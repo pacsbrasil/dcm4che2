@@ -12,6 +12,14 @@
 <xsl:text>datasource-mapping=</xsl:text>
 <xsl:value-of select="jbosscmp-jdbc/defaults/datasource-mapping"/>
 <xsl:text>
+AddUserCmd=INSERT INTO users (user_id,passwd) VALUES(%1,%2)
+UpdatePasswordForUserCmd=UPDATE users SET passwd=%2 WHERE user_id=%1
+RemoveUserCmd=DELETE FROM users WHERE user_id=%1
+AddRoleToUserCmd=INSERT INTO roles (user_id,roles) VALUES(%1,%2)
+RemoveRoleFromUserCmd=DELETE FROM roles WHERE user_id=%1 AND roles=%2
+QueryUsersCmd=SELECT user_id FROM users
+QueryPasswordForUserCmd=SELECT passwd FROM users WHERE user_id=%1
+QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=%1
 </xsl:text>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Patient']" mode="fk">
 <xsl:with-param name="fk" select="'merge_fk'"/>

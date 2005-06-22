@@ -27,7 +27,7 @@ import org.dcm4chex.archive.common.PrivateTags;
  * @version $Revision$ $Date$
  * @since 14.01.2004
  */
-public class QueryStudiesCmd extends BaseCmd {
+public class QueryStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -48,7 +48,8 @@ public class QueryStudiesCmd extends BaseCmd {
     
     public QueryStudiesCmd(Dataset filter)
             throws SQLException {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");

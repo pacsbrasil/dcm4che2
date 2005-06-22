@@ -15,7 +15,7 @@ import java.sql.SQLException;
  * @version $Revision$
  * @since 22.11.2003
  */
-public final class AECmd extends BaseCmd
+public final class AECmd extends BaseReadCmd
 {
 
     public static int transactionIsolationLevel = 0;
@@ -25,21 +25,21 @@ public final class AECmd extends BaseCmd
     private static final String[] SELECT_ATTRIBUTE =
         { "AE.pk", "AE.title", "AE.hostName", "AE.port", "AE.cipherSuites" };
 
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
-
     public AECmd(String aet) throws SQLException
     {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
+		SqlBuilder sqlBuilder = new SqlBuilder();
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.addSingleValueMatch(null, "AE.title", SqlBuilder.TYPE1, aet);
+		execute(sqlBuilder.getSql());
     }
 
-    public AEData execute() throws SQLException
+    public AEData getAEData() throws SQLException
     {
         try
         {
-            execute(sqlBuilder.getSql());
             return next()
                 ? new AEData(
                 	rs.getInt(1),

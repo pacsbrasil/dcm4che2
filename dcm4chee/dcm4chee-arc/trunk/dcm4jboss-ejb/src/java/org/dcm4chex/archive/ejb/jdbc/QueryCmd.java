@@ -26,7 +26,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  */
-public abstract class QueryCmd extends BaseCmd {
+public abstract class QueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -75,7 +75,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     protected QueryCmd(Dataset keys, boolean filterResult)
     		throws SQLException {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
         this.keys = keys;
         this.filterResult = filterResult;
     }

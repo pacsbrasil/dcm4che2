@@ -9,8 +9,6 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
@@ -20,7 +18,7 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @version $Revision$ $Date$
  * @since 06.12.2004
  */
-public final class QueryFilesCmd extends BaseCmd {
+public final class QueryFilesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -33,35 +31,25 @@ public final class QueryFilesCmd extends BaseCmd {
     private static final String[] RELATIONS = { "Instance.pk",
             "File.instance_fk", "File.filesystem_fk", "FileSystem.pk" };
 
-    private final String sql;
-        
     public QueryFilesCmd(String iuid) throws SQLException {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
         SqlBuilder sqlBuilder = new SqlBuilder();
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setRelations(RELATIONS);
         sqlBuilder.addSingleValueMatch(null, "Instance.sopIuid",
                 SqlBuilder.TYPE1, iuid);
-        this.sql = sqlBuilder.getSql();
+		execute(sqlBuilder.getSql());
     }
     
-    public List execute() throws SQLException {
-        ArrayList result = new ArrayList();
-        try {
-            execute(sql);
-            while (next()) {
-                FileDTO dto = new FileDTO();
-                dto.setFilePath(rs.getString(1));
-                dto.setFileMd5(MD5.toBytes(rs.getString(2)));
-                dto.setDirectoryPath(rs.getString(3));
-                dto.setRetrieveAET(rs.getString(4));
-                result.add(dto);
-            }
-        } finally {
-            close();
-        }
-        return result;        
+    public FileDTO getFileDTO() throws SQLException {
+        FileDTO dto = new FileDTO();
+        dto.setFilePath(rs.getString(1));
+        dto.setFileMd5(MD5.toBytes(rs.getString(2)));
+        dto.setDirectoryPath(rs.getString(3));
+        dto.setRetrieveAET(rs.getString(4));
+		return dto;
     }
 
 }

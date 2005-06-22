@@ -22,7 +22,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
  * @version $Revision$ $Date$
  * @since 10.02.2004
  */
-public class MPPSQueryCmd extends BaseCmd {
+public class MPPSQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -43,7 +43,8 @@ public class MPPSQueryCmd extends BaseCmd {
      * @throws SQLException
      */
     public MPPSQueryCmd(MPPSFilter filter) throws SQLException {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);

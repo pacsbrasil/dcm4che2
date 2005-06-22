@@ -1,37 +1,15 @@
-/*
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 20.07.2003
- * Time: 16:22:09
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
+
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.sql.Blob;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -48,74 +26,46 @@ import org.apache.log4j.Logger;
  */
 public abstract class BaseCmd {
     protected static final Logger log = Logger.getLogger(BaseCmd.class);
-    protected static DataSource ds;
+    protected DataSource ds;
     protected Connection con;
     protected Statement stmt;
-    protected ResultSet rs = null;
     protected int prevLevel = 0;
     
 
-    protected BaseCmd(int transactionIsolationLevel) throws SQLException {
-        if (ds == null) {
-            final String dsJndiName = JdbcProperties.getInstance().getDataSource();
+    protected BaseCmd(String dsJndiName, int transactionIsolationLevel, String sql)
+			throws SQLException {
+        try {
+            Context jndiCtx = new InitialContext();
             try {
-                Context jndiCtx = new InitialContext();
+                ds = (DataSource) jndiCtx.lookup(dsJndiName);
+            } finally {
                 try {
-                    ds = (DataSource) jndiCtx.lookup(dsJndiName);
-                } finally {
-                    try {
-                        jndiCtx.close();
-                    } catch (NamingException ignore) {
-                    }
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
                 }
-            } catch (NamingException ne) {
-                throw new RuntimeException(
-                        "Failed to access Data Source: " + dsJndiName, ne);
             }
+        } catch (NamingException ne) {
+            throw new RuntimeException(
+                    "Failed to access Data Source: " + dsJndiName, ne);
         }
         try {
             con = ds.getConnection();
             prevLevel = con.getTransactionIsolation();
             if (transactionIsolationLevel > 0)
                 con.setTransactionIsolation(transactionIsolationLevel);
-            stmt = con.createStatement();
+			if (sql != null) {
+		        log.debug("SQL: " + sql);
+	            stmt = con.prepareStatement(sql);
+			} else {
+				stmt = con.createStatement();
+			} 
         } catch (SQLException e) {
             close();
             throw e;
         }
     }
 	
-	public byte[] getBytes(int column) throws SQLException {
-	    ResultSetMetaData meta = rs.getMetaData();
-		if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
-			Blob blob = rs.getBlob(column);
-			return blob != null ? blob.getBytes(1,(int)blob.length()) : null;
-		}
-		return rs.getBytes(column);
-	}
-
-    public void execute(String sql) throws SQLException {
-        if (rs != null) {
-            throw new IllegalStateException();
-        }
-        log.debug("SQL: " + sql);
-        rs = stmt.executeQuery(sql);
-    }
-
-    public boolean next() throws SQLException {
-        if (rs == null) {
-            throw new IllegalStateException();
-        }
-        return rs.next();
-    }
-
     public void close() {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException ignore) {}
-            rs = null;
-        }
         if (stmt != null) {
             try {
                 stmt.close();

@@ -24,7 +24,7 @@ import org.dcm4che.dict.Tags;
  * @version $Revision$ $Date$
  * @since 26.08.2003
  */
-public class RetrieveCmd extends BaseCmd {
+public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -75,17 +75,15 @@ public class RetrieveCmd extends BaseCmd {
         return new RetrieveCmd(new RefSOPSql(refSOPSeq).getSql());
     }
 
-    private final String sql;
-
     protected RetrieveCmd(String sql) throws SQLException {
-        super(transactionIsolationLevel);
-        this.sql = sql;
-    }
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
+		execute(sql);
+	}
 
-    public FileInfo[][] execute() throws SQLException {
+    public FileInfo[][] getFileInfos() throws SQLException {
         Map result = map();
         try {
-            execute(sql);
             ArrayList list;
             Object key;
             while (next()) {

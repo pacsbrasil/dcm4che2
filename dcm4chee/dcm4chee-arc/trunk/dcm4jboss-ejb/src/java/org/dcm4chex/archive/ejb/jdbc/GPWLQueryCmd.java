@@ -28,7 +28,7 @@ import org.dcm4chex.archive.common.InputAvailabilityFlag;
  * @since 02.04.2005
  */
 
-public class GPWLQueryCmd extends BaseCmd {
+public class GPWLQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -52,7 +52,8 @@ public class GPWLQueryCmd extends BaseCmd {
     private final Dataset keys;
     
     public GPWLQueryCmd(Dataset keys) throws SQLException {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
         String s;
         this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter

@@ -23,7 +23,7 @@ import org.dcm4chex.archive.common.SPSStatus;
  * @version $Revision$ $Date$
  * @since 10.02.2004
  */
-public class MWLQueryCmd extends BaseCmd {
+public class MWLQueryCmd extends BaseReadCmd {
 
 
     public static int transactionIsolationLevel = 0;
@@ -47,7 +47,8 @@ public class MWLQueryCmd extends BaseCmd {
      * @throws SQLException
      */
     public MWLQueryCmd(Dataset keys) throws SQLException {
-        super(transactionIsolationLevel);
+        super(JdbcProperties.getInstance().getDataSource(),
+				transactionIsolationLevel);
         this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
