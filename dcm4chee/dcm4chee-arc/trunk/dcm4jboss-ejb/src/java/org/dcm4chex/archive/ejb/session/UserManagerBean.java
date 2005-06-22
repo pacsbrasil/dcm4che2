@@ -48,12 +48,14 @@ import org.dcm4chex.archive.ejb.jdbc.UpdatePasswordForUserCmd;
 public abstract class UserManagerBean
 		implements SessionBean {
 		
+	private static final String DB_JNDI_NAME = "java:comp/env/jdbc/DS";
+
 	/**
      * @ejb.interface-method
      */
 	public Collection getUsers() {
 		try {
-			QueryUsersCmd cmd = new QueryUsersCmd("jdbc/DS");
+			QueryUsersCmd cmd = new QueryUsersCmd(DB_JNDI_NAME);
 			try {
 				cmd.execute();
 				ArrayList users = new ArrayList();
@@ -74,7 +76,7 @@ public abstract class UserManagerBean
      */
 	public void addUser(String user, String passwd) {		
 		try {
-			AddUserCmd cmd = new AddUserCmd("jdbc/DataSource");
+			AddUserCmd cmd = new AddUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				cmd.setPassword(passwd);
@@ -96,7 +98,7 @@ public abstract class UserManagerBean
 			for (Iterator i = roles.iterator(); i.hasNext();) {
 				removeRoleFromUser(user, (String) i.next());
 			}
-			RemoveUserCmd cmd = new RemoveUserCmd("jdbc/DataSource");
+			RemoveUserCmd cmd = new RemoveUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				return cmd.execute() != 0;
@@ -113,7 +115,7 @@ public abstract class UserManagerBean
      */
 	public String getPasswordForUser(String user) {
 		try {
-			QueryPasswordForUserCmd cmd = new QueryPasswordForUserCmd("jdbc/DataSource");
+			QueryPasswordForUserCmd cmd = new QueryPasswordForUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				cmd.execute();
@@ -131,7 +133,7 @@ public abstract class UserManagerBean
      */
 	public boolean setPasswordForUser(String user, String passwd) {
 		try {
-			UpdatePasswordForUserCmd cmd = new UpdatePasswordForUserCmd("jdbc/DataSource");
+			UpdatePasswordForUserCmd cmd = new UpdatePasswordForUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				cmd.setPassword(passwd);
@@ -149,7 +151,7 @@ public abstract class UserManagerBean
      */
 	public Collection getRolesOfUser(String user) {
 		try {
-			QueryRolesForUserCmd cmd = new QueryRolesForUserCmd("jdbc/DataSource");
+			QueryRolesForUserCmd cmd = new QueryRolesForUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				cmd.execute();
@@ -171,7 +173,7 @@ public abstract class UserManagerBean
      */
 	public void addRoleToUser(String user, String role) {
 		try {
-			AddRoleToUserCmd cmd = new AddRoleToUserCmd("jdbc/DataSource");
+			AddRoleToUserCmd cmd = new AddRoleToUserCmd("DB_JNDI_NAME");
 			try {
 				cmd.setUser(user);
 				cmd.setRole(role);
@@ -189,7 +191,7 @@ public abstract class UserManagerBean
      */
 	public boolean removeRoleFromUser(String user, String role) {
 		try {
-			RemoveRoleFromUserCmd cmd = new RemoveRoleFromUserCmd("jdbc/DataSource");
+			RemoveRoleFromUserCmd cmd = new RemoveRoleFromUserCmd("DB_JNDI_NAME");
 			try {
 				cmd.setUser(user);
 				cmd.setRole(role);
