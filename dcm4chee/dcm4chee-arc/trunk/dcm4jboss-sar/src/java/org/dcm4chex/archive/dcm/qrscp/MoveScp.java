@@ -38,6 +38,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -46,16 +47,19 @@ import org.dcm4chex.archive.exceptions.UnkownAETException;
  */
 public class MoveScp extends DcmServiceBase {
     private final QueryRetrieveScpService service;
+	private final Logger log;
 
     public MoveScp(QueryRetrieveScpService service) {
         this.service = service;
+		this.log = service.getLog();
     }
 
     public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException {
         Command rqCmd = rq.getCommand();
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier:\n", rqData);
+			log.debug("Identifier:\n");
+			log.debug(rqData);
             checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
             AEData aeData = null;

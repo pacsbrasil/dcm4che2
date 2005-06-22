@@ -72,6 +72,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximal number of concurrent forwarded messages.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
       <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.

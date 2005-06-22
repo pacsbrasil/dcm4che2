@@ -49,7 +49,8 @@ class GPSPSScp extends DcmServiceBase {
 			Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         Dataset actionInfo = rq.getDataset();
-        service.logDataset("N-Action Information:\n", actionInfo);
+        log.debug("N-Action Information:\n");
+		log.debug(actionInfo);
 
         final String iuid = rqCmd.getAffectedSOPInstanceUID();
         final int actionID = rqCmd.getInt(Tags.ActionTypeID, -1);

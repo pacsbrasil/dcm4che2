@@ -30,6 +30,7 @@ import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.util.FileUtils;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -41,6 +42,7 @@ class FileDataSource implements DataSource {
     private final QueryRetrieveScpService service;
     private final FileInfo fileInfo;
     private final byte[] buffer;
+	private final Logger log;
 
     // buffer == null => send no Pixeldata
     public FileDataSource(
@@ -48,6 +50,7 @@ class FileDataSource implements DataSource {
         FileInfo fileInfo,
         byte[] buffer) {
         this.service = service;
+		this.log = service.getLog();
         this.fileInfo = fileInfo;
         this.buffer = buffer;
     }
@@ -67,7 +70,8 @@ class FileDataSource implements DataSource {
             updateAttrs(ds, fileInfo.seriesAttrs);
             updateAttrs(ds, fileInfo.instAttrs);
             if (parser.getReadTag() != Tags.PixelData || buffer == null) {
-                service.logDataset("Dataset:\n", ds);
+				log.debug("Dataset:\n");
+				log.debug(ds);
                 ds.writeDataset(out, enc);
                 return;                
             }
@@ -75,7 +79,8 @@ class FileDataSource implements DataSource {
             if (len == -1 && !enc.encapsulated) {
                 DecompressCmd cmd = new DecompressCmd(ds, parser);
                 len = cmd.getPixelDataLength();
-                service.logDataset("Dataset:\n", ds);
+				log.debug("Dataset:\n");
+				log.debug(ds);
                 ds.writeDataset(out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
                 try {
@@ -88,7 +93,8 @@ class FileDataSource implements DataSource {
 				if ((len&1)!=0)
                     out.write(0);
             } else {
-                service.logDataset("Dataset:\n", ds);
+				log.debug("Dataset:\n");
+				log.debug(ds);
                 ds.writeDataset(out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
                 if (len == -1) {

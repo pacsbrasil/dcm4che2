@@ -46,6 +46,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximal number of concurrent forwarded MPPS.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
       <description>Number and intervalls of retries of failed 

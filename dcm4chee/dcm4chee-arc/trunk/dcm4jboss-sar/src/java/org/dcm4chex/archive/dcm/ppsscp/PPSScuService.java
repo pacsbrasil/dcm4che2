@@ -30,12 +30,14 @@ import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
@@ -53,17 +55,9 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
 			UIDs.ImplicitVRLittleEndian };
 
-	private static final int ERR_SQL = -1;
+	private static final int ERR_GPPPS_RJ = -2;
 
-	private static final int ERR_UNKOWN_DEST = -2;
-
-	private static final int ERR_IO = -3;
-
-	private static final int ERR_ASSOC_NOT_ACCEPTED = -4;
-
-	private static final int ERR_SERVICE_NOT_SUPPORTED = -5;
-
-	private static final int ERR_THREAD = -6;
+	private static final int ERR_ASSOC_RJ = -1;
 
 	private static final int PCID_GPPPS = 1;
 
@@ -90,6 +84,25 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	private int dimseTimeout;
 
 	private int soCloseDelay;
+
+	private int concurrency = 1;
+
+	public final int getConcurrency() {
+		return concurrency;
+	}
+
+	public final void setConcurrency(int concurrency) throws Exception {
+		if (concurrency <= 0)
+			throw new IllegalArgumentException("Concurrency: " + concurrency);
+		if (this.concurrency != concurrency) {
+			final boolean restart = getState() == STARTED;
+			if (restart)
+				stop();
+			this.concurrency = concurrency;
+			if (restart)
+				start();
+		}
+	}
 
 	public final int getAcTimeout() {
 		return acTimeout;
@@ -166,7 +179,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	}
 
 	protected void startService() throws Exception {
-		JMSDelegate.startListening(queueName, this);
+		JMSDelegate.startListening(queueName, this, concurrency);
 		server.addNotificationListener(ppsScpServiceName, this,
 				PPSScpService.NOTIF_FILTER, null);
 	}
@@ -196,70 +209,61 @@ public class PPSScuService extends ServiceMBeanSupport implements
 		ObjectMessage om = (ObjectMessage) message;
 		try {
 			PPSOrder order = (PPSOrder) om.getObject();
-			log.info("Start processing " + order);
-			final int status = sendPPS(order.isCreate(), order.getDataset(), order
-					.getDestination());
-			if (status == 0) {
-				log.info("Finished processing " + order);
-				return;
+            log.info("Start processing " + order);
+			try {
+	            sendPPS(order.isCreate(), order.getDataset(), order.getDestination());
+	            log.info("Finished processing " + order);
+			} catch (Exception e) {
+				final int failureCount = order.getFailureCount() + 1;
+				order.setFailureCount(failureCount);
+				final long delay = retryIntervalls.getIntervall(failureCount);
+				if (delay == -1L) {
+					log.error("Give up to process " + order, e);
+				} else {
+					log.warn("Failed to process " + order
+							+ ". Scheduling retry.", e);
+					JMSDelegate.queue(queueName, order, 0, System
+							.currentTimeMillis()
+							+ delay);
+				}
 			}
-			order.setFailureStatus(status);
-			final int failureCount = order.getFailureCount() + 1;
-			order.setFailureCount(failureCount);
-			final long delay = retryIntervalls.getIntervall(failureCount);
-			if (delay == -1L) {
-				log.error("Give up to process " + order);
-			} else {
-				log.warn("Failed to process " + order + ". Scheduling retry.");
-				JMSDelegate.queue(queueName, order, 0, System
-						.currentTimeMillis()
-						+ delay);
-			}
-		} catch (JMSException e) {
-			log.error("jms error during processing message: " + message, e);
-		} catch (Throwable e) {
-			log.error("unexpected error during processing message: " + message,
-					e);
-		}
-	}
+        } catch (JMSException e) {
+            log.error("jms error during processing message: " + message, e);
+        } catch (Throwable e) {
+            log.error("unexpected error during processing message: " + message,
+                    e);
+        }
+    }
 
-	int sendPPS(boolean create, Dataset mpps, String destination) {
-		AEData aeData = null;
-		try {
-			aeData = new AECmd(destination).execute();
-		} catch (SQLException e1) {
-			log.error("Failed to access DB for resolving AET: " + destination,
-					e1);
-			return ERR_SQL;
-		}
+	void sendPPS(boolean create, Dataset mpps, String aet)
+			throws InterruptedException, IOException, UnkownAETException,
+			SQLException, DcmServiceException {
+		AEData aeData = new AECmd(aet).execute();
 		if (aeData == null) {
-			log.error("Unkown Destination AET: " + destination);
-			return ERR_UNKOWN_DEST;
+			throw new UnkownAETException("Unkown Destination AET: "
+					+ aet);
 		}
-		ActiveAssociation aa = null;
+		AssociationFactory af = AssociationFactory.getInstance();
+		Association a = af.newRequestor(createSocket(aeData));
+		a.setAcTimeout(acTimeout);
+		a.setDimseTimeout(dimseTimeout);
+		a.setSoCloseDelay(soCloseDelay);
+		AAssociateRQ rq = af.newAAssociateRQ();
+		rq.setCalledAET(aet);
+		rq.setCallingAET(callingAET);
+		rq.addPresContext(af.newPresContext(PCID_GPPPS,
+				UIDs.GeneralPurposePerformedProcedureStepSOPClass, NATIVE_TS));
+		PDU ac = a.connect(rq);
+		if (!(ac instanceof AAssociateAC)) {
+			throw new DcmServiceException(ERR_ASSOC_RJ,
+					"Association not accepted by " + aet + ": " + ac);
+		}
+		ActiveAssociation aa = af.newActiveAssociation(a, null);
 		try {
-			AssociationFactory af = AssociationFactory.getInstance();
-			Association a = af.newRequestor(createSocket(aeData));
-			a.setAcTimeout(acTimeout);
-			a.setDimseTimeout(dimseTimeout);
-			a.setSoCloseDelay(soCloseDelay);
-			AAssociateRQ rq = af.newAAssociateRQ();
-			rq.setCalledAET(destination);
-			rq.setCallingAET(callingAET);
-			rq.addPresContext(af.newPresContext(PCID_GPPPS,
-					UIDs.GeneralPurposePerformedProcedureStepSOPClass, NATIVE_TS));
-			PDU ac = a.connect(rq);
-			if (!(ac instanceof AAssociateAC)) {
-				log.error("Association not accepted by " + destination + ": "
-						+ ac);
-				return ERR_ASSOC_NOT_ACCEPTED;
-			}
-			aa = af.newActiveAssociation(a, null);
 			aa.start();
 			if (a.getAcceptedTransferSyntaxUID(PCID_GPPPS) == null) {
-				log.error("MPPS Service not supported by remote AE: "
-						+ destination);
-				return ERR_SERVICE_NOT_SUPPORTED;
+				throw new DcmServiceException(ERR_GPPPS_RJ,
+						"GPPPS not supported by remote AE: " + aet);
 			}
 			DcmObjectFactory dof = DcmObjectFactory.getInstance();
 			Command cmdRq = dof.newCommand();
@@ -272,38 +276,28 @@ public class PPSScuService extends ServiceMBeanSupport implements
 						UIDs.GeneralPurposePerformedProcedureStepSOPClass, mpps
 								.getString(Tags.SOPInstanceUID));
 			}
-			Dimse dimseRq = af.newDimse(PCID_GPPPS, cmdRq, mpps.exclude(EXCLUDE_TAGS));
-			final Dimse dimseRsp;
-			try {
-				dimseRsp = aa.invoke(dimseRq).get();
-			} catch (InterruptedException ie) {
-				log.error("Threading error during waiting for response of "
-						+ cmdRq);
-				return ERR_THREAD;
-			}
+			Dimse dimseRq = af.newDimse(PCID_GPPPS, cmdRq, mpps
+					.exclude(EXCLUDE_TAGS));
+			final Dimse dimseRsp = aa.invoke(dimseRq).get();
 			final Command cmdRsp = dimseRsp.getCommand();
 			final int status = cmdRsp.getStatus();
 			switch (status) {
 			case 0x0000:
-				return 0;
+				break;
 			case 0x0116:
-				log
-						.warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
-								+ destination);
-				return 0;
+				log.warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
+								+ aet);
+				break;
 			default:
-				return status;
+				throw new DcmServiceException(status, cmdRsp
+						.getString(Tags.ErrorComment));
 			}
-		} catch (IOException e) {
-			log.error("i/o exception during sending MPPS to " + destination, e);
-			return ERR_IO;
 		} finally {
-			if (aa != null)
-				try {
-					aa.release(true);
-				} catch (Exception e) {
-					log.warn("Failed to release " + aa.getAssociation());
-				}
+			try {
+				aa.release(true);
+			} catch (Exception e) {
+				log.warn("Failed to release " + aa.getAssociation());
+			}
 		}
 	}
 

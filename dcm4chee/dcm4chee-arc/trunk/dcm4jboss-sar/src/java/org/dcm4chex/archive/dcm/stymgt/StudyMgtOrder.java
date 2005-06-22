@@ -76,8 +76,6 @@ public class StudyMgtOrder implements Serializable {
 	}
 
     public String toString() {
-		StringBuffer sb = new StringBuffer("StudyMgtOrder[");
-		
         return "StudyMgtOrder[" + cmdFieldAsString()
         		+ ", iuid=" + iuid
         		+ ", failureCount=" + failureCount 

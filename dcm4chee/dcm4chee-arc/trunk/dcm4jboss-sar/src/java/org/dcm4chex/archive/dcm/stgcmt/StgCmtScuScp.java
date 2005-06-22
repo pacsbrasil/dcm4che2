@@ -48,7 +48,8 @@ class StgCmtScuScp extends DcmServiceBase {
             Command rspCmd) throws IOException, DcmServiceException {
         Command cmd = rq.getCommand();
         Dataset data = rq.getDataset();
-        service.logDataset("StgCmt Request:\n", data);
+		log.debug("StgCmt Request:\n");
+		log.debug(data);
         if (!UIDs.StorageCommitmentPushModelSOPInstance.equals(cmd
                 .getRequestedSOPInstanceUID())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
@@ -87,7 +88,8 @@ class StgCmtScuScp extends DcmServiceBase {
             Command rspCmd) throws IOException, DcmServiceException {
         Command cmd = rq.getCommand();
         Dataset data = rq.getDataset();
-        service.logDataset("StgCmt Result:\n", data);
+		log.debug("StgCmt Result:\n");
+		log.debug(data);
         if (!UIDs.StorageCommitmentPushModelSOPInstance.equals(cmd
                 .getRequestedSOPInstanceUID())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);

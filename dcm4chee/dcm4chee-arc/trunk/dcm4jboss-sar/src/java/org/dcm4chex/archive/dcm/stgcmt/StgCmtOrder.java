@@ -19,11 +19,9 @@ import org.dcm4che.data.Dataset;
  */
 class StgCmtOrder implements Serializable {
 
-    private static final long serialVersionUID = 3256442495255525432L;
+    private static final long serialVersionUID = 3256437014860936248L;
 
-//    public static final String QUEUE = "StgCmtScuScp";
-
-    private final String callingAET;
+	private final String callingAET;
 
     private final String calledAET;
 
@@ -32,8 +30,6 @@ class StgCmtOrder implements Serializable {
     private final boolean scpRole;
 
     private int failureCount;
-
-    private int failureStatus;
 
     public StgCmtOrder(String callingAET, String calledAET, Dataset actionInfo,
             boolean scpRole) {
@@ -49,14 +45,6 @@ class StgCmtOrder implements Serializable {
 
     public final void setFailureCount(int failureCount) {
         this.failureCount = failureCount;
-    }
-
-    public final int getFailureStatus() {
-        return failureStatus;
-    }
-
-    public final void setFailureStatus(int failureStatus) {
-        this.failureStatus = failureStatus;
     }
 
     public final Dataset getActionInfo() {
@@ -78,6 +66,6 @@ class StgCmtOrder implements Serializable {
     public String toString() {
         return "StgCmtOrder[calling=" + callingAET + ", called=" + calledAET
         	+ ", role=" + (scpRole ? "SCP, failures=" : "SCU, failures=")
-        	+ failureCount + ", status=" + failureStatus + "]";
+        	+ failureCount + "]";
     }
 }

@@ -26,7 +26,7 @@
       setMethod="setForwardAETs">
       <description>AET(s) of AE(s) to forward destinations.
       Separate multiple values by '\'(backslash).
-      "NONE" = do not forward MPPS to any AE.
+      "NONE" = do not forward GP-PPS to any AE.
       </description>
       <name>ForwardAETs</name>
       <type>java.lang.String</type>
@@ -43,6 +43,17 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximal number of concurrent forwarded GP-PPS.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

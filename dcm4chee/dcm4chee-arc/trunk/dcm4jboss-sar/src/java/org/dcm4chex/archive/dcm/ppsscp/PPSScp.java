@@ -18,6 +18,7 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -26,9 +27,11 @@ import org.dcm4che.net.Dimse;
 class PPSScp extends DcmServiceBase {
 
     private final PPSScpService service;
+	private final Logger log;
 
     public PPSScp(PPSScpService service) {
         this.service = service;
+		this.log = service.getLog();
     }
 
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
@@ -36,7 +39,8 @@ class PPSScp extends DcmServiceBase {
         final Command cmd = rq.getCommand();
         final Dataset gppps = rq.getDataset();
         final String iuid = rspCmd.getAffectedSOPInstanceUID();
-        service.logDataset("Creating PPS:\n", gppps);
+		log.debug("Creating PPS:\n");
+		log.debug(gppps);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         service.sendPPSNotification(gppps);
         return null;
@@ -47,7 +51,8 @@ class PPSScp extends DcmServiceBase {
         final Command cmd = rq.getCommand();
         final Dataset gppps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
-        service.logDataset("Set PPS:\n", gppps);
+		log.debug("Set PPS:\n");
+		log.debug(gppps);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         service.sendPPSNotification(gppps);
         return null;

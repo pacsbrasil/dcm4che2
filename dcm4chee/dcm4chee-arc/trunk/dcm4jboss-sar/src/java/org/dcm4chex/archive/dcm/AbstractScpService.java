@@ -166,10 +166,4 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] getTransferSyntaxUIDs() {
         return acceptExplicitVRLE ? NATIVE_LE_TS : ONLY_DEFAULT_TS;
     }
-    
-    public void logDataset(String prompt, Dataset ds) {
-        if (!log.isDebugEnabled()) { return; }
-        log.debug(prompt);
-        log.debug( ds );
-    }    
 }

@@ -96,6 +96,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximal number of concurrent sent Notifications.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getScnPriority"
       setMethod="setScnPriority">
       <description>Priority used in Basic Study Content Notification Requests.

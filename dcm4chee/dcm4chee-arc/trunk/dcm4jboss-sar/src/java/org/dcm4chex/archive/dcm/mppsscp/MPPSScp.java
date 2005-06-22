@@ -24,6 +24,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -54,8 +55,11 @@ class MPPSScp extends DcmServiceBase {
 
     private final MPPSScpService service;
 
+	private final Logger log;
+
     public MPPSScp(MPPSScpService service) {
         this.service = service;
+		this.log = service.getLog();
     }
 
     private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
@@ -69,7 +73,8 @@ class MPPSScp extends DcmServiceBase {
         final Dataset mpps = rq.getDataset();
         final String cuid = rspCmd.getAffectedSOPClassUID();
         final String iuid = rspCmd.getAffectedSOPInstanceUID();
-        service.logDataset("Creating MPPS:\n", mpps);
+		log.debug("Creating MPPS:\n");
+		log.debug(mpps);
         checkCreateAttributs(mpps);
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
@@ -103,7 +108,8 @@ class MPPSScp extends DcmServiceBase {
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
-        service.logDataset("Set MPPS:\n", mpps);
+		log.debug("Set MPPS:\n");
+		log.debug(mpps);
         checkSetAttributs(mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         updateMPPS(mpps);

@@ -87,6 +87,25 @@ public class SendMailService extends ServiceMBeanSupport
 	
 	private RetryIntervalls retryIntervalls;
 
+	private int concurrency = 1;
+
+	public final int getConcurrency() {
+		return concurrency;
+	}
+
+	public final void setConcurrency(int concurrency) throws Exception {
+		if (concurrency <= 0)
+			throw new IllegalArgumentException("Concurrency: " + concurrency);
+		if (this.concurrency != concurrency) {
+			final boolean restart = getState() == STARTED;
+			if (restart)
+				stop();
+			this.concurrency = concurrency;
+			if (restart)
+				start();
+		}
+	}
+
 	public final String getSmtpHost()
 	{
 		return smtpHost;
@@ -168,7 +187,7 @@ public class SendMailService extends ServiceMBeanSupport
 	protected void startService() throws Exception
 	{
         super.startService();
-        JMSDelegate.startListening(QUEUE, listener);
+        JMSDelegate.startListening(QUEUE, listener, concurrency);
 	}
 
 	protected void stopService() throws Exception

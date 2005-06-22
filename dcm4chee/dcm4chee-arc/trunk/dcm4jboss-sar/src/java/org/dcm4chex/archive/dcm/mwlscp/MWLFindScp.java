@@ -34,6 +34,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -41,9 +42,11 @@ import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
  */
 public class MWLFindScp extends DcmServiceBase {
     private final MWLFindScpService service;
+	private final Logger log;
 
     public MWLFindScp(MWLFindScpService service) {
         this.service = service;
+		this.log = service.getLog();
     }
 
     protected MultiDimseRsp doCFind(
@@ -54,7 +57,8 @@ public class MWLFindScp extends DcmServiceBase {
         final MWLQueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier:\n", rqData);
+			log.debug("Identifier:\n");
+			log.debug(rqData);
             queryCmd = new MWLQueryCmd(rqData);
             queryCmd.execute();
         } catch (Exception e) {
@@ -94,13 +98,14 @@ public class MWLFindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset rspData = queryCmd.getDataset();
-                service.logDataset("Identifier:",rspData);
+				log.debug("Identifier:\n");
+				log.debug(rspData);
                 return rspData;
             } catch (SQLException e) {
-                service.getLog().error("Retrieve DB record failed:", e);
+                log.error("Retrieve DB record failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);                
             } catch (Exception e) {
-                service.getLog().error("Corrupted DB record:", e);
+                log.error("Corrupted DB record:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);                
             }                        
         }

@@ -65,6 +65,18 @@
          <value value="CDRECORD" />
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximal number of concurrent invoked Media Creation Requests.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
    
    <attribute access="read-write"
       getMethod="getFileSetIdPrefix"

@@ -22,10 +22,7 @@ import org.dcm4che.dict.Tags;
  */
 public class MPPSOrder implements Serializable {
 
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = 3978710575507585336L;
+	private static final long serialVersionUID = 4049078245976520754L;
 
 	private final boolean create;
 
@@ -34,8 +31,6 @@ public class MPPSOrder implements Serializable {
     private final String dest;
 
     private int failureCount;
-
-    private int failureStatus;
 
     public MPPSOrder(Dataset ds, String dest) {
         if (dest == null) throw new NullPointerException();
@@ -65,23 +60,12 @@ public class MPPSOrder implements Serializable {
         this.failureCount = failureCount;
     }
 
-    public final int getFailureStatus() {
-        return failureStatus;
-    }
-
-    public final void setFailureStatus(int failureStatus) {
-        this.failureStatus = failureStatus;
-    }
-
     public String toString() {
         return (create
                 ? "MPPSOrder[N-CREATE, iuid="
                 : "MPPSOrder[N-SET, iuid=")
                 + ds.getString(Tags.SOPInstanceUID)
-                + ", dest="
-                + dest
-                + ", failureStatus="
-                + Integer.toHexString(failureStatus).toUpperCase()
-                + "H, failureCount=" + failureCount + "]";
+                + ", dest=" + dest
+                + ", failureCount=" + failureCount + "]";
     }
 }

@@ -84,7 +84,26 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
 	
 	private boolean retryIfNoSuchSOPInstance = false;
 
-    public final int getAcTimeout() {
+	private int concurrency = 1;
+
+	public final int getConcurrency() {
+		return concurrency;
+	}
+
+	public final void setConcurrency(int concurrency) throws Exception {
+		if (concurrency <= 0)
+			throw new IllegalArgumentException("Concurrency: " + concurrency);
+		if (this.concurrency  != concurrency) {
+			final boolean restart = getState() == STARTED;
+			if (restart)
+				stop();
+			this.concurrency = concurrency;
+			if (restart)
+				start();
+		}
+	}
+
+	public final int getAcTimeout() {
         return acTimeout;
     }
 
@@ -165,7 +184,7 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this);
+        JMSDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(scpServiceName,
                 this,
                 StudyMgtScpService.NOTIF_FILTER,

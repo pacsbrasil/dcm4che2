@@ -22,10 +22,7 @@ import org.dcm4che.dict.Tags;
 
 public class PPSOrder implements Serializable {
 
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = 3690198762949851445L;
+	private static final long serialVersionUID = 3689634692077140272L;
 
 	private final boolean create;
 
@@ -34,8 +31,6 @@ public class PPSOrder implements Serializable {
     private final String dest;
 
     private int failureCount;
-
-    private int failureStatus;
 
     public PPSOrder(Dataset ds, String dest) {
         if (dest == null) throw new NullPointerException();
@@ -65,23 +60,12 @@ public class PPSOrder implements Serializable {
         this.failureCount = failureCount;
     }
 
-    public final int getFailureStatus() {
-        return failureStatus;
-    }
-
-    public final void setFailureStatus(int failureStatus) {
-        this.failureStatus = failureStatus;
-    }
-
     public String toString() {
         return (create
                 ? "PPSOrder[N-CREATE, iuid="
                 : "PPSOrder[N-SET, iuid=")
                 + ds.getString(Tags.SOPInstanceUID)
-                + ", dest="
-                + dest
-                + ", failureStatus="
-                + Integer.toHexString(failureStatus).toUpperCase()
-                + "H, failureCount=" + failureCount + "]";
+                + ", dest=" + dest
+                + ", failureCount=" + failureCount + "]";
     }
 }

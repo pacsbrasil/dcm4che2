@@ -42,11 +42,12 @@ public class JMSDelegate {
      */
     public static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
 
-    public static void startListening(String name, MessageListener listener)
+    public static void startListening(String name, MessageListener listener, 
+				int receiverCount)
     		throws JMSException {
         if (map.containsKey(name))
             throw new IllegalStateException("Already listening on queue " + name);
-        map.put(name, new JMSDelegate(name, listener));
+        map.put(name, new JMSDelegate(name, listener, receiverCount));
     }
 
     public static void stopListening(String name) {
@@ -78,7 +79,7 @@ public class JMSDelegate {
 
     private int deliveryMode = DeliveryMode.PERSISTENT;
 
-    private JMSDelegate(String name, MessageListener listener)
+    private JMSDelegate(String name, MessageListener listener, int receiverCount)
     		throws JMSException {
         InitialContext iniCtx = null;
         QueueConnectionFactory qcf = null;
@@ -100,10 +101,12 @@ public class JMSDelegate {
             }
         }
         try {
-            QueueSession session = conn.createQueueSession(false,
-                    QueueSession.AUTO_ACKNOWLEDGE);
-            QueueReceiver receiver = session.createReceiver(queue);
-            receiver.setMessageListener(listener);
+			for (int i = 0; i < receiverCount; ++i) {
+	            QueueSession session = conn.createQueueSession(false,
+	                    QueueSession.AUTO_ACKNOWLEDGE);
+	            QueueReceiver receiver = session.createReceiver(queue);
+	            receiver.setMessageListener(listener);
+			}
             conn.start();
         } catch (JMSException e) {
             close();

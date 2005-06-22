@@ -81,7 +81,13 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 
     /** Action command for cancel media creation. */
     private static final int CANCEL_MEDIA_CREATION = 2;
+	
+	/** Array containing String values of priorities. (N-Action need text values). */
+	private static final String[] prioStrings = new String[]{"MED","HIGH","LOW"};
 
+    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
+        UIDs.ImplicitVRLittleEndian};
+    
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
 	private long maxMediaUsage = 680 * FileUtils.MEGA;
 	
@@ -147,12 +153,26 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	
 	/** DICOM priority. Used for move and media creation action. */
 	private int priority = 0;
-	/** Array containing String values of priorities. (N-Action need text values). */
-	private static final String[] prioStrings = new String[]{"MED","HIGH","LOW"};
+	
+	private int concurrency = 1;
 
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-        UIDs.ImplicitVRLittleEndian};
-    
+	public final int getConcurrency() {
+		return concurrency;
+	}
+
+	public final void setConcurrency(int concurrency) throws Exception {
+		if (concurrency <= 0)
+			throw new IllegalArgumentException("Concurrency: " + concurrency);
+		if (this.concurrency != concurrency) {
+			final boolean restart = getState() == STARTED;
+			if (restart)
+				stop();
+			this.concurrency = concurrency;
+			if (restart)
+				start();
+		}
+	}
+
 	private MediaComposer mediaComposer;
 
     private final NotificationListener scheduleMediaListener = 
@@ -630,7 +650,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
         		updateMediaStatusInterval, updateMediaStatusListener);
         burnMediaListenerID = startScheduler("CheckForMediaToBurn",
         		burnMediaInterval, burnMediaListener);
-        JMSDelegate.startListening(QUEUE, this);
+        JMSDelegate.startListening(QUEUE, this, concurrency);
     }
 
 	/**

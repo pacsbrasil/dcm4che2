@@ -22,6 +22,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
+import org.jboss.logging.Logger;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -31,9 +32,11 @@ import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 
 class GPWLFindScp extends DcmServiceBase {
     private final GPWLScpService service;
+	private final Logger log;
 
     public GPWLFindScp(GPWLScpService service) {
         this.service = service;
+		this.log = service.getLog();
     }
 
     protected MultiDimseRsp doCFind(
@@ -44,7 +47,8 @@ class GPWLFindScp extends DcmServiceBase {
         final GPWLQueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier:\n", rqData);
+			log.debug("Identifier:\n");
+			log.debug(rqData);
             queryCmd = new GPWLQueryCmd(rqData);
             queryCmd.execute();
         } catch (Exception e) {
@@ -84,7 +88,8 @@ class GPWLFindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset rspData = queryCmd.getDataset();
-                service.logDataset("Identifier:",rspData);
+				log.debug("Identifier:\n");
+				log.debug(rspData);
                 return rspData;
             } catch (SQLException e) {
                 service.getLog().error("Retrieve DB record failed:", e);

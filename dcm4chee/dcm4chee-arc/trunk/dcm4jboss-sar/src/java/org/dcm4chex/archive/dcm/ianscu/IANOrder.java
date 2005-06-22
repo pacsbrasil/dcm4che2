@@ -21,15 +21,13 @@ import org.dcm4che.dict.Tags;
  */
 class IANOrder implements Serializable {
 
-    static final long serialVersionUID = 3594630119462653994L;
+	private static final long serialVersionUID = 3258412833061679669L;
 
-    private final String dest;
+	private final String dest;
 
     private final Dataset ds;
 
     private int failureCount;
-
-    private int failureStatus;
 
     public IANOrder(String dest, Dataset ds) {
         if (dest == null) throw new NullPointerException();
@@ -50,23 +48,15 @@ class IANOrder implements Serializable {
         this.failureCount = failureCount;
     }
 
-    public final int getFailureStatus() {
-        return failureStatus;
-    }
-
-    public final void setFailureStatus(int failureStatus) {
-        this.failureStatus = failureStatus;
-    }
-
     public final String getDestination() {
         return dest;
     }
 
     public String toString() {
         return "IanOrder[dest=" + dest + ", suid="
-                + ds.getString(Tags.StudyInstanceUID) + ", failureStatus="
-                + Integer.toHexString(failureStatus).toUpperCase()
-                + "H, failureCount=" + failureCount + "]";
+                + ds.getString(Tags.StudyInstanceUID)
+                + ", failureCount=" + failureCount
+        		+ "]";
     }
 
 }

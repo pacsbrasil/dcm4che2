@@ -35,6 +35,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -49,8 +50,11 @@ public class FindScp extends DcmServiceBase {
     
     private final boolean filterResult;
 
+	private Logger log;
+
     public FindScp(QueryRetrieveScpService service, boolean filterResult) {
         this.service = service;
+		this.log = service.getLog();
         this.filterResult = filterResult;
     }
 
@@ -59,12 +63,13 @@ public class FindScp extends DcmServiceBase {
         final QueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier:\n", rqData);
+			log.debug("Identifier:\n");
+			log.debug(rqData);
             logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
             queryCmd = QueryCmd.create(rqData, filterResult);
             queryCmd.execute();
         } catch (Exception e) {
-            service.getLog().error("Query DB failed:", e);
+            log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
         return new MultiCFindRsp(queryCmd);
@@ -107,13 +112,14 @@ public class FindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset data = queryCmd.getDataset();
-                service.logDataset("Identifier:\n", data);
+				log.debug("Identifier:\n");
+				log.debug(data);
                 return data;
             } catch (SQLException e) {
-                service.getLog().error("Retrieve DB record failed:", e);
+                log.error("Retrieve DB record failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);
             } catch (Exception e) {
-                service.getLog().error("Corrupted DB record:", e);
+                log.error("Corrupted DB record:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);
             }
         }
