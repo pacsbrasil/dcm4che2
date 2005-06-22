@@ -233,7 +233,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			SeriesLocal series = seriesHome.findBySeriesIuid(
 					ds.getString(Tags.SeriesInstanceUID));
 			StudyLocal prevStudy = series.getStudy();
-			if (!series.isIdentical(prevStudy)) {
+			if (!study.isIdentical(prevStudy)) {
 				log.info("Move " + series.asString() + " from " + 
 						prevStudy.asString() + " to " + study.asString());
 				series.setStudy(study);
