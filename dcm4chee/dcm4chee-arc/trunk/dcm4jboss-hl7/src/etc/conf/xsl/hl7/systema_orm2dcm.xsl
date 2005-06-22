@@ -17,11 +17,12 @@
         </dataset>
     </xsl:template>
     <xsl:template match="PV1">
-        <!-- Referring Physican Name -->
+        <!-- Referring Physican Name
         <xsl:call-template name="cn2pnAttr">
             <xsl:with-param name="tag" select="'00080090'"/>
             <xsl:with-param name="cn" select="field[8]"/>
         </xsl:call-template>
+        -->
         <xsl:call-template name="pregnancyStatus">
             <xsl:with-param name="ambulantStatus" select="field[15]/text()"/>
         </xsl:call-template>
@@ -64,7 +65,7 @@
         </xsl:if>
     </xsl:template>
     <xsl:template match="OBR[1]">        
-        <!-- Use Placer Order Number as Accession Number if missing OBR:18 -->
+        <!-- Use Placer Order Number as Accession Number if missing OBR-18 -->
         <xsl:variable name="accno">
             <xsl:choose>
                 <xsl:when test="field[18]/text()">
@@ -79,6 +80,11 @@
             <xsl:with-param name="tag" select="'00080050'"/>
             <xsl:with-param name="vr" select="'SH'"/>
             <xsl:with-param name="val" select="$accno"/>
+        </xsl:call-template>
+        <!-- Provide Requesting Physician also as Referring Physican Name -->
+        <xsl:call-template name="cn2pnAttr">
+            <xsl:with-param name="tag" select="'00080090'"/>
+            <xsl:with-param name="cn" select="field[16]"/>
         </xsl:call-template>
         <!-- Medical Alerts -->
         <xsl:call-template name="dcmAttr">
