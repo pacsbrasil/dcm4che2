@@ -61,6 +61,25 @@ public class HL7SendService
 	
 	private volatile long messageControlID = System.currentTimeMillis();
 	
+	private int concurrency = 1;
+
+	public final int getConcurrency() {
+		return concurrency;
+	}
+
+	public final void setConcurrency(int concurrency) throws Exception {
+		if (concurrency <= 0)
+			throw new IllegalArgumentException("Concurrency: " + concurrency);
+		if (this.concurrency != concurrency) {
+			final boolean restart = getState() == STARTED;
+			if (restart)
+				stop();
+			this.concurrency = concurrency;
+			if (restart)
+				start();
+		}
+	}
+	
 	public final String getSendingApplication() {
 		return sendingApplication;
 	}
@@ -134,7 +153,7 @@ public class HL7SendService
 	}
 
 	protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this);
+        JMSDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(hl7ServerName,
                 this,
                 HL7ServerService.NOTIF_FILTER,
