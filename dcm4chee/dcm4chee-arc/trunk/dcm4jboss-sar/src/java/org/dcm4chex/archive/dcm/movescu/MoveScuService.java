@@ -211,7 +211,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 		if (aet == null) {
 			aet = calledAET;
 		}
-		AEData aeData = new AECmd(aet).execute();
+		AEData aeData = new AECmd(aet).getAEData();
 		if (aeData == null) {
 			throw new UnkownAETException("Unkown Retrieve AET: " + aet);
 		}

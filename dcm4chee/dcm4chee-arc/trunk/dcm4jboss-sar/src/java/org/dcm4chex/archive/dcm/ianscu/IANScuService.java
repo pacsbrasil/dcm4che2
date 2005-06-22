@@ -293,7 +293,7 @@ public class IANScuService extends ServiceMBeanSupport implements
 			UnkownAETException, IOException, DcmServiceException,
 			InterruptedException {
 		final String aet = order.getDestination();
-		AEData aeData = new AECmd(aet).execute();
+		AEData aeData = new AECmd(aet).getAEData();
 		if (aeData == null) {
 			throw new UnkownAETException("Unkown Destination AET: " + aet);
 		}

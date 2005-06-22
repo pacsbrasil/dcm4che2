@@ -737,7 +737,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	private boolean processMove( MediaDTO mediaDTO ) {
     	ActiveAssociation assoc = null;
     	try {
-    		AEData aeData = new AECmd( retrieveAET ).execute();
+    		AEData aeData = new AECmd( retrieveAET ).getAEData();
 			assoc = openAssoc( aeData.getHostName(), aeData.getPort(),
 					getAssocReq(retrieveAET, UIDs.StudyRootQueryRetrieveInformationModelMOVE) );
 			if ( assoc == null ) {
@@ -795,7 +795,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     	String iuid = null;
     	try {
 //get association for media creation request and action.    		
-    		AEData aeData = new AECmd( mcmScpAET ).execute();
+    		AEData aeData = new AECmd( mcmScpAET ).getAEData();
 			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), 
 					getAssocReq(mcmScpAET, UIDs.MediaCreationManagementSOPClass) );
 			if ( assoc == null ) {
@@ -1004,7 +1004,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
                 return "No Media in processing status.";
 			
 //          get association for media creation request and action.          
-            AEData aeData = new AECmd( this.getMcmScpAET() ).execute();
+            AEData aeData = new AECmd( this.getMcmScpAET() ).getAEData();
             if ( aeData == null ) {
                 log.error("Cant get media creation status! Reason: Unknown AET:"+getMcmScpAET());
                 return "Error: Unknown AET:"+getMcmScpAET();
@@ -1166,7 +1166,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     	AEData aeData;
    	//check move dest.
     	try {
-			aeData = new AECmd( this.getMoveDestinationAET() ).execute();
+			aeData = new AECmd( this.getMoveDestinationAET() ).getAEData();
 			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), 
 					getAssocReq(destAET, UIDs.SecondaryCaptureImageStorage) );
 			if ( assoc == null ) {
@@ -1198,7 +1198,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     	
  	//check mcm scp.
     	try {
-			aeData = new AECmd( this.getMcmScpAET() ).execute();
+			aeData = new AECmd( this.getMcmScpAET() ).getAEData();
 			assoc = openAssoc( aeData.getHostName(), aeData.getPort(),
 					getAssocReq(mcmScpAET, UIDs.MediaCreationManagementSOPClass));
 			if ( assoc == null ) {

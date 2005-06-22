@@ -300,7 +300,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 		Map fileInfos = null;
 		if (storage != null) {
 			try {
-				FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).execute();
+				FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
 				fileInfos = new HashMap();
 				for (int i = 0; i < aa.length; i++) {
 					fileInfos.put(aa[i][0].sopIUID, aa[i]);
@@ -335,7 +335,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 			throws InterruptedException, DcmServiceException, IOException,
 			UnkownAETException, SQLException {
 		final String aet = order.getCalledAET();
-		AEData aeData = new AECmd(aet).execute();
+		AEData aeData = new AECmd(aet).getAEData();
 		if (aeData == null) {
 			throw new UnkownAETException("Unkown Retrieve AET: " + aet);
 		}

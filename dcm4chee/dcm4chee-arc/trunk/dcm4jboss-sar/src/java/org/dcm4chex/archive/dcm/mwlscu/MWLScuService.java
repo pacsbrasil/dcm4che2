@@ -273,7 +273,7 @@ public class MWLScuService extends ServiceMBeanSupport {
     	List list = new ArrayList();
     	try {
 //get association for mwl find.    		
-    		AEData aeData = new AECmd( calledAET ).execute();
+    		AEData aeData = new AECmd( calledAET ).getAEData();
 			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getCFINDAssocReq() );
 			if ( assoc == null ) {
 				log.error( "Couldnt open association to " + aeData );

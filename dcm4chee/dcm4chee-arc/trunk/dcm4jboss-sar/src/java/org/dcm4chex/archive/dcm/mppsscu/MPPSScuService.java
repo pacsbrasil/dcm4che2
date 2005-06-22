@@ -243,7 +243,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     void sendMPPS(boolean create, Dataset mpps, String aet)
 			throws DcmServiceException, InterruptedException, IOException,
 			UnkownAETException, SQLException {
-		AEData aeData = new AECmd(aet).execute();
+		AEData aeData = new AECmd(aet).getAEData();
 		if (aeData == null) {
 			throw new UnkownAETException("Unkown Destination AET: " + aet);
 		}

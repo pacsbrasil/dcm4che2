@@ -216,7 +216,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Association assoc = activeAssoc.getAssociation();
         File file = null;
         try {
-            List duplicates = new QueryFilesCmd(iuid).execute();
+			
+            List duplicates = ArrayList();
+			QueryFilesCmd cmd = new QueryFilesCmd(iuid);
+			try {
+				while (cmd.next())
+					duplicates.add(cmd.getFileDTO());
+			} finally {
+				cmd.close();
+			}
             if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
                     && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
@@ -292,7 +300,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private boolean containsLocal(List duplicates) {
+    /**
+	 * @return
+	 */
+	private List ArrayList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private boolean containsLocal(List duplicates) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
             if (service.isLocalFileSystem(dto.getDirectoryPath()))

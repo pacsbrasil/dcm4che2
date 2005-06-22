@@ -518,7 +518,14 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     public Object locateInstance(String iuid) throws SQLException {
-        List list = new QueryFilesCmd(iuid).execute();
+        List list = ArrayList();
+		QueryFilesCmd cmd = new QueryFilesCmd(iuid);
+		try {
+			while (cmd.next())
+				list.add(cmd.getFileDTO());
+		} finally {
+			cmd.close();
+		}
         if (list.isEmpty())
             return null;
         for (int i = 0, n = list.size(); i < n; ++i) {
@@ -528,11 +535,19 @@ public class FileSystemMgtService extends TimerSupport {
                 return FileUtils.toFile(dirPath, dto.getFilePath());
         }
         FileDTO dto = (FileDTO) list.get(0);
-        AEData aeData = new AECmd(dto.getRetrieveAET()).execute();
+        AEData aeData = new AECmd(dto.getRetrieveAET()).getAEData();
         return aeData.getHostName();
     }
     
     /**
+	 * @return
+	 */
+	private List ArrayList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
      * Delete studies that fullfill freeDiskSpacePolicy to free disk space.
      * <p>
      * Checks available disk space if free disk space is necessary.

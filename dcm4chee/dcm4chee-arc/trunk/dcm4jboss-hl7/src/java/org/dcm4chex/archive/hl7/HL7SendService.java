@@ -245,7 +245,7 @@ public class HL7SendService
 	public void sendTo(byte[] message, String receiving) 
 			throws SQLException, IOException, UnkownAETException, 
 					TransformerException, SAXException, HL7Exception {
-		AEData aeData = new AECmd(receiving).execute();
+		AEData aeData = new AECmd(receiving).getAEData();
 		if (aeData == null) {
 			throw new UnkownAETException("Unkown HL7 receiver application "
 					+ receiving);

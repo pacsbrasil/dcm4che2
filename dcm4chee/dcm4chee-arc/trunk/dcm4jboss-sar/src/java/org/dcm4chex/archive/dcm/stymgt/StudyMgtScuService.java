@@ -324,7 +324,7 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
 	private Dimse invoke(String aet, Command cmd, Dataset ds)
 			throws DcmServiceException, UnkownAETException, IOException, 
 				SQLException, InterruptedException {
-        AEData aeData = new AECmd(aet).execute();
+        AEData aeData = new AECmd(aet).getAEData();
         if (aeData == null) {
 			throw new UnkownAETException("Unkown Destination AET: " + aet);
         }

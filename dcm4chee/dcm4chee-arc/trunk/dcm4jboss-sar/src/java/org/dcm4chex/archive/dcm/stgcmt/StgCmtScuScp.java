@@ -70,7 +70,7 @@ class StgCmtScuScp extends DcmServiceBase {
         final Association a = assoc.getAssociation();
         final String aet = a.getCallingAET();
         try {
-            AEData aeData = new AECmd(aet).execute();
+            AEData aeData = new AECmd(aet).getAEData();
             if (aeData == null) {
                 throw new DcmServiceException(Status.ProcessingFailure,
                         "Failed to resolve AET:" + aet);
