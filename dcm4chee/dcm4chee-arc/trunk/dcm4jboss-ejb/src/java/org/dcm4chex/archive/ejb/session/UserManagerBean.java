@@ -37,11 +37,11 @@ import org.dcm4chex.archive.ejb.jdbc.UpdatePasswordForUserCmd;
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
  * 
- * @ejb:resource-ref res-name="jdbc/DataSource"
+ * @ejb:resource-ref res-name="jdbc/DS"
  * 	                 res-type="javax.sql.DataSource"
  * 					 res-auth="Container"
- * @jboss:resource-ref res-ref-name="jdbc/DataSource" 
- *                     resource-name="java:/DefaultDS"
+ * @jboss:resource-ref res-ref-name="jdbc/DS" 
+ *                     jndi-name="java:/DefaultDS"
  *
  */
 public abstract class UserManagerBean
@@ -52,7 +52,7 @@ public abstract class UserManagerBean
      */
 	public Collection getUsers() {
 		try {
-			QueryUsersCmd cmd = new QueryUsersCmd("jdbc/DataSource");
+			QueryUsersCmd cmd = new QueryUsersCmd("jdbc/DS");
 			try {
 				cmd.execute();
 				ArrayList users = new ArrayList();
