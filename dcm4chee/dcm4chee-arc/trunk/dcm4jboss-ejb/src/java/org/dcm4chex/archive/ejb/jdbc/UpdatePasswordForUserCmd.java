@@ -27,10 +27,10 @@ public final class UpdatePasswordForUserCmd extends BaseUpdateCmd {
 	}
 
 	public void setUser(String user) throws SQLException {
-		((PreparedStatement) stmt).setString(1, user);		
+		((PreparedStatement) stmt).setString(2, user);		
 	}
 
 	public void setPassword(String passwd) throws SQLException {
-		((PreparedStatement) stmt).setString(2, passwd);		
+		((PreparedStatement) stmt).setString(1, passwd);		
 	}
 }

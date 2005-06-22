@@ -12,14 +12,14 @@
 <xsl:text>datasource-mapping=</xsl:text>
 <xsl:value-of select="jbosscmp-jdbc/defaults/datasource-mapping"/>
 <xsl:text>
-AddUserCmd=INSERT INTO users (user_id,passwd) VALUES(%1,%2)
-UpdatePasswordForUserCmd=UPDATE users SET passwd=%2 WHERE user_id=%1
-RemoveUserCmd=DELETE FROM users WHERE user_id=%1
-AddRoleToUserCmd=INSERT INTO roles (user_id,roles) VALUES(%1,%2)
-RemoveRoleFromUserCmd=DELETE FROM roles WHERE user_id=%1 AND roles=%2
+AddUserCmd=INSERT INTO users (user_id,passwd) VALUES(?,?)
+UpdatePasswordForUserCmd=UPDATE users SET passwd=? WHERE user_id=?
+RemoveUserCmd=DELETE FROM users WHERE user_id=?
+AddRoleToUserCmd=INSERT INTO roles (user_id,roles) VALUES(?,?)
+RemoveRoleFromUserCmd=DELETE FROM roles WHERE user_id=? AND roles=?
 QueryUsersCmd=SELECT user_id FROM users
-QueryPasswordForUserCmd=SELECT passwd FROM users WHERE user_id=%1
-QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=%1
+QueryPasswordForUserCmd=SELECT passwd FROM users WHERE user_id=?
+QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=?
 </xsl:text>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Patient']" mode="fk">
 <xsl:with-param name="fk" select="'merge_fk'"/>
