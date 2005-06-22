@@ -63,12 +63,22 @@
             </attr>
         </xsl:if>
     </xsl:template>
-    <xsl:template match="OBR[1]">
-        <!-- Use Placer Order Number as Accession Number -->
+    <xsl:template match="OBR[1]">        
+        <!-- Use Placer Order Number as Accession Number if missing OBR:18 -->
+        <xsl:variable name="accno">
+            <xsl:choose>
+                <xsl:when test="field[18]/text()">
+                    <xsl:value-of select="field[18]/text()"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="field[2]/text()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         <xsl:call-template name="dcmAttr">
             <xsl:with-param name="tag" select="'00080050'"/>
             <xsl:with-param name="vr" select="'SH'"/>
-            <xsl:with-param name="val" select="field[2]/text()"/>
+            <xsl:with-param name="val" select="$accno"/>
         </xsl:call-template>
         <!-- Medical Alerts -->
         <xsl:call-template name="dcmAttr">
