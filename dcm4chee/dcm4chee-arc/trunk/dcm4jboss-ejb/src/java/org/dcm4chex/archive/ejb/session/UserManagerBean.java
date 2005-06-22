@@ -12,6 +12,7 @@ package org.dcm4chex.archive.ejb.session;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
@@ -91,6 +92,10 @@ public abstract class UserManagerBean
      */
 	public boolean removeUser(String user) {		
 		try {
+			Collection roles = getRolesOfUser(user);
+			for (Iterator i = roles.iterator(); i.hasNext();) {
+				removeRoleFromUser(user, (String) i.next());
+			}
 			RemoveUserCmd cmd = new RemoveUserCmd("jdbc/DataSource");
 			try {
 				cmd.setUser(user);
