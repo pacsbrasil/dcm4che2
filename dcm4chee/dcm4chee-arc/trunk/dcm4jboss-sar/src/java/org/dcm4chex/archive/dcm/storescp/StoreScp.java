@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -217,7 +218,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         File file = null;
         try {
 			
-            List duplicates = ArrayList();
+            List duplicates = new ArrayList();
 			QueryFilesCmd cmd = new QueryFilesCmd(iuid);
 			try {
 				while (cmd.next())
@@ -299,14 +300,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
-
-    /**
-	 * @return
-	 */
-	private List ArrayList() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private boolean containsLocal(List duplicates) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
