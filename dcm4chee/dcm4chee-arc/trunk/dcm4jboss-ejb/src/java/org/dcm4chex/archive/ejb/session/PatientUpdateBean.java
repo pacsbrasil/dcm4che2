@@ -14,6 +14,7 @@ import java.util.Collection;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -120,4 +121,27 @@ public abstract class PatientUpdateBean implements SessionBean {
         pat.setAttributes(ds);
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public void deletePatient(Dataset ds) throws RemoteException {
+        try {
+            String pid = ds.getString(Tags.PatientID);
+            String issuer = ds.getString(Tags.IssuerOfPatientID);
+            Collection c = issuer == null ? patHome.findByPatientId(pid)
+                    : patHome.findByPatientIdWithIssuer(pid, issuer);
+            if (c.isEmpty()) { throw new FinderException("Patient not found! PID:"+pid+",issuer:"+issuer); }
+            if (c.size() > 1) { throw new FinderException("Patient ID[id="
+                    + pid + ",issuer=" + issuer + " ambiguous"); }
+            PatientLocal pat = (PatientLocal) c.iterator().next();
+            patHome.remove(pat.getPk());
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+        throw new RemoteException(e.getMessage());
+    }
+    }
+    
 }
