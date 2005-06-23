@@ -92,6 +92,27 @@ public abstract class UserManagerBean
 	/**
      * @ejb.interface-method
      */
+	public void addUser(String user, String passwd, Collection roles) {		
+		try {
+			addUser(user,passwd);
+			AddRoleToUserCmd cmd = new AddRoleToUserCmd(DB_JNDI_NAME);
+			try {
+				cmd.setUser(user);
+				for (Iterator i = roles.iterator(); i.hasNext();) {
+					cmd.setRole( (String) i.next());
+					cmd.execute();
+				}
+			} finally {
+				cmd.close();
+			}
+		} catch (SQLException e) {
+			throw new EJBException(e);
+		}
+	}
+	
+	/**
+     * @ejb.interface-method
+     */
 	public boolean removeUser(String user) {		
 		try {
 			Collection roles = getRolesOfUser(user);
@@ -149,6 +170,16 @@ public abstract class UserManagerBean
 	/**
      * @ejb.interface-method
      */
+	public boolean changePasswordForUser(String user, String oldPasswd, String newPasswd) {
+		if ( !getPasswordForUser(user).equals(oldPasswd) ) {
+			return false;
+		}
+		return setPasswordForUser(user, newPasswd);
+	}
+	
+	/**
+     * @ejb.interface-method
+     */
 	public Collection getRolesOfUser(String user) {
 		try {
 			QueryRolesForUserCmd cmd = new QueryRolesForUserCmd(DB_JNDI_NAME);
@@ -198,6 +229,44 @@ public abstract class UserManagerBean
 				return cmd.execute() != 0;
 			} finally {
 				cmd.close();
+			}
+		} catch (SQLException e) {
+			throw new EJBException(e);
+		}
+	}
+	
+	/**
+     * @ejb.interface-method
+     */
+	public void updateUser(String user, Collection roles) {		
+		try {
+			Collection col = getRolesOfUser(user);
+			AddRoleToUserCmd cmd = new AddRoleToUserCmd(DB_JNDI_NAME);
+			String role;
+			try {
+				cmd.setUser(user);
+				for (Iterator i = roles.iterator(); i.hasNext();) {
+					role = (String) i.next();
+					if ( !col.contains( role) ) {
+						cmd.setRole(role);
+						cmd.execute();
+					} else {
+						col.remove(role);
+					}
+				}
+			} finally {
+				cmd.close();
+			}
+			//remove old roles from user (the remaining items in col).
+			RemoveRoleFromUserCmd delCmd = new RemoveRoleFromUserCmd(DB_JNDI_NAME);
+			try {
+				delCmd.setUser(user);
+				for (Iterator i = col.iterator(); i.hasNext();) {
+					delCmd.setRole( (String) i.next());
+					delCmd.execute();
+				}
+			} finally {
+				delCmd.close();
 			}
 		} catch (SQLException e) {
 			throw new EJBException(e);
