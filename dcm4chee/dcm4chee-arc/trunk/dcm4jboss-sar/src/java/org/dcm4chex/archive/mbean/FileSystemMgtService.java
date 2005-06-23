@@ -518,7 +518,7 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     public Object locateInstance(String iuid) throws SQLException {
-        List list = ArrayList();
+        List list = new ArrayList();
 		QueryFilesCmd cmd = new QueryFilesCmd(iuid);
 		try {
 			while (cmd.next())
@@ -539,14 +539,6 @@ public class FileSystemMgtService extends TimerSupport {
         return aeData.getHostName();
     }
     
-    /**
-	 * @return
-	 */
-	private List ArrayList() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	/**
      * Delete studies that fullfill freeDiskSpacePolicy to free disk space.
      * <p>
