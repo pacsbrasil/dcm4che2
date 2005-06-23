@@ -23,7 +23,7 @@ class AttributeSerializer implements Serializable {
 	private static final int ITEM_DELIM_TAG = 0xfffee00d;
 	
 	private static final Attribute END_OF_SET = 
-		new BasicAttribute(ITEM_DELIM_TAG, VR.UN, false, null);
+		new BasicAttribute(ITEM_DELIM_TAG, VR.UN, false, null, null);
 
 	private transient AttributeSet attrs;
 

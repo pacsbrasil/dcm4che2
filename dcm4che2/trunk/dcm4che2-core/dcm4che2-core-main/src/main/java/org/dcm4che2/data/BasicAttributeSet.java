@@ -11,18 +11,18 @@ package org.dcm4che2.data;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.dcm4che2.util.IntHashtable;
 import org.dcm4che2.util.TagUtils;
 
 public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final int DEFAULT_INIT_CACHE_CAPACITY = 37;
-	
+	private static final int INIT_FRAGMENT_CAPACITY = 2;
+
+	private static final int INIT_SEQUENCE_CAPACITY = 10;
+		
 	private static final int TRANSFER_SYNTAX_TAG = 0x00020010;
 	
 	private static final int CHARSET_TAG = 0x00080005;
@@ -40,22 +40,16 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	private transient AttributeSet parent;
 	private transient long itemOffset = -1L;
 	private transient TagStringPair privateCreatorCache = new TagStringPair();
-	private transient IntHashtable cache = null;
+	private transient boolean cache = false;
 
-	public boolean isCached() {
-		return cache != null;
+	public final boolean isCacheAttributeValues() {
+		return cache;
 	}
 
-	public void setCached(boolean enable) {
-		if (enable) {
-			if (cache == null) {
-				cache = new IntHashtable(DEFAULT_INIT_CACHE_CAPACITY);
-			}
-		} else {
-			cache = null;
-		}
+	public final void setCacheAttributeValues(boolean cache) {
+		this.cache = cache;
 	}
-	
+
 	public int resolvePrivateTag(int privateTag, String privateCreator) {
 		return resolvePrivateTagInternal(privateTag, privateCreator, false);
 	}
@@ -65,10 +59,8 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	public void shareAttributes() {
-		synchronized (getRoot()) {
-			for (int i = 0, n = attrs.size(); i < n; ++i) {
-				attrs.set(i, ((Attribute) attrs.get(i)).share());
-			}
+		for (int i = 0, n = attrs.size(); i < n; ++i) {
+			attrs.set(i, ((Attribute) attrs.get(i)).share());
 		}
 	}
 	
@@ -234,9 +226,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 				privateCreatorCache.value = null;
 			}
 		}
-		if (cache != null) {
-			cache.remove(tag);
-		}
 		return (Attribute) attrs.remove(index);
 	}
 	
@@ -248,9 +237,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	protected Attribute putAttribute(Attribute a) {
 		final int tag = a.tag();
-		if (cache != null) {
-			cache.remove(tag);
-		}
 		if ((lastTag() & 0xffffffffL) < (tag & 0xffffffffL)) {
 			attrs.add(a);
 		} else {
@@ -262,9 +248,9 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			}
 		}
 		if (tag == TRANSFER_SYNTAX_TAG) {
-			ts = TransferSyntax.valueOf(a.getString(null));
+			ts = TransferSyntax.valueOf(a.getString(null, false));
 		} else if (tag == CHARSET_TAG) {
-			charset = SpecificCharacterSet.valueOf(a.getStrings(null));
+			charset = SpecificCharacterSet.valueOf(a.getStrings(null, false));
 		} else if (privateCreatorCache.tag == tag) {
 			synchronized (privateCreatorCache) {
 				privateCreatorCache.tag = 0;
@@ -315,34 +301,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		}
 	}
 
-	private Object cachedValue(int tag) {
-		return cache != null  ? cache.get(tag) : null;
-	}
-
-	private Object cacheValue(int tag, Object value) {
-		if (cache != null && value != null)
-			cache.put(tag, value);
-		return value;
-	}
-
-	private int cacheIntValue(int tag, int value) {
-		if (cache != null)
-			cache.put(tag, new Integer(value));
-		return value;
-	}
-
-	private float cacheFloatValue(int tag, float value) {
-		if (cache != null)
-			cache.put(tag, new Float(value));
-		return value;
-	}
-
-	private double cacheDoubleValue(int tag, double value) {
-		if (cache != null)
-			cache.put(tag, new Double(value));
-		return value;
-	}
-
 	public byte[] getBytes(int tag, boolean bigEndian) {
 		Attribute a = getAttribute(tag);
 		return a == null ? null : a.bigEndian(bigEndian).getBytes();
@@ -354,158 +312,117 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	public int getInt(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof Integer) {
-			return ((Integer) val).intValue();
-		}
 		Attribute a = getAttribute(tag);
-		return cacheIntValue(tag, a == null ? 0 : a.getInt());
+		return a == null ? 0 : a.getInt(cache);
 	}
 
 	public int[] getInts(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof int[]) {
-			return (int[]) val;
-		}
 		Attribute a = getAttribute(tag);
-		return (int[]) cacheValue(tag, a == null ? null : a.getInts());
+		return a == null ? null : a.getInts(cache);
 	}
 
 	public float getFloat(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof Float) {
-			return ((Float) val).floatValue();
-		}
 		Attribute a = getAttribute(tag);
-		return cacheFloatValue(tag, a == null ? 0 : a.getFloat());
+		return a == null ? 0 : a.getFloat(cache);
 	}
 
 	public float[] getFloats(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof float[]) {
-			return (float[]) val;
-		}
 		Attribute a = getAttribute(tag);
-		return (float[]) cacheValue(tag, a == null ? null : a.getFloats());
+		return a == null ? null : a.getFloats(cache);
 	}
 
 	public double getDouble(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof Float) {
-			return ((Double) val).doubleValue();
-		}
 		Attribute a = getAttribute(tag);
-		return cacheDoubleValue(tag, a == null ? 0 : a.getDouble());
+		return a == null ? 0 : a.getDouble(cache);
 	}
 
 	public double[] getDoubles(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof double[]) {
-			return (double[]) val;
-		}
 		Attribute a = getAttribute(tag);
-		return (double[]) cacheValue(tag, a == null ? null : a.getDoubles());
+		return a == null ? null : a.getDoubles(cache);
 	}
 
 	public String getString(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof String) {
-			return (String) val;
-		}
 		Attribute a = getAttribute(tag);
-		return (String) cacheValue(tag, a == null ? null
-				: a.getString(getSpecificCharacterSet()));
+		return a == null ? null : a.getString(getSpecificCharacterSet(), cache);
 	}
 
 	public String[] getStrings(int tag) {
-		Object val = cachedValue(tag);
-		if (val instanceof String[]) {
-			return (String[]) val;
-		}
 		Attribute a = getAttribute(tag);
-		return (String[]) cacheValue(tag, a == null ? null
-				: a.getStrings(getSpecificCharacterSet()));
+		return a == null ? null
+				: a.getStrings(getSpecificCharacterSet(), cache);
 	}
 
-	private Attribute putAttribute(int tag, VR vr, boolean explicitVR, Object val) {
-		return putAttribute(new BasicAttribute(tag, vr, explicitVR, val));
+	private Attribute putAttribute(int tag, VR vr, boolean explicitVR, Object val, Object cache) {
+		return putAttribute(new BasicAttribute(tag, vr, explicitVR, val, cache));
 	}
 
 	public Attribute putNull(int tag, VR vr) {
-		return putAttribute(tag, vr, false, null);
+		return putAttribute(tag, vr, false, null, null);
 	}
 
 	public Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
-		return putAttribute(tag, vr, bigEndian, val);
-	}
-
-	public Attribute putItems(int tag, List items) {
-		return putAttribute(tag, VR.SQ, false, items);
-	}
-
-	public Attribute putItems(int tag, VR vr, boolean bigEndian, List items) {
-		return putAttribute(tag, vr, bigEndian, items);	
+		return putAttribute(tag, vr, bigEndian, val, null);
 	}
 
 	public Attribute putItem(int tag, AttributeSet item) {
-		List items = new ArrayList(1);
-		items.add(item);
-		return putItems(tag, items);
+		Attribute a = putSequence(tag, 1);
+		a.addItem(item);
+		return a;
 	}
 
 	public Attribute putInt(int tag, VR vr, int val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be));				
-		cacheIntValue(tag, val);
+		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? new Integer(val) : null);
 		return attr;
 	}
 
 	public Attribute putInts(int tag, VR vr, int[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be));						
-		cacheValue(tag, val);
+		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),						
+				cache ? val : null);
 		return attr;
 	}
 
 	public Attribute putFloat(int tag, VR vr, float val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be));						
-		cacheFloatValue(tag, val);
+		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? new Float(val) : null);
 		return attr;
 	}
 
 	public Attribute putFloats(int tag, VR vr, float[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be));						
-		cacheValue(tag, val);
+		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),						
+				cache ? val : null);
 		return attr;
 	}
 
 	public Attribute putDouble(int tag, VR vr, double val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be));
-		cacheDoubleValue(tag, val);
+		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? new Double(val) : null);
 		return attr;
 	}
 
 	public Attribute putDoubles(int tag, VR vr, double[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be));						
-		cacheValue(tag, val);
+		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),						
+				cache ? val : null);
 		return attr;
 	}
 
 	public Attribute putString(int tag, VR vr, String val) {
 		Attribute attr = putAttribute(tag, vr, false,
-				vr.toBytes(val, getSpecificCharacterSet()));						
-		cacheValue(tag, val);
+				vr.toBytes(val, getSpecificCharacterSet()),						
+				cache ? val : null);
 		return attr;
 	}
 
 	public Attribute putStrings(int tag, VR vr, String[] val) {
 		Attribute attr = putAttribute(tag, vr, false,
-				vr.toBytes(val, getSpecificCharacterSet()));						
-		cacheValue(tag, val);
+				vr.toBytes(val, getSpecificCharacterSet()),						
+				cache ? val : null);
 		return attr;
 	}
 
@@ -514,16 +431,16 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	public Attribute putSequence(int tag, int capacity) {
-		return putAttribute(tag, VR.SQ, false, new ArrayList(capacity));
+		return putAttribute(tag, VR.SQ, false, new ArrayList(capacity), null);
 	}
 
 	public Attribute putFragments(int tag, VR vr, boolean bigEndian) {
-		return putFragments(tag, vr, bigEndian, 2);
+		return putFragments(tag, vr, bigEndian, INIT_FRAGMENT_CAPACITY);
 	}
 
 	public Attribute putFragments(int tag, VR vr, boolean bigEndian, int capacity) {
 		if (!(vr instanceof VR.Fragment))
 			throw new UnsupportedOperationException();
-		return putAttribute(tag, vr, bigEndian, new ArrayList(capacity));
+		return putAttribute(tag, vr, bigEndian, new ArrayList(capacity), null);
 	}
 }

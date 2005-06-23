@@ -109,7 +109,7 @@ public class DicomInputStream
 		}
 	}
 
-	public synchronized int read() throws IOException {
+	public int read() throws IOException {
 		int ch = in.read();
 		if (ch != -1) {
 			++pos;
@@ -117,7 +117,7 @@ public class DicomInputStream
 		return ch;
 	}
 
-	public synchronized int read(byte[] b, int off, int len) throws IOException {
+	public int read(byte[] b, int off, int len) throws IOException {
 		int result = in.read(b, off, len);
 		if (result != -1) {
 			pos += result;
@@ -125,12 +125,12 @@ public class DicomInputStream
 		return result;
 	}
 
-	public synchronized void mark(int readlimit) {
+	public void mark(int readlimit) {
 		in.mark(readlimit);
 		mark = pos;
 	}
 
-	public synchronized void reset() throws IOException {
+	public void reset() throws IOException {
 		in.reset();
 		pos = mark;
 	}
@@ -284,7 +284,7 @@ public class DicomInputStream
 						readBytes(vallen));
 				logAttr(-1, a.vr());
 				if (tag == 0x00020000) {
-					fmiEndPos = pos + a.getInt();
+					fmiEndPos = pos + a.getInt(false);
 				}
 			}
 		}

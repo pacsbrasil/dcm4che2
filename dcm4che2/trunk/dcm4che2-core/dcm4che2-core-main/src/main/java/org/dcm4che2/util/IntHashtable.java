@@ -44,11 +44,13 @@ public class IntHashtable {
 		    throw new NullPointerException();
 		}
 		if (key == EMPTY) {
-			valueEMPTY = updateCount(valueEMPTY, value);
+			if (valueEMPTY == null) ++count;
+			valueEMPTY = value;
 			return;
 		}
 		if (key == DELETED) {
-			valueDELETED = updateCount(valueDELETED, value);
+			if (valueDELETED == null) ++count;
+			valueDELETED = value;
 			return;
 		}
         if (count > highWaterMark) {
@@ -57,14 +59,6 @@ public class IntHashtable {
 		putInternal(key, value);
     }
 
-    private Object updateCount(Object oldValue, Object value) {
-		if (oldValue == null)
-			++count;
-		if (value == null)
-			--count;
-		return value;
-	}
-
 	public Object get(int key) {
 		return key == EMPTY ? valueEMPTY : key == DELETED ? valueDELETED
 				: values[find(key)];
@@ -72,11 +66,17 @@ public class IntHashtable {
 
     public void remove(int key) {
 		if (key == EMPTY) {
-			valueEMPTY = updateCount(valueEMPTY, null);
+			if (valueEMPTY != null) {
+				valueEMPTY = null;
+				--count;
+			}
 			return;
 		}
 		if (key == DELETED) {
-			valueDELETED = updateCount(valueDELETED, null);
+			if (valueDELETED != null) {
+				valueDELETED = null;
+				--count;
+			}
 			return;
 		}
         int index = find(key);
@@ -226,7 +226,8 @@ public class IntHashtable {
     private void putInternal (int key, Object value) {
 	        int index = find(key);
 			keyList[index] = key;
-	        values[index] = updateCount(values[index], value);
+			if (values[index] == null) ++count;
+	        values[index] = value;
     }
 
     private int find (int key) {
@@ -244,7 +245,7 @@ public class IntHashtable {
                 // ignore
             } else if (tableHash == EMPTY) {        // empty, end o' the line
                 if (firstDeleted >= 0) {
-		    index = firstDeleted;           // reset if had deleted slot
+					index = firstDeleted;           // reset if had deleted slot
                 }
                 return index;
             } else if (firstDeleted < 0) {	    // remember first deleted

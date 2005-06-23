@@ -280,8 +280,8 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 		return attrs.getTransferSyntax();
 	}
 
-	public boolean isCached() {
-		return attrs.isCached();
+	public boolean isCacheAttributeValues() {
+		return attrs.isCacheAttributeValues();
 	}
 
 	public Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
@@ -340,8 +340,8 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 		return attrs.resolvePrivateTag(privateTag, privateCreator);
 	}
 
-	public void setCached(boolean cached) {
-		throw new UnsupportedOperationException();
+	public void setCacheAttributeValues(boolean cached) {
+		attrs.setCacheAttributeValues(cached);
 	}
 
 	public void shareAttributes() {

@@ -32,14 +32,14 @@ public interface Attribute extends Serializable {
 	byte[] addBytes(byte[] b);
 	byte[] addBytes(int index, byte[] b);
 	byte[] setBytes(int index, byte[] b);	
-	int getInt();
-	int[] getInts();
-	float getFloat();
-	float[] getFloats();
-	double getDouble();
-	double[] getDoubles();
-	String getString(SpecificCharacterSet cs);
-	String[] getStrings(SpecificCharacterSet cs);
+	int getInt(boolean cache);
+	int[] getInts(boolean cache);
+	float getFloat(boolean cache);
+	float[] getFloats(boolean cache);
+	double getDouble(boolean cache);
+	double[] getDoubles(boolean cache);
+	String getString(SpecificCharacterSet cs, boolean cache);
+	String[] getStrings(SpecificCharacterSet cs, boolean cache);
     Attribute share();
 	Attribute filterItems(AttributeSet filter);
 }

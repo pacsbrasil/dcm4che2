@@ -12,7 +12,7 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="src/test/java">
+	<classpathentry output="target/test-classes" kind="src" path="src/test/java">
 		<attributes>
 		</attributes>
 	</classpathentry>
@@ -28,5 +28,5 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="output" path="target/test-classes"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

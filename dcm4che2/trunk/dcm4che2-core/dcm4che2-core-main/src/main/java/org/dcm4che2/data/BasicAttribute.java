@@ -36,11 +36,15 @@ class BasicAttribute implements Attribute {
 	
 	private transient Object value;
 	
-	BasicAttribute(int tag, VR vr, boolean bigEndian, Object value) {
+	private transient Object cachedValue;
+	
+	BasicAttribute(int tag, VR vr, boolean bigEndian, Object value, 
+			Object cachedValue) {
 		this.tag = tag;
 		this.vr = vr;
 		this.bigEndian = bigEndian;
 		this.value = value;
+		this.cachedValue = cachedValue;
 	}
 	
 	private void writeObject(ObjectOutputStream s)
@@ -171,7 +175,7 @@ class BasicAttribute implements Attribute {
 		return bigEndian;
 	}
 
-	public synchronized Attribute bigEndian(boolean bigEndian) {
+	public Attribute bigEndian(boolean bigEndian) {
 		if (this.bigEndian == bigEndian)
 			return this;
 		vr.toggleEndian(value);
@@ -199,36 +203,76 @@ class BasicAttribute implements Attribute {
 		return (byte[]) value;
 	}
 
-	public int getInt() {
-		return vr.toInt((byte[]) value, bigEndian);
+	public int getInt(boolean cache) {
+		if (cache && cachedValue instanceof Integer)
+			return ((Integer) cachedValue).intValue();
+		int val = vr.toInt((byte[]) value, bigEndian);
+		if (cache)
+			cachedValue = new Integer(val);
+		return val;
 	}
 
-	public int[] getInts() {
-		return vr.toInts((byte[]) value, bigEndian);
+	public int[] getInts(boolean cache) {
+		if (cache && cachedValue instanceof int[])
+			return (int[]) cachedValue;
+		int[] val = vr.toInts((byte[]) value, bigEndian);
+		if (cache)
+			cachedValue = val;
+		return val;
 	}
 
-	public float getFloat() {
-		return vr.toFloat((byte[]) value, bigEndian);
+	public float getFloat(boolean cache) {
+		if (cache && cachedValue instanceof Float)
+			return ((Float) cachedValue).floatValue();
+		float val = vr.toFloat((byte[]) value, bigEndian);
+		if (cache)
+			cachedValue = new Float(val);
+		return val;
 	}
 
-	public float[] getFloats() {
-		return vr.toFloats((byte[]) value, bigEndian);
+	public float[] getFloats(boolean cache) {
+		if (cache && cachedValue instanceof float[])
+			return (float[]) cachedValue;
+		float[] val = vr.toFloats((byte[]) value, bigEndian);
+		if (cache)
+			cachedValue = val;
+		return val;
 	}
 
-	public double getDouble() {
-		return vr.toDouble((byte[]) value, bigEndian);
+	public double getDouble(boolean cache) {
+		if (cache && cachedValue instanceof Double)
+			return ((Double) cachedValue).doubleValue();
+		double val = vr.toDouble((byte[]) value, bigEndian);
+		if (cache)
+			cachedValue = new Double(val);
+		return val;
 	}
 
-	public double[] getDoubles() {
-		return vr.toDoubles((byte[]) value, bigEndian);
+	public double[] getDoubles(boolean cache) {
+		if (cache && cachedValue instanceof double[])
+			return (double[]) cachedValue;
+		double[] val = vr.toDoubles((byte[]) value, bigEndian);
+		if (cache)
+			cachedValue = val;
+		return val;
 	}
 
-	public String getString(SpecificCharacterSet cs) {
-		return vr.toString((byte[]) value, cs);
+	public String getString(SpecificCharacterSet cs, boolean cache) {
+		if (cache && cachedValue instanceof String)
+			return (String) cachedValue;
+		String val = vr.toString((byte[]) value, cs);
+		if (cache)
+			cachedValue = val;
+		return val;
 	}
 
-	public String[] getStrings(SpecificCharacterSet cs) {
-		return vr.toStrings((byte[]) value, cs);
+	public String[] getStrings(SpecificCharacterSet cs, boolean cache) {
+		if (cache && cachedValue instanceof String[])
+			return (String[]) cachedValue;
+		String[] val = vr.toStrings((byte[]) value, cs);
+		if (cache)
+			cachedValue = val;
+		return val;
 	}
 
 	public final boolean hasItems() {
@@ -342,7 +386,7 @@ class BasicAttribute implements Attribute {
 		for (int i = 0; i < count; i++) {
 			items.add(getItem(i).subSet(filter));
 		}
-		return new BasicAttribute(tag, vr, bigEndian, items);
+		return new BasicAttribute(tag, vr, bigEndian, items, null);
 	}
 
 }

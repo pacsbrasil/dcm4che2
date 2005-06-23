@@ -1,4 +1,4 @@
-<project name="dcm4che" default="jar" basedir=".">
+<project name="dcm4che-core-main" default="jar" basedir=".">
   <property file="${user.home}/.m2/maven.properties"/>
   <property name="maven.build.output" value="target/classes"/>
   <property name="maven.build.directory" value="target"/>
@@ -9,6 +9,7 @@
   <path id="build.classpath">
     <fileset dir="${maven.repo.local}">
       <include name="junit/junit/3.8.1/junit-3.8.1.jar"/>
+      <include name="dcm4che/dcm4che-core-test-dictionary/2.0-SNAPSHOT/dcm4che-core-test-dictionary-2.0-SNAPSHOT.jar"/>
       <include name="log4j/log4j/1.2.8/log4j-1.2.8.jar"/>
     </fileset>
   </path>
@@ -23,6 +24,9 @@
       </src>
       <classpath refid="build.classpath"/>
     </javac>
+    <copy todir="${maven.build.output}">
+      <fileset dir="src/main/resources"/>
+    </copy>
   </target>
   <target name="jar" depends="compile,test" description="Clean the JAR">
     <jar jarfile="${maven.build.directory}/${maven.build.final.name}.jar" basedir="${maven.build.output}" excludes="**/package.html"/>
@@ -77,6 +81,7 @@
   <target name="get-deps" depends="test-offline" description="Download all dependencies" unless="maven.mode.offline">
     <mkdir dir="${maven.repo.local}"/>
     <get src="http://repo1.maven.org/maven2/junit/junit/3.8.1/junit-3.8.1.jar" dest="${maven.repo.local}/junit/junit/3.8.1/junit-3.8.1.jar" usetimestamp="true" ignoreerrors="true"/>
+    <get src="http://repo1.maven.org/maven2/dcm4che/dcm4che-core-test-dictionary/2.0-SNAPSHOT/dcm4che-core-test-dictionary-2.0-SNAPSHOT.jar" dest="${maven.repo.local}/dcm4che/dcm4che-core-test-dictionary/2.0-SNAPSHOT/dcm4che-core-test-dictionary-2.0-SNAPSHOT.jar" usetimestamp="true" ignoreerrors="true"/>
     <get src="http://repo1.maven.org/maven2/log4j/log4j/1.2.8/log4j-1.2.8.jar" dest="${maven.repo.local}/log4j/log4j/1.2.8/log4j-1.2.8.jar" usetimestamp="true" ignoreerrors="true"/>
   </target>
 </project>

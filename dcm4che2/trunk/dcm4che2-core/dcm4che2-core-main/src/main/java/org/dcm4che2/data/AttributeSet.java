@@ -61,8 +61,8 @@ public interface AttributeSet
 	void shareAttributes();
 	void serializeAttributes(ObjectOutputStream oos) throws IOException;
 	void addAll(AttributeSet other);
-	boolean isCached();
-	void setCached(boolean cached);
+	boolean isCacheAttributeValues();
+	void setCacheAttributeValues(boolean cacheAttributeValues);
 	AttributeSet subSet(AttributeSet filter);
 	AttributeSet subSet(int fromTag, int toTag);
 	AttributeSet subSet(int[] tags);
