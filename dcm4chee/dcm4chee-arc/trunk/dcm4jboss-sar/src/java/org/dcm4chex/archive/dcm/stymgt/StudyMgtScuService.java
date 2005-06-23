@@ -206,13 +206,13 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
 				order.getActionTypeID(), order.getDataset());
     }
 
-	public int forward(String origCallingAET, String origCalledAET,
+ 	public int forward(String origCallingAET, String origCalledAET,
 			String iuid, int commandField, int actionTypeID, Dataset dataset) {
 		int count = 0;
 		Map keys = new HashMap();
-		keys.put("calling", origCallingAET);
-		keys.put("called", origCalledAET);
-		keys.put("command", StudyMgtOrder.commandAsString(commandField, actionTypeID));
+		keys.put("calling", new String[]{origCallingAET});
+		keys.put("called", new String[]{origCalledAET});
+		keys.put("command", new String[]{StudyMgtOrder.commandAsString(commandField, actionTypeID)});
 		String[] forwardAETs = forwardingRules.getForwardDestinationsFor(keys);
 		for (int i = 0; i < forwardAETs.length; i++) {
 			StudyMgtOrder order = new StudyMgtOrder(
