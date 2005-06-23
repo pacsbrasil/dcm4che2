@@ -231,6 +231,65 @@ default-transform-type="xslt">
 	    </view>
      </command>
      
+	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->
+
+    <command name="useradmin_console">
+        <controller class="org.dcm4chex.archive.web.maverick.admin.UserAdminConsoleCtrl" />    
+	    <view name="userlist" type="redirect" path="user_list.m"/>
+	    <view name="chgpwd" type="redirect" path="user_chgpwd.m"/>
+     </command>
+     
+    <command name="user_list">
+        <controller class="org.dcm4chex.archive.web.maverick.admin.UserListCtrl" />    
+	    <view name="success">
+    	  <transform path="admin/user_list.xsl" />
+	    </view>
+     </command>
+ 
+    <command name="user_chgpwd">
+        <controller class="org.dcm4chex.archive.web.maverick.admin.UserChgPwdCtrl" />    
+	    <view name="success">
+    	  <transform path="admin/user_chgpwd.xsl" />
+	    </view>
+     </command>
+
+    <command name="user_chgpwdsubmit">
+        <controller class="org.dcm4chex.archive.web.maverick.admin.UserChgPwdSubmitCtrl" />    
+	    <view name="success" type="redirect" path="folder.m"/>
+	    <view name="chgpwd_error" type="redirect" path="user_chgpwd.m"/>
+        <view ref="error" />
+     </command>
+ 
+    <command name="user_edit">
+        <controller class="org.dcm4chex.archive.web.maverick.admin.UserEditCtrl" />    
+	    <view name="success">
+    	  <transform path="admin/user_edit.xsl" />
+	    </view>
+      <view ref="error" />
+     </command>
+
+    <command name="user_editsubmit">
+        <controller class="org.dcm4chex.archive.web.maverick.admin.UserEditSubmitCtrl" />    
+	    <view name="success" type="redirect" path="useradmin_console.m"/>
+	    <view name="passwd_mismatch" type="redirect" path="user_new.m"/>
+        <view ref="error" />
+     </command>
+     
+    <command name="user_new">
+    	<controller class="org.dcm4chex.archive.web.maverick.admin.UserNewCtrl" />    
+	    <view name="success">
+    	  <transform path="admin/user_new.xsl" />
+	    </view>
+      <view ref="error" />
+     </command>
+
+
+    <command name="user_delete">
+    	<controller class="org.dcm4chex.archive.web.maverick.admin.UserDeleteCtrl" />    
+	    <view name="success" type="redirect" path="useradmin_console.m"/>
+	    <view ref="error" />
+     </command>
+    
   </commands>
 </maverick>
 

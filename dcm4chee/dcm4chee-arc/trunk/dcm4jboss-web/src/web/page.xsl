@@ -17,6 +17,7 @@
 		      		<td width="120" align="center"><a href="mwl_console.m">Worklist Console</a></td>
 		      		<td width="120" align="center"><a href="mpps_console.m">MPPS Console</a></td>
 		      	</xsl:if>
+	      		<td width="120" align="center"><a href="useradmin_console.m">User Admin</a></td>
 		      	<td width="120" align="center"><a href="../dcm4jboss-arr">Audit Repository</a></td>
 				<td width="40%"></td>
 			  	<xsl:apply-templates select="model"/>
