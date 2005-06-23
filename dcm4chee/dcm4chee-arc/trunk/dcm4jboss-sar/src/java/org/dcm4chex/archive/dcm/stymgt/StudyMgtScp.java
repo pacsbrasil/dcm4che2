@@ -50,10 +50,9 @@ class StudyMgtScp extends DcmServiceBase {
 					stymgt.deleteSeries(toSeriesIuids(ds));
 					break;
 				case 2:
-					stymgt.deleteSeries(toSopIuids(ds));
+					stymgt.deleteInstances(toSopIuids(ds));
 					break;
 				}
-				stymgt.createStudy(ds);
 			} finally {
 				try {
 					stymgt.remove();
@@ -104,7 +103,7 @@ class StudyMgtScp extends DcmServiceBase {
 				}
 				for (int j = 0, m = sops.vm(); j < m; ++j) {
 					Dataset sop = sersq.getItem(i);
-					String iuid = ser.getString(Tags.RefSOPInstanceUID);
+					String iuid = sop.getString(Tags.RefSOPInstanceUID);
 					if (iuid == null) {
 						throw new DcmServiceException(Status.MissingAttribute,
 								"Missing Referenced SOP Instance UID");
