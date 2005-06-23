@@ -440,6 +440,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	    		} else if ( moveType == MOVE_INSTANCES ) {
 	    			_move_instances( cm );
 	    		}
+	    		clearSticky();
 	    		ret = FOLDER;
     		} catch ( Exception x ) {
         		folderForm.setErrorCode( FolderForm.ERROR_MOVE );
@@ -462,6 +463,17 @@ public class FolderSubmitCtrl extends FolderCtrl {
     
     
     /**
+	 * 
+	 */
+	private void clearSticky() {
+		FolderForm folderForm = (FolderForm) getForm();
+       	folderForm.getStickyPatients().clear();		
+       	folderForm.getStickyStudies().clear();		
+       	folderForm.getStickySeries().clear();		
+       	folderForm.getStickyInstances().clear();		
+	}
+
+	/**
      * Move selected studies to a patient.
      * 
 	 * @param cm ContentManagerBean to update the model.
