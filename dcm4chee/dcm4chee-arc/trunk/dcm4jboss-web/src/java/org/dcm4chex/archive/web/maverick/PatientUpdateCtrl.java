@@ -17,9 +17,6 @@
 package org.dcm4chex.archive.web.maverick;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
-import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
 /**
