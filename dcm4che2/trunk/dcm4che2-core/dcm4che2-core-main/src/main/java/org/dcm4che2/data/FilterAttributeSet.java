@@ -376,8 +376,4 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 	public Attribute putSequence(int tag) {
 		throw new UnsupportedOperationException();
 	}
-	
-	public void flush() {
-		attrs.flush();
-	}
 }

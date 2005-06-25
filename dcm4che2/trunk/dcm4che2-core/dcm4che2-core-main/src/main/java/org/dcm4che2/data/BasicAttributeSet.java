@@ -76,19 +76,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			}});
 	}
 	
-	public void flush() {
-		table.flush();
-		accept(new Visitor(){
-			public boolean visit(Attribute attr) {
-				if (attr.vr() == VR.SQ && attr.hasItems()) {
-					for (int i = 0, n = attr.countItems(); i < n; ++i) {
-						attr.getItem(i).flush();
-					}
-				}
-				return true;
-			}});
-	}	
-
 	public int resolvePrivateTag(int privateTag, String privateCreator) {
 		return resolvePrivateTagInternal(privateTag, privateCreator, false);
 	}

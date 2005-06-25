@@ -34,8 +34,8 @@ public class IntHashtable {
 	private Object[] values;
 	private Object value0;
 	private Object value_1;
-	private int[] skeys;
-	private Object[] svalues;
+	private int[] sortedKeys;
+	private boolean dirty = true;
 
 	
 	public IntHashtable() {
@@ -54,11 +54,6 @@ public class IntHashtable {
 		return count == 0;
 	}
 
-	public void flush() {
-		skeys = null;
-		svalues = null;
-	}
-	
 	public void put(int key, Object value) {
 		if (value == null) {
 			throw new NullPointerException();
@@ -75,7 +70,7 @@ public class IntHashtable {
 			value_1 = value;
 			return;
 		}
-		flush();
+		dirty = true;
 		if (count > highWaterMark)
 			rehash();
 		putInternal(key, value);
@@ -103,7 +98,7 @@ public class IntHashtable {
 			final int index = find(key);
 			if (values[index] != null) {
 				retval = values[index];
-				flush();
+				dirty = true;
 				keyList[index] = -1;
 				values[index] = null;
 				--count;
@@ -158,6 +153,7 @@ public class IntHashtable {
 		IntHashtable result = (IntHashtable) super.clone();
 		values = (Object[]) values.clone();
 		keyList = (int[]) keyList.clone();
+		sortedKeys = sortedKeys != null ? (int[]) sortedKeys.clone() : null;
 		return result;
 	}
 
@@ -189,6 +185,7 @@ public class IntHashtable {
 		int initialSize = PRIMES[primeIndex];
 		values = new Object[initialSize];
 		keyList = new int[initialSize];
+		sortedKeys = null;
 		count = 0;
 		if (value0 != null)
 			++count;
@@ -255,89 +252,6 @@ public class IntHashtable {
 		return i;
 	}
 
-	private void sort() {
-		skeys = (int[]) keyList.clone();
-		svalues = (Object[]) values.clone();
-		sort(0, skeys.length);
-
-	}
-
-	private void sort(int off, int len) {
-		// Insertion sort on smallest arrays
-		if (len < 7) {
-			for (int i = 0; i < skeys.length; i++)
-				for (int j = i; j > off && skeys[j - 1] > skeys[j]; j--)
-					swap(j, j - 1);
-			return;
-		}
-
-		// Choose a partition element, v
-		int m = off + (len >> 1); // Small arrays, middle element
-		if (len > 7) {
-			int l = off;
-			int n = off + len - 1;
-			if (len > 40) { // Big arrays, pseudomedian of 9
-				int s = len / 8;
-				l = med3(l, l + s, l + 2 * s);
-				m = med3(m - s, m, m + s);
-				n = med3(n - 2 * s, n - s, n);
-			}
-			m = med3(l, m, n); // Mid-size, med of 3
-		}
-		int v = skeys[m];
-
-		// Establish Invariant: v* (<v)* (>v)* v*
-		int a = off, b = a, c = off + len - 1, d = c;
-		while (true) {
-			while (b <= c && skeys[b] <= v) {
-				if (skeys[b] == v)
-					swap(a++, b);
-				b++;
-			}
-			while (c >= b && skeys[c] >= v) {
-				if (skeys[c] == v)
-					swap(c, d--);
-				c--;
-			}
-			if (b > c)
-				break;
-			swap(b++, c--);
-		}
-
-		// Swap partition elements back to middle
-		int s, n = off + len;
-		s = Math.min(a - off, b - a);
-		vecswap(off, b - s, s);
-		s = Math.min(d - c, n - d - 1);
-		vecswap(b, n - s, s);
-
-		// Recursively sort non-partition-elements
-		if ((s = b - a) > 1)
-			sort(off, s);
-		if ((s = d - c) > 1)
-			sort(n - s, s);
-	}
-
-	private void swap(int a, int b) {
-		int t = skeys[a];
-		skeys[a] = skeys[b];
-		skeys[b] = t;
-		Object v = svalues[a];
-		svalues[a] = svalues[b];
-		svalues[b] = v;
-	}
-
-	private void vecswap(int a, int b, int n) {
-		for (int i = 0; i < n; i++, a++, b++)
-			swap(a, b);
-	}
-
-	private int med3(int a, int b, int c) {
-		return (skeys[a] < skeys[b] ? (skeys[b] < skeys[c] ? b
-				: skeys[a] < skeys[c] ? c : a) : (skeys[b] > skeys[c] ? b
-				: skeys[a] > skeys[c] ? c : a));
-	}
-
 	private final class Itr implements Iterator {
 		int endIndex;
 		int index;
@@ -359,16 +273,22 @@ public class IntHashtable {
 					next = value_1;
 				return;
 			}
-			if (skeys == null)
-				sort();
-			endIndex = Arrays.binarySearch(skeys, end != -1 ? end : -2);
+			if (dirty) {
+				if (sortedKeys == null) {
+					sortedKeys = new int[keyList.length];
+				}
+				System.arraycopy(keyList, 0, sortedKeys, 0, keyList.length);
+				Arrays.sort(sortedKeys);
+				dirty = false;
+			}
+			endIndex = Arrays.binarySearch(sortedKeys, end != -1 ? end : -2);
 			if (endIndex < 0) {
 				endIndex = normalize(-endIndex - 2);				
 			}
 			if (end == -1 && value_1 != null) {
 				endIndex = normalize(endIndex + 1);
 			}
-			index = Arrays.binarySearch(skeys, start != 0 ? start : 1);
+			index = Arrays.binarySearch(sortedKeys, start != 0 ? start : 1);
 			if (index < 0) {
 				index = normalize(-index-1);
 			}
@@ -377,13 +297,13 @@ public class IntHashtable {
 				--index;
 			} else {
 				if (index != normalize(endIndex+1)) {
-					next = svalues[index];
+					next = get(sortedKeys[index]);
 				}
 			}
 		}
 
 		private int normalize(int index) {
-			return (index + svalues.length) % svalues.length;
+			return (index + sortedKeys.length) % sortedKeys.length;
 		}
 
 		public boolean hasNext() {
@@ -398,9 +318,8 @@ public class IntHashtable {
 				next = null;
 			} else {
 				index = normalize(index+1);
-				next = svalues[index];
-				if (next == null)
-					next = value_1;
+				int key = sortedKeys[index];
+				next = key != 0 ? get(key) : value_1;
 			}
 			return v;
 		}

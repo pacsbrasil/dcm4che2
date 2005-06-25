@@ -75,5 +75,4 @@ public interface AttributeSet
 	AttributeSet subSet(int[] tags);
 	AttributeSet exclude(int[] tags);
 	AttributeSet excludePrivate();
-	void flush();
 }
