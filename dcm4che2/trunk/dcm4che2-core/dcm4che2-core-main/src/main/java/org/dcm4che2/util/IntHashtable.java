@@ -35,7 +35,7 @@ public class IntHashtable {
 	private Object value0;
 	private Object value_1;
 	private int[] sortedKeys;
-	private boolean dirty = true;
+	private boolean sorted;
 
 	
 	public IntHashtable() {
@@ -70,7 +70,7 @@ public class IntHashtable {
 			value_1 = value;
 			return;
 		}
-		dirty = true;
+		sorted = false;
 		if (count > highWaterMark)
 			rehash();
 		putInternal(key, value);
@@ -98,7 +98,7 @@ public class IntHashtable {
 			final int index = find(key);
 			if (values[index] != null) {
 				retval = values[index];
-				dirty = true;
+				sorted = false;
 				keyList[index] = -1;
 				values[index] = null;
 				--count;
@@ -273,13 +273,13 @@ public class IntHashtable {
 					next = value_1;
 				return;
 			}
-			if (dirty) {
+			if (!sorted) {
 				if (sortedKeys == null) {
 					sortedKeys = new int[keyList.length];
 				}
 				System.arraycopy(keyList, 0, sortedKeys, 0, keyList.length);
 				Arrays.sort(sortedKeys);
-				dirty = false;
+				sorted = true;
 			}
 			endIndex = Arrays.binarySearch(sortedKeys, end != -1 ? end : -2);
 			if (endIndex < 0) {
