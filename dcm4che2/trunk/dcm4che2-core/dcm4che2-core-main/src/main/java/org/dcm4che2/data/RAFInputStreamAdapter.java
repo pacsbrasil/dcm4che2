@@ -19,7 +19,7 @@ import java.io.RandomAccessFile;
  * @since Jun 25, 2005
  *
  */
-public class RAFInputStreamAdapter extends InputStream {
+class RAFInputStreamAdapter extends InputStream {
 
 	private final RandomAccessFile raf;
 	private long markedPos;
