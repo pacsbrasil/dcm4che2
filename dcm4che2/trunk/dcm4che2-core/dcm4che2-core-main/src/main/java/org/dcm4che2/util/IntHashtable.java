@@ -281,29 +281,32 @@ public class IntHashtable {
 				Arrays.sort(sortedKeys);
 				sorted = true;
 			}
-			endIndex = Arrays.binarySearch(sortedKeys, end != -1 ? end : -2);
+			endIndex = Arrays.binarySearch(sortedKeys, end !=-1 ? end : -2);
 			if (endIndex < 0) {
-				endIndex = normalize(-endIndex - 2);				
+				if (endIndex == -1)
+					endIndex = sortedKeys.length - 1;
+				else
+					endIndex = -(endIndex + 1) - 1;
 			}
 			if (end == -1 && value_1 != null) {
-				endIndex = normalize(endIndex + 1);
+				endIndex = incIndex(endIndex);
 			}
 			index = Arrays.binarySearch(sortedKeys, start != 0 ? start : 1);
 			if (index < 0) {
-				index = normalize(-index-1);
+				index = -(index + 1) % sortedKeys.length;				
 			}
 			if (start == 0 && value0 != null) {
 				next = value0;
 				--index;
 			} else {
-				if (index != normalize(endIndex+1)) {
+				if (index != incIndex(endIndex)) {
 					next = get(sortedKeys[index]);
 				}
 			}
 		}
 
-		private int normalize(int index) {
-			return (index + sortedKeys.length) % sortedKeys.length;
+		private int incIndex(int index) {
+			return (index + 1) % sortedKeys.length;
 		}
 
 		public boolean hasNext() {
@@ -317,7 +320,7 @@ public class IntHashtable {
 			if (index == endIndex) {
 				next = null;
 			} else {
-				index = normalize(index+1);
+				index = incIndex(index);
 				int key = sortedKeys[index];
 				next = key != 0 ? get(key) : value_1;
 			}
