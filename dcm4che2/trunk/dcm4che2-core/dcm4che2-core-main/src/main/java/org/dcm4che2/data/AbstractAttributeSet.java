@@ -15,16 +15,6 @@ import java.io.ObjectStreamException;
 
 abstract class AbstractAttributeSet implements AttributeSet {
 
-	private int itemLength = -1;
-
-	final int getItemLength() {
-		return itemLength;
-	}
-
-	final void setItemLength(int itemLength) {
-		this.itemLength = itemLength;
-	}
-
 	protected Object writeReplace() throws ObjectStreamException {
 		return new AttributeSetSerializer(this);
 	}
@@ -32,6 +22,31 @@ abstract class AbstractAttributeSet implements AttributeSet {
 	public void serializeAttributes(ObjectOutputStream oos)
 			throws IOException {
 		oos.writeObject(new AttributeSerializer(this));
+	}
+	
+	public void copyTo(final AttributeSet dest) {
+		accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				dest.addAttribute(attr);
+				return true;
+			}});		
+	}
+
+	public boolean isEmpty() {
+		return accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				return false;
+			}});
+	}
+	
+	public int size() {
+		final int[] count = { 0 };
+		accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				++count[0];
+				return true;
+			}});
+		return count[0];
 	}
 	
 	public AttributeSet exclude(int[] tags) {

@@ -39,7 +39,7 @@ public class DicomOutputStreamTest extends TestCase {
 		DicomInputStream dis = new DicomInputStream(ifile);
 		AttributeSet dicomdir = dis.readAttributeSet(-1);
 		dis.close();
-		dicomdir.putString(0x00020010, VR.CS, TransferSyntax.DeflatedExplicitVRLittleEndian.uid());
+		dicomdir.putString(0x00020010, VR.CS, TransferSyntax.ExplicitVRLittleEndian.uid());
 		File ofile = new File("target/test-out/DICOMDIR");
 		ofile.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(ofile);

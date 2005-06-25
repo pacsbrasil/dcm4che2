@@ -129,9 +129,14 @@ public class ElementDictionary implements Serializable {
 		os.writeInt(table.size());
 		try {
 			table.accept(new IntHashtable.Visitor() {
-				public void visit(int key, Object value) throws IOException {
-					os.writeInt(key);
-					os.writeUTF((String) value);
+				public boolean visit(int key, Object value) {
+					try {
+						os.writeInt(key);
+						os.writeUTF((String) value);
+						return true;
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
 			});
 		} catch (Exception e) {

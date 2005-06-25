@@ -16,6 +16,9 @@ import java.util.Iterator;
 
 public interface AttributeSet 
 		extends Serializable {
+	public interface Visitor {
+		boolean visit(Attribute attr);
+	}
 	AttributeSet getRoot();
 	AttributeSet getParent();
 	void setParent(AttributeSet parent);
@@ -29,8 +32,12 @@ public interface AttributeSet
 	int resolvePrivateTag(int privateTag, String privateCreator);
 	int reservePrivateTag(int privateTag, String privateCreator);
 	String getPrivateCreator(int privateTag);
+	boolean isEmpty();
+	int size();
 	boolean contains(int tag);
 	boolean containsValue(int tag);
+	boolean accept(Visitor visitor);
+	void addAttribute(Attribute attr);
 	Attribute getAttribute(int tag);
 	Attribute removeAttribute(int tag);
 	byte[] getBytes(int tag, boolean bigEndian);
@@ -60,7 +67,7 @@ public interface AttributeSet
 	Attribute putFragments(int tag, VR vr, boolean bigEndian, int capacity);
 	void shareAttributes();
 	void serializeAttributes(ObjectOutputStream oos) throws IOException;
-	void addAll(AttributeSet other);
+	void copyTo(AttributeSet destination);
 	boolean isCacheAttributeValues();
 	void setCacheAttributeValues(boolean cacheAttributeValues);
 	AttributeSet subSet(AttributeSet filter);
@@ -68,4 +75,5 @@ public interface AttributeSet
 	AttributeSet subSet(int[] tags);
 	AttributeSet exclude(int[] tags);
 	AttributeSet excludePrivate();
+	void flush();
 }

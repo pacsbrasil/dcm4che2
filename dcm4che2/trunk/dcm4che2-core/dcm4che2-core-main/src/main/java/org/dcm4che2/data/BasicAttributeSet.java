@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.util.IntHashtable;
 import org.dcm4che2.util.TagUtils;
 
 public class BasicAttributeSet extends AbstractAttributeSet {
@@ -22,33 +23,71 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	private static final int INIT_FRAGMENT_CAPACITY = 2;
 
 	private static final int INIT_SEQUENCE_CAPACITY = 10;
-		
+
 	private static final int TRANSFER_SYNTAX_TAG = 0x00020010;
-	
+
 	private static final int CHARSET_TAG = 0x00080005;
 
-	private static final class TagStringPair {
-		int tag;
-		String value;
+	private static final Logger log = Logger.getLogger(BasicAttributeSet.class);
+
+	private transient final IntHashtable table;
+
+	private transient AttributeSet parent;
+
+	private transient TransferSyntax ts = TransferSyntax.ImplicitVRLittleEndian;
+
+	private transient SpecificCharacterSet charset = null;
+
+	private transient long itemOffset = -1L;
+
+	private transient boolean cache = false;
+
+	public BasicAttributeSet() {
+		this(null, 10);
 	}
 
-	private static final Logger log = Logger.getLogger(BasicAttributeSet.class);
-	
-	private transient ArrayList attrs = new ArrayList();
-	private transient TransferSyntax ts = TransferSyntax.ImplicitVRLittleEndian;
-	private transient SpecificCharacterSet charset = null;
-	private transient AttributeSet parent;
-	private transient long itemOffset = -1L;
-	private transient TagStringPair privateCreatorCache = new TagStringPair();
-	private transient boolean cache = false;
+	public BasicAttributeSet(int capacity) {
+		this(null, capacity);
+	}
+
+	public BasicAttributeSet(AttributeSet parent) {
+		this(parent, 10);
+	}
+
+	public BasicAttributeSet(AttributeSet parent, int capacity) {
+		this.table = new IntHashtable(capacity);
+		this.parent = parent;
+	}
 
 	public final boolean isCacheAttributeValues() {
 		return cache;
 	}
 
-	public final void setCacheAttributeValues(boolean cache) {
+	public final void setCacheAttributeValues(final boolean cache) {
 		this.cache = cache;
+		accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				if (attr.vr() == VR.SQ && attr.hasItems()) {
+					for (int i = 0, n = attr.countItems(); i < n; ++i) {
+						attr.getItem(i).setCacheAttributeValues(cache);
+					}
+				}
+				return true;
+			}});
 	}
+	
+	public void flush() {
+		table.flush();
+		accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				if (attr.vr() == VR.SQ && attr.hasItems()) {
+					for (int i = 0, n = attr.countItems(); i < n; ++i) {
+						attr.getItem(i).flush();
+					}
+				}
+				return true;
+			}});
+	}	
 
 	public int resolvePrivateTag(int privateTag, String privateCreator) {
 		return resolvePrivateTagInternal(privateTag, privateCreator, false);
@@ -59,45 +98,39 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	public void shareAttributes() {
-		for (int i = 0, n = attrs.size(); i < n; ++i) {
-			attrs.set(i, ((Attribute) attrs.get(i)).share());
-		}
+		table.accept(new IntHashtable.Visitor() {
+			public boolean visit(int key, Object value) {
+				table.put(key, ((Attribute) value).share());
+				return true;
+			}
+		});
 	}
-	
+
 	public Iterator iterator() {
-		return attrs.iterator();
+		return iterator(0, 0xffffffff);
 	}
 
 	public Iterator iterator(int fromTag, int toTag) {
 		if ((fromTag & 0xffffffffL) > (toTag & 0xffffffffL)) {
 			throw new IllegalArgumentException("fromTag:"
-					+ TagUtils.toString(fromTag) 
-					+ " > toTag:"
+					+ TagUtils.toString(fromTag) + " > toTag:"
 					+ TagUtils.toString(toTag));
 		}
-		int fromPos = binarySearch(fromTag);
-		if (fromPos < 0) {
-			fromPos = -(fromPos+1);
-		}
-		int toPos = binarySearch(toTag);
-		if (toPos < 0) {
-			toPos = -(toPos+1);
-		}
-		return attrs.subList(fromPos, toPos).iterator();
+		return table.iterator(fromTag, toTag);
 	}
-	
+
 	public final AttributeSet getParent() {
-		return parent;		
+		return parent;
 	}
 
 	public final void setParent(AttributeSet parent) {
-		this.parent = parent;		
+		this.parent = parent;
 	}
 
 	public AttributeSet getRoot() {
 		return parent == null ? this : parent.getRoot();
 	}
-		
+
 	public final long getItemOffset() {
 		return itemOffset;
 	}
@@ -105,7 +138,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public final void setItemOffset(long itemOffset) {
 		this.itemOffset = itemOffset;
 	}
-	
+
 	public SpecificCharacterSet getSpecificCharacterSet() {
 		if (charset != null)
 			return charset;
@@ -113,29 +146,29 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			return parent.getSpecificCharacterSet();
 		return null;
 	}
-	
+
 	public TransferSyntax getTransferSyntax() {
 		if (parent != null)
 			return parent.getTransferSyntax();
 		return ts;
 	}
-	
+
 	public VR vrOf(int tag) {
 		VRMap vrmap;
 		if (TagUtils.isPrivateDataElement(tag)) {
 			if (TagUtils.isPrivateCreatorDataElement(tag))
 				return VR.LO;
-			
+
 			final String privateCreatorID = getPrivateCreator(tag);
 			if (privateCreatorID == null)
 				return VR.UN;
-			
+
 			vrmap = VRMap.getPrivateVRMap(privateCreatorID);
 		} else {
 			vrmap = VRMap.getVRMap();
 		}
 		return vrmap.vrOf(tag);
-					
+
 	}
 
 	public String getPrivateCreator(int tag) {
@@ -143,119 +176,82 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 				|| TagUtils.isPrivateCreatorDataElement(tag))
 			throw new IllegalArgumentException(TagUtils.toString(tag));
 		int creatorIDtag = (tag & 0xffff0000) | ((tag >> 8) & 0xff);
-		synchronized (privateCreatorCache) {
-			if (privateCreatorCache.tag == creatorIDtag)
-				return privateCreatorCache.value;
-			this.privateCreatorCache.tag = creatorIDtag;
-			return privateCreatorCache.value = getString(creatorIDtag);
-		}
+		return getAndCacheString(creatorIDtag);
 	}
 
-	private int resolvePrivateTagInternal(int privateTag, String privateCreator, 
-			boolean reserve) {
+	private String getAndCacheString(int creatorIDtag) {
+		Attribute a = getAttribute(creatorIDtag);
+		return a == null ? null : a.getString(getSpecificCharacterSet(), true);
+	}
+
+	private int resolvePrivateTagInternal(int privateTag,
+			String privateCreator, boolean reserve) {
 		if (!TagUtils.isPrivateDataElement(privateTag)
 				|| TagUtils.isPrivateCreatorDataElement(privateTag))
 			throw new IllegalArgumentException(TagUtils.toString(privateTag));
 		int gggg0000 = privateTag & 0xffff0000;
-		synchronized (privateCreatorCache) {
-			if (gggg0000 != (privateCreatorCache.tag & 0xffff0000) 
-					|| !privateCreator.equals(privateCreatorCache.value)) {
-				int idTag = gggg0000 | 0x10;
-				int maxIdTag = gggg0000 | 0xff;
-				String id;
-				while (!privateCreator.equals(id = getString(idTag))) {
-					if (id == null) {
-						if (!reserve)
-							return -1;
-						putString(idTag, VR.LO, id = privateCreator);
-						break;
-					}
-					if (++idTag > maxIdTag)
-						throw new IllegalStateException(
-								"No free block to reserve in group " 
-								+ TagUtils.toString(gggg0000));
-				}
-				privateCreatorCache.tag = idTag;
-				privateCreatorCache.value = id;
+		int idTag = gggg0000 | 0x10;
+		int maxIdTag = gggg0000 | 0xff;
+		String id;
+		while (!privateCreator.equals(id = getAndCacheString(idTag))) {
+			if (id == null) {
+				if (!reserve)
+					return -1;
+				add(new BasicAttribute(idTag, VR.LO, false, VR.LO.toBytes(
+						privateCreator, getSpecificCharacterSet()), 
+						privateCreator));
+				break;
 			}
-			return (privateTag & 0xffff00ff)
-					| ((privateCreatorCache.tag & 0xff) << 8);
+			if (++idTag > maxIdTag)
+				throw new IllegalStateException(
+						"No free block to reserve in group "
+								+ TagUtils.toString(gggg0000));
 		}
-	}
-	
-    private int binarySearch(int tag) {
-		long ltag = tag & 0xFFFFFFFFL;
-		int low = 0;
-		int high = attrs.size() - 1;
-		while (low <= high) {
-		    int mid = (low + high) >> 1;
-		    Attribute attr = (Attribute) attrs.get(mid);
-			long midTag = attr.tag() & 0xFFFFFFFFL;
-		    if (midTag < ltag)
-				low = mid + 1;
-		    else if (midTag > ltag)
-				high = mid - 1;
-		    else
-				return mid; // key found
-		}
-		return -(low + 1);  // key not found.
+		return (privateTag & 0xffff00ff) | ((idTag & 0xff) << 8);
 	}
 
-	public boolean contains(int tag) {
-		return binarySearch(tag) >= 0;
+	public boolean isEmpty() {
+		return table.isEmpty();
 	}
 	
+	public int size() {
+		return table.size();
+	}
+	
+	public boolean contains(int tag) {
+		return table.get(tag) != null;
+	}
+
 	public boolean containsValue(int tag) {
 		Attribute attr = getAttribute(tag);
 		return attr != null && !attr.isNull();
 	}
-	
+
 	public Attribute getAttribute(int tag) {
-		int index = binarySearch(tag);
-		return (Attribute) (index >= 0 ? attrs.get(index) : null);
-	}
-	
-	public Attribute removeAttribute(int tag) {
-		int index = binarySearch(tag);
-		if (index < 0) return null;
-		if (tag == CHARSET_TAG) {
-			charset = null;
-		} else if (privateCreatorCache.tag == tag) {
-			synchronized (privateCreatorCache) {
-				privateCreatorCache.tag = 0;
-				privateCreatorCache.value = null;
-			}
-		}
-		return (Attribute) attrs.remove(index);
-	}
-	
-	private int lastTag() {
-		if (attrs.isEmpty()) return 0;
-		Attribute last = (Attribute) attrs.get(attrs.size() - 1);
-		return last.tag();
+		return (Attribute) table.get(tag);
 	}
 
-	protected Attribute putAttribute(Attribute a) {
-		final int tag = a.tag();
-		if ((lastTag() & 0xffffffffL) < (tag & 0xffffffffL)) {
-			attrs.add(a);
-		} else {
-			int index = binarySearch(tag);
-			if (index < 0) {
-				attrs.add(-(index + 1), a);
-			} else {
-				attrs.set(index, a);
+	public Attribute removeAttribute(int tag) {
+		Attribute attr = (Attribute) table.remove(tag);
+		if (attr != null) {
+			if (tag == CHARSET_TAG) {
+				charset = null;
 			}
 		}
+		return attr;
+	}
+
+	Attribute add(Attribute a) {
+		final int tag = a.tag();
+		if ((tag & 0x0000ffff) == 0) {
+			// do not include group length elements
+			return a;
+		}
+		table.put(tag, a);
 		if (tag == TRANSFER_SYNTAX_TAG) {
 			ts = TransferSyntax.valueOf(a.getString(null, false));
 		} else if (tag == CHARSET_TAG) {
 			charset = SpecificCharacterSet.valueOf(a.getStrings(null, false));
-		} else if (privateCreatorCache.tag == tag) {
-			synchronized (privateCreatorCache) {
-				privateCreatorCache.tag = 0;
-				privateCreatorCache.value = null;
-			}
 		}
 		return a;
 	}
@@ -277,28 +273,34 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return !it.hasNext() && !otherIt.hasNext();
 	}
 
-	public void addAll(AttributeSet other) {
-		for (Iterator it = other.iterator(); it.hasNext();) {
-			Attribute src = (Attribute) it.next();
-			if (src.hasItems()) {
-				final int count = src.countItems();
-				if (src.vr() == VR.SQ) {
-					Attribute dst = putSequence(src.tag(), count);
-					for (int i = 0; i < count; i++) {
-						dst.addItem(new BasicAttributeSet())
-								.addAll(src.getItem(i));
-					}
-				} else {
-					Attribute dst = putFragments(
-							src.tag(), src.vr(), src.bigEndian(), count);
-					for (int i = 0; i < count; i++) {
-						dst.addBytes(src.getBytes(i));
-					}
+	public boolean accept(final Visitor visitor) {
+		return table.accept(new IntHashtable.Visitor() {
+			public boolean visit(int key, Object value) {
+				return visitor.visit((Attribute) value);
+			}
+		});
+	}
+
+	public void addAttribute(Attribute a) {
+		if (a.hasItems()) {
+			final int n = a.countItems();
+			Attribute t;
+			if (a.vr() == VR.SQ) {
+				t = putSequence(a.tag(), n);
+				for (int i = 0; i < n; i++) {
+					BasicAttributeSet item = new BasicAttributeSet(this, n);
+					a.getItem(i).copyTo(item);
+					t.addItem(item);
 				}
 			} else {
-				putAttribute(src);
+				t = putFragments(a.tag(), a.vr(), a.bigEndian(), n);
+				for (int i = 0; i < n; i++) {
+					t.addBytes(a.getBytes(i));
+				}
 			}
+			a = t;
 		}
+		add(a);
 	}
 
 	public byte[] getBytes(int tag, boolean bigEndian) {
@@ -348,20 +350,16 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	public String[] getStrings(int tag) {
 		Attribute a = getAttribute(tag);
-		return a == null ? null
-				: a.getStrings(getSpecificCharacterSet(), cache);
-	}
-
-	private Attribute putAttribute(int tag, VR vr, boolean explicitVR, Object val, Object cache) {
-		return putAttribute(new BasicAttribute(tag, vr, explicitVR, val, cache));
+		return a == null ? null : a
+				.getStrings(getSpecificCharacterSet(), cache);
 	}
 
 	public Attribute putNull(int tag, VR vr) {
-		return putAttribute(tag, vr, false, null, null);
+		return add(new BasicAttribute(tag, vr, false, null, null));
 	}
 
 	public Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
-		return putAttribute(tag, vr, bigEndian, val, null);
+		return add(new BasicAttribute(tag, vr, bigEndian, val, null));
 	}
 
 	public Attribute putItem(int tag, AttributeSet item) {
@@ -372,58 +370,48 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	public Attribute putInt(int tag, VR vr, int val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? new Integer(val) : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? new Integer(val) : null));
 	}
 
 	public Attribute putInts(int tag, VR vr, int[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),						
-				cache ? val : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? val : null));
 	}
 
 	public Attribute putFloat(int tag, VR vr, float val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? new Float(val) : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? new Float(val) : null));
 	}
 
 	public Attribute putFloats(int tag, VR vr, float[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),						
-				cache ? val : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? val : null));
 	}
 
 	public Attribute putDouble(int tag, VR vr, double val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? new Double(val) : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? new Double(val) : null));
 	}
 
 	public Attribute putDoubles(int tag, VR vr, double[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		Attribute attr = putAttribute(tag, vr, be, vr.toBytes(val, be),						
-				cache ? val : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+				cache ? val : null));
 	}
 
 	public Attribute putString(int tag, VR vr, String val) {
-		Attribute attr = putAttribute(tag, vr, false,
-				vr.toBytes(val, getSpecificCharacterSet()),						
-				cache ? val : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val,
+				getSpecificCharacterSet()), cache ? val : null));
 	}
 
 	public Attribute putStrings(int tag, VR vr, String[] val) {
-		Attribute attr = putAttribute(tag, vr, false,
-				vr.toBytes(val, getSpecificCharacterSet()),						
-				cache ? val : null);
-		return attr;
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val,
+				getSpecificCharacterSet()), cache ? val : null));
 	}
 
 	public Attribute putSequence(int tag) {
@@ -431,16 +419,19 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	public Attribute putSequence(int tag, int capacity) {
-		return putAttribute(tag, VR.SQ, false, new ArrayList(capacity), null);
+		return add(new BasicAttribute(tag, VR.SQ, false,
+				new ArrayList(capacity), null));
 	}
 
 	public Attribute putFragments(int tag, VR vr, boolean bigEndian) {
 		return putFragments(tag, vr, bigEndian, INIT_FRAGMENT_CAPACITY);
 	}
 
-	public Attribute putFragments(int tag, VR vr, boolean bigEndian, int capacity) {
+	public Attribute putFragments(int tag, VR vr, boolean bigEndian,
+			int capacity) {
 		if (!(vr instanceof VR.Fragment))
 			throw new UnsupportedOperationException();
-		return putAttribute(tag, vr, bigEndian, new ArrayList(capacity), null);
+		return add(new BasicAttribute(tag, vr, bigEndian, new ArrayList(
+				capacity), null));
 	}
 }

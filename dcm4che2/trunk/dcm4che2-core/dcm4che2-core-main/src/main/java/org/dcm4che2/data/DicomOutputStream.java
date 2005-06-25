@@ -13,11 +13,11 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.zip.DeflaterOutputStream;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.util.ByteUtils;
-import org.dcm4che2.util.TagUtils;
 
 public class DicomOutputStream 
 	extends FilterOutputStream {
@@ -93,23 +93,11 @@ public class DicomOutputStream
 		this.includeGroupLength = includeGroupLength;
 	}
 
-	void prepareWriteDataset(AbstractAttributeSet attrs) {
-		if (includeGroupLength 
-				|| explicitItemLength 
-				|| explicitSequenceLength
-				|| explicitItemLengthIfZero 
-				|| explicitSequenceLengthIfZero) {
-			calcItemLength(attrs);
-		} else {
-			resetItemLength(attrs);
-		}
-	}
-		
 	public void writeCommand(AttributeSet attrs)
 			throws IOException {
 		this.ts = TransferSyntax.ImplicitVRLittleEndian;
-		writeGroupLength(CMD_GROUPLENGTH_TAG, calcCommandGroupLength(attrs));
-		writeAttributes(attrs.iterator(CMD_FIRST_TAG, CMD_LAST_TAG));		
+		writeAttributes(attrs.iterator(CMD_FIRST_TAG, CMD_LAST_TAG), 
+				new ItemInfo(attrs.iterator(CMD_FIRST_TAG, CMD_LAST_TAG)), true);		
 	}
 
 	private void writeGroupLength(int tag, int length)
@@ -132,8 +120,8 @@ public class DicomOutputStream
 		write('C');
 		write('M');
 		this.ts = TransferSyntax.ExplicitVRLittleEndian;
-		writeGroupLength(FMI_GROUPLENGTH_TAG, calcFMIGroupLength(attrs));
-		writeAttributes(attrs.iterator(FMI_FIRST_TAG, FMI_LAST_TAG));
+		writeAttributes(attrs.iterator(FMI_FIRST_TAG, FMI_LAST_TAG), 
+				new ItemInfo(attrs.iterator(FMI_FIRST_TAG, FMI_LAST_TAG)), true);
 	}
 
 	public void writeDataset(AttributeSet attrs)
@@ -146,86 +134,97 @@ public class DicomOutputStream
 		if (ts.isDeflated())
 			out = new DeflaterOutputStream(out);
 		this.ts = ts;
-		prepareWriteDataset((AbstractAttributeSet) attrs);
-		writeAttributes(attrs.iterator(DATASET_FIRST_TAG, DATASET_LAST_TAG));	
+		writeAttributes(attrs.iterator(DATASET_FIRST_TAG, DATASET_LAST_TAG),
+				createItemInfo(attrs), includeGroupLength);
+	}
+
+	private boolean needItemInfo() {
+		return includeGroupLength 
+				|| explicitItemLength 
+				|| explicitSequenceLength;
+	}
+		
+	private ItemInfo createItemInfo(AttributeSet attrs) {
+		if (needItemInfo())
+			return new ItemInfo(attrs.iterator(DATASET_FIRST_TAG,
+					DATASET_LAST_TAG));
+		return null;
 	}
 
 	public void writeItem(AttributeSet item, TransferSyntax ts)
 			throws IOException {
 		this.ts = ts;
-		prepareWriteDataset((AbstractAttributeSet) item);
-		writeItem(item, ((AbstractAttributeSet) item).getItemLength());
+		writeItem(item, createItemInfo(item));
 	}
 
-	private void writeItem(AttributeSet item, int itemLen)
+	private void writeItem(AttributeSet item, ItemInfo itemInfo)
 			throws IOException {
 		// TODO
 		// item.setItemOffset(getStreamPosition());
-		int len = itemLen;
-		if (!(len == 0 ? explicitItemLengthIfZero : explicitItemLength)) {
-			len = -1;
-		}		
+		int len;
+		if (item.isEmpty()) {
+			len = explicitItemLengthIfZero ? 0 : -1;
+		} else {
+			len = explicitItemLength ? itemInfo.len : -1;
+		}
 		writeHeader(ITEM_TAG, null, len);
-		writeAttributes(item.iterator());
+		writeAttributes(item.iterator(), itemInfo, includeGroupLength);
 		if (len == -1) {
 			writeHeader(ITEM_DELIM_TAG, null, 0);
 		}
 	}
 	
-	void writeAttributes(Iterator itr)
+	void writeAttributes(Iterator itr, ItemInfo itemInfo, boolean includeGroupLength)
 			throws IOException {
+		int gggg0 = -1;
+		int gri = -1;
+		int sqi = -1;
 		while (itr.hasNext()) {
-			writeAttribute((Attribute) itr.next());
-		}
-	}
-
-	public void writeAttribute(Attribute attr)
-			throws IOException {
-		final int tag = attr.tag();
-		if (TagUtils.isGroupLengthElement(tag)
-				&& !includeGroupLength
-				&& tag != CMD_GROUPLENGTH_TAG
-				&& tag != FMI_GROUPLENGTH_TAG)
-			return;
-		final VR vr = attr.vr();
-		int len = attr.length();
-		if (vr == VR.SQ) {
-			if (len == -1 && explicitSequenceLength) {
-				len = calcSeqLength(attr, false);
-			} else if (len == 0 && !explicitSequenceLengthIfZero) {
-				len = -1;
+			Attribute a = (Attribute) itr.next();
+			int gggg = a.tag() & 0xffff0000;
+			if (includeGroupLength) {
+				if (gggg != gggg0) {
+					gggg0 = gggg;
+					writeGroupLength(gggg, itemInfo.grlen[++gri]);
+				}
 			}
-		}
-		writeHeader(tag, vr, len);
-		writeValue(attr, vr, len);
-		if (len == -1) {
-			writeHeader(SEQ_DELIM_TAG, null, 0);			
-		}
-	}
-
-	private void writeValue(Attribute attr, final VR vr, int len)
-			throws IOException {
-		attr.bigEndian(ts.bigEndian());
-		if (attr.hasItems()) {
+			final VR vr = a.vr();
+			int len = a.length();
 			if (vr == VR.SQ) {
-				for (int i = 0, n = attr.countItems(); i < n; i++) {
-					AttributeSet item = attr.getItem(i);
-					writeItem(item, ((AbstractAttributeSet) item).getItemLength());
-				}
-			} else {
-				for (int i = 0, n = attr.countItems(); i < n; i++) {
-					byte[] val = attr.getBytes(i);
-					writeHeader(ITEM_TAG, null, (val.length + 1) & ~1);
-					write(val);
-					if ((val.length & 1) != 0)
-						write(0);
+				if (len == -1 && explicitSequenceLength) {
+					len = itemInfo.sqlen[++sqi];
+				} else if (len == 0 && !explicitSequenceLengthIfZero) {
+					len = -1;
 				}
 			}
-		} else if (len > 0) {
-			byte[] val = attr.getBytes();
-			write(val);
-			if ((val.length & 1) != 0)
-				write(vr.padding());
+			writeHeader(a.tag(), vr, len);
+			a.bigEndian(ts.bigEndian());
+			if (a.hasItems()) {
+				if (vr == VR.SQ) {
+					for (int i = 0, n = a.countItems(); i < n; i++) {
+						AttributeSet item = a.getItem(i);
+						ItemInfo childItemInfo = itemInfo != null ? 
+								(ItemInfo) itemInfo.childs.removeFirst() : null;
+						writeItem(item, childItemInfo);
+					}
+				} else {
+					for (int i = 0, n = a.countItems(); i < n; i++) {
+						byte[] val = a.getBytes(i);
+						writeHeader(ITEM_TAG, null, (val.length + 1) & ~1);
+						write(val);
+						if ((val.length & 1) != 0)
+							write(0);
+					}
+				}
+			} else if (len > 0) {
+				byte[] val = a.getBytes();
+				write(val);
+				if ((val.length & 1) != 0)
+					write(vr.padding());
+			}
+			if (len == -1) {
+				writeHeader(SEQ_DELIM_TAG, null, 0);			
+			}
 		}
 	}
 
@@ -260,113 +259,84 @@ public class DicomOutputStream
 		write(header, off, 8 - off);
 	}
 
-	private int calcCommandGroupLength(AttributeSet attrs) {
+	private class ItemInfo {
 		int len = 0;
-		Attribute a;
-		Iterator itr = attrs.iterator(0x00000001,0x0000ffff);
-		while (itr.hasNext()) {
-			a = (Attribute) itr.next();
-			len += 8;
-			len += a.length();
-		}
-		return len;
-	}
-
-	private int calcFMIGroupLength(AttributeSet attrs) {
-		int len = 0;
-		Attribute a;
-		Iterator itr = attrs.iterator(0x00020001,0x0002ffff);
-		while (itr.hasNext()) {
-			a = (Attribute) itr.next();
-			len += a.vr().explicitVRHeaderLength();
-			len += a.length();
-		}
-		return len;
-	}
-	
-	private void resetItemLength(AbstractAttributeSet attrs) {
-		for (Iterator itr = attrs.iterator(); itr.hasNext();) {
-			Attribute a = (Attribute) itr.next();
-			final VR vr = a.vr();
-			if (a.vr() == VR.SQ && a.hasItems()) {
-				for (int i = 0, n = a.countItems(); i < n; ++i) {	
-					resetItemLength((AbstractAttributeSet) a.getItem(i));
+		int[] grlen = { 0 };
+		int[] sqlen = {};
+		LinkedList childs = null;
+		
+		ItemInfo(Iterator it) {
+			int gggg0 = -1;
+			int gri = -1;
+			int sqi = -1;
+			while (it.hasNext()) {
+				Attribute a = (Attribute) it.next();
+				final VR vr = a.vr();
+				int vlen = a.length();
+				if (vlen == -1) {
+					if (a.vr() == VR.SQ) {
+						vlen = calcItemSqLen(a);
+						if (explicitSequenceLength) {
+							if (++sqi >= sqlen.length) {
+								sqlen = realloc(sqlen);
+							}
+							sqlen[sqi] = vlen;
+						}
+					} else {
+						vlen = calcFragSqLen(a);
+					}
+				} else if (a.vr() == VR.SQ) { // vlen == 0
+					if (!explicitSequenceLengthIfZero)
+						vlen = 8;
+				}
+				final int alen = 
+					(ts.explicitVR() ? vr.explicitVRHeaderLength() : 8) + vlen;
+				len += alen;
+				final int gggg = a.tag() & 0xffff0000;
+				if (gggg == CMD_GROUPLENGTH_TAG || gggg == FMI_GROUPLENGTH_TAG 
+						|| includeGroupLength) {
+					if (gggg != gggg0) {
+						gggg0 = gggg;
+						len += 12;
+						if (++gri >= grlen.length) {
+							grlen = realloc(grlen);
+						}
+					}
+					grlen[gri] += alen;
 				}
 			}
-		}
-		attrs.setItemLength(-1);
-	}
-
-	private int calcSeqLength(Attribute attr, boolean calcItemLength) {
-		int len = 0;
-		for (int i = 0, n = attr.countItems(); i < n; i++) {
-			AbstractAttributeSet item = (AbstractAttributeSet) attr.getItem(i);
-			int itemLen = calcItemLength ? calcItemLength(item)
-					: item.getItemLength();
-			len += 8;
-			len += itemLen; 
-			if (!(itemLen == 0 ? explicitItemLengthIfZero : explicitItemLength)) {
+			if (!(len == 0 ? explicitItemLengthIfZero : explicitItemLength)) {
 				len += 8;
 			}
 		}
-		return len;
-	}
-	
-	private int calcItemLength(AbstractAttributeSet attrs) {
-		int len = 0;
-		int glen = 0;
-		int gggg0 = 0;
-		AttributeSet glAttrs = null;
-		if (includeGroupLength) {
-			glAttrs = new BasicAttributeSet(); 
-		}
-		
-		for (Iterator itr = attrs.iterator(); itr.hasNext();) {
-			Attribute a = (Attribute) itr.next();
-			if (TagUtils.isGroupLengthElement(a.tag())) continue;
-			if (includeGroupLength) {
-				final int gggg1 = a.tag() & 0xffff0000;
-				if (gggg0 != gggg1) {
-					if (glen > 0) {
-						glAttrs.putInt(gggg0, VR.UL, glen);
-						len += 12;
-					}
-					gggg0 = gggg1;
-					glen = 0;
-				}
+
+		private int calcFragSqLen(Attribute a) {
+			int l = 8;
+			for (int i = 0, n = a.countItems(); i < n; ++i) {
+				byte[] b = a.getBytes(i);
+				l += 8 + (b.length + 1) & ~1; 
 			}
-			final VR vr = a.vr();
-			int l = ts.explicitVR() ? vr.explicitVRHeaderLength() : 8;
-			int alen = a.length();
-			if (vr == VR.SQ) {
-				if (alen == -1) {
-					l += calcSeqLength(a, true);
-				}
-				if (!(alen == 0 ? explicitSequenceLengthIfZero : explicitSequenceLength)) {
-					l += 8;
-				}
-			} else if (alen == -1) { // data fragments
-				for (int i = 0, n = a.countItems(); i < n; ++i) {
-					byte[] b = a.getBytes(i);
-					l += 8;
-					l += (b.length + 1) & ~1; 
-				}
-				l += 8;
-			} else {
-				l += alen;
-			}
-			len += l;
-			glen += l;
+			return l;
 		}
-		if (includeGroupLength) {
-			if (glen > 0) {
-				glAttrs.putInt(gggg0, VR.UL, glen);
-				len += 12;
+
+		private int calcItemSqLen(Attribute a) {
+			int l = explicitSequenceLength ? 0 : 8;
+			for (int i = 0, n = a.countItems(); i < n; ++i) {
+				AttributeSet item = a.getItem(i);
+				ItemInfo itemInfo = new ItemInfo(item.iterator());
+				if (childs == null) // lazy allocation
+					childs = new LinkedList();
+				childs.add(itemInfo);
+				l += 8 + itemInfo.len;
 			}
-			attrs.addAll(glAttrs);
+			return l;
 		}
-		attrs.setItemLength(len);
-		return len;
+
+		private int[] realloc(int[] src) {
+			int[] dest = new int[src.length + 10];
+			System.arraycopy(src, 0, dest, 0,  src.length);
+			return dest;
+		}
 	}
 
 }

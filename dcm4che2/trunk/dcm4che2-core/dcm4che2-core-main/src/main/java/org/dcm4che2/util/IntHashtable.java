@@ -1,287 +1,413 @@
-/*
- * @(#)IntHashtable.java	1.11 03/12/19
- *
- * Copyright 2004 Sun Microsystems, Inc. All rights reserved.
- * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- * 
- * Modified by gunter zeilinger to use objects as values and enable
- * usage of Integer.MIN_VALUE and Integer.MIN_VALUE+1 as key values.
- */
-
-/*
- * (C) Copyright Taligent, Inc. 1996,1997 - All Rights Reserved
- * (C) Copyright IBM Corp. 1996, 1997 - All Rights Reserved
- * (C) Copyright Sun Microsystems, Inc. 2004 - All Rights Reserved
- */
-
 package org.dcm4che2.util;
 
-/** Simple internal class for doing hash mapping. Much, much faster than the
- * standard Hashtable for integer to integer mappings,
- * and doesn't require object creation.<br>
- */
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 public class IntHashtable {
+
+	private static final float HIGH_WATER_FACTOR = 0.4F;
+	private static final float LOW_WATER_FACTOR = 0.0F;
+	private static final int[] PRIMES = { 7, 17, 37, 67, 131, 257, 521, 1031,
+		2053, 4099, 8209, 16411, 32771, 65537, 131101, 262147, 524309,
+		1048583, 2097169, 4194319, 8388617, 16777259, 33554467, 67108879,
+		134217757, 268435459, 536870923, 1073741827, 2147483647 };
 	
-	public IntHashtable () {
-        initialize(3);
-    }
-
-    public IntHashtable (int initialSize) {
-        initialize(leastGreaterPrimeIndex((int)(initialSize/HIGH_WATER_FACTOR)));
-    }
-
-    public int size() {
-        return count;
-    }
-
-    public boolean isEmpty() {
-        return count == 0;
-    }
-
-    public void put(int key, Object value) {
-		// Make sure the value is not null
-		if (value == null) {
-		    throw new NullPointerException();
-		}
-		if (key == EMPTY) {
-			if (valueEMPTY == null) ++count;
-			valueEMPTY = value;
-			return;
-		}
-		if (key == DELETED) {
-			if (valueDELETED == null) ++count;
-			valueDELETED = value;
-			return;
-		}
-        if (count > highWaterMark) {
-            rehash();
-        }
-		putInternal(key, value);
-    }
-
-	public Object get(int key) {
-		return key == EMPTY ? valueEMPTY : key == DELETED ? valueDELETED
-				: values[find(key)];
-	}
-
-    public void remove(int key) {
-		if (key == EMPTY) {
-			if (valueEMPTY != null) {
-				valueEMPTY = null;
-				--count;
+	private static int primeIndex(int size) {
+		for (int i = 0; i < PRIMES.length; ++i) {
+			if (size < PRIMES[i]) {
+				return i;
 			}
-			return;
 		}
-		if (key == DELETED) {
-			if (valueDELETED != null) {
-				valueDELETED = null;
-				--count;
-			}
-			return;
-		}
-        int index = find(key);
-		keyList[index] = DELETED;
-        if (values[index] != null) {
-            values[index] = null;
-            --count;
-            if (count < lowWaterMark) {
-                rehash();
-            }
-        }
-    }
+		return PRIMES.length - 1;
+	}	
 
 	public interface Visitor {
-		
-		void visit(int key, Object value) throws Exception;
-
+		boolean visit(int key, Object value);
 	}
 
-	public void accept(Visitor visitor) throws Exception {
-		if (valueEMPTY != null) {
-			visitor.visit(EMPTY, valueEMPTY);
+	private int primeIndex;
+	private int highWaterMark;
+	private int lowWaterMark;
+	private int count;
+	private int[] keyList;
+	private Object[] values;
+	private Object value0;
+	private Object value_1;
+	private int[] skeys;
+	private Object[] svalues;
+
+	
+	public IntHashtable() {
+		initialize(3);
+	}
+
+	public IntHashtable(int initialSize) {
+		initialize(primeIndex((int) (initialSize / HIGH_WATER_FACTOR)));
+	}
+
+	public int size() {
+		return count;
+	}
+
+	public boolean isEmpty() {
+		return count == 0;
+	}
+
+	public void flush() {
+		skeys = null;
+		svalues = null;
+	}
+	
+	public void put(int key, Object value) {
+		if (value == null) {
+			throw new NullPointerException();
 		}
-		if (valueDELETED != null) {
-			visitor.visit(DELETED, valueDELETED);
+		if (key == 0) {
+			if (value0 == null)
+				++count;
+			value0 = value;
+			return;
 		}
-		for (int i = 0; i < keyList.length; i++) {
-			Object v = values[i];
-			if (v != null) {
-				visitor.visit(keyList[i], v);
+		if (key == -1) {
+			if (value_1 == null)
+				++count;
+			value_1 = value;
+			return;
+		}
+		flush();
+		if (count > highWaterMark)
+			rehash();
+		putInternal(key, value);
+	}
+
+	public Object get(int key) {
+		return key == 0 ? value0 : key == -1 ? value_1 : values[find(key)];
+	}
+
+	public Object remove(int key) {
+		Object retval = null;
+		if (key == 0) {
+			if (value0 != null) {
+				retval = value0;
+				value0 = null;
+				--count;
+			}
+		} else if (key == -1) {
+			if (value_1 != null) {
+				retval = value_1;
+				value_1 = null;
+				--count;
+			}
+		} else {
+			final int index = find(key);
+			if (values[index] != null) {
+				retval = values[index];
+				flush();
+				keyList[index] = -1;
+				values[index] = null;
+				--count;
+				if (count < lowWaterMark) {
+					rehash();
+				}
 			}
 		}
+		return retval;
 	}
-		
-    public boolean equals (Object that) {
-        if (that.getClass() != this.getClass()) return false;
 
-        IntHashtable other = (IntHashtable) that;
-        if (other.size() != count) {
-                return false;
-        }
-        for (int i = 0; i < values.length; ++i) {
-            Object v = values[i];
-            if (v != null && !v.equals(other.get(keyList[i])))
-                return false;
-        }
-        return equals(valueEMPTY, other.valueEMPTY)
-        	&& equals(valueDELETED, other.valueDELETED);
-    }
+	public boolean equals(Object that) {
+		if (that.getClass() != this.getClass())
+			return false;
 
-    private boolean equals(Object o1, Object o2) {
+		IntHashtable other = (IntHashtable) that;
+		if (other.size() != count) {
+			return false;
+		}
+		for (int i = 0; i < values.length; ++i) {
+			Object v = values[i];
+			if (v != null && !v.equals(other.get(keyList[i])))
+				return false;
+		}
+		return equals(value0, other.value0) && equals(value_1, other.value_1);
+	}
+
+	private boolean equals(Object o1, Object o2) {
 		return o1 == null ? o2 == null : o1.equals(o1);
 	}
 
 	public int hashCode() {
-         if (count == 0)
-            return 0;  // Returns zero
-
-       int h = 0;
-       for (int i = 0; i < values.length; i++) {
+		if (count == 0)
+			return 0;
+		
+		int h = 0;
+		for (int i = 0; i < values.length; i++) {
 			Object v = values[i];
 			if (v != null)
-               h += keyList[i] ^ v.hashCode();
-       }
-	   if (valueEMPTY != null) {
-		   h = 37 * h + valueEMPTY.hashCode();
-	   }
-	   if (valueDELETED != null) {
-		   h = 37 * h + valueDELETED.hashCode();
-	   }
-	   return h;
-    }
+				h += keyList[i] ^ v.hashCode();
+		}
+		if (value0 != null) {
+			h = 37 * h + value0.hashCode();
+		}
+		if (value_1 != null) {
+			h = 37 * h + value_1.hashCode();
+		}
+		return h;
+	}
 
-    public Object clone ()
-                    throws CloneNotSupportedException {
-        IntHashtable result = (IntHashtable) super.clone();
-        values = (Object[]) values.clone();
-        keyList = (int[])keyList.clone();
-        return result;
-    }
+	public Object clone() throws CloneNotSupportedException {
+		IntHashtable result = (IntHashtable) super.clone();
+		values = (Object[]) values.clone();
+		keyList = (int[]) keyList.clone();
+		return result;
+	}
 
-    // =======================PRIVATES============================
-    // the tables have to have prime-number lengths. Rather than compute
-    // primes, we just keep a table, with the current index we are using.
-    private int primeIndex;
+	public boolean accept(Visitor visitor) {
+		if (value0 != null) {
+			if (!visitor.visit(0, value0))
+				return false;
+		}
+		if (value_1 != null) {
+			if (!visitor.visit(-1, value_1))
+				return false;
+		}
+		for (int i = 0; i < keyList.length; i++) {
+			Object v = values[i];
+			if (v != null) {
+				if (!visitor.visit(keyList[i], v))
+					return false;
+			}
+		}
+		return true;
+	}
 
-    // highWaterFactor determines the maximum number of elements before
-    // a rehash. Can be tuned for different performance/storage characteristics.
-    private static final float HIGH_WATER_FACTOR = 0.4F;
-    private int highWaterMark;
+	public Iterator iterator(int start, int end) {
+		return new Itr(start, end);
+	}
 
-    // lowWaterFactor determines the minimum number of elements before
-    // a rehash. Can be tuned for different performance/storage characteristics.
-    private static final float LOW_WATER_FACTOR = 0.0F;
-    private int lowWaterMark;
-
-    private int count;
-	
-    // we use two arrays to minimize allocations
-    private Object[] values;
-    private int[] keyList;
-	private Object valueEMPTY;
-	private Object valueDELETED;
-
-    private static final int EMPTY = 0;
-    private static final int DELETED = -1;
-
-    private void initialize (int primeIndex) {
-        if (primeIndex < 0) {
-            primeIndex = 0;
-        } else if (primeIndex >= PRIMES.length) {
-            System.out.println("TOO BIG");
-            primeIndex = PRIMES.length - 1;
-            // throw new java.util.IllegalArgumentError();
-        }
-        this.primeIndex = primeIndex;
-        int initialSize = PRIMES[primeIndex];
-        values = new Object[initialSize];
-        keyList = new int[initialSize];
-        count = 0;
-		if (valueEMPTY != null)
+	private void initialize(int primeIndex) {
+		this.primeIndex = Math.min(Math.max(0, primeIndex), PRIMES.length - 1);
+		int initialSize = PRIMES[primeIndex];
+		values = new Object[initialSize];
+		keyList = new int[initialSize];
+		count = 0;
+		if (value0 != null)
 			++count;
-		if (valueDELETED != null)
+		if (value_1 != null)
 			++count;
-        lowWaterMark = (int)(initialSize * LOW_WATER_FACTOR);
-        highWaterMark = (int)(initialSize * HIGH_WATER_FACTOR);
-    }
+		lowWaterMark = (int) (initialSize * LOW_WATER_FACTOR);
+		highWaterMark = (int) (initialSize * HIGH_WATER_FACTOR);
+	}
 
-    private void rehash() {
-        Object[] oldValues = values;
-        int[] oldkeyList = keyList;
-        int newPrimeIndex = primeIndex;
-        if (count > highWaterMark) {
-            ++newPrimeIndex;
-        } else if (count < lowWaterMark) {
-            newPrimeIndex -= 2;
-        }
-        initialize(newPrimeIndex);
-        for (int i = oldkeyList.length - 1; i >= 0; --i) {
-            Object value = oldValues[i];
-            if (value != null) {
+	private void rehash() {
+		Object[] oldValues = values;
+		int[] oldkeyList = keyList;
+		int newPrimeIndex = primeIndex;
+		if (count > highWaterMark) {
+			++newPrimeIndex;
+		} else if (count < lowWaterMark) {
+			newPrimeIndex -= 2;
+		}
+		initialize(newPrimeIndex);
+		for (int i = oldkeyList.length - 1; i >= 0; --i) {
+			Object value = oldValues[i];
+			if (value != null) {
 				putInternal(oldkeyList[i], value);
-            }
-        }
-    }
+			}
+		}
+	}
 
-    private void putInternal (int key, Object value) {
-	        int index = find(key);
-			keyList[index] = key;
-			if (values[index] == null) ++count;
-	        values[index] = value;
-    }
+	private void putInternal(int key, Object value) {
+		int index = find(key);
+		keyList[index] = key;
+		if (values[index] == null)
+			++count;
+		values[index] = value;
+	}
 
-    private int find (int key) {
-		if (key == EMPTY || key == DELETED)
-			throw new IllegalArgumentException("key: " + key);
-        int firstDeleted = -1;  // assume invalid index
-        int index = (key ^ 0x4000000) % keyList.length;
-        if (index < 0) index = -index; // positive only
-        int jump = 0; // lazy evaluate
-        while (true) {
-            int tableHash = keyList[index];
-            if (tableHash == key) {                 // quick check
-                return index;
-            } else if (values[index] != null) {    // neither correct nor unused
-                // ignore
-            } else if (tableHash == EMPTY) {        // empty, end o' the line
-                if (firstDeleted >= 0) {
-					index = firstDeleted;           // reset if had deleted slot
-                }
-                return index;
-            } else if (firstDeleted < 0) {	    // remember first deleted
-                    firstDeleted = index;
-            }
-            if (jump == 0) {                        // lazy compute jump
-                jump = (key % (keyList.length - 1));
-                if (jump < 0) jump = -jump;
-                ++jump;
-            }
+	private int find(int key) {
+		int firstDeleted = -1;
+		int i = (key ^ 0x4000000) % keyList.length;
+		if (i < 0)
+			i = -i;
+		int d = 0;
+		do {
+			int hash = keyList[i];
+			if (hash == key) {
+				return i;
+			} else {
+				if (values[i] == null) {
+					if (hash == 0) {
+						return firstDeleted >= 0 ? firstDeleted : i;
+					} else if (firstDeleted < 0) {
+						firstDeleted = i;
+					}
+				}
+			}
+			if (d == 0) {
+				d = (key % (keyList.length - 1));
+				if (d < 0)
+					d = -d;
+				++d;
+			}
 
-            index = (index + jump) % keyList.length;
-	    if (index == firstDeleted) {
-		// We've searched all entries for the given key.
-		return index;
-	    }
-        }
-    }
+			i = (i + d) % keyList.length;
+		} while (i != firstDeleted);
+		return i;
+	}
 
-    private static int leastGreaterPrimeIndex(int source) {
-        int i;
-        for (i = 0; i < PRIMES.length; ++i) {
-            if (source < PRIMES[i]) {
-                break;
-            }
-        }
-        return (i == 0) ? 0 : (i - 1);
-    }
+	private void sort() {
+		skeys = (int[]) keyList.clone();
+		svalues = (Object[]) values.clone();
+		sort(0, skeys.length);
 
-    // This list is the result of buildList below. Can be tuned for different
-    // performance/storage characteristics.
-    private static final int[] PRIMES = {
-        17, 37, 67, 131, 257,
-        521, 1031, 2053, 4099, 8209, 16411, 32771, 65537,
-        131101, 262147, 524309, 1048583, 2097169, 4194319, 8388617, 16777259,
-        33554467, 67108879, 134217757, 268435459, 536870923, 1073741827, 2147483647
-    };
+	}
+
+	private void sort(int off, int len) {
+		// Insertion sort on smallest arrays
+		if (len < 7) {
+			for (int i = 0; i < skeys.length; i++)
+				for (int j = i; j > off && skeys[j - 1] > skeys[j]; j--)
+					swap(j, j - 1);
+			return;
+		}
+
+		// Choose a partition element, v
+		int m = off + (len >> 1); // Small arrays, middle element
+		if (len > 7) {
+			int l = off;
+			int n = off + len - 1;
+			if (len > 40) { // Big arrays, pseudomedian of 9
+				int s = len / 8;
+				l = med3(l, l + s, l + 2 * s);
+				m = med3(m - s, m, m + s);
+				n = med3(n - 2 * s, n - s, n);
+			}
+			m = med3(l, m, n); // Mid-size, med of 3
+		}
+		int v = skeys[m];
+
+		// Establish Invariant: v* (<v)* (>v)* v*
+		int a = off, b = a, c = off + len - 1, d = c;
+		while (true) {
+			while (b <= c && skeys[b] <= v) {
+				if (skeys[b] == v)
+					swap(a++, b);
+				b++;
+			}
+			while (c >= b && skeys[c] >= v) {
+				if (skeys[c] == v)
+					swap(c, d--);
+				c--;
+			}
+			if (b > c)
+				break;
+			swap(b++, c--);
+		}
+
+		// Swap partition elements back to middle
+		int s, n = off + len;
+		s = Math.min(a - off, b - a);
+		vecswap(off, b - s, s);
+		s = Math.min(d - c, n - d - 1);
+		vecswap(b, n - s, s);
+
+		// Recursively sort non-partition-elements
+		if ((s = b - a) > 1)
+			sort(off, s);
+		if ((s = d - c) > 1)
+			sort(n - s, s);
+	}
+
+	private void swap(int a, int b) {
+		int t = skeys[a];
+		skeys[a] = skeys[b];
+		skeys[b] = t;
+		Object v = svalues[a];
+		svalues[a] = svalues[b];
+		svalues[b] = v;
+	}
+
+	private void vecswap(int a, int b, int n) {
+		for (int i = 0; i < n; i++, a++, b++)
+			swap(a, b);
+	}
+
+	private int med3(int a, int b, int c) {
+		return (skeys[a] < skeys[b] ? (skeys[b] < skeys[c] ? b
+				: skeys[a] < skeys[c] ? c : a) : (skeys[b] > skeys[c] ? b
+				: skeys[a] > skeys[c] ? c : a));
+	}
+
+	private final class Itr implements Iterator {
+		int endIndex;
+		int index;
+		Object next;
+
+		private Itr(int start, int end) {
+			if ((start & 0xffffffffL) > (end & 0xffffffffL))
+				throw new IllegalArgumentException(
+						"start:" + start + ", end:" + end);
+			if (isEmpty())
+				return;
+			if (end == 0) {
+				if (start == 0)
+					next = value0;
+				return;
+			}
+			if (start == -1) {
+				if (end == -1)
+					next = value_1;
+				return;
+			}
+			if (skeys == null)
+				sort();
+			endIndex = Arrays.binarySearch(skeys, end != -1 ? end : -2);
+			if (endIndex < 0) {
+				endIndex = normalize(-endIndex - 2);				
+			}
+			if (end == -1 && value_1 != null) {
+				endIndex = normalize(endIndex + 1);
+			}
+			index = Arrays.binarySearch(skeys, start != 0 ? start : 1);
+			if (index < 0) {
+				index = normalize(-index-1);
+			}
+			if (start == 0 && value0 != null) {
+				next = value0;
+				--index;
+			} else {
+				if (index != normalize(endIndex+1)) {
+					next = svalues[index];
+				}
+			}
+		}
+
+		private int normalize(int index) {
+			return (index + svalues.length) % svalues.length;
+		}
+
+		public boolean hasNext() {
+			return next != null;
+		}
+
+		public Object next() {
+			if (next == null)
+				throw new NoSuchElementException();
+			Object v = next;
+			if (index == endIndex) {
+				next = null;
+			} else {
+				index = normalize(index+1);
+				next = svalues[index];
+				if (next == null)
+					next = value_1;
+			}
+			return v;
+		}
+
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+	}
 }
-

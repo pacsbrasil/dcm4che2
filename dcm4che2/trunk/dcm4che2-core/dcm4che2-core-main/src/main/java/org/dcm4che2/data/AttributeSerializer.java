@@ -14,7 +14,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.Iterator;
+
+import org.dcm4che2.data.AttributeSet.Visitor;
 
 class AttributeSerializer implements Serializable {
 
@@ -36,13 +37,24 @@ class AttributeSerializer implements Serializable {
 		return attrs;
 	}
 
-	private void writeObject(ObjectOutputStream s)
+	private void writeObject(final ObjectOutputStream s)
 			throws IOException {
 		s.defaultWriteObject();
 		s.writeLong(attrs.getItemOffset());
-		Iterator it = attrs.iterator();
-		while (it.hasNext()) {
-			s.writeObject(it.next());			
+		try {
+			attrs.accept(new Visitor() {
+				public boolean visit(Attribute attr) {
+					try {
+						s.writeObject(attr);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+					return true;
+				}
+			});
+		} catch (Exception e) {
+			if (e.getCause() instanceof IOException)
+				throw (IOException) e.getCause();
 		}
 		s.writeObject(END_OF_SET);
 	}
@@ -59,7 +71,7 @@ class AttributeSerializer implements Serializable {
 					attr.getItem(i).setParent(attrs);
 				}
 			}
-			((BasicAttributeSet) attrs).putAttribute(attr);
+			((BasicAttributeSet) attrs).add(attr);
 			attr = (Attribute) s.readObject();
 		}
 	}

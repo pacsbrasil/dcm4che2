@@ -161,6 +161,15 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 		throw new UnsupportedOperationException();
 	}
 	
+	public boolean accept(final Visitor visitor) {
+		return attrs.accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				if (filter(attr.tag()))
+					visitor.visit(attr);
+				return true;
+			}});
+	}
+
 	public Iterator iterator() {
 		return new Itr(attrs.iterator());
 	}
@@ -200,10 +209,6 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 
 	}
 		
-	public void addAll(AttributeSet other) {
-		throw new UnsupportedOperationException();
-	}
-
 	public boolean contains(int tag) {
 		return filter(tag) && attrs.contains(tag);
 	}
@@ -282,6 +287,10 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 
 	public boolean isCacheAttributeValues() {
 		return attrs.isCacheAttributeValues();
+	}
+
+	public void addAttribute(Attribute attr) {
+		throw new UnsupportedOperationException();
 	}
 
 	public Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
@@ -366,5 +375,9 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 
 	public Attribute putSequence(int tag) {
 		throw new UnsupportedOperationException();
+	}
+	
+	public void flush() {
+		attrs.flush();
 	}
 }

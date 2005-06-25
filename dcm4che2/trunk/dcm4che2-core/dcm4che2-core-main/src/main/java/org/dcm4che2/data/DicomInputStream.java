@@ -190,17 +190,13 @@ public class DicomInputStream
 
 	public AttributeSet readAttributeSet(int len) 
 			throws IOException {
-		AttributeSet parent = attrs;
-		this.attrs = new BasicAttributeSet();
+		this.attrs = new BasicAttributeSet(attrs);
 		try {
-			if (parent != null) {
-				attrs.setItemOffset(pos - 8);
-				attrs.setParent(parent);
-			}
+			attrs.setItemOffset(pos - 8);
 			parse(len, ITEM_DELIM_TAG);
 			return attrs;
 		} finally {
-			this.attrs = parent;
+			this.attrs = attrs.getParent();
 		}
 	}
 
