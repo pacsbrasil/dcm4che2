@@ -45,6 +45,8 @@ class AttributeSetSerializer implements Serializable {
 		s.defaultReadObject();
 		DicomInputStream dis = 
 				new DicomInputStream(s, TransferSyntax.ExplicitVRLittleEndian);
-		attrs = dis.readAttributeSet(-1);
+		
+		attrs = new BasicAttributeSet();
+		dis.readAttributeSet(attrs, -1);
 	}
 }

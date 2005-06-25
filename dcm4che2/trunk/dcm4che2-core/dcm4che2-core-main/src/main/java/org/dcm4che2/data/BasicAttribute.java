@@ -164,7 +164,9 @@ class BasicAttribute implements Attribute {
 			InputStream is = new ByteArrayInputStream(b);
 			DicomInputStream dis = new DicomInputStream(is, 
 					TransferSyntax.ImplicitVRLittleEndian);
-			newval.add(dis.readAttributeSet(b.length));
+			AttributeSet item = new BasicAttributeSet();
+			dis.readAttributeSet(item, b.length);
+			newval.add(item);
 		}
 		this.value = newval;
 		this.vr = VR.SQ;

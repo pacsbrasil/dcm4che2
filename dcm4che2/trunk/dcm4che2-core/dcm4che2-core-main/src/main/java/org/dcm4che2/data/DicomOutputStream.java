@@ -24,9 +24,6 @@ public class DicomOutputStream
 	
 	private static Logger log = Logger.getLogger(DicomOutputStream.class);
 
-	private static final int SEQ_DELIM_TAG = 0xfffee0dd;
-	private static final int ITEM_DELIM_TAG = 0xfffee00d;
-	private static final int ITEM_TAG = 0xfffee000;
 	private static final int PREAMBLE_LENGTH = 128;
 	
 	private TransferSyntax ts = TransferSyntax.ExplicitVRLittleEndian;
@@ -177,10 +174,10 @@ public class DicomOutputStream
 		} else {
 			len = explicitItemLength ? itemInfo.len : -1;
 		}
-		writeHeader(ITEM_TAG, null, len);
+		writeHeader(Tag.Item, null, len);
 		writeAttributes(item.iterator(), includeGroupLength, itemInfo);
 		if (len == -1) {
-			writeHeader(ITEM_DELIM_TAG, null, 0);
+			writeHeader(Tag.ItemDelimitationItem, null, 0);
 		}
 	}
 	
@@ -220,7 +217,7 @@ public class DicomOutputStream
 				} else {
 					for (int i = 0, n = a.countItems(); i < n; i++) {
 						byte[] val = a.getBytes(i);
-						writeHeader(ITEM_TAG, null, (val.length + 1) & ~1);
+						writeHeader(Tag.Item, null, (val.length + 1) & ~1);
 						write(val);
 						if ((val.length & 1) != 0)
 							write(0);
@@ -233,7 +230,7 @@ public class DicomOutputStream
 					write(vr.padding());
 			}
 			if (len == -1) {
-				writeHeader(SEQ_DELIM_TAG, null, 0);			
+				writeHeader(Tag.SequenceDelimitationItem, null, 0);			
 			}
 		}
 	}

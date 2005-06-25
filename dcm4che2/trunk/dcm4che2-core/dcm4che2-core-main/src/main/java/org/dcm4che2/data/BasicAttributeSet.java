@@ -24,10 +24,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private static final int INIT_SEQUENCE_CAPACITY = 10;
 
-	private static final int TRANSFER_SYNTAX_TAG = 0x00020010;
-
-	private static final int CHARSET_TAG = 0x00080005;
-
 	private static final Logger log = Logger.getLogger(BasicAttributeSet.class);
 
 	private transient final IntHashtable table;
@@ -43,20 +39,11 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	private transient boolean cache = false;
 
 	public BasicAttributeSet() {
-		this(null, 10);
+		this(10);
 	}
 
 	public BasicAttributeSet(int capacity) {
-		this(null, capacity);
-	}
-
-	public BasicAttributeSet(AttributeSet parent) {
-		this(parent, 10);
-	}
-
-	public BasicAttributeSet(AttributeSet parent, int capacity) {
 		this.table = new IntHashtable(capacity);
-		this.parent = parent;
 	}
 
 	public final boolean isCacheAttributeValues() {
@@ -221,7 +208,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public Attribute removeAttribute(int tag) {
 		Attribute attr = (Attribute) table.remove(tag);
 		if (attr != null) {
-			if (tag == CHARSET_TAG) {
+			if (tag == Tag.SpecificCharacterSet) {
 				charset = null;
 			}
 		}
@@ -235,9 +222,9 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			return a;
 		}
 		table.put(tag, a);
-		if (tag == TRANSFER_SYNTAX_TAG) {
+		if (tag == Tag.TransferSyntaxUID) {
 			ts = TransferSyntax.valueOf(a.getString(null, false));
-		} else if (tag == CHARSET_TAG) {
+		} else if (tag == Tag.SpecificCharacterSet) {
 			charset = SpecificCharacterSet.valueOf(a.getStrings(null, false));
 		}
 		return a;
@@ -275,7 +262,8 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			if (a.vr() == VR.SQ) {
 				t = putSequence(a.tag(), n);
 				for (int i = 0; i < n; i++) {
-					BasicAttributeSet item = new BasicAttributeSet(this, n);
+					BasicAttributeSet item = new BasicAttributeSet(n);
+					item.setParent(this);
 					a.getItem(i).copyTo(item);
 					t.addItem(item);
 				}

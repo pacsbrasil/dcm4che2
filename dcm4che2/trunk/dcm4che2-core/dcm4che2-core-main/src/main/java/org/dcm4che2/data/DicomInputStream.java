@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.zip.InflaterInputStream;
 
@@ -23,17 +24,10 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.TagUtils;
 
-public class DicomInputStream
-		extends FilterInputStream
-		implements DicomInputHandler {
-	
+public class DicomInputStream extends FilterInputStream implements
+		DicomInputHandler {
+
 	private static Logger log = Logger.getLogger(DicomInputStream.class);
-
-	private static final int SEQ_DELIM_TAG = 0xfffee0dd;
-
-	private static final int ITEM_DELIM_TAG = 0xfffee00d;
-
-	private static final int ITEM_TAG = 0xfffee000;
 
 	DicomInputHandler handler = this;
 
@@ -42,37 +36,42 @@ public class DicomInputStream
 	AttributeSet attrs;
 
 	ArrayList sqStack;
-	
+
 	long pos = 0;
-	
+
 	long tagPos = 0;
-	
+
 	long fmiEndPos = -1;
-	
+
 	boolean ignoreFmiTs = false;
 
-	long mark = 0;
+	long markedPos = 0;
 
 	byte[] preamble;
 
 	byte[] header = new byte[8];
-	
+
 	int tag;
-	
+
 	VR vr;
-	
+
 	int vallen;
 
 	long vallenLimit = 40000000L;
-	
+
+	public DicomInputStream(RandomAccessFile raf) throws IOException {
+		this(new RAFInputStreamAdapter(raf));
+		pos = raf.getFilePointer();
+	}
+
 	public DicomInputStream(File f) throws IOException {
-		this(new BufferedInputStream(new FileInputStream(f)));		
+		this(new BufferedInputStream(new FileInputStream(f)));
 	}
-	
+
 	public DicomInputStream(InputStream in) throws IOException {
-		this(in, null);		
+		this(in, null);
 	}
-	
+
 	public DicomInputStream(InputStream in, TransferSyntax ts)
 			throws IOException {
 		super(in);
@@ -86,11 +85,19 @@ public class DicomInputStream
 	public final void setStreamPosition(long pos) {
 		this.pos = pos;
 	}
-	
+
 	public final void setHandler(DicomInputHandler handler) {
 		if (handler == null)
 			throw new NullPointerException();
 		this.handler = handler;
+	}
+
+	public final int tag() {
+		return tag;
+	}
+	
+	public final int level() {
+		return sqStack != null ? sqStack.size() : 0;
 	}
 	
 	private TransferSyntax guessTransferSyntax() throws IOException {
@@ -135,12 +142,12 @@ public class DicomInputStream
 
 	public void mark(int readlimit) {
 		in.mark(readlimit);
-		mark = pos;
+		markedPos = pos;
 	}
 
 	public void reset() throws IOException {
 		in.reset();
-		pos = mark;
+		pos = markedPos;
 	}
 
 	public long skip(long n) throws IOException {
@@ -166,15 +173,15 @@ public class DicomInputStream
 			n += count;
 		}
 	}
-	
+
 	public int readHeader() throws IOException {
 		tagPos = pos;
 		readFully(header, 0, 8);
-		tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0)
-				: ByteUtils.bytesLE2tag(header, 0);
-		if (tag == ITEM_TAG 
-				|| tag == ITEM_DELIM_TAG 
-				|| tag == SEQ_DELIM_TAG) {
+		tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
+				.bytesLE2tag(header, 0);
+		if (tag == Tag.Item 
+				|| tag == Tag.ItemDelimitationItem 
+				|| tag == Tag.SequenceDelimitationItem) {
 			vr = null;
 		} else if (!ts.explicitVR()) {
 			vr = attrs.vrOf(tag);
@@ -191,33 +198,41 @@ public class DicomInputStream
 			}
 			readFully(header, 4, 4);
 		}
-		vallen = ts.bigEndian() ? ByteUtils.bytesBE2int(header, 4)
-				: ByteUtils.bytesLE2int(header, 4);
+		vallen = ts.bigEndian() ? ByteUtils.bytesBE2int(header, 4) : ByteUtils
+				.bytesLE2int(header, 4);
 		return tag;
 	}
 
-	public AttributeSet readAttributeSet(int len) 
+	public void readItem(AttributeSet dest)
 			throws IOException {
-		this.attrs = new BasicAttributeSet(attrs);
+		dest.setItemOffset(pos);
+		if (readHeader() != Tag.Item)
+			throw new IOException("Expected (FFFE,E000) but read " 
+					+ TagUtils.toString(tag));
+		readAttributeSet(dest, vallen);
+	}
+	
+	public void readAttributeSet(AttributeSet dest, int len)
+			throws IOException {
+		AttributeSet oldAttrs = attrs;
+		this.attrs = dest;
 		try {
-			attrs.setItemOffset(pos - 8);
-			parse(len, ITEM_DELIM_TAG);
-			return attrs;
+			parse(len, Tag.Item);
 		} finally {
-			this.attrs = attrs.getParent();
+			this.attrs = oldAttrs;
 		}
 	}
-
+	
 	private void parse(int len, int endTag) throws IOException {
-		long endPos = len == -1 ? Long.MAX_VALUE
-				: pos + (len & 0xffffffffL);
+		long endPos = len == -1 ? Long.MAX_VALUE : pos + (len & 0xffffffffL);
 		boolean quit = false;
 		int tag0 = 0;
 		while (!quit && tag0 != endTag && pos < endPos) {
 			try {
 				tag0 = readHeader();
 			} catch (EOFException e) {
-				if (len == -1) return;
+				if (len == -1)
+					return;
 				throw e;
 			}
 			quit = !handler.readValue(this);
@@ -229,7 +244,8 @@ public class DicomInputStream
 
 	private void switchTransferSyntax(TransferSyntax ts) {
 		if (this.ts.isDeflated())
-			throw new IllegalStateException("Cannot switch back from Deflated TS");
+			throw new IllegalStateException(
+					"Cannot switch back from Deflated TS");
 		if (ts.isDeflated())
 			in = new InflaterInputStream(in);
 		this.ts = ts;
@@ -239,47 +255,60 @@ public class DicomInputStream
 		if (dis != this)
 			throw new IllegalArgumentException("dis != this");
 		switch (tag) {
-		case ITEM_TAG:
-			BasicAttribute sq = (BasicAttribute) sqStack.get(sqStack.size() - 1);
-			logAttr(sq.countItems()+1, vr);
+		case Tag.Item:
+			BasicAttribute sq = (BasicAttribute) sqStack
+					.get(sqStack.size() - 1);
+			logAttr(sq.countItems() + 1, vr);
 			if (vallen == -1) {
 				if (sq.vr() != VR.SQ) {
 					sq.fragmentsToSequence(attrs);
 				}
 			}
 			if (sq.vr() == VR.SQ) {
-				sq.addItem(readAttributeSet(vallen));
+				BasicAttributeSet item = new BasicAttributeSet();
+				item.setParent(attrs);
+				item.setItemOffset(pos-8);
+				readAttributeSet(item, vallen);
+				sq.addItem(item);
 			} else {
 				sq.addBytes(readBytes(vallen));
 			}
 			break;
-		case ITEM_DELIM_TAG:
+		case Tag.ItemDelimitationItem:
 			logAttr(-1, vr);
 			if (vallen > 0) {
-				log.warn("Item Delimitation Item (FFFE,E00D) with non-zero Item Length:" 
-						+ vallen + " at pos: " + tagPos + " - try to skip length");
+				log
+						.warn("Item Delimitation Item (FFFE,E00D) with non-zero Item Length:"
+								+ vallen
+								+ " at pos: "
+								+ tagPos
+								+ " - try to skip length");
 				skip(vallen);
 			}
 			break;
-		case SEQ_DELIM_TAG:
+		case Tag.SequenceDelimitationItem:
 			logAttr(-1, vr);
 			if (vallen > 0) {
-				log.warn("Sequence Delimitation Item (FFFE,E0DD) with non-zero Item Length:" 
-						+ vallen + " at pos: " + tagPos + " - try to skip length");
+				log
+						.warn("Sequence Delimitation Item (FFFE,E0DD) with non-zero Item Length:"
+								+ vallen
+								+ " at pos: "
+								+ tagPos
+								+ " - try to skip length");
 				skip(vallen);
 			}
 			break;
 		default:
 			if (vallen == -1 || vr == VR.SQ) {
-				Attribute a = vr == VR.SQ ? attrs.putSequence(tag)
-						: attrs.putFragments(tag, vr, ts.bigEndian());
+				Attribute a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
+						.putFragments(tag, vr, ts.bigEndian());
 				logAttr(-1, a.vr());
 				if (sqStack == null) { // lazy creation
 					sqStack = new ArrayList();
 				}
 				sqStack.add(a);
 				try {
-					parse(vallen, SEQ_DELIM_TAG);
+					parse(vallen, Tag.SequenceDelimitationItem);
 				} finally {
 					sqStack.remove(sqStack.size() - 1);
 				}
@@ -327,7 +356,7 @@ public class DicomInputStream
 		readFully(val, 0, vallen);
 		return val;
 	}
-	
+
 	public static void main(String[] args) throws IOException {
 		readFiles(args, true);
 		long start = System.currentTimeMillis();
@@ -335,22 +364,27 @@ public class DicomInputStream
 		long end = System.currentTimeMillis();
 		System.out.println("Reading " + args.length + " objects takes "
 				+ ((end - start) / 1000f) + "s [= "
-				+ ((float)(end - start) / args.length) + "ms]");
+				+ ((float) (end - start) / args.length) + "ms]");
 	}
 
-	private static void readFiles(String[] args, boolean logmem) throws IOException {
-		if (logmem) logmem();
+	private static void readFiles(String[] args, boolean logmem)
+			throws IOException {
+		if (logmem)
+			logmem();
 		AttributeSet dataset;
 		for (int i = 0; i < args.length; i++) {
 			File f = new File(args[i]);
 			DicomInputStream dis = new DicomInputStream(f);
-			dataset = dis.readAttributeSet(-1);
+			dataset = new BasicAttributeSet();
+			dis.readAttributeSet(dataset, -1);
 			dis.close();
-			if (logmem) logmem();
+			if (logmem)
+				logmem();
 		}
 	}
 
 	private static long prevUsed = 0L;
+
 	private static void logmem() {
 		Runtime rt = Runtime.getRuntime();
 		rt.gc();
@@ -358,12 +392,10 @@ public class DicomInputStream
 		long total = rt.totalMemory();
 		long max = rt.maxMemory();
 		long used = total - free;
-		System.out.println("used: "
-			+ (used / 1024f) + "[+" + 
-			+ ((used - prevUsed) / 1024f) + "]K, free: "
-			+ (free / 1024f) + "K, total: "
-			+ (total / 1024f) + "K, max: "
-			+ (max / 1024f) + "K");
+		System.out.println("used: " + (used / 1024f) + "[+"
+				+ +((used - prevUsed) / 1024f) + "]K, free: " + (free / 1024f)
+				+ "K, total: " + (total / 1024f) + "K, max: " + (max / 1024f)
+				+ "K");
 		prevUsed = used;
 	}
 }

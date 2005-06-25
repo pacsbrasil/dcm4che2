@@ -37,15 +37,16 @@ public class DicomOutputStreamTest extends TestCase {
 		String fpath = cl.getResource("DICOMDIR").getPath();
 		File ifile = new File(fpath);
 		DicomInputStream dis = new DicomInputStream(ifile);
-		AttributeSet dicomdir = dis.readAttributeSet(-1);
+		AttributeSet attrs = new BasicAttributeSet();
+		dis.readAttributeSet(attrs, -1);
 		dis.close();
-		dicomdir.putString(0x00020010, VR.CS, TransferSyntax.ExplicitVRLittleEndian.uid());
+		attrs.putString(0x00020010, VR.CS, TransferSyntax.ExplicitVRLittleEndian.uid());
 		File ofile = new File("target/test-out/DICOMDIR");
 		ofile.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(ofile);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 		DicomOutputStream dos = new DicomOutputStream(bos);
-		dos.writeDicomFile(dicomdir);
+		dos.writeDicomFile(attrs);
 		dos.close();
     }
 }

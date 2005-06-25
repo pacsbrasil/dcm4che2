@@ -71,7 +71,9 @@ public class AttributeSetTest extends TestCase {
 		DicomInputStream dis = new DicomInputStream(new BufferedInputStream(cl
 				.getResourceAsStream(fname)));
 		try {
-			return dis.readAttributeSet(-1);
+			AttributeSet attrs = new BasicAttributeSet();
+			dis.readAttributeSet(attrs, -1);
+			return attrs;
 		} finally {
 			dis.close();
 		}
