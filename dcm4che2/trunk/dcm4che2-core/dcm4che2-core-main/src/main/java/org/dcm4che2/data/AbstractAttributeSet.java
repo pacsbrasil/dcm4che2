@@ -12,6 +12,7 @@ package org.dcm4che2.data;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
+import java.util.Iterator;
 
 abstract class AbstractAttributeSet implements AttributeSet {
 
@@ -48,28 +49,52 @@ abstract class AbstractAttributeSet implements AttributeSet {
 			}});
 		return count[0];
 	}
+
+	public Iterator commandIterator() {
+		return iterator(0x00000000, 0x0000ffff);
+	}
+	
+	public Iterator fileMetaInfoIterator() {
+		return iterator(0x00020000, 0x0002ffff);
+	}
+	
+	public Iterator datasetIterator() {
+		return iterator(0x00030000, 0xffffffff);
+	}
+	
+	public AttributeSet command() {
+		return subSet(0x00000000, 0x0000ffff);
+	}
+	
+	public AttributeSet dataset() {
+		return subSet(0x00030000, 0xffffffff);		
+	}
+	
+	public AttributeSet fileMetaInfo() {
+		return subSet(0x00020000, 0x0002ffff);
+	}
 	
 	public AttributeSet exclude(int[] tags) {
 		return tags != null && tags.length > 0 ?
-				new FilterAttributeSet.Exclude(this, tags) : this;
+				new FilteredAttributeSet.Exclude(this, tags) : this;
 	}
 
 	public AttributeSet excludePrivate() {
-		return new FilterAttributeSet.ExcludePrivate(this);
+		return new FilteredAttributeSet.ExcludePrivate(this);
 	}
 
 	public AttributeSet subSet(AttributeSet filter) {
 		return filter != null ?
-				new FilterAttributeSet.FilterSet(this, filter) : null;
+				new FilteredAttributeSet.FilterSet(this, filter) : null;
 	}
 
 	public AttributeSet subSet(int fromTag, int toTag) {
-		return new FilterAttributeSet.Range(this, fromTag, toTag);
+		return new FilteredAttributeSet.Range(this, fromTag, toTag);
 	}
 
 	public AttributeSet subSet(int[] tags) {
 		return tags != null && tags.length > 0 ?
-				new FilterAttributeSet.Include(this, tags) : this;
+				new FilteredAttributeSet.Include(this, tags) : this;
 	}
 
 }

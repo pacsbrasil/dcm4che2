@@ -26,6 +26,9 @@ public interface AttributeSet
 	SpecificCharacterSet getSpecificCharacterSet();
 	Iterator iterator();
 	Iterator iterator(int fromTag, int toTag);
+	Iterator commandIterator();
+	Iterator fileMetaInfoIterator();
+	Iterator datasetIterator();
 	long getItemOffset();
 	void setItemOffset(long offset);
 	VR vrOf(int tag);
@@ -70,6 +73,9 @@ public interface AttributeSet
 	void copyTo(AttributeSet destination);
 	boolean isCacheAttributeValues();
 	void setCacheAttributeValues(boolean cacheAttributeValues);
+	AttributeSet command();
+	AttributeSet dataset();
+	AttributeSet fileMetaInfo();
 	AttributeSet subSet(AttributeSet filter);
 	AttributeSet subSet(int fromTag, int toTag);
 	AttributeSet subSet(int[] tags);

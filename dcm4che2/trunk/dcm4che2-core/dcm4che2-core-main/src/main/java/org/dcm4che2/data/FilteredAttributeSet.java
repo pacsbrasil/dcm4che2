@@ -15,9 +15,9 @@ import java.util.NoSuchElementException;
 
 import org.dcm4che2.util.TagUtils;
 
-abstract class FilterAttributeSet extends AbstractAttributeSet {
+abstract class FilteredAttributeSet extends AbstractAttributeSet {
 
-	static final class Include extends FilterAttributeSet {		
+	static final class Include extends FilteredAttributeSet {		
 		private static final long serialVersionUID = 1L;
 		final int[] tags;
 		public Include(AttributeSet attrs, int[] tags) {
@@ -31,7 +31,7 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 		}
 	}
 
-	static final class Exclude extends FilterAttributeSet {
+	static final class Exclude extends FilteredAttributeSet {
 		private static final long serialVersionUID = 1L;
 		final int[] tags;
 		public Exclude(AttributeSet attrs, int[] tags) {
@@ -45,7 +45,7 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 		}
 	}
 
-	static final class Range extends FilterAttributeSet {
+	static final class Range extends FilteredAttributeSet {
 		private static final long serialVersionUID = 1L;
 		final long fromTag;
 		final long toTag;
@@ -84,7 +84,7 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 	}
 
 	
-	static final class ExcludePrivate extends FilterAttributeSet {
+	static final class ExcludePrivate extends FilteredAttributeSet {
 		private static final long serialVersionUID = 1L;
 
 		public ExcludePrivate(AttributeSet attrs) {
@@ -97,7 +97,7 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 
 	}
 
-	static final class FilterSet extends FilterAttributeSet {
+	static final class FilterSet extends FilteredAttributeSet {
 		private static final long serialVersionUID = 1L;
 		final class FilterItr extends Itr implements Iterator {
 
@@ -147,7 +147,7 @@ abstract class FilterAttributeSet extends AbstractAttributeSet {
 
 	protected final AttributeSet attrs;
 	
-	public FilterAttributeSet(AttributeSet attrs) {
+	public FilteredAttributeSet(AttributeSet attrs) {
 		this.attrs = attrs;
 	}
 	

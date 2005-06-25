@@ -36,7 +36,7 @@ class AttributeSetSerializer implements Serializable {
 			throws IOException {
 		s.defaultWriteObject();
 		DicomOutputStream dos = new DicomOutputStream(s);
-		dos.writeAttributes(attrs.iterator(), null, false);
+		dos.writeAttributes(attrs.iterator(), false, null);
 		dos.writeHeader(ITEM_DELIM_TAG, null, 0);
 	}
 

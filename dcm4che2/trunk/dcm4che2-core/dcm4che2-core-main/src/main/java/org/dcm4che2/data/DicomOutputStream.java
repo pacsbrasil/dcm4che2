@@ -24,14 +24,6 @@ public class DicomOutputStream
 	
 	private static Logger log = Logger.getLogger(DicomOutputStream.class);
 
-	private static final int CMD_GROUPLENGTH_TAG = 0x00000000;
-	private static final int CMD_FIRST_TAG = 0x00000001;
-	private static final int CMD_LAST_TAG = 0x0000ffff;
-	private static final int FMI_GROUPLENGTH_TAG = 0x00020000;	
-	private static final int FMI_FIRST_TAG = 0x00020001;
-	private static final int FMI_LAST_TAG = 0x0002ffff;
-	private static final int DATASET_FIRST_TAG = 0x00030001;
-	private static final int DATASET_LAST_TAG = 0xffffffff;
 	private static final int SEQ_DELIM_TAG = 0xfffee0dd;
 	private static final int ITEM_DELIM_TAG = 0xfffee00d;
 	private static final int ITEM_TAG = 0xfffee000;
@@ -48,10 +40,30 @@ public class DicomOutputStream
 
 	byte[] preamble = new byte[PREAMBLE_LENGTH];
 
+	long pos = 0;
+	
 	public DicomOutputStream(OutputStream out) {
 		super(out);
 	}
 	
+	public final long getStreamPosition() {
+		return pos;
+	}
+
+	public final void setStreamPosition(long pos) {
+		this.pos = pos;
+	}
+
+	public void write(byte[] b, int off, int len) throws IOException {
+		out.write(b, off, len);
+		pos += len;
+	}
+
+	public void write(int b) throws IOException {
+		out.write(b);
+		++pos;
+	}
+
 	public final boolean isExplicitItemLength() {
 		return explicitItemLength;
 	}
@@ -96,8 +108,8 @@ public class DicomOutputStream
 	public void writeCommand(AttributeSet attrs)
 			throws IOException {
 		this.ts = TransferSyntax.ImplicitVRLittleEndian;
-		writeAttributes(attrs.iterator(CMD_FIRST_TAG, CMD_LAST_TAG), 
-				new ItemInfo(attrs.iterator(CMD_FIRST_TAG, CMD_LAST_TAG)), true);		
+		writeAttributes(attrs.commandIterator(), 
+				true, new ItemInfo(attrs.commandIterator(), true));		
 	}
 
 	private void writeGroupLength(int tag, int length)
@@ -120,8 +132,8 @@ public class DicomOutputStream
 		write('C');
 		write('M');
 		this.ts = TransferSyntax.ExplicitVRLittleEndian;
-		writeAttributes(attrs.iterator(FMI_FIRST_TAG, FMI_LAST_TAG), 
-				new ItemInfo(attrs.iterator(FMI_FIRST_TAG, FMI_LAST_TAG)), true);
+		writeAttributes(attrs.fileMetaInfoIterator(), 
+				true, new ItemInfo(attrs.fileMetaInfoIterator(), true));
 	}
 
 	public void writeDataset(AttributeSet attrs)
@@ -134,8 +146,14 @@ public class DicomOutputStream
 		if (ts.isDeflated())
 			out = new DeflaterOutputStream(out);
 		this.ts = ts;
-		writeAttributes(attrs.iterator(DATASET_FIRST_TAG, DATASET_LAST_TAG),
-				createItemInfo(attrs), includeGroupLength);
+		writeAttributes(attrs.datasetIterator(),
+				includeGroupLength, createItemInfo(attrs));
+	}
+
+	private ItemInfo createItemInfo(AttributeSet attrs) {
+		if (needItemInfo())
+			return new ItemInfo(attrs.datasetIterator(), includeGroupLength);
+		return null;
 	}
 
 	private boolean needItemInfo() {
@@ -144,13 +162,6 @@ public class DicomOutputStream
 				|| explicitSequenceLength;
 	}
 		
-	private ItemInfo createItemInfo(AttributeSet attrs) {
-		if (needItemInfo())
-			return new ItemInfo(attrs.iterator(DATASET_FIRST_TAG,
-					DATASET_LAST_TAG));
-		return null;
-	}
-
 	public void writeItem(AttributeSet item, TransferSyntax ts)
 			throws IOException {
 		this.ts = ts;
@@ -159,8 +170,7 @@ public class DicomOutputStream
 
 	private void writeItem(AttributeSet item, ItemInfo itemInfo)
 			throws IOException {
-		// TODO
-		// item.setItemOffset(getStreamPosition());
+		item.setItemOffset(pos);
 		int len;
 		if (item.isEmpty()) {
 			len = explicitItemLengthIfZero ? 0 : -1;
@@ -168,21 +178,21 @@ public class DicomOutputStream
 			len = explicitItemLength ? itemInfo.len : -1;
 		}
 		writeHeader(ITEM_TAG, null, len);
-		writeAttributes(item.iterator(), itemInfo, includeGroupLength);
+		writeAttributes(item.iterator(), includeGroupLength, itemInfo);
 		if (len == -1) {
 			writeHeader(ITEM_DELIM_TAG, null, 0);
 		}
 	}
 	
-	void writeAttributes(Iterator itr, ItemInfo itemInfo, boolean includeGroupLength)
+	void writeAttributes(Iterator itr, boolean groupLength1, ItemInfo itemInfo)
 			throws IOException {
 		int gggg0 = -1;
 		int gri = -1;
 		int sqi = -1;
 		while (itr.hasNext()) {
 			Attribute a = (Attribute) itr.next();
-			int gggg = a.tag() & 0xffff0000;
-			if (includeGroupLength) {
+			if (groupLength1) {
+				int gggg = a.tag() & 0xffff0000;
 				if (gggg != gggg0) {
 					gggg0 = gggg;
 					writeGroupLength(gggg, itemInfo.grlen[++gri]);
@@ -265,7 +275,7 @@ public class DicomOutputStream
 		int[] sqlen = {};
 		LinkedList childs = null;
 		
-		ItemInfo(Iterator it) {
+		ItemInfo(Iterator it, boolean groupLength1) {
 			int gggg0 = -1;
 			int gri = -1;
 			int sqi = -1;
@@ -293,8 +303,7 @@ public class DicomOutputStream
 					(ts.explicitVR() ? vr.explicitVRHeaderLength() : 8) + vlen;
 				len += alen;
 				final int gggg = a.tag() & 0xffff0000;
-				if (gggg == CMD_GROUPLENGTH_TAG || gggg == FMI_GROUPLENGTH_TAG 
-						|| includeGroupLength) {
+				if (groupLength1) {
 					if (gggg != gggg0) {
 						gggg0 = gggg;
 						len += 12;
@@ -323,7 +332,7 @@ public class DicomOutputStream
 			int l = explicitSequenceLength ? 0 : 8;
 			for (int i = 0, n = a.countItems(); i < n; ++i) {
 				AttributeSet item = a.getItem(i);
-				ItemInfo itemInfo = new ItemInfo(item.iterator());
+				ItemInfo itemInfo = new ItemInfo(item.iterator(), includeGroupLength);
 				if (childs == null) // lazy allocation
 					childs = new LinkedList();
 				childs.add(itemInfo);

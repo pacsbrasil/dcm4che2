@@ -79,6 +79,14 @@ public class DicomInputStream
 		this.ts = (ignoreFmiTs = ts != null) ? ts : guessTransferSyntax();
 	}
 
+	public final long getStreamPosition() {
+		return pos;
+	}
+
+	public final void setStreamPosition(long pos) {
+		this.pos = pos;
+	}
+	
 	public final void setHandler(DicomInputHandler handler) {
 		if (handler == null)
 			throw new NullPointerException();
