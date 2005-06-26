@@ -53,6 +53,15 @@ public class IntHashtable {
 	public boolean isEmpty() {
 		return count == 0;
 	}
+	
+	public void clear() {
+		count = 0;
+		Arrays.fill(keyList, 0);
+		Arrays.fill(values, null);
+		value0 = null;
+		value_1 = null;
+		sorted = false;
+	}
 
 	public void put(int key, Object value) {
 		if (value == null) {

@@ -262,7 +262,7 @@ class BasicAttribute implements Attribute {
 	public String getString(SpecificCharacterSet cs, boolean cache) {
 		if (cache && cachedValue instanceof String)
 			return (String) cachedValue;
-		String val = vr.toString((byte[]) value, cs);
+		String val = vr.toString((byte[]) value, bigEndian, cs);
 		if (cache)
 			cachedValue = val;
 		return val;
@@ -271,7 +271,7 @@ class BasicAttribute implements Attribute {
 	public String[] getStrings(SpecificCharacterSet cs, boolean cache) {
 		if (cache && cachedValue instanceof String[])
 			return (String[]) cachedValue;
-		String[] val = vr.toStrings((byte[]) value, cs);
+		String[] val = vr.toStrings((byte[]) value, bigEndian, cs);
 		if (cache)
 			cachedValue = val;
 		return val;

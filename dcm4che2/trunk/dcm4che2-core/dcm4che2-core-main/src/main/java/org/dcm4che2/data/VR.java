@@ -53,19 +53,23 @@ public abstract class VR {
 			super(code, padding, valueLengthBytes);
 		}
 
-		public byte[] toBytes(String val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.str2bytes(val, null);
 		}
 		
-		public byte[] toBytes(String[] val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.strs2bytes(val, null);
 		}
 
-		public String toString(byte[] val, SpecificCharacterSet cs) {
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return StringUtils.trim(VR.bytes2str1(val, null));
 		}
 
-		public String[] toStrings(byte[] val, SpecificCharacterSet cs) {
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			if (val == null || val.length == 0)
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trim(VR.bytes2strs(val, null));
@@ -78,19 +82,23 @@ public abstract class VR {
 			super(code, padding, valueLengthBytes);
 		}
 		
-		public byte[] toBytes(String val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.str2bytes(val, cs);
 		}
 		
-		public byte[] toBytes(String[] val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.strs2bytes(val, cs);
 		}
 
-		public String toString(byte[] val, SpecificCharacterSet cs) {
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return StringUtils.trim(VR.bytes2str1(val, cs));
 		}
 
-		public String[] toStrings(byte[] val, SpecificCharacterSet cs) {
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			if (val == null || val.length == 0)
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trim(VR.bytes2strs(val, cs));
@@ -104,11 +112,13 @@ public abstract class VR {
 			super(code, padding, valueLengthBytes);
 		}
 		
-		public byte[] toBytes(String val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.str2bytes(val, cs);
 		}
 		
-		public String toString(byte[] val, SpecificCharacterSet cs) {
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return StringUtils.trimEnd(VR.bytes2str(val, cs));
 		}
 	}
@@ -120,7 +130,7 @@ public abstract class VR {
 		}
 
 		public byte[] toBytes(int val, boolean bigEndian) {
-			byte[] b = new byte[4];
+			byte[] b = new byte[2];
 			return bigEndian ? ByteUtils.ushort2bytesBE(val, b, 0) 
 					: ByteUtils.ushort2bytesLE(val, b, 0);
 		}
@@ -130,6 +140,39 @@ public abstract class VR {
 					: ByteUtils.ushorts2bytesLE(val);
 		}
 
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			return toBytes(Integer.parseInt(val), bigEndian);
+		}
+		
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			int[] t = new int[val.length];
+			for (int i = 0; i < val.length; i++) {
+				t[i] = Integer.parseInt(val[i]);
+			}
+			return toBytes(t, bigEndian);
+		}
+
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return null;
+			return Integer.toString(toInt(val, bigEndian));
+		}
+
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return EMPTY_STRING_ARRAY;
+			int[] t1 = toInts(val, bigEndian);
+			String[] t2 = new String[t1.length];
+			for (int i = 0; i < t2.length; i++) {
+				t2[i] = Integer.toString(t1[i]);
+			}
+			return t2;
+		}
+			
 		public void toggleEndian(Object val) {
 			ByteUtils.toggleShortEndian((byte[]) val);
 		}
@@ -150,6 +193,20 @@ public abstract class VR {
 		public byte[] toBytes(int[] val, boolean bigEndian) {
 			return bigEndian ? ByteUtils.ints2bytesBE(val) 
 					: ByteUtils.ints2bytesLE(val);
+		}
+
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			return toBytes((int) Long.parseLong(val), bigEndian);
+		}
+		
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			int[] t = new int[val.length];
+			for (int i = 0; i < val.length; i++) {
+				t[i] = (int) Long.parseLong(val[i]);
+			}
+			return toBytes(t, bigEndian);
 		}
 
 		public int toInt(byte[] val, boolean bigEndian) {
@@ -240,7 +297,7 @@ public abstract class VR {
 		}
 		
 		public byte[] toBytes(float val, boolean bigEndian) {
-			return toBytes(Float.toString(val), null);
+			return toBytes(Float.toString(val), bigEndian, null);
 		}
 		
 		public byte[] toBytes(float[] val, boolean bigEndian) {
@@ -249,19 +306,19 @@ public abstract class VR {
 			String[] ss = new String[val.length];
 			for (int i = 0; i < ss.length; i++)
 				ss[i] = Float.toString(val[i]);
-			return toBytes(ss, null);
+			return toBytes(ss, bigEndian, null);
 		}
 		
 		public float toFloat(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return 0f;
-			return Float.parseFloat(toString(val, null));
+			return Float.parseFloat(toString(val, bigEndian, null));
 		}
 
 		public float[] toFloats(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return EMPTY_FLOAT_ARRAY;
-			String[] ss = toStrings(val, null);
+			String[] ss = toStrings(val, bigEndian, null);
 			float[] fs = new float[ss.length];
 			for (int i = 0; i < fs.length; i++)
 				if (ss[i].length() > 0)
@@ -294,6 +351,20 @@ public abstract class VR {
 					: ByteUtils.floats2bytesLE(val);
 		}
 		
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			return toBytes(Float.parseFloat(val), bigEndian);
+		}
+		
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			float[] t = new float[val.length];
+			for (int i = 0; i < val.length; i++) {
+				t[i] = Float.parseFloat(val[i]);
+			}
+			return toBytes(t, bigEndian);
+		}
+
 		public float toFloat(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return 0f;
@@ -307,6 +378,25 @@ public abstract class VR {
 			return bigEndian ? ByteUtils.bytesBE2floats(val)
 					: ByteUtils.bytesLE2floats(val);
 		}		
+
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return null;
+			return Float.toString(toFloat(val, bigEndian));
+		}
+
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return EMPTY_STRING_ARRAY;
+			float[] t1 = toFloats(val, bigEndian);
+			String[] t2 = new String[t1.length];
+			for (int i = 0; i < t2.length; i++) {
+				t2[i] = Float.toString(t1[i]);
+			}
+			return t2;
+		}
 		
 		public void toggleEndian(byte[] b) {
 			ByteUtils.toggleIntEndian(b);
@@ -330,6 +420,20 @@ public abstract class VR {
 					: ByteUtils.doubles2bytesLE(val);
 		}
 		
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			return toBytes(Double.parseDouble(val), bigEndian);
+		}
+		
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			double[] t = new double[val.length];
+			for (int i = 0; i < val.length; i++) {
+				t[i] = Double.parseDouble(val[i]);
+			}
+			return toBytes(t, bigEndian);
+		}
+
 		public double toDouble(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return 0f;
@@ -344,6 +448,25 @@ public abstract class VR {
 					: ByteUtils.bytesLE2doubles(val);
 		}		
 		
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return null;
+			return Double.toString(toDouble(val, bigEndian));
+		}
+
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return EMPTY_STRING_ARRAY;
+			double[] t1 = toDoubles(val, bigEndian);
+			String[] t2 = new String[t1.length];
+			for (int i = 0; i < t2.length; i++) {
+				t2[i] = Double.toString(t1[i]);
+			}
+			return t2;
+		}
+		
 		public void toggleEndian(byte[] b) {
 			ByteUtils.toggleLongEndian(b);
 		}
@@ -356,7 +479,7 @@ public abstract class VR {
 		}
 
 		public byte[] toBytes(int val, boolean bigEndian) {
-			return toBytes(String.valueOf(val), null);
+			return toBytes(String.valueOf(val), bigEndian, null);
 		}
 		
 		public byte[] toBytes(int[] val, boolean bigEndian) {
@@ -364,20 +487,20 @@ public abstract class VR {
 				return null;
 			String[] ss = new String[val.length];
 			for (int i = 0; i < ss.length; i++)
-				ss[i] = String.valueOf(val[i]);
-			return toBytes(ss, null);
+				ss[i] = Integer.toString(val[i]);
+			return toBytes(ss, bigEndian, null);
 		}
 		
 		public int toInt(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return 0;
-			return (int) Long.parseLong(toString(val, null));
+			return (int) Long.parseLong(toString(val, bigEndian, null));
 		}
 
 		public int[] toInts(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return EMPTY_INT_ARRAY;
-			String[] ss = toStrings(val, null);
+			String[] ss = toStrings(val, bigEndian, null);
 			int[] is = new int[ss.length];
 			for (int i = 0; i < is.length; i++)
 				if (ss[i].length() > 0)
@@ -495,11 +618,13 @@ public abstract class VR {
 			super(0x504e, ' ', 8);
 		}
 
-		public String toString(byte[] val, SpecificCharacterSet cs) {
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return StringUtils.trimPN(VR.bytes2str1(val, cs));
 		}
 
-		public String[] toStrings(byte[] val, SpecificCharacterSet cs) {
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			if (val == null || val.length == 0)
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trimPN(VR.bytes2strs(val, cs));
@@ -518,6 +643,25 @@ public abstract class VR {
 		private SL() {
 			super(0x534c, ' ', 8);
 		}
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return null;
+			return Integer.toString(toInt(val, bigEndian));
+		}
+
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return EMPTY_STRING_ARRAY;
+			int[] t1 = toInts(val, bigEndian);
+			String[] t2 = new String[t1.length];
+			for (int i = 0; i < t2.length; i++) {
+				t2[i] = Integer.toString(t1[i]);
+			}
+			return t2;
+		}
+		
 	}
 
 	private static final class SQ extends VR {		
@@ -560,19 +704,23 @@ public abstract class VR {
 			super(0x544d, ' ', 8);
 		}
 
-		public byte[] toBytes(String val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.str2bytes(val, null);
 		}
 		
-		public byte[] toBytes(String[] val, SpecificCharacterSet cs) {
+		public byte[] toBytes(String[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return VR.strs2bytes(val, null);
 		}
 
-		public String toString(byte[] val, SpecificCharacterSet cs) {
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			return StringUtils.trim(VR.bytes2str1(val, null));
 		}
 
-		public String[] toStrings(byte[] val, SpecificCharacterSet cs) {
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
 			if (val == null || val.length == 0)
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trim(VR.bytes2strs(val, null));
@@ -590,6 +738,25 @@ public abstract class VR {
 
 		private UL() {
 			super(0x554c, 0, 8);
+		}
+
+		public String toString(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return null;
+			return Long.toString(toInt(val, bigEndian) & 0xffffffffL);
+		}
+
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return EMPTY_STRING_ARRAY;
+			int[] t1 = toInts(val, bigEndian);
+			String[] t2 = new String[t1.length];
+			for (int i = 0; i < t2.length; i++) {
+				t2[i] = Long.toString(t1[i] & 0xffffffffL);
+			}
+			return t2;
 		}
 	}
 
@@ -609,7 +776,7 @@ public abstract class VR {
 		public int toInt(byte[] val, boolean bigEndian) {
 			if (val == null || val.length == 0)
 				return 0;
-			return bigEndian ? ByteUtils.bytesBE2sshort(val, 0) 
+			return bigEndian ? ByteUtils.bytesBE2ushort(val, 0) 
 					: ByteUtils.bytesLE2ushort(val, 0);
 		}
 
@@ -768,11 +935,13 @@ public abstract class VR {
 		throw new UnsupportedOperationException();
 	}
 	
-	public byte[] toBytes(String val, SpecificCharacterSet cs) {
+	public byte[] toBytes(String val, boolean bigEndian,
+			SpecificCharacterSet cs) {
 		throw new UnsupportedOperationException();
 	}
 	
-	public byte[] toBytes(String[] val, SpecificCharacterSet cs) {
+	public byte[] toBytes(String[] val, boolean bigEndian,
+			SpecificCharacterSet cs) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -800,11 +969,13 @@ public abstract class VR {
 		throw new UnsupportedOperationException();
 	}
 
-	public String toString(byte[] val, SpecificCharacterSet cs) {
+	public String toString(byte[] val, boolean bigEndian, 
+			SpecificCharacterSet cs) {
 		throw new UnsupportedOperationException();
 	}
 
-	public String[] toStrings(byte[] val, SpecificCharacterSet cs) {
+	public String[] toStrings(byte[] val, boolean bigEndian,
+			SpecificCharacterSet cs) {
 		throw new UnsupportedOperationException();
 	}
 

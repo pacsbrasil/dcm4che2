@@ -337,6 +337,10 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		throw new UnsupportedOperationException();
 	}
 
+	public void clear() {
+		throw new UnsupportedOperationException();
+	}
+
 	public Attribute removeAttribute(int tag) {
 		throw new UnsupportedOperationException();
 	}

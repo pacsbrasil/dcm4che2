@@ -45,6 +45,11 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public BasicAttributeSet(int capacity) {
 		this.table = new IntHashtable(capacity);
 	}
+	
+	public void clear() {
+		table.clear();
+		charset = null;
+	}
 
 	public final boolean isCacheAttributeValues() {
 		return cache;
@@ -172,7 +177,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 				if (!reserve)
 					return -1;
 				add(new BasicAttribute(idTag, VR.LO, false, VR.LO.toBytes(
-						privateCreator, getSpecificCharacterSet()), 
+						privateCreator, false, getSpecificCharacterSet()), 
 						privateCreator));
 				break;
 			}
@@ -380,13 +385,15 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	public Attribute putString(int tag, VR vr, String val) {
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val,
-				getSpecificCharacterSet()), cache ? val : null));
+		final boolean be = getTransferSyntax().bigEndian();
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val,
+				be, getSpecificCharacterSet()), cache ? val : null));
 	}
 
 	public Attribute putStrings(int tag, VR vr, String[] val) {
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val,
-				getSpecificCharacterSet()), cache ? val : null));
+		final boolean be = getTransferSyntax().bigEndian();
+		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val,
+				be, getSpecificCharacterSet()), cache ? val : null));
 	}
 
 	public Attribute putSequence(int tag) {

@@ -37,6 +37,7 @@ public interface AttributeSet
 	String getPrivateCreator(int privateTag);
 	boolean isEmpty();
 	int size();
+	void clear();
 	boolean contains(int tag);
 	boolean containsValue(int tag);
 	boolean accept(Visitor visitor);

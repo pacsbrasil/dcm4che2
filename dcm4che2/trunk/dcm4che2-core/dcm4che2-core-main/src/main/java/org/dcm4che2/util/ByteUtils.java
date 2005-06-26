@@ -170,7 +170,7 @@ public class ByteUtils {
 	}
 	
 	public static int bytesLE2ushort(byte[] b, int off) {
-		return bytesLE2sshort(b, off) & 0xffffffff;
+		return bytesLE2sshort(b, off) & 0xffff;
 	}
 
 	public static int[] bytesLE2ushorts(byte[] b) {
@@ -185,7 +185,7 @@ public class ByteUtils {
 	}
 
 	public static int bytesBE2ushort(byte[] b, int off) {
-		return bytesBE2sshort(b, off) & 0xffffffff;
+		return bytesBE2sshort(b, off) & 0xffff;
 	}
 
 	public static int[] bytesBE2ushorts(byte[] b) {
