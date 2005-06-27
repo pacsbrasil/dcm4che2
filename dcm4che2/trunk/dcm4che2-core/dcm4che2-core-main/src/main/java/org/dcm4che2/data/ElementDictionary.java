@@ -96,6 +96,16 @@ public class ElementDictionary implements Serializable {
 		ElementDictionary.privDicts = newPrivDicts;
 	}
 
+	public static void loadDictionary(String resourceName) {
+		ElementDictionary d = (ElementDictionary) ResourceLocator
+				.loadResource(resourceName);
+		if (d.getPrivateCreator() == null) {
+			ElementDictionary.stdDict = d;
+		} else {
+			ElementDictionary.privDicts.put(d.getPrivateCreator(), d);
+		}
+	}
+	
 	public final String getPrivateCreator() {
 		return privateCreator;
 	}

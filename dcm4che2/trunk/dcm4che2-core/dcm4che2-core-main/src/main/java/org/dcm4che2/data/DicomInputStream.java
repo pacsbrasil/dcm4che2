@@ -100,6 +100,14 @@ public class DicomInputStream extends FilterInputStream implements
 		return sqStack != null ? sqStack.size() : 0;
 	}
 	
+	public final int valueLength() {
+		return vallen;
+	}
+
+	public final VR vr() {
+		return vr;
+	}
+
 	private TransferSyntax guessTransferSyntax() throws IOException {
 		mark(132);
 		byte[] b = new byte[128];

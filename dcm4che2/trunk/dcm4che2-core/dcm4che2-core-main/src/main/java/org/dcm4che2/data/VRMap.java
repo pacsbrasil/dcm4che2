@@ -91,6 +91,15 @@ public class VRMap implements Serializable {
 		VRMap.privVRMaps = newPrivVRMaps;
 	}
 
+	public static void loadVRMap(String resourceName) {
+		VRMap m = (VRMap) ResourceLocator.loadResource(resourceName);
+		if (m.getPrivateCreator() == null) {
+			VRMap.vrMap = m;
+		} else {
+			VRMap.privVRMaps.put(m.getPrivateCreator(), m);
+		}
+	}
+		
 	public static VRMap getVRMap() {
 		return maskNull(vrMap);
 	}

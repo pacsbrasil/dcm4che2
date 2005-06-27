@@ -139,6 +139,9 @@ class BasicAttribute implements Attribute {
 		if (isNull()) {
 			return other.isNull();
 		}
+		if (other.isNull()) {
+			return false;
+		}
 		if (value instanceof byte[] && other.value instanceof byte[]) {
 			return Arrays.equals((byte[]) value, (byte[]) other.value);		
 		}

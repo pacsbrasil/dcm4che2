@@ -379,6 +379,17 @@ public abstract class VR {
 					: ByteUtils.bytesLE2floats(val);
 		}		
 
+		public double toDouble(byte[] val, boolean bigEndian) {
+			return toFloat(val, bigEndian);
+		}
+
+		public double[] toDoubles(byte[] val, boolean bigEndian) {
+			if (val == null || val.length == 0)
+				return EMPTY_DOUBLE_ARRAY;
+			return bigEndian ? ByteUtils.bytesBE2floats2doubles(val)
+					: ByteUtils.bytesLE2floats2doubles(val);
+		}		
+		
 		public String toString(byte[] val, boolean bigEndian,
 				SpecificCharacterSet cs) {
 			if (val == null || val.length == 0)

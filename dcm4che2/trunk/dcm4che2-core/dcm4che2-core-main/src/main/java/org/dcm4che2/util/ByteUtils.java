@@ -270,6 +270,17 @@ public class ByteUtils {
 		return val;		
 	}
 
+	public static double[] bytesLE2floats2doubles(byte[] b) {
+		if (b == null)
+			return null;
+		if (b.length % 4 != 0)
+			throw new IllegalArgumentException("byte[" + b.length + "]");
+		double[] val = new double[b.length >> 2];
+		for (int i = 0; i < val.length; i++)
+			val[i] = bytesLE2float(b, i << 2);
+		return val;		
+	}
+	
 	public static float bytesBE2float(byte[] b, int off) {
 		return Float.intBitsToFloat(bytesBE2int(b, off));
 	}
@@ -280,6 +291,17 @@ public class ByteUtils {
 		if (b.length % 4 != 0)
 			throw new IllegalArgumentException("byte[" + b.length + "]");
 		float[] val = new float[b.length >> 2];
+		for (int i = 0; i < val.length; i++)
+			val[i] = bytesBE2float(b, i << 2);
+		return val;		
+	}
+
+	public static double[] bytesBE2floats2doubles(byte[] b) {
+		if (b == null)
+			return null;
+		if (b.length % 4 != 0)
+			throw new IllegalArgumentException("byte[" + b.length + "]");
+		double[] val = new double[b.length >> 2];
 		for (int i = 0; i < val.length; i++)
 			val[i] = bytesBE2float(b, i << 2);
 		return val;		
