@@ -44,6 +44,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isIgnoreDeleteFailed"
+      setMethod="setIgnoreDeleteFailed">
+      <description>Ignore study deletion failure if study not found.
+      </description>
+      <name>IgnoreStudyDeleteFailed</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
