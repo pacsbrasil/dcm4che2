@@ -163,6 +163,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             else
                 scheduleMoveStudies(pat.getStudies());
         }
+        clearSticky();
         return FOLDER;
     }
 
@@ -248,7 +249,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private String delete() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         deletePatients(folderForm.getPatients());
+        query(false);
         folderForm.removeStickies();
+        
         return FOLDER;
     }
 
