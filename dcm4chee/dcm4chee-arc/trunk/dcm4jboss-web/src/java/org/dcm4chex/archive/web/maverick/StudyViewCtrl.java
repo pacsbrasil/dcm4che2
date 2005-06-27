@@ -14,6 +14,7 @@ import java.util.List;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -26,11 +27,15 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  *
  */
 public class StudyViewCtrl extends Dcm4JbossController {
-    private int patPk;
+    private int patPk = -1;
 
-    private int studyPk;
+    private int studyPk = -1;
     
     private int seriesPk = -1;
+    
+    private String patID = null;
+    private String studyUID = null;
+    private String seriesUID = null;
     
     private PatientModel patient;
     
@@ -80,12 +85,49 @@ public class StudyViewCtrl extends Dcm4JbossController {
     	return this.selectedSeries;
     }
 
-    protected String perform() throws Exception {
+	/**
+	 * @return Returns the patID.
+	 */
+	public String getPatID() {
+		return patID;
+	}
+	/**
+	 * @param patID The patID to set.
+	 */
+	public void setPatID(String patID) {
+		this.patID = patID;
+	}
+	/**
+	 * @return Returns the seriesUID.
+	 */
+	public String getSeriesUID() {
+		return seriesUID;
+	}
+	/**
+	 * @param seriesUID The seriesUID to set.
+	 */
+	public void setSeriesUID(String seriesUID) {
+		this.seriesUID = seriesUID;
+	}
+	/**
+	 * @return Returns the studyUID.
+	 */
+	public String getStudyUID() {
+		return studyUID;
+	}
+	/**
+	 * @param studyUID The studyUID to set.
+	 */
+	public void setStudyUID(String studyUID) {
+		this.studyUID = studyUID;
+	}
+    protected String perform() throws Exception { 
+    	if ( studyPk < 0 ) studyPk = lookupContentManager().getStudyByIUID(studyUID).getInt(PrivateTags.StudyPk,-1);
     	patient = new PatientModel( lookupContentManager().getPatientForStudy( studyPk ) );
     	ContentManager cm = lookupContentManager();
     	Dataset sopIUIDs = cm.getSOPInstanceRefMacro( studyPk, true );
-    	String seriesIUID = seriesPk < 0 ? null:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
-    	study = new StudyContainer( sopIUIDs, seriesIUID );
+    	String serIUID = seriesPk < 0 ? seriesUID:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
+    	study = new StudyContainer( sopIUIDs, serIUID );
        return SUCCESS;
     }
     
