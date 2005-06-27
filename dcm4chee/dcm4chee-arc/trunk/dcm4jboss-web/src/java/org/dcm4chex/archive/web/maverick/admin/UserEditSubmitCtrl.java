@@ -77,6 +77,12 @@ public class UserEditSubmitCtrl extends Dcm4JbossFormController
 		user.setRole( DCMUser.JBOSSADMIN, role);
 	}
 	/**
+	 * @param role true means that this role is assigned to this user.
+	 */
+	public void setArrUser(boolean role) {
+		user.setRole( DCMUser.ARRUSER, role);
+	}
+	/**
 	 * @param userID The userID to set.
 	 */
 	public void setUserID(String userID) {

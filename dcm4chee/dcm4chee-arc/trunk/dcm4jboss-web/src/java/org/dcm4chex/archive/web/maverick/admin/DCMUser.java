@@ -21,6 +21,7 @@ public class DCMUser {
 	public static final String JBOSSADMIN = "JBossAdmin";
 	public static final String WEBADMIN = "WebAdmin";
 	public static final String WEBUSER = "WebUser";
+	public static final String ARRUSER = "arr-user";
 	
 	private String userID;
 	private Collection roles = new ArrayList();
@@ -45,7 +46,12 @@ public class DCMUser {
 			removeRole(role);
 	}
 	public void addRole( String role ) {
-		if ( ! roles.contains(role ) ) roles.add(role);
+		if ( ! roles.contains(role ) ) {
+			roles.add(role);
+			if ( role.equals(WEBADMIN) && !roles.contains(WEBUSER) ) {//ensures that WebAdmin is also WebUser (to get the web pages)
+				roles.add(WEBUSER);
+			}
+		}
 	}
 
 	public void removeRole( String role ) {
@@ -77,6 +83,12 @@ public class DCMUser {
 	 */
 	public boolean isJBossAdmin() {
 		return roles.contains(JBOSSADMIN);
+	}
+	/**
+	 * @return Returns the roles.
+	 */
+	public boolean isArrUser() {
+		return roles.contains(ARRUSER);
 	}
 	/**
 	 * @return Returns the userID.

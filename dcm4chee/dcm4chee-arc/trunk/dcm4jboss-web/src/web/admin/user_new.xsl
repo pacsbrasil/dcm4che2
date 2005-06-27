@@ -59,6 +59,16 @@
 							</input>
 				        </td>
 					</tr>
+					<tr>				        
+						<td width="50">AuditRep</td>														
+				        <td title="Admin">
+							<input type="checkbox" name="arrUser" value="true">
+								<xsl:if test="editUser/arrUser = 'true'">
+									<xsl:attribute name="checked"/>
+								</xsl:if>
+							</input>
+				        </td>
+					</tr>
 					<tr>
 						<td colspan="2">
 							<center>

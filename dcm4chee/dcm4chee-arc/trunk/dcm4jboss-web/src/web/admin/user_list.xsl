@@ -14,7 +14,7 @@
 			<td>
 				<tr>
 					<td width="25%"><h2>User ID</h2></td>
-					<td colspan="3" width="65%"><h2>Roles</h2></td>
+					<td colspan="4" width="65%"><h2>Roles</h2></td>
 					<td colspan="2" width="10%" align="center"><a href="user_new.m?newUser=new"><img src="images/addpat.gif" alt="add new user" border="0"/></a></td>
 				</tr>
 					<xsl:apply-templates select="userList/item">
@@ -31,6 +31,8 @@
 		<DD>The user must be also in role WebUser!</DD>
 		<DT>Admin:</DT>
 		<DD>This role is used to allow configuration access via JMX console.</DD>
+		<DT>AuditRep:</DT>
+		<DD>Members of this role are allowed to access the Audit Repository.</DD>
 		</DL>
 
 
@@ -61,6 +63,13 @@
 	        <td title="Admin">
 				Admin<input type="checkbox" name="jBossAdmin" value="true" disabled="true">
 					<xsl:if test="JBossAdmin = 'true'">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+	        </td>
+	        <td title="AuditRep">
+				AuditRep<input type="checkbox" name="arrUser" value="true" disabled="true">
+					<xsl:if test="arrUser = 'true'">
 						<xsl:attribute name="checked"/>
 					</xsl:if>
 				</input>
