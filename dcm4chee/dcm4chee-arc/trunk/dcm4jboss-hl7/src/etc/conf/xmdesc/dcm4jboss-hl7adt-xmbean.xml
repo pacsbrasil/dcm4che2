@@ -66,6 +66,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isIgnoreDeleteErrors"
+      setMethod="setIgnoreDeleteErrors">
+      <description>Ignore errors of ADT_A23 messages (delete patient).
+      </description>
+      <name>IgnoreDeleteErrors</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getHL7ServerName"
       setMethod="setHL7ServerName">
       <description>Used internally - do NOT modify.

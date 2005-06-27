@@ -35,6 +35,7 @@ public class ADTService extends AbstractHL7Service {
     private String mrgStylesheetURL = "resource:xsl/hl7/mrg2dcm.xsl";
     
     private String patientUpdateMessages = ADT_A08+",A01,A04,A05";//A01,A04,A05 'create' patient (via update)
+	private boolean ignoreDeleteErrors;
     
     public String getPatientUpdateMessages() {
     	return patientUpdateMessages;
@@ -68,6 +69,18 @@ public class ADTService extends AbstractHL7Service {
 		this.pidStylesheetURL = pidStylesheetURL;
 	}
 
+	/**
+	 * @return Returns the ignoreNotFound.
+	 */
+	public boolean isIgnoreDeleteErrors() {
+		return ignoreDeleteErrors;
+	}
+	/**
+	 * @param ignoreNotFound The ignoreNotFound to set.
+	 */
+	public void setIgnoreDeleteErrors(boolean ignore) {
+		this.ignoreDeleteErrors = ignore;
+	}
 	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         Dataset pat = dof.newDataset();
@@ -97,7 +110,13 @@ public class ADTService extends AbstractHL7Service {
                     update.mergePatient(pat, mrg);
                 } else if ( isDelete(msh) ) {
                 	log.info("Delete Patient "+pat.getString( Tags.PatientName )+", PID:"+pat.getString( Tags.PatientID ));
-                	update.deletePatient(pat);
+                	try {
+                		update.deletePatient(pat);
+                	} catch ( Exception x ) {
+                		if ( ! ignoreDeleteErrors ) {
+                			throw x;
+                		}
+                	}
                 }
             } finally {
                 try {
@@ -111,7 +130,7 @@ public class ADTService extends AbstractHL7Service {
         return true;
     }
 
-    private boolean isUpdate(MSH msh) {
+	private boolean isUpdate(MSH msh) {
         return patientUpdateMessages.indexOf(msh.triggerEvent) != -1;
     }
 
