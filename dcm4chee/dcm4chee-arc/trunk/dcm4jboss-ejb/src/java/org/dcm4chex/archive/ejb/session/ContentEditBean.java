@@ -11,7 +11,9 @@ package org.dcm4chex.archive.ejb.session;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -23,11 +25,14 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -74,8 +79,17 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  ejb-name="Instance" 
  *  view-type="local"
  *  ref-name="ejb/Instance" 
+ *  
+ * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
+ *                value="resource:dcm4jboss-attribute-filter.xml"
+ *  
  */
 public abstract class ContentEditBean implements SessionBean {
+
+	private static final int CHANGE_MODE_NO = 0;
+	private static final int CHANGE_MODE_STUDY = 0x04;
+	private static final int CHANGE_MODE_SERIES = 0x02;
+	private static final int CHANGE_MODE_INSTANCE = 0x01;
 
     private PatientLocalHome patHome;
 
@@ -87,6 +101,8 @@ public abstract class ContentEditBean implements SessionBean {
     
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
+    private AttributeFilter attrFilter;
+    private static Logger log = Logger.getLogger( ContentEditBean.class.getName() );
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
             RemoteException {
@@ -101,7 +117,11 @@ public abstract class ContentEditBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
+            attrFilter = new AttributeFilter((String) jndiCtx
+                    .lookup("java:comp/env/AttributeFilterConfigURL"));
         } catch (NamingException e) {
+            throw new EJBException(e);
+        } catch (ConfigurationException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
@@ -131,13 +151,18 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection mergePatients(int patPk, int[] mergedPks) {
+    public Map mergePatients(int patPk, int[] mergedPks) {
+    	Map map = new HashMap();
     	try {
 	        PatientLocal dominant = patHome.findByPrimaryKey(new Integer(patPk));
+            map.put("DOMINANT",dominant.getAttributes(false) );
+            Dataset[] mergedPats = new Dataset[mergedPks.length];
+            map.put("MERGED",mergedPats);
 	        ArrayList list = new ArrayList();
 	        for (int i = 0; i < mergedPks.length; i++) {
 	            if ( patPk == mergedPks[i] ) continue;
 	            PatientLocal priorPat = patHome.findByPrimaryKey(new Integer(mergedPks[i]));
+	            mergedPats[i] = priorPat.getAttributes(false);
             	list.addAll(priorPat.getStudies());
 	            dominant.getStudies().addAll(priorPat.getStudies());
 	            dominant.getMpps().addAll(priorPat.getMpps());
@@ -150,22 +175,27 @@ public abstract class ContentEditBean implements SessionBean {
             StudyLocal sl;
             while ( iter.hasNext() ) {
             	sl = (StudyLocal) iter.next();
-            	col.add( getNotificationDataset( sl, sl.getSeries(), null ) );
+            	col.add( getStudyMgtDataset( sl, sl.getSeries(), null ) );
             }
-            return col;
+            map.put("NOTIFICATION_DS", col);
+            return map;
         } catch (FinderException e) {
             throw new EJBException(e);
         }        
     }
 
-    /**
+	/**
      * @throws CreateException
      * @ejb.interface-method
      */
     public Dataset createStudy(Dataset ds, int patPk) throws CreateException {
     	try {
 	        PatientLocal patient = patHome.findByPrimaryKey(new Integer(patPk));
-	        return studyHome.create(ds, patient).getAttributes(true);
+	        Dataset ds1 = studyHome.create(ds, patient).getAttributes(true);
+	        log.info("createStudy ds1:");log.info(ds1);
+	        ds1.putAll( patient.getAttributes(true).subSet(attrFilter.getPatientFilter()) );
+	        log.info("createStudy ds1 with patient:");log.info(ds1);
+	        return ds1;
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -179,7 +209,9 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createSeries(Dataset ds, int studyPk) throws CreateException {
     	try {
 	        StudyLocal study = studyHome.findByPrimaryKey(new Integer(studyPk));
-	        return seriesHome.create(ds, study).getAttributes(true);
+	        SeriesLocal series =  seriesHome.create(ds, study);
+	        Collection col = new ArrayList(); col.add( series );
+	        return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, series.getAttributes(true) );
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -203,7 +235,7 @@ public abstract class ContentEditBean implements SessionBean {
             StudyLocal sl;
             while ( iter.hasNext() ) {
             	sl = (StudyLocal) iter.next();
-            	col.add( getNotificationDataset( sl, sl.getSeries(), null ) );
+            	col.add( getStudyMgtDataset( sl, sl.getSeries(), null ) );
             }
             return col;
         } catch (FinderException e) {
@@ -222,7 +254,8 @@ public abstract class ContentEditBean implements SessionBean {
             StudyLocal study = studyHome
                     .findByPrimaryKey(new Integer(pk));
             study.setAttributes(ds);
-            return getNotificationDataset( study, study.getSeries(), null );            
+            return getStudyMgtDataset( study, study.getSeries(), null, CHANGE_MODE_STUDY, 
+            		study.getAttributes(true).subSet(attrFilter.getStudyFilter()) );            
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -242,7 +275,7 @@ public abstract class ContentEditBean implements SessionBean {
             StudyLocal study = series.getStudy();
             study.updateDerivedFields(false, false, false, false, false, true);
             Collection col = new ArrayList(); col.add( series );
-            return getNotificationDataset( study, col, null );            
+            return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, series.getAttributes(true) );            
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -251,13 +284,16 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void deleteSeries(int series_pk) throws RemoteException {
+    public Dataset deleteSeries(int series_pk) throws RemoteException {
         try {
             SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
                     series_pk));
             StudyLocal study = series.getStudy();
+	        Collection col = new ArrayList(); col.add( series );
+        	Dataset ds = getStudyMgtDataset( study, col, series.getInstances() );
             series.remove();
             study.updateDerivedFields(true, true, true, true, true, true);
+            return ds;
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -270,12 +306,17 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void deleteStudy(int study_pk) throws RemoteException {
+    public Dataset deleteStudy(int study_pk) throws RemoteException {
         try {
+        	StudyLocal study = studyHome.findByPrimaryKey( new Integer(study_pk) );
+        	Dataset ds = getStudyMgtDataset( study, study.getSeries(), null );
             studyHome.remove(new Integer(study_pk));
+            return ds;
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
             throw new RemoteException(e.getMessage());
         }
     }
@@ -283,27 +324,36 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void deletePatient(int patient_pk) throws RemoteException {
+    public Dataset deletePatient(int patient_pk) throws RemoteException {
         try {
+        	Dataset ds = patHome.findByPrimaryKey( new Integer(patient_pk) ).getAttributes(true);
             patHome.remove(new Integer(patient_pk));
+            return ds;
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
             throw new RemoteException(e.getMessage());
-        }
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+		}
     }
 
     /**
      * @ejb.interface-method
      */
-    public void deleteInstance(int instance_pk) throws RemoteException {
+    public Dataset deleteInstance(int instance_pk) throws RemoteException {
         try {
             InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
                     instance_pk));
+            String iuid = instance.getSopIuid();
             SeriesLocal series = instance.getSeries();
+            Collection colSeries = new ArrayList(); colSeries.add( series );
+            Collection colInstance = new ArrayList(); colInstance.add( instance );
+        	Dataset ds = getStudyMgtDataset( series.getStudy(), colSeries, colInstance );
             instance.remove();
             series.updateDerivedFields(true, true, true, true, true);
             series.getStudy().updateDerivedFields(true, true, true, true, true, true);
+            return ds;
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -323,13 +373,16 @@ public abstract class ContentEditBean implements SessionBean {
             PatientLocal pat = patHome.findByPrimaryKey(new Integer(
                     patient_pk));
             Collection studies = pat.getStudies();
+            Dataset dsPat = pat.getAttributes(true).subSet( attrFilter.getPatientFilter());
+            Dataset ds1;
             for (int i = 0; i < study_pks.length; i++) {
                 StudyLocal study = studyHome.findByPrimaryKey(new Integer(
                         study_pks[i]));
                 PatientLocal oldPat = study.getPatient();
                 if (oldPat.isIdentical(pat)) continue;
-                studies.add(study);        
-                col.add( getNotificationDataset( study, study.getSeries(), null ) );
+                studies.add(study);
+                ds1 = getStudyMgtDataset( study, study.getSeries(), null, CHANGE_MODE_STUDY, dsPat );
+                col.add( ds1 );
                 
             }
             return col;
@@ -361,7 +414,7 @@ public abstract class ContentEditBean implements SessionBean {
                 oldStudy.updateDerivedFields(true, true, true, true, true, true);
             }
             study.updateDerivedFields(true, true, true, true, true, true);
-            return getNotificationDataset( study, movedSeriess, null );
+            return getStudyMgtDataset( study, movedSeriess, null );
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
@@ -390,7 +443,7 @@ public abstract class ContentEditBean implements SessionBean {
             series.updateDerivedFields(true, true, true, true, true);
             series.getStudy().updateDerivedFields(true, true, true, true, true, true);
             Collection col = new ArrayList(); col.add( series );
-            return getNotificationDataset( series.getStudy(), col, instances );
+            return getStudyMgtDataset( series.getStudy(), col, instances );
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
@@ -398,14 +451,21 @@ public abstract class ContentEditBean implements SessionBean {
         }
     }
     
-    private Dataset getNotificationDataset( StudyLocal study, Collection series, Collection instances ) {
+    private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {
+    	return getStudyMgtDataset( study, series, instances, 0, null );
+    }
+
+    private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances, int chgMode, Dataset changes ) {
     	Dataset ds = dof.newDataset();
     	ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
+    	log.info("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
+    	if ( chgMode == CHANGE_MODE_STUDY) ds.putAll( changes );
 		DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
 		Iterator iter = series.iterator();
 		while ( iter.hasNext() ) {
 			SeriesLocal sl = (SeriesLocal) iter.next();
 			Dataset dsSer = refSeriesSeq.addNewItem();
+	    	if ( chgMode == CHANGE_MODE_SERIES ) dsSer.putAll( changes );
 			dsSer.putUI( Tags.SeriesInstanceUID, sl.getSeriesIuid() );
 			Collection colInstances = ( instances != null && series.size() == 1 ) ? instances : sl.getInstances();
 			Iterator iter2 = colInstances.iterator();
@@ -415,12 +475,13 @@ public abstract class ContentEditBean implements SessionBean {
 			while ( iter2.hasNext() ) {
 				InstanceLocal il = (InstanceLocal) iter2.next();
 				Dataset dsInst = refSopSeq.addNewItem();
+		    	if ( chgMode == CHANGE_MODE_INSTANCE ) dsInst.putAll( changes );
 				dsInst.putUI( Tags.RefSOPClassUID, il.getSopCuid() );
 				dsInst.putUI( Tags.RefSOPInstanceUID, il.getSopIuid() );
 				dsInst.putAE( Tags.RetrieveAET, il.getRetrieveAETs() );
 			}
 		}
-    	
+    	log.info("return StgMgtDataset:");log.info(ds);
     	return ds;
     }
 }

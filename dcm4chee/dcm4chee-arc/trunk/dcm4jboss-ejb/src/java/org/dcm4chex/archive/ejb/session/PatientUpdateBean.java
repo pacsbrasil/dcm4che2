@@ -140,7 +140,7 @@ public abstract class PatientUpdateBean implements SessionBean {
         } catch (RemoveException e) {
             throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
-        throw new RemoteException(e.getMessage());
+        throw new RemoteException(e.getMessage(),e);
     }
     }
     

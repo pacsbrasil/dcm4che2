@@ -18,6 +18,101 @@
       <name>ContentEditService</name>
    </constructor>
 
+   <attribute access="read-write"
+      getMethod="getReceivingApplication"
+      setMethod="setReceivingApplication">
+      <description>Receiving applicition of HL7 message.
+      	
+      </description>
+      <name>ReceivingApplication</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getReceivingFacility"
+      setMethod="setReceivingFacility">
+      <description>Receiving facility of HL7 message.
+      </description>
+      <name>ReceivingFacility</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="SYNC" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSendingApplication"
+      setMethod="setSendingApplication">
+      <description>Sending applicition of HL7 message.
+      		You have to configure a forward rule in HL7Send service with this sendingApplication/-Facility pair
+      		to all nodes that have to be synchronized.
+      		You have also to configure 'AE Titles' for this nodes (e.g. PACS1^SYNC, pacs1.domain, 2300)
+      </description>
+      <name>SendingApplication</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSendingFacility"
+      setMethod="setSendingFacility">
+      <description>Sending facility of HL7 message. 
+      	See also SendingApplication description.
+      </description>
+      <name>SendingFacility</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="WEBSYNC" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getHL7SendServiceName"
+      setMethod="setHL7SendServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>HL7SendServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=HL7Send" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getCalledSyncAET"
+      setMethod="setCalledSyncAET">
+      <description>Called AET for StudyMgt Association. 
+      </description>
+      <name>CalledSyncAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI_SYNC" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCallingSyncAET"
+      setMethod="setCallingSyncAET">
+      <description>Calling AET for StudyMgt Association. 
+      </description>
+      <name>CallingSyncAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI_SYNC" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getStudyMgtScuServiceName"
+      setMethod="setStudyMgtScuServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>StudyMgtScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=StudyMgtScu" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
