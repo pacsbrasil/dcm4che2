@@ -101,6 +101,14 @@ public abstract class ContentManagerBean implements SessionBean {
     public Dataset getStudy(int studyPk) throws FinderException {
         return studyHome.findByPrimaryKey(new Integer(studyPk)).getAttributes(true);
     }
+   
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getStudyByIUID(String studyIUID) throws FinderException {
+        return studyHome.findByStudyIuid(studyIUID).getAttributes(true);
+    }
     
     /**
      * @ejb.interface-method
@@ -109,7 +117,7 @@ public abstract class ContentManagerBean implements SessionBean {
     public Dataset getSeries(int seriesPk) throws FinderException {
         return seriesHome.findByPrimaryKey(new Integer(seriesPk)).getAttributes(true);
     }
-    
+
     /**
      * @ejb.interface-method
      */
