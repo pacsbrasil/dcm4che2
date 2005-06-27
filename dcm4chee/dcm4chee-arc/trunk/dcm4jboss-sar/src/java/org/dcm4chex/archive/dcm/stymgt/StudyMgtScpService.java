@@ -27,6 +27,19 @@ public class StudyMgtScpService extends AbstractScpService {
 
     private StudyMgtScp stymgtScp = new StudyMgtScp(this);
 
+	/**
+	 * @return Returns the ignoreDeleteFailed.
+	 */
+	public boolean isIgnoreDeleteFailed() {
+		return stymgtScp.isIgnoreDeleteFailed();
+	}
+	/**
+	 * @param ignoreDeleteFailed The ignoreDeleteFailed to set.
+	 */
+	public void setIgnoreDeleteFailed(boolean ignoreDeleteFailed) {
+		stymgtScp.setIgnoreDeleteFailed( ignoreDeleteFailed );
+	}
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }

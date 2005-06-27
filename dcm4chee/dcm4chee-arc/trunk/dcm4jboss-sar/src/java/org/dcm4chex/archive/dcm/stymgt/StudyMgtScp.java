@@ -23,12 +23,26 @@ class StudyMgtScp extends DcmServiceBase {
 
 	final StudyMgtScpService service;
 	private Logger log;
+	private boolean ignoreDeleteFailed;
 
 	public StudyMgtScp(StudyMgtScpService service) {
 		this.service = service;
 		this.log = service.getLog();
 	}
 
+	/**
+	 * @return Returns the ignoreDeleteFailed.
+	 */
+	public boolean isIgnoreDeleteFailed() {
+		return ignoreDeleteFailed;
+	}
+	/**
+	 * @param ignoreDeleteFailed The ignoreDeleteFailed to set.
+	 */
+	public void setIgnoreDeleteFailed(boolean ignoreDeleteFailed) {
+		this.ignoreDeleteFailed = ignoreDeleteFailed;
+	}
+	
     private StudyMgtHome getStudyMgtHome() throws HomeFactoryException {
         return (StudyMgtHome) EJBHomeFactory.getFactory().lookup(
 				StudyMgtHome.class, StudyMgtHome.JNDI_NAME);
@@ -41,6 +55,9 @@ class StudyMgtScp extends DcmServiceBase {
 		int actionTypeID = cmd.getInt(Tags.ActionTypeID, -1);
 		String iuid = cmd.getRequestedSOPInstanceUID();
 		Dataset ds = rq.getDataset();
+		if ( log.isDebugEnabled() ) {
+			log.debug("Received N-Action cmd with ds:");log.debug(ds);
+		}
 		checkStudyIuid(iuid, ds);
 		try {
 			StudyMgt stymgt = getStudyMgtHome().create();
@@ -102,7 +119,7 @@ class StudyMgtScp extends DcmServiceBase {
 							"Missing Referenced SOP Seq.");
 				}
 				for (int j = 0, m = sops.vm(); j < m; ++j) {
-					Dataset sop = sersq.getItem(i);
+					Dataset sop = sops.getItem(i);
 					String iuid = sop.getString(Tags.RefSOPInstanceUID);
 					if (iuid == null) {
 						throw new DcmServiceException(Status.MissingAttribute,
@@ -159,6 +176,10 @@ class StudyMgtScp extends DcmServiceBase {
 			StudyMgt stymgt = getStudyMgtHome().create();
 			try {
 				stymgt.deleteStudy(iuid);
+			} catch ( DcmServiceException e ) {
+				if ( ! (ignoreDeleteFailed && e.getStatus() == Status.NoSuchSOPClass ) ) {
+					throw e;
+				}
 			} finally {
 				try {
 					stymgt.remove();
