@@ -12,6 +12,11 @@ package org.dcm4che2.util;
 public class StringUtils {
 
 	private static final String[] EMPTY_STRING_ARRAY = {};
+	private static final char[] HEX_DIGITS = {
+		'0' , '1' , '2' , '3' , '4' , '5' ,
+		'6' , '7' , '8' , '9' , 'A' , 'B' ,
+		'C' , 'D' , 'E' , 'F'
+	};
 
 	public static String join(String[] ss, char delim) {
 		if (ss == null)
@@ -108,28 +113,28 @@ public class StringUtils {
     }
 
 	public static StringBuffer intToHex(int val, StringBuffer sb) {
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 28) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 24) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 20) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 16) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 12) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 8) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 4) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[val & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 28) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 24) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 20) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 16) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 12) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 8) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 4) & 0xf]);
+		sb.append(HEX_DIGITS[val & 0xf]);
 		return sb;
 	}
 
 	public static StringBuffer shortToHex(int val, StringBuffer sb) {
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 12) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 8) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 4) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[val & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 12) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 8) & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 4) & 0xf]);
+		sb.append(HEX_DIGITS[val & 0xf]);
 		return sb;
 	}
 
 	public static StringBuffer byteToHex(int val, StringBuffer sb) {
-		sb.append(ByteUtils.HEX_DIGITS[(val >> 4) & 0xf]);
-		sb.append(ByteUtils.HEX_DIGITS[val & 0xf]);
+		sb.append(HEX_DIGITS[(val >> 4) & 0xf]);
+		sb.append(HEX_DIGITS[val & 0xf]);
 		return sb;
 	}
 

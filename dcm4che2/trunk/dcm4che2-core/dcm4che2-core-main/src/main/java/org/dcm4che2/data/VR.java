@@ -9,9 +9,11 @@
 
 package org.dcm4che2.data;
 
+import java.util.Date;
 import java.util.List;
 
 import org.dcm4che2.util.ByteUtils;
+import org.dcm4che2.util.DateUtils;
 import org.dcm4che2.util.StringUtils;
 
 public abstract class VR {
@@ -24,6 +26,7 @@ public abstract class VR {
 	private static final int[] EMPTY_INT_ARRAY = {};
 	private static final float[] EMPTY_FLOAT_ARRAY = {};
 	private static final double[] EMPTY_DOUBLE_ARRAY = {};
+	private static final Date[] EMPTY_DATE_ARRAY = {};
 	
 	private static byte[] str2bytes(String val, SpecificCharacterSet cs) {
 		return val == null ? null
@@ -288,6 +291,61 @@ public abstract class VR {
 		private DA() {
 			super(0x4441, ' ', 8);
 		}
+
+		public byte[] toBytes(Date d) {
+			return VR.str2bytes(DateUtils.formatDA(d), null);
+		}
+
+		public byte[] toBytes(Date[] d) {
+			if (d == null || d.length == 0)
+				return null;
+			String[] ss = new String[d.length];
+			for (int i = 0; i < ss.length; i++) {
+				ss[i] = DateUtils.formatDA(d[i]);
+			}
+			return VR.strs2bytes(ss, null);
+		}
+
+		public byte[] toBytes(DateRange dr) {
+			if (dr == null)
+				return null;
+			StringBuffer sb = new StringBuffer(9);
+			if (dr.getStart() != null)
+				sb.append(DateUtils.formatDA(dr.getStart()));
+			sb.append("-");
+			if (dr.getEnd() != null)
+				sb.append(DateUtils.formatDA(dr.getEnd()));
+			return VR.str2bytes(sb.toString(), null);
+		}
+		
+		public Date toDate(byte[] val) {
+			return DateUtils.parseDA(
+					StringUtils.trim(VR.bytes2str1(val, null)), false);
+		}
+
+		public Date[] toDates(byte[] val) {
+			if (val == null || val.length == 0)
+				return EMPTY_DATE_ARRAY;
+			String[] ss = StringUtils.trim(VR.bytes2strs(val, null));
+			Date[] ds = new Date[ss.length];
+			for (int i = 0; i < ds.length; i++) {
+				ds[i] = DateUtils.parseDA(ss[i], false);
+			}
+			return ds;
+		}
+		
+		public DateRange toDateRange(byte[] val) {
+			String s = StringUtils.trim(VR.bytes2str1(val, null));
+			int l;
+			if (s == null || (l = s.length()) == 0 || s.equals("-"))
+				return null;
+			int hypen = s.indexOf('-');
+			Date start = hypen == 0 ? null : DateUtils.parseDA(
+					hypen == -1 ? s : s.substring(0, hypen), false);
+			Date end = hypen + 1 == l ? null 
+					: DateUtils.parseDA(s.substring(hypen+1), true);
+			return new DateRange(start, end);
+		}
 	}
 
 	private static final class DS extends ASCIIVR {
@@ -331,6 +389,61 @@ public abstract class VR {
 
 		private DT() {
 			super(0x4454, ' ', 8);
+		}
+
+		public byte[] toBytes(Date d) {
+			return VR.str2bytes(DateUtils.formatDT(d), null);
+		}
+
+		public byte[] toBytes(Date[] d) {
+			if (d == null || d.length == 0)
+				return null;
+			String[] ss = new String[d.length];
+			for (int i = 0; i < ss.length; i++) {
+				ss[i] = DateUtils.formatDT(d[i]);
+			}
+			return VR.strs2bytes(ss, null);
+		}
+
+		public byte[] toBytes(DateRange dr) {
+			if (dr == null)
+				return null;
+			StringBuffer sb = new StringBuffer(36);
+			if (dr.getStart() != null)
+				sb.append(DateUtils.formatDT(dr.getStart()));
+			sb.append("-");
+			if (dr.getEnd() != null)
+				sb.append(DateUtils.formatDT(dr.getEnd()));
+			return VR.str2bytes(sb.toString(), null);
+		}
+		
+		public Date toDate(byte[] val) {
+			return DateUtils.parseDT(
+					StringUtils.trim(VR.bytes2str1(val, null)), false);
+		}
+
+		public Date[] toDates(byte[] val) {
+			if (val == null || val.length == 0)
+				return EMPTY_DATE_ARRAY;
+			String[] ss = StringUtils.trim(VR.bytes2strs(val, null));
+			Date[] ds = new Date[ss.length];
+			for (int i = 0; i < ds.length; i++) {
+				ds[i] = DateUtils.parseDT(ss[i], false);
+			}
+			return ds;
+		}
+		
+		public DateRange toDateRange(byte[] val) {
+			String s = StringUtils.trim(VR.bytes2str1(val, null));
+			int l;
+			if (s == null || (l = s.length()) == 0 || s.equals("-"))
+				return null;
+			int hypen = s.indexOf('-');
+			Date start = hypen == 0 ? null : DateUtils.parseDT(
+					hypen == -1 ? s : s.substring(0, hypen), false);
+			Date end = hypen + 1 == l ? null 
+					: DateUtils.parseDT(s.substring(hypen+1), true);
+			return new DateRange(start, end);
 		}
 	}
 
@@ -709,32 +822,65 @@ public abstract class VR {
 
 	}
 
-	private static final class TM extends VR {
+	private static final class TM extends ASCIIVR {
 
 		private TM() {
 			super(0x544d, ' ', 8);
 		}
 
-		public byte[] toBytes(String val, boolean bigEndian,
-				SpecificCharacterSet cs) {
-			return VR.str2bytes(val, null);
+		public byte[] toBytes(Date d) {
+			return VR.str2bytes(DateUtils.formatTM(d), null);
+		}
+
+		public byte[] toBytes(Date[] d) {
+			if (d == null || d.length == 0)
+				return null;
+			String[] ss = new String[d.length];
+			for (int i = 0; i < ss.length; i++) {
+				ss[i] = DateUtils.formatTM(d[i]);
+			}
+			return VR.strs2bytes(ss, null);
+		}
+
+		public byte[] toBytes(DateRange dr) {
+			if (dr == null)
+				return null;
+			StringBuffer sb = new StringBuffer(20);
+			if (dr.getStart() != null)
+				sb.append(DateUtils.formatTM(dr.getStart()));
+			sb.append("-");
+			if (dr.getEnd() != null)
+				sb.append(DateUtils.formatTM(dr.getEnd()));
+			return VR.str2bytes(sb.toString(), null);
 		}
 		
-		public byte[] toBytes(String[] val, boolean bigEndian,
-				SpecificCharacterSet cs) {
-			return VR.strs2bytes(val, null);
+		public Date toDate(byte[] val) {
+			return DateUtils.parseTM(
+					StringUtils.trim(VR.bytes2str1(val, null)), false);
 		}
 
-		public String toString(byte[] val, boolean bigEndian,
-				SpecificCharacterSet cs) {
-			return StringUtils.trim(VR.bytes2str1(val, null));
-		}
-
-		public String[] toStrings(byte[] val, boolean bigEndian,
-				SpecificCharacterSet cs) {
+		public Date[] toDates(byte[] val) {
 			if (val == null || val.length == 0)
-				return EMPTY_STRING_ARRAY;
-			return StringUtils.trim(VR.bytes2strs(val, null));
+				return EMPTY_DATE_ARRAY;
+			String[] ss = StringUtils.trim(VR.bytes2strs(val, null));
+			Date[] ds = new Date[ss.length];
+			for (int i = 0; i < ds.length; i++) {
+				ds[i] = DateUtils.parseTM(ss[i], false);
+			}
+			return ds;
+		}
+		
+		public DateRange toDateRange(byte[] val) {
+			String s = StringUtils.trim(VR.bytes2str1(val, null));
+			int l;
+			if (s == null || (l = s.length()) == 0 || s.equals("-"))
+				return null;
+			int hypen = s.indexOf('-');
+			Date start = hypen == 0 ? null : DateUtils.parseTM(
+					hypen == -1 ? s : s.substring(0, hypen), false);
+			Date end = hypen + 1 == l ? null 
+					: DateUtils.parseTM(s.substring(hypen+1), true);
+			return new DateRange(start, end);
 		}
 	}
 
@@ -956,6 +1102,18 @@ public abstract class VR {
 		throw new UnsupportedOperationException();
 	}
 
+	public byte[] toBytes(Date val) {
+		throw new UnsupportedOperationException();
+	}
+
+	public byte[] toBytes(Date[] val) {
+		throw new UnsupportedOperationException();
+	}
+
+	public byte[] toBytes(DateRange val) {
+		throw new UnsupportedOperationException();
+	}
+	
 	public int toInt(byte[] val, boolean bigEndian) {
 		throw new UnsupportedOperationException();
 	}
@@ -987,6 +1145,18 @@ public abstract class VR {
 
 	public String[] toStrings(byte[] val, boolean bigEndian,
 			SpecificCharacterSet cs) {
+		throw new UnsupportedOperationException();
+	}
+
+	public Date toDate(byte[] val) {
+		throw new UnsupportedOperationException();
+	}
+
+	public Date[] toDates(byte[] val) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public DateRange toDateRange(byte[] val) {
 		throw new UnsupportedOperationException();
 	}
 

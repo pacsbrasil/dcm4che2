@@ -10,6 +10,7 @@
 package org.dcm4che2.data;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -213,44 +214,8 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return filter(tag) && attrs.contains(tag);
 	}
 
-	public boolean containsValue(int tag) {
-		return filter(tag) && attrs.containsValue(tag);
-	}
-
 	public Attribute getAttribute(int tag) {
 		return filter(tag) ? attrs.getAttribute(tag) : null;
-	}
-
-	public byte[] getBytes(int tag, boolean bigEndian) {
-		return filter(tag) ? attrs.getBytes(tag, bigEndian) : null;
-	}
-
-	public double getDouble(int tag) {
-		return filter(tag) ? attrs.getDouble(tag) : 0.;
-	}
-
-	public double[] getDoubles(int tag) {
-		return filter(tag) ? attrs.getDoubles(tag) : null;
-	}
-
-	public float getFloat(int tag) {
-		return filter(tag) ? attrs.getFloat(tag) : 0f;
-	}
-
-	public float[] getFloats(int tag) {
-		return filter(tag) ? attrs.getFloats(tag) : null;
-	}
-
-	public int getInt(int tag) {
-		return filter(tag) ? attrs.getInt(tag) : 0;
-	}
-
-	public int[] getInts(int tag) {
-		return filter(tag) ? attrs.getInts(tag) : null;
-	}
-
-	public AttributeSet getItem(int tag) {
-		return filter(tag) ? attrs.getItem(tag) : null;
 	}
 
 	public AttributeSet getParent() {
@@ -273,20 +238,12 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return attrs.getSpecificCharacterSet();
 	}
 
-	public String getString(int tag) {
-		return filter(tag) ? attrs.getString(tag) : null;
-	}
-
-	public String[] getStrings(int tag) {
-		return filter(tag) ? attrs.getStrings(tag) : null;
-	}
-
 	public TransferSyntax getTransferSyntax() {
 		return attrs.getTransferSyntax();
 	}
 
-	public boolean isCacheAttributeValues() {
-		return attrs.isCacheAttributeValues();
+	public boolean cache() {
+		return attrs.cache();
 	}
 
 	public void addAttribute(Attribute attr) {
@@ -337,6 +294,18 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		throw new UnsupportedOperationException();
 	}
 
+	public Attribute putDate(int tag, VR vr, Date val) {
+		throw new UnsupportedOperationException();
+	}
+
+	public Attribute putDates(int tag, VR vr, Date[] val) {
+		throw new UnsupportedOperationException();
+	}
+
+	public Attribute putDateRange(int tag, VR vr, DateRange val) {
+		throw new UnsupportedOperationException();
+	}
+	
 	public void clear() {
 		throw new UnsupportedOperationException();
 	}
@@ -353,8 +322,8 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return attrs.resolvePrivateTag(privateTag, privateCreator);
 	}
 
-	public void setCacheAttributeValues(boolean cached) {
-		attrs.setCacheAttributeValues(cached);
+	public void cache(boolean cached) {
+		attrs.cache(cached);
 	}
 
 	public void shareAttributes() {

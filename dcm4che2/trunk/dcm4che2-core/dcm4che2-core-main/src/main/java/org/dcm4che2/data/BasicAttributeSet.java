@@ -10,6 +10,7 @@
 package org.dcm4che2.data;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
@@ -36,7 +37,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private transient long itemOffset = -1L;
 
-	private transient boolean cache = false;
+	private transient boolean cache = true;
 
 	public BasicAttributeSet() {
 		this(10);
@@ -51,17 +52,17 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		charset = null;
 	}
 
-	public final boolean isCacheAttributeValues() {
+	public final boolean cache() {
 		return cache;
 	}
 
-	public final void setCacheAttributeValues(final boolean cache) {
+	public final void cache(final boolean cache) {
 		this.cache = cache;
 		accept(new Visitor(){
 			public boolean visit(Attribute attr) {
 				if (attr.vr() == VR.SQ && attr.hasItems()) {
 					for (int i = 0, n = attr.countItems(); i < n; ++i) {
-						attr.getItem(i).setCacheAttributeValues(cache);
+						attr.getItem(i).cache(cache);
 					}
 				}
 				return true;
@@ -201,11 +202,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return table.get(tag) != null;
 	}
 
-	public boolean containsValue(int tag) {
-		Attribute attr = getAttribute(tag);
-		return attr != null && !attr.isNull();
-	}
-
 	public Attribute getAttribute(int tag) {
 		return (Attribute) table.get(tag);
 	}
@@ -283,57 +279,6 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		add(a);
 	}
 
-	public byte[] getBytes(int tag, boolean bigEndian) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.bigEndian(bigEndian).getBytes();
-	}
-
-	public AttributeSet getItem(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null && !a.isNull() ? null : a.getItem();
-	}
-
-	public int getInt(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? 0 : a.getInt(cache);
-	}
-
-	public int[] getInts(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getInts(cache);
-	}
-
-	public float getFloat(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? 0 : a.getFloat(cache);
-	}
-
-	public float[] getFloats(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getFloats(cache);
-	}
-
-	public double getDouble(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? 0 : a.getDouble(cache);
-	}
-
-	public double[] getDoubles(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getDoubles(cache);
-	}
-
-	public String getString(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getString(getSpecificCharacterSet(), cache);
-	}
-
-	public String[] getStrings(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a
-				.getStrings(getSpecificCharacterSet(), cache);
-	}
-
 	public Attribute putNull(int tag, VR vr) {
 		return add(new BasicAttribute(tag, vr, false, null, null));
 	}
@@ -396,6 +341,21 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 				be, getSpecificCharacterSet()), cache ? val : null));
 	}
 
+	public Attribute putDate(int tag, VR vr, Date val) {
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val),
+				cache ? val : null));
+	}
+
+	public Attribute putDates(int tag, VR vr, Date[] val) {
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val),
+				cache ? val : null));
+	}
+
+	public Attribute putDateRange(int tag, VR vr, DateRange val) {
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val),
+				cache ? val : null));
+	}
+	
 	public Attribute putSequence(int tag) {
 		return putSequence(tag, 10);
 	}
@@ -416,4 +376,5 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return add(new BasicAttribute(tag, vr, bigEndian, new ArrayList(
 				capacity), null));
 	}
+
 }

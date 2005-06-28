@@ -11,14 +11,7 @@ package org.dcm4che2.util;
 
 public class ByteUtils {
 
-    final static char[] HEX_DIGITS = {
-		'0' , '1' , '2' , '3' , '4' , '5' ,
-		'6' , '7' , '8' , '9' , 'A' , 'B' ,
-		'C' , 'D' , 'E' , 'F'
-	};
-	
-	
-	public static byte[] int2bytesLE(int val, byte[] b, int off) {
+    public static byte[] int2bytesLE(int val, byte[] b, int off) {
 		b[off] = (byte) val;
 		b[off + 1] = (byte) (val >>> 8);
 		b[off + 2] = (byte) (val >>> 16);

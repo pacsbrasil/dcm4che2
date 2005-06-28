@@ -12,7 +12,10 @@ package org.dcm4che2.data;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
+import java.util.Date;
 import java.util.Iterator;
+
+import org.dcm4che2.util.DateUtils;
 
 abstract class AbstractAttributeSet implements AttributeSet {
 
@@ -97,4 +100,88 @@ abstract class AbstractAttributeSet implements AttributeSet {
 				new FilteredAttributeSet.Include(this, tags) : this;
 	}
 
+	public boolean containsValue(int tag) {
+		Attribute attr = getAttribute(tag);
+		return attr != null && !attr.isNull();
+	}
+
+	public byte[] getBytes(int tag, boolean bigEndian) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.bigEndian(bigEndian).getBytes();
+	}
+
+	public AttributeSet getItem(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null && !a.isNull() ? null : a.getItem();
+	}
+
+	public int getInt(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? 0 : a.getInt(cache());
+	}
+
+	public int[] getInts(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getInts(cache());
+	}
+
+	public float getFloat(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? 0 : a.getFloat(cache());
+	}
+
+	public float[] getFloats(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getFloats(cache());
+	}
+
+	public double getDouble(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? 0 : a.getDouble(cache());
+	}
+
+	public double[] getDoubles(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getDoubles(cache());
+	}
+
+	public String getString(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getString(getSpecificCharacterSet(), cache());
+	}
+
+	public String[] getStrings(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a
+				.getStrings(getSpecificCharacterSet(), cache());
+	}
+
+	public Date getDate(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getDate(cache());
+	}
+
+	public Date[] getDates(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getDates(cache());
+	}
+
+	public DateRange getDateRange(int tag) {
+		Attribute a = getAttribute(tag);
+		return a == null ? null : a.getDateRange(cache());
+	}
+
+	public Date getDate(int daTag, int tmTag) {
+		return DateUtils.toDateTime(getDate(daTag), getDate(tmTag));
+	}
+
+	public DateRange getDateRange(int daTag, int tmTag) {
+		DateRange da = getDateRange(daTag);
+		if (da == null) return null;
+		DateRange tm = getDateRange(tmTag);
+		if (tm == null) return da;
+		return new DateRange(
+				DateUtils.toDateTime(da.getStart(), tm.getStart()),
+				DateUtils.toDateTime(da.getEnd(), tm.getEnd()));
+	}
 }

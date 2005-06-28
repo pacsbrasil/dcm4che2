@@ -17,6 +17,7 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -275,6 +276,33 @@ class BasicAttribute implements Attribute {
 		if (cache && cachedValue instanceof String[])
 			return (String[]) cachedValue;
 		String[] val = vr.toStrings((byte[]) value, bigEndian, cs);
+		if (cache)
+			cachedValue = val;
+		return val;
+	}
+
+	public Date getDate(boolean cache) {
+		if (cache && cachedValue instanceof Date)
+			return (Date) cachedValue;
+		Date val = vr.toDate((byte[]) value);
+		if (cache)
+			cachedValue = val;
+		return val;
+	}
+
+	public Date[] getDates(boolean cache) {
+		if (cache && cachedValue instanceof Date[])
+			return (Date[]) cachedValue;
+		Date[] val = vr.toDates((byte[]) value);
+		if (cache)
+			cachedValue = val;
+		return val;
+	}
+	
+	public DateRange getDateRange(boolean cache) {
+		if (cache && cachedValue instanceof Date)
+			return (DateRange) cachedValue;
+		DateRange val = vr.toDateRange((byte[]) value);
 		if (cache)
 			cachedValue = val;
 		return val;

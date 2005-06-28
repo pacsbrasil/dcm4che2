@@ -12,6 +12,7 @@ package org.dcm4che2.data;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Iterator;
 
 public interface AttributeSet 
@@ -54,6 +55,11 @@ public interface AttributeSet
 	double[] getDoubles(int tag);
 	String getString(int tag);
 	String[] getStrings(int tag);
+	Date getDate(int tag);
+	Date[] getDates(int tag);
+	DateRange getDateRange(int tag);
+	Date getDate(int daTag, int tmTag);
+	DateRange getDateRange(int daTag, int tmTag);
 	Attribute putNull(int tag, VR vr);
 	Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val);
 	Attribute putItem(int tag, AttributeSet item);
@@ -65,6 +71,9 @@ public interface AttributeSet
 	Attribute putDoubles(int tag, VR vr, double[] val);
 	Attribute putString(int tag, VR vr, String val);
 	Attribute putStrings(int tag, VR vr, String[] val);
+	Attribute putDate(int tag, VR vr, Date val);
+	Attribute putDates(int tag, VR vr, Date[] val);
+	Attribute putDateRange(int tag, VR vr, DateRange val);
 	Attribute putSequence(int tag);
 	Attribute putSequence(int tag, int capacity);
 	Attribute putFragments(int tag, VR vr, boolean bigEndian);
@@ -72,8 +81,8 @@ public interface AttributeSet
 	void shareAttributes();
 	void serializeAttributes(ObjectOutputStream oos) throws IOException;
 	void copyTo(AttributeSet destination);
-	boolean isCacheAttributeValues();
-	void setCacheAttributeValues(boolean cacheAttributeValues);
+	boolean cache();
+	void cache(boolean cache);
 	AttributeSet command();
 	AttributeSet dataset();
 	AttributeSet fileMetaInfo();

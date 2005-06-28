@@ -10,6 +10,7 @@
 package org.dcm4che2.data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public interface Attribute extends Serializable {
 	int tag();
@@ -40,6 +41,9 @@ public interface Attribute extends Serializable {
 	double[] getDoubles(boolean cache);
 	String getString(SpecificCharacterSet cs, boolean cache);
 	String[] getStrings(SpecificCharacterSet cs, boolean cache);
+	Date getDate(boolean cache);
+	Date[] getDates(boolean cache);
+	DateRange getDateRange(boolean cache);
     Attribute share();
 	Attribute filterItems(AttributeSet filter);
 }
