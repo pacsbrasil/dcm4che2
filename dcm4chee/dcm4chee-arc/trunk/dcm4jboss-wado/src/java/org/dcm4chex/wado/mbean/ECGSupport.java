@@ -142,7 +142,7 @@ public class ECGSupport {
 		OutputStream out = null;
 		try { 
 			DcmElement elem = ds.get( Tags.WaveformSeq);
-			WaveformGroup wfgrp = new WaveformGroup( elem, 0, 
+			WaveformGroup wfgrp = new WaveformGroup( ds.getString(Tags.SOPClassUID), elem, 0, 
 					ridSupport.getWaveformCorrection() );//TODO all groups
 			log.info( wfgrp );
 			WaveformInfo wfInfo = new WaveformInfo( ds );
@@ -170,8 +170,8 @@ public class ECGSupport {
 		OutputStream tmpOut = null;
 		File tmpFile = null;
 		try { 
-	        out = new FileOutputStream( outFile );
 	        outFile.getParentFile().mkdirs();
+	        out = new FileOutputStream( outFile );
 	        tmpFile = new File( outFile.toString()+".fop");
 		     if ( ! tmpFile.exists() ) {
 		        tmpFile.deleteOnExit();
@@ -181,7 +181,7 @@ public class ECGSupport {
 				int nrOfWFGroups = elem.vm();
 				WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
 				for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
-					wfgrps[i] = new WaveformGroup( elem, i,
+					wfgrps[i] = new WaveformGroup( ds.getString(Tags.SOPClassUID),elem, i,
 							ridSupport.getWaveformCorrection());
 				}
 				WaveformInfo wfInfo = new WaveformInfo( ds );

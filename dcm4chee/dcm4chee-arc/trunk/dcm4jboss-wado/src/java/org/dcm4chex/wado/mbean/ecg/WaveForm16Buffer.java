@@ -41,4 +41,12 @@ public class WaveForm16Buffer implements WaveFormBuffer {
 		return getValue();
 	}
 	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("WaveForm8Buffer:").append(leadNr).append(" of ").append(nrOfLeads);
+		sb.append(" leads, sampleIterpretation:").append(sampleIterpretation).append("buffersize:").append(buffer.limit());
+		return sb.toString();
+	}
+
+	
 }

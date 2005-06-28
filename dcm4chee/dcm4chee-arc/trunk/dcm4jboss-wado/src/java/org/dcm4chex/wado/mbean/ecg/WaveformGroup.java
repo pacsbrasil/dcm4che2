@@ -31,13 +31,16 @@ public class WaveformGroup {
 	private String sampleInterpretation;
 	private WaveFormChannel[] channels = null;
 	private ByteBuffer data = null;
+	
+	private String cuid;
 
 	private static Logger log = Logger.getLogger( SVGCreator.class.getName() );
 		
 	/**
 	 * @param elem
 	 */
-	public WaveformGroup(DcmElement elem, int grpIndex, float fCorr) {
+	public WaveformGroup(String cuid, DcmElement elem, int grpIndex, float fCorr) {
+		this.cuid = cuid;
 		if ( elem == null ) throw new NullPointerException( "WaveFormSequence missing!");
 		Dataset ds = elem.getItem( grpIndex );
 		this.grpIndex = grpIndex;
@@ -59,6 +62,15 @@ public class WaveformGroup {
 					"! ( WaveformData.size:"+data.limit()+" nrOfChannels:"+nrOfChannels+" bitsAlloc:"+bitsAlloc+" )" );
 		}
 		prepareChannels( ds.get( Tags.ChannelDefinitionSeq ), fCorr );
+	}
+	
+	/**
+	 * Returns the SOP Class UID of this waveform.
+	 * 
+	 * @return
+	 */
+	public String getCUID() {
+		return cuid;
 	}
 	
 	/**
