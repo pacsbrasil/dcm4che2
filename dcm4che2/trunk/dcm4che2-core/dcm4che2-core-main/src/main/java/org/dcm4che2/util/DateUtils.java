@@ -61,7 +61,7 @@ public class DateUtils {
 			c.setTimeZone(TimeZone.getTimeZone("GMT" + s.substring(len)));
 		}
 		int pos = parseDA(c, s, 0, len);
-		if (pos + 2 < len) {
+		if (pos + 2 <= len) {
 			parseTM(c, s, pos, len);
 		}
 		return c.getTime();		
@@ -112,15 +112,15 @@ public class DateUtils {
 		if (pos < len) {
 			if (!Character.isDigit(s.charAt(pos)))
 				++pos;
-			if (pos + 2 < len) {
+			if (pos + 2 <= len) {
 				c.set(Calendar.MONTH, Integer.parseInt(
 						s.substring(pos, pos +=2 )) - 1);
 				if (pos < len) {
 					if (!Character.isDigit(s.charAt(pos)))
 						++pos;
-					if (pos + 2 < len) {
+					if (pos + 2 <= len) {
 						c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(
-								s.substring(pos, pos += 2)) - 1);
+								s.substring(pos, pos += 2)));
 					}					
 				}
 			}			
@@ -135,15 +135,15 @@ public class DateUtils {
 		if (pos < len) {
 			if (!Character.isDigit(s.charAt(pos)))
 				++pos;
-			if (pos + 2 < len) {
+			if (pos + 2 <= len) {
 				c.set(Calendar.MINUTE, Integer.parseInt(
-						s.substring(pos, pos +=2 )) - 1);
+						s.substring(pos, pos +=2 )));
 				if (pos < len) {
 					if (!Character.isDigit(s.charAt(pos)))
 						++pos;
-					if (pos + 2 < len) {
+					if (pos + 2 <= len) {
 						c.set(Calendar.SECOND, Integer.parseInt(
-								s.substring(pos, pos += 2)) - 1);
+								s.substring(pos, pos += 2)));
 						if (pos + 1 < len) {
 							c.set(Calendar.MILLISECOND, 
 									(int) (Float.parseFloat(

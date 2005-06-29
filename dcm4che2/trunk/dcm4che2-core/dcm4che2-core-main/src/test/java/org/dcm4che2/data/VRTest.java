@@ -1,5 +1,8 @@
 package org.dcm4che2.data;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import junit.framework.TestCase;
 
 public class VRTest extends TestCase {
@@ -32,6 +35,20 @@ public class VRTest extends TestCase {
 	private static final byte[] INT_4095_MINUS_4095_BE = { 
 			0, 0, 0x0f, (byte) 0xff, 
 			(byte) 0xff, (byte) 0xff, (byte) 0xf0, 0x01 };
+	private static final byte[] DATE_20030515 = {
+			'2', '0', '0', '3', '0', '5', '1', '5' };
+	private static final byte[] DATE_2003_05_15 = {
+		'2', '0', '0', '3', '-', '0', '5', '-', '1', '5' };
+	private static final byte[] TIME_10 = {
+		'1', '0' };
+	private static final byte[] TIME_1038 = {
+		'1', '0', '3', '8'};
+	private static final byte[] TIME_103845 = {
+		'1', '0', '3', '8', '4', '5'};
+	private static final byte[] TIME_103845_234 = {
+		'1', '0', '3', '8', '4', '5', '.', '2', '3', '4'};
+	private static final byte[] DATETIME_20030515_103845_234 = {
+		'2', '0', '0', '3', '0', '5', '1', '5', '1', '0', '3', '8', '4', '5', '.', '2', '3', '4' };
 
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(VRTest.class);
@@ -46,6 +63,31 @@ public class VRTest extends TestCase {
 		for (int i = 0; i < value.length; i++) {
 			assertEquals("byte[" + i + "]", expected[i], value[i]);
 		}
+	}
+
+	public final void testVR_DA() {
+		SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
+		Date t = VR.DA.toDate(DATE_20030515);
+		assertEquals("20030515", f.format(t));
+		assertEquals(DATE_20030515, VR.DA.toBytes(t));		
+		assertEquals("20030515", f.format(VR.DA.toDate(DATE_2003_05_15)));
+	}
+
+	public final void testVR_TM() {
+		SimpleDateFormat f = new SimpleDateFormat("HHmmss_SSS");
+		Date t = VR.TM.toDate(TIME_103845_234);
+		assertEquals("103845_234", f.format(t));
+		assertEquals(TIME_103845_234, VR.TM.toBytes(t));		
+		assertEquals("100000_000", f.format(VR.TM.toDate(TIME_10)));
+		assertEquals("103800_000", f.format(VR.TM.toDate(TIME_1038)));
+		assertEquals("103845_000", f.format(VR.TM.toDate(TIME_103845)));
+	}
+
+	public final void testVR_DT() {
+		SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+		Date t = VR.DT.toDate(DATETIME_20030515_103845_234);
+		assertEquals("20030515_103845_234", f.format(t));
+		assertEquals(DATETIME_20030515_103845_234, VR.DT.toBytes(t));		
 	}
 
 	public final void testVR_SL() {
