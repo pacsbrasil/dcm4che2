@@ -35,13 +35,11 @@ public class VRMap implements Serializable {
 		"Create VRMap resource from XML source:\n" +
 		"\n" +
 		"  java VRMap <xml-file> <resource-file>\n" +
-		"\n" +
-		"    Store serialized VRMap in <resource-file>.\n" +
+		"  ->Store serialized VRMap in <resource-file>.\n" +
 		"\n" +
 		"  java VRMap <xml-file> <resource-name> <zip-file>\n" +
-		"\n" +
-		"    Create <zip-file> with serialized VRMap under <resource-name>\n" +
-		"    and appendant META-INF/org.dcm4che2.data.VRMap.";
+		"  ->Create <zip-file> with serialized VRMap under <resource-name>\n" +
+		"    and appendant META-INF/org.dcm4che2.data.VRMap.\n";
 
 
 	private static final VRMap DEFAULT = new VRMap();
@@ -181,25 +179,50 @@ public class VRMap implements Serializable {
 		VR vr = (VR) table.get(tag);
 		return vr != null ? vr : VR.UN;
 	}
-
+	
 	private VR vrOfCommand(int tag) {
 		switch (tag) {
 		case 0x00000600: // MoveDestination
+		case 0x00000200: // Initiator
+		case 0x00000300: // Receiver
+		case 0x00000400: // Find Location
 		case 0x00001030: // MoveOriginatorAET
 			return VR.AE;
 		case 0x00000901: // OffendingElement:
-		case 0x00001005: // AttributeIdentifierList:
+		case 0x00001005: // AttributeIdentifierList
+		case 0x00004000: // DIALOG Receiver
+		case 0x00004010: // Terminal Type
+		case 0x00005110: // Display Format
+		case 0x00005120: // Page Position ID
 			return VR.AT;
+		case 0x00000010: // Recognition Code
+		case 0x00005130: // Text Format ID
+		case 0x00005140: // Normal/Reverse
+		case 0x00005150: // Add Gray Scale
+		case 0x00005160: // Borders
+		case 0x00005180: // Magnification Type
+		case 0x00005190: // Erase
+		case 0x000051A0: // Print
+			return VR.CS;
+		case 0x00005170: // Copies
+			return VR.IS;
 		case 0x00000902: // ErrorComment:
 			return VR.LO;
+		case 0x00005010: // Message Set ID
+		case 0x00005020: // End Message ID
+			return VR.SH;
 		case 0x00000002: // AffectedSOPClassUID:
 		case 0x00000003: // RequestedSOPClassUID:
 		case 0x00001000: // AffectedSOPInstanceUID:
 		case 0x00001001: // RequestedSOPInstanceUID:
 			return VR.UI;
+		case 0x00000001: // Length to End
+			return VR.UL;
 		case 0x00000100: // CommandField:
 		case 0x00000110: // MessageID:
 		case 0x00000120: // MessageIDToBeingRespondedTo:
+		case 0x00000850: // Number of Matches
+		case 0x00000860: // Response Sequence Number
 		case 0x00000700: // Priority:
 		case 0x00000800: // DataSetType:
 		case 0x00000900: // Status:
@@ -211,6 +234,7 @@ public class VRMap implements Serializable {
 		case 0x00001022: // NumberOfFailedSubOperations:
 		case 0x00001023: // NumberOfWarningSubOperations:
 		case 0x00001031: // MoveOriginatorMessageID:
+		case 0x000051B0: // Overlays
 			return VR.US;
 		}
 		return VR.UN;

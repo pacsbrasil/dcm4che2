@@ -29,7 +29,7 @@ public class Tag {
     /** (0000,0000) VR=UL, VM=1 Group Length  */
     public static final int GroupLength00000000 = 0x00000000;
 
-    /** (0000,0001) VR=, VM= Length to End RET */
+    /** (0000,0001) VR=UL, VM=1 Length to End RET */
     public static final int LengthtoEndRET00000001 = 0x00000001;
 
     /** (0000,0002) VR=UI, VM=1 Affected SOP Class UID  */
@@ -38,7 +38,7 @@ public class Tag {
     /** (0000,0003) VR=UI, VM=1 Requested SOP Class UID  */
     public static final int RequestedSOPClassUID = 0x00000003;
 
-    /** (0000,0010) VR=, VM= Recognition Code RET */
+    /** (0000,0010) VR=CS, VM=1 Recognition Code RET */
     public static final int RecognitionCodeRET00000010 = 0x00000010;
 
     /** (0000,0100) VR=US, VM=1 Command Field  */
@@ -50,13 +50,13 @@ public class Tag {
     /** (0000,0120) VR=US, VM=1 Message ID Being Responded To  */
     public static final int MessageIDBeingRespondedTo = 0x00000120;
 
-    /** (0000,0200) VR=, VM= Initiator RET */
+    /** (0000,0200) VR=AE, VM=1 Initiator RET */
     public static final int InitiatorRET = 0x00000200;
 
-    /** (0000,0300) VR=, VM= Receiver RET */
+    /** (0000,0300) VR=AE, VM=1 Receiver RET */
     public static final int ReceiverRET = 0x00000300;
 
-    /** (0000,0400) VR=, VM= Find Location RET */
+    /** (0000,0400) VR=AE, VM=1 Find Location RET */
     public static final int FindLocationRET = 0x00000400;
 
     /** (0000,0600) VR=AE, VM=1 Move Destination  */
@@ -68,10 +68,10 @@ public class Tag {
     /** (0000,0800) VR=US, VM=1 Data Set Type  */
     public static final int DataSetType = 0x00000800;
 
-    /** (0000,0850) VR=, VM= Number of Matches RET */
+    /** (0000,0850) VR=US, VM=1 Number of Matches RET */
     public static final int NumberofMatchesRET = 0x00000850;
 
-    /** (0000,0860) VR=, VM= Response Sequence Number RET */
+    /** (0000,0860) VR=US, VM=1 Response Sequence Number RET */
     public static final int ResponseSequenceNumberRET = 0x00000860;
 
     /** (0000,0900) VR=US, VM=1 Status  */
@@ -119,49 +119,49 @@ public class Tag {
     /** (0000,1031) VR=US, VM=1 Move Originator Message ID  */
     public static final int MoveOriginatorMessageID = 0x00001031;
 
-    /** (0000,4000) VR=, VM= DIALOG Receiver RET */
+    /** (0000,4000) VR=AT, VM=1 DIALOG Receiver RET */
     public static final int DIALOGReceiverRET = 0x00004000;
 
-    /** (0000,4010) VR=, VM= Terminal Type RET */
+    /** (0000,4010) VR=AT, VM=1 Terminal Type RET */
     public static final int TerminalTypeRET = 0x00004010;
 
-    /** (0000,5010) VR=, VM= Message Set ID RET */
+    /** (0000,5010) VR=SH, VM=1 Message Set ID RET */
     public static final int MessageSetIDRET = 0x00005010;
 
-    /** (0000,5020) VR=, VM= End Message ID RET */
+    /** (0000,5020) VR=SH, VM=1 End Message ID RET */
     public static final int EndMessageIDRET = 0x00005020;
 
-    /** (0000,5110) VR=, VM= Display Format RET */
+    /** (0000,5110) VR=AT, VM=1 Display Format RET */
     public static final int DisplayFormatRET = 0x00005110;
 
-    /** (0000,5120) VR=, VM= Page Position ID RET */
+    /** (0000,5120) VR=AT, VM=1 Page Position ID RET */
     public static final int PagePositionIDRET = 0x00005120;
 
-    /** (0000,5130) VR=, VM= Text Format ID RET */
+    /** (0000,5130) VR=CS, VM=1 Text Format ID RET */
     public static final int TextFormatIDRET = 0x00005130;
 
-    /** (0000,5140) VR=, VM= Nor/Rev RET */
-    public static final int NorRevRET = 0x00005140;
+    /** (0000,5140) VR=CS, VM=1 Normal/Reverse RET */
+    public static final int NormalReverseRET = 0x00005140;
 
-    /** (0000,5150) VR=, VM= Add Gray Scale RET */
+    /** (0000,5150) VR=CS, VM=1 Add Gray Scale RET */
     public static final int AddGrayScaleRET = 0x00005150;
 
-    /** (0000,5160) VR=, VM= Borders RET */
+    /** (0000,5160) VR=CS, VM=1 Borders RET */
     public static final int BordersRET = 0x00005160;
 
-    /** (0000,5170) VR=, VM= Copies RET */
+    /** (0000,5170) VR=IS, VM=1 Copies RET */
     public static final int CopiesRET = 0x00005170;
 
-    /** (0000,5180) VR=, VM= Magnification Type RET */
+    /** (0000,5180) VR=CS, VM=1 Magnification Type RET */
     public static final int MagnificationTypeRET = 0x00005180;
 
-    /** (0000,5190) VR=, VM= Erase RET */
+    /** (0000,5190) VR=CS, VM=1 Erase RET */
     public static final int EraseRET = 0x00005190;
 
-    /** (0000,51A0) VR=, VM= Print RET */
+    /** (0000,51A0) VR=CS, VM=1 Print RET */
     public static final int PrintRET = 0x000051A0;
 
-    /** (0000,51B0) VR=, VM= Overlays RET */
+    /** (0000,51B0) VR=US, VM=1-n Overlays RET */
     public static final int OverlaysRET = 0x000051B0;
 
     /** (0002,0000) VR=UL, VM=1 Group Length  */
@@ -254,7 +254,7 @@ public class Tag {
     /** (0004,1600) VR=UL, VM=1 Number of References  */
     public static final int NumberofReferences = 0x00041600;
 
-    /** (0008,0001) VR=, VM= Length to End RET */
+    /** (0008,0001) VR=UL, VM=1 Length to End RET */
     public static final int LengthtoEndRET00080001 = 0x00080001;
 
     /** (0008,0005) VR=CS, VM=1-n Specific Character Set  */
@@ -263,7 +263,7 @@ public class Tag {
     /** (0008,0008) VR=CS, VM=1-n Image Type  */
     public static final int ImageType = 0x00080008;
 
-    /** (0008,0010) VR=, VM= Recognition Code RET */
+    /** (0008,0010) VR=CS, VM=1 Recognition Code RET */
     public static final int RecognitionCodeRET00080010 = 0x00080010;
 
     /** (0008,0012) VR=DA, VM=1 Instance Creation Date  */
@@ -326,10 +326,10 @@ public class Tag {
     /** (0008,0035) VR=TM, VM=1 Curve Time  */
     public static final int CurveTime = 0x00080035;
 
-    /** (0008,0040) VR=, VM= Data Set Type RET */
+    /** (0008,0040) VR=US, VM=1 Data Set Type RET */
     public static final int DataSetTypeRET = 0x00080040;
 
-    /** (0008,0041) VR=, VM= Data Set Subtype RET */
+    /** (0008,0041) VR=LT, VM=1 Data Set Subtype RET */
     public static final int DataSetSubtypeRET = 0x00080041;
 
     /** (0008,0042) VR=CS, VM=1 Nuclear Medicine Series Type RET */
@@ -440,7 +440,7 @@ public class Tag {
     /** (0008,0201) VR=SH, VM=1 Timezone Offset From UTC  */
     public static final int TimezoneOffsetFromUTC = 0x00080201;
 
-    /** (0008,1000) VR=, VM= Network ID RET */
+    /** (0008,1000) VR=AE, VM=1 Network ID RET */
     public static final int NetworkIDRET = 0x00081000;
 
     /** (0008,1010) VR=SH, VM=1 Station Name  */
@@ -548,7 +548,7 @@ public class Tag {
     /** (0008,1199) VR=SQ, VM=1 Referenced SOP Sequence  */
     public static final int ReferencedSOPSequence = 0x00081199;
 
-    /** (0008,1200) VR=, VM= Studies Containing Other Referenced Instances Sequence  */
+    /** (0008,1200) VR=SQ, VM=1 Studies Containing Other Referenced Instances Sequence  */
     public static final int StudiesContainingOtherReferencedInstancesSequence = 0x00081200;
 
     /** (0008,1250) VR=SQ, VM=1 Related Series Sequence  */
@@ -638,7 +638,7 @@ public class Tag {
     /** (0008,3001) VR=SQ, VM=1 Alternate Representation Sequence  */
     public static final int AlternateRepresentationSequence = 0x00083001;
 
-    /** (0008,4000) VR=, VM= Comments RET */
+    /** (0008,4000) VR=LT, VM=1-n Comments RET */
     public static final int CommentsRET00084000 = 0x00084000;
 
     /** (0008,9007) VR=CS, VM=4 Frame Type  */
@@ -728,7 +728,7 @@ public class Tag {
     /** (0010,1040) VR=LO, VM=1 Patient's Address  */
     public static final int PatientsAddress = 0x00101040;
 
-    /** (0010,1050) VR=, VM= Insurance Plan Identification RET */
+    /** (0010,1050) VR=LT, VM=1-n Insurance Plan Identification RET */
     public static final int InsurancePlanIdentificationRET = 0x00101050;
 
     /** (0010,1060) VR=PN, VM=1 Patient's Mother's Birth Name  */
@@ -1286,7 +1286,7 @@ public class Tag {
     /** (0018,1210) VR=SH, VM=1-n Convolution Kernel  */
     public static final int ConvolutionKernel = 0x00181210;
 
-    /** (0018,1240) VR=, VM= Upper/Lower Pixel Values RET */
+    /** (0018,1240) VR=IS, VM=1-n Upper/Lower Pixel Values RET */
     public static final int UpperLowerPixelValuesRET = 0x00181240;
 
     /** (0018,1242) VR=IS, VM=1 Actual Frame Duration  */
@@ -1511,7 +1511,7 @@ public class Tag {
     /** (0018,3105) VR=IS, VM=1-n Lesion Number  */
     public static final int LesionNumber = 0x00183105;
 
-    /** (0018,4000) VR=, VM= Comments RET */
+    /** (0018,4000) VR=LT, VM=1-n Comments RET */
     public static final int CommentsRET00184000 = 0x00184000;
 
     /** (0018,5000) VR=SH, VM=1-n Output Power  */
@@ -1547,10 +1547,10 @@ public class Tag {
     /** (0018,5029) VR=DS, VM=1 Soft Tissue-surface Thermal Index  */
     public static final int SoftTissuesurfaceThermalIndex = 0x00185029;
 
-    /** (0018,5030) VR=, VM= Dynamic Range RET */
+    /** (0018,5030) VR=DS, VM=1 Dynamic Range RET */
     public static final int DynamicRangeRET = 0x00185030;
 
-    /** (0018,5040) VR=, VM= Total Gain RET */
+    /** (0018,5040) VR=DS, VM=1 Total Gain RET */
     public static final int TotalGainRET = 0x00185040;
 
     /** (0018,5050) VR=IS, VM=1 Depth of Scan Field  */
@@ -2432,19 +2432,19 @@ public class Tag {
     /** (0020,0026) VR=IS, VM=1 Lookup Table Number  */
     public static final int LookupTableNumber = 0x00200026;
 
-    /** (0020,0030) VR=, VM= Image Position RET */
+    /** (0020,0030) VR=DS, VM=3 Image Position RET */
     public static final int ImagePositionRET = 0x00200030;
 
     /** (0020,0032) VR=DS, VM=3 Image Position (Patient)  */
     public static final int ImagePositionPatient = 0x00200032;
 
-    /** (0020,0035) VR=, VM= Image Orientation RET */
+    /** (0020,0035) VR=DS, VM=6 Image Orientation RET */
     public static final int ImageOrientationRET = 0x00200035;
 
     /** (0020,0037) VR=DS, VM=6 Image Orientation (Patient)  */
     public static final int ImageOrientationPatient = 0x00200037;
 
-    /** (0020,0050) VR=, VM= Location RET */
+    /** (0020,0050) VR=DS, VM=1 Location RET */
     public static final int LocationRET = 0x00200050;
 
     /** (0020,0052) VR=UI, VM=1 Frame of Reference UID  */
@@ -2456,10 +2456,10 @@ public class Tag {
     /** (0020,0062) VR=CS, VM=1 Image Laterality  */
     public static final int ImageLaterality = 0x00200062;
 
-    /** (0020,0070) VR=, VM= Image Geometry Type RET */
+    /** (0020,0070) VR=LT, VM=1 Image Geometry Type RET */
     public static final int ImageGeometryTypeRET = 0x00200070;
 
-    /** (0020,0080) VR=, VM= Masking Image RET */
+    /** (0020,0080) VR=CS, VM=1-n Masking Image RET */
     public static final int MaskingImageRET = 0x00200080;
 
     /** (0020,0100) VR=IS, VM=1 Temporal Position Identifier  */
@@ -2477,7 +2477,7 @@ public class Tag {
     /** (0020,1000) VR=IS, VM=1 Series in Study  */
     public static final int SeriesinStudy = 0x00201000;
 
-    /** (0020,1001) VR=, VM= Acquisitions in Series RET */
+    /** (0020,1001) VR=IS, VM=1 Acquisitions in Series RET */
     public static final int AcquisitionsinSeriesRET = 0x00201001;
 
     /** (0020,1002) VR=IS, VM=1 Images in Acquisition  */
@@ -2486,7 +2486,7 @@ public class Tag {
     /** (0020,1004) VR=IS, VM=1 Acquisitions in Study  */
     public static final int AcquisitionsinStudy = 0x00201004;
 
-    /** (0020,1020) VR=, VM= Reference RET */
+    /** (0020,1020) VR=CS, VM=1-n Reference RET */
     public static final int ReferenceRET = 0x00201020;
 
     /** (0020,1040) VR=LO, VM=1 Position Reference Indicator  */
@@ -2516,34 +2516,34 @@ public class Tag {
     /** (0020,1209) VR=IS, VM=1 Number of Series Related Instances  */
     public static final int NumberofSeriesRelatedInstances = 0x00201209;
 
-    /** (0020,31xx) VR=, VM= Source Image Ids RET */
+    /** (0020,31xx) VR=CS, VM=1-n Source Image Ids RET */
     public static final int SourceImageIdsRET = 0x00203100;
 
-    /** (0020,3401) VR=, VM= Modifying Device ID RET */
+    /** (0020,3401) VR=CS, VM=1 Modifying Device ID RET */
     public static final int ModifyingDeviceIDRET = 0x00203401;
 
-    /** (0020,3402) VR=, VM= Modified Image ID RET */
+    /** (0020,3402) VR=CS, VM=1 Modified Image ID RET */
     public static final int ModifiedImageIDRET = 0x00203402;
 
-    /** (0020,3403) VR=, VM= Modified Image Date RET */
+    /** (0020,3403) VR=DA, VM=1 Modified Image Date RET */
     public static final int ModifiedImageDateRET = 0x00203403;
 
-    /** (0020,3404) VR=, VM= Modifying Device Manufacturer RET */
+    /** (0020,3404) VR=LO, VM=1 Modifying Device Manufacturer RET */
     public static final int ModifyingDeviceManufacturerRET = 0x00203404;
 
-    /** (0020,3405) VR=, VM= Modified Image Time RET */
+    /** (0020,3405) VR=TM, VM=1 Modified Image Time RET */
     public static final int ModifiedImageTimeRET = 0x00203405;
 
-    /** (0020,3406) VR=, VM= Modified Image Description RET */
+    /** (0020,3406) VR=LT, VM=1 Modified Image Description RET */
     public static final int ModifiedImageDescriptionRET = 0x00203406;
 
     /** (0020,4000) VR=LT, VM=1 Image Comments  */
     public static final int ImageComments = 0x00204000;
 
-    /** (0020,5000) VR=, VM= Original Image Identification RET */
+    /** (0020,5000) VR=AT, VM=1-n Original Image Identification RET */
     public static final int OriginalImageIdentificationRET = 0x00205000;
 
-    /** (0020,5002) VR=, VM= Original Image Identification Nomenclature RET */
+    /** (0020,5002) VR=CS, VM=1-n Original Image Identification Nomenclature RET */
     public static final int OriginalImageIdentificationNomenclatureRET = 0x00205002;
 
     /** (0020,9056) VR=SH, VM=1 Stack ID  */
@@ -2717,7 +2717,7 @@ public class Tag {
     /** (0028,0004) VR=CS, VM=1 Photometric Interpretation  */
     public static final int PhotometricInterpretation = 0x00280004;
 
-    /** (0028,0005) VR=, VM= Image Dimensions RET */
+    /** (0028,0005) VR=US, VM=1 Image Dimensions RET */
     public static final int ImageDimensionsRET = 0x00280005;
 
     /** (0028,0006) VR=US, VM=1 Planar Configuration  */
@@ -2756,16 +2756,16 @@ public class Tag {
     /** (0028,0034) VR=IS, VM=2 Pixel Aspect Ratio  */
     public static final int PixelAspectRatio = 0x00280034;
 
-    /** (0028,0040) VR=, VM= Image Format RET */
+    /** (0028,0040) VR=CS, VM=1 Image Format RET */
     public static final int ImageFormatRET = 0x00280040;
 
-    /** (0028,0050) VR=, VM= Manipulated Image RET */
+    /** (0028,0050) VR=LT, VM=1-n Manipulated Image RET */
     public static final int ManipulatedImageRET = 0x00280050;
 
     /** (0028,0051) VR=CS, VM=1-n Corrected Image  */
     public static final int CorrectedImage = 0x00280051;
 
-    /** (0028,0060) VR=, VM= Compression Code RET */
+    /** (0028,0060) VR=CS, VM=1 Compression Code RET */
     public static final int CompressionCodeRET00280060 = 0x00280060;
 
     /** (0028,0100) VR=US, VM=1 Bits Allocated  */
@@ -2780,10 +2780,10 @@ public class Tag {
     /** (0028,0103) VR=US, VM=1 Pixel Representation  */
     public static final int PixelRepresentation = 0x00280103;
 
-    /** (0028,0104) VR=, VM= Smallest Valid Pixel Value RET */
+    /** (0028,0104) VR=US|SS, VM=1 Smallest Valid Pixel Value RET */
     public static final int SmallestValidPixelValueRET = 0x00280104;
 
-    /** (0028,0105) VR=, VM= Largest Valid Pixel Value RET */
+    /** (0028,0105) VR=US|SS, VM=1 Largest Valid Pixel Value RET */
     public static final int LargestValidPixelValueRET = 0x00280105;
 
     /** (0028,0106) VR=US|SS, VM=1 Smallest Image Pixel Value  */
@@ -2807,7 +2807,7 @@ public class Tag {
     /** (0028,0120) VR=US|SS, VM=1 Pixel Padding Value  */
     public static final int PixelPaddingValue = 0x00280120;
 
-    /** (0028,0200) VR=, VM= Image Location RET */
+    /** (0028,0200) VR=US, VM=1 Image Location RET */
     public static final int ImageLocationRET = 0x00280200;
 
     /** (0028,0300) VR=CS, VM=1 Quality Control Image  */
@@ -2840,13 +2840,13 @@ public class Tag {
     /** (0028,1055) VR=LO, VM=1-n Window Center & Width Explanation  */
     public static final int WindowCenterWidthExplanation = 0x00281055;
 
-    /** (0028,1080) VR=, VM= Gray Scale RET */
+    /** (0028,1080) VR=CS, VM=1 Gray Scale RET */
     public static final int GrayScaleRET = 0x00281080;
 
     /** (0028,1090) VR=CS, VM=1 Recommended Viewing Mode  */
     public static final int RecommendedViewingMode = 0x00281090;
 
-    /** (0028,1100) VR=, VM= Gray Lookup Table Descriptor RET */
+    /** (0028,1100) VR=US|SS, VM=3 Gray Lookup Table Descriptor RET */
     public static final int GrayLookupTableDescriptorRET = 0x00281100;
 
     /** (0028,1101) VR=US|SS, VM=3 Red Palette Color Lookup Table Descriptor  */
@@ -2861,7 +2861,7 @@ public class Tag {
     /** (0028,1199) VR=UI, VM=1 Palette Color Lookup Table UID  */
     public static final int PaletteColorLookupTableUID = 0x00281199;
 
-    /** (0028,1200) VR=, VM= Gray Lookup Table Data RET */
+    /** (0028,1200) VR=US|SS, VM=1-n Gray Lookup Table Data RET */
     public static final int GrayLookupTableDataRET = 0x00281200;
 
     /** (0028,1201) VR=OW, VM=1 Red Palette Color Lookup Table Data  */
@@ -2921,7 +2921,7 @@ public class Tag {
     /** (0028,3110) VR=SQ, VM=1 Softcopy VOI LUT Sequence  */
     public static final int SoftcopyVOILUTSequence = 0x00283110;
 
-    /** (0028,4000) VR=, VM= Comments RET */
+    /** (0028,4000) VR=LT, VM=1-n Comments RET */
     public static final int CommentsRET00284000 = 0x00284000;
 
     /** (0028,5000) VR=SQ, VM=1 Bi-Plane Acquisition Sequence  */
@@ -6257,10 +6257,10 @@ public class Tag {
     /** (300E,0008) VR=PN, VM=1 Reviewer Name  */
     public static final int ReviewerName = 0x300E0008;
 
-    /** (4000,0010) VR=, VM= Arbitrary RET */
+    /** (4000,0010) VR=LT, VM=1-n Arbitrary RET */
     public static final int ArbitraryRET = 0x40000010;
 
-    /** (4000,4000) VR=, VM= Comments RET */
+    /** (4000,4000) VR=LT, VM=1-n Comments RET */
     public static final int CommentsRET40004000 = 0x40004000;
 
     /** (4008,0040) VR=SH, VM=1 Results ID  */
@@ -6488,7 +6488,7 @@ public class Tag {
     /** (60xx,0052) VR=US, VM=1 Overlay Plane Origin  */
     public static final int OverlayPlaneOrigin = 0x60000052;
 
-    /** (60xx,0060) VR=, VM= Compression Code RET */
+    /** (60xx,0060) VR=CS, VM=1 Compression Code RET */
     public static final int CompressionCodeRET60xx0060 = 0x60000060;
 
     /** (60xx,0100) VR=US, VM=1 Overlay Bits Allocated  */
@@ -6497,10 +6497,10 @@ public class Tag {
     /** (60xx,0102) VR=US, VM=1 Overlay Bit Position  */
     public static final int OverlayBitPosition = 0x60000102;
 
-    /** (60xx,0110) VR=, VM= Overlay Format RET */
+    /** (60xx,0110) VR=CS, VM=1 Overlay Format RET */
     public static final int OverlayFormatRET = 0x60000110;
 
-    /** (60xx,0200) VR=, VM= Overlay Location RET */
+    /** (60xx,0200) VR=US, VM=1 Overlay Location RET */
     public static final int OverlayLocationRET = 0x60000200;
 
     /** (60xx,1001) VR=CS, VM=1 Overlay Activation Layer  */
@@ -6545,7 +6545,7 @@ public class Tag {
     /** (60xx,3000) VR=OB|OW, VM=1 Overlay Data  */
     public static final int OverlayData = 0x60003000;
 
-    /** (60xx,4000) VR=, VM= Comments RET */
+    /** (60xx,4000) VR=LT, VM=1-n Comments RET */
     public static final int CommentsRET60xx4000 = 0x60004000;
 
     /** (7FE0,0010) VR=OW|OB, VM=1 Pixel Data  */

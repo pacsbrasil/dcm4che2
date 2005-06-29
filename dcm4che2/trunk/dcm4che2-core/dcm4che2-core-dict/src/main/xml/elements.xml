@@ -10,6 +10,7 @@
 <!ENTITY cp487 SYSTEM "../../../target/xml/cp487_ft.xml">
 <!ENTITY cp491 SYSTEM "../../../target/xml/cp491_ft.xml">
 <!ENTITY cp507 SYSTEM "../../../target/xml/cp507_ft.xml">
+<!ENTITY retired_vr SYSTEM "retired_vr.xml">
 ]>
 <elements>
 &p04_07;
@@ -22,4 +23,5 @@
 &cp487;
 &cp491;
 &cp507;
+&retired_vr;
 </elements>

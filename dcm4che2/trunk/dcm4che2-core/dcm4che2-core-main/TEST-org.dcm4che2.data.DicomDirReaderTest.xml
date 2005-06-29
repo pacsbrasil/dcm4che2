@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite name="org.dcm4che2.data.DicomDirReaderTest" tests="2" failures="0" errors="0" time="0.199">
+  <properties>
+    <property name="maven.build.output" value="target/classes"></property>
+    <property name="java.runtime.name" value="Java(TM) 2 Runtime Environment, Standard Edition"></property>
+    <property name="sun.boot.library.path" value="/usr/lib/j2sdk1.4-sun/jre/lib/i386"></property>
+    <property name="junit.present" value="true"></property>
+    <property name="java.vm.version" value="1.4.2_08-b03"></property>
+    <property name="ant.library.dir" value="/usr/share/ant/lib"></property>
+    <property name="ant.version" value="Apache Ant version 1.6.2 compiled on September 28 2004"></property>
+    <property name="ant.java.version" value="1.4"></property>
+    <property name="java.vm.vendor" value="Sun Microsystems Inc."></property>
+    <property name="java.vendor.url" value="http://java.sun.com/"></property>
+    <property name="path.separator" value=":"></property>
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM"></property>
+    <property name="file.encoding.pkg" value="sun.io"></property>
+    <property name="user.country" value="US"></property>
+    <property name="sun.os.patch.level" value="unknown"></property>
+    <property name="maven.build.directory" value="target"></property>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"></property>
+    <property name="user.dir" value="/home/gunter/dcm4che2/dcm4che2-core/dcm4che2-core-main"></property>
+    <property name="maven.test.output" value="target/test-classes"></property>
+    <property name="java.runtime.version" value="1.4.2_08-b03"></property>
+    <property name="maven.build.final.name" value="dcm4che-2.0-SNAPSHOT"></property>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"></property>
+    <property name="basedir" value="."></property>
+    <property name="java.endorsed.dirs" value="/usr/lib/j2sdk1.4-sun/jre/lib/endorsed"></property>
+    <property name="os.arch" value="i386"></property>
+    <property name="java.io.tmpdir" value="/tmp"></property>
+    <property name="line.separator" value="
+"></property>
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc."></property>
+    <property name="os.name" value="Linux"></property>
+    <property name="ant.home" value="/usr/share/ant"></property>
+    <property name="ant.file.dcm4che-core-main" value="/home/gunter/dcm4che2/dcm4che2-core/dcm4che2-core-main/build.xml"></property>
+    <property name="sun.java2d.fontpath" value=""></property>
+    <property name="ant.project.name" value="dcm4che-core-main"></property>
+    <property name="maven.test.reports" value="target/test-reports"></property>
+    <property name="java.library.path" value="/usr/lib/j2sdk1.4-sun/jre/lib/i386/client:/usr/lib/j2sdk1.4-sun/jre/lib/i386:/usr/lib/j2sdk1.4-sun/jre/../lib/i386"></property>
+    <property name="java.class.version" value="48.0"></property>
+    <property name="java.specification.name" value="Java Platform API Specification"></property>
+    <property name="maven.repo.local" value="/home/gunter/.m2/repository"></property>
+    <property name="java.util.prefs.PreferencesFactory" value="java.util.prefs.FileSystemPreferencesFactory"></property>
+    <property name="os.version" value="2.6.8-2-k7"></property>
+    <property name="ant.file" value="/home/gunter/dcm4che2/dcm4che2-core/dcm4che2-core-main/build.xml"></property>
+    <property name="user.home" value="/home/gunter"></property>
+    <property name="user.timezone" value=""></property>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"></property>
+    <property name="java.specification.version" value="1.4"></property>
+    <property name="file.encoding" value="ISO-8859-1"></property>
+    <property name="java.class.path" value="/home/gunter/.m2/repository/dcm4che/dcm4che-core-test-dictionary/2.0-SNAPSHOT/dcm4che-core-test-dictionary-2.0-SNAPSHOT.jar:/home/gunter/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/home/gunter/.m2/repository/log4j/log4j/1.2.8/log4j-1.2.8.jar:/home/gunter/dcm4che2/dcm4che2-core/dcm4che2-core-main/target/classes:/home/gunter/dcm4che2/dcm4che2-core/dcm4che2-core-main/target/test-classes:/usr/share/ant/lib/junit.jar:/usr/share/ant/lib/ant-launcher.jar:/usr/share/ant/lib/ant.jar:/usr/share/ant/lib/ant-junit.jar"></property>
+    <property name="user.name" value="gunter"></property>
+    <property name="java.vm.specification.version" value="1.0"></property>
+    <property name="java.home" value="/usr/lib/j2sdk1.4-sun/jre"></property>
+    <property name="sun.arch.data.model" value="32"></property>
+    <property name="user.language" value="en"></property>
+    <property name="java.specification.vendor" value="Sun Microsystems Inc."></property>
+    <property name="java.vm.info" value="mixed mode"></property>
+    <property name="java.version" value="1.4.2_08"></property>
+    <property name="java.ext.dirs" value="/usr/lib/j2sdk1.4-sun/jre/lib/ext"></property>
+    <property name="sun.boot.class.path" value="/usr/lib/j2sdk1.4-sun/jre/lib/rt.jar:/usr/lib/j2sdk1.4-sun/jre/lib/i18n.jar:/usr/lib/j2sdk1.4-sun/jre/lib/sunrsasign.jar:/usr/lib/j2sdk1.4-sun/jre/lib/jsse.jar:/usr/lib/j2sdk1.4-sun/jre/lib/jce.jar:/usr/lib/j2sdk1.4-sun/jre/lib/charsets.jar:/usr/lib/j2sdk1.4-sun/jre/classes"></property>
+    <property name="java.vendor" value="Sun Microsystems Inc."></property>
+    <property name="file.separator" value="/"></property>
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi"></property>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"></property>
+    <property name="sun.cpu.endian" value="little"></property>
+    <property name="sun.cpu.isalist" value=""></property>
+  </properties>
+  <testcase name="testReadNextSiblingRecord" classname="org.dcm4che2.data.DicomDirReaderTest" time="0.18"></testcase>
+  <testcase name="testReadFirstChildRecord" classname="org.dcm4che2.data.DicomDirReaderTest" time="0.0010"></testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

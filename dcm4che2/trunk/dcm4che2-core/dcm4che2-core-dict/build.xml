@@ -18,9 +18,9 @@
 	<property file="build.properties"/>
 	<property name="office.dtd"
 		value="/usr/lib/openoffice/share/dtd/officedocument/1_0/office.dtd"/>
-	<property name="package" value="org.dcm4che.data"/>
-	<property name="folder" value="org/dcm4che/data"/>
-	<property name="class" value="Tags"/>
+	<property name="package" value="org.dcm4che2.data"/>
+	<property name="folder" value="org/dcm4che2/data"/>
+	<property name="class" value="Tag"/>
 
 
 	
