@@ -8,8 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.sql.Blob;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import org.dcm4che.data.Dataset;
@@ -33,8 +31,6 @@ public class MPPSQueryCmd extends BaseReadCmd {
 
     private static final String[] RELATIONS = { "Patient.pk",
     		"MPPS.patient_fk"};
-
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -85,27 +81,9 @@ public class MPPSQueryCmd extends BaseReadCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = dof.newDataset();       
-        // Get metadata from resultset
-        // If a database does not fully support this command, it will return null
-        ResultSetMetaData meta = rs.getMetaData();
-        int colType = java.sql.Types.VARCHAR;
-        boolean isBlob = false;
-    	Blob blob1 = null;
-    	Blob blob2 = null;
-        if( meta != null ) {
-        	if( meta.getColumnType(1) == java.sql.Types.BLOB && 
-        		meta.getColumnType(2) == java.sql.Types.BLOB	) {
-        		// We know for sure these columns are blobs
-        		isBlob = true;
-            	blob1 = rs.getBlob(1);
-            	blob2 = rs.getBlob(2);
-        	}
-        }
-        DatasetUtils.fromByteArray( isBlob ? blob1.getBytes(1,(int)blob1.length()) : rs.getBytes(1),
-                DcmDecodeParam.EVR_LE, ds);
-        DatasetUtils.fromByteArray( isBlob ? blob2.getBytes(1,(int)blob2.length()) : rs.getBytes(2),
-                DcmDecodeParam.EVR_LE, ds);
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();       
+        DatasetUtils.fromByteArray( getBytes(1), DcmDecodeParam.EVR_LE, ds);
+        DatasetUtils.fromByteArray( getBytes(2), DcmDecodeParam.EVR_LE, ds);
         return ds;
     }
     

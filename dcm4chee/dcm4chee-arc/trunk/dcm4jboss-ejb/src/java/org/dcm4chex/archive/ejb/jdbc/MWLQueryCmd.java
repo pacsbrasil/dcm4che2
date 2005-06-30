@@ -8,12 +8,11 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.sql.Blob;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
@@ -108,26 +107,9 @@ public class MWLQueryCmd extends BaseReadCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        // Get metadata from resultset
-        // If a database does not fully support this command, it will return null
-        ResultSetMetaData meta = rs.getMetaData();
-        int colType = java.sql.Types.VARCHAR;
-        boolean isBlob = false;
-    	Blob blob1 = null;
-    	Blob blob2 = null;
-        if( meta != null ) {
-        	if( meta.getColumnType(1) == java.sql.Types.BLOB && 
-        		meta.getColumnType(2) == java.sql.Types.BLOB	) {
-        		// We know for sure these columns are blobs
-        		isBlob = true;
-            	blob1 = rs.getBlob(1);
-            	blob2 = rs.getBlob(2);
-        	}
-        }
-        Dataset ds = DatasetUtils.fromByteArray( isBlob ? blob1.getBytes(1,(int)blob1.length()) : rs.getBytes(1),
-                DcmDecodeParam.EVR_LE, null);
-        DatasetUtils.fromByteArray( isBlob ? blob2.getBytes(1,(int)blob2.length()) : rs.getBytes(2),
-                DcmDecodeParam.EVR_LE, ds);
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();       
+        DatasetUtils.fromByteArray( getBytes(1), DcmDecodeParam.EVR_LE, ds);
+        DatasetUtils.fromByteArray(getBytes(2), DcmDecodeParam.EVR_LE, ds);
         QueryCmd.adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

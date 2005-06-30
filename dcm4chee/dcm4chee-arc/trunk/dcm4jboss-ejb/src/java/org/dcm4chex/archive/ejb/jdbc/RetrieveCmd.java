@@ -82,30 +82,30 @@ public class RetrieveCmd extends BaseReadCmd {
 	}
 
     public FileInfo[][] getFileInfos() throws SQLException {
-        Map result = map();
-        try {
-            ArrayList list;
-            Object key;
-            while (next()) {
-                FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3), rs
-                        .getString(4), rs.getBytes(5), rs.getString(6), rs
-                        .getBytes(7), rs.getBytes(8), rs.getBytes(9), rs
-                        .getString(10), rs.getString(11), rs.getString(12), rs
-                        .getString(13), rs.getString(14), rs.getString(15), rs
-                        .getString(16), rs.getString(17), rs.getInt(18), rs
-                        .getInt(19));
-                key = key();
-                list = (ArrayList) result.get(key);
-                if (list == null) {
-                    result.put(key, list = new ArrayList());
-                }
-                list.add(info);
-            }
-        } finally {
-            close();
-        }
-        return toArray(result);
-    }
+		Map result = map();
+		try {
+			ArrayList list;
+			Object key;
+			while (next()) {
+				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3), rs
+						.getString(4), getBytes(5), rs.getString(6),
+						getBytes(7), getBytes(8), getBytes(9),
+						rs.getString(10), rs.getString(11), rs.getString(12),
+						rs.getString(13), rs.getString(14), rs.getString(15),
+						rs.getString(16), rs.getString(17), rs.getInt(18), rs
+								.getInt(19));
+				key = key();
+				list = (ArrayList) result.get(key);
+				if (list == null) {
+					result.put(key, list = new ArrayList());
+				}
+				list.add(info);
+			}
+		} finally {
+			close();
+		}
+		return toArray(result);
+	}
 
     protected Map map() {
         return new TreeMap();
