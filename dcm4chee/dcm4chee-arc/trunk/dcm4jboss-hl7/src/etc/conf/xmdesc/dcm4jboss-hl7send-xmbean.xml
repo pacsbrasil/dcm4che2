@@ -52,7 +52,7 @@
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[sending=adt^mesa,msgtype=ADT^A08|ADT^A40]imgmgr^mesa,rptmgr^mesa;NONE" />
+         <value value="[sending=PACS_TIANI^TIANI]PACS_CENTRAL^TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

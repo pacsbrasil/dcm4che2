@@ -29,29 +29,13 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
-    private static final String ADT_A08 = "A08";
 	private String pidStylesheetURL = "resource:xsl/hl7/pid2dcm.xsl";
 
     private String mrgStylesheetURL = "resource:xsl/hl7/mrg2dcm.xsl";
     
-    private String patientUpdateMessages = ADT_A08+",A01,A04,A05";//A01,A04,A05 'create' patient (via update)
 	private boolean ignoreDeleteErrors;
-    
-    public String getPatientUpdateMessages() {
-    	return patientUpdateMessages;
-    }
-    
-    public void setPatientUpdateMessages( String msgs ) {
-    	if (msgs == null || msgs.trim().length() < 1) {
-    		patientUpdateMessages = ADT_A08;
-    	} else {
-    		if ( msgs.indexOf( ADT_A08 ) == -1 ) {
-    			patientUpdateMessages = ADT_A08+","+msgs;
-    		}
-    	}
-    }
 
-    public final String getMrgStylesheetURL() {
+	public final String getMrgStylesheetURL() {
 		return mrgStylesheetURL;
 	}
 
@@ -90,13 +74,7 @@ public class ADTService extends AbstractHL7Service {
                     .getSAXHandler2(null)));
             PatientUpdate update = getPatientUpdateHome().create();
             try {
-                if (isUpdate(msh)) {
-                    log.info("Update Patient Info of " 
-                            + pat.getString(Tags.PatientName)
-                            + ", PID:" + pat.getString(Tags.PatientID));
-                    update.updatePatient(pat);
-
-                } else if (isMerge(msh)) {
+                if (isMerge(msh)) {
                     Dataset mrg = dof.newDataset();
                     Transformer t2 = getTemplates(mrgStylesheetURL)
                             .newTransformer();
@@ -117,6 +95,11 @@ public class ADTService extends AbstractHL7Service {
                 			throw x;
                 		}
                 	}
+                } else {
+                    log.info("Update Patient Info of " 
+                            + pat.getString(Tags.PatientName)
+                            + ", PID:" + pat.getString(Tags.PatientID));
+                    update.updatePatient(pat);					
                 }
             } finally {
                 try {
@@ -128,10 +111,6 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
-    }
-
-	private boolean isUpdate(MSH msh) {
-        return patientUpdateMessages.indexOf(msh.triggerEvent) != -1;
     }
 
     private boolean isMerge(MSH msh) {

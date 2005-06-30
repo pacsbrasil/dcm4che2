@@ -27,20 +27,7 @@
       <name>MessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ADT^A08,ADT^A40,ADT^23,ADT^A01,ADT^A04,ADT^A05" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getPatientUpdateMessages"
-      setMethod="setPatientUpdateMessages">
-      <description>Comma separated list of Message Types that service a patient update. 
-      	This can be used to service 'create patient' via patient update.
-      	(A08 will be always in this list)
-      </description>
-      <name>PatientUpdateTypes</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="A08,A01,A04,A05" />
+         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A23,ADT^A40" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -68,7 +55,7 @@
    <attribute access="read-write"
       getMethod="isIgnoreDeleteErrors"
       setMethod="setIgnoreDeleteErrors">
-      <description>Ignore errors of ADT_A23 messages (delete patient).
+      <description>Ignore errors processing ADT^A23 messages (delete patient).
       </description>
       <name>IgnoreDeleteErrors</name>
       <type>boolean</type>
