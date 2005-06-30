@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.management.ObjectName;
@@ -36,7 +37,9 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ContentEditService extends ServiceMBeanSupport {
 
-    public static final String EVENT_TYPE = "org.dcm4chex.archive.mbean.ContentEditService";
+    private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
+
+	public static final String EVENT_TYPE = "org.dcm4chex.archive.mbean.ContentEditService";
 
     private ContentEdit ce;
 	private ContentEdit contentEdit;
@@ -49,13 +52,11 @@ public class ContentEditService extends ServiceMBeanSupport {
 	private String receivingFacility;
 
 	private ObjectName studyMgtScuServiceName;
-	private String callingSyncAET;
-	private String calledSyncAET;
+	private String callingAET;
+	private String calledAET;
 	
 	private ContentManager contentMgr;
 	
-	private static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-
 	private static long msgCtrlid = System.currentTimeMillis();
 
 	public ContentEditService() {
@@ -66,8 +67,15 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     protected void stopService() throws Exception {
     }
-
     
+    public String getEjbProviderURL() {
+        return EJBHomeFactory.getEjbProviderURL();
+    }
+
+    public void setEjbProviderURL(String ejbProviderURL) {
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+
     public final ObjectName getHL7SendServiceName() {
         return hl7SendServiceName;
     }
@@ -133,29 +141,30 @@ public class ContentEditService extends ServiceMBeanSupport {
 		this.sendingFacility = sendingFacility;
 	}
 	/**
-	 * @return Returns the calledSyncAET.
+	 * @return Returns the calledAET.
 	 */
-	public String getCalledSyncAET() {
-		return calledSyncAET;
+	public String getCalledAET() {
+		return calledAET;
 	}
 	/**
-	 * @param calledSyncAET The calledSyncAET to set.
+	 * @param calledAET The calledAET to set.
 	 */
-	public void setCalledSyncAET(String calledSyncAET) {
-		this.calledSyncAET = calledSyncAET;
+	public void setCalledAET(String calledAET) {
+		this.calledAET = calledAET;
 	}
 	/**
-	 * @return Returns the callingSyncAET.
+	 * @return Returns the callingAET.
 	 */
-	public String getCallingSyncAET() {
-		return callingSyncAET;
+	public String getCallingAET() {
+		return callingAET;
 	}
 	/**
-	 * @param callingSyncAET The callingSyncAET to set.
+	 * @param callingAET The callingAET to set.
 	 */
-	public void setCallingSyncAET(String callingSyncAET) {
-		this.callingSyncAET = callingSyncAET;
+	public void setCallingAET(String callingAET) {
+		this.callingAET = callingAET;
 	}
+	
     public Dataset createPatient(Dataset ds) throws RemoteException, CreateException, HomeFactoryException {
     	if ( log.isDebugEnabled() ) log.debug("create Partient");
     	Dataset ds1 = lookupContentEdit().createPatient( ds );
@@ -201,8 +210,8 @@ public class ContentEditService extends ServiceMBeanSupport {
 		try {
             server.invoke(this.studyMgtScuServiceName,
                     "forward",
-                    new Object[] { this.getCallingSyncAET(),
-            					   this.getCalledSyncAET(),
+                    new Object[] { this.callingAET,
+            					   this.calledAET,
 								   iuid, 
 								   new Integer(commandField), new Integer(actionTypeID),
 								   dataset },
@@ -220,7 +229,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 	 * @param ds
 	 */
 	private void sendHL7PatientXXX(Dataset ds,String msgType) {
-		String timeStamp = formatter.format( new Date() );
+		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
 		StringBuffer sb = getMSH(msgType);//get MSH for patient information update (ADT^A08)
 		addEVN(sb);
 		addPID( sb, ds );
@@ -243,7 +252,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 	}
 	
 	private void sendHL7Msg( String msg ) {
-		log.info("send HL7 message:"+msg);
+		log.debug("send HL7 message:"+msg);
         try {
             server.invoke(this.hl7SendServiceName,
                     "forward",
@@ -263,13 +272,13 @@ public class ContentEditService extends ServiceMBeanSupport {
 		sb.append("MSH|^~\\&|");
 		sb.append( getSendingApplication() ).append("|").append( getSendingFacility() ).append("|");
 		sb.append( getReceivingApplication() ).append("|").append( getReceivingFacility() ).append("|");
-		sb.append( formatter.format( new Date() ) ).append("||").append(msgType).append("|");
+		sb.append( new SimpleDateFormat(DATETIME_FORMAT).format( new Date() ) ).append("||").append(msgType).append("|");
 		sb.append( getMsgCtrlId() ).append("|P|2.3.1||||||||");
 		return sb;
 	}
 
 	private void addEVN( StringBuffer sb) {
-		String timeStamp = formatter.format( new Date() );
+		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
 		sb.append("\rEVN||").append(timeStamp).append("||||").append(timeStamp);
 	}
 	/**
@@ -282,13 +291,32 @@ public class ContentEditService extends ServiceMBeanSupport {
 		sb.append("\rPID|||");
 		appendPatIDwithIssuer(sb,ds);
 		sb.append("||");
-		sb.append(ds.getString( Tags.PatientName )).append("||");
+		addPersonName(sb, ds.getString( Tags.PatientName ));
+		sb.append("||");
 		d = ds.getDateTime( Tags.PatientBirthDate, Tags.PatientBirthTime );
-		if ( d != null ) sb.append( formatter.format(d) );
+		if ( d != null ) sb.append( new SimpleDateFormat(DATETIME_FORMAT).format(d) );
 		sb.append("|");
 		s = ds.getString( Tags.PatientSex );
 		if ( s != null ) sb.append( s );
 		sb.append("||||||||||||||||||||||");//patient Account number ???(field 18)
+	}
+
+	// concerns different order of name suffix, prefix in HL7 XPN compared to DICOM PN
+	private void addPersonName(StringBuffer sb, final String patName) {
+		StringTokenizer stk = new StringTokenizer(patName, "^", true);
+		for (int i = 0; i < 6 && stk.hasMoreTokens(); ++i) {
+			sb.append(stk.nextToken());
+		}
+		if (stk.hasMoreTokens()) {
+			String prefix = stk.nextToken();
+			if (stk.hasMoreTokens()) {
+				stk.nextToken(); // skip delim
+				if (stk.hasMoreTokens()) {
+					sb.append(stk.nextToken()); // name suffix
+				}
+			}
+			sb.append('^').append(prefix);
+		}
 	}
 	
 	private void appendPatIDwithIssuer( StringBuffer sb, Dataset ds ) {

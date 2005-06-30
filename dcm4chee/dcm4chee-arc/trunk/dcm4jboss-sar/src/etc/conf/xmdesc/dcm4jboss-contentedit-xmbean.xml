@@ -21,8 +21,12 @@
    <attribute access="read-write"
       getMethod="getReceivingApplication"
       setMethod="setReceivingApplication">
-      <description>Receiving applicition of HL7 message.
-      	
+      <description>Receiving Application in HL7 message directed to
+         HL7SendService to notify other Applications about Patient Information
+         Updates. The Receiving Application/Facility and/or the 
+         Sending Application/Facility may be used to configure specific
+         forwarding Rules in HL7SendService for HL7 messages received from this
+         Content Edit Service.   
       </description>
       <name>ReceivingApplication</name>
       <type>java.lang.String</type>
@@ -33,21 +37,22 @@
    <attribute access="read-write"
       getMethod="getReceivingFacility"
       setMethod="setReceivingFacility">
-      <description>Receiving facility of HL7 message.
+      <description>Receiving Facility in HL7 message directed to
+         HL7SendService to notify other Applications about Patient Information
+         Updates.
       </description>
       <name>ReceivingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="SYNC" />
+         <value value="TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getSendingApplication"
       setMethod="setSendingApplication">
-      <description>Sending applicition of HL7 message.
-      		You have to configure a forward rule in HL7Send service with this sendingApplication/-Facility pair
-      		to all nodes that have to be synchronized.
-      		You have also to configure 'AE Titles' for this nodes (e.g. PACS1^SYNC, pacs1.domain, 2300)
+      <description>Sending Application in HL7 message directed to
+         HL7SendService to notify other Applications about Patient Information
+         Updates.
       </description>
       <name>SendingApplication</name>
       <type>java.lang.String</type>
@@ -58,13 +63,54 @@
    <attribute access="read-write"
       getMethod="getSendingFacility"
       setMethod="setSendingFacility">
-      <description>Sending facility of HL7 message. 
-      	See also SendingApplication description.
+      <description>Sending Facility in HL7 message directed to
+         HL7SendService to notify other Applications about Patient Information
+         Updates.
       </description>
       <name>SendingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="WEBSYNC" />
+         <value value="TIANI" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCalledAET"
+      setMethod="setCalledAET">
+      <description>Called AET in DICOM message directed to StudyMgtScuService
+         to notify other Applications about Study Information Updates.
+         The Called AET and/or the Calling AET may be used to configure
+         specific forwarding Rules in StudyMgtScuService for DICOM messages
+         received from this Content Edit Service.
+      </description>
+      <name>CalledAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCallingAET"
+      setMethod="setCallingAET">
+      <description>Calling AET in DICOM message directed to StudyMgtScuService
+         to notify other Applications about Study Information Updates.
+      </description>
+      <name>CallingAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
+      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+      "LOCAL", if EJBs are deployed in same JBoss instance.
+      </description>
+      <name>EjbProviderURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LOCAL" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -78,30 +124,6 @@
          <value value="tiani.archive:service=HL7Send" />
       </descriptors>
    </attribute>
-
-   <attribute access="read-write"
-      getMethod="getCalledSyncAET"
-      setMethod="setCalledSyncAET">
-      <description>Called AET for StudyMgt Association. 
-      </description>
-      <name>CalledSyncAET</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="PACS_TIANI_SYNC" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingSyncAET"
-      setMethod="setCallingSyncAET">
-      <description>Calling AET for StudyMgt Association. 
-      </description>
-      <name>CallingSyncAET</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="PACS_TIANI_SYNC" />
-      </descriptors>
-   </attribute>
-
    <attribute access="read-write"
       getMethod="getStudyMgtScuServiceName"
       setMethod="setStudyMgtScuServiceName">

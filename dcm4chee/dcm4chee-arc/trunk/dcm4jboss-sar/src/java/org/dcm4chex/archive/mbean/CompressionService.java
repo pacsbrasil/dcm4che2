@@ -273,7 +273,7 @@ public class CompressionService extends TimerSupport {
                 if (absTmpDir.mkdirs())
                     log.info("Create directory for decompressed files");
                 File decFile = new File(absTmpDir,
-                        srcFile.getPath().substring(1).replace(File.separatorChar, '-')
+						fileDTO.getFilePath().replace('/', '-')
                         + _DCM);
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
                         decFile, fileDTO.getFileTsuid(), pxvalVR[0]);

@@ -6,5 +6,11 @@
          name="tiani.archive:service=ContentEditService"
          xmbean-dd="xmdesc/dcm4jboss-contentedit-xmbean.xml">
   </mbean>
+    <depends>
+      tiani.archive:service=HL7Send
+    </depends> 
+    <depends>
+      tiani.archive:service=StudyMgtScu
+    </depends> 
 
 </server>

@@ -32,7 +32,7 @@
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=PACS_TIANI]PACS_CENTRAL;NONE" />
+         <value value="[calling=PACS_TIANI]PACS_CENTRAL" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
