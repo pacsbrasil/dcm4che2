@@ -26,6 +26,7 @@ public class WaveformArea {
 	private float height;
 	private int waveformIndex = -1;
 	private String waveformDescription = null;
+	private WaveformScalingInfo scalingInfo;
 	
 	private WaveformArea( int type, float x, float y, float w, float h ) {
 		this.type = type;
@@ -34,18 +35,19 @@ public class WaveformArea {
 		width = w;
 		height = h;
 	}
-	private WaveformArea( int type, float x, float y, float w, float h, int idx, String desc ) {
+	private WaveformArea( int type, float x, float y, float w, float h, int idx, String desc, WaveformScalingInfo scale ) {
 		this( type, x, y, w, h );
 		waveformIndex = idx;
 		waveformDescription = desc;
+		scalingInfo = scale;
 	}
 
 	public static WaveformArea getCalPulseArea( float x, float y, float w, float h ){
 		return new WaveformArea( TYPE_CAL_PULSE, x, y, w, h );
 	}
 
-	public static WaveformArea getWaveformArea( float x, float y, float w, float h, int idx, String desc ){
-		return new WaveformArea( TYPE_WAVEFORM, x, y, w, h, idx, desc );
+	public static WaveformArea getWaveformArea( float x, float y, float w, float h, int idx, String desc, WaveformScalingInfo scale ){
+		return new WaveformArea( TYPE_WAVEFORM, x, y, w, h, idx, desc, scale );
 	}
 	
 	/**
@@ -105,5 +107,11 @@ public class WaveformArea {
 	 */
 	public int getWaveformIndex() {
 		return waveformIndex;
+	}
+	/**
+	 * @return Returns the scalingInfo.
+	 */
+	public WaveformScalingInfo getScalingInfo() {
+		return scalingInfo;
 	}
 }

@@ -106,7 +106,10 @@ public class WaveformGroup {
 	 * @return
 	 */
 	public String getFilterText() {
-		return channels[0].getLowFreq()+"-"+channels[0].getHighFreq()+" Hz";
+		if ( channels[0].getLowFreq() != null )
+			return channels[0].getLowFreq()+"-"+channels[0].getHighFreq()+" Hz";
+		else
+			return "No Filter!";
 	}
 	
 	/**
@@ -117,7 +120,7 @@ public class WaveformGroup {
 		channels = new WaveFormChannel[ len ];
 		WaveFormChannel ch;
 		for ( int i = 0 ; i < len ; i++ ) {
-			ch = new WaveFormChannel( chDefs.getItem(i), getWaveFormBuffer(i), fCorr );
+			ch = new WaveFormChannel( this, chDefs.getItem(i), getWaveFormBuffer(i), fCorr );
 			channels[i] = ch;
 		}
 		

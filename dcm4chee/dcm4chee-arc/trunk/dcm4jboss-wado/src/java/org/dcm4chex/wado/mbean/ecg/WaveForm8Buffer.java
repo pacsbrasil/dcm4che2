@@ -40,6 +40,10 @@ public class WaveForm8Buffer implements WaveFormBuffer {
 		return getValue();
 	}
 	
+	public void reset() {
+		offset = leadNr;
+	}
+	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("WaveForm8Buffer:").append(leadNr).append(" of ").append(nrOfLeads);

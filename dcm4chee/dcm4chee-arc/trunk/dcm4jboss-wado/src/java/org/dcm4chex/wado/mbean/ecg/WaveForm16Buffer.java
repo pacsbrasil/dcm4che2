@@ -40,6 +40,10 @@ public class WaveForm16Buffer implements WaveFormBuffer {
 		offset = sampleNr * nrOfLeads + leadNr;
 		return getValue();
 	}
+
+	public void reset() {
+		offset = leadNr;
+	}
 	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

@@ -239,8 +239,10 @@ public class FOPCreator implements XMLResponseObject{
 		util.addAttribute( attr, "text-align", "center" );
 		util.startElement( "fo:block", attr);
 		{
-			util.singleElement("fo:inline", null, "25mm/sec" );
-			util.singleElement("fo:inline", null, "10mm/mV" );
+			if ( group.getNrOfChannels() == 12 ) { //TODO: Hack, only know that 12lead use this scaling, also should be checked via CUID!
+				util.singleElement("fo:inline", null, "25mm/sec" );
+				util.singleElement("fo:inline", null, "10mm/mV" );
+			}
 			util.singleElement("fo:inline", null, group.getFilterText() );
 		}
 		util.endElement( "fo:block");

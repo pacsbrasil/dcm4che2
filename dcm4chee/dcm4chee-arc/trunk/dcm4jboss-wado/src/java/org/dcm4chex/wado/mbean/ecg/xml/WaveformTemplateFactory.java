@@ -26,6 +26,7 @@ public class WaveformTemplateFactory {
 	
 	public static WaveformTemplate getInstance( WaveformGroup wfGrp, float w, float h ) {
 		int nrOfChannels = wfGrp.getNrOfChannels();
+		String cuid = wfGrp.getCUID();
 		if ( nrOfChannels == 12 ) {
 			return new TwelveLeadTemplate( w, h );
 		}

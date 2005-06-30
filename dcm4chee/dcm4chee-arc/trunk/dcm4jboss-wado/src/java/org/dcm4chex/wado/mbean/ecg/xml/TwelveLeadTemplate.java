@@ -17,6 +17,7 @@ public class TwelveLeadTemplate implements WaveformTemplate {
 	public static final float MIN_WIDTH = 1000;
 	public static final float MIN_HEIGHT = 1000;
 	public static final float CAL_PULSE_WIDTH = 120;
+	public static final WaveformScalingInfo SCALING_INFO = new WaveformScalingInfo(250f,null,100f,null);
 	
 	private float width;
 	private float height;
@@ -39,8 +40,8 @@ public class TwelveLeadTemplate implements WaveformTemplate {
 		float topY = 0;
 		for ( int i = 0 ; i < 6 ; i++, topY += lineHeight ) {
 			calPulseAreas[i] = WaveformArea.getCalPulseArea( 0, topY, CAL_PULSE_WIDTH, lineHeight );
-			wfAreas[i] = WaveformArea.getWaveformArea( CAL_PULSE_WIDTH, topY, wfWidth, lineHeight, i, null );
-			wfAreas[i+6] = WaveformArea.getWaveformArea( rightWaveformX, topY, wfWidth, lineHeight, i+6, null );
+			wfAreas[i] = WaveformArea.getWaveformArea( CAL_PULSE_WIDTH, topY, wfWidth, lineHeight, i, null, SCALING_INFO );
+			wfAreas[i+6] = WaveformArea.getWaveformArea( rightWaveformX, topY, wfWidth, lineHeight, i+6, null, SCALING_INFO );
 		}
 	}
 
@@ -80,6 +81,10 @@ public class TwelveLeadTemplate implements WaveformTemplate {
 	 */
 	public WaveformArea[] getWaveformAreas() {
 		return wfAreas;
+	}
+	
+	public String getFooterText() {
+		return "25mm/sec 10mm/mV";
 	}
 
 

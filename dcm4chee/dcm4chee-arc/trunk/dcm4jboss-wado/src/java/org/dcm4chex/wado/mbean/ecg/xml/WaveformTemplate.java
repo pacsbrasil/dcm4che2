@@ -24,4 +24,9 @@ public interface WaveformTemplate {
 	
 	WaveformArea[] getWaveformAreas();
 
+	/**
+	 * @return The text rendered as footer.
+	 */
+	String getFooterText();
+
 }

@@ -19,6 +19,7 @@ import org.dcm4che.dict.Tags;
  */
 public class WaveFormChannel {
 
+	private WaveformGroup wfGrp;
 	private int chNr;
 	private String chSource;
 	private int bitsStored;
@@ -37,29 +38,31 @@ public class WaveFormChannel {
 	private WaveFormBuffer buffer;
 	private Float lowFreq;
 	private Float highFreq;
-
+	
 	private static Logger log = Logger.getLogger( WaveFormChannel.class.getName() );
 
 	/**
 	 * @param buffer
 	 * @param item
 	 */
-	public WaveFormChannel(Dataset ch, WaveFormBuffer buffer, float fCorr) {
+	public WaveFormChannel(WaveformGroup grp, Dataset ch, WaveFormBuffer buffer, float fCorr) {
+		wfGrp = grp;
 		this.fCorr = fCorr;
 		chNr = ch.getInt( Tags.WaveformChannelNumber, -1);
 		chSource = ch.get(Tags.ChannelSourceSeq).getItem().getString( Tags.CodeMeaning);
-		bitsStored = ch.getInt( Tags.WaveformBitsStored, -1 );
-		minValue = ch.getInteger( Tags.ChannelMinimumValue, 0 );
-		maxValue = ch.getInteger( Tags.ChannelMaximumValue, (1 << bitsStored)-1 );
+		try {
+			bitsStored = ch.getInt( Tags.WaveformBitsStored, -1 );
+		} catch ( UnsupportedOperationException x ) {
+			bitsStored = ch.getFloat( Tags.WaveformBitsStored ).intValue();
+		}
+		minValue = ch.getInteger( Tags.ChannelMinimumValue );//min (max) should have the same VR as waveform data!
+		maxValue = ch.getInteger( Tags.ChannelMaximumValue );
 		label = ch.getString( Tags.ChannelLabel );
 		status = ch.getString( Tags.ChannelStatus );
 		
 		sensitivity = channelSensitivity = ch.getFloat( Tags.ChannelSensitivity, 1f );
 		sensitivityCorrection = ch.getFloat( Tags.ChannelSensitivityCorrectionFactor, 1f );
 		sensitivityUnit = getSensitivityUnit( ch, "" );
-		if ( "uV".equals( sensitivityUnit) ) {
-			sensitivity *= getSensitifityUnitFactor( "" );
-		}
 		if ( fCorr != 1f ) sensitivity *= fCorr;
 		sensitivity *= sensitivityCorrection; 
 		
@@ -69,22 +72,12 @@ public class WaveFormChannel {
 		if ( log.isDebugEnabled() ) logInfo();
 	}
 	
-	public WaveFormChannel(Dataset ch, WaveFormBuffer buffer, float fCorr, float pixPerUnit) {
-		this( ch, buffer, fCorr);
-	}
 	/**
-	 * Returns the sensitivity correction factor for given unit string.
-	 * <p>
-	 * The base unit is mV! Therefore uV will return 0.001f!
-	 * 
-	 * @param unit The unit String
-	 * @return the correction factor for given unit.
+	 * @return Returns the wfGrp.
 	 */
-	private float getSensitifityUnitFactor(String unit) {
-		if ( "uV".equals(unit) ) return 0.001f;
-		return 1f;
+	public WaveformGroup getWaveformGroup() {
+		return wfGrp;
 	}
-
 	/**
 	 * @param ch
 	 * @return
@@ -93,8 +86,13 @@ public class WaveFormChannel {
 		DcmElement sensSeq = ch.get(Tags.ChannelSensitivityUnitsSeq);
 		if ( sensSeq != null) {
 			Dataset ds = sensSeq.getItem();
-			if ( ds != null)
-				return ds.getString( Tags.CodeValue );
+			if ( ds != null) {
+				if ( "UCUM".equals(ds.getString(Tags.CodingSchemeDesignator)) ) {
+					return ds.getString( Tags.CodeValue );
+				} else {
+					return ds.getString(Tags.CodeMeaning);
+				}
+			}
 		}
 		return def;
 	}
@@ -126,6 +124,12 @@ public class WaveFormChannel {
 		return highFreq;
 	}
 
+	/**
+	 * @return Returns the sensitivity.
+	 */
+	public float getSensitivity() {
+		return sensitivity;
+	}
 	
 	
 	
@@ -136,6 +140,34 @@ public class WaveFormChannel {
 	public int getRawValue( int sampleNr ) {
 		return buffer.getValue( sampleNr );
 	}
+	
+	/**
+	 * @return Returns the maxValue.
+	 */
+	public Integer getMaxValue() {
+		return maxValue;
+	}
+	/**
+	 * @return Returns the minValue.
+	 */
+	public Integer getMinValue() {
+		return minValue;
+	}
+	/**
+	 * @return Returns the sensitivityUnit.
+	 */
+	public String getUnit() {
+		return sensitivityUnit;
+	}
+	/**
+	 * This method reset the channel. 
+	 * Therefore next getValue() call will return first sample!
+	 *
+	 */
+	public void reset() {
+		buffer.reset();
+	}
+	
 	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -170,6 +202,31 @@ public class WaveFormChannel {
 	 */
 	public float getValue() {
 		return getRawValue() * sensitivity;//TODO all the other things to get the real value!
+	}
+	
+	/**
+	 * Calculates min and max value for given samples (start..(end-1)).
+	 * <p>
+	 * Return the float array with min value at index 0 and max at index 1.
+	 * <p>
+	 * This method reset the channel. Therefore next getValue() call will return first sample!
+	 * 
+	 * @param start The first sample
+	 * @param end The last sample (exclusive)
+	 * 
+	 * @return array with min and max value.
+	 */
+	public float[] calcMinMax(int start, int end) {
+		int min = buffer.getValue(start);
+		int max = min;
+		int value;
+		for ( int i = start+1 ; i < end ; i++ ) {
+			value = buffer.getValue(i);
+			if ( value < min ) min = value;
+			else if ( value > max ) max = value;
+		}
+		buffer.reset();
+		return new float[]{ min*sensitivity, max*sensitivity};
 	}
 
 }

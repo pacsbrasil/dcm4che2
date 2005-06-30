@@ -49,7 +49,7 @@ public class WaveformFlowTemplate implements WaveformTemplate {
 		float topY = 0;
 		for ( int i = 0 ; i < nrOfChannels ; i++, topY += lineHeight ) {
 			if ( useCalPulse ) calPulseAreas[i] = WaveformArea.getCalPulseArea( 0, topY, CAL_PULSE_WIDTH, lineHeight );
-			wfAreas[i] = WaveformArea.getWaveformArea( wfX, topY, wfWidth, lineHeight, i, null );
+			wfAreas[i] = WaveformArea.getWaveformArea( wfX, topY, wfWidth, lineHeight, i, null, null );
 		}
 	}
 
@@ -94,5 +94,8 @@ public class WaveformFlowTemplate implements WaveformTemplate {
 		return wfAreas;
 	}
 
+	public String getFooterText() {
+		return null;
+	}
 
 }

@@ -43,8 +43,7 @@ public class SVGCreator implements XMLResponseObject{
 	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyyMMddHHmmss");
 	private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
 	
-	private static final float PIX_PER_MV = -100f;// (negative because x=0 is top)  1mV/cm
-	private static final float PIX_PER_SEC = 250f;// is400ms/cm -> 25mm/s / 1mm = 10 pix
+	private static final float PIX_PER_SEC = 250f;// default value: is 400ms/cm -> 25mm/s / 1mm = 10 pix
 	
 	private static final NumberFormat cmFormatter = new DecimalFormat("##.##cm", new DecimalFormatSymbols( new Locale( "en", "us")));
 	
@@ -74,6 +73,8 @@ public class SVGCreator implements XMLResponseObject{
 	private String nameSpace = null;
 	private float scaling = 0.28169f;
 	
+	WaveformTemplate wfTemplate;
+	private static final String[] WF_COLORS = new String[]{"black","green","red","blue"};
 
 	/**
 	 * 
@@ -88,7 +89,7 @@ public class SVGCreator implements XMLResponseObject{
 		if ( width != null ) {
 			setPageWidth( width.floatValue() );
 		} else {
-			float prefWidth = PIX_PER_SEC / wfgrp.getSampleFreq() * (float) wfgrp.getNrOfSamples();
+			float prefWidth = PIX_PER_SEC / wfgrp.getSampleFreq() * (float) wfgrp.getNrOfSamples(); //default 25mm/sec
 			prefWidth *= 2;//two columns!
 			prefWidth += 110;//space for calPulse
 			if ( log.isDebugEnabled() ) log.debug("calculated width:"+prefWidth );
@@ -217,6 +218,7 @@ public class SVGCreator implements XMLResponseObject{
 	        	addRightstatementSegment();
 	        	addInterpSeparator();
         	}
+    		wfTemplate = WaveformTemplateFactory.getInstance( waveForms, (graphicWidthCm-1)*100, (graphicHeightCm-1)*100 );
         	addFooter();
         	addG("scaling", "translate("+this.graphicXOffset*scaling+","+(this.graphicYOffset+100)*scaling+"), scale("+scaling +")",null,null,null);
         	addDefs();
@@ -291,8 +293,9 @@ public class SVGCreator implements XMLResponseObject{
 			props.setProperty("id","filtertext");
 			props.setProperty("text-anchor", "end");
 			addText( String.valueOf(endX), "0", null, null, props, waveForms.getFilterText() );
-			addText( String.valueOf( endX - 500 ), "0", null, null, null, "25mm/sec" );
-			addText( String.valueOf( endX - 400 ), "0", null, null, null, "10mm/mV" );
+			String footer = wfTemplate.getFooterText();
+			if ( footer != null )
+				addText( String.valueOf( endX - footer.length()*50 ), "0", null, null, null, footer );
 		}
 		util.endElement( "g" );
 	}
@@ -354,9 +357,8 @@ public class SVGCreator implements XMLResponseObject{
 	}
 	
 	private void addGraphic( int width, int height ) throws SAXException{
-		WaveformTemplate tmpl = WaveformTemplateFactory.getInstance( waveForms, (width-1)*100, height*100 );
-		WaveformArea[] calPulseAreas = tmpl.getCalPulseAreas();
-		WaveformArea[] wfAreas = tmpl.getWaveformAreas();
+		WaveformArea[] calPulseAreas = wfTemplate.getCalPulseAreas();
+		WaveformArea[] wfAreas = wfTemplate.getWaveformAreas();
 		WaveformArea area;
 		if ( calPulseAreas != null ) {
 			for ( int i = 0 ; i < calPulseAreas.length ; i++ ) {
@@ -367,7 +369,7 @@ public class SVGCreator implements XMLResponseObject{
 		if ( wfAreas != null ) {
 			for ( int i = 0 ; i < wfAreas.length ; i++ ) {
 				area = wfAreas[i];
-				addWaveform( area.getWaveformIndex(), area.getLeftX(), area.getTopY(), area.getHeight(), area.getWidth() );
+				addWaveform( area );
 			}
 		}
 	}
@@ -384,23 +386,40 @@ public class SVGCreator implements XMLResponseObject{
 		
 	}
 	
-	private void addWaveform(int lead, float xOffset, float topPos, float height, float width) throws SAXException {
-		float baseLineY = topPos + height/2f;
-		if ( log.isDebugEnabled() ) log.debug("topPos:"+topPos);
-		addG( "lead"+lead, "translate("+(graphicXOffset+xOffset)+","+baseLineY+")",null, null, null );
-			addText( "0", "-100", "30", "green", null, waveForms.getChannel( lead ).getChSource());
-			addPath( "lead"+lead, "fill:none;stroke:black", "5", getWaveFormString( waveForms.getChannel( lead ), width ));
+	private void addWaveform(WaveformArea area) throws SAXException {
+		int lead=area.getWaveformIndex();
+		WaveFormChannel channel = waveForms.getChannel( lead );
+		WaveformScalingInfo scalingInfo = prepareScalingInfo( channel, area );
+		float topPos=area.getTopY();
+		float baseLineY = topPos + area.getHeight()*scalingInfo.getZeroLine();
+		if ( log.isDebugEnabled() ) log.debug("topPos:"+topPos+", baseLineY:"+baseLineY+", scalingInfo:"+scalingInfo);
+		channel.reset();
+		addG( "lead"+lead, "translate("+(graphicXOffset+area.getLeftX())+","+baseLineY+")",null, null, null );
+			addPath( "lead"+lead, "fill:none;stroke:"+WF_COLORS[lead%WF_COLORS.length], "5", getWaveFormString( channel, area, scalingInfo ));
+		util.endElement("g");
+		addG( "lead"+lead, "translate("+(graphicXOffset+area.getLeftX())+","+(topPos + area.getHeight()*0.5)+")",null, null, null );
+			addText( "0", "-100", "30", "green", null, channel.getChSource());
 		    addPath( "waveseparator", "fill:none;stroke:green", "5" ,"M 0 -90 L 0 -20 M 0 90 L 0 20 ");
-		   util.endElement("g");
+		    if ( scalingInfo.getYScaleDesc() != null ) {
+		    	addText( "0", "-150", "30", "green", null, scalingInfo.getYScaleDesc());
+		    }
+		    if ( scalingInfo.getXScaleDesc() != null ) {
+		    	addText( Float.toString(area.getWidth()-300), Float.toString( topPos+area.getHeight()-150), "30", "green", null, scalingInfo.getXScaleDesc());
+		    }
+	   util.endElement("g");
 	}
 
 	/**
 	 * @param channel
+	 * @param scalingInfo
 	 * @return
 	 */
-	private String getWaveFormString(WaveFormChannel channel, float width) {
+	private String getWaveFormString(WaveFormChannel channel, WaveformArea area, WaveformScalingInfo scalingInfo ) {
+		float width = area.getWidth();
 		StringBuffer sb = new StringBuffer();
-		float xDelta = PIX_PER_SEC / waveForms.getSampleFreq();
+		float xDelta = scalingInfo.getPixPerSec() / waveForms.getSampleFreq();
+		float yDelta = scalingInfo.getPixPerUnit() * -1;
+		
 		int len = waveForms.getNrOfSamples();
 		if ( log.isDebugEnabled() ) log.debug("NrOfSamples:"+len);
 		if ( len * xDelta > width ) {
@@ -411,10 +430,63 @@ public class SVGCreator implements XMLResponseObject{
 		sb.append("M 0 0 L ");
 		float currX = 0f;
 		for ( int i = 0 ; i < len ; i++ ) {
-			sb.append( currX ).append( " " ).append( channel.getValue() * PIX_PER_MV ).append(" ");
+			sb.append( currX ).append( " " ).append( channel.getValue() * yDelta ).append(" ");
 			currX += xDelta;
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * @param channel
+	 * @param scalingInfo
+	 * @return
+	 */
+	private WaveformScalingInfo prepareScalingInfo(WaveFormChannel channel, WaveformArea area) {
+		float pixPerSec = -1;
+		float pixPerUnit = -1f;
+		float zeroLine = 0.5f;
+		String xScaleDesc = null;
+		String yScaleDesc = null;
+		WaveformScalingInfo scalingInfo = area.getScalingInfo();
+		if ( scalingInfo != null ) {
+			if ( (pixPerSec = scalingInfo.getPixPerSec()) > 0 && (pixPerUnit = scalingInfo.getPixPerUnit()) > 0 ) 
+				return scalingInfo;
+			xScaleDesc = scalingInfo.getXScaleDesc();
+			yScaleDesc = scalingInfo.getYScaleDesc();
+		}
+		//OK! We need scaling information
+		if ( pixPerSec <= 0f ) {
+			int nrOfSamples = channel.getWaveformGroup().getNrOfSamples();
+			pixPerSec = area.getWidth() / nrOfSamples * channel.getWaveformGroup().getSampleFreq();
+			xScaleDesc = (pixPerSec/10)+"mm/sec";
+		}
+		if ( pixPerUnit <= 0f ) {
+			Integer min = channel.getMinValue();
+			Integer max = channel.getMaxValue();
+			float[] minmax;
+			if ( min != null && max != null ) {
+				float sens = channel.getSensitivity();
+				minmax = new float[] { min.floatValue()*sens, 
+									   max.floatValue()*sens };
+			} else {
+				minmax = channel.calcMinMax(0,channel.getWaveformGroup().getNrOfSamples());
+			}
+			float unitRange = minmax[1]-minmax[0];
+			if ( unitRange == 0 ) unitRange = 1;
+			pixPerUnit = area.getHeight() / unitRange;
+			yScaleDesc = channel.getUnit()+" ("+(pixPerUnit/10)+"mm/"+channel.getUnit()+")";
+			if ( minmax[0] > 0 && minmax[1] > 0 ) { 
+				zeroLine = minmax[1] / unitRange;
+			} else if ( minmax[0] < 0 && minmax[1] < 0) {
+				zeroLine = minmax[0] / unitRange;
+			} else {
+				zeroLine = (unitRange + minmax[0])/unitRange;// unitrange - abs(min)
+			}
+			
+		}
+		scalingInfo = new WaveformScalingInfo(pixPerSec,xScaleDesc,pixPerUnit,yScaleDesc);
+		scalingInfo.setZeroLine( zeroLine );
+		return scalingInfo;
 	}
 
 	/**
