@@ -66,6 +66,8 @@ public class CompressionService extends TimerSupport {
     private long keepTempFileIfVerificationFails = 0L;    
 
     private List compressionRuleList = new ArrayList();
+    
+    private boolean autoPurge = true;
 
     private static final String[] CODEC_NAMES = new String[] { "JPLL", "JLSL",
             "J2KR" };
@@ -188,6 +190,20 @@ public class CompressionService extends TimerSupport {
         return tmpDir.toString();
     }
         
+	/**
+	 * @return Returns the autoPurge.
+	 */
+	public boolean isAutoPurge() {
+		return autoPurge;
+	}
+	/**
+	 * @param autoPurge The autoPurge to set.
+	 */
+	public void setAutoPurge(boolean autoPurge) {
+		this.autoPurge = autoPurge;
+	}
+	
+	
     public void checkForTempFilesToDelete() {
         if (keepTempFileIfVerificationFails <= 0)
             return;
@@ -210,6 +226,7 @@ public class CompressionService extends TimerSupport {
     public void checkForFilesToCompress() throws RemoteException,
             FinderException {
         log.info("Check For Files To Compress on attached filesystems!");
+		long minDiskFree = getMinDiskFreeFromFsmgt();
         String cuid;
         Timestamp before;
         CompressionRule info;
@@ -230,6 +247,7 @@ public class CompressionService extends TimerSupport {
                                 + fsdirs[j] + " triggered by " + info);
                         for (int k = 0; k < files.length; k++) {
                             doCompress(fsMgt, files[k], info);
+                            if ( autoPurge ) autoPurge( files[k], minDiskFree);
                         }
                         limit -= files.length;
                     }
@@ -242,7 +260,27 @@ public class CompressionService extends TimerSupport {
         }
     }
 
-    private String[] fileSystemDirPaths() {
+    /**
+	 * @param fileDTO
+	 */
+	private void autoPurge(FileDTO fileDTO, long minDiskFree) {
+		if ( log.isDebugEnabled() ) log.debug("autoPurge called for "+fileDTO.getDirectoryPath());
+        if ( new se.mog.io.File(FileUtils.resolve(new File(fileDTO.getDirectoryPath()))).getDiskSpaceAvailable() < minDiskFree) {
+    		if ( log.isDebugEnabled() ) log.debug("autoPurge start processing purgeFiles! Available disk space is < "+minDiskFree);
+            try {
+                server.invoke(fileSystemMgtName,
+                        "purgeFiles", 
+                        new Object[] { fileDTO.getDirectoryPath() },
+						new String[] { String.class.getName() });
+            } catch (JMException e) {
+                throw new RuntimeException(
+                        "Failed to invoke purgeFiles(\""+fileDTO.getDirectoryPath()+"\")", e);
+            }
+            
+        }
+	}
+
+	private String[] fileSystemDirPaths() {
         try {
             return (String[]) server.invoke(fileSystemMgtName,
                     "fileSystemDirPaths", null, null);
@@ -250,6 +288,16 @@ public class CompressionService extends TimerSupport {
             throw new RuntimeException(
                     "Failed to invoke fileSystemDirPaths", e);
         }
+    }
+    
+    private long getMinDiskFreeFromFsmgt() {
+        try {
+            return FileUtils.parseSize((String) server.getAttribute(fileSystemMgtName,"MinFreeDiskSpace"),-1);
+        } catch (JMException e) { 
+            throw new RuntimeException(
+                    "Failed to invoke getMinDiskFree", e);
+        }
+    	
     }
 
      private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
@@ -273,8 +321,8 @@ public class CompressionService extends TimerSupport {
                 if (absTmpDir.mkdirs())
                     log.info("Create directory for decompressed files");
                 File decFile = new File(absTmpDir,
-						fileDTO.getFilePath().replace('/', '-')
-                        + _DCM);
+                		fileDTO.getFilePath().replace('/', '-') 
+                		+ _DCM);
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
                         decFile, fileDTO.getFileTsuid(), pxvalVR[0]);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {

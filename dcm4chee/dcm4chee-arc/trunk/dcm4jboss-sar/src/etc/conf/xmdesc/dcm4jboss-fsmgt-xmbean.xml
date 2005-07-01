@@ -272,6 +272,18 @@
       <name>purgeFiles</name>
       <return-type>void</return-type>
    </operation>   
+   <operation impact="ACTION">
+      <description>Purge unreferenced Files on specific filesystem</description>
+      <name>purgeFiles</name>
+      <parameter>
+        <description>Directory path of filesystem.
+        			Purge all filesystems if parameter is null!
+        </description>
+        <name>purgeDirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
    <operation impact="INFO">
       <description>Locate SOP Instance. Return a File object, if the instance
       is locally available, or the hostname as String object if a file

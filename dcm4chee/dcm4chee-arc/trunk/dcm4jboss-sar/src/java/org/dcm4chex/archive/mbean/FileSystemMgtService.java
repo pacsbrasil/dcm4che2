@@ -464,39 +464,56 @@ public class FileSystemMgtService extends TimerSupport {
     public void purgeFiles() {
         log.info("Check for unreferenced files to delete");
         FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            FileDTO[] toDelete;
-            for (int i = 0, n = dirPathList.size(); i < n; ++i) {
-                try {
-                    File dirPath = (File) dirPathList.get(i);
-                    toDelete = fsMgt.getDereferencedFiles(
-							FileUtils.slashify(dirPath), getLimitNumberOfFilesPerTask() );
-                } catch (Exception e) {
-                    log.warn("Failed to query dereferenced files:", e);
-                    break;
-                }
-                for (int j = 0; j < toDelete.length; j++) {
-                    FileDTO fileDTO = toDelete[j];
-					File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
-                            fileDTO.getFilePath());
-                    try {
-                        fsMgt.deleteFile(fileDTO.getPk());
-                    } catch (Exception e) {
-                        log.warn("Failed to remove File Record[pk=" 
-								+ fileDTO.getPk() + "] from DB:", e);
-                        log.info("-> Keep dereferenced file: " + file);
-						continue;
-                    }
-                    delete(file);
-                }
-            }
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
+        FileDTO[] toDelete;
+        for (int i = 0, n = dirPathList.size(); i < n; ++i) {
+            File dirPath = (File) dirPathList.get(i);
+            if ( ! purgeFiles(dirPath,fsMgt) ) break;
         }
-
+        
+        try {
+            fsMgt.remove();
+        } catch (Exception ignore) {
+        }
+    }
+    public void purgeFiles( String purgeDirPath ) {
+    	if ( purgeDirPath == null ) {
+    		purgeFiles();
+    	} else {
+            log.info("Check for unreferenced files to delete in filesystem:"+purgeDirPath);
+		    FileSystemMgt fsMgt = newFileSystemMgt();
+			purgeFiles(new File(purgeDirPath),fsMgt);
+		    try {
+		        fsMgt.remove();
+		    } catch (Exception ignore) {
+		    }
+    	}   	
+    }
+    
+    private boolean purgeFiles( File purgeDirPath, FileSystemMgt fsMgt ) {
+        FileDTO[] toDelete;
+    	try {
+    		toDelete = fsMgt.getDereferencedFiles(
+					FileUtils.slashify(purgeDirPath), getLimitNumberOfFilesPerTask() );
+            if ( log.isDebugEnabled()) log.debug("purgeFiles: found "+toDelete.length+" files to delete on dirPath:"+purgeDirPath);
+        } catch (Exception e) {
+            log.warn("Failed to query dereferenced files:", e);
+            return false;
+        }
+        for (int j = 0; j < toDelete.length; j++) {
+            FileDTO fileDTO = toDelete[j];
+			File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
+                    fileDTO.getFilePath());
+            try {
+                fsMgt.deleteFile(fileDTO.getPk());
+            } catch (Exception e) {
+                log.warn("Failed to remove File Record[pk=" 
+						+ fileDTO.getPk() + "] from DB:", e);
+                log.info("-> Keep dereferenced file: " + file);
+				continue;
+            }
+            delete(file);
+        }
+        return true;
     }
 
     private boolean delete(File file) {

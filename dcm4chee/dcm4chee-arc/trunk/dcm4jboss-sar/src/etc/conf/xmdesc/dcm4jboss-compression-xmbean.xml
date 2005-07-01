@@ -128,6 +128,20 @@
          <value value="tiani.archive:service=FileSystemMgt" />
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="isAutoPurge"
+      setMethod="setAutoPurge">
+      <description>Enables/Disables purging after a file is compressed.
+      				The purge will be only started if the filesystem of the compressed file is below minDiskSpace (Fsmgt).
+      				The purge process is limited to the filesystem where the compressed file is stored.
+      </description>
+      <name>autoPurge</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
