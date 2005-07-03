@@ -6,30 +6,18 @@
     <xsl:template match="/">
         <xsl:apply-templates
             select="office:document-content/office:body/table:table[position()=last()-1]/table:table-row[position()!=1]"/>
-        <xsl:apply-templates
-            select="office:document-content/office:body/table:table[position()=last()]/table:table-row[position()!=1]">
-            <xsl:with-param name="ret">RET</xsl:with-param>
-        </xsl:apply-templates>
-     </xsl:template>
+    </xsl:template>
     <xsl:template match="table:table-row">
-        <xsl:param name="ret"/>
-        <xsl:variable name="tag" select="normalize-space(table:table-cell[2])"/>
+         <xsl:variable name="tag" select="normalize-space(table:table-cell[2])"/>
         <element>
             <xsl:attribute name="tag">
                 <xsl:value-of select="$tag"/>
             </xsl:attribute>
             <xsl:attribute name="vr">
-                <xsl:if test="not($ret)">
-                    <xsl:value-of select="normalize-space(table:table-cell[3])"/>
-                </xsl:if>
+                <xsl:value-of select="normalize-space(table:table-cell[3])"/>
             </xsl:attribute>
             <xsl:attribute name="vm">
-                <xsl:if test="not($ret)">
-                    <xsl:value-of select="normalize-space(table:table-cell[4])"/>
-                </xsl:if>
-            </xsl:attribute>
-            <xsl:attribute name="ret">
-                <xsl:value-of select="$ret"/>
+                <xsl:value-of select="normalize-space(table:table-cell[4])"/>
             </xsl:attribute>
             <xsl:value-of select="normalize-space(table:table-cell[1])"/>
         </element>
