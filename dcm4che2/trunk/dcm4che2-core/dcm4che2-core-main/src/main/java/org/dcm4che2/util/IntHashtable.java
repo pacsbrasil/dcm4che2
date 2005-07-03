@@ -33,7 +33,6 @@ public class IntHashtable {
 	private int[] keyList;
 	private Object[] values;
 	private Object value0;
-	private Object value_1;
 	private int[] sortedKeys;
 	private boolean sorted;
 
@@ -59,7 +58,6 @@ public class IntHashtable {
 		Arrays.fill(keyList, 0);
 		Arrays.fill(values, null);
 		value0 = null;
-		value_1 = null;
 		sorted = false;
 	}
 
@@ -73,12 +71,6 @@ public class IntHashtable {
 			value0 = value;
 			return;
 		}
-		if (key == -1) {
-			if (value_1 == null)
-				++count;
-			value_1 = value;
-			return;
-		}
 		sorted = false;
 		if (count > highWaterMark)
 			rehash();
@@ -86,7 +78,7 @@ public class IntHashtable {
 	}
 
 	public Object get(int key) {
-		return key == 0 ? value0 : key == -1 ? value_1 : values[find(key)];
+		return key == 0 ? value0 : values[find(key)];
 	}
 
 	public Object remove(int key) {
@@ -97,18 +89,11 @@ public class IntHashtable {
 				value0 = null;
 				--count;
 			}
-		} else if (key == -1) {
-			if (value_1 != null) {
-				retval = value_1;
-				value_1 = null;
-				--count;
-			}
 		} else {
 			final int index = find(key);
 			if (values[index] != null) {
 				retval = values[index];
 				sorted = false;
-				keyList[index] = -1;
 				values[index] = null;
 				--count;
 				if (count < lowWaterMark) {
@@ -132,7 +117,7 @@ public class IntHashtable {
 			if (v != null && !v.equals(other.get(keyList[i])))
 				return false;
 		}
-		return equals(value0, other.value0) && equals(value_1, other.value_1);
+		return equals(value0, other.value0);// && equals(value_1, other.value_1);
 	}
 
 	private boolean equals(Object o1, Object o2) {
@@ -152,9 +137,6 @@ public class IntHashtable {
 		if (value0 != null) {
 			h = 37 * h + value0.hashCode();
 		}
-		if (value_1 != null) {
-			h = 37 * h + value_1.hashCode();
-		}
 		return h;
 	}
 
@@ -169,10 +151,6 @@ public class IntHashtable {
 	public boolean accept(Visitor visitor) {
 		if (value0 != null) {
 			if (!visitor.visit(0, value0))
-				return false;
-		}
-		if (value_1 != null) {
-			if (!visitor.visit(-1, value_1))
 				return false;
 		}
 		for (int i = 0; i < keyList.length; i++) {
@@ -197,8 +175,6 @@ public class IntHashtable {
 		sortedKeys = null;
 		count = 0;
 		if (value0 != null)
-			++count;
-		if (value_1 != null)
 			++count;
 		lowWaterMark = (int) (initialSize * LOW_WATER_FACTOR);
 		highWaterMark = (int) (initialSize * HIGH_WATER_FACTOR);
@@ -277,11 +253,6 @@ public class IntHashtable {
 					next = value0;
 				return;
 			}
-			if (start == -1) {
-				if (end == -1)
-					next = value_1;
-				return;
-			}
 			if (!sorted) {
 				if (sortedKeys == null) {
 					sortedKeys = new int[keyList.length];
@@ -290,15 +261,12 @@ public class IntHashtable {
 				Arrays.sort(sortedKeys);
 				sorted = true;
 			}
-			endIndex = Arrays.binarySearch(sortedKeys, end !=-1 ? end : -2);
+			endIndex = Arrays.binarySearch(sortedKeys, end);
 			if (endIndex < 0) {
 				if (endIndex == -1)
 					endIndex = sortedKeys.length - 1;
 				else
 					endIndex = -(endIndex + 1) - 1;
-			}
-			if (end == -1 && value_1 != null) {
-				endIndex = incIndex(endIndex);
 			}
 			index = Arrays.binarySearch(sortedKeys, start != 0 ? start : 1);
 			if (index < 0) {
@@ -330,8 +298,7 @@ public class IntHashtable {
 				next = null;
 			} else {
 				index = incIndex(index);
-				int key = sortedKeys[index];
-				next = key != 0 ? get(key) : value_1;
+				next = get(sortedKeys[index]);
 			}
 			return v;
 		}
