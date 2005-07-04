@@ -302,7 +302,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
             boolean checkOnMedia, boolean checkExternal, long maxSizeToDel)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
-        log.info("Releasing " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
+        log.info("Free Disk Space: try to release " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
         return releaseStudies(fsPathSet, checkUncommited, checkOnMedia,
                 checkExternal, maxSizeToDel, null);
     }

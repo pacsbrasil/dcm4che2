@@ -84,6 +84,11 @@ public class FileSystemMgtService extends TimerSupport {
 
     private Integer freeDiskSpaceListenerID;
     
+    private boolean autoPurge = true;
+    
+    private boolean freeDiskSpaceOnDemand = true;
+
+    
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
     
@@ -333,6 +338,30 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
     
+	/**
+	 * @return Returns the freeDiskSpaceOnDemand.
+	 */
+	public boolean isFreeDiskSpaceOnDemand() {
+		return freeDiskSpaceOnDemand;
+	}
+	/**
+	 * @param freeDiskSpaceOnDemand The freeDiskSpaceOnDemand to set.
+	 */
+	public void setFreeDiskSpaceOnDemand(boolean freeDiskSpaceOnDemand) {
+		this.freeDiskSpaceOnDemand = freeDiskSpaceOnDemand;
+	}
+	/**
+	 * @return Returns the autoPurge.
+	 */
+	public boolean isPurgeFilesAfterFreeDiskSpace() {
+		return autoPurge;
+	}
+	/**
+	 * @param autoPurge The autoPurge to set.
+	 */
+	public void setPurgeFilesAfterFreeDiskSpace(boolean autoPurge) {
+		this.autoPurge = autoPurge;
+	}
     public final String getPurgeFilesInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(purgeFilesInterval);
     }
@@ -564,7 +593,9 @@ public class FileSystemMgtService extends TimerSupport {
      * Remove old files until the stopFreeDiskSpaceWatermark is reached.
      * <p>
      * The real deletion is done in the purge process! This method removes only the reference to the file system.  
-     *
+     * <p>
+     * If PurgeFilesAfterFreeDiskSpace is enabled, the purge process will be called immediately.(if checkFreeDiskSpaceNecessary() is true)
+     * 
      * @return The released size in bytes or -1 if an error occured.
      */
     public long freeDiskSpace() {
@@ -575,8 +606,13 @@ public class FileSystemMgtService extends TimerSupport {
                     * dirPathList.size() - availableDiskSpace;
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
-                    return fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
+                    long size = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, maxSizeToDel);
+                    if ( autoPurge ) {
+                    	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
+                    	this.purgeFiles();
+                    }
+                    return size;
                 } finally {
                     fsMgt.remove();
                 }            

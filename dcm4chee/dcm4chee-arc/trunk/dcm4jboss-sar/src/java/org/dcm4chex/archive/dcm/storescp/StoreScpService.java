@@ -396,7 +396,7 @@ public class StoreScpService extends AbstractScpService {
                     null,
                     null);
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+            throw new RuntimeException("Failed to invoke selectStorageFileSystem", e);
         }
     }
 
@@ -424,4 +424,26 @@ public class StoreScpService extends AbstractScpService {
             throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
         }
     }
+    
+	boolean isFreeDiskSpaceOnDemand() {
+        try {
+            Boolean b = (Boolean) server.getAttribute(fileSystemMgtName,
+                    "FreeDiskSpaceOnDemand");
+            return b.booleanValue();
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke getAttribute 'FreeDiskSpaceOnDemand'", e);
+        }
+	}
+	
+	void callFreeDiskSpace() {
+        try {
+            server.invoke(fileSystemMgtName,
+                    "freeDiskSpace",
+                    null,
+                    null);
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke freeDiskSpace", e);
+        }
+		
+	}
 }

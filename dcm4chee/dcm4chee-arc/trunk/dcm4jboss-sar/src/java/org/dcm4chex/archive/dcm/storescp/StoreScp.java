@@ -589,6 +589,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         logInstancesStored(assoc);
         service.sendReleaseNotification(assoc);
+        if ( service.isFreeDiskSpaceOnDemand() ) {
+        	service.callFreeDiskSpace();
+        }
     }
 
     private void updateDBStudiesAndSeries(Map ians) {

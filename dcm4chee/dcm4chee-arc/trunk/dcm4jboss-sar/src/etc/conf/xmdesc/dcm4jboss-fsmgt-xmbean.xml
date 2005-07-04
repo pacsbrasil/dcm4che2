@@ -225,6 +225,30 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isFreeDiskSpaceOnDemand"
+      setMethod="setFreeDiskSpaceOnDemand">
+      <description>Enables/Disables 'freeDiskSpace on demand'.
+      		Services like StorageSCP can use this flag to permit or omit the call of freeDiscSpace after their work.
+      </description>
+      <name>FreeDiskSpaceOnDemand</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isPurgeFilesAfterFreeDiskSpace"
+      setMethod="setPurgeFilesAfterFreeDiskSpace">
+      <description>Enables/Disables purging after freeDiskSpace has processed.
+      </description>
+      <name>PurgeFilesAfterFreeDiskSpace</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
