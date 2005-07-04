@@ -64,7 +64,7 @@
       <name>OnMPPSReceived</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NO_OP" />
+         <value value="UPDATE_STATUS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
