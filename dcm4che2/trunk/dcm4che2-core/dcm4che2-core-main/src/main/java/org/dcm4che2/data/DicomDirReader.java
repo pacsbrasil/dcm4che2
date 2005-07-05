@@ -119,6 +119,7 @@ public class DicomDirReader {
 				in.setStreamPosition(l);
 				item = new BasicAttributeSet();
 				in.readItem(item);
+				cache.put(offset, item);
 			}
 			if ((showInactiveRecords || item.getInt(Tag.RecordInuseFlag) != 0)
 					&& (filter == null || filter.match(item, ignoreCaseOfPN)))
