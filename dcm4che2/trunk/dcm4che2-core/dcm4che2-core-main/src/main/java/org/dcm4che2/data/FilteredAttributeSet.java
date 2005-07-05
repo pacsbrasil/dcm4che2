@@ -242,8 +242,12 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return attrs.getTransferSyntax();
 	}
 
-	public boolean cache() {
-		return attrs.cache();
+	public boolean cacheGet() {
+		return attrs.cacheGet();
+	}
+
+	public boolean cachePut() {
+		return attrs.cachePut();
 	}
 
 	public void addAttribute(Attribute attr) {
@@ -322,8 +326,12 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return attrs.resolvePrivateTag(privateTag, privateCreator);
 	}
 
-	public void cache(boolean cached) {
-		attrs.cache(cached);
+	public void cacheGet(boolean cached) {
+		attrs.cacheGet(cached);
+	}
+
+	public void cachePut(boolean cached) {
+		attrs.cachePut(cached);
 	}
 
 	public void shareAttributes() {

@@ -37,7 +37,9 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private transient long itemOffset = -1L;
 
-	private transient boolean cache = true;
+	private transient boolean cacheGet = true;
+
+	private transient boolean cachePut = false;
 
 	public BasicAttributeSet() {
 		this(10);
@@ -52,17 +54,34 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		charset = null;
 	}
 
-	public final boolean cache() {
-		return cache;
+	public final boolean cacheGet() {
+		return cacheGet;
 	}
 
-	public final void cache(final boolean cache) {
-		this.cache = cache;
+	public final void cacheGet(final boolean cacheGet) {
+		this.cacheGet = cacheGet;
 		accept(new Visitor(){
 			public boolean visit(Attribute attr) {
 				if (attr.vr() == VR.SQ && attr.hasItems()) {
 					for (int i = 0, n = attr.countItems(); i < n; ++i) {
-						attr.getItem(i).cache(cache);
+						attr.getItem(i).cacheGet(cacheGet);
+					}
+				}
+				return true;
+			}});
+	}
+	
+	public final boolean cachePut() {
+		return cachePut;
+	}
+
+	public final void cachePut(final boolean cachePut) {
+		this.cachePut = cachePut;
+		accept(new Visitor(){
+			public boolean visit(Attribute attr) {
+				if (attr.vr() == VR.SQ && attr.hasItems()) {
+					for (int i = 0, n = attr.countItems(); i < n; ++i) {
+						attr.getItem(i).cachePut(cachePut);
 					}
 				}
 				return true;
@@ -296,64 +315,67 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public Attribute putInt(int tag, VR vr, int val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? new Integer(val) : null));
+				cachePut ? new Integer(val) : null));
 	}
 
 	public Attribute putInts(int tag, VR vr, int[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? val : null));
+				cachePut ? val : null));
 	}
 
 	public Attribute putFloat(int tag, VR vr, float val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? new Float(val) : null));
+				cachePut ? new Float(val) : null));
 	}
 
 	public Attribute putFloats(int tag, VR vr, float[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? val : null));
+				cachePut ? val : null));
 	}
 
 	public Attribute putDouble(int tag, VR vr, double val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? new Double(val) : null));
+				cachePut ? new Double(val) : null));
 	}
 
 	public Attribute putDoubles(int tag, VR vr, double[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
-				cache ? val : null));
+				cachePut ? val : null));
 	}
 
 	public Attribute putString(int tag, VR vr, String val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val,
-				be, getSpecificCharacterSet()), cache ? val : null));
+				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
 	public Attribute putStrings(int tag, VR vr, String[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
 		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val,
-				be, getSpecificCharacterSet()), cache ? val : null));
+				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
 	public Attribute putDate(int tag, VR vr, Date val) {
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val),
-				cache ? val : null));
+		// no cache of given Date object, to avoid problems
+		// with non-zero values for unsignifcant fields
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val), null));
 	}
 
 	public Attribute putDates(int tag, VR vr, Date[] val) {
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val),
-				cache ? val : null));
+		// no cache of given Date objects, to avoid problems
+		// with non-zero values for unsignifcant fields
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val), null));
 	}
 
 	public Attribute putDateRange(int tag, VR vr, DateRange val) {
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val),
-				cache ? val : null));
+		// no cache of given DateRange object, to avoid problems
+		// with non-zero values for unsignifcant fields
+		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val), null));
 	}
 	
 	public Attribute putSequence(int tag) {

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.WeakHashMap;
+import java.util.regex.Pattern;
 
 import org.dcm4che2.util.TagUtils;
 
@@ -303,6 +304,21 @@ class BasicAttribute implements Attribute {
 		if (cache && cachedValue instanceof Date)
 			return (DateRange) cachedValue;
 		DateRange val = vr.toDateRange((byte[]) value);
+		if (cache)
+			cachedValue = val;
+		return val;
+	}
+
+	public Pattern getPattern(SpecificCharacterSet cs, boolean ignoreCase,
+			boolean cache) {
+		if (cache && cachedValue instanceof Pattern) {
+			Pattern t = (Pattern) cachedValue;
+			if (t.flags() == (ignoreCase 
+					? (Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+					: 0))
+				return t;
+		}
+		Pattern val = vr.toPattern((byte[]) value, bigEndian, cs, ignoreCase);
 		if (cache)
 			cachedValue = val;
 		return val;

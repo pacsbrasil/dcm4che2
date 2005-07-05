@@ -11,6 +11,8 @@ package org.dcm4che2.data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.DateUtils;
@@ -123,6 +125,13 @@ public abstract class VR {
 		public String toString(byte[] val, boolean bigEndian,
 				SpecificCharacterSet cs) {
 			return StringUtils.trimEnd(VR.bytes2str(val, cs));
+		}
+		
+		public String[] toStrings(byte[] val, boolean bigEndian,
+				SpecificCharacterSet cs) {
+			if (val == null || val.length == 0)
+				return EMPTY_STRING_ARRAY;
+			return new String[]{ toString(val, bigEndian, cs) };
 		}
 	}
 	
@@ -753,6 +762,7 @@ public abstract class VR {
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trimPN(VR.bytes2strs(val, cs));
 		}
+
 	}
 
 	private static final class SH extends StringVR {
@@ -1158,6 +1168,29 @@ public abstract class VR {
 	
 	public DateRange toDateRange(byte[] val) {
 		throw new UnsupportedOperationException();
+	}
+
+	public Pattern toPattern(byte[] bs, boolean bigEndian,
+			SpecificCharacterSet cs, boolean ignoreCase) {
+		String s = toString(bs, bigEndian, cs);
+		if (s == null)
+			return null;
+		StringBuffer sb = new StringBuffer(s.length()+10);
+		StringTokenizer stk = new StringTokenizer(s, "*?", true);
+		while (stk.hasMoreTokens()) {
+			String tk = stk.nextToken();
+			char c = tk.charAt(0);
+			if (c == '*') {
+				sb.append(".*");
+			} else if (c == '?') {
+				sb.append(".");
+			} else {
+				sb.append("\\Q").append(tk).append("\\E");				
+			}
+		}
+		return Pattern.compile(sb.toString(), ignoreCase 
+				? (Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+						: 0);
 	}
 
 	public void toggleEndian(Object val) {

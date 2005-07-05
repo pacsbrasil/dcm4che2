@@ -11,6 +11,7 @@ package org.dcm4che2.data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public interface Attribute extends Serializable {
 	int tag();
@@ -44,6 +45,8 @@ public interface Attribute extends Serializable {
 	Date getDate(boolean cache);
 	Date[] getDates(boolean cache);
 	DateRange getDateRange(boolean cache);
+	Pattern getPattern(SpecificCharacterSet cs, boolean ignoreCase,
+			boolean cache);
     Attribute share();
 	Attribute filterItems(AttributeSet filter);
 }

@@ -20,24 +20,52 @@ public class DicomDirReaderTest extends TestCase {
 		return new File(cl.getResource(name).toString().substring(5));
 	}
 
-	public void testReadNextSiblingRecord() throws IOException {
+	public void testFindNextSiblingRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
-		AttributeSet rec = r.readFirstRootRecord();
+		AttributeSet rec = r.findFirstRootRecord();
 		int count = 0;
 		while (rec != null) {
-			rec = r.readNextSiblingRecord(rec);
+			rec = r.findNextSiblingRecord(rec);
 			++count;
 		}
 		r.close();
 		assertEquals(81, count);
 	}
 
-	public void testReadFirstChildRecord() throws IOException {
+	public void testFindFirstMatchingRootRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
-		AttributeSet rec = r.readFirstRootRecord();
+		AttributeSet filter = new BasicAttributeSet();
+		filter.putString(Tag.DirectoryRecordType, VR.CS, "PATIENT");
+		filter.putString(Tag.PatientsName, VR.PN, "CHEST*");
+		AttributeSet rec = r.findFirstMatchingRootRecord(filter, true);
+		assertEquals("Chest^Portable", rec.getString(Tag.PatientsName));
+	}
+
+	public void testFindNextMatchingSiblingRecordRecord() throws IOException {
+		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
+		AttributeSet filter = new BasicAttributeSet();
+		filter.putString(Tag.DirectoryRecordType, VR.CS, "STUDY");
+		filter.putString(Tag.StudyDate, VR.DA, "-19931213");
+		AttributeSet pat = r.findFirstRootRecord();
+		int count = 0;
+		while (pat != null) {
+			AttributeSet sty = r.findFirstMatchingChildRecord(pat, filter, true);
+			while (sty != null) {
+				++count;
+				sty = r.findNextMatchingSiblingRecord(sty, filter, true);
+			}
+			pat = r.findNextSiblingRecord(pat);
+		}
+		r.close();
+		assertEquals(3, count);
+	}
+
+	public void testFindFirstChildRecord() throws IOException {
+		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
+		AttributeSet rec = r.findFirstRootRecord();
 		int count = 0;
 		while (rec != null) {
-			rec = r.readFirstChildRecord(rec);
+			rec = r.findFirstChildRecord(rec);
 			++count;
 		}
 		r.close();

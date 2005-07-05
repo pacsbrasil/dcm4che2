@@ -14,6 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.dcm4che2.util.IntHashtable;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -25,6 +27,7 @@ public class DicomDirReader {
 	protected DicomInputStream in;
 	protected AttributeSet fileSetInfo;
 	protected boolean showInactiveRecords;
+	protected IntHashtable cache = new IntHashtable();
 	
 	public DicomDirReader(File f) throws FileNotFoundException {
 		this(new RandomAccessFile(f, "r"));
@@ -32,6 +35,16 @@ public class DicomDirReader {
 	
 	public DicomDirReader(RandomAccessFile raf) {
 		this.raf = raf;		
+	}
+	
+	public void clearCache() {
+		cache.clear();
+	}
+	
+	public AttributeSet getFileSetInfo()
+			throws IOException {
+		init();
+		return fileSetInfo;
 	}
 
 	public final boolean isShowInactiveRecords() {
@@ -53,37 +66,62 @@ public class DicomDirReader {
 		in.setHandler(in);
 	}
 	
-	public AttributeSet readFirstRootRecord()
+	public AttributeSet findFirstRootRecord()
+			throws IOException {
+		return findFirstMatchingRootRecord(null, false);
+	}
+
+	public AttributeSet findFirstMatchingRootRecord(AttributeSet filter,
+			boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(fileSetInfo.getInt(
-				Tag.OffsetoftheFirstDirectoryRecordoftheRootDirectoryEntity));
+					Tag.OffsetoftheFirstDirectoryRecordoftheRootDirectoryEntity),
+					filter, ignoreCaseOfPN);
 	}
 
-	public AttributeSet readNextSiblingRecord(AttributeSet prevRecord)
+	public AttributeSet findNextSiblingRecord(AttributeSet prevRecord)
+			throws IOException {
+		return findNextMatchingSiblingRecord(prevRecord, null, false);
+	}
+	
+	public AttributeSet findNextMatchingSiblingRecord(AttributeSet prevRecord,
+			AttributeSet filter, boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(prevRecord.getInt(
-				Tag.OffsetoftheNextDirectoryRecord));
+					Tag.OffsetoftheNextDirectoryRecord),
+					filter, ignoreCaseOfPN);
 	}
-	
-	public AttributeSet readFirstChildRecord(AttributeSet parentRecord)
+
+	public AttributeSet findFirstChildRecord(AttributeSet parentRecord)
+			throws IOException {
+		return findFirstMatchingChildRecord(parentRecord, null, false);
+	}
+
+	public AttributeSet findFirstMatchingChildRecord(AttributeSet parentRecord,
+			AttributeSet filter, boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(parentRecord.getInt(
-				Tag.OffsetofReferencedLowerLevelDirectoryEntity));
+				Tag.OffsetofReferencedLowerLevelDirectoryEntity),
+				filter, ignoreCaseOfPN);
 	}
 
-	private AttributeSet readRecord(int offset)
+	private AttributeSet readRecord(int offset, AttributeSet filter,
+			boolean ignoreCaseOfPN)
 			throws IOException {
-		BasicAttributeSet attrs = new BasicAttributeSet();
 		while (offset != 0) {
-			final long l = offset & 0xffffffffL;
-			raf.seek(l);
-			in.setStreamPosition(l);
-			BasicAttributeSet item = new BasicAttributeSet();
-			in.readItem(item);
-			if (showInactiveRecords || item.getInt(Tag.RecordInuseFlag) != 0)
+			AttributeSet item = (AttributeSet) cache.get(offset);
+			if (item == null) {
+				final long l = offset & 0xffffffffL;
+				raf.seek(l);
+				in.setStreamPosition(l);
+				item = new BasicAttributeSet();
+				in.readItem(item);
+			}
+			if ((showInactiveRecords || item.getInt(Tag.RecordInuseFlag) != 0)
+					&& (filter == null || filter.match(item, ignoreCaseOfPN)))
 				return item;
 			offset = item.getInt(Tag.OffsetoftheNextDirectoryRecord);
 		}

@@ -59,6 +59,7 @@ public interface AttributeSet
 	Date[] getDates(int tag);
 	DateRange getDateRange(int tag);
 	Date getDate(int daTag, int tmTag);
+	Date[] getDates(int daTag, int tmTag);
 	DateRange getDateRange(int daTag, int tmTag);
 	Attribute putNull(int tag, VR vr);
 	Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val);
@@ -81,8 +82,11 @@ public interface AttributeSet
 	void shareAttributes();
 	void serializeAttributes(ObjectOutputStream oos) throws IOException;
 	void copyTo(AttributeSet destination);
-	boolean cache();
-	void cache(boolean cache);
+	boolean match(AttributeSet attrs, boolean ignoreCaseOfPN);
+	boolean cacheGet();
+	void cacheGet(boolean cacheGet);
+	boolean cachePut();
+	void cachePut(boolean cachePut);
 	AttributeSet command();
 	AttributeSet dataset();
 	AttributeSet fileMetaInfo();
