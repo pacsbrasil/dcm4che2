@@ -52,7 +52,7 @@
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[sending=PACS_TIANI^TIANI]PACS_CENTRAL^TIANI" />
+         <value value="[sending=PACS_NODEXX^TIANI]PACS_CENTRAL^TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
