@@ -41,7 +41,7 @@ public class DicomDirReaderTest extends TestCase {
 		assertEquals("Chest^Portable", rec.getString(Tag.PatientsName));
 	}
 
-	public void testFindNextMatchingSiblingRecordRecord() throws IOException {
+	public void testFindNextMatchingSiblingRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
 		AttributeSet filter = new BasicAttributeSet();
 		filter.putString(Tag.DirectoryRecordType, VR.CS, "STUDY");
