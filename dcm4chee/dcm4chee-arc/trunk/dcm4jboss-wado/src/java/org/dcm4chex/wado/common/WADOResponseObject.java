@@ -6,7 +6,12 @@
  */
 package org.dcm4chex.wado.common;
 
-import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.xml.transform.TransformerConfigurationException;
+
+import org.xml.sax.SAXException;
 
 /**
  * @author franz.willer
@@ -17,11 +22,14 @@ import java.io.InputStream;
 public interface WADOResponseObject {
 	
 	/**
-	 * The File object to response.
+	 * The RIDCommand to execute this.
 	 * 
-	 * @return A file object containing either a DICOM or Image (jpeg) object.
+	 * @return A command object to perform output process.
+	 * @throws SAXException
+	 * @throws TransformerConfigurationException
+	 * @throws IOException
 	 */
-	InputStream getStream();
+	void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException;
 	
 	/**
 	 * Returns the content type that should be set in the response.

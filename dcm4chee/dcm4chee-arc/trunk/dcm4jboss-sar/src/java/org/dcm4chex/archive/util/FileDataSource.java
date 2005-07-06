@@ -7,7 +7,7 @@
  *                                        *
  ******************************************/
 
-package org.dcm4chex.archive.dcm.qrscp;
+package org.dcm4chex.archive.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -25,11 +25,11 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -37,28 +37,56 @@ import org.jboss.logging.Logger;
  * @version $Revision$
  * @since 18.09.2003
  */
-class FileDataSource implements DataSource {
+public class FileDataSource implements DataSource {
 
-    private final QueryRetrieveScpService service;
     private final FileInfo fileInfo;
     private final byte[] buffer;
 	private final Logger log;
+	
+	/** if true use Dataset.writeFile instead of writeDataset */
+	private boolean writeFile = false;
 
     // buffer == null => send no Pixeldata
     public FileDataSource(
-        QueryRetrieveScpService service,
+        Logger logger,
         FileInfo fileInfo,
         byte[] buffer) {
-        this.service = service;
-		this.log = service.getLog();
+    	if ( logger != null ) {
+    		this.log = logger;
+    	} else {
+    		this.log = Logger.getLogger(FileDataSource.class);
+    	}
         this.fileInfo = fileInfo;
         this.buffer = buffer;
     }
-
+	/**
+	 * @return Returns the writeFile.
+	 */
+	public boolean isWriteFile() {
+		return writeFile;
+	}
+	/**
+	 * Set the write method (file or net).
+	 * <p>
+	 * If true, this datasource use writeFile instead of writeDataset. 
+	 * Therefore the FileMetaInfo will be only written if writeFile is set to true explicitly!
+	 * 
+	 * @param writeFile The writeFile to set.
+	 */
+	public void setWriteFile(boolean writeFile) {
+		this.writeFile = writeFile;
+	}
+    /**
+     * 
+     * @param out
+     * @param tsUID
+     * @param writeFile
+     * @throws IOException
+     */
     public void writeTo(OutputStream out, String tsUID) throws IOException {
-        DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
+        
         File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
-        service.getLog().info("M-READ file:" + file);
+        log.info("M-READ file:" + file);
         FileImageInputStream fiis = new FileImageInputStream(file);
         try {
             DcmParser parser = DcmParserFactory.getInstance().newDcmParser(fiis);
@@ -69,19 +97,38 @@ class FileDataSource implements DataSource {
             updateAttrs(ds, fileInfo.studyAttrs);
             updateAttrs(ds, fileInfo.seriesAttrs);
             updateAttrs(ds, fileInfo.instAttrs);
+            String tsOrig = null;
+            if ( writeFile && ds.getFileMetaInfo() != null ) {
+            	tsOrig = ds.getFileMetaInfo().getTransferSyntaxUID();
+            	if ( tsUID != null ) {
+            		if ( tsUID.equals( UIDs.ExplicitVRLittleEndian) || ! tsUID.equals( tsOrig ) ) { //can only decompress here!
+            			tsUID = UIDs.ExplicitVRLittleEndian;
+            			ds.setFileMetaInfo( DcmObjectFactory.getInstance().newFileMetaInfo(ds, tsUID));
+            		}
+            	} else {
+            		tsUID = tsOrig;
+            	}
+            }
+            DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
             if (parser.getReadTag() != Tags.PixelData || buffer == null) {
 				log.debug("Dataset:\n");
 				log.debug(ds);
-                ds.writeDataset(out, enc);
+				if ( writeFile )
+					ds.writeFile(out, enc);
+				else
+					ds.writeDataset(out, enc);
                 return;                
             }
             int len = parser.getReadLength();
             if (len == -1 && !enc.encapsulated) {
-                DecompressCmd cmd = new DecompressCmd(ds, parser);
+                DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
                 len = cmd.getPixelDataLength();
 				log.debug("Dataset:\n");
 				log.debug(ds);
-                ds.writeDataset(out, enc);
+				if ( writeFile )
+					ds.writeFile(out, enc);
+				else
+					ds.writeDataset(out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
                 try {
 	                cmd.decompress(enc.byteOrder, out);
@@ -95,7 +142,10 @@ class FileDataSource implements DataSource {
             } else {
 				log.debug("Dataset:\n");
 				log.debug(ds);
-                ds.writeDataset(out, enc);
+				if ( writeFile )
+					ds.writeFile(out, enc);
+				else
+					ds.writeDataset(out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
                 if (len == -1) {
 		            parser.parseHeader();

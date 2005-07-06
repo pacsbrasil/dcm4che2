@@ -9,6 +9,7 @@ package org.dcm4chex.wado.mbean;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,6 +31,12 @@ import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.DataSource;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -50,6 +57,9 @@ public static final String CONTENT_TYPE_DICOM = "application/dicom";
 private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
 private static ObjectName fileSystemMgtName = null;
+private boolean useOrigFile = false;
+
+private boolean useTransferSyntaxOfFileAsDefault = true;
 
 private static MBeanServer server;
 
@@ -89,7 +99,7 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 	} else if ( CONTENT_TYPE_DICOM.equals( contentType ) ) {
 		return handleDicom( req );
 	} else {
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested content type(s)!");
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested content type(s)!");
 		
 	}
 }
@@ -124,24 +134,75 @@ public WADOResponseObject handleDicom( WADORequestObject req ) {
 		file = this.getDICOMFile( req.getStudyUID(), req.getSeriesUID(), req.getObjectUID() );
 		if ( file == null ) {
 			if ( log.isDebugEnabled() ) log.debug("Dicom object not found: "+req);
-			return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 		}
 	} catch (IOException x) {
 		log.error("Exception in handleDicom: "+x.getMessage(), x);
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
 	} catch ( NeedRedirectionException nre ) {
 		if ( ! WADOCacheImpl.getWADOCache().isClientRedirect() )  {
 			return getRemoteDICOMFile( nre.getHostname(), req);
 		} else {
-			return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
 		}
 	}
 	try {
-		return new WADOResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+		if ( useOrigFile  ) {
+			return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+		} else {
+			return getUpdatedInstance( req.getObjectUID(), checkTransferSyntax( req.getTransferSyntax() ) );
+		}
 	} catch (FileNotFoundException x) {
 		log.error("Exception in handleDicom: "+x.getMessage(), x);
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
 	}	
+}
+
+/**
+ * @param transferSyntax
+ * @return
+ */
+private String checkTransferSyntax(String transferSyntax) {
+	if ( transferSyntax == null ) {
+		if ( ! this.useTransferSyntaxOfFileAsDefault ) 
+			return UIDs.ExplicitVRLittleEndian;
+		else
+			return null;
+	}
+	if ( ! UIDs.isValid(transferSyntax) ) {
+		log.warn("WADO parameter transferSyntax is not a valid UID! Use Explicit VR little endian instead! transferSyntax:"+transferSyntax);
+		return UIDs.ExplicitVRLittleEndian;
+	}
+	if ( transferSyntax.equals(UIDs.ImplicitVRLittleEndian) || 
+		 transferSyntax.equals(UIDs.ExplicitVRBigEndian) ) {
+		log.warn("WADO parameter transferSyntax should neither Implicit VR, nor Big Endian! Use Explicit VR little endian instead! transferSyntax:"+transferSyntax);
+		return UIDs.ExplicitVRLittleEndian;
+	}
+	return transferSyntax;
+}
+
+private WADOResponseObject getUpdatedInstance( String iuid, String transferSyntax ) {
+	DataSource ds = null;
+	try {
+        ds = (DataSource) server.invoke(fileSystemMgtName,
+                "getDatasourceOfInstance",
+                new Object[] { iuid },
+                new String[] { String.class.getName() } );
+        return new WADODatasourceResponseObjectImpl( ds, transferSyntax, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+        
+    } catch (Exception e) {
+        log.error("Failed to get updated DICOM file", e);
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
+    }
+	
+}
+
+private void updateAttrs(Dataset ds, byte[] attrs) throws IOException {
+    ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
+    DcmParser parser = DcmParserFactory.getInstance().newDcmParser(bis);
+    parser.setDcmHandler(ds.getDcmHandler());
+    parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
+    bis.close();
 }
 
 /**
@@ -168,21 +229,21 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 	try {
 		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber );
 		if ( file != null ) {
-			return new WADOResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
+			return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
 		} else {
-			return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 		}
 	} catch ( NeedRedirectionException nre ) {
 		if ( ! WADOCacheImpl.getWADOCache().isClientRedirect() )  {
 			return getRemoteDICOMFile( nre.getHostname(), req);
 		} else {
-			return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
 		}
 	} catch ( NoImageException x1 ) {
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get jpeg from requested object");		
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get jpeg from requested object");		
 	} catch ( Exception x ) {
 		log.error("Exception in handleJpg: "+x.getMessage(), x);
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get jpeg");
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get jpeg");
 	}
 }
 public File getJpg( String studyUID, String seriesUID, String instanceUID,
@@ -310,7 +371,7 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 		if (log.isDebugEnabled() ) log.debug("conn.getResponseCode():"+conn.getResponseCode() );
 		if ( conn.getResponseCode() != HttpServletResponse.SC_OK ) {
 			if (log.isInfoEnabled() ) log.info("Remote WADO server responses with:"+conn.getResponseMessage() );
-			return new WADOResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
+			return new WADOStreamResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
 		}
 		InputStream is = conn.getInputStream();
 		if ( WADOCacheImpl.getWADOCache().isRedirectCaching() && CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
@@ -321,7 +382,7 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 													req.getColumns() );
 			is = new FileInputStream( file );
 		}
-		return new WADOResponseObjectImpl( is, conn.getContentType(), HttpServletResponse.SC_OK, null);
+		return new WADOStreamResponseObjectImpl( is, conn.getContentType(), HttpServletResponse.SC_OK, null);
 	} catch (Exception e) {
 		log.error("Can't connect to remote WADO service:"+url, e);
 		e.printStackTrace();
@@ -424,6 +485,32 @@ public ObjectName getFileSystemMgtName() {
 	return fileSystemMgtName;
 }
 
+/**
+ * @return Returns the useOrigFile.
+ */
+public boolean isUseOrigFile() {
+	return useOrigFile;
+}
+/**
+ * @param useOrigFile The useOrigFile to set.
+ */
+public void setUseOrigFile(boolean useOrigFile) {
+	this.useOrigFile = useOrigFile;
+}
+
+/**
+ * @return Returns the useTransferSyntaxOfFileAsDefault.
+ */
+public boolean isUseTransferSyntaxOfFileAsDefault() {
+	return useTransferSyntaxOfFileAsDefault;
+}
+/**
+ * @param useTransferSyntaxOfFileAsDefault The useTransferSyntaxOfFileAsDefault to set.
+ */
+public void setUseTransferSyntaxOfFileAsDefault(
+		boolean useTransferSyntaxOfFileAsDefault) {
+	this.useTransferSyntaxOfFileAsDefault = useTransferSyntaxOfFileAsDefault;
+}
 /**
  * Inner exception class to handle WADO redirection.
  *  

@@ -6,13 +6,14 @@
  */
 package org.dcm4chex.wado.mbean;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.dcm4chex.wado.common.RIDResponseObject;
-import org.dcm4chex.wado.mbean.xml.XMLResponseObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 import org.xml.sax.SAXException;
 
 /**
@@ -21,15 +22,16 @@ import org.xml.sax.SAXException;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class RIDTransformResponseObjectImpl implements RIDResponseObject {
+public class WADOStreamResponseObjectImpl implements WADOResponseObject {
 
-	private XMLResponseObject xmlResp;
+	private InputStream stream;
 	private String contentType;
 	private int returnCode;
 	private String errorMessage;
+	private static final int BUF_LEN = 65536;
 
-	public RIDTransformResponseObjectImpl( XMLResponseObject xmlResp, String contentType, int retCode, String errMsg ) {
-		this.xmlResp = xmlResp;
+	public WADOStreamResponseObjectImpl( InputStream is, String contentType, int retCode, String errMsg ) {
+		this.stream = is;
 		this.contentType = contentType;
 		returnCode = retCode;
 		errorMessage = errMsg;
@@ -39,8 +41,26 @@ public class RIDTransformResponseObjectImpl implements RIDResponseObject {
 	 * @see org.dcm4chex.wado.common.WADOResponseObject#getFile()
 	 */
 	public void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException {
-		xmlResp.toXML( out );
-		out.flush();
+		if ( stream != null ) {
+			InputStream in;
+			if ( stream instanceof BufferedInputStream ) {
+				in = stream;
+			} else {
+				in = new BufferedInputStream( stream, BUF_LEN );
+			}
+			byte[] buf = new byte[BUF_LEN];
+			try {
+				int len = in.read( buf );
+				while ( len > 0 ) {
+					out.write( buf, 0, len );
+					len = in.read( buf );
+				}
+			} catch ( IOException e ) {
+				throw e;
+			} finally {
+				in.close();
+			}
+		}
 	}
 
 	/* (non-Javadoc)

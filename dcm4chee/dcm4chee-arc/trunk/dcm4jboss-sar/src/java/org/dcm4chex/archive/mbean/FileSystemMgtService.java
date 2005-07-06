@@ -23,14 +23,21 @@ import java.util.StringTokenizer;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -585,6 +592,22 @@ public class FileSystemMgtService extends TimerSupport {
         return aeData.getHostName();
     }
     
+    public DataSource getDatasourceOfInstance(String iuid) throws SQLException, IOException {
+    	Object o = locateInstance(iuid);
+    	if ( o == null || o instanceof String ) return null;
+    	File file = (File) o;
+    	Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
+    	dsQ.putUI(Tags.SOPInstanceUID, iuid);
+    	dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+    	RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
+    	FileInfo infoList[][] = retrieveCmd.getFileInfos();
+    	final FileInfo fileInfo = infoList[0][0];
+    	FileDataSource ds = new FileDataSource(log, fileInfo, new byte[512]);
+    	ds.setWriteFile(true);//write FileMetaInfo!
+    	return ds;
+    }
+    
+   
 	/**
      * Delete studies that fullfill freeDiskSpacePolicy to free disk space.
      * <p>

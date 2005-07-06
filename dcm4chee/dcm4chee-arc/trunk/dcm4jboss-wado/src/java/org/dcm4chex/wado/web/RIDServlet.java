@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4chex.wado.common.BasicRequestObject;
 import org.dcm4chex.wado.common.RIDRequestObject;
-import org.dcm4chex.wado.common.RIDResponseObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 
 /**
  * @author franz.willer
@@ -74,7 +74,7 @@ public class RIDServlet extends HttpServlet {
 			sendError( response, HttpServletResponse.SC_NOT_FOUND, "This IHE RID request is not supported!" );
 			return;
 		} 
-		RIDResponseObject resp = null; //use WADOResponseObject for encapsulate response.
+		WADOResponseObject resp = null; //use WADOResponseObject for encapsulate response.
 		if ( reqTypeCode == RIDRequestObject.SUMMERY_INFO ) {
 			resp = delegate.getRIDSummary( (RIDRequestObject) reqObj );
 		} else if ( reqTypeCode == RIDRequestObject.DOCUMENT ) {
@@ -122,7 +122,7 @@ public class RIDServlet extends HttpServlet {
 	 * @param response
 	 * @param respObject
 	 */
-	private void sendResponse( HttpServletResponse response, RIDResponseObject respObject ) {
+	private void sendResponse( HttpServletResponse response, WADOResponseObject respObject ) {
 		response.setHeader("Expires","0");//disables client side caching!!!
 		delegate.getLogger().info("sendResponse"+respObject);
 		try {

@@ -6,9 +6,14 @@
  */
 package org.dcm4chex.wado.mbean;
 
-import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
+import javax.xml.transform.TransformerConfigurationException;
+
+import org.dcm4che.net.DataSource;
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.xml.sax.SAXException;
 
 /**
  * @author franz.willer
@@ -16,15 +21,17 @@ import org.dcm4chex.wado.common.WADOResponseObject;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WADOResponseObjectImpl implements WADOResponseObject {
+public class WADODatasourceResponseObjectImpl implements WADOResponseObject {
 
-	private InputStream stream;
+	private DataSource datasource;
+	String transferSyntax = null;
 	private String contentType;
 	private int returnCode;
 	private String errorMessage;
 
-	public WADOResponseObjectImpl( InputStream pStream, String contentType, int retCode, String errMsg ) {
-		stream = pStream;
+	public WADODatasourceResponseObjectImpl( DataSource ds, String ts, String contentType, int retCode, String errMsg ) {
+		this.datasource = ds;
+		this.transferSyntax = ts;
 		this.contentType = contentType;
 		returnCode = retCode;
 		errorMessage = errMsg;
@@ -33,8 +40,8 @@ public class WADOResponseObjectImpl implements WADOResponseObject {
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.wado.common.WADOResponseObject#getFile()
 	 */
-	public InputStream getStream() {
-		return stream;
+	public void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException {
+		datasource.writeTo( out, transferSyntax );
 	}
 
 	/* (non-Javadoc)

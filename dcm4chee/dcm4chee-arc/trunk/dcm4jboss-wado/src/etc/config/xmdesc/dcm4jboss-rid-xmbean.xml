@@ -172,7 +172,7 @@
         <name>reqVO</name>
         <type>org.dcm4chex.wado.common.RIDRequestObject</type>
       </parameter>
-      <return-type>org.dcm4chex.wado.common.RIDResponseObject</return-type>
+      <return-type>org.dcm4chex.wado.common.WADOResponseObject</return-type>
    </operation>
    
    <operation impact="ACTION">
@@ -183,7 +183,7 @@
         <name>reqVO</name>
         <type>org.dcm4chex.wado.common.RIDRequestObject</type>
       </parameter>
-      <return-type>org.dcm4chex.wado.common.RIDResponseObject</return-type>
+      <return-type>org.dcm4chex.wado.common.WADOResponseObject</return-type>
    </operation>
   
 </mbean>

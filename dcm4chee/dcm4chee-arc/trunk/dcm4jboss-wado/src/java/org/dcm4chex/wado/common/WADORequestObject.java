@@ -70,5 +70,12 @@ public interface WADORequestObject extends BasicRequestObject {
 	 * @return requestType
 	 */
 	List getContentTypes();
+
+	/**
+	 * Returns the transferSyntax parameter of the http request.
+	 * 
+	 * @return transferSyntax
+	 */
+	String getTransferSyntax();
 	
 }

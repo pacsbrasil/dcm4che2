@@ -76,7 +76,7 @@ public class DecompressCmd extends CodecCmd {
             DigestOutputStream dos = new DigestOutputStream(os, md);
             try {
     			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
-                DecompressCmd cmd = new DecompressCmd(ds, parser);
+                DecompressCmd cmd = new DecompressCmd(ds, null, parser);
                 int len = cmd.getPixelDataLength();
         		FileMetaInfo fmi = dof.newFileMetaInfo(ds, tsuid);
         		ds.setFileMetaInfo(fmi);
@@ -105,12 +105,20 @@ public class DecompressCmd extends CodecCmd {
         }
     }
     
-    public DecompressCmd(Dataset ds, DcmParser parser) throws IOException {
+    public DecompressCmd(Dataset ds,String tsuid, DcmParser parser) throws IOException {
     	super(ds);
         this.parser = parser;
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
-        tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
+        if ( tsuid != null ) {
+        	this.tsuid = tsuid;
+        } else {
+        	if ( ds.getFileMetaInfo() != null ) {
+        		this.tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
+        	} else {
+        		this.tsuid = UIDs.ExplicitVRLittleEndian;
+        	}
+        }
         if (samples == 3) ds.putCS(Tags.PhotometricInterpretation, "RGB");
     }
 

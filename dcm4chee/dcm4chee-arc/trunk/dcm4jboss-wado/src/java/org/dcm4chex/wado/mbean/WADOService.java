@@ -9,8 +9,8 @@ package org.dcm4chex.wado.mbean;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 
 /**
@@ -50,6 +50,37 @@ public class WADOService extends AbstractCacheService {
 	 */
 	public void setRedirectCaching(boolean redirectCaching) {
 		cache.setRedirectCaching( redirectCaching );
+	}
+
+	/**
+	 * @return Returns the useOrigFile.
+	 */
+	public boolean isUseOrigFile() {
+		return support.isUseOrigFile();
+	}
+	/**
+	 * @param useOrigFile The useOrigFile to set.
+	 */
+	public void setUseOrigFile(boolean useOrigFile) {
+		support.setUseOrigFile(useOrigFile);
+	}
+	
+	/**
+	 * @return Returns the useTransferSyntaxOfFileAsDefault.
+	 */
+	public boolean isUseTransferSyntaxOfFileAsDefault() {
+		return support.isUseTransferSyntaxOfFileAsDefault();
+	}
+	/**
+	 * Set default transfer syntax option.
+	 * <p>
+	 * If true use the TS from file.<br>
+	 * If false use Explicit VR littlle Endian (as defined in part 18)
+	 *  
+	 * @param b If true use TS from file.
+	 */
+	public void setUseTransferSyntaxOfFileAsDefault(boolean b) {
+		support.setUseTransferSyntaxOfFileAsDefault(b);
 	}
 	
 	/**

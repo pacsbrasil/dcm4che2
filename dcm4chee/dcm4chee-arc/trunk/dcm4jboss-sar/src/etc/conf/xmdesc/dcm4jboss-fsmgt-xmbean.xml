@@ -321,6 +321,17 @@
       <return-type>java.lang.Object</return-type>
    </operation>
    <operation impact="INFO">
+      <description>Locate SOP Instance. Return a Dataset object, if the instance
+      is locally available. The attributes of the dataset are updated with the attributes from database.</description>
+      <name>getDatasourceOfInstance</name>
+      <parameter>
+        <description>SOP Instance UID</description>
+        <name>iuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>org.dcm4che.net.DataSource</return-type>
+   </operation>
+   <operation impact="INFO">
       <description>Check if it is necessary to free disk space.
       </description>
       <name>checkFreeDiskSpaceNecessary</name>

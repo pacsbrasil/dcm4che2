@@ -6,17 +6,14 @@
  */
 package org.dcm4chex.wado.web;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.common.WADORequestObject;
 
 /**
  * @author franz.willer
@@ -117,36 +114,25 @@ public class WADOServlet extends HttpServlet {
 	 * @param respObject
 	 */
 	private void sendWADOFile( HttpServletResponse response, WADOResponseObject respObject ) {
+		response.setHeader("Expires","0");//disables client side caching!!!
+		delegate.getLogger().info("sendResponse"+respObject);
 		try {
-			InputStream stream = respObject.getStream();
-			if ( stream != null ) {
+			if ( respObject != null ) {
 				response.setContentType( respObject.getContentType() );
-				
-				OutputStream out = response.getOutputStream();
-				InputStream in;
-				if ( stream instanceof BufferedInputStream ) {
-					in = stream;
-				} else {
-					in = new BufferedInputStream( stream, BUF_LEN );
-				}
-				byte[] buf = new byte[BUF_LEN];
 				try {
-					int len = in.read( buf );
-					while ( len > 0 ) {
-						out.write( buf, 0, len );
-						len = in.read( buf );
-					}
+					delegate.getLogger().info("respObject execute");
+					//respObject.execute( System.out );
+					respObject.execute( response.getOutputStream() );
+					response.getOutputStream().close();
 				} catch ( Exception e ) {
-					delegate.getLogger().error("Exception while writing WADO file to client! reason:"+e.getMessage(), e );
-				} finally {
-					in.close();
+					delegate.getLogger().error("Exception while writing WADO response to client! reason:"+e.getMessage(), e );
 				}
+				
 			}
 		} catch ( Exception x ) {
 			x.printStackTrace();
 			sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
 		}
-		
 	}
 
 }

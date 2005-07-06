@@ -4,8 +4,8 @@ import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.common.WADORequestObject;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /*

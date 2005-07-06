@@ -27,7 +27,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.wado.common.RIDRequestObject;
-import org.dcm4chex.wado.common.RIDResponseObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -61,26 +61,26 @@ public class ECGSupport {
 	 * @param ds
 	 * @return
 	 */
-	public RIDResponseObject getECGDocument(RIDRequestObject reqObj, Dataset ds) {
+	public WADOResponseObject getECGDocument(RIDRequestObject reqObj, Dataset ds) {
 		String contentType = reqObj.getParam("preferredContentType");
 		if ( contentType.equals( CONTENT_TYPE_SVGXML ) || contentType.equals( "image/svg" )) {
 			contentType = CONTENT_TYPE_SVGXML;
 			if ( ridSupport.checkContentType( reqObj, new String[]{ CONTENT_TYPE_SVGXML } ) == null ) {
-				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+				return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
 			}
 		} else if ( contentType.equals( RIDSupport.CONTENT_TYPE_PDF) ) {
 			if ( ridSupport.checkContentType( reqObj, new String[]{ RIDSupport.CONTENT_TYPE_PDF } ) == null ) {
-				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+				return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
 			}
 		} else {
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/svg+xml' are supported !");
+			return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/svg+xml' are supported !");
 		}
 		log.info("get ECG document!");
 		WADOCache cache = WADOCacheImpl.getRIDCache();
 		File outFile = cache.getFileObject(null, null, reqObj.getParam("documentUID"), contentType );
 		try {
 			if ( outFile.exists() ) {
-				return new RIDStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
+				return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -89,7 +89,7 @@ public class ECGSupport {
 		try {
 			Dataset fullDS = getDataset( ds );
 			if ( fullDS == null ) {
-				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested document not found::"+ds.getString( Tags.SOPClassUID ) );
+				return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested document not found::"+ds.getString( Tags.SOPClassUID ) );
 			} else {
 				if ( contentType.equals( RIDSupport.CONTENT_TYPE_PDF ) ) {
 					return handlePDF( fullDS, outFile );
@@ -98,9 +98,9 @@ public class ECGSupport {
 				}
 			}
 		} catch (NeedRedirectionException e) {
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
+			return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
 		} catch (Exception e) {
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
+			return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
 		} 
 	}
 	
@@ -138,7 +138,7 @@ public class ECGSupport {
      * @param outFile
 	 * @return
 	 */
-	private RIDResponseObject handleSVG(Dataset ds, File outFile) {
+	private WADOResponseObject handleSVG(Dataset ds, File outFile) {
 		OutputStream out = null;
 		try { 
 			DcmElement elem = ds.get( Tags.WaveformSeq);
@@ -152,7 +152,7 @@ public class ECGSupport {
 			out= new FileOutputStream( outFile );
 			svgCreator.toXML( out );
 			out.close();
-			return new RIDStreamResponseObjectImpl( new FileInputStream( outFile), CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
+			return new WADOStreamResponseObjectImpl( new FileInputStream( outFile), CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
 			if ( out != null )
 				try {
@@ -161,11 +161,11 @@ public class ECGSupport {
 			if ( outFile.exists() ) outFile.delete();
 			log.error("Cant create SVG for Waveform!", t);
 			log.error("Waveform Dataset:");log.error(ds);
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform SVG! Reason:"+t.getMessage());
+			return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform SVG! Reason:"+t.getMessage());
 		}
 	}
 	
-	private RIDResponseObject handlePDF(Dataset ds, File outFile) {
+	private WADOResponseObject handlePDF(Dataset ds, File outFile) {
 		OutputStream out = null;
 		OutputStream tmpOut = null;
 		File tmpFile = null;
@@ -197,7 +197,7 @@ public class ECGSupport {
 	        t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
 	        out.close();
 			//TODO tmpFile.delete();
-			return new RIDStreamResponseObjectImpl(new FileInputStream( outFile ), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
+			return new WADOStreamResponseObjectImpl(new FileInputStream( outFile ), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
 			try {
 				if ( out != null ) out.close();
@@ -207,7 +207,7 @@ public class ECGSupport {
  			if ( tmpFile.exists() ) tmpFile.delete();
 			log.error("Cant create PDF for Waveform!", t);
 			log.error("Waveform Dataset:");log.error(ds);
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform PDF! Reason:"+t.getMessage());
+			return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform PDF! Reason:"+t.getMessage());
 		}
 	}
 	

@@ -52,7 +52,7 @@ import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.wado.common.RIDRequestObject;
-import org.dcm4chex.wado.common.RIDResponseObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
 import org.dcm4chex.wado.mbean.WADOSupport.NoImageException;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -105,7 +105,7 @@ public class RIDSupport {
 
 	public RIDSupport( RIDService service ) {
 		this.service = service;
-		this.server = service.getServer();
+		RIDSupport.server = service.getServer();
 		if ( server == null ) {
 			server = MBeanServerLocator.locate();
 		}
@@ -270,10 +270,10 @@ public class RIDSupport {
 	 * @throws SAXException
 	 * @throws TransformerConfigurationException
 	 */
-	public RIDResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
+	public WADOResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
 		String contentType = checkContentType( reqObj, new String[]{CONTENT_TYPE_HTML,CONTENT_TYPE_XML } );
 		if ( contentType == null ) {
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
 		}
 		Dataset queryDS;
 		String reqType = reqObj.getRequestType();
@@ -283,7 +283,7 @@ public class RIDSupport {
 		} else {
 			queryDS = getRadiologyQueryDS( reqObj );
 			if ( queryDS == null )
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
+				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
 			
 
 		}
@@ -325,7 +325,7 @@ public class RIDSupport {
 		}
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
 		log.info("ContentType:"+contentType);
-		return new RIDTransformResponseObjectImpl(docList, contentType, HttpServletResponse.SC_OK, null);
+		return new WADOTransformResponseObjectImpl(docList, contentType, HttpServletResponse.SC_OK, null);
 	}
 	
 	/**
@@ -356,15 +356,15 @@ public class RIDSupport {
 		return null;
 	}
 
-	private RIDResponseObject getECGSummary( RIDRequestObject reqObj ) throws SQLException {
+	private WADOResponseObject getECGSummary( RIDRequestObject reqObj ) throws SQLException {
 		Dataset queryDS = getECGQueryDS( reqObj );
 		if ( queryDS == null )
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
 		addECGSummary( docList, queryDS );
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
-		return new RIDTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
+		return new WADOTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
 	}
 	
 	private void addECGSummary( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
@@ -549,7 +549,7 @@ public class RIDSupport {
 	 * @param reqVO
 	 * @return
 	 */
-	public RIDResponseObject getRIDDocument(RIDRequestObject reqObj) {
+	public WADOResponseObject getRIDDocument(RIDRequestObject reqObj) {
 		String uid = reqObj.getParam("documentUID");
 		Dataset queryDS = factory.newDataset();
 		queryDS.putCS(Tags.QueryRetrieveLevel, "IMAGE");
@@ -570,16 +570,16 @@ public class RIDSupport {
 				}
 			} else {
 				cmd.close();
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
+				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
 			}
 		} catch (SQLException x) {
 			log.error("Cant get RIDDocument:", x);
 			if ( cmd != null ) cmd.close();
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
 		}
 	}
 	
-	private RIDResponseObject getDocument( RIDRequestObject reqObj ) {
+	private WADOResponseObject getDocument( RIDRequestObject reqObj ) {
 		String docUID = reqObj.getParam("documentUID");
 		if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
 		String contentType = reqObj.getParam("preferredContentType");
@@ -588,17 +588,17 @@ public class RIDSupport {
 		} else {
 			if ( contentType.equals( CONTENT_TYPE_JPEG )) {
 				if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_JPEG } ) == null ) {
-					return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+					return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
 				}
-				RIDResponseObject resp = handleJPEG( reqObj );
+				WADOResponseObject resp = handleJPEG( reqObj );
 				if ( resp != null ) return resp; 
 				contentType = CONTENT_TYPE_PDF; //cant be rendered as image (SR) make PDF instead.
 			} else if ( ! contentType.equals( CONTENT_TYPE_PDF) ) {
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
+				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
 			}
 		}
 		if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_PDF } ) == null ) {
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
 		}
 		WADOCache cache = WADOCacheImpl.getRIDCache();
 		File outFile = cache.getFileObject(null, null, reqObj.getParam("documentUID"), contentType );
@@ -606,11 +606,11 @@ public class RIDSupport {
 			if ( !outFile.exists() ) {
 				File inFile = getDICOMFile( docUID );
 				if ( inFile == null ) {
-					return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
+					return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
 				}
 				outFile = renderSRFile( inFile, outFile );
 			}
-			return new RIDStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
+			return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -622,21 +622,21 @@ public class RIDSupport {
 	 * @param reqObj
 	 * @return
 	 */
-	private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) {
+	private WADOResponseObject handleJPEG(final RIDRequestObject reqObj) {
 		File file;
 		try {
 			file = getWADOSupport().getJpg( "rid", "rid", reqObj.getParam("documentUID"), null, null, null );
 			if ( file != null ) {
-				return new RIDStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
+				return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
 			} else {
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document not found! documentID:"+reqObj.getParam("documentUID") );
+				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document not found! documentID:"+reqObj.getParam("documentUID") );
 			}
 		} catch (NeedRedirectionException e) {
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
 		} catch (NoImageException e) {
 			return null;
 		} catch (Exception e) {
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
 		}
 	}
 

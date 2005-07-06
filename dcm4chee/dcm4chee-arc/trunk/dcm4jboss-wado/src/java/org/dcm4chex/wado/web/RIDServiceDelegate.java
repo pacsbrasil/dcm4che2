@@ -5,7 +5,7 @@ import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.RIDRequestObject;
-import org.dcm4chex.wado.common.RIDResponseObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /*
@@ -59,15 +59,15 @@ public class RIDServiceDelegate {
 	 * 
 	 * @return The WADO response object.
 	 */
-	public RIDResponseObject getRIDSummary( RIDRequestObject reqVO ) {
+	public WADOResponseObject getRIDSummary( RIDRequestObject reqVO ) {
 		log.info( "RIDdelegate.getRIDSummary called");
-		RIDResponseObject resp = null;
+		WADOResponseObject resp = null;
 		try {
 	        Object o = server.invoke(ridServiceName,
 	                "getRIDSummary",
 	                new Object[] { reqVO },
 	                new String[] { RIDRequestObject.class.getName() } );
-	        resp = (RIDResponseObject) o;
+	        resp = (WADOResponseObject) o;
 		} catch ( Exception x ) {
 			log.error( "Exception occured in getRIDSummary: "+x.getMessage(), x );
 		}
@@ -81,15 +81,15 @@ public class RIDServiceDelegate {
 	 * 
 	 * @return The WADO response object.
 	 */
-	public RIDResponseObject getRIDDocument( RIDRequestObject reqVO ) {
+	public WADOResponseObject getRIDDocument( RIDRequestObject reqVO ) {
 		log.info( "RIDdelegate.getRIDDocument called");
-		RIDResponseObject resp = null;
+		WADOResponseObject resp = null;
 		try {
 	        Object o = server.invoke(ridServiceName,
 	                "getRIDDocument",
 	                new Object[] { reqVO },
 	                new String[] { RIDRequestObject.class.getName() } );
-	        resp = (RIDResponseObject) o;
+	        resp = (WADOResponseObject) o;
 		} catch ( Exception x ) {
 			log.error( "Exception occured in getRIDDocument: "+x.getMessage(), x );
 		}

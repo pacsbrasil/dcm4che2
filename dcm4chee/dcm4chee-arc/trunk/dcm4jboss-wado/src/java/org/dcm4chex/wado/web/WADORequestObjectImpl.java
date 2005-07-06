@@ -15,6 +15,7 @@ import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.mbean.WADOService;
 
@@ -34,6 +35,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	private String rows;
 	private String columns;
 	private String frameNumber;
+	private String transferSyntax;
 	
 	private List contentTypes = null;
 
@@ -52,6 +54,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 		rows = request.getParameter( "rows" );
 		columns = request.getParameter( "columns" );
 		frameNumber = request.getParameter("frameNumber");
+		transferSyntax = request.getParameter("transferSyntax");
 		contentTypes = _string2List( contentType, "," );
 	}
 	
@@ -135,6 +138,17 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	}
 
 
+	/**
+	 * Returns the transferSyntax parameter value or null if contentType is not application/dicom.
+	 * @return Returns the transferSyntax.
+	 */
+	public String getTransferSyntax() {
+		if ( contentTypes.contains("application/dicom") ) {
+			return transferSyntax;
+		} else {
+			return null;
+		}
+	}
 	/** 
 	 * Checks this request object and returns an error code.
 	 * <p>

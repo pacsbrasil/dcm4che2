@@ -18,7 +18,7 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.RIDRequestObject;
-import org.dcm4chex.wado.common.RIDResponseObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.xml.sax.SAXException;
 
@@ -153,7 +153,7 @@ public class RIDService extends AbstractCacheService  {
 	 * @throws IOException
 	 * @throws TransformerConfigurationException
 	 */
-	public RIDResponseObject getRIDSummary( RIDRequestObject reqVO ) throws SQLException, TransformerConfigurationException, IOException, SAXException {
+	public WADOResponseObject getRIDSummary( RIDRequestObject reqVO ) throws SQLException, TransformerConfigurationException, IOException, SAXException {
 		if ( log.isDebugEnabled() ) log.debug("getRIDSummary:"+reqVO );
 		return support.getRIDSummary( reqVO );
 	}
@@ -166,7 +166,7 @@ public class RIDService extends AbstractCacheService  {
 	 * 
 	 * @return The value object containing the retrieved object or an error.
 	 */
-	public RIDResponseObject getRIDDocument( RIDRequestObject reqVO ) {
+	public WADOResponseObject getRIDDocument( RIDRequestObject reqVO ) {
 		if ( log.isDebugEnabled() ) log.debug("getRIDDocument:"+reqVO );
 		return support.getRIDDocument( reqVO );
 	}

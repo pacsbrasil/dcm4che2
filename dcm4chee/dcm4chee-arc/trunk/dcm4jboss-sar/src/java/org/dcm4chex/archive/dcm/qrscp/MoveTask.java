@@ -51,6 +51,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
@@ -564,7 +565,7 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        DataSource ds = new FileDataSource(service, info, buffer);
+        DataSource ds = new FileDataSource(service.getLog(), info, buffer);
         return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);
     }
