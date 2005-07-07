@@ -860,7 +860,6 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 		Dataset ds = lookupMediaComposer().prepareMediaCreationRequest( mediaDTO.getPk() );
 		ds.putCS(Tags.LabelUsingInformationExtractedFromInstances, this.isUseInstanceInfo() ? "YES" : "NO");
 		ds.putCS(Tags.IncludeNonDICOMObjects, includeNonDICOMObj);
-		ds.putIS( Tags.NumberOfCopies, nrOfCopies );
 		if ( log.isDebugEnabled() ) {
 			log.debug("getMediaCreationReqDS:\n");
 			log.info( ds );
@@ -877,6 +876,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 */
 	private Dataset getMediaCreationActionDS() {
 		Dataset ds = DcmObjectFactory.getInstance().newDataset();
+		ds.putIS( Tags.NumberOfCopies, nrOfCopies );
 		ds.putCS( Tags.RequestPriority, prioStrings[ priority ] );
 		return ds;
 	}
