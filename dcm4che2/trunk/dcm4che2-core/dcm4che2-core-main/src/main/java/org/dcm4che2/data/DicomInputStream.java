@@ -225,7 +225,7 @@ public class DicomInputStream extends FilterInputStream implements
 		AttributeSet oldAttrs = attrs;
 		this.attrs = dest;
 		try {
-			parse(len, Tag.Item);
+			parse(len, Tag.ItemDelimitationItem);
 		} finally {
 			this.attrs = oldAttrs;
 		}
