@@ -280,4 +280,79 @@ abstract class AbstractAttributeSet implements AttributeSet {
 				DateUtils.toDateTime(da.getStart(), tm.getStart()),
 				DateUtils.toDateTime(da.getEnd(), tm.getEnd()));
 	}
+	
+	public AttributeSet getItem(int[] itemPath) {
+		if ((itemPath.length & 1) != 0) {
+			throw new IllegalArgumentException("itemPath.length: "
+					+ itemPath.length);
+		}
+		AttributeSet item = this;
+		for (int i = 0; i < itemPath.length; ++i, ++i) {
+			Attribute sq = item.getAttribute(itemPath[i]);
+			if (sq == null || !sq.hasItems() || sq.countItems() < itemPath[i+1])
+				return null;
+			item = sq.getItem(itemPath[i+1]);
+		}
+		return item;
+	}
+	
+	public byte[] getBytes(int[] itemPath, int tag, boolean bigEndian) {
+		return getItem(itemPath).getBytes(tag, bigEndian);
+	}
+	
+	public int getInt(int[] itemPath, int tag) {
+		return getItem(itemPath).getInt(tag);		
+	}
+	
+	public int[] getInts(int[] itemPath, int tag) {
+		return getItem(itemPath).getInts(tag);		
+	}
+	
+	public float getFloat(int[] itemPath, int tag) {
+		return getItem(itemPath).getFloat(tag);		
+	}
+	
+	public float[] getFloats(int[] itemPath, int tag) {
+		return getItem(itemPath).getFloats(tag);				
+	}
+	
+	public double getDouble(int[] itemPath, int tag) {
+		return getItem(itemPath).getDouble(tag);				
+	}
+	
+	public double[] getDoubles(int[] itemPath, int tag) {
+		return getItem(itemPath).getDoubles(tag);				
+	}
+	
+	public String getString(int[] itemPath, int tag) {
+		return getItem(itemPath).getString(tag);				
+	}
+	
+	public String[] getStrings(int[] itemPath, int tag) {
+		return getItem(itemPath).getStrings(tag);				
+	}
+	
+	public Date getDate(int[] itemPath, int tag) {
+		return getItem(itemPath).getDate(tag);				
+	}
+	
+	public Date[] getDates(int[] itemPath, int tag) {
+		return getItem(itemPath).getDates(tag);				
+	}
+	
+	public DateRange getDateRange(int[] itemPath, int tag) {
+		return getItem(itemPath).getDateRange(tag);				
+	}
+	
+	public Date getDate(int[] itemPath, int daTag, int tmTag) {
+		return getItem(itemPath).getDate(daTag, tmTag);		
+	}
+	
+	public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
+		return getItem(itemPath).getDates(daTag, tmTag);				
+	}
+	
+	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
+		return getItem(itemPath).getDateRange(daTag, tmTag);				
+	}
 }
