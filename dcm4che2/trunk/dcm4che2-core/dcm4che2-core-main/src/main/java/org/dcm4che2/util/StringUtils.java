@@ -112,7 +112,48 @@ public class StringUtils {
 		return trim(ss, '\0', '\0', ' ');
     }
 
-	public static StringBuffer intToHex(int val, StringBuffer sb) {
+    public static String[] int2strs(int[] val) {
+        if (val == null || val.length == 0)
+            return EMPTY_STRING_ARRAY;
+        String[] ss = new String[val.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = Integer.toString(val[i]);
+        }
+        return ss;
+    }
+    
+    public static String[] uints2strs(int[] val) {
+        if (val == null || val.length == 0)
+            return EMPTY_STRING_ARRAY;
+        String[] ss = new String[val.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = Long.toString(val[i] & 0xffffffffL);
+        }
+        return ss;
+    }
+    
+    public static String[] floats2strs(float[] fs) {
+        if (fs == null || fs.length == 0)
+            return EMPTY_STRING_ARRAY;
+        String[] ss = new String[fs.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = Float.toString(fs[i]);
+        }
+        return ss;
+    }
+    
+    public static String[] doubles2strs(double[] ds) {
+        if (ds == null || ds.length == 0)
+            return EMPTY_STRING_ARRAY;
+        String[] ss = new String[ds.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = Double.toString(ds[i]);
+        }
+        return ss;
+    }
+    
+
+    public static StringBuffer intToHex(int val, StringBuffer sb) {
 		sb.append(HEX_DIGITS[(val >> 28) & 0xf]);
 		sb.append(HEX_DIGITS[(val >> 24) & 0xf]);
 		sb.append(HEX_DIGITS[(val >> 20) & 0xf]);
@@ -138,9 +179,41 @@ public class StringUtils {
 		return sb;
 	}
 
-	public static String shortToHex(int val) {
-		return shortToHex(val, new StringBuffer(4)).toString();
+    public static void intToHex(int val, char[] ch, int off) {
+        ch[off] = HEX_DIGITS[(val >> 28) & 0xf];
+        ch[off+1] = HEX_DIGITS[(val >> 24) & 0xf];
+        ch[off+2] = HEX_DIGITS[(val >> 20) & 0xf];
+        ch[off+3] = HEX_DIGITS[(val >> 16) & 0xf];
+        ch[off+4] = HEX_DIGITS[(val >> 12) & 0xf];
+        ch[off+5] = HEX_DIGITS[(val >> 8) & 0xf];
+        ch[off+6] = HEX_DIGITS[(val >> 4) & 0xf];
+        ch[off+7] = HEX_DIGITS[val & 0xf];
+    }
+
+    public static void shortToHex(int val, char[] ch, int off) {
+        ch[off] = HEX_DIGITS[(val >> 12) & 0xf];
+        ch[off+1] = HEX_DIGITS[(val >> 8) & 0xf];
+        ch[off+2] = HEX_DIGITS[(val >> 4) & 0xf];
+        ch[off+3] = HEX_DIGITS[val & 0xf];
+    }
+
+    public static void byteToHex(int val, char[] ch, int off) {
+        ch[off] = HEX_DIGITS[(val >> 4) & 0xf];
+        ch[off+1] = HEX_DIGITS[val & 0xf];
+    }
+ 
+    public static String intToHex(int val) {
+        char[] ch = new char[8];
+        intToHex(val, ch, 0);
+        return new String(ch);
+    }
+
+    public static String shortToHex(int val) {
+        char[] ch = new char[4];
+        shortToHex(val, ch, 0);
+		return new String(ch);
 	}
 
+    
 
 }

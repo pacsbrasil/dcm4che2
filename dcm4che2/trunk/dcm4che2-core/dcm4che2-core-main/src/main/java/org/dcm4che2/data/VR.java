@@ -17,6 +17,9 @@ import java.util.regex.Pattern;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.DateUtils;
 import org.dcm4che2.util.StringUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
 
 public abstract class VR {
 	
@@ -29,6 +32,11 @@ public abstract class VR {
 	private static final float[] EMPTY_FLOAT_ARRAY = {};
 	private static final double[] EMPTY_DOUBLE_ARRAY = {};
 	private static final Date[] EMPTY_DATE_ARRAY = {};
+    private static final char[] HEX_DIGITS = {
+        '0' , '1' , '2' , '3' , '4' , '5' ,
+        '6' , '7' , '8' , '9' , 'A' , 'B' ,
+        'C' , 'D' , 'E' , 'F'
+    };
 	
 	private static byte[] str2bytes(String val, SpecificCharacterSet cs) {
 		return val == null ? null
@@ -79,6 +87,12 @@ public abstract class VR {
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trim(VR.bytes2strs(val, null));
 		}
+        
+        public void toContentHandler(byte[] bs, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            VR.str2ch(StringUtils.trim(VR.bytes2str(bs, cs)), ch, cbuf);
+        }
 	}
 
 	private static class StringVR extends VR {
@@ -108,7 +122,12 @@ public abstract class VR {
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trim(VR.bytes2strs(val, cs));
 		}
-
+        
+        public void toContentHandler(byte[] bs, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            VR.str2ch(StringUtils.trim(VR.bytes2str(bs, cs)), ch, cbuf);
+        }
 	}
 
 	private static class TextVR extends VR {
@@ -133,6 +152,12 @@ public abstract class VR {
 				return EMPTY_STRING_ARRAY;
 			return new String[]{ toString(val, bigEndian, cs) };
 		}
+        
+        public void toContentHandler(byte[] bs, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            VR.str2ch(StringUtils.trimEnd(VR.bytes2str(bs, cs)), ch, cbuf);
+        }
 	}
 	
 	private static class ShortVR extends VR {
@@ -175,16 +200,10 @@ public abstract class VR {
 
 		public String[] toStrings(byte[] val, boolean bigEndian,
 				SpecificCharacterSet cs) {
-			if (val == null || val.length == 0)
-				return EMPTY_STRING_ARRAY;
-			int[] t1 = toInts(val, bigEndian);
-			String[] t2 = new String[t1.length];
-			for (int i = 0; i < t2.length; i++) {
-				t2[i] = Integer.toString(t1[i]);
-			}
-			return t2;
+            return StringUtils.int2strs(toInts(val, bigEndian));
 		}
 			
+
 		public void toggleEndian(Object val) {
 			ByteUtils.toggleShortEndian((byte[]) val);
 		}
@@ -282,11 +301,43 @@ public abstract class VR {
 			return bigEndian ? ByteUtils.bytesBE2tags(val) 
 					: ByteUtils.bytesLE2tags(val);
 		}
-		
-		public void toggleEndian(Object val) {
-			ByteUtils.toggleShortEndian((byte[]) val);
-		}
-	}
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            final int b1 = bigEndian ? 0 : 1;
+            final int b2 = 1 - b1;
+            final int b3 = 2 + b1;
+            final int b4 = 2 + b2;
+            int clen = 0;
+            for (int i = 0, n = val.length / 4; i < n; i += 4) {
+                if (clen + 9 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                cbuf[clen++] = HEX_DIGITS[(val[i+b1] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i+b1] & 0xf];
+                cbuf[clen++] = HEX_DIGITS[(val[i+b2] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i+b2] & 0xf];
+                cbuf[clen++] = HEX_DIGITS[(val[i+b3] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i+b3] & 0xf];
+                cbuf[clen++] = HEX_DIGITS[(val[i+b4] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i+b4] & 0xf];
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);            
+            }
+        }
+        
+        public void toggleEndian(Object val) {
+            ByteUtils.toggleShortEndian((byte[]) val);
+        }
+    }
 	
 	private static final class CS extends ASCIIVR {
 
@@ -521,16 +572,15 @@ public abstract class VR {
 
 		public String[] toStrings(byte[] val, boolean bigEndian,
 				SpecificCharacterSet cs) {
-			if (val == null || val.length == 0)
-				return EMPTY_STRING_ARRAY;
-			float[] t1 = toFloats(val, bigEndian);
-			String[] t2 = new String[t1.length];
-			for (int i = 0; i < t2.length; i++) {
-				t2[i] = Float.toString(t1[i]);
-			}
-			return t2;
+            return StringUtils.floats2strs(toFloats(val, bigEndian));
 		}
 		
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            VR.fl2ch(val, bigEndian, ch, cbuf);
+        }
+        
 		public void toggleEndian(byte[] b) {
 			ByteUtils.toggleIntEndian(b);
 		}
@@ -588,18 +638,37 @@ public abstract class VR {
 			return Double.toString(toDouble(val, bigEndian));
 		}
 
-		public String[] toStrings(byte[] val, boolean bigEndian,
-				SpecificCharacterSet cs) {
-			if (val == null || val.length == 0)
-				return EMPTY_STRING_ARRAY;
-			double[] t1 = toDoubles(val, bigEndian);
-			String[] t2 = new String[t1.length];
-			for (int i = 0; i < t2.length; i++) {
-				t2[i] = Double.toString(t1[i]);
-			}
-			return t2;
-		}
-		
+        public String[] toStrings(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs) {
+            return StringUtils.doubles2strs(toDoubles(val, bigEndian));
+        }
+        
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0, n = val.length / 8; i < n; i += 8) {
+                if (clen + 26 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                String s = Double.toString(bigEndian 
+                        ? ByteUtils.bytesBE2double(val, i)
+                        : ByteUtils.bytesLE2double(val, i));
+                int sl = s.length();
+                s.getChars(0, sl, cbuf, clen);
+                clen += sl;
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);           
+            }
+        }
+                
 		public void toggleEndian(byte[] b) {
 			ByteUtils.toggleLongEndian(b);
 		}
@@ -660,7 +729,29 @@ public abstract class VR {
 		private OB() {
 			super(0x4f42, 0, 12);
 		}
-	}
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0; i < val.length; i++) {
+                if (clen + 3 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                cbuf[clen++] = HEX_DIGITS[(val[i] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i] & 0xf];
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);            
+            }
+        }
+    }
 	
 	private static final class OF extends VR implements Fragment {
 		private OF() {
@@ -692,6 +783,23 @@ public abstract class VR {
 					: ByteUtils.bytesLE2floats(val);
 		}		
 		
+        public double toDouble(byte[] val, boolean bigEndian) {
+            return toFloat(val, bigEndian);
+        }
+
+        public double[] toDoubles(byte[] val, boolean bigEndian) {
+            if (val == null || val.length == 0)
+                return EMPTY_DOUBLE_ARRAY;
+            return bigEndian ? ByteUtils.bytesBE2floats2doubles(val)
+                    : ByteUtils.bytesLE2floats2doubles(val);
+        } 
+        
+        public void toContentHandler(byte[] bs, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            VR.fl2ch(bs, bigEndian, ch, cbuf);
+        }
+        
 		public void toggleEndian(Object val) {
 			if (val instanceof List) {
 				List items = (List) val;
@@ -733,6 +841,32 @@ public abstract class VR {
 					: ByteUtils.bytesLE2ushorts(val);
 		}
 		
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            final int b1 = bigEndian ? 0 : 1;
+            final int b2 = 1 - b1;
+            int clen = 0;
+            for (int i = 0, n = val.length / 2; i < n; i++, i++) {
+                if (clen + 5 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                cbuf[clen++] = HEX_DIGITS[(val[i+b1] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i+b1] & 0xf];
+                cbuf[clen++] = HEX_DIGITS[(val[i+b2] >> 4) & 0xf];
+                cbuf[clen++] = HEX_DIGITS[val[i+b2] & 0xf];
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);            
+            }
+        }
+        
 		public void toggleEndian(Object val) {
 			if (val instanceof List) {
 				List items = (List) val;
@@ -786,16 +920,34 @@ public abstract class VR {
 
 		public String[] toStrings(byte[] val, boolean bigEndian,
 				SpecificCharacterSet cs) {
-			if (val == null || val.length == 0)
-				return EMPTY_STRING_ARRAY;
-			int[] t1 = toInts(val, bigEndian);
-			String[] t2 = new String[t1.length];
-			for (int i = 0; i < t2.length; i++) {
-				t2[i] = Integer.toString(t1[i]);
-			}
-			return t2;
+            return StringUtils.int2strs(toInts(val, bigEndian));
 		}
-		
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0, n = val.length / 4; i < n; i += 4) {
+                if (clen + 12 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                String s = Integer.toString(bigEndian 
+                        ? ByteUtils.bytesBE2int(val, i)
+                        : ByteUtils.bytesLE2int(val, i));
+                int sl = s.length();
+                s.getChars(0, sl, cbuf, clen);
+                clen += sl;
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);           
+            }
+        }
 	}
 
 	private static final class SQ extends VR {		
@@ -822,7 +974,34 @@ public abstract class VR {
 			return bigEndian ? ByteUtils.bytesBE2sshorts(val) 
 					: ByteUtils.bytesLE2sshorts(val);
 		}
-	}
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0, n = val.length / 2; i < n; i += 2) {
+                if (clen + 8 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                String s = Integer.toString(bigEndian 
+                        ? ByteUtils.bytesBE2sshort(val, i)
+                        : ByteUtils.bytesLE2sshort(val, i));
+                int sl = s.length();
+                s.getChars(0, sl, cbuf, clen);
+                clen += sl;
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);           
+            }
+        }
+        
+    }
 
 	private static final class ST extends TextVR {
 
@@ -914,17 +1093,37 @@ public abstract class VR {
 			return Long.toString(toInt(val, bigEndian) & 0xffffffffL);
 		}
 
-		public String[] toStrings(byte[] val, boolean bigEndian,
-				SpecificCharacterSet cs) {
-			if (val == null || val.length == 0)
-				return EMPTY_STRING_ARRAY;
-			int[] t1 = toInts(val, bigEndian);
-			String[] t2 = new String[t1.length];
-			for (int i = 0; i < t2.length; i++) {
-				t2[i] = Long.toString(t1[i] & 0xffffffffL);
-			}
-			return t2;
-		}
+        public String[] toStrings(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs) {
+            return StringUtils.uints2strs(toInts(val, bigEndian));
+        }
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0, n = val.length / 4; i < n; i += 4) {
+                if (clen + 12 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                String s = Long.toString((bigEndian 
+                        ? ByteUtils.bytesBE2int(val, i)
+                        : ByteUtils.bytesLE2int(val, i))
+                        & 0xffffffffL);
+                int sl = s.length();
+                s.getChars(0, sl, cbuf, clen);
+                clen += sl;
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);           
+            }
+        }
 	}
 
 	private static final class UN extends VR implements Fragment {
@@ -932,7 +1131,34 @@ public abstract class VR {
 		private UN() {
 			super(0x554e, 0, 12);
 		}
-	}
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0; i < val.length; i++) {
+                if (clen + 3 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (val[i] >= 32 && val[i] <= 126) {
+                    cbuf[clen++] = (char) val[i];
+                    if (val[i] == '\\') {
+                        cbuf[clen++] = '\\';
+                    }
+                } else {
+                    cbuf[clen++] = '\\';
+                    cbuf[clen++] = HEX_DIGITS[(val[i] >> 4) & 0xf];
+                    cbuf[clen++] = HEX_DIGITS[val[i] & 0xf];
+                }
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);
+            }
+        }
+    }
 
 	private static final class US extends ShortVR {
 
@@ -951,7 +1177,33 @@ public abstract class VR {
 			return bigEndian ? ByteUtils.bytesBE2ushorts(val) 
 					: ByteUtils.bytesLE2ushorts(val);
 		}
-	}
+
+        public void toContentHandler(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+                throws SAXException {
+            if (val == null || val.length == 0)
+                return;
+            int clen = 0;
+            for (int i = 0, n = val.length / 2; i < n; i += 2) {
+                if (clen + 8 >= cbuf.length) {
+                    ch.characters(cbuf, 0, clen);
+                    clen = 0;
+                }
+                if (i != 0) {
+                    cbuf[clen++] = '\\';
+                }
+                String s = Integer.toString(bigEndian 
+                        ? ByteUtils.bytesBE2ushort(val, i)
+                        : ByteUtils.bytesLE2ushort(val, i));
+                int sl = s.length();
+                s.getChars(0, sl, cbuf, clen);
+                clen += sl;
+            }
+            if (clen > 0) {
+                ch.characters(cbuf, 0, clen);           
+            }
+        }
+    }
 
 	private static final class UT extends TextVR {
 
@@ -1193,8 +1445,52 @@ public abstract class VR {
 						: 0);
 	}
 
+    public void toContentHandler(byte[] val, boolean bigEndian,
+            SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
+            throws SAXException {
+        throw new UnsupportedOperationException();
+	}
+    
 	public void toggleEndian(Object val) {
 		// NO OP		
 	}
-	
+
+    public static void str2ch(String s, ContentHandler ch, char[] cbuf)
+            throws SAXException {
+         if (s == null)
+             return;
+         int sl = s.length();
+         for (int pos = 0; pos < sl;) {
+             int l = Math.min(cbuf.length, sl - pos);
+             s.getChars(pos, pos + l, cbuf, 0);
+             ch.characters(cbuf, 0, l);
+             pos += l;
+         }
+    }
+
+    public static void fl2ch(byte[] b, boolean bigEndian, ContentHandler ch,
+            char[] cbuf)
+            throws SAXException {
+        if (b == null || b.length == 0)
+            return;
+        int clen = 0;
+        for (int i = 0, n = b.length / 4; i < n; i += 4) {
+            if (clen + 16 >= cbuf.length) {
+                ch.characters(cbuf, 0, clen);
+                clen = 0;
+            }
+            if (i != 0) {
+                cbuf[clen++] = '\\';
+            }
+            String s = Float.toString(bigEndian 
+                    ? ByteUtils.bytesBE2float(b, i)
+                    : ByteUtils.bytesLE2float(b, i));
+            int sl = s.length();
+            s.getChars(0, sl, cbuf, clen);
+            clen += sl;
+        }
+        if (clen > 0) {
+            ch.characters(cbuf, 0, clen);           
+        }
+    }
 }

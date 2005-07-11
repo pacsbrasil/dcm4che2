@@ -343,13 +343,22 @@ class BasicAttribute implements Attribute {
 	}
 
 	public AttributeSet removeItem(int index) {
-		return (AttributeSet) remove(index);
+		AttributeSet ret = (AttributeSet) remove(index);
+        updateItemPositions(index);
+        return ret;
 	}
 
-	public AttributeSet addItem(AttributeSet item) {
+	private void updateItemPositions(int index) {
+        for (int i = index, n = countItems(); i < n; ++i) {
+            getItem(i).setItemPosition(i + 1);
+        }
+    }
+
+    public AttributeSet addItem(AttributeSet item) {
 		if (vr != VR.SQ)
 			throw new UnsupportedOperationException();
 		add(item);
+        item.setItemPosition(countItems());
 		return item;
 	}
 
@@ -357,6 +366,7 @@ class BasicAttribute implements Attribute {
 		if (vr != VR.SQ)
 			throw new UnsupportedOperationException();
 		add(index, item);
+        updateItemPositions(index);
 		return item;
 	}
 
@@ -364,6 +374,7 @@ class BasicAttribute implements Attribute {
 		if (vr != VR.SQ)
 			throw new UnsupportedOperationException();
 		set(index, item);
+        item.setItemPosition(index + 1);
 		return item;
 	}
 

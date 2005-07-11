@@ -30,12 +30,15 @@ public interface AttributeSet
 	Iterator commandIterator();
 	Iterator fileMetaInfoIterator();
 	Iterator datasetIterator();
+    int getItemPosition();
+    void setItemPosition(int pos);
 	long getItemOffset();
 	void setItemOffset(long offset);
 	VR vrOf(int tag);
 	int resolvePrivateTag(int privateTag, String privateCreator);
 	int reservePrivateTag(int privateTag, String privateCreator);
 	String getPrivateCreator(int privateTag);
+    boolean isRoot();
 	boolean isEmpty();
 	int size();
 	void clear();

@@ -119,6 +119,10 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		return true;
 	}
 
+    public boolean isRoot() {
+        return getParent() == null;
+    }
+    
 	public boolean isEmpty() {
 		return accept(new Visitor(){
 			public boolean visit(Attribute attr) {

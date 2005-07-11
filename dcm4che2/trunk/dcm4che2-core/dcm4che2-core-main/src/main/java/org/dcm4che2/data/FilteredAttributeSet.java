@@ -154,6 +154,14 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 	
 	protected abstract boolean filter(int tag);
 
+    public int getItemPosition() {
+        return attrs.getItemPosition();
+    }
+    
+    public void setItemPosition(int pos) {
+        attrs.setItemPosition(pos);
+    }
+    
 	public long getItemOffset() {
 		return attrs.getItemOffset();
 	}

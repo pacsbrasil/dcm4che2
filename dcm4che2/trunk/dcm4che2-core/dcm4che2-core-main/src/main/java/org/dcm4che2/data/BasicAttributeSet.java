@@ -37,6 +37,8 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private transient long itemOffset = -1L;
 
+    private transient int itemPos = -1;
+    
 	private transient boolean cacheGet = true;
 
 	private transient boolean cachePut = false;
@@ -129,6 +131,14 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public AttributeSet getRoot() {
 		return parent == null ? this : parent.getRoot();
 	}
+
+    public final int getItemPosition() {
+        return itemPos;
+    }
+    
+    public final void setItemPosition(int itemPos) {
+        this.itemPos = itemPos;
+    }
 
 	public final long getItemOffset() {
 		return itemOffset;
