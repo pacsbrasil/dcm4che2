@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 
 /**
  *@author     gunter.zeilinger@tiani.com
@@ -134,6 +135,15 @@ public class DatasetTest extends TestCase {
         }
     }
 
+    public void testWriteDeflated() throws Exception {
+		testReadEVR_LE();
+		DcmObjectFactory dof = DcmObjectFactory.getInstance();
+		FileMetaInfo fmi = dof.newFileMetaInfo(ds, UIDs.DeflatedExplicitVRLittleEndian);
+		ds.setFileMetaInfo(fmi);
+		ds.writeFile(OUT_FILE, DcmEncodeParam.DEFL_EVR_LE);
+		ds.readFile(OUT_FILE, null, -1);
+	};
+	
 
     /**
      *  A unit test for JUnit
