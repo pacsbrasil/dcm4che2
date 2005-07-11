@@ -99,12 +99,7 @@ class DcmStreamHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
     
     public void endDataset() {
-        if (out instanceof OutputStream) {
-			try {
-				((OutputStream) out).close();
-			} catch (IOException ignore) {
-			}			
-		}
+        // noop
     }
     
     public void setDcmDecodeParam(DcmDecodeParam param) {

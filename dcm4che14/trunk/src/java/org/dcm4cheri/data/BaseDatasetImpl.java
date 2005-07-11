@@ -308,8 +308,11 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
         if (param == null) {
             param = DcmDecodeParam.IVR_LE;
         }
-        writeDataset(new DcmStreamHandlerImpl(
-                param.deflated ? new DeflaterOutputStream(out) : out), param);
+		DeflaterOutputStream deflater = null;
+        writeDataset(new DcmStreamHandlerImpl(param.deflated 
+				? deflater = new DeflaterOutputStream(out) : out), param);
+		if (deflater != null)
+			deflater.close();
     }
 
     /**
@@ -341,9 +344,12 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
         if (param == null) {
             param = DcmDecodeParam.IVR_LE;
         }
+		DeflaterOutputStream deflater = null;
         writeDataset(param.deflated ? new DcmStreamHandlerImpl(
-                new DeflaterOutputStream(new OutputStreamAdapter(out)))
+				deflater = new DeflaterOutputStream(new OutputStreamAdapter(out)))
                 : new DcmStreamHandlerImpl(out), param);
+		if (deflater != null)
+			deflater.close();
     }
 
     private DcmEncodeParam checkCompatibility(FileMetaInfo fmi,
