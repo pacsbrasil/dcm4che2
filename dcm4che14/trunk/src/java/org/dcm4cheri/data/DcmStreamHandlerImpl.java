@@ -24,19 +24,17 @@
 
 package org.dcm4cheri.data;
 
-import org.dcm4che.data.DcmDecodeParam;
-
-import org.dcm4che.dict.VRs;
-
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
-import java.util.zip.DeflaterOutputStream;
+import java.nio.ByteOrder;
 
 import javax.imageio.stream.ImageOutputStream;
+
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.dict.VRs;
 
 /**
  *
