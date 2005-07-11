@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
+import java.util.zip.DeflaterOutputStream;
 
 import javax.imageio.stream.ImageOutputStream;
 
@@ -100,7 +101,12 @@ class DcmStreamHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
     
     public void endDataset() {
-        // noop
+        if (out instanceof OutputStream) {
+			try {
+				((OutputStream) out).close();
+			} catch (IOException ignore) {
+			}			
+		}
     }
     
     public void setDcmDecodeParam(DcmDecodeParam param) {
