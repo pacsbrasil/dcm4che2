@@ -36,7 +36,7 @@ public class RetrieveCmd extends BaseReadCmd {
             "Instance.sopCuid", "Instance.externalRetrieveAET",
             "FileSystem.retrieveAET", "FileSystem.directoryPath",
             "File.filePath", "File.fileTsuid",
-            "File.fileMd5Field", "File.fileSize", "File.fileStatus"};
+            "File.fileMd5Field", "File.fileSize", "File.fileStatus", "Series.pk"};
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance"};
@@ -107,6 +107,41 @@ public class RetrieveCmd extends BaseReadCmd {
 		return toArray(result);
 	}
 
+    public Map getStudyFileInfo() throws SQLException {
+		Map result = map();
+		Map all = map();
+		Map series;
+		try {
+			ArrayList list;
+			Object seriesKey, instKey;
+			while (next()) {
+				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3), rs
+						.getString(4), getBytes(5), rs.getString(6),
+						getBytes(7), getBytes(8), getBytes(9),
+						rs.getString(10), rs.getString(11), rs.getString(12),
+						rs.getString(13), rs.getString(14), rs.getString(15),
+						rs.getString(16), rs.getString(17), rs.getInt(18), rs
+								.getInt(19));
+				seriesKey = new Integer( rs.getInt(20));//series.pk
+				instKey = new Integer( rs.getInt(1));//instance.pk
+				series = (Map) all.get(seriesKey);
+				if (series == null) {
+					all.put( seriesKey, series = map());
+					series.put(instKey, list = new ArrayList());
+				} else {
+					list = (ArrayList)series.get(instKey);
+					if ( list == null ) {
+						series.put(instKey, list = new ArrayList());
+					}
+				}
+				list.add(info);
+			}
+		} finally {
+			close();
+		}
+		return all;
+	}
+    
     protected Map map() {
         return new TreeMap();
     }
