@@ -57,5 +57,7 @@ public interface BasicRequestObject {
 	Map getRequestHeaders();
 
 	String getRequestURL();
+	
+	String getErrorMsg();
 
 }

@@ -17,10 +17,14 @@ import java.util.List;
 public interface WADORequestObject extends BasicRequestObject {
 
 	public static final int OK = 0;
-	public static final int INVALID_WADO_URL = 1;
-	public static final int INVALID_ROWS = 2;
-	public static final int INVALID_COLUMNS = 3;
-	public static final int INVALID_FRAME_NUMBER = 4;
+	public static final int EXTENDED_WADO_URL = 1;
+	
+	public static final int INVALID_WADO_URL = -1;
+	public static final int INVALID_ROWS = -2;
+	public static final int INVALID_COLUMNS = -3;
+	public static final int INVALID_FRAME_NUMBER = -4;
+	public static final int INVALID_CONTENT_TYPE = -5;
+	public static final int INVALID_TRANSFER_SYNTAX = -6;
 	
 	/**
 	 * Returns the studyUID parameter of the http request.
