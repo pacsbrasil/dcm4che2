@@ -312,7 +312,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
         writeDataset(new DcmStreamHandlerImpl(param.deflated 
 				? deflater = new DeflaterOutputStream(out) : out), param);
 		if (deflater != null)
-			deflater.close();
+			deflater.finish();
     }
 
     /**
@@ -349,7 +349,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
 				deflater = new DeflaterOutputStream(new OutputStreamAdapter(out)))
                 : new DcmStreamHandlerImpl(out), param);
 		if (deflater != null)
-			deflater.close();
+			deflater.finish();
     }
 
     private DcmEncodeParam checkCompatibility(FileMetaInfo fmi,
