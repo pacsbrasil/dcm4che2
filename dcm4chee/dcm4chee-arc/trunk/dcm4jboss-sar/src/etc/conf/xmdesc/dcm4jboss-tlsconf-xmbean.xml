@@ -28,7 +28,7 @@
       <name>KeyStoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:mesa_test_sys_1.p12" />
+         <value value="resource:identity.p12" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
@@ -39,7 +39,7 @@
       <name>KeyStorePassword</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="passwd" />
+         <value value="secret" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -51,7 +51,7 @@
       <name>TrustStoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:mesa_cacerts.jks" />
+         <value value="resource:cacerts.jks" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
@@ -62,7 +62,7 @@
       <name>TrustStorePassword</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="passwd" />
+         <value value="secret" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
