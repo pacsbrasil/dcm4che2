@@ -2315,6 +2315,7 @@
   <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1" name="Tiani Study Root Query/Retrieve Information Model - FIND" key="TianiStudyRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.3.1" name="Tiani Patient/Study Only Query/Retrieve Information Model - FIND" key="TianiPatientStudyOnlyQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.3.1.2.3.1" name="Tiani Study Management SOP Class" key="TianiStudyManagement" />
+  <uid value="1.2.40.0.13.1.1.3.10" name="Tiani Study Info SOP Class" key="TianiStudyInfo" />
 </uids>
 
 <uids type="MetaSOPClass">
