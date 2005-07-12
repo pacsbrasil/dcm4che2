@@ -156,14 +156,14 @@ public class MoveStudy
                 return;
             }
             tls = SSLContextAdapter.getInstance();
-            char[] keypasswd = cfg.getProperty("tls-key-passwd", "passwd").toCharArray();
+            char[] keypasswd = cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             tls.setKey(tls.loadKeyStore(
                     MoveStudy.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
                     keypasswd),
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
                     MoveStudy.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                    cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
+                    cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray()));
             tls.init();
         } catch (Exception ex) {
             throw new RuntimeException("Could not initalize TLS configuration: ", ex);

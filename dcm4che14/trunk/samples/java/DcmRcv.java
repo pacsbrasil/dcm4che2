@@ -546,7 +546,7 @@ public class DcmRcv extends DcmServiceBase
             }
 
             tls = SSLContextAdapter.getInstance();
-            char[] keypasswd = cfg.getProperty("tls-key-passwd", "passwd").toCharArray();
+            char[] keypasswd = cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             tls.setKey(
                     tls.loadKeyStore(
                     DcmRcv.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
@@ -554,7 +554,7 @@ public class DcmRcv extends DcmServiceBase
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
                     DcmRcv.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                    cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
+                    cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray()));
             this.server.setServerSocketFactory(
                     tls.getServerSocketFactory(protocol.getCipherSuites()));
         } catch (Exception ex) {

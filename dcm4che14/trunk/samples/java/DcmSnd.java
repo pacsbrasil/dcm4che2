@@ -779,7 +779,7 @@ public class DcmSnd implements PollDirSrv.Handler {
             }
             tls = SSLContextAdapter.getInstance();
             char[] keypasswd =
-                cfg.getProperty("tls-key-passwd", "passwd").toCharArray();
+                cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             tls.setKey(
                 tls.loadKeyStore(
                     DcmSnd.class.getResource(
@@ -791,7 +791,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                     DcmSnd.class.getResource(
                         cfg.getProperty("tls-cacerts", "cacerts.jks")),
                     cfg
-                        .getProperty("tls-cacerts-passwd", "passwd")
+                        .getProperty("tls-cacerts-passwd", "secret")
                         .toCharArray()));
             tls.init();
         } catch (Exception ex) {

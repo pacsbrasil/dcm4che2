@@ -318,7 +318,7 @@ public class MediaCreationMgtScu {
             cipherSuites = url.getCipherSuites();
             if (cipherSuites == null) { return; }
             tls = SSLContextAdapter.getInstance();
-            char[] keypasswd = cfg.getProperty("tls-key-passwd", "passwd")
+            char[] keypasswd = cfg.getProperty("tls-key-passwd", "secret")
                     .toCharArray();
             tls.setKey(tls.loadKeyStore(DcmSnd.class.getResource(cfg
                     .getProperty("tls-key", "identity.p12")), keypasswd),
@@ -326,7 +326,7 @@ public class MediaCreationMgtScu {
             tls
                     .setTrust(tls.loadKeyStore(DcmSnd.class.getResource(cfg
                             .getProperty("tls-cacerts", "cacerts.jks")), cfg
-                            .getProperty("tls-cacerts-passwd", "passwd")
+                            .getProperty("tls-cacerts-passwd", "secret")
                             .toCharArray()));
             tls.init();
         } catch (Exception ex) {
