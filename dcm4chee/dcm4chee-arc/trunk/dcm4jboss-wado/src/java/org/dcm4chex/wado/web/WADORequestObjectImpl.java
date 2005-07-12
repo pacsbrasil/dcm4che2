@@ -15,7 +15,6 @@ import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.mbean.WADOService;
 
@@ -36,6 +35,8 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	private String columns;
 	private String frameNumber;
 	private String transferSyntax;
+	
+	private String serviceName;
 	
 	private List contentTypes = null;
 
@@ -139,15 +140,11 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 
 
 	/**
-	 * Returns the transferSyntax parameter value or null if contentType is not application/dicom.
+	 * Returns the transferSyntax parameter.
 	 * @return Returns the transferSyntax.
 	 */
 	public String getTransferSyntax() {
-		if ( contentTypes.contains("application/dicom") ) {
-			return transferSyntax;
-		} else {
-			return null;
-		}
+		return transferSyntax;
 	}
 	/** 
 	 * Checks this request object and returns an error code.
@@ -166,12 +163,14 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	public int checkRequest() {
 		if ( getRequestType() == null || !"WADO".equalsIgnoreCase(getRequestType()) ||
 				studyUID == null  || seriesUID == null || instanceUID == null ) {
+			setErrorMsg("Not a WADO URL!");
  			return INVALID_WADO_URL;
 		}
 		if ( rows != null ) {
 			try {
 				Integer.parseInt( rows );
 			} catch ( Exception x ) {
+				setErrorMsg("Error: rows parameter is inavlid! Must be an integer string.");
 				return INVALID_ROWS;
 			}
 		}
@@ -179,6 +178,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			try {
 				Integer.parseInt( columns );
 			} catch ( Exception x ) {
+				setErrorMsg("Error: columns parameter is inavlid! Must be an integer string.");
 				return INVALID_COLUMNS;
 			}
 		}
@@ -186,9 +186,11 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			try {
 				Integer.parseInt( frameNumber );
 			} catch ( Exception x ) {
+				setErrorMsg("Error: frameNumber parameter is inavlid! Must be an integer string.");
 				return INVALID_FRAME_NUMBER;
 			}
 		}
+		setErrorMsg(null);
 		return OK;
 	}
 

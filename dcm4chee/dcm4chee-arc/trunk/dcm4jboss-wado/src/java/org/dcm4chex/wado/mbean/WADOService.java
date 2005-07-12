@@ -9,8 +9,8 @@ package org.dcm4chex.wado.mbean;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.common.WADORequestObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 
 /**
@@ -24,6 +24,7 @@ public class WADOService extends AbstractCacheService {
 
 	private WADOSupport support = new WADOSupport( this.server );
 
+	
 	public WADOService() {
 		cache = WADOCacheImpl.getWADOCache();
 	}
@@ -107,6 +108,32 @@ public class WADOService extends AbstractCacheService {
 			support.setFileSystemMgtName( on );
 		} catch (MalformedObjectNameException e) {
 		}
+	}
+	
+	/**
+	 * @return Returns the extendedWADOAllowed.
+	 */
+	public boolean isExtendedWADOAllowed() {
+		return support.isExtendedWADOAllowed();
+	}
+	/**
+	 * @param extendedWADOAllowed The extendedWADOAllowed to set.
+	 */
+	public void setExtendedWADOAllowed(boolean extendedWADOAllowed) {
+		support.setExtendedWADOAllowed(extendedWADOAllowed);
+	}
+	
+	/**
+	 * @return Returns the extendedWADORequestType.
+	 */
+	public String getExtendedWADORequestType() {
+		return support.getExtendedWADORequestType();
+	}
+	/**
+	 * @param extendedWADORequestType The extendedWADORequestType to set.
+	 */
+	public void setExtendedWADORequestType(String extendedWADORequestType) {
+		support.setExtendedWADORequestType( extendedWADORequestType );
 	}
 	
 	/**

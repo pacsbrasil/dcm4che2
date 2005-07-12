@@ -118,6 +118,30 @@
          <value value="true" />
       </descriptors>
    </attribute>
+
+    <attribute access="read-write"
+      getMethod="isExtendedWADOAllowed"
+      setMethod="setExtendedWADOAllowed">
+      <description>Enable/disable extended WADO support (requestType=WADOext). 
+      </description>
+      <name>ExtendedWADOAllowed</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getExtendedWADORequestType"
+      setMethod="setExtendedWADORequestType">
+      <description>requestType value to use extended WADO service.
+      		          
+      </description>
+      <name>ExtendedWADORequestType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="WADOext" />
+      </descriptors>
+   </attribute>
    
     <attribute access="read-write"
       getMethod="getFileSystemMgtName"

@@ -61,6 +61,9 @@ private boolean useOrigFile = false;
 
 private boolean useTransferSyntaxOfFileAsDefault = true;
 
+private boolean extendedWADOAllowed = false;
+private String extendedWADORequestType;
+
 private static MBeanServer server;
 
 private static final int BUF_LEN = 65536;
@@ -114,7 +117,7 @@ private String getPrefContentType(WADORequestObject req) {
 
 	int idxJpeg = contentTypes.indexOf( CONTENT_TYPE_JPEG );
 	int idxDicom = contentTypes.indexOf( CONTENT_TYPE_DICOM );
-	log.info("getPrefContentType idxJpeg:"+idxJpeg+"  idxDicom:"+idxDicom);
+	if ( log.isDebugEnabled() ) log.debug("getPrefContentType idxJpeg:"+idxJpeg+"  idxDicom:"+idxDicom);
 	if ( idxJpeg != -1 ) {
 		if ( idxDicom != -1 && idxDicom < idxJpeg ) {
 			return CONTENT_TYPE_DICOM;
@@ -510,6 +513,31 @@ public boolean isUseTransferSyntaxOfFileAsDefault() {
 public void setUseTransferSyntaxOfFileAsDefault(
 		boolean useTransferSyntaxOfFileAsDefault) {
 	this.useTransferSyntaxOfFileAsDefault = useTransferSyntaxOfFileAsDefault;
+}
+/**
+ * @return Returns the extendedWADOAllowed.
+ */
+public boolean isExtendedWADOAllowed() {
+	return extendedWADOAllowed;
+}
+/**
+ * @param extendedWADOAllowed The extendedWADOAllowed to set.
+ */
+public void setExtendedWADOAllowed(boolean extendedWADOAllowed) {
+	this.extendedWADOAllowed = extendedWADOAllowed;
+}
+
+/**
+ * @return Returns the extendedWADORequestType.
+ */
+public String getExtendedWADORequestType() {
+	return extendedWADORequestType;
+}
+/**
+ * @param extendedWADORequestType The extendedWADORequestType to set.
+ */
+public void setExtendedWADORequestType(String extendedWADORequestType) {
+	this.extendedWADORequestType = extendedWADORequestType;
 }
 /**
  * Inner exception class to handle WADO redirection.

@@ -23,6 +23,14 @@
 			<param-value>tiani.archive:service=WADOService</param-value>
 		</init-param>
 		
+		<!--
+			The configuration base for extended WADO service.
+		-->
+		<init-param>
+			<param-name>wadoExtServiceName</param-name>
+			<param-value>tiani.archive:service=WADOExtService</param-value>
+		</init-param>
+		
 		<!-- 
 			Used by dcm4jboss-web application to find FileSystemMgtService MBean.
 			Value must match mbean name in configured in

@@ -18,6 +18,8 @@ import org.dcm4chex.wado.common.BasicRequestObject;
  */
 public class RequestObjectFactory {
 
+	private static String wadoExtReqType = "WADOext";
+	
 	/**
 	 * Returns an request object for given hjttp request.
 	 * <p>
@@ -31,8 +33,10 @@ public class RequestObjectFactory {
 		BasicRequestObject reqObj = null; 
 		String reqType = request.getParameter("requestType");
 		if ( reqType == null ) return null; //wrong URL
-		if ( "WADO".equals( reqType ) ) {
+		if ( "WADO".equalsIgnoreCase( reqType ) ) {
 			return new WADORequestObjectImpl( request );
+		} else if ( wadoExtReqType.equals( reqType )) {
+			return new WADOExtRequestObject( reqType, request );
 		} else if ( "DOCUMENT".equals( reqType )) {
 			return new RIDDocumentRequestObject( request );
 		} else if ( reqType.startsWith( "SUMMARY" ) ) {
@@ -42,5 +46,11 @@ public class RequestObjectFactory {
 		} else {
 			return null; //wrong URL
 		}
+	}
+	/**
+	 * @param delegate The delegate to set.
+	 */
+	public static void setWADOextRequestType(String s) {
+		wadoExtReqType = s;
 	}
 }

@@ -35,6 +35,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	private List allowedContentTypes = null;
 
 	private String reqURL;
+	private String errMsg;
 
 	/**
 	 * Initialize an RequestObject with http request.
@@ -122,5 +123,17 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	public String getRequestURL() {
 		return reqURL;
 		
+	}
+	/**
+	 * @return Returns the errMsg.
+	 */
+	public String getErrorMsg() {
+		return errMsg;
+	}
+	/**
+	 * @param errMsg The errMsg to set.
+	 */
+	protected void setErrorMsg(String errMsg) {
+		this.errMsg = errMsg;
 	}
 }

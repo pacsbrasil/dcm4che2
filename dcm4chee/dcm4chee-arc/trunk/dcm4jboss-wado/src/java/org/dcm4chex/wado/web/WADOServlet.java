@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4chex.wado.common.BasicRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 
@@ -39,6 +40,7 @@ public class WADOServlet extends HttpServlet {
 	public void init() {
 		delegate = new WADOServiceDelegate();
 		delegate.init( getServletConfig() );
+		RequestObjectFactory.setWADOextRequestType( delegate.getExtendedWADORequestType() );
 	}
 
 	/**
@@ -58,32 +60,37 @@ public class WADOServlet extends HttpServlet {
 	 * @param response	The http response.
 	 */
 	public void doGet( HttpServletRequest request, HttpServletResponse response ){
-		WADORequestObject reqObject = new WADORequestObjectImpl( request );
+		BasicRequestObject reqObject = RequestObjectFactory.getRequestObject( request );
+		if ( reqObject == null || ! (reqObject instanceof WADORequestObject) ) {
+			RequestObjectFactory.setWADOextRequestType( delegate.getExtendedWADORequestType() );//try if config has changed!
+			reqObject = RequestObjectFactory.getRequestObject( request );
+			if ( reqObject == null ) {
+				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not A WADO URL" );
+				return;
+			}
+		}
 		int iErr = reqObject.checkRequest();
-		if ( iErr == WADORequestObject.INVALID_WADO_URL ) {
-			sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not a WADO URL!" );//required params missing!
-		} else if ( iErr == WADORequestObject.INVALID_ROWS ) {
-				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Error: rows parameter is inavlid! Must be an integer string." );
-		} else if ( iErr == WADORequestObject.INVALID_COLUMNS ) {
-				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Error: columns parameter is inavlid! Must be an integer string." );
-		} else if ( iErr == WADORequestObject.INVALID_FRAME_NUMBER ) {
-			sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Error: frameNumber parameter is inavlid! Must be an integer string." );
-		} else if ( iErr == WADORequestObject.OK ) { 
-			WADOResponseObject respObject = delegate.getWADOObject( reqObject );
-			int returnCode = respObject.getReturnCode();
-			if ( returnCode == HttpServletResponse.SC_OK ) {
-				sendWADOFile( response, respObject );
-			} else if ( returnCode == HttpServletResponse.SC_TEMPORARY_REDIRECT ) {
-				try {
-					response.sendRedirect( respObject.getErrorMessage() ); //error message contains redirect host.
-				} catch (IOException e) {
-					sendError( response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: cant send redirect to client! Redirect to host "+respObject.getErrorMessage()+" failed!" );
-				}
-			} else {
-				sendError( response, returnCode, respObject.getErrorMessage() );
+		if ( iErr < 0 ) {
+			sendError( response, HttpServletResponse.SC_BAD_REQUEST, reqObject.getErrorMsg() );//required params missing or invalid!
+			return;
+		} else if ( iErr == WADORequestObject.EXTENDED_WADO_URL ) {
+			if ( ! delegate.isWadoExtAllowed() ) {
+				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not A WADO URL" );
+				return;
+			}
+		}
+		WADOResponseObject respObject = delegate.getWADOObject( (WADORequestObject)reqObject );
+		int returnCode = respObject.getReturnCode();
+		if ( returnCode == HttpServletResponse.SC_OK ) {
+			sendWADOFile( response, respObject );
+		} else if ( returnCode == HttpServletResponse.SC_TEMPORARY_REDIRECT ) {
+			try {
+				response.sendRedirect( respObject.getErrorMessage() ); //error message contains redirect host.
+			} catch (IOException e) {
+				sendError( response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: cant send redirect to client! Redirect to host "+respObject.getErrorMessage()+" failed!" );
 			}
 		} else {
-			sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Error: Please check URL parameter!" );
+			sendError( response, returnCode, respObject.getErrorMessage() );
 		}
 	}
 	

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>Extended WADO Service</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.wado.mbean.ExtendedWADOService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>ExtendedWADOService</name>
+   </constructor>
+
+    <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>For internal use. Don't change!
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tiani.archive:service=FileSystemMgt" />
+      </descriptors>
+   </attribute>
+    <attribute access="read-write"
+      getMethod="getStudyInfoServiceName"
+      setMethod="setStudyInfoServiceName">
+      <description>For internal use. Don't change!
+      </description>
+      <name>StudyInfoServiceName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tiani.archive:service=StudyInfoService" />
+      </descriptors>
+   </attribute>
+
+   <!-- Operations -->
+   &defaultOperations;
+   
+   <operation impact="ACTION">
+      <description>Get WADO response object</description>
+      <name>getWADOObject</name>
+      <parameter>
+        <description>Value object of the request.</description>
+        <name>reqVO</name>
+        <type>org.dcm4chex.wado.common.WADORequestObject</type>
+      </parameter>
+      <return-type>org.dcm4chex.wado.common.WADOResponseObject</return-type>
+   </operation>
+   
+</mbean>
