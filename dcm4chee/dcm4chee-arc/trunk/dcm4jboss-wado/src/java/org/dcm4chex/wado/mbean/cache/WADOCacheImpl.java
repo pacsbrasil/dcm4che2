@@ -32,9 +32,11 @@ public class WADOCacheImpl implements WADOCache {
 	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
 	public static final String DEFAULT_WADO_SUBDIR = "default";
 	public static final String DEFAULT_RID_SUBDIR = "rid";
+	public static final String DEFAULT_WADO_EXT_SUBDIR = "wfind";
 
 	private static WADOCacheImpl singletonWADO = null;
 	private static WADOCacheImpl singletonRID = null;
+	private static WADOCacheImpl singletonWADOExt = null;
 	
 	private static Logger log = Logger.getLogger( WADOCacheImpl.class.getName() );
 	
@@ -94,6 +96,18 @@ public class WADOCacheImpl implements WADOCache {
 			singletonRID.defaultSubdir = DEFAULT_RID_SUBDIR;
 		}
 		return singletonRID;
+	}
+
+	/**
+	 * Returns the singleton instance of WADOCache.
+	 * @return
+	 */
+	public static WADOCache getWADOExtCache() {
+		if ( singletonWADOExt == null ) {
+			singletonWADOExt = new WADOCacheImpl();
+			singletonWADOExt.defaultSubdir = DEFAULT_WADO_EXT_SUBDIR;
+		}
+		return singletonWADOExt;
 	}
 	
 	/**
@@ -293,6 +307,9 @@ public class WADOCacheImpl implements WADOCache {
 					}
 				}
 			}
+		} else if (this == singletonWADOExt ) {
+			log.info("Clear WADOExt cache!");
+			delTree( new File( this.getAbsCacheRoot(), DEFAULT_WADO_EXT_SUBDIR ) );
 		} else {
 			log.info("Clear RID cache!");
 			delTree( new File( this.getAbsCacheRoot(), DEFAULT_RID_SUBDIR ) );

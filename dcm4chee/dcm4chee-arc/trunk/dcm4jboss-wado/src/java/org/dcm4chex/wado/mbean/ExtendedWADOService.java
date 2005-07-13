@@ -11,6 +11,7 @@ import javax.management.ObjectName;
 
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 
 /**
  * @author franz.willer 
@@ -24,6 +25,7 @@ public class ExtendedWADOService extends AbstractCacheService {
 	private ExtendedWADOSupport support = new ExtendedWADOSupport( this.server );
 
 	public ExtendedWADOService() {
+		cache = WADOCacheImpl.getWADOExtCache();
 	}
 	
 	/**
@@ -77,6 +79,20 @@ public class ExtendedWADOService extends AbstractCacheService {
 		} catch (MalformedObjectNameException e) {
 		}
 	}
+	
+	/**
+	 * @return Returns the cacheEnabled.
+	 */
+	public boolean isCacheEnabled() {
+		return support.isCacheEnabled();
+	}
+	/**
+	 * @param cacheEnabled The cacheEnabled to set.
+	 */
+	public void setCacheEnabled(boolean cacheEnabled) {
+		support.setCacheEnabled(cacheEnabled);
+	}
+	
 	
 	/**
 	 * Get the requested DICOM object as File packed in a WADOResponseObject.

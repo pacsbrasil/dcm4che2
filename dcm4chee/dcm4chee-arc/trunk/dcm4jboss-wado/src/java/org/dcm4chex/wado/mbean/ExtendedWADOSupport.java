@@ -6,17 +6,24 @@
  */
 package org.dcm4chex.wado.mbean;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Date;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
-import org.dcm4chex.wado.web.WADOExtRequestObject;
+import org.dcm4chex.wado.mbean.cache.WADOCache;
+import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -37,6 +44,8 @@ private static ObjectName studyInfoServiceName = null;
 private static MBeanServer server;
 
 private static final int BUF_LEN = 65536;
+
+private boolean cacheEnabled;
 
 public ExtendedWADOSupport( MBeanServer mbServer ) {
 	if ( server != null ) {
@@ -85,14 +94,28 @@ private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
 		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_BAD_REQUEST, "Missing uid parameter! Either StudyUID,SeriesUID or ObjectUID must be set!");
 	}
 	if ( ts == null ) ts = UIDs.ExplicitVRLittleEndian;
+	WADOCache cache = WADOCacheImpl.getWADOExtCache();
+	File outFile = cache.getFileObject(null, level.toLowerCase(),  
+			(UIDs.ExplicitVRLittleEndian.equals(ts) ? uid:uid+"_deflated"), CONTENT_TYPE_DICOM );
 	try {
+		if ( cacheEnabled && outFile.exists() ) {
+			if ( ! isOutdated( req, outFile ) ) 
+				return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+		}
         ds = (Dataset) server.invoke( studyInfoServiceName,
                 "retrieveStudyInfo",
                 new Object[] { level, uid },
                 new String[] { String.class.getName(), String.class.getName() } );
         
         ds.setFileMetaInfo( DcmObjectFactory.getInstance().newFileMetaInfo(ds, ts) );
-        return new WADODatasourceResponseObjectImpl( ds, ts, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+        if ( ! cacheEnabled ) {
+        	return new WADODatasourceResponseObjectImpl( ds, ts, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+        } else {
+        	outFile.getParentFile().mkdirs();
+        	FileOutputStream out = new FileOutputStream( outFile );
+        	ds.writeFile(out, DcmEncodeParam.valueOf( ts ));
+			return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+        }
         
     } catch (Exception e) {
         log.error("Failed to get study information for "+level+" uid:"+uid, e);
@@ -101,6 +124,35 @@ private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
 }
 
 
+/**
+ * @param req
+ * @param outFile
+ * @return
+ */
+private boolean isOutdated(WADORequestObject req, File outFile) {
+	String level, uid;
+	if ( (uid = req.getObjectUID()) != null ) {
+		level="IMAGE";
+	} else if ( (uid = req.getSeriesUID()) != null ) {
+		level="SERIES";
+	} else if ( (uid = req.getStudyUID()) != null ) {
+		level="STUDY";
+	} else {
+		return true;
+	}
+	boolean b;
+	try {
+		b = ((Boolean)server.invoke( studyInfoServiceName,
+		        "checkOutdated",
+		        new Object[] { new Date(outFile.lastModified()), level, uid },
+		        new String[] { Date.class.getName(),String.class.getName(), String.class.getName() } ) ).booleanValue();
+		log.info("is "+outFile+" outdated? :"+b);
+		return b;
+	} catch (Exception x) {
+		log.error("Failed to check if file is outdated!",x);
+		return true;
+	}
+}
 
 /**
  * Set the name of the FileSystemMgtBean.
@@ -136,5 +188,17 @@ public ObjectName getStudyInfoServiceName() {
  */
 public void setStudyInfoServiceName(ObjectName studyInfoServiceName) {
 	ExtendedWADOSupport.studyInfoServiceName = studyInfoServiceName;
+}
+/**
+ * @return Returns the cacheEnabled.
+ */
+public boolean isCacheEnabled() {
+	return cacheEnabled;
+}
+/**
+ * @param cacheEnabled The cacheEnabled to set.
+ */
+public void setCacheEnabled(boolean cacheEnabled) {
+	this.cacheEnabled = cacheEnabled;
 }
 }
