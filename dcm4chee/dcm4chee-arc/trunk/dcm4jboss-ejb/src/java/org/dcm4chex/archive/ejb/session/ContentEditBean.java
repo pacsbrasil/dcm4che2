@@ -192,9 +192,9 @@ public abstract class ContentEditBean implements SessionBean {
     	try {
 	        PatientLocal patient = patHome.findByPrimaryKey(new Integer(patPk));
 	        Dataset ds1 = studyHome.create(ds, patient).getAttributes(true);
-	        log.info("createStudy ds1:");log.info(ds1);
+	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1:");log.debug(ds1);}
 	        ds1.putAll( patient.getAttributes(true).subSet(attrFilter.getPatientFilter()) );
-	        log.info("createStudy ds1 with patient:");log.info(ds1);
+	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1 with patient:");log.debug(ds1);}
 	        return ds1;
         } catch (FinderException e) {
             throw new EJBException(e);
@@ -458,7 +458,7 @@ public abstract class ContentEditBean implements SessionBean {
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances, int chgMode, Dataset changes ) {
     	Dataset ds = dof.newDataset();
     	ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
-    	log.info("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
+    	log.debug("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
     	if ( chgMode == CHANGE_MODE_STUDY) ds.putAll( changes );
 		DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
 		Iterator iter = series.iterator();
@@ -481,7 +481,7 @@ public abstract class ContentEditBean implements SessionBean {
 				dsInst.putAE( Tags.RetrieveAET, il.getRetrieveAETs() );
 			}
 		}
-    	log.info("return StgMgtDataset:");log.info(ds);
+		if ( log.isDebugEnabled() ) { log.debug("return StgMgtDataset:");log.debug(ds);}
     	return ds;
     }
 }
