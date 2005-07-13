@@ -72,7 +72,7 @@ public class WADOExtRequestObject extends WADORequestObjectImpl {
 			}
 		}
 		String ts = getTransferSyntax();
-		if ( !UIDs.ExplicitVRLittleEndian.equals(ts) && !UIDs.DeflatedExplicitVRLittleEndian.equals(ts)) {
+		if ( ts != null && !UIDs.ExplicitVRLittleEndian.equals(ts) && !UIDs.DeflatedExplicitVRLittleEndian.equals(ts)) {
 			setErrorMsg("Extended WADO: Invalid transferSyntax parameter! Only 1.2.840.10008.1.2.1(explicit VR little endian) or 1.2.840.10008.1.2.1.99(deflated explicit VR little endian) are allowed!");
 			return INVALID_TRANSFER_SYNTAX;
 		}
