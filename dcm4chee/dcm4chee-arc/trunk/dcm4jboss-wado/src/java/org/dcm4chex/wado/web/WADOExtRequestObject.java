@@ -56,14 +56,14 @@ public class WADOExtRequestObject extends WADORequestObjectImpl {
 	public int checkRequest() {
 		
 		if ( getRequestType() == null || !reqType.equalsIgnoreCase(getRequestType()) ||
-				serviceType == null || level == null) {
-			setErrorMsg("Extended WADO: URL not valid! Parameters must be set: requestType="+reqType+", serviceType and level"); 
+				serviceType == null ) {
+			setErrorMsg("Extended WADO: URL not valid! Parameters must be set: requestType="+reqType+" and serviceType"); 
  			return INVALID_WADO_URL;
 		}
 		List l = getContentTypes();
 		if ( l != null && l.size() > 0) {
 			if ( l.size() > 1 ) {
-				setErrorMsg("Extended WADO: Invalid contentType parameter! Only one content type is allowed!");
+				setErrorMsg("Extended WADO: Invalid contentType parameter! Only one content type (application/dicom) is allowed!");
 				return INVALID_CONTENT_TYPE;
 			}
 			if ( ! "application/dicom".equals(l.get(0)) ) {
