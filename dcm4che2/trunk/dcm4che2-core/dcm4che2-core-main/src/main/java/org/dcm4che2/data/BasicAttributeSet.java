@@ -177,8 +177,24 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			vrmap = VRMap.getVRMap();
 		}
 		return vrmap.vrOf(tag);
-
 	}
+
+    public String nameOf(int tag) {
+        ElementDictionary dict;
+        if (TagUtils.isPrivateDataElement(tag)) {
+            if (TagUtils.isPrivateCreatorDataElement(tag))
+                return ElementDictionary.PRIVATE_CREATOR;
+
+            final String privateCreatorID = getPrivateCreator(tag);
+            if (privateCreatorID == null)
+                return ElementDictionary.UNKOWN;
+
+            dict = ElementDictionary.getPrivateDictionary(privateCreatorID);
+        } else {
+            dict = ElementDictionary.getDictionary();
+        }
+        return dict.nameOf(tag);
+    }
 
 	public String getPrivateCreator(int tag) {
 		if (!TagUtils.isPrivateDataElement(tag)

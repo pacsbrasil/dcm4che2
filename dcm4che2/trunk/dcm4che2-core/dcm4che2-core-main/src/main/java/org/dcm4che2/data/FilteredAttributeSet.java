@@ -83,7 +83,6 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 			return new Itr(attrs.iterator((int) maxFromTag, (int) minToTag));
 		}
 	}
-
 	
 	static final class ExcludePrivate extends FilteredAttributeSet {
 		private static final long serialVersionUID = 1L;
@@ -349,6 +348,10 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 	public VR vrOf(int tag) {
 		return attrs.vrOf(tag);
 	}
+    
+    public String nameOf(int tag) {
+        return attrs.nameOf(tag);
+    }
 
 	public Attribute putFragments(int tag, VR vr, boolean bigEndian, int capacity) {
 		throw new UnsupportedOperationException();

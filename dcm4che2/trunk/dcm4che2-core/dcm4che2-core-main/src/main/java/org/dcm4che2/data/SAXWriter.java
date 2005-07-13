@@ -5,23 +5,26 @@ import java.util.Iterator;
 import org.dcm4che2.util.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class SAXWriter {
     
     private static final int CBUF_LENGTH = 512;
 
-    private ContentHandler handler;
+    private ContentHandler ch;
+    private LexicalHandler lh;
 
-    public SAXWriter(ContentHandler handler) {
-        this.handler = handler;
+    public SAXWriter(ContentHandler ch, LexicalHandler lh) {
+        this.ch = ch;
+        this.lh = lh;
     }
     
     public void write(AttributeSet attrs)
             throws SAXException {
-        handler.startDocument();
+        ch.startDocument();
         writeContent(attrs, new char[CBUF_LENGTH]);
-        handler.endDocument();
+        ch.endDocument();
     }
 
     private void writeContent(AttributeSet attrs, char[] cbuf)
@@ -30,20 +33,23 @@ public class SAXWriter {
         String qName = "dicom";
         if (!attrs.isRoot()) {
             qName = "item";
-            atts.addAttribute("", "", "pos", "",
-                    Integer.toString(attrs.getItemPosition()));
             atts.addAttribute("", "", "off", "",
                     Long.toString(attrs.getItemOffset()));
         }
-        handler.startElement("", "", qName, atts);
+        ch.startElement("", "", qName, atts);
         for (Iterator it = attrs.iterator(); it.hasNext();) {
             Attribute a = (Attribute) it.next();
             VR vr = a.vr();
+            final int tag = a.tag();
+            if (lh != null) {
+                String name = attrs.nameOf(tag);
+                lh.comment(name.toCharArray(), 0, name.length());
+            }
             atts.clear();
-            atts.addAttribute("", "", "tag", "", StringUtils.intToHex(a.tag()));
+            atts.addAttribute("", "", "tag", "", StringUtils.intToHex(tag));
             atts.addAttribute("", "", "vr", "", vr.toString());
             atts.addAttribute("", "", "len", "", Integer.toString(a.length()));
-            handler.startElement("", "", "attr", atts);
+            ch.startElement("", "", "attr", atts);
             if (a.hasItems()) {
                 for (int i = 0, n = a.countItems(); i < n; ++i) {
                     if (vr == VR.SQ) {
@@ -51,23 +57,21 @@ public class SAXWriter {
                     } else {
                         final byte[] bytes = a.getBytes(i);
                         atts.clear();
-                        atts.addAttribute("", "", "pos", "", Integer
-                                .toString(i + 1));
                         atts.addAttribute("", "", "len", "", Integer
                                 .toString((bytes.length + 1) & ~1));
-                        handler.startElement("", "", "item", atts);
-                        vr.toContentHandler(bytes, a.bigEndian(), null, handler, cbuf);
-                        handler.endElement("", "", "item");
+                        ch.startElement("", "", "item", atts);
+                        vr.formatXMLValue(bytes, a.bigEndian(), null, ch, cbuf);
+                        ch.endElement("", "", "item");
                     }
                 }
             } else {
-                vr.toContentHandler(a.getBytes(), a.bigEndian(), attrs
-                        .getSpecificCharacterSet(), handler, cbuf);
+                vr.formatXMLValue(a.getBytes(), a.bigEndian(), attrs
+                        .getSpecificCharacterSet(), ch, cbuf);
             }
-            handler.endElement("", "", "attr");
+            ch.endElement("", "", "attr");
 
         }
-        handler.endElement("", "", qName);
+        ch.endElement("", "", qName);
     }
 
 }

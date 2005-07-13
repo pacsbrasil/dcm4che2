@@ -145,6 +145,8 @@ public class DicomOutputStream
 		this.ts = ts;
 		writeAttributes(attrs.datasetIterator(),
 				includeGroupLength, createItemInfo(attrs));
+        if (ts.isDeflated())
+            ((DeflaterOutputStream) out).finish();
 	}
 
 	private ItemInfo createItemInfo(AttributeSet attrs) {

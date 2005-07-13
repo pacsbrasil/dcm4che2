@@ -37,13 +37,13 @@ public class SAXWriterTest extends TestCase {
         AttributeSet attrs = new BasicAttributeSet();
         dis.readAttributeSet(attrs, -1);
         dis.close();
-        File ofile = new File("target/test-out/DICOMDIR.XML");
+        File ofile = new File("target/test-out/DICOMDIR.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
         th.setResult(new StreamResult(ofile));
-        new SAXWriter(th).write(attrs);
+        new SAXWriter(th, th).write(attrs);
     }
 
 }
