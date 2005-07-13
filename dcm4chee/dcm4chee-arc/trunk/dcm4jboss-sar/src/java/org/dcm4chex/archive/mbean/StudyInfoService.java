@@ -8,10 +8,10 @@
  ******************************************/
 package org.dcm4chex.archive.mbean;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +21,13 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.UIDGenerator;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -41,6 +40,8 @@ public class StudyInfoService extends ServiceMBeanSupport {
 
     private static Logger log = Logger.getLogger( StudyInfoService.class.getName() );
 
+	DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    
 	public StudyInfoService() {
     }
     
@@ -57,9 +58,8 @@ public class StudyInfoService extends ServiceMBeanSupport {
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
-
-    public Dataset retrieveStudyInfo( String level, String uid ) throws SQLException, IOException {
-    	DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    
+    private Dataset getQueryDS(String level, String uid ){
     	Dataset dsQ = dof.newDataset();
     	if ( "STUDY".equals(level) ) 
     		dsQ.putUI(Tags.StudyInstanceUID, uid);
@@ -70,6 +70,23 @@ public class StudyInfoService extends ServiceMBeanSupport {
 		else
 			throw new IllegalArgumentException("Argument level must be either STUDY,SERIES or IMAGE! level:"+level);
     	dsQ.putCS(Tags.QueryRetrieveLevel, level);
+    	return dsQ;
+    }
+    
+    public boolean checkOutdated( Date date, String level, String uid ) {
+    	Dataset dsQ = getQueryDS(level, uid);
+    	try {
+			RetrieveStudyDatesCmd cmd = RetrieveStudyDatesCmd.create(dsQ);
+			Date mrDate = cmd.getMostRecentUpdatedTime();
+			return date.before(mrDate);
+		} catch (SQLException x) {
+			log.error("Error while RetrieveStudyDatesCmd!", x);
+		}
+    	return true;
+    }
+
+    public Dataset retrieveStudyInfo( String level, String uid ) throws SQLException, IOException {
+    	Dataset dsQ = getQueryDS(level, uid);
     	RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
     	Map all = retrieveCmd.getStudyFileInfo();//map containing series with series.pk as key, map with List of instances as value
 
@@ -121,14 +138,6 @@ public class StudyInfoService extends ServiceMBeanSupport {
     	return ds;
     }
    
-
-    private void updateAttrs(Dataset ds, byte[] attrs) throws IOException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
-        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(bis);
-        parser.setDcmHandler(ds.getDcmHandler());
-        parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
-        bis.close();
-    }
 
  
 }

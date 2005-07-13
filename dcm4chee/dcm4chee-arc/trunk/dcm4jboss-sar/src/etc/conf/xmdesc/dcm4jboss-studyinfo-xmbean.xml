@@ -38,6 +38,26 @@
       </parameter>
       <return-type>org.dcm4che.data.Dataset</return-type>
    </operation>   
+   <operation impact="INFO">
+      <description>Check if given Date is outdated for study.</description>
+      <name>checkOutdated</name>
+      <parameter>
+      	<description>Date to check</description>
+        <name>date</name>
+        <type>java.util.Date</type>
+      </parameter>
+      <parameter>
+      	<description>Query level (STUDY,SERIES or IMAGE)</description>
+        <name>level</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+      	<description>UID for level (Study Instance UID, Series Instance UID, SOP Instance UID)</description>
+        <name>UID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>   
    
 </mbean>
     
