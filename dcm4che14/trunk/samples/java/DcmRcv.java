@@ -18,9 +18,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 
-import java.io.BufferedOutputStream;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,9 +35,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
@@ -502,11 +501,29 @@ public class DcmRcv extends DcmServiceBase
                 initPresContext(key.substring(3),
                         cfg.tokenize(cfg.getProperty(key)));
             }
+            if (key.startsWith("role.")) {
+                initRole(key.substring(5),
+                        cfg.tokenize(cfg.getProperty(key)));
+            }
         }
     }
 
 
-    private void initPresContext(String asName, String[] tsNames)
+ 	private void initRole(String asName, String[] roles) {
+        String as = UIDs.forName(asName);
+		policy.putRoleSelection(as, contains(roles, "scu"), contains(roles, "scp"));
+	}
+
+
+	private boolean contains(String[] roles, String key) {
+		for (int i = 0; i < roles.length; i++) {
+			if (key.equalsIgnoreCase(roles[i]))
+				return true;
+		}
+		return false;
+	}
+
+	private void initPresContext(String asName, String[] tsNames)
     {
         String as = UIDs.forName(asName);
         String[] tsUIDs = new String[tsNames.length];
