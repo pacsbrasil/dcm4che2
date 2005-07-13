@@ -19,6 +19,7 @@ import org.dcm4che.dict.Tags;
  */
 public class StudyFilterModel extends AbstractModel {
 
+	private String name; //hold orig input! in dataset append an asterix!
     public StudyFilterModel() {
     }
 
@@ -31,10 +32,25 @@ public class StudyFilterModel extends AbstractModel {
     }
 
     public final String getPatientName() {
-        return ds.getString(Tags.PatientName);
+        return name;
     }
 
+    /**
+     * Set patient name filter value.
+     * <p>
+     * Use auto wildcard match to get all patient beginning with given string.
+     * <p>
+     * This feature is only used if <code>patientName</code> doesn't already 
+     * contain a wildcard caracter ('?' or '*')! 
+     * 
+     * @param patientName
+     */
     public final void setPatientName(String patientName) {
+    	name = patientName;
+    	if ( patientName != null && 
+    		 patientName.length() > 0 && 
+			 patientName.indexOf('*') == -1 &&
+			 patientName.indexOf('?') == -1) patientName+="*";
         ds.putPN(Tags.PatientName, patientName);
     }
 
