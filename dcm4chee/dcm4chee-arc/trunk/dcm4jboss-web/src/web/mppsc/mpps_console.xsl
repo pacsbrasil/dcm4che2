@@ -137,28 +137,24 @@
 
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<colgroup>
-			<col width="8%"/>
-			<col width="9%"/>
-			<col width="15%"/>
-			<col width="20%"/>
+			<col width="17%"/>
 			<col width="11%"/>
-			<col width="12%"/>
-			<col width="3%"/>
-			<col width="10%"/>
+			<col width="30%"/>
+			<col width="20%"/>
+			<col width="5%"/>
+			<col width="15%"/>
 			<col width="12%"/>
 		</colgroup>
 		<tr >
-			<td bgcolor="eeeeee" style="height:7px" colspan="9"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:7px" colspan="7"></td> <!-- spacer -->
 		</tr>
 		<tr>
-			<th title="Accession Number" align="left">Acc. No.</th>
-			<th title="Procedure Step Status" align="left">Status</th>
-			<th title="Study Instance UID" align="left">StudyIUID</th>
-			<th title="Performed Procedure Description" align="left">Proc. Desc.</th>
+			<th title="PatientName: " align="left">Patient</th>
 			<th title="Performed Step Start Date" align="left">Start Date</th>
+			<th title="Performed Procedure Description" align="left">Proc. Desc.</th>
 			<th title="Perf. Station: (&lt;Name&gt;-&lt;AET&gt;[&lt;Mod.&gt;]" align="left">Station</th>
 			<th title="Number of Instances: " align="left">NoI</th>
-			<th title="PatientName: " align="left">Patient</th>
+			<th title="Procedure Step Status" align="left">Status</th>
 			<xsl:choose>
 				<xsl:when test="unscheduled = 'true'">
 					<th nowrap="nowrap">Function</th>	
@@ -169,11 +165,26 @@
 			</xsl:choose>
 		</tr>
 	</table>
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="5%"/>
+			<col width="35%"/>
+			<col width="35%"/>
+			<col width="25%"/>
+		</colgroup>
+		<tr>
+			<th >&#160;</th>
+			<th title="Scheduled Procedure Step ID" align="left">Scheduled Procedure Step ID</th>
+			<th title="Study Instance UID" align="left">Study Instance UID</th>
+			<th title="Accession Number" align="left">Accession No.</th>
+		</tr>
+	</table>
+	
 </table>
 
 </xsl:template>
 
-<!-- List of working list entries ( scheduled procedur steps ) -->
+<!-- List of MPPS entries ( Modality performed procedure steps ) -->
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry']">
 
@@ -181,36 +192,29 @@
 	
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<colgroup>
-			<col width="8%"/>
-			<col width="9%"/>
-			<col width="15%"/>
-			<col width="20%"/>
+			<col width="17%"/>
 			<col width="11%"/>
-			<col width="12%"/>
-			<col width="3%"/>
-			<col width="10%"/>
+			<col width="30%"/>
+			<col width="20%"/>
+			<col width="5%"/>
+			<col width="15%"/>
 			<col width="12%"/>
 		</colgroup>
+		<tr >
+			<td bgcolor="999999" style="height:2px" colspan="9"></td> <!-- spacer -->
+		</tr>
 		<tr>
-	        <td align="left" title="Accession No." >
-				<a href="foldersubmit.m?destination=LOCAL&amp;accessionNumber={accNumbers}&amp;patientName=&amp;patientID=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12"><!-- TODO if more than one accNumber -->
-					<xsl:value-of select="accNumbers"/>
+	        <td align="left" title="Patient" >
+				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+					<xsl:value-of select="patientName"/>
 				</a>
-		 	</td>
-	        <td align="left" title="PPSStatus" >
-				<xsl:value-of select="PPSStatus"/>
-		 	</td>
-	        <td title="StudyIUID">
-				<a href="foldersubmit.m?destination=LOCAL&amp;studyUID={studyUIDs}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12"><!-- TODO if more than one studyIUID -->
-					<xsl:value-of select="studyUIDs"/>
-				</a>
-		 	</td>
-	        <td align="left" title="PPS Desc.">
-				<xsl:value-of select="PPSDescription"/>
-		 	</td>
+			</td>
 	        <td align="left" title="Start Date" >
 				<xsl:value-of select="ppsStartDateTime"/>
 	        </td>
+	        <td align="left" title="PPS Desc.">
+				<xsl:value-of select="PPSDescription"/>
+		 	</td>
 	        <td align="left" title="Station" >
 				<xsl:if test="string-length(stationName) > 0">
 					<xsl:value-of select="stationName"/> -
@@ -220,11 +224,9 @@
 	        <td align="left" title="Number of Instances" >
 				<xsl:value-of select="numberOfInstances"/>
 	        </td>
-	        <td align="left" title="Patient" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
-					<xsl:value-of select="patientName"/>
-				</a>
-			</td>
+	        <td align="left" title="PPSStatus" >
+				<xsl:value-of select="PPSStatus"/>
+		 	</td>
 			<xsl:choose> <!-- TODO -->
 				<xsl:when test="/model/unscheduled = 'true'">
 					<td title="Function" align="center" valign="bottom">
@@ -235,6 +237,43 @@
 					<td>&#160;&#160;</td>
 				</xsl:otherwise>
 			</xsl:choose>
+		</tr>
+	</table>
+
+</table>
+	<xsl:apply-templates select="scheduledStepAttrs/item"/>
+</xsl:template>
+<!-- List of ScheduleStepAttribute sequence entries (per MPPS entry) -->
+
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry$SSAttr']">
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="5%"/>
+			<col width="35%"/>
+			<col width="35%"/>
+			<col width="25%"/>
+		</colgroup>
+		<tr>
+			<td >&#160;&#160;</td>
+	        <td  align="left" title="Schedule Procedure Step ID" >
+	        	<xsl:value-of select="spsID"/>
+			</td>
+	        <td  title="StudyIUID">
+				<a href="foldersubmit.m?destination=LOCAL&amp;studyUID={studyUID}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+					<xsl:value-of select="studyUID"/>
+				</a>
+		 	</td>
+	        <td  align="left" title="Accession Number" >
+				<a href="foldersubmit.m?destination=LOCAL&amp;accessionNumber={accessionNumber}&amp;patientName=&amp;patientID=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+					<xsl:value-of select="accessionNumber"/>
+				</a>
+		 	</td>
+		</tr>
+		<tr >
+			<td style="height:2px" colspan="4"></td> <!-- spacer -->
 		</tr>
 	</table>
 
