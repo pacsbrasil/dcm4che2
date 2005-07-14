@@ -170,23 +170,25 @@ public class UserAdminModel {
 	 * 
 	 * @return the new user object of the changed user or null.
 	 */
-	public DCMUser updateUser( String oldUserID, DCMUser user ) {
-		if ( !userList.contains( user ) ) {
-			log.error("User doesnt exist! UserID "+oldUserID);
+	public DCMUser updateUser( int userHash, DCMUser user ) {
+		DCMUser qUser = DCMUser.getQueryUser(userHash );
+		int idx = userList.indexOf(qUser);
+		if ( idx == -1 ) {
+			log.error("User doesnt exist! UserID "+user.getUserID());
 			return null;
 		} else {
-			String userID = user.getUserID();
+			String userID = ((DCMUser)userList.get(idx)).getUserID();
 			Collection roles = user.roles();
 			String role;
 			try {
 				UserManager manager = lookupUserManager();
-				manager.updateUser(oldUserID, roles);
+				manager.updateUser(userID, roles);
 			} catch (Exception e) {
-				log.error("Cant update user "+oldUserID+" with roles "+roles, e);
-				popupMsg = "Cant create user "+oldUserID+"! Exception:"+e.getMessage();
+				log.error("Cant update user "+userID+" with roles "+roles, e);
+				popupMsg = "Cant update user "+userID+"! Exception:"+e.getMessage();
 				return null;
 			}
-			log.info("User "+oldUserID+" updated:"+user);
+			log.info("User "+userID+" updated:"+user);
 		}
 		return user;
 	}
@@ -210,9 +212,8 @@ public class UserAdminModel {
 	 * @param userID
 	 * @return user object or null.
 	 */
-	public DCMUser getUser( String userID ) {
-		if ( userID == null ) return null;
-		return (DCMUser) userList.get( userList.indexOf( new DCMUser(userID, null) ) );
+	public DCMUser getUser( int userHash ) {
+		return (DCMUser) userList.get( userList.indexOf( DCMUser.getQueryUser(userHash) ) );
 	}
 
 	/**
@@ -227,8 +228,8 @@ public class UserAdminModel {
 		return editUser;
 	}
 	
-	public void selectEditUser( String userID ) {
-		editUser = getUser( userID );
+	public void selectEditUser( String userHash ) {
+		editUser = userHash == null ? null : getUser( Integer.parseInt(userHash) );
 	}
 	
 	public void setEditUser( DCMUser user ) {
@@ -242,7 +243,8 @@ public class UserAdminModel {
 	 * 
 	 * @return true if user is deleted, false otherwise.
 	 */
-	public boolean deleteUser( String userID ) {
+	public boolean deleteUser( int userHash ) {
+		String userID = getUser( userHash ).getUserID();
 		try {
 			this.lookupUserManager().removeUser( userID );
 		} catch (Exception e) {

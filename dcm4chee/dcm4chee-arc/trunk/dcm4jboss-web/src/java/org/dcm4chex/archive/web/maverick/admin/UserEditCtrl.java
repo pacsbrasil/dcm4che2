@@ -28,7 +28,7 @@ public class UserEditCtrl extends UserAdminCtrl
 
 	protected String perform() throws Exception 
 	{
-		getModel().selectEditUser( getCtx().getRequest().getParameter("userID" ) );
+		getModel().selectEditUser( getCtx().getRequest().getParameter("userHash" ) );
 		if ( ! model.isAdmin() ) return "error";
 		return "success";
 	}

@@ -16,25 +16,25 @@ import org.dcm4chex.archive.web.maverick.Errable;
  */
 public class UserDeleteCtrl extends Errable
 {
-	private String userID;
+	private int userHash;
 
 	/**
 	 * @return Returns the userID.
 	 */
-	public String getUserID() {
-		return userID;
+	public int getUserHash() {
+		return userHash;
 	}
 	/**
 	 * @param userID The userID to set.
 	 */
-	public void setUserID(String userID) {
-		this.userID = userID;
+	public void setUserHash(int userHash) {
+		this.userHash = userHash;
 	}
 	protected String perform() throws Exception
 	{
 		UserAdminModel model = UserAdminModel.getModel( getCtx().getRequest() );
 		if ( !model.isAdmin() ) return "error";
-		model.deleteUser( userID );//Any failure will be marked in popUpMessage!
+		model.deleteUser( userHash );//Any failure will be marked in popUpMessage!
 		return "success";
 	}		
 }
