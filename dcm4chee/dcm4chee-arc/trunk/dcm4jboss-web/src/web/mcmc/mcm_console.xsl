@@ -1,8 +1,6 @@
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-
-<xsl:output method="html">
-</xsl:output>
+<xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
 <xsl:variable name="page_title">Media Creation Managment Console</xsl:variable>
 <xsl:include href="../page.xsl"/>
 <xsl:template match="model">

@@ -1,8 +1,6 @@
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-
-<xsl:output method="html">
-</xsl:output>
+<xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
 <xsl:variable name="page_title">Modality Worklist Console</xsl:variable>
 <xsl:include href="../page.xsl"/>
 <xsl:template match="model">
@@ -64,31 +62,37 @@
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" class="label">Patient:</td>
 						<td bgcolor="eeeeee">
-							<input size="10" name="patientName" type="text" value="{filter/patientName}"/>
+							<input size="10" name="patientName" type="text" value="{filter/patientName}"
+								title="Patient name"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" colspan="2">Date: </td>
 						<td bgcolor="eeeeee">
-							<input size="15" name="startDate" type="text" value="{filter/startDate}"/>
+							<input size="15" name="startDate" type="text" value="{filter/startDate}"
+								title="Query Start date"/>
 						</td>
 						<td bgcolor="eeeeee">to: </td>
 						<td bgcolor="eeeeee">
-							<input size="15" name="endDate" type="text" value="{filter/endDate}"/>
+							<input size="15" name="endDate" type="text" value="{filter/endDate}"
+								title="Query End date"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Modality: </td>
 						<td bgcolor="eeeeee">
-							<input size="10" name="modality" type="text" value="{filter/modality}"/>
+							<input size="10" name="modality" type="text" value="{filter/modality}"
+								title="Modality"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Station AET: </td>
 						<td bgcolor="eeeeee">
-							<input size="10" name="stationAET" type="text" value="{filter/stationAET}"/>
+							<input size="10" name="stationAET" type="text" value="{filter/stationAET}"
+								title="Station AET"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Accession No.: </td>
 						<td bgcolor="eeeeee">
-							<input size="10" name="accessionNumber" type="text" value="{filter/accessionNumber}"/>
+							<input size="10" name="accessionNumber" type="text" value="{filter/accessionNumber}"
+								title="Accession number"/>
 						</td>
 						<td width="100%" bgcolor="eeeeee">&#160;</td>
 						

@@ -3,6 +3,7 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
+<xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
    <xsl:variable name="page_title">New AE</xsl:variable>
    <xsl:include href  = "page.xsl" />
 

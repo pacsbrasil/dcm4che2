@@ -2,6 +2,8 @@
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
+	
+<xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
 
    <xsl:variable name="page_title">Change User password</xsl:variable>
    <xsl:include href  = "../page.xsl" />
