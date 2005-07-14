@@ -936,7 +936,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
-						<img src="images/image.gif" alt="View waveform" border="0" title="View waveform"/>		
+						<img src="images/waveform.gif" alt="View waveform" border="0" title="View waveform"/>		
 					</a>
 				</xsl:when>
 				<xsl:otherwise>
