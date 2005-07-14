@@ -40,6 +40,19 @@
          <value value="wado_ext_cache" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getNumberOfCacheFolders"
+      setMethod="setNumberOfCacheFolders">
+      <description>Number of subfolders for separating caching files.
+      		(to avoid too many files in a single directory!)
+      </description>
+      <name>NumberOfCacheFolders</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
+   
     <attribute access="read-write"
       getMethod="getMinFreeSpace"
       setMethod="setMinFreeSpace">

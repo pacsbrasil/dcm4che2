@@ -40,12 +40,13 @@ private static Logger log = Logger.getLogger( ExtendedWADOService.class.getName(
 
 private static ObjectName fileSystemMgtName = null;
 private static ObjectName studyInfoServiceName = null;
+private boolean cacheEnabled;
+private int numberOfCacheFolders;
 
 private static MBeanServer server;
 
 private static final int BUF_LEN = 65536;
 
-private boolean cacheEnabled;
 
 public ExtendedWADOSupport( MBeanServer mbServer ) {
 	if ( server != null ) {
@@ -95,12 +96,21 @@ private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
 	}
 	if ( ts == null ) ts = UIDs.ExplicitVRLittleEndian;
 	WADOCache cache = WADOCacheImpl.getWADOExtCache();
-	File outFile = cache.getFileObject(null, level.toLowerCase(),  
-			(UIDs.ExplicitVRLittleEndian.equals(ts) ? uid:uid+"_deflated"), CONTENT_TYPE_DICOM );
+	File outFile = null; 
 	try {
-		if ( cacheEnabled && outFile.exists() ) {
-			if ( ! isOutdated( req, outFile ) ) 
-				return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+		if ( cacheEnabled ) {
+			//We have only one uid (either study, series or object), so we choose a slightly different directory structure. 
+			//file: <level>/<separatorDir>/<uid[ts]>.dcm
+			//level: uid level(study,series or image)
+			//separatorDir: used to get a deeper folder hierarchy. format: uid.hashcode()/numberOfCachefolders.
+			//The file is named by uid with optional deflated mark and file ending .dcm. 
+			outFile = cache.getFileObject( level.toLowerCase(), 
+					String.valueOf(uid.hashCode() / this.numberOfCacheFolders),  
+					(UIDs.ExplicitVRLittleEndian.equals(ts) ? uid:uid+"_deflated"), CONTENT_TYPE_DICOM );
+			if ( outFile.exists() ) {
+				if ( ! isOutdated( req, outFile ) ) 
+					return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+			}
 		}
         ds = (Dataset) server.invoke( studyInfoServiceName,
                 "retrieveStudyInfo",
@@ -119,7 +129,7 @@ private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
         
     } catch (Exception e) {
         log.error("Failed to get study information for "+level+" uid:"+uid, e);
-		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get study information for "+level+" uid:"+uid);
     }
 }
 
@@ -200,5 +210,17 @@ public boolean isCacheEnabled() {
  */
 public void setCacheEnabled(boolean cacheEnabled) {
 	this.cacheEnabled = cacheEnabled;
+}
+/**
+ * @return Returns the numberOfCacheFolders.
+ */
+public int getNumberOfCacheFolders() {
+	return numberOfCacheFolders;
+}
+/**
+ * @param numberOfCacheFolders The numberOfCacheFolders to set.
+ */
+public void setNumberOfCacheFolders(int numberOfCacheFolders) {
+	this.numberOfCacheFolders = numberOfCacheFolders;
 }
 }

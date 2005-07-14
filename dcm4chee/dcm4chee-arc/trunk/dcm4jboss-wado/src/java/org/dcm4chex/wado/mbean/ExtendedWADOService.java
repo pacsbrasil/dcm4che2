@@ -93,6 +93,16 @@ public class ExtendedWADOService extends AbstractCacheService {
 		support.setCacheEnabled(cacheEnabled);
 	}
 	
+	public int getNumberOfCacheFolders() {
+		return support.getNumberOfCacheFolders();
+	}
+	/**
+	 * @param numberOfCacheFolders The numberOfCacheFolders to set.
+	 */
+	public void setNumberOfCacheFolders(int numberOfCacheFolders) {
+		support.setNumberOfCacheFolders(numberOfCacheFolders);
+	}
+	
 	
 	/**
 	 * Get the requested DICOM object as File packed in a WADOResponseObject.
