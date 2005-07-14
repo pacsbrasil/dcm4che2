@@ -19,7 +19,7 @@ import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
 public class UserEditSubmitCtrl extends Dcm4JbossFormController
 {
 
-	private String oldUserID = null;
+	private String userHash = null;
 	private String passwd = null;
 	private String passwd1 = null;
 	private DCMUser user = new DCMUser("",null);
@@ -31,8 +31,8 @@ public class UserEditSubmitCtrl extends Dcm4JbossFormController
 	/**
 	 * @param oldUserID The oldUserID to set.
 	 */
-	public void setOldUserID(String oldUserID) {
-		this.oldUserID = oldUserID;
+	public void setUserHash(String hash) {
+		this.userHash = hash;
 	}
 	/**
 	 * @param cancelPar The cancelPar to set.
@@ -100,8 +100,8 @@ public class UserEditSubmitCtrl extends Dcm4JbossFormController
 			return "error";
 		}
 		if ( cancelPar == null ) {
-			if ( oldUserID != null ) {
-				model.updateUser( oldUserID, user );
+			if ( userHash != null ) {
+				model.updateUser( Integer.parseInt(userHash), user );
 			} else {
 				String userID = user.getUserID();
 				if ( userID == null || userID.trim().length() < 3 ) {

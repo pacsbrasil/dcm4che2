@@ -74,12 +74,12 @@
 				</input>
 	        </td>
 			<td align="center" valign="top" >
-				<a href="user_edit.m?userID={userID}">
+				<a href="user_edit.m?userHash={userHash}">
 					<img src="images/edit.gif" alt="edit" border="0"/>		
 				</a>
 	        </td>
 			<td align="left" valign="top" >
-					<a href="user_delete.m?userID={userID}" onclick="return confirm('Are you sure you want to delete?')">
+					<a href="user_delete.m?userHash={userHash}" onclick="return confirm('Are you sure you want to delete?')">
 					<img src="images/delete.gif" alt="delete" border="0"/>							
 					</a>					
 			</td>

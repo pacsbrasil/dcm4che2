@@ -25,14 +25,28 @@ public class DCMUser {
 	
 	private String userID;
 	private Collection roles = new ArrayList();
+	private int hash;
 	
 	public DCMUser( String userID, Collection roles ) {
 		if ( userID == null ) {
 			throw new IllegalArgumentException("Cant create DCMUser! UserID must not be null!");
 		}
 		this.userID = userID;
+		hash = userID.hashCode();
 		if ( roles != null )
 			this.roles = roles;
+	}
+	
+	/**
+	 * @param hashCode
+	 */
+	private DCMUser(int hashCode) {
+		hash = hashCode;
+		// TODO Auto-generated constructor stub
+	}
+
+	public static final DCMUser getQueryUser( int hashCode ) {
+		return new DCMUser(hashCode);
 	}
 	
 	public void setUserID( String id ) {
@@ -97,6 +111,11 @@ public class DCMUser {
 		return userID;
 	}
 	
+	public int getUserHash() {
+		return hash;
+	}
+
+	
 	/**
 	 * Returns simple description of this object.
 	 */
@@ -108,6 +127,8 @@ public class DCMUser {
 	 * Returns true if parameter is a DCMUser object with same userID as this object.
 	 * <p>
 	 * This method returns true even roles are equal or not!
+	 * <p>
+	 * Use hashcode to check equality!
 	 * 
 	 * @param user The object to check equality.
 	 * 
@@ -115,7 +136,7 @@ public class DCMUser {
 	 */
 	public boolean equals( Object user ) {
 		if ( user != null || (user instanceof DCMUser) ) {
-			return userID.equals( ((DCMUser)user).getUserID() );
+			return hash == ((DCMUser)user).hashCode();
 		} 
 		return false;
 	}
@@ -126,6 +147,6 @@ public class DCMUser {
 	 * @return Hashcode of this object.
 	 */
 	public int hashCode() {
-		return userID.hashCode();
+		return hash;
 	}
 }

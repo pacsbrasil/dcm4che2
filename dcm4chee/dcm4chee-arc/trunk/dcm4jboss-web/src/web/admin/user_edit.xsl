@@ -18,7 +18,7 @@
 				        <td title="User ID" >
 				        	<b><xsl:value-of select="editUser/userID" /></b>
 			                <input name="userID" type="hidden" value="{editUser/userID}"/>
-			                <input type="hidden" name="oldUserID" value="{editUser/userID}"/>
+			                <input type="hidden" name="userHash" value="{editUser/userHash}"/>
 						</td>
 						
 					</tr>
