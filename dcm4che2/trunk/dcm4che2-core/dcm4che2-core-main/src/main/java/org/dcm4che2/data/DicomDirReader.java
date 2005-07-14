@@ -71,13 +71,13 @@ public class DicomDirReader {
 		return findFirstMatchingRootRecord(null, false);
 	}
 
-	public AttributeSet findFirstMatchingRootRecord(AttributeSet filter,
+	public AttributeSet findFirstMatchingRootRecord(AttributeSet keys,
 			boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(fileSetInfo.getInt(
 					Tag.OffsetoftheFirstDirectoryRecordoftheRootDirectoryEntity),
-					filter, ignoreCaseOfPN);
+					keys, ignoreCaseOfPN);
 	}
 
 	public AttributeSet findNextSiblingRecord(AttributeSet prevRecord)
@@ -86,12 +86,12 @@ public class DicomDirReader {
 	}
 	
 	public AttributeSet findNextMatchingSiblingRecord(AttributeSet prevRecord,
-			AttributeSet filter, boolean ignoreCaseOfPN)
+			AttributeSet keys, boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(prevRecord.getInt(
 					Tag.OffsetoftheNextDirectoryRecord),
-					filter, ignoreCaseOfPN);
+					keys, ignoreCaseOfPN);
 	}
 
 	public AttributeSet findFirstChildRecord(AttributeSet parentRecord)
@@ -100,15 +100,15 @@ public class DicomDirReader {
 	}
 
 	public AttributeSet findFirstMatchingChildRecord(AttributeSet parentRecord,
-			AttributeSet filter, boolean ignoreCaseOfPN)
+			AttributeSet keys, boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(parentRecord.getInt(
 				Tag.OffsetofReferencedLowerLevelDirectoryEntity),
-				filter, ignoreCaseOfPN);
+				keys, ignoreCaseOfPN);
 	}
 
-	private AttributeSet readRecord(int offset, AttributeSet filter,
+	private AttributeSet readRecord(int offset, AttributeSet keys,
 			boolean ignoreCaseOfPN)
 			throws IOException {
 		while (offset != 0) {
@@ -122,7 +122,7 @@ public class DicomDirReader {
 				cache.put(offset, item);
 			}
 			if ((showInactiveRecords || item.getInt(Tag.RecordInuseFlag) != 0)
-					&& (filter == null || filter.match(item, ignoreCaseOfPN)))
+					&& (keys == null || item.matches(keys, ignoreCaseOfPN)))
 				return item;
 			offset = item.getInt(Tag.OffsetoftheNextDirectoryRecord);
 		}

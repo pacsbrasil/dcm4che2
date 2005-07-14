@@ -14,14 +14,13 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.dcm4che2.util.DateUtils;
 
 abstract class AbstractAttributeSet implements AttributeSet {
-
-	
-	
+		
 	protected Object writeReplace() throws ObjectStreamException {
 		return new AttributeSetSerializer(this);
 	}
@@ -39,13 +38,13 @@ abstract class AbstractAttributeSet implements AttributeSet {
 			}});		
 	}
 
-	public boolean match(final AttributeSet attrs, final boolean ignoreCaseOfPN) {
-		return accept(new Visitor(){
+	public boolean matches(final AttributeSet keys, final boolean ignoreCaseOfPN) {
+		return keys.accept(new Visitor(){
 			public boolean visit(Attribute test) {
 				if (test.isNull()) // Universal Matching
 					return true;
 				final int tag = test.tag();
-				Attribute attr = attrs.getAttribute(tag);
+				Attribute attr = getAttribute(tag);
 				if (attr == null || attr.isNull())
 					return true;	// Missing Attribute (Value) match always
 				
@@ -59,28 +58,27 @@ abstract class AbstractAttributeSet implements AttributeSet {
 				if (vr == VR.DA) {
 					int tmTag = DA_TM.getTMTag(tag);
 					return tmTag != 0 
-							? matchRange(attrs.getDates(tag, tmTag), 
-									getDateRange(tag, tmTag)) 
-							: matchRange(attr.getDates(attrs.cacheGet()), 
-									test.getDateRange(cacheGet()));
+							? matchRange(getDates(tag, tmTag), 
+									keys.getDateRange(tag, tmTag)) 
+							: matchRange(attr.getDates(cacheGet()), 
+									test.getDateRange(keys.cacheGet()));
 				}
 				if (vr == VR.TM) {
 					int daTag = DA_TM.getDATag(tag);
 					return daTag != 0 && containsValue(daTag) 
 							? true // considered by visit of daTag
-							: matchRange(attr.getDates(attrs.cacheGet()), 
-									test.getDateRange(cacheGet()));
+							: matchRange(attr.getDates(cacheGet()), 
+									test.getDateRange(keys.cacheGet()));
 				}
 				if (vr == VR.DT) {
-					return matchRange(attr.getDates(attrs.cacheGet()), 
-							test.getDateRange(cacheGet()));
+					return matchRange(attr.getDates(cacheGet()), 
+							test.getDateRange(keys.cacheGet()));
 				}
 				return matchValue(
-						attr.getStrings(attrs.getSpecificCharacterSet(),
-								attrs.cacheGet()),
-						test.getPattern(getSpecificCharacterSet(), 
+						attr.getStrings(getSpecificCharacterSet(), cacheGet()),
+						test.getPattern(keys.getSpecificCharacterSet(), 
 								vr == VR.PN ? ignoreCaseOfPN : false,
-								cacheGet()));				
+								keys.cacheGet()));				
 			}});		
 		
 	}
@@ -109,11 +107,11 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		return true;
 	}
 
-	private boolean matchSQ(Attribute sq, AttributeSet filter, boolean ignoreCaseOfPN) {
-		if (filter.isEmpty())
+	private boolean matchSQ(Attribute sq, AttributeSet keys, boolean ignoreCaseOfPN) {
+		if (keys.isEmpty())
 			return true;
 		for (int i = 0, n = sq.countItems(); i < n; i++) {
-			if (!sq.getItem(i).match(filter, ignoreCaseOfPN))
+			if (!sq.getItem(i).matches(keys, ignoreCaseOfPN))
 				return false;
 		}
 		return true;
@@ -284,7 +282,17 @@ abstract class AbstractAttributeSet implements AttributeSet {
 				DateUtils.toDateTime(da.getStart(), tm.getStart()),
 				DateUtils.toDateTime(da.getEnd(), tm.getEnd()));
 	}
-	
+
+    public Attribute getAttribute(int[] itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getAttribute(tag) : null;        
+    }
+    
+    public Attribute getAttribute(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getAttribute(tag) : null;        
+    }
+    
 	public AttributeSet getItem(int[] itemPath) {
 		if ((itemPath.length & 1) != 0) {
 			throw new IllegalArgumentException("itemPath.length: "
@@ -299,64 +307,209 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		}
 		return item;
 	}
-	
-	public byte[] getBytes(int[] itemPath, int tag, boolean bigEndian) {
-		return getItem(itemPath).getBytes(tag, bigEndian);
+
+    public AttributeSet getItem(String str) {
+        if (str.length() == 0)
+            return this;
+        if (str.startsWith("/"))
+            return getRoot().getItem(str.substring(1));
+        return getItem(parseItemPath(str));
+    }
+    
+    private int[] parseItemPath(String str) {
+        int n = 0;
+        for (int i = 0; (i = str.indexOf(']', i) + 1) != 0; ++n);
+        int[] itemPath = new int[n];
+        int state = 0;
+        int i = 0;
+        try {
+            for (StringTokenizer stk = new StringTokenizer(str, "/[]", true);
+                    stk.hasMoreTokens();) {
+                String tk = stk.nextToken();
+                switch (state) {
+                case 0:
+                    itemPath[i++] = (int) Long.parseLong(tk, 16);
+                    ++state;
+                    break;
+                case 1:
+                    if (!"[".equals(tk))
+                        throw new IllegalArgumentException(str);
+                    ++state;
+                    break;
+                case 2:
+                    itemPath[i++] = Integer.parseInt(tk);
+                    ++state;
+                    break;
+                case 3:
+                    if (!"]".equals(tk))
+                        throw new IllegalArgumentException(str);
+                    ++state;
+                    break;
+                case 4:
+                    if (!"/".equals(tk))
+                        throw new IllegalArgumentException(str);
+                    state = 0;
+                    break;
+                }
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(str);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(str);
+        }
+        if (!(state == 4 && i == itemPath.length))
+            throw new IllegalArgumentException(str);
+        return itemPath;
+    }
+        
+    public byte[] getBytes(int[] itemPath, int tag, boolean bigEndian) {
+		final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getBytes(tag, bigEndian) : null;
 	}
-	
+
+    public byte[] getBytes(String itemPath, int tag, boolean bigEndian) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getBytes(tag, bigEndian) : null;
+    }
+    
 	public int getInt(int[] itemPath, int tag) {
-		return getItem(itemPath).getInt(tag);		
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getInt(tag) : 0;		
 	}
 	
+    public int getInt(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getInt(tag) : 0;     
+    }
+    
 	public int[] getInts(int[] itemPath, int tag) {
-		return getItem(itemPath).getInts(tag);		
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getInts(tag) : null;		
 	}
 	
+    public int[] getInts(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getInts(tag) : null;     
+    }
+    
 	public float getFloat(int[] itemPath, int tag) {
-		return getItem(itemPath).getFloat(tag);		
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getFloat(tag) : 0;		
 	}
 	
+    public float getFloat(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getFloat(tag) : 0;       
+    }
+    
 	public float[] getFloats(int[] itemPath, int tag) {
-		return getItem(itemPath).getFloats(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getFloats(tag) : null;				
 	}
 	
+    public float[] getFloats(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getFloats(tag) : null;               
+    }
+    
 	public double getDouble(int[] itemPath, int tag) {
-		return getItem(itemPath).getDouble(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDouble(tag) : 0;				
 	}
 	
+    public double getDouble(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDouble(tag) : 0;              
+    }
+    
 	public double[] getDoubles(int[] itemPath, int tag) {
-		return getItem(itemPath).getDoubles(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDoubles(tag) : null;				
 	}
 	
+    public double[] getDoubles(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDoubles(tag) : null;              
+    }
+    
 	public String getString(int[] itemPath, int tag) {
-		return getItem(itemPath).getString(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getString(tag) : null;				
 	}
 	
+    public String getString(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getString(tag) : null;               
+    }
+    
 	public String[] getStrings(int[] itemPath, int tag) {
-		return getItem(itemPath).getStrings(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getStrings(tag) : null;				
 	}
 	
+    public String[] getStrings(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getStrings(tag) : null;              
+    }
+    
 	public Date getDate(int[] itemPath, int tag) {
-		return getItem(itemPath).getDate(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDate(tag) : null;				
 	}
 	
+    public Date getDate(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDate(tag) : null;             
+    }
+    
 	public Date[] getDates(int[] itemPath, int tag) {
-		return getItem(itemPath).getDates(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDates(tag) : null;				
 	}
 	
+    public Date[] getDates(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDates(tag) : null;                
+    }
+    
 	public DateRange getDateRange(int[] itemPath, int tag) {
-		return getItem(itemPath).getDateRange(tag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDateRange(tag) : null;				
 	}
 	
+    public DateRange getDateRange(String itemPath, int tag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDateRange(tag) : null;                
+    }
+    
 	public Date getDate(int[] itemPath, int daTag, int tmTag) {
-		return getItem(itemPath).getDate(daTag, tmTag);		
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDate(daTag, tmTag) : null;		
 	}
 	
+    public Date getDate(String itemPath, int daTag, int tmTag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDate(daTag, tmTag) : null;        
+    }
+    
 	public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
-		return getItem(itemPath).getDates(daTag, tmTag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDates(daTag, tmTag) : null;				
 	}
 	
+    public Date[] getDates(String itemPath, int daTag, int tmTag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDates(daTag, tmTag) : null;               
+    }
+    
 	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
-		return getItem(itemPath).getDateRange(daTag, tmTag);				
+        final AttributeSet item = getItem(itemPath);
+		return item != null ? item.getDateRange(daTag, tmTag) : null;				
 	}
+
+    public DateRange getDateRange(String itemPath, int daTag, int tmTag) {
+        final AttributeSet item = getItem(itemPath);
+        return item != null ? item.getDateRange(daTag, tmTag) : null;               
+    }
+
 }
