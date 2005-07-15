@@ -11,7 +11,7 @@ import org.xml.sax.helpers.AttributesImpl;
 public class SAXWriter {
     
     private static final int CBUF_LENGTH = 512;
-
+    private final char[] cbuf = new char[CBUF_LENGTH];
     private ContentHandler ch;
     private LexicalHandler lh;
 
@@ -23,11 +23,11 @@ public class SAXWriter {
     public void write(AttributeSet attrs)
             throws SAXException {
         ch.startDocument();
-        writeContent(attrs, new char[CBUF_LENGTH]);
+        writeContent(attrs);
         ch.endDocument();
     }
 
-    private void writeContent(AttributeSet attrs, char[] cbuf)
+    private void writeContent(AttributeSet attrs)
             throws SAXException {
         AttributesImpl atts = new AttributesImpl();
         String qName = "dicom";
@@ -53,7 +53,7 @@ public class SAXWriter {
             if (a.hasItems()) {
                 for (int i = 0, n = a.countItems(); i < n; ++i) {
                     if (vr == VR.SQ) {
-                        writeContent(a.getItem(i), cbuf);
+                        writeContent(a.getItem(i));
                     } else {
                         final byte[] bytes = a.getBytes(i);
                         atts.clear();

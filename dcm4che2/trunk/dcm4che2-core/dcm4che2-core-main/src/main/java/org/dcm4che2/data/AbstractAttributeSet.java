@@ -14,7 +14,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.dcm4che2.util.DateUtils;
@@ -191,9 +190,12 @@ abstract class AbstractAttributeSet implements AttributeSet {
 	}
 
 	public byte[] getBytes(int tag, boolean bigEndian) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.bigEndian(bigEndian).getBytes();
+		return toBytes(getAttribute(tag), bigEndian);
 	}
+
+    private byte[] toBytes(Attribute a, boolean bigEndian) {
+        return a == null ? null : a.bigEndian(bigEndian).getBytes();
+    }
 
 	public AttributeSet getItem(int tag) {
 		Attribute a = getAttribute(tag);
@@ -201,60 +203,95 @@ abstract class AbstractAttributeSet implements AttributeSet {
 	}
 
 	public int getInt(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? 0 : a.getInt(cacheGet());
+		return toInt(getAttribute(tag));
 	}
+
+    private int toInt(Attribute a) {
+        return a == null ? 0 : a.getInt(cacheGet());
+    }
 
 	public int[] getInts(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getInts(cacheGet());
+		return toInts(getAttribute(tag));
 	}
+
+    private int[] toInts(Attribute a) {
+        return a == null ? null : a.getInts(cacheGet());
+    }
 
 	public float getFloat(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? 0 : a.getFloat(cacheGet());
+		return toFloat(getAttribute(tag));
 	}
+
+    private float toFloat(Attribute a) {
+        return a == null ? 0f : a.getFloat(cacheGet());
+    }
 
 	public float[] getFloats(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getFloats(cacheGet());
+		return toFloats(getAttribute(tag));
 	}
+
+    private float[] toFloats(Attribute a) {
+        return a == null ? null : a.getFloats(cacheGet());
+    }
 
 	public double getDouble(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? 0 : a.getDouble(cacheGet());
+		return toDouble(getAttribute(tag));
 	}
+
+    private double toDouble(Attribute a) {
+        return a == null ? 0. : a.getDouble(cacheGet());
+    }
 
 	public double[] getDoubles(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getDoubles(cacheGet());
+		return toDoubles(getAttribute(tag));
 	}
+
+    private double[] toDoubles(Attribute a) {
+        return a == null ? null : a.getDoubles(cacheGet());
+    }
 
 	public String getString(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getString(getSpecificCharacterSet(), cacheGet());
+		return toString(getAttribute(tag));
 	}
+
+    private String toString(Attribute a) {
+        return a == null ? null 
+                : a.getString(getSpecificCharacterSet(), cacheGet());
+    }
 
 	public String[] getStrings(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a
-				.getStrings(getSpecificCharacterSet(), cacheGet());
+		return toStrings(getAttribute(tag));
 	}
+
+    private String[] toStrings(Attribute a) {
+        return a == null ? null
+                : a.getStrings(getSpecificCharacterSet(), cacheGet());
+    }
 
 	public Date getDate(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getDate(cacheGet());
+		return toDate(getAttribute(tag));
 	}
 
+    private Date toDate(Attribute a) {
+        return a == null ? null : a.getDate(cacheGet());
+    }
+
 	public Date[] getDates(int tag) {
-		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getDates(cacheGet());
+		return toDates(getAttribute(tag));
 	}
+
+    private Date[] toDates(Attribute a) {
+        return a == null ? null : a.getDates(cacheGet());
+    }
 
 	public DateRange getDateRange(int tag) {
 		Attribute a = getAttribute(tag);
-		return a == null ? null : a.getDateRange(cacheGet());
+		return toDateRange(a);
 	}
+
+    private DateRange toDateRange(Attribute a) {
+        return a == null ? null : a.getDateRange(cacheGet());
+    }
 
 	public Date getDate(int daTag, int tmTag) {
 		return DateUtils.toDateTime(getDate(daTag), getDate(tmTag));
@@ -283,23 +320,42 @@ abstract class AbstractAttributeSet implements AttributeSet {
 				DateUtils.toDateTime(da.getEnd(), tm.getEnd()));
 	}
 
-    public Attribute getAttribute(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getAttribute(tag) : null;        
+    public Attribute getAttribute(int[] tagPath) {
+        if ((tagPath.length & 1) == 0) {
+            throw new IllegalArgumentException("tagPath.length: "
+                    + tagPath.length);
+        }
+        final int last = tagPath.length - 1;
+        final AttributeSet item = getItem(tagPath, last);
+        return item != null ? item.getAttribute(tagPath[last]) : null;        
     }
     
-    public Attribute getAttribute(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getAttribute(tag) : null;        
+    public Attribute getAttribute(String tagPath) {
+        int endItemPath = tagPath.lastIndexOf('/');
+        final AttributeSet item = 
+                endItemPath == -1 ? this :
+                endItemPath == 0 ? getRoot() : 
+                getItem(tagPath.substring(0, endItemPath));
+        return item != null 
+                ? item.getAttribute(parseTag(tagPath.substring(endItemPath+1)))
+                : null;
+    }
+
+    private int parseTag(String tag) {
+        return (int) Long.parseLong(tag, 16);
     }
     
 	public AttributeSet getItem(int[] itemPath) {
-		if ((itemPath.length & 1) != 0) {
-			throw new IllegalArgumentException("itemPath.length: "
-					+ itemPath.length);
-		}
+        if ((itemPath.length & 1) != 0) {
+            throw new IllegalArgumentException("itemPath.length: "
+                    + itemPath.length);
+        }
+        return getItem(itemPath, itemPath.length);
+    }
+    
+    private AttributeSet getItem(int[] itemPath, int pathLen) {
 		AttributeSet item = this;
-		for (int i = 0; i < itemPath.length; ++i, ++i) {
+		for (int i = 0; i < pathLen; ++i, ++i) {
 			Attribute sq = item.getAttribute(itemPath[i]);
 			if (sq == null || !sq.hasItems() || sq.countItems() < itemPath[i+1])
 				return null;
@@ -308,178 +364,121 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		return item;
 	}
 
-    public AttributeSet getItem(String str) {
-        if (str.length() == 0)
+    public AttributeSet getItem(String itemPath) {
+        if (itemPath.length() == 0)
             return this;
-        if (str.startsWith("/"))
-            return getRoot().getItem(str.substring(1));
-        return getItem(parseItemPath(str));
-    }
-    
-    private int[] parseItemPath(String str) {
-        int n = 0;
-        for (int i = 0; (i = str.indexOf(']', i) + 1) != 0; ++n);
-        int[] itemPath = new int[n];
-        int state = 0;
-        int i = 0;
-        try {
-            for (StringTokenizer stk = new StringTokenizer(str, "/[]", true);
-                    stk.hasMoreTokens();) {
-                String tk = stk.nextToken();
-                switch (state) {
-                case 0:
-                    itemPath[i++] = (int) Long.parseLong(tk, 16);
-                    ++state;
-                    break;
-                case 1:
-                    if (!"[".equals(tk))
-                        throw new IllegalArgumentException(str);
-                    ++state;
-                    break;
-                case 2:
-                    itemPath[i++] = Integer.parseInt(tk);
-                    ++state;
-                    break;
-                case 3:
-                    if (!"]".equals(tk))
-                        throw new IllegalArgumentException(str);
-                    ++state;
-                    break;
-                case 4:
-                    if (!"/".equals(tk))
-                        throw new IllegalArgumentException(str);
-                    state = 0;
-                    break;
-                }
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(str);
-        } catch (IndexOutOfBoundsException e) {
-            throw new IllegalArgumentException(str);
+        if (itemPath.equals("/"))
+            return getRoot();
+        String tagPath = itemPath;
+        int index = 0;
+        if (itemPath.endsWith("]")) {
+            int endTagPath = tagPath.lastIndexOf('[');
+            tagPath = itemPath.substring(0, endTagPath);
+            index = Integer.parseInt(
+                    itemPath.substring(endTagPath+1, itemPath.length() -1)) - 1;
         }
-        if (!(state == 4 && i == itemPath.length))
-            throw new IllegalArgumentException(str);
-        return itemPath;
+        Attribute sq = getAttribute(tagPath);
+        if (sq == null)
+            return null;
+        if (sq.countItems() <= index)
+            return null;
+        return sq.getItem(index);
     }
-        
-    public byte[] getBytes(int[] itemPath, int tag, boolean bigEndian) {
-		final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getBytes(tag, bigEndian) : null;
+            
+    public byte[] getBytes(int[] tagPath, boolean bigEndian) {
+        return toBytes(getAttribute(tagPath), bigEndian);
 	}
 
-    public byte[] getBytes(String itemPath, int tag, boolean bigEndian) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getBytes(tag, bigEndian) : null;
+    public byte[] getBytes(String tagPath, boolean bigEndian) {
+        return toBytes(getAttribute(tagPath), bigEndian);
     }
     
-	public int getInt(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getInt(tag) : 0;		
+	public int getInt(int[] tagPath) {
+        return toInt(getAttribute(tagPath));
 	}
 	
-    public int getInt(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getInt(tag) : 0;     
+    public int getInt(String tagPath) {
+        return toInt(getAttribute(tagPath));
     }
     
-	public int[] getInts(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getInts(tag) : null;		
+	public int[] getInts(int[] tagPath) {
+        return toInts(getAttribute(tagPath));
 	}
 	
-    public int[] getInts(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getInts(tag) : null;     
+    public int[] getInts(String tagPath) {
+        return toInts(getAttribute(tagPath));
     }
     
-	public float getFloat(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getFloat(tag) : 0;		
+	public float getFloat(int[] tagPath) {
+        return toFloat(getAttribute(tagPath));
 	}
 	
-    public float getFloat(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getFloat(tag) : 0;       
+    public float getFloat(String tagPath) {
+        return toFloat(getAttribute(tagPath));
     }
     
-	public float[] getFloats(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getFloats(tag) : null;				
+	public float[] getFloats(int[] tagPath) {
+        return toFloats(getAttribute(tagPath));
 	}
 	
-    public float[] getFloats(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getFloats(tag) : null;               
+    public float[] getFloats(String tagPath) {
+        return toFloats(getAttribute(tagPath));
     }
     
-	public double getDouble(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getDouble(tag) : 0;				
+	public double getDouble(int[] tagPath) {
+        return toDouble(getAttribute(tagPath));
 	}
 	
-    public double getDouble(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getDouble(tag) : 0;              
+    public double getDouble(String tagPath) {
+        return toDouble(getAttribute(tagPath));
     }
     
-	public double[] getDoubles(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getDoubles(tag) : null;				
+	public double[] getDoubles(int[] tagPath) {
+        return toDoubles(getAttribute(tagPath));
 	}
 	
-    public double[] getDoubles(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getDoubles(tag) : null;              
+    public double[] getDoubles(String tagPath) {
+        return toDoubles(getAttribute(tagPath));
     }
     
-	public String getString(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getString(tag) : null;				
+	public String getString(int[] tagPath) {
+        return toString(getAttribute(tagPath));
 	}
 	
-    public String getString(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getString(tag) : null;               
+    public String getString(String tagPath) {
+        return toString(getAttribute(tagPath));
     }
     
-	public String[] getStrings(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getStrings(tag) : null;				
+	public String[] getStrings(int[] tagPath) {
+        return toStrings(getAttribute(tagPath));
 	}
 	
-    public String[] getStrings(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getStrings(tag) : null;              
+    public String[] getStrings(String tagPath) {
+        return toStrings(getAttribute(tagPath));
     }
     
-	public Date getDate(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getDate(tag) : null;				
+	public Date getDate(int[] tagPath) {
+        return toDate(getAttribute(tagPath));
 	}
 	
-    public Date getDate(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getDate(tag) : null;             
+    public Date getDate(String tagPath) {
+        return toDate(getAttribute(tagPath));
     }
     
-	public Date[] getDates(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getDates(tag) : null;				
+	public Date[] getDates(int[] tagPath) {
+        return toDates(getAttribute(tagPath));
 	}
 	
-    public Date[] getDates(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getDates(tag) : null;                
+    public Date[] getDates(String tagPath) {
+        return toDates(getAttribute(tagPath));
     }
     
-	public DateRange getDateRange(int[] itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-		return item != null ? item.getDateRange(tag) : null;				
+	public DateRange getDateRange(int[] tagPath) {
+        return toDateRange(getAttribute(tagPath));
 	}
 	
-    public DateRange getDateRange(String itemPath, int tag) {
-        final AttributeSet item = getItem(itemPath);
-        return item != null ? item.getDateRange(tag) : null;                
+    public DateRange getDateRange(String tagPath) {
+        return toDateRange(getAttribute(tagPath));
     }
     
 	public Date getDate(int[] itemPath, int daTag, int tmTag) {
@@ -511,5 +510,4 @@ abstract class AbstractAttributeSet implements AttributeSet {
         final AttributeSet item = getItem(itemPath);
         return item != null ? item.getDateRange(daTag, tmTag) : null;               
     }
-
 }
