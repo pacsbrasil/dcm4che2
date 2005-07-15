@@ -136,10 +136,11 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				      		<td bgcolor="eeeeee">
 				        		<input size="10" name="studyID" type="text" value="{studyID}"/>
 				      		</td>
-							<td bgcolor="eeeeee" class="label">Study Date:
+							<td bgcolor="eeeeee" class="label" title="Study date. format:yyyy/mm/dd or range:yyyy/mm/dd-yyyy/mm/dd">Study Date:
 							</td>
 				      		<td bgcolor="eeeeee"> 
-				        		    <input size="10" name="studyDateRange" type="text" value="{studyDateRange}"/>
+				        		    <input size="10" name="studyDateRange" type="text" value="{studyDateRange}"
+				        		    title="Study date. format:yyyy/mm/dd or range:yyyy/mm/dd-yyyy/mm/dd" />
 				      		    <input name="studyUID" type="hidden" value=""/>
 				      		</td>
 						</xsl:otherwise>
