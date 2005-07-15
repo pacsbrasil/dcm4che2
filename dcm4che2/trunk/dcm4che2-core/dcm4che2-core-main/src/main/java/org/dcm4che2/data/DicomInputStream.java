@@ -338,7 +338,7 @@ public class DicomInputStream extends FilterInputStream implements
 			sb.append(tagPos).append(": ");
 			AttributeSet p = attrs;
 			while ((p = p.getParent()) != null)
-				sb.append('>');
+				sb.append('>');            
 			TagUtils.toStringBuffer(tag, sb);
 			if (itemIndex > 0) {
 				sb.append("[").append(itemIndex).append("]");

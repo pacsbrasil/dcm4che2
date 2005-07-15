@@ -79,17 +79,26 @@ public abstract class VR {
         return out.toByteArray();
     }
 
-    private static void formatUShortXMLValue(byte[] val, boolean bigEndian, ContentHandler ch, char[] cbuf) throws SAXException {
+    private static void ushort2chars(byte[] val, boolean bigEndian, char[] cbuf,
+            int maxLen, CharOut out) {
         if (val == null || val.length == 0)
             return;
+        int cpos = 0;
         int clen = 0;
         for (int i = 0, n = val.length / 2; i < n; i += 2) {
             if (clen + 8 >= cbuf.length) {
-                ch.characters(cbuf, 0, clen);
+                out.write(cbuf, 0, clen);
                 clen = 0;
             }
             if (i != 0) {
                 cbuf[clen++] = '\\';
+                cpos++;
+            }
+            if (maxLen > 0 && cpos + 8 > maxLen) {
+                cbuf[clen++] = '.';
+                cbuf[clen++] = '.';
+                cbuf[clen++] = '.';
+                break;
             }
             String s = Integer.toString(bigEndian 
                     ? ByteUtils.bytesBE2ushort(val, i)
@@ -97,9 +106,10 @@ public abstract class VR {
             int sl = s.length();
             s.getChars(0, sl, cbuf, clen);
             clen += sl;
+            cpos += sl;
         }
         if (clen > 0) {
-            ch.characters(cbuf, 0, clen);           
+            out.write(cbuf, 0, clen);           
         }
     }
     
@@ -123,27 +133,36 @@ public abstract class VR {
         return out.toByteArray();
     }
     
-    public static void formatFloatXMLValue(byte[] b, boolean bigEndian, ContentHandler ch,
-            char[] cbuf) throws SAXException {
+    public static void float2chars(byte[] b, boolean bigEndian, CharOut ch,
+            char[] cbuf, int maxLen) {
         if (b == null || b.length == 0)
             return;
-        int clen = 0;
+        int cpos = 0;
+        int clen = 0;        
         for (int i = 0, n = b.length / 4; i < n; i += 4) {
             if (clen + 16 >= cbuf.length) {
-                ch.characters(cbuf, 0, clen);
+                ch.write(cbuf, 0, clen);
                 clen = 0;
             }
             if (i != 0) {
                 cbuf[clen++] = '\\';
+                cpos++;
+            }
+            if (maxLen > 0 && cpos + 16 > maxLen) {
+                cbuf[clen++] = '.';
+                cbuf[clen++] = '.';
+                cbuf[clen++] = '.';
+                break;
             }
             String s = Float.toString(bigEndian ? ByteUtils.bytesBE2float(b, i)
                     : ByteUtils.bytesLE2float(b, i));
             int sl = s.length();
             s.getChars(0, sl, cbuf, clen);
             clen += sl;
+            cpos += sl;
         }
         if (clen > 0) {
-            ch.characters(cbuf, 0, clen);
+            ch.write(cbuf, 0, clen);
         }
     }
 
@@ -418,23 +437,31 @@ public abstract class VR {
 					: ByteUtils.bytesLE2tags(val);
 		}
 
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out)  {
             if (val == null || val.length == 0)
                 return;
             final int b1 = bigEndian ? 0 : 1;
             final int b2 = 1 - b1;
             final int b3 = 2 + b1;
             final int b4 = 2 + b2;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0, n = val.length / 4; i < n; i += 4) {
                 if (clen + 9 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
                 }
                 if (i != 0) {
                     cbuf[clen++] = '\\';
+                    cpos++;
+                }
+                if (maxLen > 0 && cpos + 9 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 cbuf[clen++] = HEX_DIGITS[(val[i+b1] >> 4) & 0xf];
                 cbuf[clen++] = HEX_DIGITS[val[i+b1] & 0xf];
@@ -444,9 +471,10 @@ public abstract class VR {
                 cbuf[clen++] = HEX_DIGITS[val[i+b3] & 0xf];
                 cbuf[clen++] = HEX_DIGITS[(val[i+b4] >> 4) & 0xf];
                 cbuf[clen++] = HEX_DIGITS[val[i+b4] & 0xf];
+                cpos += 8;
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);            
+                out.write(cbuf, 0, clen);            
             }
         }
         
@@ -691,10 +719,10 @@ public abstract class VR {
             return StringUtils.floats2strs(toFloats(val, bigEndian));
 		}
 		
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
-            VR.formatFloatXMLValue(val, bigEndian, ch, cbuf);
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
+            VR.float2chars(val, bigEndian, out, cbuf, maxLen);
         }
         
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
@@ -764,19 +792,27 @@ public abstract class VR {
             return StringUtils.doubles2strs(toDoubles(val, bigEndian));
         }
         
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
             if (val == null || val.length == 0)
                 return;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0, n = val.length / 8; i < n; i += 8) {
                 if (clen + 26 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
                 }
                 if (i != 0) {
                     cbuf[clen++] = '\\';
+                    cpos++;
+                }
+                if (maxLen > 0 && cpos + 26 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 String s = Double.toString(bigEndian 
                         ? ByteUtils.bytesBE2double(val, i)
@@ -784,9 +820,10 @@ public abstract class VR {
                 int sl = s.length();
                 s.getChars(0, sl, cbuf, clen);
                 clen += sl;
+                cpos += sl;
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);           
+                out.write(cbuf, 0, clen);           
             }
         }
                 
@@ -886,25 +923,35 @@ public abstract class VR {
             return sb.toString();
        }
         
-       public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
             if (val == null || val.length == 0)
                 return;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0; i < val.length; i++) {
                 if (clen + 3 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
                 }
                 if (i != 0) {
                     cbuf[clen++] = '\\';
+                    cpos++;
+                }
+                if (maxLen > 0 && cpos + 3 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 cbuf[clen++] = HEX_DIGITS[(val[i] >> 4) & 0xf];
                 cbuf[clen++] = HEX_DIGITS[val[i] & 0xf];
+                cpos++;
+                cpos++;
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);            
+                out.write(cbuf, 0, clen);            
             }
        }
        
@@ -982,10 +1029,10 @@ public abstract class VR {
             return StringUtils.floats2strs(toFloats(val, bigEndian));
         }
 
-        public void formatXMLValue(byte[] bs, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
-            VR.formatFloatXMLValue(bs, bigEndian, ch, cbuf);
+        protected void toChars(byte[] bs, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
+            VR.float2chars(bs, bigEndian, out, cbuf, maxLen);
         }
  
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
@@ -1046,10 +1093,10 @@ public abstract class VR {
             return StringUtils.int2strs(toInts(val, bigEndian));
         }
 
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
-            VR.formatUShortXMLValue(val, bigEndian, ch, cbuf);
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
+            VR.ushort2chars(val, bigEndian, cbuf, maxLen, out);
         }
 
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
@@ -1113,19 +1160,27 @@ public abstract class VR {
             return StringUtils.int2strs(toInts(val, bigEndian));
 		}
 
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
             if (val == null || val.length == 0)
                 return;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0, n = val.length / 4; i < n; i += 4) {
                 if (clen + 12 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
                 }
                 if (i != 0) {
                     cbuf[clen++] = '\\';
+                    cpos++;
+                }
+                if (maxLen > 0 && cpos + 12 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 String s = Integer.toString(bigEndian 
                         ? ByteUtils.bytesBE2int(val, i)
@@ -1133,9 +1188,10 @@ public abstract class VR {
                 int sl = s.length();
                 s.getChars(0, sl, cbuf, clen);
                 clen += sl;
+                cpos += sl;
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);           
+                out.write(cbuf, 0, clen);           
             }
         }
 	}
@@ -1165,19 +1221,27 @@ public abstract class VR {
 					: ByteUtils.bytesLE2sshorts(val);
 		}
 
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
             if (val == null || val.length == 0)
                 return;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0, n = val.length / 2; i < n; i += 2) {
                 if (clen + 8 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
                 }
                 if (i != 0) {
                     cbuf[clen++] = '\\';
+                    cpos++;
+                }
+                if (maxLen > 0 && cpos + 8 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 String s = Integer.toString(bigEndian 
                         ? ByteUtils.bytesBE2sshort(val, i)
@@ -1185,9 +1249,10 @@ public abstract class VR {
                 int sl = s.length();
                 s.getChars(0, sl, cbuf, clen);
                 clen += sl;
+                cpos += sl;
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);           
+                out.write(cbuf, 0, clen);           
             }
         }
         
@@ -1288,19 +1353,27 @@ public abstract class VR {
             return StringUtils.uints2strs(toInts(val, bigEndian));
         }
 
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
             if (val == null || val.length == 0)
                 return;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0, n = val.length / 4; i < n; i += 4) {
                 if (clen + 12 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
                 }
                 if (i != 0) {
                     cbuf[clen++] = '\\';
+                    cpos++;
+                }
+                if (maxLen > 0 && cpos + 12 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 String s = Long.toString((bigEndian 
                         ? ByteUtils.bytesBE2int(val, i)
@@ -1309,9 +1382,10 @@ public abstract class VR {
                 int sl = s.length();
                 s.getChars(0, sl, cbuf, clen);
                 clen += sl;
+                cpos += sl;
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);           
+                out.write(cbuf, 0, clen);           
             }
         }
 	}
@@ -1342,30 +1416,40 @@ public abstract class VR {
             return sb.toString();
         }
         
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
             if (val == null || val.length == 0)
                 return;
+            int cpos = 0;
             int clen = 0;
             for (int i = 0; i < val.length; i++) {
                 if (clen + 3 >= cbuf.length) {
-                    ch.characters(cbuf, 0, clen);
+                    out.write(cbuf, 0, clen);
                     clen = 0;
+                }
+                if (maxLen > 0 && cpos + 3 > maxLen) {
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    cbuf[clen++] = '.';
+                    break;
                 }
                 if (val[i] >= 32 && val[i] <= 126) {
                     cbuf[clen++] = (char) val[i];
+                    cpos++;
                     if (val[i] == '\\') {
                         cbuf[clen++] = '\\';
+                        cpos++;
                     }
                 } else {
                     cbuf[clen++] = '\\';
                     cbuf[clen++] = HEX_DIGITS[(val[i] >> 4) & 0xf];
                     cbuf[clen++] = HEX_DIGITS[val[i] & 0xf];
+                    cpos += 3;
                 }
             }
             if (clen > 0) {
-                ch.characters(cbuf, 0, clen);
+                out.write(cbuf, 0, clen);
             }
         }
         
@@ -1412,10 +1496,10 @@ public abstract class VR {
 					: ByteUtils.bytesLE2ushorts(val);
 		}
 
-        public void formatXMLValue(byte[] val, boolean bigEndian,
-                SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-                throws SAXException {
-            VR.formatUShortXMLValue(val, bigEndian, ch, cbuf);
+        protected void toChars(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs, char[] cbuf, int maxLen,
+                CharOut out) {
+            VR.ushort2chars(val, bigEndian, cbuf, maxLen, out);
         }
 
     }
@@ -1659,21 +1743,64 @@ public abstract class VR {
 				? (Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
 						: 0);
 	}
+    
+    protected interface CharOut {
+        public void write (char ch[], int start, int length);        
+    }
 
-    public void formatXMLValue(byte[] bs, boolean bigEndian,
-            SpecificCharacterSet cs, ContentHandler ch, char[] cbuf)
-            throws SAXException {
+    protected void toChars(byte[] bs, boolean bigEndian,
+            SpecificCharacterSet cs, char[] cbuf, int maxLen,
+            CharOut out) {
         if (bs == null || bs.length == 0)
             return;
         String s = StringUtils.trim(VR.bytes2str(bs, cs));
         int sl = s.length();
+        int eclipsePos = sl;
+        if (maxLen > 0 && sl > maxLen) {
+            sl = maxLen;
+            eclipsePos = maxLen-3;
+        }
         for (int pos = 0; pos < sl;) {
             int l = Math.min(cbuf.length, sl - pos);
             s.getChars(pos, pos + l, cbuf, 0);
-            ch.characters(cbuf, 0, l);
             pos += l;
+            while (eclipsePos < pos) {
+                cbuf[l - pos + eclipsePos++] = '.';
+            }
+            out.write(cbuf, 0, l);
         }
     }
+
+    public void formatXMLValue(byte[] bs, boolean bigEndian,
+            SpecificCharacterSet cs, char[] cbuf, final ContentHandler out)
+            throws SAXException {
+        try {
+            toChars(bs, bigEndian, cs, cbuf, -1, new CharOut() {
+                public void write(char[] ch, int start, int length) {
+                    try {
+                        out.characters(ch, start, length);
+                    } catch (SAXException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof SAXException)
+                throw (SAXException) e.getCause();
+            throw e;
+        }
+    }
+ 
+    public void promptValue(byte[] bs, boolean bigEndian,
+            SpecificCharacterSet cs, char[] cbuf, int maxLen,
+            final StringBuffer out) {
+        toChars(bs, bigEndian, cs, cbuf, maxLen, new CharOut(){
+            public void write(char[] ch, int start, int length) {
+                out.append(ch, start, length);              
+            }
+        });
+    }
+    
 
     public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
             boolean last, SpecificCharacterSet cs) {

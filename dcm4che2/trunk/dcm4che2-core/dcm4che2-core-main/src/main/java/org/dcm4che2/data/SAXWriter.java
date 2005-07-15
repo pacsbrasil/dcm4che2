@@ -60,13 +60,13 @@ public class SAXWriter {
                         atts.addAttribute("", "", "len", "", Integer
                                 .toString((bytes.length + 1) & ~1));
                         ch.startElement("", "", "item", atts);
-                        vr.formatXMLValue(bytes, a.bigEndian(), null, ch, cbuf);
+                        vr.formatXMLValue(bytes, a.bigEndian(), null, cbuf, ch);
                         ch.endElement("", "", "item");
                     }
                 }
             } else {
                 vr.formatXMLValue(a.getBytes(), a.bigEndian(), attrs
-                        .getSpecificCharacterSet(), ch, cbuf);
+                        .getSpecificCharacterSet(), cbuf, ch);
             }
             ch.endElement("", "", "attr");
 

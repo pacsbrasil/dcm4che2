@@ -153,9 +153,32 @@ class BasicAttribute implements Attribute {
 	public final VR vr() {
 		return vr;
 	}
-	
+    
+    private static ThreadLocal cbuf = new ThreadLocal(){
+        protected Object initialValue() {
+            return new char[64];
+        }
+    };
+    
 	public String toString() {
-		return TagUtils.toString(tag) + " " + vr + " #" + length();
+        StringBuffer sb = new StringBuffer();
+        TagUtils.toStringBuffer(tag, sb);
+        sb.append(' ');
+        sb.append(vr);
+        sb.append(" #");
+        sb.append(length());
+        sb.append(" [");
+        if (!isNull()) {
+            if (hasItems()) {
+                sb.append(countItems());
+                sb.append(" items");                
+            } else {
+                vr.promptValue(getBytes(), bigEndian, null,
+                        (char[]) cbuf.get(), 64, sb);
+            }
+        }
+        sb.append("]");
+		return sb.toString();
 	}	
 	
 	Attribute fragmentsToSequence(AttributeSet parent)
