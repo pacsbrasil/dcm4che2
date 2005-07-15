@@ -12,8 +12,8 @@
 		<tr>	<center>
 			<td>
 				<tr>
-					<td width="25%"><h2>User ID</h2></td>
-					<td colspan="4" width="65%"><h2>Roles</h2></td>
+					<td width="15%"><h2>User ID</h2></td>
+					<td colspan="5" width="75%"><h2>Roles</h2></td>
 					<td colspan="2" width="10%" align="center"><a href="user_new.m?newUser=new"><img src="images/addpat.gif" alt="add new user" border="0"/></a></td>
 				</tr>
 					<xsl:apply-templates select="userList/item">
@@ -25,6 +25,8 @@
 		<DL>
 		<DT>WebUser:</DT>
 		<DD>A user in this role is allowed to use this web interface.</DD>
+		<DT>McmUser:</DT>
+		<DD>This role is used to allow access to the Media Creation Console (Offline Storage).</DD>
 		<DT>WebAdmin:</DT>
 		<DD>A user in this role has admin rights in the web interface.</DD>
 		<DD>The user must be also in role WebUser!</DD>
@@ -46,6 +48,14 @@
 	        <td title="WebUser">
 				WebUser<input type="checkbox" name="webUser" value="true" disabled="true">
 					<xsl:if test="webUser = 'true'">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+	        </td>
+		    
+	        <td title="McmUser">
+				McMUser<input type="checkbox" name="mcmUser" value="true" disabled="true">
+					<xsl:if test="mcmUser = 'true'">
 						<xsl:attribute name="checked"/>
 					</xsl:if>
 				</input>
