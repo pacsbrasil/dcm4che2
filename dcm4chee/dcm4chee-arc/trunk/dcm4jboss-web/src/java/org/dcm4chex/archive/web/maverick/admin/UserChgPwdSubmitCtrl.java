@@ -46,6 +46,12 @@ public class UserChgPwdSubmitCtrl extends Errable
 	public void setPasswd1(String passwd1) {
 		this.passwd1 = passwd1;
 	}
+	/**
+	 * @param cancelPar The cancelPar to set.
+	 */
+	public void setCancel(String cancelPar) {
+		this.cancelPar = cancelPar;
+	}
 	
 	protected String perform() throws Exception
 	{
