@@ -35,60 +35,6 @@ public class FolderForm {
 
     static final String FOLDER_ATTRNAME = "folderFrom";
 
-    static FolderForm getFolderForm(HttpServletRequest request) {
-        FolderForm form = (FolderForm) request.getSession()
-                .getAttribute(FOLDER_ATTRNAME);
-        if (form == null) {
-            form = new FolderForm(request.isUserInRole("WebAdmin"));
-            try {
-				URL wadoURL = new URL( "http", request.getServerName(), 
-						request.getServerPort(), "/dcm4jboss-wado/");
-				form.setWadoBaseURL( wadoURL.toString() );
-				URL url = new URL( "http", request.getServerName(), 
-						request.getServerPort(), "/WebViewer/jvapplet.jar");
-				try {
-					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-					conn.connect();
-					if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK )
-						form.enableWebViewer();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            request.getSession().setAttribute(FOLDER_ATTRNAME, form);
-        }
-        form.setErrorCode( NO_ERROR ); //reset error code
-        
-        return form;
-    }
-    
-    /**
-	 * 
-	 */
-	private void enableWebViewer() {
-		this.webViewer = true;
-		
-	}
-
-	private FolderForm( boolean adm ) {
-    	admin = adm;
-    }
-
-	/**
-	 * @return Returns the admin.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-	/**
-	 * @return Returns the webViewer.
-	 */
-	public boolean isWebViewer() {
-		return webViewer;
-	}
     public static final int LIMIT = 10;
     
     public static final String NO_ERROR ="OK";
@@ -156,6 +102,7 @@ public class FolderForm {
     private int total;
     
     private final boolean admin;
+    private boolean mcmUser;
     
     private boolean webViewer;
     
@@ -177,6 +124,67 @@ public class FolderForm {
 	
 	private boolean addWorklist = false;
     
+    static FolderForm getFolderForm(HttpServletRequest request) {
+        FolderForm form = (FolderForm) request.getSession()
+                .getAttribute(FOLDER_ATTRNAME);
+        if (form == null) {
+            form = new FolderForm(request.isUserInRole("WebAdmin"));
+            form.mcmUser = request.isUserInRole("McmUser");
+            try {
+				URL wadoURL = new URL( "http", request.getServerName(), 
+						request.getServerPort(), "/dcm4jboss-wado/");
+				form.setWadoBaseURL( wadoURL.toString() );
+				URL url = new URL( "http", request.getServerName(), 
+						request.getServerPort(), "/WebViewer/jvapplet.jar");
+				try {
+					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+					conn.connect();
+					if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK )
+						form.enableWebViewer();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            request.getSession().setAttribute(FOLDER_ATTRNAME, form);
+        }
+        form.setErrorCode( NO_ERROR ); //reset error code
+        
+        return form;
+    }
+    
+    /**
+	 * 
+	 */
+	private void enableWebViewer() {
+		this.webViewer = true;
+		
+	}
+
+	private FolderForm( boolean adm ) {
+    	admin = adm;
+    }
+
+	/**
+	 * @return Returns the admin.
+	 */
+	public boolean isAdmin() {
+		return admin;
+	}
+	/**
+	 * @return Returns the mcmUser.
+	 */
+	public boolean isMcmUser() {
+		return mcmUser;
+	}
+	/**
+	 * @return Returns the webViewer.
+	 */
+	public boolean isWebViewer() {
+		return webViewer;
+	}
 
 	/**
 	 * @return Returns the wadoBaseURL.

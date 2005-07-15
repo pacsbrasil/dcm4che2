@@ -13,7 +13,11 @@
 	    		<td width="100" align="center"><a href="default.jsp">Folder</a></td>
 	    		<xsl:if test="model/admin='true'">
 		    		<td width="120" align="center"><a href="ae.m">AE Management</a></td>
+		      	</xsl:if>
+	    		<xsl:if test="model/admin='true' or model/mcmUser='true'">
 		      		<td width="120" align="center"><a href="mcm_console.m">Offline Storage</a></td>
+		      	</xsl:if>
+	    		<xsl:if test="model/admin='true'">
 		      		<td width="120" align="center"><a href="mwl_console.m">Worklist Console</a></td>
 		      		<td width="120" align="center"><a href="mpps_console.m">MPPS Console</a></td>
 		      	</xsl:if>

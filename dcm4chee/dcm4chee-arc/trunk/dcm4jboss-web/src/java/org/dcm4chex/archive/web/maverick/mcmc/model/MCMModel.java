@@ -42,6 +42,9 @@ public class MCMModel {
 
 	/** holds current error code. */
 	private String errorCode = NO_ERROR;
+    /** Popup message */
+    private String popupMsg = null;
+
 	/** Holds the current offset for paging */
 	private int offset = 0;
 	/** Holds the limit for paging */
@@ -65,7 +68,8 @@ public class MCMModel {
 	 * if checkMCM request parameter is true.
 	 */
 	private boolean checkAvail = false;
-	private boolean admin = false;
+	private final boolean admin;
+	private boolean mcmUser = false;
 	
 	/**
 	 * Creates the model.
@@ -96,6 +100,7 @@ public class MCMModel {
 		MCMModel model = (MCMModel) request.getSession().getAttribute(MCMMODEL_ATTR_NAME);
 		if (model == null) {
 				model = new MCMModel(request.isUserInRole("WebAdmin"));
+				model.mcmUser = request.isUserInRole("McmUser");
 				request.getSession().setAttribute(MCMMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
@@ -109,6 +114,12 @@ public class MCMModel {
 		return admin;
 	}
 
+	/**
+	 * @return Returns the mcmUser.
+	 */
+	public boolean isMcmUser() {
+		return mcmUser;
+	}
 	/**
 	 * Set the error code of this model.
 	 * 
@@ -128,6 +139,18 @@ public class MCMModel {
 		return errorCode;
 	}
 	
+	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
+	}
 	/**
 	 * Returns the status for 'queue' action.
 	 * <p>

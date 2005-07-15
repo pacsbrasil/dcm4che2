@@ -33,6 +33,16 @@
 				        </td>
 					</tr>
 					<tr>				        
+						<td width="50">McmUser</td>														
+				        <td title="McmUser">
+							<input type="checkbox" name="mcmUser" value="true">
+								<xsl:if test="editUser/mcmUser = 'true'">
+									<xsl:attribute name="checked"/>
+								</xsl:if>
+							</input>
+				        </td>
+					</tr>
+					<tr>				        
 						<td width="50">WebAdmin</td>														
 				        <td title="WebAdmin">
 							<input type="checkbox" name="webAdmin" value="true">

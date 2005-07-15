@@ -51,6 +51,11 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
         try {
             HttpServletRequest request = getCtx().getRequest();
     		model = MCMModel.getModel(request);
+    		model.setPopupMsg(null);
+    		if ( !model.isMcmUser() && !model.isAdmin() ) {
+    			model.setPopupMsg("Access denied!");
+    			return "success";
+    		}
     		model.setErrorCode( MCMModel.NO_ERROR );
             if ( request.getParameter("checkMCM") != null ) {
     			model.setMcmNotAvail( ! delegate.checkMcmScpAvail() );
@@ -110,6 +115,10 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 				}
            	}
 		} else if ( action.equalsIgnoreCase("delete") ) {
+    		if ( !model.isAdmin() ) {
+    			model.setPopupMsg("You are not allowed to delete Media Creation Managment items!!");
+    			return;
+    		}
 			if ( ! delegate.deleteMedia( Integer.parseInt( request.getParameter("mediaPk"))) ) {
 				model.setErrorCode( MCMModel.ERROR_MEDIA_DELETE );
 			}
