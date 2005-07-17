@@ -37,13 +37,31 @@ public class SAXWriterTest extends TestCase {
         AttributeSet attrs = new BasicAttributeSet();
         dis.readAttributeSet(attrs, -1);
         dis.close();
-        File ofile = new File("target/test-out/DICOMDIR.xml");
+        File ofile = new File("target/test-out/DICOMDIR1.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
         th.setResult(new StreamResult(ofile));
         new SAXWriter(th, th).write(attrs);
+    }
+
+    public final void testReadValue() throws IOException,
+            TransformerConfigurationException,
+            TransformerFactoryConfigurationError, SAXException {
+        File ofile = new File("target/test-out/DICOMDIR2.xml");
+        ofile.getParentFile().mkdirs();
+        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
+                .newInstance();
+        TransformerHandler th = tf.newTransformerHandler();
+        th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
+        th.setResult(new StreamResult(ofile));
+        SAXWriter w = new SAXWriter(th, th);
+        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+        dis.setHandler(w);
+        AttributeSet attrs = new BasicAttributeSet();
+        dis.readAttributeSet(attrs, -1);
+        dis.close();
     }
 
 }

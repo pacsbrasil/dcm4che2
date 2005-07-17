@@ -339,12 +339,12 @@ public class DicomOutputStream
 			}
 			return l;
 		}
-
-		private int[] realloc(int[] src) {
-			int[] dest = new int[src.length + 10];
-			System.arraycopy(src, 0, dest, 0,  src.length);
-			return dest;
-		}
 	}
+    
+    private static int[] realloc(int[] src) {
+        int[] dest = new int[src.length + 10];
+        System.arraycopy(src, 0, dest, 0,  src.length);
+        return dest;
+    }
 
 }

@@ -107,6 +107,18 @@ public class DicomInputStream extends FilterInputStream implements
 	public final VR vr() {
 		return vr;
 	}
+    
+    public final Attribute sq() {
+        return (Attribute) sqStack.get(sqStack.size() - 1);
+    }
+    
+    public final TransferSyntax getTransferSyntax() {
+        return ts;
+    }
+
+    public final AttributeSet getAttributeSet() {
+        return attrs;
+    }
 
 	private TransferSyntax guessTransferSyntax() throws IOException {
 		mark(132);
@@ -239,9 +251,12 @@ public class DicomInputStream extends FilterInputStream implements
 			try {
 				tag0 = readHeader();
 			} catch (EOFException e) {
-				if (len == -1)
-					return;
-				throw e;
+				if (len != -1)
+                    throw e;
+                // treat EOF like read of ItemDelimitationItem
+                tag0 = tag = Tag.ItemDelimitationItem;
+                vr = null;
+                vallen = 0;
 			}
 			quit = !handler.readValue(this);
 			if (!ignoreFmiTs && pos == fmiEndPos) {
@@ -351,7 +366,7 @@ public class DicomInputStream extends FilterInputStream implements
 		}
 	}
 
-	private byte[] readBytes(int vallen) throws IOException {
+	public byte[] readBytes(int vallen) throws IOException {
 		if (vallen == 0)
 			return null;
 		if (vallen > vallenLimit) {
