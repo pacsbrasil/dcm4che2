@@ -32,9 +32,8 @@ public class ContentHandlerAdapterTest extends TestCase {
         SAXParser p = f.newSAXParser();
         BasicAttributeSet attrs = new BasicAttributeSet();
         ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
-        p.parse(locateFile("DICOMDIR.xml"), ch);
-        Attribute attr = attrs.getAttribute(0x00041220);
-        assertEquals(1203, attr.countItems());
+        p.parse(locateFile("sr_511_ct-1.xml"), ch);
+        assertEquals("ISO639_2", attrs.getString("/0040A730/0040A168/00080102"));
    }
 
 }

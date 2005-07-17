@@ -33,11 +33,11 @@ public class SAXWriterTest extends TestCase {
     public final void testWrite() 
             throws IOException, TransformerConfigurationException, 
             TransformerFactoryConfigurationError, SAXException {
-        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+        DicomInputStream dis = new DicomInputStream(locateFile("sr_511_ct.dcm"));
         AttributeSet attrs = new BasicAttributeSet();
         dis.readAttributeSet(attrs, -1);
         dis.close();
-        File ofile = new File("target/test-out/DICOMDIR1.xml");
+        File ofile = new File("target/test-out/sr_511_ct-1.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler();
@@ -49,7 +49,7 @@ public class SAXWriterTest extends TestCase {
     public final void testReadValue() throws IOException,
             TransformerConfigurationException,
             TransformerFactoryConfigurationError, SAXException {
-        File ofile = new File("target/test-out/DICOMDIR2.xml");
+        File ofile = new File("target/test-out/sr_511_ct-2.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
                 .newInstance();
@@ -57,7 +57,7 @@ public class SAXWriterTest extends TestCase {
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
         th.setResult(new StreamResult(ofile));
         SAXWriter w = new SAXWriter(th, th);
-        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+        DicomInputStream dis = new DicomInputStream(locateFile("sr_511_ct.dcm"));
         dis.setHandler(w);
         AttributeSet attrs = new BasicAttributeSet();
         dis.readAttributeSet(attrs, -1);
