@@ -7,7 +7,7 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.IOException;
 import java.io.InputStream;

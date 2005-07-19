@@ -7,7 +7,7 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -17,6 +17,11 @@ import java.util.LinkedList;
 import java.util.zip.DeflaterOutputStream;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.util.ByteUtils;
 
 public class DicomOutputStream 
@@ -102,10 +107,16 @@ public class DicomOutputStream
 		this.includeGroupLength = includeGroupLength;
 	}
 
-	public void writeCommand(AttributeSet attrs)
+    public void writeDicomObject(DicomObject attrs) throws IOException {
+        this.ts = TransferSyntax.ExplicitVRLittleEndian;
+        writeElements(attrs.iterator(), false, null);
+        writeHeader(Tag.ItemDelimitationItem, null, 0);
+    }
+    
+	public void writeCommand(DicomObject attrs)
 			throws IOException {
 		this.ts = TransferSyntax.ImplicitVRLittleEndian;
-		writeAttributes(attrs.commandIterator(), 
+		writeElements(attrs.commandIterator(), 
 				true, new ItemInfo(attrs.commandIterator(), true));		
 	}
 
@@ -115,13 +126,13 @@ public class DicomOutputStream
 		write(VR.UL.toBytes(length, ts.bigEndian()), 0, 4);		
 	}
 
-	public void writeDicomFile(AttributeSet attrs)
+	public void writeDicomFile(DicomObject attrs)
 			throws IOException {
 		writeFileMetaInformation(attrs);
 		writeDataset(attrs);		
 	}
 	
-	public void writeFileMetaInformation(AttributeSet attrs)
+	public void writeFileMetaInformation(DicomObject attrs)
 			throws IOException {
 		write(preamble, 0, 128);
 		write('D');
@@ -129,27 +140,27 @@ public class DicomOutputStream
 		write('C');
 		write('M');
 		this.ts = TransferSyntax.ExplicitVRLittleEndian;
-		writeAttributes(attrs.fileMetaInfoIterator(), 
+		writeElements(attrs.fileMetaInfoIterator(), 
 				true, new ItemInfo(attrs.fileMetaInfoIterator(), true));
 	}
 
-	public void writeDataset(AttributeSet attrs)
+	public void writeDataset(DicomObject attrs)
 			throws IOException {
 		writeDataset(attrs, attrs.getTransferSyntax());		
 	}
 	
-	public void writeDataset(AttributeSet attrs, TransferSyntax ts)
+	public void writeDataset(DicomObject attrs, TransferSyntax ts)
 			throws IOException {
 		if (ts.isDeflated())
 			out = new DeflaterOutputStream(out);
 		this.ts = ts;
-		writeAttributes(attrs.datasetIterator(),
+		writeElements(attrs.datasetIterator(),
 				includeGroupLength, createItemInfo(attrs));
         if (ts.isDeflated())
             ((DeflaterOutputStream) out).finish();
 	}
 
-	private ItemInfo createItemInfo(AttributeSet attrs) {
+	private ItemInfo createItemInfo(DicomObject attrs) {
 		if (needItemInfo())
 			return new ItemInfo(attrs.datasetIterator(), includeGroupLength);
 		return null;
@@ -161,13 +172,13 @@ public class DicomOutputStream
 				|| explicitSequenceLength;
 	}
 		
-	public void writeItem(AttributeSet item, TransferSyntax ts)
+	public void writeItem(DicomObject item, TransferSyntax ts)
 			throws IOException {
 		this.ts = ts;
 		writeItem(item, createItemInfo(item));
 	}
 
-	private void writeItem(AttributeSet item, ItemInfo itemInfo)
+	private void writeItem(DicomObject item, ItemInfo itemInfo)
 			throws IOException {
 		item.setItemOffset(pos);
 		int len;
@@ -177,19 +188,19 @@ public class DicomOutputStream
 			len = explicitItemLength ? itemInfo.len : -1;
 		}
 		writeHeader(Tag.Item, null, len);
-		writeAttributes(item.iterator(), includeGroupLength, itemInfo);
+		writeElements(item.iterator(), includeGroupLength, itemInfo);
 		if (len == -1) {
 			writeHeader(Tag.ItemDelimitationItem, null, 0);
 		}
 	}
-	
-	void writeAttributes(Iterator itr, boolean groupLength1, ItemInfo itemInfo)
+    
+	private void writeElements(Iterator itr, boolean groupLength1, ItemInfo itemInfo)
 			throws IOException {
 		int gggg0 = -1;
 		int gri = -1;
 		int sqi = -1;
 		while (itr.hasNext()) {
-			Attribute a = (Attribute) itr.next();
+			DicomElement a = (DicomElement) itr.next();
 			if (groupLength1) {
 				int gggg = a.tag() & 0xffff0000;
 				if (gggg != gggg0) {
@@ -211,7 +222,7 @@ public class DicomOutputStream
 			if (a.hasItems()) {
 				if (vr == VR.SQ) {
 					for (int i = 0, n = a.countItems(); i < n; i++) {
-						AttributeSet item = a.getItem(i);
+						DicomObject item = a.getItem(i);
 						ItemInfo childItemInfo = itemInfo != null ? 
 								(ItemInfo) itemInfo.childs.removeFirst() : null;
 						writeItem(item, childItemInfo);
@@ -279,7 +290,7 @@ public class DicomOutputStream
 			int gri = -1;
 			int sqi = -1;
 			while (it.hasNext()) {
-				Attribute a = (Attribute) it.next();
+				DicomElement a = (DicomElement) it.next();
 				final VR vr = a.vr();
 				int vlen = a.length();
 				if (vlen == -1) {
@@ -318,7 +329,7 @@ public class DicomOutputStream
 			}
 		}
 
-		private int calcFragSqLen(Attribute a) {
+		private int calcFragSqLen(DicomElement a) {
 			int l = 8;
 			for (int i = 0, n = a.countItems(); i < n; ++i) {
 				byte[] b = a.getBytes(i);
@@ -327,10 +338,10 @@ public class DicomOutputStream
 			return l;
 		}
 
-		private int calcItemSqLen(Attribute a) {
+		private int calcItemSqLen(DicomElement a) {
 			int l = explicitSequenceLength ? 0 : 8;
 			for (int i = 0, n = a.countItems(); i < n; ++i) {
-				AttributeSet item = a.getItem(i);
+				DicomObject item = a.getItem(i);
 				ItemInfo itemInfo = new ItemInfo(item.iterator(), includeGroupLength);
 				if (childs == null) // lazy allocation
 					childs = new LinkedList();

@@ -15,20 +15,18 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-import org.dcm4che2.data.AttributeSet.Visitor;
+import org.dcm4che2.data.DicomObject.Visitor;
 
-class AttributeSerializer implements Serializable {
+class ElementSerializer implements Serializable {
 
 	private static final long serialVersionUID = 4051046376018292793L;
 
-	private static final int ITEM_DELIM_TAG = 0xfffee00d;
-	
-	private static final Attribute END_OF_SET = 
-		new BasicAttribute(ITEM_DELIM_TAG, VR.UN, false, null, null);
+	private static final DicomElement END_OF_SET = 
+		new BasicDicomElement(Tag.ItemDelimitationItem, VR.UN, false, null, null);
 
-	private transient AttributeSet attrs;
+	private transient DicomObject attrs;
 
-	public AttributeSerializer(AttributeSet attrs) {
+	public ElementSerializer(DicomObject attrs) {
 		this.attrs = attrs;
 	}
 		
@@ -43,7 +41,7 @@ class AttributeSerializer implements Serializable {
 		s.writeLong(attrs.getItemOffset());
 		try {
 			attrs.accept(new Visitor() {
-				public boolean visit(Attribute attr) {
+				public boolean visit(DicomElement attr) {
 					try {
 						s.writeObject(attr);
 					} catch (IOException e) {
@@ -62,17 +60,17 @@ class AttributeSerializer implements Serializable {
 	private void readObject(ObjectInputStream s)
 			throws IOException, ClassNotFoundException {
 		s.defaultReadObject();
-		attrs = new BasicAttributeSet();
+		attrs = new BasicDicomObject();
 		attrs.setItemOffset(s.readLong());
-		Attribute attr = (Attribute) s.readObject();
-		while (attr.tag() != ITEM_DELIM_TAG) {
+		DicomElement attr = (DicomElement) s.readObject();
+		while (attr.tag() != Tag.ItemDelimitationItem) {
 			if (attr.vr() == VR.SQ && attr.hasItems()) {
 				for (int i = 0, n = attr.countItems(); i < n; ++i) {
 					attr.getItem(i).setParent(attrs);
 				}
 			}
-			((BasicAttributeSet) attrs).add(attr);
-			attr = (Attribute) s.readObject();
+			((BasicDicomObject) attrs).addInternal(attr);
+			attr = (DicomElement) s.readObject();
 		}
 	}
 }

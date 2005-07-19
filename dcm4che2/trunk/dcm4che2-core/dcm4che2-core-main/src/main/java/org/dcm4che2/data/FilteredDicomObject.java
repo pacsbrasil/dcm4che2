@@ -16,12 +16,12 @@ import java.util.NoSuchElementException;
 
 import org.dcm4che2.util.TagUtils;
 
-abstract class FilteredAttributeSet extends AbstractAttributeSet {
+abstract class FilteredDicomObject extends AbstractDicomObject {
 
-	static final class Include extends FilteredAttributeSet {		
+	static final class Include extends FilteredDicomObject {		
 		private static final long serialVersionUID = 1L;
 		final int[] tags;
-		public Include(AttributeSet attrs, int[] tags) {
+		public Include(DicomObject attrs, int[] tags) {
 			super(attrs);
 			this.tags = (int[]) tags.clone();
 			Arrays.sort(this.tags);
@@ -32,10 +32,10 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		}
 	}
 
-	static final class Exclude extends FilteredAttributeSet {
+	static final class Exclude extends FilteredDicomObject {
 		private static final long serialVersionUID = 1L;
 		final int[] tags;
-		public Exclude(AttributeSet attrs, int[] tags) {
+		public Exclude(DicomObject attrs, int[] tags) {
 			super(attrs);
 			this.tags = (int[]) tags.clone();
 			Arrays.sort(this.tags);
@@ -46,11 +46,11 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		}
 	}
 
-	static final class Range extends FilteredAttributeSet {
+	static final class Range extends FilteredDicomObject {
 		private static final long serialVersionUID = 1L;
 		final long fromTag;
 		final long toTag;
-		public Range(AttributeSet attrs, int fromTag, int toTag) {
+		public Range(DicomObject attrs, int fromTag, int toTag) {
 			super(attrs);
 			if ((fromTag & 0xffffffffL) > (toTag & 0xffffffffL)) {
 				throw new IllegalArgumentException("fromTag:"
@@ -84,10 +84,10 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		}
 	}
 	
-	static final class ExcludePrivate extends FilteredAttributeSet {
+	static final class ExcludePrivate extends FilteredDicomObject {
 		private static final long serialVersionUID = 1L;
 
-		public ExcludePrivate(AttributeSet attrs) {
+		public ExcludePrivate(DicomObject attrs) {
 			super(attrs);
 		}
 
@@ -97,7 +97,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 
 	}
 
-	static final class FilterSet extends FilteredAttributeSet {
+	static final class FilterSet extends FilteredDicomObject {
 		private static final long serialVersionUID = 1L;
 		final class FilterItr extends Itr implements Iterator {
 
@@ -106,7 +106,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 			}
 			
 			public Object next() {
-				Attribute attr = (Attribute) super.next();
+				DicomElement attr = (DicomElement) super.next();
 				if (attr.vr() == VR.SQ && attr.hasItems()) {					
 					return attr.filterItems(
 							filter.getItem(attr.tag()));
@@ -116,9 +116,9 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 
 		}
 
-		final AttributeSet filter;
+		final DicomObject filter;
 		
-		public FilterSet(AttributeSet attrs, AttributeSet filter) {
+		public FilterSet(DicomObject attrs, DicomObject filter) {
 			super(attrs);
 			this.filter = filter;
 		}
@@ -127,8 +127,8 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 			return filter.contains(tag);
 		}
 		
-		public AttributeSet getItem(int tag) {
-			AttributeSet item = super.getItem(tag);
+		public DicomObject getItem(int tag) {
+			DicomObject item = super.getItem(tag);
 			if (item == null)
 				return null;
 			
@@ -145,9 +145,9 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 	}
 
 
-	protected final AttributeSet attrs;
+	protected final DicomObject attrs;
 	
-	public FilteredAttributeSet(AttributeSet attrs) {
+	public FilteredDicomObject(DicomObject attrs) {
 		this.attrs = attrs;
 	}
 	
@@ -171,7 +171,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 	
 	public boolean accept(final Visitor visitor) {
 		return attrs.accept(new Visitor(){
-			public boolean visit(Attribute attr) {
+			public boolean visit(DicomElement attr) {
 				if (filter(attr.tag()))
 					visitor.visit(attr);
 				return true;
@@ -188,7 +188,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 
 	private class Itr implements Iterator {
 		final Iterator itr;
-		Attribute next;
+		DicomElement next;
 		public Itr(Iterator itr) {
 			this.itr = itr;
 			findNext();
@@ -208,7 +208,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		}
 		private void findNext() {
 			while (itr.hasNext()) {
-				next = (Attribute) itr.next();
+				next = (DicomElement) itr.next();
 				if (filter(next.tag()))
 					return;
 			}
@@ -221,15 +221,15 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return filter(tag) && attrs.contains(tag);
 	}
 
-	public Attribute getAttribute(int tag) {
-		return filter(tag) ? attrs.getAttribute(tag) : null;
+	public DicomElement get(int tag) {
+		return filter(tag) ? attrs.get(tag) : null;
 	}
 
-	public AttributeSet getParent() {
+	public DicomObject getParent() {
 		return attrs.getParent();
 	}
 
-	public void setParent(AttributeSet parent) {
+	public void setParent(DicomObject parent) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -237,7 +237,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return filter(privateTag) ? attrs.getPrivateCreator(privateTag) : null;
 	}
 
-	public AttributeSet getRoot() {
+	public DicomObject getRoot() {
 		return attrs.getRoot();
 	}
 
@@ -257,63 +257,63 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		return attrs.cachePut();
 	}
 
-	public void addAttribute(Attribute attr) {
+	public void add(DicomElement attr) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
+	public DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putDouble(int tag, VR vr, double val) {
+	public DicomElement putDouble(int tag, VR vr, double val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putDoubles(int tag, VR vr, double[] val) {
+	public DicomElement putDoubles(int tag, VR vr, double[] val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putNull(int tag, VR vr) {
+	public DicomElement putNull(int tag, VR vr) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putFloat(int tag, VR vr, float val) {
+	public DicomElement putFloat(int tag, VR vr, float val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putFloats(int tag, VR vr, float[] val) {
+	public DicomElement putFloats(int tag, VR vr, float[] val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putInt(int tag, VR vr, int val) {
+	public DicomElement putInt(int tag, VR vr, int val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putInts(int tag, VR vr, int[] val) {
+	public DicomElement putInts(int tag, VR vr, int[] val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putItem(int tag, AttributeSet item) {
+	public DicomElement putItem(int tag, DicomObject item) {
 		throw new IllegalArgumentException(TagUtils.toString(tag));
 	}
 
-	public Attribute putString(int tag, VR vr, String val) {
+	public DicomElement putString(int tag, VR vr, String val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putStrings(int tag, VR vr, String[] val) {
+	public DicomElement putStrings(int tag, VR vr, String[] val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putDate(int tag, VR vr, Date val) {
+	public DicomElement putDate(int tag, VR vr, Date val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putDates(int tag, VR vr, Date[] val) {
+	public DicomElement putDates(int tag, VR vr, Date[] val) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putDateRange(int tag, VR vr, DateRange val) {
+	public DicomElement putDateRange(int tag, VR vr, DateRange val) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -321,7 +321,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute removeAttribute(int tag) {
+	public DicomElement remove(int tag) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -341,7 +341,7 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
 		attrs.cachePut(cached);
 	}
 
-	public void shareAttributes() {
+	public void share() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -353,19 +353,19 @@ abstract class FilteredAttributeSet extends AbstractAttributeSet {
         return attrs.nameOf(tag);
     }
 
-	public Attribute putFragments(int tag, VR vr, boolean bigEndian, int capacity) {
+	public DicomElement putFragments(int tag, VR vr, boolean bigEndian, int capacity) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putFragments(int tag, VR vr, boolean bigEndian) {
+	public DicomElement putFragments(int tag, VR vr, boolean bigEndian) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putSequence(int tag, int capacity) {
+	public DicomElement putSequence(int tag, int capacity) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Attribute putSequence(int tag) {
+	public DicomElement putSequence(int tag) {
 		throw new UnsupportedOperationException();
 	}
 }

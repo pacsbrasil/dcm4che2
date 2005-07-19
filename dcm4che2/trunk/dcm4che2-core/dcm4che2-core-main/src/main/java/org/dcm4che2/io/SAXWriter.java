@@ -1,8 +1,12 @@
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.TagUtils;
 import org.xml.sax.ContentHandler;
@@ -23,14 +27,14 @@ public class SAXWriter implements DicomInputHandler {
         this.lh = lh;
     }
     
-    public void write(AttributeSet attrs)
+    public void write(DicomObject attrs)
             throws SAXException {
         ch.startDocument();
         writeContent(attrs, attrs.isRoot() ? "dicom" : "item");
         ch.endDocument();
     }
 
-    private void writeContent(AttributeSet attrs, String qName)
+    private void writeContent(DicomObject attrs, String qName)
             throws SAXException {
         AttributesImpl atts = new AttributesImpl();
         if (!attrs.isRoot()) {
@@ -39,7 +43,7 @@ public class SAXWriter implements DicomInputHandler {
         }
         ch.startElement("", "", qName, atts);
         for (Iterator it = attrs.iterator(); it.hasNext();) {
-            Attribute a = (Attribute) it.next();
+            DicomElement a = (DicomElement) it.next();
             VR vr = a.vr();
             final int tag = a.tag();
             if (lh != null) {
@@ -95,7 +99,7 @@ public class SAXWriter implements DicomInputHandler {
                         .valueLength()));
                 ch.startElement("", "", "item", atts);
                 in.readValue(in);
-                Attribute sq = in.sq();
+                DicomElement sq = in.sq();
                 VR sqvr = sq.vr();
                 if (sqvr != VR.SQ) {
                     sqvr.formatXMLValue(sq.removeBytes(0), bigEndian, null, cbuf, ch);
@@ -120,7 +124,7 @@ public class SAXWriter implements DicomInputHandler {
                     ch.startDocument();
                     ch.startElement("", "", "dicom", atts);
                 }
-                final AttributeSet attrs = in.getAttributeSet();
+                final DicomObject attrs = in.getDicomObject();
                 if (lh != null) {
                     String name = attrs.nameOf(tag);
                     lh.comment(name.toCharArray(), 0, name.length());
@@ -131,7 +135,7 @@ public class SAXWriter implements DicomInputHandler {
                 ch.startElement("", "", "attr", atts);
                 if (vallen == -1 || vr == VR.SQ) {
                     in.readValue(in);
-                    attrs.removeAttribute(tag);
+                    attrs.remove(tag);
                 } else {
                     byte[] val = in.readBytes(vallen);
                     vr.formatXMLValue(val, bigEndian,

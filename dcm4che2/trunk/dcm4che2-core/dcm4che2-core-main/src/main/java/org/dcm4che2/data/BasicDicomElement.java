@@ -22,9 +22,10 @@ import java.util.List;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 
+import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.TagUtils;
 
-class BasicAttribute implements Attribute {
+public class BasicDicomElement implements DicomElement {
 
 	private static final long serialVersionUID = 3256439218229556788L;
 
@@ -40,7 +41,7 @@ class BasicAttribute implements Attribute {
 	
 	private transient Object cachedValue;
 	
-	BasicAttribute(int tag, VR vr, boolean bigEndian, Object value, 
+	BasicDicomElement(int tag, VR vr, boolean bigEndian, Object value, 
 			Object cachedValue) {
 		this.tag = tag;
 		this.vr = vr;
@@ -68,8 +69,8 @@ class BasicAttribute implements Attribute {
 			s.writeInt(size);
 			for (int i = 0; i < size; ++i) {
 				Object item = l.get(i);
-				if (item instanceof AttributeSet) {
-					s.writeObject(new AttributeSerializer((AttributeSet) item));
+				if (item instanceof DicomObject) {
+					s.writeObject(new ElementSerializer((DicomObject) item));
 				} else {
 					s.writeObject(item);
 				}
@@ -98,19 +99,19 @@ class BasicAttribute implements Attribute {
 		}
 	}
 
-	public Attribute share() {
+	public DicomElement share() {
 		if (value instanceof List) {
 			if (vr == VR.SQ) {
 				List l = (List) value;
 				for (int i = 0, n = l.size(); i < n; ++i) {
-					((AttributeSet) l.get(i)).shareAttributes();
+					((DicomObject) l.get(i)).share();
 				}
 			}
 			return this;
 		}
         WeakReference wr = (WeakReference) shared.get(this);
         if (wr != null) {
-			Attribute e = (Attribute) wr.get();
+			DicomElement e = (DicomElement) wr.get();
             if (e != null) {
                 return e;
             }
@@ -132,10 +133,10 @@ class BasicAttribute implements Attribute {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof BasicAttribute)) {
+		if (!(o instanceof BasicDicomElement)) {
 			return false;
 		}
-		BasicAttribute other = (BasicAttribute) o;
+		BasicDicomElement other = (BasicDicomElement) o;
 		if (tag != other.tag || vr != other.vr)
 			return false;
 		if (isNull()) {
@@ -181,7 +182,7 @@ class BasicAttribute implements Attribute {
 		return sb.toString();
 	}	
 	
-	Attribute fragmentsToSequence(AttributeSet parent)
+	public DicomElement fragmentsToSequence(DicomObject parent)
 			throws IOException {
 		if (vr != VR.UN)
 			throw new IllegalStateException("vr:" + vr);
@@ -192,8 +193,8 @@ class BasicAttribute implements Attribute {
 			InputStream is = new ByteArrayInputStream(b);
 			DicomInputStream dis = new DicomInputStream(is, 
 					TransferSyntax.ImplicitVRLittleEndian);
-			AttributeSet item = new BasicAttributeSet();
-			dis.readAttributeSet(item, b.length);
+			DicomObject item = new BasicDicomObject();
+			dis.readDicomObject(item, b.length);
 			newval.add(item);
 		}
 		this.value = newval;
@@ -205,7 +206,7 @@ class BasicAttribute implements Attribute {
 		return bigEndian;
 	}
 
-	public Attribute bigEndian(boolean bigEndian) {
+	public DicomElement bigEndian(boolean bigEndian) {
 		if (this.bigEndian == bigEndian)
 			return this;
 		vr.toggleEndian(value);
@@ -356,17 +357,17 @@ class BasicAttribute implements Attribute {
 		return l.size();
 	}
 
-	public AttributeSet getItem() {
+	public DicomObject getItem() {
 		List l = (List) value;
-		return (AttributeSet) (!l.isEmpty() ? l.get(0) : null);
+		return (DicomObject) (!l.isEmpty() ? l.get(0) : null);
 	}
 
-	public AttributeSet getItem(int index) {
-		return (AttributeSet) get(index);
+	public DicomObject getItem(int index) {
+		return (DicomObject) get(index);
 	}
 
-	public AttributeSet removeItem(int index) {
-		AttributeSet ret = (AttributeSet) remove(index);
+	public DicomObject removeItem(int index) {
+		DicomObject ret = (DicomObject) remove(index);
         updateItemPositions(index);
         return ret;
 	}
@@ -377,7 +378,7 @@ class BasicAttribute implements Attribute {
         }
     }
 
-    public AttributeSet addItem(AttributeSet item) {
+    public DicomObject addItem(DicomObject item) {
 		if (vr != VR.SQ)
 			throw new UnsupportedOperationException();
 		add(item);
@@ -385,7 +386,7 @@ class BasicAttribute implements Attribute {
 		return item;
 	}
 
-	public AttributeSet addItem(int index, AttributeSet item) {
+	public DicomObject addItem(int index, DicomObject item) {
 		if (vr != VR.SQ)
 			throw new UnsupportedOperationException();
 		add(index, item);
@@ -393,7 +394,7 @@ class BasicAttribute implements Attribute {
 		return item;
 	}
 
-	public AttributeSet setItem(int index, AttributeSet item) {
+	public DicomObject setItem(int index, DicomObject item) {
 		if (vr != VR.SQ)
 			throw new UnsupportedOperationException();
 		set(index, item);
@@ -461,7 +462,7 @@ class BasicAttribute implements Attribute {
 		l.set(index, item);
 	}
 
-	public Attribute filterItems(AttributeSet filter) {
+	public DicomElement filterItems(DicomObject filter) {
 		if (filter == null)
 			return this;
 		int count = countItems();
@@ -469,7 +470,7 @@ class BasicAttribute implements Attribute {
 		for (int i = 0; i < count; i++) {
 			items.add(getItem(i).subSet(filter));
 		}
-		return new BasicAttribute(tag, vr, bigEndian, items, null);
+		return new BasicDicomElement(tag, vr, bigEndian, items, null);
 	}
 
 }

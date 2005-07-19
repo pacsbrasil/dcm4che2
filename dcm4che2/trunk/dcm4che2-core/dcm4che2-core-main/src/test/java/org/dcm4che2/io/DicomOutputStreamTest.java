@@ -7,12 +7,19 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.TransferSyntax;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.io.DicomOutputStream;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -37,8 +44,8 @@ public class DicomOutputStreamTest extends TestCase {
 		String fpath = cl.getResource("DICOMDIR").getPath();
 		File ifile = new File(fpath);
 		DicomInputStream dis = new DicomInputStream(ifile);
-		AttributeSet attrs = new BasicAttributeSet();
-		dis.readAttributeSet(attrs, -1);
+		DicomObject attrs = new BasicDicomObject();
+		dis.readDicomObject(attrs, -1);
 		dis.close();
 		attrs.putString(0x00020010, VR.CS, TransferSyntax.ExplicitVRLittleEndian.uid());
 		File ofile = new File("target/test-out/DICOMDIR");

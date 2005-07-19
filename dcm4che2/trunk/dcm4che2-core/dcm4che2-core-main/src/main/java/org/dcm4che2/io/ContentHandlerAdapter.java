@@ -7,11 +7,15 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Stack;
 
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.VR;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -32,11 +36,11 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final StringBuffer sb = new StringBuffer();    
     private final Stack sqStack = new Stack();
-    private AttributeSet attrs;
+    private DicomObject attrs;
     private int tag;
     private VR vr;
 
-    public ContentHandlerAdapter(AttributeSet attrs) {
+    public ContentHandlerAdapter(DicomObject attrs) {
         this.attrs = attrs;
     }
 
@@ -85,10 +89,10 @@ public class ContentHandlerAdapter extends DefaultHandler {
             sqStack.push(vr == VR.SQ ? attrs.putSequence(tag) 
                     : attrs.putFragments(tag, vr, false));
         case EXPECT_NEXT_ITEM:
-            Attribute sq = (Attribute) sqStack.peek();
+            DicomElement sq = (DicomElement) sqStack.peek();
             if (sq.vr() == VR.SQ) {
-                AttributeSet parent = attrs;
-                attrs = new BasicAttributeSet();
+                DicomObject parent = attrs;
+                attrs = new BasicDicomObject();
                 attrs.setParent(parent);
                 if (offStr != null) {
                     attrs.setItemOffset(Long.parseLong(offStr));
@@ -110,7 +114,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             attrs = attrs.getParent();
             break;
         case EXPECT_FRAG:
-            Attribute sq = (Attribute) sqStack.peek();
+            DicomElement sq = (DicomElement) sqStack.peek();
             byte[] data =  sq.vr().parseXMLValue(sb, out, true, null);
             sq.addBytes(data);
             sb.setLength(0);

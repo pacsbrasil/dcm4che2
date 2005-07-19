@@ -1,4 +1,4 @@
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.TestCase;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.xml.sax.SAXException;
 
 public class ContentHandlerAdapterTest extends TestCase {
@@ -30,7 +31,7 @@ public class ContentHandlerAdapterTest extends TestCase {
             throws SAXException, IOException, ParserConfigurationException {
         SAXParserFactory f = SAXParserFactory.newInstance();
         SAXParser p = f.newSAXParser();
-        BasicAttributeSet attrs = new BasicAttributeSet();
+        BasicDicomObject attrs = new BasicDicomObject();
         ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
         p.parse(locateFile("sr_511_ct-1.xml"), ch);
         assertEquals("ISO639_2", attrs.getString("/0040A730/0040A168/00080102"));

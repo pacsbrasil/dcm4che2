@@ -7,13 +7,16 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.util.IntHashtable;
 
 /**
@@ -25,7 +28,7 @@ import org.dcm4che2.util.IntHashtable;
 public class DicomDirReader {
 	protected final RandomAccessFile raf;
 	protected DicomInputStream in;
-	protected AttributeSet fileSetInfo;
+	protected DicomObject fileSetInfo;
 	protected boolean showInactiveRecords;
 	protected IntHashtable cache = new IntHashtable();
 	
@@ -41,7 +44,7 @@ public class DicomDirReader {
 		cache.clear();
 	}
 	
-	public AttributeSet getFileSetInfo()
+	public DicomObject getFileSetInfo()
 			throws IOException {
 		init();
 		return fileSetInfo;
@@ -61,17 +64,17 @@ public class DicomDirReader {
 			return;
 		in = new DicomInputStream(raf);
 		in.setHandler(new StopTagInputHandler(Tag.DirectoryRecordSequence));
-		fileSetInfo = new BasicAttributeSet();
-		in.readAttributeSet(fileSetInfo, -1);
+		fileSetInfo = new BasicDicomObject();
+		in.readDicomObject(fileSetInfo, -1);
 		in.setHandler(in);
 	}
 	
-	public AttributeSet findFirstRootRecord()
+	public DicomObject findFirstRootRecord()
 			throws IOException {
 		return findFirstMatchingRootRecord(null, false);
 	}
 
-	public AttributeSet findFirstMatchingRootRecord(AttributeSet keys,
+	public DicomObject findFirstMatchingRootRecord(DicomObject keys,
 			boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
@@ -80,13 +83,13 @@ public class DicomDirReader {
 					keys, ignoreCaseOfPN);
 	}
 
-	public AttributeSet findNextSiblingRecord(AttributeSet prevRecord)
+	public DicomObject findNextSiblingRecord(DicomObject prevRecord)
 			throws IOException {
 		return findNextMatchingSiblingRecord(prevRecord, null, false);
 	}
 	
-	public AttributeSet findNextMatchingSiblingRecord(AttributeSet prevRecord,
-			AttributeSet keys, boolean ignoreCaseOfPN)
+	public DicomObject findNextMatchingSiblingRecord(DicomObject prevRecord,
+			DicomObject keys, boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(prevRecord.getInt(
@@ -94,13 +97,13 @@ public class DicomDirReader {
 					keys, ignoreCaseOfPN);
 	}
 
-	public AttributeSet findFirstChildRecord(AttributeSet parentRecord)
+	public DicomObject findFirstChildRecord(DicomObject parentRecord)
 			throws IOException {
 		return findFirstMatchingChildRecord(parentRecord, null, false);
 	}
 
-	public AttributeSet findFirstMatchingChildRecord(AttributeSet parentRecord,
-			AttributeSet keys, boolean ignoreCaseOfPN)
+	public DicomObject findFirstMatchingChildRecord(DicomObject parentRecord,
+			DicomObject keys, boolean ignoreCaseOfPN)
 			throws IOException {
 		init();
 		return readRecord(parentRecord.getInt(
@@ -108,16 +111,16 @@ public class DicomDirReader {
 				keys, ignoreCaseOfPN);
 	}
 
-	private AttributeSet readRecord(int offset, AttributeSet keys,
+	private DicomObject readRecord(int offset, DicomObject keys,
 			boolean ignoreCaseOfPN)
 			throws IOException {
 		while (offset != 0) {
-			AttributeSet item = (AttributeSet) cache.get(offset);
+			DicomObject item = (DicomObject) cache.get(offset);
 			if (item == null) {
 				final long l = offset & 0xffffffffL;
 				raf.seek(l);
 				in.setStreamPosition(l);
-				item = new BasicAttributeSet();
+				item = new BasicDicomObject();
 				in.readItem(item);
 				cache.put(offset, item);
 			}

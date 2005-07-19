@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.util.IntHashtable;
 import org.dcm4che2.util.TagUtils;
 
-public class BasicAttributeSet extends AbstractAttributeSet {
+public class BasicDicomObject extends AbstractDicomObject {
 
 	private static final long serialVersionUID = 1L;
 
@@ -25,11 +25,11 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private static final int INIT_SEQUENCE_CAPACITY = 10;
 
-	private static final Logger log = Logger.getLogger(BasicAttributeSet.class);
+	private static final Logger log = Logger.getLogger(BasicDicomObject.class);
 
 	private transient final IntHashtable table;
 
-	private transient AttributeSet parent;
+	private transient DicomObject parent;
 
 	private transient TransferSyntax ts = TransferSyntax.ImplicitVRLittleEndian;
 
@@ -43,11 +43,11 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 
 	private transient boolean cachePut = false;
 
-	public BasicAttributeSet() {
+	public BasicDicomObject() {
 		this(10);
 	}
 
-	public BasicAttributeSet(int capacity) {
+	public BasicDicomObject(int capacity) {
 		this.table = new IntHashtable(capacity);
 	}
 	
@@ -63,7 +63,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public final void cacheGet(final boolean cacheGet) {
 		this.cacheGet = cacheGet;
 		accept(new Visitor(){
-			public boolean visit(Attribute attr) {
+			public boolean visit(DicomElement attr) {
 				if (attr.vr() == VR.SQ && attr.hasItems()) {
 					for (int i = 0, n = attr.countItems(); i < n; ++i) {
 						attr.getItem(i).cacheGet(cacheGet);
@@ -80,7 +80,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public final void cachePut(final boolean cachePut) {
 		this.cachePut = cachePut;
 		accept(new Visitor(){
-			public boolean visit(Attribute attr) {
+			public boolean visit(DicomElement attr) {
 				if (attr.vr() == VR.SQ && attr.hasItems()) {
 					for (int i = 0, n = attr.countItems(); i < n; ++i) {
 						attr.getItem(i).cachePut(cachePut);
@@ -98,10 +98,10 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return resolvePrivateTagInternal(privateTag, privateCreatorID, true);
 	}
 
-	public void shareAttributes() {
+	public void share() {
 		table.accept(new IntHashtable.Visitor() {
 			public boolean visit(int key, Object value) {
-				table.put(key, ((Attribute) value).share());
+				table.put(key, ((DicomElement) value).share());
 				return true;
 			}
 		});
@@ -120,15 +120,15 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return table.iterator(fromTag, toTag);
 	}
 
-	public final AttributeSet getParent() {
+	public final DicomObject getParent() {
 		return parent;
 	}
 
-	public final void setParent(AttributeSet parent) {
+	public final void setParent(DicomObject parent) {
 		this.parent = parent;
 	}
 
-	public AttributeSet getRoot() {
+	public DicomObject getRoot() {
 		return parent == null ? this : parent.getRoot();
 	}
 
@@ -205,7 +205,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	}
 
 	private String getAndCacheString(int creatorIDtag) {
-		Attribute a = getAttribute(creatorIDtag);
+		DicomElement a = get(creatorIDtag);
 		return a == null ? null : a.getString(getSpecificCharacterSet(), true);
 	}
 
@@ -222,7 +222,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			if (id == null) {
 				if (!reserve)
 					return -1;
-				add(new BasicAttribute(idTag, VR.LO, false, VR.LO.toBytes(
+				addInternal(new BasicDicomElement(idTag, VR.LO, false, VR.LO.toBytes(
 						privateCreator, false, getSpecificCharacterSet()), 
 						privateCreator));
 				break;
@@ -247,12 +247,12 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return table.get(tag) != null;
 	}
 
-	public Attribute getAttribute(int tag) {
-		return (Attribute) table.get(tag);
+	public DicomElement get(int tag) {
+		return (DicomElement) table.get(tag);
 	}
 
-	public Attribute removeAttribute(int tag) {
-		Attribute attr = (Attribute) table.remove(tag);
+	public DicomElement remove(int tag) {
+		DicomElement attr = (DicomElement) table.remove(tag);
 		if (attr != null) {
 			if (tag == Tag.SpecificCharacterSet) {
 				charset = null;
@@ -261,7 +261,7 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		return attr;
 	}
 
-	Attribute add(Attribute a) {
+	DicomElement addInternal(DicomElement a) {
 		final int tag = a.tag();
 		if ((tag & 0x0000ffff) == 0) {
 			// do not include group length elements
@@ -280,10 +280,10 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof AttributeSet)) {
+		if (!(o instanceof DicomObject)) {
 			return false;
 		}
-		AttributeSet other = (AttributeSet) o;
+		DicomObject other = (DicomObject) o;
 		Iterator it = iterator();
 		Iterator otherIt = other.iterator();
 		while (it.hasNext() && otherIt.hasNext()) {
@@ -296,19 +296,19 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 	public boolean accept(final Visitor visitor) {
 		return table.accept(new IntHashtable.Visitor() {
 			public boolean visit(int key, Object value) {
-				return visitor.visit((Attribute) value);
+				return visitor.visit((DicomElement) value);
 			}
 		});
 	}
 
-	public void addAttribute(Attribute a) {
+	public void add(DicomElement a) {
 		if (a.hasItems()) {
 			final int n = a.countItems();
-			Attribute t;
+			DicomElement t;
 			if (a.vr() == VR.SQ) {
 				t = putSequence(a.tag(), n);
 				for (int i = 0; i < n; i++) {
-					BasicAttributeSet item = new BasicAttributeSet(n);
+					BasicDicomObject item = new BasicDicomObject(n);
 					item.setParent(this);
 					a.getItem(i).copyTo(item);
 					t.addItem(item);
@@ -321,107 +321,107 @@ public class BasicAttributeSet extends AbstractAttributeSet {
 			}
 			a = t;
 		}
-		add(a);
+		addInternal(a);
 	}
 
-	public Attribute putNull(int tag, VR vr) {
-		return add(new BasicAttribute(tag, vr, false, null, null));
+	public DicomElement putNull(int tag, VR vr) {
+		return addInternal(new BasicDicomElement(tag, vr, false, null, null));
 	}
 
-	public Attribute putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
-		return add(new BasicAttribute(tag, vr, bigEndian, val, null));
+	public DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
+		return addInternal(new BasicDicomElement(tag, vr, bigEndian, val, null));
 	}
 
-	public Attribute putItem(int tag, AttributeSet item) {
-		Attribute a = putSequence(tag, 1);
+	public DicomElement putItem(int tag, DicomObject item) {
+		DicomElement a = putSequence(tag, 1);
 		a.addItem(item);
 		return a;
 	}
 
-	public Attribute putInt(int tag, VR vr, int val) {
+	public DicomElement putInt(int tag, VR vr, int val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Integer(val) : null));
 	}
 
-	public Attribute putInts(int tag, VR vr, int[] val) {
+	public DicomElement putInts(int tag, VR vr, int[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
-	public Attribute putFloat(int tag, VR vr, float val) {
+	public DicomElement putFloat(int tag, VR vr, float val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Float(val) : null));
 	}
 
-	public Attribute putFloats(int tag, VR vr, float[] val) {
+	public DicomElement putFloats(int tag, VR vr, float[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
-	public Attribute putDouble(int tag, VR vr, double val) {
+	public DicomElement putDouble(int tag, VR vr, double val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Double(val) : null));
 	}
 
-	public Attribute putDoubles(int tag, VR vr, double[] val) {
+	public DicomElement putDoubles(int tag, VR vr, double[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
-	public Attribute putString(int tag, VR vr, String val) {
+	public DicomElement putString(int tag, VR vr, String val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val,
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
 				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
-	public Attribute putStrings(int tag, VR vr, String[] val) {
+	public DicomElement putStrings(int tag, VR vr, String[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
-		return add(new BasicAttribute(tag, vr, be, vr.toBytes(val,
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
 				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
-	public Attribute putDate(int tag, VR vr, Date val) {
+	public DicomElement putDate(int tag, VR vr, Date val) {
 		// no cache of given Date object, to avoid problems
 		// with non-zero values for unsignifcant fields
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val), null));
+		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 
-	public Attribute putDates(int tag, VR vr, Date[] val) {
+	public DicomElement putDates(int tag, VR vr, Date[] val) {
 		// no cache of given Date objects, to avoid problems
 		// with non-zero values for unsignifcant fields
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val), null));
+		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 
-	public Attribute putDateRange(int tag, VR vr, DateRange val) {
+	public DicomElement putDateRange(int tag, VR vr, DateRange val) {
 		// no cache of given DateRange object, to avoid problems
 		// with non-zero values for unsignifcant fields
-		return add(new BasicAttribute(tag, vr, false, vr.toBytes(val), null));
+		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 	
-	public Attribute putSequence(int tag) {
+	public DicomElement putSequence(int tag) {
 		return putSequence(tag, 10);
 	}
 
-	public Attribute putSequence(int tag, int capacity) {
-		return add(new BasicAttribute(tag, VR.SQ, false,
+	public DicomElement putSequence(int tag, int capacity) {
+		return addInternal(new BasicDicomElement(tag, VR.SQ, false,
 				new ArrayList(capacity), null));
 	}
 
-	public Attribute putFragments(int tag, VR vr, boolean bigEndian) {
+	public DicomElement putFragments(int tag, VR vr, boolean bigEndian) {
 		return putFragments(tag, vr, bigEndian, INIT_FRAGMENT_CAPACITY);
 	}
 
-	public Attribute putFragments(int tag, VR vr, boolean bigEndian,
+	public DicomElement putFragments(int tag, VR vr, boolean bigEndian,
 			int capacity) {
 		if (!(vr instanceof VR.Fragment))
 			throw new UnsupportedOperationException();
-		return add(new BasicAttribute(tag, vr, bigEndian, new ArrayList(
+		return addInternal(new BasicDicomElement(tag, vr, bigEndian, new ArrayList(
 				capacity), null));
 	}
 

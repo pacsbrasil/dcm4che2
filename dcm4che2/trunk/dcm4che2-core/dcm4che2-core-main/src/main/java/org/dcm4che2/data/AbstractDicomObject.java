@@ -18,34 +18,34 @@ import java.util.regex.Pattern;
 
 import org.dcm4che2.util.DateUtils;
 
-abstract class AbstractAttributeSet implements AttributeSet {
+abstract class AbstractDicomObject implements DicomObject {
 		
 	protected Object writeReplace() throws ObjectStreamException {
-		return new AttributeSetSerializer(this);
+		return new DicomObjectSerializer(this);
 	}
 
-	public void serializeAttributes(ObjectOutputStream oos)
+	public void serializeElements(ObjectOutputStream oos)
 			throws IOException {
-		oos.writeObject(new AttributeSerializer(this));
+		oos.writeObject(new ElementSerializer(this));
 	}
 	
-	public void copyTo(final AttributeSet dest) {
+	public void copyTo(final DicomObject dest) {
 		accept(new Visitor(){
-			public boolean visit(Attribute attr) {
-				dest.addAttribute(attr);
+			public boolean visit(DicomElement attr) {
+				dest.add(attr);
 				return true;
 			}});		
 	}
 
-	public boolean matches(final AttributeSet keys, final boolean ignoreCaseOfPN) {
+	public boolean matches(final DicomObject keys, final boolean ignoreCaseOfPN) {
 		return keys.accept(new Visitor(){
-			public boolean visit(Attribute test) {
+			public boolean visit(DicomElement test) {
 				if (test.isNull()) // Universal Matching
 					return true;
 				final int tag = test.tag();
-				Attribute attr = getAttribute(tag);
+				DicomElement attr = get(tag);
 				if (attr == null || attr.isNull())
-					return true;	// Missing Attribute (Value) match always
+					return true;	// Missing DicomElement (Value) match always
 				
 				final VR vr = test.vr();
 				if (vr instanceof VR.Fragment)
@@ -106,7 +106,7 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		return true;
 	}
 
-	private boolean matchSQ(Attribute sq, AttributeSet keys, boolean ignoreCaseOfPN) {
+	private boolean matchSQ(DicomElement sq, DicomObject keys, boolean ignoreCaseOfPN) {
 		if (keys.isEmpty())
 			return true;
 		for (int i = 0, n = sq.countItems(); i < n; i++) {
@@ -122,7 +122,7 @@ abstract class AbstractAttributeSet implements AttributeSet {
     
 	public boolean isEmpty() {
 		return accept(new Visitor(){
-			public boolean visit(Attribute attr) {
+			public boolean visit(DicomElement attr) {
 				return false;
 			}});
 	}
@@ -130,7 +130,7 @@ abstract class AbstractAttributeSet implements AttributeSet {
 	public int size() {
 		final int[] count = { 0 };
 		accept(new Visitor(){
-			public boolean visit(Attribute attr) {
+			public boolean visit(DicomElement attr) {
 				++count[0];
 				return true;
 			}});
@@ -149,147 +149,147 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		return iterator(0x00030000, 0xffffffff);
 	}
 	
-	public AttributeSet command() {
+	public DicomObject command() {
 		return subSet(0x00000000, 0x0000ffff);
 	}
 	
-	public AttributeSet dataset() {
+	public DicomObject dataset() {
 		return subSet(0x00030000, 0xffffffff);		
 	}
 	
-	public AttributeSet fileMetaInfo() {
+	public DicomObject fileMetaInfo() {
 		return subSet(0x00020000, 0x0002ffff);
 	}
 	
-	public AttributeSet exclude(int[] tags) {
+	public DicomObject exclude(int[] tags) {
 		return tags != null && tags.length > 0 ?
-				new FilteredAttributeSet.Exclude(this, tags) : this;
+				new FilteredDicomObject.Exclude(this, tags) : this;
 	}
 
-	public AttributeSet excludePrivate() {
-		return new FilteredAttributeSet.ExcludePrivate(this);
+	public DicomObject excludePrivate() {
+		return new FilteredDicomObject.ExcludePrivate(this);
 	}
 
-	public AttributeSet subSet(AttributeSet filter) {
+	public DicomObject subSet(DicomObject filter) {
 		return filter != null ?
-				new FilteredAttributeSet.FilterSet(this, filter) : null;
+				new FilteredDicomObject.FilterSet(this, filter) : null;
 	}
 
-	public AttributeSet subSet(int fromTag, int toTag) {
-		return new FilteredAttributeSet.Range(this, fromTag, toTag);
+	public DicomObject subSet(int fromTag, int toTag) {
+		return new FilteredDicomObject.Range(this, fromTag, toTag);
 	}
 
-	public AttributeSet subSet(int[] tags) {
+	public DicomObject subSet(int[] tags) {
 		return tags != null && tags.length > 0 ?
-				new FilteredAttributeSet.Include(this, tags) : this;
+				new FilteredDicomObject.Include(this, tags) : this;
 	}
 
 	public boolean containsValue(int tag) {
-		Attribute attr = getAttribute(tag);
+		DicomElement attr = get(tag);
 		return attr != null && !attr.isNull();
 	}
 
 	public byte[] getBytes(int tag, boolean bigEndian) {
-		return toBytes(getAttribute(tag), bigEndian);
+		return toBytes(get(tag), bigEndian);
 	}
 
-    private byte[] toBytes(Attribute a, boolean bigEndian) {
+    private byte[] toBytes(DicomElement a, boolean bigEndian) {
         return a == null ? null : a.bigEndian(bigEndian).getBytes();
     }
 
-	public AttributeSet getItem(int tag) {
-		Attribute a = getAttribute(tag);
+	public DicomObject getItem(int tag) {
+		DicomElement a = get(tag);
 		return a == null && !a.isNull() ? null : a.getItem();
 	}
 
 	public int getInt(int tag) {
-		return toInt(getAttribute(tag));
+		return toInt(get(tag));
 	}
 
-    private int toInt(Attribute a) {
+    private int toInt(DicomElement a) {
         return a == null ? 0 : a.getInt(cacheGet());
     }
 
 	public int[] getInts(int tag) {
-		return toInts(getAttribute(tag));
+		return toInts(get(tag));
 	}
 
-    private int[] toInts(Attribute a) {
+    private int[] toInts(DicomElement a) {
         return a == null ? null : a.getInts(cacheGet());
     }
 
 	public float getFloat(int tag) {
-		return toFloat(getAttribute(tag));
+		return toFloat(get(tag));
 	}
 
-    private float toFloat(Attribute a) {
+    private float toFloat(DicomElement a) {
         return a == null ? 0f : a.getFloat(cacheGet());
     }
 
 	public float[] getFloats(int tag) {
-		return toFloats(getAttribute(tag));
+		return toFloats(get(tag));
 	}
 
-    private float[] toFloats(Attribute a) {
+    private float[] toFloats(DicomElement a) {
         return a == null ? null : a.getFloats(cacheGet());
     }
 
 	public double getDouble(int tag) {
-		return toDouble(getAttribute(tag));
+		return toDouble(get(tag));
 	}
 
-    private double toDouble(Attribute a) {
+    private double toDouble(DicomElement a) {
         return a == null ? 0. : a.getDouble(cacheGet());
     }
 
 	public double[] getDoubles(int tag) {
-		return toDoubles(getAttribute(tag));
+		return toDoubles(get(tag));
 	}
 
-    private double[] toDoubles(Attribute a) {
+    private double[] toDoubles(DicomElement a) {
         return a == null ? null : a.getDoubles(cacheGet());
     }
 
 	public String getString(int tag) {
-		return toString(getAttribute(tag));
+		return toString(get(tag));
 	}
 
-    private String toString(Attribute a) {
+    private String toString(DicomElement a) {
         return a == null ? null 
                 : a.getString(getSpecificCharacterSet(), cacheGet());
     }
 
 	public String[] getStrings(int tag) {
-		return toStrings(getAttribute(tag));
+		return toStrings(get(tag));
 	}
 
-    private String[] toStrings(Attribute a) {
+    private String[] toStrings(DicomElement a) {
         return a == null ? null
                 : a.getStrings(getSpecificCharacterSet(), cacheGet());
     }
 
 	public Date getDate(int tag) {
-		return toDate(getAttribute(tag));
+		return toDate(get(tag));
 	}
 
-    private Date toDate(Attribute a) {
+    private Date toDate(DicomElement a) {
         return a == null ? null : a.getDate(cacheGet());
     }
 
 	public Date[] getDates(int tag) {
-		return toDates(getAttribute(tag));
+		return toDates(get(tag));
 	}
 
-    private Date[] toDates(Attribute a) {
+    private Date[] toDates(DicomElement a) {
         return a == null ? null : a.getDates(cacheGet());
     }
 
 	public DateRange getDateRange(int tag) {
-		Attribute a = getAttribute(tag);
+		DicomElement a = get(tag);
 		return toDateRange(a);
 	}
 
-    private DateRange toDateRange(Attribute a) {
+    private DateRange toDateRange(DicomElement a) {
         return a == null ? null : a.getDateRange(cacheGet());
     }
 
@@ -320,24 +320,24 @@ abstract class AbstractAttributeSet implements AttributeSet {
 				DateUtils.toDateTime(da.getEnd(), tm.getEnd()));
 	}
 
-    public Attribute getAttribute(int[] tagPath) {
+    public DicomElement get(int[] tagPath) {
         if ((tagPath.length & 1) == 0) {
             throw new IllegalArgumentException("tagPath.length: "
                     + tagPath.length);
         }
         final int last = tagPath.length - 1;
-        final AttributeSet item = getItem(tagPath, last);
-        return item != null ? item.getAttribute(tagPath[last]) : null;        
+        final DicomObject item = getItem(tagPath, last);
+        return item != null ? item.get(tagPath[last]) : null;        
     }
     
-    public Attribute getAttribute(String tagPath) {
+    public DicomElement get(String tagPath) {
         int endItemPath = tagPath.lastIndexOf('/');
-        final AttributeSet item = 
+        final DicomObject item = 
                 endItemPath == -1 ? this :
                 endItemPath == 0 ? getRoot() : 
                 getItem(tagPath.substring(0, endItemPath));
         return item != null 
-                ? item.getAttribute(parseTag(tagPath.substring(endItemPath+1)))
+                ? item.get(parseTag(tagPath.substring(endItemPath+1)))
                 : null;
     }
 
@@ -345,7 +345,7 @@ abstract class AbstractAttributeSet implements AttributeSet {
         return (int) Long.parseLong(tag, 16);
     }
     
-	public AttributeSet getItem(int[] itemPath) {
+	public DicomObject getItem(int[] itemPath) {
         if ((itemPath.length & 1) != 0) {
             throw new IllegalArgumentException("itemPath.length: "
                     + itemPath.length);
@@ -353,10 +353,10 @@ abstract class AbstractAttributeSet implements AttributeSet {
         return getItem(itemPath, itemPath.length);
     }
     
-    private AttributeSet getItem(int[] itemPath, int pathLen) {
-		AttributeSet item = this;
+    private DicomObject getItem(int[] itemPath, int pathLen) {
+		DicomObject item = this;
 		for (int i = 0; i < pathLen; ++i, ++i) {
-			Attribute sq = item.getAttribute(itemPath[i]);
+			DicomElement sq = item.get(itemPath[i]);
 			if (sq == null || !sq.hasItems() || sq.countItems() < itemPath[i+1])
 				return null;
 			item = sq.getItem(itemPath[i+1]);
@@ -364,7 +364,7 @@ abstract class AbstractAttributeSet implements AttributeSet {
 		return item;
 	}
 
-    public AttributeSet getItem(String itemPath) {
+    public DicomObject getItem(String itemPath) {
         if (itemPath.length() == 0)
             return this;
         if (itemPath.equals("/"))
@@ -377,7 +377,7 @@ abstract class AbstractAttributeSet implements AttributeSet {
             index = Integer.parseInt(
                     itemPath.substring(endTagPath+1, itemPath.length() -1)) - 1;
         }
-        Attribute sq = getAttribute(tagPath);
+        DicomElement sq = get(tagPath);
         if (sq == null)
             return null;
         if (sq.countItems() <= index)
@@ -386,128 +386,128 @@ abstract class AbstractAttributeSet implements AttributeSet {
     }
             
     public byte[] getBytes(int[] tagPath, boolean bigEndian) {
-        return toBytes(getAttribute(tagPath), bigEndian);
+        return toBytes(get(tagPath), bigEndian);
 	}
 
     public byte[] getBytes(String tagPath, boolean bigEndian) {
-        return toBytes(getAttribute(tagPath), bigEndian);
+        return toBytes(get(tagPath), bigEndian);
     }
     
 	public int getInt(int[] tagPath) {
-        return toInt(getAttribute(tagPath));
+        return toInt(get(tagPath));
 	}
 	
     public int getInt(String tagPath) {
-        return toInt(getAttribute(tagPath));
+        return toInt(get(tagPath));
     }
     
 	public int[] getInts(int[] tagPath) {
-        return toInts(getAttribute(tagPath));
+        return toInts(get(tagPath));
 	}
 	
     public int[] getInts(String tagPath) {
-        return toInts(getAttribute(tagPath));
+        return toInts(get(tagPath));
     }
     
 	public float getFloat(int[] tagPath) {
-        return toFloat(getAttribute(tagPath));
+        return toFloat(get(tagPath));
 	}
 	
     public float getFloat(String tagPath) {
-        return toFloat(getAttribute(tagPath));
+        return toFloat(get(tagPath));
     }
     
 	public float[] getFloats(int[] tagPath) {
-        return toFloats(getAttribute(tagPath));
+        return toFloats(get(tagPath));
 	}
 	
     public float[] getFloats(String tagPath) {
-        return toFloats(getAttribute(tagPath));
+        return toFloats(get(tagPath));
     }
     
 	public double getDouble(int[] tagPath) {
-        return toDouble(getAttribute(tagPath));
+        return toDouble(get(tagPath));
 	}
 	
     public double getDouble(String tagPath) {
-        return toDouble(getAttribute(tagPath));
+        return toDouble(get(tagPath));
     }
     
 	public double[] getDoubles(int[] tagPath) {
-        return toDoubles(getAttribute(tagPath));
+        return toDoubles(get(tagPath));
 	}
 	
     public double[] getDoubles(String tagPath) {
-        return toDoubles(getAttribute(tagPath));
+        return toDoubles(get(tagPath));
     }
     
 	public String getString(int[] tagPath) {
-        return toString(getAttribute(tagPath));
+        return toString(get(tagPath));
 	}
 	
     public String getString(String tagPath) {
-        return toString(getAttribute(tagPath));
+        return toString(get(tagPath));
     }
     
 	public String[] getStrings(int[] tagPath) {
-        return toStrings(getAttribute(tagPath));
+        return toStrings(get(tagPath));
 	}
 	
     public String[] getStrings(String tagPath) {
-        return toStrings(getAttribute(tagPath));
+        return toStrings(get(tagPath));
     }
     
 	public Date getDate(int[] tagPath) {
-        return toDate(getAttribute(tagPath));
+        return toDate(get(tagPath));
 	}
 	
     public Date getDate(String tagPath) {
-        return toDate(getAttribute(tagPath));
+        return toDate(get(tagPath));
     }
     
 	public Date[] getDates(int[] tagPath) {
-        return toDates(getAttribute(tagPath));
+        return toDates(get(tagPath));
 	}
 	
     public Date[] getDates(String tagPath) {
-        return toDates(getAttribute(tagPath));
+        return toDates(get(tagPath));
     }
     
 	public DateRange getDateRange(int[] tagPath) {
-        return toDateRange(getAttribute(tagPath));
+        return toDateRange(get(tagPath));
 	}
 	
     public DateRange getDateRange(String tagPath) {
-        return toDateRange(getAttribute(tagPath));
+        return toDateRange(get(tagPath));
     }
     
 	public Date getDate(int[] itemPath, int daTag, int tmTag) {
-        final AttributeSet item = getItem(itemPath);
+        final DicomObject item = getItem(itemPath);
 		return item != null ? item.getDate(daTag, tmTag) : null;		
 	}
 	
     public Date getDate(String itemPath, int daTag, int tmTag) {
-        final AttributeSet item = getItem(itemPath);
+        final DicomObject item = getItem(itemPath);
         return item != null ? item.getDate(daTag, tmTag) : null;        
     }
     
 	public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
-        final AttributeSet item = getItem(itemPath);
+        final DicomObject item = getItem(itemPath);
 		return item != null ? item.getDates(daTag, tmTag) : null;				
 	}
 	
     public Date[] getDates(String itemPath, int daTag, int tmTag) {
-        final AttributeSet item = getItem(itemPath);
+        final DicomObject item = getItem(itemPath);
         return item != null ? item.getDates(daTag, tmTag) : null;               
     }
     
 	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
-        final AttributeSet item = getItem(itemPath);
+        final DicomObject item = getItem(itemPath);
 		return item != null ? item.getDateRange(daTag, tmTag) : null;				
 	}
 
     public DateRange getDateRange(String itemPath, int daTag, int tmTag) {
-        final AttributeSet item = getItem(itemPath);
+        final DicomObject item = getItem(itemPath);
         return item != null ? item.getDateRange(daTag, tmTag) : null;               
     }
 }

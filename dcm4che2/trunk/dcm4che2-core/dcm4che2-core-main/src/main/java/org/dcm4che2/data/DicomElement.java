@@ -13,22 +13,22 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-public interface Attribute extends Serializable {
+public interface DicomElement extends Serializable {
 	int tag();
 	VR vr();
 	boolean bigEndian();
-	Attribute bigEndian(boolean bigEndian);
+	DicomElement bigEndian(boolean bigEndian);
 	int length();
 	boolean isNull();
 	boolean hasItems();
 	int countItems();
 	byte[] getBytes();
-	AttributeSet getItem();
-	AttributeSet getItem(int index);
-	AttributeSet removeItem(int index);
-	AttributeSet addItem(AttributeSet item);
-	AttributeSet addItem(int index, AttributeSet item);
-	AttributeSet setItem(int index, AttributeSet item);
+	DicomObject getItem();
+	DicomObject getItem(int index);
+	DicomObject removeItem(int index);
+	DicomObject addItem(DicomObject item);
+	DicomObject addItem(int index, DicomObject item);
+	DicomObject setItem(int index, DicomObject item);
 	byte[] getBytes(int index);
 	byte[] removeBytes(int index);
 	byte[] addBytes(byte[] b);
@@ -47,6 +47,6 @@ public interface Attribute extends Serializable {
 	DateRange getDateRange(boolean cache);
 	Pattern getPattern(SpecificCharacterSet cs, boolean ignoreCase,
 			boolean cache);
-    Attribute share();
-	Attribute filterItems(AttributeSet filter);
+    DicomElement share();
+	DicomElement filterItems(DicomObject filter);
 }

@@ -15,15 +15,16 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-class AttributeSetSerializer implements Serializable {
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.io.DicomOutputStream;
+
+class DicomObjectSerializer implements Serializable {
 
 	private static final long serialVersionUID = 3257002159626139955L;
 
-	private transient AttributeSet attrs;
+	private transient DicomObject attrs;
 
-	private static final int ITEM_DELIM_TAG = 0xfffee00d;
-		
-	public AttributeSetSerializer(AttributeSet attrs) {
+	public DicomObjectSerializer(DicomObject attrs) {
 		this.attrs = attrs;
 	}
 		
@@ -36,8 +37,7 @@ class AttributeSetSerializer implements Serializable {
 			throws IOException {
 		s.defaultWriteObject();
 		DicomOutputStream dos = new DicomOutputStream(s);
-		dos.writeAttributes(attrs.iterator(), false, null);
-		dos.writeHeader(ITEM_DELIM_TAG, null, 0);
+		dos.writeDicomObject(attrs);
 	}
 
 	private void readObject(ObjectInputStream s)
@@ -46,7 +46,7 @@ class AttributeSetSerializer implements Serializable {
 		DicomInputStream dis = 
 				new DicomInputStream(s, TransferSyntax.ExplicitVRLittleEndian);
 		
-		attrs = new BasicAttributeSet();
-		dis.readAttributeSet(attrs, -1);
+		attrs = new BasicDicomObject();
+		dis.readDicomObject(attrs, -1);
 	}
 }

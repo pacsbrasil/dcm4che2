@@ -7,7 +7,7 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -21,6 +21,13 @@ import java.util.ArrayList;
 import java.util.zip.InflaterInputStream;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomElement;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.TagUtils;
 
@@ -33,7 +40,7 @@ public class DicomInputStream extends FilterInputStream implements
 
 	TransferSyntax ts;
 
-	AttributeSet attrs;
+	DicomObject attrs;
 
 	ArrayList sqStack;
 
@@ -108,15 +115,15 @@ public class DicomInputStream extends FilterInputStream implements
 		return vr;
 	}
     
-    public final Attribute sq() {
-        return (Attribute) sqStack.get(sqStack.size() - 1);
+    public final DicomElement sq() {
+        return (DicomElement) sqStack.get(sqStack.size() - 1);
     }
     
     public final TransferSyntax getTransferSyntax() {
         return ts;
     }
 
-    public final AttributeSet getAttributeSet() {
+    public final DicomObject getDicomObject() {
         return attrs;
     }
 
@@ -223,18 +230,18 @@ public class DicomInputStream extends FilterInputStream implements
 		return tag;
 	}
 
-	public void readItem(AttributeSet dest)
+	public void readItem(DicomObject dest)
 			throws IOException {
 		dest.setItemOffset(pos);
 		if (readHeader() != Tag.Item)
 			throw new IOException("Expected (FFFE,E000) but read " 
 					+ TagUtils.toString(tag));
-		readAttributeSet(dest, vallen);
+		readDicomObject(dest, vallen);
 	}
 	
-	public void readAttributeSet(AttributeSet dest, int len)
+	public void readDicomObject(DicomObject dest, int len)
 			throws IOException {
-		AttributeSet oldAttrs = attrs;
+		DicomObject oldAttrs = attrs;
 		this.attrs = dest;
 		try {
 			parse(len, Tag.ItemDelimitationItem);
@@ -279,7 +286,7 @@ public class DicomInputStream extends FilterInputStream implements
 			throw new IllegalArgumentException("dis != this");
 		switch (tag) {
 		case Tag.Item:
-			BasicAttribute sq = (BasicAttribute) sqStack
+			BasicDicomElement sq = (BasicDicomElement) sqStack
 					.get(sqStack.size() - 1);
 			logAttr(sq.countItems() + 1, vr);
 			if (vallen == -1) {
@@ -288,10 +295,10 @@ public class DicomInputStream extends FilterInputStream implements
 				}
 			}
 			if (sq.vr() == VR.SQ) {
-				BasicAttributeSet item = new BasicAttributeSet();
+				BasicDicomObject item = new BasicDicomObject();
 				item.setParent(attrs);
 				item.setItemOffset(pos-8);
-				readAttributeSet(item, vallen);
+				readDicomObject(item, vallen);
 				sq.addItem(item);
 			} else {
 				sq.addBytes(readBytes(vallen));
@@ -323,7 +330,7 @@ public class DicomInputStream extends FilterInputStream implements
 			break;
 		default:
 			if (vallen == -1 || vr == VR.SQ) {
-				Attribute a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
+				DicomElement a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
 						.putFragments(tag, vr, ts.bigEndian());
 				logAttr(-1, a.vr());
 				if (sqStack == null) { // lazy creation
@@ -336,7 +343,7 @@ public class DicomInputStream extends FilterInputStream implements
 					sqStack.remove(sqStack.size() - 1);
 				}
 			} else {
-				Attribute a = attrs.putBytes(tag, vr, ts.bigEndian(),
+				DicomElement a = attrs.putBytes(tag, vr, ts.bigEndian(),
 						readBytes(vallen));
 				logAttr(-1, a.vr());
 				if (tag == 0x00020000) {
@@ -351,7 +358,7 @@ public class DicomInputStream extends FilterInputStream implements
 		if (log.isDebugEnabled()) {
 			StringBuffer sb = new StringBuffer();
 			sb.append(tagPos).append(": ");
-			AttributeSet p = attrs;
+			DicomObject p = attrs;
 			while ((p = p.getParent()) != null)
 				sb.append('>');            
 			TagUtils.toStringBuffer(tag, sb);
@@ -394,12 +401,12 @@ public class DicomInputStream extends FilterInputStream implements
 			throws IOException {
 		if (logmem)
 			logmem();
-		AttributeSet dataset;
+		DicomObject dataset;
 		for (int i = 0; i < args.length; i++) {
 			File f = new File(args[i]);
 			DicomInputStream dis = new DicomInputStream(f);
-			dataset = new BasicAttributeSet();
-			dis.readAttributeSet(dataset, -1);
+			dataset = new BasicDicomObject();
+			dis.readDicomObject(dataset, -1);
 			dis.close();
 			if (logmem)
 				logmem();

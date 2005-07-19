@@ -1,4 +1,4 @@
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,10 @@ import javax.xml.transform.stream.StreamResult;
 
 import junit.framework.TestCase;
 
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.io.SAXWriter;
 import org.xml.sax.SAXException;
 
 public class SAXWriterTest extends TestCase {
@@ -34,8 +38,8 @@ public class SAXWriterTest extends TestCase {
             throws IOException, TransformerConfigurationException, 
             TransformerFactoryConfigurationError, SAXException {
         DicomInputStream dis = new DicomInputStream(locateFile("sr_511_ct.dcm"));
-        AttributeSet attrs = new BasicAttributeSet();
-        dis.readAttributeSet(attrs, -1);
+        DicomObject attrs = new BasicDicomObject();
+        dis.readDicomObject(attrs, -1);
         dis.close();
         File ofile = new File("target/test-out/sr_511_ct-1.xml");
         ofile.getParentFile().mkdirs();
@@ -59,8 +63,8 @@ public class SAXWriterTest extends TestCase {
         SAXWriter w = new SAXWriter(th, th);
         DicomInputStream dis = new DicomInputStream(locateFile("sr_511_ct.dcm"));
         dis.setHandler(w);
-        AttributeSet attrs = new BasicAttributeSet();
-        dis.readAttributeSet(attrs, -1);
+        DicomObject attrs = new BasicDicomObject();
+        dis.readDicomObject(attrs, -1);
         dis.close();
     }
 

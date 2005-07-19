@@ -7,10 +7,15 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.io.DicomInputStream;
 
 import junit.framework.TestCase;
 
@@ -25,22 +30,22 @@ public class DicomInputStreamTest extends TestCase {
 	}
 
 	public final void testReadExplicitVRLE() throws IOException {
-		AttributeSet attrs = load("DICOMDIR");		
-		Attribute attr = attrs.getAttribute(0x00041220);
+		DicomObject attrs = load("DICOMDIR");		
+		DicomElement attr = attrs.get(0x00041220);
 		assertEquals(1203, attr.countItems());
 	}
 
 	public final void testReadRawImplicitVRLE() throws IOException {
-		AttributeSet attrs = load("OT-PAL-8-face");		
+		DicomObject attrs = load("OT-PAL-8-face");		
 	}
 	
-	private AttributeSet load(String fname) throws IOException {
+	private DicomObject load(String fname) throws IOException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		DicomInputStream dis = new DicomInputStream(
 				new BufferedInputStream(cl.getResourceAsStream(fname)));
 		try {
-			AttributeSet attrs = new BasicAttributeSet();
-			dis.readAttributeSet(attrs, -1);
+			DicomObject attrs = new BasicDicomObject();
+			dis.readDicomObject(attrs, -1);
 			return attrs;
 		} finally {
 			dis.close();

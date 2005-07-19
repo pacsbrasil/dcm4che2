@@ -1,7 +1,13 @@
-package org.dcm4che2.data;
+package org.dcm4che2.io;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomDirReader;
 
 import junit.framework.TestCase;
 
@@ -22,7 +28,7 @@ public class DicomDirReaderTest extends TestCase {
 
 	public void testFindNextSiblingRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
-		AttributeSet rec = r.findFirstRootRecord();
+		DicomObject rec = r.findFirstRootRecord();
 		int count = 0;
 		while (rec != null) {
 			rec = r.findNextSiblingRecord(rec);
@@ -34,22 +40,22 @@ public class DicomDirReaderTest extends TestCase {
 
 	public void testFindFirstMatchingRootRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
-		AttributeSet filter = new BasicAttributeSet();
+		DicomObject filter = new BasicDicomObject();
 		filter.putString(Tag.DirectoryRecordType, VR.CS, "PATIENT");
 		filter.putString(Tag.PatientsName, VR.PN, "CHEST*");
-		AttributeSet rec = r.findFirstMatchingRootRecord(filter, true);
+		DicomObject rec = r.findFirstMatchingRootRecord(filter, true);
 		assertEquals("Chest^Portable", rec.getString(Tag.PatientsName));
 	}
 
 	public void testFindNextMatchingSiblingRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
-		AttributeSet filter = new BasicAttributeSet();
+		DicomObject filter = new BasicDicomObject();
 		filter.putString(Tag.DirectoryRecordType, VR.CS, "STUDY");
 		filter.putString(Tag.StudyDate, VR.DA, "-19931213");
-		AttributeSet pat = r.findFirstRootRecord();
+		DicomObject pat = r.findFirstRootRecord();
 		int count = 0;
 		while (pat != null) {
-			AttributeSet sty = r.findFirstMatchingChildRecord(pat, filter, true);
+			DicomObject sty = r.findFirstMatchingChildRecord(pat, filter, true);
 			while (sty != null) {
 				++count;
 				sty = r.findNextMatchingSiblingRecord(sty, filter, true);
@@ -62,7 +68,7 @@ public class DicomDirReaderTest extends TestCase {
 
 	public void testFindFirstChildRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
-		AttributeSet rec = r.findFirstRootRecord();
+		DicomObject rec = r.findFirstRootRecord();
 		int count = 0;
 		while (rec != null) {
 			rec = r.findFirstChildRecord(rec);
