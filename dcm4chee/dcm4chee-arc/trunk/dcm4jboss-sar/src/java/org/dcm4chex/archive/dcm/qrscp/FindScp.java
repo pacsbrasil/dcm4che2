@@ -125,8 +125,9 @@ public class FindScp extends DcmServiceBase {
 					for (int i = 1, n = service.getMaxBlockedFindRSP();
 							i <= n && queryCmd.next(); ++i) {
 						sq.addItem(queryCmd.getDataset());
-					}					
-				}
+					}
+					data = parent;
+				}				
 				log.debug("Identifier:\n");
 				log.debug(data);
                 return data;
