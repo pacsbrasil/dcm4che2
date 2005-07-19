@@ -117,7 +117,7 @@ public interface DicomObject
 	DicomElement putSequence(int tag, int capacity);
 	DicomElement putFragments(int tag, VR vr, boolean bigEndian);
 	DicomElement putFragments(int tag, VR vr, boolean bigEndian, int capacity);
-	void share();
+	void shareElements();
 	void serializeElements(ObjectOutputStream oos) throws IOException;
 	void copyTo(DicomObject destination);
 	boolean matches(DicomObject keys, boolean ignoreCaseOfPN);

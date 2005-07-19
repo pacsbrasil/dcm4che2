@@ -104,7 +104,7 @@ public class BasicDicomElement implements DicomElement {
 			if (vr == VR.SQ) {
 				List l = (List) value;
 				for (int i = 0, n = l.size(); i < n; ++i) {
-					((DicomObject) l.get(i)).share();
+					((DicomObject) l.get(i)).shareElements();
 				}
 			}
 			return this;

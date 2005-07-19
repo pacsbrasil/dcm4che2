@@ -341,7 +341,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 		attrs.cachePut(cached);
 	}
 
-	public void share() {
+	public void shareElements() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -98,7 +98,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		return resolvePrivateTagInternal(privateTag, privateCreatorID, true);
 	}
 
-	public void share() {
+	public void shareElements() {
 		table.accept(new IntHashtable.Visitor() {
 			public boolean visit(int key, Object value) {
 				table.put(key, ((DicomElement) value).share());
