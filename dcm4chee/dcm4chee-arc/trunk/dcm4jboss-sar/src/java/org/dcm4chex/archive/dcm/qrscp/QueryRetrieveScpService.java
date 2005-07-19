@@ -49,7 +49,11 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 public class QueryRetrieveScpService extends AbstractScpService {
 
     private static final String NONE = "NONE";
-    
+
+    protected static final String[] DEFLATED_OR_NATIVE_LE_TS = {
+			UIDs.DeflatedExplicitVRLittleEndian, UIDs.ExplicitVRLittleEndian,
+            UIDs.ImplicitVRLittleEndian,};
+	
     private static String transactionIsolationLevelAsString(int level) {
         switch (level) {
         	case 0:
@@ -121,20 +125,32 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean tianiPatientStudyOnlyFind;
 
+    private boolean tianiBlockedPatientRootFind;
+
+    private boolean tianiBlockedStudyRootFind;
+
+    private boolean tianiBlockedPatientStudyOnlyFind;
+	
+    private boolean acceptDeflatedBlockedFind;
+
     private boolean patientRootMove;
 
     private boolean studyRootMove;
 
     private boolean patientStudyOnlyMove;
 
-    private FindScp dicomFindScp = new FindScp(this, true);
+    private FindScp dicomFindScp = new FindScp(this, true, false);
 
-    private FindScp tianiFindScp = new FindScp(this, false);
-    
+    private FindScp tianiFindScp = new FindScp(this, false, false);
+
+    private FindScp tianiBlockedFindScp = new FindScp(this, false, true);
+	
     private MoveScp moveScp = new MoveScp(this);
     
     private int maxUIDsPerMoveRQ = 100;
-    
+
+    private int maxBlockedFindRSP = 10000;
+	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -201,7 +217,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
         enableService();
     }
 
-    public final boolean isAcceptPatientRootMove() {
+	public final boolean isAcceptTianiBlockedPatientRootFind() {
+		return tianiBlockedPatientRootFind;
+	}
+
+	public final void setAcceptTianiBlockedPatientRootFind(boolean enable) {
+		this.tianiBlockedPatientRootFind = enable;
+        enableService();
+	}
+
+	public final boolean isAcceptPatientRootMove() {
         return patientRootMove;
     }
 
@@ -227,6 +252,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.tianiPatientStudyOnlyFind = enable;
         enableService();
     }
+
+	public final boolean isAcceptTianiBlockedPatientStudyOnlyFind() {
+		return tianiBlockedPatientStudyOnlyFind;
+	}
+
+	public final void setAcceptTianiBlockedPatientStudyOnlyFind(boolean enable) {
+		this.tianiBlockedPatientStudyOnlyFind = enable;
+        enableService();
+	}
 
     public final boolean isAcceptPatientStudyOnlyMove() {
         return patientStudyOnlyMove;
@@ -255,6 +289,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         enableService();
     }
 
+	public final boolean isAcceptTianiBlockedStudyRootFind() {
+		return tianiBlockedStudyRootFind;
+	}
+
+	public final void setAcceptTianiBlockedStudyRootFind(boolean enable) {
+		this.tianiBlockedStudyRootFind = enable;
+        enableService();
+	}
+
     public final boolean isAcceptStudyRootMove() {
         return studyRootMove;
     }
@@ -264,7 +307,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
         enableService();
     }
 
-    public final int getAcTimeout() {
+    public final boolean isAcceptDeflatedBlockedFind() {
+		return acceptDeflatedBlockedFind;
+	}
+
+	public final void setAcceptDeflatedBlockedFind(boolean enable) {
+		this.acceptDeflatedBlockedFind = enable;
+        enableService();
+	}
+
+	public final int getAcTimeout() {
         return acTimeout;
     }
 
@@ -382,6 +434,19 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	public final void setMaxUIDsPerMoveRQ(int max) {
 		this.maxUIDsPerMoveRQ = max;
 	}
+
+	public final void setMaxBlockedFindRSP(int max) {
+		this.maxBlockedFindRSP = max;
+	}
+
+    public final int getMaxBlockedFindRSP() {
+		return maxBlockedFindRSP;
+	}
+
+	protected String[] getBlockedFindTransferSyntaxUIDs() {
+        return acceptDeflatedBlockedFind ? DEFLATED_OR_NATIVE_LE_TS
+				: getTransferSyntaxUIDs();
+    }
 	
 	protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
@@ -397,6 +462,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 tianiFindScp);
         services.bind(UIDs.TianiPatientStudyOnlyQueryRetrieveInformationModelFIND,
                 tianiFindScp);
+        
+        services.bind(UIDs.TianiBlockedPatientRootQueryRetrieveInformationModelFIND,
+                tianiBlockedFindScp);
+        services.bind(UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
+                tianiBlockedFindScp);
+        services.bind(UIDs.TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND,
+                tianiBlockedFindScp);
         
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 moveScp);
@@ -414,9 +486,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.unbind(UIDs.TianiStudyRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.TianiPatientStudyOnlyQueryRetrieveInformationModelFIND);
 
-        services.unbind(UIDs.PatientRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.TianiBlockedPatientRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND);
+
+        services.unbind(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
+        services.unbind(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
+        services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
     }
 
     private static final ExtNegotiator ECHO_EXT_NEG = new ExtNegotiator() {
@@ -425,8 +501,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     };
 
-    protected void updatePC(AcceptorPolicy policy, String cuid, boolean enable) {
+	private void updatePC(AcceptorPolicy policy, String cuid, boolean enable) {
         policy.putPresContext(cuid, enable ? getTransferSyntaxUIDs() : null);
+        policy.putExtNegPolicy(cuid, enable ? ECHO_EXT_NEG : null);
+    }
+    
+    private void updateBlockedFindPC(AcceptorPolicy policy, String cuid, boolean enable) {
+        policy.putPresContext(cuid, enable ? getBlockedFindTransferSyntaxUIDs() : null);
         policy.putExtNegPolicy(cuid, enable ? ECHO_EXT_NEG : null);
     }
     
@@ -443,6 +524,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 enable && tianiStudyRootFind);
         updatePC(policy, UIDs.TianiPatientStudyOnlyQueryRetrieveInformationModelFIND,
                 enable && tianiPatientStudyOnlyFind);
+        updateBlockedFindPC(policy, UIDs.TianiBlockedPatientRootQueryRetrieveInformationModelFIND,
+                enable && tianiBlockedPatientRootFind);
+		updateBlockedFindPC(policy, UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
+                enable && tianiBlockedStudyRootFind);
+		updateBlockedFindPC(policy, UIDs.TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND,
+                enable && tianiBlockedPatientStudyOnlyFind);
         updatePC(policy, UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 enable && patientRootMove);
         updatePC(policy, UIDs.StudyRootQueryRetrieveInformationModelMOVE,

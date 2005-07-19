@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
@@ -50,12 +52,16 @@ public class FindScp extends DcmServiceBase {
     
     private final boolean filterResult;
 
+    private final boolean blockResults;
+	
 	private Logger log;
 
-    public FindScp(QueryRetrieveScpService service, boolean filterResult) {
+    public FindScp(QueryRetrieveScpService service, boolean filterResult,
+			boolean blockResults) {
         this.service = service;
 		this.log = service.getLog();
         this.filterResult = filterResult;
+		this.blockResults = blockResults;
     }
 
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
@@ -112,6 +118,15 @@ public class FindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset data = queryCmd.getDataset();
+				if (blockResults) {
+					Dataset parent = DcmObjectFactory.getInstance().newDataset();
+					DcmElement sq = parent.putSQ(Tags.DirectoryRecordSeq);
+					sq.addItem(data);
+					for (int i = 1, n = service.getMaxBlockedFindRSP();
+							i <= n && queryCmd.next(); ++i) {
+						sq.addItem(queryCmd.getDataset());
+					}					
+				}
 				log.debug("Identifier:\n");
 				log.debug(data);
                 return data;

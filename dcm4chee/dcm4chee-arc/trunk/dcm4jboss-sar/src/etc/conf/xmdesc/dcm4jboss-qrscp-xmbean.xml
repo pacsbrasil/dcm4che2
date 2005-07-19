@@ -100,55 +100,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptTianiPatientRootFind"
-      setMethod="setAcceptTianiPatientRootFind">
-      <description>Support Private Tiani Patient Root Query/Retrieve Information Model - FIND SOP Class
-      </description>
-      <name>AcceptTianiPatientRootFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptPatientRootMove"
-      setMethod="setAcceptPatientRootMove">
-      <description>Support Patient Root Query/Retrieve Information Model - MOVE SOP Class
-      </description>
-      <name>AcceptPatientRootMove</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isAcceptStudyRootFind"
       setMethod="setAcceptStudyRootFind">
       <description>Support Study Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptStudyRootFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptTianiStudyRootFind"
-      setMethod="setAcceptTianiStudyRootFind">
-      <description>Support Private Tiani Study Root Query/Retrieve Information Model - FIND SOP Class
-      </description>
-      <name>AcceptTianiStudyRootFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptStudyRootMove"
-      setMethod="setAcceptStudyRootMove">
-      <description>Support Study Root Query/Retrieve Information Model - MOVE SOP Class
-      </description>
-      <name>AcceptStudyRootMove</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -166,11 +122,22 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptTianiPatientStudyOnlyFind"
-      setMethod="setAcceptTianiPatientStudyOnlyFind">
-      <description>Support Private Tiani Patient Study Only Query/Retrieve Information Model - FIND SOP Class
+      getMethod="isAcceptPatientRootMove"
+      setMethod="setAcceptPatientRootMove">
+      <description>Support Patient Root Query/Retrieve Information Model - MOVE SOP Class
       </description>
-      <name>AcceptTianiPatientStudyOnlyFind</name>
+      <name>AcceptPatientRootMove</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptStudyRootMove"
+      setMethod="setAcceptStudyRootMove">
+      <description>Support Study Root Query/Retrieve Information Model - MOVE SOP Class
+      </description>
+      <name>AcceptStudyRootMove</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -188,11 +155,90 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isAcceptTianiPatientRootFind"
+      setMethod="setAcceptTianiPatientRootFind">
+      <description>Support Private Tiani Patient Root Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiPatientRootFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiStudyRootFind"
+      setMethod="setAcceptTianiStudyRootFind">
+      <description>Support Private Tiani Study Root Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiStudyRootFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiPatientStudyOnlyFind"
+      setMethod="setAcceptTianiPatientStudyOnlyFind">
+      <description>Support Private Tiani Patient Study Only Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiPatientStudyOnlyFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiBlockedPatientRootFind"
+      setMethod="setAcceptTianiBlockedPatientRootFind">
+      <description>Support Private Tiani Blocked Patient Root Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiBlockedPatientRootFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiBlockedStudyRootFind"
+      setMethod="setAcceptTianiBlockedStudyRootFind">
+      <description>Support Private Tiani Blocked Study Root Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiBlockedStudyRootFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiBlockedPatientStudyOnlyFind"
+      setMethod="setAcceptTianiBlockedPatientStudyOnlyFind">
+      <description>Support Private Tiani Blocked Patient Study Only Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiBlockedPatientStudyOnlyFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
-      <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
+      <description>Accept Explicit Value Representation Little Endian Transfer Syntax
+          for all provided Q/R Services.
       </description>
       <name>AcceptExplicitVRLE</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptDeflatedBlockedFind"
+      setMethod="setAcceptDeflatedBlockedFind">
+      <description>Accept Deflated Explicit Value Representation Little Endian
+         Transfer Syntax for Tiani Blocked FIND Services.
+      </description>
+      <name>AcceptDeflatedBlockedFind</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -233,6 +279,17 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxBlockedFindRSP"
+      setMethod="setMaxBlockedFindRSP">
+      <description>Maximal number of Result Records blocked in one Find RSP from Tiani Blocked FIND Services.
+      </description>
+      <name>MaxBlockedFindRSP</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000" />
+      </descriptors>
+   </attribute>   
    <attribute access="read-write"
       getMethod="getMaxUIDsPerMoveRQ"
       setMethod="setMaxUIDsPerMoveRQ">
