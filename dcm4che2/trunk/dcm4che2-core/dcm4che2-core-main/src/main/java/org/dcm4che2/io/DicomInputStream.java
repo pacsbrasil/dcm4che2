@@ -10,6 +10,7 @@
 package org.dcm4che2.io;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,10 +22,9 @@ import java.util.ArrayList;
 import java.util.zip.InflaterInputStream;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.BasicDicomElement;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
@@ -280,19 +280,32 @@ public class DicomInputStream extends FilterInputStream implements
 			in = new InflaterInputStream(in);
 		this.ts = ts;
 	}
-
+    
 	public boolean readValue(DicomInputStream dis) throws IOException {
 		if (dis != this)
 			throw new IllegalArgumentException("dis != this");
 		switch (tag) {
 		case Tag.Item:
-			BasicDicomElement sq = (BasicDicomElement) sqStack
-					.get(sqStack.size() - 1);
+			DicomElement sq = (DicomElement) sqStack.get(sqStack.size() - 1);
 			logAttr(sq.countItems() + 1, vr);
 			if (vallen == -1) {
-				if (sq.vr() != VR.SQ) {
-					sq.fragmentsToSequence(attrs);
+				if (sq.vr() == VR.UN) {
+                    DicomElement tmp = attrs.putSequence(sq.tag());
+                    for (int i = 0, n = sq.countItems(); i < n; ++i) {
+                        byte[] b = sq.getBytes(i);
+                        InputStream is = new ByteArrayInputStream(b);
+                        DicomInputStream dis1 = new DicomInputStream(is, 
+                                TransferSyntax.ImplicitVRLittleEndian);
+                        DicomObject item = new BasicDicomObject();
+                        dis1.readDicomObject(item, b.length);
+                        tmp.addItem(item);
+                    }
+                    sqStack.set(sqStack.size() - 1, sq = tmp);
 				}
+                if (sq.vr() != VR.SQ) {
+                    throw new IOException(TagUtils.toString(tag) + " "
+                            + sq.vr() + " contains item with unknown length.");            
+                }
 			}
 			if (sq.vr() == VR.SQ) {
 				BasicDicomObject item = new BasicDicomObject();

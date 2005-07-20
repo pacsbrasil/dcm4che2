@@ -9,9 +9,7 @@
 
 package org.dcm4che2.data;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
@@ -22,7 +20,6 @@ import java.util.List;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 
-import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.TagUtils;
 
 public class BasicDicomElement implements DicomElement {
@@ -182,26 +179,6 @@ public class BasicDicomElement implements DicomElement {
 		return sb.toString();
 	}	
 	
-	public DicomElement fragmentsToSequence(DicomObject parent)
-			throws IOException {
-		if (vr != VR.UN)
-			throw new IllegalStateException("vr:" + vr);
-		List oldval = (List) value;
-		List newval = new ArrayList(oldval.size());
-		for (int i = 0, n = oldval.size(); i < n; ++i) {
-			byte[] b = (byte[]) oldval.get(i);
-			InputStream is = new ByteArrayInputStream(b);
-			DicomInputStream dis = new DicomInputStream(is, 
-					TransferSyntax.ImplicitVRLittleEndian);
-			DicomObject item = new BasicDicomObject();
-			dis.readDicomObject(item, b.length);
-			newval.add(item);
-		}
-		this.value = newval;
-		this.vr = VR.SQ;
-		return this;
-	}
-
 	public final boolean bigEndian() {
 		return bigEndian;
 	}
