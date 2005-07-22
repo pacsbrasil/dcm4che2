@@ -67,6 +67,12 @@ public class DicomObjectTest extends TestCase {
 		ois.close();
 		assertEquals(dicomdir, dicomdir2);
 	}
+    
+    public void testPut() {
+        DicomObject dcm = new BasicDicomObject();
+        dcm.putNull(Tag.AcquisitionDate, null);
+        assertEquals(VR.DA, dcm.get(Tag.AcquisitionDate).vr());
+    }
 
 	private DicomObject load(String fname) throws IOException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();

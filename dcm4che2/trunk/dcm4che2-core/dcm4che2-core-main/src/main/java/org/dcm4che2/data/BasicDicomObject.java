@@ -325,10 +325,14 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 
 	public DicomElement putNull(int tag, VR vr) {
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, false, null, null));
 	}
 
 	public DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, bigEndian, val, null));
 	}
 
@@ -340,48 +344,64 @@ public class BasicDicomObject extends AbstractDicomObject {
 
 	public DicomElement putInt(int tag, VR vr, int val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Integer(val) : null));
 	}
 
 	public DicomElement putInts(int tag, VR vr, int[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
 	public DicomElement putFloat(int tag, VR vr, float val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Float(val) : null));
 	}
 
 	public DicomElement putFloats(int tag, VR vr, float[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
 	public DicomElement putDouble(int tag, VR vr, double val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Double(val) : null));
 	}
 
 	public DicomElement putDoubles(int tag, VR vr, double[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
 	public DicomElement putString(int tag, VR vr, String val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
 				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
 	public DicomElement putStrings(int tag, VR vr, String[] val) {
 		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
 				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
@@ -389,18 +409,24 @@ public class BasicDicomObject extends AbstractDicomObject {
 	public DicomElement putDate(int tag, VR vr, Date val) {
 		// no cache of given Date object, to avoid problems
 		// with non-zero values for unsignifcant fields
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 
 	public DicomElement putDates(int tag, VR vr, Date[] val) {
 		// no cache of given Date objects, to avoid problems
 		// with non-zero values for unsignifcant fields
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 
 	public DicomElement putDateRange(int tag, VR vr, DateRange val) {
 		// no cache of given DateRange object, to avoid problems
 		// with non-zero values for unsignifcant fields
+        if (vr == null)
+            vr = vrOf(tag);
 		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 	
@@ -419,6 +445,8 @@ public class BasicDicomObject extends AbstractDicomObject {
 
 	public DicomElement putFragments(int tag, VR vr, boolean bigEndian,
 			int capacity) {
+        if (vr == null)
+            vr = vrOf(tag);
 		if (!(vr instanceof VR.Fragment))
 			throw new UnsupportedOperationException();
 		return addInternal(new BasicDicomElement(tag, vr, bigEndian, new ArrayList(
