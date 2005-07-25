@@ -249,7 +249,13 @@ public class MWLModel {
 		//Visit Identification
 		ds.putLO( Tags.AdmissionID );
 		//Patient Identification
-		ds.putPN( Tags.PatientName, mwlFilter.getPatientName() );
+		String patientName = mwlFilter.getPatientName();
+    	if ( patientName != null && 
+       		 patientName.length() > 0 && 
+   			 patientName.indexOf('*') == -1 &&
+   			 patientName.indexOf('?') == -1) patientName+="*";
+
+		ds.putPN( Tags.PatientName, patientName );
 		ds.putLO( Tags.PatientID);
 		//Patient demographic
 		ds.putDA( Tags.PatientBirthDate );
