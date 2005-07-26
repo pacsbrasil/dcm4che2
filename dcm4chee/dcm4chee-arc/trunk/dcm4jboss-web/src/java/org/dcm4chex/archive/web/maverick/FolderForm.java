@@ -151,6 +151,7 @@ public class FolderForm {
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
         }
         form.setErrorCode( NO_ERROR ); //reset error code
+		form.setPopupMsg(null);
         
         return form;
     }
