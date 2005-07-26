@@ -32,6 +32,9 @@ public class Dcm4JbossController extends Throwaway2
 	 */
 	protected final String go() throws Exception
 	{
+		
+		if ( this.getCtx().getRequest().getSession().isNew() ) return "sessionChanged";
+		
 		Map modified_parameters = new HashMap();
 		Map parameters = this.getCtx().getRequest().getParameterMap();
 		modified_parameters.putAll(parameters);

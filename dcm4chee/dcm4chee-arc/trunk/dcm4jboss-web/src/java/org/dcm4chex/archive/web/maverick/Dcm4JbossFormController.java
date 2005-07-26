@@ -49,16 +49,20 @@ public class Dcm4JbossFormController extends Throwaway2
 		Map modified_parameters = new HashMap();
 		Map parameters = this.getCtx().getRequest().getParameterMap();
 		modified_parameters.putAll(parameters);
+		boolean btnPressed = false;
 		for (Iterator i = parameters.keySet().iterator(); i.hasNext();)
 		{
 			String parameterName = (String)i.next();
 			if (parameterName.endsWith(".x"))
 			{
+				btnPressed = true;
 				String newName =
 					parameterName.substring(0, parameterName.indexOf(".x"));
 				modified_parameters.put(newName, newName);
 			}
 		}
+		// This controller is used in folder main pages, and therefore check new session only if a (img-)button is pressed.(parameterName ends with .x)
+		if ( btnPressed  && this.getCtx().getRequest().getSession().isNew() ) return "sessionChanged";
 
 		BeanUtils.populate(this.formBean, modified_parameters);
 		BeanUtils.populate(this.formBean, this.getCtx().getControllerParams());

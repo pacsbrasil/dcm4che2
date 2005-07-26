@@ -84,6 +84,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		        log.debug( "UserPrincipal:"+rq.getUserPrincipal().getName() );
 		        log.debug( "UserPrincipal is in role admin:"+rq.isUserInRole("WebAdmin") );
             }
+            if (rq.getParameter("sessionChanged") != null ) {
+            	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
+            	return query(true); 
+            }
             if (rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null

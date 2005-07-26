@@ -25,6 +25,7 @@ default-transform-type="xslt">
     <command name="folder">
       <controller class="org.dcm4chex.archive.web.maverick.FolderCtrl" />
       <view ref="folder" />
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="foldersubmit">
@@ -36,6 +37,7 @@ default-transform-type="xslt">
 	    <view id="worklist" name="worklist">
 	      <transform path="addWorklist.xsl" />
 	    </view>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandPat">
@@ -43,6 +45,7 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandPatientCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="collapsePat">
@@ -50,6 +53,7 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.CollapsePatientCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandStudy">
@@ -57,6 +61,7 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandStudyCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="collapseStudy">
@@ -64,6 +69,7 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.CollapseStudyCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandSeries">
@@ -71,11 +77,13 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandSeriesCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="collapseSeries">
       <controller class="org.dcm4chex.archive.web.maverick.CollapseSeriesCtrl" />
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
     
     <command name="expandInstance">
@@ -83,6 +91,7 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandInstanceCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="patientEdit">
@@ -90,17 +99,20 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="patient_edit.xsl" />
 	    </view>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="patientUpdate">
         <controller class="org.dcm4chex.archive.web.maverick.PatientUpdateCtrl" />    
 	    <view type="redirect" path="folder.m" name="success"/>        
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="patientMerge">
         <controller class="org.dcm4chex.archive.web.maverick.PatientMergeCtrl" />    
 	    <view type="redirect" path="foldersubmit.m?filter=" name="success"/>        
 	    <view ref="error" />
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="studyEdit">
@@ -108,6 +120,7 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="study_edit.xsl" />
 	    </view>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
  
     <command name="studyView">
@@ -115,6 +128,7 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="study_view.xsl" />
 	    </view>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="koView">
@@ -122,6 +136,7 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="ko_view.xsl" />
 	    </view>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
      
      <command name="addWorklist">
@@ -144,6 +159,7 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="series_edit.xsl" />
 	    </view>
+	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="seriesUpdate">
