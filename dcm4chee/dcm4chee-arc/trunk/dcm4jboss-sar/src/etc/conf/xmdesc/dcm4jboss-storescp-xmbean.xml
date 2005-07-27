@@ -4,7 +4,10 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>DICOM Storage SCP</description>
+   <description>DICOM Storage SCP. Provides a DICOM storage service to receive DICOM objects from remote
+   DICOM applications. Typically these objects are images received from modalities. The tiani.archive=DCMServer
+   must be deployed first because the StoreScp registers itself against this server.
+ </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate" />
@@ -22,10 +25,10 @@
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Accepted Called AET(s).
-      Separate multiple values by '\'(backslash). 
+      <description>List of accepted called AE titles, separated by \(backslash). 
+      For example, PACS_TIANI\PACS_TIANI2.
       </description>
-      <name>CalledAETs</name>
+      <name>Called AE Titles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -34,10 +37,10 @@
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>Accepted Calling AETs.
-      "ANY" = accept any. Separate multiple values by '\'(backslash). 
+      <description>List of accepted calling AE titles, separated by \(backslash).
+      ANY = accept any. 
       </description>
-      <name>CallingAETs</name>
+      <name>Calling AE Titles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY" />
@@ -46,11 +49,12 @@
    <attribute access="read-write"
       getMethod="getCoerceWarnCallingAETs"
       setMethod="setCoerceWarnCallingAETs">
-      <description>List of AETs of Storage SCUs, to which
-      a warning status B000 is returned if Data Elements was coerced.
-      "NONE" = none Calling AET. Separate multiple values by '\'(backslash). 
+      <description>List of the AE titles for the Storage SCUs for which
+      a warning status, B000, is returned if data elements were coerced. 
+      Separate multiple values by \(backslash).
+      NONE = no calling AE titles.  
       </description>
-      <name>CoerceWarnCallingAETs</name>
+      <name>Warn for Coerced AE Titles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE" />
@@ -59,15 +63,15 @@
    <attribute access="read-write"
       getMethod="getGeneratePatientID"
       setMethod="setGeneratePatientID">
-      <description>Generate Patient ID from hash of Patient Name and
-          Birth Date, if there is no Patient ID in the received object.
-          If there is also no value for Patient Name, the hash of the
-          Study Instance UID is used to generate different Patient IDs for
+      <description>Generate a patient ID from a hash of the patient name and
+          birth date, if the received study has no patient ID.
+          If the study has no patient name, the study instance UID 
+          is used to generate different patient IDs for
           different studies in that case.
-          &lt;br&gt;Use ### as placeholder for decimal hash value.
-          &lt;br&gt;NONE = do not generate Patient IDs -> Media Creation will fail.
+          &lt;br&gt;Use ### as a placeholder for the decimal hash value. For example, PACS-##########.
+          &lt;br&gt;NONE = do not generate patient IDs. But, this means media creation will fail.
       </description>
-      <name>GeneratePatientID</name>
+      <name>Generate Patient ID</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS-##########" />
@@ -76,13 +80,17 @@
    <attribute access="read-write"
       getMethod="getIssuerOfPatientIDRules"
       setMethod="setIssuerOfPatientIDRules">
-      <description>List of rules to add Issuer Of PatientID if not contained
-      in the received object and if the Patient ID matches the specified regular
+      <description><![CDATA[List of rules used to add the Issuer Of PatientID value if not contained
+      in the received object, if the Patient ID matches the specified regular
       expression. Multiple rules are separated by new lines.
-      Format: [REGEX:]ISSUER . If no regular expression is specified,
-      the issuer is added for any Patient ID.
+      Format: 
+      <br><i>REGEX</i>:<i>ISSUER</i>
+      <br>Example:
+      <br>^PACS- \d*:PACS_TIANI 
+      <br>If no regular expression is specified,
+      the issuer is added for all patient IDs.]]>
       </description>
-      <name>IssuerOfPatientIDRules</name>
+      <name>Issuer of Patient ID Rules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="^PACS-\d*:PACS_TIANI" />
@@ -91,9 +99,9 @@
    <attribute access="read-write"
       getMethod="isStoreDuplicateIfDiffMD5"
       setMethod="setStoreDuplicateIfDiffMD5">
-      <description>Store duplicate objects, if MD5 sum of new object differs
-      from MD5 sum of existing files.</description>
-      <name>StoreDuplicateIfDiffMD5</name>
+      <description>Store a duplicate object if the MD5 sum of the new object differs
+      from the MD5 sum of the existing file. If the MD5 sum does not match, the files may be corrupted.</description>
+      <name>Store Duplicates if Different MD5</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -102,10 +110,10 @@
    <attribute access="read-write"
       getMethod="isStoreDuplicateIfDiffHost"
       setMethod="setStoreDuplicateIfDiffHost">
-      <description>Store duplicate objects, if existing files are NOT located 
-      on this host.
+      <description><![CDATA[Store duplicate objects if the existing files are <b>NOT</b> located 
+      on this host.]]>
       </description>
-      <name>StoreDuplicateIfDiffHost</name>
+      <name>Store Duplicate if Different Host</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -114,12 +122,32 @@
    <attribute access="read-write"
       getMethod="getCompressionRules"
       setMethod="setCompressionRules">
-      <description>List of image compression rules.
-      Format:=['['CONDITION[,..]']']COMPRESSION
-      CONDITION:=(calling|called|pmi|cuid|imgtype)[!]=value['|'...]    
-      COMPRESSION:=(NONE|JPLL|JLSL|J2KR)
+      <description><![CDATA[List of image compression rules.
+      <br>Format:
+      <br>[<i>condition</i>!=<i>value</i>]<i>compression</i>
+      <br>where
+      <br><i>condition</i>&#8212;when to apply the compression rule. Separate
+      multiple <i>condition</i>!=<i>value</i> statements with a comma. The possible condition 
+      values are:
+      <br>calling - called AE title. Apply the rule to the called AE titles listed as values.
+      <br>called - called AE title. Apply the rule to the calling AE titles listed as values.
+      <br>pmi - photometric interpretation.
+      <br>cuid - SOP Class UID. Apply the rule for the SOP Class UIDs listed as values.
+      <br>imgtype - type of image. Apply the rule to the image types listed as values, such as RGB.
+      <br>
+      <br><i>value</i>&#8212;the value of the condition. Each condition can
+      have multiple values, separated by | (pipe).For example, 
+      <code>[calling!=SCU1|SCU2]</code>
+      <br>    
+      <br><i>compression</i>&#8212;the type of compression to apply to each condition!=value pair, separated by a space.
+      Possible values are:
+      <br>NONE - do not apply compression.
+      <br>JPLL - JPEG Lossless
+      <br>JLSL - JPEG-LS Lossless
+      <br>J2KR - JPEG 2000 Lossless
+      ]]>
       </description>
-      <name>CompressionRules</name>
+      <name>Compression Rules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE" />
@@ -128,11 +156,11 @@
    <attribute access="read-write"
       getMethod="getOutOfResourcesThreshold"
       setMethod="setOutOfResourcesThreshold">
-      <description>Minimal Available Disk Space in Storage Directory to accept
-      received Objects. If the available Disk Space falls below this value,
-      storage of received objects is rejected with Error Status "Out Of Resource".
+      <description>Minimum available disk space in the storage directory to accept
+      received objects. If the available disk space falls below this value,
+      storage of received objects is rejected with the error "Out Of Resource".
       </description>
-      <name>OutOfResourcesThreshold</name>
+      <name>Out Of Resources Threshold</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="30MB" />
@@ -141,10 +169,11 @@
    <attribute access="read-write"
       getMethod="getUpdateDatabaseMaxRetries"
       setMethod="setUpdateDatabaseMaxRetries">
-      <description>Maximal number of retries to update DB records for new received
-      objects, before a Processing Failure is returned to the Storage SCU.
+      <description>Maximum number of retries to update the database records 
+      for new received objects, before a processing failure is returned to 
+      the Storage SCU.
       </description>
-      <name>UpdateDatabaseMaxRetries</name>
+      <name>Update Database - Maximum Retries </name>
       <type>int</type>
       <descriptors>
          <value value="2" />
@@ -152,18 +181,19 @@
    </attribute>
    <attribute access="read-only"
       getMethod="getMaxCountUpdateDatabaseRetries">
-      <description>Maximal number of actually performed retries to update DB records for new received
-      objects.
+      <description>Maximum number of retries actually performed to update the
+      database records for new received objects.
       </description>
-      <name>MaxCountUpdateDatabaseRetries</name>
+      <name>Update Database - Performed Retries</name>
       <type>int</type>
    </attribute>   
    <attribute access="read-write"
       getMethod="getUpdateDatabaseRetryInterval"
       setMethod="setUpdateDatabaseRetryInterval">
-      <description>Delay in ms between retries to update DB records for new received objects.
+      <description>Delay in milliseconds between retries to update the 
+      database records for new received objects.
       </description>
-      <name>UpdateDatabaseRetryInterval</name>
+      <name>Update Database - Retry Interval</name>
       <type>long</type>
       <descriptors>
          <value value="0" />
@@ -174,7 +204,7 @@
       setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
       </description>
-      <name>AcceptExplicitVRLE</name>
+      <name>Accept Explicit VRLE</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -185,7 +215,7 @@
       setMethod="setAcceptJPEG2000Lossless">
       <description>Accept DICOM images encoded in JPEG 2000 Lossless Transfer Syntax.
       </description>
-      <name>AcceptJPEG2000Lossless</name>
+      <name>Accept JPEG 2000 Lossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -196,7 +226,7 @@
       setMethod="setAcceptJPEG2000Lossy">
       <description>Accept DICOM images encoded in JPEG 2000 Lossy Transfer Syntax.
       </description>
-      <name>AcceptJPEG2000Lossy</name>
+      <name>Accept JPEG 2000 Lossy</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -207,7 +237,7 @@
       setMethod="setAcceptJPEGLSLossless">
       <description>Accept DICOM images encoded in JPEG-LS Lossless Transfer Syntax.
       </description>
-      <name>AcceptJPEGLSLossless</name>
+      <name>Accept JPEG-LS Lossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -218,7 +248,7 @@
       setMethod="setAcceptJPEGLSLossy">
       <description>Accept DICOM images encoded in JPEG-LS Lossy Transfer Syntax.
       </description>
-      <name>AcceptJPEGLSLossy</name>
+      <name>Accept JPEG-LS Lossy</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -230,7 +260,7 @@
       <description>Accept DICOM images encoded in JPEG Lossless (Process 14) 
       First-Order Prediction Transfer Syntax. (DICOM JPEG Lossless default TS)
       </description>
-      <name>AcceptJPEGLossless</name>
+      <name>Accept JPEG Lossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -241,7 +271,7 @@
       setMethod="setAcceptJPEGLossless14">
       <description>Accept DICOM images encoded in JPEG Lossless (Process 14) Transfer Syntax.
       </description>
-      <name>AcceptJPEGLossless14</name>
+      <name>Accept JPEG Lossless 14</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -252,7 +282,7 @@
       setMethod="setAcceptJPEGBaseline">
       <description>Accept DICOM images encoded in JPEG Baseline Transfer Syntax.
       </description>
-      <name>AcceptJPEGBaseline</name>
+      <name>Accept JPEG Baseline</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -263,7 +293,7 @@
       setMethod="setAcceptJPEGExtended">
       <description>Accept DICOM images encoded in JPEG Extended Transfer Syntax.
       </description>
-      <name>AcceptJPEGExtended</name>
+      <name>Accept JPEG Extended</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -274,7 +304,7 @@
       setMethod="setAcceptRLELossless">
       <description>Accept DICOM images encoded in RLE Lossless Transfer Syntax.
       </description>
-      <name>AcceptRLELossless</name>
+      <name>Accept RLE Lossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -283,9 +313,9 @@
    <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
-      <description>Maximal PDU package length for receiving PDUs.
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
-      <name>MaxPDULength</name>
+      <name>Maximum PDU Length</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
@@ -294,10 +324,10 @@
    <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
-      <description>Size of buffer used to copy data from TCP channel to file.
-      No need to change default value: 512.
+      <description>Size of the buffer used to copy data from the TCP channel 
+      to file. Keep the default value: 512.
       </description>
-      <name>BufferSize</name>
+      <name>Buffer Size</name>
       <type>int</type>
       <descriptors>
          <value value="512" />
@@ -307,9 +337,9 @@
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
-      "LOCAL", if EJBs are deployed in same JBoss instance.
+      Use LOCAL if EJBs are deployed in same JBoss instance.
       </description>
-      <name>EjbProviderURL</name>
+      <name>EJB Provider URL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL" />
@@ -318,7 +348,7 @@
    <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
@@ -329,7 +359,7 @@
    <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
@@ -340,7 +370,7 @@
    <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
@@ -351,7 +381,7 @@
    <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
@@ -363,7 +393,7 @@
 
    <!-- Operations -->
    <operation impact="ACTION">
-     <description>Reset MaxCountUpdateDatabaseRetries to 0.</description>
+     <description>Reset Update Database - Performed Retries to 0.</description>
      <name>resetMaxCountUpdateDatabaseRetries</name>
      <return-type>void</return-type>
 	</operation>

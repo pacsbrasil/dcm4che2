@@ -4,7 +4,9 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Move SCU Service to process Move Orders</description>
+   <description>Move SCU Service to process move orders. Invokes DICOM 
+   Retrieve requests, typically from the archive's own DICOM
+   Query/Retrieve Service (SCP).</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate" />
@@ -22,9 +24,9 @@
    <attribute access="read-write"
       getMethod="getCallingAET"
       setMethod="setCallingAET">
-      <description>(Calling) AET of Move SCU.
+      <description>Calling AE title of the Move SCU.
       </description>
-      <name>CallingAET</name>
+      <name>Calling AE Title</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -33,10 +35,10 @@
    <attribute access="read-write"
       getMethod="getCalledAET"
       setMethod="setCalledAET">
-      <description>AET of default MOVE SCP. Only effective, if a
-      Move Order does not specify a Retrieve AET.
+      <description>AE title of the default Move SCP. Only effective, if a
+      Move order does not specify a Retrieve AE title.
       </description>
-      <name>CalledAET</name>
+      <name>Called AE Title</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -45,12 +47,18 @@
    <attribute access="read-write"
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
-      <description>Number and intervalls of retries of failed Move Requests
-      by a list of comma separated NUMBERxINTERVAL pairs. The
-      intervall can be specified in seconds (##s), minutes (##m), hours (##h)
-      or days (##d).
+      <description><![CDATA[Number and interval of retries made for
+      failed Move Requests.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      <br>Example: 
+      <br>5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.]]>
       </description>
-      <name>RetryIntervalls</name>
+      <name>Retry Intervals</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m,24x1h,7x1d" />
@@ -59,7 +67,7 @@
    <attribute access="read-write"
       getMethod="getConcurrency"
       setMethod="setConcurrency">
-      <description>Maximal number of concurrent invoked Move Requests.
+      <description>Maximum number of concurrent invoked Move Requests.
       </description>
       <name>Concurrency</name>
       <type>int</type>
@@ -70,9 +78,9 @@
    <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
-      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>AcTimeout</name>
+      <name>Accept Timeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000" />
@@ -81,9 +89,9 @@
    <attribute access="read-write"
       getMethod="getDimseTimeout"
       setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in ms. 0 = no timeout.
+      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DimseTimeout</name>
+      <name>DIMSE Timeout</name>
       <type>int</type>
       <descriptors>
          <value value="60000" />
@@ -92,9 +100,9 @@
    <attribute access="read-write"
       getMethod="getSoCloseDelay"
       setMethod="setSoCloseDelay">
-      <description>Socket close delay in ms after A-RELEASE RSP.
+      <description>Socket close delay in milliseconds after an A-Release response.
       </description>
-      <name>SoCloseDelay</name>
+      <name>Socket Close Delay</name>
       <type>int</type>
       <descriptors>
          <value value="50" />
@@ -103,7 +111,7 @@
    <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>

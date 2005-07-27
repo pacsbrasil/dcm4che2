@@ -4,7 +4,15 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>DICOM Storage Commitment SCU/SCP</description>
+   <description>DICOM Storage Commitment SCU/SCP. Provides a DICOM Storage 
+   Commitment Service in the Service Class Provider
+   (SCP) and the Service Class User (SCU) Role. When acting as the SCP,
+   the service handles storage commitment requests that it receives 
+   from modalities or evidence creators (workstations). 
+   When acting as the SCU, it may request storage
+   commitment for objects for itself that were retrieved from the archive to a remote
+   application. Typically this application is a further archive 
+   instance acting as a long-term or central archive.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate" />
@@ -22,10 +30,9 @@
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Accepted Called AET(s).
-      Separate multiple values by '\'(backslash). 
+      <description>Accepted called AE titles, separated by \ (backslash). 
       </description>
-      <name>CalledAETs</name>
+      <name>Called AE Titles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -34,10 +41,10 @@
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>Accepted Calling AETs.
-      "ANY" = accept any. Separate multiple values by '\'(backslash). 
+      <description>Accepted calling AE titles, separated by \ (backslash).
+      ANY = accept any. 
       </description>
-      <name>CallingAETs</name>
+      <name>Calling AE Titles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY" />
@@ -46,11 +53,11 @@
    <attribute access="read-write"
       getMethod="getReceiveResultInSameAssocTimeout"
       setMethod="setReceiveResultInSameAssocTimeout">
-      <description>Time in ms, the StgCmt SCU waits for receiving the
-      the StgCmt Result in the same Association as the StgCmt was requested,
-      before releasing the association.
+      <description>Time in milliseconds that the Storage Commit SCU waits to 
+      receive the Storage Commit Result in the same association 
+      as the storage commit was requested, before releasing the association.
       </description>
-      <name>ReceiveResultInSameAssocTimeout</name>
+      <name>Receive Result in Same Association Timeout</name>
       <type>long</type>
       <descriptors>
          <value value="0" />
@@ -59,12 +66,18 @@
    <attribute access="read-write"
       getMethod="getScuRetryIntervalls"
       setMethod="setScuRetryIntervalls">
-      <description>Number and intervalls of retries of SCU to invoke a
-      Storage Commitment Requests. Format: comma separated list of 
-      NUMBERxINTERVAL pairs. The intervall can be specified in seconds (##s),
+      <description><![CDATA[Number and interval of retries by the SCU to invoke
+      Storage Commitment Requests.
+      <br>Format:
+      <br>Comma separated list of <i>number</i> x <i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s),
       minutes (##m), hours (##h) or days (##d).
+      <br>Example: 
+      <br>5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.]]>
       </description>
-      <name>ScuRetryIntervalls</name>
+      <name>SCU Retry Intervals</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m" />
@@ -73,12 +86,17 @@
    <attribute access="read-write"
       getMethod="getScpRetryIntervalls"
       setMethod="setScpRetryIntervalls">
-      <description>Number and intervalls of retries of SCP to send
-      Storage Commitment Results to SCU. Format: comma separated list of 
-      NUMBERxINTERVAL pairs. The intervall can be specified in
-      seconds (##s), minutes (##m), hours (##h) or days (##d).
+      <description><![CDATA[Number and interval of retries by the SCP to send
+      Storage Commitment Results to the SCU.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      <br>Example: 5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.]]>
       </description>
-      <name>ScpRetryIntervalls</name>
+      <name>Scp Retry Intervals</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m" />
@@ -90,7 +108,7 @@
       <description>Accept DICOM objects encoded in Explicit Value Representation
       Little Endian Transfer Syntax.
       </description>
-      <name>AcceptExplicitVRLE</name>
+      <name>Accept Explicit VRLE</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -99,7 +117,8 @@
    <attribute access="read-write"
       getMethod="getConcurrency"
       setMethod="setConcurrency">
-      <description>Maximal number of concurrent invoked/processed Stg.Cmt. Requests.
+      <description>Maximum number of concurrent invoked or processed 
+      Storage Commit Requests.
       </description>
       <name>Concurrency</name>
       <type>int</type>
@@ -110,9 +129,9 @@
    <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
-      <description>Maximal PDU package length for receiving PDUs.
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
-      <name>MaxPDULength</name>
+      <name>Maximum PDU Length</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
@@ -121,9 +140,9 @@
    <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
-      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>AcTimeout</name>
+      <name>Accept Timeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000" />
@@ -132,9 +151,9 @@
    <attribute access="read-write"
       getMethod="getDimseTimeout"
       setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in ms. 0 = no timeout.
+      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DimseTimeout</name>
+      <name>DIMSE Timeout</name>
       <type>int</type>
       <descriptors>
          <value value="60000" />
@@ -143,9 +162,9 @@
    <attribute access="read-write"
       getMethod="getSoCloseDelay"
       setMethod="setSoCloseDelay">
-      <description>Socket close delay in ms after A-RELEASE RSP.
+      <description>Socket close delay in milliseconds after an A-Release response.
       </description>
-      <name>SoCloseDelay</name>
+      <name>Socket Close Delay</name>
       <type>int</type>
       <descriptors>
          <value value="50" />
@@ -157,7 +176,7 @@
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
-      <name>EjbProviderURL</name>
+      <name>EJB Provider URL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL" />
@@ -166,7 +185,7 @@
    <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>QueueName</name>
       <type>java.lang.String</type>
@@ -177,7 +196,7 @@
    <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
@@ -188,7 +207,7 @@
    <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
@@ -199,7 +218,7 @@
    <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
@@ -212,7 +231,7 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Use internally.</description>
+      <description>Used internally.</description>
       <name>queueStgCmtOrder</name>
       <parameter>
         <name>calling</name>

@@ -4,7 +4,8 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Audit Logger</description>
+   <description>Audit Logger. Used by all other services to record audit logs 
+   to a remote audit log repository.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
@@ -22,9 +23,9 @@
    <attribute access="read-write"
       getMethod="getActorName"
       setMethod="setActorName">
-      <description>Actor Name in emited Audit Trail Messages.
+      <description>Actor Name in audit log messages.
       </description>
-      <name>ActorName</name>
+      <name>Actor Name</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -33,9 +34,9 @@
    <attribute access="read-write"
       getMethod="getSyslogHost"
       setMethod="setSyslogHost">
-      <description>Hostname of Audit Record Repository.
+      <description>Hostname of audit record repository.
       </description>
-      <name>SyslogHost</name>
+      <name>Audit Repository Hostname</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="localhost" />
@@ -44,9 +45,9 @@
    <attribute access="read-write"
       getMethod="getSyslogPort"
       setMethod="setSyslogPort">
-      <description>UDP Port of Audit Record Repository.
+      <description>UDP port of the audit record repository.
       </description>
-      <name>SyslogPort</name>
+      <name>Audit Repository Port</name>
       <type>int</type>
       <descriptors>
          <value value="4000" />
@@ -55,11 +56,11 @@
    <attribute access="read-write"
       getMethod="getFacility"
       setMethod="setFacility">
-      <description>Syslog Facility. Enumerated values:
+      <description>Facility used for the audit record repository. Possible values are:
       kern, user, mail, daemon, auth, syslog, lpr, news, ucp, cron, authpriv,
       ftp, local0, local1, local2, local3, local4, local5, local6, local7 
       </description>
-      <name>Facility</name>
+      <name>Autdit Repository Facility</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="authpriv" />
@@ -68,10 +69,10 @@
    <attribute access="read-write"
       getMethod="isStrictIHEYr4"
       setMethod="setStrictIHEYr4">
-      <description>Limit message format to IHEYr4 XML schema.
+      <description>Limit message format to IHE Year 4 XML schema.
           Skip proprietary extensions. 
       </description>
-      <name>StrictIHEYr4</name>
+      <name>Strict IHE Yr4</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -80,12 +81,12 @@
    <attribute access="read-write"
       getMethod="getSupressLogForAETs"
       setMethod="setSupressLogForAETs">
-      <description>Emission of Audit Logs for DICOM Storage, Query and Retrieve
-      will be supressed, if this list contains the AET of the initator of the
-      operation. Use '\' (backslash) as delimiter. "NONE" = Do not supress
-      Audit Trails according the initiator AET.
+      <description>Audit logs for DICOM Storage, Query and Retrieve
+      are supressed if this list contains the AE title of the initator of the
+      operation. Separate multiple AE titles with a \ (backslash). 
+      NONE = Do not supress audit logs according the initiator AE title.
       </description>
-      <name>SupressLogForAETs</name>
+      <name>Supress Log For AE Titles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -94,9 +95,9 @@
    <attribute access="read-write"
       getMethod="isLogActorConfig"
       setMethod="setLogActorConfig">
-      <description>Emit ActorConfig Audit Messages.
+      <description>Emit ActorConfig audit messages.
       </description>
-      <name>LogActorConfig</name>
+      <name>Log ActorConfig</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -105,9 +106,9 @@
    <attribute access="read-write"
       getMethod="isLogPatientRecord"
       setMethod="setLogPatientRecord">
-      <description>Emit PatientRecord Audit Messages.
+      <description>Emit PatientRecord audit messages.
       </description>
-      <name>LogPatientRecord</name>
+      <name>Log PatientRecord</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -116,9 +117,9 @@
    <attribute access="read-write"
       getMethod="isLogProcedureRecord"
       setMethod="setLogProcedureRecord">
-      <description>Emit LogProcedureRecord Audit Messages.
+      <description>Emit LogProcedureRecord audit messages.
       </description>
-      <name>LogProcedureRecord</name>
+      <name>Log ProcedureRecord</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -127,9 +128,9 @@
    <attribute access="read-write"
       getMethod="isLogStudyDeleted"
       setMethod="setLogStudyDeleted">
-      <description>Emit LogStudyDeleted Audit Messages.
+      <description>Emit LogStudyDeleted audit messages.
       </description>
-      <name>LogStudyDeleted</name>
+      <name>Log StudyDeleted</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -138,9 +139,9 @@
    <attribute access="read-write"
       getMethod="isLogActorStartStop"
       setMethod="setLogActorStartStop">
-      <description>Emit ActorStartStop Audit Messages.
+      <description>Emit ActorStartStop audit messages.
       </description>
-      <name>LogActorStartStop</name>
+      <name>Log ActorStartStop</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -160,9 +161,9 @@
    <attribute access="read-write"
       getMethod="isLogDicomQuery"
       setMethod="setLogDicomQuery">
-      <description>Emit DicomQuery Audit Messages.
+      <description>Emit DicomQuery audit messages.
       </description>
-      <name>LogDicomQuery</name>
+      <name>Log DicomQuery</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -171,9 +172,9 @@
    <attribute access="read-write"
       getMethod="isLogInstancesSent"
       setMethod="setLogInstancesSent">
-      <description>Emit InstancesSent Audit Messages.
+      <description>Emit InstancesSent audit messages.
       </description>
-      <name>LogInstancesSent</name>
+      <name>Log InstancesSent</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -182,9 +183,9 @@
    <attribute access="read-write"
       getMethod="isLogSecurityAlert"
       setMethod="setLogSecurityAlert">
-      <description>Emit SecurityAlert Audit Messages.
+      <description>Emit SecurityAlert audit messages.
       </description>
-      <name>LogSecurityAlert</name>
+      <name>Log SecurityAlert</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -193,9 +194,9 @@
    <attribute access="read-write"
       getMethod="isLogUserAuthenticated"
       setMethod="setLogUserAuthenticated">
-      <description>Emit UserAuthenticated Audit Messages.
+      <description>Emit UserAuthenticated audit messages.
       </description>
-      <name>LogUserAuthenticated</name>
+      <name>Log UserAuthenticated</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -204,9 +205,9 @@
    <attribute access="read-write"
       getMethod="isLogExport"
       setMethod="setLogExport">
-      <description>Emit Export Audit Messages.
+      <description>Emit Export audit messages.
       </description>
-      <name>LogExport</name>
+      <name>Log Export</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
