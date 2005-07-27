@@ -26,7 +26,7 @@
       setMethod="setCallingAET">
       <description>Calling AE title of the Move SCU.
       </description>
-      <name>Calling AE Title</name>
+      <name>CallingAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -38,7 +38,7 @@
       <description>AE title of the default Move SCP. Only effective, if a
       Move order does not specify a Retrieve AE title.
       </description>
-      <name>Called AE Title</name>
+      <name>CalledAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -58,7 +58,7 @@
       apart for each retry; then retry a total of 10 times, 10 minutes 
       apart for each retry.]]>
       </description>
-      <name>Retry Intervals</name>
+      <name>RetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m,24x1h,7x1d" />
@@ -80,7 +80,7 @@
       setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>Accept Timeout</name>
+      <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000" />
@@ -91,7 +91,7 @@
       setMethod="setDimseTimeout">
       <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DIMSE Timeout</name>
+      <name>DIMSETimeout</name>
       <type>int</type>
       <descriptors>
          <value value="60000" />
@@ -102,7 +102,7 @@
       setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after an A-Release response.
       </description>
-      <name>Socket Close Delay</name>
+      <name>SocketCloseDelay</name>
       <type>int</type>
       <descriptors>
          <value value="50" />

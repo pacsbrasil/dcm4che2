@@ -25,7 +25,7 @@
       setMethod="setActorName">
       <description>Actor Name in audit log messages.
       </description>
-      <name>Actor Name</name>
+      <name>ActorName</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -36,7 +36,7 @@
       setMethod="setSyslogHost">
       <description>Hostname of audit record repository.
       </description>
-      <name>Audit Repository Hostname</name>
+      <name>AuditRepositoryHostname</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="localhost" />
@@ -47,7 +47,7 @@
       setMethod="setSyslogPort">
       <description>UDP port of the audit record repository.
       </description>
-      <name>Audit Repository Port</name>
+      <name>AuditRepositoryPort</name>
       <type>int</type>
       <descriptors>
          <value value="4000" />
@@ -60,7 +60,7 @@
       kern, user, mail, daemon, auth, syslog, lpr, news, ucp, cron, authpriv,
       ftp, local0, local1, local2, local3, local4, local5, local6, local7 
       </description>
-      <name>Autdit Repository Facility</name>
+      <name>AutditRepositoryFacility</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="authpriv" />
@@ -72,7 +72,7 @@
       <description>Limit message format to IHE Year 4 XML schema.
           Skip proprietary extensions. 
       </description>
-      <name>Strict IHE Yr4</name>
+      <name>StrictIHEYr4</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -86,7 +86,7 @@
       operation. Separate multiple AE titles with a \ (backslash). 
       NONE = Do not supress audit logs according the initiator AE title.
       </description>
-      <name>Supress Log For AE Titles</name>
+      <name>SupressLogForAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -97,7 +97,7 @@
       setMethod="setLogActorConfig">
       <description>Emit ActorConfig audit messages.
       </description>
-      <name>Log ActorConfig</name>
+      <name>LogActorConfig</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -108,7 +108,7 @@
       setMethod="setLogPatientRecord">
       <description>Emit PatientRecord audit messages.
       </description>
-      <name>Log PatientRecord</name>
+      <name>LogPatientRecord</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -119,7 +119,7 @@
       setMethod="setLogProcedureRecord">
       <description>Emit LogProcedureRecord audit messages.
       </description>
-      <name>Log ProcedureRecord</name>
+      <name>LogProcedureRecord</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -130,7 +130,7 @@
       setMethod="setLogStudyDeleted">
       <description>Emit LogStudyDeleted audit messages.
       </description>
-      <name>Log StudyDeleted</name>
+      <name>LogStudyDeleted</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -141,7 +141,7 @@
       setMethod="setLogActorStartStop">
       <description>Emit ActorStartStop audit messages.
       </description>
-      <name>Log ActorStartStop</name>
+      <name>LogActorStartStop</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -163,7 +163,7 @@
       setMethod="setLogDicomQuery">
       <description>Emit DicomQuery audit messages.
       </description>
-      <name>Log DicomQuery</name>
+      <name>LogDicomQuery</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -174,7 +174,7 @@
       setMethod="setLogInstancesSent">
       <description>Emit InstancesSent audit messages.
       </description>
-      <name>Log InstancesSent</name>
+      <name>LogInstancesSent</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -185,7 +185,7 @@
       setMethod="setLogSecurityAlert">
       <description>Emit SecurityAlert audit messages.
       </description>
-      <name>Log SecurityAlert</name>
+      <name>LogSecurityAlert</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -196,7 +196,7 @@
       setMethod="setLogUserAuthenticated">
       <description>Emit UserAuthenticated audit messages.
       </description>
-      <name>Log UserAuthenticated</name>
+      <name>LogUserAuthenticated</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -207,7 +207,7 @@
       setMethod="setLogExport">
       <description>Emit Export audit messages.
       </description>
-      <name>Log Export</name>
+      <name>LogExport</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />

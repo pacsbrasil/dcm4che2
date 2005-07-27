@@ -28,7 +28,7 @@
       <description>List of accepted called AE titles, separated by \(backslash). 
       For example, PACS_TIANI\PACS_TIANI2.
       </description>
-      <name>Called AE Titles</name>
+      <name>CalledAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -40,7 +40,7 @@
       <description>List of accepted calling AE titles, separated by \(backslash).
       ANY = accept any. 
       </description>
-      <name>Calling AE Titles</name>
+      <name>CallingAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY" />
@@ -54,7 +54,7 @@
       Separate multiple values by \(backslash).
       NONE = no calling AE titles.  
       </description>
-      <name>Warn for Coerced AE Titles</name>
+      <name>WarnForCoercedAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE" />
@@ -71,7 +71,7 @@
           &lt;br&gt;Use ### as a placeholder for the decimal hash value. For example, PACS-##########.
           &lt;br&gt;NONE = do not generate patient IDs. But, this means media creation will fail.
       </description>
-      <name>Generate Patient ID</name>
+      <name>GeneratePatientID</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS-##########" />
@@ -90,7 +90,7 @@
       <br>If no regular expression is specified,
       the issuer is added for all patient IDs.]]>
       </description>
-      <name>Issuer of Patient ID Rules</name>
+      <name>IssuerofPatientIDRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="^PACS-\d*:PACS_TIANI" />
@@ -101,7 +101,7 @@
       setMethod="setStoreDuplicateIfDiffMD5">
       <description>Store a duplicate object if the MD5 sum of the new object differs
       from the MD5 sum of the existing file. If the MD5 sum does not match, the files may be corrupted.</description>
-      <name>Store Duplicates if Different MD5</name>
+      <name>StoreDuplicatesIfDifferentMD5</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -113,7 +113,7 @@
       <description><![CDATA[Store duplicate objects if the existing files are <b>NOT</b> located 
       on this host.]]>
       </description>
-      <name>Store Duplicate if Different Host</name>
+      <name>StoreDuplicatesIfDifferentHost</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -147,7 +147,7 @@
       <br>J2KR - JPEG 2000 Lossless
       ]]>
       </description>
-      <name>Compression Rules</name>
+      <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE" />
@@ -160,7 +160,7 @@
       received objects. If the available disk space falls below this value,
       storage of received objects is rejected with the error "Out Of Resource".
       </description>
-      <name>Out Of Resources Threshold</name>
+      <name>OutOfResourcesThreshold</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="30MB" />
@@ -173,7 +173,7 @@
       for new received objects, before a processing failure is returned to 
       the Storage SCU.
       </description>
-      <name>Update Database - Maximum Retries </name>
+      <name>UpdateDatabaseMaximumRetries </name>
       <type>int</type>
       <descriptors>
          <value value="2" />
@@ -184,7 +184,7 @@
       <description>Maximum number of retries actually performed to update the
       database records for new received objects.
       </description>
-      <name>Update Database - Performed Retries</name>
+      <name>UpdateDatabasePerformedRetries</name>
       <type>int</type>
    </attribute>   
    <attribute access="read-write"
@@ -193,7 +193,7 @@
       <description>Delay in milliseconds between retries to update the 
       database records for new received objects.
       </description>
-      <name>Update Database - Retry Interval</name>
+      <name>UpdateDatabaseRetryInterval</name>
       <type>long</type>
       <descriptors>
          <value value="0" />
@@ -204,7 +204,7 @@
       setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
       </description>
-      <name>Accept Explicit VRLE</name>
+      <name>AcceptExplicitVRLE</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -215,7 +215,7 @@
       setMethod="setAcceptJPEG2000Lossless">
       <description>Accept DICOM images encoded in JPEG 2000 Lossless Transfer Syntax.
       </description>
-      <name>Accept JPEG 2000 Lossless</name>
+      <name>AcceptJPEG2000Lossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -226,7 +226,7 @@
       setMethod="setAcceptJPEG2000Lossy">
       <description>Accept DICOM images encoded in JPEG 2000 Lossy Transfer Syntax.
       </description>
-      <name>Accept JPEG 2000 Lossy</name>
+      <name>AcceptJPEG2000Lossy</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -237,7 +237,7 @@
       setMethod="setAcceptJPEGLSLossless">
       <description>Accept DICOM images encoded in JPEG-LS Lossless Transfer Syntax.
       </description>
-      <name>Accept JPEG-LS Lossless</name>
+      <name>AcceptJPEGLSLossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -248,7 +248,7 @@
       setMethod="setAcceptJPEGLSLossy">
       <description>Accept DICOM images encoded in JPEG-LS Lossy Transfer Syntax.
       </description>
-      <name>Accept JPEG-LS Lossy</name>
+      <name>AcceptJPEGLSLossy</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -260,7 +260,7 @@
       <description>Accept DICOM images encoded in JPEG Lossless (Process 14) 
       First-Order Prediction Transfer Syntax. (DICOM JPEG Lossless default TS)
       </description>
-      <name>Accept JPEG Lossless</name>
+      <name>AcceptJPEGLossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -271,7 +271,7 @@
       setMethod="setAcceptJPEGLossless14">
       <description>Accept DICOM images encoded in JPEG Lossless (Process 14) Transfer Syntax.
       </description>
-      <name>Accept JPEG Lossless 14</name>
+      <name>AcceptJPEGLossless14</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -282,7 +282,7 @@
       setMethod="setAcceptJPEGBaseline">
       <description>Accept DICOM images encoded in JPEG Baseline Transfer Syntax.
       </description>
-      <name>Accept JPEG Baseline</name>
+      <name>AcceptJPEGBaseline</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -293,7 +293,7 @@
       setMethod="setAcceptJPEGExtended">
       <description>Accept DICOM images encoded in JPEG Extended Transfer Syntax.
       </description>
-      <name>Accept JPEG Extended</name>
+      <name>AcceptJPEGExtended</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -304,7 +304,7 @@
       setMethod="setAcceptRLELossless">
       <description>Accept DICOM images encoded in RLE Lossless Transfer Syntax.
       </description>
-      <name>Accept RLE Lossless</name>
+      <name>AcceptRLELossless</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -315,7 +315,7 @@
       setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
-      <name>Maximum PDU Length</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
@@ -327,7 +327,7 @@
       <description>Size of the buffer used to copy data from the TCP channel 
       to file. Keep the default value: 512.
       </description>
-      <name>Buffer Size</name>
+      <name>BufferSize</name>
       <type>int</type>
       <descriptors>
          <value value="512" />
@@ -339,7 +339,7 @@
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       Use LOCAL if EJBs are deployed in same JBoss instance.
       </description>
-      <name>EJB Provider URL</name>
+      <name>EJBProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL" />

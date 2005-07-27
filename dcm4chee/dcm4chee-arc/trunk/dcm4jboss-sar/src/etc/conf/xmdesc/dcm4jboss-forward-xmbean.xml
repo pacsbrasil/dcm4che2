@@ -38,7 +38,7 @@
       <br>NONE = 
       ]]>
       </description>
-      <name>Forwarding Rules</name>
+      <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]SAMPLE_SCP3,SAMPLE_SCP4!8-16;NONE" />
@@ -51,7 +51,7 @@
           by using the web application are re-forwarded. NONE = do not forward
           modified objects.
       </description>
-      <name>Forward Modified to AE Titles</name>
+      <name>ForwardModifiedToAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE" />
@@ -62,7 +62,7 @@
       setMethod="setForwardPriority">
       <description>Forwarding priority. 0=medium, 1=high, 2=low.
       </description>
-      <name>Forward Priority</name>
+      <name>ForwardPriority</name>
       <type>int</type>
       <descriptors>
          <value value="0" />
@@ -73,7 +73,7 @@
       setMethod="setMaxSOPInstanceUIDsPerMoveRQ">
       <description>Maximum number of SOP Instance UIDs per Move Request.
       </description>
-      <name>Maximum SOP Instance UIDs</name>
+      <name>MaximumSOPInstanceUIDs</name>
       <type>int</type>
       <descriptors>
          <value value="100" />

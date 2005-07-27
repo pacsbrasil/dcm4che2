@@ -24,7 +24,7 @@
       setMethod="setPort">
       <description>Port that listens for TCP communication.
       </description>
-      <name>TCP Port</name>
+      <name>TCPPort</name>
       <type>int</type>
       <descriptors>
          <value value="2350" />
@@ -41,7 +41,7 @@
       <b>dicom-tls.3des</b>&#8212;accept TLS connections; force DES encryption<br>
       <b>dicom-tls.nodes</b>&#8212;accept TLS connections without encryption]]>
       </description>
-      <name>Security Protocol</name>
+      <name>SecurityProtocol</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="dicom" />
@@ -52,7 +52,7 @@
       setMethod="setDimseTimeout">
       <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DIMSE Timeout</name>
+      <name>DIMSETimeout</name>
       <type>int</type>
       <descriptors>
          <value value="600000" />
@@ -63,7 +63,7 @@
       setMethod="setRqTimeout">
       <description>Sets the DICOM A-Associate request timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>Request Timeout</name>
+      <name>RequestTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="5000" />
@@ -74,7 +74,7 @@
       setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after a Dicom A-Release response.
       </description>
-      <name>Socket Close Delay</name>
+      <name>SocketCloseDelay</name>
       <type>int</type>
       <descriptors>
          <value value="50" />
@@ -85,7 +85,7 @@
       setMethod="setMaxPDULength">
       <description>Maximum Protocol Data Unit (PDU) package length for receiving PDUs.
       </description>
-      <name>Maximum PDU Length</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
@@ -96,7 +96,7 @@
       setMethod="setPackPDVs">
       <description>Pack command and data PDVs in one PDU.
       </description>
-      <name>Pack PDVs</name>
+      <name>PackPDVs</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -107,7 +107,7 @@
       setMethod="setMaxClients">
       <description>Maximum number of DICOM clients that can simultaneously connect.
       </description>
-      <name>Maximum DICOM Clients</name>
+      <name>MaximumDICOMClients</name>
       <type>int</type>
       <descriptors>
          <value value="10" />
@@ -117,7 +117,7 @@
       getMethod="getNumClients">
       <description>Current number of connected DICOM clients.
       </description>
-      <name>Current Clients</name>
+      <name>CurrentClients</name>
       <type>int</type>
    </attribute>
    <attribute access="read-write"
@@ -125,7 +125,7 @@
       setMethod="setMaxIdleThreads">
       <description>Maximum number of idle threads.
       </description>
-      <name>Maximum Idle Threads</name>
+      <name>MaximumIdleThreads</name>
       <type>int</type>
       <descriptors>
          <value value="5" />
@@ -135,7 +135,7 @@
       getMethod="getNumIdleThreads">
       <description>Current number of idle threads.
       </description>
-      <name>Current Idle Threads</name>
+      <name>CurrentIdleThreads</name>
       <type>int</type>
    </attribute>
    <attribute access="read-write"
@@ -143,7 +143,7 @@
       setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.
       </description>
-      <name>TLS Config Name</name>
+      <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="tiani.archive:service=TLSConfig" />
@@ -154,7 +154,7 @@
       setMethod="setAuditLoggerName">
       <description>Used internally. Do NOT modify.
       </description>
-      <name>Audit Logger Name</name>
+      <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="tiani.archive:service=AuditLogger" />

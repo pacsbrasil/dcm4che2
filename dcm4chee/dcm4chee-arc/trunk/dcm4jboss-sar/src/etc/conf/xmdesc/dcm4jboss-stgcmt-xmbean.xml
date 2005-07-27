@@ -32,7 +32,7 @@
       setMethod="setCalledAETs">
       <description>Accepted called AE titles, separated by \ (backslash). 
       </description>
-      <name>Called AE Titles</name>
+      <name>CalledAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -44,7 +44,7 @@
       <description>Accepted calling AE titles, separated by \ (backslash).
       ANY = accept any. 
       </description>
-      <name>Calling AE Titles</name>
+      <name>CallingAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY" />
@@ -57,7 +57,7 @@
       receive the Storage Commit Result in the same association 
       as the storage commit was requested, before releasing the association.
       </description>
-      <name>Receive Result in Same Association Timeout</name>
+      <name>ReceiveResultInSameAssociationTimeout</name>
       <type>long</type>
       <descriptors>
          <value value="0" />
@@ -77,7 +77,7 @@
       apart for each retry; then retry a total of 10 times, 10 minutes 
       apart for each retry.]]>
       </description>
-      <name>SCU Retry Intervals</name>
+      <name>SCURetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m" />
@@ -96,7 +96,7 @@
       apart for each retry; then retry a total of 10 times, 10 minutes 
       apart for each retry.]]>
       </description>
-      <name>Scp Retry Intervals</name>
+      <name>SCPRetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m" />
@@ -108,7 +108,7 @@
       <description>Accept DICOM objects encoded in Explicit Value Representation
       Little Endian Transfer Syntax.
       </description>
-      <name>Accept Explicit VRLE</name>
+      <name>AcceptExplicitVRLE</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -131,7 +131,7 @@
       setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
-      <name>Maximum PDU Length</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
@@ -142,7 +142,7 @@
       setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>Accept Timeout</name>
+      <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000" />
@@ -153,7 +153,7 @@
       setMethod="setDimseTimeout">
       <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DIMSE Timeout</name>
+      <name>DIMSETimeout</name>
       <type>int</type>
       <descriptors>
          <value value="60000" />
@@ -164,7 +164,7 @@
       setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after an A-Release response.
       </description>
-      <name>Socket Close Delay</name>
+      <name>SocketCloseDelay</name>
       <type>int</type>
       <descriptors>
          <value value="50" />
@@ -176,7 +176,7 @@
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
-      <name>EJB Provider URL</name>
+      <name>EJBProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL" />
