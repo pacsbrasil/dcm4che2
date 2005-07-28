@@ -55,7 +55,7 @@ function checkError( errCode )
     	else if ( errCode == 'moveError_toManyDest' ) 
     		msg = msg + 'Please select only one destination!'
     	else if ( errCode == 'moveError_noSource' ) 
-    		msg = msg + 'Please select at least one source!'
+    		msg = msg + 'Please select one destination and at least one source!'
     	else if ( errCode == 'moveError_unselectSeries' ) 
     		msg = msg + 'Please check that all series and instances are unselected.'
     	else if ( errCode == 'moveError_unselectInstances' ) 
@@ -73,9 +73,9 @@ function checkError( errCode )
     	else if ( errCode == 'moveError_diffStudyParent' ) 
     		msg = msg + 'Not allowed! You can only move studies from one patient to another patient.'
     	else if ( errCode == 'moveError_diffSeriesParent' ) 
-    		msg = msg + 'Not allowed! You can only move series from one study to another study.'
+    		msg = msg + 'Not allowed! All series must be of the same study.'
     	else if ( errCode == 'moveError_diffInstanceParent' ) 
-    		msg = msg + 'Not allowed! You can only move instances from one series to another series.'
+    		msg = msg + 'Not allowed! All instances must be of the same series.'
     	else if ( errCode == 'MEDIA_DELETE_FAILED' ) 
     		msg = msg + 'Delete media failed!'
     	else if ( errCode == 'deleteError_mwlEntry' ) 
