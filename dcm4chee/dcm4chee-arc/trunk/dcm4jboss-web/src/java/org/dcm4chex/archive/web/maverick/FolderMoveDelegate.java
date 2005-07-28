@@ -187,7 +187,7 @@ public class FolderMoveDelegate {
 		SeriesModel srcSeries = (SeriesModel) sourcePath.get(2);//0..patient,1..study,2..series
 		
 		SeriesModel destSeries;
-		StudyModel destStudy;
+		StudyModel destStudy = null;
 		PatientModel pat;
 		if ( iDestSeries != -1 ) {
 			List destPath = findModelPath( folderForm.getPatients(), iDestSeries, 2 );
@@ -215,6 +215,7 @@ public class FolderMoveDelegate {
 		_updateSeriesWithInstances( destSeries, cm );
 		_updateSeriesWithInstances( (SeriesModel) sourcePath.get(2), cm );//0..patient,1..study,2..series,3..instances
 
+		if ( destStudy != null ) destStudy.update( cm.getStudy( destStudy.getPk() ) );
 /*_*/	
 		ctrl.logProcedureRecord(pat,srcStudy,iaSrc.length + " instances moved to " + 
 				destSeries.getSeriesDescription()+ " ("+destSeries.getSeriesIUID()+")");
