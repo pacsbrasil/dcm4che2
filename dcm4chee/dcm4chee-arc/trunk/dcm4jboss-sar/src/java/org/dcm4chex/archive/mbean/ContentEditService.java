@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
+import javax.ejb.FinderException;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
@@ -26,6 +27,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -188,12 +190,13 @@ public class ContentEditService extends ServiceMBeanSupport {
     	return ds1;
     }
     
-    public Dataset createSeries(Dataset ds, Integer studyPk) throws CreateException, RemoteException, HomeFactoryException {
+    public Dataset createSeries(Dataset ds, Integer studyPk) throws CreateException, RemoteException, HomeFactoryException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("create Series");
     	Dataset ds1 =  lookupContentEdit().createSeries( ds, studyPk.intValue() );
     	if ( log.isDebugEnabled() ) {log.debug("create Series ds1:"); log.debug( ds1 );}
 		sendStudyMgt( ds1.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds1);
-    	return ds1;
+		String seriesIUID = ds1.get(Tags.RefSeriesSeq).getItem().getString(Tags.SeriesInstanceUID);
+		return lookupContentManager().getSeriesByIUID(seriesIUID);
     }
     
     public void updatePatient(Dataset ds) throws RemoteException, HomeFactoryException, CreateException {
@@ -418,5 +421,12 @@ public class ContentEditService extends ServiceMBeanSupport {
         return contentEdit;
     }
 
+    private ContentManager lookupContentManager() throws HomeFactoryException, RemoteException, CreateException  {
+    	if ( contentMgr != null ) return contentMgr;
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        contentMgr = home.create();
+        return contentMgr;
+    }
  
 }
