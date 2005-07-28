@@ -53,14 +53,14 @@ public class DTFormat extends SimpleDateFormat {
                 Integer.parseInt(s.substring(p,p+4)));
             pos.setIndex(p+=4);
             if (l > p) {
-                if (s.charAt(p) == '-') {
+                if (!Character.isDigit(s.charAt(p))) {
                     pos.setIndex(++p);
                 }
                 calendar.set(Calendar.MONTH,
                     Integer.parseInt(s.substring(p,p+2)) - 1);
                 pos.setIndex(p+=2);
                 if (l > p) {
-                    if (s.charAt(p) == '-') {
+                    if (!Character.isDigit(s.charAt(p))) {
                         pos.setIndex(++p);
                     }
                     calendar.set(Calendar.DAY_OF_MONTH,
