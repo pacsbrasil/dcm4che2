@@ -117,6 +117,13 @@ public abstract class ContentManagerBean implements SessionBean {
     public Dataset getSeries(int seriesPk) throws FinderException {
         return seriesHome.findByPrimaryKey(new Integer(seriesPk)).getAttributes(true);
     }
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getSeriesByIUID(String seriesIUID) throws FinderException {
+        return seriesHome.findBySeriesIuid(seriesIUID).getAttributes(true);
+    }
 
     /**
      * @ejb.interface-method
