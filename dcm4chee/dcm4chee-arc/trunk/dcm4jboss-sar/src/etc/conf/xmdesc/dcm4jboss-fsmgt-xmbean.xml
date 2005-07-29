@@ -4,7 +4,10 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>File System Management Service</description>
+   <description>File System Management Service. Specifies the location of
+file systems in which DICOM objects received from the Store SCP Server 
+are stored. You can also set up rules to delete the most infrequently
+accessed studies.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
@@ -22,14 +25,15 @@
    <attribute access="read-write"
       getMethod="getDirectoryPathList"
       setMethod="setDirectoryPathList">
-      <description>List storage directories/mount points on this DICOM Node.
-      Use ';' on Windows and ':' on Unix-like platforms to separate
-      multiple directory path names. Relative path names are
-      resolved relative to INSTALL_DIR/server/pacs/. '*'-suffix marks current 
-      Storage Directory used for storage of new received DICOM Instances by the
-      Storage SCP on this DICOM Node.      
+      <description>List directories (mount points) on this DICOM node.
+      To separate multiple directories, use ; (semi-colon) on Windows and 
+      : (colon) on UNIX-like platforms. Relative path names are
+      resolved relative to the archive-install-directory/server/pacs/. 
+      To mark the directory used for storage of newly received DICOM Instances 
+      by the Storage SCP on this DICOM node, 
+      add * (asterisk) to the end of the directory path name.
       </description>
-      <name>DirectoryPathList</name>
+      <name>DirectoryPaths</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="archive*" />
@@ -38,13 +42,13 @@
    <attribute access="read-write"
       getMethod="getReadOnlyDirectoryPathList"
       setMethod="setReadOnlyDirectoryPathList">
-      <description>List readonly directories/mount points on this DICOM Node.
-      Use ';' on Windows and ':' on Unix-like platforms to separate
-      multiple directory path names. Relative path names are
-      resolved relative to INSTALL_DIR/server/pacs/. NONE = no readonly
-      directory/mount point.
+      <description>List read-only directories (mount points) on this 
+      DICOM node. To separate multiple directories, use ; (semi-colon) on Windows and 
+      : (colon) on UNIX-like platforms. Relative path names are
+      resolved relative to the archive-install-directory/server/pacs/.
+      NONE = no read-only directory or mount point.
       </description>
-      <name>ReadOnlyDirectoryPathList</name>
+      <name>ReadOnlyDirectoryPaths</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE" />
@@ -53,9 +57,9 @@
    <attribute access="read-write"
       getMethod="getRetrieveAET"
       setMethod="setRetrieveAET">
-      <description>Retrieve AET associated with this DICOM Node. 
+      <description>Retrieve AE titles associated with this DICOM Node. 
       </description>
-      <name>RetrieveAET</name>
+      <name>RetrieveAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -64,12 +68,12 @@
    <attribute access="read-write"
       getMethod="getMinFreeDiskSpace"
       setMethod="setMinFreeDiskSpace">
-      <description>Minimal Available Disk Space.
-      Storage Directory switches to next entry in DirectoryPathList,
-      if amount of available disk space falls below this value.
-      1MB = 1000000 Byte, 1GB = 1000MB.    
+      <description><![CDATA[Minimum free disk space.
+      The storage directory, or cache, switches to the next entry in  
+      <b>Directory Paths</b>, if the amount of free disk space falls below this value.
+      1MB = 1000000 bytes, 1GB = 1000MB.]]>   
       </description>
-      <name>MinFreeDiskSpace</name>
+      <name>MinimumFreeDiskSpace</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="50MB" />
@@ -78,7 +82,7 @@
    <attribute access="read-write"
       getMethod="getMountFailedCheckFile"
       setMethod="setMountFailedCheckFile">
-      <description>Existence of specified file signals failed mount.
+      <description>If the specified file exists, this signals a failed mount.
       </description>
       <name>MountFailedCheckFile</name>
       <type>java.lang.String</type>
@@ -89,7 +93,7 @@
    <attribute access="read-write"
       getMethod="isMakeStorageDirectory"
       setMethod="setMakeStorageDirectory">
-      <description>Make Storage Directory if no one already exists.
+      <description>Make a storage directory, or cache, if one does not already exist.
       </description>
       <name>MakeStorageDirectory</name>
       <type>boolean</type>
@@ -100,11 +104,11 @@
    <attribute access="read-write"
       getMethod="getFreeDiskSpaceLowerThreshold"
       setMethod="setFreeDiskSpaceLowerThreshold">
-      <description>Defines lower threshold of available disk space for 
-          deleting least-recently accessed studies: if the average available
-          disk space on storage filesystems falls below 
-          MinFreeDiskSpace * FreeDiskSpaceLowerThreshold,
-          least-recently accessed studies will be deleted.
+      <description>Defines lower threshold of free disk space for 
+          deleting the most infrequently accessed studies.
+          If the average free disk space on the storage directories falls below 
+          MinimumFreeDiskSpace x FreeDiskSpaceLowerThreshold, the most
+          infrequently accessed studies are deleted.
       </description>
       <name>FreeDiskSpaceLowerThreshold</name>
       <type>float</type>
@@ -115,11 +119,11 @@
    <attribute access="read-write"
       getMethod="getFreeDiskSpaceUpperThreshold"
       setMethod="setFreeDiskSpaceUpperThreshold">
-      <description>Defines upper threshold of available disk space for 
-          deleting least-recently accessed studies: least-recently accessed
-          studies will be deleted, until the average available
-          disk space on storage filesystems exceeds 
-          MinFreeDiskSpace * FreeDiskSpaceUpperThreshold.
+      <description>Defines the upper threshold of free disk space for 
+          deleting the most infrequently accessed studies.
+          The most infrequently accessed studies are deleted until the 
+          average free disk space on the storage directories exceeds 
+          MinimumFreeDiskSpace x FreeDiskSpaceUpperThreshold.
       </description>
       <name>FreeDiskSpaceUpperThreshold</name>
       <type>float</type>
@@ -130,11 +134,11 @@
    <attribute access="read-write"
       getMethod="isFlushStudiesExternalRetrievable"
       setMethod="setFlushStudiesExternalRetrievable">
-      <description>Enables deletion of objects in local filesystems of Studies
-      which are retrieveable from an external Retrieve AE. DB Entries for
-      the Studies will not be removed!
+      <description>Enables deletion of studies in local cache if the studies
+      are retrieveable from an external Retrieve AE. Database entries for
+      the studies are not removed.
       </description>
-      <name>FlushStudiesExternalRetrievable</name>
+      <name>DeleteStudiesExternallyRetrievable</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -143,11 +147,11 @@
    <attribute access="read-write"
       getMethod="isFlushStudiesOnMedia"
       setMethod="setFlushStudiesOnMedia">
-      <description>Enables deletion of objects in local filesystems of Studies
-      stored on media (offline storage). DB Entries for the Studies will not
-      be removed! 
+      <description>Enables the deletion studies in local cache that are
+      stored on media (offline storage). Database entries for the studies are not
+      be removed. 
       </description>
-      <name>FlushStudiesOnMedia</name>
+      <name>DeleteLocalStudiesStoredOnMedia</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -156,12 +160,13 @@
    <attribute access="read-write"
       getMethod="isDeleteStudiesStorageNotCommited"
       setMethod="setDeleteStudiesStorageNotCommited">
-      <description>Enables deletion of least-recently accessed studies for
-          which no storage commitment request was received. Deletes
-          files AND database entries! Do only activate if you know what you
-          are doing!
+      <description>Enables deletion of the most infrequently accessed studies for
+          which no storage commitment request was received. Enabling this feature
+          deletes the studies and the database entries, so the study is completely 
+          removed from the system. We recommend extreme caution
+          when using this feature.
       </description>
-      <name>DeleteStudiesStorageNotCommited</name>
+      <name>DeleteStudiesFromSystem</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -170,14 +175,18 @@
    <attribute access="read-write"
       getMethod="getStudyCacheTimeout"
       setMethod="setStudyCacheTimeout">
-      <description>Defines how long a study may not be accessed, before it will
-      be deleted if it match one of the configured conditions:
-      FlushStudiesExternalRetrievable, FlushStudiesOnMedia and 
-      DeleteStudiesStorageNotCommited.
-      Format: ##h (in hours), ##d (in days), ##w (in weeks)
-      NEVER (= deletion of studies is only triggered by running out of disk space).
+      <description><![CDATA[Defines how long a study is not accessed before it will
+      be deleted from cache if it matches one of the configured conditions:
+      Delete Studies Externally Retrievable, Delete Studies On Media, or 
+      Delete Studies from System.
+      <br>Format: 
+      <br>##h (in hours) | ##d (in days) | ##w (in weeks) | NEVER
+      <br>NEVER = deletion of studies is only triggered by running out of disk space.
+      <br>Example:
+      <br>52w = any studies that have not been accessed for 52 weeks or more can be
+      deleted if they match the preconfigured conditions.]]>
       </description>
-      <name>StudyCacheTimeout</name>
+      <name>StudyAgeForDeletion</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NEVER" />
@@ -186,11 +195,12 @@
    <attribute access="read-write"
       getMethod="getPurgeFilesInterval"
       setMethod="setPurgeFilesInterval">
-      <description>Interval in which unreferenced Files are purged from the
-      filesystem. Format: ##s (in seconds), ##m (in minutes), ##h (in hours)
-      NEVER (= disable deletion of unreferenced Files).
+      <description>Interval in which unreferenced files are deleted. The 
+      Delete Files Interval must be less than the Free Disk Space Interval.
+      Format: ##s (in seconds), ##m (in minutes), ##h (in hours)
+      NEVER = never delete unreferenced files.
       </description>
-      <name>PurgeFilesInterval</name>
+      <name>DeleteFilesInterval</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="1m" />
@@ -199,10 +209,9 @@
    <attribute access="read-write"
       getMethod="getLimitNumberOfFilesPerTask"
       setMethod="setLimitNumberOfFilesPerTask">
-      <description>Limit number of unreferenced Files that are purged from the
-      filesystem in one purge task.
-      </description>
-      <name>PurgeFilesLimit</name>
+      <description>Limit the number of unreferenced files that are deleted in one 
+      delete task.</description>
+      <name>DeleteFilesLimit</name>
       <type>int</type>
       <descriptors>
          <value value="1000" />
@@ -212,11 +221,12 @@
    <attribute access="read-write"
       getMethod="getFreeDiskSpaceInterval"
       setMethod="setFreeDiskSpaceInterval">
-      <description>Interval in which available disk space is checked for
-          necessity to free disk space by deletion of least-recently accessed
-          studies. FreeDiskSpaceInterval shall be greater than PurgeFilesInterval.
-          Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
-          NEVER (= no deletion of studies).          
+      <description>Interval in which free disk space checked to 
+      see whether the deletion of the most infrequently accessed
+      studies should be triggered. The Free Disk Space Interval must be
+      greater than Delete Files Interval.
+      Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
+      NEVER = do not delete of studies.          
       </description>
       <name>FreeDiskSpaceInterval</name>
       <type>java.lang.String</type>
@@ -227,8 +237,9 @@
    <attribute access="read-write"
       getMethod="isFreeDiskSpaceOnDemand"
       setMethod="setFreeDiskSpaceOnDemand">
-      <description>Enables/Disables 'freeDiskSpace on demand'.
-      		Services like StorageSCP can use this flag to permit or omit the call of freeDiscSpace after their work.
+      <description>Enables the "free disk space on demand" feature.
+    Services such as the StorageSCP use this flag to permit or omit 
+    the call of free disk space after their work.
       </description>
       <name>FreeDiskSpaceOnDemand</name>
       <type>boolean</type>
@@ -239,9 +250,9 @@
    <attribute access="read-write"
       getMethod="isPurgeFilesAfterFreeDiskSpace"
       setMethod="setPurgeFilesAfterFreeDiskSpace">
-      <description>Enables/Disables purging after freeDiskSpace has processed.
+      <description>Enables deletion of files after free disk space has processed.
       </description>
-      <name>PurgeFilesAfterFreeDiskSpace</name>
+      <name>DeleteFilesAfterFreeDiskSpace</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -254,7 +265,7 @@
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
-      <name>EjbProviderURL</name>
+      <name>EJBProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL" />
@@ -265,8 +276,8 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="INFO">
-      <description>Determines if the specified File System is
-      accessable on this DICOM Node</description>
+      <description>Determines if the specified directory or mount point is
+      accessible on this DICOM node</description>
       <name>isLocalFileSystem</name>
       <parameter>
         <description>Directory Path</description>
@@ -281,13 +292,13 @@
       <return-type>[Ljava.lang.String;</return-type>
    </operation>
    <operation impact="INFO">
-      <description>Show Available Disk Space on Local File Systems</description>
+      <description>Show free disk space on the local directories or mount points.</description>
       <name>showAvailableDiskSpace</name>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="INFO">
-      <description>Select Storage File System with Available Disk Space 
-      &gt; MinFreeDiskSpace</description>
+      <description>Select the storage directory or mount point
+      where the free disk space is less than the Minimum Free Disk Space</description>
       <name>selectStorageFileSystem</name>
       <return-type>org.dcm4chex.archive.mbean.FileSystemInfo</return-type>
    </operation>
@@ -297,11 +308,11 @@
       <return-type>void</return-type>
    </operation>   
    <operation impact="ACTION">
-      <description>Purge unreferenced Files on specific filesystem</description>
+      <description>Delete unreferenced files on specific directories or mount points.</description>
       <name>purgeFiles</name>
       <parameter>
         <description>Directory path of filesystem.
-        			Purge all filesystems if parameter is null!
+        			Delete all directories or mount points if the parameter is null.
         </description>
         <name>purgeDirPath</name>
         <type>java.lang.String</type>
