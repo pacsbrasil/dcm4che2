@@ -19,12 +19,16 @@ default-transform-type="xslt">
     <view id="error" name="error">
    	  <transform path="error.xsl" />
     </view>
+    <view id="logout" name="logout">
+      <transform path="logout.xsl" />
+    </view>
   </views>
 
   <commands>
     <command name="folder">
       <controller class="org.dcm4chex.archive.web.maverick.FolderCtrl" />
       <view ref="folder" />
+      <view ref="logout" />
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
@@ -37,6 +41,7 @@ default-transform-type="xslt">
 	    <view id="worklist" name="worklist">
 	      <transform path="addWorklist.xsl" />
 	    </view>
+      <view ref="logout" />
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 

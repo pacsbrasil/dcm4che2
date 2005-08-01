@@ -10,7 +10,6 @@ package org.dcm4chex.archive.web.maverick;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,9 +17,7 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
@@ -28,7 +25,6 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.JMSDelegate;
-import org.dcm4chex.archive.web.maverick.model.AbstractModel;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
@@ -43,12 +39,14 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  */
 public class FolderSubmitCtrl extends FolderCtrl {
     
+	public static final String LOGOUT = "logout";
 	
     private static final int MOVE_PRIOR = 0;
     
     private static ContentEditDelegate delegate = null;
     
     private FolderMoveDelegate moveDelegate = null;
+
 
     public static ContentEditDelegate getDelegate() {
     	return delegate;
@@ -80,6 +78,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
             HttpServletRequest rq = getCtx().getRequest();
+            if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
+            	return logout();
+            
             if ( log.isDebugEnabled() ) {
 		        log.debug( "UserPrincipal:"+rq.getUserPrincipal().getName() );
 		        log.debug( "UserPrincipal is in role admin:"+rq.isUserInRole("WebAdmin") );
@@ -460,6 +461,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 desc );
 	}
 	
-
+	private String logout() {
+    	getCtx().getRequest().getSession().invalidate();
+    	return LOGOUT;
+	}
 
 }

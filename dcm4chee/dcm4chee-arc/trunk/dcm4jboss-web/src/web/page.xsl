@@ -23,6 +23,7 @@
 		      	</xsl:if>
 	      		<td width="120" align="center"><a href="useradmin_console.m">User Admin</a></td>
 		      	<td width="120" align="center"><a href="../dcm4jboss-arr">Audit Repository</a></td>
+		      	<td width="120" align="center"><a href="foldersubmit.m?logout=">Logout</a></td>
 				<td width="40%"></td>
 			  	<xsl:apply-templates select="model"/>
 		     </tr>
