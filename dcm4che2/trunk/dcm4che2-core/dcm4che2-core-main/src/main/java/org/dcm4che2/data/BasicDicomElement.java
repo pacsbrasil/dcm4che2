@@ -206,6 +206,14 @@ public class BasicDicomElement implements DicomElement {
 			return ((byte[])value).length == 0;
 		return ((List)value).isEmpty();
 	}
+    
+    public int vm(SpecificCharacterSet cs) {
+        if (value == null)
+            return 0;
+        if (value instanceof byte[])
+            return vr.vm((byte[])value, cs);
+        return ((List)value).isEmpty() ? 0 : 1;
+    }
 	
 	public byte[] getBytes() {
 		return (byte[]) value;

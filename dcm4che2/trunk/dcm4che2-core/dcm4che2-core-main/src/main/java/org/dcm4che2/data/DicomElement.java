@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 public interface DicomElement extends Serializable {
 	int tag();
 	VR vr();
+    int vm(SpecificCharacterSet cs);
 	boolean bigEndian();
 	DicomElement bigEndian(boolean bigEndian);
 	int length();

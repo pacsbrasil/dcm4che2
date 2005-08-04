@@ -183,6 +183,11 @@ abstract class AbstractDicomObject implements DicomObject {
 		return tags != null && tags.length > 0 ?
 				new FilteredDicomObject.Include(this, tags) : this;
 	}
+    
+    public int vm(int tag) {
+        DicomElement attr = get(tag);
+        return attr != null ? attr.vm(getSpecificCharacterSet()) : -1;
+    }
 
 	public boolean containsValue(int tag) {
 		DicomElement attr = get(tag);

@@ -43,6 +43,7 @@ public interface DicomObject
 	boolean isEmpty();
 	int size();
 	void clear();
+    int vm(int tag);
 	boolean contains(int tag);
 	boolean containsValue(int tag);
 	boolean accept(Visitor visitor);

@@ -217,6 +217,11 @@ public abstract class VR {
 			return StringUtils.trim(VR.bytes2strs(val, null));
 		}
         
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            if (val == null || val.length == 0)
+                return 0;
+            return StringUtils.count(VR.bytes2str(val, null), '\\') + 1;
+        }
 	}
 
 	private static class StringVR extends VR {
@@ -246,6 +251,12 @@ public abstract class VR {
 				return EMPTY_STRING_ARRAY;
 			return StringUtils.trim(VR.bytes2strs(val, cs));
 		}
+        
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            if (val == null || val.length == 0)
+                return 0;
+            return StringUtils.count(VR.bytes2str(val, cs), '\\') + 1;
+        }
 	}
 
 	private static class TextVR extends VR {
@@ -319,6 +330,10 @@ public abstract class VR {
                 boolean last, SpecificCharacterSet cs) {
             return VR.parseShortXMLValue(sb, out, last);                
         }
+                
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            return val == null ? 0 : val.length / 2;
+        }
 
 		public void toggleEndian(Object val) {
 			ByteUtils.toggleShortEndian((byte[]) val);
@@ -385,6 +400,10 @@ public abstract class VR {
             }
             outIntLE(out, (int) Long.parseLong(remain));
             return out.toByteArray();                
+        }
+                
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            return val == null ? 0 : val.length / 4;
         }
         
 		public void toggleEndian(Object val) {
@@ -497,6 +516,10 @@ public abstract class VR {
             outShortLE(out, Integer.parseInt(remain.substring(0, 4),16));
             outShortLE(out, Integer.parseInt(remain.substring(4),16));
             return out.toByteArray();
+        }
+        
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            return val == null ? 0 : val.length / 4;
         }
         
         public void toggleEndian(Object val) {
@@ -751,6 +774,10 @@ public abstract class VR {
             return VR.parseFloatXMLValue(sb, out, last);                
         }
         
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            return val == null ? 0 : val.length / 4;
+        }
+        
 		public void toggleEndian(byte[] b) {
 			ByteUtils.toggleIntEndian(b);
 		}
@@ -868,6 +895,10 @@ public abstract class VR {
             return out.toByteArray();
         }
 
+        public int vm(byte[] val, SpecificCharacterSet cs) {
+            return val == null ? 0 : val.length / 8;
+        }
+        
         public void toggleEndian(byte[] b) {
 			ByteUtils.toggleLongEndian(b);
 		}
@@ -1822,10 +1853,13 @@ public abstract class VR {
         });
     }
     
-
     public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
             boolean last, SpecificCharacterSet cs) {
         return last ? VR.str2bytes(sb.toString(), null) : null;
+    }
+
+    public int vm(byte[] bs, SpecificCharacterSet cs) {
+        return (bs == null || bs.length == 0) ? 0 : 1;
     }
     
 	public void toggleEndian(Object val) {
