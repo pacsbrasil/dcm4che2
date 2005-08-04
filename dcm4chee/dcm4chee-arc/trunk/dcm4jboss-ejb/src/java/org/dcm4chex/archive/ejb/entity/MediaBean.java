@@ -16,6 +16,7 @@ import javax.ejb.EntityBean;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.common.Availability;
 
 /**
  * @ejb.bean name="Media" type="CMP" view-type="local"
@@ -60,6 +61,9 @@ import org.apache.log4j.Logger;
  * @jboss.query 
  * 	signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
  *  dynamic="true"
+ *
+ * @jboss.query signature="int ejbSelectInstanceAvailability(java.lang.Integer pk)"
+ * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1"
  *
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
@@ -163,6 +167,14 @@ public abstract class MediaBean implements EntityBean {
      */
     public abstract void setMediaStatusInfo(String info);
 
+    /**
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public boolean checkInstancesAvailable() throws FinderException {
+    	return ejbSelectInstanceAvailability( getPk() ) == Availability.ONLINE;
+    }
+    
     /**
      * @ejb.relation
      * 	name="instance-media"
@@ -316,4 +328,11 @@ public abstract class MediaBean implements EntityBean {
      */ 
     public abstract int ejbSelectGenericInt(String jbossQl, Object[] args)
     		throws FinderException;
+    
+    /**
+     * @ejb.select query=""
+     */
+    public abstract int ejbSelectInstanceAvailability(Integer pk)
+            throws FinderException;
+    
 }

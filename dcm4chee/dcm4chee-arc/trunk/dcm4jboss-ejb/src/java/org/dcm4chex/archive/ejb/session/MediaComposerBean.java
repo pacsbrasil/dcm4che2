@@ -453,6 +453,9 @@ public abstract class MediaComposerBean implements SessionBean {
         dto.setFilesetId(media.getFilesetId());
         dto.setFilesetIuid(media.getFilesetIuid());
         dto.setMediaCreationRequestIuid(media.getMediaCreationRequestIuid());
+        try {
+			dto.setInstancesAvailable(media.checkInstancesAvailable());
+		} catch (FinderException e) { /* ignore */ }
         return dto;
     }    
 
@@ -587,5 +590,18 @@ public abstract class MediaComposerBean implements SessionBean {
      	}
     	if ( log.isDebugEnabled() ) log.debug( "Studies updated after media "+filesetId+" was deleted!");
    	
+    }
+    
+    /**
+     * Checks if all instances of a media are locally available (online).
+     * <p>
+     * Update derived fields from series and studies after media is successfully deleted.
+     * 
+     * @param mediaPk Primary key of the media.
+     * 
+     * @ejb.interface-method
+     */
+    public boolean checkInstancesAvailable( Integer mediaPk ) throws FinderException {
+    	return mediaHome.findByPrimaryKey( mediaPk ).checkInstancesAvailable();
     }
 }

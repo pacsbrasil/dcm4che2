@@ -350,16 +350,28 @@
       <return-type>int</return-type>
    </operation>
  
-    <operation impact="ACTION">
+   <operation impact="ACTION">
       <description>Delete Media.
       </description>
       <name>deleteMedia</name>
       <parameter>
-        <description>Directory Path</description>
+        <description>Primary key of media</description>
         <name>mediaPk</name>
         <type>java.lang.Integer</type>
       </parameter>
       <return-type>void</return-type>
+   </operation>
+    
+   <operation impact="INFO">
+      <description>Check if all instances of a medium are available as files.
+      </description>
+      <name>checkMediaInstances</name>
+      <parameter>
+        <description>Primary key of media</description>
+        <name>mediaPk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>boolean</return-type>
    </operation>
    
 </mbean>

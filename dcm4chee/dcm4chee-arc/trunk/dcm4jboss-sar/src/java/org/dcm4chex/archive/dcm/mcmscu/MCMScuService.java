@@ -1119,7 +1119,6 @@ public class MCMScuService extends TimerSupport implements MessageListener {
      * @throws JMSException
 	 */
 	private void notifyMediaToBurn(List mediaToBurn) throws JMSException {
-		// TODO Auto-generated method stub
 		log.info("Notify "+this.notifyBurnMediaEmailTo+" that "+mediaToBurn.size()+" media are ready to burn!");
 		HashMap map = new HashMap();
 		map.put( SendMailService.MAIL_BODY, formatBody(mediaToBurn) );
@@ -1229,6 +1228,33 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     	return "OK";
     }
     
+    /**
+     * Checks if all instances of a media are available (ONLINE).
+     * 
+     * @param mediaPk Primary key of media
+     * 
+     * @return true if all instances are ONLINE
+     * 
+     * @throws RemoteException
+     * @throws FinderException
+     * @throws HomeFactoryException
+     * @throws CreateException
+     */
+    public boolean checkMediaInstances( int mediaPk ) throws RemoteException, FinderException, HomeFactoryException, CreateException{
+    	return lookupMediaComposer().checkInstancesAvailable( new Integer( mediaPk ) );
+    }
+    
+    /**
+     * Delete a media.
+     * 
+     * @param mediaPk Primary key of media.
+     * 
+     * @throws RemoteException
+     * @throws RemoveException
+     * @throws FinderException
+     * @throws HomeFactoryException
+     * @throws CreateException
+     */
     public void deleteMedia( Integer mediaPk ) throws RemoteException, RemoveException, FinderException, HomeFactoryException, CreateException {
     	lookupMediaComposer().deleteMedia( mediaPk );
     }

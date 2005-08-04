@@ -37,6 +37,7 @@ public class MediaDTO implements Serializable {
     private long mediaUsage;
     private long createdTime;
     private long updatedTime;
+    private boolean instancesAvailable;
 
     public final int getPk() {
         return pk;
@@ -111,4 +112,16 @@ public class MediaDTO implements Serializable {
         this.mediaStatusInfo = info;
     }
     
+	/**
+	 * @return Returns the instanceAvailable.
+	 */
+	public boolean getInstancesAvailable() {
+		return instancesAvailable;
+	}
+	/**
+	 * @param instanceAvailable The instanceAvailable to set.
+	 */
+	public void setInstancesAvailable(boolean instanceAvailable) {
+		this.instancesAvailable = instanceAvailable;
+	}
 }
