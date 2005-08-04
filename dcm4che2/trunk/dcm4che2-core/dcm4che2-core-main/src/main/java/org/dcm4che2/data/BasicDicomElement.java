@@ -201,7 +201,7 @@ public class BasicDicomElement implements DicomElement {
 
 	public final boolean isNull() {
 		if (value == null)
-			return false;
+			return true;
 		if (value instanceof byte[])
 			return ((byte[])value).length == 0;
 		return ((List)value).isEmpty();
