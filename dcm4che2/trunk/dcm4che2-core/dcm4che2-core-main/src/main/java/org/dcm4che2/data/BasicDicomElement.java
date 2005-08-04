@@ -204,7 +204,7 @@ public class BasicDicomElement implements DicomElement {
 			return false;
 		if (value instanceof byte[])
 			return ((byte[])value).length == 0;
-		return !((List)value).isEmpty();
+		return ((List)value).isEmpty();
 	}
 	
 	public byte[] getBytes() {
