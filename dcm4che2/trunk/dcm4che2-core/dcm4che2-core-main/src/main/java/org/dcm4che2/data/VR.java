@@ -477,6 +477,27 @@ public abstract class VR {
                 out.write(cbuf, 0, clen);            
             }
         }
+
+        public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
+                boolean last, SpecificCharacterSet cs) {
+            if (sb.length() == 0) return null;
+            int begin = 0;
+            int end;
+            while ((end = sb.indexOf("\\", begin)) != -1) {
+                outShortLE(out, Integer.parseInt(sb.substring(begin, begin+4),16));
+                outShortLE(out, Integer.parseInt(sb.substring(begin+4, begin+8),16));
+                begin = end + 1;
+            }
+            String remain = sb.substring(begin);
+            sb.setLength(0);
+            if (!last) {
+                sb.append(remain);
+                return null;
+            }
+            outShortLE(out, Integer.parseInt(remain.substring(0, 4),16));
+            outShortLE(out, Integer.parseInt(remain.substring(4),16));
+            return out.toByteArray();
+        }
         
         public void toggleEndian(Object val) {
             ByteUtils.toggleShortEndian((byte[]) val);
