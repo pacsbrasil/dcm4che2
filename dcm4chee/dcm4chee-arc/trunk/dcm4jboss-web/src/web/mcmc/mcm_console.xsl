@@ -176,7 +176,8 @@
 					<td width="15%"><h2>Initialized</h2></td>
 					<td width="15%"><h2>Modified</h2></td>
 					<td width="15%"><h2>Usage</h2></td>
-					<td width="10%"><h2>Status</h2></td>	
+					<td width="15%"><h2>Instance status</h2></td>
+					<td width="10%"><h2>Media status</h2></td>	
 					<td width="10" ><h2>Action</h2></td>	
 				</tr>
 					<xsl:apply-templates select="mediaList/item">
@@ -203,6 +204,16 @@
 	        <td title="Media usage: {mediaUsage} Bytes" >
 				<xsl:value-of select="mediaUsageWithUnit"/>
 	        </td>
+	        <td title="Instances online">
+				<xsl:choose>
+					<xsl:when test="instancesAvailable = 'true'">
+						<img src="images/avail.gif" alt="Instances online" border="0" title="All instances online!"/>		
+	 				</xsl:when>
+					<xsl:otherwise>
+						<img src="images/not_avail.gif" alt="Missing instances!" border="0" title="One or more instances are not online!"/>		
+					</xsl:otherwise>
+				</xsl:choose>
+	        </td>
 	        <td title="Status info: {mediaStatusString}">
 				<xsl:choose>
 					<xsl:when test="mediaStatus = 0">
@@ -227,11 +238,15 @@
 						unknown	(<xsl:value-of select="mediaStatus"/>)											
 					</xsl:otherwise>
 				</xsl:choose>
+				
 	        </td>
 	        <td title="Action">
 	        	<table>
 		        	<td width="20">
 		        		<xsl:choose>
+							<xsl:when test="instancesAvailable = 'false'"><!-- Dont allow burn if not online! -->
+								&#160;
+			 				</xsl:when>
 							<xsl:when test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
 								<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
 									<img src="images/burn.gif" alt="Create media" border="0" title="Create media"/>		

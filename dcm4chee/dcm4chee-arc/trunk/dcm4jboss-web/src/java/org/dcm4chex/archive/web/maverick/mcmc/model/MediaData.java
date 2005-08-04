@@ -40,6 +40,7 @@ public class MediaData {
 	private String mediaStatusString;
 	private String mediaStatusInfo;
 	private long mediaUsage;
+	private boolean instancesAvailable;
 	
 	/**
 	 * Creates a MediaData object with given MediaDTO object.
@@ -57,6 +58,7 @@ public class MediaData {
 		mediaStatusString = getStatusString( mediaStatus );
 		mediaStatusInfo = mediaDTO.getMediaStatusInfo();
 		mediaUsage = mediaDTO.getMediaUsage();
+		instancesAvailable = mediaDTO.getInstancesAvailable();
 	}
 	
 	/**
@@ -89,6 +91,13 @@ public class MediaData {
 	
 	public int getMediaPk() {
 		return mediaPk;
+	}
+
+	/**
+	 * @return Returns the instanceAvailable.
+	 */
+	public boolean isInstancesAvailable() {
+		return instancesAvailable;
 	}
 	
 	/**
