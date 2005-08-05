@@ -59,6 +59,16 @@ public class StringUtils {
         ss[i] = s.substring(l);
         return ss;
     }
+    
+    public static int count(String s, char ch) {
+        if (s == null || s.length() == 0)
+            return 0;
+        int count = 0;
+        for (int off = 0, next; 
+            (next = s.indexOf(ch, off)) != -1;
+            off = next+1, count++);
+        return count;        
+    }
 
 	public static String first(String s, char delim) {
         if (s == null || s.length() == 0)
@@ -213,7 +223,5 @@ public class StringUtils {
         shortToHex(val, ch, 0);
 		return new String(ch);
 	}
-
-    
 
 }
