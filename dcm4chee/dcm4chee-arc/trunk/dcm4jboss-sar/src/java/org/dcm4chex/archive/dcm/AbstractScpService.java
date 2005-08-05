@@ -67,10 +67,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final String getCalledAETs() {
-        return StringUtils.toString(calledAETs, '\\');
+        return calledAETs == null ? "":StringUtils.toString(calledAETs, '\\');
     }
     
     public final void setCalledAETs(String calledAETs) {
+    	if ( getCalledAETs().equals(calledAETs)) return;
         disableService();
         this.calledAETs = StringUtils.split(calledAETs, '\\');
         enableService();
@@ -81,6 +82,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 	}
 	
 	public final void setMaxPDULength(int maxPDULength) {
+		if ( this.maxPDULength == maxPDULength ) return;
 		this.maxPDULength = maxPDULength;
 		enableService();
 	}
@@ -129,6 +131,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final void setCallingAETs(String callingAETs) {
+    	if ( getCallingAETs().equals(callingAETs)) return;
         this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null 
                 : StringUtils.split(callingAETs, '\\');
         enableService();
@@ -139,6 +142,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final void setAcceptExplicitVRLE(boolean acceptExplicitVRLE) {
+        if ( this.acceptExplicitVRLE == acceptExplicitVRLE ) return;
         this.acceptExplicitVRLE = acceptExplicitVRLE;
         enableService();
     }

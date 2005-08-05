@@ -204,6 +204,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptPatientRootFind(boolean enable) {
+	    if ( this.patientRootFind == enable ) return;
         this.patientRootFind = enable;
         enableService();
     }
@@ -213,6 +214,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptTianiPatientRootFind(boolean enable) {
+	    if ( this.tianiPatientRootFind == enable ) return;
         this.tianiPatientRootFind = enable;
         enableService();
     }
@@ -222,6 +224,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	}
 
 	public final void setAcceptTianiBlockedPatientRootFind(boolean enable) {
+	    if ( this.tianiBlockedPatientRootFind == enable ) return;
 		this.tianiBlockedPatientRootFind = enable;
         enableService();
 	}
@@ -231,6 +234,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptPatientRootMove(boolean enable) {
+	    if ( this.patientRootMove == enable ) return;
         this.patientRootMove = enable;
         enableService();
     }
@@ -240,6 +244,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptPatientStudyOnlyFind(boolean enable) {
+	    if ( this.patientStudyOnlyFind == enable ) return;
         this.patientStudyOnlyFind = enable;
         enableService();
     }
@@ -249,6 +254,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptTianiPatientStudyOnlyFind(boolean enable) {
+	    if ( this.tianiPatientStudyOnlyFind == enable ) return;
         this.tianiPatientStudyOnlyFind = enable;
         enableService();
     }
@@ -258,6 +264,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	}
 
 	public final void setAcceptTianiBlockedPatientStudyOnlyFind(boolean enable) {
+	    if ( this.tianiBlockedPatientStudyOnlyFind == enable ) return;
 		this.tianiBlockedPatientStudyOnlyFind = enable;
         enableService();
 	}
@@ -267,6 +274,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptPatientStudyOnlyMove(boolean patientStudyOnlyMove) {
+	    if ( this.patientStudyOnlyMove == patientStudyOnlyMove ) return;
         this.patientStudyOnlyMove = patientStudyOnlyMove;
         enableService();
     }
@@ -276,6 +284,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptStudyRootFind(boolean enable) {
+        if ( this.studyRootFind == enable ) return;
         this.studyRootFind = enable;
         enableService();
     }
@@ -285,7 +294,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptTianiStudyRootFind(boolean enable) {
-        this.tianiStudyRootFind = enable;
+       if ( this.tianiStudyRootFind == enable ) return;
+       this.tianiStudyRootFind = enable;
         enableService();
     }
 
@@ -294,6 +304,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	}
 
 	public final void setAcceptTianiBlockedStudyRootFind(boolean enable) {
+	    if ( this.tianiBlockedStudyRootFind == enable ) return;
 		this.tianiBlockedStudyRootFind = enable;
         enableService();
 	}
@@ -303,6 +314,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final void setAcceptStudyRootMove(boolean studyRootMove) {
+	    if ( this.studyRootMove == studyRootMove ) return;
         this.studyRootMove = studyRootMove;
         enableService();
     }
@@ -312,6 +324,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	}
 
 	public final void setAcceptDeflatedBlockedFind(boolean enable) {
+	    if ( this.acceptDeflatedBlockedFind == enable ) return;
 		this.acceptDeflatedBlockedFind = enable;
         enableService();
 	}
