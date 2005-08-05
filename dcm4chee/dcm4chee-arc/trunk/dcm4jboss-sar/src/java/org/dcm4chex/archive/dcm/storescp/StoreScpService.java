@@ -10,6 +10,11 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.TreeMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.management.JMException;
 import javax.management.Notification;
@@ -51,47 +56,11 @@ public class StoreScpService extends AbstractScpService {
         }
     };
 
-    private static final String[] IMAGE_CUIDS = {
-            UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
-            UIDs.ComputedRadiographyImageStorage,
-            UIDs.DigitalXRayImageStorageForPresentation,
-            UIDs.DigitalXRayImageStorageForProcessing,
-            UIDs.DigitalMammographyXRayImageStorageForPresentation,
-            UIDs.DigitalMammographyXRayImageStorageForProcessing,
-            UIDs.DigitalIntraoralXRayImageStorageForPresentation,
-            UIDs.DigitalIntraoralXRayImageStorageForProcessing,
-            UIDs.CTImageStorage, UIDs.UltrasoundMultiframeImageStorageRetired,
-            UIDs.UltrasoundMultiframeImageStorage, UIDs.MRImageStorage,
-            UIDs.EnhancedMRImageStorage,
-            UIDs.NuclearMedicineImageStorageRetired,
-            UIDs.UltrasoundImageStorageRetired, UIDs.UltrasoundImageStorage,
-            UIDs.SecondaryCaptureImageStorage,
-            UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
-            UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
-            UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-            UIDs.MultiframeColorSecondaryCaptureImageStorage,
-            UIDs.XRayAngiographicImageStorage,
-            UIDs.XRayRadiofluoroscopicImageStorage,
-            UIDs.XRayAngiographicBiPlaneImageStorageRetired,
-            UIDs.NuclearMedicineImageStorage, UIDs.VLImageStorageRetired,
-            UIDs.VLMultiframeImageStorageRetired,
-            UIDs.VLEndoscopicImageStorage, UIDs.VLMicroscopicImageStorage,
-            UIDs.VLSlideCoordinatesMicroscopicImageStorage,
-            UIDs.VLPhotographicImageStorage,
-            UIDs.PositronEmissionTomographyImageStorage, UIDs.RTImageStorage,};
+    /** Map containing all image SOP Class UID. (key is name (as in config string), value is real uid) */
+    private Map imageCUIDS = new TreeMap();
 
-    private static final String[] OTHER_CUIDS = { UIDs.BasicTextSR,
-            UIDs.EnhancedSR, UIDs.ComprehensiveSR, UIDs.MammographyCADSR,
-            UIDs.GrayscaleSoftcopyPresentationStateStorage,
-            UIDs.KeyObjectSelectionDocument, UIDs.RTDoseStorage,
-            UIDs.RTStructureSetStorage, UIDs.RTBeamsTreatmentRecordStorage,
-            UIDs.RTPlanStorage, UIDs.RTBrachyTreatmentRecordStorage,
-            UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage,
-            UIDs.AmbulatoryECGWaveformStorage,
-            UIDs.BasicVoiceAudioWaveformStorage,
-            UIDs.CardiacElectrophysiologyWaveformStorage,
-            UIDs.GeneralECGWaveformStorage, UIDs.HemodynamicWaveformStorage,
-            UIDs.TwelveLeadECGWaveformStorage};
+    /** Map containing all NOT image SOP Class UID. (key is name (as in config string), value is real uid) */
+    private Map otherCUIDS = new TreeMap();
 
     private ObjectName fileSystemMgtName;
 
@@ -116,6 +85,7 @@ public class StoreScpService extends AbstractScpService {
     private boolean acceptRLELossless = false;
 
     private StoreScp scp = new StoreScp(this);
+
 
     public final String getGeneratePatientID() {
 		return scp.getGeneratePatientID();
@@ -227,6 +197,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEG2000Lossless(boolean accept) {
+        if ( this.acceptJPEG2000Lossless == accept ) return;
         this.acceptJPEG2000Lossless = accept;
         enableService();
     }
@@ -236,8 +207,9 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEG2000Lossy(boolean accept) {
-        this.acceptJPEG2000Lossy = accept;
-        enableService();
+       if ( this.acceptJPEG2000Lossy == accept ) return;
+       this.acceptJPEG2000Lossy = accept;
+       enableService();
     }
 
     public final boolean isAcceptJPEGBaseline() {
@@ -245,6 +217,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEGBaseline(boolean accept) {
+        if ( this.acceptJPEGBaseline == accept ) return;
         this.acceptJPEGBaseline = accept;
         enableService();
     }
@@ -254,6 +227,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEGExtended(boolean accept) {
+        if ( this.acceptJPEGExtended == accept ) return;
         this.acceptJPEGExtended = accept;
         enableService();
     }
@@ -263,6 +237,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEGLossless14(boolean accept) {
+        if ( this.acceptJPEGLossless14 == accept ) return;
         this.acceptJPEGLossless14 = accept;
         enableService();
     }
@@ -272,6 +247,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEGLossless(boolean accept) {
+        if ( this.acceptJPEGLossless == accept ) return;
         this.acceptJPEGLossless = accept;
         enableService();
     }
@@ -281,8 +257,9 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEGLSLossless(boolean accept) {
-        this.acceptJPEGLSLossless = accept;
-        enableService();
+       if ( this.acceptJPEGLSLossless == accept ) return;
+       this.acceptJPEGLSLossless = accept;
+       enableService();
     }
 
     public final boolean isAcceptJPEGLSLossy() {
@@ -290,6 +267,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptJPEGLSLossy(boolean accept) {
+        if ( this.acceptJPEGLSLossy == accept ) return;
         this.acceptJPEGLSLossy = accept;
         enableService();
     }
@@ -299,6 +277,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final void setAcceptRLELossless(boolean accept) {
+        if ( this.acceptRLELossless == accept ) return;
         this.acceptRLELossless = accept;
         enableService();
     }
@@ -310,28 +289,133 @@ public class StoreScpService extends AbstractScpService {
     public final void setBufferSize(int bufferSize) {
         scp.setBufferSize(bufferSize);
     }
+    
+    public String getImageCUIDs() {
+    	return toString(imageCUIDS);
+    }
+ 
+	public void setImageCUIDs( String uids ) {
+		if ( getImageCUIDs().equals(uids)) return;
+    	Map map =parseUIDs(uids);
+    	updateBindings(imageCUIDS.values(), map.values());
+    	putPresContexts(null,imageCUIDS,null);
+    	putPresContexts(null,map,getImageTS());
+    	imageCUIDS.clear();
+    	imageCUIDS = map;
+    }
 
-    protected void startService() throws Exception {
+    public String getOtherCUIDs() {
+    	return toString(otherCUIDS);
+    }
+    public void setOtherCUIDs( String uids ) {
+		if ( getOtherCUIDs().equals(uids)) return;
+    	Map map = parseUIDs(uids);
+    	updateBindings(otherCUIDS.values(), map.values());
+    	putPresContexts(null,otherCUIDS,null);
+    	putPresContexts(null,map,getTransferSyntaxUIDs());
+    	otherCUIDS.clear();
+    	otherCUIDS = map;
+    }
+
+    /**
+     * Updates the service bindigs.
+     * <p>
+     * Add this storeSCP service for all SOP Class UIDs contained in newCUIDS.
+     * <p>
+     * Removes all bindings for CUIDs in oldCUIDS that are not in newCUIDS.
+     * <p>
+     * A <code>null</code> value means an empty list. (see <code>bindDcmServices, unbindDcmServices</code>)
+     * <p>
+     * Caution: oldCUIDS will be changed in this method if an item is also in newCUIDS! (item will be removed)
+     * 
+	 * @param oldCUIDS List of cuids already bind to this service.
+	 * @param newCUIDS List of cuids that should be bind to this service.
+	 * 
+	 */
+	private void updateBindings( Collection oldCUIDS, Collection newCUIDS) {
+		if ( dcmHandler == null ) return; //nothing to do!
+		DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
+		if ( oldCUIDS == null ) oldCUIDS = new ArrayList();
+		if ( newCUIDS == null ) newCUIDS = new ArrayList();
+		Iterator iter = newCUIDS.iterator();
+		String cuid;
+		while ( iter.hasNext() ) {
+			cuid = iter.next().toString();
+			if ( ! oldCUIDS.remove(cuid) ) {
+	            services.bind(cuid, scp);
+			}
+		}
+		iter = oldCUIDS.iterator();
+		while ( iter.hasNext() ) {
+	            services.unbind(iter.next().toString());
+		}
+	}
+
+	/**
+	 * @param imageCUIDS2
+	 * @return
+	 */
+	private String toString(Map uids) {
+		if ( uids == null || uids.size() < 1 ) return "";
+		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
+		Iterator iter = uids.keySet().iterator();
+		sb.append(iter.next());
+		while ( iter.hasNext() ) {
+			sb.append('\r').append('\n').append(iter.next());
+		}
+		return sb.toString();
+	}
+    
+    /**
+	 * @param uids
+	 * @return
+	 */
+	private Map parseUIDs(String uids) {
+        StringTokenizer st = new StringTokenizer(uids, "\r\n;");
+        String uid,name;
+        Map map = new TreeMap();
+        int i = 0;
+        while ( st.hasMoreTokens() ) {
+        	uid = st.nextToken().trim();
+    		name = uid;
+        	if ( isDigit(uid.charAt(0) ) ) {
+        		if ( ! UIDs.isValid(uid) ) 
+        			throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+        	} else {
+        		uid = UIDs.forName( name );
+        	}
+        	map.put(name,uid);
+        }
+		return map;
+	}
+	
+	
+	/**
+	 * Simple digit check.
+	 * <p>
+	 * Checks only if char is between 0x30 and 0x39. (Not if type is DECIMAL_DIGIT_NUMBER)
+	 * 
+	 * @param c Char to test.
+	 * 
+	 * @return true if char is '0'-'9'
+	 */
+    private static boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
+
+	protected void startService() throws Exception {
         super.startService();
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {
-        for (int i = 0; i < IMAGE_CUIDS.length; ++i) {
-            services.bind(IMAGE_CUIDS[i], scp);
-        }
-        for (int i = 0; i < OTHER_CUIDS.length; ++i) {
-            services.bind(OTHER_CUIDS[i], scp);
-        }
+        updateBindings(null,imageCUIDS.values());
+        updateBindings(null,otherCUIDS.values());
         dcmHandler.addAssociationListener(scp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
-        for (int i = 0; i < IMAGE_CUIDS.length; ++i) {
-            services.unbind(IMAGE_CUIDS[i]);
-        }
-        for (int i = 0; i < OTHER_CUIDS.length; ++i) {
-            services.unbind(OTHER_CUIDS[i]);
-        }
+        updateBindings(imageCUIDS.values(),null);
+        updateBindings(otherCUIDS.values(),null);
         dcmHandler.removeAssociationListener(scp);
     }
 
@@ -372,15 +456,26 @@ public class StoreScpService extends AbstractScpService {
     }
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        putPresContexts(policy, IMAGE_CUIDS, enable ? getImageTS() : null);
-        putPresContexts(policy, OTHER_CUIDS, enable ? getTransferSyntaxUIDs() : null);
+        putPresContexts(policy, imageCUIDS, enable ? getImageTS() : null);
+        putPresContexts(policy, otherCUIDS, enable ? getTransferSyntaxUIDs() : null);
     }
 
-    private void putPresContexts(AcceptorPolicy policy, String[] asuids, String[] tsuids) {
-        for (int i = 0; i < asuids.length; i++) {
-            policy.putPresContext(asuids[i], tsuids);
+    private void putPresContexts(AcceptorPolicy policy, Map cuids, String[] tsuids) {
+    	Iterator iter = cuids.values().iterator();
+        while (iter.hasNext()) {
+        	if ( policy == null ) {
+        		if ( dcmHandler == null ) return;
+        		AcceptorPolicy policies = dcmHandler.getAcceptorPolicy();
+        		String cuid = iter.next().toString();
+    	        for (int i = 0; i < calledAETs.length; ++i) {
+    	            policy = policies.getPolicyForCalledAET(calledAETs[i]);
+            		policy.putPresContext(cuid, tsuids);
+    	        }
+        	} else {
+        		policy.putPresContext(iter.next().toString(), tsuids);
+        	}
         }
-    }
+     }
 
     void sendReleaseNotification(Association assoc) {
         long eventID = super.getNextNotificationSequenceNumber();

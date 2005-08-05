@@ -200,6 +200,66 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getImageCUIDs"
+      setMethod="setImageCUIDs">
+      <description><![CDATA[List of image SOP Class UIDs.<br>
+      	Either the UID or the symbolic name can be used!
+    ]]>
+      </description>
+      <name>ImageCUIDs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="HardcopyGrayscaleImageStorage;HardcopyColorImageStorage;
+         	ComputedRadiographyImageStorage;DigitalXRayImageStorageForPresentation;
+            DigitalXRayImageStorageForProcessing;DigitalMammographyXRayImageStorageForPresentation;
+            DigitalMammographyXRayImageStorageForProcessing;DigitalIntraoralXRayImageStorageForPresentation;
+            DigitalIntraoralXRayImageStorageForProcessing;
+            CTImageStorage;UltrasoundMultiframeImageStorageRetired;
+            UltrasoundMultiframeImageStorage;MRImageStorage;
+            EnhancedMRImageStorage;
+            NuclearMedicineImageStorageRetired;
+            UltrasoundImageStorageRetired;UltrasoundImageStorage;
+            SecondaryCaptureImageStorage;
+            MultiframeSingleBitSecondaryCaptureImageStorage;
+            MultiframeGrayscaleByteSecondaryCaptureImageStorage;
+            MultiframeGrayscaleWordSecondaryCaptureImageStorage;
+            MultiframeColorSecondaryCaptureImageStorage;
+            XRayAngiographicImageStorage;
+            XRayRadiofluoroscopicImageStorage;
+            XRayAngiographicBiPlaneImageStorageRetired;
+            NuclearMedicineImageStorage;VLImageStorageRetired;
+            VLMultiframeImageStorageRetired;
+            VLEndoscopicImageStorage;VLMicroscopicImageStorage;
+            VLSlideCoordinatesMicroscopicImageStorage;
+            VLPhotographicImageStorage;
+            PositronEmissionTomographyImageStorage;RTImageStorage" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getOtherCUIDs"
+      setMethod="setOtherCUIDs">
+      <description><![CDATA[List of other (no image) SOP Class UIDs.<br>
+      	Either the UID or the symbolic name can be used!
+    ]]>
+      </description>
+      <name>OtherCUIDs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="BasicTextSR;
+             EnhancedSR;ComprehensiveSR;MammographyCADSR;
+             GrayscaleSoftcopyPresentationStateStorage;
+             KeyObjectSelectionDocument;RTDoseStorage;
+             RTStructureSetStorage;RTBeamsTreatmentRecordStorage;
+             RTPlanStorage;RTBrachyTreatmentRecordStorage;
+             RTTreatmentSummaryRecordStorage;RawDataStorage;
+             AmbulatoryECGWaveformStorage;
+             BasicVoiceAudioWaveformStorage;
+             CardiacElectrophysiologyWaveformStorage;
+             GeneralECGWaveformStorage;HemodynamicWaveformStorage;
+             TwelveLeadECGWaveformStorage" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
