@@ -116,9 +116,6 @@ public class ARRServer extends ServiceMBeanSupport implements
         udpsrv.setMaxIdleThreads(max);
     }
     
-    public void stop() {
-        udpsrv.stop();
-    }
     public String toString() {
         return udpsrv.toString();
     }
