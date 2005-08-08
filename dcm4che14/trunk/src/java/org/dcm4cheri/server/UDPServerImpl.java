@@ -46,7 +46,7 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
     private final String name = "UDPServer-" + ++instCount;
     private final Handler handler;
     private static final Logger log = Logger.getLogger(UDPServerImpl.class);
-    private final LF_ThreadPool threadPool = new LF_ThreadPool(this, name);
+    private LF_ThreadPool threadPool = new LF_ThreadPool(this, name);
     private DatagramSocket ss;
     private int port;
 
@@ -123,6 +123,10 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
 	ss.close();
 	ss = null;
 	threadPool.shutdown();
+	LF_ThreadPool tp = new LF_ThreadPool(this, name);
+	tp.setMaxRunning( threadPool.getMaxRunning());
+	tp.setMaxWaiting( threadPool.getMaxWaiting());
+	threadPool = tp;
     }
 
     public void run(LF_ThreadPool pool)
