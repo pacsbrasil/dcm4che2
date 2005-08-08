@@ -22,30 +22,26 @@
 
 package org.dcm4cheri.server;
 
-import org.dcm4che.server.Server;
-import org.dcm4che.util.HandshakeFailedEvent;
-import org.dcm4che.util.HandshakeFailedListener;
-
-import org.dcm4cheri.util.LF_ThreadPool;
-
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
-
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.server.Server;
+import org.dcm4che.util.HandshakeFailedEvent;
+import org.dcm4che.util.HandshakeFailedListener;
+import org.dcm4cheri.util.LF_ThreadPool;
 
 /**
  * <description>
@@ -202,7 +198,10 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         } catch (IOException ignore) {}*/
         ss = null;
         threadPool.shutdown();
-        threadPool = new LF_ThreadPool(this, name);
+    	LF_ThreadPool tp = new LF_ThreadPool(this, name);
+    	tp.setMaxRunning( threadPool.getMaxRunning());
+    	tp.setMaxWaiting( threadPool.getMaxWaiting());
+    	threadPool = tp;
     }
     
     // LF_ThreadPool.Handler implementation --------------------------
