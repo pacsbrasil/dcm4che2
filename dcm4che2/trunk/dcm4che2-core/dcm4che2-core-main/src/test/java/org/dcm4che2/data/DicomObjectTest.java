@@ -9,7 +9,6 @@
 
 package org.dcm4che2.data;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,15 +16,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.junit.BaseTestCase;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class DicomObjectTest extends TestCase {
+public class DicomObjectTest extends BaseTestCase {
 
-	public static void main(java.lang.String[] args) {
+    public static void main(java.lang.String[] args) {
 		junit.textui.TestRunner.run(suite());
 	}
 
@@ -74,16 +72,14 @@ public class DicomObjectTest extends TestCase {
         assertEquals(VR.DA, dcm.get(Tag.AcquisitionDate).vr());
     }
 
-	private DicomObject load(String fname) throws IOException {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		DicomInputStream dis = new DicomInputStream(new BufferedInputStream(cl
-				.getResourceAsStream(fname)));
-		try {
-			DicomObject attrs = new BasicDicomObject();
-			dis.readDicomObject(attrs, -1);
-			return attrs;
-		} finally {
-			dis.close();
-		}
-	}
+    private static final String[] IMAGE_TYPES = {
+        "ORIGINAL", "PRIMARY", "AXIAL"
+    };
+
+
+    public void testVm() {
+        DicomObject dcm = new BasicDicomObject();
+        dcm.putStrings(Tag.ImageType, VR.CS, IMAGE_TYPES);
+        assertEquals(IMAGE_TYPES.length, dcm.vm(Tag.ImageType));
+    }
 }

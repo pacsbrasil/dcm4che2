@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-
-class ResourceLocator {
+public class ResourceLocator {
 
 	private static final String PREFIX = "META-INF/dcm4che/";
 
@@ -59,6 +58,19 @@ class ResourceLocator {
 		}
 	}
 
+    public static Object createInstance(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        try {
+            return cl.loadClass(name).newInstance();
+        } catch (ClassNotFoundException ex) {
+            throw new ConfigurationError("Class not found: " + name, ex); 
+        } catch (InstantiationException ex) {
+            throw new ConfigurationError("Could not instantiate: " + name, ex); 
+        } catch (IllegalAccessException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        }        
+    }
+    
 	public static Object loadResource(String name) {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		InputStream is = cl.getResourceAsStream(name);

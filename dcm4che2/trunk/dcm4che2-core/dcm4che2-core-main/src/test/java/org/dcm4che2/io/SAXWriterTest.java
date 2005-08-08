@@ -11,15 +11,12 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import junit.framework.TestCase;
-
-import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.io.SAXWriter;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.junit.BaseTestCase;
 import org.xml.sax.SAXException;
 
-public class SAXWriterTest extends TestCase {
+public class SAXWriterTest extends BaseTestCase {
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(SAXWriterTest.class);
@@ -29,18 +26,10 @@ public class SAXWriterTest extends TestCase {
         super(arg0);
     }
 
-    private File locateFile(String name) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new File(cl.getResource(name).toString().substring(5));
-    }
-    
     public final void testWrite() 
             throws IOException, TransformerConfigurationException, 
             TransformerFactoryConfigurationError, SAXException {
-        DicomInputStream dis = new DicomInputStream(locateFile("sr_511_ct.dcm"));
-        DicomObject attrs = new BasicDicomObject();
-        dis.readDicomObject(attrs, -1);
-        dis.close();
+        DicomObject attrs = load("sr_511_ct.dcm");
         File ofile = new File("target/test-out/sr_511_ct-1.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();

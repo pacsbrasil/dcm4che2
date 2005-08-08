@@ -1,17 +1,14 @@
 package org.dcm4che2.io;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.io.DicomDirReader;
+import org.dcm4che2.junit.BaseTestCase;
 
-import junit.framework.TestCase;
-
-public class DicomDirReaderTest extends TestCase {
+public class DicomDirReaderTest extends BaseTestCase {
 
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(DicomDirReaderTest.class);
@@ -19,11 +16,6 @@ public class DicomDirReaderTest extends TestCase {
 
 	public DicomDirReaderTest(String arg0) {
 		super(arg0);
-	}
-
-	private File locateFile(String name) {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		return new File(cl.getResource(name).toString().substring(5));
 	}
 
 	public void testFindNextSiblingRecord() throws IOException {
