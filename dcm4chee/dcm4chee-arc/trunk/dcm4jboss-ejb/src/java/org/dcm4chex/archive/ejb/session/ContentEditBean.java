@@ -145,7 +145,8 @@ public abstract class ContentEditBean implements SessionBean {
      * @ejb.interface-method
      */
     public Dataset createPatient(Dataset ds) throws CreateException {
-        return patHome.create(ds).getAttributes(true);
+        final int[] filter = attrFilter.getPatientFilter();
+        return patHome.create(ds.subSet(filter)).getAttributes(true);
     }
 
     /**
@@ -191,7 +192,8 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createStudy(Dataset ds, int patPk) throws CreateException {
     	try {
 	        PatientLocal patient = patHome.findByPrimaryKey(new Integer(patPk));
-	        Dataset ds1 = studyHome.create(ds, patient).getAttributes(true);
+	        final int[] filter = attrFilter.getStudyFilter();
+	        Dataset ds1 = studyHome.create(ds.subSet(filter), patient).getAttributes(true);
 	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1:");log.debug(ds1);}
 	        ds1.putAll( patient.getAttributes(true).subSet(attrFilter.getPatientFilter()) );
 	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1 with patient:");log.debug(ds1);}
@@ -209,7 +211,8 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createSeries(Dataset ds, int studyPk) throws CreateException {
     	try {
 	        StudyLocal study = studyHome.findByPrimaryKey(new Integer(studyPk));
-	        SeriesLocal series =  seriesHome.create(ds, study);
+	        final int[] filter = attrFilter.getSeriesFilter();
+	        SeriesLocal series =  seriesHome.create(ds.subSet(filter), study);
 	        Collection col = new ArrayList(); col.add( series );
 	        return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, series.getAttributes(true) );
         } catch (FinderException e) {
@@ -229,7 +232,8 @@ public abstract class ContentEditBean implements SessionBean {
             final int pk = ds.getInt(PrivateTags.PatientPk, -1);
             PatientLocal patient = patHome
                     .findByPrimaryKey(new Integer(pk));
-            patient.setAttributes(ds);
+	        final int[] filter = attrFilter.getPatientFilter();
+            patient.setAttributes(ds.subSet(filter));
             Collection studies = patient.getStudies();
             Iterator iter = patient.getStudies().iterator();
             StudyLocal sl;
@@ -253,9 +257,10 @@ public abstract class ContentEditBean implements SessionBean {
             final int pk = ds.getInt(PrivateTags.StudyPk, -1);
             StudyLocal study = studyHome
                     .findByPrimaryKey(new Integer(pk));
-            study.setAttributes(ds);
+	        final int[] filter = attrFilter.getStudyFilter();
+            study.setAttributes(ds.subSet(filter));
             return getStudyMgtDataset( study, study.getSeries(), null, CHANGE_MODE_STUDY, 
-            		study.getAttributes(true).subSet(attrFilter.getStudyFilter()) );            
+            		study.getAttributes(true) );            
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -271,7 +276,8 @@ public abstract class ContentEditBean implements SessionBean {
             final int pk = ds.getInt(PrivateTags.SeriesPk, -1);
             SeriesLocal series = seriesHome
                     .findByPrimaryKey(new Integer(pk));
-            series.setAttributes(ds);
+	        final int[] filter = attrFilter.getSeriesFilter();
+	        series.setAttributes(ds.subSet(filter));
             StudyLocal study = series.getStudy();
             study.updateDerivedFields(false, false, false, false, false, true);
             Collection col = new ArrayList(); col.add( series );
