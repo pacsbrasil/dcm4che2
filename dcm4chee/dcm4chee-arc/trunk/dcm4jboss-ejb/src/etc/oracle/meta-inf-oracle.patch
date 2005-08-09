@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2005-06-08 10:24:29.000000000 +0200
-+++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2005-06-08 10:24:30.000000000 +0200
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2005-08-09 16:57:43.117286232 +0200
++++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2005-08-09 16:57:44.252113712 +0200
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -151,8 +151,8 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1163,7 +1177,8 @@
- 			<dynamic-ql/>
+@@ -1172,7 +1186,8 @@
+             <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1]]></jboss-ql>
           </query>
  
 -	<entity-command name="hsqldb-fetch-key">
@@ -161,7 +161,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1193,7 +1208,8 @@
+@@ -1202,7 +1217,8 @@
  
          </cmp-field>
  
@@ -171,7 +171,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1230,7 +1246,8 @@
+@@ -1239,7 +1255,8 @@
  
          </cmp-field>
  
