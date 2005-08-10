@@ -46,7 +46,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
     
-    public QueryStudiesCmd(Dataset filter)
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
@@ -74,6 +74,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 false);
         sqlBuilder.addModalitiesInStudyMatch(null, filter
                 .getString(Tags.ModalitiesInStudy));
+        if ( hideMissingStudies )
+        	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
     }
 
     public int count() throws SQLException {
