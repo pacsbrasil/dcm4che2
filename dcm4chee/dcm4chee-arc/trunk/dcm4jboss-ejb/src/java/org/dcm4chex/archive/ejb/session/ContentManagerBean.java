@@ -128,9 +128,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int countStudies(Dataset filter) {
+    public int countStudies(Dataset filter, boolean hideWithoutStudies) {
         try {
-            return new QueryStudiesCmd(filter).count();
+            return new QueryStudiesCmd(filter, hideWithoutStudies).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -139,9 +139,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listStudies(Dataset filter, int offset, int limit) {
+    public List listStudies(Dataset filter, boolean hideWithoutStudies, int offset, int limit) {
         try {
-            return new QueryStudiesCmd(filter).list(offset, limit);
+            return new QueryStudiesCmd(filter, hideWithoutStudies).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }
