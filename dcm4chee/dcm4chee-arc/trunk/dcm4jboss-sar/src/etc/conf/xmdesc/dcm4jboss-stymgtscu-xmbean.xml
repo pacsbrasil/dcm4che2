@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Private Study Management Service SCU Service to forward 
-   messages received by private Study Management Service SCP Service
-   </description>
+   <description>Private Study Management Service SCU Service used to forward 
+   messages received by private Study Management Service SCP Service. You must use the Content Edit service to identify where study information updates are sent and received. Use the values in the CalledAETitle and the CallingAETitle attributesto configure
+         specific forwarding rules in this StudyMgtScu Service for study information updates
+         received from the Content Edit Service.</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate" />
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.stymgt.StudyMgtScuService</class>
@@ -21,131 +20,122 @@
    </constructor>
 
    <!-- Attributes -->
-    <attribute access="read-write"
-      getMethod="getForwardingRules"
-      setMethod="setForwardingRules">
+    <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
       <description>List of forwarding rules.
-      Format:=['['CONDITION[,..]']'](AET[,..]|NONE)
-      CONDITION:=('calling'|'called'|'command')[!]=VALUE['|'...]
-      command-VALUE:=('N_CREATE_RQ'|'N_SET_RQ'|'N_DELETE_RQ'|'N_ACTION_RQ(1)'|'N_ACTION_RQ(2)')      
-      </description>
+      &lt;br&gt;Format:&lt;br&gt;[&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,…]&lt;i&gt;aeTitle&lt;/i&gt;, &lt;i&gt;aeTitle&lt;/i&gt;,… | NONE
+
+&lt;br&gt;where
+&lt;br&gt;&lt;i&gt;condition&lt;/i&gt; = calling|called|command
+&lt;br&gt;&lt;i&gt;value&lt;/i&gt; = 
+the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&gt;calling - if the condition variable is calling, the value is the AE title. Possible values can be configured in the ContentEdit service.
+&lt;br&gt;called - if the condition variable is called, the value is the called AE title. Possible values can be configured in the ContentEdit service.
+&lt;br&gt;command - if the condition variable is command, the values can be N_CREATE_RQ | N_SET_RQ | N_DELETE_RQ | N_ACTION_RQ(1) | N_ACTION_RQ(2)
+&lt;br&gt;Note that you can optionally have a comma-separated list of &lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt; statements.
+&lt;br&gt;&lt;i&gt;aeTitle&lt;/i&gt; = the AE title the forward rule applies to
+&lt;br&gt;Note that you can have a comma-separate list of &lt;i&gt;aeTitles&lt;/i&gt; to which the forwarding rule applies.
+</description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=PACS_NODEXX]PACS_CENTRAL" />
+         <value value="[calling=PACS_NODEXX]PACS_CENTRAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isRetryIfNoSuchSOPInstance"
-      setMethod="setRetryIfNoSuchSOPInstance">
-      <description>Retry forward if SCP returns status 0112H (No Such SOP Instance).
+   <attribute access="read-write" getMethod="isRetryIfNoSuchSOPInstance" setMethod="setRetryIfNoSuchSOPInstance">
+      <description>Retry the forward if the SCP returns status 0112H (No Such SOP Instance).
       </description>
       <name>RetryIfNoSuchSOPInstance</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="false"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingAET"
-      setMethod="setCallingAET">
-      <description>Calling AET used in Association Request.
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
+      <description>Calling AE title used in the association request.
       </description>
-      <name>CallingAET</name>
+      <name>CallingAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getRetryIntervalls"
-      setMethod="setRetryIntervalls">
-      <description>Number and intervalls of retries of failed 
-      forward requests by a list of comma separated NUMBERxINTERVAL pairs.
-      The intervall can be specified in seconds (##s), minutes (##m),
-      hours (##h) or days (##d).
+   <attribute access="read-write" getMethod="getRetryIntervalls" setMethod="setRetryIntervalls">
+      <description>Number and intervals of retries for the  failed 
+      forward requests.
+      &lt;br&gt;Format:
+      &lt;br&gt;Comma separated list of &lt;i&gt;number&lt;/i&gt; x &lt;i&gt;interval&lt;/i&gt; pairs.
+      &lt;br&gt;The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      &lt;br&gt;Example: 
+      &lt;br&gt;5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.
       </description>
-      <name>RetryIntervalls</name>
+      <name>RetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="5x1m,12x5m,24x1h,7x1d" />
+         <value value="5x1m,12x5m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getConcurrency"
-      setMethod="setConcurrency">
-      <description>Maximal number of concurrent forwarded messages.
+   <attribute access="read-write" getMethod="getConcurrency" setMethod="setConcurrency">
+      <description>Maximum number of concurrent forwarded messages.
       </description>
       <name>Concurrency</name>
       <type>int</type>
       <descriptors>
-         <value value="1" />
+         <value value="1"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getAcTimeout"
-      setMethod="setAcTimeout">
-      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
+   <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>AcTimeout</name>
+      <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="10000" />
+         <value value="10000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDimseTimeout"
-      setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in ms. 0 = no timeout.
+   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DimseTimeout</name>
+      <name>DIMSETimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="60000" />
+         <value value="60000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getSoCloseDelay"
-      setMethod="setSoCloseDelay">
-      <description>Socket close delay in ms after A-RELEASE RSP.
+   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
+      <description>Socket close delay in milliseconds after an A-Release response.
       </description>
-      <name>SoCloseDelay</name>
+      <name>SocketCloseDelay</name>
       <type>int</type>
       <descriptors>
-         <value value="50" />
+         <value value="50"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getQueueName"
-      setMethod="setQueueName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
+      <description>Used internally. Do NOT modify.
       </description>
       <name>QueueName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="StudyMgtScu" />
+         <value value="StudyMgtScu"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyMgtScpServiceName"
-      setMethod="setStudyMgtScpServiceName">
+   <attribute access="read-write" getMethod="getStudyMgtScpServiceName" setMethod="setStudyMgtScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>StudyMgtScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StudyMgtScp" />
+         <value value="tiani.archive:service=StudyMgtScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
-      </description>
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+      <description>Used internally. Do NOT modify.</description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
@@ -153,15 +143,15 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Forward DIMSE according configured Forwarding Rules</description>
+      <description>Forward DIMSE according to the configured ForwardingRules</description>
       <name>forward</name>
       <parameter>
-        <description>Original Calling AET</description>
+        <description>Original Calling AE title</description>
         <name>origCallingAET</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Original Called AET</description>
+        <description>Original Called AE title</description>
         <name>origCalledAET</name>
         <type>java.lang.String</type>
       </parameter>

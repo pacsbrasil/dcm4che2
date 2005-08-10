@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
    <description>DICOM Storage SCP. Provides a DICOM storage service to receive DICOM objects from remote
@@ -10,8 +8,8 @@
  </description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate" />
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.storescp.StoreScpService</class>
@@ -22,33 +20,27 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getCalledAETs"
-      setMethod="setCalledAETs">
+   <attribute access="read-write" getMethod="getCalledAETs" setMethod="setCalledAETs">
       <description>List of accepted called AE titles, separated by \(backslash). 
       For example, PACS_TIANI\PACS_TIANI2.
       </description>
       <name>CalledAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingAETs"
-      setMethod="setCallingAETs">
+   <attribute access="read-write" getMethod="getCallingAETs" setMethod="setCallingAETs">
       <description>List of accepted calling AE titles, separated by \(backslash).
       ANY = accept any. 
       </description>
       <name>CallingAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ANY" />
+         <value value="ANY"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCoerceWarnCallingAETs"
-      setMethod="setCoerceWarnCallingAETs">
+   <attribute access="read-write" getMethod="getCoerceWarnCallingAETs" setMethod="setCoerceWarnCallingAETs">
       <description>List of the AE titles for the Storage SCUs for which
       a warning status, B000, is returned if data elements were coerced. 
       Separate multiple values by \(backslash).
@@ -57,12 +49,10 @@
       <name>WarnForCoercedAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE" />
+         <value value="NONE"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getGeneratePatientID"
-      setMethod="setGeneratePatientID">
+   <attribute access="read-write" getMethod="getGeneratePatientID" setMethod="setGeneratePatientID">
       <description>Generate a patient ID from a hash of the patient name and
           birth date, if the received study has no patient ID.
           If the study has no patient name, the study instance UID 
@@ -74,12 +64,10 @@
       <name>GeneratePatientID</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS-##########" />
+         <value value="PACS-##########"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getIssuerOfPatientIDRules"
-      setMethod="setIssuerOfPatientIDRules">
+   <attribute access="read-write" getMethod="getIssuerOfPatientIDRules" setMethod="setIssuerOfPatientIDRules">
       <description><![CDATA[List of rules used to add the Issuer Of PatientID value if not contained
       in the received object, if the Patient ID matches the specified regular
       expression. Multiple rules are separated by new lines.
@@ -93,36 +81,32 @@
       <name>IssuerofPatientIDRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="^PACS-\d*:PACS_TIANI" />
+         <value value="^PACS-\d*:PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isStoreDuplicateIfDiffMD5"
-      setMethod="setStoreDuplicateIfDiffMD5">
+   <attribute access="read-write" getMethod="isStoreDuplicateIfDiffMD5" setMethod="setStoreDuplicateIfDiffMD5">
       <description>Store a duplicate object if the MD5 sum of the new object differs
       from the MD5 sum of the existing file. If the MD5 sum does not match, the files may be corrupted.</description>
       <name>StoreDuplicatesIfDifferentMD5</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isStoreDuplicateIfDiffHost"
-      setMethod="setStoreDuplicateIfDiffHost">
+   <attribute access="read-write" getMethod="isStoreDuplicateIfDiffHost" setMethod="setStoreDuplicateIfDiffHost">
       <description><![CDATA[Store duplicate objects if the existing files are <b>NOT</b> located 
       on this host.]]>
       </description>
       <name>StoreDuplicatesIfDifferentHost</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="false"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCompressionRules"
-      setMethod="setCompressionRules">
-      <description><![CDATA[List of image compression rules.
+   <attribute access="read-write" getMethod="getCompressionRules" setMethod="setCompressionRules">
+      <description><![CDATA[List of image compression rules. Note that the value of the <b>MaxConcurrentCodec</b> attribute in the Compression Service also effects the on-the-fly
+compression and decompression during the store of images by the
+StoreSCP service.
       <br>Format:
       <br>[<i>condition</i>!=<i>value</i>]<i>compression</i>
       <br>where
@@ -150,12 +134,10 @@
       <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE" />
+         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getOutOfResourcesThreshold"
-      setMethod="setOutOfResourcesThreshold">
+   <attribute access="read-write" getMethod="getOutOfResourcesThreshold" setMethod="setOutOfResourcesThreshold">
       <description>Minimum available disk space in the storage directory to accept
       received objects. If the available disk space falls below this value,
       storage of received objects is rejected with the error "Out Of Resource".
@@ -163,12 +145,10 @@
       <name>OutOfResourcesThreshold</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="30MB" />
+         <value value="30MB"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getUpdateDatabaseMaxRetries"
-      setMethod="setUpdateDatabaseMaxRetries">
+   <attribute access="read-write" getMethod="getUpdateDatabaseMaxRetries" setMethod="setUpdateDatabaseMaxRetries">
       <description>Maximum number of retries to update the database records 
       for new received objects, before a processing failure is returned to 
       the Storage SCU.
@@ -176,32 +156,27 @@
       <name>UpdateDatabaseMaximumRetries </name>
       <type>int</type>
       <descriptors>
-         <value value="2" />
+         <value value="2"/>
       </descriptors>
    </attribute>
-   <attribute access="read-only"
-      getMethod="getMaxCountUpdateDatabaseRetries">
+   <attribute access="read-only" getMethod="getMaxCountUpdateDatabaseRetries">
       <description>Maximum number of retries actually performed to update the
       database records for new received objects.
       </description>
       <name>UpdateDatabasePerformedRetries</name>
       <type>int</type>
    </attribute>   
-   <attribute access="read-write"
-      getMethod="getUpdateDatabaseRetryInterval"
-      setMethod="setUpdateDatabaseRetryInterval">
+   <attribute access="read-write" getMethod="getUpdateDatabaseRetryInterval" setMethod="setUpdateDatabaseRetryInterval">
       <description>Delay in milliseconds between retries to update the 
       database records for new received objects.
       </description>
       <name>UpdateDatabaseRetryInterval</name>
       <type>long</type>
       <descriptors>
-         <value value="0" />
+         <value value="0"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getImageCUIDs"
-      setMethod="setImageCUIDs">
+   <attribute access="read-write" getMethod="getImageCUIDs" setMethod="setImageCUIDs">
       <description><![CDATA[List of image SOP Class UIDs.<br>
       	Either the UID or the symbolic name can be used!
     ]]>
@@ -232,12 +207,10 @@
             VLEndoscopicImageStorage;VLMicroscopicImageStorage;
             VLSlideCoordinatesMicroscopicImageStorage;
             VLPhotographicImageStorage;
-            PositronEmissionTomographyImageStorage;RTImageStorage" />
+            PositronEmissionTomographyImageStorage;RTImageStorage"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getOtherCUIDs"
-      setMethod="setOtherCUIDs">
+   <attribute access="read-write" getMethod="getOtherCUIDs" setMethod="setOtherCUIDs">
       <description><![CDATA[List of other (no image) SOP Class UIDs.<br>
       	Either the UID or the symbolic name can be used!
     ]]>
@@ -256,197 +229,163 @@
              BasicVoiceAudioWaveformStorage;
              CardiacElectrophysiologyWaveformStorage;
              GeneralECGWaveformStorage;HemodynamicWaveformStorage;
-             TwelveLeadECGWaveformStorage" />
+             TwelveLeadECGWaveformStorage"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptExplicitVRLE"
-      setMethod="setAcceptExplicitVRLE">
+   <attribute access="read-write" getMethod="isAcceptExplicitVRLE" setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
       </description>
       <name>AcceptExplicitVRLE</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEG2000Lossless"
-      setMethod="setAcceptJPEG2000Lossless">
+   <attribute access="read-write" getMethod="isAcceptJPEG2000Lossless" setMethod="setAcceptJPEG2000Lossless">
       <description>Accept DICOM images encoded in JPEG 2000 Lossless Transfer Syntax.
       </description>
       <name>AcceptJPEG2000Lossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEG2000Lossy"
-      setMethod="setAcceptJPEG2000Lossy">
+   <attribute access="read-write" getMethod="isAcceptJPEG2000Lossy" setMethod="setAcceptJPEG2000Lossy">
       <description>Accept DICOM images encoded in JPEG 2000 Lossy Transfer Syntax.
       </description>
       <name>AcceptJPEG2000Lossy</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEGLSLossless"
-      setMethod="setAcceptJPEGLSLossless">
+   <attribute access="read-write" getMethod="isAcceptJPEGLSLossless" setMethod="setAcceptJPEGLSLossless">
       <description>Accept DICOM images encoded in JPEG-LS Lossless Transfer Syntax.
       </description>
       <name>AcceptJPEGLSLossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEGLSLossy"
-      setMethod="setAcceptJPEGLSLossy">
+   <attribute access="read-write" getMethod="isAcceptJPEGLSLossy" setMethod="setAcceptJPEGLSLossy">
       <description>Accept DICOM images encoded in JPEG-LS Lossy Transfer Syntax.
       </description>
       <name>AcceptJPEGLSLossy</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEGLossless"
-      setMethod="setAcceptJPEGLossless">
+   <attribute access="read-write" getMethod="isAcceptJPEGLossless" setMethod="setAcceptJPEGLossless">
       <description>Accept DICOM images encoded in JPEG Lossless (Process 14) 
       First-Order Prediction Transfer Syntax. (DICOM JPEG Lossless default TS)
       </description>
       <name>AcceptJPEGLossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEGLossless14"
-      setMethod="setAcceptJPEGLossless14">
+   <attribute access="read-write" getMethod="isAcceptJPEGLossless14" setMethod="setAcceptJPEGLossless14">
       <description>Accept DICOM images encoded in JPEG Lossless (Process 14) Transfer Syntax.
       </description>
       <name>AcceptJPEGLossless14</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEGBaseline"
-      setMethod="setAcceptJPEGBaseline">
+   <attribute access="read-write" getMethod="isAcceptJPEGBaseline" setMethod="setAcceptJPEGBaseline">
       <description>Accept DICOM images encoded in JPEG Baseline Transfer Syntax.
       </description>
       <name>AcceptJPEGBaseline</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptJPEGExtended"
-      setMethod="setAcceptJPEGExtended">
+   <attribute access="read-write" getMethod="isAcceptJPEGExtended" setMethod="setAcceptJPEGExtended">
       <description>Accept DICOM images encoded in JPEG Extended Transfer Syntax.
       </description>
       <name>AcceptJPEGExtended</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptRLELossless"
-      setMethod="setAcceptRLELossless">
+   <attribute access="read-write" getMethod="isAcceptRLELossless" setMethod="setAcceptRLELossless">
       <description>Accept DICOM images encoded in RLE Lossless Transfer Syntax.
       </description>
       <name>AcceptRLELossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="false"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getMaxPDULength"
-      setMethod="setMaxPDULength">
+   <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
       <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
-         <value value="16352" />
+         <value value="16352"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getBufferSize"
-      setMethod="setBufferSize">
+   <attribute access="read-write" getMethod="getBufferSize" setMethod="setBufferSize">
       <description>Size of the buffer used to copy data from the TCP channel 
       to file. Keep the default value: 512.
       </description>
       <name>BufferSize</name>
       <type>int</type>
       <descriptors>
-         <value value="512" />
+         <value value="512"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
+   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       Use LOCAL if EJBs are deployed in same JBoss instance.
       </description>
       <name>EJBProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="LOCAL" />
+         <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
+   <attribute access="read-write" getMethod="getFileSystemMgtName" setMethod="setFileSystemMgtName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt" />
+         <value value="tiani.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDcmServerName"
-      setMethod="setDcmServerName">
+   <attribute access="read-write" getMethod="getDcmServerName" setMethod="setDcmServerName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=DcmServer" />
+         <value value="tiani.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
+   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AuditLogger" />
+         <value value="tiani.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

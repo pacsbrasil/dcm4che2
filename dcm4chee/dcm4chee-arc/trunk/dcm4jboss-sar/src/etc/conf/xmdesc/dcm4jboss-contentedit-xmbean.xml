@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>ContentEdit service</description>
+   <description>Content Edit service. Identifies where patient information and study information updates are sent and received. Use the values in ReceivingApplication and ReceivingFacility attributes or the 
+         SendingApplication or SendingFacility attributes to configure specific
+         forwarding rules in the HL7SendService for patient information updates received from this
+         Content Edit Service. Use the values in the CalledAETitle and the CallingAETitle attributes to configure
+         specific forwarding rules in the StudyMgtScu Service for study information updates
+         received from this Content Edit Service.
+      </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.mbean.ContentEditService</class>
@@ -18,121 +22,111 @@
       <name>ContentEditService</name>
    </constructor>
 
-   <attribute access="read-write"
-      getMethod="getReceivingApplication"
-      setMethod="setReceivingApplication">
-      <description>Receiving Application in HL7 message directed to
-         HL7SendService to notify other Applications about Patient Information
-         Updates. The Receiving Application/Facility and/or the 
-         Sending Application/Facility may be used to configure specific
-         forwarding Rules in HL7SendService for HL7 messages received from this
+   <attribute access="read-write" getMethod="getReceivingApplication" setMethod="setReceivingApplication">
+      <description>Identifies the Receiving Application in HL7 messages that are  directed to
+         the HL7SendService to notify other applications about patient information
+         updates. The values in the ReceivingApplication attribute may be used to configure specific
+         forwarding rules in the HL7SendService for HL7 messages that are  received from this
          Content Edit Service.   
       </description>
       <name>ReceivingApplication</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getReceivingFacility"
-      setMethod="setReceivingFacility">
-      <description>Receiving Facility in HL7 message directed to
-         HL7SendService to notify other Applications about Patient Information
-         Updates.
-      </description>
+   <attribute access="read-write" getMethod="getReceivingFacility" setMethod="setReceivingFacility">
+      <description>Identifies the Receiving Facility in HL7 messages that are directed to
+         the HL7SendService to notify other applications about patient information
+         updates.
+      The values in the ReceivingFacility attribute may be used to configure specific
+         forwarding rules in the HL7SendService for HL7 messages that are  received from this
+         Content Edit Service.</description>
       <name>ReceivingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TIANI" />
+         <value value="TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getSendingApplication"
-      setMethod="setSendingApplication">
-      <description>Sending Application in HL7 message directed to
-         HL7SendService to notify other Applications about Patient Information
-         Updates.
-      </description>
+   <attribute access="read-write" getMethod="getSendingApplication" setMethod="setSendingApplication">
+      <description>Identifies the Sending Application in HL7 messages that are  directed to
+         the HL7SendService to notify other applications about patient information
+         updates.
+      The values in the SendingApplication attribute may be used to configure specific
+         forwarding rules in the HL7SendService for HL7 messages that are  received from this
+         Content Edit Service.</description>
       <name>SendingApplication</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getSendingFacility"
-      setMethod="setSendingFacility">
-      <description>Sending Facility in HL7 message directed to
-         HL7SendService to notify other Applications about Patient Information
-         Updates.
-      </description>
+   <attribute access="read-write" getMethod="getSendingFacility" setMethod="setSendingFacility">
+      <description>Identifies the Sending Facility in HL7 messages that are directed to
+         HL7SendService to notify other applications about patient information
+         updates.
+      The values in the SendingFacility attribute may be used to configure specific
+         forwarding rules in the HL7SendService for HL7 messages that are  received from this
+         Content Edit Service.</description>
       <name>SendingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TIANI" />
+         <value value="TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCalledAET"
-      setMethod="setCalledAET">
-      <description>Called AET in DICOM message directed to StudyMgtScuService
-         to notify other Applications about Study Information Updates.
-         The Called AET and/or the Calling AET may be used to configure
-         specific forwarding Rules in StudyMgtScuService for DICOM messages
+   <attribute access="read-write" getMethod="getCalledAET" setMethod="setCalledAET">
+      <description>Called AE title in DICOM messages that are directed to the StudyMgtScuService
+         to notify other applications about study information updates.
+         The CalledAETitle may be used to configure
+         specific forwarding rules in StudyMgtScu Service for DICOM messages
          received from this Content Edit Service.
       </description>
-      <name>CalledAET</name>
+      <name>CalledAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingAET"
-      setMethod="setCallingAET">
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>Calling AET in DICOM message directed to StudyMgtScuService
          to notify other Applications about Study Information Updates.
+      The CallingAETitle may be used to configure
+         specific forwarding rules in StudyMgtScu Service for DICOM messages
+         received from this Content Edit Service.
       </description>
-      <name>CallingAET</name>
+      <name>CallingAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
+   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
       <name>EjbProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="LOCAL" />
+         <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getHL7SendServiceName"
-      setMethod="setHL7SendServiceName">
+   <attribute access="read-write" getMethod="getHL7SendServiceName" setMethod="setHL7SendServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>HL7SendServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=HL7Send" />
+         <value value="tiani.archive:service=HL7Send"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyMgtScuServiceName"
-      setMethod="setStudyMgtScuServiceName">
+   <attribute access="read-write" getMethod="getStudyMgtScuServiceName" setMethod="setStudyMgtScuServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>StudyMgtScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StudyMgtScu" />
+         <value value="tiani.archive:service=StudyMgtScu"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
