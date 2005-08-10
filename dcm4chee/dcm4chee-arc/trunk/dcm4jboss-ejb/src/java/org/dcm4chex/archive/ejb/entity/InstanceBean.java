@@ -52,6 +52,8 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @jboss.load-group name="most"
  * @jboss.eager-load-group name="most"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.audit-created-time field-name="createdTime"
+ * @jboss.audit-updated-time field-name="updatedTime"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.sopIuid = ?1"
@@ -120,6 +122,22 @@ public abstract class InstanceBean implements EntityBean {
 
     public abstract void setPk(Integer pk);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="created_time"
+     */
+    public abstract java.sql.Timestamp getCreatedTime();
+
+    public abstract void setCreatedTime(java.sql.Timestamp time);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="updated_time"
+     */
+    public abstract java.sql.Timestamp getUpdatedTime();
+
+    public abstract void setUpdatedTime(java.sql.Timestamp time);
+	
     /**
      * SOP Instance UID
      *
@@ -266,6 +284,27 @@ public abstract class InstanceBean implements EntityBean {
      */
     public abstract void setCommitment(boolean commitment);
 
+    /**
+     * @ejb.persistence column-name="hidden"
+     */
+    public abstract boolean getHidden();
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean getHiddenSafe() {
+        try {
+            return getHidden();
+        } catch (NullPointerException npe) {
+            return false;
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setHidden(boolean hidden);
+	
     /**
      * @ejb.interface-method 
      * @ejb.relation name="series-instance" role-name="instance-of-series"

@@ -34,6 +34,9 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="mwl_item"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.audit-created-time field-name="createdTime"
+ * @jboss.audit-updated-time field-name="updatedTime"
+ * 
  * @ejb.env-entry name="SpsIdPrefix" type="java.lang.String" value="" 
  *
  * @ejb.finder signature="Collection findAll()"
@@ -84,6 +87,22 @@ public abstract class MWLItemBean implements EntityBean {
 
     public abstract void setPk(Integer pk);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="created_time"
+     */
+    public abstract java.sql.Timestamp getCreatedTime();
+
+    public abstract void setCreatedTime(java.sql.Timestamp time);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="updated_time"
+     */
+    public abstract java.sql.Timestamp getUpdatedTime();
+
+    public abstract void setUpdatedTime(java.sql.Timestamp time);
+	
     /**
      * SPS ID
      *

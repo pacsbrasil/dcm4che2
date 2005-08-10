@@ -33,6 +33,9 @@ CREATE TABLE patient (
 	pat_name_up    	GENERATED ALWAYS AS (UPPER(pat_name)),
 	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR(254),
+	hidden			SMALLINT NOT NULL,
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP,
 	pat_attrs		BLOB(64000),
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
@@ -41,6 +44,7 @@ CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(pat_name_up);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 CREATE INDEX pat_sex ON patient(pat_sex);
+CREATE INDEX pat_hidden ON patient(hidden);
 
 CREATE SEQUENCE study_pk_seq;
 CREATE TABLE study (
@@ -53,13 +57,14 @@ CREATE TABLE study (
 	ref_physician   VARCHAR(254),
 	ref_physician_up GENERATED ALWAYS AS (UPPER(ref_physician)),
 	mods_in_study	VARCHAR(254),
-	num_series		INTEGER,
-	num_instances	INTEGER,
+	num_series		INTEGER NOT NULL,
+	num_instances	INTEGER NOT NULL,
 	ext_retr_aet	VARCHAR(254),
 	retrieve_aets	VARCHAR(254),
 	fileset_iuid	VARCHAR(254),
 	fileset_id		VARCHAR(254),
-	availability	INTEGER,
+	availability	INTEGER NOT NULL,
+	hidden			SMALLINT NOT NULL,
 	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -74,6 +79,7 @@ CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician_up);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
+CREATE INDEX study_hidden ON study(hidden);
 
 
 CREATE SEQUENCE mpps_pk_seq;
@@ -87,6 +93,8 @@ CREATE TABLE mpps (
 	modality	    VARCHAR(254),
 	accession_no    VARCHAR(254),
 	mpps_status		INTEGER NOT NULL,
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP,
 	mpps_attrs		BLOB(64000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
@@ -114,8 +122,8 @@ CREATE TABLE series (
 	retrieve_aets	VARCHAR(254),
 	fileset_iuid	VARCHAR(254),
 	fileset_id		VARCHAR(254),
-	availability	INTEGER,
-	hidden			SMALLINT,
+	availability	INTEGER NOT NULL,
+	hidden			SMALLINT NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	series_attrs	BLOB(64000),
@@ -131,6 +139,8 @@ CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series(pps_iuid);
 CREATE INDEX series_src_aet ON series(src_aet);
 CREATE INDEX series_created ON series(created_time);
+CREATE INDEX series_hidden ON series(hidden);
+
 
 CREATE SEQUENCE series_req_pk_seq;
 CREATE TABLE series_req (
@@ -173,8 +183,11 @@ CREATE TABLE instance (
 	sr_verified			VARCHAR(254),
 	ext_retr_aet		VARCHAR(254),
 	retrieve_aets		VARCHAR(254),
-	availability		INTEGER,
-	commitment			SMALLINT,
+	availability		INTEGER NOT NULL,
+	commitment			SMALLINT NOT NULL,
+	hidden				SMALLINT NOT NULL,
+	created_time		TIMESTAMP,
+	updated_time		TIMESTAMP,
 	inst_attrs			BLOB(64000),
 FOREIGN KEY (series_fk)	REFERENCES series(pk),
 FOREIGN KEY (srcode_fk)	REFERENCES code(pk),
@@ -191,6 +204,7 @@ CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
+CREATE INDEX inst_hidden ON instance(hidden);
 
 
 CREATE SEQUENCE filesystem_pk_seq;
@@ -248,6 +262,8 @@ CREATE TABLE mwl_item (
 	perf_physician_up GENERATED ALWAYS AS (UPPER(perf_physician)),
 	req_proc_id    	VARCHAR(254) NOT NULL,
 	accession_no	VARCHAR(254),
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP,
 	item_attrs		BLOB(64000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -349,6 +365,65 @@ CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
 CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
 CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
+CREATE SEQUENCE hp_pk_seq;
+CREATE TABLE hp (
+	pk              INTEGER PRIMARY KEY NOT NULL,
+	user_fk         INTEGER,
+	hp_iuid         VARCHAR(254) NOT NULL,
+	hp_name         VARCHAR(254),
+	hp_group        VARCHAR(254),
+	hp_level        INTEGER,
+	hp_priors       INTEGER,
+	hp_screens      INTEGER,
+	hp_attrs        BLOB(64000),
+FOREIGN KEY (user_fk) REFERENCES code(pk)
+);
+CREATE INDEX hp_user_fk ON hp(user_fk);
+CREATE UNIQUE INDEX hp_iuid ON hp(hp_iuid);
+CREATE INDEX hp_name ON hp(hp_name);
+CREATE INDEX hp_level ON hp(hp_level);
+CREATE INDEX hp_priors ON hp(hp_priors);
+CREATE INDEX hp_screens ON hp(hp_screens);
+
+CREATE SEQUENCE hpdef_pk_seq;
+CREATE TABLE hpdef (
+	pk              INTEGER PRIMARY KEY NOT NULL,
+	hp_fk           INTEGER,
+	modality        VARCHAR(254),
+	laterality      VARCHAR(254),
+FOREIGN KEY (hp_fk) REFERENCES hp(pk)
+);
+CREATE INDEX hp_fk ON hpdef(hp_fk);
+CREATE INDEX hpdef_modality ON hpdef(modality);
+CREATE INDEX hpdef_laterality ON hpdef(laterality);
+
+CREATE TABLE rel_hpdef_region (
+	hpdef_fk        INTEGER,
+	region_fk       INTEGER,
+FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
+FOREIGN KEY (region_fk) REFERENCES code(pk)
+);
+CREATE INDEX region_hpdef_fk ON rel_hpdef_region(hpdef_fk);
+CREATE INDEX hpdef_region_fk ON rel_hpdef_region(region_fk);
+
+CREATE TABLE rel_hpdef_proc (
+	hpdef_fk        INTEGER,
+	proc_fk         INTEGER,
+FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
+FOREIGN KEY (proc_fk) REFERENCES code(pk)
+);
+CREATE INDEX proc_hpdef_fk ON rel_hpdef_proc(hpdef_fk);
+CREATE INDEX hpdef_proc_fk ON rel_hpdef_proc(proc_fk);
+
+CREATE TABLE rel_hpdef_reason (
+	hpdef_fk        INTEGER,
+	reason_fk       INTEGER,
+FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
+FOREIGN KEY (reason_fk) REFERENCES code(pk)
+);
+CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
+CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
+
 CREATE SEQUENCE device_pk_seq;
 CREATE TABLE device (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
@@ -403,10 +478,12 @@ CREATE INDEX user_id ON roles(user_id);
 INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebUser');
+INSERT INTO roles VALUES('admin','McmUser');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
 INSERT INTO users VALUES('user','user');
 INSERT INTO roles VALUES('user','WebUser');
+INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(NEXTVAL FOR ae_pk_seq,'PACS_TIANI','localhost',2350);

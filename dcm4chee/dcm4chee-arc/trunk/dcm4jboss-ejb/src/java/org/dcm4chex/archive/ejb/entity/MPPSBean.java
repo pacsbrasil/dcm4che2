@@ -40,6 +40,8 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="mpps"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.audit-created-time field-name="createdTime"
+ * @jboss.audit-updated-time field-name="updatedTime"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
  *             query="SELECT OBJECT(a) FROM Instance AS a" transaction-type="Supports"
@@ -111,6 +113,22 @@ public abstract class MPPSBean implements EntityBean {
 
 	public abstract void setPk(Integer pk);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="created_time"
+     */
+    public abstract java.sql.Timestamp getCreatedTime();
+
+    public abstract void setCreatedTime(java.sql.Timestamp time);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="updated_time"
+     */
+    public abstract java.sql.Timestamp getUpdatedTime();
+
+    public abstract void setUpdatedTime(java.sql.Timestamp time);
+	
 	/**
 	 * SOP Instance UID
 	 * 

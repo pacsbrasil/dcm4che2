@@ -251,6 +251,27 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
+     * @ejb.persistence column-name="hidden"
+     */
+    public abstract boolean getHidden();
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean getHiddenSafe() {
+        try {
+            return getHidden();
+        } catch (NullPointerException npe) {
+            return false;
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setHidden(boolean hidden);
+	
+    /**
      * Modalities In Study
      *
      * @ejb.interface-method

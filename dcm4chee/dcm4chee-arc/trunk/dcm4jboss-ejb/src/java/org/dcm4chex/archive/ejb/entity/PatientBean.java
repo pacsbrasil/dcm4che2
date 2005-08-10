@@ -26,6 +26,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="patient"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.audit-created-time field-name="createdTime"
+ * @jboss.audit-updated-time field-name="updatedTime"
  * 
  * @ejb.finder signature="Collection findAll()"
  *             query="SELECT OBJECT(a) FROM Patient AS a"
@@ -64,6 +66,22 @@ public abstract class PatientBean implements EntityBean {
 
     public abstract void setPk(Integer pk);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="created_time"
+     */
+    public abstract java.sql.Timestamp getCreatedTime();
+
+    public abstract void setCreatedTime(java.sql.Timestamp time);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="updated_time"
+     */
+    public abstract java.sql.Timestamp getUpdatedTime();
+
+    public abstract void setUpdatedTime(java.sql.Timestamp time);
+	
     /**
      * Patient ID
      *
@@ -128,6 +146,27 @@ public abstract class PatientBean implements EntityBean {
     public abstract void setPatientSex(String sex);
 
     /**
+     * @ejb.persistence column-name="hidden"
+     */
+    public abstract boolean getHidden();
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean getHiddenSafe() {
+        try {
+            return getHidden();
+        } catch (NullPointerException npe) {
+            return false;
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setHidden(boolean hidden);
+
+	/**
      * Patient DICOM Attributes
      *
      * @ejb.persistence
