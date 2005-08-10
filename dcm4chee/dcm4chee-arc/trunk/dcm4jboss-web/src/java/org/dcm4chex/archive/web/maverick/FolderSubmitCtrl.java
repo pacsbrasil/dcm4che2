@@ -65,7 +65,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         		log.error("Cant make form bean!", x );
         	}
         }
-        return super.makeFormBean();
+       return super.makeFormBean();
     }
     
     protected String perform() throws Exception {
@@ -78,6 +78,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
             HttpServletRequest rq = getCtx().getRequest();
+            folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
             	return logout();
             
@@ -106,7 +107,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	                    || rq.getParameter("move.x") != null) { return move(); }
             }
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
-            if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) ); 
+            if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
+            
 
             return FOLDER;
         } catch (Exception e) {
@@ -129,10 +131,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
             	return FOLDER;
             }
             if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter.toDataset()));
+                folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies()));
                 folderForm.setAets(lookupAEManager().getAes());
             }
-            List studyList = cm.listStudies(filter.toDataset(), folderForm
+            List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), folderForm
                     .getOffset(), folderForm.getLimit());
             List patList = new ArrayList();
             PatientModel curPat = null;

@@ -109,14 +109,6 @@
 			<param-value>tiani.archive:service=ECHOService</param-value>
 		</init-param>
 
-		<!-- 
-			The default value for 'hidePatientWithoutStudies' in dcm4jboss-web application.
-		-->
-		<init-param>
-			<param-name>hidePatientWithoutStudies</param-name>
-			<param-value>false</param-value>
-		</init-param>
-
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	

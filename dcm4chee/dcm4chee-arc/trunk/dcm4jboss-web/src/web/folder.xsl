@@ -12,6 +12,14 @@
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
+					<td width="5" bgcolor="eeeeee">
+						<input type="checkbox" name="showWithoutStudies" value="true" title="Show patients without studies">
+							<xsl:if test="/model/showWithoutStudies = 'true'">
+								<xsl:attribute name="checked"/>
+							</xsl:if>
+						</input>
+					</td>
+					<td width="5" bgcolor="eeeeee" title="Show patients without studies">w/o studies</td>
 					<td bgcolor="eeeeee" align="center">Displaying studies
 						<b>
 							<xsl:value-of select="offset + 1"/>

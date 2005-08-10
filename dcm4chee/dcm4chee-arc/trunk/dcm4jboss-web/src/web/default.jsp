@@ -3,4 +3,4 @@
 	$Source$
 --%>
 
-<jsp:forward page="foldersubmit.m?filter="/>
+<jsp:forward page="foldersubmit.m?showWithoutStudies=true&amp;filter="/>

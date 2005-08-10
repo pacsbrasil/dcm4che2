@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -123,6 +122,8 @@ public class FolderForm {
 	private boolean showSeriesIUID;
 	
 	private boolean addWorklist = false;
+	
+	private boolean showWithoutStudies;
     
     static FolderForm getFolderForm(HttpServletRequest request) {
         FolderForm form = (FolderForm) request.getSession()
@@ -611,5 +612,17 @@ public class FolderForm {
 	 */
 	public void setAddWorklist(boolean addWorklist) {
 		this.addWorklist = addWorklist;
+	}
+	/**
+	 * @return Returns the hideStudyLess.
+	 */
+	public boolean isShowWithoutStudies() {
+		return showWithoutStudies;
+	}
+	/**
+	 * @param hideStudyLess The hideStudyLess to set.
+	 */
+	public void setShowWithoutStudies(boolean showWithoutStudies) {
+		this.showWithoutStudies = showWithoutStudies;
 	}
 }
