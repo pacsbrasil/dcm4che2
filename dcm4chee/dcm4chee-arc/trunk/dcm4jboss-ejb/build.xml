@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.4.8"/>
+	<property name="version" value="2.4.9"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
