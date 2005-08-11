@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
    <description>PPS SCU Service to forward GP-PPS messages received by
@@ -9,8 +7,8 @@
    </description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate" />
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.ppsscp.PPSScuService</class>
@@ -21,119 +19,102 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getForwardAETs"
-      setMethod="setForwardAETs">
-      <description>AET(s) of AE(s) to forward destinations.
-      Separate multiple values by '\'(backslash).
-      "NONE" = do not forward GP-PPS to any AE.
+   <attribute access="read-write" getMethod="getForwardAETs" setMethod="setForwardAETs">
+      <description>List of the AE titles of the application entities that GP-PPS messages can be  forwarded to, separated by \(backslash).
+      NONE = do not forward GP-PPS messages to any application entities.
       </description>
       <name>ForwardAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE" />
+         <value value="NONE"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingAET"
-      setMethod="setCallingAET">
-      <description>Calling AET used in Association Request.
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
+      <description>Calling AE title used in the Association Request.
       </description>
-      <name>CallingAET</name>
+      <name>CallingAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getConcurrency"
-      setMethod="setConcurrency">
-      <description>Maximal number of concurrent forwarded GP-PPS.
+   <attribute access="read-write" getMethod="getConcurrency" setMethod="setConcurrency">
+      <description>Maximum number of concurrent forwarded GP-PPS messages.
       </description>
       <name>Concurrency</name>
       <type>int</type>
       <descriptors>
-         <value value="1" />
+         <value value="1"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getRetryIntervalls"
-      setMethod="setRetryIntervalls">
-      <description>Number and intervalls of retries of failed 
-      GP-PPS forward requests by a list of comma separated NUMBERxINTERVAL pairs.
-      The intervall can be specified in seconds (##s), minutes (##m),
-      hours (##h) or days (##d).
-      </description>
-      <name>RetryIntervalls</name>
+   <attribute access="read-write" getMethod="getRetryIntervalls" setMethod="setRetryIntervalls">
+      <description>Number and intervals of retries of failed 
+      GP-PPS forward requests.&lt;br&gt;Format:
+      &lt;br&gt;Comma separated list of &lt;i&gt;number&lt;/i&gt;x&lt;i&gt;interval&lt;/i&gt; pairs.
+      &lt;br&gt;The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      &lt;br&gt;Example: 
+      &lt;br&gt;5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.</description>
+      <name>RetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="5x1m,12x5m,24x1h,7x1d" />
+         <value value="5x1m,12x5m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getAcTimeout"
-      setMethod="setAcTimeout">
-      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
+   <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
+      
       </description>
-      <name>AcTimeout</name>
+      <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="10000" />
+         <value value="10000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDimseTimeout"
-      setMethod="setDimseTimeout">
+   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
       <description>DIMSE message timeout in ms. 0 = no timeout.
       </description>
-      <name>DimseTimeout</name>
+      <name>DIMSETimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="60000" />
+         <value value="60000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getSoCloseDelay"
-      setMethod="setSoCloseDelay">
-      <description>Socket close delay in ms after A-RELEASE RSP.
-      </description>
-      <name>SoCloseDelay</name>
+   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
+      <description>Socket close delay in milliseconds after an A-Release response.</description>
+      <name>SocketCloseDelay</name>
       <type>int</type>
       <descriptors>
-         <value value="50" />
+         <value value="50"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getQueueName"
-      setMethod="setQueueName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
+      <description>Used internally. Do not modify.
       </description>
       <name>QueueName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PPSScu" />
+         <value value="PPSScu"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getPpsScpServiceName"
-      setMethod="setPpsScpServiceName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getPpsScpServiceName" setMethod="setPpsScpServiceName">
+      <description>Used internally. Do not modify.
       </description>
       <name>PpsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=PPSScp" />
+         <value value="tiani.archive:service=PPSScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+      <description>Used internally. Do not modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

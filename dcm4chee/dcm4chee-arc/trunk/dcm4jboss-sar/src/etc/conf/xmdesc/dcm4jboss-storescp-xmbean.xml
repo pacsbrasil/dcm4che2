@@ -324,7 +324,7 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
-      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs, in bytes.
       </description>
       <name>MaximumPDULength</name>
       <type>int</type>

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
    <description>Private Study Management Service SCU Service used to forward 
@@ -10,8 +8,8 @@
          received from the Content Edit Service.</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate" />
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.stymgt.StudyMgtScuService</class>
@@ -22,11 +20,9 @@
    </constructor>
 
    <!-- Attributes -->
-    <attribute access="read-write"
-      getMethod="getForwardingRules"
-      setMethod="setForwardingRules">
+    <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
       <description>List of forwarding rules.
-      &lt;br&gt;Format:&lt;br&gt;[&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,…]&lt;i&gt;aeTitle&lt;/i&gt;, &lt;i&gt;aeTitle&lt;/i&gt;,… | NONE
+      &lt;br&gt;Format:&lt;br&gt;[&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,...]&lt;i&gt;aeTitle&lt;/i&gt;, &lt;i&gt;aeTitle&lt;/i&gt;,... | NONE
 
 &lt;br&gt;where
 &lt;br&gt;&lt;i&gt;condition&lt;/i&gt; = calling|called|command
@@ -41,34 +37,28 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=PACS_NODEXX]PACS_CENTRAL" />
+         <value value="[calling=PACS_NODEXX]PACS_CENTRAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isRetryIfNoSuchSOPInstance"
-      setMethod="setRetryIfNoSuchSOPInstance">
+   <attribute access="read-write" getMethod="isRetryIfNoSuchSOPInstance" setMethod="setRetryIfNoSuchSOPInstance">
       <description>Retry forward if SCP returns status 0112H (No Such SOP Instance).
       </description>
       <name>RetryIfNoSuchSOPInstance</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="false"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingAET"
-      setMethod="setCallingAET">
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>Calling AET used in Association Request.
       </description>
       <name>CallingAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getRetryIntervalls"
-      setMethod="setRetryIntervalls">
+   <attribute access="read-write" getMethod="getRetryIntervalls" setMethod="setRetryIntervalls">
       <description>Number and intervals of retries for the  failed 
       forward requests.
       &lt;br&gt;Format:
@@ -83,83 +73,69 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
       <name>RetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="5x1m,12x5m,24x1h,7x1d" />
+         <value value="5x1m,12x5m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-    <attribute access="read-write"
-      getMethod="getConcurrency"
-      setMethod="setConcurrency">
+    <attribute access="read-write" getMethod="getConcurrency" setMethod="setConcurrency">
       <description>Maximum number of concurrent forwarded messages.
       </description>
       <name>Concurrency</name>
       <type>int</type>
       <descriptors>
-         <value value="1" />
+         <value value="1"/>
       </descriptors>
    </attribute>
-     <attribute access="read-write"
-      getMethod="getAcTimeout"
-      setMethod="setAcTimeout">
+     <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
       <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="10000" />
+         <value value="10000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDimseTimeout"
-      setMethod="setDimseTimeout">
+   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
       <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
       <name>DIMSETimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="60000" />
+         <value value="60000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getSoCloseDelay"
-      setMethod="setSoCloseDelay">
+   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after an A-Release response.
       </description>
       <name>SocketCloseDelay</name>
       <type>int</type>
       <descriptors>
-         <value value="50" />
+         <value value="50"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getQueueName"
-      setMethod="setQueueName">
+   <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>QueueName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="StudyMgtScu" />
+         <value value="StudyMgtScu"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyMgtScpServiceName"
-      setMethod="setStudyMgtScpServiceName">
+   <attribute access="read-write" getMethod="getStudyMgtScpServiceName" setMethod="setStudyMgtScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>StudyMgtScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StudyMgtScp" />
+         <value value="tiani.archive:service=StudyMgtScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.</description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
