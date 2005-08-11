@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.4.5"/>
+	<property name="version" value="2.4.10"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -102,29 +102,6 @@
                 />
             
         </ejbdoclet>
-    	<uptodate property="meta-inf-psql.notRequired"
-    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
-    		targetfile="${basedir}/target/meta-inf-psql/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-psql"/>
- 
-    	<uptodate property="meta-inf-mysql.notRequired"
-    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
-    		targetfile="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-mysql"/>
- 
-    	<uptodate property="meta-inf-oracle.notRequired"
-    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
-    		targetfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-oracle"/>
-
-    	<uptodate property="meta-inf-db2.notRequired"
-    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
-    		targetfile="${basedir}/target/meta-inf-db2/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-db2"/>
     </target>
 
    <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
@@ -245,25 +222,58 @@
       	</javac>
 	</target>
 
-	<target name="ejb" depends="compile">
-    	<antcall target="ejb-jdbc-jar">
+    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,oracle-jar,db2-jar,common-jar"/>
+    <target name="hsql-jar" depends="compile" unless="hsql.nobuild">
+    	<antcall target="ejb-jar">
     		<param name="db.name" value="hsql"/>
     	</antcall>
-    	<antcall target="ejb-jdbc-jar">
+    </target>
+
+    <target name="psql-jar" depends="compile" unless="psql.nobuild">
+    	<uptodate property="meta-inf-psql.notRequired"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+    		targetfile="${basedir}/target/meta-inf-psql/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-psql"/> 
+    	<antcall target="ejb-jar">
     		<param name="db.name" value="psql"/>
     	</antcall>
-    	<antcall target="ejb-jdbc-jar">
+    </target>
+
+     <target name="mysql-jar" depends="compile" unless="mysql.nobuild">
+    	<uptodate property="meta-inf-mysql.notRequired"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+    		targetfile="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-mysql"/> 
+    	<antcall target="ejb-jar">
     		<param name="db.name" value="mysql"/>
     	</antcall>
-    	<antcall target="ejb-jdbc-jar">
+    </target>
+
+    <target name="db2-jar" depends="compile" unless="db2.nobuild">
+    	<uptodate property="meta-inf-db2.notRequired"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+    		targetfile="${basedir}/target/meta-inf-db2/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-db2"/>
+    	<antcall target="ejb-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
-    	<antcall target="ejb-jdbc-jar">
+    </target>
+
+    <target name="oracle-jar" depends="compile" unless="oracle.nobuild">
+    	<uptodate property="meta-inf-oracle.notRequired"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+    		targetfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-oracle"/>
+    	<antcall target="ejb-jar">
     		<param name="db.name" value="oracle"/>
     	</antcall>
-	</target>
+    </target>
 
-    <target name="ejb-jdbc-jar">
+    <target name="ejb-jar">
 		<mkdir dir="${basedir}/target/${db.name}/deploy"/>
         <jar jarfile="${basedir}/target/${db.name}/deploy/dcm4jboss-arr-ejb.jar">
         	<metainf dir="${basedir}/target/meta-inf-${db.name}"/>
@@ -279,8 +289,8 @@
         </jar>
     </target>
 
-	<target name="jar" depends="compile">
-		<mkdir dir="${basedir}/target/common/lib"/>
+    <target name="common-jar" depends="compile">
+	<mkdir dir="${basedir}/target/common/lib"/>
         <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr-ejb-client.jar">
         	<manifest>
 				<attribute name="Implementation-Title" value="dcm4jboss-arr"/>
@@ -311,7 +321,7 @@
                 <include name="**/security/**" />
             </fileset>
         </jar>
-	</target>
+    </target>
 
 	<target name="war" depends="compile">
 		<mkdir dir="${basedir}/target/common/deploy"/>
@@ -329,7 +339,7 @@
 
 	</target>
 
-	<target name="all" depends="ejb,jar,war"/>
+	<target name="all" depends="jar,war"/>
 
    	<target name="clean">
      	<delete dir="${basedir}/target"/>
