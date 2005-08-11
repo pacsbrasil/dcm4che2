@@ -256,31 +256,6 @@
                 />
             
         </ejbdoclet>
-
-    	<uptodate property="meta-inf-psql.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
-    		targetfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-psql"/>
- 
-    	<uptodate property="meta-inf-mysql.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
-    		targetfile="${target.meta-inf-mysql}/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-mysql"/>
- 
-    	<uptodate property="meta-inf-oracle.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
-    		targetfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-oracle"/>
-
-    	<uptodate property="meta-inf-db2.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
-    		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-db2"/>
-
     </target>
 
     <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
@@ -365,22 +340,58 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-jar and jdbc-jar                                    -->
    <!-- =================================================================== -->
-    <target name="jar" depends="compile">
+    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,oracle-jar,db2-jar,common-jar"/>
+    <target name="hsql-jar" depends="compile" unless="hsql.nobuild">
      	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="hsql"/>
     	</antcall>
+    </target>
+
+    <target name="psql-jar" depends="compile" unless="psql.nobuild">
+    	<uptodate property="meta-inf-psql.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-psql"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="psql"/>
     	</antcall>
+    </target>
+
+    <target name="mysql-jar" depends="compile" unless="mysql.nobuild">
+    	<uptodate property="meta-inf-mysql.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-mysql}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-mysql"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="mysql"/>
     	</antcall>
+    </target>
+
+    <target name="oracle-jar" depends="compile" unless="oracle.nobuild">
+    	<uptodate property="meta-inf-oracle.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-oracle"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="oracle"/>
     	</antcall>
+    </target>
+
+    <target name="db2-jar" depends="compile" unless="db2.nobuild">
+    	<uptodate property="meta-inf-db2.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-db2"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
+    </target>
+
+    <target name="common-jar" depends="compile">
         <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
          	<manifest>
 				<attribute name="Implementation-Title" value="dcm4jboss-ejb-client"/>

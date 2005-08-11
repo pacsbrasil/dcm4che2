@@ -11,5 +11,5 @@ cactus.home=${user.home}/jakarta-cactus-13-1.7
 jboss.home=${user.home}/jboss-4.0.2
 
 #Uncomment to skip patch task (=not available on Windows)
-#meta-inf-oracle.notRequired=true
-#meta-inf-db2.notRequired=true
+#oracle.nobuild=true
+#db2.nobuild=true
