@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Compression Service</description>
+   <description>Consistency Check Service. Sets up a schedule to automatically check the consistency of compressed images. You can set image compression rules in the Compression Service. You can also use the commands below to manually check the consistency of images.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
@@ -19,69 +17,56 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getTaskInterval"
-      setMethod="setTaskInterval">
-      <description>Interval in which DB is checked for images to compress.
-          Format: INTERVAL['!'FROM'-'TO] or 'NEVER'
-          INTERVAL: ##s (in seconds), ##m (in minutes), ##h (in hours).
-          FROM,TO: start and end hour (0-23) when no compression should be performed.
-          'NEVER' = disable auto compression).
-      </description>
+   <attribute access="read-write" getMethod="getTaskInterval" setMethod="setTaskInterval">
+      <description>Interval in which to  check for images for consistency.
+          &lt;br&gt;Format: 
+			 &lt;br&gt;&lt;i&gt;interval&lt;/i&gt;!&lt;i&gt;from&lt;/i&gt;-&lt;i&gt;to&lt;/i&gt; or NEVER
+          &lt;br&gt;&lt;i&gt;interval&lt;/i&gt; = ##s (in seconds), ##m (in minutes), ##h (in hours).
+          &lt;br&gt;&lt;i&gt;from&lt;/i&gt; = start hour (0-23) when no consistency check should be performed &lt;br&gt;&lt;i&gt;to&lt;/i&gt; = end hour (0-23) when no consistency check should be performed
+          &lt;br&gt;NEVER = disable automatic consistency checking &lt;br&gt;Example:10s!9-17 means every 10 seconds, poll the database and check image consistency, except between the hours of 9:00am and 5:00pm. By setting this type of TaskInterval, you can ensure checks occur outside of peak imaging hours. </description>
       <name>TaskInterval</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NEVER" />
+         <value value="NEVER"/>
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getMinStudyAge"
-      setMethod="setMinStudyAge">
-      <description>Min. study age that will be checked.
-      		##w (in weeks), ##d (in days), ##h (in hours)
-      </description>
+   <attribute access="read-write" getMethod="getMinStudyAge" setMethod="setMinStudyAge">
+      <description>Minimum age of a study that will be checked for consistency, in 
+      		##w (in weeks), ##d (in days), or ##h (in hours).</description>
       <name>MinStudyAge</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="1d" />
+         <value value="1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getMaxStudyAge"
-      setMethod="setMaxStudyAge">
-      <description>Max. study age that will be checked.
-      		##w (in weeks), ##d (in days), ##h (in hours)
-      </description>
+   <attribute access="read-write" getMethod="getMaxStudyAge" setMethod="setMaxStudyAge">
+      <description>Maximum age of a study that will be checked for consistency, in 
+      		##w (in weeks), ##d (in days), or ##h (in hours).</description>
       <name>MaxStudyAge</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="4w" />
+         <value value="4w"/>
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getMaxCheckedBefore"
-      setMethod="setMaxCheckedBefore">
-      <description>Max. amount of time from last check.
-      		##w (in weeks), ##d (in days), ##h (in hours)
-      </description>
+   <attribute access="read-write" getMethod="getMaxCheckedBefore" setMethod="setMaxCheckedBefore">
+      <description>Maximum amount of time from the last consistency check, in
+      		##w (in weeks), ##d (in days), or ##h (in hours).</description>
       <name>MaxCheckedBefore</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="1w" />
+         <value value="1w"/>
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getLimitNumberOfStudiesPerTask"
-      setMethod="setLimitNumberOfStudiesPerTask">
-      <description>Max. number of studies that are checked in one task.
+   <attribute access="read-write" getMethod="getLimitNumberOfStudiesPerTask" setMethod="setLimitNumberOfStudiesPerTask">
+      <description>Maximum number of studies that are checked in one task.
       </description>
       <name>LimitNumberOfStudiesPerTask</name>
       <type>int</type>
       <descriptors>
-         <value value="100" />
+         <value value="100"/>
       </descriptors>
    </attribute>
 
