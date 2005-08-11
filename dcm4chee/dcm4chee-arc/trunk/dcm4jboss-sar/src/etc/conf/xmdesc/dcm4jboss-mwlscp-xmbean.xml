@@ -4,11 +4,11 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>DICOM Modality Performed Procedure Step SCP</description>
+   <description>DICOM Modality Worklist SCP</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate" />
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.mwlscp.MWLScpService</class>
@@ -19,108 +19,91 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getCalledAETs"
-      setMethod="setCalledAETs">
-      <description>Accepted Called AET(s). Separate multiple values by '\'(backslash). 
+   <attribute access="read-write" getMethod="getCalledAETs" setMethod="setCalledAETs">
+      <description>Accepted called AE titles, separated by \ (backslash). 
+       
       </description>
       <name>CalledAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getCallingAETs"
-      setMethod="setCallingAETs">
-      <description>Accepted Calling AETs.
-      "ANY" = accept any. Separate multiple values by '\'(backslash). 
+   <attribute access="read-write" getMethod="getCallingAETs" setMethod="setCallingAETs">
+      <description>Accepted calling AE titles, separated by \ (backslash).
+      ANY = accept any. 
       </description>
       <name>CallingAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ANY" />
+         <value value="ANY"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptExplicitVRLE"
-      setMethod="setAcceptExplicitVRLE">
+   <attribute access="read-write" getMethod="isAcceptExplicitVRLE" setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
       </description>
       <name>AcceptExplicitVRLE</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getOnMPPSReceived"
-      setMethod="setOnMPPSReceived">
-      <description>Defines behavoir on receive of MPPS messages by the
-      associated MPPS SCP, which references one or several worklist items
-      in its Scheduled Step Attributes Sequence. Possible values: NO_OP,
-      REMOVE_ITEM, UPDATE_STATUS.
+   <attribute access="read-write" getMethod="getOnMPPSReceived" setMethod="setOnMPPSReceived">
+      <description>Defines the behavior when MPPS messages that reference one or several worklist items
+      in its Scheduled Step Attributes Sequence are received by the
+      associated MPPS SCP. (Use the MPPSScp service to set the associated SCPs.) Possible values: NO_OP,
+      REMOVE_ITEM (remove the worklist item), UPDATE_STATUS (updated the status of the worklist item).
       </description>
       <name>OnMPPSReceived</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="UPDATE_STATUS" />
+         <value value="UPDATE_STATUS"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getMaxPDULength"
-      setMethod="setMaxPDULength">
-      <description>Maximal PDU package length for receiving PDUs.
+   <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs, in bytes.
       </description>
-      <name>MaxPDULength</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
-         <value value="16352" />
+         <value value="16352"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
+   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
       <name>EjbProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="LOCAL" />
+         <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDcmServerName"
-      setMethod="setDcmServerName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getDcmServerName" setMethod="setDcmServerName">
+      <description>Used internally. Do not modify.
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=DcmServer" />
+         <value value="tiani.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getMppsScpServiceName"
-      setMethod="setMppsScpServiceName">
+   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MPPSScp" />
+         <value value="tiani.archive:service=MPPSScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+      <description>Used internally. Do not modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AuditLogger" />
+         <value value="tiani.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
