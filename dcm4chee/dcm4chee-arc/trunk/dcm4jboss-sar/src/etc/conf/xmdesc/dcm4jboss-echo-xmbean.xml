@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>AE Configuration Service</description>
+   <description>Echo Service. Use this service to test the AE configurations you defined with the AE Configuration Service. First, you must set the CallingAETitle used in echo associations used to  test those AE configurations.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.mbean.EchoService</class>
@@ -19,64 +17,60 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getCallingAET"
-      setMethod="setCallingAET">
-      <description>Calling AET that is used in echo association.
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
+      <description>Calling AE title  that is used in echo associations.
       </description>
-      <name>CallingAET</name>
+      <name>CallingAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="PACS_TIANI"/>
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+      <description>Used internally. Do not modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
    <operation impact="ACTION">
-     <description>Send echo request to AET</description>
+     <description>Send an echo request to the specified AE title, for the specified number of times.</description>
      <name>echo</name>
      <parameter>
-       <description>AET to test</description>
-       <name>aet</name>
+       <description>AE title to test</description>
+       <name>aeTitle</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
-       <description>nr of echos for this check</description>
+       <description>number of times to repeat the request</description>
        <name>nrOfTests</name>
        <type>java.lang.Integer</type>
      </parameter>
      <return-type>java.lang.String</return-type>
 	</operation>
    <operation impact="ACTION">
-     <description>Send echo request to AE</description>
+     <description>Send an echo request to an AE configuration, for the specified number of times.</description>
      <name>echo</name>
      <parameter>
-       <description>AE Configuration to test</description>
+       <description>AE configuration to test</description>
        <name>AEData</name>
        <type>org.dcm4chex.archive.ejb.jdbc.AEData</type>
      </parameter>
      <parameter>
-       <description>nr of echos for this check</description>
+       <description>number of times to repeat the request</description>
        <name>nrOfTests</name>
        <type>java.lang.Integer</type>
      </parameter>
      <return-type>java.lang.String</return-type>
 	</operation>
    <operation impact="ACTION">
-     <description>Send echo request to all configured AEs</description>
+     <description>Send an echo request to all configured AE titles.</description>
      <name>echoAll</name>
      <return-type>[Ljava.lang.String;</return-type>
 	</operation>

@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
-   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>GPWL Feed Service to add workitems into General Purpose Worklist
-     triggered by received MPPS N-SET messages.
+   <description>GPWL Feed Service. Used to add entries to the General Purpose Worklist, triggered by received MPPS N-Set messages.
    </description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate" />
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.gpwlscp.GPWLFeedService</class>
@@ -21,67 +18,57 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
+   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
       <name>EjbProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="LOCAL" />
+         <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getMppsScpServiceName"
-      setMethod="setMppsScpServiceName">
-      <description>Used internally - do NOT modify.
+   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
+      <description>Used internally. Do not modify.
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MPPSScp" />
+         <value value="tiani.archive:service=MPPSScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTemplateURL"
-      setMethod="setTemplateURL">
-      <description>URL to directory of worklist item templates.
+   <attribute access="read-write" getMethod="getTemplateURL" setMethod="setTemplateURL">
+      <description>URL to the directory of worklist entry templates.
       </description>
       <name>TemplateURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="gpwl" />
+         <value value="gpwl"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTemplates"
-      setMethod="setTemplates">
+   <attribute access="read-write" getMethod="getTemplates" setMethod="setTemplates">
       <description>List of templates for worklist entries.
       </description>
       <name>TemplateList</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="wl1.tpl^Worklist1,wl2.tpl^Worklist2" />
+         <value value="wl1.tpl^Worklist1,wl2.tpl^Worklist2"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getHumanPerformer"
-      setMethod="setHumanPerformer">
-      <description>List of human performer for a worklist entry.
+   <attribute access="read-write" getMethod="getHumanPerformer" setMethod="setHumanPerformer">
+      <description>List of human performers for a worklist entry.
       </description>
       <name>HumanPerformerList</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="doc1^PACS_TIANI^Dr. Allis,doc2^HUGO^Dr. Suse" />
+         <value value="doc1^PACS_TIANI^Dr. Allis,doc2^HUGO^Dr. Suse"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
     <operation impact="ACTION">
-      <description>add new general purpose worklist entry.
+      <description>Add a new general purpose worklist entry.
       </description>
       <name>addWorklistItem</name>
       <parameter>
@@ -90,17 +77,17 @@
         <type>java.lang.Integer</type>
       </parameter>
       <parameter>
-        <description>Filename of template file</description>
+        <description>name of template file</description>
         <name>templateFile</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Human performer</description>
+        <description>human performer</description>
         <name>humanPerformer</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Schedule date</description>
+        <description>scheduled date</description>
         <name>scheduleDate</name>
         <type>java.lang.Long</type>
       </parameter>
