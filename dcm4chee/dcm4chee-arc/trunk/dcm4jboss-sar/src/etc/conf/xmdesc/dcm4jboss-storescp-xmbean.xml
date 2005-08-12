@@ -3,7 +3,8 @@
 
 <mbean>
    <description>DICOM Storage SCP. Provides a DICOM storage service to receive DICOM objects from remote
-   DICOM applications. Typically these objects are images received from modalities. The tiani.archive=DCMServer
+   DICOM applications. Typically these objects are images received from modalities. You can also configure
+	what DICOM SOP classes are accepted by the StoreScp service using the &lt;b&gt;AcceptedImageSOPClasses&lt;/b&gt; and &lt;b&gt;AcceptedOtherSOPClasses&lt;/b&gt; atributes. The tiani.archive=DCMServer
    must be deployed first because the StoreScp registers itself against this server.
  </description>
 
@@ -72,7 +73,7 @@
       in the received object, if the Patient ID matches the specified regular
       expression. Multiple rules are separated by new lines.
       Format: 
-      <br><i>REGEX</i>:<i>ISSUER</i>
+      <br><i>regExpression</i>:<i>issuer</i>
       <br>Example:
       <br>^PACS- \d*:PACS_TIANI 
       <br>If no regular expression is specified,
@@ -177,11 +178,48 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getImageCUIDs" setMethod="setImageCUIDs">
-      <description><![CDATA[List of image SOP Class UIDs.<br>
-      	Either the UID or the symbolic name can be used!
+      <description><![CDATA[List of image SOP Classes that the Store SCP service accepts, separated by semi-colons. The difference between AcceptedImageSOPClasses and 
+AcceptedOtherSOPClasses is the set of transfer syntax offered in the presentation context. AcceptedOtherSOPClasses always uses implicit 
+(explicit) VR little endian, while AcceptedImageSOPClasses can use all selected image transfer syntax options, such as AcceptJPEGLossless.<br>
+Use either the SOP Class UID or the symbolic name:
+<br>HardcopyGrayscaleImageStorage
+<br>HardcopyColorImageStorage
+<br>ComputedRadiographyImageStorage
+<br>DigitalXRayImageStorageForPresentation
+            <br>DigitalXRayImageStorageForProcessing
+<br>DigitalMammographyXRayImageStorageForPresentation
+            <br>DigitalMammographyXRayImageStorageForProcessing
+				<br>DigitalIntraoralXRayImageStorageForPresentation
+            <br>DigitalIntraoralXRayImageStorageForProcessing
+            <br>CTImageStorage
+				<br>UltrasoundMultiframeImageStorageRetired
+            <br>UltrasoundMultiframeImageStorage
+				<br>MRImageStorage
+            <br>EnhancedMRImageStorage
+            <br>NuclearMedicineImageStorageRetired
+            <br>UltrasoundImageStorageRetired
+				<br>UltrasoundImageStorage
+            <br>SecondaryCaptureImageStorage
+            <br>MultiframeSingleBitSecondaryCaptureImageStorage
+            <br>MultiframeGrayscaleByteSecondaryCaptureImageStorage
+            <br>MultiframeGrayscaleWordSecondaryCaptureImageStorage
+            <br>MultiframeColorSecondaryCaptureImageStorage
+            <br>XRayAngiographicImageStorage
+            <br>XRayRadiofluoroscopicImageStorage
+            <br>XRayAngiographicBiPlaneImageStorageRetired
+            <br>NuclearMedicineImageStorage
+				<br>VLImageStorageRetired
+            <br>VLMultiframeImageStorageRetired
+            <br>VLEndoscopicImageStorage
+				<br>VLMicroscopicImageStorage
+            <br>VLSlideCoordinatesMicroscopicImageStorage
+            <br>VLPhotographicImageStorage
+            <br>PositronEmissionTomographyImageStorage
+				<br>RTImageStorage
+<br>To map your own symbolic names to SOP classes or add more SOP Classes as possible values, use the dictionary.xml file.
     ]]>
       </description>
-      <name>ImageCUIDs</name>
+      <name>AcceptedImageSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="HardcopyGrayscaleImageStorage;HardcopyColorImageStorage;
@@ -211,11 +249,32 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getOtherCUIDs" setMethod="setOtherCUIDs">
-      <description><![CDATA[List of other (no image) SOP Class UIDs.<br>
-      	Either the UID or the symbolic name can be used!
+      <description><![CDATA[List of other non-image SOP Classes that the Store SCP service accepts. The difference between AcceptedImageSOPClasses and 
+AcceptedOtherSOPClasses is the set of transfer syntax offered in the presentation context. AcceptedOtherSOPClasses always uses implicit 
+(explicit) VR little endian, while AcceptedImageSOPClasses can use all selected image transfer syntax options, such as AcceptJPEGLossless.<br>
+Use either the SOP Class UID or the symbolic name:
+<br>BasicTextSR
+             <br>EnhancedSR<br>ComprehensiveSR
+				 <br>MammographyCADSR
+             <br>GrayscaleSoftcopyPresentationStateStorage
+             <br>KeyObjectSelectionDocument
+				 <br>RTDoseStorage
+             <br>RTStructureSetStorage
+				 <br>RTBeamsTreatmentRecordStorage
+             <br>RTPlanStorage
+				 <br>RTBrachyTreatmentRecordStorage
+             <br>RTTreatmentSummaryRecordStorage
+				 <br>RawDataStorage
+             <br>AmbulatoryECGWaveformStorage
+             <br>BasicVoiceAudioWaveformStorage
+             <br>CardiacElectrophysiologyWaveformStorage
+             <br>GeneralECGWaveformStorage
+				 <br>HemodynamicWaveformStorage
+             <br>TwelveLeadECGWaveformStorage
+<br>To map your own symbolic names to SOP classes or add more SOP Classes as possible values, use the dictionary.xml file.
     ]]>
       </description>
-      <name>OtherCUIDs</name>
+      <name>AcceptedOtherSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="BasicTextSR;
