@@ -155,7 +155,7 @@
 			  </xsl:when>		
 
 	  		  <xsl:when test="attr[@tag='0040A040']='NUM '">
-				<fo:block font-size="12pt"><xsl:value-of select="attr[@tag='0040A043']/item/attr[@tag='00080104']"/> Measurement not supported yet </fo:block>
+    			<xsl:apply-templates select="attr[@tag='0040A300']/item" mode="measurement"/>
 			  </xsl:when>		
 
 			  <xsl:when test="attr[@tag='0040A040']='CONTAINER '">
@@ -182,5 +182,15 @@
 
 	</xsl:template>
 	    
+ 	<xsl:template match="item" mode="measurement">
+	    <fo:block>
+			<xsl:value-of select="attr[@tag='0040A30A']"/>
+			<xsl:text> </xsl:text>
+			<xsl:if test="attr[@tag='004008EA']/item/attr[@tag='00080100'] != 1" > <!-- No unit (UCUM) -->
+				<xsl:value-of select="attr[@tag='004008EA']/item/attr[@tag='00080100']"/> 
+			</xsl:if>
+	    </fo:block>
+
+	</xsl:template>
     
 </xsl:stylesheet>
