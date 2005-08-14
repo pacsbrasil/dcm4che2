@@ -85,7 +85,7 @@ public abstract class VR {
             return;
         int cpos = 0;
         int clen = 0;
-        for (int i = 0, n = val.length / 2; i < n; i += 2) {
+        for (int i = 0; i + 2 <= val.length; i += 2) {
             if (clen + 8 >= cbuf.length) {
                 out.write(cbuf, 0, clen);
                 clen = 0;
@@ -139,7 +139,7 @@ public abstract class VR {
             return;
         int cpos = 0;
         int clen = 0;        
-        for (int i = 0, n = b.length / 4; i < n; i += 4) {
+        for (int i = 0; i + 4 <= b.length; i += 4) {
             if (clen + 16 >= cbuf.length) {
                 ch.write(cbuf, 0, clen);
                 clen = 0;
@@ -154,7 +154,8 @@ public abstract class VR {
                 cbuf[clen++] = '.';
                 break;
             }
-            String s = Float.toString(bigEndian ? ByteUtils.bytesBE2float(b, i)
+            String s = Float.toString(bigEndian 
+                    ? ByteUtils.bytesBE2float(b, i)
                     : ByteUtils.bytesLE2float(b, i));
             int sl = s.length();
             s.getChars(0, sl, cbuf, clen);
@@ -467,7 +468,7 @@ public abstract class VR {
             final int b4 = 2 + b2;
             int cpos = 0;
             int clen = 0;
-            for (int i = 0, n = val.length / 4; i < n; i += 4) {
+            for (int i = 0; i + 4 <= val.length; i += 4) {
                 if (clen + 9 >= cbuf.length) {
                     out.write(cbuf, 0, clen);
                     clen = 0;
@@ -847,7 +848,7 @@ public abstract class VR {
                 return;
             int cpos = 0;
             int clen = 0;
-            for (int i = 0, n = val.length / 8; i < n; i += 8) {
+            for (int i = 0; i + 8 < val.length; i += 8) {
                 if (clen + 26 >= cbuf.length) {
                     out.write(cbuf, 0, clen);
                     clen = 0;
@@ -1219,7 +1220,7 @@ public abstract class VR {
                 return;
             int cpos = 0;
             int clen = 0;
-            for (int i = 0, n = val.length / 4; i < n; i += 4) {
+            for (int i = 0; i + 4 <= val.length; i += 4) {
                 if (clen + 12 >= cbuf.length) {
                     out.write(cbuf, 0, clen);
                     clen = 0;
@@ -1280,7 +1281,7 @@ public abstract class VR {
                 return;
             int cpos = 0;
             int clen = 0;
-            for (int i = 0, n = val.length / 2; i < n; i += 2) {
+            for (int i = 0; i + 2 <= val.length; i += 2) {
                 if (clen + 8 >= cbuf.length) {
                     out.write(cbuf, 0, clen);
                     clen = 0;
@@ -1412,7 +1413,7 @@ public abstract class VR {
                 return;
             int cpos = 0;
             int clen = 0;
-            for (int i = 0, n = val.length / 4; i < n; i += 4) {
+            for (int i = 0; i + 4 <= val.length; i += 4) {
                 if (clen + 12 >= cbuf.length) {
                     out.write(cbuf, 0, clen);
                     clen = 0;
