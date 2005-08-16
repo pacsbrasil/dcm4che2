@@ -876,8 +876,8 @@ public abstract class VR {
             }
         }
                 
-        private static byte[] parseXMLValue(StringBuffer sb,
-                ByteArrayOutputStream out, boolean last) {
+        public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
+                boolean last, SpecificCharacterSet cs) {
             if (sb.length() == 0) return null;
             int begin = 0;
             int end;
