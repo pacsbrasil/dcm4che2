@@ -47,7 +47,7 @@
 						<fo:table-body>
 							<fo:table-row>
 								<fo:table-cell border-style="solid">
-									<fo:block font-size="10pt" padding="3mm">TEST4 Name:</fo:block>
+									<fo:block font-size="10pt" padding="3mm">Name:</fo:block>
 								</fo:table-cell>
 								<fo:table-cell border-style="solid">
 									<fo:block font-size="10pt" padding="3mm">
