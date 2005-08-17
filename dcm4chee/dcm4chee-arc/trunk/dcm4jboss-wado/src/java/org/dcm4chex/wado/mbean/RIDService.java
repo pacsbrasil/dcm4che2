@@ -10,12 +10,16 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
@@ -84,15 +88,13 @@ public class RIDService extends AbstractCacheService  {
 	 * @return SOP Class UIDs to find ECG related files.
 	 */
 	public String getECGSopCuids() {
-		StringBuffer sb = new StringBuffer();
-		Set set = support.getECGSopCuids();
-		if ( set == null ) return "";
-		Iterator iter = set.iterator();
-		if ( iter.hasNext() ) {
-			sb.append( iter.next() );
-			while ( iter.hasNext() ) {
-				sb.append("|").append( iter.next() );
-			}
+		Map uids = support.getECGSopCuids();
+		if ( uids == null || uids.size() < 1 ) return "";
+		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
+		Iterator iter = uids.keySet().iterator();
+		sb.append(iter.next());
+		while ( iter.hasNext() ) {
+			sb.append('\r').append('\n').append(iter.next());
 		}
 		return sb.toString();
 	}
@@ -105,15 +107,28 @@ public class RIDService extends AbstractCacheService  {
 	 * @param sopCuids String with SOP class UIDs seperated with '|'
 	 */
 	public void setECGSopCuids( String sopCuids ) {
-		String[] sa = StringUtils.split( sopCuids, '|');
-		Set set = new HashSet();
-		if ( sa != null && sa.length > 0 ) {
-			for ( int i = 0, len = sa.length ; i < len ; i++ ) {
-				if ( sa[i].trim().length() > 1 ) set.add( sa[i] );
-			}
-		}
-		support.setECGSopCuids( set );
+		
+        StringTokenizer st = new StringTokenizer(sopCuids, "\r\n;");
+        String uid,name;
+        Map map = new TreeMap();
+        int i = 0;
+        while ( st.hasMoreTokens() ) {
+        	uid = st.nextToken().trim();
+    		name = uid;
+        	if ( isDigit(uid.charAt(0) ) ) {
+        		if ( ! UIDs.isValid(uid) ) 
+        			throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+        	} else {
+        		uid = UIDs.forName( name );
+        	}
+        	map.put(name,uid);
+        }
+		support.setECGSopCuids( map );
 	}
+
+    private static boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
 	
 	/**
 	 * Getter for the name of the FileSystemMgt MBean.

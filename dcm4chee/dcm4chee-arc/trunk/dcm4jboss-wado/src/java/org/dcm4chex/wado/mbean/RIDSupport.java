@@ -20,7 +20,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -87,7 +89,7 @@ public class RIDSupport {
     private final Driver fop = new Driver();
 
     private static MBeanServer server;
-	private Set ecgSopCuids;
+    private Map ecgSopCuids = new TreeMap();
 	private String ridSummaryXsl;
 	private static List allConceptNameCodes;
 	private static List cardiologyConceptNameCodes;
@@ -127,14 +129,14 @@ public class RIDSupport {
 	/**
 	 * @return Returns the sopCuids.
 	 */
-	public Set getECGSopCuids() {
+	public Map getECGSopCuids() {
 		if ( ecgSopCuids == null ) setDefaultECGSopCuids();
 		return ecgSopCuids;
 	}
 	/**
 	 * @param sopCuids The sopCuids to set.
 	 */
-	public void setECGSopCuids(Set sopCuids) {
+	public void setECGSopCuids(Map sopCuids) {
 		if ( sopCuids != null && ! sopCuids.isEmpty() )
 			ecgSopCuids = sopCuids;
 		else {
@@ -146,13 +148,12 @@ public class RIDSupport {
 	 * 
 	 */
 	private void setDefaultECGSopCuids() {
-		ecgSopCuids = new HashSet();
-		ecgSopCuids.add( UIDs.TwelveLeadECGWaveformStorage );
-		ecgSopCuids.add( UIDs.GeneralECGWaveformStorage );
-		ecgSopCuids.add( UIDs.AmbulatoryECGWaveformStorage );
-		ecgSopCuids.add( UIDs.HemodynamicWaveformStorage );
-		ecgSopCuids.add( UIDs.CardiacElectrophysiologyWaveformStorage );
-		ecgSopCuids.add( UIDs.BasicVoiceAudioWaveformStorage );
+		ecgSopCuids.clear();
+		ecgSopCuids.put( "TwelveLeadECGWaveformStorage", UIDs.TwelveLeadECGWaveformStorage );
+		ecgSopCuids.put( "GeneralECGWaveformStorage", UIDs.GeneralECGWaveformStorage );
+		ecgSopCuids.put( "AmbulatoryECGWaveformStorage", UIDs.AmbulatoryECGWaveformStorage );
+		ecgSopCuids.put( "HemodynamicWaveformStorage", UIDs.HemodynamicWaveformStorage );
+		ecgSopCuids.put( "CardiacElectrophysiologyWaveformStorage", UIDs.CardiacElectrophysiologyWaveformStorage );
 	}
 
 	private static List getCardiologyConceptNameCodes() {
@@ -368,7 +369,7 @@ public class RIDSupport {
 	}
 	
 	private void addECGSummary( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
-	    queryDS.putUI( Tags.SOPClassUID, (String[]) getECGSopCuids().toArray( new String[0] ) );
+	    queryDS.putUI( Tags.SOPClassUID, (String[]) getECGSopCuids().values().toArray( new String[0] ) );
     	fillDocList( docList, queryDS );//TODO Is it ok to put all SOP Class UIDs in one query?
 		
 	}
@@ -561,7 +562,7 @@ public class RIDSupport {
 			if ( cmd.next() ) {
 				Dataset ds = cmd.getDataset();
 				String cuid = ds.getString( Tags.SOPClassUID );
-				if ( getECGSopCuids().contains( cuid ) ) {
+				if ( getECGSopCuids().values().contains( cuid ) ) {
 					cmd.close();
 					return getECGSupport().getECGDocument( reqObj, ds );
 				} else {

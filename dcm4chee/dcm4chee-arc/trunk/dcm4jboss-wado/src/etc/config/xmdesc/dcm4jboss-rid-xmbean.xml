@@ -84,8 +84,8 @@
     <attribute access="read-write"
       getMethod="getECGSopCuids"
       setMethod="setECGSopCuids">
-      <description>List of SOP Class UIDs that are used to find ECG documents.
-      UIDs are seperated with '|'!
+      <description>List of SOP Class UIDs that are used to find ECG documents (seperated with semicolon or newline).
+      Use either the SOP Class UID or the symbolic name! Use an empty value to reset this list.
       </description>
       <name>ECGSopCuids</name>
       <type>java.lang.String</type>
