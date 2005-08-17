@@ -148,6 +148,13 @@ public abstract class HPBean implements EntityBean {
 
     public abstract void setSopIuid(String iuid);
 	
+    /**
+     * @ejb.persistence column-name="hp_cuid"
+     * @ejb.interface-method
+     */
+    public abstract String getSopCuid();
+
+    public abstract void setSopCuid(String cuid);
 	
     /**
      * @ejb.persistence column-name="hp_name"
@@ -179,7 +186,7 @@ public abstract class HPBean implements EntityBean {
      * @ejb.persistence column-name="num_priors"
      * @ejb.interface-method
      */
-    public abstract int setNumberOfPriorsReferenced();
+    public abstract int getNumberOfPriorsReferenced();
 
 	public abstract void setNumberOfPriorsReferenced(int priors);
 
@@ -195,7 +202,7 @@ public abstract class HPBean implements EntityBean {
      * @ejb.persistence column-name="num_screens"
      * @ejb.interface-method
      */
-    public abstract int setNumberOfScreens();
+    public abstract int getNumberOfScreens();
 
 	public abstract void setNumberOfScreens(int screens);
 
@@ -234,6 +241,7 @@ public abstract class HPBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
+		setSopCuid(ds.getString(Tags.SOPClassUID));
 		setHangingProtocolName(ds.getString(Tags.HangingProtocolName));
 		setHangingProtocolLevel(ds.getString(Tags.HangingProtocolLevel));
 		setNumberOfPriorsReferenced(ds.getInt(Tags.NumberOfPriorsReferenced, 0));

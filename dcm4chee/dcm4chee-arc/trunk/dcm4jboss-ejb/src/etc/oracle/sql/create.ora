@@ -358,20 +358,22 @@ CREATE TABLE hp (
 	pk              NUMBER PRIMARY KEY,
 	user_fk         INTEGER,
 	hp_iuid         VARCHAR2(255) NOT NULL,
+	hp_cuid         VARCHAR2(255),
 	hp_name         VARCHAR2(255),
 	hp_group        VARCHAR2(255),
 	hp_level        INTEGER,
-	hp_priors       INTEGER,
-	hp_screens      INTEGER,
+	num_priors      INTEGER,
+	num_screens     INTEGER,
 	hp_attrs        BLOB,
 FOREIGN KEY (user_fk) REFERENCES code(pk)
 );
 CREATE INDEX hp_user_fk ON hp(user_fk);
 CREATE UNIQUE INDEX hp_iuid ON hp(hp_iuid);
+CREATE INDEX hp_cuid ON hp(hp_cuid);
 CREATE INDEX hp_name ON hp(hp_name);
 CREATE INDEX hp_level ON hp(hp_level);
-CREATE INDEX hp_priors ON hp(hp_priors);
-CREATE INDEX hp_screens ON hp(hp_screens);
+CREATE INDEX num_priors ON hp(num_priors);
+CREATE INDEX num_screens ON hp(num_screens);
 
 CREATE SEQUENCE hpdef_pk_seq;
 CREATE TABLE hpdef (

@@ -17,7 +17,7 @@ import java.util.Arrays;
  * @since Aug 3, 2005
  */
 public class HPLevel {
-    private static final String[] ENUM = { "MANUFACTURER", "IN PROGRESS", 
+    private static final String[] ENUM = { "MANUFACTURER", "SITE", 
         "USER_GROUP", "SINGLE_USER" };
 
     public static final int MANUFACTURER = 0;    
