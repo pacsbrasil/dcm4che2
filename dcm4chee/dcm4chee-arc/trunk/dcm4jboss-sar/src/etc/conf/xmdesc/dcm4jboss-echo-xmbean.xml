@@ -2,7 +2,7 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Echo Service. Use this service to test the AE configurations you defined with the AE Configuration Service. First, you must set the CallingAETitle used in echo associations used to  test those AE configurations.</description>
+   <description>Echo Service. Use this service to test the AE configurations (host and port and protocol) you defined with the AE Configuration Service. First, you must set the CallingAETitle used in echo associations used to  test those AE configurations.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
