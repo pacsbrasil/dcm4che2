@@ -58,7 +58,7 @@
      <description>Send an echo request to an AE configuration, for the specified number of times.</description>
      <name>echo</name>
      <parameter>
-       <description>AE configuration to test</description>
+       <description>AE configuration to test. The AE configuration consists of a host, port, and protocol (dicom or dicom-tls with various TLS Ciphersuites combinations).</description>
        <name>AEData</name>
        <type>org.dcm4chex.archive.ejb.jdbc.AEData</type>
      </parameter>

@@ -50,7 +50,7 @@ accessed studies.</description>
    </attribute>
    <attribute access="read-write" getMethod="getRetrieveAET" setMethod="setRetrieveAET">
       <description>Retrieve the AE title associated with this DICOM Node. 
-      </description>
+      Note that only one retrieve AE title can be associated with one file system.</description>
       <name>RetrieveAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
