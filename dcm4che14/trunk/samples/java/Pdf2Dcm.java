@@ -107,7 +107,7 @@ public class Pdf2Dcm {
 		addContentDateTime(ds);
 		ds.setFileMetaInfo(df.newFileMetaInfo(ds, UIDs.ExplicitVRLittleEndian));
 		write(pdfFile, dcmFile, ds);
-		System.out.println("Converted " + pdfFile + " to " + dcmFile);
+		System.out.println("Encapsulate " + pdfFile + " into " + dcmFile);
 	}
 
 	private static void write(File pdfFile, File dcmFile, Dataset ds)
