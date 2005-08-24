@@ -1225,6 +1225,11 @@
   <element tag="(0040,9224)" name="Real World Value Intercept" vr="FD" vm="1" key="RealWorldValueIntercept" />
   <element tag="(0040,9225)" name="Real World Value Slope" vr="FD" vm="1" key="RealWorldValueSlope" />
 
+  <element tag="(0042,0010)" name="Document Title" vr="ST" vm="1" key="DocumentTitle" />
+  <element tag="(0042,0011)" name="Encapsulated Document" vr="OB" vm="1" key="EncapsulatedDocument" />
+  <element tag="(0042,0012)" name="MIME Type of Encapsulated Document" vr="LO" vm="1" key="MIMETypeOfEncapsulatedDocument" />
+  <element tag="(0042,0013)" name="Source Instance Sequence" vr="SQ" vm="1" key="SourceInstanceSeq" />
+  
   <element tag="(0050,0004)" name="Calibration Image" vr="CS" vm="1" key="CalibrationImage" />
   <element tag="(0050,0010)" name="Device Sequence" vr="SQ" vm="1" key="DeviceSeq" />
   <element tag="(0050,0014)" name="Device Length" vr="DS" vm="1" key="DeviceLength" />
