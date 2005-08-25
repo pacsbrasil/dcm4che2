@@ -10,6 +10,7 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,10 +18,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.ejb.FinderException;
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 
 import org.dcm4che.data.Dataset;
@@ -36,6 +40,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.notif.IANNotificationVO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
@@ -48,6 +53,17 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class FileSystemMgtService extends TimerSupport {
 
+    public static final String EVENT_TYPE = "org.dcm4chex.archive.mbean.FileSystemMgtService";
+
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+
+		private static final long serialVersionUID = 3257288045601634612L;
+
+		public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE.equals(notif.getType());
+        }
+    };
+	
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     private static final String LOCAL = "local";
     
@@ -95,7 +111,8 @@ public class FileSystemMgtService extends TimerSupport {
     
     private boolean freeDiskSpaceOnDemand = true;
 
-    
+	private boolean sendIANs = true;
+
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
     
@@ -110,7 +127,7 @@ public class FileSystemMgtService extends TimerSupport {
             public void handleNotification(Notification notif, Object handback) {
                 freeDiskSpace();
             }};
-
+            
     private static String null2local(String s) {
         return s == null ? LOCAL : s;
     }
@@ -407,6 +424,18 @@ public class FileSystemMgtService extends TimerSupport {
         this.mountFailedCheckFile = mountFailedCheckFile;
     }
     
+	/**
+	 * @return Returns the sendIANs.
+	 */
+	public boolean isSendIANs() {
+		return sendIANs;
+	}
+	/**
+	 * @param sendIANs The sendIANs to set.
+	 */
+	public void setSendIANs(boolean sendIANs) {
+		this.sendIANs = sendIANs;
+	}
     public final boolean isLocalFileSystem(String fsdir) {
         return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
     }
@@ -607,7 +636,7 @@ public class FileSystemMgtService extends TimerSupport {
     	return ds;
     }
     
-   
+  
 	/**
      * Delete studies that fullfill freeDiskSpacePolicy to free disk space.
      * <p>
@@ -619,7 +648,7 @@ public class FileSystemMgtService extends TimerSupport {
      * <p>
      * If PurgeFilesAfterFreeDiskSpace is enabled, the purge process will be called immediately.(if checkFreeDiskSpaceNecessary() is true)
      * 
-     * @return The released size in bytes or -1 if an error occured.
+     * @return The number of released studies.
      */
     public long freeDiskSpace() {
         log.info("Check available Disk Space");
@@ -629,13 +658,14 @@ public class FileSystemMgtService extends TimerSupport {
                     * dirPathList.size() - availableDiskSpace;
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
-                    long size = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
+                	Map ians = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, maxSizeToDel);
+                    if ( sendIANs ) sendIANs(ians);
                     if ( autoPurge ) {
                     	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
                     	this.purgeFiles();
                     }
-                    return size;
+                    return ians.size();
                 } finally {
                     fsMgt.remove();
                 }            
@@ -643,8 +673,10 @@ public class FileSystemMgtService extends TimerSupport {
                 long accessedBefore = System.currentTimeMillis() - studyCacheTimeout;
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
-                    return fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
+                	Map ians = fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, accessedBefore);
+                    if ( sendIANs ) sendIANs(ians);
+                    return ians.size();
                 } finally {
                     fsMgt.remove();
                 }
@@ -657,6 +689,15 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
     
+	/**
+	 * @param ians
+	 */
+	private void sendIANs(Map ians) {
+	        Notification notif = new Notification(EVENT_TYPE, this, super.getNextNotificationSequenceNumber());
+	        notif.setUserData(new IANNotificationVO(ians,null,null));
+	        super.sendNotification(notif);
+	}
+
 	/**
      * Check if a cleaning process is ncessary.
      * <p>
@@ -688,5 +729,10 @@ public class FileSystemMgtService extends TimerSupport {
     		availableDiskSpace += info.getAvailable();
     	}
     	return availableDiskSpace;
+    }
+    
+    public long showStudySize( Integer pk ) throws RemoteException, FinderException {
+        FileSystemMgt fsMgt = newFileSystemMgt();
+    	return fsMgt.getStudySize(pk);
     }
 }

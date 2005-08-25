@@ -43,7 +43,9 @@ import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.FileSystemMgtService;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.notif.IANNotificationVO;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -79,6 +81,7 @@ public class IANScuService extends ServiceMBeanSupport implements
 	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
 	private ObjectName storeScpServiceName;
+	private ObjectName fileSystemMgtServiceName;
 
 	private String queueName;
 
@@ -211,6 +214,13 @@ public class IANScuService extends ServiceMBeanSupport implements
 		this.storeScpServiceName = storeScpServiceName;
 	}
 
+	public ObjectName getFileSystemMgtServiceName() {
+		return fileSystemMgtServiceName;
+	}
+	public void setFileSystemMgtServiceName(ObjectName fileSystemMgtServiceName) {
+		this.fileSystemMgtServiceName = fileSystemMgtServiceName;
+	}
+	
 	public final ObjectName getTLSConfigName() {
 		return tlsConfig.getTLSConfigName();
 	}
@@ -231,21 +241,26 @@ public class IANScuService extends ServiceMBeanSupport implements
 		JMSDelegate.startListening(queueName, this, concurrency);
 		server.addNotificationListener(storeScpServiceName, this,
 				StoreScpService.NOTIF_FILTER, null);
+		server.addNotificationListener(fileSystemMgtServiceName, this,
+				FileSystemMgtService.NOTIF_FILTER, null);
 	}
 
 	protected void stopService() throws Exception {
 		server.removeNotificationListener(storeScpServiceName, this,
 				StoreScpService.NOTIF_FILTER, null);
+		server.removeNotificationListener(fileSystemMgtServiceName, this,
+				FileSystemMgtService.NOTIF_FILTER, null);
 		JMSDelegate.stopListening(queueName);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {
-		Association assoc = (Association) notif.getUserData();
-		Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
+    	IANNotificationVO ianVO = (IANNotificationVO) notif.getUserData();
+        Map ians = ianVO.getIANs();
 		if (ians == null)
 			return;
 		for (Iterator it = ians.values().iterator(); it.hasNext();) {
 			Dataset ian = (Dataset) it.next();
+			if (log.isDebugEnabled()) { log.debug("IAN Dataset:");log.debug(ian); }
 			for (int i = 0; i < notifiedAETs.length; ++i) {
 				IANOrder order = new IANOrder(notifiedAETs[i], ian);
 				try {

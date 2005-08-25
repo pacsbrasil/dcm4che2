@@ -26,6 +26,7 @@ import org.dcm4che.net.Association;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
+import org.dcm4chex.archive.notif.IANNotificationVO;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -125,13 +126,12 @@ public class ForwardService extends ServiceMBeanSupport implements
     }
 
     public void handleNotification(Notification notif, Object handback) {
-        Association assoc = (Association) notif.getUserData();
-        Map ians = (Map) assoc
-                .getProperty(StoreScpService.IANS_KEY);
+    	IANNotificationVO ianVO = (IANNotificationVO) notif.getUserData();
+        Map ians = ianVO.getIANs();
         if (ians != null) {
 	        Map param = new HashMap();
-			param.put("calling", new String[]{assoc.getCallingAET()});
-			param.put("called", new String[]{assoc.getCalledAET()});
+			param.put("calling", new String[]{ianVO.getCallingAET()});
+			param.put("called", new String[]{ianVO.getCalledAET()});
             String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(param);
             if (destAETs.length != 0) forward(destAETs, ians);

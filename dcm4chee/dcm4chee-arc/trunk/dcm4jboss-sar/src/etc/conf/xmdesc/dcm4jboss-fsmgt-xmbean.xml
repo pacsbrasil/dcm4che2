@@ -222,6 +222,17 @@ accessed studies.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isSendIANs"
+      setMethod="setSendIANs">
+      <description>Enables sending Instance Availability Notifications after free disk space.
+      </description>
+      <name>SendIANs</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    
    <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -313,8 +324,20 @@ accessed studies.</description>
    <operation impact="ACTION">
       <description>Free disk space by deleting old studies.
       Deletes all older files on study level that fullfill the freeDiskSpacePolicy.
+      Returns the number of released studies.
       </description>
       <name>freeDiskSpace</name>
+      <return-type>long</return-type>
+   </operation>   
+   <operation impact="INFO">
+      <description>get file size of study.
+      </description>
+      <name>showStudySize</name>
+      <parameter>
+        <description>Study pk</description>
+        <name>studyPk</name>
+        <type>java.lang.Integer</type>
+      </parameter>
       <return-type>long</return-type>
    </operation>   
    

@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -27,6 +29,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.ejb.interfaces.DatasetResultDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -285,27 +289,31 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /** 
      * @ejb.interface-method
      */
-    public long releaseStudies(Set fsPathSet, boolean checkUncommited,
+    public Map releaseStudies(Set fsPathSet, boolean checkUncommited,
             boolean checkOnMedia, boolean checkExternal, long accessedBefore)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
         Timestamp tsBefore = new Timestamp(accessedBefore);
         log.info("Releasing studies not accessed since " + tsBefore);
-        return releaseStudies(fsPathSet, checkUncommited, checkOnMedia,
+        Map ians = new HashMap();
+        releaseStudies(fsPathSet, ians, checkUncommited, checkOnMedia,
                 checkExternal, Long.MAX_VALUE, new Timestamp(accessedBefore));
+        return ians;
     }
 
     /** 
      * @ejb.interface-method
      */
-    public long freeDiskSpace(Set fsPathSet, boolean checkUncommited,
+    public Map freeDiskSpace(Set fsPathSet, boolean checkUncommited,
             boolean checkOnMedia, boolean checkExternal, long maxSizeToDel)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
+    	Map ians = new HashMap();
         log.info("Free Disk Space: try to release " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
-        return releaseStudies(fsPathSet, checkUncommited, checkOnMedia,
+        releaseStudies(fsPathSet, ians, checkUncommited, checkOnMedia,
                 checkExternal, maxSizeToDel, null);
-    }
+        return ians;
+   }
     
     /**
      * Release studies that fullfill freeDiskSpacePolicy to free disk space.
@@ -332,25 +340,35 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws EJBException
      * @throws CreateException 
      */
-    private long releaseStudies(Set fsPathSet, boolean checkUncommited,
+    private long releaseStudies(Set fsPathSet, Map ians, boolean checkUncommited,
             boolean checkOnMedia, boolean checkExternal, long maxSizeToDel,
             Timestamp tsBefore) throws IOException, FinderException,
             EJBException, RemoveException, CreateException {
         Collection c = getStudiesOnFilesystems(fsPathSet, tsBefore);
         long sizeToDelete = 0L;
         FileSystemMgtSupportLocal spacer = fileSystemMgtSupportHome.create();
+        Dataset ianDS;
         try {
             for (Iterator iter = c.iterator(); iter.hasNext()
                     && sizeToDelete < maxSizeToDel;) {
                 StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
                         .next();
-                sizeToDelete += spacer.releaseStudy(studyOnFs, checkUncommited,
+                sizeToDelete += spacer.releaseStudy(studyOnFs, ians, checkUncommited,
                         checkOnMedia, checkExternal);
+                
             }
         } finally {
             spacer.remove();
         }
         log.info("Released " + (sizeToDelete / 1000000.f) + "MB of DiskSpace");
         return sizeToDelete;
+    }
+    
+    /** 
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public long getStudySize(Integer studyPk) throws FinderException {
+    	return studyHome.selectStudySize(studyPk);
     }
 }

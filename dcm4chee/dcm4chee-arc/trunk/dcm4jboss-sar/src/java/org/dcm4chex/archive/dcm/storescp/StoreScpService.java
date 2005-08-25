@@ -31,6 +31,7 @@ import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.notif.IANNotificationVO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 
@@ -480,7 +481,7 @@ public class StoreScpService extends AbstractScpService {
     void sendReleaseNotification(Association assoc) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE, this, eventID);
-        notif.setUserData(assoc);
+        notif.setUserData(new IANNotificationVO((Map)assoc.getProperty(IANS_KEY), assoc.getCalledAET(), assoc.getCallingAET()));
         super.sendNotification(notif);
     }
 

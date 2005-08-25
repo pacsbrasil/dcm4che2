@@ -148,6 +148,15 @@
          <value value="tiani.archive:service=StoreScp"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getFileSystemMgtServiceName" setMethod="setFileSystemMgtServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>FileSystemMgtServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=FileSystemMgt"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
       <description>Used internally - do NOT modify.
       </description>
