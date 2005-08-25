@@ -271,7 +271,18 @@ public abstract class StorageBean implements SessionBean {
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
-        coerceIdentity(patient.getAttributes(false), ds, coercedElements);
+        Dataset patAttrs = patient.getAttributes(false);
+        Dataset filtered = patAttrs.subSet(attrFilter.getPatientFilter());
+        int excludeAttrs = patAttrs.size() - filtered.size();
+        if (excludeAttrs > 0) {
+            log.warn("Detect " + excludeAttrs + " attributes in record of " +
+                    "patient " + patAttrs.getString(Tags.PatientName) + "[" +
+                    patAttrs.getString(Tags.PatientID) + "] which does not " +
+                    "match current configured patient attribute filter -> " +
+                    "removed attributes from patient record");
+            patient.setAttributes(filtered);
+        }
+        coerceIdentity(filtered, ds, coercedElements);
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
