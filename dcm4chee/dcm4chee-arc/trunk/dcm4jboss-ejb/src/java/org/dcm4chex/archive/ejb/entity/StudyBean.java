@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -70,6 +71,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
+ * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.hidden = FALSE AND f.instance.series.study.pk = ?1"
  * 
  *
  */
@@ -429,6 +432,20 @@ public abstract class StudyBean implements EntityBean {
     public abstract int ejbSelectAvailability(Integer pk)
             throws FinderException;
 
+    /**
+     * @ejb.select query=""
+     */
+    public abstract long ejbSelectStudyFileSize(Integer pk)
+            throws FinderException;
+
+    /**    
+     * @throws FinderException
+     * @ejb.home-method
+     */
+    public long ejbHomeSelectStudySize( Integer pk ) throws FinderException {
+    	return ejbSelectStudyFileSize(pk);
+    }
+    
     private boolean updateRetrieveAETs(Integer pk, int numI)
     		throws FinderException {
     	boolean updated = false;
