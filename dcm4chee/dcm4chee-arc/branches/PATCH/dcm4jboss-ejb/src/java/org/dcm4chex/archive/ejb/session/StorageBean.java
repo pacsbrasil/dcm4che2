@@ -262,7 +262,13 @@ public abstract class StorageBean implements SessionBean {
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
-        coerceIdentity(patient.getAttributes(false), ds, coercedElements);
+    	Dataset patAttrs = patient.getAttributes(false);
+    	Dataset filtered = patAttrs.subSet(attrFilter.getPatientFilter());
+    	if (patAttrs.size() > filtered.size()) {
+    		log.warn("Patient attributes updated in DB! Reason: A patient record may contain only patient relevant attributes!");
+    		patient.setAttributes(filtered);
+    	}
+    	coerceIdentity(filtered, ds, coercedElements); 
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
