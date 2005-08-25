@@ -23,6 +23,8 @@ import javax.naming.NamingException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -80,6 +82,8 @@ public abstract class ContentEditBean implements SessionBean {
 
     private InstanceLocalHome instHome;
 
+    private AttributeFilter attrFilter;
+
     public void setSessionContext(SessionContext arg0) throws EJBException,
             RemoteException {
         Context jndiCtx = null;
@@ -93,7 +97,11 @@ public abstract class ContentEditBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
+            attrFilter = new AttributeFilter((String) jndiCtx
+                    .lookup("java:comp/env/AttributeFilterConfigURL"));
         } catch (NamingException e) {
+            throw new EJBException(e);
+        } catch (ConfigurationException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
@@ -117,7 +125,8 @@ public abstract class ContentEditBean implements SessionBean {
      * @ejb.interface-method
      */
     public Dataset createPatient(Dataset ds) throws CreateException {
-        return patHome.create(ds).getAttributes(true);
+        final int[] filter = attrFilter.getPatientFilter();
+        return patHome.create(ds.subSet(filter)).getAttributes(true);
     }
 
     /**
@@ -145,7 +154,7 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createStudy(Dataset ds, int patPk) throws CreateException {
     	try {
 	        PatientLocal patient = patHome.findByPrimaryKey(new Integer(patPk));
-	        return studyHome.create(ds, patient).getAttributes(true);
+	        return studyHome.create(ds.subSet(attrFilter.getStudyFilter()), patient).getAttributes(true);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -159,7 +168,7 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createSeries(Dataset ds, int studyPk) throws CreateException {
     	try {
 	        StudyLocal study = studyHome.findByPrimaryKey(new Integer(studyPk));
-	        return seriesHome.create(ds, study).getAttributes(true);
+	        return seriesHome.create(ds.subSet(attrFilter.getSeriesFilter()), study).getAttributes(true);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -176,7 +185,7 @@ public abstract class ContentEditBean implements SessionBean {
             final int pk = ds.getInt(PrivateTags.PatientPk, -1);
             PatientLocal patient = patHome
                     .findByPrimaryKey(new Integer(pk));
-            patient.setAttributes(ds);
+            patient.setAttributes(ds.subSet(attrFilter.getPatientFilter()));
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -192,7 +201,7 @@ public abstract class ContentEditBean implements SessionBean {
             final int pk = ds.getInt(PrivateTags.StudyPk, -1);
             StudyLocal study = studyHome
                     .findByPrimaryKey(new Integer(pk));
-            study.setAttributes(ds);
+            study.setAttributes(ds.subSet(attrFilter.getStudyFilter()));
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -208,7 +217,7 @@ public abstract class ContentEditBean implements SessionBean {
             final int pk = ds.getInt(PrivateTags.SeriesPk, -1);
             SeriesLocal series = seriesHome
                     .findByPrimaryKey(new Integer(pk));
-            series.setAttributes(ds);
+            series.setAttributes(ds.subSet(attrFilter.getSeriesFilter()));
             StudyLocal study = series.getStudy();
             study.updateDerivedFields(false, false, false, false, false, true);
         } catch (FinderException e) {
