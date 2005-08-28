@@ -1,0 +1,469 @@
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
+
+package org.dcm4che2.data;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+
+import org.apache.log4j.Logger;
+import org.dcm4che2.util.IntHashtable;
+import org.dcm4che2.util.TagUtils;
+
+public class BasicDicomObject extends AbstractDicomObject {
+
+	private static final long serialVersionUID = 1L;
+
+	private static final int INIT_FRAGMENT_CAPACITY = 2;
+
+	private static final int INIT_SEQUENCE_CAPACITY = 10;
+
+	private static final Logger log = Logger.getLogger(BasicDicomObject.class);
+
+	private transient final IntHashtable table;
+
+	private transient DicomObject parent;
+
+	private transient TransferSyntax ts = TransferSyntax.ImplicitVRLittleEndian;
+
+	private transient SpecificCharacterSet charset = null;
+
+	private transient long itemOffset = -1L;
+
+    private transient int itemPos = -1;
+    
+	private transient boolean cacheGet = true;
+
+	private transient boolean cachePut = false;
+
+	public BasicDicomObject() {
+		this(10);
+	}
+
+	public BasicDicomObject(int capacity) {
+		this.table = new IntHashtable(capacity);
+	}
+	
+	public void clear() {
+		table.clear();
+		charset = null;
+	}
+
+	public final boolean cacheGet() {
+		return cacheGet;
+	}
+
+	public final void cacheGet(final boolean cacheGet) {
+		this.cacheGet = cacheGet;
+		accept(new Visitor(){
+			public boolean visit(DicomElement attr) {
+				if (attr.vr() == VR.SQ && attr.hasItems()) {
+					for (int i = 0, n = attr.countItems(); i < n; ++i) {
+						attr.getItem(i).cacheGet(cacheGet);
+					}
+				}
+				return true;
+			}});
+	}
+	
+	public final boolean cachePut() {
+		return cachePut;
+	}
+
+	public final void cachePut(final boolean cachePut) {
+		this.cachePut = cachePut;
+		accept(new Visitor(){
+			public boolean visit(DicomElement attr) {
+				if (attr.vr() == VR.SQ && attr.hasItems()) {
+					for (int i = 0, n = attr.countItems(); i < n; ++i) {
+						attr.getItem(i).cachePut(cachePut);
+					}
+				}
+				return true;
+			}});
+	}
+	
+	public int resolvePrivateTag(int privateTag, String privateCreator) {
+		return resolvePrivateTagInternal(privateTag, privateCreator, false);
+	}
+
+	public int reservePrivateTag(int privateTag, String privateCreatorID) {
+		return resolvePrivateTagInternal(privateTag, privateCreatorID, true);
+	}
+
+	public void shareElements() {
+		table.accept(new IntHashtable.Visitor() {
+			public boolean visit(int key, Object value) {
+				table.put(key, ((DicomElement) value).share());
+				return true;
+			}
+		});
+	}
+
+	public Iterator iterator() {
+		return iterator(0, 0xffffffff);
+	}
+
+	public Iterator iterator(int fromTag, int toTag) {
+		if ((fromTag & 0xffffffffL) > (toTag & 0xffffffffL)) {
+			throw new IllegalArgumentException("fromTag:"
+					+ TagUtils.toString(fromTag) + " > toTag:"
+					+ TagUtils.toString(toTag));
+		}
+		return table.iterator(fromTag, toTag);
+	}
+
+	public final DicomObject getParent() {
+		return parent;
+	}
+
+	public final void setParent(DicomObject parent) {
+		this.parent = parent;
+	}
+
+	public DicomObject getRoot() {
+		return parent == null ? this : parent.getRoot();
+	}
+
+    public final int getItemPosition() {
+        return itemPos;
+    }
+    
+    public final void setItemPosition(int itemPos) {
+        this.itemPos = itemPos;
+    }
+
+	public final long getItemOffset() {
+		return itemOffset;
+	}
+
+	public final void setItemOffset(long itemOffset) {
+		this.itemOffset = itemOffset;
+	}
+
+	public SpecificCharacterSet getSpecificCharacterSet() {
+		if (charset != null)
+			return charset;
+		if (parent != null)
+			return parent.getSpecificCharacterSet();
+		return null;
+	}
+
+	public TransferSyntax getTransferSyntax() {
+		if (parent != null)
+			return parent.getTransferSyntax();
+		return ts;
+	}
+
+	public VR vrOf(int tag) {
+		VRMap vrmap;
+		if (TagUtils.isPrivateDataElement(tag)) {
+			if (TagUtils.isPrivateCreatorDataElement(tag))
+				return VR.LO;
+
+			final String privateCreatorID = getPrivateCreator(tag);
+			if (privateCreatorID == null)
+				return VR.UN;
+
+			vrmap = VRMap.getPrivateVRMap(privateCreatorID);
+		} else {
+			vrmap = VRMap.getVRMap();
+		}
+		return vrmap.vrOf(tag);
+	}
+
+    public String nameOf(int tag) {
+        ElementDictionary dict;
+        if (TagUtils.isPrivateDataElement(tag)) {
+            if (TagUtils.isPrivateCreatorDataElement(tag))
+                return ElementDictionary.PRIVATE_CREATOR;
+
+            final String privateCreatorID = getPrivateCreator(tag);
+            if (privateCreatorID == null)
+                return ElementDictionary.UNKOWN;
+
+            dict = ElementDictionary.getPrivateDictionary(privateCreatorID);
+        } else {
+            dict = ElementDictionary.getDictionary();
+        }
+        return dict.nameOf(tag);
+    }
+
+	public String getPrivateCreator(int tag) {
+		if (!TagUtils.isPrivateDataElement(tag)
+				|| TagUtils.isPrivateCreatorDataElement(tag))
+			throw new IllegalArgumentException(TagUtils.toString(tag));
+		int creatorIDtag = (tag & 0xffff0000) | ((tag >> 8) & 0xff);
+		return getAndCacheString(creatorIDtag);
+	}
+
+	private String getAndCacheString(int creatorIDtag) {
+		DicomElement a = get(creatorIDtag);
+		return a == null ? null : a.getString(getSpecificCharacterSet(), true);
+	}
+
+	private int resolvePrivateTagInternal(int privateTag,
+			String privateCreator, boolean reserve) {
+		if (!TagUtils.isPrivateDataElement(privateTag)
+				|| TagUtils.isPrivateCreatorDataElement(privateTag))
+			throw new IllegalArgumentException(TagUtils.toString(privateTag));
+		int gggg0000 = privateTag & 0xffff0000;
+		int idTag = gggg0000 | 0x10;
+		int maxIdTag = gggg0000 | 0xff;
+		String id;
+		while (!privateCreator.equals(id = getAndCacheString(idTag))) {
+			if (id == null) {
+				if (!reserve)
+					return -1;
+				addInternal(new BasicDicomElement(idTag, VR.LO, false, VR.LO.toBytes(
+						privateCreator, false, getSpecificCharacterSet()), 
+						privateCreator));
+				break;
+			}
+			if (++idTag > maxIdTag)
+				throw new IllegalStateException(
+						"No free block to reserve in group "
+								+ TagUtils.toString(gggg0000));
+		}
+		return (privateTag & 0xffff00ff) | ((idTag & 0xff) << 8);
+	}
+
+	public boolean isEmpty() {
+		return table.isEmpty();
+	}
+	
+	public int size() {
+		return table.size();
+	}
+	
+	public boolean contains(int tag) {
+		return table.get(tag) != null;
+	}
+
+	public DicomElement get(int tag) {
+		return (DicomElement) table.get(tag);
+	}
+
+	public DicomElement remove(int tag) {
+		DicomElement attr = (DicomElement) table.remove(tag);
+		if (attr != null) {
+			if (tag == Tag.SpecificCharacterSet) {
+				charset = null;
+			}
+		}
+		return attr;
+	}
+
+	DicomElement addInternal(DicomElement a) {
+		final int tag = a.tag();
+		if ((tag & 0x0000ffff) == 0) {
+			// do not include group length elements
+			return a;
+		}
+		table.put(tag, a);
+		if (tag == Tag.TransferSyntaxUID) {
+			ts = TransferSyntax.valueOf(a.getString(null, false));
+		} else if (tag == Tag.SpecificCharacterSet) {
+			charset = SpecificCharacterSet.valueOf(a.getStrings(null, false));
+		}
+		return a;
+	}
+
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof DicomObject)) {
+			return false;
+		}
+		DicomObject other = (DicomObject) o;
+		Iterator it = iterator();
+		Iterator otherIt = other.iterator();
+		while (it.hasNext() && otherIt.hasNext()) {
+			if (!it.next().equals(otherIt.next()))
+				return false;
+		}
+		return !it.hasNext() && !otherIt.hasNext();
+	}
+
+	public boolean accept(final Visitor visitor) {
+		return table.accept(new IntHashtable.Visitor() {
+			public boolean visit(int key, Object value) {
+				return visitor.visit((DicomElement) value);
+			}
+		});
+	}
+
+	public void add(DicomElement a) {
+		if (a.hasItems()) {
+			final int n = a.countItems();
+			DicomElement t;
+			if (a.vr() == VR.SQ) {
+				t = putSequence(a.tag(), n);
+				for (int i = 0; i < n; i++) {
+					BasicDicomObject item = new BasicDicomObject(n);
+					item.setParent(this);
+					a.getItem(i).copyTo(item);
+					t.addItem(item);
+				}
+			} else {
+				t = putFragments(a.tag(), a.vr(), a.bigEndian(), n);
+				for (int i = 0; i < n; i++) {
+					t.addBytes(a.getBytes(i));
+				}
+			}
+			a = t;
+		}
+		addInternal(a);
+	}
+
+	public DicomElement putNull(int tag, VR vr) {
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, false, null, null));
+	}
+
+	public DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, bigEndian, val, null));
+	}
+
+	public DicomElement putItem(int tag, DicomObject item) {
+		DicomElement a = putSequence(tag, 1);
+		a.addItem(item);
+		return a;
+	}
+
+	public DicomElement putInt(int tag, VR vr, int val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+				cachePut ? new Integer(val) : null));
+	}
+
+	public DicomElement putInts(int tag, VR vr, int[] val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+				cachePut ? val : null));
+	}
+
+	public DicomElement putFloat(int tag, VR vr, float val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+				cachePut ? new Float(val) : null));
+	}
+
+	public DicomElement putFloats(int tag, VR vr, float[] val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+				cachePut ? val : null));
+	}
+
+	public DicomElement putDouble(int tag, VR vr, double val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+				cachePut ? new Double(val) : null));
+	}
+
+	public DicomElement putDoubles(int tag, VR vr, double[] val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+				cachePut ? val : null));
+	}
+
+	public DicomElement putString(int tag, VR vr, String val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
+				be, getSpecificCharacterSet()), cachePut ? val : null));
+	}
+
+	public DicomElement putStrings(int tag, VR vr, String[] val) {
+		final boolean be = getTransferSyntax().bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
+				be, getSpecificCharacterSet()), cachePut ? val : null));
+	}
+
+	public DicomElement putDate(int tag, VR vr, Date val) {
+		// no cache of given Date object, to avoid problems
+		// with non-zero values for unsignifcant fields
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
+	}
+
+	public DicomElement putDates(int tag, VR vr, Date[] val) {
+		// no cache of given Date objects, to avoid problems
+		// with non-zero values for unsignifcant fields
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
+	}
+
+	public DicomElement putDateRange(int tag, VR vr, DateRange val) {
+		// no cache of given DateRange object, to avoid problems
+		// with non-zero values for unsignifcant fields
+        if (vr == null)
+            vr = vrOf(tag);
+		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
+	}
+	
+	public DicomElement putSequence(int tag) {
+		return putSequence(tag, 10);
+	}
+
+	public DicomElement putSequence(int tag, int capacity) {
+		return addInternal(new BasicDicomElement(tag, VR.SQ, false,
+				new ArrayList(capacity), null));
+	}
+
+	public DicomElement putFragments(int tag, VR vr, boolean bigEndian) {
+		return putFragments(tag, vr, bigEndian, INIT_FRAGMENT_CAPACITY);
+	}
+
+	public DicomElement putFragments(int tag, VR vr, boolean bigEndian,
+			int capacity) {
+        if (vr == null)
+            vr = vrOf(tag);
+		if (!(vr instanceof VR.Fragment))
+			throw new UnsupportedOperationException();
+		return addInternal(new BasicDicomElement(tag, vr, bigEndian, new ArrayList(
+				capacity), null));
+	}
+
+    public void initFileMetaInformation(String tsuid) {
+        putBytes(Tag.FileMetaInformationVersion, VR.OB, false, 
+                new byte[] {0,1});
+        putString(Tag.MediaStorageSOPClassUID, VR.UI, 
+                getString(Tag.SOPClassUID));
+        putString(Tag.MediaStorageSOPInstanceUID, VR.UI,
+                getString(Tag.SOPInstanceUID));
+        putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        putString(Tag.ImplementationClassUID, VR.UI, 
+                Implementation.classUID());
+        putString(Tag.ImplementationVersionName, VR.SH, 
+                Implementation.versionName());
+    }
+}
