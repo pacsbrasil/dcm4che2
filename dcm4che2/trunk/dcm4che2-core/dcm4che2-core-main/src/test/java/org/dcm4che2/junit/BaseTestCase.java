@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Aug 3, 2005
  *
  */

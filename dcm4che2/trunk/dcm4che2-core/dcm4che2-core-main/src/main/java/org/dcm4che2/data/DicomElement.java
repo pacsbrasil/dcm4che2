@@ -20,7 +20,7 @@ public interface DicomElement extends Serializable {
 	boolean bigEndian();
 	DicomElement bigEndian(boolean bigEndian);
 	int length();
-	boolean isNull();
+	boolean isEmpty();
 	boolean hasItems();
 	int countItems();
 	byte[] getBytes();

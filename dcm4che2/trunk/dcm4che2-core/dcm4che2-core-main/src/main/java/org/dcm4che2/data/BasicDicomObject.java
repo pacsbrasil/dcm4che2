@@ -453,4 +453,17 @@ public class BasicDicomObject extends AbstractDicomObject {
 				capacity), null));
 	}
 
+    public void initFileMetaInformation(String tsuid) {
+        putBytes(Tag.FileMetaInformationVersion, VR.OB, false, 
+                new byte[] {0,1});
+        putString(Tag.MediaStorageSOPClassUID, VR.UI, 
+                getString(Tag.SOPClassUID));
+        putString(Tag.MediaStorageSOPInstanceUID, VR.UI,
+                getString(Tag.SOPInstanceUID));
+        putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        putString(Tag.ImplementationClassUID, VR.UI, 
+                Implementation.classUID());
+        putString(Tag.ImplementationVersionName, VR.SH, 
+                Implementation.versionName());
+    }
 }

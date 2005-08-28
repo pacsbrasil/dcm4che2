@@ -16,7 +16,7 @@ import org.dcm4che2.util.TagUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jul 30, 2005
  *
  */
@@ -318,7 +318,7 @@ abstract class AbstractHPSelector implements HPSelector {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             DicomElement values = dcmobj.get(resolveTag(dcmobj));
-            if (values == null || values.isNull() )
+            if (values == null || values.isEmpty() )
                 return match;
             return filterOp.op(values, params);
         }
@@ -335,7 +335,7 @@ abstract class AbstractHPSelector implements HPSelector {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             DicomElement values1 = dcmobj.get(resolveTag(dcmobj));
-            if (values1 == null || values1.isNull() )
+            if (values1 == null || values1.isEmpty() )
                 return match;
             for (int i = 0, n = values1.countItems(); i < n; i++) {
                 if (selector.matches(values1.getItem(i), frame))

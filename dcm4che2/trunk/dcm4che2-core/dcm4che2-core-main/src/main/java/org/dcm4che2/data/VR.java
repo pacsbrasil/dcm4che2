@@ -632,7 +632,24 @@ public abstract class VR {
 					fs[i] = Float.parseFloat(ss[i]);
 			return fs;
 		}		
-	}
+
+        public double toDouble(byte[] val, boolean bigEndian) {
+            if (val == null || val.length == 0)
+                return 0f;
+            return Double.parseDouble(toString(val, bigEndian, null));
+        }
+
+        public double[] toDoubles(byte[] val, boolean bigEndian) {
+            if (val == null || val.length == 0)
+                return EMPTY_DOUBLE_ARRAY;
+            String[] ss = toStrings(val, bigEndian, null);
+            double[] fs = new double[ss.length];
+            for (int i = 0; i < fs.length; i++)
+                if (ss[i].length() > 0)
+                    fs[i] = Double.parseDouble(ss[i]);
+            return fs;
+        }
+    }
 
 	private static final class DT extends ASCIIVR {
 

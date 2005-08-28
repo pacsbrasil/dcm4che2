@@ -13,7 +13,7 @@ import java.util.Date;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jun 27, 2005
  *
  */

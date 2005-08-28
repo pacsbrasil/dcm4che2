@@ -21,7 +21,7 @@ import org.dcm4che2.util.IntHashtable;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jun 25, 2005
  *
  */

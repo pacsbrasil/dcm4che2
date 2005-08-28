@@ -27,6 +27,6 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>dcm4che-${version}</finalName>
+    <finalName>dcm4che-core-${version}</finalName>
   </build>
 </model>

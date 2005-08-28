@@ -40,11 +40,11 @@ abstract class AbstractDicomObject implements DicomObject {
 	public boolean matches(final DicomObject keys, final boolean ignoreCaseOfPN) {
 		return keys.accept(new Visitor(){
 			public boolean visit(DicomElement test) {
-				if (test.isNull()) // Universal Matching
+				if (test.isEmpty()) // Universal Matching
 					return true;
 				final int tag = test.tag();
 				DicomElement attr = get(tag);
-				if (attr == null || attr.isNull())
+				if (attr == null || attr.isEmpty())
 					return true;	// Missing DicomElement (Value) match always
 				
 				final VR vr = test.vr();
@@ -191,7 +191,7 @@ abstract class AbstractDicomObject implements DicomObject {
 
 	public boolean containsValue(int tag) {
 		DicomElement attr = get(tag);
-		return attr != null && !attr.isNull();
+		return attr != null && !attr.isEmpty();
 	}
 
 	public byte[] getBytes(int tag, boolean bigEndian) {
@@ -204,7 +204,7 @@ abstract class AbstractDicomObject implements DicomObject {
 
 	public DicomObject getItem(int tag) {
 		DicomElement a = get(tag);
-		return a == null && !a.isNull() ? null : a.getItem();
+		return a == null && !a.isEmpty() ? null : a.getItem();
 	}
 
 	public int getInt(int tag) {

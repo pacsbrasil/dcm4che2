@@ -7,28 +7,30 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.hp.plugins;
+package org.dcm4che2.hp;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.hp.HPComparator;
-import org.dcm4che2.hp.spi.HPComparatorSpi;
+import org.dcm4che2.data.Tag;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 6, 2005
+ * @since Aug 15, 2005
  *
  */
-public class AlongAxisComparatorSpi extends HPComparatorSpi {
+public class ReferencedSOP {
+    private final DicomObject dcmobj;
 
-    private static final String[] CATEGORIES = { "ALONG_AXIS" };
-    
-    public AlongAxisComparatorSpi() {
-        super(CATEGORIES);
-    }
-
-    public HPComparator createHPComparator(DicomObject sortOp) {
-        return new AlongAxisComparator(sortOp);
+    public ReferencedSOP(DicomObject dcmobj) {
+         this.dcmobj = dcmobj;
     }
     
+    public String getReferencedSOPInstanceUID() {    
+        return dcmobj.getString(Tag.ReferencedSOPInstanceUID);
+    }
+    
+    public String getReferencedSOPClassUID() {    
+        return dcmobj.getString(Tag.ReferencedSOPClassUID);
+    }
+
 }

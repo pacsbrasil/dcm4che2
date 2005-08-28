@@ -13,7 +13,7 @@ import java.io.IOException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jun 26, 2005
  *
  */

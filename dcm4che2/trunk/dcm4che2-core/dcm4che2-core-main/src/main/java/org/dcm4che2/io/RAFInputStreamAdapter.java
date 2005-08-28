@@ -15,7 +15,7 @@ import java.io.RandomAccessFile;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jun 25, 2005
  *
  */

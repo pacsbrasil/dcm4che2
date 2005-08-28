@@ -134,4 +134,5 @@ public interface DicomObject
 	DicomObject subSet(int[] tags);
 	DicomObject exclude(int[] tags);
 	DicomObject excludePrivate();
+    void initFileMetaInformation(String tsuid);
 }

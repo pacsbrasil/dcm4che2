@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jul 4, 2005
  *
  */

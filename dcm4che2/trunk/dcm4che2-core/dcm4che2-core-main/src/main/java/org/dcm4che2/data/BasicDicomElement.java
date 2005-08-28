@@ -136,10 +136,10 @@ public class BasicDicomElement implements DicomElement {
 		BasicDicomElement other = (BasicDicomElement) o;
 		if (tag != other.tag || vr != other.vr)
 			return false;
-		if (isNull()) {
-			return other.isNull();
+		if (isEmpty()) {
+			return other.isEmpty();
 		}
-		if (other.isNull()) {
+		if (other.isEmpty()) {
 			return false;
 		}
 		if (value instanceof byte[] && other.value instanceof byte[]) {
@@ -166,7 +166,7 @@ public class BasicDicomElement implements DicomElement {
         sb.append(" #");
         sb.append(length());
         sb.append(" [");
-        if (!isNull()) {
+        if (!isEmpty()) {
             if (hasItems()) {
                 sb.append(countItems());
                 sb.append(" items");                
@@ -199,7 +199,7 @@ public class BasicDicomElement implements DicomElement {
 		return ((List)value).isEmpty() ? 0 : -1;
 	}
 
-	public final boolean isNull() {
+	public final boolean isEmpty() {
 		if (value == null)
 			return true;
 		if (value instanceof byte[])

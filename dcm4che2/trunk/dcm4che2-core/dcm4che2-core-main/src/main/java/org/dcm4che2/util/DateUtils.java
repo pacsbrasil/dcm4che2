@@ -15,7 +15,7 @@ import java.util.TimeZone;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Jun 27, 2005
  *
  */

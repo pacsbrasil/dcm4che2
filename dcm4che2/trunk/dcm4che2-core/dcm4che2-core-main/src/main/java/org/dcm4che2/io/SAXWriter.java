@@ -1,6 +1,9 @@
 package org.dcm4che2.io;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.dcm4che2.data.DicomElement;
@@ -20,94 +23,136 @@ public class SAXWriter implements DicomInputHandler {
     private final char[] cbuf = new char[CBUF_LENGTH];
     private ContentHandler ch;
     private LexicalHandler lh;
+    private File baseDir;
+    private int baseOff;
+    private File file;
+    private int[] exclude;
     private boolean seenFirst = false;
+    private static final byte[] EMPTY_BYTES = {};
 
     public SAXWriter(ContentHandler ch, LexicalHandler lh) {
         this.ch = ch;
         this.lh = lh;
     }
     
+    public final File getBaseDir() {
+        return baseDir;
+    }
+
+    public final void setBaseDir(File baseDir) {
+        this.baseDir = baseDir;
+        this.baseOff = 0;
+        if (baseDir != null) {
+            String path = baseDir.getPath();
+            baseOff = path.length();
+            if (!path.endsWith(File.separator))
+                ++baseOff;
+        }
+    }
+
+    public final int[] getExclude() {
+        return exclude != null ? (int[]) exclude.clone() : null;
+    }
+
+    public final void setExclude(int[] exclude) {
+        if (exclude != null) {
+            this.exclude = (int[]) exclude.clone();
+            Arrays.sort(exclude);
+        } else {
+            this.exclude = null;
+        }
+    }
+
     public void write(DicomObject attrs)
-            throws SAXException {
+            throws SAXException, IOException {
         ch.startDocument();
+        file = baseDir;
         writeContent(attrs, attrs.isRoot() ? "dicom" : "item");
         ch.endDocument();
     }
 
     private void writeContent(DicomObject attrs, String qName)
-            throws SAXException {
+            throws SAXException, IOException {
         AttributesImpl atts = new AttributesImpl();
         if (!attrs.isRoot()) {
             atts.addAttribute("", "", "off", "",
                     Long.toString(attrs.getItemOffset()));
         }
-        ch.startElement("", "", qName, atts);
+        ch.startElement("", "", qName, new AttributesImpl());
         for (Iterator it = attrs.iterator(); it.hasNext();) {
-            DicomElement a = (DicomElement) it.next();
-            VR vr = a.vr();
-            final int tag = a.tag();
-            if (lh != null) {
-                String name = attrs.nameOf(tag);
-                lh.comment(name.toCharArray(), 0, name.length());
-            }
-            atts.clear();
-            atts.addAttribute("", "", "tag", "", StringUtils.intToHex(tag));
-            atts.addAttribute("", "", "vr", "", vr.toString());
-            atts.addAttribute("", "", "len", "", Integer.toString(a.length()));
-            ch.startElement("", "", "attr", atts);
-            if (a.hasItems()) {
-                for (int i = 0, n = a.countItems(); i < n; ++i) {
-                    if (vr == VR.SQ) {
-                        writeContent(a.getItem(i), "item");
-                    } else {
-                        final byte[] bytes = a.getBytes(i);
-                        atts.clear();
-                        atts.addAttribute("", "", "len", "", Integer
-                                .toString((bytes.length + 1) & ~1));
-                        ch.startElement("", "", "item", atts);
-                        vr.formatXMLValue(bytes, a.bigEndian(), null, cbuf, ch);
-                        ch.endElement("", "", "item");
-                    }
-                }
-            } else {
-                vr.formatXMLValue(a.getBytes(), a.bigEndian(), attrs
-                        .getSpecificCharacterSet(), cbuf, ch);
-            }
-            ch.endElement("", "", "attr");
-
+            writeElement(attrs, (DicomElement) it.next());
         }
         ch.endElement("", "", qName);
-    }    
-    
+    }
+
+    private void writeElement(DicomObject attrs, DicomElement a)
+            throws SAXException, IOException {
+        VR vr = a.vr();
+        final int tag = a.tag();
+        if (file != null)
+            file = new File(file, StringUtils.intToHex(tag));
+        String fpath = fpath(tag, vr, a.length());
+        startAttributeElement(tag, vr, a.length(), fpath, attrs);
+        if (a.hasItems()) {
+            for (int i = 0, n = a.countItems(); i < n; ++i) {
+                writeItem(a, i);
+            }
+        } else {
+            if (fpath != null) {
+                writeToFile(a.getBytes());
+            } else {
+                vr.formatXMLValue(a.getBytes(), a.bigEndian(),
+                        attrs.getSpecificCharacterSet(), cbuf, ch);
+            }
+        }
+        endAttributeElement();
+        if (file != null)
+            file = file.getParentFile();
+    }
+
+    private void writeItem(DicomElement a, int index)
+            throws SAXException, IOException {
+        if (file != null)
+            file = new File(file, Integer.toString(index+1));
+        if (a.vr() == VR.SQ) {
+            writeContent(a.getItem(index), "item");
+        } else {
+            final byte[] data = a.getBytes(index);
+            writeFragment(a.vr(), data, a.bigEndian(),
+                     fpath(a.tag(), a.vr(), data.length));
+        }
+        if (file != null)
+            file = file.getParentFile();
+    }
+
+    private void writeFragment(VR vr, byte[] bytes, boolean bigEndian,
+            String fpath)
+            throws SAXException, IOException {
+        startItemElement(-1, (bytes.length + 1) & ~1, fpath);
+        if (fpath != null) {
+            writeToFile(bytes);
+        } else {
+            vr.formatXMLValue(bytes, bigEndian, null, cbuf, ch);
+        }
+        endItemElement();
+    }
+
     public boolean readValue(DicomInputStream in) throws IOException {
-        AttributesImpl atts = new AttributesImpl();
-        final int tag = in.tag();
-        final VR vr = in.vr();
-        final int vallen = in.valueLength();
-        final boolean bigEndian = in.getTransferSyntax().bigEndian();
         try {
-            switch (tag) {
+            switch (in.tag()) {
             case Tag.Item:
-                boolean isRoot = !seenFirst;
-                if (isRoot) {
+            {
+                final boolean isRoot;
+                if (isRoot = !seenFirst) {
                     seenFirst = true;
+                    file = baseDir;
                     ch.startDocument();
                 }
-                atts.addAttribute("", "", "off", "", Long.toString(in
-                        .getStreamPosition() - 8));
-                atts.addAttribute("", "", "len", "", Integer.toString(in
-                        .valueLength()));
-                ch.startElement("", "", "item", atts);
-                in.readValue(in);
-                DicomElement sq = in.sq();
-                VR sqvr = sq.vr();
-                if (sqvr != VR.SQ) {
-                    sqvr.formatXMLValue(sq.removeBytes(0), bigEndian, null, cbuf, ch);
-                }
-                ch.endElement("", "", "item");
+                transcodeItem(in);
                 if (isRoot)
                     ch.endDocument();
                 break;
+            }
             case Tag.ItemDelimitationItem:
                 in.readValue(in);
                 if (in.level() == 0) {
@@ -121,31 +166,11 @@ public class SAXWriter implements DicomInputHandler {
             default:
                 if (!seenFirst) {
                     seenFirst = true;
+                    file = baseDir;
                     ch.startDocument();
-                    ch.startElement("", "", "dicom", atts);
+                    ch.startElement("", "", "dicom", new AttributesImpl());
                 }
-                final DicomObject attrs = in.getDicomObject();
-                if (lh != null) {
-                    String name = attrs.nameOf(tag);
-                    lh.comment(name.toCharArray(), 0, name.length());
-                }
-                atts.addAttribute("", "", "tag", "", StringUtils.intToHex(tag));
-                atts.addAttribute("", "", "vr", "", vr.toString());
-                atts.addAttribute("", "", "len", "", Integer.toString(vallen));
-                ch.startElement("", "", "attr", atts);
-                if (vallen == -1 || vr == VR.SQ) {
-                    in.readValue(in);
-                    attrs.remove(tag);
-                } else {
-                    byte[] val = in.readBytes(vallen);
-                    vr.formatXMLValue(val, bigEndian,
-                            attrs.getSpecificCharacterSet(), cbuf, ch);
-                    if (tag == Tag.SpecificCharacterSet
-                            || TagUtils.isPrivateCreatorDataElement(tag)) {
-                        attrs.putBytes(tag, vr, bigEndian, val);
-                    }
-                }
-                ch.endElement("", "", "attr");
+                transcodeAttribute(in);
             }
         } catch (SAXException e) {
             throw (IOException) new IOException().initCause(e);
@@ -153,4 +178,121 @@ public class SAXWriter implements DicomInputHandler {
         return true;
     }
 
+    private void transcodeItem(DicomInputStream in) throws SAXException,
+            IOException {
+        final DicomElement sq = in.sq();
+        final int itemLen = in.valueLength();
+        final VR sqvr = sq.vr();
+        final int index = sq.countItems();
+        if (file != null)
+            file = new File(file, Integer.toString(index+1));
+        final String fpath = fpath(sq.tag(), sqvr, itemLen);
+        startItemElement(in.getStreamPosition() - 8, itemLen, fpath);
+        in.readValue(in);
+        if (sqvr != VR.SQ) {
+            byte[] data = sq.getBytes(index);
+            if (fpath != null) {
+                writeToFile(data);
+            } else {
+                final boolean bigEndian = in.getTransferSyntax().bigEndian();
+                sqvr.formatXMLValue(data, bigEndian, null, cbuf, ch);
+            }
+            sq.setBytes(index, EMPTY_BYTES); // allow gc to release byte[]
+        }
+        endItemElement();
+        if (file != null)
+            file = file.getParentFile();
+    }
+
+    private void endItemElement() throws SAXException {
+        ch.endElement("", "", "item");
+    }
+
+    private void startItemElement(long off, int itemLen, String fpath)
+            throws SAXException {
+        final AttributesImpl atts = new AttributesImpl();
+        atts.addAttribute("", "", "off", "", Long.toString(off));
+        atts.addAttribute("", "", "len", "", Integer.toString(itemLen));
+        if (fpath != null) {
+            atts.addAttribute("", "", "src", "", fpath);
+        }
+        ch.startElement("", "", "item", atts);
+    }
+
+    private void writeToFile(byte[] data) throws IOException {
+        if (file == null)
+            return;
+        file.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(file);
+        try {
+            out.write(data);
+        } finally {
+            out.close();
+        }
+    }
+
+    private void transcodeAttribute(DicomInputStream in)
+            throws SAXException, IOException {
+        final int tag = in.tag();
+        final VR vr = in.vr();
+        final int vallen = in.valueLength();
+        final DicomObject attrs = in.getDicomObject();
+        final String tagHex = StringUtils.intToHex(tag);
+        if (file != null)
+            file = new File(file, tagHex);
+        final String fpath = fpath(tag, vr, vallen);
+        startAttributeElement(tag, vr, vallen, fpath, attrs);
+        if (vallen == -1 || vr == VR.SQ) {
+            in.readValue(in);
+            attrs.remove(tag);
+        } else {
+            byte[] val = in.readBytes(vallen);
+            final boolean bigEndian = in.getTransferSyntax().bigEndian();
+            if (fpath != null) {
+                writeToFile(val);
+            } else {
+                vr.formatXMLValue(val, bigEndian,
+                        attrs.getSpecificCharacterSet(), cbuf, ch);
+            }
+            if (tag == Tag.SpecificCharacterSet
+                    || TagUtils.isPrivateCreatorDataElement(tag)) {
+                attrs.putBytes(tag, vr, bigEndian, val);
+            }
+        }
+        if (file != null)
+            file = file.getParentFile();
+        endAttributeElement();
+    }
+
+    private void endAttributeElement() throws SAXException {
+        ch.endElement("", "", "attr");
+    }
+
+    private void startAttributeElement(int tag, VR vr, int vallen,
+            String fpath, DicomObject attrs)
+            throws SAXException {
+        if (lh != null) {
+            String name = attrs.nameOf(tag);
+            lh.comment(name.toCharArray(), 0, name.length());
+        }
+        AttributesImpl atts = new AttributesImpl();
+        atts.addAttribute("", "", "tag", "", StringUtils.intToHex(tag));
+        atts.addAttribute("", "", "vr", "", vr.toString());
+        atts.addAttribute("", "", "len", "", Integer.toString(vallen));
+        if (fpath != null) {
+            atts.addAttribute("", "", "src", "", fpath);                    
+        }
+        ch.startElement("", "", "attr", atts);
+    }
+
+    private String fpath(int tag, VR vr, int vallen) {
+        return !exclude(tag, vr, vallen) ? null : file == null ? "" 
+                : file.getPath().substring(baseOff)
+                        .replace(File.separatorChar, '/');
+    }
+
+    private boolean exclude(int tag, VR vr, int vallen) {
+        return exclude != null && vallen > 0 && vr != VR.SQ 
+                && Arrays.binarySearch(exclude, tag) >= 0;
+    }
 }

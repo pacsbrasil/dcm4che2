@@ -172,9 +172,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 	public boolean accept(final Visitor visitor) {
 		return attrs.accept(new Visitor(){
 			public boolean visit(DicomElement attr) {
-				if (filter(attr.tag()))
-					visitor.visit(attr);
-				return true;
+				return !filter(attr.tag()) || visitor.visit(attr);
 			}});
 	}
 
@@ -368,4 +366,8 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 	public DicomElement putSequence(int tag) {
 		throw new UnsupportedOperationException();
 	}
+
+    public void initFileMetaInformation(String tsuid) {
+        throw new UnsupportedOperationException();
+    }
 }

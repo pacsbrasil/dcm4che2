@@ -15,13 +15,13 @@ import org.dcm4che2.hp.spi.HPSelectorSpi;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Aug 6, 2005
  *
  */
 public class ImagePlaneSelectorSpi extends HPSelectorSpi {
 
-    private static final String[] CATEGORIES = { "IMAGE_PANE" };
+    private static final String[] CATEGORIES = { "IMAGE_PLANE" };
     private static final float MIN_MIN_COSINE = 0.8f;
     private static final float DEF_MIN_COSINE = 0.9f;
     private float minCosine = DEF_MIN_COSINE;

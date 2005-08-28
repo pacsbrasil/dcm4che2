@@ -15,7 +15,7 @@ import org.dcm4che2.data.Tag;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Aug 7, 2005
  *
  */

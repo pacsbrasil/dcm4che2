@@ -29,10 +29,9 @@ public class ResourceLocator {
 	private static final String PREFIX = "META-INF/dcm4che/";
 
 	public static List findResources(Class c) {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		ArrayList list = new ArrayList();
 		try {
-			for (Enumeration configs = cl.getResources(PREFIX + c.getName()); 
+			for (Enumeration configs = enumResources(PREFIX + c.getName()); 
 					configs.hasMoreElements();) {
 				URL u = (URL) configs.nextElement();
 				InputStream in = u.openStream();
@@ -58,10 +57,16 @@ public class ResourceLocator {
 		}
 	}
 
+    private static Enumeration enumResources(String name) throws IOException {
+        Enumeration e = Thread.currentThread().getContextClassLoader()
+                .getResources(name);        
+        return e.hasMoreElements() ? e 
+                : ResourceLocator.class.getClassLoader().getResources(name);
+    }
+
     public static Object createInstance(String name) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            return cl.loadClass(name).newInstance();
+            return loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {
             throw new ConfigurationError("Class not found: " + name, ex); 
         } catch (InstantiationException ex) {
@@ -71,12 +76,25 @@ public class ResourceLocator {
         }        
     }
     
-	public static Object loadResource(String name) {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		InputStream is = cl.getResourceAsStream(name);
-		if (is == null) {
-			throw new ConfigurationError("Missing Resource: " + name);
-		}
+	private static Class loadClass(String name) throws ClassNotFoundException {
+        try {
+            return Thread.currentThread().getContextClassLoader()
+                    .loadClass(name);
+        } catch (ClassNotFoundException ex) {
+            return ResourceLocator.class.getClassLoader().loadClass(name);
+        }
+    }
+
+    public static Object loadResource(String name) {
+		InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(name);
+        if (is == null) {
+            is = ResourceLocator.class.getClassLoader()
+                    .getResourceAsStream(name);
+    		if (is == null) {
+    			throw new ConfigurationError("Missing Resource: " + name);
+    		}
+        }
 		try {
 			ObjectInputStream ois = new ObjectInputStream(is);
 			return ois.readObject();
