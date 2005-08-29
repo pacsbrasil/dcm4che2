@@ -41,19 +41,19 @@ import org.xml.sax.SAXException;
  */
 public class Xml2Dcm {
 
-    private static final String USAGE = "xml2dcm [-ageEuUVh] [-t [<tsuid>]] " +
+    private static final String USAGE = "xml2dcm [-geEuUVh] [-a|-d] [-t <tsuid>] " +
             "[-i <dcmfile>] [-x [<xmlfile>] -d <basedir>] -o <dcmfile>";
     private static final String DESCRIPTION = "Modify existing or create " +
             "new DICOM file according given XML presentation and store result " +
             "as ACR/NEMA-2 dump (option: -a) or DICOM Part 10 file " +
-            "(option: -t <tsuid>). If neither option -a nor -t is specified, " +
+            "(option: -d). If neither option -a nor -d is specified, " +
             "inclusion of Part 10 File Meta Information depends, if the input " +
             "DICOM file or the XML presentation already includes File Meta " +
             "Information attributes (0002,eeee). Either option -i <dcmfile> or" +
             "-x [<xmlfile>] (or both) must be specified.";
     private static final String EXAMPLE = "Example: xml2dcm -x in.xml -o out.dcm\n" +
             " => Convert XML presentation in.xml to DICOM file out.dcm\n" +
-            "xml2dcm -t1.2.840.10008.1.2.1.990 -i in.dcm -o out.dcm\n" +
+            "xml2dcm -d -t 1.2.840.10008.1.2.1.990 -i in.dcm -o out.dcm\n" +
             " => Load DICOM object from file in.dcm and store it as " +
             "DICOM (Part 10) file encoded with Transfer Syntax: Deflated " +
             "Explicit VR Little Endian Transfer Syntax.";
@@ -81,15 +81,15 @@ public class Xml2Dcm {
         ofile.setArgName("dcmfile");
         opts.addOption(ofile);
         Option tsuid = new Option("t", true,
-                "Store result as DICOM Part 10 file with specified Transfer Syntax. " +
-                "Without <tsuid>, Explicit VR Little Endian Transfer Syntax.");
-        tsuid.setLongOpt("part10");
-        tsuid.setOptionalArg(true);
+                "Store result with specified Transfer Syntax.");
         tsuid.setArgName("tsuid");
         opts.addOption(tsuid);
         opts.addOption("a", "acrnema2", false,
                 "Store result as ACR/NEMA 2 dump. Mutual exclusive " +
-                "with option -t [<tsuid>]");
+                "with option -d");
+        opts.addOption("d", "dicom", false,
+                "Store result as DICOM Part 10 File. Mutual exclusive " +
+                "with option -a");
         opts.addOption("g", "grlen", false, 
                 "Include (gggg,0000) Group Length attributes." +
                 "By default, optional Group Length attributes are excluded.");
@@ -133,8 +133,8 @@ public class Xml2Dcm {
         if (!cl.hasOption("x") && !cl.hasOption("i"))
             exit("xml2dcm: You must specify option -i <xmlfile> or " +
                     "-x [<xmlfile>]");
-        if (cl.hasOption("a") && !cl.hasOption("t"))
-            exit("xml2dcm: Option -a and -t [<tsuid>] are mutual exclusive");
+        if (cl.hasOption("a") && cl.hasOption("d"))
+            exit("xml2dcm: Option -a and -d are mutual exclusive");
         if (cl.hasOption("e") && !cl.hasOption("u"))
             exit("xml2dcm: Option -e and -u are mutual exclusive");
         if (cl.hasOption("E") && !cl.hasOption("U"))
@@ -204,14 +204,16 @@ public class Xml2Dcm {
                     dos.setExplicitItemLengthIfZero(!cl.hasOption("u"));
                     dos.setExplicitSequenceLength(cl.hasOption("E"));
                     dos.setExplicitSequenceLengthIfZero(!cl.hasOption("U"));
-                    if (cl.hasOption("t")) {
-                        String tsuid = cl.getOptionValue("t");
+                    String tsuid = cl.getOptionValue("t");
+                    if (cl.hasOption("d")) {
                         if (tsuid == null)
                             tsuid = TransferSyntax.ExplicitVRLittleEndian.uid();
                         dcmobj.initFileMetaInformation(tsuid);
                     }
                     if (cl.hasOption("a") || dcmobj.fileMetaInfo().isEmpty()) {
-                        dos.writeDataset(dcmobj, TransferSyntax.ImplicitVRLittleEndian);
+                        if (tsuid == null)
+                            tsuid = TransferSyntax.ImplicitVRLittleEndian.uid();
+                        dos.writeDataset(dcmobj, TransferSyntax.valueOf(tsuid));
                         System.out.println("Created ACR/NEMA Dump " + ofile);                    
                     } else {
                         dos.writeDicomFile(dcmobj);
