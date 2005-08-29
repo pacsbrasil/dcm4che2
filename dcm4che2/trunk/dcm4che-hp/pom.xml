@@ -2,11 +2,16 @@
   <parent>
     <artifactId>dcm4che</artifactId>
     <groupId>dcm4che</groupId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0-alpha-1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-hp</artifactId>
   <dependencies>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>2.0-alpha-1</version>
+    </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
@@ -18,11 +23,6 @@
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>dcm4che</groupId>
-      <artifactId>dcm4che-core</artifactId>
-      <version>2.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </model>
