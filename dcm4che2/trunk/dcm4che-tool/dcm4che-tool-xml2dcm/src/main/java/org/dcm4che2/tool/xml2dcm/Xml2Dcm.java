@@ -53,7 +53,7 @@ public class Xml2Dcm {
             "-x [<xmlfile>] (or both) must be specified.";
     private static final String EXAMPLE = "Example: xml2dcm -x in.xml -o out.dcm\n" +
             " => Convert XML presentation in.xml to DICOM file out.dcm\n" +
-            "xml2dcm -d -t 1.2.840.10008.1.2.1.990 -i in.dcm -o out.dcm\n" +
+            "xml2dcm -d -t 1.2.840.10008.1.2.1.99 -i in.dcm -o out.dcm\n" +
             " => Load DICOM object from file in.dcm and store it as " +
             "DICOM (Part 10) file encoded with Transfer Syntax: Deflated " +
             "Explicit VR Little Endian Transfer Syntax.";
