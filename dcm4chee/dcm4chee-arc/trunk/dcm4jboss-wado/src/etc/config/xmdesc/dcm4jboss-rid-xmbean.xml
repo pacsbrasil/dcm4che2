@@ -95,6 +95,80 @@
     </attribute>
 
     <attribute access="read-write"
+      getMethod="getRadiologyConceptNames"
+      setMethod="setRadiologyConceptNames">
+      <description>List of Concept Name Codes to find Radiology SR documents.
+      Format: codeValue:codeSchemeDesignator;....
+      </description>
+      <name>RadiologyConceptNames</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+    </attribute>
+    <attribute access="read-write"
+      getMethod="getCardiologyConceptNames"
+      setMethod="setCardiologyConceptNames">
+      <description>List of Concept Name Codes to find Cardiology SR documents.
+      Format: codeValue:codeSchemeDesignator;....
+      </description>
+      <name>CardiologyConceptNames</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+    </attribute>
+    
+    <attribute access="read-write"
+      getMethod="isEncapsulatedPDFSupport"
+      setMethod="setEncapsulatedPDFSupport">
+      <description>Enables/disables support of encapsulated PDF documents.
+      </description>
+      <name>EncapsulatedPDFSupport</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+    </attribute>
+
+    <attribute access="read-write"
+      getMethod="getRadiologyPDFConceptCodeNames"
+      setMethod="setRadiologyPDFConceptCodeNames">
+      <description>List of Concept Name Codes to find Radiology PDF documents (DICOM Encapsulation of PDF Documents).
+      Format: codeValue:codeSchemeDesignator;....
+      </description>
+      <name>RadiologyPDFConceptCodeNames</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="11541-0:LN" />
+      </descriptors>
+    </attribute>
+    <attribute access="read-write"
+      getMethod="getCardiologyPDFConceptCodeNames"
+      setMethod="setCardiologyPDFConceptCodeNames">
+      <description>List of Concept Name Codes to find Cardiology PDF documents (DICOM Encapsulation of PDF Documents).
+      Format: codeValue:codeSchemeDesignator;....
+      </description>
+      <name>CardiologyPDFConceptCodeNames</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="11522-0;28032-1:LN" />
+      </descriptors>
+    </attribute>
+    <attribute access="read-write"
+      getMethod="getECGPDFConceptCodeNames"
+      setMethod="setECGPDFConceptCodeNames">
+      <description>List of Concept Name Codes to find ECG PDF documents (DICOM Encapsulation of PDF Documents).
+      Format: codeValue:codeSchemeDesignator;....
+      </description>
+      <name>ECGPDFConceptCodeNames</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="11524-6:LN" />
+      </descriptors>
+    </attribute>
+
+    <attribute access="read-write"
       getMethod="getWadoURL"
       setMethod="setWadoURL">
       <description>URL to WADO service to get images for reports.

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -22,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.management.MBeanServer;
@@ -70,6 +72,12 @@ import org.xml.sax.SAXException;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class RIDSupport {
+	private static final String CARDIOLOGY = "Cardiology";
+	private static final String RADIOLOGY = "Radiology";
+	private static final String ENCAPSED_PDF_CARDIOLOGY = "encapsed_PDF_Cardiology";
+	private static final String ENCAPSED_PDF_RADIOLOGY = "encapsed_PDF_Radiology";
+	public static final String ENCAPSED_PDF_ECG = "encapsed_PDF_ECG";
+	
 	private static final String SUMMARY = "SUMMARY";
 	private static final String SUMMARY_RADIOLOGY = "SUMMARY-RADIOLOGY";
 	private static final String SUMMARY_CARDIOLOGY = "SUMMARY-CARDIOLOGY";
@@ -91,9 +99,7 @@ public class RIDSupport {
     private static MBeanServer server;
     private Map ecgSopCuids = new TreeMap();
 	private String ridSummaryXsl;
-	private static List allConceptNameCodes;
-	private static List cardiologyConceptNameCodes;
-	private static List radiologyConceptNameCodes;
+	
 	private boolean useXSLInstruction;
 	private String wadoURL;
 	
@@ -104,6 +110,9 @@ public class RIDSupport {
 	private Dataset patientDS = null;
 	private WADOSupport wadoSupport;
 	private RIDService service;
+	private ConceptNameCodeConfig conceptNameCodeConfig = new ConceptNameCodeConfig();
+	
+	private boolean encapsulatedPDFSupport = true;
 
 	public RIDSupport( RIDService service ) {
 		this.service = service;
@@ -126,6 +135,12 @@ public class RIDSupport {
 		return ecgSupport;
 	}
 
+	/**
+	 * @return Returns the conceptNameCodeConfig.
+	 */
+	public ConceptNameCodeConfig getConceptNameCodeConfig() {
+		return conceptNameCodeConfig;
+	}
 	/**
 	 * @return Returns the sopCuids.
 	 */
@@ -156,53 +171,18 @@ public class RIDSupport {
 		ecgSopCuids.put( "CardiacElectrophysiologyWaveformStorage", UIDs.CardiacElectrophysiologyWaveformStorage );
 	}
 
-	private static List getCardiologyConceptNameCodes() {
-		//TODO: not only codeValue; configureable
-		if ( cardiologyConceptNameCodes == null ) {
-			cardiologyConceptNameCodes = new ArrayList();
-			cardiologyConceptNameCodes.add( createCodeDS( "18745-0", "LN" ) );//Cardiac Catheteization Report
-			cardiologyConceptNameCodes.add( createCodeDS( "11522-0", "LN" ) );//Echocardiography Report
-			cardiologyConceptNameCodes.add( createCodeDS( "10001", "99SUPP97" ) );//Quantitavie Arteriography report //a cardio report?
-			cardiologyConceptNameCodes.add( createCodeDS( "122291", "DCM" ) );//CT/MR Cardiovascular Report
-			cardiologyConceptNameCodes.add( createCodeDS( "122292", "DCM" ) );//Quantitative Ventriculography Report
-			cardiologyConceptNameCodes.add( createCodeDS( "125200", "DCM" ) );//Adult Echocardiography Procedure Report
-		}
-		return cardiologyConceptNameCodes;
-	}
-	private static List getRadiologyConceptNameCodes() {
-		if ( radiologyConceptNameCodes == null ) {
-			radiologyConceptNameCodes = new ArrayList();
-			radiologyConceptNameCodes.add( createCodeDS( "11540-2", "LN" ) );//CT Abdomen Report
-			radiologyConceptNameCodes.add( createCodeDS( "11538-6", "LN" ) );//CT Chest Report
-			radiologyConceptNameCodes.add( createCodeDS( "11539-4", "LN" ) );//CT Head Report
-			radiologyConceptNameCodes.add( createCodeDS( "18747-6", "LN" ) );//CT Report
-			radiologyConceptNameCodes.add( createCodeDS( "18748-4", "LN" ) );//Diagnostic Imaging Report
-			radiologyConceptNameCodes.add( createCodeDS( "18760-9", "LN" ) );//Ultrasound Report
-			radiologyConceptNameCodes.add( createCodeDS( "11541-0", "LN" ) );//MRI Head Report
-			radiologyConceptNameCodes.add( createCodeDS( "18755-9", "LN" ) );//MRI Report
-			radiologyConceptNameCodes.add( createCodeDS( "18756-7", "LN" ) );//MRI Spine Report
-			radiologyConceptNameCodes.add( createCodeDS( "18757-5", "LN" ) );//Nuclear Medicine Report
-			radiologyConceptNameCodes.add( createCodeDS( "11525-3", "LN" ) );//Ultrasound Obstetric and Gyn Report
-			radiologyConceptNameCodes.add( createCodeDS( "18758-3", "LN" ) );//PET Scan Report
-			radiologyConceptNameCodes.add( createCodeDS( "11528-7", "LN" ) );//Radiology Report
-		}
-		return radiologyConceptNameCodes;
-	}
 	
-	private static List getAllConceptNameCodes() {
-		if ( allConceptNameCodes == null ) {
-			allConceptNameCodes = new ArrayList();
-			allConceptNameCodes.addAll( getRadiologyConceptNameCodes() );
-			allConceptNameCodes.addAll( getCardiologyConceptNameCodes() );
-		}
-		return allConceptNameCodes;
+	/**
+	 * @return Returns the encapsulatedPDFSupport.
+	 */
+	public boolean isEncapsulatedPDFSupport() {
+		return encapsulatedPDFSupport;
 	}
-	
-	private static Dataset createCodeDS( String value, String design ) {
-		Dataset ds = factory.newDataset();
-        ds.putSH(Tags.CodeValue, value);
-        ds.putSH(Tags.CodingSchemeDesignator, design);
-        return ds;
+	/**
+	 * @param encapsulatedPDFSupport The encapsulatedPDFSupport to set.
+	 */
+	public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
+		this.encapsulatedPDFSupport = encapsulatedPDFSupport;
 	}
 	/**
 	 * @return Returns the wadoURL.
@@ -292,11 +272,12 @@ public class RIDSupport {
 	    initDocList( docList, reqObj, queryDS );
 	    List conceptNames = null;
 	    if ( reqType.equals( SUMMARY ) ) {
-	    	conceptNames = getAllConceptNameCodes();
+	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
+	    	conceptNames.addAll( conceptNameCodeConfig.getConceptNameCodes(CARDIOLOGY) );
 	    } else if ( reqType.equals( SUMMARY_CARDIOLOGY) ) {
-	    	conceptNames = getCardiologyConceptNameCodes();
+	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(CARDIOLOGY);
 	    } else {
-	    	conceptNames = getRadiologyConceptNameCodes();
+	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
 	    }
 		for ( Iterator iter = conceptNames.iterator() ; iter.hasNext() ; ) {
         	queryDS.remove( Tags.ConceptNameCodeSeq );//remove for next search.
@@ -304,9 +285,21 @@ public class RIDSupport {
         	cnSq.addItem( (Dataset) iter.next() );
         	fillDocList( docList, queryDS );
 		}
+		Dataset ecgQueryDS = getECGQueryDS( reqObj);
 		if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
-			addECGSummary( docList, getECGQueryDS( reqObj) );
+			addECGSummary( docList, ecgQueryDS );
 		}
+		
+		if ( encapsulatedPDFSupport ) {
+			if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
+				addEncapsulatedPDF(docList,ecgQueryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY));
+				addEncapsulatedPDF(docList,ecgQueryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG));
+			}
+			if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_RADIOLOGY ) ) {
+				addEncapsulatedPDF(docList,ecgQueryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_RADIOLOGY));
+			}
+		}
+
 		if ( docList.size() < 1 ) {
 			log.info("No documents found: patientDS:"+patientDS);
 			if ( patientDS != null ) {
@@ -364,6 +357,10 @@ public class RIDSupport {
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
 		addECGSummary( docList, queryDS );
+		if ( encapsulatedPDFSupport ) {
+			addEncapsulatedPDF( docList, queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG) );
+		}
+		
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
 		return new WADOTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
 	}
@@ -565,6 +562,9 @@ public class RIDSupport {
 				if ( getECGSopCuids().values().contains( cuid ) ) {
 					cmd.close();
 					return getECGSupport().getECGDocument( reqObj, ds );
+				} else if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) {
+					cmd.close();
+					return getEncapsulatedPDF( reqObj );
 				} else {
 					cmd.close();
 					return getDocument( reqObj );
@@ -707,6 +707,26 @@ public class RIDSupport {
 		return null;
 	}
 	
+	private WADOResponseObject getEncapsulatedPDF( RIDRequestObject reqObj ) {
+		if ( ! encapsulatedPDFSupport ) 
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Encapsulated PDF documents not supported! Please check RID configuration");
+		if ( checkContentType( reqObj, new String[]{CONTENT_TYPE_PDF}) == null ) 
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "The Display actor doesnt accept application/pdf! (requested document is of type application/pdf)");
+
+		try {
+			File inFile = getDICOMFile( reqObj.getParam("documentUID"));
+			InputStream is = new BufferedInputStream( new FileInputStream(inFile) );
+	        DataInputStream dis = new DataInputStream(is);
+	        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+	        parser.parseDcmFile(null,Tags.EncapsulatedDocument);
+	        return new WADOStreamResponseObjectImpl(is, CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
+		} catch ( Exception x ) {
+			log.error("Error getting encapsulated PDF!", x);
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
+		}
+	}
+	
+	
 	/**
 	 * @param patientID patient id in form patientID^^^issuerOfPatientID
 	 * @return String[] 0..patientID 1.. issuerOfPatientID
@@ -722,5 +742,85 @@ public class RIDSupport {
 		return service.getWaveformCorrection();
 	}
 
+	/**
+	 * @param docList
+	 * @param queryDS
+	 * @param cardiologyConceptNameCodes2
+	 * @throws SQLException
+	 */
+	private void addEncapsulatedPDF(IHEDocumentList docList, Dataset queryDS, List conceptNames) throws SQLException {
+		queryDS.putUI( Tags.SOPClassUID, UIDs.EncapsulatedPDFStorage);
+		for ( Iterator iter = conceptNames.iterator() ; iter.hasNext() ; ) {
+        	DcmElement cnSq = queryDS.putSQ(Tags.ConceptNameCodeSeq);
+        	cnSq.addItem( (Dataset) iter.next() );
+        	fillDocList( docList, queryDS );
+		}
+		
+	}
+
+	public String getRadiologyConceptNames() {
+		return conceptNameCodeConfig.getConceptNameCodeString(RADIOLOGY);
+	}
+
+	/**
+	 * @param conceptNames
+	 */
+	public void setRadiologyConceptNames(String conceptNames) {
+		if ( conceptNameCodeConfig.setConceptNameCodes(RADIOLOGY, conceptNames ) == null )
+			conceptNameCodeConfig.setConceptNameCodes(RADIOLOGY,ConceptNameCodeConfig.getDefaultRadiologyConceptNameCodes());
+		
+	}
+	public String getCardiologyConceptNames() {
+		return conceptNameCodeConfig.getConceptNameCodeString(CARDIOLOGY);
+	}
+
+	/**
+	 * @param conceptNames
+	 */
+	public void setCardiologyConceptNames(String conceptNames) {
+		if ( conceptNameCodeConfig.setConceptNameCodes(CARDIOLOGY, conceptNames ) == null )
+			conceptNameCodeConfig.setConceptNameCodes(CARDIOLOGY,ConceptNameCodeConfig.getDefaultCardiologyConceptNameCodes());
+		
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getRadiologyPDFConceptCodeNames() {
+		return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_RADIOLOGY);
+	}
+
+	/**
+	 * @param conceptNames
+	 */
+	public void setRadiologyPDFConceptNameCodes(String conceptNames) {
+		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_RADIOLOGY, conceptNames );
+	}
+	/**
+	 * @return
+	 */
+	public String getCardiologyPDFConceptCodeNames() {
+		return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_CARDIOLOGY);
+	}
+
+	/**
+	 * @param conceptNames
+	 */
+	public void setCardiologyPDFConceptNameCodes(String conceptNames) {
+		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY, conceptNames );
+	}
+	/**
+	 * @return
+	 */
+	public String getECGPDFConceptCodeNames() {
+		return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_ECG);
+	}
+
+	/**
+	 * @param conceptNames
+	 */
+	public void setECGPDFConceptNameCodes(String conceptNames) {
+		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_ECG, conceptNames );
+	}
 	
 }

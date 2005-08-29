@@ -9,7 +9,6 @@
 package org.dcm4chex.archive.web.maverick.model;
 
 
-import java.sql.SQLException;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -17,7 +16,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
-import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -44,6 +42,8 @@ public class InstanceModel extends AbstractModel {
         	|| UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid)
         	|| UIDs.BasicVoiceAudioWaveformStorage.equals(cuid))
         	return new WaveformModel(ds);
+        if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) 
+        	return new StructuredReportModel(ds);
         return new ImageModel(ds);
     }
 

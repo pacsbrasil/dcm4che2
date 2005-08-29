@@ -456,7 +456,8 @@ public class IHEDocumentList implements XMLResponseObject{
 		String uid = ds.getString( Tags.SOPInstanceUID );
 		if ( uid == null ) uid = "---";
 		Date date = null;
-		if ( "SR".equals(ds.getString( Tags.Modality ) ) ) {
+		if ( "SR".equals(ds.getString( Tags.Modality ) ) || 
+			 UIDs.EncapsulatedPDFStorage.equals(ds.getString(Tags.SOPClassUID))) {
 			date = ds.getDateTime( Tags.ContentDate, Tags.ContentTime );
 		} else {
 			date = ds.getDate( Tags.AcquisitionDatetime );
@@ -531,7 +532,8 @@ public class IHEDocumentList implements XMLResponseObject{
         String code = "";
         String codeSystem = "";
         String displayname = "";
-		if ( "SR".equals(ds.getString( Tags.Modality ) ) ) {
+		String cuid = ds.getString( Tags.SOPClassUID );
+		if ( "SR".equals(ds.getString( Tags.Modality ) ) || UIDs.EncapsulatedPDFStorage.equals(cuid)) {
 	        DcmElement elem = ds.get( Tags.ConceptNameCodeSeq );
 	        if ( elem != null ) {
 	        	Dataset ds1 = elem.getItem(0);
@@ -543,7 +545,6 @@ public class IHEDocumentList implements XMLResponseObject{
 	        }
 	        if ( displayname == null ) displayname = ds.getString( Tags.StudyDescription );
 		} else { //ECG
-			String cuid = ds.getString( Tags.SOPClassUID );
 			if ( UIDs.TwelveLeadECGWaveformStorage.equals( cuid ) )
 				displayname = "12-lead ECG";
 			else if ( UIDs.GeneralECGWaveformStorage.equals( cuid ) )

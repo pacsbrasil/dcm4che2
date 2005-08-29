@@ -8,10 +8,8 @@ package org.dcm4chex.wado.mbean;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -20,7 +18,6 @@ import javax.management.ObjectName;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4che.dict.UIDs;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -126,6 +123,49 @@ public class RIDService extends AbstractCacheService  {
 		support.setECGSopCuids( map );
 	}
 
+	public boolean isEncapsulatedPDFSupport() {
+		return support.isEncapsulatedPDFSupport();
+	}
+	public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
+		support.setEncapsulatedPDFSupport(encapsulatedPDFSupport);
+	}
+	
+	public String getRadiologyConceptNames() {
+		return support.getRadiologyConceptNames();
+	}
+	public void setRadiologyConceptNames( String conceptNames ) {
+		support.setRadiologyConceptNames( conceptNames );
+	}
+
+	public String getCardiologyConceptNames() {
+		return support.getCardiologyConceptNames();
+	}
+	public void setCardiologyConceptNames( String conceptNames ) {
+		support.setCardiologyConceptNames( conceptNames );
+	}
+
+	public String getRadiologyPDFConceptCodeNames() {
+		return support.getRadiologyPDFConceptCodeNames();
+	}
+	
+	public void setRadiologyPDFConceptCodeNames( String conceptNames ) {
+		support.setRadiologyPDFConceptNameCodes( conceptNames );
+	}
+	public String getCardiologyPDFConceptCodeNames() {
+		return support.getCardiologyPDFConceptCodeNames();
+	}
+	
+	public void setCardiologyPDFConceptCodeNames( String conceptNames ) {
+		support.setCardiologyPDFConceptNameCodes( conceptNames );
+	}
+	public String getECGPDFConceptCodeNames() {
+		return support.getECGPDFConceptCodeNames();
+	}
+	
+	public void setECGPDFConceptCodeNames( String conceptNames ) {
+		support.setECGPDFConceptNameCodes( conceptNames );
+	}
+	
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
