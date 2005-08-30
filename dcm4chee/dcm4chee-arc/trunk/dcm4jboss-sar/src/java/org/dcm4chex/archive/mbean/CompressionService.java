@@ -292,7 +292,7 @@ public class CompressionService extends TimerSupport {
     
     private long getMinDiskFreeFromFsmgt() {
         try {
-            return FileUtils.parseSize((String) server.getAttribute(fileSystemMgtName,"MinFreeDiskSpace"),-1);
+            return FileUtils.parseSize((String) server.getAttribute(fileSystemMgtName,"MinimumFreeDiskSpace"),-1);
         } catch (JMException e) { 
             throw new RuntimeException(
                     "Failed to invoke getMinDiskFree", e);
