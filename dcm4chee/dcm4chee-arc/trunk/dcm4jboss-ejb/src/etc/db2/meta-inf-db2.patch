@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2005-08-25 15:55:55.827432328 +0200
-+++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2005-08-25 15:56:01.860647288 +0200
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2005-08-30 17:05:37.558433944 +0200
++++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2005-08-30 17:05:49.594604168 +0200
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -145,7 +145,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1138,7 +1151,8 @@
+@@ -1148,7 +1161,8 @@
              <jboss-ql><![CDATA[SELECT OBJECT(a) FROM Patient AS a WHERE a.patientName = ?1 AND a.patientBirthDate = ?2]]></jboss-ql>
           </query>
  
@@ -155,7 +155,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1203,8 +1217,9 @@
+@@ -1213,8 +1227,9 @@
  
          </cmp-field>
  
@@ -167,7 +167,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1236,7 +1251,8 @@
+@@ -1246,7 +1261,8 @@
  			<dynamic-ql/>
           </query>
  
@@ -177,7 +177,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1352,7 +1368,8 @@
+@@ -1362,7 +1378,8 @@
              <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1]]></jboss-ql>
           </query>
  
@@ -187,7 +187,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1382,7 +1399,8 @@
+@@ -1392,7 +1409,8 @@
  
          </cmp-field>
  
@@ -197,7 +197,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1419,7 +1437,8 @@
+@@ -1429,7 +1447,8 @@
  
          </cmp-field>
  
