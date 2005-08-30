@@ -57,6 +57,7 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
@@ -353,24 +354,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        for (int hash = ds.getString(Tags.SOPInstanceUID).hashCode();; ++hash) {
-            File f = new File(dir, toHex(hash));
-            if (f.createNewFile()) {
-                return f;
-            }
-        }
-    }
-
-    private File toFile(String basedir, String[] fileIDs) {
-        File dir = new File(basedir, fileIDs[0] + File.separatorChar
-                + fileIDs[1] + File.separatorChar + fileIDs[2]
-                + File.separatorChar + fileIDs[3] + File.separatorChar
-                + fileIDs[4]);
-        File file;
-        while ((file = new File(dir, fileIDs[5])).exists()) {
-            fileIDs[5] = toHex((int) Long.parseLong(fileIDs[5], 16) + 1);
-        }
-        return file;
+		return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
     }
 
     private StorageHome getStorageHome() throws HomeFactoryException {

@@ -38,6 +38,25 @@ public class FileUtils {
 
     public static final long GIGA = 1000000000L;
 
+    private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+	private static String toHex(int val) {
+	    char[] ch8 = new char[8];
+	    for (int i = 8; --i >= 0; val >>= 4) {
+	        ch8[i] = HEX_DIGIT[val & 0xf];
+	    }
+	    return String.valueOf(ch8);
+	}
+
+    public static File createNewFile(File dir, int hash) throws IOException {
+		File f;
+		do {
+			f = new File(dir, toHex(hash++));
+		} while (!f.createNewFile());
+		return f;
+    }
+	
     public static String slashify(File f) {
         return f.getPath().replace(File.separatorChar, '/');
     }
