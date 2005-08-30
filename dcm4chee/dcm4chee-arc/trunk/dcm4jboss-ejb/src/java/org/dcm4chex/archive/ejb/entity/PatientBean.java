@@ -32,6 +32,12 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.finder signature="Collection findAll()"
  *             query="SELECT OBJECT(a) FROM Patient AS a"
  *             transaction-type="Supports"
+ * @ejb.finder signature="Collection findAll(int offset, int limit)"
+ *             query=""
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findAll(int offset, int limit)"
+ *              query="SELECT OBJECT(a) FROM Patient AS a ORDER BY a.pk OFFSET ?1 LIMIT ?2"
+ *              
  * @ejb.finder signature="java.util.Collection findByPatientId(java.lang.String pid)"
  *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
  *             transaction-type="Supports"
