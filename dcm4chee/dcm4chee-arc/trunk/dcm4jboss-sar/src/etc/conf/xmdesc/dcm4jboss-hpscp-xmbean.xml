@@ -54,6 +54,15 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isSendPendingMoveRSP" setMethod="setSendPendingMoveRSP">
+      <description>Return optional C-Move Response DICOM message with pending status.
+      </description>
+      <name>SendPendingMoveResponse</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
@@ -63,6 +72,33 @@
       <type>int</type>
       <descriptors>
          <value value="16352" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
+      </description>
+      <name>AcceptTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
+      </description>
+      <name>DIMSETimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="60000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
+      <description>Socket close delay in milliseconds after an A-Release response.
+      </description>
+      <name>SocketCloseDelay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -86,6 +122,15 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="tiani.archive:service=DcmServer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TLSConfigName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

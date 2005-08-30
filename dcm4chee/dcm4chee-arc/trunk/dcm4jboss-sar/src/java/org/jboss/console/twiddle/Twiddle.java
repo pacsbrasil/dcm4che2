@@ -265,6 +265,17 @@ public class Twiddle
 
    public static void main(final String[] args)
    {
+	   String handlerPkgs = System.getProperty("java.protocol.handler.pkgs");
+       if (handlerPkgs != null)
+       {
+          handlerPkgs += "|org.jboss.net.protocol";
+       }
+       else
+       {
+          handlerPkgs = "org.jboss.net.protocol";
+       }
+       System.setProperty("java.protocol.handler.pkgs", handlerPkgs);
+	   
       Command command = null;
 
       try

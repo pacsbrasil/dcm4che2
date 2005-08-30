@@ -11,7 +11,6 @@ package org.dcm4chex.archive.dcm;
 
 import javax.management.ObjectName;
 
-import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;

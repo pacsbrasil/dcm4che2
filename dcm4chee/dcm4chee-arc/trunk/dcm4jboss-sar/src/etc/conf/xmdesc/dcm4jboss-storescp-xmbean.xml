@@ -271,6 +271,8 @@ Use either the SOP Class UID or the symbolic name:
              <br>GeneralECGWaveformStorage
 				 <br>HemodynamicWaveformStorage
              <br>TwelveLeadECGWaveformStorage
+			 <br>EncapsulatedPDFStorage
+		     <br>TianiEncapsulatedDocumentStorage
 <br>To map your own symbolic names to SOP classes or add more SOP Classes as possible values, use the dictionary.xml file.
     ]]>
       </description>
@@ -278,17 +280,26 @@ Use either the SOP Class UID or the symbolic name:
       <type>java.lang.String</type>
       <descriptors>
          <value value="BasicTextSR;
-             EnhancedSR;ComprehensiveSR;MammographyCADSR;
+             EnhancedSR;
+             ComprehensiveSR;
+             MammographyCADSR;
              GrayscaleSoftcopyPresentationStateStorage;
-             KeyObjectSelectionDocument;RTDoseStorage;
-             RTStructureSetStorage;RTBeamsTreatmentRecordStorage;
-             RTPlanStorage;RTBrachyTreatmentRecordStorage;
-             RTTreatmentSummaryRecordStorage;RawDataStorage;
+             KeyObjectSelectionDocument;
+             RTDoseStorage;
+             RTStructureSetStorage;
+             RTBeamsTreatmentRecordStorage;
+             RTPlanStorage;
+             RTBrachyTreatmentRecordStorage;
+             RTTreatmentSummaryRecordStorage;
+             RawDataStorage;
              AmbulatoryECGWaveformStorage;
              BasicVoiceAudioWaveformStorage;
              CardiacElectrophysiologyWaveformStorage;
-             GeneralECGWaveformStorage;HemodynamicWaveformStorage;
-             TwelveLeadECGWaveformStorage"/>
+             GeneralECGWaveformStorage;
+             HemodynamicWaveformStorage;
+             TwelveLeadECGWaveformStorage;
+             EncapsulatedPDFStorage;
+             TianiEncapsulatedDocumentStorage"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="isAcceptExplicitVRLE" setMethod="setAcceptExplicitVRLE">
