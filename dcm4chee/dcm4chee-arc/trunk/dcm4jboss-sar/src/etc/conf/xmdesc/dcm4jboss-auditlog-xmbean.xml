@@ -60,7 +60,7 @@
       kern, user, mail, daemon, auth, syslog, lpr, news, ucp, cron, authpriv,
       ftp, local0, local1, local2, local3, local4, local5, local6, local7 
       </description>
-      <name>AutditRepositoryFacility</name>
+      <name>AuditRepositoryFacility</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="authpriv" />
