@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.ejb.FinderException;
+import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
@@ -177,6 +178,15 @@ public class FileSystemMgtService extends TimerSupport {
         dirPathList = list;
         fsPathSet = set;
         curDirIndex = dirIndex;
+    }
+
+    private void storeDirectoryPathList() {
+		Attribute a = new Attribute("DirectoryPaths", getDirectoryPathList());
+		try {
+			server.setAttribute(super.getServiceName(), a);
+		} catch (Exception e) {
+			log.warn("Failed to store DirectoryPaths", e);
+		}
     }
 
     public final String getReadOnlyDirectoryPathList() {
@@ -518,7 +528,8 @@ public class FileSystemMgtService extends TimerSupport {
                 log.info("High Water Mark reached on current Storage Directory "
                         + curDir + " - switch Storage Directory to " + dir);
                 curDirIndex = dirIndex;
-                return info;
+				storeDirectoryPathList();
+				return info;
             }
         }
         log.error("High Water Mark reached on Storage Directory " + curDir
