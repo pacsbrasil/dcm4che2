@@ -124,12 +124,12 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 			filtered = patAttrs.subSet(attrFilter.getPatientFilter());
 			if (patAttrs.size() > filtered.size()) {
 			    log.warn("Detect Patient Record [pk= " + patient.getPk() +
-			    		"] with none patient attributes:");
+			    		"] with non-patient attributes:");
 				log.warn(patAttrs);
 				if (doUpdate) {
 				    patient.setAttributes(filtered);
 				    log.warn(
-						"Remove none patient attributes from Patient Record [pk= "
+						"Remove non-patient attributes from Patient Record [pk= "
 							+ patient.getPk() + "]");
 				}
 			    updated++;
