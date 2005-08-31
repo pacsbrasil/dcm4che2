@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.session;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -114,24 +113,29 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * @ejb.interface-method
      */
     public Integer checkPatientAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
-    	Collection updatedPatients = new ArrayList();
     	Collection col = patHome.findAll(offset,limit);
     	if ( col.isEmpty() ) return null;
     	PatientLocal patient;
     	Dataset patAttrs, filtered;
+    	int updated = 0;
     	for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
 			patient = (PatientLocal) iter.next();
 			patAttrs = patient.getAttributes(false);
 			filtered = patAttrs.subSet(attrFilter.getPatientFilter());
 			if (patAttrs.size() > filtered.size()) {
+			    log.warn("Detect Patient Record [pk= " + patient.getPk() +
+			    		"] with none patient attributes:");
+				log.warn(patAttrs);
 				if (doUpdate) {
-				    log.warn("Patient attributes updated! (None patient attributes removed!)");
 				    patient.setAttributes(filtered);
+				    log.warn(
+						"Remove none patient attributes from Patient Record [pk= "
+							+ patient.getPk() + "]");
 				}
-			    updatedPatients.add(patient);
+			    updated++;
 			}
      	}
-    	return new Integer( updatedPatients.size() );
+    	return new Integer( updated );
     }
 
 }
