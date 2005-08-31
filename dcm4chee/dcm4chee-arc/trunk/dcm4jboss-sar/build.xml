@@ -238,8 +238,12 @@
 			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}/server/pacs">
 				<exclude name="sql/**"/>
 			</zipfileset>
+			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}" filemode="755">
+				<include name="bin/*.sh"/>
+			</zipfileset>
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}">
 				<include name="bin/**"/>
+				<exclude name="bin/*.sh"/>
 				<include name="lib/jboss-common.jar"/>
 				<include name="test/**"/>
 			</zipfileset>
