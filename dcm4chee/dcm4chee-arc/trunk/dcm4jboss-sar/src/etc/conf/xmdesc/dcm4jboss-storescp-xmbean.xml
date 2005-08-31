@@ -79,7 +79,7 @@
       <br>If no regular expression is specified,
       the issuer is added for all patient IDs.]]>
       </description>
-      <name>IssuerofPatientIDRules</name>
+      <name>IssuerOfPatientIDRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="^PACS-\d*:PACS_TIANI"/>
