@@ -8,8 +8,8 @@ rem $Id$
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che2.tool.dcm2xm.Dcm2Xml
-set MAIN_JAR=dcm4che-tool-dcm2xm-2.0-alpha-1.jar
+set MAIN_CLASS=org.dcm4che2.tool.dcm2xml.Dcm2Xml
+set MAIN_JAR=dcm4che-tool-dcm2xml-2.0-alpha-1.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
