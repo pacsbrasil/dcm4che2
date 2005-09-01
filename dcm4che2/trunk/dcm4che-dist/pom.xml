@@ -35,6 +35,7 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <descriptor>src/assemble/bin.xml</descriptor>
+          <finalName>dcm4che-2.0-alpha-1</finalName>
         </configuration>
       </plugin>
     </plugins>

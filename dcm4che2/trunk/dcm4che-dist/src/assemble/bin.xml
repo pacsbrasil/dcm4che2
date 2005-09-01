@@ -7,6 +7,22 @@
   </formats>
   <fileSets>
     <fileSet>
+      <directory>../dcm4che-core/src</directory>
+      <includes>
+        <include>bin/*</include>
+        <include>dtd/*</include>
+        <include>xml/*</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-core/src/test/resources</directory>
+      <includes>
+        <include>log4j.properties</include>
+      </includes>
+      <outputDirectory>etc</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src/bin</directory>
       <outputDirectory>bin</outputDirectory>
     </fileSet>
