@@ -50,7 +50,7 @@ public class Xml2Dcm {
             "inclusion of Part 10 File Meta Information depends, if the input " +
             "DICOM file or the XML presentation already includes File Meta " +
             "Information attributes (0002,eeee). Either option -i <dcmfile> or" +
-            "-x [<xmlfile>] (or both) must be specified.\n\n" +
+            "-x [<xmlfile>] (or both) must be specified.\n \n" +
             "Options:";
     private static final String EXAMPLE = "\nExample: xml2dcm -x in.xml -o out.dcm\n" +
             " => Convert XML presentation in.xml to DICOM file out.dcm\n" +
