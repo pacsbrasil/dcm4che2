@@ -26,7 +26,7 @@ if [%1] == [] goto end
 
 if not "%DCM4CHE_HOME%" == "" goto HAVE_DCM4CHE_HOME
 
-set DCM4CHE_HOME=%DIRNAME%\..
+set DCM4CHE_HOME=%DIRNAME%..
 
 :HAVE_DCM4CHE_HOME
 
@@ -42,7 +42,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-CP="%DCM4CHE_HOME%\lib\%MAIN_JAR%"
+set CP=%DCM4CHE_HOME%\lib\%MAIN_JAR%
 
-%JAVA% %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
+"%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
 

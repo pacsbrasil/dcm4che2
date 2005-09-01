@@ -41,11 +41,11 @@ else
 fi
 
 # Setup the classpath
-CP="$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$DCM4CHE_HOME/etc/"
+CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0-alpha-1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.8.jar"
-CP="$CP:$DCM4CHE_HOME/etc/"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

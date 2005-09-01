@@ -45,7 +45,7 @@ public class Dcm2Xml {
         "dcm2xml [-VXcCh] -i <dcmfile> [-o <xmlfile>] [-x <tag>]... " +
         "[-d <basedir>] [-T <xslurl> [-I] [-P <param=value>]]";
     private static final String DESCRIPTION = 
-        "Convert DICOM file in XML presentation and optionally apply " +
+        "\nConvert DICOM file in XML presentation and optionally apply " +
         "XSL stylesheet on it. Values of attributes specified by -x <tag> " +
         "are excluded from the generated XML. With -o <xmlfile>, the " +
         "excluded values are stored into files named according the hex " +
@@ -55,9 +55,10 @@ public class Dcm2Xml {
         "and the item number <ggggeeee>/<item#>/. Without -o <xmlfile>, but " +
         "given -d <basedir>, excluded values are stored into files under " +
         "specified <basedir>. If neither -o <xmlfile> nor -d <basedir> is " +
-        "specified, excluded values from the XML output are not stored.";
+        "specified, excluded values from the XML output are not stored.\n\n" +
+        "Options:";
     private static final String EXAMPLE = 
-        "Example: dcm2xml -Xi image.dcm -o image.xml\n=> Store XML " +
+        "\nExample: dcm2xml -Xi image.dcm -o image.xml\n=> Store XML " +
         "presentation of image.dcm to image.xml, excluding  pixel data from " +
         "XML presentation, but extracting it to file 7FE00010.";
 

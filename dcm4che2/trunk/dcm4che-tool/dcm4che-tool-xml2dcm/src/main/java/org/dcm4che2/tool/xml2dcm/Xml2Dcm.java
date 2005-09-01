@@ -43,20 +43,21 @@ public class Xml2Dcm {
 
     private static final String USAGE = "xml2dcm [-geEuUVh] [-a|-d] [-t <tsuid>] " +
             "[-i <dcmfile>] [-x [<xmlfile>] -d <basedir>] -o <dcmfile>";
-    private static final String DESCRIPTION = "Modify existing or create " +
+    private static final String DESCRIPTION = "\nModify existing or create " +
             "new DICOM file according given XML presentation and store result " +
             "as ACR/NEMA-2 dump (option: -a) or DICOM Part 10 file " +
             "(option: -d). If neither option -a nor -d is specified, " +
             "inclusion of Part 10 File Meta Information depends, if the input " +
             "DICOM file or the XML presentation already includes File Meta " +
             "Information attributes (0002,eeee). Either option -i <dcmfile> or" +
-            "-x [<xmlfile>] (or both) must be specified.";
-    private static final String EXAMPLE = "Example: xml2dcm -x in.xml -o out.dcm\n" +
+            "-x [<xmlfile>] (or both) must be specified.\n\n" +
+            "Options:";
+    private static final String EXAMPLE = "\nExample: xml2dcm -x in.xml -o out.dcm\n" +
             " => Convert XML presentation in.xml to DICOM file out.dcm\n" +
             "xml2dcm -d -t 1.2.840.10008.1.2.1.99 -i in.dcm -o out.dcm\n" +
             " => Load DICOM object from file in.dcm and store it as " +
-            "DICOM (Part 10) file encoded with Transfer Syntax: Deflated " +
-            "Explicit VR Little Endian Transfer Syntax.";
+            "DICOM (Part 10) file encoded with Deflated Explicit VR Little " +
+            "Endian Transfer Syntax.";
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
@@ -98,7 +99,8 @@ public class Xml2Dcm {
                 "sequences are encoded with undefined length.");
         opts.addOption("e", "explitemlen", false, 
                 "Encode sequence items with explicit length. At default, " +
-                "non-empty sequence items are encoded with undefined length.");
+                "non-empty sequence items are encoded with\n" +
+                "undefined length.");
         opts.addOption("U", "undefseqlen", false, 
                 "Encode all sequences with undefined length. Mutual exclusive " +
                 "with option -E.");
