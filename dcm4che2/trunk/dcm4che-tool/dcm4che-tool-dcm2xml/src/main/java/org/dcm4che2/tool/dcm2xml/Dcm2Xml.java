@@ -55,7 +55,7 @@ public class Dcm2Xml {
         "and the item number <ggggeeee>/<item#>/. Without -o <xmlfile>, but " +
         "given -d <basedir>, excluded values are stored into files under " +
         "specified <basedir>. If neither -o <xmlfile> nor -d <basedir> is " +
-        "specified, excluded values from the XML output are not stored.\n\n" +
+        "specified, excluded values from the XML output are not stored.\n \n" +
         "Options:";
     private static final String EXAMPLE = 
         "\nExample: dcm2xml -Xi image.dcm -o image.xml\n=> Store XML " +
