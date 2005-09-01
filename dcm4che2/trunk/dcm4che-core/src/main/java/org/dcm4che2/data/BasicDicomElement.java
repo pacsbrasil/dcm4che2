@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import org.dcm4che2.util.TagUtils;
 
-public class BasicDicomElement implements DicomElement {
+class BasicDicomElement implements DicomElement {
 
 	private static final long serialVersionUID = 3256439218229556788L;
 
