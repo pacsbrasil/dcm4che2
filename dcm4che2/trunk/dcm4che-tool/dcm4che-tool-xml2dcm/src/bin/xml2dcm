@@ -7,6 +7,9 @@
 
 ### $Id$ ###
 
+MAIN_CLASS=org.dcm4che2.tool.xml2dcm.Xml2Dcm
+MAIN_JAR=dcm4che-tool-xml2dcm-2.0-alpha-1.jar
+
 DIRNAME=`dirname $0`
 
 # OS specific support (must be 'true' or 'false').
@@ -29,7 +32,6 @@ fi
 if [ "x$DCM4CHE_HOME" = "x" ]; then
     DCM4CHE_HOME=`cd $DIRNAME/..; pwd`
 fi
-export DCM4CHE_HOME
 
 # Setup the JVM
 if [ "x$JAVA_HOME" != "x" ]; then
@@ -39,21 +41,17 @@ else
 fi
 
 # Setup the classpath
-DCM4CHE_CLASSPATH="$DCM4CHE_HOME/etc/"
-DCM4CHE_CLASSPATH="$DCM4CHE_CLASSPATH:$DCM4CHE_HOME/lib/dcm4che-tool-xml2dcm-2.0-alpha-1.jar"
-DCM4CHE_CLASSPATH="$DCM4CHE_CLASSPATH:$DCM4CHE_HOME/lib/dcm4che-core-2.0-alpha-1.jar"
-DCM4CHE_CLASSPATH="$DCM4CHE_CLASSPATH:$DCM4CHE_HOME/lib/log4j-1.2.8.jar"
-DCM4CHE_CLASSPATH="$DCM4CHE_CLASSPATH:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
+CP="$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0-alpha-1.jar"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.8.jar"
+CP="$CP:$DCM4CHE_HOME/etc/"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
-    DCM4CHE_HOME=`cygpath --path --windows "$DCM4CHE_HOME"`
-    JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
-    DCM4CHE_CLASSPATH=`cygpath --path --windows "$DCM4CHE_CLASSPATH"`
+    JAVA=`cygpath --path --windows "$JAVA"`
+    CP=`cygpath --path --windows "$CP"`
 fi
 
 # Execute the JVM
-exec $JAVA \
-    $JAVA_OPTS \
-    -classpath $DCM4CHE_CLASSPATH \
-    org.dcm4che2.tool.xml2dcm.Xml2Dcm "$@"
+exec $JAVA $JAVA_OPTS -cp $CP $MAIN_CLASS "$@"
