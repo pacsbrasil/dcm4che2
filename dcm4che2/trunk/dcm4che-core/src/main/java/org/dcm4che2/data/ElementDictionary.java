@@ -32,13 +32,12 @@ public class ElementDictionary implements Serializable {
 	private static final long serialVersionUID = 3834593209899757880L;
 
 	private static final String USAGE = 
-		"Create dictionary resource from XML source:\n" +
-		"\n" +
-		"  java ElementDictionary <xml-file> <resource-file>\n" +
-		"  ->Store serialized dictionary in <resource-file>.\n" +
-		"\n" +
-		"  java ElementDictionary <xml-file> <resource-name> <zip-file>\n" +
-		"  ->Create <zip-file> with serialized dictionary under <resource-name>\n" +
+		"Create dictionary resource from XML source\n" +
+		"Usage:\n" +
+		"  mkelmdic <xml-file> <resource-file>\n" +
+		"    Store serialized dictionary in <resource-file>.\n" +
+		"  mkelmdic <xml-file> <resource-name> <zip-file>\n" +
+		"    Create <zip-file> with serialized dictionary under <resource-name>\n" +
 		"    and appendant META-INF/org.dcm4che2.data.ElementDictionary.\n";
 
 	public static final String UNKOWN = "?";

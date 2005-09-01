@@ -32,13 +32,12 @@ public class VRMap implements Serializable {
 	private static final long serialVersionUID = 6581801202183118918L;
 
 	private static final String USAGE = 
-		"Create VRMap resource from XML source:\n" +
-		"\n" +
-		"  java VRMap <xml-file> <resource-file>\n" +
-		"  ->Store serialized VRMap in <resource-file>.\n" +
-		"\n" +
-		"  java VRMap <xml-file> <resource-name> <zip-file>\n" +
-		"  ->Create <zip-file> with serialized VRMap under <resource-name>\n" +
+		"Create VRMap resource from XML source\n" +
+		"Usage:\n" +
+		"  mkvrmap <xml-file> <resource-file>\n" +
+		"    Store serialized VRMap in <resource-file>.\n" +
+		"  mkvrmap <xml-file> <resource-name> <zip-file>\n" +
+		"    Create <zip-file> with serialized VRMap under <resource-name>\n" +
 		"    and appendant META-INF/org.dcm4che2.data.VRMap.\n";
 
 
