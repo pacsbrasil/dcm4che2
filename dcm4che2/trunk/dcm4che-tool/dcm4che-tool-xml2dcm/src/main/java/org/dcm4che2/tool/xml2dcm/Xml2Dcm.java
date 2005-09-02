@@ -43,14 +43,14 @@ public class Xml2Dcm {
 
     private static final String USAGE = "xml2dcm [-geEuUVh] [-a|-d] [-t <tsuid>] " +
             "[-i <dcmfile>] [-x [<xmlfile>] -d <basedir>] -o <dcmfile>";
-    private static final String DESCRIPTION = "\nModify existing or create " +
+    private static final String DESCRIPTION = "Modify existing or create " +
             "new DICOM file according given XML presentation and store result " +
             "as ACR/NEMA-2 dump (option: -a) or DICOM Part 10 file " +
             "(option: -d). If neither option -a nor -d is specified, " +
             "inclusion of Part 10 File Meta Information depends, if the input " +
             "DICOM file or the XML presentation already includes File Meta " +
             "Information attributes (0002,eeee). Either option -i <dcmfile> or" +
-            "-x [<xmlfile>] (or both) must be specified.\n \n" +
+            "-x [<xmlfile>] (or both) must be specified.\n" +
             "Options:";
     private static final String EXAMPLE = "\nExample: xml2dcm -x in.xml -o out.dcm\n" +
             " => Convert XML presentation in.xml to DICOM file out.dcm\n" +
@@ -121,20 +121,12 @@ public class Xml2Dcm {
             System.out.println("dcm2xml v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h')) {
+        if (cl.hasOption('h') || !cl.hasOption("o")
+                || (!cl.hasOption("x") && !cl.hasOption("i"))) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(
-                    USAGE,
-                    DESCRIPTION,
-                    opts,
-                    EXAMPLE);
+            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
         }
-        if (!cl.hasOption("o"))
-            exit("xml2dcm: missing option: -o <dcmfile>");
-        if (!cl.hasOption("x") && !cl.hasOption("i"))
-            exit("xml2dcm: You must specify option -i <xmlfile> or " +
-                    "-x [<xmlfile>]");
         if (cl.hasOption("a") && cl.hasOption("d"))
             exit("xml2dcm: Option -a and -d are mutual exclusive");
         if (cl.hasOption("e") && !cl.hasOption("u"))

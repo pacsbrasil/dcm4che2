@@ -45,7 +45,7 @@ public class Dcm2Xml {
         "dcm2xml [-VXcCh] -i <dcmfile> [-o <xmlfile>] [-x <tag>]... " +
         "[-d <basedir>] [-T <xslurl> [-I] [-P <param=value>]]";
     private static final String DESCRIPTION = 
-        "\nConvert DICOM file in XML presentation and optionally apply " +
+        "Convert DICOM file in XML presentation and optionally apply " +
         "XSL stylesheet on it. Values of attributes specified by -x <tag> " +
         "are excluded from the generated XML. With -o <xmlfile>, the " +
         "excluded values are stored into files named according the hex " +
@@ -55,7 +55,7 @@ public class Dcm2Xml {
         "and the item number <ggggeeee>/<item#>/. Without -o <xmlfile>, but " +
         "given -d <basedir>, excluded values are stored into files under " +
         "specified <basedir>. If neither -o <xmlfile> nor -d <basedir> is " +
-        "specified, excluded values from the XML output are not stored.\n \n" +
+        "specified, excluded values from the XML output are not stored.\n" +
         "Options:";
     private static final String EXAMPLE = 
         "\nExample: dcm2xml -Xi image.dcm -o image.xml\n=> Store XML " +
@@ -112,13 +112,11 @@ public class Dcm2Xml {
             System.out.println("dcm2xml v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h')) {
+        if (cl.hasOption('h') || !cl.hasOption("i")) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
         }
-        if (!cl.hasOption("i"))
-            exit("dcm2xml: missing option: -i <dcmfile>");
         if (cl.hasOption("o") && cl.hasOption("d"))
             exit("dcm2xml: Option -o <xmlfile> and -d <basedir> are mutual" +
                     "exclusive");
