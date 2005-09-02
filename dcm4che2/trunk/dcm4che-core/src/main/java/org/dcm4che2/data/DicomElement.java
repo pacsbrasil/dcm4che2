@@ -50,4 +50,6 @@ public interface DicomElement extends Serializable {
 			boolean cache);
     DicomElement share();
 	DicomElement filterItems(DicomObject filter);
+    StringBuffer toStringBuffer(StringBuffer sb, int maxValLen);
+
 }

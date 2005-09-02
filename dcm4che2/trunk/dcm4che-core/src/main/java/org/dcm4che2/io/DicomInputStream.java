@@ -46,7 +46,7 @@ public class DicomInputStream extends FilterInputStream implements
 
 	long pos = 0;
 
-	long tagPos = 0;
+	long tagpos = 0;
 
 	long fmiEndPos = -1;
 
@@ -88,6 +88,10 @@ public class DicomInputStream extends FilterInputStream implements
 	public final long getStreamPosition() {
 		return pos;
 	}
+
+    public final long tagPosition() {
+        return tagpos;
+    }
 
 	public final void setStreamPosition(long pos) {
 		this.pos = pos;
@@ -202,7 +206,7 @@ public class DicomInputStream extends FilterInputStream implements
 	}
 
 	public int readHeader() throws IOException {
-		tagPos = pos;
+		tagpos = pos;
 		readFully(header, 0, 8);
 		tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
 				.bytesLE2tag(header, 0);
@@ -313,7 +317,7 @@ public class DicomInputStream extends FilterInputStream implements
 			if (sq.vr() == VR.SQ) {
 				BasicDicomObject item = new BasicDicomObject();
 				item.setParent(attrs);
-				item.setItemOffset(pos-8);
+				item.setItemOffset(tagpos);
 				readDicomObject(item, vallen);
 				sq.addItem(item);
 			} else {
@@ -327,7 +331,7 @@ public class DicomInputStream extends FilterInputStream implements
 						.warn("Item Delimitation Item (FFFE,E00D) with non-zero Item Length:"
 								+ vallen
 								+ " at pos: "
-								+ tagPos
+								+ tagpos
 								+ " - try to skip length");
 				skip(vallen);
 			}
@@ -339,7 +343,7 @@ public class DicomInputStream extends FilterInputStream implements
 						.warn("Sequence Delimitation Item (FFFE,E0DD) with non-zero Item Length:"
 								+ vallen
 								+ " at pos: "
-								+ tagPos
+								+ tagpos
 								+ " - try to skip length");
 				skip(vallen);
 			}
@@ -373,7 +377,7 @@ public class DicomInputStream extends FilterInputStream implements
 	private void logAttr(int itemIndex, VR vr1) {
 		if (log.isDebugEnabled()) {
 			StringBuffer sb = new StringBuffer();
-			sb.append(tagPos).append(": ");
+			sb.append(tagpos).append(": ");
 			DicomObject p = attrs;
 			while ((p = p.getParent()) != null)
 				sb.append('>');            
@@ -382,7 +386,7 @@ public class DicomInputStream extends FilterInputStream implements
 				sb.append("[").append(itemIndex).append("]");
 			}
 			if (vr1 != null) {
-				sb.append(" ").append(vr);
+				sb.append(" ").append(vr1);
 			}
 			sb.append(" #").append(vallen);
 			log.debug(sb.toString());

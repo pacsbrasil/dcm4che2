@@ -24,7 +24,9 @@ import org.dcm4che2.util.TagUtils;
 
 class BasicDicomElement implements DicomElement {
 
-	private static final long serialVersionUID = 3256439218229556788L;
+	private static final int TO_STRING_MAX_VAL_LEN = 64;
+
+    private static final long serialVersionUID = 3256439218229556788L;
 
 	private static final WeakHashMap shared = new WeakHashMap();
 
@@ -159,7 +161,11 @@ class BasicDicomElement implements DicomElement {
     };
     
 	public String toString() {
-        StringBuffer sb = new StringBuffer();
+		return toStringBuffer(new StringBuffer(), 
+                TO_STRING_MAX_VAL_LEN).toString();
+	}
+
+    public StringBuffer toStringBuffer(StringBuffer sb, int maxValLen) {
         TagUtils.toStringBuffer(tag, sb);
         sb.append(' ');
         sb.append(vr);
@@ -168,16 +174,17 @@ class BasicDicomElement implements DicomElement {
         sb.append(" [");
         if (!isEmpty()) {
             if (hasItems()) {
-                sb.append(countItems());
-                sb.append(" items");                
+                int n = countItems();
+                sb.append(n);
+                sb.append(n > 1 ? " items" : " item");                
             } else {
                 vr.promptValue(getBytes(), bigEndian, null,
-                        (char[]) cbuf.get(), 64, sb);
+                        (char[]) cbuf.get(), maxValLen, sb);
             }
         }
         sb.append("]");
-		return sb.toString();
-	}	
+        return sb;
+    }	
 	
 	public final boolean bigEndian() {
 		return bigEndian;

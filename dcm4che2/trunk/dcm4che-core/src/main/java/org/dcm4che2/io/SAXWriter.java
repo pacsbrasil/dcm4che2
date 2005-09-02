@@ -187,7 +187,7 @@ public class SAXWriter implements DicomInputHandler {
         if (file != null)
             file = new File(file, Integer.toString(index+1));
         final String fpath = fpath(sq.tag(), sqvr, itemLen);
-        startItemElement(in.getStreamPosition() - 8, itemLen, fpath);
+        startItemElement(in.tagPosition(), itemLen, fpath);
         in.readValue(in);
         if (sqvr != VR.SQ) {
             byte[] data = sq.getBytes(index);

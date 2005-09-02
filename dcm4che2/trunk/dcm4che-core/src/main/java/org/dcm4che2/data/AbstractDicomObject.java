@@ -36,8 +36,72 @@ abstract class AbstractDicomObject implements DicomObject {
 				return true;
 			}});		
 	}
+    
+    public String toString() {
+        return "DicomObject[size=" + size() + "]"; 
+    }
+    
+    public StringBuffer toStringBuffer(StringBuffer sb, String indent, 
+            int maxValLen, int maxWidth, boolean withNames,
+            String lineSeparator) {
+        if (sb == null)
+            sb = new StringBuffer();
+        for (Iterator it = iterator(); it.hasNext();) {
+            DicomElement e = (DicomElement) it.next();
+            int maxLen = sb.length() + maxWidth;
+            sb.append(indent);
+            e.toStringBuffer(sb, maxValLen);
+            if (withNames) {
+                sb.append(" ");
+                sb.append(nameOf(e.tag()));
+            }
+            if (sb.length() > maxLen)
+                sb.setLength(maxLen);
+            sb.append(lineSeparator);
+            if (e.hasItems())
+                if (e.vr() == VR.SQ)
+                    itemsToStringBuffer(e, sb, indent + '>', maxValLen,
+                            maxWidth, withNames, lineSeparator);
+                else
+                    fragsToStringBuffer(e, sb, indent + '>', lineSeparator);
+        }
+        return sb;
+    }    
 
-	public boolean matches(final DicomObject keys, final boolean ignoreCaseOfPN) {
+	private void fragsToStringBuffer(DicomElement e, StringBuffer sb,
+            String indent, String lineSeparator) {
+        for (int i = 0, n = e.countItems(); i < n; i++) {
+            sb.append(indent);
+            sb.append("ITEM #");
+            sb.append(i+1);
+            sb.append(" [");
+            sb.append((e.getBytes(i).length + 1) & ~1);
+            sb.append(" bytes]");
+            sb.append(lineSeparator);
+        }
+    }
+
+    private static void itemsToStringBuffer(DicomElement e, StringBuffer sb,
+            String indent, int maxValLen, int maxWidth, boolean withNames,
+            String lineSeparator) {
+        for (int i = 0, n = e.countItems(); i < n; i++) {
+            DicomObject item = e.getItem(i);
+            long off = item.getItemOffset();
+            sb.append(indent);
+            sb.append("ITEM #");
+            sb.append(i+1);
+            if (off != -1) {
+                sb.append(" @");
+                sb.append(off);
+            }
+            sb.append(":");
+            sb.append(lineSeparator);
+            item.toStringBuffer(sb, indent, maxValLen, maxWidth,
+                    withNames, lineSeparator);
+        }
+     }
+
+    public boolean matches(final DicomObject keys, final boolean ignoreCaseOfPN) {
 		return keys.accept(new Visitor(){
 			public boolean visit(DicomElement test) {
 				if (test.isEmpty()) // Universal Matching
