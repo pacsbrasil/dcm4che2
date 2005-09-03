@@ -34,13 +34,14 @@ import org.dcm4che2.util.TagUtils;
  */
 public class Dcm2Txt implements DicomInputHandler {
 
-    private static final int DEF_MAX_WIDTH = 80;
+    private static final int DEF_MAX_WIDTH = 78;
     private static final int MIN_MAX_WIDTH = 32;
     private static final int MAX_MAX_WIDTH = 512;
     private static final int DEF_MAX_VAL_LEN = 64;
     private static final int MIN_MAX_VAL_LEN = 16;
     private static final int MAX_MAX_VAL_LEN = 512;    
-    private static final String USAGE = "dcm2txt -i <dcmfile>";
+    private static final String USAGE =
+        "dcm2txt [-cVh] [-l <max>] [-w <max>] -i <dcmfile>";
     private static final String DESCRIPTION = 
         "Dump DICOM file and data set\nOptions:";
     private static final String EXAMPLE = null;
@@ -52,11 +53,11 @@ public class Dcm2Txt implements DicomInputHandler {
         opts.addOption(dcmfile);
         Option width = new Option("w", "width", true, 
                 "maximal number of characters per line, by default: 80");
-        width.setArgName("maxlen");
+        width.setArgName("max");
         opts.addOption(width);
         Option vallen = new Option("l", "vallen", true, 
                 "limit value prompt to <maxlen> characters, by default: 64");
-        vallen.setArgName("maxlen");
+        vallen.setArgName("max");
         opts.addOption(vallen);
         opts.addOption("c", "compact", false, "dump without attribute names");
         opts.addOption("h", "help", false, "print this message");
