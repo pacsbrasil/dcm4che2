@@ -88,7 +88,7 @@ public class HPImageSet {
     }
  
     public Code getAbstractPriorCode() {
-        return new Code(dcmobj.getItem(Tag.AbstractPriorCodeSequence));
+        return new Code(dcmobj.getNestedDicomObject(Tag.AbstractPriorCodeSequence));
     }
 
     public DicomElement getImageSetSelectorSequence() {

@@ -113,7 +113,7 @@ abstract class FilterOp {
     
     static boolean memberOf(DicomObject value, DicomElement params) {
         for (int i = 0, n = params.countItems(); i < n; i++) {
-            if (codeEquals(params.getItem(i), value))
+            if (codeEquals(params.getDicomObject(i), value))
                 return true;
         }
         return false;
@@ -195,7 +195,7 @@ abstract class FilterOp {
 
         public boolean op(DicomElement values, DicomElement params) {
             for (int i = 0, n = values.countItems(); i < n; i++) {
-                if (memberOf(values.getItem(i), params))
+                if (memberOf(values.getDicomObject(i), params))
                     return true;
             }
             return false;
@@ -259,7 +259,7 @@ abstract class FilterOp {
 
         public boolean op(DicomElement values, DicomElement params) {
             for (int i = 0, n = values.countItems(); i < n; i++) {
-                if (memberOf(values.getItem(i), params))
+                if (memberOf(values.getDicomObject(i), params))
                     return false;
             }
             return true;

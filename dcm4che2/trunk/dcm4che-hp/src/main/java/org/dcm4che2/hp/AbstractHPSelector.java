@@ -338,7 +338,7 @@ abstract class AbstractHPSelector implements HPSelector {
             if (values1 == null || values1.isEmpty() )
                 return match;
             for (int i = 0, n = values1.countItems(); i < n; i++) {
-                if (selector.matches(values1.getItem(i), frame))
+                if (selector.matches(values1.getDicomObject(i), frame))
                     return true;
             }
             return false;
@@ -357,7 +357,7 @@ abstract class AbstractHPSelector implements HPSelector {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             DicomObject sharedFctGrp = 
-                    dcmobj.getItem(Tag.SharedFunctionalGroupsSequence);
+                    dcmobj.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
             if (sharedFctGrp != null) {
                 DicomElement fctGrp = sharedFctGrp.get(resolveTag(sharedFctGrp));
                 if (fctGrp != null) {
@@ -369,10 +369,10 @@ abstract class AbstractHPSelector implements HPSelector {
             if (frameFctGrpSeq == null)
                 return match;
             if (frame != 0) {
-                return op(frameFctGrpSeq.getItem(frame-1), frame);
+                return op(frameFctGrpSeq.getDicomObject(frame-1), frame);
             }
             for (int i = 0, n = frameFctGrpSeq.countItems(); i < n; i++) {
-                if (op(frameFctGrpSeq.getItem(i), frame))
+                if (op(frameFctGrpSeq.getDicomObject(i), frame))
                     return true;
             }
             return false;
@@ -389,7 +389,7 @@ abstract class AbstractHPSelector implements HPSelector {
         
         private boolean matches(DicomElement fctGrp, int frame) {
             for (int i = 0, n = fctGrp.countItems(); i < n; i++) {
-                if (selector.matches(fctGrp.getItem(i), frame))
+                if (selector.matches(fctGrp.getDicomObject(i), frame))
                     return true;
             }
             return false;

@@ -131,7 +131,7 @@ abstract class AbstractHPComparator implements HPComparator {
             case 0x5353: // SS;
                 return intcmp(e1.getInts(true), e2.getInts(true));
             case 0x5351: // SQ;
-                return codecmp(e1.getItem(), e2.getItem());
+                return codecmp(e1.getDicomObject(), e2.getDicomObject());
             }
             // no sort if VR = OB, OF, OW or UN
             return 0;
@@ -217,10 +217,10 @@ abstract class AbstractHPComparator implements HPComparator {
 
         public int compare(DicomObject o1, int frame1,
                            DicomObject o2, int frame2) {
-            DicomObject v1 = o1.getItem(resolveTag(o1));
+            DicomObject v1 = o1.getNestedDicomObject(resolveTag(o1));
             if (v1 == null) 
                 return 0;
-            DicomObject v2 = o2.getItem(resolveTag(o2));
+            DicomObject v2 = o2.getNestedDicomObject(resolveTag(o2));
             if (v2 == null) 
                 return 0;
             return cmp.compare(v1, frame1, v2, frame2);
@@ -247,9 +247,9 @@ abstract class AbstractHPComparator implements HPComparator {
         }
         
         private DicomObject fctGrp(DicomObject o, int frame) {
-            DicomObject sharedFctGrp = o.getItem(Tag.SharedFunctionalGroupsSequence);
+            DicomObject sharedFctGrp = o.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
             if (sharedFctGrp != null) {
-                DicomObject fctGrp = sharedFctGrp.getItem(resolveTag(sharedFctGrp));
+                DicomObject fctGrp = sharedFctGrp.getNestedDicomObject(resolveTag(sharedFctGrp));
                 if (fctGrp != null) {
                     return fctGrp;
                 }
@@ -257,8 +257,8 @@ abstract class AbstractHPComparator implements HPComparator {
             DicomElement frameFctGrpSeq = o.get(Tag.PerframeFunctionalGroupsSequence);
             if (frameFctGrpSeq == null)
                 return null;
-            DicomObject frameFctGrp = frameFctGrpSeq.getItem(frame-1);
-                return frameFctGrp.getItem(resolveTag(frameFctGrp));
+            DicomObject frameFctGrp = frameFctGrpSeq.getDicomObject(frame-1);
+                return frameFctGrp.getNestedDicomObject(resolveTag(frameFctGrp));
         }
 
     }

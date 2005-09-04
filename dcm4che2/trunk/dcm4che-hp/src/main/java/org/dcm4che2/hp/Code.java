@@ -49,7 +49,7 @@ public class Code {
     public static Code[] toArray(DicomElement sq) {
         Code[] a = new Code[sq.countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new Code(sq.getItem(i));
+            a[i] = new Code(sq.getDicomObject(i));
         }
         return a;
     }

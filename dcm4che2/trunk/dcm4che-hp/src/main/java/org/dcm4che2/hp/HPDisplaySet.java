@@ -69,7 +69,7 @@ public class HPDisplaySet {
         int numImageBoxes = imageBoxesSeq.countItems();
         this.imageBoxes = new ArrayList(numImageBoxes);
         for (int i = 0; i < numImageBoxes; i++) {
-            imageBoxes.add(new HPImageBox(imageBoxesSeq.getItem(i), numImageBoxes));
+            imageBoxes.add(new HPImageBox(imageBoxesSeq.getDicomObject(i), numImageBoxes));
         }
         DicomElement filterOpSeq = dcmobj.get(Tag.FilterOperationsSequence);
         if (filterOpSeq == null || filterOpSeq.isEmpty()) {
@@ -79,7 +79,7 @@ public class HPDisplaySet {
             this.filters = new ArrayList(n);
             for (int i = 0; i < n; i++) {
                 filters.add(AbstractHPSelector.createDisplaySetFilter(
-                        filterOpSeq.getItem(i)));
+                        filterOpSeq.getDicomObject(i)));
             }
         }
         DicomElement sortingOpSeq = dcmobj.get(Tag.SortingOperationsSequence);
@@ -89,7 +89,7 @@ public class HPDisplaySet {
             int n = sortingOpSeq.countItems();
             this.cmps = new ArrayList();
             for (int i = 0; i < n; i++) {
-                cmps.add(AbstractHPComparator.valueOf(sortingOpSeq.getItem(i)));
+                cmps.add(AbstractHPComparator.valueOf(sortingOpSeq.getDicomObject(i)));
             }
         }
     }
