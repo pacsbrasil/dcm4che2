@@ -109,7 +109,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 				DicomElement attr = (DicomElement) super.next();
 				if (attr.vr() == VR.SQ && attr.hasItems()) {					
 					return attr.filterItems(
-							filter.getItem(attr.tag()));
+							filter.getNestedDicomObject(attr.tag()));
 				}
 				return attr;
 			}
@@ -127,12 +127,12 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 			return filter.contains(tag);
 		}
 		
-		public DicomObject getItem(int tag) {
-			DicomObject item = super.getItem(tag);
+		public DicomObject getNestedDicomObject(int tag) {
+			DicomObject item = super.getNestedDicomObject(tag);
 			if (item == null)
 				return null;
 			
-			return item.subSet(filter.getItem(tag));
+			return item.subSet(filter.getNestedDicomObject(tag));
 		}
 
 		public Iterator iterator() {
@@ -291,7 +291,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 		throw new UnsupportedOperationException();
 	}
 
-	public DicomElement putItem(int tag, DicomObject item) {
+	public DicomElement putNestedDicomObject(int tag, DicomObject item) {
 		throw new IllegalArgumentException(TagUtils.toString(tag));
 	}
 

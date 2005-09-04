@@ -115,7 +115,7 @@ public class SAXWriter implements DicomInputHandler {
         if (file != null)
             file = new File(file, Integer.toString(index+1));
         if (a.vr() == VR.SQ) {
-            writeContent(a.getItem(index), "item");
+            writeContent(a.getDicomObject(index), "item");
         } else {
             final byte[] data = a.getBytes(index);
             writeFragment(a.vr(), data, a.bigEndian(),

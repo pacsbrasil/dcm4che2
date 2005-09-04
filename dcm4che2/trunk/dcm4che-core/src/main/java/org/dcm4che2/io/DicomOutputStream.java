@@ -222,7 +222,7 @@ public class DicomOutputStream
 			if (a.hasItems()) {
 				if (vr == VR.SQ) {
 					for (int i = 0, n = a.countItems(); i < n; i++) {
-						DicomObject item = a.getItem(i);
+						DicomObject item = a.getDicomObject(i);
 						ItemInfo childItemInfo = itemInfo != null ? 
 								(ItemInfo) itemInfo.childs.removeFirst() : null;
 						writeItem(item, childItemInfo);
@@ -341,7 +341,7 @@ public class DicomOutputStream
 		private int calcItemSqLen(DicomElement a) {
 			int l = explicitSequenceLength ? 0 : 8;
 			for (int i = 0, n = a.countItems(); i < n; ++i) {
-				DicomObject item = a.getItem(i);
+				DicomObject item = a.getDicomObject(i);
 				ItemInfo itemInfo = new ItemInfo(item.iterator(), includeGroupLength);
 				if (childs == null) // lazy allocation
 					childs = new LinkedList();

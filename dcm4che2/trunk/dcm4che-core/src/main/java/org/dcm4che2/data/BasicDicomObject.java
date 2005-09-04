@@ -66,7 +66,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 			public boolean visit(DicomElement attr) {
 				if (attr.vr() == VR.SQ && attr.hasItems()) {
 					for (int i = 0, n = attr.countItems(); i < n; ++i) {
-						attr.getItem(i).cacheGet(cacheGet);
+						attr.getDicomObject(i).cacheGet(cacheGet);
 					}
 				}
 				return true;
@@ -83,7 +83,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 			public boolean visit(DicomElement attr) {
 				if (attr.vr() == VR.SQ && attr.hasItems()) {
 					for (int i = 0, n = attr.countItems(); i < n; ++i) {
-						attr.getItem(i).cachePut(cachePut);
+						attr.getDicomObject(i).cachePut(cachePut);
 					}
 				}
 				return true;
@@ -222,9 +222,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 			if (id == null) {
 				if (!reserve)
 					return -1;
-				addInternal(new BasicDicomElement(idTag, VR.LO, false, VR.LO.toBytes(
-						privateCreator, false, getSpecificCharacterSet()), 
-						privateCreator));
+				addPrivateCreator(privateCreator, idTag);
 				break;
 			}
 			if (++idTag > maxIdTag)
@@ -234,6 +232,12 @@ public class BasicDicomObject extends AbstractDicomObject {
 		}
 		return (privateTag & 0xffff00ff) | ((idTag & 0xff) << 8);
 	}
+
+    private void addPrivateCreator(String privateCreator, int idTag) {
+        addInternal(new SimpleDicomElement(idTag, VR.LO, false,
+                VR.LO.toBytes(privateCreator, false, getSpecificCharacterSet()), 
+        		privateCreator));
+    }
 
 	public boolean isEmpty() {
 		return table.isEmpty();
@@ -310,8 +314,8 @@ public class BasicDicomObject extends AbstractDicomObject {
 				for (int i = 0; i < n; i++) {
 					BasicDicomObject item = new BasicDicomObject(n);
 					item.setParent(this);
-					a.getItem(i).copyTo(item);
-					t.addItem(item);
+					a.getDicomObject(i).copyTo(item);
+					t.addDicomObject(item);
 				}
 			} else {
 				t = putFragments(a.tag(), a.vr(), a.bigEndian(), n);
@@ -327,18 +331,21 @@ public class BasicDicomObject extends AbstractDicomObject {
 	public DicomElement putNull(int tag, VR vr) {
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, false, null, null));
+        DicomElement e = vr == VR.SQ 
+                ? (DicomElement) new SequenceDicomElement(tag, vr, false, new ArrayList(0))
+                : (DicomElement) new SimpleDicomElement(tag, vr, false, null, null);
+		return addInternal(e);
 	}
 
 	public DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val) {
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, bigEndian, val, null));
+		return addInternal(new SimpleDicomElement(tag, vr, bigEndian, val, null));
 	}
 
-	public DicomElement putItem(int tag, DicomObject item) {
+	public DicomElement putNestedDicomObject(int tag, DicomObject item) {
 		DicomElement a = putSequence(tag, 1);
-		a.addItem(item);
+		a.addDicomObject(item);
 		return a;
 	}
 
@@ -346,7 +353,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Integer(val) : null));
 	}
 
@@ -354,7 +361,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
@@ -362,7 +369,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Float(val) : null));
 	}
 
@@ -370,7 +377,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
@@ -378,7 +385,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? new Double(val) : null));
 	}
 
@@ -386,7 +393,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val, be),
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val, be),
 				cachePut ? val : null));
 	}
 
@@ -394,7 +401,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
 				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
@@ -402,7 +409,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		final boolean be = getTransferSyntax().bigEndian();
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, be, vr.toBytes(val,
+		return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
 				be, getSpecificCharacterSet()), cachePut ? val : null));
 	}
 
@@ -411,7 +418,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		// with non-zero values for unsignifcant fields
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
+		return addInternal(new SimpleDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 
 	public DicomElement putDates(int tag, VR vr, Date[] val) {
@@ -419,7 +426,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		// with non-zero values for unsignifcant fields
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
+		return addInternal(new SimpleDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 
 	public DicomElement putDateRange(int tag, VR vr, DateRange val) {
@@ -427,7 +434,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		// with non-zero values for unsignifcant fields
         if (vr == null)
             vr = vrOf(tag);
-		return addInternal(new BasicDicomElement(tag, vr, false, vr.toBytes(val), null));
+		return addInternal(new SimpleDicomElement(tag, vr, false, vr.toBytes(val), null));
 	}
 	
 	public DicomElement putSequence(int tag) {
@@ -435,8 +442,8 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 
 	public DicomElement putSequence(int tag, int capacity) {
-		return addInternal(new BasicDicomElement(tag, VR.SQ, false,
-				new ArrayList(capacity), null));
+		return addInternal(new SequenceDicomElement(tag, VR.SQ, false,
+				new ArrayList(capacity)));
 	}
 
 	public DicomElement putFragments(int tag, VR vr, boolean bigEndian) {
@@ -449,8 +456,8 @@ public class BasicDicomObject extends AbstractDicomObject {
             vr = vrOf(tag);
 		if (!(vr instanceof VR.Fragment))
 			throw new UnsupportedOperationException();
-		return addInternal(new BasicDicomElement(tag, vr, bigEndian, new ArrayList(
-				capacity), null));
+		return addInternal(new SequenceDicomElement(tag, vr, bigEndian,
+                new ArrayList(capacity)));
 	}
 
     public void initFileMetaInformation(String tsuid) {

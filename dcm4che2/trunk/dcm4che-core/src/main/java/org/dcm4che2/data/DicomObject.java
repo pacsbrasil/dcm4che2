@@ -55,9 +55,9 @@ public interface DicomObject
 	byte[] getBytes(int tag, boolean bigEndian);
 	byte[] getBytes(int[] tagPath, boolean bigEndian);
     byte[] getBytes(String tagPath, boolean bigEndian);
-	DicomObject getItem(int tag);
-	DicomObject getItem(int[] itemPath);
-    DicomObject getItem(String itemPath);
+	DicomObject getNestedDicomObject(int tag);
+	DicomObject getNestedDicomObject(int[] itemPath);
+    DicomObject getNestedDicomObject(String itemPath);
 	int getInt(int tag);
 	int getInt(int[] tagPath);
     int getInt(String tagPath);
@@ -102,7 +102,7 @@ public interface DicomObject
     DateRange getDateRange(String itemPath, int daTag, int tmTag);
 	DicomElement putNull(int tag, VR vr);
 	DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val);
-	DicomElement putItem(int tag, DicomObject item);
+	DicomElement putNestedDicomObject(int tag, DicomObject item);
 	DicomElement putInt(int tag, VR vr, int val);
 	DicomElement putInts(int tag, VR vr, int[] val);
 	DicomElement putFloat(int tag, VR vr, float val);

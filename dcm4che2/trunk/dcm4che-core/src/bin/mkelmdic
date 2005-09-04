@@ -1,14 +1,14 @@
 #!/bin/sh
 ### ====================================================================== ###
 ##                                                                          ##
-##  dcm4che2/mkelmdic  Launch Script                                         ##
+##  dcm4che2/mkelmdic  Launch Script                                        ##
 ##                                                                          ##
 ### ====================================================================== ###
 
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.data.ElementDictionary
-MAIN_JAR=dcm4che-core-2.0-alpha-2.jar
+MAIN_JAR=dcm4che-core-2.0-alpha-3-SNAPSHOT.jar
 
 DIRNAME=`dirname $0`
 

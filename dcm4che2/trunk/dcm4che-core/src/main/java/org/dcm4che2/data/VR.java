@@ -336,8 +336,8 @@ public abstract class VR {
             return val == null ? 0 : val.length / 2;
         }
 
-		public void toggleEndian(Object val) {
-			ByteUtils.toggleShortEndian((byte[]) val);
+		public void toggleEndian(byte[] val) {
+			ByteUtils.toggleShortEndian(val);
 		}
 	}
 
@@ -407,8 +407,8 @@ public abstract class VR {
             return val == null ? 0 : val.length / 4;
         }
         
-		public void toggleEndian(Object val) {
-			ByteUtils.toggleIntEndian((byte[]) val);
+		public void toggleEndian(byte[] val) {
+			ByteUtils.toggleIntEndian(val);
 		}
 	}
 	
@@ -523,8 +523,8 @@ public abstract class VR {
             return val == null ? 0 : val.length / 4;
         }
         
-        public void toggleEndian(Object val) {
-            ByteUtils.toggleShortEndian((byte[]) val);
+        public void toggleEndian(byte[] val) {
+            ByteUtils.toggleShortEndian(val);
         }
     }
 	
@@ -1880,8 +1880,8 @@ public abstract class VR {
         return (bs == null || bs.length == 0) ? 0 : 1;
     }
     
-	public void toggleEndian(Object val) {
+	public void toggleEndian(byte[] val) {
 		// NO OP		
-	}
-
+	}    
+    
 }

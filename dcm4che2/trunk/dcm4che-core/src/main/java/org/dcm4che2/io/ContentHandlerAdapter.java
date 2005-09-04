@@ -109,7 +109,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
                 if (offStr != null) {
                     attrs.setItemOffset(Long.parseLong(offStr));
                 }
-                sq.addItem(attrs);
+                sq.addDicomObject(attrs);
                 state = EXPECT_ELM;
             } else {
                 state = EXPECT_FRAG;

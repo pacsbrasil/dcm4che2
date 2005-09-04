@@ -85,7 +85,7 @@ abstract class AbstractDicomObject implements DicomObject {
             String indent, int maxValLen, int maxWidth, boolean withNames,
             String lineSeparator) {
         for (int i = 0, n = e.countItems(); i < n; i++) {
-            DicomObject item = e.getItem(i);
+            DicomObject item = e.getDicomObject(i);
             long off = item.getItemOffset();
             sb.append(indent);
             sb.append("ITEM #");
@@ -116,7 +116,7 @@ abstract class AbstractDicomObject implements DicomObject {
 					return true; 	// ignore OB,OW,OF,UN filter attrs
 
 				if (vr == VR.SQ)
-					return matchSQ(attr, test.getItem(), ignoreCaseOfPN);
+					return matchSQ(attr, test.getDicomObject(), ignoreCaseOfPN);
 				
 				if (vr == VR.DA) {
 					int tmTag = DA_TM.getTMTag(tag);
@@ -174,7 +174,7 @@ abstract class AbstractDicomObject implements DicomObject {
 		if (keys.isEmpty())
 			return true;
 		for (int i = 0, n = sq.countItems(); i < n; i++) {
-			if (!sq.getItem(i).matches(keys, ignoreCaseOfPN))
+			if (!sq.getDicomObject(i).matches(keys, ignoreCaseOfPN))
 				return false;
 		}
 		return true;
@@ -266,9 +266,9 @@ abstract class AbstractDicomObject implements DicomObject {
         return a == null ? null : a.bigEndian(bigEndian).getBytes();
     }
 
-	public DicomObject getItem(int tag) {
+	public DicomObject getNestedDicomObject(int tag) {
 		DicomElement a = get(tag);
-		return a == null && !a.isEmpty() ? null : a.getItem();
+		return a == null && !a.isEmpty() ? null : a.getDicomObject();
 	}
 
 	public int getInt(int tag) {
@@ -404,7 +404,7 @@ abstract class AbstractDicomObject implements DicomObject {
         final DicomObject item = 
                 endItemPath == -1 ? this :
                 endItemPath == 0 ? getRoot() : 
-                getItem(tagPath.substring(0, endItemPath));
+                getNestedDicomObject(tagPath.substring(0, endItemPath));
         return item != null 
                 ? item.get(parseTag(tagPath.substring(endItemPath+1)))
                 : null;
@@ -414,7 +414,7 @@ abstract class AbstractDicomObject implements DicomObject {
         return (int) Long.parseLong(tag, 16);
     }
     
-	public DicomObject getItem(int[] itemPath) {
+	public DicomObject getNestedDicomObject(int[] itemPath) {
         if ((itemPath.length & 1) != 0) {
             throw new IllegalArgumentException("itemPath.length: "
                     + itemPath.length);
@@ -428,12 +428,12 @@ abstract class AbstractDicomObject implements DicomObject {
 			DicomElement sq = item.get(itemPath[i]);
 			if (sq == null || !sq.hasItems() || sq.countItems() < itemPath[i+1])
 				return null;
-			item = sq.getItem(itemPath[i+1]);
+			item = sq.getDicomObject(itemPath[i+1]);
 		}
 		return item;
 	}
 
-    public DicomObject getItem(String itemPath) {
+    public DicomObject getNestedDicomObject(String itemPath) {
         if (itemPath.length() == 0)
             return this;
         if (itemPath.equals("/"))
@@ -451,7 +451,7 @@ abstract class AbstractDicomObject implements DicomObject {
             return null;
         if (sq.countItems() <= index)
             return null;
-        return sq.getItem(index);
+        return sq.getDicomObject(index);
     }
             
     public byte[] getBytes(int[] tagPath, boolean bigEndian) {
@@ -551,32 +551,32 @@ abstract class AbstractDicomObject implements DicomObject {
     }
     
 	public Date getDate(int[] itemPath, int daTag, int tmTag) {
-        final DicomObject item = getItem(itemPath);
+        final DicomObject item = getNestedDicomObject(itemPath);
 		return item != null ? item.getDate(daTag, tmTag) : null;		
 	}
 	
     public Date getDate(String itemPath, int daTag, int tmTag) {
-        final DicomObject item = getItem(itemPath);
+        final DicomObject item = getNestedDicomObject(itemPath);
         return item != null ? item.getDate(daTag, tmTag) : null;        
     }
     
 	public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
-        final DicomObject item = getItem(itemPath);
+        final DicomObject item = getNestedDicomObject(itemPath);
 		return item != null ? item.getDates(daTag, tmTag) : null;				
 	}
 	
     public Date[] getDates(String itemPath, int daTag, int tmTag) {
-        final DicomObject item = getItem(itemPath);
+        final DicomObject item = getNestedDicomObject(itemPath);
         return item != null ? item.getDates(daTag, tmTag) : null;               
     }
     
 	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
-        final DicomObject item = getItem(itemPath);
+        final DicomObject item = getNestedDicomObject(itemPath);
 		return item != null ? item.getDateRange(daTag, tmTag) : null;				
 	}
 
     public DateRange getDateRange(String itemPath, int daTag, int tmTag) {
-        final DicomObject item = getItem(itemPath);
+        final DicomObject item = getNestedDicomObject(itemPath);
         return item != null ? item.getDateRange(daTag, tmTag) : null;               
     }
 }

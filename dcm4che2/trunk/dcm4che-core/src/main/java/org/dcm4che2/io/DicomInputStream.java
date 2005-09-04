@@ -305,7 +305,7 @@ public class DicomInputStream extends FilterInputStream implements
                                 TransferSyntax.ImplicitVRLittleEndian);
                         DicomObject item = new BasicDicomObject();
                         dis1.readDicomObject(item, b.length);
-                        tmp.addItem(item);
+                        tmp.addDicomObject(item);
                     }
                     sqStack.set(sqStack.size() - 1, sq = tmp);
 				}
@@ -319,7 +319,7 @@ public class DicomInputStream extends FilterInputStream implements
 				item.setParent(attrs);
 				item.setItemOffset(tagpos);
 				readDicomObject(item, vallen);
-				sq.addItem(item);
+				sq.addDicomObject(item);
 			} else {
 				sq.addBytes(readBytes(vallen));
 			}
