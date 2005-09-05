@@ -349,7 +349,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 		rq.setCalledAET(aet);
 		rq.setCallingAET(order.getCallingAET());
 		rq.addPresContext(af.newPresContext(PCID_STGCMT,
-				UIDs.StudyRootQueryRetrieveInformationModelMOVE, NATIVE_LE_TS));
+				UIDs.StorageCommitmentPushModel, NATIVE_LE_TS));
 		if (order.isScpRole()) {
 			rq.addRoleSelection(af.newRoleSelection(
 					UIDs.StorageCommitmentPushModel, false, true));
