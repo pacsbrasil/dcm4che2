@@ -112,13 +112,13 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Integer checkPatientAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
+    public int[] checkPatientAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
     	Collection col = patHome.findAll(offset,limit);
     	if ( col.isEmpty() ) return null;
     	PatientLocal patient;
     	Dataset patAttrs, filtered;
-    	int updated = 0;
-    	for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
+    	int[] result = { 0, 0 };
+    	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
 			patient = (PatientLocal) iter.next();
 			patAttrs = patient.getAttributes(false);
 			filtered = patAttrs.subSet(attrFilter.getPatientFilter());
@@ -132,10 +132,10 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 						"Remove non-patient attributes from Patient Record [pk= "
 							+ patient.getPk() + "]");
 				}
-			    updated++;
+				result[0]++;
 			}
      	}
-    	return new Integer( updated );
+    	return result;
     }
 
 }
