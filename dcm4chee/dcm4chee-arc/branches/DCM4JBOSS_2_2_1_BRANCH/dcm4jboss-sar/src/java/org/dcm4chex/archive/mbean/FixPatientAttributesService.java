@@ -53,13 +53,12 @@ public class FixPatientAttributesService extends ServiceMBeanSupport {
     private int checkPatientAttributes(boolean doUpdate) throws RemoteException, FinderException {
     	FixPatientAttributes checker = newFixPatientAttributes();
     	int offset = 0, total = 0;
-    	Integer fixed;
-    	fixed = checker.checkPatientAttributes(offset,limitNumberOfPatientsPerTask, doUpdate);
-    	while ( fixed != null ) {
-    		total += fixed.intValue();
+    	int[] fixed;
+		do {
+			fixed = checker.checkPatientAttributes(offset,limitNumberOfPatientsPerTask, doUpdate);
+			total += fixed[0];
     		offset += limitNumberOfPatientsPerTask;
-    		fixed = checker.checkPatientAttributes(offset,limitNumberOfPatientsPerTask, doUpdate);
-    	}
+		} while (fixed[1] == limitNumberOfPatientsPerTask);
     	return total;
     }
     

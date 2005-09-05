@@ -107,7 +107,8 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * @param limit  number of patients to check (paging)
      * @param doUpdate true will update patient record, false leave patient record unchanged.
      * 
-     * @return number of 'fixed/toBeFixed' patient records or null if no more patients to check.
+     * @return int[2] containing number of 'fixed/toBeFixed' patient records
+     *                and number of checked patient records
      * 
      * @throws FinderException
      * @ejb.interface-method

@@ -107,18 +107,19 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * @param limit  number of patients to check (paging)
      * @param doUpdate true will update patient record, false leave patient record unchanged.
      * 
-     * @return number of 'fixed/toBeFixed' patient records or null if no more patients to check.
+     * @return int[2] containing number of 'fixed/toBeFixed' patient records
+     *                and number of checked patient records
      * 
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Integer checkPatientAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
+    public int[] checkPatientAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
     	Collection col = patHome.findAll(offset,limit);
     	if ( col.isEmpty() ) return null;
     	PatientLocal patient;
     	Dataset patAttrs, filtered;
-    	int updated = 0;
-    	for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
+    	int[] result = { 0, 0 };
+    	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
 			patient = (PatientLocal) iter.next();
 			patAttrs = patient.getAttributes(false);
 			filtered = patAttrs.subSet(attrFilter.getPatientFilter());
@@ -132,10 +133,10 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 						"Remove non-patient attributes from Patient Record [pk= "
 							+ patient.getPk() + "]");
 				}
-			    updated++;
+				result[0]++;
 			}
      	}
-    	return new Integer( updated );
+    	return result;
     }
 
 }
