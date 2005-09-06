@@ -229,7 +229,7 @@ public class DicomOutputStream
 					}
 				} else {
 					for (int i = 0, n = a.countItems(); i < n; i++) {
-						byte[] val = a.getBytes(i);
+						byte[] val = a.getFragment(i);
 						writeHeader(Tag.Item, null, (val.length + 1) & ~1);
 						write(val);
 						if ((val.length & 1) != 0)
@@ -332,7 +332,7 @@ public class DicomOutputStream
 		private int calcFragSqLen(DicomElement a) {
 			int l = 8;
 			for (int i = 0, n = a.countItems(); i < n; ++i) {
-				byte[] b = a.getBytes(i);
+				byte[] b = a.getFragment(i);
 				l += 8 + (b.length + 1) & ~1; 
 			}
 			return l;

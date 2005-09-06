@@ -320,7 +320,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 			} else {
 				t = putFragments(a.tag(), a.vr(), a.bigEndian(), n);
 				for (int i = 0; i < n; i++) {
-					t.addBytes(a.getBytes(i));
+					t.addFragment(a.getFragment(i));
 				}
 			}
 			a = t;

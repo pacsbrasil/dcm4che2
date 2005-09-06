@@ -128,7 +128,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         case EXPECT_FRAG:
             DicomElement sq = (DicomElement) sqStack.peek();
             byte[] data =  getValue(sq.vr(), null);
-            sq.addBytes(data);
+            sq.addFragment(data);
             sb.setLength(0);
             out.reset();
             break;

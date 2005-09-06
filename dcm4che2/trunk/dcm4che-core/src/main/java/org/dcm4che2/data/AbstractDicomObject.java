@@ -38,67 +38,101 @@ abstract class AbstractDicomObject implements DicomObject {
 	}
     
     public String toString() {
-        return "DicomObject[size=" + size() + "]"; 
+        StringBuffer sb = new StringBuffer();
+        toStringBuffer(sb, null);        
+        return sb.toString();
     }
     
-    public StringBuffer toStringBuffer(StringBuffer sb, String indent, 
-            int maxValLen, int maxWidth, boolean withNames,
-            String lineSeparator) {
+    public int toStringBuffer(StringBuffer sb, DicomObjectToStringParam param) {
         if (sb == null)
-            sb = new StringBuffer();
-        for (Iterator it = iterator(); it.hasNext();) {
+            throw new NullPointerException();
+        if (param == null)
+            param = DicomObjectToStringParam.getDefaultParam();
+        int lines = 0;
+        for (Iterator it = iterator(); lines < param.numLines && it.hasNext();) {
             DicomElement e = (DicomElement) it.next();
-            int maxLen = sb.length() + maxWidth;
-            sb.append(indent);
-            e.toStringBuffer(sb, maxValLen);
-            if (withNames) {
+            if (++lines == param.numLines && it.hasNext()) {
+                sb.append("...").append(param.lineSeparator);
+                break;
+            }
+            int maxLen = sb.length() + param.lineLength;
+            sb.append(param.indent);
+            e.toStringBuffer(sb, param.valueLength);
+            if (param.name) {
                 sb.append(" ");
                 sb.append(nameOf(e.tag()));
             }
             if (sb.length() > maxLen)
                 sb.setLength(maxLen);
-            sb.append(lineSeparator);
-            if (e.hasItems())
-                if (e.vr() == VR.SQ)
-                    itemsToStringBuffer(e, sb, indent + '>', maxValLen,
-                            maxWidth, withNames, lineSeparator);
+            sb.append(param.lineSeparator);
+            if (e.countItems() > 0) {
+                DicomObjectToStringParam param1 = new DicomObjectToStringParam(
+                        param.name, param.valueLength, param.numItems,
+                        param.lineLength, param.numLines - lines,
+                        param.indent + '>', param.lineSeparator);
+                if (e.hasDicomObjects())
+                    lines += itemsToStringBuffer(e, sb, param1);
                 else
-                    fragsToStringBuffer(e, sb, indent + '>', lineSeparator);
+                    lines += fragsToStringBuffer(e, sb, param1);
+            }
         }
-        return sb;
+        return lines;
     }    
 
-	private void fragsToStringBuffer(DicomElement e, StringBuffer sb,
-            String indent, String lineSeparator) {
-        for (int i = 0, n = e.countItems(); i < n; i++) {
-            sb.append(indent);
+	private static int fragsToStringBuffer(DicomElement e, StringBuffer sb,
+            DicomObjectToStringParam param) {
+        int lines = 0;
+        for (int i = 0, n = e.countItems(); i < n; ++i) {
+            if (++lines >= param.numLines) {
+                sb.append("...").append(param.lineSeparator);
+                break;
+            }
+            sb.append(param.indent);
             sb.append("ITEM #");
-            sb.append(i+1);
+            sb.append(i + 1);
+            if (i >= param.numItems) {
+                sb.append("...").append(param.lineSeparator);
+                break;
+            }
             sb.append(" [");
-            sb.append((e.getBytes(i).length + 1) & ~1);
+            sb.append((e.getFragment(i).length + 1) & ~1);
             sb.append(" bytes]");
-            sb.append(lineSeparator);
+            sb.append(param.lineSeparator);
         }
+        return lines;
     }
 
-    private static void itemsToStringBuffer(DicomElement e, StringBuffer sb,
-            String indent, int maxValLen, int maxWidth, boolean withNames,
-            String lineSeparator) {
-        for (int i = 0, n = e.countItems(); i < n; i++) {
+    private static int itemsToStringBuffer(DicomElement e, StringBuffer sb,
+            DicomObjectToStringParam param) {
+        int lines = 0;
+        for (int i = 0, n = e.countItems(); 
+                 i < n && lines < param.numLines; i++) {
+            if (++lines == param.numLines) {
+                sb.append("...").append(param.lineSeparator);
+                break;
+            }
             DicomObject item = e.getDicomObject(i);
             long off = item.getItemOffset();
-            sb.append(indent);
+            sb.append(param.indent);
             sb.append("ITEM #");
-            sb.append(i+1);
+            sb.append(i + 1);
+            if (i >= param.numItems) {
+                sb.append("...").append(param.lineSeparator);
+                break;
+            }
             if (off != -1) {
                 sb.append(" @");
                 sb.append(off);
             }
             sb.append(":");
-            sb.append(lineSeparator);
-            item.toStringBuffer(sb, indent, maxValLen, maxWidth,
-                    withNames, lineSeparator);
+            sb.append(param.lineSeparator);
+            DicomObjectToStringParam param1 = new DicomObjectToStringParam(
+                    param.name, param.valueLength, param.numItems,
+                    param.lineLength, param.numLines - lines,
+                    param.indent, param.lineSeparator);
+            lines += item.toStringBuffer(sb, param1);
         }
+        return lines;
      }
 
     public boolean matches(final DicomObject keys, final boolean ignoreCaseOfPN) {

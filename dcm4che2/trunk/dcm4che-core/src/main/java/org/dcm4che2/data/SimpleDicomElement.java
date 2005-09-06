@@ -112,7 +112,7 @@ class SimpleDicomElement extends AbstractDicomElement {
     public final boolean isEmpty() {
         return value.length == 0;
     }
-    
+
     public int vm(SpecificCharacterSet cs) {
         return vr.vm(value, cs);
     }
@@ -238,8 +238,16 @@ class SimpleDicomElement extends AbstractDicomElement {
     public final boolean hasItems() {
         return false;
     }
+
+    public final boolean hasDicomObjects() {
+        return false;
+    }
+
+    public final boolean hasFragments() {
+        return false;
+    }
     
-    public int countItems() {
+    public final int countItems() {
         return -1;
     }
 
@@ -271,23 +279,23 @@ class SimpleDicomElement extends AbstractDicomElement {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] getBytes(int index) {
+    public byte[] getFragment(int index) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] removeBytes(int index) {
+    public byte[] removeFragment(int index) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] addBytes(byte[] b) {
+    public byte[] addFragment(byte[] b) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] addBytes(int index, byte[] b) {
+    public byte[] addFragment(int index, byte[] b) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] setBytes(int index, byte[] b) {
+    public byte[] setFragment(int index, byte[] b) {
         throw new UnsupportedOperationException();
     }
 

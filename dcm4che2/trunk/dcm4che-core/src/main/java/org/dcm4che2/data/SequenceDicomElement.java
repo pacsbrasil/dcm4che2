@@ -180,6 +180,14 @@ class SequenceDicomElement extends AbstractDicomElement {
         return items.size();
     }
 
+    public final boolean hasDicomObjects() {
+        return vr == VR.SQ;
+    }
+
+    public final boolean hasFragments() {
+        return vr != VR.SQ;
+    }
+    
     public DicomObject getDicomObject() {
         return (DicomObject) (!items.isEmpty() ? items.get(0) : null);
     }
@@ -230,15 +238,15 @@ class SequenceDicomElement extends AbstractDicomElement {
         return item;
     }
 
-    public byte[] getBytes(int index) {
+    public byte[] getFragment(int index) {
         return (byte[]) items.get(index);
     }
 
-    public byte[] removeBytes(int index) {
+    public byte[] removeFragment(int index) {
         return (byte[]) items.remove(index);
     }
 
-    public byte[] addBytes(byte[] b) {
+    public byte[] addFragment(byte[] b) {
         if (hasDicomObjects())
             throw new UnsupportedOperationException();
         if (b == null)
@@ -247,7 +255,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         return b;
     }
 
-    public byte[] addBytes(int index, byte[] b) {
+    public byte[] addFragment(int index, byte[] b) {
         if (hasDicomObjects())
             throw new UnsupportedOperationException();
         if (b == null)
@@ -256,7 +264,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         return b;
     }
 
-    public byte[] setBytes(int index, byte[] b) {
+    public byte[] setFragment(int index, byte[] b) {
         if (hasDicomObjects())
             throw new UnsupportedOperationException();
         if (b == null)

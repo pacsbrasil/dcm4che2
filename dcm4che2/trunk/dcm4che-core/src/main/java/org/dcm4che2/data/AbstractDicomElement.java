@@ -46,10 +46,6 @@ abstract class AbstractDicomElement implements DicomElement {
         return vr;
     }
 
-    public final boolean hasDicomObjects() {
-        return vr == VR.SQ;
-    }
-
     public String toString() {
         return toStringBuffer(null, TO_STRING_MAX_VAL_LEN).toString();
     }

@@ -299,7 +299,7 @@ public class DicomInputStream extends FilterInputStream implements
 				if (sq.vr() == VR.UN) {
                     DicomElement tmp = attrs.putSequence(sq.tag());
                     for (int i = 0, n = sq.countItems(); i < n; ++i) {
-                        byte[] b = sq.getBytes(i);
+                        byte[] b = sq.getFragment(i);
                         InputStream is = new ByteArrayInputStream(b);
                         DicomInputStream dis1 = new DicomInputStream(is, 
                                 TransferSyntax.ImplicitVRLittleEndian);
@@ -321,7 +321,7 @@ public class DicomInputStream extends FilterInputStream implements
 				readDicomObject(item, vallen);
 				sq.addDicomObject(item);
 			} else {
-				sq.addBytes(readBytes(vallen));
+				sq.addFragment(readBytes(vallen));
 			}
 			break;
 		case Tag.ItemDelimitationItem:

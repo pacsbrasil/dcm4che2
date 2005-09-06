@@ -135,6 +135,5 @@ public interface DicomObject
 	DicomObject exclude(int[] tags);
 	DicomObject excludePrivate();
     void initFileMetaInformation(String tsuid);
-    StringBuffer toStringBuffer(StringBuffer sb, String indent, int maxValLen,
-            int maxWidth, boolean withNames, String lineSeparator);
+    int toStringBuffer(StringBuffer sb, DicomObjectToStringParam param);
 }

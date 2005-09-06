@@ -117,7 +117,7 @@ public class SAXWriter implements DicomInputHandler {
         if (a.vr() == VR.SQ) {
             writeContent(a.getDicomObject(index), "item");
         } else {
-            final byte[] data = a.getBytes(index);
+            final byte[] data = a.getFragment(index);
             writeFragment(a.vr(), data, a.bigEndian(),
                      fpath(a.tag(), a.vr(), data.length));
         }
@@ -190,14 +190,14 @@ public class SAXWriter implements DicomInputHandler {
         startItemElement(in.tagPosition(), itemLen, fpath);
         in.readValue(in);
         if (sqvr != VR.SQ) {
-            byte[] data = sq.getBytes(index);
+            byte[] data = sq.getFragment(index);
             if (fpath != null) {
                 writeToFile(data);
             } else {
                 final boolean bigEndian = in.getTransferSyntax().bigEndian();
                 sqvr.formatXMLValue(data, bigEndian, null, cbuf, ch);
             }
-            sq.setBytes(index, EMPTY_BYTES); // allow gc to release byte[]
+            sq.setFragment(index, EMPTY_BYTES); // allow gc to release byte[]
         }
         endItemElement();
         if (file != null)
