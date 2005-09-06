@@ -221,7 +221,7 @@ public class Dcm2Txt implements DicomInputHandler {
         outLen(in);
         in.readValue(in);
         DicomElement sq = in.sq();
-        byte[] data = sq.removeBytes(0);
+        byte[] data = sq.removeFragment(0);
         boolean bigEndian = in.getTransferSyntax().bigEndian();
         sq.vr().promptValue(data, bigEndian, null, cbuf, maxValLen, line);
         outLine(in);
