@@ -75,7 +75,7 @@ abstract class AbstractHPComparator implements HPComparator {
         
         protected int resolveTag(DicomObject dcmobj) {
             return privateCreator == null ? tag
-                    : dcmobj.resolvePrivateTag(tag, privateCreator);
+                    : dcmobj.resolveTag(tag, privateCreator);
         }
     }
     

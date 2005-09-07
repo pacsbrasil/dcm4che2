@@ -258,6 +258,10 @@ public class SAXWriter implements DicomInputHandler {
                     || TagUtils.isPrivateCreatorDataElement(tag)) {
                 attrs.putBytes(tag, vr, bigEndian, val);
             }
+            if (tag == 0x00020000) {
+                in.setEndOfFileMetaInfoPosition(
+                        in.getStreamPosition() + vr.toInt(val, bigEndian));
+            }
         }
         if (file != null)
             file = file.getParentFile();

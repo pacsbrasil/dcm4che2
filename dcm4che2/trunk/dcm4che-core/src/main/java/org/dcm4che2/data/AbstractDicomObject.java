@@ -51,7 +51,7 @@ abstract class AbstractDicomObject implements DicomObject {
         int lines = 0;
         for (Iterator it = iterator(); lines < param.numLines && it.hasNext();) {
             DicomElement e = (DicomElement) it.next();
-            if (++lines == param.numLines && it.hasNext()) {
+            if (++lines == param.numLines) {
                 sb.append("...").append(param.lineSeparator);
                 break;
             }

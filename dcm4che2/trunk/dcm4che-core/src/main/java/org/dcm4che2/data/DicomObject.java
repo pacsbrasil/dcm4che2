@@ -36,8 +36,8 @@ public interface DicomObject
 	void setItemOffset(long offset);
 	VR vrOf(int tag);
     String nameOf(int tag);
-	int resolvePrivateTag(int privateTag, String privateCreator);
-	int reservePrivateTag(int privateTag, String privateCreator);
+	int resolveTag(int tag, String privateCreator);
+	int reserveTag(int tag, String privateCreator);
 	String getPrivateCreator(int privateTag);
     boolean isRoot();
 	boolean isEmpty();

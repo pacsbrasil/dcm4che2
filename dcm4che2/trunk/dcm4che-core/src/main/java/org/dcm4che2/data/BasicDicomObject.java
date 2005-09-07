@@ -29,6 +29,8 @@ public class BasicDicomObject extends AbstractDicomObject {
 
 	private transient final IntHashtable table;
 
+    private transient DicomObject defaults;
+    
 	private transient DicomObject parent;
 
 	private transient TransferSyntax ts = TransferSyntax.ImplicitVRLittleEndian;
@@ -44,10 +46,18 @@ public class BasicDicomObject extends AbstractDicomObject {
 	private transient boolean cachePut = false;
 
 	public BasicDicomObject() {
-		this(10);
+		this(null, 10);
 	}
 
-	public BasicDicomObject(int capacity) {
+    public BasicDicomObject(DicomObject defaults) {
+        this(defaults, 10);
+    }
+
+    public BasicDicomObject(int capacity) {
+        this(null, capacity);
+    }
+    
+	public BasicDicomObject(DicomObject defaults, int capacity) {
 		this.table = new IntHashtable(capacity);
 	}
 	
@@ -90,12 +100,12 @@ public class BasicDicomObject extends AbstractDicomObject {
 			}});
 	}
 	
-	public int resolvePrivateTag(int privateTag, String privateCreator) {
-		return resolvePrivateTagInternal(privateTag, privateCreator, false);
+	public int resolveTag(int privateTag, String privateCreator) {
+		return resolveTagInternal(privateTag, privateCreator, false);
 	}
 
-	public int reservePrivateTag(int privateTag, String privateCreatorID) {
-		return resolvePrivateTagInternal(privateTag, privateCreatorID, true);
+	public int reserveTag(int privateTag, String privateCreatorID) {
+		return resolveTagInternal(privateTag, privateCreatorID, true);
 	}
 
 	public void shareElements() {
@@ -209,20 +219,18 @@ public class BasicDicomObject extends AbstractDicomObject {
 		return a == null ? null : a.getString(getSpecificCharacterSet(), true);
 	}
 
-	private int resolvePrivateTagInternal(int privateTag,
-			String privateCreator, boolean reserve) {
-		if (!TagUtils.isPrivateDataElement(privateTag)
-				|| TagUtils.isPrivateCreatorDataElement(privateTag))
-			throw new IllegalArgumentException(TagUtils.toString(privateTag));
-		int gggg0000 = privateTag & 0xffff0000;
+	private int resolveTagInternal(int tag, String creator, boolean reserve) {
+		if (!TagUtils.isPrivateDataElement(tag))
+            return tag;
+		int gggg0000 = tag & 0xffff0000;
 		int idTag = gggg0000 | 0x10;
 		int maxIdTag = gggg0000 | 0xff;
 		String id;
-		while (!privateCreator.equals(id = getAndCacheString(idTag))) {
+		while (!creator.equals(id = getAndCacheString(idTag))) {
 			if (id == null) {
 				if (!reserve)
 					return -1;
-				addPrivateCreator(privateCreator, idTag);
+				addPrivateCreator(creator, idTag);
 				break;
 			}
 			if (++idTag > maxIdTag)
@@ -230,7 +238,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 						"No free block to reserve in group "
 								+ TagUtils.toString(gggg0000));
 		}
-		return (privateTag & 0xffff00ff) | ((idTag & 0xff) << 8);
+		return (tag & 0xffff00ff) | ((idTag & 0xff) << 8);
 	}
 
     private void addPrivateCreator(String privateCreator, int idTag) {
@@ -252,7 +260,8 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 
 	public DicomElement get(int tag) {
-		return (DicomElement) table.get(tag);
+		DicomElement attr = (DicomElement) table.get(tag);
+        return (attr != null || defaults == null) ? attr : defaults.get(tag);
 	}
 
 	public DicomElement remove(int tag) {

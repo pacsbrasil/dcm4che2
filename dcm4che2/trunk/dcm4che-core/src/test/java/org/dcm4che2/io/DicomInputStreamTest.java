@@ -31,8 +31,14 @@ public class DicomInputStreamTest extends BaseTestCase {
 		assertEquals(1203, attr.countItems());
 	}
 
+    public final void testReadImplicitVRLE() throws IOException {
+        DicomObject attrs = load("view400.dcm");
+        assertEquals(37, attrs.size());
+    }
+    
 	public final void testReadRawImplicitVRLE() throws IOException {
-		DicomObject attrs = load("OT-PAL-8-face");		
+		DicomObject attrs = load("OT-PAL-8-face");
+        assertEquals(28, attrs.size());
 	}
 	
 }

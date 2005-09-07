@@ -89,14 +89,23 @@ public class DicomInputStream extends FilterInputStream implements
 		return pos;
 	}
 
-    public final long tagPosition() {
-        return tagpos;
-    }
-
 	public final void setStreamPosition(long pos) {
 		this.pos = pos;
 	}
 
+    public final long tagPosition() {
+        return tagpos;
+    }
+
+    public final long getEndOfFileMetaInfoPosition() {
+        return fmiEndPos;
+    }
+
+    public final void setEndOfFileMetaInfoPosition(long fmiEndPos) {
+        this.fmiEndPos = fmiEndPos;
+    }
+
+    
 	public final void setHandler(DicomInputHandler handler) {
 		if (handler == null)
 			throw new NullPointerException();

@@ -154,7 +154,7 @@ abstract class AbstractHPSelector implements HPSelector {
         
         protected int resolveTag(DicomObject dcmobj) {
             return privateCreator == null ? tag
-                    : dcmobj.resolvePrivateTag(tag, privateCreator);
+                    : dcmobj.resolveTag(tag, privateCreator);
         }
 
     }

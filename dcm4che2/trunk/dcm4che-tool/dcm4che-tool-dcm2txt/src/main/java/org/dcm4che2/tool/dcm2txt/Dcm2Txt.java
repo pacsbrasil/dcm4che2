@@ -198,6 +198,10 @@ public class Dcm2Txt implements DicomInputHandler {
                 || TagUtils.isPrivateCreatorDataElement(tag)) {
             dcmobj.putBytes(tag, vr, bigEndian, val);
         }
+        if (tag == 0x00020000) {
+            in.setEndOfFileMetaInfoPosition(
+                    in.getStreamPosition() + vr.toInt(val, bigEndian));
+        }
     }
 
     private boolean hasItems(DicomInputStream in) {
