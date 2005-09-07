@@ -1,0 +1,16 @@
+<model>
+  <parent>
+    <artifactId>dcm4che</artifactId>
+    <groupId>dcm4che</groupId>
+    <version>2.0-alpha-4</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dcm4che</groupId>
+  <artifactId>dcm4che-tool</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>dcm4che-tool-dcm2txt</module>
+    <module>dcm4che-tool-dcm2xml</module>
+    <module>dcm4che-tool-xml2dcm</module>
+  </modules>
+</model>
