@@ -9,7 +9,6 @@ package org.dcm4chex.wado.mbean;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,10 +30,6 @@ import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.wado.common.WADORequestObject;
@@ -200,13 +195,6 @@ private WADOResponseObject getUpdatedInstance( String iuid, String transferSynta
 	
 }
 
-private void updateAttrs(Dataset ds, byte[] attrs) throws IOException {
-    ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
-    DcmParser parser = DcmParserFactory.getInstance().newDcmParser(bis);
-    parser.setDcmHandler(ds.getDcmHandler());
-    parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
-    bis.close();
-}
 
 /**
  * Handles a request for content type image/jpeg.
