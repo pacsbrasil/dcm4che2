@@ -205,6 +205,18 @@
     </attribute>
  
     <attribute access="read-write"
+      getMethod="isUseOrigFile"
+      setMethod="setUseOrigFile">
+      <description>If enabled, A RID request will use the original dicom file to generate a document.
+      </description>
+      <name>UseOrigFile</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+    </attribute>
+ 
+    <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
       <description>For internal use. Don't change!

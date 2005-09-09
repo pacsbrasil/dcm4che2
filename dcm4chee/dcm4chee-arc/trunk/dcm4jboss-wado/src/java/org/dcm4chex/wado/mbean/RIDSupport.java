@@ -7,6 +7,7 @@
 package org.dcm4chex.wado.mbean;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,14 +17,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.management.MBeanServer;
@@ -51,6 +48,7 @@ import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.DataSource;
 import org.dcm4che.srom.SRDocumentFactory;
 import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4cheri.util.StringUtils;
@@ -113,6 +111,7 @@ public class RIDSupport {
 	private ConceptNameCodeConfig conceptNameCodeConfig = new ConceptNameCodeConfig();
 	
 	private boolean encapsulatedPDFSupport = true;
+	private boolean useOrigFile = false;
 
 	public RIDSupport( RIDService service ) {
 		this.service = service;
@@ -222,6 +221,18 @@ public class RIDSupport {
 	}
 	
 	/**
+	 * @return Returns the useOrigFile.
+	 */
+	public boolean isUseOrigFile() {
+		return useOrigFile;
+	}
+	/**
+	 * @param useOrigFile The useOrigFile to set.
+	 */
+	public void setUseOrigFile(boolean useOrigFile) {
+		this.useOrigFile = useOrigFile;
+	}
+	/**
 	 * Set the name of the FileSystemMgtBean.
 	 * <p>
 	 * This bean is used to retrieve the DICOM object.
@@ -241,6 +252,10 @@ public class RIDSupport {
 	 */
 	public ObjectName getFileSystemMgtName() {
 		return fileSystemMgtName;
+	}
+	
+	protected MBeanServer getMBeanServer() {
+		return server;
 	}
 	
 	/**
@@ -609,7 +624,29 @@ public class RIDSupport {
 				if ( inFile == null ) {
 					return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
 				}
-				outFile = renderSRFile( inFile, outFile );
+				if ( ! useOrigFile   ) {
+				
+					DataSource ds = null;
+					try {
+				        ds = (DataSource) server.invoke(fileSystemMgtName,
+				                "getDatasourceOfInstance",
+				                new Object[] { docUID },
+				                new String[] { String.class.getName() } );
+				        
+				    } catch (Exception e) {
+				        log.error("Failed to get updated DICOM file", e);
+						return new WADOStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
+				    }
+				    inFile = new File( outFile.toString() + ".dcm" );
+				    inFile.deleteOnExit();
+				    OutputStream os = new BufferedOutputStream( new FileOutputStream( inFile ));
+				    ds.writeTo( os, null);
+				    os.close();
+				    outFile = renderSRFile( inFile, outFile );
+				    inFile.delete();
+				} else {
+					outFile = renderSRFile( inFile, outFile );
+				}
 			}
 			return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
 		} catch (Exception e) {

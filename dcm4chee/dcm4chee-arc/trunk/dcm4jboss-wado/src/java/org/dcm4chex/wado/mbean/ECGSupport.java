@@ -7,6 +7,7 @@
 package org.dcm4chex.wado.mbean;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,6 +27,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DataSource;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
@@ -111,12 +113,37 @@ public class ECGSupport {
      * @throws IOException
 	 */
 	private Dataset getDataset(Dataset ds) throws IOException, NeedRedirectionException {
+		String iuid = ds.getString( Tags.SOPInstanceUID );
 		File file = ridSupport.getWADOSupport().getDICOMFile(ds.getString( Tags.StudyInstanceUID),
 															 ds.getString( Tags.SeriesInstanceUID),
-															 ds.getString( Tags.SOPInstanceUID ) );
+															 iuid );
 		if ( log.isDebugEnabled() ) log.debug("DCM file for "+ds.getString( Tags.SOPInstanceUID )+":"+file);
 		if ( file == null ) return null;
-		return loadDataset(file);
+		Dataset dsFile;
+		if ( ! ridSupport.isUseOrigFile()   ) {
+			
+				DataSource dsrc = null;
+				try {
+					dsrc = (DataSource) ridSupport.getMBeanServer().invoke(ridSupport.getFileSystemMgtName(),
+			                "getDatasourceOfInstance",
+			                new Object[] { iuid },
+			                new String[] { String.class.getName() } );
+			        
+			    } catch (Exception e) {
+			        log.error("Failed to get updated DICOM file", e);
+			    }
+			    file = new File( file + ".dcm" );
+			    file.deleteOnExit();
+			    OutputStream os = new BufferedOutputStream( new FileOutputStream( file ) );
+			    dsrc.writeTo( os, null);
+			    os.close();
+			    dsFile =loadDataset(file);
+			    file.delete();
+			}
+		else {
+			dsFile = loadDataset(file);
+		}
+		return dsFile;
 	}
 	private Dataset loadDataset(File file) throws IOException {
 	    BufferedInputStream bis = new BufferedInputStream( new FileInputStream(file));

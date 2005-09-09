@@ -76,6 +76,18 @@ public class RIDService extends AbstractCacheService  {
 		support.setUseXSLInstruction( useXSLInstruction );
 	}
 	
+	/**
+	 * @return Returns the useOrigFile.
+	 */
+	public boolean isUseOrigFile() {
+		return support.isUseOrigFile();
+	}
+	/**
+	 * @param useOrigFile The useOrigFile to set.
+	 */
+	public void setUseOrigFile(boolean useOrigFile) {
+		support.setUseOrigFile(useOrigFile);
+	}
 
 	/**
 	 * Returns a String with all defined SOP Class UIDs that are used to find ECG documents.
@@ -209,7 +221,7 @@ public class RIDService extends AbstractCacheService  {
 	 * @throws TransformerConfigurationException
 	 */
 	public WADOResponseObject getRIDSummary( RIDRequestObject reqVO ) throws SQLException, TransformerConfigurationException, IOException, SAXException {
-		if ( log.isDebugEnabled() ) log.debug("getRIDSummary:"+reqVO );
+		if ( log.isDebugEnabled() ) log.debug( "getRIDSummary:"+reqVO );
 		return support.getRIDSummary( reqVO );
 	}
 	
