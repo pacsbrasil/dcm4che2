@@ -27,7 +27,7 @@
       <name>Port</name>
       <type>int</type>
       <descriptors>
-         <value value="2300" />
+         <value value="2575" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
