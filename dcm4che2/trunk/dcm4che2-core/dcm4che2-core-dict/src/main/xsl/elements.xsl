@@ -3,7 +3,7 @@
     <xsl:output method="xml" indent="yes"/>
     <xsl:variable name="noascii">&#xF06D;&#x2019;&#x2013;</xsl:variable>
     <xsl:variable name="ascii">u'-</xsl:variable>
-    <xsl:variable name="nojavaid"> ,'/-()&amp;</xsl:variable>
+    <xsl:variable name="nojavaid"> ,'/-()[]@:&amp;</xsl:variable>
     <xsl:variable name="digits">0123456789</xsl:variable>
     <xsl:template match="/">
         <dictionary>
@@ -32,7 +32,7 @@
                 </xsl:attribute>
                 <xsl:attribute name="alias">
                     <!-- if first char is digit, add _ as prefix -->
-                    <xsl:if test="not(translate(substring(text(),1,1),$digits,''))">_</xsl:if>
+                    <xsl:if test="not(translate(substring($name,1,1),$digits,''))">_</xsl:if>
                     <xsl:value-of select="concat(translate($name,$nojavaid,''),@ret)"/>
                     <!-- if different attributes with equal names, add ggggeeee suffix -->
                     <xsl:if test="../*[text()=$text][@ret=$ret][@tag!=$tag]">

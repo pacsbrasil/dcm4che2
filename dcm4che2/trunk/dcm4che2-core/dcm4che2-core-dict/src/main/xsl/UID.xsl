@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="text"/>
     <xsl:param name="package">org.dcm4che2.data</xsl:param>
-    <xsl:param name="class">Tag</xsl:param>
+    <xsl:param name="class">UID</xsl:param>
     
     <xsl:template match="/">
     <xsl:text>/******************************************
@@ -29,42 +29,34 @@ public class </xsl:text>
    <xsl:text>() {
     }
     
-    public static final int forName(String name) {
+    public static final String forName(String name) {
        try {
-          return </xsl:text>
+          return (String) </xsl:text>
    <xsl:value-of select="$class"/>
-   <xsl:text>.class.getField(name).getInt(null);
+   <xsl:text>.class.getField(name).get(null);
        } catch (IllegalAccessException e) {
           throw new Error(e);
        } catch (NoSuchFieldException e) {
-          throw new IllegalArgumentException("Unknown Tag Name: " + name);
+          throw new IllegalArgumentException("Unknown UID Name: " + name);
        }
     }
 
 </xsl:text>
-        <xsl:apply-templates select="dictionary/element"/>
+        <xsl:apply-templates select="uids/uid"/>
         <xsl:text>}</xsl:text>
     </xsl:template>    
     
-    <xsl:template match="element">
-        <xsl:text>    /** (</xsl:text>
-        <xsl:value-of select="substring(@tag,1,4)"/>
-        <xsl:text>,</xsl:text>
-        <xsl:value-of select="substring(@tag,5,4)"/>
-        <xsl:text>) VR=</xsl:text>
-        <xsl:value-of select="@vr"/>
-        <xsl:text>, VM=</xsl:text>
-        <xsl:value-of select="@vm"/>
-        <xsl:text> </xsl:text>
+    <xsl:template match="uid">
+        <xsl:text>    /** </xsl:text>
         <xsl:value-of select="text()"/>
-        <xsl:text> </xsl:text>
-        <xsl:value-of select="@ret"/>
+        <xsl:text> - </xsl:text>
+        <xsl:value-of select="@type"/>        
         <xsl:text> */
-    public static final int </xsl:text>
+    public static final String </xsl:text>
         <xsl:value-of select="@alias"/>
-        <xsl:text> = 0x</xsl:text>
-        <xsl:value-of select="translate(@tag,'x','0')"/>
-        <xsl:text>;
+        <xsl:text> = "</xsl:text>
+        <xsl:value-of select="@value"/>
+        <xsl:text>";
 
 </xsl:text>
     </xsl:template>
