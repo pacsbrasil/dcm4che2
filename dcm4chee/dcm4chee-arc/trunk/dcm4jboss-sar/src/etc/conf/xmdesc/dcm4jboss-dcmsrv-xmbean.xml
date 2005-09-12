@@ -27,7 +27,7 @@
       <name>TCPPort</name>
       <type>int</type>
       <descriptors>
-         <value value="2350" />
+         <value value="11112" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
