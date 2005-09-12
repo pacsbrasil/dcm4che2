@@ -171,12 +171,7 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.create(ds.subSet(filter),
                         getSeries(ds, coercedElements));
             }
-            FileSystemLocal fs;
-            try {
-                fs = fileSystemHome.findByDirectoryPath(dirpath);
-            } catch (ObjectNotFoundException onfe) {
-                fs = fileSystemHome.create(dirpath, ds.getString(Tags.RetrieveAET));
-            }
+            FileSystemLocal fs = getFileSystem(ds, dirpath);
             instance.setAvailability(Availability.ONLINE);
             instance.addRetrieveAET(fs.getRetrieveAET());
             FileLocal file = fileHome.create(fileid,
@@ -194,6 +189,20 @@ public abstract class StorageBean implements SessionBean {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
+
+	private FileSystemLocal getFileSystem(Dataset ds, String dirpath)
+	throws FinderException {
+		try {
+		    return fileSystemHome.findByDirectoryPath(dirpath);
+		} catch (ObjectNotFoundException onfe) {
+		    try {
+				return fileSystemHome.create(dirpath, ds.getString(Tags.RetrieveAET));
+			} catch (CreateException e) {
+				// try to find again, in case it was concurrently created by another thread
+				return fileSystemHome.findByDirectoryPath(dirpath);
+			}
+		}
+	}
 
     private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
             throws FinderException, CreateException, DcmServiceException {
