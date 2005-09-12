@@ -37,7 +37,7 @@ public interface DicomObject
 	VR vrOf(int tag);
     String nameOf(int tag);
 	int resolveTag(int tag, String privateCreator);
-	int reserveTag(int tag, String privateCreator);
+	int resolveTag(int tag, String privateCreator, boolean reserve);
 	String getPrivateCreator(int privateTag);
     boolean isRoot();
 	boolean isEmpty();

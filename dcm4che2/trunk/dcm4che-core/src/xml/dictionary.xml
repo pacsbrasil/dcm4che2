@@ -166,6 +166,7 @@
 <element tag="00081140" alias="ReferencedImageSequence" vr="SQ" vm="1" ret="">Referenced Image Sequence</element>
 <element tag="00081145" alias="ReferencedCurveSequence" vr="SQ" vm="1" ret="">Referenced Curve Sequence</element>
 <element tag="0008114A" alias="ReferencedInstanceSequence" vr="SQ" vm="1" ret="">Referenced Instance Sequence</element>
+<element tag="0008114B" alias="ReferencedRealWorldValueMappingInstanceSequence" vr="SQ" vm="1" ret="">Referenced Real World Value Mapping Instance Sequence</element>
 <element tag="00081150" alias="ReferencedSOPClassUID" vr="UI" vm="1" ret="">Referenced SOP Class UID</element>
 <element tag="00081155" alias="ReferencedSOPInstanceUID" vr="UI" vm="1" ret="">Referenced SOP Instance UID</element>
 <element tag="0008115A" alias="SOPClassesSupported" vr="UI" vm="1-n" ret="">SOP Classes Supported</element>
@@ -204,6 +205,7 @@
 <element tag="00082244" alias="TransducerOrientationSequence" vr="SQ" vm="1" ret="">Transducer Orientation Sequence</element>
 <element tag="00082246" alias="TransducerOrientationModifierSequence" vr="SQ" vm="1" ret="">Transducer Orientation Modifier Sequence</element>
 <element tag="00083001" alias="AlternateRepresentationSequence" vr="SQ" vm="1" ret="">Alternate Representation Sequence</element>
+<element tag="00083010" alias="IrradiationEventUID" vr="UI" vm="1" ret="">Irradiation Event UID</element>
 <element tag="00084000" alias="CommentsRET00084000" vr="LT" vm="1" ret="RET">Comments</element>
 <element tag="00089007" alias="FrameType" vr="CS" vm="4" ret="">Frame Type</element>
 <element tag="00089092" alias="ReferencedImageEvidenceSequence" vr="SQ" vm="1" ret="">Referenced Image Evidence Sequence</element>
@@ -218,6 +220,10 @@
 <element tag="00089209" alias="AcquisitionContrast" vr="CS" vm="1" ret="">Acquisition Contrast</element>
 <element tag="00089215" alias="DerivationCodeSequence" vr="SQ" vm="1" ret="">Derivation Code Sequence</element>
 <element tag="00089237" alias="ReferencedGrayscalePresentationStateSequence" vr="SQ" vm="1" ret="">Referenced Grayscale Presentation State Sequence</element>
+<element tag="00089410" alias="ReferencedOtherPlaneSequence" vr="SQ" vm="1" ret="">Referenced Other Plane Sequence</element>
+<element tag="00089458" alias="FrameDisplaySequence" vr="SQ" vm="1" ret="">Frame Display Sequence</element>
+<element tag="00089459" alias="RecommendedDisplayFrameRateinFloat" vr="FL" vm="1" ret="">Recommended Display Frame Rate in Float</element>
+<element tag="00089460" alias="SkipFrameRangeFlag" vr="CS" vm="1" ret="">Skip Frame Range Flag</element>
 <element tag="00100010" alias="PatientsName" vr="PN" vm="1" ret="">Patient's Name</element>
 <element tag="00100020" alias="PatientID" vr="LO" vm="1" ret="">Patient ID</element>
 <element tag="00100021" alias="IssuerofPatientID" vr="LO" vm="1" ret="">Issuer of Patient ID</element>
@@ -252,6 +258,7 @@
 <element tag="001021D0" alias="LastMenstrualDate" vr="DA" vm="1" ret="">Last Menstrual Date</element>
 <element tag="001021F0" alias="PatientsReligiousPreference" vr="LO" vm="1" ret="">Patient's Religious Preference</element>
 <element tag="00104000" alias="PatientComments" vr="LT" vm="1" ret="">Patient Comments</element>
+<element tag="00109431" alias="ExaminedBodyThickness" vr="FL" vm="1" ret="">Examined Body Thickness</element>
 <element tag="00120010" alias="ClinicalTrialSponsorName" vr="LO" vm="1" ret="">Clinical Trial Sponsor Name</element>
 <element tag="00120020" alias="ClinicalTrialProtocolID" vr="LO" vm="1" ret="">Clinical Trial Protocol ID</element>
 <element tag="00120021" alias="ClinicalTrialProtocolName" vr="LO" vm="1" ret="">Clinical Trial Protocol Name</element>
@@ -402,7 +409,7 @@
 <element tag="00181155" alias="RadiationSetting" vr="CS" vm="1" ret="">Radiation Setting</element>
 <element tag="00181156" alias="RectificationType" vr="CS" vm="1" ret="">Rectification Type</element>
 <element tag="0018115A" alias="RadiationMode" vr="CS" vm="1" ret="">Radiation Mode</element>
-<element tag="0018115E" alias="ImageAreaDoseProduct" vr="DS" vm="1" ret="">Image Area Dose Product</element>
+<element tag="0018115E" alias="ImageandFluoroscopyAreaDoseProduct" vr="DS" vm="1" ret="">Image and Fluoroscopy Area Dose Product</element>
 <element tag="00181160" alias="FilterType" vr="SH" vm="1" ret="">Filter Type</element>
 <element tag="00181161" alias="TypeofFilters" vr="LO" vm="1-n" ret="">Type of Filters</element>
 <element tag="00181162" alias="IntensifierSize" vr="DS" vm="1" ret="">Intensifier Size</element>
@@ -469,6 +476,7 @@
 <element tag="00181620" alias="VerticesofthePolygonalShutter" vr="IS" vm="2-2n" ret="">Vertices of the Polygonal Shutter</element>
 <element tag="00181622" alias="ShutterPresentationValue" vr="US" vm="1" ret="">Shutter Presentation Value</element>
 <element tag="00181623" alias="ShutterOverlayGroup" vr="US" vm="1" ret="">Shutter Overlay Group</element>
+<element tag="00181624" alias="ShutterPresentationColorCIELabValue" vr="US" vm="3" ret="">Shutter Presentation Color CIELab Value</element>
 <element tag="00181700" alias="CollimatorShape" vr="CS" vm="1-3" ret="">Collimator Shape</element>
 <element tag="00181702" alias="CollimatorLeftVerticalEdge" vr="IS" vm="1" ret="">Collimator Left Vertical Edge</element>
 <element tag="00181704" alias="CollimatorRightVerticalEdge" vr="IS" vm="1" ret="">Collimator Right Vertical Edge</element>
@@ -784,6 +792,57 @@
 <element tag="00189343" alias="ContrastBolusAgentDetected" vr="CS" vm="1" ret="">Contrast/Bolus Agent Detected</element>
 <element tag="00189344" alias="ContrastBolusAgentPhase" vr="CS" vm="1" ret="">Contrast/Bolus Agent Phase</element>
 <element tag="00189345" alias="CTDIvol" vr="FD" vm="1" ret="">CTDIvol</element>
+<element tag="00189401" alias="ProjectionPixelCalibrationSequence" vr="SQ" vm="1" ret="">Projection Pixel Calibration Sequence</element>
+<element tag="00189402" alias="DistanceSourcetoIsocenter" vr="FL" vm="1" ret="">Distance Source to Isocenter</element>
+<element tag="00189403" alias="DistanceObjecttoTableTop" vr="FL" vm="1" ret="">Distance Object to Table Top</element>
+<element tag="00189404" alias="ObjectPixelSpacinginCenterofBeam" vr="FL" vm="2" ret="">Object Pixel Spacing in Center of Beam</element>
+<element tag="00189405" alias="PositionerPositionSequence" vr="SQ" vm="1" ret="">Positioner Position Sequence</element>
+<element tag="00189406" alias="TablePositionSequence" vr="SQ" vm="1" ret="">Table Position Sequence</element>
+<element tag="00189407" alias="CollimatorShapeSequence" vr="SQ" vm="1" ret="">Collimator Shape Sequence</element>
+<element tag="00189412" alias="XAXRFFrameCharacteristicsSequence" vr="SQ" vm="1" ret="">XA/XRF Frame Characteristics Sequence</element>
+<element tag="00189420" alias="XRayReceptorType" vr="CS" vm="1" ret="">X-Ray Receptor Type</element>
+<element tag="00189423" alias="AcquisitionProtocolName" vr="LO" vm="1" ret="">Acquisition Protocol Name</element>
+<element tag="00189424" alias="AcquisitionProtocolDescription" vr="LT" vm="1" ret="">Acquisition Protocol Description</element>
+<element tag="00189425" alias="ContrastBolusIngredientOpaque" vr="CS" vm="1" ret="">Contrast/Bolus Ingredient Opaque</element>
+<element tag="00189426" alias="DistanceReceptorPlanetoDetectorHousing" vr="FL" vm="1" ret="">Distance Receptor Plane to Detector Housing</element>
+<element tag="00189427" alias="IntensifierActiveShape" vr="CS" vm="1" ret="">Intensifier Active Shape</element>
+<element tag="00189428" alias="IntensifierActiveDimensions" vr="FL" vm="1-2" ret="">Intensifier Active Dimension(s)</element>
+<element tag="00189429" alias="PhysicalDetectorSize" vr="FL" vm="2" ret="">Physical Detector Size</element>
+<element tag="00189430" alias="PositionofIsocenterProjection" vr="US" vm="2" ret="">Position of Isocenter Projection</element>
+<element tag="00189432" alias="FieldofViewSequence" vr="SQ" vm="1" ret="">Field of View Sequence</element>
+<element tag="00189433" alias="FieldofViewDescription" vr="LO" vm="1" ret="">Field of View Description</element>
+<element tag="00189434" alias="ExposureControlSensingRegionsSequence" vr="SQ" vm="1" ret="">Exposure Control Sensing Regions Sequence</element>
+<element tag="00189435" alias="ExposureControlSensingRegionShape" vr="CS" vm="1" ret="">Exposure Control Sensing Region Shape</element>
+<element tag="00189436" alias="ExposureControlSensingRegionLeftVerticalEdge" vr="SS" vm="1" ret="">Exposure Control Sensing Region Left Vertical Edge</element>
+<element tag="00189437" alias="ExposureControlSensingRegionRightVerticalEdge" vr="SS" vm="1" ret="">Exposure Control Sensing Region Right Vertical Edge</element>
+<element tag="00189438" alias="ExposureControlSensingRegionUpperHorizontalEdge" vr="SS" vm="1" ret="">Exposure Control Sensing Region Upper Horizontal Edge</element>
+<element tag="00189439" alias="ExposureControlSensingRegionLowerHorizontalEdge" vr="SS" vm="1" ret="">Exposure Control Sensing Region Lower Horizontal Edge</element>
+<element tag="00189440" alias="CenterofCircularExposureControlSensingRegion" vr="SS" vm="2" ret="">Center of Circular Exposure Control Sensing Region</element>
+<element tag="00189441" alias="RadiusofCircularExposureControlSensingRegion" vr="US" vm="1" ret="">Radius of Circular Exposure Control Sensing Region</element>
+<element tag="00189442" alias="VerticesofthePolygonalExposureControlSensingRegion" vr="SS" vm="2-n" ret="">Vertices of the Polygonal Exposure Control Sensing Region</element>
+<element tag="00189447" alias="ColumnAngulationPatient" vr="FL" vm="1" ret="">Column Angulation (Patient)</element>
+<element tag="00189449" alias="BeamAngle" vr="FL" vm="1" ret="">Beam Angle</element>
+<element tag="00189451" alias="FrameDetectorParametersSequence" vr="SQ" vm="1" ret="">Frame Detector Parameters Sequence</element>
+<element tag="00189452" alias="CalculatedAnatomyThickness" vr="FL" vm="1" ret="">Calculated Anatomy Thickness</element>
+<element tag="00189455" alias="CalibrationSequence" vr="SQ" vm="1" ret="">Calibration Sequence</element>
+<element tag="00189456" alias="ObjectThicknessSequence" vr="SQ" vm="1" ret="">Object Thickness Sequence</element>
+<element tag="00189457" alias="PlaneIdentification" vr="CS" vm="1" ret="">Plane Identification</element>
+<element tag="00189461" alias="FieldofViewDimensionsinFloat" vr="FL" vm="1-2" ret="">Field of View Dimension(s) in Float</element>
+<element tag="00189462" alias="IsocenterReferenceSystemSequence" vr="SQ" vm="1" ret="">Isocenter Reference System Sequence</element>
+<element tag="00189463" alias="PositionerIsocenterPrimaryAngle" vr="FL" vm="1" ret="">Positioner Isocenter Primary Angle</element>
+<element tag="00189464" alias="PositionerIsocenterSecondaryAngle" vr="FL" vm="1" ret="">Positioner Isocenter Secondary Angle</element>
+<element tag="00189465" alias="PositionerIsocenterDetectorRotationAngle" vr="FL" vm="1" ret="">Positioner Isocenter Detector Rotation Angle</element>
+<element tag="00189466" alias="TableXPositiontoIsocenter" vr="FL" vm="1" ret="">Table X Position to Isocenter</element>
+<element tag="00189467" alias="TableYPositiontoIsocenter" vr="FL" vm="1" ret="">Table Y Position to Isocenter</element>
+<element tag="00189468" alias="TableZPositiontoIsocenter" vr="FL" vm="1" ret="">Table Z Position to Isocenter</element>
+<element tag="00189469" alias="TableHorizontalRotationAngle" vr="FL" vm="1" ret="">Table Horizontal Rotation Angle</element>
+<element tag="00189470" alias="TableHeadTiltAngle" vr="FL" vm="1" ret="">Table Head Tilt Angle</element>
+<element tag="00189471" alias="TableCradleTiltAngle" vr="FL" vm="1" ret="">Table Cradle Tilt Angle</element>
+<element tag="00189472" alias="FrameDisplayShutterSequence" vr="SQ" vm="1" ret="">Frame Display Shutter Sequence</element>
+<element tag="00189473" alias="AcquiredImageAreaDoseProduct" vr="FL" vm="1" ret="">Acquired Image Area Dose Product</element>
+<element tag="00189474" alias="CarmPositionerTabletopRelationship" vr="CS" vm="1" ret="">C-arm Positioner Tabletop Relationship</element>
+<element tag="00189476" alias="XRayGeometrySequence" vr="SQ" vm="1" ret="">X-Ray Geometry Sequence</element>
+<element tag="00189477" alias="IrradiationEventIdentificationSequence" vr="SQ" vm="1" ret="">Irradiation Event Identification Sequence</element>
 <element tag="0018A001" alias="ContributingEquipmentSequence" vr="SQ" vm="1" ret="">Contributing Equipment Sequence</element>
 <element tag="0018A002" alias="ContributionDateTime" vr="DT" vm="1" ret="">Contribution DateTime</element>
 <element tag="0018A003" alias="ContributionDescription" vr="ST" vm="1" ret="">Contribution Description</element>
@@ -864,6 +923,9 @@
 <element tag="00209222" alias="DimensionIndexSequence" vr="SQ" vm="1" ret="">Dimension Index Sequence</element>
 <element tag="00209228" alias="ConcatenationFrameOffsetNumber" vr="UL" vm="1" ret="">Concatenation Frame Offset Number</element>
 <element tag="00209238" alias="FunctionalGroupPrivateCreator" vr="LO" vm="1" ret="">Functional Group Private Creator</element>
+<element tag="00209421" alias="DimensionDescriptionLabel" vr="LO" vm="1" ret="">Dimension Description Label</element>
+<element tag="00209450" alias="PatientOrientationinFrameSequence" vr="SQ" vm="1" ret="">Patient Orientation in Frame Sequence</element>
+<element tag="00209453" alias="FrameLabel" vr="LO" vm="1" ret="">Frame Label</element>
 <element tag="00220001" alias="LightPathFilterPassThroughWavelength" vr="US" vm="1" ret="">Light Path Filter Pass-Through Wavelength</element>
 <element tag="00220002" alias="LightPathFilterPassBand" vr="US" vm="2" ret="">Light Path Filter Pass Band</element>
 <element tag="00220003" alias="ImagePathFilterPassThroughWavelength" vr="US" vm="1" ret="">Image Path Filter Pass-Through Wavelength</element>
@@ -956,6 +1018,7 @@
 <element tag="00281300" alias="ImplantPresent" vr="CS" vm="1" ret="">Implant Present</element>
 <element tag="00281350" alias="PartialView" vr="CS" vm="1" ret="">Partial View</element>
 <element tag="00281351" alias="PartialViewDescription" vr="ST" vm="1" ret="">Partial View Description</element>
+<element tag="00282000" alias="ICCProfile" vr="OB" vm="1" ret="">ICC Profile</element>
 <element tag="00282110" alias="LossyImageCompression" vr="CS" vm="1" ret="">Lossy Image Compression</element>
 <element tag="00282112" alias="LossyImageCompressionRatio" vr="DS" vm="1-n" ret="">Lossy Image Compression Ratio</element>
 <element tag="00282114" alias="LossyImageCompressionMethod" vr="CS" vm="1-n" ret="">Lossy Image Compression Method</element>
@@ -991,6 +1054,16 @@
 <element tag="00289132" alias="FrameVOILUTSequence" vr="SQ" vm="1" ret="">Frame VOI LUT Sequence</element>
 <element tag="00289145" alias="PixelValueTransformationSequence" vr="SQ" vm="1" ret="">Pixel Value Transformation Sequence</element>
 <element tag="00289235" alias="SignalDomainRows" vr="CS" vm="1" ret="">Signal Domain Rows</element>
+<element tag="00289411" alias="DisplayFilterPercentage" vr="FL" vm="1" ret="">Display Filter Percentage</element>
+<element tag="00289415" alias="FramePixelShiftSequence" vr="SQ" vm="1" ret="">Frame Pixel Shift Sequence</element>
+<element tag="00289416" alias="SubtractionItemID" vr="US" vm="1" ret="">Subtraction Item ID</element>
+<element tag="00289422" alias="PixelIntensityRelationshipLUTSequence" vr="SQ" vm="1" ret="">Pixel Intensity Relationship LUT Sequence</element>
+<element tag="00289443" alias="FramePixelDataPropertiesSequence" vr="SQ" vm="1" ret="">Frame Pixel Data Properties Sequence</element>
+<element tag="00289444" alias="GeometricalProperties" vr="CS" vm="1" ret="">Geometrical Properties</element>
+<element tag="00289445" alias="GeometricMaximumDistortion" vr="FL" vm="1" ret="">Geometric Maximum Distortion</element>
+<element tag="00289446" alias="ImageProcessingApplied" vr="CS" vm="1-n" ret="">Image Processing Applied</element>
+<element tag="00289454" alias="MaskSelectionMode" vr="CS" vm="1" ret="">Mask Selection Mode</element>
+<element tag="00289475" alias="LUTFunction" vr="CS" vm="1" ret="">LUT Function</element>
 <element tag="0032000A" alias="StudyStatusID" vr="CS" vm="1" ret="">Study Status ID</element>
 <element tag="0032000C" alias="StudyPriorityID" vr="CS" vm="1" ret="">Study Priority ID</element>
 <element tag="00320012" alias="StudyIDIssuer" vr="LO" vm="1" ret="">Study ID Issuer</element>
@@ -1199,6 +1272,7 @@
 <element tag="00404036" alias="HumanPerformersOrganization" vr="LO" vm="1" ret="">Human Performer's Organization</element>
 <element tag="00404037" alias="HumanPerformersName" vr="PN" vm="1" ret="">Human Performer's Name</element>
 <element tag="00408302" alias="EntranceDoseinmGy" vr="DS" vm="1" ret="">Entrance Dose in mGy</element>
+<element tag="00409094" alias="ReferencedImageRealWorldValueMappingSequence" vr="SQ" vm="1" ret="">Referenced Image Real World Value Mapping Sequence</element>
 <element tag="00409096" alias="RealWorldValueMappingSequence" vr="SQ" vm="1" ret="">Real World Value Mapping Sequence</element>
 <element tag="00409098" alias="PixelValueMappingCodeSequence" vr="SQ" vm="1" ret="">Pixel Value Mapping Code Sequence</element>
 <element tag="00409210" alias="LUTLabel" vr="SH" vm="1" ret="">LUT Label</element>
@@ -1398,6 +1472,7 @@
 <element tag="00700082" alias="PresentationCreationDate" vr="DA" vm="1" ret="">Presentation Creation Date</element>
 <element tag="00700083" alias="PresentationCreationTime" vr="TM" vm="1" ret="">Presentation Creation Time</element>
 <element tag="00700084" alias="ContentCreatorsName" vr="PN" vm="1" ret="">Content Creator's Name</element>
+<element tag="00700086" alias="ContentCreatorsIdentificationSequence" vr="SQ" vm="1" ret="">Content Creator's Identification Sequence</element>
 <element tag="00700100" alias="PresentationSizeMode" vr="CS" vm="1" ret="">Presentation Size Mode</element>
 <element tag="00700101" alias="PresentationPixelSpacing" vr="DS" vm="2" ret="">Presentation Pixel Spacing</element>
 <element tag="00700102" alias="PresentationPixelAspectRatio" vr="IS" vm="2" ret="">Presentation Pixel Aspect Ratio</element>
@@ -1417,6 +1492,11 @@
 <element tag="0070031A" alias="FiducialUID" vr="UI" vm="1" ret="">Fiducial UID</element>
 <element tag="0070031C" alias="FiducialSetSequence" vr="SQ" vm="1" ret="">Fiducial Set Sequence</element>
 <element tag="0070031E" alias="FiducialSequence" vr="SQ" vm="1" ret="">Fiducial Sequence</element>
+<element tag="00700401" alias="GraphicLayerRecommendedDisplayCIELabValue" vr="US" vm="3" ret="">Graphic Layer Recommended Display CIELab Value</element>
+<element tag="00700402" alias="BlendingSequence" vr="SQ" vm="1" ret="">Blending Sequence</element>
+<element tag="00700403" alias="RelativeOpacity" vr="FL" vm="1" ret="">Relative Opacity</element>
+<element tag="00700404" alias="ReferencedSpatialRegistrationSequence" vr="SQ" vm="1" ret="">Referenced Spatial Registration Sequence</element>
+<element tag="00700405" alias="BlendingPosition" vr="CS" vm="1" ret="">Blending Position</element>
 <element tag="00720002" alias="HangingProtocolName" vr="SH" vm="1" ret="">Hanging Protocol Name</element>
 <element tag="00720004" alias="HangingProtocolDescription" vr="LO" vm="1" ret="">Hanging Protocol Description</element>
 <element tag="00720006" alias="HangingProtocolLevel" vr="CS" vm="1" ret="">Hanging Protocol Level</element>
@@ -2087,6 +2167,9 @@
 <element tag="300C00D0" alias="ReferencedCompensatorNumber" vr="IS" vm="1" ret="">Referenced Compensator Number</element>
 <element tag="300C00E0" alias="ReferencedBlockNumber" vr="IS" vm="1" ret="">Referenced Block Number</element>
 <element tag="300C00F0" alias="ReferencedControlPointIndex" vr="IS" vm="1" ret="">Referenced Control Point Index</element>
+<element tag="300C00F2" alias="ReferencedControlPointSequence" vr="SQ" vm="1" ret="">Referenced Control Point Sequence</element>
+<element tag="300C00F4" alias="ReferencedStartControlPointIndex" vr="IS" vm="1" ret="">Referenced Start Control Point Index</element>
+<element tag="300C00F6" alias="ReferencedStopControlPointIndex" vr="IS" vm="1" ret="">Referenced Stop Control Point Index</element>
 <element tag="300E0002" alias="ApprovalStatus" vr="CS" vm="1" ret="">Approval Status</element>
 <element tag="300E0004" alias="ReviewDate" vr="DA" vm="1" ret="">Review Date</element>
 <element tag="300E0005" alias="ReviewTime" vr="TM" vm="1" ret="">Review Time</element>

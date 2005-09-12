@@ -1,6 +1,6 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem dcm4che2/mkelmdic  Launcher
+rem dcm4che2/mkuiddic  Launcher
 rem -------------------------------------------------------------------------
 
 rem $Id$
@@ -8,7 +8,7 @@ rem $Id$
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che2.data.ElementDictionary
+set MAIN_CLASS=org.dcm4che2.data.UIDDictionary
 set MAIN_JAR=dcm4che-core-2.0-alpha-5.jar
 
 set DIRNAME=.\

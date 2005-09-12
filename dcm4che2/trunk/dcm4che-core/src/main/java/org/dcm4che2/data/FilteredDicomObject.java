@@ -323,13 +323,13 @@ abstract class FilteredDicomObject extends AbstractDicomObject {
 		throw new UnsupportedOperationException();
 	}
 
-	public int reserveTag(int privateTag, String privateCreator) {
-		throw new UnsupportedOperationException();
-	}
+    public int resolveTag(int privateTag, String privateCreator) {
+        return attrs.resolveTag(privateTag, privateCreator);
+    }
 
-	public int resolveTag(int privateTag, String privateCreator) {
-		return attrs.resolveTag(privateTag, privateCreator);
-	}
+    public int resolveTag(int privateTag, String privateCreator, boolean reserve) {
+        return attrs.resolveTag(privateTag, privateCreator, false);
+    }
 
 	public void cacheGet(boolean cached) {
 		attrs.cacheGet(cached);

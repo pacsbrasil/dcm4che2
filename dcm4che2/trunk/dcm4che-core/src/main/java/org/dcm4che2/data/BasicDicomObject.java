@@ -101,11 +101,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 	
 	public int resolveTag(int privateTag, String privateCreator) {
-		return resolveTagInternal(privateTag, privateCreator, false);
-	}
-
-	public int reserveTag(int privateTag, String privateCreatorID) {
-		return resolveTagInternal(privateTag, privateCreatorID, true);
+		return resolveTag(privateTag, privateCreator, false);
 	}
 
 	public void shareElements() {
@@ -219,7 +215,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 		return a == null ? null : a.getString(getSpecificCharacterSet(), true);
 	}
 
-	private int resolveTagInternal(int tag, String creator, boolean reserve) {
+	public int resolveTag(int tag, String creator, boolean reserve) {
 		if (!TagUtils.isPrivateDataElement(tag))
             return tag;
 		int gggg0000 = tag & 0xffff0000;
