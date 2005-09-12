@@ -185,7 +185,7 @@
    <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>AcTimeout</name>
+      <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000"/>
@@ -215,7 +215,7 @@
    <attribute access="read-write" getMethod="getMaxPDUlen" setMethod="setMaxPDUlen">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs, in bytes
       </description>
-      <name>MaximumPDUSize</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
          <value value="16352"/>

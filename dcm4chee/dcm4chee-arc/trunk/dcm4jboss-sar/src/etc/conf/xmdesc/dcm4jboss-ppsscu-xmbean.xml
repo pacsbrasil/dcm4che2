@@ -23,7 +23,7 @@
       <description>List of the AE titles of the application entities that GP-PPS messages can be  forwarded to, separated by \(backslash).
       NONE = do not forward GP-PPS messages to any application entities.
       </description>
-      <name>ForwardAETs</name>
+      <name>ForwardAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>

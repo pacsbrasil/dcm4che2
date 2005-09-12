@@ -22,10 +22,10 @@
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Accepted Called AETs.
-      Separate multiple values by '\'(backslash). 
+      <description>List of accepted called AE titles, separated by \(backslash). 
+      For example, PACS_TIANI\PACS_TIANI2.
       </description>
-      <name>CalledAETs</name>
+      <name>CalledAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
@@ -34,10 +34,10 @@
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>Accepted Calling AETs.
-      "ANY" = accept any. Separate multiple values by '\'(backslash). 
+      <description>List of accepted calling AE titles, separated by \(backslash).
+      ANY = accept any.       
       </description>
-      <name>CallingAETs</name>
+      <name>CallingAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY" />
@@ -66,9 +66,9 @@
    <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
-      <description>Maximal PDU package length for receiving PDUs.
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
-      <name>MaxPDULength</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
