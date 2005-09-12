@@ -81,7 +81,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final Logger log;
 
     private int bufferSize = 512;
+	
+	private boolean acceptMissingPatientID = true;
 
+	private boolean acceptMissingPatientName = true;
+	
+	private boolean serializeDBUpdate = false;
+	
 	private String generatePatientID = "PACS-##########";
 	
 	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
@@ -102,6 +108,30 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private long updateDatabaseRetryInterval = 0L;
 
     private long outOfResourcesThreshold = 30000000L;
+
+	public final boolean isAcceptMissingPatientID() {
+		return acceptMissingPatientID;
+	}
+
+	public final void setAcceptMissingPatientID(boolean accept) {
+		this.acceptMissingPatientID = accept;
+	}
+
+	public final boolean isAcceptMissingPatientName() {
+		return acceptMissingPatientName;
+	}
+
+	public final void setAcceptMissingPatientName(boolean accept) {
+		this.acceptMissingPatientName = accept;
+	}
+
+	public final boolean isSerializeDBUpdate() {
+		return serializeDBUpdate;
+	}
+
+	public final void setSerializeDBUpdate(boolean serialize) {
+		this.serializeDBUpdate = serialize;
+	}
 
     public final String getGeneratePatientID() {
 		return generatePatientID != null  ? generatePatientID : "NONE";
@@ -344,10 +374,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             int retry = 0;
             for (;;) {
                 try {
-                    synchronized (this) {
+					if (serializeDBUpdate) {
+	                    synchronized (this) {
+	                        return storage.store(ds, fsInfo.getPath(), filePath,
+	                                (int) file.length(), md5);
+	                    }
+					} else {
                         return storage.store(ds, fsInfo.getPath(), filePath,
-                                (int) file.length(), md5);
-                    }
+                                (int) file.length(), md5);						
+					}
                 } catch (Exception e) {
                     ++retry;
                     if (retry > updateDatabaseMaxRetries) {
@@ -494,6 +529,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
 		String pid = ds.getString(Tags.PatientID);
 		String pname = ds.getString(Tags.PatientName);
+		if (pid == null && !acceptMissingPatientID) {
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "Acceptance of objects without Patient ID is disabled");			
+		}
+		if (pname == null && !acceptMissingPatientName) {
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "Acceptance of objects without Patient Name is disabled");			
+		}
 		if (pid == null && generatePatientID != null) {
 			if (generatePatientID != null) {
 				pid = generatePatientID(ds);

@@ -53,6 +53,24 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isAcceptMissingPatientID" setMethod="setAcceptMissingPatientID">
+      <description><![CDATA[Accept storage of objects/images without patient ID]]>
+      </description>
+      <name>AcceptMissingPatientID</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isAcceptMissingPatientName" setMethod="setAcceptMissingPatientName">
+      <description><![CDATA[Accept storage of objects/images without patient name]]>
+      </description>
+      <name>AcceptMissingPatientName</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getGeneratePatientID" setMethod="setGeneratePatientID">
       <description>Generate a patient ID from a hash of the patient name and
           birth date, if the received study has no patient ID.
@@ -147,6 +165,15 @@ StoreSCP service.
       <type>java.lang.String</type>
       <descriptors>
          <value value="30MB"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isSerializeDBUpdate" setMethod="setSerializeDBUpdate">
+      <description><![CDATA[Serialize updates of DB records for received objects. Decreases Storage Performance!]]>
+      </description>
+      <name>SerializeDBUpdate</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getUpdateDatabaseMaxRetries" setMethod="setUpdateDatabaseMaxRetries">

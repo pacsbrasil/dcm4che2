@@ -87,6 +87,29 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
 
+    public final boolean isAcceptMissingPatientID() {
+		return scp.isAcceptMissingPatientID();
+	}
+
+	public final void setAcceptMissingPatientID(boolean accept) {
+		scp.setAcceptMissingPatientID(accept);
+	}
+
+    public final boolean isAcceptMissingPatientName() {
+		return scp.isAcceptMissingPatientName();
+	}
+
+	public final void setAcceptMissingPatientName(boolean accept) {
+		scp.setAcceptMissingPatientName(accept);
+	}
+
+    public final boolean isSerializeDBUpdate() {
+		return scp.isSerializeDBUpdate();
+	}
+
+	public final void setSerializeDBUpdate(boolean serialize) {
+		scp.setSerializeDBUpdate(serialize);
+	}
 
     public final String getGeneratePatientID() {
 		return scp.getGeneratePatientID();
