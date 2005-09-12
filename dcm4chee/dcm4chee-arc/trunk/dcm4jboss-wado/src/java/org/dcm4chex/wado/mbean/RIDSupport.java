@@ -53,6 +53,7 @@ import org.dcm4che.srom.SRDocumentFactory;
 import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
@@ -575,23 +576,20 @@ public class RIDSupport {
 				Dataset ds = cmd.getDataset();
 				String cuid = ds.getString( Tags.SOPClassUID );
 				if ( getECGSopCuids().values().contains( cuid ) ) {
-					cmd.close();
 					return getECGSupport().getECGDocument( reqObj, ds );
 				} else if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) {
-					cmd.close();
 					return getEncapsulatedPDF( reqObj );
 				} else {
-					cmd.close();
 					return getDocument( reqObj );
 				}
 			} else {
-				cmd.close();
 				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
 			}
 		} catch (SQLException x) {
 			log.error("Cant get RIDDocument:", x);
-			if ( cmd != null ) cmd.close();
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
+		} finally {
+			if ( cmd != null ) cmd.close();
 		}
 	}
 	
@@ -619,7 +617,7 @@ public class RIDSupport {
 		WADOCache cache = WADOCacheImpl.getRIDCache();
 		File outFile = cache.getFileObject(null, null, reqObj.getParam("documentUID"), contentType );
 		try {
-			if ( !outFile.exists() ) {
+			if ( !outFile.exists() || isOutdated( outFile, docUID ) ) {
 				File inFile = getDICOMFile( docUID );
 				if ( inFile == null ) {
 					return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
@@ -654,6 +652,33 @@ public class RIDSupport {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	/**
+	 * @param outFile
+	 * @return
+	 */
+	protected boolean isOutdated(File outFile, String docUID) {
+		Date fileDate = new Date( outFile.lastModified() );
+		Dataset dsQ = factory.newDataset();
+		dsQ.putUI(Tags.SOPInstanceUID, docUID);
+		dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+		RetrieveStudyDatesCmd cmd = null;
+		try {
+			cmd = RetrieveStudyDatesCmd.create(dsQ);
+			Date[] dates = cmd.getUpdatedTimes(1);//IMAGE should contain only one result set
+			if (dates != null) {
+//				check only patient and instance (study and series maybe changed without influence of this instance!) 
+				return dates[0].after(fileDate) || dates[3].after(fileDate);
+			} else {
+				return true;
+			}
+		} catch (SQLException e) {
+			log.error("Cant get Study date/times! mark "+outFile+" as outdated!",e);
+			return true;
+		} finally {
+			if ( cmd != null ) cmd.close();
+		}
 	}
 
 	/**

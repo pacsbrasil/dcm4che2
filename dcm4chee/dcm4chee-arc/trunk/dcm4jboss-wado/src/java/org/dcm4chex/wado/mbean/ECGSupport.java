@@ -81,7 +81,7 @@ public class ECGSupport {
 		WADOCache cache = WADOCacheImpl.getRIDCache();
 		File outFile = cache.getFileObject(null, null, reqObj.getParam("documentUID"), contentType );
 		try {
-			if ( outFile.exists() ) {
+			if ( outFile.exists() && ! ridSupport.isOutdated( outFile, reqObj.getParam("documentUID"))) {
 				return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
 			}
 		} catch (Exception e) {
@@ -200,30 +200,28 @@ public class ECGSupport {
 	        outFile.getParentFile().mkdirs();
 	        out = new FileOutputStream( outFile );
 	        tmpFile = new File( outFile.toString()+".fop");
-		     if ( ! tmpFile.exists() ) {
-		        tmpFile.deleteOnExit();
-		        tmpOut = new FileOutputStream( tmpFile);
-		        
-				DcmElement elem = ds.get( Tags.WaveformSeq);
-				int nrOfWFGroups = elem.vm();
-				WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
-				for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
-					wfgrps[i] = new WaveformGroup( ds.getString(Tags.SOPClassUID),elem, i,
-							ridSupport.getWaveformCorrection());
-				}
-				WaveformInfo wfInfo = new WaveformInfo( ds );
-	
-				FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
-				fopCreator.toXML( tmpOut );
-		        tmpOut.close();
-		     }
+	        tmpFile.deleteOnExit();
+	        tmpOut = new FileOutputStream( tmpFile);
+	        
+			DcmElement elem = ds.get( Tags.WaveformSeq);
+			int nrOfWFGroups = elem.vm();
+			WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
+			for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
+				wfgrps[i] = new WaveformGroup( ds.getString(Tags.SOPClassUID),elem, i,
+						ridSupport.getWaveformCorrection());
+			}
+			WaveformInfo wfInfo = new WaveformInfo( ds );
+
+			FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
+			fopCreator.toXML( tmpOut );
+	        tmpOut.close();
 	        fop.setRenderer(Driver.RENDER_PDF);
 	        fop.setOutputStream( out );
 			SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 	        Transformer t = tf.newTransformer();
 	        t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
 	        out.close();
-			//TODO tmpFile.delete();
+			tmpFile.delete();
 			return new WADOStreamResponseObjectImpl(new FileInputStream( outFile ), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
 			try {
