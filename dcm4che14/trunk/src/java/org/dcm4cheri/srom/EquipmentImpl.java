@@ -48,9 +48,9 @@ final class EquipmentImpl implements Equipment {
     // Constructor --------------------------------------------------------
     public EquipmentImpl(String manufacturer, String modelName,
             String stationName) {
-        this.manufacturer = manufacturer;
-        this.modelName = modelName;
-        this.stationName = stationName;
+        setManufacturer(manufacturer);
+		setModelName(modelName);
+		setStationName(stationName);
     }
 
     public EquipmentImpl(Equipment other) {
@@ -77,12 +77,10 @@ final class EquipmentImpl implements Equipment {
     }
     
     public final void setManufacturer(String manufacturer) {
-        if (manufacturer == null)
-            throw new NullPointerException();
-        this.manufacturer = manufacturer;
+        this.manufacturer = manufacturer == null ? "" : manufacturer;
     }
     
-    public final String getInstitutionName() {
+	public final String getInstitutionName() {
         return institutionName;
     }
     

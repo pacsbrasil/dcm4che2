@@ -45,14 +45,8 @@ final class PatientImpl implements org.dcm4che.srom.Patient {
     // Constructors --------------------------------------------------
     public PatientImpl(String patientID, String patientName, Sex patientSex,
             Date patientBirthDate) {
-        if (patientID == null)
-            throw new NullPointerException();
-        
-        if (patientName == null)
-            throw new NullPointerException();
-
-        this.patientID = patientID;
-        this.patientName = patientName;
+        this.patientID = patientID == null ? "" : patientID;
+        this.patientName = patientName == null ? "" : patientName;;
         this.patientSex = patientSex;
         this.patientBirthDate = patientBirthDate != null 
             ? new Long(patientBirthDate.getTime()) : null;
