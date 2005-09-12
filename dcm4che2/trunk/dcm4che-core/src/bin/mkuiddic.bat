@@ -9,7 +9,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che2.data.UIDDictionary
-set MAIN_JAR=dcm4che-core-2.0-alpha-5.jar
+set MAIN_JAR=dcm4che-core-2.0-alpha-6.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%

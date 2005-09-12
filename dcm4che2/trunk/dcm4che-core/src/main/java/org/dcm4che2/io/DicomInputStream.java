@@ -36,6 +36,8 @@ public class DicomInputStream extends FilterInputStream implements
 
 	private static Logger log = Logger.getLogger(DicomInputStream.class);
 
+    private static final byte[] EMPTY_BYTES = {};
+
 	DicomInputHandler handler = this;
 
 	TransferSyntax ts;
@@ -404,12 +406,12 @@ public class DicomInputStream extends FilterInputStream implements
 
 	public byte[] readBytes(int vallen) throws IOException {
 		if (vallen == 0)
-			return null;
+			return EMPTY_BYTES;
 		if (vallen > vallenLimit) {
 			if (skip(vallen) != vallen) {
 				throw new IOException("Failed to skip " + vallen + " bytes");
 			}
-			return null;
+			return EMPTY_BYTES;
 		}
 		byte[] val = new byte[vallen];
 		readFully(val, 0, vallen);

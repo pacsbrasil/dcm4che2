@@ -42,8 +42,8 @@ import org.dcm4che2.io.SAXWriter;
 public class Dcm2Xml {
 
     private static final String USAGE = 
-        "dcm2xml [-VXcCh] -i <dcmfile> [-o <xmlfile>] [-x <tag>]... " +
-        "[-d <basedir>] [-T <xslurl> [-I] [-P <param=value>]]";
+        "dcm2xml [-VXcCh] [-o <xmlfile>] [-x <tag>]... [-d <basedir>] " +
+        "[-T <xslurl> [-I] [-P <param=value>]] <dcmfile>";
     private static final String DESCRIPTION = 
         "Convert DICOM file in XML presentation and optionally apply " +
         "XSL stylesheet on it. Values of attributes specified by -x <tag> " +
@@ -64,9 +64,6 @@ public class Dcm2Xml {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
-        Option dcmfile = new Option("i", true, "DICOM file to convert.");
-        dcmfile.setArgName("dcmfile");
-        opts.addOption(dcmfile);
         Option basedir = new Option("d", true,
                 "store extracted values in files under <basedir>. Cannot be " +
                 "specified together with option -o <xmlfile>.");
@@ -112,7 +109,7 @@ public class Dcm2Xml {
             System.out.println("dcm2xml v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || !cl.hasOption("i")) {
+        if (cl.hasOption('h') || cl.getArgList().isEmpty()) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
@@ -134,7 +131,7 @@ public class Dcm2Xml {
     public static void main(String[] args) {
         CommandLine cl = parse(args);
         Dcm2Xml dcm2xml = new Dcm2Xml();
-        File ifile = new File(cl.getOptionValue("i"));
+        File ifile = new File((String) cl.getArgList().get(0));
         File ofile = null;
         if (cl.hasOption("o")) {
             ofile = new File(cl.getOptionValue("o"));

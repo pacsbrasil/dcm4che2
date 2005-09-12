@@ -482,8 +482,14 @@ public class UID {
     /** X-Ray Angiographic Image Storage - SOP Class */
     public static final String XRayAngiographicImageStorage = "1.2.840.10008.5.1.4.1.1.12.1";
 
+    /** Enhanced XA Image Storage - SOP Class */
+    public static final String EnhancedXAImageStorage = "1.2.840.10008.5.1.4.1.1.12.1.1";
+
     /** X-Ray Radiofluoroscopic Image Storage - SOP Class */
     public static final String XRayRadiofluoroscopicImageStorage = "1.2.840.10008.5.1.4.1.1.12.2";
+
+    /** Enhanced XRF Image Storage - SOP Class */
+    public static final String EnhancedXRFImageStorage = "1.2.840.10008.5.1.4.1.1.12.2.1";
 
     /** X-Ray Angiographic Bi-Plane Image Storage (Retired) - SOP Class */
     public static final String XRayAngiographicBiPlaneImageStorageRetired = "1.2.840.10008.5.1.4.1.1.12.3";
@@ -655,12 +661,6 @@ public class UID {
 
     /** Basic Voice Audio Waveform Storage - SOP Class */
     public static final String BasicVoiceAudioWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.4.1";
-
-    /** Enhanced XA Image Storage - SOP Class */
-    public static final String EnhancedXAImageStorage = "1.2.840.10008.5.1.4.1.1.x1";
-
-    /** Enhanced XRF Image Storage - SOP Class */
-    public static final String EnhancedXRFImageStorage = "1.2.840.10008.5.1.4.1.1.x2";
 
     /** Patient Root Query/Retrieve Information Model - FIND - SOP Class */
     public static final String PatientRootQueryRetrieveInformationModelFIND = "1.2.840.10008.5.1.4.1.2.1.1";

@@ -41,16 +41,13 @@ public class Dcm2Txt implements DicomInputHandler {
     private static final int MIN_MAX_VAL_LEN = 16;
     private static final int MAX_MAX_VAL_LEN = 512;    
     private static final String USAGE =
-        "dcm2txt [-cVh] [-l <max>] [-w <max>] -i <dcmfile>";
+        "dcm2txt [-cVh] [-l <max>] [-w <max>] <dcmfile>";
     private static final String DESCRIPTION = 
         "Dump DICOM file and data set\nOptions:";
     private static final String EXAMPLE = null;
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
-        Option dcmfile = new Option("i", true, "DICOM file to be dumped.");
-        dcmfile.setArgName("dcmfile");
-        opts.addOption(dcmfile);
         Option width = new Option("w", "width", true, 
                 "maximal number of characters per line, by default: 80");
         width.setArgName("max");
@@ -74,7 +71,7 @@ public class Dcm2Txt implements DicomInputHandler {
             System.out.println("dcm2txt v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || !cl.hasOption("i")) {
+        if (cl.hasOption('h') || cl.getArgList().isEmpty()) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
@@ -99,7 +96,7 @@ public class Dcm2Txt implements DicomInputHandler {
         if (cl.hasOption("l"))
             dcm2txt.setMaxValLen(parseInt(cl.getOptionValue("l"), "l",
                     MIN_MAX_VAL_LEN, MAX_MAX_VAL_LEN));
-        File ifile = new File(cl.getOptionValue("i"));
+        File ifile = new File((String) cl.getArgList().get(0));
         try {
             dcm2txt.dump(ifile);
         } catch (IOException e) {
@@ -195,6 +192,7 @@ public class Dcm2Txt implements DicomInputHandler {
                 cbuf, maxValLen, line);
         line.append("]");
         if (tag == Tag.SpecificCharacterSet
+                || tag == Tag.TransferSyntaxUID
                 || TagUtils.isPrivateCreatorDataElement(tag)) {
             dcmobj.putBytes(tag, vr, bigEndian, val);
         }
@@ -227,7 +225,9 @@ public class Dcm2Txt implements DicomInputHandler {
         DicomElement sq = in.sq();
         byte[] data = sq.removeFragment(0);
         boolean bigEndian = in.getTransferSyntax().bigEndian();
+        line.append(" [");
         sq.vr().promptValue(data, bigEndian, null, cbuf, maxValLen, line);
+        line.append("]");
         outLine(in);
     }
     

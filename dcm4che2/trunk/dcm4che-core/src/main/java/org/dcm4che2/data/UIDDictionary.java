@@ -34,24 +34,29 @@ public class UIDDictionary implements Serializable {
     private static final String RESOURCE_NAME = 
             "org/dcm4che2/data/UIDDictionary.ser";
 
+    private static final String FILE_NAME = "UIDDictionary.ser";
+    
     private static final String USAGE = 
-        "Usage: mkuiddic <xml-file> <resource-file>\n" +
-		"         (Store serialized dictionary in <resource-file>).\n";
+        "Usage: mkuiddic <xml-file>...\n" +
+		"         (Create UID Dictionary resource from XML files).\n";
 
 	public static final String UNKOWN = "?";
 
 	private static UIDDictionary inst;
 
 	public static void main(String args[]) {
-		if (args.length < 2) {
+		if (args.length == 0) {
 			System.out.println(USAGE);
 			System.exit(1);
 		}
 		UIDDictionary dict = new UIDDictionary(250);
 		try {
-			dict.loadXML(new File(args[0]));
-			ResourceLocator.serializeTo(dict, new File(args[1]));
-			System.out.println("Serialize Dictionary to - " + args[1]);
+			for (int i = 0; i < args.length; i++) {
+                dict.loadXML(new File(args[i]));
+            }
+			File ofile = new File(FILE_NAME);
+            ResourceLocator.serializeTo(dict, ofile);
+			System.out.println("Create Dictionary Resource - " + ofile);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

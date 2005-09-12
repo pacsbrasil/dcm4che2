@@ -75,4 +75,22 @@ public class SAXWriterTest extends BaseTestCase {
         dis.readDicomObject(attrs, -1);
         dis.close();
     }
+
+    public final void testReadValue3() throws IOException,
+            TransformerConfigurationException,
+            TransformerFactoryConfigurationError, SAXException {
+        File ofile = new File("target/test-out/DICOMDIR.xml");
+        ofile.getParentFile().mkdirs();
+        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
+                .newInstance();
+        TransformerHandler th = tf.newTransformerHandler();
+        th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
+        th.setResult(new StreamResult(ofile));
+        SAXWriter w = new SAXWriter(th, th);
+        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+        dis.setHandler(w);
+        DicomObject attrs = new BasicDicomObject();
+        dis.readDicomObject(attrs, -1);
+        dis.close();
+    }
 }

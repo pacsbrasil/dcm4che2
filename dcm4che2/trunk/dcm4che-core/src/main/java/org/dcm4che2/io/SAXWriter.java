@@ -255,6 +255,7 @@ public class SAXWriter implements DicomInputHandler {
                         attrs.getSpecificCharacterSet(), cbuf, ch);
             }
             if (tag == Tag.SpecificCharacterSet
+                    || tag == Tag.TransferSyntaxUID
                     || TagUtils.isPrivateCreatorDataElement(tag)) {
                 attrs.putBytes(tag, vr, bigEndian, val);
             }

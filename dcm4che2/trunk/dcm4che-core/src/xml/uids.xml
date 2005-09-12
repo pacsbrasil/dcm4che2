@@ -152,7 +152,9 @@
 <uid value="1.2.840.10008.5.1.4.1.1.11.3" alias="PseudoColorSoftcopyPresentationStateStorageSOPClass" type="SOP Class">Pseudo-Color Softcopy Presentation State Storage SOP Class</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.11.4" alias="BlendingSoftcopyPresentationStateStorageSOPClass" type="SOP Class">Blending Softcopy Presentation State Storage SOP Class</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.12.1" alias="XRayAngiographicImageStorage" type="SOP Class">X-Ray Angiographic Image Storage</uid>
+<uid value="1.2.840.10008.5.1.4.1.1.12.1.1" alias="EnhancedXAImageStorage" type="SOP Class">Enhanced XA Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.12.2" alias="XRayRadiofluoroscopicImageStorage" type="SOP Class">X-Ray Radiofluoroscopic Image Storage</uid>
+<uid value="1.2.840.10008.5.1.4.1.1.12.2.1" alias="EnhancedXRFImageStorage" type="SOP Class">Enhanced XRF Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.12.3" alias="XRayAngiographicBiPlaneImageStorageRetired" type="SOP Class">X-Ray Angiographic Bi-Plane Image Storage (Retired)</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.128" alias="PositronEmissionTomographyImageStorage" type="SOP Class">Positron Emission Tomography Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.129" alias="StandalonePETCurveStorage" type="SOP Class">Standalone PET Curve Storage</uid>
@@ -210,8 +212,6 @@
 <uid value="1.2.840.10008.5.1.4.1.1.9.2.1" alias="HemodynamicWaveformStorage" type="SOP Class">Hemodynamic Waveform Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.9.3.1" alias="CardiacElectrophysiologyWaveformStorage" type="SOP Class">Cardiac Electrophysiology Waveform Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.9.4.1" alias="BasicVoiceAudioWaveformStorage" type="SOP Class">Basic Voice Audio Waveform Storage</uid>
-<uid value="1.2.840.10008.5.1.4.1.1.x1" alias="EnhancedXAImageStorage" type="SOP Class">Enhanced XA Image Storage</uid>
-<uid value="1.2.840.10008.5.1.4.1.1.x2" alias="EnhancedXRFImageStorage" type="SOP Class">Enhanced XRF Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.2.1.1" alias="PatientRootQueryRetrieveInformationModelFIND" type="SOP Class">Patient Root Query/Retrieve Information Model - FIND</uid>
 <uid value="1.2.840.10008.5.1.4.1.2.1.2" alias="PatientRootQueryRetrieveInformationModelMOVE" type="SOP Class">Patient Root Query/Retrieve Information Model - MOVE</uid>
 <uid value="1.2.840.10008.5.1.4.1.2.1.3" alias="PatientRootQueryRetrieveInformationModelGET" type="SOP Class">Patient Root Query/Retrieve Information Model - GET</uid>
