@@ -65,6 +65,7 @@ public class ADTService extends AbstractHL7Service {
 	public void setIgnoreDeleteErrors(boolean ignore) {
 		this.ignoreDeleteErrors = ignore;
 	}
+	
 	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         Dataset pat = dof.newDataset();
@@ -72,6 +73,14 @@ public class ADTService extends AbstractHL7Service {
             Transformer t = getTemplates(pidStylesheetURL).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
                     .getSAXHandler2(null)));
+			final String pid = pat.getString(Tags.PatientID);
+			if (pid == null)
+				throw new HL7Exception("AR", 
+						"Missing required PID-3: Patient ID (Internal ID)");
+			final String pname = pat.getString(Tags.PatientName);
+			if (pname == null)
+				throw new HL7Exception("AR", 
+						"Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
             try {
                 if (isMerge(msh)) {
@@ -80,14 +89,17 @@ public class ADTService extends AbstractHL7Service {
                             .newTransformer();
                     t2.transform(new DocumentSource(msg), new SAXResult(mrg
                             .getSAXHandler2(null)));
-                    log.info("Merge Patient " 
-                            + mrg.getString(Tags.PatientName)
-                            + ", PID:" + mrg.getString(Tags.PatientID)
-                            + " with "+ pat.getString(Tags.PatientName)
-                            + ", PID:" + pat.getString(Tags.PatientID));
+					final String opid = mrg.getString(Tags.PatientID);
+					if (opid == null)
+						throw new HL7Exception("AR",
+								"Missing required MRG-1: Prior Patient ID - Internal");
+					final String opname = mrg.getString(Tags.PatientName);
+                    log.info("Merge Patient " + opname + ", PID:" + opid
+                            + " with "+ pname + ", PID:" + pid);
                     update.mergePatient(pat, mrg);
                 } else if ( isDelete(msh) ) {
-                	log.info("Delete Patient "+pat.getString( Tags.PatientName )+", PID:"+pat.getString( Tags.PatientID ));
+                	log.info("Delete Patient "+pat.getString( Tags.PatientName )
+							+ ", PID:"+pat.getString( Tags.PatientID ));
                 	try {
                 		update.deletePatient(pat);
                 	} catch ( Exception x ) {
@@ -96,9 +108,7 @@ public class ADTService extends AbstractHL7Service {
                 		}
                 	}
                 } else {
-                    log.info("Update Patient Info of " 
-                            + pat.getString(Tags.PatientName)
-                            + ", PID:" + pat.getString(Tags.PatientID));
+                    log.info("Update Patient Info of " + pname + ", PID:" + pid);
                     update.updatePatient(pat);					
                 }
             } finally {
@@ -107,13 +117,15 @@ public class ADTService extends AbstractHL7Service {
 	            } catch (Exception ignore) {
 	            }
             }
+        } catch (HL7Exception e) {
+            throw e;
         } catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
     }
 
-    private boolean isMerge(MSH msh) {
+	private boolean isMerge(MSH msh) {
         return "A40".equals(msh.triggerEvent);
     }
 

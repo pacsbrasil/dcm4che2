@@ -108,6 +108,14 @@ public class ORMService extends AbstractHL7Service {
 			Transformer t = getTemplates(stylesheetURL).newTransformer();
 			t.transform(new DocumentSource(msg), new SAXResult(ds
 					.getSAXHandler2(null)));
+			final String pid = ds.getString(Tags.PatientID);
+			if (pid == null)
+				throw new HL7Exception("AR",
+						"Missing required PID-3: Patient ID (Internal ID)");
+			final String pname = ds.getString(Tags.PatientName);
+			if (pname == null)
+				throw new HL7Exception("AR",
+						"Missing required PID-5: Patient Name");
 			mergeProtocolCodes(ds);
 			if (msgType == NW || msgType == XA) {
 				ds = addScheduledStationInfo(ds);
@@ -146,6 +154,8 @@ public class ORMService extends AbstractHL7Service {
 			} finally {
 				mwlManager.remove();
 			}
+		} catch (HL7Exception e) {
+			throw e;
 		} catch (Exception e) {
 			throw new HL7Exception("AE", e.getMessage(), e);
 		}
