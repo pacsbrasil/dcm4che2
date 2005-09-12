@@ -75,12 +75,15 @@ public class StudyInfoService extends ServiceMBeanSupport {
     
     public boolean checkOutdated( Date date, String level, String uid ) {
     	Dataset dsQ = getQueryDS(level, uid);
+    	RetrieveStudyDatesCmd cmd = null;
     	try {
-			RetrieveStudyDatesCmd cmd = RetrieveStudyDatesCmd.create(dsQ);
+			cmd = RetrieveStudyDatesCmd.create(dsQ);
 			Date mrDate = cmd.getMostRecentUpdatedTime();
 			return date.before(mrDate);
 		} catch (SQLException x) {
 			log.error("Error while RetrieveStudyDatesCmd!", x);
+		} finally {
+			if ( cmd != null ) cmd.close();
 		}
     	return true;
     }
