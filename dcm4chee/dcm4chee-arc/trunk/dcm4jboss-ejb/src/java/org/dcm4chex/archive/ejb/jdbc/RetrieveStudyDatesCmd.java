@@ -9,10 +9,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -28,7 +25,8 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
     public static int transactionIsolationLevel = 0;
 
     //be aware of order the fields: dont mix up different types (updated, created)  
-    private static final String[] SELECT_ATTRIBUTE = { "Study.updatedTime", "Series.updatedTime", "Study.createdTime", "Series.createdTime" };
+    private static final String[] SELECT_ATTRIBUTE = { "Patient.updatedTime", "Study.updatedTime", "Series.updatedTime", "Instance.updatedTime",
+    												"Patient.createdTime", "Study.createdTime", "Series.createdTime", "Instance.createdTime" };
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance"};
@@ -45,8 +43,7 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
         if (qrLevel == null || qrLevel.length() == 0)
             throw new IllegalArgumentException("Missing QueryRetrieveLevel");
 		if ("IMAGE".equals(qrLevel)) {
-            return new ImageRetrieveCmd(new ImageSql(keys).getSql(), 
-					keys.getStrings(Tags.SOPInstanceUID));
+            return new RetrieveStudyDatesCmd(new ImageSql(keys).getSql());
         }
 		if ("SERIES".equals(qrLevel)) {
 			return new RetrieveStudyDatesCmd(new SeriesSql(keys, true).getSql());
@@ -67,55 +64,50 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
 	}
 
     public Date getMostRecentUpdatedTime() throws SQLException {
-    	return getMostRecent(1);//1 index of field study.updatedTime
+    	return getBoundary(1, 4, false);//1 index of field patient.updatedTime
     }
     public Date getMostRecentCreatedTime() throws SQLException {
-    	return getMostRecent(3);//3 index of field study.createdTime
+    	return getBoundary(5, 8, false);//5 index of field patient.createdTime
     }
-    private Date getMostRecent(int idx) throws SQLException {
-    	int idx2 = idx; idx2++;
-		try {
-			if ( ! next() ) {
-				return null;
-			}
-			Date seriesDate, studyDate, mrDate;
-			Date date = rs.getTimestamp(idx);
-			rs.beforeFirst();
-			while (next()) {
-				studyDate = rs.getTimestamp(idx);
-				seriesDate = rs.getTimestamp(idx2);
-				mrDate = studyDate.after(seriesDate) ? studyDate:seriesDate;
-				if ( mrDate.after(date) ) 
-					date = mrDate;
-			}
-			return date;
-		} finally {
-			close();
-		}
-		
-	}
-
+    
     public Date getEldestUpdatedTime() throws SQLException {
-    	return getEldest(1);//1 index of field study.updatedTime
+    	return getBoundary(1, 4, true);//1 index of field patient.updatedTime
     }
     public Date getEldestCreatedTime() throws SQLException {
-    	return getEldest(3);//3 index of field study.createdTime
+    	return getBoundary(5, 8, true);//5 index of field patient.createdTime
     }
-    private Date getEldest(int idx) throws SQLException {
-    	int idx2 = idx; idx2++;
+
+    /**
+     * Return the 'eldest' or 'most recent' date/time of all timestamps.
+     * <p>
+     * With eldest you can switch between 'eldest' or 'most recent' boundary.
+     * <p>
+     * You can select the relevant fields with <code>startIdx and endIdx</code>. 
+     * 
+     * @param startIdx
+     * @param endIdx
+     * @param eldest If true use boundary 'eldest', otherwise 'most recent'
+     * @return
+     * @throws SQLException
+     */
+    private Date getBoundary(int startIdx, int endIdx, boolean eldest) throws SQLException {
 		try {
+			rs.beforeFirst();
 			if ( ! next() ) {
 				return null;
 			}
-			Date seriesDate, studyDate, mrDate;
-			Date date = rs.getTimestamp(idx);
+			endIdx++;
+			Date mrDate;
+			Date date = rs.getTimestamp(startIdx);
 			rs.beforeFirst();
 			while (next()) {
-				studyDate = rs.getTimestamp(idx);
-				seriesDate = rs.getTimestamp(idx2);
-				mrDate = studyDate.before(seriesDate) ? studyDate:seriesDate;
-				if ( mrDate.before(date) ) 
-					date = mrDate;
+				for ( int i = startIdx ; i < endIdx ; i++ ) {
+					mrDate = rs.getTimestamp(i);
+					if ( eldest )
+						date = mrDate.before(date) ? mrDate : date;
+					else
+						date = mrDate.after(date) ? mrDate : date;
+				}
 			}
 			return date;
 		} finally {
@@ -124,36 +116,48 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
 		
 	}
     
-    static class ImageRetrieveCmd extends RetrieveStudyDatesCmd {
-        final String[] uids;
-        ImageRetrieveCmd(String sql, String[] uids) throws SQLException {
-            super(sql);
-            this.uids = uids;
-        }
+    /**
+     * Returns an array of all updated times of given row of current result set.
+     * <p>
+     * Return null if row is not within current result set.
+     * <p>
+     * This method changes the current row position!
+     * 
+     * @param row row position (first row is 1)
+     * 
+     * @return Date array with updated dates (Patient, Study, Series, Instance)
+     * 
+     * @throws SQLException
+     */
+    public Date[] getUpdatedTimes( int row ) throws SQLException {
+    	rs.absolute(row);
+    	if ( rs.isAfterLast() || rs.isBeforeFirst() ) return null;
+    	Date[] dates = new Date[] { rs.getTimestamp(1), rs.getTimestamp(2),
+    								rs.getTimestamp(3), rs.getTimestamp(4) };
+    	
+    	return dates;
+    }
 
-        protected Map map() {
-            return new HashMap();
-        }
-
-        protected Object key() throws SQLException {
-            return rs.getString(10);
-        }
-        
-        protected FileInfo[][] toArray(Map result) {
-            FileInfo[][] array = new FileInfo[result.size()][];
-            ArrayList list;
-            for (int i = 0, j = 0; j < uids.length; ++j) {
-                list = (ArrayList) result.remove(uids[j]);
-                if (list != null) {
-                    array[i++] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
-                }
-            }
-            if (!result.isEmpty()) {
-                throw new RuntimeException("Result Set contains " 
-						+ result.size() + " non-matching entries!");
-            }
-            return array;
-        }
+    /**
+     * Returns an array of all created times of given row of current result set.
+     * <p>
+     * Return null if row is not within current result set.
+     * <p>
+     * This method changes the current row position!
+     * 
+     * @param row row position (first row is 1)
+     * 
+     * @return Date array with created dates (Patient, Study, Series, Instance)
+     * 
+     * @throws SQLException
+     */
+    public Date[] getCreatedTimes( int row ) throws SQLException {
+    	rs.absolute(row);
+    	if ( rs.isAfterLast() || rs.isBeforeFirst() ) return null;
+    	Date[] dates = new Date[] { rs.getTimestamp(5), rs.getTimestamp(6),
+    								rs.getTimestamp(7), rs.getTimestamp(8) };
+    	
+    	return dates;
     }
 
 	private static class Sql {
