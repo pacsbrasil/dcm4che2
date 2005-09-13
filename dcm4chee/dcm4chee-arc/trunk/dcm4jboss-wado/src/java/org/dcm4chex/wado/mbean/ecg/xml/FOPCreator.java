@@ -62,8 +62,8 @@ public class FOPCreator implements XMLResponseObject{
 		pageHeight = height;
 		graphHeight = new Float( pageHeight.floatValue() - 4.0f );
 		graphWidth = new Float( pageWidth.floatValue() - 2.0f );
-		log.info("page (h*w):"+pageHeight+"*"+pageWidth);
-		log.info("graph (h*w):"+graphHeight+"*"+graphWidth);
+		if ( log.isDebugEnabled() ) log.debug("page (h*w):"+pageHeight+"*"+pageWidth);
+		if ( log.isDebugEnabled() ) log.debug("graph (h*w):"+graphHeight+"*"+graphWidth);
 	}
 
 	public void toXML( OutputStream out ) throws TransformerConfigurationException, SAXException {

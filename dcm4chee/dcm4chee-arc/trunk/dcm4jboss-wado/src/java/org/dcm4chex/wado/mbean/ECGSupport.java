@@ -171,7 +171,7 @@ public class ECGSupport {
 			DcmElement elem = ds.get( Tags.WaveformSeq);
 			WaveformGroup wfgrp = new WaveformGroup( ds.getString(Tags.SOPClassUID), elem, 0, 
 					ridSupport.getWaveformCorrection() );//TODO all groups
-			log.info( wfgrp );
+			if ( log.isDebugEnabled() ) log.debug( wfgrp );
 			WaveformInfo wfInfo = new WaveformInfo( ds );
 
 			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, new Float( 27.6f ), new Float(20.3f) );

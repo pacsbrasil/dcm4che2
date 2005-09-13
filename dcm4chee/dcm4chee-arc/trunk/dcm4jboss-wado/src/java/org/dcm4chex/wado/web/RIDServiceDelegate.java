@@ -60,7 +60,7 @@ public class RIDServiceDelegate {
 	 * @return The WADO response object.
 	 */
 	public WADOResponseObject getRIDSummary( RIDRequestObject reqVO ) {
-		log.info( "RIDdelegate.getRIDSummary called");
+		if ( log.isDebugEnabled() ) log.debug( "RIDdelegate.getRIDSummary called");
 		WADOResponseObject resp = null;
 		try {
 	        Object o = server.invoke(ridServiceName,
@@ -82,7 +82,7 @@ public class RIDServiceDelegate {
 	 * @return The WADO response object.
 	 */
 	public WADOResponseObject getRIDDocument( RIDRequestObject reqVO ) {
-		log.info( "RIDdelegate.getRIDDocument called");
+		if ( log.isDebugEnabled() ) log.debug( "RIDdelegate.getRIDDocument called");
 		WADOResponseObject resp = null;
 		try {
 	        Object o = server.invoke(ridServiceName,

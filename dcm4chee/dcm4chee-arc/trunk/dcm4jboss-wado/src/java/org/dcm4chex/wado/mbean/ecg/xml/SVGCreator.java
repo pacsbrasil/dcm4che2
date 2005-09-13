@@ -423,9 +423,9 @@ public class SVGCreator implements XMLResponseObject{
 		int len = waveForms.getNrOfSamples();
 		if ( log.isDebugEnabled() ) log.debug("NrOfSamples:"+len);
 		if ( len * xDelta > width ) {
-			log.info("correction: (len*xdelta):"+(len*xDelta)+">"+width);
+			if ( log.isDebugEnabled() ) log.debug("correction: (len*xdelta):"+(len*xDelta)+">"+width);
 			len = new Float( width / xDelta).intValue();
-			log.info("xDelta:"+xDelta+" --> width/xDelta:"+( width / xDelta)+" len:"+len);
+			if ( log.isDebugEnabled() ) log.debug("xDelta:"+xDelta+" --> width/xDelta:"+( width / xDelta)+" len:"+len);
 		}
 		sb.append("M 0 0 L ");
 		float currX = 0f;

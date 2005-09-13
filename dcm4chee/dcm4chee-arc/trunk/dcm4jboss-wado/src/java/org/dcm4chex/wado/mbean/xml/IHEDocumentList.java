@@ -387,7 +387,7 @@ public class IHEDocumentList implements XMLResponseObject{
         		birthDate = DATE_FORMATTER.format( date );
         	
         } catch ( Exception x ) {
-        	log.info("Exception getting person informations:", x);
+        	log.warn("Exception getting person informations:", x);
         }
         util.startElement("patientPatient", EMPTY_ATTRIBUTES );
         //Names
