@@ -22,8 +22,8 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.net.Association;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.notif.IANNotificationVO;
@@ -61,12 +61,12 @@ public class ForwardService extends ServiceMBeanSupport implements
         this.forwardingRules = new ForwardingRules(forwardingRules);
     }
 
-    public final int getForwardPriority() {
-        return forwardPriority;
+    public final String getForwardPriority() {
+        return DicomPriority.toString(forwardPriority);
     }
 
-    public final void setForwardPriority(int forwardPriority) {
-        this.forwardPriority = forwardPriority;
+    public final void setForwardPriority(String forwardPriority) {
+        this.forwardPriority = DicomPriority.toCode(forwardPriority);
     }
 
     public final ObjectName getStoreScpServiceName() {

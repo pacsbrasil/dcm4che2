@@ -95,12 +95,12 @@
    </attribute>
    <attribute access="read-write" getMethod="getScnPriority" setMethod="setScnPriority">
       <description>Priority used in Basic Study Content Notification Requests.
-      0=medium, 1=high, 2=low.
+      Enumerated Values: LOW, MEDIUM, HIGH.
       </description>
       <name>StudyContentNotificationPriority</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="0"/>
+         <value value="MEDIUM"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">

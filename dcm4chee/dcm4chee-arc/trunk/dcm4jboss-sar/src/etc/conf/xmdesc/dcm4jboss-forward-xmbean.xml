@@ -66,12 +66,12 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getForwardPriority" setMethod="setForwardPriority">
-      <description>Forwarding priority. 0=medium, 1=high, 2=low.
+      <description>Forwarding priority. Enumerated Values: LOW, MEDIUM, HIGH.
       </description>
       <name>ForwardPriority</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="0"/>
+         <value value="MEDIUM"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getMaxSOPInstanceUIDsPerMoveRQ" setMethod="setMaxSOPInstanceUIDsPerMoveRQ">

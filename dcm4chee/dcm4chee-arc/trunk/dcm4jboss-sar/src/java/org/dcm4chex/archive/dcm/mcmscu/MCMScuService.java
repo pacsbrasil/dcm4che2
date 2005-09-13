@@ -44,6 +44,7 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposer;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
@@ -523,8 +524,8 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 * 
 	 * @return Returns the priority.
 	 */
-	public int getPriority() {
-		return priority;
+	public String getPriority() {
+		return DicomPriority.toString(priority);
 	}
 	
 	/**
@@ -532,9 +533,8 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 * 
 	 * @param priority The priority to set.
 	 */
-	public void setPriority(int priority) {
-		if ( priority < 0 || priority > 2 ) priority = 0;
-		this.priority = priority;
+	public void setPriority(String priority) {
+		this.priority = DicomPriority.toCode(priority);
 	}
 	
 	/**
@@ -757,7 +757,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
             for ( int i = 0, len = studyUIDs.length ; i < len ; i++ ) {
                 cmd.initCMoveRQ(as.nextMsgID(), UIDs.StudyRootQueryRetrieveInformationModelMOVE, 
-        				getPriority() , this.getMoveDestinationAET() );
+        				priority , this.getMoveDestinationAET() );
                 ds.putUI(Tags.StudyInstanceUID, studyUIDs[i] );
 	            Dimse moveRQ = AssociationFactory.getInstance().newDimse(1, cmd, ds);
 	            FutureRSP rsp = assoc.invoke(moveRQ);

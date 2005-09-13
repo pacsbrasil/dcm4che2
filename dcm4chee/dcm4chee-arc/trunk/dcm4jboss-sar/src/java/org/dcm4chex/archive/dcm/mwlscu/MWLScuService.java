@@ -31,6 +31,7 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -197,8 +198,8 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return Returns the priority.
 	 */
-	public final int getPriority() {
-		return priority;
+	public final String getPriority() {
+		return DicomPriority.toString(priority);
 	}
 	
 	/**
@@ -206,9 +207,8 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param priority The priority to set.
 	 */
-	public final void setPriority(int priority) {
-		if ( priority < 0 || priority > 2 ) priority = 0;
-		this.priority = priority;
+	public final void setPriority(String priority) {
+		this.priority = DicomPriority.toCode(priority);
 	}
 	
 	/**
@@ -286,7 +286,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 			}
 //send mwl cfind request.			
 			Command cmd = DcmObjectFactory.getInstance().newCommand();
-            cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND, getPriority() );
+            cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND, priority );
             Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd, searchDS);
             if ( log.isDebugEnabled() ) log.debug("make CFIND req:"+mcRQ);
             FutureRSP rsp = assoc.invoke(mcRQ);

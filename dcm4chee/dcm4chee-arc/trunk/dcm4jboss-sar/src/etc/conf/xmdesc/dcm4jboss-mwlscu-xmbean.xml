@@ -87,12 +87,12 @@
    </attribute>
 
    <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">
-      <description>Priority for C-Find requests. 0=medium, 1=high, 2=low.
+      <description>Priority for C-Find requests. Enumerated Values: LOW, MEDIUM, HIGH.
       </description>
       <name>Priority</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="0"/>
+         <value value="MEDIUM"/>
       </descriptors>
    </attribute>
 

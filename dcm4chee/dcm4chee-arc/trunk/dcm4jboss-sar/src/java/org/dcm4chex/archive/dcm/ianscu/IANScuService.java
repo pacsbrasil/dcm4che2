@@ -38,6 +38,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -196,12 +197,12 @@ public class IANScuService extends ServiceMBeanSupport implements
 		this.preferInstanceAvailableNotification = preferIAN;
 	}
 
-	public final int getScnPriority() {
-		return scnPriority;
+	public final String getScnPriority() {
+		return DicomPriority.toString(scnPriority);
 	}
 
-	public final void setScnPriority(int scnPriority) {
-		this.scnPriority = scnPriority;
+	public final void setScnPriority(String scnPriority) {
+		this.scnPriority = DicomPriority.toCode(scnPriority);
 	}
 
 	private RetryIntervalls retryIntervalls = new RetryIntervalls();
