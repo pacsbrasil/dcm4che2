@@ -49,6 +49,9 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
             boolean flushExternal) throws EJBException, RemoveException,
             FinderException {
         long size = 0L;
+        if ( Thread.interrupted() ) {
+        	log.warn("Interrupted state cleared for current thread!");
+        }
         StudyLocal study = studyOnFs.getStudy();
         if (flushExternal && study.isStudyExternalRetrievable() || flushOnMedia
                 && study.isStudyAvailableOnMedia()) {
