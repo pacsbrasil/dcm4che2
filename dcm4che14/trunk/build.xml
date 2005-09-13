@@ -382,6 +382,14 @@
 	    	</manifest>
          	<fileset dir="${build.classes.dir}" includes="Pdf2Dcm*,Configuration*"/>
       </jar>
+    <jar jarfile="${build.bin.dir}/hpqrscu.jar">
+      	<manifest>
+				<attribute name="Main-Class" value="HPQRScu"/>
+				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
+	    	</manifest>
+         <fileset dir="${build.classes.dir}" includes="HPQRScu*,Configuration*"/>
+         <fileset dir="${build.res.dir}" includes="HPQRScu*"/>
+    </jar>
    </target>
    
    <target name="check-javadoc" depends="xslt-generate">
@@ -477,6 +485,7 @@
             <include name="MppsSnd.java"/>
             <include name="MoveScu.java"/>
             <include name="MoveStudy.java"/>
+            <include name="HPQRScu.java"/>
             <include name="Hl7Snd.java"/>
             <include name="Hl7Rcv.java"/>
          </fileset>
@@ -485,6 +494,7 @@
             <include name="DcmSnd.properties"/>
             <include name="MppsSnd.properties"/>
             <include name="MoveStudy.properties"/>
+            <include name="HPQRScu.properties"/>
             <include name="QueryStudyUIDs.properties"/>
             <include name="Hl7Snd.properties"/>
             <include name="Hl7Rcv.properties"/>
