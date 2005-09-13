@@ -121,6 +121,10 @@ public class HPQueryCmd extends BaseReadCmd {
 		Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
 		if (item != null && !item.isEmpty()) {
 			sqlBuilder.setDistinct(true);
+			list.add("HPDefinition");
+			list.add(null);
+			list.add("HP.pk");
+			list.add("HPDefinition.hp_fk");
 			if (isMatchCode(item.getItem(Tags.AnatomicRegionSeq))) {
 				list.add("rel_hpdef_region");
 				list.add(null);
