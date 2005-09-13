@@ -56,6 +56,9 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         long size = 0L;
         Dataset ian = null;
 
+        if ( Thread.interrupted() ) {
+        	log.warn("Interrupted state cleared for current thread!");
+        }
         StudyLocal study = studyOnFs.getStudy();
         boolean release = flushExternal && study.isStudyExternalRetrievable() || flushOnMedia
         && study.isStudyAvailableOnMedia();
