@@ -95,7 +95,7 @@ public class HPScpService extends AbstractScpService {
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.HangingProtocolStorage, hpStoreScp);
         services.bind(UIDs.HangingProtocolInformationModelFIND, hpFindScp);
-        services.bind(UIDs.HangingProtocolInformationModelMOVE, hpFindScp);
+        services.bind(UIDs.HangingProtocolInformationModelMOVE, hpMoveScp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
