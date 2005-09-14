@@ -3,7 +3,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="2.5.2"/>
+    <property name="version" value="2.5.3"/>
     <property name="dist.jboss.conf" value="dcmcdw"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
     <property name="dist.src" value="dcmcdw-src-${version}"/>
