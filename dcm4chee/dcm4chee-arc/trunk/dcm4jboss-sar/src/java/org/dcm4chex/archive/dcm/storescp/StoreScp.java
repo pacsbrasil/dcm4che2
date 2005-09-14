@@ -672,9 +672,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         int retry = 0;
         for (;;) {
             try {
-                synchronized (this) {
-                    store.updateStudy(suid);
-                }
+				if (serializeDBUpdate) {
+	                synchronized (this) {
+	                    store.updateStudy(suid);
+	                }
+				} else {
+                    store.updateStudy(suid);					
+				}
                 return;
             } catch (Exception e) {
                 ++retry;
@@ -702,9 +706,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         int retry = 0;
         for (;;) {
             try {
-                synchronized (this) {
-                    store.updateSeries(seriuid);
-                }
+				if (serializeDBUpdate) {
+	                synchronized (this) {
+	                    store.updateSeries(seriuid);
+	                }
+				} else {
+                    store.updateSeries(seriuid);					
+				}
                 return;
             } catch (Exception e) {
                 ++retry;
