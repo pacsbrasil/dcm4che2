@@ -1,0 +1,52 @@
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
+
+package org.dcm4che2.net.codec;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.mina.common.ByteBuffer;
+import org.apache.mina.protocol.ProtocolSession;
+import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.net.pdu.PDU;
+
+/**
+ * @author gunter zeilinger(gunterze@gmail.com)
+ * @version $Reversion$ $Date$
+ * @since Sep 15, 2005
+ */
+public class AAbortEncoder extends PDUEncoder {
+
+    public AAbortEncoder() {
+        super(PDUType.A_ABORT);
+    }
+
+    private static final Set TYPES;
+
+    static {
+        Set types = new HashSet();
+        types.add(AAbort.class);
+        TYPES = Collections.unmodifiableSet(types);
+    }
+
+    public Set getMessageTypes() {
+        return TYPES;
+    }
+
+    @Override
+    protected void encodePDU(ProtocolSession session, PDU pdu, ByteBuffer out) {
+        AAbort aabort = (AAbort) pdu;
+        out.putShort((short) 0);
+        out.put((byte) aabort.source());
+        out.put((byte) aabort.reason());
+    }
+
+}
