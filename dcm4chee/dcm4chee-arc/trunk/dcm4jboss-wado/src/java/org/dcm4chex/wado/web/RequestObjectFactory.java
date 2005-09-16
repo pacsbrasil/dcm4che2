@@ -35,8 +35,8 @@ public class RequestObjectFactory {
 		if ( reqType == null ) return null; //wrong URL
 		if ( "WADO".equalsIgnoreCase( reqType ) ) {
 			return new WADORequestObjectImpl( request );
-		} else if ( wadoExtReqType.equals( reqType )) {
-			return new WADOExtRequestObject( reqType, request );
+		} else if ( wadoExtReqType.equalsIgnoreCase( reqType )) {
+			return new WADOExtRequestObjectImpl( reqType, request );
 		} else if ( "DOCUMENT".equals( reqType )) {
 			return new RIDDocumentRequestObject( request );
 		} else if ( reqType.startsWith( "SUMMARY" ) ) {

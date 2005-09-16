@@ -9,6 +9,7 @@ package org.dcm4chex.wado.mbean;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.dcm4chex.wado.common.WADOExtRequestObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -113,7 +114,7 @@ public class ExtendedWADOService extends AbstractCacheService {
 	 * @return The value object containing the retrieved object or an error.
 	 */
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
-		return support.getWADOObject( reqVO );
+		return support.getWADOObject( (WADOExtRequestObject)reqVO );
 	}
 
 }
