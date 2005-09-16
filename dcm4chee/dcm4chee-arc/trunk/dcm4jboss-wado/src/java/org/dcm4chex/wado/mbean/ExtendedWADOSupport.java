@@ -19,7 +19,9 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4chex.wado.common.WADOExtRequestObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -38,8 +40,8 @@ public static final String CONTENT_TYPE_DICOM = "application/dicom";
 
 private static Logger log = Logger.getLogger( ExtendedWADOService.class.getName() );
 
-private static ObjectName fileSystemMgtName = null;
-private static ObjectName studyInfoServiceName = null;
+private ObjectName fileSystemMgtName = null;
+private ObjectName studyInfoServiceName = null;
 private boolean cacheEnabled;
 private int numberOfCacheFolders;
 
@@ -71,7 +73,7 @@ public ExtendedWADOSupport( MBeanServer mbServer ) {
  * 
  * @return The WADO response object.
  */
-public WADOResponseObject getWADOObject( WADORequestObject req ) {
+public WADOResponseObject getWADOObject( WADOExtRequestObject req ) {
 	String serviceType = ((String[])req.getRequestParams().get("serviceType"))[0];
 	if ( "WFIND".equals(serviceType)) {
 		return handleGetStudyInfo( req );
@@ -80,23 +82,30 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 	}
 }
 
-private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
+private WADOResponseObject handleGetStudyInfo( WADOExtRequestObject req ) {
 
-	Dataset ds = null;
 	String ts = req.getTransferSyntax();
-	String level, uid;
-	if ( (uid = req.getObjectUID()) != null ) {
-		level="IMAGE";
-	} else if ( (uid = req.getSeriesUID()) != null ) {
-		level="SERIES";
-	} else if ( (uid = req.getStudyUID()) != null ) {
-		level="STUDY";
-	} else {
-		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_BAD_REQUEST, "Missing uid parameter! Either StudyUID,SeriesUID or ObjectUID must be set!");
-	}
 	if ( ts == null ) ts = UIDs.ExplicitVRLittleEndian;
+	
+	String level = req.getLevel();
+	String uid = null;
+	Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
+	if ((uid = req.getObjectUID()) != null)
+		dsQ.putUI(Tags.StudyInstanceUID, uid);
+	else if ((uid = req.getSeriesUID()) != null)
+		dsQ.putUI(Tags.SeriesInstanceUID, uid);
+	else if ((uid = req.getStudyUID()) != null)
+		dsQ.putUI(Tags.StudyInstanceUID, uid);
+	else
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_BAD_REQUEST, "Missing uid parameter! Either StudyUID,SeriesUID or ObjectUID must be set!");
+	dsQ.putCS(Tags.QueryRetrieveLevel, level);
+	if(log.isDebugEnabled())
+		log.debug("Retrieve study info. " + req.toString());
+	
+	
 	WADOCache cache = WADOCacheImpl.getWADOExtCache();
 	File outFile = null; 
+	
 	try {
 		if ( cacheEnabled ) {
 			//We have only one uid (either study, series or object), so we choose a slightly different directory structure. 
@@ -111,11 +120,12 @@ private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
 				if ( ! isOutdated( req, outFile ) ) 
 					return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
 			}
-		}
-        ds = (Dataset) server.invoke( studyInfoServiceName,
+		}		
+		
+        Dataset ds = (Dataset) server.invoke( studyInfoServiceName,
                 "retrieveStudyInfo",
-                new Object[] { level, uid },
-                new String[] { String.class.getName(), String.class.getName() } );
+                new Object[] { level, dsQ },
+                new String[] { String.class.getName(), Dataset.class.getName() } );
         
         ds.setFileMetaInfo( DcmObjectFactory.getInstance().newFileMetaInfo(ds, ts) );
         if ( ! cacheEnabled ) {
@@ -128,8 +138,8 @@ private WADOResponseObject handleGetStudyInfo( WADORequestObject req ) {
         }
         
     } catch (Exception e) {
-        log.error("Failed to get study information for "+level+" uid:"+uid, e);
-		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get study information for "+level+" uid:"+uid);
+        log.error("Failed to get study information for: "+req.toString(), e);
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get study information for " + req.toString());
     }
 }
 
@@ -172,7 +182,7 @@ private boolean isOutdated(WADORequestObject req, File outFile) {
  * @param fileSystemMgtName The fileSystemMgtName to set.
  */
 public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-	ExtendedWADOSupport.fileSystemMgtName = fileSystemMgtName;
+	this.fileSystemMgtName = fileSystemMgtName;
 }
 
 /**
@@ -197,7 +207,7 @@ public ObjectName getStudyInfoServiceName() {
  * @param studyInfoServiceName The studyInfoServiceName to set.
  */
 public void setStudyInfoServiceName(ObjectName studyInfoServiceName) {
-	ExtendedWADOSupport.studyInfoServiceName = studyInfoServiceName;
+	this.studyInfoServiceName = studyInfoServiceName;
 }
 /**
  * @return Returns the cacheEnabled.
