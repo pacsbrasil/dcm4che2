@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
@@ -25,14 +25,14 @@
       <description>Retrieve study information.</description>
       <name>retrieveStudyInfo</name>
       <parameter>
-      	<description>Query level (STUDY,SERIES or IMAGE)</description>
+      	<description>Query level (STUDY,SERIES,IMAGE or LOCATION)</description>
         <name>level</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-      	<description>UID for level (Study Instance UID, Series Instance UID, SOP Instance UID)</description>
-        <name>UID</name>
-        <type>java.lang.String</type>
+      	<description>Dataset that contains query information</description>
+        <name>ds</name>
+        <type>org.dcm4che.data.Dataset</type>
       </parameter>
       <return-type>org.dcm4che.data.Dataset</return-type>
    </operation>   
