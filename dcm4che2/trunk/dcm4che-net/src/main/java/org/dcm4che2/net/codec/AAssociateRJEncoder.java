@@ -45,9 +45,9 @@ public class AAssociateRJEncoder extends PDUEncoder {
     protected void encodePDU(ProtocolSession session, PDU pdu, ByteBuffer out) {
         AAssociateRJ rj = (AAssociateRJ) pdu;
         out.put((byte) 0);
-        out.put((byte) rj.reason());
-        out.put((byte) rj.source());
-        out.put((byte) rj.reason());
+        out.put((byte) rj.getReason());
+        out.put((byte) rj.getSource());
+        out.put((byte) rj.getReason());
     }
 
 }

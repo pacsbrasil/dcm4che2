@@ -28,11 +28,12 @@ public class AAssociateRJDecoder extends PDUDecoder {
 
     @Override
     protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
-        in.get(); // skip reserved bytes 7
-        final int result = in.getUnsigned();
-        final int source = in.getUnsigned();
-        final int reason = in.getUnsigned();
-        return new AAssociateRJ(result, source, reason);
+        AAssociateRJ pdu = new AAssociateRJ();
+        in.get(); // skip reserved byte 7
+        pdu.setResult(in.getUnsigned());
+        pdu.setSource(in.getUnsigned());
+        pdu.setReason(in.getUnsigned());
+        return pdu;
     }
 
 }

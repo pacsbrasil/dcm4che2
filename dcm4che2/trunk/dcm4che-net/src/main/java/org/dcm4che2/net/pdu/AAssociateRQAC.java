@@ -12,6 +12,7 @@ package org.dcm4che2.net.pdu;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public abstract class AAssociateRQAC implements PDU {
     private static final String DEF_CALLING_AET = "ANONYMOUS";
     
     private byte[] reservedBytes = new byte[32];
+    private int protocolVersion = 1;
     private int maxPDULength = DEF_MAX_PDU_LENGTH;
     private int maxOpsInvoked = 1;
     private int maxOpsPerformed = 1;
@@ -40,11 +42,30 @@ public abstract class AAssociateRQAC implements PDU {
     private String applicationContext = UID.DICOMApplicationContextName;
     private String implClassUID = Implementation.classUID();
     private String implVersionName = Implementation.versionName();
-    private final List pcList = new ArrayList();
+    private final List pcs = new ArrayList();
     private final Map roleSelMap = new LinkedHashMap();
     private final Map extNegMap = new LinkedHashMap();
     private final Map commonExtNegMap = new LinkedHashMap();
     private UserIdentity userIdentity;
+
+    public final int getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public final void setProtocolVersion(int protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
+
+    public final byte[] getReservedBytes() {
+        return reservedBytes.clone();
+    }
+
+    public final void setReservedBytes(byte[] reservedBytes) {
+        if (reservedBytes.length != 32)
+            throw new IllegalArgumentException("reservedBytes.length: "
+                    + reservedBytes.length);
+        System.arraycopy(reservedBytes, 0, this.reservedBytes, 0, 32);
+    }
 
     public final String getCalledAET() {
         return calledAET;
@@ -64,6 +85,17 @@ public abstract class AAssociateRQAC implements PDU {
         if (callingAET.length() > 16)
             throw new IllegalArgumentException("callingAET: " + callingAET);
         this.callingAET = callingAET;
+    }
+
+    public final String getApplicationContext() {
+        return applicationContext;
+    }
+
+    public final void setApplicationContext(String applicationContext) {
+        if (applicationContext != null)
+            throw new NullPointerException();
+        
+        this.applicationContext = applicationContext;
     }
 
     public final int getMaxPDULength() {
@@ -99,6 +131,9 @@ public abstract class AAssociateRQAC implements PDU {
     }
 
     public final void setImplClassUID(String implClassUID) {
+        if (implClassUID == null)
+            throw new NullPointerException();
+        
         this.implClassUID = implClassUID;
     }
 
@@ -110,44 +145,72 @@ public abstract class AAssociateRQAC implements PDU {
         this.implVersionName = implVersionName;
     }
 
-    public final byte[] getReservedBytes() {
-        return reservedBytes.clone();
+    public Collection getPresentationContexts() {
+         return Collections.unmodifiableCollection(pcs) ;
     }
-
-    public final void setReservedBytes(byte[] reservedBytes) {
-        if (reservedBytes.length != 32)
-            throw new IllegalArgumentException("reservedBytes.length: "
-                    + reservedBytes.length);
-        this.reservedBytes = reservedBytes.clone();
-    }
-
-    public final String getApplicationContext() {
-        return applicationContext;
-    }
-
-    public final void setApplicationContext(String applicationContext) {
-        if (applicationContext != null)
+    
+    public void addPresentationContext(PresentationContext pc) {
+        if (pc == null)
             throw new NullPointerException();
-        
-        this.applicationContext = applicationContext;
+        if (pcs.size() >= 128)
+            throw new IllegalStateException(
+                    "Maximal Number (128) of Presentation Context obtained.");
+            
+        pcs.add(pc);
     }
 
-    public final Collection getPresentationContexts() {
-         return Collections.unmodifiableList(pcList) ;
+    public boolean removePresentationContext(PresentationContext pc) {
+        return pcs.remove(pc);
     }
     
     public Collection getRoleSelections() {
         return Collections.unmodifiableCollection(roleSelMap.values());
     }
+    
+    public RoleSelection getRoleSelectionFor(String cuid) {
+        return (RoleSelection) roleSelMap.get(cuid);
+    }
 
+    public RoleSelection addRoleSelection(RoleSelection rs) {
+        return (RoleSelection) roleSelMap.put(rs.getSOPClassUID(), rs);
+    }
+
+    public RoleSelection removeRoleSelectionFor(String cuid) {
+        return (RoleSelection) roleSelMap.remove(cuid);
+    }
+    
     public Collection getExtendedNegotiations() {
         return Collections.unmodifiableCollection(extNegMap.values());
     }
 
+    public ExtendedNegotiation getExtendedNegotiationFor(String cuid) {
+        return (ExtendedNegotiation) extNegMap.get(cuid);
+    }
+
+    public ExtendedNegotiation addExtendedNegotiation(ExtendedNegotiation extNeg) {
+        return (ExtendedNegotiation) extNegMap.put(extNeg.getSOPClassUID(), extNeg);
+    }
+
+    public ExtendedNegotiation removeExtendedNegotiationFor(String cuid) {
+        return (ExtendedNegotiation) extNegMap.remove(cuid);
+    }
+    
     public Collection getCommonExtendedNegotiations() {
         return Collections.unmodifiableCollection(commonExtNegMap.values());
     }
 
+    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(String cuid) {
+        return (CommonExtendedNegotiation) commonExtNegMap.get(cuid);
+    }
+
+    public CommonExtendedNegotiation addCommonExtendedNegotiation(CommonExtendedNegotiation extNeg) {
+        return (CommonExtendedNegotiation) commonExtNegMap.put(extNeg.getSOPClassUID(), extNeg);
+    }
+
+    public CommonExtendedNegotiation removeCommonExtendedNegotiationFor(String cuid) {
+        return (CommonExtendedNegotiation) commonExtNegMap.remove(cuid);
+    }
+    
     public final UserIdentity getUserIdentity() {
         return userIdentity;
     }
@@ -157,13 +220,30 @@ public abstract class AAssociateRQAC implements PDU {
     }
     
     public int length() {
-        // TODO Auto-generated method stub
-        return 0;
+        int len = 74;   // Fix AA-RQ/AC PDU fields
+        len += 4 + applicationContext.length();
+        for (Iterator it = pcs.iterator(); it.hasNext();)
+            len += 4 + ((PresentationContext) it.next()).length();        
+        len += 4 + userInfoLength();
+        return len;
     }
 
     public int userInfoLength() {
-        // TODO Auto-generated method stub
-        return 0;
+        int len = 8;    // Max Length Sub-Item
+        len += 4 + implClassUID.length();
+        if (isAsyncOps())
+            len += 8;   // Asynchronous Operations Window Sub-Item
+        for (Iterator it = roleSelMap.values().iterator(); it.hasNext();)
+            len += 4 + ((RoleSelection) it.next()).length();        
+        if (implVersionName != null)
+            len += 4 + implVersionName.length();
+        for (Iterator it = extNegMap.values().iterator(); it.hasNext();)
+            len += 4 + ((ExtendedNegotiation) it.next()).length();        
+        for (Iterator it = commonExtNegMap.values().iterator(); it.hasNext();)
+            len += 4 + ((CommonExtendedNegotiation) it.next()).length();        
+        if (userIdentity != null)
+            len += 4 + userIdentity.length();        
+        return len;
     }
 
 }

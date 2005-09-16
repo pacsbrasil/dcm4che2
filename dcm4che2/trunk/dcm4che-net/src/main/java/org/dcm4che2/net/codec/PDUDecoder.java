@@ -24,11 +24,11 @@ import org.dcm4che2.net.pdu.PDU;
  */
 public abstract class PDUDecoder implements MessageDecoder {
 
-    private final int type;
+    protected final int type;
 
-    private int length;
+    protected int length;
 
-    private boolean readHeader;
+    protected boolean readHeader;
 
     private static final int HEADER_LEN = 6;
 

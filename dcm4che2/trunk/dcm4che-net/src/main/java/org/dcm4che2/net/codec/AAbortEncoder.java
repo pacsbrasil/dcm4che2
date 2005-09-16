@@ -45,8 +45,8 @@ public class AAbortEncoder extends PDUEncoder {
     protected void encodePDU(ProtocolSession session, PDU pdu, ByteBuffer out) {
         AAbort aabort = (AAbort) pdu;
         out.putShort((short) 0);
-        out.put((byte) aabort.source());
-        out.put((byte) aabort.reason());
+        out.put((byte) aabort.getSource());
+        out.put((byte) aabort.getReason());
     }
 
 }

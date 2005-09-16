@@ -17,24 +17,27 @@ package org.dcm4che2.net.pdu;
  */
 public class AAbort implements PDU {
     
-    private final int source;
-    private final int reason;
+    private int source;
+    private int reason;
 
-    public AAbort(int source, int reason) {
-        this.source = source;
-        this.reason = reason;
-    }
-    
     public final int length() {
         return 4;
     }
-    
-    public final int source() {
+
+    public final int getReason() {
+        return reason;
+    }
+
+    public final void setReason(int reason) {
+        this.reason = reason;
+    }
+
+    public final int getSource() {
         return source;
     }
 
-    public final int reason() {
-        return reason;
+    public final void setSource(int source) {
+        this.source = source;
     }
 
 }

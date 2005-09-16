@@ -17,30 +17,36 @@ package org.dcm4che2.net.pdu;
  */
 public class AAssociateRJ implements PDU {
     
-    private final int result;
-    private final int source;
-    private final int reason;
+    private int result;
+    private int source;
+    private int reason;
 
-    public AAssociateRJ(int result, int source, int reason) {
-        this.result = result;
-        this.source = source;
-        this.reason = reason;
-    }
-    
     public final int length() {
         return 4;
     }
     
-    public final int result() {
+    public final int getResult() {
         return result;
     }
     
-    public final int source() {
+    public final void setResult(int result) {
+        this.result = result;
+    }
+
+    public final int getSource() {
         return source;
     }
 
-    public final int reason() {
+    public final void setSource(int source) {
+        this.source = source;
+    }
+
+    public final int getReason() {
         return reason;
+    }
+
+    public final void setReason(int reason) {
+        this.reason = reason;
     }
 
 }

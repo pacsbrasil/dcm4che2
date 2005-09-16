@@ -54,7 +54,7 @@ public class UserIdentity {
         this.secondaryField = secondaryField.clone();
     }
 
-    public int itemLength() {
+    public int length() {
         return 6 + primaryField.length + secondaryField.length;
     }
 

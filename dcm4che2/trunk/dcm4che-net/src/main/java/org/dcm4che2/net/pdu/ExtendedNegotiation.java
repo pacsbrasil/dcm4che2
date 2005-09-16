@@ -17,26 +17,33 @@ package org.dcm4che2.net.pdu;
  */
 public class ExtendedNegotiation {
 
-    private final String cuid;
-    private final byte[] info;
+    private String cuid;
+    private byte[] info;
 
-    public ExtendedNegotiation(String cuid, byte[] info) {
+    public final String getSOPClassUID() {
+        return cuid;
+    }
+    
+    public final void setSOPClassUID(String cuid) {
         if (cuid == null)
             throw new NullPointerException();
         
         this.cuid = cuid;
-        this.info = info.clone();
-    }
-
-    public int itemLength() {
-        return cuid.length() + info.length;
-    }
-    
-    public final String getSOPClassUID() {
-        return cuid;
     }
     
     public final byte[] getInformation() {
         return info.clone();
     }
+    
+    public final void setInformation(byte[] info) {
+        this.info = info.clone();
+    }
+    
+    public int length() {
+        if (cuid == null)
+            throw new IllegalStateException();
+        
+        return cuid.length() + info.length;
+    }
+    
 }

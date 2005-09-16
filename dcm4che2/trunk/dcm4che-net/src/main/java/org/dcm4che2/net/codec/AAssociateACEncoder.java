@@ -47,7 +47,7 @@ public class AAssociateACEncoder extends AAssociateRQACEncoder {
     protected void encodePCs(Collection pcs, ByteBuffer out) {
         for (Iterator it = pcs.iterator(); it.hasNext();) {
             PresentationContext pc = (PresentationContext) it.next();
-            encodePC(ItemType.AC_PRES_CTX, pc, out);
+            encodePC(ItemType.AC_PRES_CONTEXT, pc, out);
         }
     }
 

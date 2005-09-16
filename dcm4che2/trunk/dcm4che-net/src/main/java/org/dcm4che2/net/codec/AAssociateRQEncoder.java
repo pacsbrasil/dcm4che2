@@ -48,9 +48,9 @@ public class AAssociateRQEncoder extends AAssociateRQACEncoder {
         int pcid = 1;
         for (Iterator it = pcs.iterator(); it.hasNext(); ++pcid, ++pcid) {
             PresentationContext pc = (PresentationContext) it.next();
-            pc.pcid(pcid);
-            pc.result(0);
-            encodePC(ItemType.RQ_PRES_CTX, pc, out);
+            pc.setPCID(pcid);
+            pc.setResult(0);
+            encodePC(ItemType.RQ_PRES_CONTEXT, pc, out);
         }
     }
 }

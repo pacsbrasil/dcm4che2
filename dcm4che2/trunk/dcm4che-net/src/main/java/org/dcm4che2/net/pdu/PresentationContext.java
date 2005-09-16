@@ -9,9 +9,11 @@
 
 package org.dcm4che2.net.pdu;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -24,21 +26,21 @@ public class PresentationContext {
     private int pcid;
     private int result;
     public String abstractSyntax;
-    public List transferSyntaxList = new ArrayList();
+    public Set transferSyntaxes = new LinkedHashSet();
 
-    public final int pcid() {
+    public final int getPCID() {
         return pcid;
     }
 
-    public final void pcid(int pcid) {
+    public final void setPCID(int pcid) {
         this.pcid = pcid;
     }
 
-    public final int result() {
+    public final int getResult() {
         return result;
     }
 
-    public final void result(int result) {
+    public final void setResult(int result) {
         this.result = result;
     }
 
@@ -50,13 +52,28 @@ public class PresentationContext {
         this.abstractSyntax = abstractSyntax;
     }
 
-    public final List getTransferSyntaxList() {
-        return Collections.unmodifiableList(transferSyntaxList);
+    public final Collection getTransferSyntaxes() {
+        return Collections.unmodifiableCollection(transferSyntaxes);
+    }
+    
+    public final boolean addTransferSyntax(String tsuid) {
+        if (tsuid == null)
+            throw new NullPointerException();
+        
+        return transferSyntaxes.add(tsuid);
+    }
+    
+    public final boolean removeTransferSyntax(String tsuid) {
+        return transferSyntaxes.remove(tsuid);
     }
 
     public int length() {
-        // TODO Auto-generated method stub
-        return 0;
+        int len = 8;
+        if (abstractSyntax != null)
+            len += 4 + abstractSyntax.length();
+        for (Iterator it = transferSyntaxes.iterator(); it.hasNext();)
+            len += 4 + ((String) it.next()).length();
+        return len;
     }
 
 }

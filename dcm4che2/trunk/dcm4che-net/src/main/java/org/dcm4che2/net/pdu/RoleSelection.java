@@ -17,33 +17,38 @@ package org.dcm4che2.net.pdu;
  */
 public class RoleSelection {
     
-    private final String cuid;
-    private final boolean scu;
-    private final boolean scp;
+    private String cuid;
+    private boolean scu;
+    private boolean scp;
 
-    public RoleSelection(String cuid, boolean scu, boolean scp) {
-        if (cuid == null)
-            throw new NullPointerException();
-        
-        this.cuid = cuid;
-        this.scu = scu;
-        this.scp = scp;
-    }
-
-    public int itemLength() {
-        return cuid.length() + 4;
-    }
-    
     public final String getSOPClassUID() {
         return cuid;
     }
 
-    public final boolean scu() {
+    public final void setSOPClassUID(String cuid) {
+        this.cuid = cuid;
+    }
+
+    public final boolean isSCU() {
         return scu;
     }
 
-    public final boolean scp() {
+    public final void setSCU(boolean scu) {
+        this.scu = scu;
+    }
+
+    public final boolean isSCP() {
         return scp;
     }
 
+    public final void setSCP(boolean scp) {
+        this.scp = scp;
+    }
+
+    public int length() {
+        if (cuid == null)
+            throw new IllegalStateException();
+        
+        return cuid.length() + 4;
+    }
 }

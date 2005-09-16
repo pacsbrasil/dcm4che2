@@ -28,10 +28,11 @@ public class AAbortDecoder extends PDUDecoder {
 
     @Override
     protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
+        AAbort pdu = new AAbort();
         in.getShort(); // skip reserved bytes 7,8
-        final int source = in.getUnsigned();
-        final int reason = in.getUnsigned();
-        return new AAbort(source, reason);
+        pdu.setSource(in.getUnsigned());
+        pdu.setReason(in.getUnsigned());
+        return pdu;
     }
 
 }
