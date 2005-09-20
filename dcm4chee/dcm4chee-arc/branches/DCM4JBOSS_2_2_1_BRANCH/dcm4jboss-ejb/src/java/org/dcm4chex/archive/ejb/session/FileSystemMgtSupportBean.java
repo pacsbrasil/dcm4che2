@@ -56,6 +56,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         if (flushExternal && study.isStudyExternalRetrievable() || flushOnMedia
                 && study.isStudyAvailableOnMedia()) {
             Collection c = studyOnFs.getFiles();
+            if ( log.isDebugEnabled() ) log.debug( "Release "+c.size()+" files from "+studyOnFs.asString() );
             FileLocal fileLocal;
             InstanceLocal il;
             Set series = new HashSet();

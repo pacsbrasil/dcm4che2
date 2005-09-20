@@ -310,6 +310,13 @@ public abstract class FileSystemMgtBean implements SessionBean {
             Timestamp tsBefore) throws IOException, FinderException,
             EJBException, RemoveException, CreateException {
         Collection c = getStudiesOnFilesystems(fsPathSet, tsBefore);
+        if ( log.isDebugEnabled() ) {
+        	log.debug("Studies on filesystem(s) accessed before "+tsBefore+" :"+c.size() );
+        	log.debug(" checkUncommited: "+checkUncommited);
+        	log.debug(" checkOnMedia: "+checkOnMedia);
+        	log.debug(" checkExternal: "+checkExternal);
+        	log.debug(" maxSizeToDel: "+maxSizeToDel);
+        }
         long sizeToDelete = 0L;
         FileSystemMgtSupportLocal spacer = fileSystemMgtSupportHome.create();
         try {
