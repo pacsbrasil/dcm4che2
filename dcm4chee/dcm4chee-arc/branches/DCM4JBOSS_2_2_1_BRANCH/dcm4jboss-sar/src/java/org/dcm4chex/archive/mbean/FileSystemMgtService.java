@@ -82,6 +82,8 @@ public class FileSystemMgtService extends TimerSupport {
 
     private Integer freeDiskSpaceListenerID;
     
+	private boolean isPurging = false;
+    
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and isFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
     
@@ -447,6 +449,13 @@ public class FileSystemMgtService extends TimerSupport {
 
     public void purgeFiles() {
         log.info("Check for unreferenced files to delete");
+        synchronized (this) {  
+	        if ( isPurging ) {
+	        	log.info("A purge task is already in progress! Ignore this purge order!");
+	        	return;
+	        }
+	        isPurging = true;
+        }
         FileSystemMgt fsMgt = newFileSystemMgt();
         try {
             FileDTO[] toDelete;
@@ -480,7 +489,7 @@ public class FileSystemMgtService extends TimerSupport {
             } catch (Exception ignore) {
             }
         }
-
+        isPurging = false;
     }
 
     private boolean delete(File file) {
