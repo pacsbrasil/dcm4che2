@@ -260,7 +260,8 @@ public abstract class StorageBean implements SessionBean {
 			case 0:
 				return patHome.create(ds.subSet(attrFilter.getPatientFilter()));
 			case 1:
-				return (PatientLocal) c.iterator().next();
+				return checkIfMerged((PatientLocal) c.iterator().next());
+				
 			default:
 				throw new DcmServiceException(Status.ProcessingFailure,
 						"Found " + n + " Patients with id=" + pid
@@ -273,7 +274,14 @@ public abstract class StorageBean implements SessionBean {
 		}
     }
     
-    private boolean equals(PatientLocal patient, Dataset ds) {
+ 	private PatientLocal checkIfMerged(PatientLocal pat) {
+		PatientLocal merged;
+		if ((merged = pat.getMergedWith()) != null)
+			pat = merged;
+		return pat;
+	}
+
+	private boolean equals(PatientLocal patient, Dataset ds) {
         // TODO Auto-generated method stub
         return true;
     }
