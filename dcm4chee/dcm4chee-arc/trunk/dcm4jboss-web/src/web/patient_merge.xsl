@@ -21,10 +21,11 @@
 			</tr>	
 			<tr>
 				<th title="Patient ID" >Patient ID</th>
+				<th title="Issuer of Patient ID" >Issuer</th>
 				<th title="Patient Name" >Patient Name</th>
 				<th title="Patient Sex">Patient Sex</th>
 				<th title="Birth Date">Birth Date</th>
-				<th title="Patient ID" >Patient ID</th>
+				<th title="Select"></th>
 			</tr>	
 				<xsl:apply-templates select="patients/item"/>
 		  <tr>
@@ -48,7 +49,10 @@
 				<tr bgcolor="eeeeee">
 	        <td title="Patient ID" >
 						<xsl:value-of select="patientID"/>
-					</td>
+			</td>
+	        <td title="Issuer of Patient ID" >
+						<xsl:value-of select="issuerOfPatientID"/>
+			</td>
 	        <td title="Patient Name" >
 						<xsl:value-of select="patientName"/>
 	        </td>
@@ -58,7 +62,7 @@
 	        <td title="Birth Date">
 						<xsl:value-of select="patientBirthDate"/>
 	        </td>
-	        <td title="Patient ID" align="center">
+	        <td title="Select dominant patient" align="center">
 						<input type="radio" name="pk" value="{pk}">
 						</input>
 					</td>
