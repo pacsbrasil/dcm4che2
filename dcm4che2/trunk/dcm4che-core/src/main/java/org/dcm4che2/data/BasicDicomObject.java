@@ -169,9 +169,12 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 
 	public VR vrOf(int tag) {
+        if ((tag & 0x0000ffff) == 0) // Group Length
+            return VR.UL;
+        
 		VRMap vrmap;
-		if (TagUtils.isPrivateDataElement(tag)) {
-			if (TagUtils.isPrivateCreatorDataElement(tag))
+        if ((tag & 0x00010000) != 0) { // Private Element
+            if ((tag & 0x0000ff00) == 0)
 				return VR.LO;
 
 			final String privateCreatorID = getPrivateCreator(tag);
@@ -186,9 +189,12 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 
     public String nameOf(int tag) {
+        if ((tag & 0x0000ffff) == 0) // Group Length
+            return ElementDictionary.GROUP_LENGTH;
+        
         ElementDictionary dict;
-        if (TagUtils.isPrivateDataElement(tag)) {
-            if (TagUtils.isPrivateCreatorDataElement(tag))
+        if ((tag & 0x00010000) != 0) { // Private Element
+            if ((tag & 0x0000ff00) == 0)
                 return ElementDictionary.PRIVATE_CREATOR;
 
             final String privateCreatorID = getPrivateCreator(tag);
