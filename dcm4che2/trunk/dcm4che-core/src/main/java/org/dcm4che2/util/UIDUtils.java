@@ -127,7 +127,7 @@ public class UIDUtils {
         UIDUtils.useHostUnique = useHostUnique;
     }
     
-    private static void verifyUID(String uid) {
+    public static void verifyUID(String uid) {
         int len = uid.length();
         if (len > 64) {
             throw new IllegalArgumentException(
