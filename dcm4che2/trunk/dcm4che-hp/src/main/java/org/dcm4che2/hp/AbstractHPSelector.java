@@ -20,7 +20,7 @@ import org.dcm4che2.util.TagUtils;
  * @since Jul 30, 2005
  *
  */
-abstract class AbstractHPSelector implements HPSelector {
+public abstract class AbstractHPSelector implements HPSelector {
 
     public abstract boolean matches(DicomObject dcmobj, int frame);
 

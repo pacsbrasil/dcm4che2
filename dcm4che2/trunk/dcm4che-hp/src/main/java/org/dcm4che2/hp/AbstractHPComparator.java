@@ -21,7 +21,7 @@ import org.dcm4che2.data.Tag;
  * @since Aug 1, 2005
  *
  */
-abstract class AbstractHPComparator implements HPComparator {
+public abstract class AbstractHPComparator implements HPComparator {
 
     public abstract int compare(DicomObject o1, int frame1,
             DicomObject o2, int frame2);
