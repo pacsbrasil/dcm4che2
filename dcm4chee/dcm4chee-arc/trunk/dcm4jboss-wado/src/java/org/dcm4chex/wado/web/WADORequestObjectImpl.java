@@ -52,8 +52,6 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 		instanceUID = request.getParameter( "objectUID" );
 		// optional parameters - implemented
 		String contentType = request.getParameter( "contentType" );
-		if (contentType == null || contentType.length() == 0)		
-			contentType = "application/dicom";
 		
 		rows = request.getParameter( "rows" );
 		columns = request.getParameter( "columns" );
