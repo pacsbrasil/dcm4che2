@@ -9,7 +9,9 @@
 
 package org.dcm4che2.net.codec;
 
-import org.apache.mina.protocol.codec.DemuxingProtocolCodecFactory;
+import org.apache.mina.protocol.ProtocolCodecFactory;
+import org.apache.mina.protocol.ProtocolDecoder;
+import org.apache.mina.protocol.ProtocolEncoder;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -17,23 +19,14 @@ import org.apache.mina.protocol.codec.DemuxingProtocolCodecFactory;
  * @since Sep 15, 2005
  *
  */
-public class DULProtocolCodecFactory extends DemuxingProtocolCodecFactory {
-    
-    public DULProtocolCodecFactory() {
-        super.register(AAssociateRQDecoder.class);
-        super.register(AAssociateRQEncoder.class);
-        super.register(AAssociateACDecoder.class);
-        super.register(AAssociateACEncoder.class);
-        super.register(AAssociateRJDecoder.class);
-        super.register(AAssociateRJEncoder.class);
-        super.register(PDataTFDecoder.class);
-        super.register(PDataTFEncoder.class);
-        super.register(AReleaseRQDecoder.class);
-        super.register(AReleaseRQEncoder.class);
-        super.register(AReleaseRPDecoder.class);
-        super.register(AReleaseRPEncoder.class);
-        super.register(AAbortDecoder.class);
-        super.register(AAbortEncoder.class);
+class DULProtocolCodecFactory implements ProtocolCodecFactory {
+
+    public ProtocolEncoder newEncoder() {
+        return new DULProtocolEncoder();
     }
+
+    public ProtocolDecoder newDecoder() {
+        return new DULProtocolDecoder();
+    }    
 
 }

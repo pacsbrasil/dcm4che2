@@ -28,7 +28,7 @@ import org.dcm4che2.data.UID;
  */
 public abstract class AAssociateRQAC implements PDU {
 
-    private static final int DEF_MAX_PDU_LENGTH = 16384;
+    public static final int DEF_MAX_PDU_LENGTH = 16384;
     private static final String DEF_CALLED_AET = "ANONYMOUS";
     private static final String DEF_CALLING_AET = "ANONYMOUS";
     
@@ -92,7 +92,7 @@ public abstract class AAssociateRQAC implements PDU {
     }
 
     public final void setApplicationContext(String applicationContext) {
-        if (applicationContext != null)
+        if (applicationContext == null)
             throw new NullPointerException();
         
         this.applicationContext = applicationContext;
@@ -220,7 +220,7 @@ public abstract class AAssociateRQAC implements PDU {
     }
     
     public int length() {
-        int len = 74;   // Fix AA-RQ/AC PDU fields
+        int len = 68;   // Fix AA-RQ/AC PDU fields
         len += 4 + applicationContext.length();
         for (Iterator it = pcs.iterator(); it.hasNext();)
             len += 4 + ((PresentationContext) it.next()).length();        

@@ -17,14 +17,6 @@ package org.dcm4che2.net.pdu;
  */
 public class AReleaseRQ implements PDU {
     
-    private static AReleaseRQ instance = new AReleaseRQ();
-
-    public static PDU getAReleaseRQ() {
-        return instance;
-    }
-    
-    private AReleaseRQ() {}
-
     public int length() {
         return 4;
     }

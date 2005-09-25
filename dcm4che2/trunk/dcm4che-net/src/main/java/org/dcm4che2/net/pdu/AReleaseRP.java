@@ -17,14 +17,6 @@ package org.dcm4che2.net.pdu;
  */
 public class AReleaseRP implements PDU {
     
-    private static AReleaseRP instance = new AReleaseRP();
-
-    public static PDU getAReleaseRP() {
-        return instance;
-    }
-    
-    private AReleaseRP() {};
-
     public int length() {
         return 4;
     }

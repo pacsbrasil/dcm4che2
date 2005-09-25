@@ -10,9 +10,7 @@
 package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.protocol.ProtocolEncoderOutput;
 import org.apache.mina.protocol.ProtocolSession;
-import org.apache.mina.protocol.codec.MessageEncoder;
 import org.dcm4che2.net.pdu.PDU;
 
 /**
@@ -20,27 +18,24 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public abstract class PDUEncoder implements MessageEncoder {
-    private final int type;
+public abstract class PDUEncoder {
 
-    protected PDUEncoder(int type) {
+    private final int type;
+    
+    public PDUEncoder(int type) {
         this.type = type;
     }
-
-    public void encode(ProtocolSession session, Object message,
-            ProtocolEncoderOutput out) {
-        PDU pdu = (PDU) message;
-        final int pdulen = pdu.length();
+    
+    public ByteBuffer encodePDU(ProtocolSession session, PDU pdu) {
+        int pdulen = pdu.length();
         ByteBuffer buf = ByteBuffer.allocate(pdulen + 6);
-        buf.putShort((short) type);
-        buf.putInt(pdu.length());
-        encodePDU(session, pdu, buf);
-        
-        buf.flip();
-        out.write(buf);
+        buf.put((byte) type);
+        buf.put((byte) 0);
+        buf.putInt(pdulen);
+        encodePDUBody(session, pdu, buf);
+        return buf;
     }
 
-    protected abstract void encodePDU(ProtocolSession session, PDU pdu,
-            ByteBuffer out);
-
+    protected abstract void encodePDUBody(ProtocolSession session, PDU pdu,
+            ByteBuffer buf);
 }

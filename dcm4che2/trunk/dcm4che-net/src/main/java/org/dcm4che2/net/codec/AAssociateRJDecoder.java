@@ -11,6 +11,8 @@ package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
+import org.apache.mina.protocol.ProtocolViolationException;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.PDU;
 
@@ -20,19 +22,20 @@ import org.dcm4che2.net.pdu.PDU;
  * @since Sep 15, 2005
  *
  */
-public class AAssociateRJDecoder extends PDUDecoder {
+class AAssociateRJDecoder implements PDUDecoder {
 
-    public AAssociateRJDecoder() {
-        super(PDUType.A_ASSOCIATE_RJ);
-    }
-
-    @Override
-    protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    throws ProtocolViolationException {
         AAssociateRJ pdu = new AAssociateRJ();
+        if (length != 4)
+            throw new DULProtocolViolationException(
+                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    "Invalid PDU-length of A-ASSOCIATE-RJ: " + length);
+        
         in.get(); // skip reserved byte 7
-        pdu.setResult(in.getUnsigned());
-        pdu.setSource(in.getUnsigned());
-        pdu.setReason(in.getUnsigned());
+        pdu.setResult(in.get() & 0xff);
+        pdu.setSource(in.get() & 0xff);
+        pdu.setReason(in.get() & 0xff);
         return pdu;
     }
 

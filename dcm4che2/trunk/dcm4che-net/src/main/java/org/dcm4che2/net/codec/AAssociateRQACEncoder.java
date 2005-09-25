@@ -9,14 +9,11 @@
 
 package org.dcm4che2.net.codec;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
@@ -34,16 +31,16 @@ import org.dcm4che2.net.pdu.UserIdentity;
  * @since Sep 15, 2005
  *
  */
-public abstract class AAssociateRQACEncoder extends PDUEncoder {
+abstract class AAssociateRQACEncoder extends PDUEncoder {
 
-    private CharsetEncoder asciiEncoder = Charset.forName("US_ASCII").newEncoder();
+    private CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
 
     protected AAssociateRQACEncoder(int type) {
         super(type);
     }
 
     @Override
-    protected void encodePDU(ProtocolSession session, PDU pdu, ByteBuffer out) {
+    protected void encodePDUBody(ProtocolSession session, PDU pdu, ByteBuffer out) {
         AAssociateRQAC rqac = (AAssociateRQAC) pdu;
         encodeProtocolVersion(rqac.getProtocolVersion(), out);
         encodeAET(rqac.getCalledAET(), out);
@@ -87,24 +84,29 @@ public abstract class AAssociateRQACEncoder extends PDUEncoder {
         if (s == null)
             return;
         
-        out.putShort((short) type);
+        out.put((byte) type);
+        out.put((byte) 0);
         encodeASCIIString(s, out);
     }
 
     protected abstract void encodePCs(Collection pcs, ByteBuffer out);
 
     protected void encodePC(int type, PresentationContext pc, ByteBuffer out) {
-        out.putShort((short) type);
+        out.put((byte) type);
+        out.put((byte) 0);
         out.putShort((short) pc.length());
-        out.putShort((short) pc.getPCID());
-        out.putShort((short) pc.getResult());
+        out.putShort((byte) pc.getPCID());
+        out.put((byte) 0);
+        out.put((byte) pc.getResult());
+        out.put((byte) 0);
         encodeItem(ItemType.ABSTRACT_SYNTAX, pc.getAbstractSyntax(), out);
         for (Iterator it = pc.getTransferSyntaxes().iterator(); it.hasNext();)
             encodeItem(ItemType.TRANSFER_SYNTAX, (String) it.next(), out);
     }
 
     private void encodeUserInfo(AAssociateRQAC rqac, ByteBuffer out) {
-        out.putShort((short) ItemType.USER_INFO);
+        out.put((byte) ItemType.USER_INFO);
+        out.put((byte) 0);
         out.putShort((short) rqac.userInfoLength());
         encodeMaxPDULength(rqac.getMaxPDULength(), out);
         encodeItem(ItemType.IMPL_CLASS_UID, rqac.getImplClassUID(), out);
@@ -121,7 +123,8 @@ public abstract class AAssociateRQACEncoder extends PDUEncoder {
     }
 
     private void encodeRoleSelection(RoleSelection selection, ByteBuffer out) {
-        out.putShort((short) ItemType.ROLE_SELECTION);
+        out.put((byte) ItemType.ROLE_SELECTION);
+        out.put((byte) 0);
         out.putShort((short) selection.length());
         encodeASCIIString(selection.getSOPClassUID(), out);
         out.put((byte) (selection.isSCU() ? 1 : 0));
@@ -129,14 +132,16 @@ public abstract class AAssociateRQACEncoder extends PDUEncoder {
     }
 
     private void encodeExtendedNegotiation(ExtendedNegotiation extNeg, ByteBuffer out) {
-        out.putShort((short) ItemType.EXT_NEG);
+        out.put((byte) ItemType.EXT_NEG);
+        out.put((byte) 0);
         out.putShort((short) extNeg.length());
         encodeASCIIString(extNeg.getSOPClassUID(), out);
         out.put(extNeg.getInformation());
     }
     
     private void encodeCommonExtendedNegotiation(CommonExtendedNegotiation extNeg, ByteBuffer out) {
-        out.putShort((short) ItemType.COMMON_EXT_NEG);
+        out.put((byte) ItemType.COMMON_EXT_NEG);
+        out.put((byte) 0);
         out.putShort((short) extNeg.length());
         encodeASCIIString(extNeg.getSOPClassUID(), out);
         encodeASCIIString(extNeg.getServiceClassUID(), out);
@@ -145,14 +150,16 @@ public abstract class AAssociateRQACEncoder extends PDUEncoder {
     }
     
     private void encodeAsyncOpsWindow(AAssociateRQAC rqac, ByteBuffer out) {
-        out.putShort((short) ItemType.ASYNC_OPS_WINDOW);
+        out.put((byte) ItemType.ASYNC_OPS_WINDOW);
+        out.put((byte) 0);
         out.putShort((short) 4);
         out.putShort((short) rqac.getMaxOpsInvoked());
         out.putShort((short) rqac.getMaxOpsPerformed());       
     }
 
     private void encodeMaxPDULength(int maxPDULength, ByteBuffer out) {
-        out.putShort((short) ItemType.MAX_PDU_LENGTH);
+        out.put((byte) ItemType.MAX_PDU_LENGTH);
+        out.put((byte) 0);
         out.putShort((short) 4);
         out.putInt(maxPDULength);
     }
@@ -161,7 +168,8 @@ public abstract class AAssociateRQACEncoder extends PDUEncoder {
         if (userIdentity == null)
             return;
         
-        out.putShort((short) ItemType.USER_IDENTITY);
+        out.put((byte) ItemType.USER_IDENTITY);
+        out.put((byte) 0);
         out.putShort((short) userIdentity.length());
         out.put((byte) userIdentity.getUserIdentityType());
         out.put((byte) (userIdentity.isPositiveResponseRequested() ? 1 : 0));

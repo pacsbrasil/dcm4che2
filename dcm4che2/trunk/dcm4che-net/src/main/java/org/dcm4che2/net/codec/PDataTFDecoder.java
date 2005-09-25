@@ -11,6 +11,7 @@ package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
+import org.apache.mina.protocol.ProtocolViolationException;
 import org.dcm4che2.net.pdu.PDataTF;
 import org.dcm4che2.net.pdu.PDU;
 
@@ -20,14 +21,10 @@ import org.dcm4che2.net.pdu.PDU;
  * @since Sep 15, 2005
  *
  */
-public class PDataTFDecoder extends PDUDecoder {
+public class PDataTFDecoder implements PDUDecoder {
 
-    public PDataTFDecoder() {
-        super(PDUType.P_DATA_TF);
-    }
-
-    @Override
-    protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length) 
+    throws ProtocolViolationException {
         return new PDataTF(in);
     }
 

@@ -11,6 +11,7 @@ package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
+import org.apache.mina.protocol.ProtocolViolationException;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.PDU;
 
@@ -20,16 +21,12 @@ import org.dcm4che2.net.pdu.PDU;
  * @since Sep 15, 2005
  *
  */
-public class AAssociateACDecoder extends AAssociateRQACDecoder {
+class AAssociateACDecoder extends AAssociateRQACDecoder {
 
-    public AAssociateACDecoder() {
-        super(PDUType.A_ASSOCIATE_AC);
-    }
-
-    @Override
-    protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    throws ProtocolViolationException {
         AAssociateAC ac = new AAssociateAC();
-        decodePDU(session, in, ac);
+        decodePDU(session, in, length, ac, "A-ASSOCIATE-AC");
         return ac;
     }
 

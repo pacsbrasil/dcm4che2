@@ -11,6 +11,8 @@ package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
+import org.apache.mina.protocol.ProtocolViolationException;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AReleaseRQ;
 import org.dcm4che2.net.pdu.PDU;
 
@@ -20,15 +22,20 @@ import org.dcm4che2.net.pdu.PDU;
  * @since Sep 15, 2005
  *
  */
-public class AReleaseRQDecoder extends PDUDecoder {
+class AReleaseRQDecoder implements PDUDecoder {
 
-    public AReleaseRQDecoder() {
-        super(PDUType.A_RELEASE_RQ);
-    }
-
-    @Override
-    protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
-        return AReleaseRQ.getAReleaseRQ();
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    throws ProtocolViolationException {
+        if (length != 4)
+            throw new DULProtocolViolationException(
+                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    "Invalid PDU-length of A-RELEASE-RQ: " + length);
+        
+        in.get();
+        in.get();
+        in.get();
+        in.get();
+        return new AReleaseRQ();
     }
 
 }

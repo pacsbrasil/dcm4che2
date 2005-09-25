@@ -11,6 +11,7 @@ package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
+import org.apache.mina.protocol.ProtocolViolationException;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.PDU;
 
@@ -20,18 +21,20 @@ import org.dcm4che2.net.pdu.PDU;
  * @since Sep 15, 2005
  *
  */
-public class AAbortDecoder extends PDUDecoder {
+class AAbortDecoder implements PDUDecoder {
 
-    public AAbortDecoder() {
-        super(PDUType.A_ABORT);
-    }
-
-    @Override
-    protected PDU decodePDU(ProtocolSession session, ByteBuffer in) {
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    throws ProtocolViolationException {
         AAbort pdu = new AAbort();
-        in.getShort(); // skip reserved bytes 7,8
-        pdu.setSource(in.getUnsigned());
-        pdu.setReason(in.getUnsigned());
+        if (length != 4)
+            throw new DULProtocolViolationException(
+                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    "Invalid PDU-length of A-ABORT: " + length);
+        
+        in.get(); // skip reserved byte 7
+        in.get(); // skip reserved byte 8
+        pdu.setSource(in.get() & 0xff);
+        pdu.setReason(in.get() & 0xff);
         return pdu;
     }
 

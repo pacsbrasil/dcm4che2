@@ -9,13 +9,8 @@
 
 package org.dcm4che2.net.codec;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
-import org.dcm4che2.net.pdu.AReleaseRQ;
 import org.dcm4che2.net.pdu.PDU;
 
 /**
@@ -23,27 +18,18 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public class AReleaseRQEncoder extends PDUEncoder {
+class AReleaseRQEncoder extends PDUEncoder {
 
     public AReleaseRQEncoder() {
         super(PDUType.A_RELEASE_RQ);
     }
 
-    private static final Set TYPES;
-
-    static {
-        Set types = new HashSet();
-        types.add(AReleaseRQ.class);
-        TYPES = Collections.unmodifiableSet(types);
-    }
-
-    public Set getMessageTypes() {
-        return TYPES;
-    }
-
     @Override
-    protected void encodePDU(ProtocolSession session, PDU pdu, ByteBuffer out) {
-        out.putInt(0);
+    protected void encodePDUBody(ProtocolSession session, PDU pdu, ByteBuffer out) {
+        out.put((byte) 0);
+        out.put((byte) 0);
+        out.put((byte) 0);
+        out.put((byte) 0);
     }
 
 }

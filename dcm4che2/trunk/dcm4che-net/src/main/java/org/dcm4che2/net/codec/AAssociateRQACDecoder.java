@@ -15,6 +15,7 @@ import java.nio.charset.CharsetDecoder;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.protocol.ProtocolSession;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
@@ -28,13 +29,9 @@ import org.dcm4che2.net.pdu.UserIdentity;
  * @since Sep 15, 2005
  *
  */
-public abstract class AAssociateRQACDecoder extends PDUDecoder {
+abstract class AAssociateRQACDecoder implements PDUDecoder {
     
-    private CharsetDecoder asciiDecoder = Charset.forName("US_ASCII").newDecoder();
-
-    protected AAssociateRQACDecoder(int type) {
-        super(type);
-    }
+    CharsetDecoder asciiDecoder = Charset.forName("US-ASCII").newDecoder();
 
     private String decodeASCIIString(ByteBuffer in)  {
         return decodeASCIIString(in, in.getUnsignedShort());
@@ -48,9 +45,17 @@ public abstract class AAssociateRQACDecoder extends PDUDecoder {
         }
     }
     
-    protected void decodePDU(ProtocolSession session, ByteBuffer in, AAssociateRQAC rqac) {
+    protected void decodePDU(ProtocolSession session, ByteBuffer in, int length, 
+            AAssociateRQAC rqac, String prompt)
+    throws DULProtocolViolationException {
+        if (length < 68)
+            throw new DULProtocolViolationException(
+                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    "Insufficient PDU-length of " + prompt + ": " + length);
+            
         rqac.setProtocolVersion(in.getUnsignedShort());
-        in.getShort(); // skip Reserved Bytes 9-10
+        in.get(); // skip reserved byte 9
+        in.get(); // skip reserved byte 10
         rqac.setCalledAET(decodeASCIIString(in, 16));
         rqac.setCallingAET(decodeASCIIString(in, 16));
         byte[] b32 = new byte[32];
@@ -58,11 +63,11 @@ public abstract class AAssociateRQACDecoder extends PDUDecoder {
         rqac.setReservedBytes(b32);
         int remaining = length - 68;
         while (remaining > 0)
-            remaining =- decodeItem(in, rqac);
+            remaining -= decodeItem(in, remaining, rqac);
     }
 
-    private int decodeItem(ByteBuffer in, AAssociateRQAC rqac) {
-        int itemType = in.getUnsigned();
+    private int decodeItem(ByteBuffer in, int remaining, AAssociateRQAC rqac) {
+        int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
         int itemLength = in.getUnsignedShort();
         switch (itemType) {
@@ -84,18 +89,18 @@ public abstract class AAssociateRQACDecoder extends PDUDecoder {
 
     private PresentationContext decodePC(ByteBuffer in, int itemLength) {
         PresentationContext pc = new PresentationContext();
-        pc.setPCID(in.getUnsigned());
+        pc.setPCID(in.get() & 0xff);
         in.get(); // skip reserved byte
-        pc.setResult(in.getUnsigned());
+        pc.setResult(in.get() & 0xff);
         in.get(); // skip reserved byte
         int remaining = itemLength - 4;
         while (remaining > 0)
-            remaining =- decodePCSubItem(in, pc);
+            remaining -= decodePCSubItem(in, pc);
         return pc;
     }
 
     private int decodePCSubItem(ByteBuffer in, PresentationContext pc) {
-        int itemType = in.getUnsigned();
+        int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
         int itemLength = in.getUnsignedShort();
         switch (itemType) {
@@ -114,11 +119,11 @@ public abstract class AAssociateRQACDecoder extends PDUDecoder {
     private void decodeUserInfo(ByteBuffer in, int itemLength, AAssociateRQAC rqac) {
         int remaining = itemLength;
         while (remaining > 0)
-            remaining =- decodeUserInfoSubItem(in, rqac);
+            remaining -= decodeUserInfoSubItem(in, rqac);
     }
 
     private int decodeUserInfoSubItem(ByteBuffer in, AAssociateRQAC rqac) {
-        int itemType = in.getUnsigned();
+        int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
         int itemLength = in.getUnsignedShort();
         switch (itemType) {
@@ -203,7 +208,7 @@ public abstract class AAssociateRQACDecoder extends PDUDecoder {
 
     private UserIdentity decodeUserIdentity(ByteBuffer in, int itemLength) {
         UserIdentity user = new UserIdentity();
-        user.setUserIdentityType(in.getUnsigned());
+        user.setUserIdentityType(in.get() & 0xff);
         user.setPositiveResponseRequested(in.get() != 0);
         user.setPrimaryField(decodeBytes(in));
         user.setSecondaryField(decodeBytes(in));
