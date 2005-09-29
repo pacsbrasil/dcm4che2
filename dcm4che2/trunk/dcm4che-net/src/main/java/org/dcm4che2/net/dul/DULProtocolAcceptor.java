@@ -28,14 +28,14 @@ public class DULProtocolAcceptor {
     private final SocketAcceptor socketIoAcceptor = new SocketAcceptor();
     private final IoProtocolAcceptor acceptor = 
             new IoProtocolAcceptor(socketIoAcceptor );
-    private int associationRequestTimer = 10;
+    private long associationRequestTimeout = 1000;
 
-    public final int getAssociationRequestTimer() {
-        return associationRequestTimer;
+    public final long getAssociationRequestTimeout() {
+        return associationRequestTimeout;
     }
 
-    public final void setAssociationRequestTimer(int associationRequestTimer) {
-        this.associationRequestTimer = associationRequestTimer;
+    public final void setAssociationRequestTimeout(long timeout) {
+        this.associationRequestTimeout = timeout;
     }
     
     public void setIoThreadPoolFilter(IoThreadPoolFilter ioThreadPoolFilter) {
@@ -68,7 +68,7 @@ public class DULProtocolAcceptor {
     public void bind(DULServiceUser user, SocketAddress address)
     throws IOException {
         DULProtocolProvider provider = new DULProtocolProvider(user, true);
-        provider.setAssociationRequestTimeout(associationRequestTimer);
+        provider.setAssociationRequestTimeout(associationRequestTimeout);
         acceptor.bind(address, provider);
     }
 

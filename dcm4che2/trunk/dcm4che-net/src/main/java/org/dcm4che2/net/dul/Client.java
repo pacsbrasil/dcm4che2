@@ -22,7 +22,11 @@ import java.net.InetSocketAddress;
 
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
+import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.net.pdu.AAssociateAC;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.AReleaseRP;
 import org.dcm4che2.net.pdu.AReleaseRQ;
 
 /**
@@ -33,12 +37,28 @@ import org.dcm4che2.net.pdu.AReleaseRQ;
  */
 public class Client
 {
-    private static DULServiceUser user = new AbstractDULServiceUser(){
+    private static DULServiceUser user = new DULServiceUser(){
 
-        public void indicate(AAssociateRQ associateRQ) {
-            // TODO Auto-generated method stub
-            
-        }};
+        public void onOpened(DULServiceProvider service) {
+            service.write(makeAARQ());            
+        }
+
+        public void onAAssociateRQ(DULServiceProvider provider, AAssociateRQ associateRQ) {}
+
+        public void onAAssociateRJ(DULServiceProvider provider, AAssociateRJ associateRJ) {}
+
+        public void onAAssociateAC(DULServiceProvider service, AAssociateAC associateAC) {
+            service.write(new AReleaseRQ());            
+        }
+
+        public void onAReleaseRQ(DULServiceProvider provider, AReleaseRQ releaseRQ) {
+            provider.write(new AReleaseRP());
+        }
+
+        public void onAReleaseRP(DULServiceProvider provider, AReleaseRP releaseRP) {}
+
+        public void onAbort(AAbort abort) {}
+   };
 
     public static void main( String[] args ) throws Throwable
     {
@@ -50,23 +70,13 @@ public class Client
         protocolThreadPoolFilter.start();
         
         DULProtocolConnector connector = new DULProtocolConnector();
-        connector.setIoThreadPoolFilter(ioThreadPoolFilter);
-        connector.setProtocolThreadPoolFilter(protocolThreadPoolFilter);
+//        connector.setIoThreadPoolFilter(ioThreadPoolFilter);
+//        connector.setProtocolThreadPoolFilter(protocolThreadPoolFilter);
         DULServiceProvider service = connector.connect(user, makeSocketAddress());
-        service.write(makeAARQ());
-        System.out.println("Wait for STA6 or STA1");
+        System.out.println("Wait for STA1");
         synchronized (service) {
-            while (!(service.getState() == DULServiceProvider.STA6
-                    || service.getState() == DULServiceProvider.STA1))
+            while (service.getState() != DULServiceProvider.STA1)
                 service.wait();
-        }
-        if (service.getState() == DULServiceProvider.STA6) {
-            service.write(new AReleaseRQ());
-            System.out.println("Wait for STA1");
-            synchronized (service) {
-                while (service.getState() != DULServiceProvider.STA1)
-                    service.wait();
-            }
         }
         System.out.println("Exit main");
         ioThreadPoolFilter.stop();

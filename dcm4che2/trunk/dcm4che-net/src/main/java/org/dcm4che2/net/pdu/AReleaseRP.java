@@ -20,5 +20,9 @@ public class AReleaseRP implements PDU {
     public int length() {
         return 4;
     }
+    
+    public String toString() {
+        return "A-RELEASE-RP";
+    }
 
 }

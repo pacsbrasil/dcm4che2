@@ -16,5 +16,9 @@ package org.dcm4che2.net.pdu;
  *
  */
 public class AAssociateRQ extends AAssociateRQAC {
+    
+    public String toString() {
+        return super.toString("A-ASSOCIATE-RQ");
+    }
 
 }

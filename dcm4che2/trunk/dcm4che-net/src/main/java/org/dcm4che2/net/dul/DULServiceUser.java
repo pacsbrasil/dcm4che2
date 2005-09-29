@@ -9,10 +9,12 @@
 
 package org.dcm4che2.net.dul;
 
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.AReleaseRP;
+import org.dcm4che2.net.pdu.AReleaseRQ;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -22,12 +24,18 @@ import org.dcm4che2.net.pdu.AReleaseRP;
  */
 public interface DULServiceUser {
 
-    void confirm(AAssociateAC associateAC, DULServiceProvider provider);
+    void onOpened(DULServiceProvider provider);
 
-    void confirm(AAssociateRJ associateRJ, DULServiceProvider provider);
+    void onAAssociateRQ(DULServiceProvider provider, AAssociateRQ associateRQ);
 
-    void confirm(AReleaseRP releaseRP, DULServiceProvider provider);
+    void onAAssociateAC(DULServiceProvider provider, AAssociateAC associateAC);
 
-    void indicate(AAssociateRQ associateRQ);
+    void onAAssociateRJ(DULServiceProvider provider, AAssociateRJ associateRJ);
+
+    void onAReleaseRQ(DULServiceProvider provider, AReleaseRQ releaseRQ);
+
+    void onAReleaseRP(DULServiceProvider provider, AReleaseRP releaseRP);
+
+    void onAbort(AAbort abort);
 
 }

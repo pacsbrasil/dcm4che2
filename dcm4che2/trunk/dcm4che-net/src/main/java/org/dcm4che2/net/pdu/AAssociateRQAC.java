@@ -10,6 +10,7 @@
 package org.dcm4che2.net.pdu;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -19,6 +20,10 @@ import java.util.Map;
 
 import org.dcm4che2.data.Implementation;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.UIDDictionary;
+import org.dcm4che2.net.codec.ItemType;
+import org.dcm4che2.util.ByteUtils;
+import org.dcm4che2.util.StringUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -42,10 +47,11 @@ public abstract class AAssociateRQAC implements PDU {
     private String applicationContext = UID.DICOMApplicationContextName;
     private String implClassUID = Implementation.classUID();
     private String implVersionName = Implementation.versionName();
-    private final List pcs = new ArrayList();
-    private final Map roleSelMap = new LinkedHashMap();
-    private final Map extNegMap = new LinkedHashMap();
-    private final Map commonExtNegMap = new LinkedHashMap();
+    private final ArrayList pcs = new ArrayList();
+    private final BitSet pcids = new BitSet(128);
+    private final LinkedHashMap roleSelMap = new LinkedHashMap();
+    private final LinkedHashMap extNegMap = new LinkedHashMap();
+    private final LinkedHashMap commonExtNegMap = new LinkedHashMap();
     private UserIdentity userIdentity;
 
     public final int getProtocolVersion() {
@@ -155,12 +161,28 @@ public abstract class AAssociateRQAC implements PDU {
         if (pcs.size() >= 128)
             throw new IllegalStateException(
                     "Maximal Number (128) of Presentation Context obtained.");
-            
+        assignPCID(pc);    
         pcs.add(pc);
     }
 
+    private void assignPCID(PresentationContext pc) {
+        int pcid = pc.getPCID();
+        if (pcid == 0) {
+            int i = pcs.size();
+            while (pcids.get(i))
+                i = (i + 1) & 0x7f;
+            pcid = i * 2 + 1;
+            pc.setPCID(pcid);
+        }
+        pcids.set(pcid / 2);
+    }
+
     public boolean removePresentationContext(PresentationContext pc) {
-        return pcs.remove(pc);
+        if (!pcs.remove(pc))
+            return false;
+        
+        pcids.clear(pc.getPCID() / 2);
+        return true;
     }
     
     public Collection getRoleSelections() {
@@ -244,6 +266,110 @@ public abstract class AAssociateRQAC implements PDU {
         if (userIdentity != null)
             len += 4 + userIdentity.length();        
         return len;
+    }
+    
+    private static StringBuffer promptUID(String uid, StringBuffer sb) {
+        return sb.append(uid).append(" - ")
+                .append(UIDDictionary.getDictionary().nameOf(uid));
+    }
+    
+    protected String toString(String type) {
+        StringBuffer sb = new StringBuffer(512);
+        sb.append(type);
+        sb.append("[\n  calledAET = ").append(calledAET);
+        sb.append("\n  callingAET = ").append(callingAET);
+        sb.append("\n  applicationContext = ");
+        promptUID(applicationContext, sb);
+        sb.append("\n  implClassUID = ").append(implClassUID);
+        sb.append("\n  implVersionName = ").append(implVersionName);
+        sb.append("\n  maxPDULength = ").append(maxPDULength);
+        sb.append("\n  maxOpsInvoked/maxOpsPerformed = ").append(maxOpsInvoked)
+                .append("/").append(maxOpsPerformed);
+        if (userIdentity != null)
+            sb.append("\n  ").append(userIdentity);
+        promptPresentationContext(sb);
+        promptRoleSelection(sb);
+        promptExtendedNegotiation(sb);
+        promptCommonExtendedNegotiation(sb);
+        sb.append("\n]");
+        return sb.toString();
+    }
+
+    private void promptPresentationContext(StringBuffer sb) {
+        ArrayList tmp = new ArrayList(pcs);
+        final int n = tmp.size();
+        sb.append("\n  Presentation Context(").append(n).append("):");
+        for (int i = 0; i < n; ++i) {
+            PresentationContext pc = (PresentationContext) tmp.get(i);
+            sb.append("\n    id = ").append(pc.getPCID()).append(", as = ");
+            String asuid = pc.getAbstractSyntax();
+            if (asuid != null)
+                promptUID(asuid, sb);
+            else
+                sb.append("result = ").append(pc.getResult())
+                        .append(" - ").append(pc.getResultAsString());
+            ArrayList tsuids = new ArrayList(pc.getTransferSyntaxes());
+            for (int j = 0, m = tsuids.size() ; j < m; j++) {
+                sb.append("\n        ts = ");
+                promptUID((String) tsuids.get(j), sb);
+            }
+        }
+    }
+
+    private void promptRoleSelection(StringBuffer sb) {
+        ArrayList tmp = new ArrayList(roleSelMap.values());
+        final int n = tmp.size();
+        sb.append("\n  Role Selection(").append(n).append("):");
+        for (int i = 0; i < n; ++i) {
+            RoleSelection rs = (RoleSelection) tmp.get(i);
+            sb.append("\n    ");
+            promptUID(rs.getSOPClassUID(), sb);
+            sb.append("\n      SCU/SCP = ");
+            sb.append(rs.isSCU()).append("/").append(rs.isSCP());
+        }
+    }
+
+    private static void promptBytes(byte[] b, StringBuffer sb) {
+        for (int i = 0; i < b.length; i++) {
+            StringUtils.byteToHex(b[i], sb);
+            sb.append(' '); 
+        }        
+    }
+
+    private void promptExtendedNegotiation(StringBuffer sb) {
+        ArrayList tmp = new ArrayList(extNegMap.values());
+        final int n = tmp.size();
+        sb.append("\n  Extended Negotiation(").append(n).append("):");
+        for (int i = 0; i < n; ++i) {
+            ExtendedNegotiation extNeg = (ExtendedNegotiation) tmp.get(i);
+            sb.append("\n    ");
+            promptUID(extNeg.getSOPClassUID(), sb);
+            sb.append("\n      info = ");
+            promptBytes(extNeg.getInformation(), sb);
+        }
+    }
+
+    private void promptCommonExtendedNegotiation(StringBuffer sb) {
+        ArrayList tmp = new ArrayList(commonExtNegMap.values());
+        final int n = tmp.size();
+        sb.append("\n  Common Extended Negotiation(").append(n).append("):");
+        for (int i = 0; i < n; ++i) {
+            CommonExtendedNegotiation extNeg = (CommonExtendedNegotiation) tmp.get(i);
+            sb.append("\n    ");
+            promptUID(extNeg.getSOPClassUID(), sb);
+            sb.append("\n      serviceClass = ");
+            promptUID(extNeg.getServiceClassUID(), sb);
+            ArrayList uids = new ArrayList(extNeg.getRelatedGeneralSOPClassUIDs());
+            if (uids.isEmpty())
+                return;
+            
+            final int m = uids.size();  
+            sb.append("\n      Related General SOP Classes(").append(m).append("):");
+            for (int j = 0; j < m; j++) {
+                sb.append("\n      ");
+                promptUID((String) uids.get(j), sb);
+            }            
+        }
     }
 
 }

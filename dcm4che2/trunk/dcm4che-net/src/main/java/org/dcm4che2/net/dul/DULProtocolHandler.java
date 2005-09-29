@@ -39,40 +39,47 @@ public class DULProtocolHandler implements ProtocolHandler {
         this.associationRequestTimeout = associationRequestTimeout;
     }
 
-    public void sessionCreated(ProtocolSession session) throws Exception {
+    public void sessionCreated(ProtocolSession session)
+    throws Exception {
         DULServiceProvider service = 
             new DULServiceProvider(user, session, acceptor);
         service.setAssociationRequestTimeout(associationRequestTimeout);
         session.setAttachment(service);
      }
 
-    public void sessionOpened(ProtocolSession session) throws Exception {
+    public void sessionOpened(ProtocolSession session)
+    throws Exception {
         DULServiceProvider provider = (DULServiceProvider) session.getAttachment();
         provider.opened();      
     }
 
-    public void sessionClosed(ProtocolSession session) throws Exception {
-        // TODO Auto-generated method stub
-        
+    public void sessionClosed(ProtocolSession session)
+    throws Exception {
+        DULServiceProvider provider = (DULServiceProvider) session.getAttachment();
+        provider.closed();      
     }
 
-    public void sessionIdle(ProtocolSession session, IdleStatus status) throws Exception {
-        // TODO Auto-generated method stub
-        
+    public void sessionIdle(ProtocolSession session, IdleStatus status)
+    throws Exception {
+        DULServiceProvider provider = (DULServiceProvider) session.getAttachment();
+        provider.idle(status);      
     }
 
-    public void exceptionCaught(ProtocolSession session, Throwable cause) throws Exception {
-        // TODO Auto-generated method stub
-        
+    public void exceptionCaught(ProtocolSession session, Throwable cause)
+    throws Exception {
+        DULServiceProvider provider = (DULServiceProvider) session.getAttachment();
+        provider.exception(cause);      
     }
 
-    public void messageReceived(ProtocolSession session, Object message) throws Exception {
+    public void messageReceived(ProtocolSession session, Object message)
+    throws Exception {
         DULServiceProvider provider = (DULServiceProvider) session.getAttachment();
         provider.received((PDU) message);        
     }
 
-    public void messageSent(ProtocolSession session, Object message) throws Exception {
-        // TODO Auto-generated method stub
-        
+    public void messageSent(ProtocolSession session, Object message)
+    throws Exception {
+        DULServiceProvider provider = (DULServiceProvider) session.getAttachment();
+        provider.sent((PDU) message);        
     }
 }

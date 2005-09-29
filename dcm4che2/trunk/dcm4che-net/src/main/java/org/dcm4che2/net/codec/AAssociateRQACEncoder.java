@@ -34,9 +34,11 @@ import org.dcm4che2.net.pdu.UserIdentity;
 abstract class AAssociateRQACEncoder extends PDUEncoder {
 
     private CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
+    private final int pcItemType;
 
-    protected AAssociateRQACEncoder(int type) {
+    protected AAssociateRQACEncoder(int type, int pcItemType) {
         super(type);
+        this.pcItemType = pcItemType;
     }
 
     @Override
@@ -89,21 +91,22 @@ abstract class AAssociateRQACEncoder extends PDUEncoder {
         encodeASCIIString(s, out);
     }
 
-    protected abstract void encodePCs(Collection pcs, ByteBuffer out);
-
-    protected void encodePC(int type, PresentationContext pc, ByteBuffer out) {
-        out.put((byte) type);
-        out.put((byte) 0);
-        out.putShort((short) pc.length());
-        out.putShort((byte) pc.getPCID());
-        out.put((byte) 0);
-        out.put((byte) pc.getResult());
-        out.put((byte) 0);
-        encodeItem(ItemType.ABSTRACT_SYNTAX, pc.getAbstractSyntax(), out);
-        for (Iterator it = pc.getTransferSyntaxes().iterator(); it.hasNext();)
-            encodeItem(ItemType.TRANSFER_SYNTAX, (String) it.next(), out);
+    protected void encodePCs(Collection pcs, ByteBuffer out) {
+        for (Iterator it = pcs.iterator(); it.hasNext();) {
+            PresentationContext pc = (PresentationContext) it.next();
+            out.put((byte) pcItemType);
+            out.put((byte) 0);
+            out.putShort((short) pc.length());
+            out.putShort((byte) pc.getPCID());
+            out.put((byte) 0);
+            out.put((byte) pc.getResult());
+            out.put((byte) 0);
+            encodeItem(ItemType.ABSTRACT_SYNTAX, pc.getAbstractSyntax(), out);
+            for (Iterator it2 = pc.getTransferSyntaxes().iterator(); it2.hasNext();)
+                encodeItem(ItemType.TRANSFER_SYNTAX, (String) it2.next(), out);
+        }
     }
-
+    
     private void encodeUserInfo(AAssociateRQAC rqac, ByteBuffer out) {
         out.put((byte) ItemType.USER_INFO);
         out.put((byte) 0);

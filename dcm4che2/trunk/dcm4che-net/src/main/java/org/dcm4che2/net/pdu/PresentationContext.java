@@ -22,7 +22,22 @@ import java.util.Set;
  *
  */
 public class PresentationContext {
-
+    
+    public static final int ACCEPTANCE = 0;
+    public static final int USER_REJECTION = 1;
+    public static final int PROVIDER_REJECTION = 2;
+    public static final int ABSTRACT_SYNTAX_NOT_SUPPORTED = 3;
+    public static final int TRANSFER_SYNTAX_NOT_SUPPORTED = 4;
+    
+    private static final String UNDEFINED = "undefined";
+    private static final String[] RESULT = {
+        "acceptance",
+        "user-rejection",
+        "no-reason (provider rejection)",
+        "abstract-syntax-not-supported (provider rejection)",
+        "transfer-syntaxes-not-supported (provider rejection)"    
+    };
+    
     private int pcid;
     private int result;
     public String abstractSyntax;
@@ -74,6 +89,14 @@ public class PresentationContext {
         for (Iterator it = transferSyntaxes.iterator(); it.hasNext();)
             len += 4 + ((String) it.next()).length();
         return len;
+    }
+
+    public String getResultAsString() {
+        try {
+            return RESULT[result];
+        } catch (IndexOutOfBoundsException e) {
+            return UNDEFINED;
+        }
     }
 
 }

@@ -9,11 +9,14 @@
 
 package org.dcm4che2.net.dul;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
+import org.apache.mina.common.IdleStatus;
 import org.apache.mina.protocol.ProtocolSession;
+import org.dcm4che2.net.codec.DULProtocolViolationException;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
@@ -57,14 +60,18 @@ public class DULServiceProvider {
     private long associationRequestTimeout = 10000L;
     private long socketCloseDelay = 100L;
 
-    public DULServiceProvider(DULServiceUser user, ProtocolSession session,
+    DULServiceProvider(DULServiceUser user, ProtocolSession session,
             boolean acceptor) {
         this.user = user;
         this.session = session;
         this.acceptor = acceptor;
-        this.state = STA1;
+        setState(acceptor ? STA2 : STA4);
     }
 
+    public final boolean isAcceptor() {
+        return acceptor;
+    }
+    
     public final long getAssociationRequestTimeout() {
         return associationRequestTimeout;
     }
@@ -84,8 +91,18 @@ public class DULServiceProvider {
     public final State getState() {
         return state;
     }
+
+    public void write(PDU pdu) {
+        if (log.isDebugEnabled()) {
+            log.debug("Sending: " + pdu);
+        }
+        state.write(this, pdu);        
+    }
     
     private synchronized void setState(State state) {
+        if (this.state == state)
+            return;
+        
         this.state = state;
         if (log.isDebugEnabled())
             log.debug("Enter State: " + state);
@@ -93,6 +110,10 @@ public class DULServiceProvider {
     }
 
     private void startARTIM(long delay) {
+        stopARTIM();
+        if (log.isDebugEnabled()) {
+            log.debug("Start ARTIM: " + (delay/1000f) + "s");
+        }
         artimTask = new TimerTask() {        
             public void run() {
                 artimExpired();        
@@ -103,35 +124,63 @@ public class DULServiceProvider {
 
     private void stopARTIM() {
         if (artimTask != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Stop ARTIM");
+            }
             artimTask.cancel();
             artimTask = null;
         }
     }
     
     void opened() {
+        if (log.isDebugEnabled()) {
+            log.debug("Opened: " + this);
+        }
+        user.onOpened(this);
         if (acceptor) {
-            ae5();
-        } else {
-            ae1();           
+            startARTIM(associationRequestTimeout);
         }
     }
 
     void received(PDU pdu) {
-        state.received(pdu, this);        
+        if (log.isDebugEnabled()) {
+            log.debug("Received: " + pdu);
+        }
+        state.received(this, pdu);        
     }
 
+    void sent(PDU pdu) {
+//        if (log.isDebugEnabled()) {
+//            log.debug("Sent: " + pdu);
+//        }
+    }
 
     void artimExpired() {
+        if (log.isDebugEnabled()) {
+            log.debug("ARTIM expired: " + this);
+        }
         state.artimExpired(this);
         
     }
     
-    public void write(PDU pdu) {
-        state.write(pdu, this);        
+
+    void closed() {
+        if (log.isDebugEnabled()) {
+            log.debug("Closed: " + this);
+        }
+        state.closed(this);
     }
 
-    private void ae1() {
-        setState(STA4);
+    void exception(Throwable cause) {
+        if (log.isDebugEnabled()) {
+            log.debug("Exception: " + cause);
+        }
+        state.exception(this, cause);
+    }
+
+    void idle(IdleStatus status) {
+        // TODO Auto-generated method stub
+        
     }
     
     /**
@@ -150,7 +199,7 @@ public class DULServiceProvider {
      */
     private void ae3(AAssociateAC associateAC) {
         setState(STA6);
-        user.confirm(associateAC, this);        
+        user.onAAssociateAC(this, associateAC);        
     }
 
     /**
@@ -159,18 +208,9 @@ public class DULServiceProvider {
      * @param associateRJ
      */
     private void ae4(AAssociateRJ associateRJ) {
-        setState(STA1);
-        user.confirm(associateRJ, this);        
+        user.onAAssociateRJ(this, associateRJ);        
         session.close();
-    }
-
-    /**
-     * Issue Transport connection response primitive already done;
-     * start ARTIM timer. Next state is Sta2
-     */
-    private void ae5() {
-        setState(STA2);
-        startARTIM(associationRequestTimeout);
+        setState(STA1);
     }
 
     /**
@@ -191,7 +231,7 @@ public class DULServiceProvider {
             setState(STA13);
         } else {
             setState(STA3);
-            user.indicate(associateRQ);
+            user.onAAssociateRQ(this, associateRQ);
         }        
     }
 
@@ -202,55 +242,293 @@ public class DULServiceProvider {
             return null;
     }
 
+    /**
+     * Send A-ASSOCIATE-AC PDU
+     * Next state is Sta6
+     * @param associateAC
+     */
     private void ae7(AAssociateAC associateAC) {
-        // TODO Auto-generated method stub
-        
+        session.write(associateAC);
+        setState(STA6);
     }
 
+    /**
+     * Send A-ASSOCIATE-RJ PDU and start ARTIM timer
+     * Next state is Sta13
+     * @param associateRJ
+     */
     private void ae8(AAssociateRJ associateRJ) {
-        // TODO Auto-generated method stub
-        
+        session.write(associateRJ);
+        startARTIM(socketCloseDelay);
+        setState(STA13);
     }
 
+    /**
+     * Send P-DATA-TF PDU
+     * Next state is Sta6
+     * @param dataTF
+     */
+    private void dt1(PDataTF dataTF) {
+        session.write(dataTF);
+    }
+
+    /**
+     * Send P-DATA indication primitive
+     * Next state is Sta6
+     * @param dataTF
+     */
+    private void dt2(PDataTF dataTF) {
+        onPDataTF(dataTF);
+        setState(STA6);
+    }
+
+    /**
+     * Send A-RELEASE-RQ PDU
+     * Next state is Sta7
+     * @param releaseRQ
+     */
     private void ar1(AReleaseRQ releaseRQ) {
         session.write(releaseRQ);
         setState(STA7);
     }
+    
+    /**
+     * Issue A-RELEASE indication primitive
+     * Next state is Sta8
+     * @param releaseRQ
+     */
+    private void ar2(AReleaseRQ releaseRQ) {
+        setState(STA8);
+        user.onAReleaseRQ(this, releaseRQ);        
+    }
 
+    /**
+     * Issue A-RELEASE confirmation primitive, and close transport connection.
+     * Next state is Sta1
+     * @param releaseRP
+     */
     private void ar3(AReleaseRP releaseRP) {
         setState(STA1);
-        user.confirm(releaseRP, this);        
+        user.onAReleaseRP(this, releaseRP);        
         session.close();
     }
 
-    private void aa1() {
+    /**
+     * Issue A-RELEASE-RP PDU and start ARTIM timer.
+     * Next state is Sta13
+     */
+    private void ar4(AReleaseRP releaseRP) {
+        session.write(releaseRP);
+        startARTIM(socketCloseDelay);
+        setState(STA13);
+    }
+
+    /**
+     * Stop ARTIM timer
+     * Next state is Sta1
+     */
+    private void ar5() {
+        stopARTIM();
+        setState(STA1);
+    }
+
+    /**
+     * Issue P-DATA indication
+     * Next state is Sta7
+     * @param dataTF
+     */
+    private void ar6(PDataTF dataTF) {
+        onPDataTF(dataTF);        
+        setState(STA7);
+    }
+    
+    private void onPDataTF(PDataTF dataTF) {
         // TODO Auto-generated method stub
         
     }
 
+    /**
+     * Issue P-DATA-TF PDU
+     * Next state is Sta8
+     * @param dataTF
+     */
+    private void ar7(PDataTF dataTF) {
+        session.write(dataTF);
+        setState(STA8);
+    }
+
+    /**
+     * Issue A-RELEASE indication (release collision):
+     * - if association-requestor, next state is Sta9
+     * - if not, next state is Sta10
+     * @param releaseRP
+     */
+    private void ar8(AReleaseRQ releaseRQ) {
+        setState(acceptor ? STA10 : STA9);
+        user.onAReleaseRQ(this, releaseRQ);        
+    }
+    
+    /**
+     * Send A-RELEASE-RP PDU
+     * Next state is Sta11.
+     */
+    private void ar9(AReleaseRP releaseRP) {
+        session.write(releaseRP);
+        setState(STA11);
+    }
+    
+    /**
+     * Issue A-RELEASE confirmation primitive.
+     * Next state is Sta12
+     * @param releaseRP
+     */
+    private void ar10(AReleaseRP releaseRP) {
+        setState(STA12);
+        user.onAReleaseRP(this, releaseRP);        
+    }
+    
+    /**
+     * Send A-ABORT PDU (service-user source) and 
+     * start (or restart if already started) ARTIM timer;
+     * Next state is Sta13
+     * @param abort
+     */
+    private void aa1(AAbort abort) {
+        session.write(abort);
+        startARTIM(socketCloseDelay);
+        setState(STA13);
+    }
+
+    /**
+     * If cause is no i/o exception, send A-ABORT PDU (service-user source) and 
+     * start (or restart if already started) ARTIM timer; Next state is Sta13.
+     * - otherwise stop ARTIM timer if running, Close transport connection;
+     * Next state is Sta1.
+     * @param cause
+     */
+    private void aa1(Throwable cause) {
+        if (cause instanceof DULProtocolViolationException) {
+            DULProtocolViolationException e = (DULProtocolViolationException) cause;
+            aa1(AAbort.fromServiceProvider(e.getReason()));                            
+        } else if (cause instanceof IOException) {
+            // do NOT try to send AAbort in case of I/O exception
+            aa2();
+        } else {
+            aa1(AAbort.reasonNotSpecified());                            
+        }
+    }
+    
+    /**
+     * Stop ARTIM timer if running. Close transport connection
+     * Next state is Sta1
+     */
     private void aa2() {
-        // TODO Auto-generated method stub
-        
+        stopARTIM();
+        session.close();
+        setState(STA1);
     }
 
+    /**
+     * If (service-user inititated abort)
+     * - issue A-ABORT indication and close transport connection
+     * otherwise (service-provider inititated abort):
+     * - issue A-P-ABORT indication and close transport connection
+     * Next state is Sta1
+     * @param abort
+     */
     private void aa3(AAbort abort) {
-        // TODO Auto-generated method stub
-        
+        user.onAbort(abort);
+        session.close();
+        setState(STA1);
     }
 
-    private void aa8() {
-        // TODO Auto-generated method stub
-        
+    /**
+     * Issue A-P-ABORT indication primitive, Next state is Sta1.
+     * @param abort
+     */
+    private void aa4(AAbort abort) {
+        user.onAbort(abort);
+        setState(STA1);
+    }
+    
+    /**
+     * Stop ARTIM timer, Next state is Sta1.
+     */
+    private void aa5() {
+        stopARTIM();        
+        setState(STA1);
+    }
+    
+    /**
+     * Ignore PDU, Next state is Sta13.
+     */
+    private void aa6() {
+        setState(STA13);
     }
 
-    private void dt1(PDataTF dataTF) {
-        // TODO Auto-generated method stub
-        
+    /**
+     * Send A-ABORT PDU, Next state is Sta13
+     * @param abort
+     */
+    private void aa7(AAbort abort) {
+        session.write(abort);
+        setState(STA13);
+    }
+    
+    /**
+     * If cause is no i/o exception, send A-ABORT PDU (service-user source);
+     * Next state is Sta13.
+     * Otherwise, stop ARTIM timer if running, Close transport connection;
+     * Next state is Sta1.
+     * @param cause
+     */
+    private void aa7(Throwable cause) {
+        if (cause instanceof DULProtocolViolationException) {
+            DULProtocolViolationException e = (DULProtocolViolationException) cause;
+            aa7(AAbort.fromServiceProvider(e.getReason()));                            
+        } else if (cause instanceof IOException) {
+            // do NOT try to send AAbort in case of I/O exception
+            aa2();
+        } else {
+            aa7(AAbort.reasonNotSpecified());                            
+        }
+    }
+    
+    /**
+     * Send A-ABORT PDU (service-provider source-), 
+     * issue an A-P-ABORT indication, and start ARTIM timer;
+     * Next state is Sta13
+     * @param abort
+     */
+    private void aa8(AAbort abort) {
+        session.write(abort);
+        user.onAbort(abort);
+        startARTIM(socketCloseDelay);
+        setState(STA13);
     }
 
+
+    /**
+     * If cause is no i/o exception, send A-ABORT PDU (service-provider source-), 
+     * issue an A-P-ABORT indication, and start ARTIM timer; Next state is Sta13.
+     * Otherwise, issue A-P-ABORT indication primitive; Next state is Sta1.
+     * @param cause
+     */
+    private void aa8(Throwable cause) {
+        if (cause instanceof DULProtocolViolationException) {
+            DULProtocolViolationException e = (DULProtocolViolationException) cause;
+            aa8(AAbort.fromServiceProvider(e.getReason()));                            
+        } else if (cause instanceof IOException) {
+            // do NOT try to send AAbort in case of I/O exception
+            aa4(AAbort.reasonNotSpecified());
+        } else {
+            aa8(AAbort.reasonNotSpecified());                            
+        }
+    }
+   
     public static abstract class State {
         
-        private final String name;
+        protected final String name;
         
         protected State(String name) {
             this.name = name;
@@ -260,14 +538,30 @@ public class DULServiceProvider {
             return name;
         }
         
-        protected void write(PDU pdu, DULServiceProvider service) {
-            throw new IllegalStateException(toString());        
+        protected void write(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AAbort)
+                as.aa1((AAbort) pdu);
+            else
+                throw new IllegalStateException(name);
         }
         
-        protected abstract void received(PDU pdu, DULServiceProvider service);
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AAbort)
+                as.aa3((AAbort) pdu);
+            else
+                as.aa8(AAbort.unexpectedPDU());
+        }
 
-        protected void artimExpired(DULServiceProvider service) {
-            //NOOP
+        protected void exception(DULServiceProvider as, Throwable cause) {
+            as.aa8(cause);
+        }
+
+        protected void closed(DULServiceProvider as) {
+            as.aa4(AAbort.reasonNotSpecified());
+        }
+
+        protected void artimExpired(DULServiceProvider as) {
+            as.aa2();
         }
     }
     
@@ -278,11 +572,9 @@ public class DULServiceProvider {
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // should not happen!
-            service.aa2();            
-        }
-
+        protected void write(DULServiceProvider as, PDU pdu) {
+            throw new IllegalStateException(name);
+        }        
     }
 
     private static class Sta2 extends State {
@@ -291,17 +583,28 @@ public class DULServiceProvider {
             super("Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)");
         }
 
-        protected void received(PDU pdu, DULServiceProvider service) {
-            if (pdu instanceof AAssociateRQ)
-                service.ae6((AAssociateRQ) pdu);
-            else if (pdu instanceof AAbort)
-                service.aa2();
-            else
-                service.aa1();
+        @Override
+        protected void write(DULServiceProvider as, PDU pdu) {
+            throw new IllegalStateException(name);
         }
         
-        protected void artimExpired(DULServiceProvider service) {
-            service.aa2();
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AAssociateRQ)
+                as.ae6((AAssociateRQ) pdu);
+            else if (pdu instanceof AAbort)
+                as.aa2();
+            else
+                as.aa1(AAbort.unexpectedPDU());
+        }
+        
+        @Override
+        protected void exception(DULServiceProvider provider, Throwable cause) {
+            provider.aa1(cause);
+        }
+
+        @Override
+        protected void closed(DULServiceProvider provider) {
+            provider.aa5();            
         }
 
     }
@@ -309,46 +612,32 @@ public class DULServiceProvider {
     private static class Sta3 extends State {
 
         Sta3() {
-            super("Sta4 - Transport connection open (Awaiting local ASSOCIATE request primitive)");
+            super("Sta3 - Awaiting local A-ASSOCIATE response primitive");
         }
         
-        protected void write(PDU pdu, DULServiceProvider service) {
-            if (pdu instanceof AAssociateRQ)
-                service.ae2((AAssociateRQ) pdu);
-            else
-                throw new IllegalStateException(toString());
-            
-        }
-
-        @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            if (pdu instanceof AAbort)
-                service.aa3((AAbort) pdu);
-            else
-                service.aa8();
+        protected void write(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AAssociateAC)
+                as.ae7((AAssociateAC) pdu);
+            else if (pdu instanceof AAssociateRJ)
+                as.ae8((AAssociateRJ) pdu);
+            else 
+                super.write(as, pdu);            
         }
     }
 
     private static class Sta4 extends State {
 
         Sta4() {
-            super("Sta4 - Transport connection open (Awaiting local ASSOCIATE request primitive)");
+            super("Sta4 - Awaiting transport connection opening to complete.");
         }
         
-        protected void write(PDU pdu, DULServiceProvider service) {
+        protected void write(DULServiceProvider as, PDU pdu) {
             if (pdu instanceof AAssociateRQ)
-                service.ae2((AAssociateRQ) pdu);
+                as.ae2((AAssociateRQ) pdu);
+            else if (pdu instanceof AAbort)
+                as.aa2();
             else
-                throw new IllegalStateException(toString());
-            
-        }
-
-        @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            if (pdu instanceof AAbort)
-                service.aa3((AAbort) pdu);
-            else
-                service.aa8();
+                throw new IllegalStateException(name);            
         }
     }
 
@@ -358,17 +647,14 @@ public class DULServiceProvider {
             super("Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU");
         }
         
-        protected void received(PDU pdu, DULServiceProvider service) {
+        protected void received(DULServiceProvider as, PDU pdu) {
             if (pdu instanceof AAssociateAC)
-                service.ae3((AAssociateAC) pdu);
+                as.ae3((AAssociateAC) pdu);
             else if (pdu instanceof AAssociateRJ)
-                service.ae4((AAssociateRJ) pdu);
-            else  if (pdu instanceof AAbort)
-                service.aa3((AAbort) pdu);
+                as.ae4((AAssociateRJ) pdu);
             else
-                service.aa8();
+                super.received(as, pdu);
         }
-
     }
 
     private static class Sta6 extends State {
@@ -377,28 +663,25 @@ public class DULServiceProvider {
             super("Sta6 - Association established and ready for data transfer");
         }
                 
-        protected void write(PDU pdu, DULServiceProvider service) {
+        protected void write(DULServiceProvider as, PDU pdu) {
             if (pdu instanceof PDataTF)
-                service.dt1((PDataTF) pdu);
+                as.dt1((PDataTF) pdu);
             else if (pdu instanceof AReleaseRQ)
-                service.ar1((AReleaseRQ) pdu);
+                as.ar1((AReleaseRQ) pdu);
             else
-                throw new IllegalStateException(toString());
+                super.write(as, pdu);
             
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            if (pdu instanceof AAssociateAC)
-                service.ae3((AAssociateAC) pdu);
-            else if (pdu instanceof AAssociateRJ)
-                service.ae4((AAssociateRJ) pdu);
-            else  if (pdu instanceof AAbort)
-                service.aa3((AAbort) pdu);
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof PDataTF)
+                as.dt2((PDataTF) pdu);
+            else if (pdu instanceof AReleaseRQ)
+                as.ar2((AReleaseRQ) pdu);
             else
-                service.aa8();
+                super.received(as, pdu);
         }
-
     }
 
     private static class Sta7 extends State {
@@ -407,11 +690,13 @@ public class DULServiceProvider {
             super("Sta7 - Awaiting A-RELEASE-RP PDU");
         }
                 
-        protected void received(PDU pdu, DULServiceProvider service) {
-            if (pdu instanceof AReleaseRP)
-                service.ar3((AReleaseRP) pdu);
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof PDataTF)
+                as.ar6((PDataTF) pdu);
+            else if (pdu instanceof AReleaseRP)
+                as.ar3((AReleaseRP) pdu);
             else
-                service.aa8();
+                super.received(as, pdu);
         }
     }
 
@@ -421,12 +706,14 @@ public class DULServiceProvider {
             super("Sta8 - Awaiting local A-RELEASE response primitive");
         }
 
-        @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // TODO Auto-generated method stub
-            
+        protected void write(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof PDataTF)
+                as.ar7((PDataTF) pdu);
+            else if (pdu instanceof AReleaseRP)
+                as.ar4((AReleaseRP) pdu);
+            else
+                super.write(as, pdu);            
         }
-
     }
 
     private static class Sta9 extends State {
@@ -436,11 +723,12 @@ public class DULServiceProvider {
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // TODO Auto-generated method stub
-            
+        protected void write(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AReleaseRP)
+                as.ar9((AReleaseRP) pdu);
+            else
+                super.write(as, pdu);
         }
-
     }
 
     private static class Sta10 extends State {
@@ -450,11 +738,11 @@ public class DULServiceProvider {
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // TODO Auto-generated method stub
-            
-        }
-
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AReleaseRP)
+                as.ar10((AReleaseRP) pdu);
+            else
+                super.received(as, pdu);        }
     }
 
     private static class Sta11 extends State {
@@ -464,11 +752,12 @@ public class DULServiceProvider {
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // TODO Auto-generated method stub
-            
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AReleaseRP)
+                as.ar3((AReleaseRP) pdu);
+            else
+                super.received(as, pdu);
         }
-
     }
 
     private static class Sta12 extends State {
@@ -478,11 +767,12 @@ public class DULServiceProvider {
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // TODO Auto-generated method stub
-            
+        protected void write(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AReleaseRP)
+                as.ar4((AReleaseRP) pdu);
+            else
+                super.write(as, pdu);
         }
-
     }
 
     private static class Sta13 extends State {
@@ -492,11 +782,33 @@ public class DULServiceProvider {
         }
 
         @Override
-        protected void received(PDU pdu, DULServiceProvider service) {
-            // TODO Auto-generated method stub
-            
+        protected void received(DULServiceProvider as, PDU pdu) {
+            if (pdu instanceof AAssociateRQ)
+                as.aa7(AAbort.unexpectedPDU());
+            else if (pdu instanceof AAbort)
+                as.aa2();
+            else
+                as.aa6();
         }
 
+        @Override
+        protected void write(DULServiceProvider as, PDU pdu) {
+            throw new IllegalStateException(name);
+        }
+
+        @Override
+        protected void exception(DULServiceProvider as, Throwable cause) {
+            as.aa7(cause);            
+        }
+
+        @Override
+        protected void closed(DULServiceProvider as) {
+            as.ar5();            
+        }
     }
+
+
+
+
 
 }
