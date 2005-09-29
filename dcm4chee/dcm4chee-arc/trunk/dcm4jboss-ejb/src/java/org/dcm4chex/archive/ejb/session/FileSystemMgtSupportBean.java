@@ -75,6 +75,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
 	        DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
         
             Collection c = studyOnFs.getFiles();
+            if ( log.isDebugEnabled() ) log.debug( "Release "+c.size()+" files from "+studyOnFs.asString() );
             FileLocal fileLocal;
             InstanceLocal il;
             Map seriesLocals = new HashMap();
@@ -116,9 +117,9 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
             if (release) {
             	for (Iterator iter = seriesLocals.values().iterator(); iter.hasNext();) {
             		final SeriesLocal ser = (SeriesLocal) iter.next();
-            		ser.updateDerivedFields(false, true, false, false, true);
+            		ser.updateDerivedFields(false, true, false, false, true, true);
             	}
-            	study.updateDerivedFields(false, true, false, false, true, false);
+            	study.updateDerivedFields(false, true, false, false, true, false, true);
             	log.info("Release Files of " + studyOnFs.asString() + " - "
                     + (size / 1000000.f) + "MB");
             	studyOnFs.remove();

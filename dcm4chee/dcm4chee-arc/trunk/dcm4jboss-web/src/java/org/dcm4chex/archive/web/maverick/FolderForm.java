@@ -124,6 +124,8 @@ public class FolderForm {
 	private boolean addWorklist = false;
 	
 	private boolean showWithoutStudies;
+
+	private boolean isTrashFolder = false;
     
     static FolderForm getFolderForm(HttpServletRequest request) {
         FolderForm form = (FolderForm) request.getSession()
@@ -168,6 +170,8 @@ public class FolderForm {
 	private FolderForm( boolean adm ) {
     	admin = adm;
     }
+	
+	public String getModelName() { return "FOLDER"; }
 
 	/**
 	 * @return Returns the admin.
@@ -624,5 +628,16 @@ public class FolderForm {
 	 */
 	public void setShowWithoutStudies(boolean showWithoutStudies) {
 		this.showWithoutStudies = showWithoutStudies;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isTrashFolder() {
+		return isTrashFolder ;
+	}
+	
+	public void setTrashFolder( boolean b ) {
+		isTrashFolder=b;
 	}
 }

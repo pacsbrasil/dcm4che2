@@ -14,7 +14,9 @@
             <table border="0">
               <xsl:apply-templates select="patient"/>
               <xsl:apply-templates select="study"/>
-              <xsl:apply-templates select="series"/>
+              <xsl:apply-templates select="series" mode="series_info"/>
+              <xsl:apply-templates select="series" mode="mpps_info"/>
+              <xsl:apply-templates select="series" mode="buttons"/>
             </table>
           </td>
         </tr>
@@ -67,7 +69,7 @@
       </td>
     </tr>
   </xsl:template>
-  <xsl:template match="series">
+  <xsl:template match="series" mode="series_info">
     <tr>
       <td class="label" bgcolor="#eeeeee">Series Instance UID:</td>
       <td>
@@ -128,6 +130,53 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
     </tr>
+  </xsl:template>
+  <xsl:template match="series" mode="mpps_info">
+  	<xsl:if test="DRCode!=''">
+	    <tr>
+	      <td class="label" >&#160;</td>
+	    </tr>
+	    <tr>
+	      <td class="label" bgcolor="#eeeeee">MPPS ID:</td>
+	      <td>
+	        <xsl:value-of select="PPSID"/>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="label" bgcolor="#eeeeee">MPPS Description:</td>
+	      <td>
+	        <xsl:value-of select="PPSDescription"/>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="label" bgcolor="#eeeeee">MPPS status:</td>
+	      <td>
+	        <xsl:value-of select="PPSStatus"/>
+	      </td>
+	    </tr>
+	    <xsl:if test="DRCode">
+		    <tr>
+		      <td class="label" bgcolor="#eeeeee">Discontinue reason:</td>
+		      <td>
+		        <xsl:value-of select="DRCodeMeaning"/> (<xsl:value-of select="DRCode"/>:<xsl:value-of select="DRCodeDesignator"/>)
+		      </td>
+		    </tr>
+		</xsl:if>
+	    <tr>
+	      <td class="label" bgcolor="#eeeeee">MPPS Start:</td>
+	      <td>
+	        <xsl:value-of select="PPSStartDate"/>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="label" bgcolor="#eeeeee">MPPS End:</td>
+	      <td>
+	        <xsl:value-of select="PPSEndDate"/>
+	      </td>
+	    </tr>
+	</xsl:if>
+  </xsl:template>
+  <xsl:template match="series" mode="buttons">
     <tr>
       <td align="left">
 	    <xsl:choose>
@@ -142,4 +191,5 @@
       </td>
     </tr>
   </xsl:template>
+  
 </xsl:stylesheet>

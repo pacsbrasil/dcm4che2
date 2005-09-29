@@ -33,6 +33,7 @@ public class StudyModel extends AbstractModel {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         this.pk = ds.getInt(PrivateTags.StudyPk, -1);
+        isHidden = ds.getInt( PrivateTags.HiddenStudy, 0) != 0;
     }
 
     public final int getPk() {

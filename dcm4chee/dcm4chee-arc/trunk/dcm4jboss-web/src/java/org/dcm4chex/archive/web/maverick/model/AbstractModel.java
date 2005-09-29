@@ -41,6 +41,8 @@ public abstract class AbstractModel {
 
     protected Dataset ds;
     
+    protected boolean isHidden = false;
+    
     private List childs = new ArrayList();
     private List childsPK = null;
 
@@ -258,5 +260,13 @@ public abstract class AbstractModel {
      * @return pk
      */
     public abstract int getPk();
+    
+    /**
+     * 
+     * @return
+     */
+    public boolean isHidden() {
+    	return isHidden;
+    }
     
 }

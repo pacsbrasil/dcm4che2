@@ -121,6 +121,17 @@ public class ContentEditDelegate {
         }
     }
  
+    public void markAsDeleted( String type, int pk, boolean delete ) {
+        try {
+            server.invoke(contentEditName,
+                    "markAsDeleted",
+                    new Object[] { type, new Integer( pk ), new Boolean(delete) },
+                    new String[] { String.class.getName(), int.class.getName(), boolean.class.getName() });
+        } catch (Exception e) {
+            log.warn("Failed to mark "+type+" (pk="+pk+") as "+(delete ? "deleted":"undeleted")+"!", e);
+        }
+    }
+    
     public void deleteInstance( int pk ) {
         try {
             server.invoke(contentEditName,

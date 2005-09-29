@@ -172,12 +172,12 @@ public abstract class ConsistencyCheckBean implements SessionBean {
             			updated = true;
             		}
             	}
-            	if ( series.updateDerivedFields( true, true, true, true, true ) ) {
+            	if ( series.updateDerivedFields( true, true, true, true, true, false ) ) {
         			log.info("Series "+series.getSeriesIuid()+" updated!");
         			updated = true;
             	}
             }
-            if ( study.updateDerivedFields( true, true, true, true, true, true ) ) {
+            if ( study.updateDerivedFields( true, true, true, true, true, true, false ) ) {
     			log.info("Study "+study.getStudyIuid()+" updated!");
     			updated = true;
             }

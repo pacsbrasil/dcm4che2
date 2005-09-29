@@ -52,6 +52,7 @@ public class InstanceModel extends AbstractModel {
     public InstanceModel(Dataset ds) {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        isHidden = ds.getInt( PrivateTags.HiddenInstance, 0) != 0;
         this.pk = ds.getInt(PrivateTags.InstancePk, -1);
     }
 

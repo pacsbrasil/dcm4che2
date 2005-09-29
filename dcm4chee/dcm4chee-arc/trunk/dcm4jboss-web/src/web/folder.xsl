@@ -9,17 +9,20 @@
 
 <xsl:template match="model">
 	<form action="foldersubmit.m" method="get" name="myForm">
+  		<input name="trashFolder" type="hidden" value="{trashFolder}"/>
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
-					<td width="5" bgcolor="eeeeee">
-						<input type="checkbox" name="showWithoutStudies" value="true" title="Show patients without studies">
-							<xsl:if test="/model/showWithoutStudies = 'true'">
-								<xsl:attribute name="checked"/>
-							</xsl:if>
-						</input>
-					</td>
-					<td width="5" bgcolor="eeeeee" title="Show patients without studies">w/o studies</td>
+					<xsl:if test="/model/trashFolder='false'">
+						<td width="5" bgcolor="eeeeee">
+							<input type="checkbox" name="showWithoutStudies" value="true" title="Show patients without studies">
+								<xsl:if test="/model/showWithoutStudies = 'true'">
+									<xsl:attribute name="checked"/>
+								</xsl:if>
+							</input>
+						</td>
+						<td width="5" bgcolor="eeeeee" title="Show patients without studies">w/o studies</td>
+					</xsl:if>
 					<td bgcolor="eeeeee" align="center">Displaying studies
 						<b>
 							<xsl:value-of select="offset + 1"/>
@@ -63,7 +66,7 @@
 							</xsl:if>
 						</input>
 					</td>
-					<xsl:if test="/model/admin='true'">
+					<xsl:if test="/model/admin='true' and /model/trashFolder='false'">
 						<td width="40" bgcolor="eeeeee">
 							<a href="patientEdit.m?pk=-1">
 								<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
@@ -95,6 +98,40 @@
 							</input>
 						</td>
 					</xsl:if>
+				  <xsl:if test="/model/trashFolder='true'">
+					<td width="40" bgcolor="eeeeee">
+					</td>
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="DelTrash" name="deltrash" src="images/deltrash.gif" alt="delete Trash" border="0"
+								title="Delete Trash"
+								onclick="return confirm('Delete trash folder?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+					<td width="40" bgcolor="eeeeee">
+					</td>
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="Undel" name="undel" src="images/undel.gif" alt="undelete" border="0"
+								title="Undelete selected Entities"
+								onclick="return confirm('Undelete selected Entities?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
+								title="Delete selected Entities"
+								onclick="return confirm('Delete selected Entities?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+				  </xsl:if>
+ 				  <xsl:if test="/model/trashFolder='false'">
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Send" name="send" src="images/send.gif" alt="send" border="0"
 							title="Send selected Entities to specified Destination"
@@ -118,6 +155,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 							</xsl:for-each>						
 						</select>
 					</td>
+				  </xsl:if>
 				</table>
 				<table border="0" width="100%" cellpadding="0" cellspacing="0">
 				  <tr>
@@ -292,7 +330,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="12%"/>
 			<col width="10%"/>
 			<col width="35%"/>
-			<col width="18%"/>
+			<col width="10%"/>
+			<col width="8%"/>
 			<col width="4%"/>
 			<col width="4%"/>
 			<col width="4%"/>
@@ -331,6 +370,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<td>
 				<font size="1" color="ff0000">
 					Vendor/Model:</font>
+			</td>
+			<td>
+				<font size="1" color="ff0000">
+					PPS Status:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -397,24 +440,33 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:value-of select="patientSex"/>&#160;
 				</strong>
       </td>
-		               <xsl:if test="/model/admin='true'">
-        			    <td align="right" bgcolor="ccccff">
-				<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
-					<img src="images/add.gif" alt="Add Study" border="0" title="Add new Study"/>		
-				</a>
+		    <xsl:if test="/model/admin='true' and /model/trashFolder='false'">
+			    <td align="right" bgcolor="ccccff">
+					<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
+						<img src="images/add.gif" alt="Add Study" border="0" title="Add new Study"/>		
+					</a>
 			    </td>
-        			    <td align="right" bgcolor="cccccc">
-				<a href="patientEdit.m?pk={pk}">
-					<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
-				</a>
+			    <td align="right" bgcolor="cccccc">
+					<a href="patientEdit.m?pk={pk}">
+						<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
+					</a>
+			    </td>
+			</xsl:if>
+		    <xsl:if test="/model/admin='true' and /model/trashFolder='true'">
+			    <td align="right" bgcolor="ccccff" colspan="2">
+					<a href="foldersubmit.m?undel=patient&amp;stickyPat={pk}" onclick="return confirm('Undelete patient {patientName}?')">
+						<img src="images/undel.gif" alt="Undelete Patient" border="0" title="Undelete Patient"/>		
+					</a>
 			    </td>
 			</xsl:if>
 			<td align="right" bgcolor="cccccc">
-				<input type="checkbox" name="stickyPat" value="{pk}">
-					<xsl:if test="/model/stickyPatients/item = pk">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
+				<xsl:if test="/model/trashFolder='false' or hidden='true'">
+					<input type="checkbox" name="stickyPat" value="{pk}">
+						<xsl:if test="/model/stickyPatients/item = pk">
+							<xsl:attribute name="checked"/>
+						</xsl:if>
+					</input>
+				</xsl:if>
 			</td>
 	</table>
 </tr>
@@ -510,36 +562,45 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
     			          </xsl:choose>
     			    </td>
 			</xsl:if>
-	                             <xsl:if test="/model/webViewer!='true'">
-	                                    <td bgcolor="eaeaff"></td>
-	                             </xsl:if>
-		              <xsl:if test="/model/admin='true'">    
+	        <xsl:if test="/model/webViewer!='true'">
+	        	<td bgcolor="eaeaff"></td>
+	        </xsl:if>
+		    <xsl:if test="/model/admin='true' and /model/trashFolder='false'">    
 			    <td align="right" bgcolor="ccffcc">
-      			            <xsl:choose>
-					<xsl:when test="/model/addWorklist='false'">
-						<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
-							<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
-						</a>
-					</xsl:when>
-					<xsl:otherwise>
-						<a href="addWorklist.m?studyPk={pk}">
-							<img src="images/worklist.gif" alt="Add worklist item" border="0" title="Add worklist item"/>		
-						</a>
-					</xsl:otherwise>
-				</xsl:choose>
-        			    </td>
-        			    <td align="right" bgcolor="ccccff">
-        				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
-        					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
-        				</a>
-        			    </td>
-        		               </xsl:if>
+	      			<xsl:choose>
+						<xsl:when test="/model/addWorklist='false'">
+							<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
+								<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
+							</a>
+						</xsl:when>
+						<xsl:otherwise>
+							<a href="addWorklist.m?studyPk={pk}">
+								<img src="images/worklist.gif" alt="Add worklist item" border="0" title="Add worklist item"/>		
+							</a>
+						</xsl:otherwise>
+					</xsl:choose>
+				    </td>
+				    <td align="right" bgcolor="ccccff">
+					<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
+						<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
+					</a>
+			    </td>
+	       	</xsl:if>
+		    <xsl:if test="/model/admin='true' and /model/trashFolder='true'">
+			    <td align="right" bgcolor="ccffcc" colspan="2">
+					<a href="foldersubmit.m?undel=study&amp;stickyStudy={pk}" onclick="return confirm('Undelete study {studyID}?')">
+						<img src="images/undel.gif" alt="Undelete Study" border="0" title="Undelete Study"/>		
+					</a>
+			    </td>
+			</xsl:if>
 			<td align="right" bgcolor="ccccff">
+				<xsl:if test="/model/trashFolder='false' or hidden='true'">
 				<input type="checkbox" name="stickyStudy" value="{pk}">
 					<xsl:if test="/model/stickyStudies/item = pk">
 						<xsl:attribute name="checked"/>
 					</xsl:if>
 				</input>
+				</xsl:if>
 			</td>
 	</table>
 </tr>
@@ -557,13 +618,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="12%"/>
 			<col width="10%"/>
 			<col width="35%"/>
-                                            <xsl:if test="/model/admin='true'">
-    			    <col width="18%"/>
+			<col width="10%"/>
+            <xsl:if test="/model/admin='true'">
+    			<col width="8%"/>
 			    <col width="2%"/>
-                                            </xsl:if>
-                                            <xsl:if test="/model/admin!='true'">
-    			    <col width="20%"/>
-                                            </xsl:if>
+            </xsl:if>
+            <xsl:if test="/model/admin!='true'">
+    			    <col width="10%"/>
+            </xsl:if>
 			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
@@ -605,50 +667,73 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</xsl:otherwise>
 				</xsl:choose>&#160;
     		
-      </td>
-			<td title="Modality Vendors / Modelname"  bgcolor="e8ffe8">
+      	</td>
+		<td title="Modality Vendors / Modelname"  bgcolor="e8ffe8">
     		<xsl:value-of select="manufacturer"/>
 				\ <xsl:value-of select="manufacturerModelName"/>
-      </td>
-			<td title="Number of Instances"  bgcolor="e8ffe8">
-				<xsl:value-of select="numberOfInstances"/>
-			</td>
-                	              <xsl:if test="/model/webViewer='true'">
-              			    <td align="right" bgcolor="e8ffe8">
-                                                    <xsl:choose>
-                                                        <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
-    
-                				<a href="studyView.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" >
-                					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../../../pk" />&amp;studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-                					<img src="images/webview.gif" alt="View Study" border="0" title="View Series in Webviewer"/>		
-                				</a>					
-                                                        </xsl:when>
-                                                        <xsl:when test="modality = 'KO'">
-					<a href="koView.m?studyPk={../../pk}&amp;seriesPk={pk}" >
-						<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-						<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
-					</a>
-                                                        </xsl:when>
-                                                    </xsl:choose>
-                		    </td>
- 		               </xsl:if>
-	                             <xsl:if test="/model/webViewer!='true'">
-	                                    <td bgcolor="e8ffe8"></td>
-	                             </xsl:if>
+      	</td>
+		<td title="PPS Status"  >
+			<xsl:choose>
+				<xsl:when test="PPSStatus='DISCONTINUED'">
+					<xsl:attribute name="style">color: red; background-color: #ccffcc</xsl:attribute>
+				</xsl:when>
+				<xsl:when test="PPSStatus!=''">
+					<xsl:attribute name="style">color: black; background-color: #ccffcc</xsl:attribute>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:attribute name="style">background-color: #e8ffe8</xsl:attribute>
+				</xsl:otherwise>
+			</xsl:choose>
+    		<xsl:value-of select="PPSStatus"/>
+      	</td>
+		<td title="Number of Instances"  bgcolor="e8ffe8">
+			<xsl:value-of select="numberOfInstances"/>
+		</td>
+        <xsl:if test="/model/webViewer='true'">
+		    <td align="right" bgcolor="e8ffe8">
+	            <xsl:choose>
+	                <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
+	
+	    				<a href="studyView.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" >
+	    					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../../../pk" />&amp;studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
+	    					<img src="images/webview.gif" alt="View Study" border="0" title="View Series in Webviewer"/>		
+	    				</a>					
+	                </xsl:when>
+	                <xsl:when test="modality = 'KO'">
+						<a href="koView.m?studyPk={../../pk}&amp;seriesPk={pk}" >
+							<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
+							<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
+						</a>
+					</xsl:when>
+	            </xsl:choose>
+	    	</td>
+     	</xsl:if>
+		<xsl:if test="/model/webViewer!='true'">
+       		<td bgcolor="e8ffe8"></td>
+		</xsl:if>
 
-                                            <xsl:if test="/model/admin='true'">
-                                                <td align="right" bgcolor="ccffcc" >
-				<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
-					<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
-				</a>
-                                                </td>
-                                            </xsl:if>
-                                            <td align="right" bgcolor="ccffcc" >
-				<input type="checkbox" name="stickySeries" value="{pk}">
-					<xsl:if test="/model/stickySeries/item = pk">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
+           <xsl:if test="/model/admin='true' and /model/trashFolder='false'">
+                <td align="right" bgcolor="ccffcc" >
+					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
+						<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
+					</a>
+    	        </td>
+            </xsl:if>
+		    <xsl:if test="/model/admin='true' and /model/trashFolder='true'">
+			    <td align="right" bgcolor="ccffcc">
+					<a href="foldersubmit.m?undel=series&amp;stickySeries={pk}" onclick="return confirm('Undelete series {seriesNumber}?')">
+						<img src="images/undel.gif" alt="Undelete Series" border="0" title="Undelete Series"/>		
+					</a>
+			    </td>
+			</xsl:if>
+            <td align="right" bgcolor="ccffcc" >
+				<xsl:if test="/model/trashFolder='false' or hidden='true'">
+					<input type="checkbox" name="stickySeries" value="{pk}">
+						<xsl:if test="/model/stickySeries/item = pk">
+							<xsl:attribute name="checked"/>
+						</xsl:if>
+					</input>
+				</xsl:if>
 			</td>
       </table>
 	</tr>
@@ -726,11 +811,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</xsl:choose>				
 		</td>
 		<td align="right" bgcolor="ffffcc">
-			<input type="checkbox" name="stickyInst" value="{pk}">
-				<xsl:if test="/model/stickyInstances/item = pk">
-					<xsl:attribute name="checked"/>
-				</xsl:if>
-			</input>
+			<xsl:if test="/model/trashFolder='false' or hidden='true'">
+				<input type="checkbox" name="stickyInst" value="{pk}">
+					<xsl:if test="/model/stickyInstances/item = pk">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+			</xsl:if>
 		</td>
       </table>
 	</tr>
@@ -794,11 +881,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
 		<td align="right" bgcolor="ffffcc">
-			<input type="checkbox" name="stickyInst" value="{pk}">
-				<xsl:if test="/model/stickyInstances/item = pk">
-					<xsl:attribute name="checked"/>
-				</xsl:if>
-			</input>
+			<xsl:if test="/model/trashFolder='false' or hidden='true'">
+				<input type="checkbox" name="stickyInst" value="{pk}">
+					<xsl:if test="/model/stickyInstances/item = pk">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+			</xsl:if>
 		</td>
       </table>
 	</tr>
@@ -882,11 +971,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</xsl:choose>				
 		</td>
 		<td align="right" bgcolor="ffffcc">
-			<input type="checkbox" name="stickyInst" value="{pk}">
-				<xsl:if test="/model/stickyInstances/item = pk">
-					<xsl:attribute name="checked"/>
-				</xsl:if>
-			</input>
+			<xsl:if test="/model/trashFolder='false' or hidden='true'">
+				<input type="checkbox" name="stickyInst" value="{pk}">
+					<xsl:if test="/model/stickyInstances/item = pk">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+			</xsl:if>
 		</td>
 </table>
 	</tr>
@@ -954,11 +1045,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</xsl:choose>				
 		</td>
 		<td align="right" bgcolor="ffffcc">
-			<input type="checkbox" name="stickyInst" value="{pk}">
-				<xsl:if test="/model/stickyInstances/item = pk">
-					<xsl:attribute name="checked"/>
-				</xsl:if>
-			</input>
+			<xsl:if test="/model/trashFolder='false' or hidden='true'">
+				<input type="checkbox" name="stickyInst" value="{pk}">
+					<xsl:if test="/model/stickyInstances/item = pk">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+			</xsl:if>
 		</td>
       </table>
 	</tr>

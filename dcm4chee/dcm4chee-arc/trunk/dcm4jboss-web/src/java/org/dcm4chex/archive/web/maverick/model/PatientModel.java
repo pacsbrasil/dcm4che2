@@ -31,6 +31,7 @@ public class PatientModel extends AbstractModel {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         this.pk = ds.getInt(PrivateTags.PatientPk, -1);
+        isHidden = ds.getInt( PrivateTags.HiddenPatient, 0) != 0;
     }
 
     public final int getPk() {

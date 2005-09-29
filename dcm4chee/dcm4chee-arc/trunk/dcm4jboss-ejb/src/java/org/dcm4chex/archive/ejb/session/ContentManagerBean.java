@@ -32,6 +32,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
@@ -57,6 +58,14 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  */
 public abstract class ContentManagerBean implements SessionBean {
 
+    private static final int[] MPPS_FILTER_TAGS = { 
+        Tags.PerformedStationAET, Tags.PerformedStationName,
+        Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSEndDate,
+        Tags.PPSEndTime, Tags.PPSStatus, Tags.PPSID,
+        Tags.PPSDescription, Tags.PerformedProcedureTypeDescription,
+        Tags.PerformedProtocolCodeSeq, Tags.ScheduledStepAttributesSeq, 
+		Tags.PPSDiscontinuationReasonCodeSeq };
+	
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
@@ -128,9 +137,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int countStudies(Dataset filter, boolean hideWithoutStudies) {
+    public int countStudies(Dataset filter, boolean showHidden, boolean hideWithoutStudies) {
         try {
-            return new QueryStudiesCmd(filter, hideWithoutStudies).count();
+            return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -139,9 +148,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listStudies(Dataset filter, boolean hideWithoutStudies, int offset, int limit) {
+    public List listStudies(Dataset filter, boolean showHidden, boolean hideWithoutStudies, int offset, int limit) {
         try {
-            return new QueryStudiesCmd(filter, hideWithoutStudies).list(offset, limit);
+            return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -151,13 +160,19 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listStudiesOfPatient(int patientPk) throws FinderException {
+    public List listStudiesOfPatient(int patientPk, boolean showHidden) throws FinderException {
         Collection c =
             patHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
         List result = new ArrayList(c.size());
+        StudyLocal study;
         for (Iterator it = c.iterator(); it.hasNext();) {
-            StudyLocal study = (StudyLocal) it.next();
-            result.add(study.getAttributes(true));
+            study = (StudyLocal) it.next();
+            if ( study.getHiddenSafe() == showHidden ) {
+            	result.add(study.getAttributes(true));
+            } else if (showHidden) { //are childs hidden?
+            	if ( listSeriesOfStudy( study.getPk().intValue(), true).size() > 0 )
+            		result.add(study.getAttributes(true));
+            }
         }
         return result;
     }
@@ -166,28 +181,48 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listSeriesOfStudy(int studyPk) throws FinderException {
+    public List listSeriesOfStudy(int studyPk, boolean showHidden) throws FinderException {
         Collection c =
             studyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
         List result = new ArrayList(c.size());
+        SeriesLocal series;
         for (Iterator it = c.iterator(); it.hasNext();) {
-            SeriesLocal series = (SeriesLocal) it.next();
-            result.add(series.getAttributes(true));
+            series = (SeriesLocal) it.next();
+            if ( series.getHiddenSafe() == showHidden ) {
+            	result.add( mergeMPPSAttr(series.getAttributes(true), series.getMpps()) );
+	        } else if (showHidden) { //are childs hidden?
+	        	if ( listInstancesOfSeries( series.getPk().intValue(), true).size() > 0 )
+	        		result.add( mergeMPPSAttr(series.getAttributes(true), series.getMpps()) );
+	        }
         }
         return result;
     }
 
     /**
+	 * @param attributes
+	 * @param ppsIuid
+	 * @return
+	 */
+	private Dataset mergeMPPSAttr(Dataset ds, MPPSLocal mpps) {
+		if ( mpps != null ) {
+			ds.putAll( mpps.getAttributes().subSet(MPPS_FILTER_TAGS));
+		}
+		return ds;
+	}
+
+	/**
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listInstancesOfSeries(int seriesPk) throws FinderException {
+    public List listInstancesOfSeries(int seriesPk, boolean showHidden) throws FinderException {
         Collection c =
             seriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
         List result = new ArrayList(c.size());
+        InstanceLocal inst;
         for (Iterator it = c.iterator(); it.hasNext();) {
-            InstanceLocal inst = (InstanceLocal) it.next();
-            result.add(inst.getAttributes(true));
+            inst = (InstanceLocal) it.next();
+            if ( inst.getHiddenSafe() == showHidden )
+            	result.add(inst.getAttributes(true));
         }
         return result;
     }

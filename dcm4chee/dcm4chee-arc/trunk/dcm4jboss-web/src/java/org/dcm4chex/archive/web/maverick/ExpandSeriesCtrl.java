@@ -50,7 +50,7 @@ public class ExpandSeriesCtrl extends Dcm4JbossController {
         try {
             FolderForm folderForm = FolderForm.getFolderForm(getCtx()
                     .getRequest());
-            List instances = cm.listInstancesOfSeries(seriesPk);
+            List instances = cm.listInstancesOfSeries(seriesPk, folderForm.isTrashFolder());
             for (int i = 0, n = instances.size(); i < n; i++)
                 instances.set(i, InstanceModel.valueOf((Dataset) instances
                         .get(i)));

@@ -362,6 +362,27 @@ public class ContentEditService extends ServiceMBeanSupport {
 		sendStudyMgt( dsN.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsN);
     }
     
+    public void markAsDeleted(String type, int pk, boolean delete) throws RemoteException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("mark "+type+" (pk="+pk+") as deleted:"+delete);
+    	Dataset ds = null;
+    	if ( type.equalsIgnoreCase("PATIENT") ) {
+        	ds = lookupContentEdit().markPatientAsDeleted( pk, delete );
+        	sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
+    	} else if ( type.equalsIgnoreCase("STUDY") ){
+    		ds = lookupContentEdit().markStudyAsDeleted( pk, delete );
+    		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_DELETE_RQ, 0, ds);
+    	} else if ( type.equalsIgnoreCase("SERIES") ){
+    		ds = lookupContentEdit().markSeriesAsDeleted( pk, delete );
+    		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 1, ds);
+    	} else if ( type.equalsIgnoreCase("INSTANCE") ){
+    		 ds = lookupContentEdit().markInstanceAsDeleted( pk, delete );
+    		 sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
+    	} else {
+    		log.error("Unknown type "+type+"! Cant process markAsDeleted!");
+    		return;
+    	}
+    	if ( log.isDebugEnabled() ) {log.debug("mark "+type+": as deleted. ds:");log.debug(ds); }
+    }
     public void deleteSeries(Integer seriesPk) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("delete Series");
     	Dataset ds = lookupContentEdit().deleteSeries( seriesPk.intValue() );

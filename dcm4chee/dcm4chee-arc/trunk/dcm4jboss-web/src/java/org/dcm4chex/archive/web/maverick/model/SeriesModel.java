@@ -25,12 +25,27 @@ public class SeriesModel extends AbstractModel {
 
     private int pk = -1;
 
+    private boolean incorrectWLEntry = false;
+    private String drCode = null;
+    private String drCodeMeaning = null;
+    private String drCodeDesignator = null;
+
+    
+    
     public SeriesModel() {
     }
 
     public SeriesModel(Dataset ds) {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        isHidden = ds.getInt( PrivateTags.HiddenSeries, 0) != 0;
+        Dataset item = ds.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        if ( item != null ) {
+	        drCode = item.getString(Tags.CodeValue);
+	        drCodeMeaning = item.getString(Tags.CodeMeaning);
+	        drCodeDesignator = item.getString(Tags.CodingSchemeDesignator);
+	        incorrectWLEntry = "110514".equals(drCode) && "DCM".equals(drCodeDesignator);
+    	}
         this.pk = ds.getInt(PrivateTags.SeriesPk, -1);
     }
 
@@ -55,6 +70,13 @@ public class SeriesModel extends AbstractModel {
         return pk == other.pk;
     }
 
+    
+	/**
+	 * @return Returns the incorrectWLEntry.
+	 */
+	public boolean isIncorrectWLEntry() {
+		return incorrectWLEntry;
+	}
     public final String getBodyPartExamined() {
         return ds.getString(Tags.BodyPartExamined);
     }
@@ -166,4 +188,29 @@ public class SeriesModel extends AbstractModel {
     public final void setInstances(List instances) {
         setChilds(instances);
     }
+    
+    public String getPPSID() {
+    	return ds.getString(Tags.PPSID);
+    }
+
+    public String getPPSDesc() {
+    	return ds.getString(Tags.PPSDescription);
+    }
+    
+    public String getPPSStatus() {
+    	return ds.getString(Tags.PPSStatus);
+    }
+
+    public String getDRCode() { return drCode; }
+    public String getDRCodeDesignator() { return drCodeDesignator; }
+    public String getDRCodeMeaning() { return drCodeMeaning; }
+    
+    public String getPPSStartDate() {
+    	return getDateTime(Tags.PPSStartDate, Tags.PPSStartTime);
+    }
+    
+    public String getPPSEndDate() {
+    	return getDateTime(Tags.PPSEndDate, Tags.PPSEndTime);
+    }
+    
 }

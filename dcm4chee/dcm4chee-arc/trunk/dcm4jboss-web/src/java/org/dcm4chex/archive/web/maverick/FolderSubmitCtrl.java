@@ -100,7 +100,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("send.x") != null) { return send(); }
             if ( folderForm.isAdmin() ) {
 	            if (rq.getParameter("del") != null
-	                    || rq.getParameter("del.x") != null) { return delete(); }
+	                    || rq.getParameter("del.x") != null) { return delete(true); }
+	            if (rq.getParameter("undel") != null
+	                    || rq.getParameter("undel.x") != null) { return delete(false); }
 	            if (rq.getParameter("merge") != null
 	                    || rq.getParameter("merge.x") != null) { return MERGE; }
 	            if (rq.getParameter("move") != null
@@ -131,11 +133,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
             	return FOLDER;
             }
             if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies()));
+                folderForm.setTotal(cm.countStudies(filter.toDataset(), 
+                		folderForm.isTrashFolder(),
+                		!folderForm.isShowWithoutStudies()));
                 folderForm.setAets(lookupAEManager().getAes());
             }
-            List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), folderForm
-                    .getOffset(), folderForm.getLimit());
+            List studyList = cm.listStudies(filter.toDataset(),
+            		folderForm.isTrashFolder(),
+					!folderForm.isShowWithoutStudies(), 
+					folderForm.getOffset(), folderForm.getLimit());
             List patList = new ArrayList();
             PatientModel curPat = null;
             for (int i = 0, n = studyList.size(); i < n; i++) {
@@ -145,7 +151,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     patList.add(curPat = pat);
                 }
                 StudyModel study = new StudyModel(ds);
-                if (study.getPk() != -1) {
+                if (study.getPk() != -1 && !curPat.getStudies().contains(study)) {
                     curPat.getStudies().add(study);
                 }
             }
@@ -253,56 +259,73 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
-    private String delete() throws Exception {
+    private String delete(boolean delete) throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
-        deletePatients(folderForm.getPatients());
-        query(false);
+        deletePatients(folderForm.getPatients(), delete);
+        query(true);
         folderForm.removeStickies();
         
         return FOLDER;
     }
 
-    private void deletePatients(List patients)
+    private void deletePatients(List patients, boolean delete)
             throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
                 List studies = listStudiesOfPatient(pat.getPk());
-                delegate.deletePatient(pat.getPk());
-                for (int j = 0, m = studies.size(); j < m; j++) {
-                    Dataset study = (Dataset) studies.get(j);
-                    AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
-                            .getPatientID(), pat.getPatientName(), study
-                            .getString(Tags.StudyInstanceUID), study
-                            .getInt(Tags.NumberOfStudyRelatedInstances, 0),
-                            null);
+                if ( delete & folderForm.isTrashFolder() ) {
+                	delegate.deletePatient(pat.getPk());
+                } else {
+                	delegate.markAsDeleted("PATIENT",pat.getPk(), delete);
+                	if ( delete ) {
+                        for (int j = 0, m = studies.size(); j < m; j++) {
+                            Dataset study = (Dataset) studies.get(j);
+                            AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
+                                    .getPatientID(), pat.getPatientName(), study
+                                    .getString(Tags.StudyInstanceUID), study
+                                    .getInt(Tags.NumberOfStudyRelatedInstances, 0),
+                                    null);
+                        }
+                        AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
+                                .getPatientID(), pat.getPatientName(), null);
+                	} else {
+                		AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
+                                .getPatientID(), pat.getPatientName(), "(undelete)");
+                	}
+                	
                 }
-                AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
-                        .getPatientID(), pat.getPatientName(), null);
             } else
-                deleteStudies( pat);
+                deleteStudies( pat, delete );
         }
     }
 
-    private void deleteStudies( PatientModel pat)
+    private void deleteStudies( PatientModel pat, boolean delete )
             throws Exception {
         List studies = pat.getStudies();
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
-            	delegate.deleteStudy(study.getPk());
-                AuditLoggerDelegate.logStudyDeleted(getCtx(),
-                        pat.getPatientID(),
-                        pat.getPatientName(),
-                        study.getStudyIUID(),
-                        study.getNumberOfInstances(),
-                        null);
+                if ( delete & folderForm.isTrashFolder() ) {
+                	delegate.deleteStudy(study.getPk());
+                } else {
+                	delegate.markAsDeleted("STUDY",study.getPk(), delete);
+                	if ( delete ) {
+                        AuditLoggerDelegate.logStudyDeleted(getCtx(),
+                                pat.getPatientID(),
+                                pat.getPatientName(),
+                                study.getStudyIUID(),
+                                study.getNumberOfInstances(),
+                                null);
+                		
+                	}
+                }
             } else {
                 StringBuffer sb = new StringBuffer("Deleted ");
-                final int deletedInstances = deleteSeries( study.getSeries(), sb);
-                if (deletedInstances > 0) {
+                final int deletedInstances = deleteSeries( study.getSeries(), delete, sb);
+                if (delete && folderForm.isTrashFolder() && deletedInstances > 0) {
                     AuditLoggerDelegate.logStudyDeleted(getCtx(),
                             pat.getPatientID(),
                             pat.getPatientName(),
@@ -315,33 +338,41 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
-    private int deleteSeries(List series, StringBuffer sb)
+    private int deleteSeries(List series, boolean delete, StringBuffer sb)
     		throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie)) {
-            	delegate.deleteSeries(serie.getPk());
+                if ( delete & folderForm.isTrashFolder() ) {
+                	delegate.deleteSeries(serie.getPk());
+                } else {
+                	delegate.markAsDeleted("SERIES",serie.getPk(), delete);
+                }
                 numInsts += serie.getNumberOfInstances();
                 sb.append("Series[");
                 sb.append(serie.getSeriesIUID());
                 sb.append("], ");
             } else {
-                numInsts += deleteInstances(serie.getInstances(), sb);
+                numInsts += deleteInstances(serie.getInstances(), delete, sb);
             }
         }
         return numInsts;
     }
 
-    private int deleteInstances(List instances,
+    private int deleteInstances(List instances, boolean delete,
             StringBuffer sb) throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance)) {
-            	delegate.deleteInstance(instance.getPk());
+                if ( delete & folderForm.isTrashFolder() ) {
+                	delegate.deleteInstance(instance.getPk());
+                } else {
+                	delegate.markAsDeleted("INSTANCE",instance.getPk(), delete);
+                }
                 ++numInsts;
                 sb.append("Object[");
                 sb.append(instance.getSopIUID());
@@ -378,7 +409,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                         ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            return cm.listStudiesOfPatient(patPk);
+            return cm.listStudiesOfPatient(patPk, ((FolderForm) getForm()).isTrashFolder() );
         } finally {
             try {
                 cm.remove();
@@ -387,35 +418,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
  
-    private List listSeriesOfStudy(int studyPk) throws Exception {
-        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
-        ContentManager cm = home.create();
-        try {
-            return cm.listSeriesOfStudy(studyPk);
-        } finally {
-            try {
-                cm.remove();
-            } catch (Exception e) {
-            }
-        }
-    }
 
-    private List listInstancesOfSeries(int seriesPk) throws Exception {
-        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
-        ContentManager cm = home.create();
-        try {
-            return cm.listInstancesOfSeries(seriesPk);
-        } finally {
-            try {
-                cm.remove();
-            } catch (Exception e) {
-            }
-        }
-    }
 
     /**
      * Move one ore more model instances to another parent.

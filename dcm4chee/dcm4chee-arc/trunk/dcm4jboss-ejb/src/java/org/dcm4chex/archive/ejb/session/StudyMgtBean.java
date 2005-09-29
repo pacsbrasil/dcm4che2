@@ -212,7 +212,7 @@ public abstract class StudyMgtBean implements SessionBean {
 		for (Iterator it = dirtyStudies.iterator(); it.hasNext();){
 			String iuid = (String) it.next();
 			StudyLocal study = studyHome.findByStudyIuid(iuid);
-			study.updateDerivedFields(true, true, true, true, true, true);
+			study.updateDerivedFields(true, true, true, true, true, true, true);
 		}
 	}
 
@@ -221,7 +221,7 @@ public abstract class StudyMgtBean implements SessionBean {
 		for (Iterator it = dirtySeries.iterator(); it.hasNext();){
 			String iuid = (String) it.next();
 			SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
-			series.updateDerivedFields(true, true, true, true, true);
+			series.updateDerivedFields(true, true, true, true, true, true);
 		}
 	}
 

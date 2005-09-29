@@ -31,6 +31,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -178,11 +179,15 @@ public abstract class MPPSManagerBean implements SessionBean {
             SeriesLocal ser = null;
             for (Iterator it = c.iterator(); it.hasNext();) {
                 ser = (SeriesLocal) it.next();
-                ser.setHidden(true);
+                ser.markDeleted(true);
             }
             if (ser != null)
                 try {
-                    ser.getStudy().updateDerivedFields(true, true, true, true, true, true);
+                	StudyLocal study = ser.getStudy();
+                	if ( study.getSeries().size() == 1)
+                		study.setHidden(true);
+                	else
+                		study.updateDerivedFields(true, true, true, true, true, true, true);
                 } catch (FinderException e1) {
                     throw new DcmServiceException(Status.ProcessingFailure, e1);
                 }

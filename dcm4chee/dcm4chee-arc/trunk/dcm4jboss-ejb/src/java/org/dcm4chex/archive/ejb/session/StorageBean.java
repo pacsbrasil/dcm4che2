@@ -406,11 +406,11 @@ public abstract class StorageBean implements SessionBean {
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
             final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
-			ser.updateDerivedFields(false, false, true, false, false);
+			ser.updateDerivedFields(false, false, true, false, false, true);
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
             final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
-			study.updateDerivedFields(false, false, true, false, false, false);
+			study.updateDerivedFields(false, false, true, false, false, false, true);
         }
     }
 
@@ -428,7 +428,10 @@ public abstract class StorageBean implements SessionBean {
      */
     public void updateStudy(String iuid) throws FinderException {
         final StudyLocal study = studyHome.findByStudyIuid(iuid);
-		study.updateDerivedFields(true, true, false, true, true, true);
+		study.updateDerivedFields(true, true, false, true, true, true, false);
+		if ( study.updateDerivedFields(false, false, false, false, false, false, true) )
+			study.getPatient().updateDerivedFields();
+		
     }
     
     /**
@@ -436,6 +439,6 @@ public abstract class StorageBean implements SessionBean {
      */
     public void updateSeries(String iuid) throws FinderException {
         final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
-        series.updateDerivedFields(true, true, false, true, true);
+        series.updateDerivedFields(true, true, false, true, true, true);
     }
 }

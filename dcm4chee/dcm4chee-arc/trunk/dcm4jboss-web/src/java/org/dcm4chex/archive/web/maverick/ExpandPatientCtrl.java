@@ -38,7 +38,7 @@ public class ExpandPatientCtrl extends Dcm4JbossController {
         try {
             FolderForm folderForm = FolderForm.getFolderForm(getCtx()
                     .getRequest());
-            List studies = cm.listStudiesOfPatient(patPk);
+            List studies = cm.listStudiesOfPatient(patPk, folderForm.isTrashFolder());
             for (int i = 0, n = studies.size(); i < n; i++)
                 studies.set(i, new StudyModel((Dataset) studies.get(i)));
             folderForm.getPatientByPk(patPk).setStudies(studies);
