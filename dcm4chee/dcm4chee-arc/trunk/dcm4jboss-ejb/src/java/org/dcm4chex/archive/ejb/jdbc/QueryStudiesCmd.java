@@ -37,21 +37,36 @@ public class QueryStudiesCmd extends BaseReadCmd {
             "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
             "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability", "Study.filesetId"};
+            "Study.availability", "Study.filesetId", "Patient.hidden", "Study.hidden"};
 
-    private static final String[] ENTITY = { "Patient"};
+    private static final String[] ENTITY = {"Patient"};
+    private static final String[] ENTITY_FOR_HIDDEN = {"Patient", "Study", "Series", "Instance"};
 
     private static final String[] LEFT_JOIN = { 
             "Study", null, "Patient.pk", "Study.patient_fk",};
+    private static final String[] LEFT_JOIN_FOR_HIDDEN = new String[] { 
+    	"Study", null, "Patient.pk", "Study.patient_fk",
+    	"Series", null, "Study.pk", "Series.study_fk",
+    	"Instance", null, "Series.pk", "Instance.series_fk"};
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
     
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
+    public QueryStudiesCmd(Dataset filter, boolean showHidden, boolean hideMissingStudies)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
-        sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setLeftJoin(LEFT_JOIN);
+        if ( showHidden ) {
+        	sqlBuilder.setFrom(ENTITY);
+        	sqlBuilder.setLeftJoin(LEFT_JOIN_FOR_HIDDEN);
+        	Match.Node node = sqlBuilder.addNodeMatch("OR",false);
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE2,true));
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Series.hidden",SqlBuilder.TYPE2,true));
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Instance.hidden",SqlBuilder.TYPE2,true));
+        } else {
+        	sqlBuilder.setFrom(ENTITY);
+            sqlBuilder.setLeftJoin(LEFT_JOIN);
+    		sqlBuilder.addBooleanMatch(null, "Study.hidden", SqlBuilder.TYPE2, false );
+        }
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE2,
@@ -74,7 +89,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 false);
         sqlBuilder.addModalitiesInStudyMatch(null, filter
                 .getString(Tags.ModalitiesInStudy));
-        if ( hideMissingStudies )
+        if ( hideMissingStudies && !showHidden )
         	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
     }
 
@@ -122,7 +137,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
                     ds.putCS(Tags.InstanceAvailability, Availability
                             .toString(rs.getInt(9)));
                     ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
+                    if ( rs.getBoolean(12) ) 
+                       	ds.putSS(PrivateTags.HiddenStudy,1);
                 }
+                if ( rs.getBoolean(11) ) 
+                	ds.putSS(PrivateTags.HiddenPatient,1);
                 result.add(ds);
             }
             return result;

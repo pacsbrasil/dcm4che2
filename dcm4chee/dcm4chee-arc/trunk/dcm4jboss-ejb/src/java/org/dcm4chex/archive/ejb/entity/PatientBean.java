@@ -8,6 +8,8 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Iterator;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
@@ -19,6 +21,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * @ejb.bean name="Patient" type="CMP" view-type="local"
@@ -51,7 +55,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.finder signature="java.util.Collection findByNameAndBirthdate(java.lang.String name, java.sql.Timestamp birthdate)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByNameAndBirthdate(java.lang.String name, java.sql.Timestamp birthdate)"
- *              query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientName = ?1 AND a.patientBirthDate = ?2"
+ *              query="SELECT OBJECT(a) FROM Patient AS a WHERE a.hidden = FALSE AND a.patientName = ?1 AND a.patientBirthDate = ?2"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -172,6 +176,17 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract void setHidden(boolean hidden);
 
+    /**
+     * @ejb.interface-method
+     */
+    public void markDeleted(boolean deleted) {
+    	Iterator iter = getStudies().iterator();
+    	while( iter.hasNext() ) {
+    		( (StudyLocal) iter.next() ).markDeleted( deleted );
+    	}
+    	setHidden(deleted);
+    }
+    
 	/**
      * Patient DICOM Attributes
      *
@@ -269,6 +284,13 @@ public abstract class PatientBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
+// we have to delete studies explicitly here due to an foreign key constrain error 
+// if an mpps key is set in one of the series.
+        for ( Iterator iter = getStudies().iterator() ; iter.hasNext() ; ) {
+        	StudyLocal study = (StudyLocal) iter.next();
+        	iter.remove(); 
+        	study.remove();
+        }
     }
 
     /**
@@ -281,6 +303,8 @@ public abstract class PatientBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.PatientPk, getPk().intValue());
+            if ( getHiddenSafe() )
+            	ds.putSS(PrivateTags.HiddenPatient,1);
         }
         return ds;
     }
@@ -323,4 +347,21 @@ public abstract class PatientBean implements EntityBean {
         return "Patient[pk=" + getPk() + ", pid=" + getPatientId() + ", name="
                 + getPatientName() + "]";
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateDerivedFields() {
+		if (getHiddenSafe()) {//we have only to check if this patient can be really marked deleted (only if all childs are marked deleted)!
+			Iterator iter = getStudies().iterator();
+			while ( iter.hasNext() ) {
+				if ( !((StudyLocal) iter.next()).getHiddenSafe() ) {
+					setHidden(false);
+					return true;
+				}
+			}
+		}
+		return false;
+    }
+
 }

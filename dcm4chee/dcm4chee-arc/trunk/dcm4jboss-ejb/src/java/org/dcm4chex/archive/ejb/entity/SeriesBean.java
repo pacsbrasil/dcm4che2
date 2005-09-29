@@ -31,6 +31,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
@@ -66,20 +67,20 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *             transaction-type="Supports"
  * 
  * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
- *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.createdTime < ?2"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.hidden = FALSE AND s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.createdTime < ?2"
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
  *              strategy="on-find"
  *              eager-load-group="*"
  * 
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
+ *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND i.hidden = FALSE AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.pk = ?1"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
- * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
+ * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.hidden = FALSE AND i.series.pk = ?1"
  * 
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
  * @ejb.ejb-ref ejb-name="SeriesRequest" view-type="local" ref-name="ejb/Request"
@@ -316,6 +317,19 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     */
+    public void markDeleted(boolean delete) {
+    	//if (!delete && getHiddenSafe() && isIncorrectWLSelected() ) 
+    	//	return;
+    	Iterator iter = getInstances().iterator();
+    	while( iter.hasNext()) {
+    		((InstanceLocal) iter.next() ).setHidden(delete);
+    	}
+    	setHidden(delete);
+    }
+    
+    /**
+     * @ejb.interface-method
      * @ejb.relation name="study-series" role-name="series-of-study"
      *               cascade-delete="yes"
      * @jboss.relation fk-column="study_fk" related-pk-field="pk"
@@ -328,6 +342,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setStudy(StudyLocal study);
 
     /**
+     * @ejb.interface-method
      * @ejb.relation name="mpps-series" role-name="series-of-mpps"
      * @jboss.relation fk-column="mpps_fk" related-pk-field="pk"
      */
@@ -366,8 +381,8 @@ public abstract class SeriesBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, StudyLocal study)
             throws CreateException {
         createRequestAttributes(ds.get(Tags.RequestAttributesSeq));
-        updateMpps();
         setStudy(study);
+        updateMpps(study);
         log.info("Created " + prompt());
     }
 
@@ -511,7 +526,7 @@ public abstract class SeriesBean implements EntityBean {
      */
     public boolean updateDerivedFields(boolean numOfInstances,
     		boolean retrieveAETs, boolean externalRettrieveAETs,
-            boolean filesetId, boolean availibility) throws FinderException {
+            boolean filesetId, boolean availibility, boolean hidden) throws FinderException {
     	boolean updated = false;
     	final Integer pk = getPk();
 		if (numOfInstances)
@@ -525,22 +540,70 @@ public abstract class SeriesBean implements EntityBean {
 			if (updateFilesetId(pk, numI)) updated = true;
 		if (availibility)
 			if (updateAvailability(pk, numI)) updated = true;
+		if (hidden)
+			if (updateHidden(pk)) updated = true;
 		return updated;
     }
     
-    private void updateMpps() {
+    /**
+	 * @param pk
+	 * @return
+	 */
+	private boolean updateHidden(Integer pk) {
+		boolean hidden = getHiddenSafe();
+		if ( hidden ) {
+			Iterator iter = this.getInstances().iterator();
+			boolean incorrect = this.isIncorrectWLSelected();
+			InstanceLocal il;
+			while ( iter.hasNext() ) {
+				if ( !(il=(InstanceLocal) iter.next()).getHiddenSafe() ) {
+					if ( incorrect ) {
+						//series is hidden and marked as 'incorrect worklist entry selected' 
+						//->all instances have to be marked deleted!
+						il.setHidden(true);
+					} else {
+						setHidden(false);//a series have to be visible if one of the childs is visible!
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private void updateMpps( StudyLocal study ) {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
         if (ppsiuid != null) try {
             mpps = mppsHome.findBySopIuid(ppsiuid);
-            setHidden(mpps.isIncorrectWorklistEntrySelected());
+            if ( mpps.isIncorrectWorklistEntrySelected() ) {
+            	String prompt = prompt();
+    			log.info(prompt+": Incorrect Worklist Entry Selected. Mark as deleted !!!");
+            	markDeleted(true);
+           		if ( study.getSeries().size() <= 1) {
+            			log.info( prompt+": Set Study hidden !!!");
+            			study.setHidden(true);
+            	}
+             }
         } catch (ObjectNotFoundException ignore) {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
         setMpps(mpps);
     }
-
+	
+	private boolean isIncorrectWLSelected() {
+        final String ppsiuid = getPpsIuid();
+        if (ppsiuid != null) try {
+             if (mppsHome.findBySopIuid(ppsiuid).isIncorrectWorklistEntrySelected()) 
+             	return true;
+        } catch (ObjectNotFoundException ignore) {
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+		return false;
+	}
+	
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
     }
@@ -588,6 +651,9 @@ public abstract class SeriesBean implements EntityBean {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.SeriesPk, getPk().intValue());
             ds.putAE(PrivateTags.CallingAET, getSourceAET());
+    		String ppsiuid = getPpsIuid();
+            if ( getHiddenSafe() )
+            	ds.putSS(PrivateTags.HiddenSeries,1);
             ds.putIS(Tags.NumberOfSeriesRelatedInstances,
                     getNumberOfSeriesRelatedInstances());
             ds.putSH(Tags.StorageMediaFileSetID, getFilesetId());

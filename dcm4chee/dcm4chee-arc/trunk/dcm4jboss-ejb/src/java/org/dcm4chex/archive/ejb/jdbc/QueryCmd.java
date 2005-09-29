@@ -72,7 +72,7 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
 	private final boolean filterResult;
-
+	
     protected QueryCmd(Dataset keys, boolean filterResult)
     		throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
@@ -105,7 +105,9 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addPatientMatch() {
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId", SqlBuilder.TYPE2,
+		sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE2, false );
+
+		sqlBuilder.addWildCardMatch(null, "Patient.patientId", SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientID), false);
         sqlBuilder.addWildCardMatch(null, "Patient.patientName",
                 SqlBuilder.TYPE2,
@@ -122,9 +124,8 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addStudyMatch() {
-        sqlBuilder.addLiteralMatch(null, "Study.numberOfStudyRelatedSeries",
-                SqlBuilder.TYPE1,
-                " != 0");
+    	sqlBuilder.addBooleanMatch(null, "Study.hidden", SqlBuilder.TYPE2, false );
+
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
@@ -144,8 +145,8 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addSeriesMatch() {
-        sqlBuilder.addBooleanMatch(null, "Series.hidden", SqlBuilder.TYPE2,
-                false);
+   		sqlBuilder.addBooleanMatch(null, "Series.hidden", SqlBuilder.TYPE2, false );
+    	
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SeriesInstanceUID));
@@ -175,6 +176,8 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addInstanceMatch() {
+		sqlBuilder.addBooleanMatch(null, "Instance.hidden", SqlBuilder.TYPE2, false );
+    	
         sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SOPInstanceUID));
         sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid", SqlBuilder.TYPE1,

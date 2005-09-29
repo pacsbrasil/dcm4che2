@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
-import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -28,6 +27,7 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -55,24 +55,24 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.finder signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
- *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
+ *              query="SELECT OBJECT(s) FROM Study AS s WHERE s.hidden = FALSE AND (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
  *  
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND f.fileSystem.retrieveAET = ?2"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.hidden = FALSE AND i.series.study.pk = ?1" AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
- *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.commitment = TRUE"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.commitment = TRUE"
  * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Integer pk)"
- *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
- * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
- * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.hidden = FALSE AND f.instance.series.study.pk = ?1"
+ * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.hidden = FALSE AND f.instance.series.study.pk = ?1"
  * 
  *
  */
@@ -273,7 +273,18 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setHidden(boolean hidden);
-	
+
+    /**
+     * @ejb.interface-method
+     */
+    public void markDeleted(boolean deleted) {
+    	Iterator iter = getSeries().iterator();
+    	while( iter.hasNext() ) {
+    		( (SeriesLocal) iter.next() ).markDeleted( deleted );
+    	}
+    	setHidden(deleted);
+    }
+    
     /**
      * Modalities In Study
      *
@@ -568,13 +579,31 @@ public abstract class StudyBean implements EntityBean {
         }
     	return updated;
     }
+    
+    /**
+	 * @param pk
+	 * @return
+	 */
+	private boolean updateHidden(Integer pk) {
+		if (getHiddenSafe()) {//we have only to check if this study can be really marked deleted (only if all childs are marked deleted)!
+			Iterator iter = this.getSeries().iterator();
+			while ( iter.hasNext() ) {
+				if ( !((SeriesLocal) iter.next()).getHiddenSafe() ) {
+					setHidden(false);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+    
 
     /**
      * @ejb.interface-method
      */
     public boolean updateDerivedFields(boolean numOfInstances,
     		boolean retrieveAETs, boolean externalRettrieveAETs, 
-            boolean filesetId, boolean availibility, boolean modsInStudies)
+            boolean filesetId, boolean availibility, boolean modsInStudies, boolean hidden)
             throws FinderException {
     	boolean updated = false;
     	final Integer pk = getPk();
@@ -591,6 +620,8 @@ public abstract class StudyBean implements EntityBean {
 			if (updateAvailability(pk, numI)) updated = true;
 		if (modsInStudies)
 			if (updateModalitiesInStudy(pk, numI)) updated = true;
+		if ( hidden ) 
+			if ( updateHidden(pk)) updated = true;
 		return updated;
     }
      
@@ -613,6 +644,8 @@ public abstract class StudyBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.StudyPk, getPk().intValue());
+            if ( getHiddenSafe() )
+            	ds.putSS(PrivateTags.HiddenStudy,1);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(
                     getModalitiesInStudy(), '\\'));
             ds.putIS(Tags.NumberOfStudyRelatedSeries,
