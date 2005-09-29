@@ -228,6 +228,31 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+<!-- mark as deleted/undeleted -->
+   <operation impact="ACTION">
+      <description>mark PATIENT/STUDY/SERIES/INSTANCE as deleted or undeleted.
+      </description>
+      <name>markAsDeleted</name>
+      <parameter>
+        <description>Entity type (PATIENT,STUDY,SERIES or INSTANCE)</description>
+        <name>type</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Primary key to mark as deleted.</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Delete (true) or undelete (false). 
+        	Series of an MPPS of status IncorrectWorklistEntry cant be undeleted!
+        </description>
+        <name>delete</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
 <!-- delete -->
    <operation impact="ACTION">
       <description>delete patient.
