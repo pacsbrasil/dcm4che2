@@ -10,7 +10,10 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -23,6 +26,16 @@ abstract class Match
     protected String column;
     protected final boolean type2;
 
+    /**
+     * Default empty constructor.
+     * <p>
+     * Only used for class Node! 
+     *
+     */
+    private Match(){
+    	type2 = false;
+    }
+    
     protected Match(String alias, String field, boolean type2)
     {
         this.column = JdbcProperties.getInstance().getProperty(field);
@@ -378,4 +391,44 @@ abstract class Match
             sb.append("') > 0");
         }
     }
+
+    static class Node extends Match
+    {
+        private List matches = new ArrayList();
+        private final String orORand;
+        private final boolean invert;
+        
+        public Node(String orORand, boolean invert){
+        	this.orORand = orORand;
+        	this.invert = invert;
+        }
+        
+        public void addMatch( Match match ) {
+        	matches.add( match );
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return false;
+        }
+
+        protected void appendBodyTo(StringBuffer sb) {
+        	if ( invert ) sb.append(" NOT");
+            sb.append(" ( ");
+            Iterator iter = matches.iterator();
+            ((Match) iter.next()).appendTo(sb);
+            while ( iter.hasNext() ) {
+            	sb.append(orORand);
+            	( (Match) iter.next()).appendTo(sb);
+            }
+            sb.append(" )");
+        }
+        public boolean appendTo(StringBuffer sb)
+        {
+        	if ( matches.isEmpty() ) return false;
+        	appendBodyTo(sb);
+            return true;
+        }
+    }
+
 }
