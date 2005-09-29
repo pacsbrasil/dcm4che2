@@ -139,8 +139,13 @@ class SqlBuilder {
     
     public void addBooleanMatch(String alias,  String field, boolean type2,
             boolean value) {
-        addMatch(new Match.AppendLiteral(alias, field, type2,
-                toBooleanLiteral(value)));
+        addMatch( getBooleanMatch(alias, field, type2, value) );
+    }
+    
+    public Match getBooleanMatch(String alias,  String field, boolean type2,
+            boolean value) {
+    	return new Match.AppendLiteral(alias, field, type2,
+                toBooleanLiteral(value));
     }
     
     private String toBooleanLiteral(boolean value) {
@@ -166,13 +171,25 @@ class SqlBuilder {
 
     public void addRangeMatch(String alias, String field, boolean type2,
             Date[] range) {
-        addMatch(new Match.Range(alias, field, type2, range,
-        		getDatabase() == JdbcProperties.ORACLE ?
-        				ORA_DATE_FORMAT : DATE_FORMAT));
+        addMatch(getRangeMatch(alias, field, type2, range) );
     }
+    
+    public Match getRangeMatch(String alias,  String field, boolean type2,
+    		Date[] range) {
+    	return new Match.Range(alias, field, type2,
+                range, getDatabase() == JdbcProperties.ORACLE ?
+        				ORA_DATE_FORMAT : DATE_FORMAT);
+    }
+    
 
     public void addModalitiesInStudyMatch(String alias, String md) {
         addMatch(new Match.ModalitiesInStudy(alias, md));
+    }
+    
+    public Match.Node addNodeMatch(String orORand, boolean invert) {
+    	Match.Node m = new Match.Node(orORand, invert);
+    	addMatch( m );
+    	return m;
     }
 
     public String getSql() {
