@@ -7,19 +7,23 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
+import org.dcm4che2.data.TransferSyntax;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 15, 2005
+ * @since Oct 1, 2005
+ *
  */
-public class AAssociateRQ extends AAssociateRQAC
+public interface DataWriter
 {
-
-    public String toString()
-    {
-        return super.toString("A-ASSOCIATE-RQ");
-    }
+    
+    void writeTo(OutputStream out, TransferSyntax ts)
+    throws IOException;
 
 }

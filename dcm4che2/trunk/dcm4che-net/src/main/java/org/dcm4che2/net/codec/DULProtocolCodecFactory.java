@@ -17,16 +17,18 @@ import org.apache.mina.protocol.ProtocolEncoder;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-class DULProtocolCodecFactory implements ProtocolCodecFactory {
+class DULProtocolCodecFactory implements ProtocolCodecFactory
+{
 
-    public ProtocolEncoder newEncoder() {
+    public ProtocolEncoder newEncoder()
+    {
         return new DULProtocolEncoder();
     }
 
-    public ProtocolDecoder newDecoder() {
+    public ProtocolDecoder newDecoder()
+    {
         return new DULProtocolDecoder();
-    }    
+    }
 
 }

@@ -19,8 +19,9 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public interface PDUDecoder {
+public interface PDUDecoder
+{
 
-    PDU decodePDU(ProtocolSession session, ByteBuffer in, int length) 
-    throws ProtocolViolationException;
+    PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+            throws ProtocolViolationException;
 }

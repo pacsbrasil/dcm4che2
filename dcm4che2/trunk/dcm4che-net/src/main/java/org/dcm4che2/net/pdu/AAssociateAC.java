@@ -13,12 +13,13 @@ package org.dcm4che2.net.pdu;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-public class AAssociateAC extends AAssociateRQAC {
+public class AAssociateAC extends AAssociateRQAC
+{
 
-    public String toString() {
+    public String toString()
+    {
         return super.toString("A-ASSOCIATE-AC");
     }
-    
+
 }

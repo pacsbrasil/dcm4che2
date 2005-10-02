@@ -20,18 +20,19 @@ import org.dcm4che2.net.pdu.PDU;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-class AAssociateRJDecoder implements PDUDecoder {
+class AAssociateRJDecoder implements PDUDecoder
+{
 
     public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
-    throws ProtocolViolationException {
+            throws ProtocolViolationException
+    {
         AAssociateRJ pdu = new AAssociateRJ();
         if (length != 4)
             throw new DULProtocolViolationException(
-                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    AAbort.INVALID_PDU_PARAMETER_VALUE,
                     "Invalid PDU-length of A-ASSOCIATE-RJ: " + length);
-        
+
         in.get(); // skip reserved byte 7
         pdu.setResult(in.get() & 0xff);
         pdu.setSource(in.get() & 0xff);

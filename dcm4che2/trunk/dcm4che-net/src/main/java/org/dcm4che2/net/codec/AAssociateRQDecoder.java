@@ -19,12 +19,13 @@ import org.dcm4che2.net.pdu.PDU;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-class AAssociateRQDecoder extends AAssociateRQACDecoder {
+class AAssociateRQDecoder extends AAssociateRQACDecoder
+{
 
     public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
-    throws ProtocolViolationException {
+            throws ProtocolViolationException
+    {
         AAssociateRQ rq = new AAssociateRQ();
         decodePDU(session, in, length, rq, "A-ASSOCIATE-RQ");
         return rq;

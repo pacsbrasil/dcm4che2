@@ -18,15 +18,18 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public abstract class PDUEncoder {
+public abstract class PDUEncoder
+{
 
     private final int type;
-    
-    public PDUEncoder(int type) {
+
+    public PDUEncoder(int type)
+    {
         this.type = type;
     }
-    
-    public ByteBuffer encodePDU(ProtocolSession session, PDU pdu) {
+
+    public ByteBuffer encodePDU(ProtocolSession session, PDU pdu)
+    {
         int pdulen = pdu.length();
         ByteBuffer buf = ByteBuffer.allocate(pdulen + 6);
         buf.put((byte) type);

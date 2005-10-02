@@ -29,13 +29,14 @@ import org.dcm4che2.net.pdu.PDataTF;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 20, 2005
- *
  */
-public class DULProtocolEncoder implements ProtocolEncoder {
+public class DULProtocolEncoder implements ProtocolEncoder
+{
 
     private final Map encoders = new IdentityHashMap(6);
-    
-    public DULProtocolEncoder() {
+
+    public DULProtocolEncoder()
+    {
         encoders.put(AAssociateRQ.class, new AAssociateRQEncoder());
         encoders.put(AAssociateAC.class, new AAssociateACEncoder());
         encoders.put(PDataTF.class, new PDataTFEncoder());
@@ -43,18 +44,20 @@ public class DULProtocolEncoder implements ProtocolEncoder {
         encoders.put(AReleaseRP.class, new AReleaseRPEncoder());
         encoders.put(AAbort.class, new AAbortEncoder());
     }
-    
-    public void encode(ProtocolSession session, Object message, 
-            ProtocolEncoderOutput out)
-    throws ProtocolViolationException {
+
+    public void encode(ProtocolSession session, Object message,
+            ProtocolEncoderOutput out) throws ProtocolViolationException
+    {
         Class type = message.getClass();
         PDUEncoder encoder = (PDUEncoder) encoders.get(type);
-        if( encoder == null) {
-            throw new ProtocolViolationException( "Unexpected message type: " + type );
+        if (encoder == null)
+        {
+            throw new ProtocolViolationException("Unexpected message type: "
+                    + type);
         }
-        
+
         ByteBuffer buf = encoder.encodePDU(session, (PDU) message);
-        
+
         buf.flip();
         out.write(buf);
     }

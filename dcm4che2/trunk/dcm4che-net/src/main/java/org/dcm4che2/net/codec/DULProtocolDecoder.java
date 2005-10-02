@@ -21,54 +21,54 @@ import org.dcm4che2.net.pdu.AAssociateRQAC;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 19, 2005
- *
  */
-public class DULProtocolDecoder extends CumulativeProtocolDecoder {
+public class DULProtocolDecoder extends CumulativeProtocolDecoder
+{
 
     private static final int HEADER_LEN = 6;
 
-    private final PDUDecoder[] decoder = {
-        new AAssociateRQDecoder(),
-        new AAssociateACDecoder(),
-        new AAssociateRJDecoder(),
-        new PDataTFDecoder(),
-        new AReleaseRQDecoder(),
-        new AReleaseRPDecoder(),
-        new AAbortDecoder()
-    };
+    private final PDUDecoder[] decoder =
+    { new AAssociateRQDecoder(), new AAssociateACDecoder(),
+            new AAssociateRJDecoder(), new PDataTFDecoder(),
+            new AReleaseRQDecoder(), new AReleaseRPDecoder(),
+            new AAbortDecoder() };
+
     private boolean readHeader;
+
     private int type;
+
     private int length;
 
-
-    public DULProtocolDecoder() {
+    public DULProtocolDecoder()
+    {
         super(AAssociateRQAC.DEF_MAX_PDU_LENGTH + 6);
     }
 
     @Override
-    protected boolean doDecode(ProtocolSession session, ByteBuffer in, 
-            ProtocolDecoderOutput out)
-    throws ProtocolViolationException {
-        
+    protected boolean doDecode(ProtocolSession session, ByteBuffer in,
+            ProtocolDecoderOutput out) throws ProtocolViolationException
+    {
+
         if (in.remaining() < HEADER_LEN)
             return false;
 
-        if (!readHeader) {
+        if (!readHeader)
+        {
             type = in.get() & 0xff;
             if (type == 0 || type > PDUType.A_ABORT)
                 throw new DULProtocolViolationException(
                         AAbort.UNRECOGNIZED_PDU, "Unkown PDU type: " + type);
-            
+
             in.get(); // reserved byte
             length = in.getInt();
             readHeader = true;
         }
-        
+
         if (in.remaining() < length)
             return false;
-        
-        out.write(decoder[type-1].decodePDU(session, in, length));
-        readHeader = false;        
+
+        out.write(decoder[type - 1].decodePDU(session, in, length));
+        readHeader = false;
         return true;
     }
 

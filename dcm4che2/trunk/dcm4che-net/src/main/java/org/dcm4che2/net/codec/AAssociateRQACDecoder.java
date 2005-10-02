@@ -27,32 +27,37 @@ import org.dcm4che2.net.pdu.UserIdentity;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-abstract class AAssociateRQACDecoder implements PDUDecoder {
-    
+abstract class AAssociateRQACDecoder implements PDUDecoder
+{
+
     CharsetDecoder asciiDecoder = Charset.forName("US-ASCII").newDecoder();
 
-    private String decodeASCIIString(ByteBuffer in)  {
+    private String decodeASCIIString(ByteBuffer in)
+    {
         return decodeASCIIString(in, in.getUnsignedShort());
     }
-    
-    private String decodeASCIIString(ByteBuffer in, int fieldSize)  {
-        try {
+
+    private String decodeASCIIString(ByteBuffer in, int fieldSize)
+    {
+        try
+        {
             return in.getString(fieldSize, asciiDecoder);
-        } catch (CharacterCodingException e) {
+        } catch (CharacterCodingException e)
+        {
             throw new RuntimeException(e);
         }
     }
-    
-    protected void decodePDU(ProtocolSession session, ByteBuffer in, int length, 
-            AAssociateRQAC rqac, String prompt)
-    throws DULProtocolViolationException {
+
+    protected void decodePDU(ProtocolSession session, ByteBuffer in,
+            int length, AAssociateRQAC rqac, String prompt)
+            throws DULProtocolViolationException
+    {
         if (length < 68)
             throw new DULProtocolViolationException(
-                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    AAbort.INVALID_PDU_PARAMETER_VALUE,
                     "Insufficient PDU-length of " + prompt + ": " + length);
-            
+
         rqac.setProtocolVersion(in.getUnsignedShort());
         in.get(); // skip reserved byte 9
         in.get(); // skip reserved byte 10
@@ -66,11 +71,13 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
             remaining -= decodeItem(in, remaining, rqac);
     }
 
-    private int decodeItem(ByteBuffer in, int remaining, AAssociateRQAC rqac) {
+    private int decodeItem(ByteBuffer in, int remaining, AAssociateRQAC rqac)
+    {
         int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
         int itemLength = in.getUnsignedShort();
-        switch (itemType) {
+        switch (itemType)
+        {
         case ItemType.APP_CONTEXT:
             rqac.setApplicationContext(decodeASCIIString(in, itemLength));
             break;
@@ -87,7 +94,8 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
         return 4 + itemLength;
     }
 
-    private PresentationContext decodePC(ByteBuffer in, int itemLength) {
+    private PresentationContext decodePC(ByteBuffer in, int itemLength)
+    {
         PresentationContext pc = new PresentationContext();
         pc.setPCID(in.get() & 0xff);
         in.get(); // skip reserved byte
@@ -99,11 +107,13 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
         return pc;
     }
 
-    private int decodePCSubItem(ByteBuffer in, PresentationContext pc) {
+    private int decodePCSubItem(ByteBuffer in, PresentationContext pc)
+    {
         int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
         int itemLength = in.getUnsignedShort();
-        switch (itemType) {
+        switch (itemType)
+        {
         case ItemType.ABSTRACT_SYNTAX:
             pc.setAbstractSyntax(decodeASCIIString(in, itemLength));
             break;
@@ -116,17 +126,21 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
         return 4 + itemLength;
     }
 
-    private void decodeUserInfo(ByteBuffer in, int itemLength, AAssociateRQAC rqac) {
+    private void decodeUserInfo(ByteBuffer in, int itemLength,
+            AAssociateRQAC rqac)
+    {
         int remaining = itemLength;
         while (remaining > 0)
             remaining -= decodeUserInfoSubItem(in, rqac);
     }
 
-    private int decodeUserInfoSubItem(ByteBuffer in, AAssociateRQAC rqac) {
+    private int decodeUserInfoSubItem(ByteBuffer in, AAssociateRQAC rqac)
+    {
         int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
         int itemLength = in.getUnsignedShort();
-        switch (itemType) {
+        switch (itemType)
+        {
         case ItemType.MAX_PDU_LENGTH:
             rqac.setMaxPDULength(in.getInt());
             break;
@@ -144,12 +158,12 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
             rqac.setImplVersionName(decodeASCIIString(in, itemLength));
             break;
         case ItemType.EXT_NEG:
-            rqac.addExtendedNegotiation(
-                    decodeExtendedNegotiation(in, itemLength));
+            rqac.addExtendedNegotiation(decodeExtendedNegotiation(in,
+                    itemLength));
             break;
         case ItemType.COMMON_EXT_NEG:
-            rqac.addCommonExtendedNegotiation(
-                    decodeCommonExtendedNegotiation(in, itemLength));
+            rqac.addCommonExtendedNegotiation(decodeCommonExtendedNegotiation(
+                    in, itemLength));
             break;
         case ItemType.USER_IDENTITY:
             rqac.setUserIdentity(decodeUserIdentity(in, itemLength));
@@ -160,7 +174,8 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
         return 4 + itemLength;
     }
 
-    private RoleSelection decodeRoleSelection(ByteBuffer in, int itemLength) {
+    private RoleSelection decodeRoleSelection(ByteBuffer in, int itemLength)
+    {
         RoleSelection rs = new RoleSelection();
         rs.setSOPClassUID(decodeASCIIString(in));
         rs.setSCU(in.get() != 0);
@@ -169,7 +184,8 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
     }
 
     private ExtendedNegotiation decodeExtendedNegotiation(ByteBuffer in,
-            int itemLength) {
+            int itemLength)
+    {
         ExtendedNegotiation extNeg = new ExtendedNegotiation();
         int uidLength = in.getUnsignedShort();
         extNeg.setSOPClassUID(decodeASCIIString(in, uidLength));
@@ -177,20 +193,23 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
         return extNeg;
     }
 
-    private byte[] decodeBytes(ByteBuffer in) {
+    private byte[] decodeBytes(ByteBuffer in)
+    {
         return decodeBytes(in, in.getUnsignedShort());
     }
-    
-    private byte[] decodeBytes(ByteBuffer in, int len) {
+
+    private byte[] decodeBytes(ByteBuffer in, int len)
+    {
         byte[] bs = new byte[len];
         in.get(bs);
         return bs;
     }
 
     private CommonExtendedNegotiation decodeCommonExtendedNegotiation(
-            ByteBuffer in, int itemLength) {
+            ByteBuffer in, int itemLength)
+    {
         int endPos = in.position() + itemLength;
-        CommonExtendedNegotiation extNeg = new CommonExtendedNegotiation();        
+        CommonExtendedNegotiation extNeg = new CommonExtendedNegotiation();
         extNeg.setSOPClassUID(decodeASCIIString(in, in.getUnsignedShort()));
         extNeg.setServiceClassUID(decodeASCIIString(in, in.getUnsignedShort()));
         decodeRelatedGeneralSOPClassUIDs(in, in.getUnsignedShort(), extNeg);
@@ -199,14 +218,17 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
     }
 
     private void decodeRelatedGeneralSOPClassUIDs(ByteBuffer in, int totlen,
-            CommonExtendedNegotiation extNeg) {
+            CommonExtendedNegotiation extNeg)
+    {
         int endPos = in.position() + totlen;
-        while (in.position() < endPos) {
+        while (in.position() < endPos)
+        {
             extNeg.addRelatedGeneralSOPClassUID(decodeASCIIString(in));
         }
     }
 
-    private UserIdentity decodeUserIdentity(ByteBuffer in, int itemLength) {
+    private UserIdentity decodeUserIdentity(ByteBuffer in, int itemLength)
+    {
         UserIdentity user = new UserIdentity();
         user.setUserIdentityType(in.get() & 0xff);
         user.setPositiveResponseRequested(in.get() != 0);
@@ -215,7 +237,8 @@ abstract class AAssociateRQACDecoder implements PDUDecoder {
         return user;
     }
 
-    private void skipItem(ByteBuffer in, int itemLength) {
+    private void skipItem(ByteBuffer in, int itemLength)
+    {
         in.position(in.position() + itemLength);
     }
 

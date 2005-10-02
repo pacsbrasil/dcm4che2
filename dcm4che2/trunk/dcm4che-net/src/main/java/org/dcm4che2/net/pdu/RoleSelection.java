@@ -13,42 +13,49 @@ package org.dcm4che2.net.pdu;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-public class RoleSelection {
-    
+public class RoleSelection
+{
+
     private String cuid;
     private boolean scu;
     private boolean scp;
 
-    public final String getSOPClassUID() {
+    public final String getSOPClassUID()
+    {
         return cuid;
     }
 
-    public final void setSOPClassUID(String cuid) {
+    public final void setSOPClassUID(String cuid)
+    {
         this.cuid = cuid;
     }
 
-    public final boolean isSCU() {
+    public final boolean isSCU()
+    {
         return scu;
     }
 
-    public final void setSCU(boolean scu) {
+    public final void setSCU(boolean scu)
+    {
         this.scu = scu;
     }
 
-    public final boolean isSCP() {
+    public final boolean isSCP()
+    {
         return scp;
     }
 
-    public final void setSCP(boolean scp) {
+    public final void setSCP(boolean scp)
+    {
         this.scp = scp;
     }
 
-    public int length() {
+    public int length()
+    {
         if (cuid == null)
             throw new IllegalStateException();
-        
+
         return cuid.length() + 4;
     }
 }

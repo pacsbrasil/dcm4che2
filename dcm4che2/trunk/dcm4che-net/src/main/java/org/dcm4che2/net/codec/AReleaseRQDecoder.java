@@ -20,17 +20,18 @@ import org.dcm4che2.net.pdu.PDU;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
- *
  */
-class AReleaseRQDecoder implements PDUDecoder {
+class AReleaseRQDecoder implements PDUDecoder
+{
 
     public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
-    throws ProtocolViolationException {
+            throws ProtocolViolationException
+    {
         if (length != 4)
             throw new DULProtocolViolationException(
-                    AAbort.INVALID_PDU_PARAMETER_VALUE, 
+                    AAbort.INVALID_PDU_PARAMETER_VALUE,
                     "Invalid PDU-length of A-RELEASE-RQ: " + length);
-        
+
         in.get();
         in.get();
         in.get();

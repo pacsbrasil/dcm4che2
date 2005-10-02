@@ -19,14 +19,18 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-class AAssociateRJEncoder extends PDUEncoder {
+class AAssociateRJEncoder extends PDUEncoder
+{
 
-    public AAssociateRJEncoder() {
+    public AAssociateRJEncoder()
+    {
         super(PDUType.A_ASSOCIATE_RJ);
     }
 
     @Override
-    protected void encodePDUBody(ProtocolSession session, PDU pdu, ByteBuffer out) {
+    protected void encodePDUBody(ProtocolSession session, PDU pdu,
+            ByteBuffer out)
+    {
         AAssociateRJ rj = (AAssociateRJ) pdu;
         out.put((byte) 0);
         out.put((byte) rj.getReason());

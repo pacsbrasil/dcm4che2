@@ -14,9 +14,11 @@ package org.dcm4che2.net.codec;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-class AAssociateACEncoder extends AAssociateRQACEncoder {
+class AAssociateACEncoder extends AAssociateRQACEncoder
+{
 
-    public AAssociateACEncoder() {
+    public AAssociateACEncoder()
+    {
         super(PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
     }
 }

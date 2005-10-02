@@ -7,11 +7,12 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.net.dul;
+package org.dcm4che2.net;
 
 import java.io.IOException;
 import java.net.SocketAddress;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.io.socket.SocketAcceptor;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
@@ -23,12 +24,28 @@ import org.apache.mina.protocol.io.IoProtocolAcceptor;
  * @since Sep 24, 2005
  *
  */
-public class DULProtocolAcceptor {
+public class AssociationAcceptor {
+    
+    static final Logger log = Logger.getLogger(AssociationAcceptor.class);
 
+    private final Executor executor;
     private final SocketAcceptor socketIoAcceptor = new SocketAcceptor();
     private final IoProtocolAcceptor acceptor = 
             new IoProtocolAcceptor(socketIoAcceptor );
     private long associationRequestTimeout = 1000;
+
+    public AssociationAcceptor(Executor executor)
+    {
+        if (executor == null)
+            throw new NullPointerException();
+
+        this.executor = executor;
+    }
+
+    public AssociationAcceptor()
+    {
+        this(new NewThreadExecutor("Association"));
+    }
 
     public final long getAssociationRequestTimeout() {
         return associationRequestTimeout;
@@ -65,14 +82,17 @@ public class DULProtocolAcceptor {
         socketIoAcceptor.setBacklog(defaultBacklog);
     }
     
-    public void bind(DULServiceUser user, SocketAddress address)
+    public void bind(AssociationHandler listener, SocketAddress address)
     throws IOException {
-        DULProtocolProvider provider = new DULProtocolProvider(user, true);
+        DULProtocolProvider provider =
+                new DULProtocolProvider(executor, listener, false);
         provider.setAssociationRequestTimeout(associationRequestTimeout);
+        log.debug("Start Acceptor listening on " + address);
         acceptor.bind(address, provider);
     }
 
     public void unbind(SocketAddress address) {
+        log.debug("Stop Acceptor listening on " + address);
         acceptor.unbind(address);
     }
 

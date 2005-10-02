@@ -19,14 +19,18 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-class AAbortEncoder extends PDUEncoder {
+class AAbortEncoder extends PDUEncoder
+{
 
-    public AAbortEncoder() {
+    public AAbortEncoder()
+    {
         super(PDUType.A_ABORT);
     }
 
     @Override
-    protected void encodePDUBody(ProtocolSession session, PDU pdu, ByteBuffer out) {
+    protected void encodePDUBody(ProtocolSession session, PDU pdu,
+            ByteBuffer out)
+    {
         AAbort aabort = (AAbort) pdu;
         out.put((byte) 0);
         out.put((byte) 0);

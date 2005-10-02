@@ -18,14 +18,18 @@ import org.dcm4che2.net.pdu.PDU;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-class AReleaseRPEncoder extends PDUEncoder {
+class AReleaseRPEncoder extends PDUEncoder
+{
 
-    public AReleaseRPEncoder() {
+    public AReleaseRPEncoder()
+    {
         super(PDUType.A_RELEASE_RP);
     }
 
     @Override
-    protected void encodePDUBody(ProtocolSession session, PDU pdu, ByteBuffer out) {
+    protected void encodePDUBody(ProtocolSession session, PDU pdu,
+            ByteBuffer out)
+    {
         out.put((byte) 0);
         out.put((byte) 0);
         out.put((byte) 0);

@@ -7,8 +7,11 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.net.dul;
+package org.dcm4che2.net;
 
+import java.io.InputStream;
+
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
@@ -22,20 +25,25 @@ import org.dcm4che2.net.pdu.AReleaseRQ;
  * @since Sep 20, 2005
  *
  */
-public interface DULServiceUser {
+public interface AssociationHandler {
 
-    void onOpened(DULServiceProvider provider);
+    void onOpened(Association as);
 
-    void onAAssociateRQ(DULServiceProvider provider, AAssociateRQ associateRQ);
+    void onAAssociateRQ(Association as, AAssociateRQ rq);
 
-    void onAAssociateAC(DULServiceProvider provider, AAssociateAC associateAC);
+    void onAAssociateAC(Association as, AAssociateAC ac);
 
-    void onAAssociateRJ(DULServiceProvider provider, AAssociateRJ associateRJ);
+    void onAAssociateRJ(Association as, AAssociateRJ rj);
 
-    void onAReleaseRQ(DULServiceProvider provider, AReleaseRQ releaseRQ);
+    void onAReleaseRQ(Association as, AReleaseRQ rq);
 
-    void onAReleaseRP(DULServiceProvider provider, AReleaseRP releaseRP);
+    void onAReleaseRP(Association as, AReleaseRP rp);
 
-    void onAbort(AAbort abort);
+    void onAbort(Association as, AAbort abort);
+
+    void onDIMSE(Association as, int pcid, DicomObject command,
+            InputStream dataStream);
+
+    void onClosed(Association association);
 
 }

@@ -7,19 +7,33 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net;
+
+import java.io.IOException;
+
+import org.dcm4che2.net.pdu.AAbort;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 15, 2005
+ * @since Sep 30, 2005
+ *
  */
-public class AAssociateRQ extends AAssociateRQAC
+public class AbortException extends IOException
 {
+    private static final long serialVersionUID = 3258131375163781169L;
 
-    public String toString()
+    private final AAbort aabort;
+
+    public AbortException(AAbort aabort)
     {
-        return super.toString("A-ASSOCIATE-RQ");
+        super(aabort.toString());
+        this.aabort = aabort;
+    }
+
+    public final AAbort getAAbort()
+    {
+        return aabort;
     }
 
 }

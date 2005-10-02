@@ -19,16 +19,20 @@ import org.dcm4che2.net.pdu.PDataTF;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public class PDataTFEncoder extends PDUEncoder {
+public class PDataTFEncoder extends PDUEncoder
+{
 
-    public PDataTFEncoder() {
+    public PDataTFEncoder()
+    {
         super(PDUType.P_DATA_TF);
     }
 
     @Override
-    protected void encodePDUBody(ProtocolSession session, PDU pdu, ByteBuffer out) {
+    protected void encodePDUBody(ProtocolSession session, PDU pdu,
+            ByteBuffer out)
+    {
         PDataTF tf = (PDataTF) pdu;
-        //TODO
+        out.put(tf.getByteBuffer());
     }
 
 }

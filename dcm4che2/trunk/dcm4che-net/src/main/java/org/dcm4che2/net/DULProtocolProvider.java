@@ -7,7 +7,7 @@
  *                                        *
  ******************************************/
 
-package org.dcm4che2.net.dul;
+package org.dcm4che2.net;
 
 import org.apache.mina.protocol.ProtocolCodecFactory;
 import org.apache.mina.protocol.ProtocolDecoder;
@@ -22,40 +22,50 @@ import org.dcm4che2.net.codec.DULProtocolEncoder;
  * @version $Reversion$ $Date$
  * @since Sep 22, 2005
  */
-public class DULProtocolProvider implements ProtocolProvider {
+public class DULProtocolProvider implements ProtocolProvider
+{
 
     private static final ProtocolCodecFactory CODEC_FACTORY = 
-            new ProtocolCodecFactory() {
+            new ProtocolCodecFactory()
+            {
+        
+                public ProtocolEncoder newEncoder()
+                {
+                    return new DULProtocolEncoder();
+                }
+        
+                public ProtocolDecoder newDecoder()
+                {
+                    return new DULProtocolDecoder();
+                }
+            };
 
-        public ProtocolEncoder newEncoder() {
-            return new DULProtocolEncoder();
-        }
-
-        public ProtocolDecoder newDecoder() {
-            return new DULProtocolDecoder();
-        }
-    };
-    
     private final DULProtocolHandler handler;
 
-    public DULProtocolProvider(DULServiceUser user, boolean client) {
-        this.handler = new DULProtocolHandler(user, client);
+    public DULProtocolProvider(Executor executor, AssociationHandler listener,
+            boolean requestor)
+    {
+        this.handler = new DULProtocolHandler(executor, listener, requestor);
     }
-    
-    public ProtocolCodecFactory getCodecFactory() {
+
+    public ProtocolCodecFactory getCodecFactory()
+    {
         return CODEC_FACTORY;
     }
 
-    public ProtocolHandler getHandler() {
+    public ProtocolHandler getHandler()
+    {
         return handler;
     }
 
-    public final long getAssociationRequestTimeout() {
+    public final long getAssociationRequestTimeout()
+    {
         return handler.getAssociationRequestTimeout();
     }
 
-    public final void setAssociationRequestTimeout(long timeout) {
-        handler.setAssociationRequestTimeout(timeout);        
+    public final void setAssociationRequestTimeout(long timeout)
+    {
+        handler.setAssociationRequestTimeout(timeout);
     }
 
 }
