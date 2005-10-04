@@ -27,12 +27,12 @@ import org.dcm4chex.archive.web.maverick.*;
  */
 public class AEEditCtrl extends Errable
 {
-	private int pk;
+	private String title;
 	
 	public AEData getAE() throws Exception
 	{
 		try {
-		return lookupAEManager().getAe(pk);
+		return lookupAEDelegate().getAE(title);
 		} catch ( Exception x ) {
 			x.printStackTrace();
 		}
@@ -60,9 +60,9 @@ public class AEEditCtrl extends Errable
 	/**
 	 * @param pk The pk to set.
 	 */
-	public final void setPk(int pk)
+	public final void setTitle(String title)
 	{
-		this.pk = pk;
+		this.title = title;
 	}
 	
 

@@ -45,12 +45,12 @@
 				</xsl:for-each>
 	        </td>
 			<td align="center" valign="top" >
-				<a href="aeedit.m?pk={pk}">
+				<a href="aeedit.m?title={title}">
 					<img src="images/edit.gif" alt="edit" border="0"/>		
 				</a>
 	        </td>
 			<td align="left" valign="top" >
-					<a href="aedelete.m?pk={pk}" onclick="return confirm('Are you sure you want to delete?')">
+					<a href="aedelete.m?title={title}" onclick="return confirm('Are you sure you want to delete?')">
 					<img src="images/delete.gif" alt="delete" border="0"/>							
 					</a>					
 			</td>

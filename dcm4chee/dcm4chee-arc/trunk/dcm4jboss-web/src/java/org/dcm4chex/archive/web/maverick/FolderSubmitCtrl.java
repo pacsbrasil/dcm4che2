@@ -19,12 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.dcm.movescu.MoveOrder;
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.JMSDelegate;
+import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
@@ -44,6 +43,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private static final int MOVE_PRIOR = 0;
     
     private static ContentEditDelegate delegate = null;
+	private static AEDelegate aeDelegate = null;
     
     private FolderMoveDelegate moveDelegate = null;
 
@@ -136,7 +136,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 folderForm.setTotal(cm.countStudies(filter.toDataset(), 
                 		folderForm.isTrashFolder(),
                 		!folderForm.isShowWithoutStudies()));
-                folderForm.setAets(lookupAEManager().getAes());
+                folderForm.setAets(getAEDelegate().getAEs());
             }
             List studyList = cm.listStudies(filter.toDataset(),
             		folderForm.isTrashFolder(),
@@ -397,12 +397,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return home.create();
     }
 
-    private AEManager lookupAEManager() throws Exception {
-        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
-        return home.create();
-    }
-
     private List listStudiesOfPatient(int patPk) throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
                 .getFactory().lookup(ContentManagerHome.class,
@@ -471,4 +465,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
     	return LOGOUT;
 	}
 
+    public AEDelegate getAEDelegate() {
+        if ( aeDelegate == null ) {
+        	aeDelegate = new AEDelegate();
+        	aeDelegate.init( getCtx().getServletConfig() );
+        }
+        return aeDelegate;
+    }
+	
 }

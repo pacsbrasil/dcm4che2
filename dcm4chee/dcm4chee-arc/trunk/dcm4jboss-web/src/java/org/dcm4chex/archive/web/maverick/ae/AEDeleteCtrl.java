@@ -8,9 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.*;
+import org.dcm4chex.archive.web.maverick.Errable;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -19,32 +17,28 @@ import org.dcm4chex.archive.web.maverick.*;
  */
 public class AEDeleteCtrl extends Errable
 {
-
-	private int pk;
+	private String title;
 
 	/**
 	 * @param oldPk The oldPk to set.
 	 */
-	public final void setPk(int pk)
+	public final void setTitle(String title)
 	{
-		this.pk = pk;
+		this.title = title;
 	}
 
 	protected String perform() throws Exception
 	{
 		try
 		{
-		    AEManager mg = lookupAEManager();
-		    AEData ae = mg.getAe(pk);
-			mg.removeAE(pk);
-			AuditLoggerDelegate.logActorConfig(getCtx(), "Removed AE: " + ae, "NetWorking");
+			lookupAEDelegate().delAE(title);
 			return "success";
 		} catch (Throwable e)
 		{
 			this.errorType = e.getClass().getName();
 			this.message = e.getMessage();
-			this.backURL = "aedelete.m?pk=" + this.pk;
+			this.backURL = "aedelete.m?title=" + this.title;
 			return ERROR_VIEW;				
 		}
-	}		
+	}	
 }

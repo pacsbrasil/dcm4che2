@@ -26,12 +26,12 @@ public class AEEchoCtrl extends Errable
 	private boolean echoSucceed = false;
 	private String echoResultMsg = null;
 	
-	private static EchoDelegate delegate = null;
+	private static AEDelegate delegate = null;
 
 	
-    private EchoDelegate getDelegate() {
+    private AEDelegate getDelegate() {
         if ( delegate == null ) {
-        	delegate = new EchoDelegate();
+        	delegate = new AEDelegate();
         	delegate.init( getCtx().getServletConfig() );
         }
         return delegate;

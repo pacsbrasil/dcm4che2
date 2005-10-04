@@ -8,9 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.AuditLoggerDelegate;
 import org.dcm4chex.archive.web.maverick.Errable;
 
 /**
@@ -27,17 +25,6 @@ public class AEEditSubmitCtrl extends Errable
 	private String cancel = null;
 	private String echo = null;
 	private String popupMsg = null;
-	
-	private static EchoDelegate delegate = null;
-
-	
-    public EchoDelegate getDelegate() {
-        if ( delegate == null ) {
-        	delegate = new EchoDelegate();
-        	delegate.init( getCtx().getServletConfig() );
-        }
-        return delegate;
-    }
 	
 	/**
 	 * @param chiperSuites The chiperSuites to set.
@@ -136,15 +123,13 @@ public class AEEditSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		AEDelegate delegate = lookupAEDelegate();
 		if (update != null)
 		{
 			AEData newAE = getAE();
 			try
 			{
-			    AEManager mg = lookupAEManager();
-			    AEData oldAE = mg.getAe(pk);
-				mg.updateAE(newAE);
-				AuditLoggerDelegate.logActorConfig(getCtx(), "Modify AE: " + oldAE + " -> " + newAE, "NetWorking");
+				lookupAEDelegate().updateAE( title, hostName, port, cipherSuites);
 				return "success";
 			} catch (Throwable e)
 			{
@@ -154,7 +139,7 @@ public class AEEditSubmitCtrl extends Errable
 				return ERROR_VIEW;
 			}
 		} else 	if ( echo != null ) {
-			popupMsg = getDelegate().echo( getAE(), 5);
+			popupMsg = delegate.echo( getAE(), 5);
 			return "success";
 		} else
 			return "success";

@@ -8,6 +8,12 @@
 
 <web-app>
 	<display-name>dcm4jboss Archive Console</display-name>
+	
+	<!-- Session timeout in minutes. 30 is default timeout of tomcat -->
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+
 
 	<servlet>
 		<servlet-name>dispatcher</servlet-name>
@@ -107,6 +113,16 @@
 		<init-param>
 			<param-name>echoServiceName</param-name>
 			<param-value>tiani.archive:service=ECHOService</param-value>
+		</init-param>
+
+		<!-- 
+			Used by dcm4jboss-web application to find AEService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-ae-service.xml.
+		-->
+		<init-param>
+			<param-name>aeServiceName</param-name>
+			<param-value>tiani.archive:service=AE</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>

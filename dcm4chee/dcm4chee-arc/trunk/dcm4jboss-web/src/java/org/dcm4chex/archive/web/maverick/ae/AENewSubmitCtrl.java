@@ -104,8 +104,7 @@ public class AENewSubmitCtrl extends Errable
 			try
 			{
 				AEData newAE = getAE();
-				lookupAEManager().newAE(newAE);
-				AuditLoggerDelegate.logActorConfig(getCtx(), "Add new AE: " + newAE, "NetWorking");
+				lookupAEDelegate().updateAE( title, hostName, port, cipherSuites);
 				return "success";
 			} catch (Throwable e)
 			{

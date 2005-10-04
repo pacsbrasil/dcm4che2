@@ -6,8 +6,13 @@
  */
 package org.dcm4chex.archive.web.maverick.ae;
 
+import java.util.List;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
@@ -20,11 +25,13 @@ import org.jboss.mx.util.MBeanServerLocator;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class EchoDelegate {
+public class AEDelegate {
 	   private static ObjectName echoServiceName = null;
-		private static MBeanServer server;
+	   private static ObjectName aeServiceName = null;
+	   private static MBeanServer server;
+	   private List aes;
 		
-	    private static Logger log = Logger.getLogger( EchoDelegate.class.getName() );
+	    private static Logger log = Logger.getLogger( AEDelegate.class.getName() );
 
 	    /** 
 	     * Iinitialize the Echo service delegator.
@@ -36,10 +43,9 @@ public class EchoDelegate {
 		public void init( ServletConfig config ) {
 	        if (server != null) return;
 	        server = MBeanServerLocator.locate();
-	        String s = config.getInitParameter("echoServiceName");
 	        try {
-	        	echoServiceName = new ObjectName(s);
-				
+	        	echoServiceName = new ObjectName(config.getInitParameter("echoServiceName"));
+	        	aeServiceName = new ObjectName(config.getInitParameter("aeServiceName"));
 			} catch (Exception e) {
 				log.error( "Exception in init! ",e );
 			}
@@ -49,7 +55,65 @@ public class EchoDelegate {
 		public Logger getLogger() {
 			return log;
 		}
+//AE Service	
+		/**
+		 * Return list of all configured AE
+		 */
+		public List getAEs() {
+			try {
+		        aes = (List) server.invoke(aeServiceName,
+		                "listAEs",
+		                null,
+		                null );
+		        return aes;
+			} catch ( Exception x ) {
+				log.error( "Exception occured in getAEs: "+x.getMessage(), x );
+				return null;
+			}
+		}
+
+		/**
+		 * @param title
+		 * @return
+		 * @throws ReflectionException
+		 * @throws MBeanException
+		 * @throws InstanceNotFoundException
+		 */
+		public AEData getAE(String title) throws InstanceNotFoundException, MBeanException, ReflectionException {
+			return (AEData) server.invoke(aeServiceName,
+	                "getAE",
+	                new Object[] {title},
+	                new String[] { String.class.getName() } );
+		}
 		
+		/**
+		 * @param newAE
+		 * @throws ReflectionException
+		 * @throws MBeanException
+		 * @throws InstanceNotFoundException
+		 */
+		public void updateAE(String aet, String host, int port, String ciphers) throws InstanceNotFoundException, MBeanException, ReflectionException {
+	        server.invoke(aeServiceName,
+	                "addAE",
+	                new Object[]{ aet, host, new Integer(port), ciphers },
+	                new String[]{ String.class.getName(), String.class.getName(), int.class.getName(), String.class.getName()} );
+		}
+	
+		/**
+		 * @param title
+		 * @return
+		 * @throws ReflectionException
+		 * @throws MBeanException
+		 * @throws InstanceNotFoundException
+		 */
+		public AEData delAE(String title) throws InstanceNotFoundException, MBeanException, ReflectionException {
+			return (AEData) server.invoke(aeServiceName,
+	                "removeAE",
+	                new Object[] {title},
+	                new String[] { String.class.getName() } );
+		}
+		
+//ECHO Service		
 		/**
 		 * Makes the MBean call to echo an AE configuration.
 		 * 
@@ -111,5 +175,4 @@ public class EchoDelegate {
 			}
 	        return resp;
 		}
-		
 }

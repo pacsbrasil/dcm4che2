@@ -20,8 +20,6 @@
 package org.dcm4chex.archive.web.maverick.ae;
 
 
-import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4chex.archive.web.maverick.Errable;
@@ -31,19 +29,22 @@ import org.dcm4chex.archive.web.maverick.Errable;
  */
 public class AEListCtrl extends Errable
 {
-	public List getAEs() 
-	{
-		try
-		{
-			return lookupAEManager().getAes();
-		} catch (RemoteException e)
-		{
-			e.printStackTrace();
-			return new ArrayList();
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			return new ArrayList();			
-		}
+	public List getAEs() {
+		return this.lookupAEDelegate().getAEs();
 	}
+	public String getModelName() { return "AEMgr"; }
+	
+	/**
+	 * @return Returns the admin.
+	 */
+	public boolean isAdmin() {
+		return this.getCtx().getRequest().isUserInRole("WebAdmin");
+	}
+	/**
+	 * @return Returns the mcmUser.
+	 */
+	public boolean isMcmUser() {
+		return this.getCtx().getRequest().isUserInRole("McmUser");
+	}
+	
 }
