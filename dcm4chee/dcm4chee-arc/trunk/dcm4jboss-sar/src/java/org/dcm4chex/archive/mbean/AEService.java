@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
@@ -122,23 +123,28 @@ public class AEService extends ServiceMBeanSupport
         }
         return sb.toString();
     }
+	
+	public List listAEs() throws RemoteException, Exception {
+		return lookupAEManager().getAes();
+	}
+	
     
-    public AEData getAET( String aet ) throws RemoteException, Exception {
-    	return lookupAEManager().getAeByTitle( aet );
+    public AEData getAE( String title ) throws RemoteException, Exception {
+    	return lookupAEManager().getAeByTitle( title );
     }
 
-    public AEData getAET( String aet, String host ) throws RemoteException, Exception {
-    	return getAET( aet, host == null ? null : InetAddress.getByName(host) );
+    public AEData getAE( String title, String host ) throws RemoteException, Exception {
+    	return getAE( title, host == null ? null : InetAddress.getByName(host) );
     }
     
-    public AEData getAET( String aet, InetAddress addr ) throws RemoteException, Exception {
+    public AEData getAE( String title, InetAddress addr ) throws RemoteException, Exception {
     	AEManager aeManager = lookupAEManager();
-    	AEData ae = aeManager.getAeByTitle( aet );
+    	AEData ae = aeManager.getAeByTitle( title );
     	if ( ae != null || portNumbers==null || addr == null ) return ae;
 		
 		String aeHost = addr.getHostName();
 		for ( int i = 0 ; i < portNumbers.length ; i++ ) {
-			ae = new AEData( -1, aet, aeHost, portNumbers[i], null );
+			ae = new AEData( -1, title, aeHost, portNumbers[i], null );
 			if ( echo(ae) ) {
 				if ( dontSaveIP ) {
 					if ( !aeHost.equals(addr.getHostAddress()))
@@ -164,25 +170,29 @@ public class AEService extends ServiceMBeanSupport
      * @throws Exception
      * @throws RemoteException
      */
-    public void addAE(String aet, String host, int port, String cipher)
+    public void addAE(String title, String host, int port, String cipher)
         throws RemoteException, Exception
     {
+    	host = InetAddress.getByName(host).getCanonicalHostName();
+    	
         AEManager aeManager = lookupAEManager();
-        AEData ae = aeManager.getAeByTitle( aet );
-        if ( ae == null ) {
-        	aeManager.newAE( ae = new AEData(-1,aet,host,port,cipher));
-            logActorConfig("Add AE " + ae +" cipher:"+ae.getCipherSuitesAsString());
+        AEData aeOld = aeManager.getAeByTitle( title );
+        if ( aeOld == null ) {
+        	AEData aeNew = new AEData(-1,title,host,port,cipher);
+        	aeManager.newAE( aeNew );
+            logActorConfig("Add AE " + aeNew +" cipher:"+aeNew.getCipherSuitesAsString());
         } else {
-        	aeManager.updateAE( ae = new AEData(ae.getPk(),aet,host,port,cipher) );
-            logActorConfig("Modify AE " + ae +" cipher:"+ae.getCipherSuitesAsString());
+        	AEData aeNew = new AEData(aeOld.getPk(),title,host,port,cipher);
+        	aeManager.updateAE( aeNew );
+            logActorConfig("Modify AE " + aeOld +" -> "+aeNew);
         }
     }
 
 
-    public void removeAE(String aets)
+    public void removeAE(String titles)
         throws Exception
     {
-        StringTokenizer st = new StringTokenizer(aets, " ,;\t\r\n");
+        StringTokenizer st = new StringTokenizer(titles, " ,;\t\r\n");
         AEData ae;
         AEManager aeManager = lookupAEManager();
         while (st.hasMoreTokens()) {

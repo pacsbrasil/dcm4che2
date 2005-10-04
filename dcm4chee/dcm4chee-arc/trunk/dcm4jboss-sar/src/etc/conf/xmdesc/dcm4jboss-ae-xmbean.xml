@@ -68,22 +68,27 @@
    &defaultAttributes;
 
    <!-- Operations -->
+   <operation impact="INFO">
+     <description>Get list of AE Configurations</description>
+     <name>listAEs</name>
+     <return-type>java.util.List</return-type>
+   </operation>
    <operation impact="ACTION">
      <description>Get AE Configuration</description>
-     <name>getAET</name>
+     <name>getAE</name>
      <parameter>
-       <description>AET</description>
-       <name>aet</name>
+       <description>AE Title</description>
+       <name>title</name>
        <type>java.lang.String</type>
      </parameter>
      <return-type>org.dcm4chex.archive.ejb.jdbc.AEData</return-type>
 	</operation>
     <operation impact="ACTION">
      <description>Get AE Configuration</description>
-     <name>getAET</name>
+     <name>getAE</name>
      <parameter>
-       <description>AET</description>
-       <name>aet</name>
+       <description>AE Title</description>
+       <name>title</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
@@ -95,10 +100,10 @@
 	</operation>
     <operation impact="ACTION">
      <description>Get AE Configuration</description>
-     <name>getAET</name>
+     <name>getAE</name>
      <parameter>
-       <description>AET</description>
-       <name>aet</name>
+       <description>AE Title</description>
+       <name>title</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
