@@ -476,3 +476,4 @@ INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(ae_pk_seq.nextval,'PACS_TIANI','localhost',11112);
+COMMIT;
