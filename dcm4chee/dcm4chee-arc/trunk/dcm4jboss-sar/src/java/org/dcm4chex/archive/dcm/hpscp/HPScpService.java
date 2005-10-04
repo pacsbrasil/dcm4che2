@@ -108,7 +108,7 @@ public class HPScpService extends AbstractScpService {
     
 	public AEData queryAEData(String aet, InetAddress addr) throws DcmServiceException {
 		try {
-			Object o = server.invoke(aeServiceName, "getAET", 
+			Object o = server.invoke(aeServiceName, "getAE", 
 					new Object[] {aet, addr}, 
 					new String[] {String.class.getName(), InetAddress.class.getName()});
 			if (o == null) {

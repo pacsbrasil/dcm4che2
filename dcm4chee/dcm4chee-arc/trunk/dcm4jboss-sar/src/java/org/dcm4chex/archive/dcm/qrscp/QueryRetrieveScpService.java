@@ -572,7 +572,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             UnkownAETException {
 		//String host = address != null ? address.getCanonicalHostName() : null;
         try {
-            Object o = server.invoke(aeServiceName, "getAET", 
+            Object o = server.invoke(aeServiceName, "getAE", 
             		new Object[] {aet, address}, 
 					new String[] {String.class.getName(), InetAddress.class.getName()});
             if ( o == null ) 

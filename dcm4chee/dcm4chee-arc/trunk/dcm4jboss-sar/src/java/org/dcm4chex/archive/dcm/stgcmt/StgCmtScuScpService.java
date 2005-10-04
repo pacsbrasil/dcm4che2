@@ -273,7 +273,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
     
     public AEData queryAEData(String aet, InetAddress addr) throws DcmServiceException, UnkownAETException {
         try {
-            Object o = server.invoke(aeServiceName, "getAET", 
+            Object o = server.invoke(aeServiceName, "getAE", 
             		new Object[] {aet, addr}, 
 					new String[] {String.class.getName(), InetAddress.class.getName()});
             if ( o == null ) 
