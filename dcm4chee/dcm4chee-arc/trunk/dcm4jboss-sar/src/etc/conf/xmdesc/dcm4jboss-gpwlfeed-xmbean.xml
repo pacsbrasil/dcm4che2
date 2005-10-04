@@ -52,7 +52,7 @@
       <name>TemplateList</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="wl1.tpl^Worklist1,wl2.tpl^Worklist2"/>
+         <value value="P1.ERL_MESA.xml^Interpretation,P102.ERL_MESA.xml^CT 3D reconstruction"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getHumanPerformer" setMethod="setHumanPerformer">
