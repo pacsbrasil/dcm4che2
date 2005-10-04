@@ -32,6 +32,8 @@ public class UserAdminModel {
 
     private String errorCode = null;
 	private boolean admin = false;
+	private boolean mcmUser = false;
+	
 	private List userList = null;
 	private DCMUser editUser = null;
 
@@ -67,12 +69,15 @@ public class UserAdminModel {
 		UserAdminModel model = (UserAdminModel) request.getSession().getAttribute(USERMODEL_ATTR_NAME);
 		if (model == null) {
 				model = new UserAdminModel(request.isUserInRole("WebAdmin"));
+				model.mcmUser = request.isUserInRole("McmUser");
 				request.getSession().setAttribute(USERMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
 	}
 
+	public String getModelName() { return "UserAdmin"; }
+	
 	/**
 	 * @return Returns true if the user have WebAdmin role.
 	 */
@@ -80,6 +85,13 @@ public class UserAdminModel {
 		return admin;
 	}
 
+	/**
+	 * @return Returns the mcmUser.
+	 */
+	public boolean isMcmUser() {
+		return mcmUser;
+	}
+	
 	/**
 	 * Set the error code of this model.
 	 * 
