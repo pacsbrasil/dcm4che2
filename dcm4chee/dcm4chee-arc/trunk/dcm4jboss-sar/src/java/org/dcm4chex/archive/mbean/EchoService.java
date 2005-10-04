@@ -133,6 +133,27 @@ public class EchoService extends ServiceMBeanSupport
 	    return "Echo ("+aeData+") done! "+count+" of "+nrOfTests+" successfully completed.";
 	}
     
+    public boolean checkEcho( AEData aeData ) {
+    	ActiveAssociation active = null;
+    	try {
+    		active = openAssoc( aeData );
+    		if (active != null && active.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO) != null ) {
+                active.invoke(
+	                    aFact.newDimse(
+	                        PCID_ECHO,
+	                        oFact.newCommand().initCEchoRQ(0)),
+	                    null);
+	     		return true;	
+    		}
+    	} catch( Throwable ignore ) {
+    	} finally {
+    		if ( active != null ) try {
+    			active.release(true);
+    		} catch ( Exception ignoreit ) {}
+    	}
+		return false;
+    }
+    
     private ActiveAssociation openAssoc(AEData aeData) throws IOException, GeneralSecurityException {
 	    Association assoc =
 	        aFact.newRequestor( tlsConfig.createSocket(aeData) );

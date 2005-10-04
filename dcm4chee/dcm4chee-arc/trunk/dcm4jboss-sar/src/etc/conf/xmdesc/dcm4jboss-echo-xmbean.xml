@@ -74,6 +74,18 @@
      <name>echoAll</name>
      <return-type>[Ljava.lang.String;</return-type>
 	</operation>
+   <operation impact="ACTION">
+     <description>Checks if an echo request to the specified AE title works correctly.&lt;br&gt;
+     			  This method is quiet (no error messages or exceptions)!     			
+     </description>
+     <name>checkEcho</name>
+     <parameter>
+       <description>AE title to test</description>
+       <name>AEData</name>
+       <type>org.dcm4chex.archive.ejb.jdbc.AEData</type>
+     </parameter>
+     <return-type>boolean</return-type>
+   </operation>
    &defaultOperations;
 </mbean>
 

@@ -19,24 +19,18 @@
  */
 package org.dcm4chex.archive.mbean;
 
-import java.util.Arrays;
+import java.net.InetAddress;
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
 
 import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
-import org.dcm4che.util.DcmURL;
-import org.dcm4chex.archive.ejb.interfaces.AELocal;
-
-import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -48,28 +42,12 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class AEService extends ServiceMBeanSupport
 {
-    private AELocalHome home = null;
     private ObjectName auditLogName;
+    private ObjectName echoServiceName;
+    
+    private boolean dontSaveIP = true;
+    private int[] portNumbers;
 
-    private AELocalHome getHome()
-    {
-        if (home != null) {
-            return home;
-        }
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            return home = (AELocalHome) jndiCtx.lookup(AELocalHome.JNDI_NAME);
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {}
-            }
-        }
-    }
 
     public ObjectName getAuditLoggerName() {
         return auditLogName;
@@ -79,59 +57,144 @@ public class AEService extends ServiceMBeanSupport
         this.auditLogName = auditLogName;
     }
     
-    public String[] getAEs()
-        throws FinderException
+	/**
+	 * @return Returns the echoServiceName.
+	 */
+	public ObjectName getEchoServiceName() {
+		return echoServiceName;
+	}
+	/**
+	 * @param echoServiceName The echoServiceName to set.
+	 */
+	public void setEchoServiceName(ObjectName echoServiceName) {
+		this.echoServiceName = echoServiceName;
+	}
+	/**
+	 * @return Returns the autoConfig.
+	 */
+	public boolean isDontSaveIP() {
+		return dontSaveIP;
+	}
+	/**
+	 * @param dontSaveIP The dontSaveIP to set.
+	 */
+	public void setDontSaveIP(boolean dontSaveIP) {
+		this.dontSaveIP = dontSaveIP;
+	}
+	/**
+	 * @return Returns the portNumbers.
+	 */
+	public String getPortNumbers() {
+		if ( portNumbers == null || portNumbers.length < 1 ) return "NONE";
+		int len = portNumbers.length;
+		String first = String.valueOf(portNumbers[0]);
+		if ( len == 1 ) return first;
+		StringBuffer sb = new StringBuffer(first);
+		for ( int i=1 ; i < len ; i++ )
+			sb.append(",").append(portNumbers[i]);
+		return sb.toString();
+	}
+	/**
+	 * @param portNumbers The portNumbers to set.
+	 */
+	public void setPortNumbers(String ports) {
+		if ( ports == null || "NONE".equalsIgnoreCase(ports) ) {
+			portNumbers = null;
+		} else {
+			StringTokenizer st = new StringTokenizer(ports, ",");
+			portNumbers = new int[st.countTokens()];
+			for ( int i=0 ; st.hasMoreTokens() ; i++ ) {
+				portNumbers[i] = Integer.parseInt(st.nextToken());
+			}
+		}
+	}
+
+	
+	public String getAEs()
+        throws RemoteException, Exception
     {
-        Collection c = getHome().findAll();
-        String[] retval = new String[c.size()];
-        Iterator it = c.iterator();
-        for (int i = 0; i < retval.length; ++i) {
-            retval[i] = ((AELocal) it.next()).asString();
+        Collection c = lookupAEManager().getAes();
+        StringBuffer sb = new StringBuffer();
+        AEData ae;
+        for (Iterator iter = c.iterator() ; iter.hasNext() ;) {
+        	ae = (AEData) iter.next();
+            sb.append( ae.toString() ).append(" cipher:").append(ae.getCipherSuitesAsString()).append("\r\n");
         }
-        Arrays.sort(retval);
-        return retval;
+        return sb.toString();
+    }
+    
+    public AEData getAET( String aet ) throws RemoteException, Exception {
+    	return lookupAEManager().getAeByTitle( aet );
+    }
+
+    public AEData getAET( String aet, String host ) throws RemoteException, Exception {
+    	return getAET( aet, host == null ? null : InetAddress.getByName(host) );
+    }
+    
+    public AEData getAET( String aet, InetAddress addr ) throws RemoteException, Exception {
+    	AEManager aeManager = lookupAEManager();
+    	AEData ae = aeManager.getAeByTitle( aet );
+    	if ( ae != null || portNumbers==null || addr == null ) return ae;
+		
+		String aeHost = addr.getHostName();
+		for ( int i = 0 ; i < portNumbers.length ; i++ ) {
+			ae = new AEData( -1, aet, aeHost, portNumbers[i], null );
+			if ( echo(ae) ) {
+				if ( dontSaveIP ) {
+					if ( !aeHost.equals(addr.getHostAddress()))
+						aeManager.newAE(ae);
+				} else {
+					aeManager.newAE(ae);
+				}
+	            logActorConfig("Add new auto-configured AE " + ae);
+				return ae;
+			}
+		}
+		return null;
     }
 
 
-    public void addAE(String urls)
-        throws CreateException
+	/**
+     * Adds (replace) a new AE Title.
+     * 
+     * @param aet 		Application Entity Title
+     * @param host		Hostname or IP addr.
+     * @param port		port number
+     * @param cipher	String with cypher(s) to create a secure connection (seperated with ',') or null
+     * @throws Exception
+     * @throws RemoteException
+     */
+    public void addAE(String aet, String host, int port, String cipher)
+        throws RemoteException, Exception
     {
-        StringTokenizer stk = new StringTokenizer(urls, " ,;\t\r\n");
-        while (stk.hasMoreTokens()) {
-            DcmURL url = new DcmURL(stk.nextToken());
-            try {
-                getHome().findByAET(url.getCalledAET()).remove();
-            } catch (FinderException ignore) {
-            } catch (RemoveException ignore) {
-            }
-            getHome().create(
-                    url.getCalledAET(),
-                    url.getHost(),
-                    url.getPort(),
-                    toString(url.getCipherSuites()));
-            logActorConfig("Add AE " + url);
+        AEManager aeManager = lookupAEManager();
+        AEData ae = aeManager.getAeByTitle( aet );
+        if ( ae == null ) {
+        	aeManager.newAE( ae = new AEData(-1,aet,host,port,cipher));
+            logActorConfig("Add AE " + ae +" cipher:"+ae.getCipherSuitesAsString());
+        } else {
+        	aeManager.updateAE( ae = new AEData(ae.getPk(),aet,host,port,cipher) );
+            logActorConfig("Modify AE " + ae +" cipher:"+ae.getCipherSuitesAsString());
         }
     }
 
 
-    public void removeAE(String titles)
-        throws RemoveException
+    public void removeAE(String aets)
+        throws Exception
     {
-        StringTokenizer stk = new StringTokenizer(titles, " ,;\t\r\n");
-        while (stk.hasMoreTokens()) {
-            String tk = stk.nextToken();
-            try {
-                DcmURL url = new DcmURL(tk);
-                tk = url.getCalledAET();
-            } catch (IllegalArgumentException ignore) {
-            }
-            getHome().remove(tk);
-            logActorConfig("Remove AE " + tk);
+        StringTokenizer st = new StringTokenizer(aets, " ,;\t\r\n");
+        AEData ae;
+        AEManager aeManager = lookupAEManager();
+        while (st.hasMoreTokens()) {
+            ae = aeManager.getAeByTitle( st.nextToken() );
+            aeManager.removeAE(ae.getPk());
+            logActorConfig("Remove AE " + ae);
         }
     }
 
     private void logActorConfig(String desc)
     {
+		log.info(desc);
         if (auditLogName == null) {
             return;
         }
@@ -149,20 +212,27 @@ public class AEService extends ServiceMBeanSupport
             log.warn("Failed to log ActorConfig:", e);
         }
     }
-
-    private String toString(String[] a)
-    {
-        if (a == null || a.length == 0) {
-            return null;
+    
+    private boolean echo(AEData ae) {
+        try {
+            Boolean result = (Boolean) server.invoke(this.echoServiceName, "checkEcho",
+                    new Object[]{ae},
+                    new String[]{AEData.class.getName()});
+            return result.booleanValue();
+        } catch (Exception e) {
+            log.warn("Failed to use echo service:", e);
+            return false;
         }
-        if (a.length == 1) {
-            return a[0];
-        }
-        StringBuffer sb = new StringBuffer(a[0]);
-        for (int i = 1; i < a.length; ++i) {
-            sb.append(',').append(a[i]);
-        }
-        return sb.toString();
+    	
     }
+
+	protected AEManager lookupAEManager() throws Exception
+	{
+		AEManagerHome home =
+			(AEManagerHome) EJBHomeFactory.getFactory().lookup(
+					AEManagerHome.class,
+					AEManagerHome.JNDI_NAME);
+		return home.create();
+	}			
 }
 

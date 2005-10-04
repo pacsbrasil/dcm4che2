@@ -26,6 +26,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.jboss.logging.Logger;
 
 /**
@@ -70,17 +71,13 @@ class StgCmtScuScp extends DcmServiceBase {
         final Association a = assoc.getAssociation();
         final String aet = a.getCallingAET();
         try {
-            AEData aeData = new AECmd(aet).getAEData();
-            if (aeData == null) {
-                throw new DcmServiceException(Status.ProcessingFailure,
-                        "Failed to resolve AET:" + aet);
-            }
+            AEData aeData = service.queryAEData(aet, a.getSocket().getInetAddress());
             service.queueStgCmtOrder(a.getCalledAET(), aet, data, true);
-        } catch (SQLException e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
         } catch (JMSException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
+        } catch (UnkownAETException e) {
+            throw new DcmServiceException(Status.MoveDestinationUnknown, aet);
+		}
         return null;
     }
 

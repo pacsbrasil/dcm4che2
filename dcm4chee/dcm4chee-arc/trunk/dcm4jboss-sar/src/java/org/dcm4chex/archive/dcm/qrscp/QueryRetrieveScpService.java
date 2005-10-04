@@ -10,6 +10,7 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -97,6 +98,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private ObjectName stgCmtScuScpName;
     
+    private ObjectName aeServiceName; 
+    
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean sendPendingMoveRSP = true;
@@ -174,6 +177,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setStgCmtScuScpName(ObjectName stgCmtScuScpName) {
         this.stgCmtScuScpName = stgCmtScuScpName;
     }
+    
+	/**
+	 * @return Returns the aeService.
+	 */
+	public ObjectName getAEServiceName() {
+		return aeServiceName;
+	}
+	/**
+	 * @param aeService The aeService to set.
+	 */
+	public void setAEServiceName(ObjectName aeServiceName) {
+		this.aeServiceName = aeServiceName;
+	}
+    
     
     public final String getQueryTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
@@ -551,11 +568,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 enable && patientStudyOnlyMove);
     }
 
-    public AEData queryAEData(String aet) throws SQLException,
+    public AEData queryAEData(String aet, InetAddress address) throws DcmServiceException,
             UnkownAETException {
-        AEData aeData = new AECmd(aet).getAEData();
-        if (aeData == null) { throw new UnkownAETException(aet); }
-        return aeData;
+		//String host = address != null ? address.getCanonicalHostName() : null;
+        try {
+            Object o = server.invoke(aeServiceName, "getAET", 
+            		new Object[] {aet, address}, 
+					new String[] {String.class.getName(), InetAddress.class.getName()});
+            if ( o == null ) 
+            	throw new UnkownAETException("Unkown AET: " + aet);
+            return (AEData) o;
+        } catch (JMException e) {
+            log.error("Failed to query AEData", e);
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
     }
 
     boolean isLocalFileSystem(String dirpath) throws DcmServiceException {

@@ -10,12 +10,16 @@
 package org.dcm4chex.archive.dcm.hpscp;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 
+import javax.management.JMException;
 import javax.management.ObjectName;
 
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -34,6 +38,7 @@ public class HPScpService extends AbstractScpService {
     private final HPMoveScp hpMoveScp = new HPMoveScp(this);
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+	private ObjectName aeServiceName;
     
     private boolean sendPendingMoveRSP = true;
     private int acTimeout = 5000;
@@ -56,6 +61,19 @@ public class HPScpService extends AbstractScpService {
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+	/**
+	 * @return Returns the aeService.
+	 */
+	public ObjectName getAEServiceName() {
+		return aeServiceName;
+	}
+	/**
+	 * @param aeService The aeService to set.
+	 */
+	public void setAEServiceName(ObjectName aeServiceName) {
+		this.aeServiceName = aeServiceName;
+	}
+    
 	public final int getAcTimeout() {
         return acTimeout;
     }
@@ -87,6 +105,22 @@ public class HPScpService extends AbstractScpService {
     public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
+    
+	public AEData queryAEData(String aet, InetAddress addr) throws DcmServiceException {
+		try {
+			Object o = server.invoke(aeServiceName, "getAET", 
+					new Object[] {aet, addr}, 
+					new String[] {String.class.getName(), InetAddress.class.getName()});
+			if (o == null) {
+				throw new DcmServiceException(Status.MoveDestinationUnknown,aet);
+			}
+			return (AEData) o;
+		} catch (JMException e) {
+			log.error("Failed to query AEData", e);
+			throw new DcmServiceException(Status.ProcessingFailure, e);
+		}
+}
+
 
 	Socket createSocket(AEData aeData) throws IOException {
         return tlsConfig.createSocket(aeData);

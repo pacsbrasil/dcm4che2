@@ -21,6 +21,7 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.sql.SQLException;
 
 import org.dcm4che.data.Command;
@@ -65,7 +66,8 @@ public class MoveScp extends DcmServiceBase {
             AEData aeData = null;
             FileInfo[][] fileInfos = null;
             try {
-                aeData = service.queryAEData(dest);
+    			InetAddress host = dest.equals( assoc.getAssociation().getCallingAET()) ? assoc.getAssociation().getSocket().getInetAddress() : null;
+                aeData = service.queryAEData(dest, host);
                 fileInfos = RetrieveCmd.create(rqData).getFileInfos();
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);

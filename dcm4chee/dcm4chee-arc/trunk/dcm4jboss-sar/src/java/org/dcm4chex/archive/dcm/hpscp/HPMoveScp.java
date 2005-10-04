@@ -10,6 +10,7 @@
 package org.dcm4chex.archive.dcm.hpscp;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -22,7 +23,6 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.HPRetrieveCmd;
 import org.jboss.logging.Logger;
@@ -51,8 +51,9 @@ public class HPMoveScp extends DcmServiceBase {
 			log.debug(rqData);
 			checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
 			String dest = rqCmd.getString(Tags.MoveDestination);
-			AEData aeData = queryAEData(dest);
-			List hpList = qeuryHPList(rqData);
+			InetAddress host = dest.equals( assoc.getAssociation().getCallingAET()) ? assoc.getAssociation().getSocket().getInetAddress() : null;
+			AEData aeData = service.queryAEData(dest, host);
+			List hpList = queryHPList(rqData);
 			new Thread(new HPMoveTask(service, assoc, rq.pcid(), rqCmd, rqData,
 					hpList, aeData, dest)).start();
 		} catch (DcmServiceException e) {
@@ -65,25 +66,10 @@ public class HPMoveScp extends DcmServiceBase {
 		}
 	}
 
-	private List qeuryHPList(Dataset rqData)
+	private List queryHPList(Dataset rqData)
 			throws DcmServiceException {
 		try {
 			return new HPRetrieveCmd(rqData).getDatasets();
-		} catch (SQLException e) {
-			service.getLog().error("Query DB failed:", e);
-			throw new DcmServiceException(Status.ProcessingFailure, e);
-		}
-	}
-
-	private AEData queryAEData(String dest)
-			throws DcmServiceException {
-		try {
-			AEData aeData = new AECmd(dest).getAEData();
-			if (aeData == null) {
-				throw new DcmServiceException(Status.MoveDestinationUnknown,
-						dest);
-			}
-			return aeData;
 		} catch (SQLException e) {
 			service.getLog().error("Query DB failed:", e);
 			throw new DcmServiceException(Status.ProcessingFailure, e);

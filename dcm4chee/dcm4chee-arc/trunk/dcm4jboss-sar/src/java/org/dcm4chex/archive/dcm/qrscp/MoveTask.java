@@ -306,7 +306,7 @@ class MoveTask implements Runnable {
         try {
             final AssociationFactory asf = AssociationFactory.getInstance();
             final AEData retrieveAEData = service
-                    .queryAEData(retrieveAET);
+                    .queryAEData(retrieveAET, null);
 			Association a = asf.newRequestor(service.createSocket(retrieveAEData));
             a.setAcTimeout(service.getAcTimeout());
             AAssociateRQ rq = asf.newAAssociateRQ();

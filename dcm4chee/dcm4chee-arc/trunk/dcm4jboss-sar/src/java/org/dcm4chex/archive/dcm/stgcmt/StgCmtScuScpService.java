@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -105,6 +106,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
 	private int concurrency = 1;
 
+	private ObjectName aeServiceName;
+
 	public final int getConcurrency() {
 		return concurrency;
 	}
@@ -146,6 +149,20 @@ public class StgCmtScuScpService extends AbstractScpService implements
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+	/**
+	 * @return Returns the aeServiceName.
+	 */
+	public ObjectName getAEServiceName() {
+		return aeServiceName;
+	}
+	/**
+	 * @param aeServiceName The aeServiceName to set.
+	 */
+	public void setAEServiceName(ObjectName aeServiceName) {
+		this.aeServiceName = aeServiceName;
+	}
+	
+	
     public final String getQueueName() {
         return queueName;
     }
@@ -253,6 +270,21 @@ public class StgCmtScuScpService extends AbstractScpService implements
         JMSDelegate.stopListening(queueName);
         super.stopService();
     }
+    
+    public AEData queryAEData(String aet, InetAddress addr) throws DcmServiceException, UnkownAETException {
+        try {
+            Object o = server.invoke(aeServiceName, "getAET", 
+            		new Object[] {aet, addr}, 
+					new String[] {String.class.getName(), InetAddress.class.getName()});
+            if ( o == null ) 
+            	throw new UnkownAETException("Unkown AET: " + aet);
+            return (AEData) o;
+        } catch (JMException e) {
+            log.error("Failed to query AEData", e);
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+}
+
 
     public void onMessage(Message message) {
         ObjectMessage om = (ObjectMessage) message;
