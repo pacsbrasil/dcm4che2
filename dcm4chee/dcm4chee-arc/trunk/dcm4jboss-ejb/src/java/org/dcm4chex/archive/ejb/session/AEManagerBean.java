@@ -124,7 +124,7 @@ public abstract class AEManagerBean implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 */
-	public AEData getAeByTitle(String aet) throws EJBException
+	public AEData getAeByTitle(String aet)
 	{
 		try
 		{
@@ -139,7 +139,7 @@ public abstract class AEManagerBean implements SessionBean
 			return aeDTO;
 		} catch (FinderException e)
 		{
-			throw new EJBException(e);
+			return null;
 		}
 	}
 	
