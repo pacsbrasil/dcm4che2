@@ -48,8 +48,24 @@ public class AAbort implements PDU
             "invalid-PDU-parameter value"
     };
 
-    private int source = UL_SERIVE_USER;
-    private int reason = REASON_NOT_SPECIFIED;
+    private int source;
+    private int reason;
+
+    public AAbort()
+    {
+        this(UL_SERIVE_USER, REASON_NOT_SPECIFIED);
+    }
+    
+    public AAbort(int reason)
+    {
+        this(UL_SERIVE_PROVIDER, reason);
+    }
+
+    public AAbort(int source, int reason)
+    {
+        setSource(source);
+        setReason(reason);
+    }
 
     public final int length()
     {
@@ -74,24 +90,6 @@ public class AAbort implements PDU
     public final void setSource(int source)
     {
         this.source = source;
-    }
-
-    public static AAbort unexpectedPDU()
-    {
-        return fromServiceProvider(UNEXPECTED_PDU);
-    }
-
-    public static AAbort reasonNotSpecified()
-    {
-        return fromServiceProvider(REASON_NOT_SPECIFIED);
-    }
-
-    public static AAbort fromServiceProvider(int reason)
-    {
-        AAbort aa = new AAbort();
-        aa.setSource(UL_SERIVE_PROVIDER);
-        aa.setReason(reason);
-        return aa;
     }
 
     public String toString()

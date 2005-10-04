@@ -35,7 +35,7 @@ public class NewThreadExecutor implements Executor
         this.threadNamePrefix = threadNamePrefix;
     }
 
-    public String getThreadNamePrefix()
+    public final String getThreadNamePrefix()
     {
         return threadNamePrefix;
     }

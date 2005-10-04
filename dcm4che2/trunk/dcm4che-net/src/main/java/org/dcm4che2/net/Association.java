@@ -85,9 +85,6 @@ public class Association
     private AAssociateRQ associateRQ;
     private AAssociateAC associateAC;
     private AAbort abort;
-    private int pdvLen = 2;
-    private int pdvPcid = -1;
-    private int pdvMch = 0;
     private int limitOutgoingPDULength = 0x10000;
     private boolean packPDV = true;
 
@@ -156,6 +153,19 @@ public class Association
         state.write(this, pdu);
     }
     
+    public void abort(int reason) 
+    {
+        if (abort != null) // already aborted
+            write(new AAbort(reason));
+    }
+
+    public void abort() 
+    {
+        if (abort != null) // already aborted
+            write(new AAbort());
+    }
+    
+   
     public void write(int pcid, DicomObject command, DataWriter dataWriter)
     throws IOException {
         if (log.isDebugEnabled()) {
@@ -538,10 +548,11 @@ public class Association
                     }});
             }
             pipedOut.write(nioBuf.array(), offset, length);
+            pipedOut.flush();
         } catch (IOException e)
         {
             log.warn("reading P-DATA-TF throws i/o exception", e);
-            write(AAbort.reasonNotSpecified());
+            abort(AAbort.REASON_NOT_SPECIFIED);
         }
     }
     
@@ -618,14 +629,14 @@ public class Association
         if (cause instanceof DULProtocolViolationException)
         {
             DULProtocolViolationException e = (DULProtocolViolationException) cause;
-            aa1(AAbort.fromServiceProvider(e.getReason()));
+            aa1(new AAbort(e.getReason()));
         } else if (cause instanceof IOException)
         {
             // do NOT try to send AAbort in case of I/O exception
             aa2();
         } else
         {
-            aa1(AAbort.reasonNotSpecified());
+            aa1(new AAbort(AAbort.REASON_NOT_SPECIFIED));
         }
     }
 
@@ -709,14 +720,14 @@ public class Association
         if (cause instanceof DULProtocolViolationException)
         {
             DULProtocolViolationException e = (DULProtocolViolationException) cause;
-            aa7(AAbort.fromServiceProvider(e.getReason()));
+            aa7(new AAbort(e.getReason()));
         } else if (cause instanceof IOException)
         {
             // do NOT try to send AAbort in case of I/O exception
             aa2();
         } else
         {
-            aa7(AAbort.reasonNotSpecified());
+            aa7(new AAbort(AAbort.REASON_NOT_SPECIFIED));
         }
     }
 
@@ -748,14 +759,14 @@ public class Association
         if (cause instanceof DULProtocolViolationException)
         {
             DULProtocolViolationException e = (DULProtocolViolationException) cause;
-            aa8(AAbort.fromServiceProvider(e.getReason()));
+            aa8(new AAbort(e.getReason()));
         } else if (cause instanceof IOException)
         {
             // do NOT try to send AAbort in case of I/O exception
-            aa4(AAbort.reasonNotSpecified());
+            aa4(new AAbort(AAbort.REASON_NOT_SPECIFIED));
         } else
         {
-            aa8(AAbort.reasonNotSpecified());
+            aa8(new AAbort(AAbort.REASON_NOT_SPECIFIED));
         }
     }
 
@@ -787,7 +798,7 @@ public class Association
             if (pdu instanceof AAbort)
                 as.aa3((AAbort) pdu);
             else
-                as.aa8(AAbort.unexpectedPDU());
+                as.aa8(new AAbort(AAbort.UNEXPECTED_PDU));
         }
 
         protected void exception(Association as, Throwable cause)
@@ -797,7 +808,7 @@ public class Association
 
         protected void closed(Association as)
         {
-            as.aa4(AAbort.reasonNotSpecified());
+            as.aa4(new AAbort(AAbort.REASON_NOT_SPECIFIED));
         }
 
         protected void artimExpired(Association as)
@@ -844,7 +855,7 @@ public class Association
             else if (pdu instanceof AAbort)
                 as.aa2();
             else
-                as.aa1(AAbort.unexpectedPDU());
+                as.aa1(new AAbort(AAbort.UNEXPECTED_PDU));
         }
 
         @Override
@@ -1075,7 +1086,7 @@ public class Association
         protected void received(Association as, PDU pdu)
         {
             if (pdu instanceof AAssociateRQ)
-                as.aa7(AAbort.unexpectedPDU());
+                as.aa7(new AAbort(AAbort.UNEXPECTED_PDU));
             else if (pdu instanceof AAbort)
                 as.aa2();
             else
@@ -1101,60 +1112,13 @@ public class Association
             as.ar5();
         }
     }
-
-    private static class PDVHeader
-    {
-        private final int length;
-        private final int pcid;
-        private final int msh;
-        
-        public PDVHeader(int length, int pcid, int msh)
-        {
-            this.length = length;
-            this.pcid = pcid;
-            this.msh = msh;
-        }
-        
-        public final int getLength()
-        {
-            return length;
-        }
-        
-        public final int getPCID()
-        {
-            return pcid;
-        }
-        
-        public final boolean isCommand()
-        {
-            return (msh & COMMAND) != 0;
-        }
-        
-        public final boolean isLast()
-        {
-            return (msh & LAST) != 0;
-        }
-        
-    }
     
     void parsePDVs()
     {
         if (log.isDebugEnabled())
             log.debug("" + this + ": Enter parsePDVs");
-        try
-        {
-            PDVHeader pdv;
-            while ((pdv = readPDVHeader()) != null)
-                nextDIMSE(pdv);
-        } catch (DULProtocolViolationException e)
-        {
-            log.warn(e.getMessage(), e);
-            write(AAbort.fromServiceProvider(e.getReason()));
-        } catch (IOException e)
-        {
-           log.warn("Parsing PDVs throws i/o exception - ", e);
-           write(AAbort.reasonNotSpecified());
-        }
+        while (nextDIMSE())
+            ;
         if (log.isDebugEnabled())
             log.debug("" + this + ": Exit parsePDVs");
         synchronized (this)
@@ -1165,119 +1129,136 @@ public class Association
         }
     }
 
-    public PDVHeader readPDVHeader() throws IOException
+    private boolean nextDIMSE()
     {
-        final int b1 = pipedIn.read();
-        final int b2 = pipedIn.read();
-        final int b3 = pipedIn.read();
-        final int b4 = pipedIn.read();
-        final int pcid = pipedIn.read();
-        final int mch = pipedIn.read();
-        if ((b1 | b2 | b3 | b4 | pcid | mch) < 0)
-            return null;
+        if (log.isDebugEnabled())
+            log.debug("Waiting for next DIMSE");
         
-        final int length = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
-        if (length < 2) {
-            log.warn("Invalid PDV item length: " + length);
-            write(AAbort.fromServiceProvider(AAbort.INVALID_PDU_PARAMETER_VALUE));
-            return null;                
-        }
-        return new PDVHeader(length, pcid, mch);
-    }
- 
-    private boolean nextDIMSE(PDVHeader pdv)
-    throws DULProtocolViolationException, IOException
-    {
-        if (!pdv.isCommand())
-            throw new DULProtocolViolationException(
-                    AAbort.UNEXPECTED_PDU_PARAMETER,
-                    "Expected Command PDV but received - " + pdv);
+        PDVInputStream pdvStream = new PDVInputStream(COMMAND, -1);
+        final int pcid = pdvStream.getPCID();
+        if (pcid == -1) // marks end of pipedIn
+            return false;
         
-        final int pcid = pdv.getPCID();
+        if (log.isDebugEnabled())
+            log.debug("Receiving DIMSE[pcid=" + pcid + "]");
+        
         PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
-            throw new DULProtocolViolationException(
-                    AAbort.UNEXPECTED_PDU_PARAMETER,
-                    "No Presentation Context with given ID - " + pdv);
+        {
+            log.warn("No Presentation Context with given ID - " + pcid);
+            abort(AAbort.UNEXPECTED_PDU_PARAMETER);
+            return false;
+        }
         
         if (!pc.isAccepted())
-            throw new DULProtocolViolationException(
-                    AAbort.UNEXPECTED_PDU_PARAMETER,
-                    "No accepted Presentation Context with given ID - " + pdv);
+        {
+            log.warn("No accepted Presentation Context with given ID - " + pcid);
+            abort(AAbort.UNEXPECTED_PDU_PARAMETER);
+            return false;
+        }
         
         BasicDicomObject cmd = new BasicDicomObject();
-        PDVInputStream inCmd = new PDVInputStream(pdv);
-        DicomInputStream din = 
-            new DicomInputStream(inCmd, TransferSyntax.ImplicitVRLittleEndian);
-        din.readDicomObject(cmd, -1);
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving DIMSE[pcid=" + pcid + "]");
+        DicomInputStream din = null;
+        try
+        {
+            din =  new DicomInputStream(pdvStream,
+                    TransferSyntax.ImplicitVRLittleEndian);
+            din.readDicomObject(cmd, -1);
+        } catch (IOException e)
+        {
+            log.warn("Parsing Command PDV throws i/o exepction:", e);
+            abort();
+            return false;
+        }
+        
+        if (log.isDebugEnabled())
+        {
+            log.debug("Command:");
             log.debug(cmd);
         }
-        PDVInputStream inData = null;
-        if (cmd.getInt(Tag.DataSetType) != 0x101) {
-            PDVHeader pdv2 = readPDVHeader();
-            if (pdv2.isCommand())
-                throw new DULProtocolViolationException(
-                        AAbort.UNEXPECTED_PDU_PARAMETER,
-                        "Expected Data PDV but received - " + pdv2);
-            
-            if (pdv2.getPCID() != pcid)
-                throw new DULProtocolViolationException(
-                        AAbort.UNEXPECTED_PDU_PARAMETER,
-                        "Expected pcid = " + pcid + " but received " + pdv2);
-                
-            inData = new PDVInputStream(pdv2);
-        }
-        handler.onDIMSE(this, pcid, cmd, inData);
+        handler.onDIMSE(this, pcid, cmd,
+                cmd.getInt(Tag.DataSetType) != 0x101 
+                ? new PDVInputStream(DATA, pcid)
+                        : null);
         return true;
     }
 
     private class PDVInputStream extends InputStream
     {
-        private PDVHeader pdv;
+        private int pcid = -1; // marks end of pipedIn
+        private int mch;
         private int available;
 
-        public PDVInputStream(PDVHeader pdv)
+        public PDVInputStream(int command, int pcid)
         {
-            this.pdv = pdv;
-            this.available = pdv.getLength() - 2;
+            nextPDV(command, pcid);
         }
 
+        public final int getPCID()
+        {
+            return pcid;
+        }
+        
         private boolean isEOF() throws IOException
         {
             while (available == 0) {
-                if (!nextPDV())
+                if ((mch & LAST) != 0)
                     return true;
+                nextPDV(mch & COMMAND, pcid);
+                throwAbortException();
             }
             return false;
         }
         
-        private boolean nextPDV() throws IOException
+        private boolean nextPDV(int command, int expectPCID)
         {
-            if (pdv.isLast())
-                return false;
-            
-            PDVHeader tmp = readPDVHeader();
-            
-            if (tmp == null) {
-                log.warn("Unexpected end of PDV Input Stream");
-                write(AAbort.reasonNotSpecified());
+            try
+            {
+                final int b1 = pipedIn.read();
+                final int b2 = pipedIn.read();
+                final int b3 = pipedIn.read();
+                final int b4 = pipedIn.read();
+                this.pcid = pipedIn.read();
+                this.mch = pipedIn.read();
+                if ((b1 | b2 | b3 | b4 | pcid | mch) < 0)
+                {
+                    if (expectPCID != -1)
+                    {
+                        log.warn("Unexpected End of PDV Stream");
+                        abort(AAbort.REASON_NOT_SPECIFIED);
+                    }
+                    return false;
+                }
+
+                this.available = ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4) - 2;
+            } catch (IOException e)
+            {
+                log.warn("Unexpected i/o exception " + e, e);
+                abort(AAbort.REASON_NOT_SPECIFIED);
                 return false;
             }
-            
-            if (tmp.getPCID() != pdv.getPCID()
-                    || tmp.isCommand() != pdv.isCommand()) {
-                log.warn("Unexpected " +  tmp + " - does not match previous " + pdv);
-                write(AAbort.fromServiceProvider(AAbort.UNEXPECTED_PDU_PARAMETER));
+            if (this.available < 0)
+            {
+                log.warn("Invalid PDV item length: " + (available + 2));
+                abort(AAbort.INVALID_PDU_PARAMETER_VALUE);
                 return false;
             }
-            
-            pdv = tmp;
-            available = pdv.getLength() - 2;
+            if ((mch & COMMAND) != command)
+            {
+                log.warn(command == 0 ? "Expected Data but received Command PDV"
+                                : "Expected Command but received Data PDV");
+                abort(AAbort.INVALID_PDU_PARAMETER_VALUE);
+                return false;
+            }
+            if (expectPCID != -1 && expectPCID != pcid)
+            {
+                log.warn("Expected PCID: " + expectPCID + " but received: " + pcid);
+                abort(AAbort.INVALID_PDU_PARAMETER_VALUE);
+                return false;
+            }
             return true;
         }
-
+     
         @Override
         public int read() throws IOException
         {
