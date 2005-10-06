@@ -73,7 +73,6 @@ public class DULProtocolDecoder extends CumulativeProtocolDecoder
         super(AAssociateRQAC.DEF_MAX_PDU_LENGTH + 6);
     }
 
-    @Override
     protected boolean doDecode(ProtocolSession session, ByteBuffer in,
             ProtocolDecoderOutput out) throws ProtocolViolationException
     {

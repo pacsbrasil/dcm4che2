@@ -56,7 +56,6 @@ class AAbortEncoder extends PDUEncoder
         super(PDUType.A_ABORT);
     }
 
-    @Override
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

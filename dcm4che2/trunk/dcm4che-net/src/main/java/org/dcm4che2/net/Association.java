@@ -95,7 +95,7 @@ public class Association
     public static final State STA12 = new Sta12();
     public static final State STA13 = new Sta13();
 
-    private static Timer artim = new Timer("ARTIM", true);
+    private static Timer artim = new Timer(true);
 
     private TimerTask artimTask = null;
 
@@ -854,7 +854,6 @@ public class Association
             super("Sta1 - Idle");
         }
 
-        @Override
         protected void write(Association as, PDU pdu)
         {
             if (!(pdu instanceof AAbort))
@@ -871,7 +870,6 @@ public class Association
                     "Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)");
         }
 
-        @Override
         protected void write(Association as, PDU pdu)
         {
             throw new IllegalStateException(name);
@@ -887,13 +885,11 @@ public class Association
                 as.aa1(new AAbort(AAbort.UNEXPECTED_PDU));
         }
 
-        @Override
         protected void exception(Association provider, Throwable cause)
         {
             provider.aa1(cause);
         }
 
-        @Override
         protected void closed(Association provider)
         {
             provider.aa5();
@@ -977,7 +973,6 @@ public class Association
 
         }
 
-        @Override
         protected void received(Association as, PDU pdu)
         {
             if (pdu instanceof PDataTF)
@@ -1036,7 +1031,6 @@ public class Association
                     "Sta9 - Release collision requestor side; awaiting A-RELEASE response primitive");
         }
 
-        @Override
         protected void write(Association as, PDU pdu)
         {
             if (pdu instanceof AReleaseRP)
@@ -1055,7 +1049,6 @@ public class Association
                     "Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU");
         }
 
-        @Override
         protected void received(Association as, PDU pdu)
         {
             if (pdu instanceof AReleaseRP)
@@ -1074,7 +1067,6 @@ public class Association
                     "Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU");
         }
 
-        @Override
         protected void received(Association as, PDU pdu)
         {
             if (pdu instanceof AReleaseRP)
@@ -1093,7 +1085,6 @@ public class Association
                     "Sta12 - Release collision acceptor side; awaiting A-RELEASE response primitive");
         }
 
-        @Override
         protected void write(Association as, PDU pdu)
         {
             if (pdu instanceof AReleaseRP)
@@ -1111,7 +1102,6 @@ public class Association
             super("Sta13 - Awaiting Transport Connection Close Indication");
         }
 
-        @Override
         protected void received(Association as, PDU pdu)
         {
             if (pdu instanceof AAssociateRQ)
@@ -1122,20 +1112,17 @@ public class Association
                 as.aa6();
         }
 
-        @Override
         protected void write(Association as, PDU pdu)
         {
             if (!(pdu instanceof AAbort))
                 throw new IllegalStateException(name);
         }
 
-        @Override
         protected void exception(Association as, Throwable cause)
         {
             as.aa7(cause);
         }
 
-        @Override
         protected void closed(Association as)
         {
             as.ar5();
@@ -1288,7 +1275,6 @@ public class Association
             return true;
         }
      
-        @Override
         public int read() throws IOException
         {
             if (isEOF())
@@ -1298,7 +1284,6 @@ public class Association
             return pipedIn.read();
         }
 
-        @Override
         public int read(byte[] b, int off, int len) throws IOException
         {
             if (isEOF())
@@ -1311,13 +1296,11 @@ public class Association
             return read;
         }
 
-        @Override
         public int available() throws IOException
         {
              return available;
         }
 
-        @Override
         public long skip(long n) throws IOException
         {
             if (n <= 0 || isEOF())
@@ -1379,7 +1362,6 @@ public class Association
             buf.position(prev);
         }
 
-        @Override
         public void write(int b) throws IOException
         {
             throwAbortException();
@@ -1390,7 +1372,6 @@ public class Association
             ++pdvLen;            
         }
 
-        @Override
         public void write(byte[] b, int off, int len)
         throws IOException
         {
@@ -1418,7 +1399,6 @@ public class Association
             init();
         }
 
-        @Override
         public void close() throws IOException
         {
             throwAbortException();

@@ -55,7 +55,6 @@ class AReleaseRQEncoder extends PDUEncoder
         super(PDUType.A_RELEASE_RQ);
     }
 
-    @Override
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

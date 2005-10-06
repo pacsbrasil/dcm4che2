@@ -73,7 +73,6 @@ abstract class AAssociateRQACEncoder extends PDUEncoder
         this.pcItemType = pcItemType;
     }
 
-    @Override
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

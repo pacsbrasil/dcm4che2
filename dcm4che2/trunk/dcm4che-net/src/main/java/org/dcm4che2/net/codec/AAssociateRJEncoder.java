@@ -56,7 +56,6 @@ class AAssociateRJEncoder extends PDUEncoder
         super(PDUType.A_ASSOCIATE_RJ);
     }
 
-    @Override
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {
