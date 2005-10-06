@@ -6,9 +6,8 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
+
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -20,6 +19,8 @@ public abstract class Errable extends Dcm4JbossController
 {
 	public static String ERROR_VIEW = "error";
 
+	private static AEDelegate aeDelegate = null;
+	
 	protected String errorType="Unknown Error";
 	protected String message= "An Unrecognized Error Has Been Thrown";
 	protected String backURL = "default.jsp";
@@ -48,13 +49,12 @@ public abstract class Errable extends Dcm4JbossController
 		return message;
 	}
 	
-	protected AEManager lookupAEManager() throws Exception
-	{
-		AEManagerHome home =
-			(AEManagerHome) EJBHomeFactory.getFactory().lookup(
-					AEManagerHome.class,
-					AEManagerHome.JNDI_NAME);
-		return home.create();
-	}			
+    public AEDelegate lookupAEDelegate() {
+        if ( aeDelegate == null ) {
+        	aeDelegate = new AEDelegate();
+        	aeDelegate.init( getCtx().getServletConfig() );
+        }
+        return aeDelegate;
+    }
 	
 }
