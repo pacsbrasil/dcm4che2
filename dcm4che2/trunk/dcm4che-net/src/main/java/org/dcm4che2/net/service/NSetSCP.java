@@ -36,48 +36,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net.service;
+
+import java.io.InputStream;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.Association;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 16, 2005
+ * @since Oct 3, 2005
+ *
  */
-public class ExtendedNegotiation
+public interface NSetSCP
 {
 
-    private String cuid;
-    private byte[] info;
-
-    public final String getSOPClassUID()
-    {
-        return cuid;
-    }
-
-    public final void setSOPClassUID(String cuid)
-    {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
-    }
-
-    public final byte[] getInformation()
-    {
-        return (byte[]) info.clone();
-    }
-
-    public final void setInformation(byte[] info)
-    {
-        this.info = (byte[]) info.clone();
-    }
-
-    public int length()
-    {
-        if (cuid == null)
-            throw new IllegalStateException();
-
-        return cuid.length() + info.length;
-    }
+    void nset(Association as, int pcid, DicomObject cmd, InputStream dataStream);
 
 }

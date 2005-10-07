@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,48 +36,61 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net;
+
+import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.net.pdu.AAssociateAC;
+import org.dcm4che2.net.pdu.AAssociateRJ;
+import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.AReleaseRP;
+import org.dcm4che2.net.service.DicomServiceRegistry;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 16, 2005
+ * @since Oct 6, 2005
+ *
  */
-public class ExtendedNegotiation
+public class AssociationAcceptorHandler
+extends AbstractAssociationHandler
 {
+    private final AcceptorPolicy acceptorPolicy;
 
-    private String cuid;
-    private byte[] info;
-
-    public final String getSOPClassUID()
+    public AssociationAcceptorHandler(AcceptorPolicy acceptorPolicy,
+            DicomServiceRegistry registry)
     {
-        return cuid;
+        super(registry);
+        this.acceptorPolicy = acceptorPolicy;
     }
 
-    public final void setSOPClassUID(String cuid)
+    public void onOpened(Association as)
     {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
     }
 
-    public final byte[] getInformation()
+    public void onAAssociateRQ(Association as, AAssociateRQ rq)
     {
-        return (byte[]) info.clone();
+        as.write(acceptorPolicy.negotiate(rq));
     }
 
-    public final void setInformation(byte[] info)
+    public void onAAssociateAC(Association as, AAssociateAC ac)
     {
-        this.info = (byte[]) info.clone();
     }
 
-    public int length()
-    {
-        if (cuid == null)
-            throw new IllegalStateException();
-
-        return cuid.length() + info.length;
+    public void onAAssociateRJ(Association as, AAssociateRJ rj)
+    {        
     }
+
+    public void onAReleaseRP(Association as, AReleaseRP rp)
+    {
+    }
+
+    public void onAbort(Association as, AAbort abort)
+    {
+    }
+
+    public void onClosed(Association association)
+    {
+    }
+
 
 }

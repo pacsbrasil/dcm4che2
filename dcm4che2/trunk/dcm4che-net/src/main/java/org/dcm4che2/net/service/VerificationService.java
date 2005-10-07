@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,48 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net.service;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 16, 2005
+ * @since Oct 7, 2005
+ *
  */
-public class ExtendedNegotiation
+public class VerificationService
+extends DicomService
+implements CEchoSCP
 {
 
-    private String cuid;
-    private byte[] info;
-
-    public final String getSOPClassUID()
+    private static final String[] sopClasses =
     {
-        return cuid;
+        UID.VerificationSOPClass
+    };
+
+    public VerificationService()
+    {
+        super(sopClasses, null);
     }
 
-    public final void setSOPClassUID(String cuid)
+    public void cecho(Association as, int pcid, DicomObject cmd,
+            InputStream dataStream)
     {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
-    }
-
-    public final byte[] getInformation()
-    {
-        return (byte[]) info.clone();
-    }
-
-    public final void setInformation(byte[] info)
-    {
-        this.info = (byte[]) info.clone();
-    }
-
-    public int length()
-    {
-        if (cuid == null)
-            throw new IllegalStateException();
-
-        return cuid.length() + info.length;
+        try
+        {
+            as.write(pcid, CommandFactory.newCEchoRSP(cmd), null);
+        } catch (IOException e)
+        {
+            // already handled by as.write
+        }        
     }
 
 }

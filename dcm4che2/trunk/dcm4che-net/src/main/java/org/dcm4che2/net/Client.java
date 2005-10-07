@@ -44,11 +44,8 @@ import java.net.InetSocketAddress;
 
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
-import org.dcm4che2.data.VR;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
@@ -56,6 +53,7 @@ import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.AReleaseRP;
 import org.dcm4che2.net.pdu.AReleaseRQ;
 import org.dcm4che2.net.pdu.PresentationContext;
+import org.dcm4che2.net.service.DicomServiceRegistry;
 
 /**
  * (<strong>Entry Point</strong>) Starts SumUp client.
@@ -67,6 +65,12 @@ public class Client
 {
 
     private static final int PCID = 1;
+
+
+    private static InetSocketAddress makeSocketAddress()
+    {
+        return new InetSocketAddress("localhost", 11112);
+    }
     
     private static AAssociateRQ makeAARQ()
     {
@@ -79,18 +83,7 @@ public class Client
         return aarq;
     }
 
-    private static DicomObject makeEchoRQ()
-    {
-        BasicDicomObject cmd = new BasicDicomObject();
-        cmd.putString(Tag.AffectedSOPClassUID, VR.UI, UID.VerificationSOPClass);
-        cmd.putInt(Tag.CommandField, VR.US, 0x30);
-        cmd.putInt(Tag.MessageID, VR.US, 1);
-        cmd.putInt(Tag.DataSetType, VR.US, 0x101);
-        return cmd;
-    }
-
-    
-    private static AssociationHandler handler = new AssociationHandler()
+    private static AssociationHandler handler = new AbstractAssociationHandler(new DicomServiceRegistry())
     {
 
         public void onOpened(Association a)
@@ -98,48 +91,53 @@ public class Client
             a.write(makeAARQ());
         }
 
-        public void onAAssociateRQ(Association a, AAssociateRQ rq)
+        public void onAAssociateRQ(Association as, AAssociateRQ rq)
         {
+            // TODO Auto-generated method stub
+            
         }
 
-        public void onAAssociateRJ(Association a, AAssociateRJ rj)
+        public void onAAssociateAC(Association as, AAssociateAC ac)
         {
+           try
+        {
+            as.writeDimseRQ(PCID, CommandFactory.newCEchoRQ(as.nextMessageID()), null, new DimseRSPHandler(){
+
+                public void onDimseRSP(Association a, int pcid, DicomObject cmd, InputStream dataStream)
+                {
+                    a.write(new AReleaseRQ());                    
+                }});
+        } catch (IOException e)
+        {
+            // already handled by as.writeDimseRQ;
+        }
+            
         }
 
-        public void onAAssociateAC(Association a, AAssociateAC ac)
+        public void onAAssociateRJ(Association as, AAssociateRJ rj)
         {
-            try
-            {
-                a.write(PCID, makeEchoRQ(), null);
-            } catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            // TODO Auto-generated method stub
+            
         }
 
-        public void onAReleaseRQ(Association a, AReleaseRQ rq)
+        public void onAReleaseRP(Association as, AReleaseRP rp)
         {
-            a.write(new AReleaseRP());
+            // TODO Auto-generated method stub
+            
         }
 
-        public void onAReleaseRP(Association a, AReleaseRP rp)
+        public void onAbort(Association as, AAbort abort)
         {
-        }
-
-        public void onAbort(Association a, AAbort abort)
-        {
-        }
-
-        public void onDIMSE(Association a, int pcid, DicomObject command, 
-                InputStream dataStream)
-        {
-            a.write(new AReleaseRQ());
+            // TODO Auto-generated method stub
+            
         }
 
         public void onClosed(Association association)
-        {         
+        {
+            // TODO Auto-generated method stub
+            
         }
+
     };
 
     public static void main(String[] args) throws Throwable
@@ -165,10 +163,5 @@ public class Client
 //        ioThreadPoolFilter.stop();
 //        protocolThreadPoolFilter.stop();
         System.out.println("Exit main");
-    }
-
-    private static InetSocketAddress makeSocketAddress()
-    {
-        return new InetSocketAddress("localhost", 11112);
     }
 }

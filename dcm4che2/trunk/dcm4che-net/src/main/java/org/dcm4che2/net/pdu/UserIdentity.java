@@ -80,22 +80,22 @@ public class UserIdentity
 
     public final byte[] getPrimaryField()
     {
-        return primaryField.clone();
+        return (byte[]) primaryField.clone();
     }
 
     public final void setPrimaryField(byte[] primaryField)
     {
-        this.primaryField = primaryField.clone();
+        this.primaryField = (byte[]) primaryField.clone();
     }
 
     public final byte[] getSecondaryField()
     {
-        return secondaryField.clone();
+        return (byte[]) secondaryField.clone();
     }
 
     public final void setSecondaryField(byte[] secondaryField)
     {
-        this.secondaryField = secondaryField.clone();
+        this.secondaryField = (byte[]) secondaryField.clone();
     }
 
     public String getUsername()

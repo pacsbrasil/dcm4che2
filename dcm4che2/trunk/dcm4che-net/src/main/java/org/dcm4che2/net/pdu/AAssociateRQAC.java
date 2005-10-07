@@ -44,14 +44,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.dcm4che2.data.Implementation;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
-import org.dcm4che2.net.codec.ItemType;
-import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.StringUtils;
 
 /**
@@ -97,7 +93,7 @@ public abstract class AAssociateRQAC implements PDU
 
     public final byte[] getReservedBytes()
     {
-        return reservedBytes.clone();
+        return (byte[]) reservedBytes.clone();
     }
 
     public final void setReservedBytes(byte[] reservedBytes)

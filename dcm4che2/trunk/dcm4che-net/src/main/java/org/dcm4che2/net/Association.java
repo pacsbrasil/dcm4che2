@@ -61,11 +61,13 @@ import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.AReleaseRP;
 import org.dcm4che2.net.pdu.AReleaseRQ;
 import org.dcm4che2.net.pdu.PDU;
 import org.dcm4che2.net.pdu.PDataTF;
 import org.dcm4che2.net.pdu.PresentationContext;
+import org.dcm4che2.util.IntHashtable;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -114,6 +116,10 @@ public class Association
     private AAssociateRQ associateRQ;
     private AAssociateAC associateAC;
     private AAbort abort;
+    private int messageID = 0;
+    private IntHashtable rspHandlerForMsgId = new IntHashtable();
+    private IntHashtable cancelHandlerForMsgId = new IntHashtable();
+    
     private int limitOutgoingPDULength = 0x10000;
     private boolean packPDV = true;
 
@@ -166,11 +172,17 @@ public class Association
     public int getMaxOutgoingPDULength() {
         try
         {
-            return (requestor ? associateAC : associateRQ).getMaxPDULength() & ~1;
+            AAssociateRQAC rqac = requestor ? (AAssociateRQAC) associateAC 
+                                            : (AAssociateRQAC) associateRQ;
+            return rqac.getMaxPDULength() & ~1;
         } catch (NullPointerException e)
         {
             throw new IllegalStateException(state.toString());
         }
+    }
+    
+    public int nextMessageID() {
+        return ++messageID;
     }
 
     public void write(PDU pdu)
@@ -196,11 +208,13 @@ public class Association
     
    
     public void write(int pcid, DicomObject command, DataWriter dataWriter)
-    throws IOException {
+    throws IOException
+    {
         if (log.isDebugEnabled()) {
             log.debug("Sending DIMSE[pcid=" + pcid + "]");
             log.debug(command);
         }
+        
         PresentationContext pc;
         try
         {
@@ -218,14 +232,32 @@ public class Association
         ByteBuffer buf = ByteBuffer.allocate(maxPduLen);
         PDVOutputStream out = new PDVOutputStream(pcid, COMMAND, buf, maxPduLen);
         DicomOutputStream dos = new DicomOutputStream(out);
-        dos.writeCommand(command);
-        dos.close();
+        try
+        {
+            dos.writeCommand(command);
+            dos.close();
+        } catch (IOException e)
+        {
+            // should never happen!
+            log.error("Failed to encode Command into PDV", e);
+            write(new AAbort(AAbort.REASON_NOT_SPECIFIED));
+            throw e;
+        }
         if (dataWriter != null) {
             if (!packPDV) 
                 writePDataTF(buf);
             out = new PDVOutputStream(pcid, DATA, buf, maxPduLen);
-            dataWriter.writeTo(out, TransferSyntax.valueOf(pc.getTransferSyntax()));
-            out.close();            
+            try
+            {
+                dataWriter.writeTo(out, TransferSyntax.valueOf(pc
+                        .getTransferSyntax()));
+                out.close(); 
+            } catch (IOException e)
+            {
+                log.error("Failed to encode Data into PDVs", e);
+                write(new AAbort(AAbort.REASON_NOT_SPECIFIED));
+                throw e;
+            }            
         }
         writePDataTF(buf);
     }
@@ -1192,10 +1224,8 @@ public class Association
             log.debug("Command:");
             log.debug(cmd);
         }
-        handler.onDIMSE(this, pcid, cmd,
-                cmd.getInt(Tag.DataSetType) != 0x101 
-                ? new PDVInputStream(DATA, pcid)
-                        : null);
+        handler.onDIMSE(this, pcid, cmd, CommandFactory.hasDataset(cmd)
+                ? new PDVInputStream(DATA, pcid) : null);
         return true;
     }
 
@@ -1405,6 +1435,52 @@ public class Association
             writePDVHeader(LAST);
         }
 
+    }
+
+    public void writeDimseRQ(int pcid, DicomObject cmd, DataWriter data, 
+            DimseRSPHandler rspHandler)
+    throws IOException
+    {
+        addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
+        write(pcid, cmd, data);
+    }
+    
+    void onDimseRSP(int pcid, DicomObject cmd, InputStream dataStream)
+    {
+        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
+        DimseRSPHandler rspHandler = CommandFactory.isPending(cmd)
+            ? getDimseRSPHandler(msgId) : removeDimseRSPHandler(msgId);
+        rspHandler.onDimseRSP(this, pcid, cmd, dataStream);
+    }
+
+    private void addDimseRSPHandler(int msgId, DimseRSPHandler rspHandler)
+    {
+        synchronized (rspHandlerForMsgId)
+        {
+            rspHandlerForMsgId.put(msgId, rspHandler);
+        }
+    }
+
+    private DimseRSPHandler removeDimseRSPHandler(int msgId)
+    {
+        synchronized (rspHandlerForMsgId)
+        {
+            return (DimseRSPHandler) rspHandlerForMsgId.remove(msgId);
+        }
+    }
+
+    private DimseRSPHandler getDimseRSPHandler(int msgId)
+    {
+        synchronized (rspHandlerForMsgId)
+        {
+            return (DimseRSPHandler) rspHandlerForMsgId.get(msgId);
+        }
+    }
+
+    void onCancelRQ(int pcid, DicomObject cmd, InputStream dataStream)
+    {
+        // TODO Auto-generated method stub
+        
     }
 
 }

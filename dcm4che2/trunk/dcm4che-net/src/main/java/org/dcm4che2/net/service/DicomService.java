@@ -36,48 +36,33 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net.service;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 16, 2005
+ * @since Oct 3, 2005
+ *
  */
-public class ExtendedNegotiation
+public abstract class DicomService
 {
-
-    private String cuid;
-    private byte[] info;
-
-    public final String getSOPClassUID()
+    private final String[] sopClasses;
+    private final String serviceClass;
+    
+    protected DicomService(String[] sopClasses, String serviceClass)
     {
-        return cuid;
+        this.sopClasses = (String[]) sopClasses.clone();
+        this.serviceClass = serviceClass;
     }
 
-    public final void setSOPClassUID(String cuid)
+    public final String[] getSopClasses()
     {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
+        return (String[]) sopClasses.clone();
     }
 
-    public final byte[] getInformation()
+    public final String getServiceClass()
     {
-        return (byte[]) info.clone();
-    }
-
-    public final void setInformation(byte[] info)
-    {
-        this.info = (byte[]) info.clone();
-    }
-
-    public int length()
-    {
-        if (cuid == null)
-            throw new IllegalStateException();
-
-        return cuid.length() + info.length;
+        return serviceClass;
     }
 
 }

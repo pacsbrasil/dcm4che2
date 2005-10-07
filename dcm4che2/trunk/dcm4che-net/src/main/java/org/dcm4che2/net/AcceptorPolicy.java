@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,48 +36,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net;
+
+import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.PDU;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 16, 2005
+ * @since Oct 7, 2005
+ *
  */
-public class ExtendedNegotiation
+public interface AcceptorPolicy
 {
 
-    private String cuid;
-    private byte[] info;
-
-    public final String getSOPClassUID()
-    {
-        return cuid;
-    }
-
-    public final void setSOPClassUID(String cuid)
-    {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
-    }
-
-    public final byte[] getInformation()
-    {
-        return (byte[]) info.clone();
-    }
-
-    public final void setInformation(byte[] info)
-    {
-        this.info = (byte[]) info.clone();
-    }
-
-    public int length()
-    {
-        if (cuid == null)
-            throw new IllegalStateException();
-
-        return cuid.length() + info.length;
-    }
+    PDU negotiate(AAssociateRQ rq);
 
 }

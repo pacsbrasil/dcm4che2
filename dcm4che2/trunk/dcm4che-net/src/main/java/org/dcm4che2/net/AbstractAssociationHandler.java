@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,48 +36,49 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.pdu;
+package org.dcm4che2.net;
+
+import java.io.InputStream;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.pdu.AReleaseRP;
+import org.dcm4che2.net.pdu.AReleaseRQ;
+import org.dcm4che2.net.service.DicomServiceRegistry;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 16, 2005
+ * @since Oct 6, 2005
+ *
  */
-public class ExtendedNegotiation
+abstract class AbstractAssociationHandler implements AssociationHandler
 {
+    protected final DicomServiceRegistry serviceRegistry;
 
-    private String cuid;
-    private byte[] info;
-
-    public final String getSOPClassUID()
+    protected AbstractAssociationHandler(DicomServiceRegistry registry)
     {
-        return cuid;
+        this.serviceRegistry = registry;
+     }
+
+    public final DicomServiceRegistry getServiceRegistry()
+    {
+        return serviceRegistry;
     }
 
-    public final void setSOPClassUID(String cuid)
+    public synchronized void onAReleaseRQ(Association as, AReleaseRQ rq)
     {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
+        // finish onDIMSE, before sending release response
+        as.write(new AReleaseRP());
     }
 
-    public final byte[] getInformation()
+    public synchronized void onDIMSE(Association as, int pcid,
+            DicomObject cmd, InputStream dataStream)
     {
-        return (byte[]) info.clone();
+        if (CommandFactory.isResponse(cmd))
+            as.onDimseRSP(pcid, cmd, dataStream);
+        else if (CommandFactory.isCancelRQ(cmd))
+            as.onCancelRQ(pcid, cmd, dataStream);
+        else
+            serviceRegistry.process(as, pcid, cmd, dataStream);
     }
-
-    public final void setInformation(byte[] info)
-    {
-        this.info = (byte[]) info.clone();
-    }
-
-    public int length()
-    {
-        if (cuid == null)
-            throw new IllegalStateException();
-
-        return cuid.length() + info.length;
-    }
-
 }
