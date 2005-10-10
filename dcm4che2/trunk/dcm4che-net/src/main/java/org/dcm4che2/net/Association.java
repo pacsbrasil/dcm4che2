@@ -41,7 +41,6 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -103,18 +102,22 @@ public class Association
 
     private final boolean requestor;
     private final Executor executor;
-    private final AssociationHandler handler;
+    private AssociationHandler handler;
     private final ProtocolSession session;
     
     private State state;
     private long associationRequestTimeout = 10000L;
+    private long associationAcceptTimeout = 10000L;
+    private long releaseResponseTimeout = 10000L;
     private long socketCloseDelay = 100L;
+    private int pipeSize = 1024;
 
     private PipedOutputStream pipedOut;
     private PipedInputStream pipedIn;
     
     private AAssociateRQ associateRQ;
     private AAssociateAC associateAC;
+    private AAssociateRJ associateRJ;
     private AAbort abort;
     private int messageID = 0;
     private IntHashtable rspHandlerForMsgId = new IntHashtable();
@@ -123,11 +126,11 @@ public class Association
     private int limitOutgoingPDULength = 0x10000;
     private boolean packPDV = true;
 
-    Association(Executor executor, AssociationHandler listener,
+    Association(Executor executor, AssociationHandler handler,
             boolean requestor, ProtocolSession session)
     {
         this.executor = executor;
-        this.handler = listener;
+        this.handler = handler;
         this.requestor = requestor;
         this.session = session;
         setState(requestor ? STA4 : STA2);
@@ -136,6 +139,14 @@ public class Association
     public final AssociationHandler getHandler()
     {
         return handler;
+    }
+    
+    public void addAssociationHandlerFilter(AssociationHandlerFilter af)
+    {
+        if (af.getHandler() != handler)
+            throw new IllegalArgumentException(
+                    "Filter does not match current Association Handler");
+        this.handler = af;        
     }
 
     public final boolean isRequestor()
@@ -148,10 +159,29 @@ public class Association
         return associationRequestTimeout;
     }
 
-    public final void setAssociationRequestTimeout(
-            long associationRequestTimeout)
+    public final void setAssociationRequestTimeout(long timeout)
     {
-        this.associationRequestTimeout = associationRequestTimeout;
+        this.associationRequestTimeout = timeout;
+    }
+
+    public final long getAssociationAcceptTimeout()
+    {
+        return associationAcceptTimeout;
+    }
+
+    public final void setAssociationAcceptTimeout(long timeout)
+    {
+        this.associationAcceptTimeout = timeout;
+    }
+
+    public final long getReleaseResponseTimeout()
+    {
+        return releaseResponseTimeout;
+    }
+
+    public final void setReleaseResponseTimeout(long releaseResponseTimeout)
+    {
+        this.releaseResponseTimeout = releaseResponseTimeout;
     }
 
     public final long getSocketCloseDelay()
@@ -164,9 +194,29 @@ public class Association
         this.socketCloseDelay = socketCloseDelay;
     }
 
+    public final int getPipeSize()
+    {
+        return pipeSize;
+    }
+
+    public final void setPipeSize(int pipeSize)
+    {
+        this.pipeSize = pipeSize;
+    }
+
     public final State getState()
     {
         return state;
+    }
+    
+    public final AAbort getAbort()
+    {
+        return abort;
+    }
+    
+    public final AAssociateRJ getAssociateRJ()
+    {
+        return associateRJ;
     }
     
     public int getMaxOutgoingPDULength() {
@@ -175,6 +225,19 @@ public class Association
             AAssociateRQAC rqac = requestor ? (AAssociateRQAC) associateAC 
                                             : (AAssociateRQAC) associateRQ;
             return rqac.getMaxPDULength() & ~1;
+        } catch (NullPointerException e)
+        {
+            throw new IllegalStateException(state.toString());
+        }
+    }
+    
+    public TransferSyntax getTransferSyntax(int pcid)
+    {
+         try
+        {
+            PresentationContext pc = associateAC.getPresentationContext(pcid);
+            return pc.isAccepted() ? TransferSyntax.valueOf(pc
+                    .getTransferSyntax()) : null;
         } catch (NullPointerException e)
         {
             throw new IllegalStateException(state.toString());
@@ -368,6 +431,13 @@ public class Association
             closePipedOut(); // wait until parsePDVs exits
         setState(STA1);
         handler.onClosed(this);
+        rspHandlerForMsgId.accept(new IntHashtable.Visitor(){
+
+            public boolean visit(int key, Object value)
+            {
+                ((DimseRSPHandler) value).onClosed(Association.this);
+                return true;
+            }});
     }
 
     private synchronized void closePipedOut()
@@ -394,8 +464,11 @@ public class Association
 
     void idle(IdleStatus status)
     {
-        // TODO Auto-generated method stub
-
+        if (state == STA6)
+        {
+            log.info("Release idle association");
+            write(new AReleaseRQ());
+        }
     }
 
     /**
@@ -407,6 +480,7 @@ public class Association
     {
         this.associateRQ = associateRQ;
         session.write(associateRQ);
+        startARTIM(associationAcceptTimeout);
         setState(STA5);
     }
 
@@ -419,6 +493,7 @@ public class Association
     private void ae3(AAssociateAC associateAC)
     {
         this.associateAC = associateAC;
+        stopARTIM();
         setState(STA6);
         handler.onAAssociateAC(this, associateAC);
     }
@@ -431,6 +506,8 @@ public class Association
      */
     private void ae4(AAssociateRJ associateRJ)
     {
+        this.associateRJ = associateRJ;
+        stopARTIM();
         handler.onAAssociateRJ(this, associateRJ);
         session.close();
 //        setState(STA1);
@@ -522,8 +599,9 @@ public class Association
      */
     private void ar1(AReleaseRQ releaseRQ)
     {
-        setState(STA7);
         session.write(releaseRQ);
+        startARTIM(releaseResponseTimeout);
+        setState(STA7);
     }
 
     /**
@@ -547,6 +625,7 @@ public class Association
     private void ar3(AReleaseRP releaseRP)
     {
 //        setState(STA1);
+        stopARTIM();
         handler.onAReleaseRP(this, releaseRP);
         session.close();
     }
@@ -601,7 +680,7 @@ public class Association
             if (pipedOut == null)
             {
                 pipedOut = new PipedOutputStream();
-                pipedIn = new PipedInputStream(pipedOut);
+                pipedIn = new PipedInputStream(pipedOut, pipeSize);
                 executor.execute(new Runnable(){
                     public void run()
                     {
@@ -634,10 +713,8 @@ public class Association
      * - if not, next state is Sta10
      * 
      * @param releaseRP
-     * @throws IOException 
      */
     private void ar8(AReleaseRQ releaseRQ)
-    throws IOException
     {
         setState(requestor ? STA9 : STA10);
         handler.onAReleaseRQ(this, releaseRQ);
@@ -659,6 +736,7 @@ public class Association
      */
     private void ar10(AReleaseRP releaseRP)
     {
+        stopARTIM();
         setState(STA12);
         handler.onAReleaseRP(this, releaseRP);
     }
@@ -831,6 +909,12 @@ public class Association
         }
     }
 
+    void releaseResponseTimeoutExpired()
+    {
+        log.warn("Timeout for receiving A-RELEASE-RP expired - abort");
+        aa8(new AAbort(AAbort.REASON_NOT_SPECIFIED));
+    }
+    
     public static abstract class State
     {
 
@@ -976,13 +1060,19 @@ public class Association
         }
 
         protected void received(Association as, PDU pdu)
-        {
+        {            
             if (pdu instanceof AAssociateAC)
                 as.ae3((AAssociateAC) pdu);
             else if (pdu instanceof AAssociateRJ)
                 as.ae4((AAssociateRJ) pdu);
             else
                 super.received(as, pdu);
+        }
+
+        protected void artimExpired(Association as)
+        {
+            log.warn("Timeout for receiving A-ASSOCIATE-AC expired - abort");
+            as.aa8(new AAbort(AAbort.REASON_NOT_SPECIFIED));
         }
     }
 
@@ -1030,8 +1120,15 @@ public class Association
                 as.ar6((PDataTF) pdu);
             else if (pdu instanceof AReleaseRP)
                 as.ar3((AReleaseRP) pdu);
+            else if (pdu instanceof AReleaseRQ)
+                as.ar8((AReleaseRQ) pdu);
             else
                 super.received(as, pdu);
+        }
+        
+        protected void artimExpired(Association as)
+        {
+            as.releaseResponseTimeoutExpired();
         }
     }
 
@@ -1070,6 +1167,11 @@ public class Association
             else
                 super.write(as, pdu);
         }
+                
+        protected void artimExpired(Association as)
+        {
+            as.releaseResponseTimeoutExpired();
+        }
     }
 
     private static class Sta10 extends State
@@ -1077,8 +1179,7 @@ public class Association
 
         public Sta10()
         {
-            super(
-                    "Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU");
+            super("Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU");
         }
 
         protected void received(Association as, PDU pdu)
@@ -1087,6 +1188,11 @@ public class Association
                 as.ar10((AReleaseRP) pdu);
             else
                 super.received(as, pdu);
+        }
+
+        protected void artimExpired(Association as)
+        {
+            as.releaseResponseTimeoutExpired();
         }
     }
 
@@ -1105,6 +1211,11 @@ public class Association
                 as.ar3((AReleaseRP) pdu);
             else
                 super.received(as, pdu);
+        }
+
+        protected void artimExpired(Association as)
+        {
+            as.releaseResponseTimeoutExpired();
         }
     }
 
@@ -1205,19 +1316,11 @@ public class Association
             return false;
         }
         
-        BasicDicomObject cmd = new BasicDicomObject();
-        DicomInputStream din = null;
-        try
-        {
-            din =  new DicomInputStream(pdvStream,
-                    TransferSyntax.ImplicitVRLittleEndian);
-            din.readDicomObject(cmd, -1);
-        } catch (IOException e)
-        {
-            log.warn("Parsing Command PDV throws i/o exepction:", e);
-            abort();
+        DicomObject cmd = readDicomObject(pdvStream,
+                TransferSyntax.ImplicitVRLittleEndian);
+        
+        if (cmd == null)
             return false;
-        }
         
         if (log.isDebugEnabled())
         {
@@ -1229,6 +1332,35 @@ public class Association
         return true;
     }
 
+    DicomObject readDicomObject(InputStream pdvStream,
+            TransferSyntax ts)
+    {
+        try {
+            DicomInputStream din = new DicomInputStream(pdvStream, ts);
+            DicomObject dcmobj = new BasicDicomObject();
+            din.readDicomObject(dcmobj, -1);
+            return dcmobj;
+        } catch (IOException e)
+        {
+            log.warn("Read Dicom Object throws i/o exepction:", e);
+            abort();
+            return null;
+        }
+    }
+
+    private static class PipedInputStream extends java.io.PipedInputStream
+    {
+
+        public PipedInputStream(PipedOutputStream pipedOut, int pipeSize)
+        throws IOException
+        {
+            super(pipedOut);
+            if (pipeSize != this.buffer.length)
+                this.buffer = new byte[pipeSize];
+        }
+
+    }
+    
     private class PDVInputStream extends InputStream
     {
         private int pcid = -1; // marks end of pipedIn
@@ -1311,7 +1443,15 @@ public class Association
                 return -1;
             
             --available;
-            return pipedIn.read();
+            try
+            {
+                return pipedIn.read();
+            } catch (IOException e)
+            {
+                log.warn("Unexpected i/o exception " + e, e);
+                abort(AAbort.REASON_NOT_SPECIFIED);
+                throw e;
+            }
         }
 
         public int read(byte[] b, int off, int len) throws IOException
@@ -1319,11 +1459,19 @@ public class Association
             if (isEOF())
                 return -1;
             
-            final int read = pipedIn.read(b, off, Math.min(len, available));
-            if (read > 0)
-                available -= read;
-            
-            return read;
+            try
+            {
+                final int read = pipedIn.read(b, off, Math.min(len, available));
+                if (read > 0)
+                    available -= read;
+                
+                return read;
+            } catch (IOException e)
+            {
+                log.warn("Unexpected i/o exception " + e, e);
+                abort(AAbort.REASON_NOT_SPECIFIED);
+                throw e;
+            }
         }
 
         public int available() throws IOException
@@ -1336,10 +1484,18 @@ public class Association
             if (n <= 0 || isEOF())
                 return 0;
             
-            final long skipped = pipedIn.skip(Math.min(n, available));
-            available -= skipped;
-           
-            return skipped;
+            try
+            {
+                final long skipped = pipedIn.skip(Math.min(n, available));
+                available -= skipped;
+
+                return skipped;
+            } catch (IOException e)
+            {
+                log.warn("Unexpected i/o exception " + e, e);
+                abort(AAbort.REASON_NOT_SPECIFIED);
+                throw e;
+            }
         }
 
     }
@@ -1437,7 +1593,7 @@ public class Association
 
     }
 
-    public void writeDimseRQ(int pcid, DicomObject cmd, DataWriter data, 
+    public void invoke(int pcid, DicomObject cmd, DataWriter data, 
             DimseRSPHandler rspHandler)
     throws IOException
     {
@@ -1465,7 +1621,10 @@ public class Association
     {
         synchronized (rspHandlerForMsgId)
         {
-            return (DimseRSPHandler) rspHandlerForMsgId.remove(msgId);
+            DimseRSPHandler tmp = 
+                    (DimseRSPHandler) rspHandlerForMsgId.remove(msgId);
+            rspHandlerForMsgId.notifyAll();
+            return tmp;
         }
     }
 
@@ -1481,6 +1640,26 @@ public class Association
     {
         // TODO Auto-generated method stub
         
+    }
+
+    public DimseRSP invoke(int pcid, DicomObject cmd, DataWriter dw)
+    throws IOException
+    {
+        DimseRSP rsp = new DimseRSP();
+        invoke(pcid, cmd, dw, rsp);
+        return rsp;
+    }
+
+    public void release(boolean waitForRSP) throws InterruptedException
+    {
+        if (waitForRSP && !rspHandlerForMsgId.isEmpty()) {
+            synchronized (rspHandlerForMsgId)
+            {
+                while (!rspHandlerForMsgId.isEmpty())
+                    wait();
+            }
+        }
+        write(new AReleaseRQ());
     }
 
 }

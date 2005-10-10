@@ -97,4 +97,154 @@ public class DULProtocolProvider implements ProtocolProvider
         handler.setAssociationRequestTimeout(timeout);
     }
 
+    public final long getAssociationAcceptTimeout()
+    {
+        return handler.getAssociationAcceptTimeout();
+    }
+
+    public final void setAssociationAcceptTimeout(long timeout)
+    {
+        handler.setAssociationAcceptTimeout(timeout);
+    }
+
+    public final long getReleaseResponseTimeout()
+    {
+        return handler.getReleaseResponseTimeout();
+    }
+
+    public final void setReleaseResponseTimeout(long timeout)
+    {
+        handler.setReleaseResponseTimeout(timeout);
+    }
+
+    public final long getSocketCloseDelay()
+    {
+        return handler.getSocketCloseDelay();
+    }
+
+    public final void getSocketCloseDelay(long socketCloseDelay)
+    {
+        handler.setSocketCloseDelay(socketCloseDelay);
+    }
+
+    public final int getIdleTime()
+    {
+        return handler.getIdleTime();
+    }
+
+    public final void setIdleTime(int idleTime)
+    {
+        handler.setIdleTime(idleTime);
+    }
+
+    public final int getPipeSize()
+    {
+        return handler.getPipeSize();
+    }
+
+    public final void setPipeSize(int pipeSize)
+    {
+        handler.setPipeSize(pipeSize);
+    }
+
+    public int getWriteTimeout()
+    {
+        return handler.getWriteTimeout();        
+    }
+
+    public void setWriteTimeout(int timeout)
+    {
+        handler.setWriteTimeout(timeout);        
+    }
+
+    public int getReceiveBufferSize()
+    {
+        return handler.getReceiveBufferSize();        
+    }
+
+    public void setReceiveBufferSize(int receiveBufferSize)
+    {
+        handler.setReceiveBufferSize(receiveBufferSize);        
+    }
+
+    public int getSendBufferSize()
+    {
+        return handler.getSendBufferSize();        
+    }
+
+    public void setSendBufferSize(int sendBufferSize)
+    {
+        handler.setSendBufferSize(sendBufferSize);        
+    }
+
+    public int getSessionReceiveBufferSize()
+    {
+        return handler.getSessionReceiveBufferSize();        
+    }
+
+    public void setSessionReceiveBufferSize(int sessionReceiveBufferSize)
+    {
+        handler.setSessionReceiveBufferSize(sessionReceiveBufferSize);        
+    }
+
+    public int getSoLinger()
+    {
+        return handler.getSoLinger();        
+    }
+
+    public void setSoLinger(int soLinger)
+    {
+        handler.setSoLinger(soLinger);        
+    }
+
+    public int getTrafficClass()
+    {
+        return handler.getTrafficClass();        
+    }
+
+    public void setTrafficClass(int trafficClass)
+    {
+        handler.setTrafficClass(trafficClass);        
+    }
+
+    public boolean getOOBInline()
+    {
+        return handler.getOOBInline();        
+    }
+
+    public void setOOBInline(boolean oobInline)
+    {
+        handler.setOOBInline(oobInline);        
+    }
+
+    public boolean getKeepAlive()
+    {
+        return handler.getKeepAlive();        
+    }
+
+    public void setKeepAlive(boolean keepAlive)
+    {
+        handler.setKeepAlive(keepAlive);        
+    }
+
+    public boolean getTcpNoDelay()
+    {
+        return handler.getTcpNoDelay();        
+    }
+
+    public void setTcpNoDelay(boolean tcpNoDelay)
+    {
+        handler.setTcpNoDelay(tcpNoDelay);        
+    }
+
+    public boolean getReuseAddress()
+    {
+        return handler.getReuseAddress();        
+    }
+
+    public void setReuseAddress(boolean reuseAddress)
+    {
+        handler.setReuseAddress(reuseAddress);        
+    }
+
 }

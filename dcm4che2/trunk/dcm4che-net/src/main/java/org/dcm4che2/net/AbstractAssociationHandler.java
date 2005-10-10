@@ -65,10 +65,24 @@ abstract class AbstractAssociationHandler implements AssociationHandler
         return serviceRegistry;
     }
 
-    public synchronized void onAReleaseRQ(Association as, AReleaseRQ rq)
-    {
-        // finish onDIMSE, before sending release response
-        as.write(new AReleaseRP());
+    public void onAReleaseRQ(Association as, AReleaseRQ rq)
+    {        
+        synchronized (as)
+        {
+            // wait for receiving A-RELEASE RP in case of release collision
+            while (as.getState() == Association.STA10)
+                try
+                {
+                    as.wait();
+                } catch (InterruptedException e)
+                {
+                }
+        }
+        synchronized (this)
+        {
+            // finish onDIMSE, before sending release response
+            as.write(new AReleaseRP());
+        }
     }
 
     public synchronized void onDIMSE(Association as, int pcid,

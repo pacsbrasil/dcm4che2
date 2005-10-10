@@ -38,22 +38,14 @@
 
 package org.dcm4che2.net;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
-import org.dcm4che2.net.pdu.AAbort;
-import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.AReleaseRP;
-import org.dcm4che2.net.pdu.AReleaseRQ;
 import org.dcm4che2.net.pdu.PresentationContext;
-import org.dcm4che2.net.service.DicomServiceRegistry;
 
 /**
  * (<strong>Entry Point</strong>) Starts SumUp client.
@@ -83,67 +75,10 @@ public class Client
         return aarq;
     }
 
-    private static AssociationHandler handler = new AbstractAssociationHandler(new DicomServiceRegistry())
-    {
-
-        public void onOpened(Association a)
-        {
-            a.write(makeAARQ());
-        }
-
-        public void onAAssociateRQ(Association as, AAssociateRQ rq)
-        {
-            // TODO Auto-generated method stub
-            
-        }
-
-        public void onAAssociateAC(Association as, AAssociateAC ac)
-        {
-           try
-        {
-            as.writeDimseRQ(PCID, CommandFactory.newCEchoRQ(as.nextMessageID()), null, new DimseRSPHandler(){
-
-                public void onDimseRSP(Association a, int pcid, DicomObject cmd, InputStream dataStream)
-                {
-                    a.write(new AReleaseRQ());                    
-                }});
-        } catch (IOException e)
-        {
-            // already handled by as.writeDimseRQ;
-        }
-            
-        }
-
-        public void onAAssociateRJ(Association as, AAssociateRJ rj)
-        {
-            // TODO Auto-generated method stub
-            
-        }
-
-        public void onAReleaseRP(Association as, AReleaseRP rp)
-        {
-            // TODO Auto-generated method stub
-            
-        }
-
-        public void onAbort(Association as, AAbort abort)
-        {
-            // TODO Auto-generated method stub
-            
-        }
-
-        public void onClosed(Association association)
-        {
-            // TODO Auto-generated method stub
-            
-        }
-
-    };
-
     public static void main(String[] args) throws Throwable
     {
-        IoThreadPoolFilter ioThreadPoolFilter = new IoThreadPoolFilter();
-        ProtocolThreadPoolFilter protocolThreadPoolFilter = new ProtocolThreadPoolFilter();
+//        IoThreadPoolFilter ioThreadPoolFilter = new IoThreadPoolFilter();
+//        ProtocolThreadPoolFilter protocolThreadPoolFilter = new ProtocolThreadPoolFilter();
 
 //        assocThreadPool.start();
 //        ioThreadPoolFilter.start();
@@ -152,13 +87,11 @@ public class Client
         AssociationRequestor connector = new AssociationRequestor();
         // connector.setIoThreadPoolFilter(ioThreadPoolFilter);
         // connector.setProtocolThreadPoolFilter(protocolThreadPoolFilter);
-        Association service = connector.connect(handler, makeSocketAddress());
-        System.out.println("Wait for STA1");
-        synchronized (service)
-        {
-            while (service.getState() != Association.STA1)
-                service.wait();
-        }
+        Association a = connector.connect(makeAARQ(), makeSocketAddress());
+        DimseRSP rsp = a.invoke(PCID, CommandFactory.newCEchoRQ(a.nextMessageID()), null);
+        rsp.next();
+        DicomObject cechorsp = rsp.getCommand();
+        a.release(true);
 //        System.out.println("Stop Threads");
 //        ioThreadPoolFilter.stop();
 //        protocolThreadPoolFilter.stop();

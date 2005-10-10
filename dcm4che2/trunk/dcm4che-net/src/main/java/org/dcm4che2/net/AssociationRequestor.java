@@ -43,12 +43,12 @@ import java.net.SocketAddress;
 
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.io.socket.SocketConnector;
-import org.apache.mina.protocol.ProtocolProvider;
 import org.apache.mina.protocol.ProtocolSession;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
 import org.apache.mina.protocol.io.IoProtocolConnector;
+import org.dcm4che2.net.pdu.AAssociateRQ;
 
-public class AssociationRequestor
+public class AssociationRequestor extends AssociationConfig
 {
 
     private final SocketConnector socketIoConnector = new SocketConnector();
@@ -56,14 +56,9 @@ public class AssociationRequestor
     private final IoProtocolConnector connector = new IoProtocolConnector(
             socketIoConnector);
 
-    private final Executor executor;
-
     public AssociationRequestor(Executor executor)
     {
-        if (executor == null)
-            throw new NullPointerException();
-
-        this.executor = executor;
+        super(executor);
     }
 
     public AssociationRequestor()
@@ -97,34 +92,78 @@ public class AssociationRequestor
         }
     }
 
-    public Association connect(AssociationHandler listener,
-            SocketAddress address) throws IOException
+    public Association connect(AssociationHandler handler,
+            SocketAddress address)
+    throws IOException, InterruptedException
     {
-        return connect(listener, address, null, Integer.MAX_VALUE);
+        return connect(handler, address, null, Integer.MAX_VALUE);
     }
 
-    public Association connect(AssociationHandler listener,
+    public Association connect(AssociationHandler handler,
             SocketAddress address, SocketAddress localAddress)
-            throws IOException
+    throws IOException, InterruptedException
     {
-        return connect(listener, address, localAddress, Integer.MAX_VALUE);
+        return connect(handler, address, localAddress, Integer.MAX_VALUE);
     }
 
-    public Association connect(AssociationHandler listener,
-            SocketAddress address, int timeout) throws IOException
+    public Association connect(AssociationHandler handler,
+            SocketAddress address, int timeout)
+    throws IOException, InterruptedException
     {
-        return connect(listener, address, null, timeout);
+        return connect(handler, address, null, timeout);
     }
 
-    public Association connect(AssociationHandler listener,
+    public Association connect(AssociationHandler handler,
             SocketAddress address, SocketAddress localAddress, int timeout)
-            throws IOException
+    throws IOException, InterruptedException
     {
-        ProtocolProvider provider = new DULProtocolProvider(executor,
-                listener, true);
+        DULProtocolProvider provider = new DULProtocolProvider(executor,
+                handler, true);
+        super.configure(provider);
         ProtocolSession session = connector.connect(address, localAddress,
                 timeout, provider);
-        return (Association) session.getAttachment();
+        Association a = (Association) session.getAttachment();
+        synchronized (a)
+        {
+            while (a.getState() == Association.STA4 
+                    || a.getState() == Association.STA5)
+                a.wait();
+        }
+        if (a.getState() == Association.STA6)
+            return a;
+        
+        if (a.getAssociateRJ() != null)
+            throw new AssociateRJException(a.getAssociateRJ());
+        else
+            throw new AbortException(a.getAbort());
     }
 
+    public Association connect(AAssociateRQ aarq,
+            SocketAddress address)
+    throws IOException, InterruptedException
+    {
+        return connect(aarq, address, null, Integer.MAX_VALUE);
+    }
+
+    public Association connect(AAssociateRQ aarq,
+            SocketAddress address, SocketAddress localAddress)
+    throws IOException, InterruptedException
+    {
+        return connect(aarq, address, localAddress, Integer.MAX_VALUE);
+    }
+
+    public Association connect(AAssociateRQ aarq,
+            SocketAddress address, int timeout)
+    throws IOException, InterruptedException
+    {
+        return connect(aarq, address, null, timeout);
+    }
+
+    public Association connect(AAssociateRQ aarq,
+            SocketAddress address, SocketAddress localAddress, int timeout)
+    throws IOException, InterruptedException
+    {
+        AssociationHandler handler = new AssociationRequestorHandler(aarq);
+        return connect(handler, address, localAddress, timeout);
+    }
 }

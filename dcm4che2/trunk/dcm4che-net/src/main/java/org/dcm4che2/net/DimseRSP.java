@@ -38,21 +38,79 @@
 
 package org.dcm4che2.net;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @since Oct 8, 2005
  *
  */
-public interface DimseRSPHandler
+public class DimseRSP extends DimseRSPHandlerAdapter
 {
+    private static class Entry
+    {
+        DicomObject command;
+        DicomObject dataset;
+        Entry next;
+    }
+    
+    private Entry entry = new Entry();
+    private boolean finished;
+    private IOException ex;
+    
+    public DicomObject getCommand()
+    {
+        return entry.command;
+    }
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
+    public DicomObject getDataset()
+    {
+        return entry.dataset;
+    }
 
-    void onClosed(Association association);
+    public synchronized boolean next()
+    throws InterruptedException, IOException
+    {
+        if (entry.next == null) {
+            if (finished)
+                return false;
+            
+            while (entry.next == null && ex == null)
+                wait();
+            
+            if (ex != null)
+                throw ex;
+         }
+        entry = entry.next;
+        return true;
+    }
+
+    protected synchronized void onDimseRSP(Association a, int pcid,
+            DicomObject cmd, DicomObject ds)
+    {
+        Entry last = entry;
+        while (last.next != null)
+            last = last.next;
+        
+        last.next = new Entry();
+        last.command = cmd;
+        last.dataset = ds;
+        finished = !CommandFactory.isPending(cmd);
+        notifyAll();
+     }
+
+    public synchronized void onClosed(Association a)
+    {
+        if (!finished) {
+            if (a.getAbort() != null)
+                ex = new AbortException(a.getAbort());
+            else
+                ex = new ReleasedException();
+        }
+        notifyAll();
+    }
+
 }

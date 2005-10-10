@@ -39,7 +39,6 @@
 package org.dcm4che2.net.pdu;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,6 +47,7 @@ import java.util.LinkedHashMap;
 import org.dcm4che2.data.Implementation;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
+import org.dcm4che2.util.IntHashtable;
 import org.dcm4che2.util.StringUtils;
 
 /**
@@ -75,7 +75,7 @@ public abstract class AAssociateRQAC implements PDU
     private String implVersionName = Implementation.versionName();
     private UserIdentity userIdentity;
     private final ArrayList pcs = new ArrayList();
-    private final BitSet pcids = new BitSet(128);
+    private final IntHashtable pcidMap = new IntHashtable();
     private final LinkedHashMap roleSelMap = new LinkedHashMap();
     private final LinkedHashMap extNegMap = new LinkedHashMap();
     private final LinkedHashMap commonExtNegMap = new LinkedHashMap();
@@ -206,13 +206,7 @@ public abstract class AAssociateRQAC implements PDU
 
     public PresentationContext getPresentationContext(int pcid)
     {
-        for (Iterator iter = pcs.iterator(); iter.hasNext();)
-        {
-            PresentationContext pc = (PresentationContext) iter.next();
-            if (pc.getPCID() == pcid)
-                return pc;
-        }
-        return null;
+        return (PresentationContext) pcidMap.get(pcid);
     }
 
     public void addPresentationContext(PresentationContext pc)
@@ -222,22 +216,21 @@ public abstract class AAssociateRQAC implements PDU
         if (pcs.size() >= 128)
             throw new IllegalStateException(
                     "Maximal Number (128) of Presentation Context obtained.");
-        assignPCID(pc);
-        pcs.add(pc);
-    }
-
-    private void assignPCID(PresentationContext pc)
-    {
         int pcid = pc.getPCID();
         if (pcid == 0)
         {
-            int i = pcs.size();
-            while (pcids.get(i))
-                i = (i + 1) & 0x7f;
-            pcid = i * 2 + 1;
+            pcid = pcs.size() * 2 + 1;
+            while (pcidMap.get(pcid) != null)
+                pcid = (pcid + 2) & 0xff;
             pc.setPCID(pcid);
+        } else
+        {
+            PresentationContext prev = (PresentationContext) pcidMap.remove(pcid);
+            if (prev != null)
+                pcs.remove(prev);
         }
-        pcids.set(pcid / 2);
+        pcidMap.put(pcid, pc);
+        pcs.add(pc);
     }
 
     public boolean removePresentationContext(PresentationContext pc)
@@ -245,7 +238,7 @@ public abstract class AAssociateRQAC implements PDU
         if (!pcs.remove(pc))
             return false;
 
-        pcids.clear(pc.getPCID() / 2);
+        pcidMap.remove(pc.getPCID());
         return true;
     }
 

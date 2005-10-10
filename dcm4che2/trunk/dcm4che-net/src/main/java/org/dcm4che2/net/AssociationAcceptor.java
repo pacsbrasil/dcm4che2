@@ -53,22 +53,17 @@ import org.apache.mina.protocol.io.IoProtocolAcceptor;
  * @since Sep 24, 2005
  *
  */
-public class AssociationAcceptor {
+public class AssociationAcceptor extends AssociationConfig {
     
     static final Logger log = Logger.getLogger(AssociationAcceptor.class);
 
-    private final Executor executor;
-    private final SocketAcceptor socketIoAcceptor = new SocketAcceptor();
-    private final IoProtocolAcceptor acceptor = 
+    protected final SocketAcceptor socketIoAcceptor = new SocketAcceptor();
+    protected final IoProtocolAcceptor acceptor = 
             new IoProtocolAcceptor(socketIoAcceptor );
-    private long associationRequestTimeout = 1000;
-
+    
     public AssociationAcceptor(Executor executor)
     {
-        if (executor == null)
-            throw new NullPointerException();
-
-        this.executor = executor;
+        super(executor);
     }
 
     public AssociationAcceptor()
@@ -76,14 +71,6 @@ public class AssociationAcceptor {
         this(new NewThreadExecutor("Association"));
     }
 
-    public final long getAssociationRequestTimeout() {
-        return associationRequestTimeout;
-    }
-
-    public final void setAssociationRequestTimeout(long timeout) {
-        this.associationRequestTimeout = timeout;
-    }
-    
     public void setIoThreadPoolFilter(IoThreadPoolFilter ioThreadPoolFilter) {
         if (ioThreadPoolFilter != null) {
             socketIoAcceptor.getFilterChain().addFirst("threadPool",
@@ -111,11 +98,11 @@ public class AssociationAcceptor {
         socketIoAcceptor.setBacklog(defaultBacklog);
     }
     
-    public void bind(AssociationHandler listener, SocketAddress address)
+    public void bind(AssociationHandler handler, SocketAddress address)
     throws IOException {
         DULProtocolProvider provider =
-                new DULProtocolProvider(executor, listener, false);
-        provider.setAssociationRequestTimeout(associationRequestTimeout);
+                new DULProtocolProvider(executor, handler, false);
+        super.configure(provider);
         log.debug("Start Acceptor listening on " + address);
         acceptor.bind(address, provider);
     }

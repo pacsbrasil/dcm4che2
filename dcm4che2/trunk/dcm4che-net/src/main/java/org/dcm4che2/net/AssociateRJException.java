@@ -38,21 +38,31 @@
 
 package org.dcm4che2.net;
 
-import java.io.InputStream;
+import java.io.IOException;
 
-import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @since Oct 8, 2005
  *
  */
-public interface DimseRSPHandler
+public class AssociateRJException extends IOException
 {
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
+    private static final long serialVersionUID = 3257568386555852083L;
 
-    void onClosed(Association association);
+    private final AAssociateRJ aarj;
+
+    public AssociateRJException(AAssociateRJ aarj)
+    {
+        super(aarj.toString());
+        this.aarj = aarj;
+    }
+
+    public final AAssociateRJ getAAssociateRJ()
+    {
+        return aarj;
+    }
 }

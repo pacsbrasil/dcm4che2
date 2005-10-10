@@ -38,21 +38,29 @@
 
 package org.dcm4che2.net;
 
-import java.io.InputStream;
-
-import org.dcm4che2.data.DicomObject;
+import java.io.IOException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @since Oct 9, 2005
  *
  */
-public interface DimseRSPHandler
+public class ReleasedException extends IOException
 {
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
+    private static final long serialVersionUID = 3546929077941449783L;
 
-    void onClosed(Association association);
+    public ReleasedException()
+    {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+    public ReleasedException(String s)
+    {
+        super(s);
+        // TODO Auto-generated constructor stub
+    }
+
 }

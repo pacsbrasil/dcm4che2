@@ -38,21 +38,65 @@
 
 package org.dcm4che2.net;
 
-import java.io.InputStream;
-
-import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.net.pdu.AAssociateAC;
+import org.dcm4che2.net.pdu.AAssociateRJ;
+import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.AReleaseRP;
+import org.dcm4che2.net.service.DicomServiceRegistry;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @since Oct 8, 2005
  *
  */
-public interface DimseRSPHandler
+public class AssociationRequestorHandler extends AbstractAssociationHandler
 {
+    private final AAssociateRQ aarq;
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
+    public AssociationRequestorHandler(AAssociateRQ aarq)
+    {
+        this(aarq, new DicomServiceRegistry());
+    }
 
-    void onClosed(Association association);
+    public AssociationRequestorHandler(AAssociateRQ aarq,
+            DicomServiceRegistry registry)
+    {
+        super(registry);
+        if (aarq == null)
+            throw new NullPointerException("aarq");
+        
+        this.aarq = aarq;
+    }
+
+    public void onOpened(Association a)
+    {
+        a.write(aarq);
+    }
+
+    public void onAAssociateRQ(Association a, AAssociateRQ rq)
+    {
+    }
+
+    public void onAAssociateAC(Association a, AAssociateAC ac)
+    {
+    }
+
+    public void onAAssociateRJ(Association a, AAssociateRJ rj)
+    {
+    }
+
+    public void onAReleaseRP(Association a, AReleaseRP rp)
+    {
+    }
+
+    public void onAbort(Association a, AAbort abort)
+    {
+    }
+
+    public void onClosed(Association a)
+    {
+    }
+
 }

@@ -41,18 +41,81 @@ package org.dcm4che2.net;
 import java.io.InputStream;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.net.pdu.AAssociateAC;
+import org.dcm4che2.net.pdu.AAssociateRJ;
+import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.AReleaseRP;
+import org.dcm4che2.net.pdu.AReleaseRQ;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @since Oct 9, 2005
  *
  */
-public interface DimseRSPHandler
+public class AssociationHandlerFilter implements AssociationHandler
 {
+    private final AssociationHandler handler;
+    
+    public AssociationHandlerFilter(AssociationHandler handler)
+    {
+        if (handler == null)
+            throw new NullPointerException();
+        
+        this.handler = handler;
+    }
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
 
-    void onClosed(Association association);
+    public final AssociationHandler getHandler()
+    {
+        return handler;
+    }
+    
+    public void onAAssociateAC(Association as, AAssociateAC ac)
+    {
+        handler.onAAssociateAC(as, ac);
+    }
+
+    public void onAAssociateRJ(Association as, AAssociateRJ rj)
+    {
+        handler.onAAssociateRJ(as, rj);
+    }
+
+    public void onAAssociateRQ(Association as, AAssociateRQ rq)
+    {
+        handler.onAAssociateRQ(as, rq);
+    }
+
+    public void onAReleaseRP(Association as, AReleaseRP rp)
+    {
+        handler.onAReleaseRP(as, rp);
+    }
+
+    public void onAReleaseRQ(Association as, AReleaseRQ rq)
+    {
+        handler.onAReleaseRQ(as, rq);
+    }
+
+    public void onAbort(Association as, AAbort abort)
+    {
+        handler.onAbort(as, abort);
+    }
+
+    public void onClosed(Association association)
+    {
+        handler.onClosed(association);
+    }
+
+    public void onDIMSE(Association as, int pcid, DicomObject command,
+            InputStream dataStream)
+    {
+        handler.onDIMSE(as, pcid, command, dataStream);
+    }
+
+    public void onOpened(Association as)
+    {
+        handler.onOpened(as);
+    }
+
 }

@@ -45,14 +45,32 @@ import org.dcm4che2.data.DicomObject;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @since Oct 9, 2005
  *
  */
-public interface DimseRSPHandler
+public class DimseRSPHandlerAdapter implements DimseRSPHandler
 {
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
+    public void onDimseRSP(Association a, int pcid, DicomObject cmd,
+            InputStream dataStream)
+    {
+        DicomObject ds = null;
+        if (dataStream != null)
+        {
+            ds = a.readDicomObject(dataStream, a.getTransferSyntax(pcid));
+            if (ds == null)
+                return;
+        }
+        onDimseRSP(a, pcid, cmd, ds);        
+    }
+    
+    protected void onDimseRSP(Association a, int pcid, DicomObject cmd,
+            DicomObject ds)
+    {
+    }
 
-    void onClosed(Association association);
+    public void onClosed(Association a)
+    {
+    }
+
 }
