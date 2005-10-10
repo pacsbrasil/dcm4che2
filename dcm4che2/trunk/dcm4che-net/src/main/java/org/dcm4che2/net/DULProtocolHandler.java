@@ -65,7 +65,8 @@ public class DULProtocolHandler implements ProtocolHandler
     private long associationAcceptTimeout = 10000L;
     private long releaseResponseTimeout = 10000L;
     private long socketCloseDelay = 100L;
-    private int pipeSize = 1024;
+    private int pdvPipeBufferSize = 1024;
+    private boolean packPDV = true;
     private int idleTime = 0;
     private int writeTimeout = 0;
     private int receiveBufferSize;
@@ -107,14 +108,24 @@ public class DULProtocolHandler implements ProtocolHandler
         this.associationAcceptTimeout = timeout;
     }
 
-    public final int getPipeSize()
+    public final int getPDVPipeBufferSize()
     {
-        return pipeSize;
+        return pdvPipeBufferSize;
     }
 
-    public final void setPipeSize(int pipeSize)
+    public final void setPDVPipeBufferSize(int bufferSize)
     {
-        this.pipeSize = pipeSize;
+        this.pdvPipeBufferSize = bufferSize;
+    }
+
+    public final boolean isPackPDV()
+    {
+        return packPDV;
+    }
+
+    public final void setPackPDV(boolean packPDV)
+    {
+        this.packPDV = packPDV;
     }
 
     public final long getReleaseResponseTimeout()
@@ -347,7 +358,8 @@ public class DULProtocolHandler implements ProtocolHandler
         a.setAssociationRequestTimeout(associationRequestTimeout);
         a.setAssociationAcceptTimeout(associationAcceptTimeout);
         a.setReleaseResponseTimeout(releaseResponseTimeout);
-        a.setPipeSize(pipeSize);
+        a.setPDVPipeBufferSize(pdvPipeBufferSize);
+        a.setPackPDV(packPDV);
     }
 
     public void sessionOpened(ProtocolSession session) throws Exception

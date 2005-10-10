@@ -110,7 +110,8 @@ public class Association
     private long associationAcceptTimeout = 10000L;
     private long releaseResponseTimeout = 10000L;
     private long socketCloseDelay = 100L;
-    private int pipeSize = 1024;
+    private int pdvPipeBufferSize = 1024;
+    private boolean packPDV = true;
 
     private PipedOutputStream pipedOut;
     private PipedInputStream pipedIn;
@@ -124,7 +125,6 @@ public class Association
     private IntHashtable cancelHandlerForMsgId = new IntHashtable();
     
     private int limitOutgoingPDULength = 0x10000;
-    private boolean packPDV = true;
 
     Association(Executor executor, AssociationHandler handler,
             boolean requestor, ProtocolSession session)
@@ -194,14 +194,24 @@ public class Association
         this.socketCloseDelay = socketCloseDelay;
     }
 
-    public final int getPipeSize()
+    public final int getPDVPipeBufferSize()
     {
-        return pipeSize;
+        return pdvPipeBufferSize;
     }
 
-    public final void setPipeSize(int pipeSize)
+    public final void setPDVPipeBufferSize(int bufferSize)
     {
-        this.pipeSize = pipeSize;
+        this.pdvPipeBufferSize = bufferSize;
+    }
+
+    public final boolean isPackPDV()
+    {
+        return packPDV;
+    }
+
+    public final void setPackPDV(boolean packPDV)
+    {
+        this.packPDV = packPDV;
     }
 
     public final State getState()
@@ -680,7 +690,7 @@ public class Association
             if (pipedOut == null)
             {
                 pipedOut = new PipedOutputStream();
-                pipedIn = new PipedInputStream(pipedOut, pipeSize);
+                pipedIn = new PipedInputStream(pipedOut, pdvPipeBufferSize);
                 executor.execute(new Runnable(){
                     public void run()
                     {

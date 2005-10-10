@@ -52,7 +52,8 @@ class AssociationConfig
     protected long associationAcceptTimeout = 10000L;
     protected long releaseResponseTimeout = 10000L;
     protected long socketCloseDelay = 100L;
-    protected int pipeSize = 1024;
+    protected int pdvPipeBufferSize = 1024;
+    protected boolean packPDV = true;
     protected int idleTime = 0;
     protected int writeTimeout = 0;
     protected int receiveBufferSize;
@@ -93,14 +94,24 @@ class AssociationConfig
         this.associationAcceptTimeout = timeout;
     }
 
-    public final int getPipeSize()
+    public final int getPDVPipeBufferSize()
     {
-        return pipeSize;
+        return pdvPipeBufferSize;
     }
 
-    public final void setPipeSize(int pipeSize)
+    public final void setPDVPipeBufferSize(int bufferSize)
     {
-        this.pipeSize = pipeSize;
+        this.pdvPipeBufferSize = bufferSize;
+    }
+
+    public final boolean isPackPDV()
+    {
+        return packPDV;
+    }
+
+    public final void setPackPDV(boolean packPDV)
+    {
+        this.packPDV = packPDV;
     }
 
     public final long getReleaseResponseTimeout()
@@ -239,7 +250,8 @@ class AssociationConfig
         provider.setAssociationAcceptTimeout(associationAcceptTimeout);
         provider.setReleaseResponseTimeout(releaseResponseTimeout);
         provider.setIdleTime(idleTime);
-        provider.setPipeSize(pipeSize);
+        provider.setPDVPipeBufferSize(pdvPipeBufferSize);
+        provider.setPackPDV(packPDV);
         provider.setWriteTimeout(writeTimeout);
         provider.setReceiveBufferSize(receiveBufferSize);
         provider.setSendBufferSize(sendBufferSize);

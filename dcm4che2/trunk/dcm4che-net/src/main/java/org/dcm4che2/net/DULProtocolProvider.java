@@ -137,16 +137,26 @@ public class DULProtocolProvider implements ProtocolProvider
         handler.setIdleTime(idleTime);
     }
 
-    public final int getPipeSize()
+    public final int getPDVPipeBufferSize()
     {
-        return handler.getPipeSize();
+        return handler.getPDVPipeBufferSize();
     }
 
-    public final void setPipeSize(int pipeSize)
+    public final void setPDVPipeBufferSize(int bufferSize)
     {
-        handler.setPipeSize(pipeSize);
+        handler.setPDVPipeBufferSize(bufferSize);
     }
 
+    public boolean getPackPDV()
+    {
+        return handler.isPackPDV();        
+    }
+
+    public void setPackPDV(boolean packPDV)
+    {
+        handler.setPackPDV(packPDV);        
+    }
+    
     public int getWriteTimeout()
     {
         return handler.getWriteTimeout();        
