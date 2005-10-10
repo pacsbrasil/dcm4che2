@@ -63,22 +63,22 @@ public abstract class AAssociateRQAC implements PDU
     private static final String DEF_CALLED_AET = "ANONYMOUS";
     private static final String DEF_CALLING_AET = "ANONYMOUS";
 
-    private byte[] reservedBytes = new byte[32];
-    private int protocolVersion = 1;
-    private int maxPDULength = DEF_MAX_PDU_LENGTH;
-    private int maxOpsInvoked = 1;
-    private int maxOpsPerformed = 1;
-    private String calledAET = DEF_CALLED_AET;
-    private String callingAET = DEF_CALLING_AET;
-    private String applicationContext = UID.DICOMApplicationContextName;
-    private String implClassUID = Implementation.classUID();
-    private String implVersionName = Implementation.versionName();
-    private UserIdentity userIdentity;
-    private final ArrayList pcs = new ArrayList();
-    private final IntHashtable pcidMap = new IntHashtable();
-    private final LinkedHashMap roleSelMap = new LinkedHashMap();
-    private final LinkedHashMap extNegMap = new LinkedHashMap();
-    private final LinkedHashMap commonExtNegMap = new LinkedHashMap();
+    protected byte[] reservedBytes = new byte[32];
+    protected int protocolVersion = 1;
+    protected int maxPDULength = DEF_MAX_PDU_LENGTH;
+    protected int maxOpsInvoked = 1;
+    protected int maxOpsPerformed = 1;
+    protected String calledAET = DEF_CALLED_AET;
+    protected String callingAET = DEF_CALLING_AET;
+    protected String applicationContext = UID.DICOMApplicationContextName;
+    protected String implClassUID = Implementation.classUID();
+    protected String implVersionName = Implementation.versionName();
+    protected UserIdentity userIdentity;
+    protected final ArrayList pcs = new ArrayList();
+    protected final IntHashtable pcidMap = new IntHashtable();
+    protected final LinkedHashMap roleSelMap = new LinkedHashMap();
+    protected final LinkedHashMap extNegMap = new LinkedHashMap();
+    protected final LinkedHashMap commonExtNegMap = new LinkedHashMap();
 
 
     public final int getProtocolVersion()
@@ -209,31 +209,19 @@ public abstract class AAssociateRQAC implements PDU
         return (PresentationContext) pcidMap.get(pcid);
     }
 
-    public void addPresentationContext(PresentationContext pc)
+    public synchronized void addPresentationContext(PresentationContext pc)
     {
         if (pc == null)
             throw new NullPointerException();
-        if (pcs.size() >= 128)
-            throw new IllegalStateException(
-                    "Maximal Number (128) of Presentation Context obtained.");
         int pcid = pc.getPCID();
-        if (pcid == 0)
-        {
-            pcid = pcs.size() * 2 + 1;
-            while (pcidMap.get(pcid) != null)
-                pcid = (pcid + 2) & 0xff;
-            pc.setPCID(pcid);
-        } else
-        {
-            PresentationContext prev = (PresentationContext) pcidMap.remove(pcid);
-            if (prev != null)
-                pcs.remove(prev);
-        }
+        PresentationContext prev = (PresentationContext) pcidMap.remove(pcid);
+        if (prev != null)
+            pcs.remove(prev);
         pcidMap.put(pcid, pc);
         pcs.add(pc);
     }
 
-    public boolean removePresentationContext(PresentationContext pc)
+    public synchronized boolean removePresentationContext(PresentationContext pc)
     {
         if (!pcs.remove(pc))
             return false;

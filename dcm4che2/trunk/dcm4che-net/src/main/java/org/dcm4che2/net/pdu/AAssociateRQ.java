@@ -45,10 +45,21 @@ package org.dcm4che2.net.pdu;
  */
 public class AAssociateRQ extends AAssociateRQAC
 {
+    private int pcid = -1;
 
     public String toString()
     {
         return super.toString("A-ASSOCIATE-RQ");
+    }
+    
+    public synchronized int nextPCID() {
+        if (pcs.size() >= 128)
+            throw new IllegalStateException(
+                    "Maximal Number (128) of Presentation Context obtained.");
+        do {
+            pcid = (pcid + 2) & 0xff;
+        } while (pcidMap.get(pcid) != null);
+        return pcid;
     }
 
 }
