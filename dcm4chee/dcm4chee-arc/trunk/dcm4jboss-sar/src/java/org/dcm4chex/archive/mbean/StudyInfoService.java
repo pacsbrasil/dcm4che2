@@ -170,7 +170,7 @@ public class StudyInfoService extends ServiceMBeanSupport {
 						continue;
 
 					// referenced series sequence
-					DcmElement rsq = pkd.ds.putSQ(Tags.RefSeriesSeq);
+					DcmElement rsq = skd.ds.putSQ(Tags.RefSeriesSeq);
 					for (Iterator rit = skd.seq.values().iterator(); rit
 							.hasNext();) {
 						WadoQueryCmd.KeyData rkd = (WadoQueryCmd.KeyData) rit
