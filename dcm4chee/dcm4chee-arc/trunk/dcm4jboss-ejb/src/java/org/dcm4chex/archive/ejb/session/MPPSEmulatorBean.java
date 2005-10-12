@@ -188,7 +188,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
         final Dataset seriesAttrs = series.getAttributes(false);
         final String key = md + suid;
         List list = (List) mppsMap.get(key);
-        if (list != null) {
+        if (list == null) {
             list = new ArrayList();
             mppsMap.put(key, list);
             Dataset mpps = DcmObjectFactory.getInstance().newDataset();
