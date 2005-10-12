@@ -411,6 +411,20 @@ public abstract class StorageBean implements SessionBean {
         }
         return true;
     }
+    /**
+     * @ejb.interface-method
+     */
+    public boolean unhide(String iuid) throws FinderException {
+        InstanceLocal il = instHome.findBySopIuid(iuid);
+        boolean wasHidden = il.getHiddenSafe();
+        il.setHidden(false);
+        SeriesLocal sl = il.getSeries();
+        sl.setHidden(false);
+        StudyLocal stl = sl.getStudy();
+        stl.setHidden(false);
+		stl.getPatient().setHidden(false);
+		return wasHidden;
+    }
 
     /**
      * @ejb.interface-method
