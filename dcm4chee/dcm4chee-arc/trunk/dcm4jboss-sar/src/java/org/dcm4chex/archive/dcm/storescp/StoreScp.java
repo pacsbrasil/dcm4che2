@@ -52,6 +52,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -113,6 +114,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final Logger log;
 
     private int bufferSize = 512;
+
+	private boolean studyDateInFilePath = false;
+
+	private boolean yearInFilePath = true;
+
+	private boolean monthInFilePath = true;
+
+	private boolean dayInFilePath = true;
+
+	private boolean hourInFilePath = false;
 	
 	private boolean acceptMissingPatientID = true;
 
@@ -206,7 +217,47 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 .split(aets, '\\')));
     }
 
-    public final boolean isStoreDuplicateIfDiffHost() {
+	public final boolean isStudyDateInFilePath() {
+		return studyDateInFilePath;
+	}
+
+	public final void setStudyDateInFilePath(boolean studyDateInFilePath) {
+		this.studyDateInFilePath = studyDateInFilePath;
+	}
+
+	public final boolean isYearInFilePath() {
+		return yearInFilePath;
+	}
+
+	public final void setYearInFilePath(boolean yearInFilePath) {
+		this.yearInFilePath = yearInFilePath;
+	}
+
+	public final boolean isMonthInFilePath() {
+		return monthInFilePath;
+	}
+
+	public final void setMonthInFilePath(boolean monthInFilePath) {
+		this.monthInFilePath = monthInFilePath;
+	}
+
+    public final boolean isDayInFilePath() {
+		return dayInFilePath;
+	}
+
+	public final void setDayInFilePath(boolean dayInFilePath) {
+		this.dayInFilePath = dayInFilePath;
+	}
+
+	public final boolean isHourInFilePath() {
+		return hourInFilePath;
+	}
+
+	public final void setHourInFilePath(boolean hourInFilePath) {
+		this.hourInFilePath = hourInFilePath;
+	}
+
+	public final boolean isStoreDuplicateIfDiffHost() {
         return storeDuplicateIfDiffHost;
     }
 
@@ -456,14 +507,33 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private File makeFile(File basedir, Dataset ds) throws IOException {
-        Calendar today = Calendar.getInstance();
-        File dir = new File(basedir, String.valueOf(today.get(Calendar.YEAR))
-                + File.separator + toDec(today.get(Calendar.MONTH) + 1)
-                + File.separator + toDec(today.get(Calendar.DAY_OF_MONTH))
-                + File.separator
-                + toHex(ds.getString(Tags.StudyInstanceUID).hashCode())
-                + File.separator
-                + toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
+        Calendar date = Calendar.getInstance();
+		if (studyDateInFilePath) {
+			Date studyDate = ds.getDate(Tags.StudyDate);
+			if (studyDate != null)
+				date.setTime(studyDate);
+		}
+		StringBuffer filePath = new StringBuffer();
+		if (yearInFilePath) {
+			filePath.append(String.valueOf(date.get(Calendar.YEAR)));
+			filePath.append(File.separatorChar);
+		}
+		if (monthInFilePath) {
+			filePath.append(String.valueOf(date.get(Calendar.MONTH) + 1));
+			filePath.append(File.separatorChar);
+		}
+		if (dayInFilePath) {
+			filePath.append(String.valueOf(date.get(Calendar.DAY_OF_MONTH)));
+			filePath.append(File.separatorChar);
+		}
+		if (hourInFilePath) {
+			filePath.append(String.valueOf(date.get(Calendar.HOUR_OF_DAY)));
+			filePath.append(File.separatorChar);
+		}
+		filePath.append(toHex(ds.getString(Tags.StudyInstanceUID).hashCode()));
+		filePath.append(File.separatorChar);
+		filePath.append(toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
+        File dir = new File(basedir, filePath.toString());
         if (!dir.exists()) {
             dir.mkdirs();
         }

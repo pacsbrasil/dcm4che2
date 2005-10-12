@@ -117,6 +117,46 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
 
+    public final boolean isStudyDateInFilePath() {
+		return scp.isStudyDateInFilePath();
+	}
+
+	public final void setStudyDateInFilePath(boolean enable) {
+		scp.setStudyDateInFilePath(enable);
+	}
+
+    public final boolean isYearInFilePath() {
+		return scp.isYearInFilePath();
+	}
+
+	public final void setYearInFilePath(boolean enable) {
+		scp.setYearInFilePath(enable);
+	}
+
+    public final boolean isMonthInFilePath() {
+		return scp.isMonthInFilePath();
+	}
+
+	public final void setMonthInFilePath(boolean enable) {
+		scp.setMonthInFilePath(enable);
+	}
+
+    public final boolean isDayInFilePath() {
+		return scp.isDayInFilePath();
+	}
+
+	public final void setDayInFilePath(boolean enable) {
+		scp.setDayInFilePath(enable);
+	}
+
+    public final boolean isHourInFilePath() {
+		return scp.isHourInFilePath();
+	}
+
+	public final void setHourInFilePath(boolean enable) {
+		scp.setHourInFilePath(enable);
+	}
+
     public final boolean isAcceptMissingPatientID() {
 		return scp.isAcceptMissingPatientID();
 	}
