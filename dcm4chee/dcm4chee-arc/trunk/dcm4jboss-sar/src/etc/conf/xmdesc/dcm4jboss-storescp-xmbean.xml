@@ -53,6 +53,57 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isStudyDateInFilePath" setMethod="setStudyDateInFilePath">
+      <description><![CDATA[Use Study Date in received objects to structure directories of the storage file system.
+      Otherwise - or if the received object does not contain a Study Date - the current date, when receiving the object, is used.
+      (s.a. attributes YearInFilePath, MonthInFilePath, DayInFilePath, HourInFilePath)]]>
+      </description>
+      <name>StudyDateInFilePath</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isYearInFilePath" setMethod="setYearInFilePath">
+      <description><![CDATA[Use the year of Study or receiving Date to structure directories of the storage file system.
+      (s.a. attributes StudyDateInFilePath, MonthInFilePath, DayInFilePath, HourInFilePath)]]>
+      </description>
+      <name>YearInFilePath</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isMonthInFilePath" setMethod="setMonthInFilePath">
+      <description><![CDATA[Use the year of Study or receiving Date to structure directories of the storage file system.
+      (s.a. attributes StudyDateInFilePath, YearInFilePath, DayInFilePath, HourInFilePath)]]>
+      </description>
+      <name>MonthInFilePath</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isDayInFilePath" setMethod="setDayInFilePath">
+      <description><![CDATA[Use the year of Study or receiving Date to structure directories of the storage file system.
+      (s.a. attributes StudyDateInFilePath, YearInFilePath, MonthInFilePath, HourInFilePath)]]>
+      </description>
+      <name>DayInFilePath</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isHourInFilePath" setMethod="setHourInFilePath">
+      <description><![CDATA[Use the year of Study or receiving Date to structure directories of the storage file system.
+      (s.a. attributes StudyDateInFilePath, YearInFilePath, MonthInFilePath, DayInFilePath)]]>
+      </description>
+      <name>HourInFilePath</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="isAcceptMissingPatientID" setMethod="setAcceptMissingPatientID">
       <description><![CDATA[Accept storage of objects/images without patient ID]]>
       </description>

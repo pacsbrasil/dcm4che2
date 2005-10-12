@@ -125,5 +125,25 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Send MPPS to Application Entity specified by AET.</description>
+      <name>sendMPPS</name>
+      <parameter>
+        <description>if true, send N-CREATE, otherwise N-SET MPPS message.</description>
+        <name>create</name>
+        <type>boolean</type>
+      </parameter>
+      <parameter>
+        <description>MPPS Dataset</description>
+        <name>mpps</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>Application Entity Title</description>
+        <name>aet</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
    
 </mbean>

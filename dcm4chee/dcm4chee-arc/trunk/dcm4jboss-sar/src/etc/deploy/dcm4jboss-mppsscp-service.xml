@@ -5,8 +5,6 @@
   <mbean code="org.dcm4chex.archive.dcm.mppsscp.MPPSScpService" 
          name="tiani.archive:service=MPPSScp"
          xmbean-dd="xmdesc/dcm4jboss-mppsscp-xmbean.xml">
-    <depends>
-      tiani.archive:service=DcmServer
-    </depends>
+    <depends>tiani.archive:service=DcmServer</depends>
   </mbean>
 </server>

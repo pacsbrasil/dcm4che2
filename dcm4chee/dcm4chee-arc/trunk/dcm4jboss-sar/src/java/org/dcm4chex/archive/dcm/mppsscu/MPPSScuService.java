@@ -271,7 +271,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-    void sendMPPS(boolean create, Dataset mpps, String aet)
+    public void sendMPPS(boolean create, Dataset mpps, String aet)
 			throws DcmServiceException, InterruptedException, IOException,
 			UnkownAETException, SQLException {
 		AEData aeData = new AECmd(aet).getAEData();
@@ -324,6 +324,10 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 								+ aet);
 				break;
 			default:
+				log.error("Received Error Status " 
+						+ Integer.toHexString(status) 
+						+ "H, Error Comment: "
+						+ cmdRsp.getString(Tags.ErrorComment));
 				throw new DcmServiceException(status, cmdRsp
 						.getString(Tags.ErrorComment));
 			}

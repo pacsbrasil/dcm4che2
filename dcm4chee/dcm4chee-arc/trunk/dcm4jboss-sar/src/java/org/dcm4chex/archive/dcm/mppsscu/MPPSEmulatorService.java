@@ -253,24 +253,12 @@ public class MPPSEmulatorService extends TimerSupport implements
 
 	private boolean createMPPS(Dataset mpps) {
         mpps.putCS(Tags.PPSStatus, IN_PROGRESS);
-        int status = sendMPPS(mpps.subSet(MPPS_CREATE_TAGS), calledAET);
-        if (status != 0) {
-            log.error("Failed to create MPPS! Error status:"
-                    + Integer.toHexString(status));
-            return false;
-        }
-        return true;
+        return sendMPPS(true, mpps.subSet(MPPS_CREATE_TAGS), calledAET);
     }
 
     private boolean updateMPPS(Dataset mpps) {
         mpps.putCS(Tags.PPSStatus, COMPLETED);
-        int status = sendMPPS(mpps.subSet(MPPS_SET_TAGS), calledAET);
-        if (status != 0) {
-            log.error("Failed to update MPPS! Error status:"
-                    + Integer.toHexString(status));
-            return false;
-        }
-        return true;
+        return sendMPPS(false, mpps.subSet(MPPS_SET_TAGS), calledAET);
     }
 
     private MPPSEmulatorHome getMPPSEmulatorHome() throws HomeFactoryException {
@@ -278,17 +266,17 @@ public class MPPSEmulatorService extends TimerSupport implements
                 MPPSEmulatorHome.class, MPPSEmulatorHome.JNDI_NAME);
     }
 
-    private int sendMPPS(Dataset mpps, String destination) {
+    private boolean sendMPPS(boolean create, Dataset mpps, String destination) {
         try {
-            Integer status = (Integer) server.invoke(mppsScuServiceName,
-                    "sendMPPS", new Object[] { mpps, destination },
-                    new String[] { Dataset.class.getName(),
+            server.invoke(mppsScuServiceName,
+                    "sendMPPS", new Object[] { Boolean.valueOf(create), mpps, destination },
+                    new String[] { boolean.class.getName(), Dataset.class.getName(),
                             String.class.getName() });
-            return status.intValue();
+            return true;
         } catch (Exception x) {
             log.error("Exception occured in sendMPPS;", x);
         }
-        return -1;
+        return false;
     }
 
     public List findMWLEntries(Dataset ds) {
