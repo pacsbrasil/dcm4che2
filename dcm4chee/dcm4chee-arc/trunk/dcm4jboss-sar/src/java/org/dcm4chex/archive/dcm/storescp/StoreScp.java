@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.ejb.FinderException;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
@@ -290,6 +292,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
+                unhide(iuid);
                 return;
             }
 
@@ -322,6 +325,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 deleteFailedStorage(file);
+                unhide( iuid );
                 return;
             }
 
@@ -359,6 +363,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             deleteFailedStorage(file);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+    
+    private void unhide (String iuid ) throws RemoteException, FinderException, CreateException, HomeFactoryException {
+    	if ( getStorageHome().create().unhide(iuid) ) {
+            log.info("Received Instance[uid=" + iuid
+                    + "] was hidden - changed to be visible");
+    		
+    	}
     }
 
 	private boolean containsLocal(List duplicates) {
