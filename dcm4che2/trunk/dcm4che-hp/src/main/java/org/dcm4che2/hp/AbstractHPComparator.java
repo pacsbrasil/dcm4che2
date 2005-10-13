@@ -63,7 +63,7 @@ public abstract class AbstractHPComparator implements HPComparator {
             throw new IllegalArgumentException(
                     "Missing (0072,0026) Selector Attribute");
         }
-        String privateCreator = sortingOp.getPrivateCreator(
+        String privateCreator = sortingOp.getString(
                 Tag.SelectorAttributePrivateCreator);
         int valueNumber = sortingOp.getInt(Tag.SelectorValueNumber);
         if (valueNumber == 0) {
