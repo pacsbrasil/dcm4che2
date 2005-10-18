@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,40 +38,66 @@
 
 package org.dcm4che2.hp.spi;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.imageio.spi.ServiceRegistry;
+
+import org.dcm4che2.hp.plugins.AlongAxisComparatorSpi;
+import org.dcm4che2.hp.plugins.ByAcqTimeComparatorSpi;
+import org.dcm4che2.hp.plugins.ImagePlaneSelectorSpi;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
- * @since Aug 6, 2005
+ * @version $Reversion$ $Date$
+ * @since Oct 17, 2005
  */
-public abstract class HPCategorySpi
+public class HPRegistry extends ServiceRegistry
 {
 
-    protected String[] categories;
+    private static final HPRegistry registry = new HPRegistry();
 
-    protected HPCategorySpi(String[] categories)
+    private HPRegistry()
     {
-        this.categories = (String[]) categories.clone();
+        super(getInitialCategories());
+        registerStandardSpis();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        registerApplicationClasspathSpis(cl);
     }
 
-    public final String[] getCategories()
+    private static Iterator getInitialCategories()
     {
-        return (String[]) categories.clone();
+        ArrayList l = new ArrayList(2);
+        l.add(HPSelectorSpi.class);
+        l.add(HPComparatorSpi.class);
+        return l.iterator();
     }
 
-    public boolean containsCategory(String category)
+    public static HPRegistry getHPRegistry()
     {
-        return Arrays.asList(categories).contains(category);
+        return registry ;
     }
 
-    public void setProperty(String name, Object value)
+    private void registerStandardSpis()
     {
-        throw new IllegalArgumentException("Unsupported property: " + name);
+        // Hardwire standard SPIs
+        registerServiceProvider(new ImagePlaneSelectorSpi());
+        registerServiceProvider(new AlongAxisComparatorSpi());
+        registerServiceProvider(new ByAcqTimeComparatorSpi());
     }
 
-    public Object getProperty(String name)
+    public void registerApplicationClasspathSpis(ClassLoader cl)
     {
-        throw new IllegalArgumentException("Unsupported property: " + name);
+        Iterator categories = getCategories();
+        while (categories.hasNext())
+        {
+            Class c = (Class) categories.next();
+            Iterator riter = Service.providers(c, cl);
+            while (riter.hasNext())
+            {
+                registerServiceProvider(riter.next());
+            }
+        }
     }
+
 }

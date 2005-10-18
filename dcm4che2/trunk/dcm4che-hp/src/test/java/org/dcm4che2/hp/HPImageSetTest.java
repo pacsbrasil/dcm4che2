@@ -38,16 +38,32 @@
 
 package org.dcm4che2.hp;
 
+import java.io.File;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.junit.BaseTestCase;
+import org.dcm4che2.io.SAXReader;
 
-public class HPImageSetTest extends BaseTestCase {
+public class HPImageSetTest extends TestCase {
 
+    private static File locateFile(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return new File(cl.getResource(name).toString().substring(5));
+    }
+
+
+    private static DicomObject loadXML(String fname)
+    throws Exception
+    {
+        SAXReader r = new SAXReader(locateFile(fname));
+        return r.readDicomObject();
+    }
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(HPImageSetTest.class);
     }

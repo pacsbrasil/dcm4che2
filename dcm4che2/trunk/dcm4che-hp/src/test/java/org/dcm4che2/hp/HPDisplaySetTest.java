@@ -38,15 +38,18 @@
 
 package org.dcm4che2.hp;
 
+import java.io.File;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.junit.BaseTestCase;
+import org.dcm4che2.io.SAXReader;
 
-public class HPDisplaySetTest extends BaseTestCase {
+public class HPDisplaySetTest extends TestCase {
 
     private static final String CORONAL = 
             "1.000000\\0.000000\\0.000000\\0.000000\\0.000000\\-1.000000";
@@ -74,6 +77,20 @@ public class HPDisplaySetTest extends BaseTestCase {
             image("ORIGINAL\\PRIMARY", "MR", "HEAD", 
                     "-120.000000\\-116.699997\\-5.800000", AXIAL);
 
+
+    private static File locateFile(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return new File(cl.getResource(name).toString().substring(5));
+    }
+
+
+    private static DicomObject loadXML(String fname)
+    throws Exception
+    {
+        SAXReader r = new SAXReader(locateFile(fname));
+        return r.readDicomObject();
+    }
+    
     private static DicomObject image(String type, String modality, String bodyPart,
             String position, String orientation) {
         DicomObject o = new BasicDicomObject();
@@ -138,4 +155,6 @@ public class HPDisplaySetTest extends BaseTestCase {
         assertEquals(true, ds10.contains(MR_AXIAL2, 0));
         assertEquals(true, ds10.compare(MR_AXIAL1, 1, MR_AXIAL2, 1) > 0);
      }
+
+
 }
