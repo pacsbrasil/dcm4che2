@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.dcm4che2.util.IntHashtable;
 import org.dcm4che2.util.TagUtils;
 
@@ -53,8 +52,6 @@ public class BasicDicomObject extends AbstractDicomObject {
 	private static final int INIT_FRAGMENT_CAPACITY = 2;
 
 	private static final int INIT_SEQUENCE_CAPACITY = 10;
-
-	private static final Logger log = Logger.getLogger(BasicDicomObject.class);
 
 	private transient final IntHashtable table;
 
@@ -251,7 +248,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 
 	public int resolveTag(int tag, String creator, boolean reserve) {
-		if (!TagUtils.isPrivateDataElement(tag))
+		if (creator == null || !TagUtils.isPrivateDataElement(tag))
             return tag;
 		int gggg0000 = tag & 0xffff0000;
 		int idTag = gggg0000 | 0x10;
@@ -478,7 +475,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 	}
 	
 	public DicomElement putSequence(int tag) {
-		return putSequence(tag, 10);
+		return putSequence(tag, INIT_SEQUENCE_CAPACITY);
 	}
 
 	public DicomElement putSequence(int tag, int capacity) {
