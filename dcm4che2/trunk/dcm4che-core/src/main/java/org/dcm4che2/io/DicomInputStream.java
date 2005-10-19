@@ -108,6 +108,11 @@ public class DicomInputStream extends FilterInputStream
         this.ts = (ignoreFmiTs = ts != null) ? ts : guessTransferSyntax();
     }
 
+    public byte[] getPreamble()
+    {
+        return (byte[]) (preamble == null ? null : preamble.clone());
+    }
+
     public final long getStreamPosition()
     {
         return pos;

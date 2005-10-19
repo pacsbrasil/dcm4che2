@@ -45,7 +45,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.zip.DeflaterOutputStream;
 
-import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -55,8 +54,6 @@ import org.dcm4che2.util.ByteUtils;
 
 public class DicomOutputStream extends FilterOutputStream
 {
-
-    private static Logger log = Logger.getLogger(DicomOutputStream.class);
 
     private static final int PREAMBLE_LENGTH = 128;
 
