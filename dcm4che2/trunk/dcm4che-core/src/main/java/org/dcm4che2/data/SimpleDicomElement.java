@@ -292,10 +292,6 @@ class SimpleDicomElement extends AbstractDicomElement {
         throw new UnsupportedOperationException();
     }
 
-    private void updateItemPositions(int index) {
-        throw new UnsupportedOperationException();
-    }
-
     public DicomObject addDicomObject(DicomObject item) {
         throw new UnsupportedOperationException();
     }
