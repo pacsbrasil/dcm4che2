@@ -289,7 +289,7 @@ public class HangingProtocol
             List selectors = new ArrayList(isssqCount);
             for (int j = 0; j < isssqCount; j++)
             {
-                selectors.add(AbstractHPSelector.createImageSetSelector(isssq
+                selectors.add(HPSelectorFactory.createImageSetSelector(isssq
                         .getDicomObject(j)));
             }
             DicomElement tbissq = is.get(Tag.TimeBasedImageSetsSequence);

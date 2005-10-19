@@ -43,9 +43,9 @@ import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.hp.HPSelector;
+import org.dcm4che2.hp.AbstractHPSelector;
 
-class ImagePlaneSelector implements HPSelector {
+class ImagePlaneSelector extends AbstractHPSelector {
     private static final String[] VALUES = {
         "SAGITTAL", "CORONAL", "AXIAL", "OBLIQUE"
     };
@@ -62,8 +62,10 @@ class ImagePlaneSelector implements HPSelector {
     private static final int CY = 4;
     private static final int CZ = 5;
 
+    private final DicomObject filterOp;
     private final float minCosine;
     private final int[] values;
+
     public ImagePlaneSelector(DicomObject filterOp, float minCosine) {
         String vrStr = filterOp.getString(Tag.SelectorAttributeVR);
         if (vrStr == null) {
@@ -88,8 +90,15 @@ class ImagePlaneSelector implements HPSelector {
                         "" + filterOp.get(Tag.SelectorCSValue));
         }
         this.minCosine = minCosine;
+        this.filterOp = filterOp;
     }
 
+
+    public final DicomObject getDicomObject()
+    {
+        return filterOp;
+    }
+    
     public boolean matches(DicomObject dcmobj, int frame) {
         int value1;
         float[] iop = dcmobj.getFloats(Tag.ImageOrientationPatient);

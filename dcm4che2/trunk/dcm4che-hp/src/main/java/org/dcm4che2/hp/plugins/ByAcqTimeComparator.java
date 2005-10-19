@@ -42,25 +42,35 @@ import java.util.Date;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.hp.HPComparator;
+import org.dcm4che2.hp.AbstractHPComparator;
 import org.dcm4che2.hp.SortingDirection;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 7, 2005
- *
+ * 
  */
-public class ByAcqTimeComparator implements HPComparator {
+public class ByAcqTimeComparator 
+extends AbstractHPComparator
+{
 
     private final int sortingDirection;
-    
-    public ByAcqTimeComparator(DicomObject sortOp) {
-        sortingDirection = SortingDirection.toSign(
-                sortOp.getString(Tag.SortingDirection));
+    private final DicomObject sortOp;
+
+    public ByAcqTimeComparator(DicomObject sortOp)
+    {
+        this.sortOp = sortOp;
+        sortingDirection = SortingDirection.toSign(sortOp.getString(Tag.SortingDirection));
     }
 
-    public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2) {
+    public final DicomObject getDicomObject()
+    {
+        return sortOp;
+    }
+
+    public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2)
+    {
         Date t1 = toAcqTime(o1, frame1);
         Date t2 = toAcqTime(o2, frame2);
         if (t1 == null || t2 == null)
@@ -68,11 +78,14 @@ public class ByAcqTimeComparator implements HPComparator {
         return t1.compareTo(t2) * sortingDirection;
     }
 
-    private Date toAcqTime(DicomObject o, int frame) {
+    private Date toAcqTime(DicomObject o, int frame)
+    {
         Date t = o.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
-        if (t == null) {
+        if (t == null)
+        {
             t = o.getDate(Tag.AcquisitionDatetime);
-            if (t == null) {
+            if (t == null)
+            {
                 t = o.getDate(Tag.ContentDate, Tag.ContentTime);
             }
         }

@@ -49,5 +49,30 @@ import org.dcm4che2.data.DicomObject;
 public interface HPSelector {
 
     boolean matches(DicomObject dcmobj, int frame);
+    
+    DicomObject getDicomObject();
 
+    String getFilterbyCategory();
+
+    String getFilterbyAttributePresence();
+
+    int getSelectorAttribute();
+
+    String getSelectorAttributeVR();
+
+    int getSelectorSequencePointer();
+
+    int getFunctionalGroupPointer();
+
+    String getSelectorSequencePointerPrivateCreator();
+
+    String getFunctionalGroupPrivateCreator();
+
+    String getSelectorAttributePrivateCreator();
+
+    Object getSelectorValue();
+
+    int getSelectorValueNumber();
+
+    String getFilterbyOperator();
 }

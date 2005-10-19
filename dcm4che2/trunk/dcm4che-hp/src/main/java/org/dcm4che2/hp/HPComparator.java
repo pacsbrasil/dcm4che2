@@ -50,4 +50,25 @@ public interface HPComparator {
 
     int compare(DicomObject o1, int frame1, DicomObject o2, int frame2);
 
+    DicomObject getDicomObject();
+    
+    String getImageSetSelectorUsageFlag();
+
+    int getSelectorAttribute();
+
+    int getSelectorSequencePointer();
+
+    int getFunctionalGroupPointer();
+
+    String getSelectorSequencePointerPrivateCreator();
+
+    String FunctionalGroupPrivateCreator();
+
+    String getSelectorAttributePrivateCreator();
+
+    int getSelectorValueNumber();
+
+    String getSortbyCategory();
+
+    String getSortingDirection();
 }

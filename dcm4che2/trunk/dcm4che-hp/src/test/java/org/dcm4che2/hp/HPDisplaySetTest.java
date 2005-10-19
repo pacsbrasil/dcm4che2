@@ -154,6 +154,16 @@ public class HPDisplaySetTest extends TestCase {
         assertEquals(true, ds10.contains(MR_AXIAL1, 0));
         assertEquals(true, ds10.contains(MR_AXIAL2, 0));
         assertEquals(true, ds10.compare(MR_AXIAL1, 1, MR_AXIAL2, 1) > 0);
+        
+        List filterOps = ds10.getFilterOperations();
+        assertEquals(1, filterOps.size());
+        HPSelector filterOp = (HPSelector) filterOps.get(0);
+        assertEquals("IMAGE_PLANE", filterOp.getFilterbyCategory());
+        
+        List sortingOps = ds10.getSortingOperations();
+        assertEquals(1, sortingOps.size());
+        HPComparator sortingOp = (HPComparator) sortingOps.get(0);
+        assertEquals("ALONG_AXIS", sortingOp.getSortbyCategory());
      }
 
 

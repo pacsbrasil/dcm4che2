@@ -107,7 +107,7 @@ public class HPDisplaySet {
             int n = filterOpSeq.countItems();
             this.filters = new ArrayList(n);
             for (int i = 0; i < n; i++) {
-                filters.add(AbstractHPSelector.createDisplaySetFilter(
+                filters.add(HPSelectorFactory.createDisplaySetFilter(
                         filterOpSeq.getDicomObject(i)));
             }
         }
@@ -118,7 +118,7 @@ public class HPDisplaySet {
             int n = sortingOpSeq.countItems();
             this.cmps = new ArrayList();
             for (int i = 0; i < n; i++) {
-                cmps.add(AbstractHPComparator.valueOf(sortingOpSeq.getDicomObject(i)));
+                cmps.add(HPComparatorFactory.createHPComparator(sortingOpSeq.getDicomObject(i)));
             }
         }
     }
@@ -133,6 +133,14 @@ public class HPDisplaySet {
 
     public List getImageBoxes() {
         return Collections.unmodifiableList(imageBoxes);
+    }
+    
+    public List getFilterOperations() {
+        return Collections.unmodifiableList(filters);
+    }
+    
+    public List getSortingOperations() {
+        return Collections.unmodifiableList(cmps);
     }
     
     public boolean contains(DicomObject o, int frame) {
@@ -249,7 +257,7 @@ public class HPDisplaySet {
         return dcmobj.getString(Tag.ShowAcquisitionTechniquesFlag);
     }
 
-    public boolean isSShowAcquisitionTechniques(String flag) {
+    public boolean isShowAcquisitionTechniques(String flag) {
         return flag.equals(getShowAcquisitionTechniquesFlag());
     }
 

@@ -48,7 +48,7 @@ import org.dcm4che2.data.Tag;
  * @since Aug 7, 2005
  *
  */
-abstract class FilterOp {
+public abstract class FilterOp {
     public static final FilterOp MEMBER_OF = new MemberOf();
     public static final FilterOp NOT_MEMBER_OF = new NotMemberOf();
     public static final FilterOp RANGE_INCL = new RangeIncl();
