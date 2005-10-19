@@ -9,23 +9,106 @@
     <fileSet>
       <directory>../dcm4che-core/src</directory>
       <includes>
-        <include>bin/*</include>
+        <include>bin/*.bat</include>
         <include>etc/*</include>
         <include>dtd/*</include>
         <include>xml/*</include>
       </includes>
+      <lineEnding>dos</lineEnding>
       <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-core/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>/bin</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2txt/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2txt/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmecho/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmecho/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
       <outputDirectory>bin</outputDirectory>
     </fileSet>
   </fileSets>
