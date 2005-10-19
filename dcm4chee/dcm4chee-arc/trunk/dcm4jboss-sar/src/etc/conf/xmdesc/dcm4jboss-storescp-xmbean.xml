@@ -101,7 +101,7 @@
       <name>HourInFilePath</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="isAcceptMissingPatientID" setMethod="setAcceptMissingPatientID">
