@@ -38,64 +38,84 @@
 
 package org.dcm4che2.data;
 
-public class TransferSyntax {
+public class TransferSyntax
+{
 
-	public static final TransferSyntax ImplicitVRLittleEndian 
-			= new TransferSyntax("1.2.840.10008.1.2", false, false, false);
-	
-	public static final TransferSyntax ImplicitVRBigEndian 
-			= new TransferSyntax(null, false, true, false);
+    public static final TransferSyntax ImplicitVRLittleEndian = 
+            new TransferSyntax("1.2.840.10008.1.2", false, false, false, false);
 
-	public static final TransferSyntax ExplicitVRLittleEndian 
-			= new TransferSyntax("1.2.840.10008.1.2.1", true, false, false);
-	
-	public static final TransferSyntax ExplicitVRBigEndian 
-			= new TransferSyntax("1.2.840.10008.1.2.2", true, true, false);
-	
-	public static final TransferSyntax DeflatedExplicitVRLittleEndian 
-			= new TransferSyntax("1.2.840.10008.1.2.1.99", true, false, true);
-	
-	public static TransferSyntax valueOf(String uid) {
-		if (uid.equals(ImplicitVRLittleEndian.uid))
-			return ImplicitVRLittleEndian;
-		if (uid.equals(ExplicitVRLittleEndian.uid))
-			return ExplicitVRLittleEndian;
-		if (uid.equals(ExplicitVRBigEndian.uid))
-			return ExplicitVRBigEndian;
-		if (uid.equals(DeflatedExplicitVRLittleEndian.uid))
-			return DeflatedExplicitVRLittleEndian;
-		return new TransferSyntax(uid, true, false, false);
-	}
+    public static final TransferSyntax ImplicitVRBigEndian =
+            new TransferSyntax(null, false, true, false, false);
 
-	final String uid;
+    public static final TransferSyntax ExplicitVRLittleEndian =
+            new TransferSyntax("1.2.840.10008.1.2.1", true, false, false, false);
 
-	final boolean bigEndian;
+    public static final TransferSyntax ExplicitVRBigEndian = 
+            new TransferSyntax("1.2.840.10008.1.2.2", true, true, false, false);
 
-	final boolean explicitVR;
+    public static final TransferSyntax DeflatedExplicitVRLittleEndian = 
+            new TransferSyntax("1.2.840.10008.1.2.1.99", true, false, true, false);
 
-	final boolean deflated;
+    public static TransferSyntax valueOf(String uid)
+    {
+        if (uid.equals(ImplicitVRLittleEndian.uid))
+            return ImplicitVRLittleEndian;
+        if (uid.equals(ExplicitVRLittleEndian.uid))
+            return ExplicitVRLittleEndian;
+        if (uid.equals(ExplicitVRBigEndian.uid))
+            return ExplicitVRBigEndian;
+        if (uid.equals(DeflatedExplicitVRLittleEndian.uid))
+            return DeflatedExplicitVRLittleEndian;
+        return new TransferSyntax(uid, true, false, false, true);
+    }
 
-	private TransferSyntax(String uid, boolean explicitVR, boolean bigEndian,
-			boolean deflated) {
-		this.uid = uid;
-		this.explicitVR = explicitVR;
-		this.bigEndian = bigEndian;
-		this.deflated = deflated;
-	}
+    final String uid;
 
-	public final String uid() {
-		return uid;
-	}
+    final boolean bigEndian;
 
-	public final boolean bigEndian() {
-		return bigEndian;
-	}
+    final boolean explicitVR;
 
-	public final boolean explicitVR() {
-		return explicitVR;
-	}
+    final boolean deflated;
 
-	public final boolean isDeflated() {
-		return deflated;
-	}
+    final boolean encapsulated;
+
+    private TransferSyntax(String uid, boolean explicitVR, boolean bigEndian,
+            boolean deflated, boolean encapsulated)
+    {
+        this.uid = uid;
+        this.explicitVR = explicitVR;
+        this.bigEndian = bigEndian;
+        this.deflated = deflated;
+        this.encapsulated = encapsulated;
+    }
+
+    public final String uid()
+    {
+        return uid;
+    }
+
+    public final boolean bigEndian()
+    {
+        return bigEndian;
+    }
+
+    public final boolean explicitVR()
+    {
+        return explicitVR;
+    }
+
+    public final boolean deflated()
+    {
+        return deflated;
+    }
+
+    public final boolean encapsulated()
+    {
+        return encapsulated;
+    }
+
+    public final boolean uncompressed()
+    {
+        return !deflated && !encapsulated;
+    }
 }

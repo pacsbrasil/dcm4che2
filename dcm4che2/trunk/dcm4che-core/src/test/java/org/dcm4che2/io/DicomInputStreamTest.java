@@ -38,15 +38,28 @@
 
 package org.dcm4che2.io;
 
+import java.io.File;
 import java.io.IOException;
+
+import junit.framework.TestCase;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.junit.BaseTestCase;
 
-public class DicomInputStreamTest extends BaseTestCase {
+public class DicomInputStreamTest extends TestCase {
 
-	public static void main(String[] args) {
+    private static File locateFile(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return new File(cl.getResource(name).toString().substring(5));
+    }
+
+    private static DicomObject load(String fname) throws IOException
+    {
+        DicomInputStream dis = new DicomInputStream(locateFile(fname));
+        return dis.readDicomObject();
+    }
+    
+    public static void main(String[] args) {
 		junit.textui.TestRunner.run(DicomInputStreamTest.class);
 	}
 
@@ -65,7 +78,7 @@ public class DicomInputStreamTest extends BaseTestCase {
         assertEquals(37, attrs.size());
     }
     
-	public final void testReadRawImplicitVRLE() throws IOException {
+    public final void testReadRawImplicitVRLE() throws IOException {
 		DicomObject attrs = load("OT-PAL-8-face");
         assertEquals(28, attrs.size());
 	}

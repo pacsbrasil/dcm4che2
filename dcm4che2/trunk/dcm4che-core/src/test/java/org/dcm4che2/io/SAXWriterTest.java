@@ -49,13 +49,25 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import junit.framework.TestCase;
+
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.junit.BaseTestCase;
 import org.xml.sax.SAXException;
 
-public class SAXWriterTest extends BaseTestCase {
+public class SAXWriterTest extends TestCase {
 
+    private static File locateFile(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return new File(cl.getResource(name).toString().substring(5));
+    }
+
+    private static DicomObject load(String fname) throws IOException
+    {
+        DicomInputStream dis = new DicomInputStream(locateFile(fname));
+        return dis.readDicomObject();
+    }
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(SAXWriterTest.class);
     }

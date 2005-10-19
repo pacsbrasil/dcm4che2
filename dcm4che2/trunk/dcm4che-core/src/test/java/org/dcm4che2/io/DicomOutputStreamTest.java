@@ -44,15 +44,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.junit.BaseTestCase;
 
-public class DicomOutputStreamTest extends BaseTestCase {
+public class DicomOutputStreamTest extends TestCase {
 
+    private static File locateFile(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return new File(cl.getResource(name).toString().substring(5));
+    }
+
+    private static DicomObject load(String fname) throws IOException
+    {
+        DicomInputStream dis = new DicomInputStream(locateFile(fname));
+        return dis.readDicomObject();
+    }
+    
 	public static void main(java.lang.String[] args) {
 		junit.textui.TestRunner.run(suite());
 	}

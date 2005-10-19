@@ -45,13 +45,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.dcm4che2.junit.BaseTestCase;
-
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class DicomObjectTest extends BaseTestCase {
+import org.dcm4che2.io.DicomInputStream;
 
+public class DicomObjectTest extends TestCase {
+
+    private static File locateFile(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return new File(cl.getResource(name).toString().substring(5));
+    }
+    
     public static void main(java.lang.String[] args) {
 		junit.textui.TestRunner.run(suite());
 	}
@@ -65,7 +71,8 @@ public class DicomObjectTest extends BaseTestCase {
 	}
 
 	public void testSerialize() throws IOException, ClassNotFoundException {
-		DicomObject dicomdir = load("DICOMDIR");
+        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+		DicomObject dicomdir = dis.readDicomObject();
 		File ofile = new File("target/test-out/DICOMDIR.dcm.ser");
 		ofile.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(ofile);
@@ -81,7 +88,8 @@ public class DicomObjectTest extends BaseTestCase {
 
 	public void testSerializeElements() throws IOException,
 			ClassNotFoundException {
-		DicomObject dicomdir = load("DICOMDIR");
+        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+        DicomObject dicomdir = dis.readDicomObject();
 		File ofile = new File("target/test-out/DICOMDIR.attr.ser");
 		ofile.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(ofile);

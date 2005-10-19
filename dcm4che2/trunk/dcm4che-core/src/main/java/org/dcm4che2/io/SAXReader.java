@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,9 +36,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.junit;
+package org.dcm4che2.io;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -48,50 +47,39 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.io.ContentHandlerAdapter;
-import org.dcm4che2.io.DicomInputStream;
 import org.xml.sax.SAXException;
-
-import junit.framework.TestCase;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
- * @since Aug 3, 2005
+ * @version $Reversion$ $Date$
+ * @since Oct 13, 2005
  *
  */
-public class BaseTestCase extends TestCase {
+public class SAXReader
+{
+    private File file;
+    private SAXParser parser;
 
-    public BaseTestCase(String testName) {
-        super(testName);
-    }
-    
-    protected static DicomObject load(String fname) throws IOException {
-    	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    	DicomInputStream dis = new DicomInputStream(new BufferedInputStream(cl
-    			.getResourceAsStream(fname)));
-    	try {
-    		DicomObject attrs = new BasicDicomObject();
-    		dis.readDicomObject(attrs, -1);
-    		return attrs;
-    	} finally {
-    		dis.close();
-    	}
-    }
-    
-    protected static DicomObject loadXML(String fname)
-            throws ParserConfigurationException, SAXException, IOException {
+    public SAXReader(File file)
+    throws ParserConfigurationException, SAXException
+    {
         SAXParserFactory f = SAXParserFactory.newInstance();
-        SAXParser p = f.newSAXParser();
-        BasicDicomObject attrs = new BasicDicomObject();
-        ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
-        p.parse(locateFile(fname), ch);
-        return attrs;        
+        parser = f.newSAXParser();
+        this.file = file;
     }
-
-    protected static File locateFile(String name) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new File(cl.getResource(name).toString().substring(5));
+    
+    public void readDicomObject(DicomObject dcmObj)
+    throws SAXException, IOException
+    {
+        parser.parse(file, new ContentHandlerAdapter(dcmObj));
+    }
+    
+    public DicomObject readDicomObject()
+    throws SAXException, IOException
+    {
+        DicomObject dcmObj = new BasicDicomObject();
+        readDicomObject(dcmObj);
+        return dcmObj;
     }
 
 }
