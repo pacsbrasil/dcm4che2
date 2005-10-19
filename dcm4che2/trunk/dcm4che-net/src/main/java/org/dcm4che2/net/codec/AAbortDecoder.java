@@ -52,14 +52,14 @@ import org.dcm4che2.net.pdu.PDU;
 class AAbortDecoder implements PDUDecoder
 {
 
-    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
         AAbort pdu = new AAbort();
-        if (length != 4)
+        if (in.remaining() != 4)
             throw new DULProtocolViolationException(
                     AAbort.INVALID_PDU_PARAMETER_VALUE,
-                    "Invalid PDU-length of A-ABORT: " + length);
+                    "Invalid PDU-length of A-ABORT: " + in.remaining());
 
         in.get(); // skip reserved byte 7
         in.get(); // skip reserved byte 8

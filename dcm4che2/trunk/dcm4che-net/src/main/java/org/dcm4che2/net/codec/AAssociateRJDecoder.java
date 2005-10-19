@@ -53,14 +53,14 @@ import org.dcm4che2.net.pdu.PDU;
 class AAssociateRJDecoder implements PDUDecoder
 {
 
-    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
         AAssociateRJ pdu = new AAssociateRJ();
-        if (length != 4)
+        if (in.remaining() != 4)
             throw new DULProtocolViolationException(
                     AAbort.INVALID_PDU_PARAMETER_VALUE,
-                    "Invalid PDU-length of A-ASSOCIATE-RJ: " + length);
+                    "Invalid PDU-length of A-ASSOCIATE-RJ: " + in.remaining());
 
         in.get(); // skip reserved byte 7
         pdu.setResult(in.get() & 0xff);

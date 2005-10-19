@@ -53,13 +53,13 @@ import org.dcm4che2.net.pdu.PDU;
 class AReleaseRPDecoder implements PDUDecoder
 {
 
-    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
-        if (length != 4)
+        if (in.remaining() != 4)
             throw new DULProtocolViolationException(
                     AAbort.INVALID_PDU_PARAMETER_VALUE,
-                    "Invalid PDU-length of A-RELEASE-RP: " + length);
+                    "Invalid PDU-length of A-RELEASE-RP: " + in.remaining());
 
         in.get();
         in.get();

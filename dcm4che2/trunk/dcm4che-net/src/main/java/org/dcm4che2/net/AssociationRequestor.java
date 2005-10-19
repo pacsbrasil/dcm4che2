@@ -94,28 +94,28 @@ public class AssociationRequestor extends AssociationConfig
 
     public Association connect(AssociationHandler handler,
             SocketAddress address)
-    throws IOException, InterruptedException
+    throws IOException
     {
         return connect(handler, address, null, Integer.MAX_VALUE);
     }
 
     public Association connect(AssociationHandler handler,
             SocketAddress address, SocketAddress localAddress)
-    throws IOException, InterruptedException
+    throws IOException
     {
         return connect(handler, address, localAddress, Integer.MAX_VALUE);
     }
 
     public Association connect(AssociationHandler handler,
             SocketAddress address, int timeout)
-    throws IOException, InterruptedException
+    throws IOException
     {
         return connect(handler, address, null, timeout);
     }
 
     public Association connect(AssociationHandler handler,
             SocketAddress address, SocketAddress localAddress, int timeout)
-    throws IOException, InterruptedException
+    throws IOException
     {
         DULProtocolProvider provider = new DULProtocolProvider(executor,
                 handler, true);
@@ -127,7 +127,16 @@ public class AssociationRequestor extends AssociationConfig
         {
             while (a.getState() == Association.STA4 
                     || a.getState() == Association.STA5)
-                a.wait();
+            {
+                try
+                {
+                    a.wait();
+                }
+                catch (InterruptedException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
         }
         if (a.getState() == Association.STA6)
             return a;
@@ -140,28 +149,28 @@ public class AssociationRequestor extends AssociationConfig
 
     public Association connect(AAssociateRQ aarq,
             SocketAddress address)
-    throws IOException, InterruptedException
+    throws IOException
     {
         return connect(aarq, address, null, Integer.MAX_VALUE);
     }
 
     public Association connect(AAssociateRQ aarq,
             SocketAddress address, SocketAddress localAddress)
-    throws IOException, InterruptedException
+    throws IOException
     {
         return connect(aarq, address, localAddress, Integer.MAX_VALUE);
     }
 
     public Association connect(AAssociateRQ aarq,
             SocketAddress address, int timeout)
-    throws IOException, InterruptedException
+    throws IOException
     {
         return connect(aarq, address, null, timeout);
     }
 
     public Association connect(AAssociateRQ aarq,
             SocketAddress address, SocketAddress localAddress, int timeout)
-    throws IOException, InterruptedException
+    throws IOException
     {
         AssociationHandler handler = new AssociationRequestorHandler(aarq);
         return connect(handler, address, localAddress, timeout);

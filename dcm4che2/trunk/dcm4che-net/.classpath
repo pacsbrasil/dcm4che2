@@ -20,7 +20,7 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/MINA_SRC/src/java" kind="var" path="MAVEN_REPOSITORY/mina/mina/0.7.4/mina-0.7.4.jar">
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/mina/mina/0.7.4/mina-0.7.4.jar">
 		<attributes>
 		</attributes>
 	</classpathentry>

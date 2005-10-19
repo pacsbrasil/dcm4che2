@@ -38,6 +38,7 @@
 
 package org.dcm4che2.net.pdu;
 
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -45,7 +46,7 @@ package org.dcm4che2.net.pdu;
  */
 public class AAssociateRQ extends AAssociateRQAC
 {
-    private int pcid = -1;
+    protected int pcid = -1;
 
     public String toString()
     {
@@ -61,5 +62,5 @@ public class AAssociateRQ extends AAssociateRQAC
         } while (pcidMap.get(pcid) != null);
         return pcid;
     }
-
+    
 }

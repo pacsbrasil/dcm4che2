@@ -79,13 +79,13 @@ abstract class AAssociateRQACDecoder implements PDUDecoder
     }
 
     protected void decodePDU(ProtocolSession session, ByteBuffer in,
-            int length, AAssociateRQAC rqac, String prompt)
+            AAssociateRQAC rqac, String prompt)
             throws DULProtocolViolationException
     {
-        if (length < 68)
+        if (in.remaining() < 68)
             throw new DULProtocolViolationException(
                     AAbort.INVALID_PDU_PARAMETER_VALUE,
-                    "Insufficient PDU-length of " + prompt + ": " + length);
+                    "Insufficient PDU-length of " + prompt + ": " + in.remaining());
 
         rqac.setProtocolVersion(in.getUnsignedShort());
         in.get(); // skip reserved byte 9
@@ -95,12 +95,11 @@ abstract class AAssociateRQACDecoder implements PDUDecoder
         byte[] b32 = new byte[32];
         in.get(b32);
         rqac.setReservedBytes(b32);
-        int remaining = length - 68;
-        while (remaining > 0)
-            remaining -= decodeItem(in, remaining, rqac);
+        while (in.remaining() > 0)
+            decodeItem(in, rqac);
     }
 
-    private int decodeItem(ByteBuffer in, int remaining, AAssociateRQAC rqac)
+    private void decodeItem(ByteBuffer in, AAssociateRQAC rqac)
     {
         int itemType = in.get() & 0xff;
         in.get(); // skip reserved byte
@@ -120,7 +119,6 @@ abstract class AAssociateRQACDecoder implements PDUDecoder
         default:
             skipItem(in, itemLength);
         }
-        return 4 + itemLength;
     }
 
     private PresentationContext decodePC(ByteBuffer in, int itemLength)

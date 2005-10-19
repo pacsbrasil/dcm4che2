@@ -55,6 +55,10 @@ public class CommandFactory
     public static final int SUCCESS = 0;
     public static final int PENDING = 0xFF00;
     
+    public static final int NORMAL = 0;
+    public static final int HIGH = 1;
+    public static final int LOW = 2;
+    
     public static final int C_STORE_RQ = 0x0001;
     public static final int C_STORE_RSP = 0x8001;
     public static final int C_GET_RQ = 0x0010;
@@ -113,6 +117,26 @@ public class CommandFactory
     {
        DicomObject rq = newRQ(msgId, C_ECHO_RQ, NO_DATASET);
        rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       return rq;
+    }
+    
+    public static DicomObject newCStoreRQ(int msgId, String cuid, String iuid,
+            int priority)
+    {
+       DicomObject rq = newRQ(msgId, C_STORE_RQ, withDatasetType);
+       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+       rq.putInt(Tag.Priority, VR.US, priority);
+       return rq;
+    }
+    
+    public static DicomObject newCStoreRQ(int msgId, String cuid, String iuid,
+            int priority, String moveOriginatorAET, int moveOriginatorMsgId)
+    {
+       DicomObject rq = newCStoreRQ(msgId, cuid, iuid, priority);
+       rq.putString(Tag.MoveOriginatorApplicationEntityTitle, VR.AE,
+               moveOriginatorAET);
+       rq.putInt(Tag.MoveOriginatorMessageID, VR.US, moveOriginatorMsgId);
        return rq;
     }
     

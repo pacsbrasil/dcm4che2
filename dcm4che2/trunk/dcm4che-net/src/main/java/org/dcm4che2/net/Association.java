@@ -60,7 +60,6 @@ import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.AReleaseRP;
 import org.dcm4che2.net.pdu.AReleaseRQ;
 import org.dcm4che2.net.pdu.PDU;
@@ -106,9 +105,9 @@ public class Association
     private final ProtocolSession session;
     
     private State state;
-    private long associationRequestTimeout = 10000L;
-    private long associationAcceptTimeout = 10000L;
-    private long releaseResponseTimeout = 10000L;
+    private long associationRequestTimeout = 0;
+    private long associationAcceptTimeout = 0;
+    private long releaseResponseTimeout = 0;
     private long socketCloseDelay = 100L;
     private int pdvPipeBufferSize = 1024;
     private boolean packPDV = true;
@@ -124,7 +123,9 @@ public class Association
     private IntHashtable rspHandlerForMsgId = new IntHashtable();
     private IntHashtable cancelHandlerForMsgId = new IntHashtable();
     
-    private int limitOutgoingPDULength = 0x10000;
+    private int maxSendPDULength = 0x100000;
+    private int sendPDULength;
+    private int maxOpsInvoked;
 
     Association(Executor executor, AssociationHandler handler,
             boolean requestor, ProtocolSession session)
@@ -204,6 +205,16 @@ public class Association
         this.pdvPipeBufferSize = bufferSize;
     }
 
+    public final int getMaxSendPDULength()
+    {
+        return maxSendPDULength;
+    }
+
+    public final void setMaxSendPDULength(int bufferSize)
+    {
+        this.maxSendPDULength = bufferSize;
+    }
+
     public final boolean isPackPDV()
     {
         return packPDV;
@@ -229,21 +240,19 @@ public class Association
         return associateRJ;
     }
     
-    public int getMaxOutgoingPDULength() {
-        try
-        {
-            AAssociateRQAC rqac = requestor ? (AAssociateRQAC) associateAC 
-                                            : (AAssociateRQAC) associateRQ;
-            return rqac.getMaxPDULength() & ~1;
-        } catch (NullPointerException e)
-        {
-            throw new IllegalStateException(state.toString());
-        }
+    public final AAssociateAC getAssociateAC()
+    {
+        return associateAC;
     }
-    
+
+    public final AAssociateRQ getAssociateRQ()
+    {
+        return associateRQ;
+    }
+
     public TransferSyntax getTransferSyntax(int pcid)
     {
-         try
+        try
         {
             PresentationContext pc = associateAC.getPresentationContext(pcid);
             return pc.isAccepted() ? TransferSyntax.valueOf(pc
@@ -301,9 +310,8 @@ public class Association
         if (!pc.isAccepted())
             throw new IllegalStateException("Presentation State not accepted - " + pc);
         
-        int maxPduLen = getOutgoingPDULength();
-        ByteBuffer buf = ByteBuffer.allocate(maxPduLen);
-        PDVOutputStream out = new PDVOutputStream(pcid, COMMAND, buf, maxPduLen);
+        ByteBuffer buf = ByteBuffer.allocate(sendPDULength);
+        PDVOutputStream out = new PDVOutputStream(pcid, COMMAND, buf, sendPDULength);
         DicomOutputStream dos = new DicomOutputStream(out);
         try
         {
@@ -319,7 +327,7 @@ public class Association
         if (dataWriter != null) {
             if (!packPDV) 
                 writePDataTF(buf);
-            out = new PDVOutputStream(pcid, DATA, buf, maxPduLen);
+            out = new PDVOutputStream(pcid, DATA, buf, sendPDULength);
             try
             {
                 dataWriter.writeTo(out, TransferSyntax.valueOf(pc
@@ -342,13 +350,6 @@ public class Association
         buf.clear();
     }
    
-    private int getOutgoingPDULength()
-    {
-        int len = getMaxOutgoingPDULength();
-        return (len > 0 && len < limitOutgoingPDULength) ? len 
-                : limitOutgoingPDULength ;
-    }
-
     private synchronized void setState(State state)
     {
         if (this.state == state)
@@ -363,6 +364,9 @@ public class Association
     private void startARTIM(long delay)
     {
         stopARTIM();
+        if (delay <= 0)
+            return;
+        
         if (log.isDebugEnabled())
         {
             log.debug("Start ARTIM: " + (delay / 1000f) + "s");
@@ -503,9 +507,16 @@ public class Association
     private void ae3(AAssociateAC associateAC)
     {
         this.associateAC = associateAC;
+        this.maxOpsInvoked = associateAC.getMaxOpsInvoked();
+        this.sendPDULength = toSendPDULength(associateAC.getMaxPDULength());
         stopARTIM();
         setState(STA6);
         handler.onAAssociateAC(this, associateAC);
+    }
+
+    private int toSendPDULength(int len)
+    {
+        return len == 0 || len > maxSendPDULength ? maxSendPDULength : len;
     }
 
     /**
@@ -534,6 +545,7 @@ public class Association
     private void ae6(AAssociateRQ associateRQ)
     {
         this.associateRQ = associateRQ;
+        this.sendPDULength = toSendPDULength(associateRQ.getMaxPDULength());
         stopARTIM();
         AAssociateRJ rj = acceptable(associateRQ);
         if (rj != null)
@@ -565,6 +577,7 @@ public class Association
     private void ae7(AAssociateAC associateAC)
     {
         this.associateAC = associateAC;
+        this.maxOpsInvoked = associateAC.getMaxOpsPerformed();
         session.write(associateAC);
         setState(STA6);
     }
@@ -992,8 +1005,7 @@ public class Association
 
         Sta2()
         {
-            super(
-                    "Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)");
+            super("Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)");
         }
 
         protected void write(Association as, PDU pdu)
@@ -1166,8 +1178,7 @@ public class Association
 
         public Sta9()
         {
-            super(
-                    "Sta9 - Release collision requestor side; awaiting A-RELEASE response primitive");
+            super("Sta9 - Release collision requestor side; awaiting A-RELEASE response primitive");
         }
 
         protected void write(Association as, PDU pdu)
@@ -1211,8 +1222,7 @@ public class Association
 
         public Sta11()
         {
-            super(
-                    "Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU");
+            super("Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU");
         }
 
         protected void received(Association as, PDU pdu)
@@ -1308,9 +1318,6 @@ public class Association
         if (pcid == -1) // marks end of pipedIn
             return false;
         
-        if (log.isDebugEnabled())
-            log.debug("Receiving DIMSE[pcid=" + pcid + "]");
-        
         PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
         {
@@ -1334,8 +1341,7 @@ public class Association
         
         if (log.isDebugEnabled())
         {
-            log.debug("Command:");
-            log.debug(cmd);
+            log.debug("Command:\n" + cmd);
         }
         handler.onDIMSE(this, pcid, cmd, CommandFactory.hasDataset(cmd)
                 ? new PDVInputStream(DATA, pcid) : null);
@@ -1419,6 +1425,10 @@ public class Association
                 }
 
                 this.available = ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4) - 2;
+                if (log.isDebugEnabled())
+                    log.debug("Parsed PDV[len = " + available
+                            + ", pcid = " + pcid + ", mch = " + mch + "]");
+                
             } catch (IOException e)
             {
                 log.warn("Unexpected i/o exception " + e, e);
@@ -1603,6 +1613,19 @@ public class Association
 
     }
 
+    public void invoke(int pcid, DicomObject cmd, DicomObject data, 
+            DimseRSPHandler rspHandler)
+    throws IOException
+    {
+        invoke(pcid, cmd, new DataWriterAdapter(data), rspHandler);
+    }
+    
+    public void invoke(int pcid, DicomObject cmd, DimseRSPHandler rspHandler)
+    throws IOException
+    {
+        invoke(pcid, cmd, (DataWriter) null, rspHandler);
+    }
+
     public void invoke(int pcid, DicomObject cmd, DataWriter data, 
             DimseRSPHandler rspHandler)
     throws IOException
@@ -1614,15 +1637,28 @@ public class Association
     void onDimseRSP(int pcid, DicomObject cmd, InputStream dataStream)
     {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
-        DimseRSPHandler rspHandler = CommandFactory.isPending(cmd)
-            ? getDimseRSPHandler(msgId) : removeDimseRSPHandler(msgId);
+        DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
         rspHandler.onDimseRSP(this, pcid, cmd, dataStream);
+        if (!CommandFactory.isPending(cmd))
+            removeDimseRSPHandler(msgId);
     }
 
     private void addDimseRSPHandler(int msgId, DimseRSPHandler rspHandler)
     {
         synchronized (rspHandlerForMsgId)
         {
+            if (maxOpsInvoked > 0)
+                while (rspHandlerForMsgId.size() >= maxOpsInvoked)
+                {
+                    try
+                    {
+                        rspHandlerForMsgId.wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
             rspHandlerForMsgId.put(msgId, rspHandler);
         }
     }
@@ -1652,6 +1688,18 @@ public class Association
         
     }
 
+    public DimseRSP invoke(int pcid, DicomObject cmd, DicomObject data)
+    throws IOException
+    {
+        return invoke(pcid, cmd, new DataWriterAdapter(data));
+    }
+    
+    public DimseRSP invoke(int pcid, DicomObject cmd)
+    throws IOException
+    {
+        return invoke(pcid, cmd, (DataWriter) null);
+    }
+    
     public DimseRSP invoke(int pcid, DicomObject cmd, DataWriter dw)
     throws IOException
     {
@@ -1660,16 +1708,50 @@ public class Association
         return rsp;
     }
 
-    public void release(boolean waitForRSP) throws InterruptedException
+    public void release()
     {
-        if (waitForRSP && !rspHandlerForMsgId.isEmpty()) {
+        write(new AReleaseRQ());
+    }
+
+    public boolean waitForDimseRSP(long timeout)
+    {
+        if (!rspHandlerForMsgId.isEmpty()) {
             synchronized (rspHandlerForMsgId)
             {
                 while (!rspHandlerForMsgId.isEmpty())
-                    wait();
+                {
+                    try
+                    {
+                        rspHandlerForMsgId.wait(timeout);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
-        write(new AReleaseRQ());
+        return rspHandlerForMsgId.isEmpty();
+    }
+
+    public void waitForDimseRSP()
+    {
+        if (!rspHandlerForMsgId.isEmpty()) {
+            synchronized (rspHandlerForMsgId)
+            {
+                while (!rspHandlerForMsgId.isEmpty())
+                {
+                    try
+                    {
+                        rspHandlerForMsgId.wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
     }
 
 }

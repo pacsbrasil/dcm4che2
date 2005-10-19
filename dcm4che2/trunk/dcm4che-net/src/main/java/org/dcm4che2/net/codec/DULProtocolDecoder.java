@@ -94,8 +94,11 @@ public class DULProtocolDecoder extends CumulativeProtocolDecoder
 
         if (in.remaining() < length)
             return false;
-
-        out.write(decoder[type - 1].decodePDU(session, in, length));
+        
+        int prevLimit = in.limit();
+        in.limit(in.position() + length);
+        out.write(decoder[type - 1].decodePDU(session, in));
+        in.limit(prevLimit);
         readHeader = false;
         return true;
     }

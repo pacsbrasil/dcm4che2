@@ -51,6 +51,6 @@ import org.dcm4che2.net.pdu.PDU;
 public interface PDUDecoder
 {
 
-    PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException;
 }

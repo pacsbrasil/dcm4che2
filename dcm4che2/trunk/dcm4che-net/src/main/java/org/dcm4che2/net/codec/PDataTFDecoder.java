@@ -52,7 +52,7 @@ import org.dcm4che2.net.pdu.PDataTF;
 public class PDataTFDecoder implements PDUDecoder
 {
 
-    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
         ByteBuffer buf = ByteBuffer.allocate(in.remaining(), false);

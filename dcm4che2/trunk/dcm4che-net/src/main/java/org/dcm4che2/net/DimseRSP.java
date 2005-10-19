@@ -52,12 +52,17 @@ public class DimseRSP extends DimseRSPHandlerAdapter
 {
     private static class Entry
     {
-        DicomObject command;
-        DicomObject dataset;
+        final DicomObject command;
+        final DicomObject dataset;
         Entry next;
+        public Entry(DicomObject command, DicomObject dataset)
+        {
+            this.command = command;
+            this.dataset = dataset;
+        }
     }
     
-    private Entry entry = new Entry();
+    private Entry entry = new Entry(null, null);
     private boolean finished;
     private IOException ex;
     
@@ -72,14 +77,21 @@ public class DimseRSP extends DimseRSPHandlerAdapter
     }
 
     public synchronized boolean next()
-    throws InterruptedException, IOException
+    throws IOException
     {
         if (entry.next == null) {
             if (finished)
                 return false;
             
             while (entry.next == null && ex == null)
-                wait();
+                try
+                {
+                    wait();
+                }
+                catch (InterruptedException e)
+                {
+                    throw new RuntimeException(e);
+                }
             
             if (ex != null)
                 throw ex;
@@ -95,10 +107,8 @@ public class DimseRSP extends DimseRSPHandlerAdapter
         while (last.next != null)
             last = last.next;
         
-        last.next = new Entry();
-        last.command = cmd;
-        last.dataset = ds;
-        finished = !CommandFactory.isPending(cmd);
+        last.next = new Entry(cmd, ds);
+         finished = !CommandFactory.isPending(cmd);
         notifyAll();
      }
 

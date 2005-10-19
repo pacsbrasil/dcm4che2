@@ -61,11 +61,12 @@ public class DULProtocolHandler implements ProtocolHandler
     private final Executor executor;
     private final AssociationHandler listener;
     private final boolean requestor;
-    private long associationRequestTimeout = 10000L;
-    private long associationAcceptTimeout = 10000L;
-    private long releaseResponseTimeout = 10000L;
+    private long associationRequestTimeout;
+    private long associationAcceptTimeout;
+    private long releaseResponseTimeout;
     private long socketCloseDelay = 100L;
     private int pdvPipeBufferSize = 1024;
+    private int maxSendPDULength = 0x100000;
     private boolean packPDV = true;
     private int idleTime = 0;
     private int writeTimeout = 0;
@@ -116,6 +117,17 @@ public class DULProtocolHandler implements ProtocolHandler
     public final void setPDVPipeBufferSize(int bufferSize)
     {
         this.pdvPipeBufferSize = bufferSize;
+    }
+
+    
+    public final int getMaxSendPDULength()
+    {
+        return maxSendPDULength;
+    }
+
+    public final void setMaxSendPDULength(int maxSendPDULength)
+    {
+        this.maxSendPDULength = maxSendPDULength;
     }
 
     public final boolean isPackPDV()

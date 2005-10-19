@@ -57,7 +57,6 @@ import org.dcm4che2.util.StringUtils;
  */
 public abstract class AAssociateRQAC implements PDU
 {
-
     public static final int DEF_MAX_PDU_LENGTH = 16384;
 
     private static final String DEF_CALLED_AET = "ANONYMOUS";
@@ -211,8 +210,6 @@ public abstract class AAssociateRQAC implements PDU
 
     public synchronized void addPresentationContext(PresentationContext pc)
     {
-        if (pc == null)
-            throw new NullPointerException();
         int pcid = pc.getPCID();
         PresentationContext prev = (PresentationContext) pcidMap.remove(pcid);
         if (prev != null)
@@ -365,26 +362,10 @@ public abstract class AAssociateRQAC implements PDU
     private void promptPresentationContext(StringBuffer sb)
     {
         ArrayList tmp = new ArrayList(pcs);
-        final int n = tmp.size();
-        sb.append("\n  Presentation Context(").append(n).append("):");
-        for (int i = 0; i < n; ++i)
+        for (int i = 0, n = tmp.size(); i < n; ++i)
         {
-            PresentationContext pc = (PresentationContext) tmp.get(i);
-            sb.append("\n    id = ").append(pc.getPCID());
-            String asuid = pc.getAbstractSyntax();
-            if (asuid != null)
-            {
-                sb.append(", as = ");
-                promptUID(asuid, sb);
-            } else
-                sb.append(", result = ").append(pc.getResult()).append(" - ")
-                        .append(pc.getResultAsString());
-            ArrayList tsuids = new ArrayList(pc.getTransferSyntaxes());
-            for (int j = 0, m = tsuids.size(); j < m; j++)
-            {
-                sb.append("\n        ts = ");
-                promptUID((String) tsuids.get(j), sb);
-            }
+            sb.append("\n  ");
+            ((PresentationContext) tmp.get(i)).toStringBuffer(sb);
         }
     }
 

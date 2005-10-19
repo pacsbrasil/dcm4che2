@@ -52,11 +52,11 @@ import org.dcm4che2.net.pdu.PDU;
 class AAssociateRQDecoder extends AAssociateRQACDecoder
 {
 
-    public PDU decodePDU(ProtocolSession session, ByteBuffer in, int length)
+    public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
         AAssociateRQ rq = new AAssociateRQ();
-        decodePDU(session, in, length, rq, "A-ASSOCIATE-RQ");
+        decodePDU(session, in, rq, "A-ASSOCIATE-RQ");
         return rq;
     }
 

@@ -38,11 +38,14 @@
 
 package org.dcm4che2.net.pdu;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.dcm4che2.data.UIDDictionary;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -150,6 +153,37 @@ public class PresentationContext
         {
             return UNDEFINED;
         }
+    }
+    
+    private static StringBuffer promptUID(String uid, StringBuffer sb)
+    {
+        return sb.append(uid).append(" - ").append(
+                UIDDictionary.getDictionary().nameOf(uid));
+    }
+
+    public StringBuffer toStringBuffer(StringBuffer sb)
+    {
+        sb.append("PresentationContext[id = ").append(pcid);
+        if (abstractSyntax != null)
+        {
+            sb.append(", as = ");
+            promptUID(abstractSyntax, sb);
+        } else
+            sb.append(", result = ").append(result).append(" - ")
+                    .append(getResultAsString());
+        ArrayList tsuids = new ArrayList(transferSyntaxes);
+        for (int j = 0, m = tsuids.size(); j < m; j++)
+        {
+            sb.append("\n    ts = ");
+            promptUID((String) tsuids.get(j), sb);
+        }
+        sb.append("\n    ]");
+        return sb;
+    }
+
+    public String toString()
+    {
+        return toStringBuffer(new StringBuffer()).toString();
     }
 
 }

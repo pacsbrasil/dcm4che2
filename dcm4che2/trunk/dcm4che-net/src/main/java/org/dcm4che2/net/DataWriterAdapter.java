@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,28 +36,37 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.codec;
+package org.dcm4che2.net;
 
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.protocol.ProtocolSession;
-import org.apache.mina.protocol.ProtocolViolationException;
-import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.PDU;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.TransferSyntax;
+import org.dcm4che2.io.DicomOutputStream;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
- * @since Sep 15, 2005
+ * @since Oct 18, 2005
+ *
  */
-class AAssociateACDecoder extends AAssociateRQACDecoder
+public class DataWriterAdapter implements DataWriter
 {
 
-    public PDU decodePDU(ProtocolSession session, ByteBuffer in)
-            throws ProtocolViolationException
+    private DicomObject data;
+
+    public DataWriterAdapter(DicomObject data)
     {
-        AAssociateAC ac = new AAssociateAC();
-        decodePDU(session, in, ac, "A-ASSOCIATE-AC");
-        return ac;
+        if (data == null)
+            throw new NullPointerException("data");
+        this.data = data;
+    }
+
+    public void writeTo(OutputStream out, TransferSyntax ts) throws IOException
+    {
+        DicomOutputStream dos = new DicomOutputStream(out);
+        dos.writeDataset(data);
     }
 
 }

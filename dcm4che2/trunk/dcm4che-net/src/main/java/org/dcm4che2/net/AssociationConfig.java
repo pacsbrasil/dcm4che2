@@ -48,12 +48,12 @@ class AssociationConfig
 {
 
     protected final Executor executor;
-    protected long associationRequestTimeout = 10000L;
-    protected long associationAcceptTimeout = 10000L;
-    protected long releaseResponseTimeout = 10000L;
+    protected long associationRequestTimeout = 0;
+    protected long associationAcceptTimeout = 0;
+    protected long releaseResponseTimeout = 0;
     protected long socketCloseDelay = 100L;
     protected int pdvPipeBufferSize = 1024;
-    protected boolean packPDV = true;
+    protected boolean packPDV = false;
     protected int idleTime = 0;
     protected int writeTimeout = 0;
     protected int receiveBufferSize;
@@ -65,6 +65,7 @@ class AssociationConfig
     protected boolean keepAlive;
     protected boolean tcpNoDelay;
     protected boolean reuseAddress = true;
+    private int maxSendPDULength;
 
     public AssociationConfig(Executor executor)
     {
@@ -104,6 +105,16 @@ class AssociationConfig
         this.pdvPipeBufferSize = bufferSize;
     }
 
+    public final int getMaxSendPDULength()
+    {
+        return maxSendPDULength;
+    }
+
+    public final void setMaxSendPDULength(int bufferSize)
+    {
+        this.maxSendPDULength = bufferSize;
+    }
+    
     public final boolean isPackPDV()
     {
         return packPDV;
@@ -134,42 +145,32 @@ class AssociationConfig
         this.socketCloseDelay = socketCloseDelay;
     }
 
-    public final int getIdleTime()
-    {
-        return idleTime;
-    }
-
-    public final void setIdleTime(int idleTime)
-    {
-        this.idleTime = idleTime;
-    }
-
-    public final boolean isKeepAlive()
+    public final boolean isSocketKeepAlive()
     {
         return keepAlive;
     }
 
-    public final void setKeepAlive(boolean keepAlive)
+    public final void setSocketKeepAlive(boolean keepAlive)
     {
         this.keepAlive = keepAlive;
     }
 
-    public final boolean isOobInline()
+    public final boolean isSocketOobInline()
     {
         return oobInline;
     }
 
-    public final void setOobInline(boolean oobInline)
+    public final void setSocketOobInline(boolean oobInline)
     {
         this.oobInline = oobInline;
     }
 
-    public final int getReceiveBufferSize()
+    public final int getSocketReceiveBufferSize()
     {
         return receiveBufferSize;
     }
 
-    public final void setReceiveBufferSize(int receiveBufferSize)
+    public final void setSocketReceiveBufferSize(int receiveBufferSize)
     {
         this.receiveBufferSize = receiveBufferSize;
     }
@@ -184,22 +185,22 @@ class AssociationConfig
         this.reuseAddress = reuseAddress;
     }
 
-    public final int getSendBufferSize()
+    public final int getSocketSendBufferSize()
     {
         return sendBufferSize;
     }
 
-    public final void setSendBufferSize(int sendBufferSize)
+    public final void setSocketSendBufferSize(int sendBufferSize)
     {
         this.sendBufferSize = sendBufferSize;
     }
 
-    public final int getSessionReceiveBufferSize()
+    public final int getAssociationReceiveBufferSize()
     {
         return sessionReceiveBufferSize;
     }
 
-    public final void setSessionReceiveBufferSize(int sessionReceiveBufferSize)
+    public final void setAssociationReceiveBufferSize(int sessionReceiveBufferSize)
     {
         this.sessionReceiveBufferSize = sessionReceiveBufferSize;
     }
@@ -234,6 +235,16 @@ class AssociationConfig
         this.trafficClass = trafficClass;
     }
 
+    public final int getIdleTime()
+    {
+        return idleTime;
+    }
+
+    public final void setIdleTime(int idleTime)
+    {
+        this.idleTime = idleTime;
+    }
+
     public final int getWriteTimeout()
     {
         return writeTimeout;
@@ -251,10 +262,11 @@ class AssociationConfig
         provider.setReleaseResponseTimeout(releaseResponseTimeout);
         provider.setIdleTime(idleTime);
         provider.setPDVPipeBufferSize(pdvPipeBufferSize);
+        provider.setMaxSendPDULength(maxSendPDULength);
         provider.setPackPDV(packPDV);
         provider.setWriteTimeout(writeTimeout);
-        provider.setReceiveBufferSize(receiveBufferSize);
-        provider.setSendBufferSize(sendBufferSize);
+        provider.setSocketReceiveBufferSize(receiveBufferSize);
+        provider.setSocketSendBufferSize(sendBufferSize);
         provider.setSessionReceiveBufferSize(sessionReceiveBufferSize);
         provider.setSoLinger(soLinger);
         provider.setTrafficClass(trafficClass);

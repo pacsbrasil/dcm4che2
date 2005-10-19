@@ -147,6 +147,11 @@ public class DULProtocolProvider implements ProtocolProvider
         handler.setPDVPipeBufferSize(bufferSize);
     }
 
+    public void setMaxSendPDULength(int bufferSize)
+    {
+        handler.setMaxSendPDULength(bufferSize);
+    }
+    
     public boolean getPackPDV()
     {
         return handler.isPackPDV();        
@@ -172,7 +177,7 @@ public class DULProtocolProvider implements ProtocolProvider
         return handler.getReceiveBufferSize();        
     }
 
-    public void setReceiveBufferSize(int receiveBufferSize)
+    public void setSocketReceiveBufferSize(int receiveBufferSize)
     {
         handler.setReceiveBufferSize(receiveBufferSize);        
     }
@@ -182,7 +187,7 @@ public class DULProtocolProvider implements ProtocolProvider
         return handler.getSendBufferSize();        
     }
 
-    public void setSendBufferSize(int sendBufferSize)
+    public void setSocketSendBufferSize(int sendBufferSize)
     {
         handler.setSendBufferSize(sendBufferSize);        
     }
@@ -196,7 +201,7 @@ public class DULProtocolProvider implements ProtocolProvider
     {
         handler.setSessionReceiveBufferSize(sessionReceiveBufferSize);        
     }
-
+    
     public int getSoLinger()
     {
         return handler.getSoLinger();        
