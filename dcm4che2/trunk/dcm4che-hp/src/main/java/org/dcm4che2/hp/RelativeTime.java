@@ -38,54 +38,80 @@
 
 package org.dcm4che2.hp;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 21, 2005
+ *
  */
-public class SortingDirection
+public class RelativeTime
 {
+    private static final RelativeTimeUnits CURRENT_TIME_UNITS = 
+            RelativeTimeUnits.SECONDS;
+    private final int[] values;
+    private final RelativeTimeUnits units;
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
-    private final String codeString;
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    public RelativeTime()
     {
-        this.codeString = codeString;
-        this.sign = sign;
+        this(0, 0, CURRENT_TIME_UNITS);
+    }
+    
+    public RelativeTime(int start, int end, RelativeTimeUnits units)
+    {
+        this(new int[]{ start, end }, units);
+    }
+    
+    RelativeTime(int[] value, RelativeTimeUnits units)
+    {
+        this.values = value;
+        this.units = units;
+    }
+    
+    final int[] getValues()
+    {
+        return values;
     }
 
-    public final String getCodeString()
+    public final int getStart()
     {
-        return codeString;
+        return values[0];
     }
 
-    public final int sign()
+    public final int getEnd()
     {
-        return sign;
+        return values[1];
     }
 
-    public static SortingDirection valueOf(String codeString)
+    public Date getStartDate()
     {
-        try
-        {
-            return (SortingDirection) 
-                    SortingDirection.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+        return toDate(values[0]);
     }
+
+    public Date getEndDate()
+    {
+        return toDate(values[1]);
+    }
+
+    private Date toDate(int value)
+    {
+        Calendar c = Calendar.getInstance();
+        c.roll(units.getCalendarField(), -value);
+        return c.getTime();
+    }
+
+    public final boolean isCurrentTime()
+    {
+        return values[0] == 0 && values[1] == 0;
+    }
+
+    public final RelativeTimeUnits getUnits()
+    {
+        return units;
+    }
+    
+    
+
 }

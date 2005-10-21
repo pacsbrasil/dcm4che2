@@ -55,7 +55,7 @@ public class ImageSetSelectorUsageFlag
     private final String codeString;
     private final boolean match;
 
-    public ImageSetSelectorUsageFlag(String codeString, boolean match)
+    private ImageSetSelectorUsageFlag(String codeString, boolean match)
     {
         this.codeString = codeString;
         this.match = match;
@@ -66,7 +66,7 @@ public class ImageSetSelectorUsageFlag
         return codeString;
     }
     
-    public boolean match()
+    public final boolean match()
     {
         return match;
     }

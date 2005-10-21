@@ -41,51 +41,36 @@ package org.dcm4che2.hp;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 21, 2005
+ *
  */
-public class SortingDirection
+public class AbstractPriorValue
 {
+    private final int[] values;
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
-    private final String codeString;
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    public AbstractPriorValue(int start, int end)
     {
-        this.codeString = codeString;
-        this.sign = sign;
+        this(new int[]{ start, end });
+    }
+    
+    AbstractPriorValue(int[] value)
+    {
+        this.values = value;
+    }
+    
+    final int[] getValues()
+    {
+        return values;
     }
 
-    public final String getCodeString()
+    public final int getStart()
     {
-        return codeString;
+        return values[0];
     }
 
-    public final int sign()
+    public final int getEnd()
     {
-        return sign;
+        return values[1];
     }
 
-    public static SortingDirection valueOf(String codeString)
-    {
-        try
-        {
-            return (SortingDirection) 
-                    SortingDirection.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
-    }
 }

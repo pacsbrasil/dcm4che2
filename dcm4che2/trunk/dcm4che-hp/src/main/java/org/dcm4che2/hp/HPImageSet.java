@@ -38,12 +38,15 @@
 
 package org.dcm4che2.hp;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -54,9 +57,6 @@ import org.dcm4che2.data.Tag;
 public class HPImageSet
 {
 
-    public static final String ABSTRACT_PRIOR = "ABSTRACT_PRIOR";
-    public static final String RELATIVE_TIME = "RELATIVE_TIME";
-
     private final DicomObject dcmobj;
     private final List selectors;
 
@@ -66,6 +66,24 @@ public class HPImageSet
         this.dcmobj = dcmobj;
     }
 
+    public HPImageSet()
+    {
+        this.selectors = new ArrayList();
+        this.dcmobj = new BasicDicomObject();
+        DicomObject is = new BasicDicomObject();
+        is.putSequence(Tag.ImageSetSelectorSequence);
+        DicomElement tbissq = is.putSequence(Tag.TimeBasedImageSetsSequence);
+        tbissq.addDicomObject(dcmobj);
+    }
+    
+    public HPImageSet(HPImageSet shareSelectors)
+    {
+        this.selectors = shareSelectors.selectors;
+        this.dcmobj = new BasicDicomObject();
+        DicomElement tbissq = shareSelectors.getTimeBasedImageSetsSequence();
+        tbissq.addDicomObject(dcmobj);
+    }
+    
     public DicomObject getDicomObject()
     {
         return dcmobj;
@@ -87,34 +105,46 @@ public class HPImageSet
         return dcmobj.getInt(Tag.ImageSetNumber);
     }
 
+    public void setImageSetNumber(int imageSetNumber)
+    {
+        dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSetNumber);
+    }
+
     public String getImageSetLabel()
     {
         return dcmobj.getString(Tag.ImageSetLabel);
     }
 
-    public String getImageSetSelectorCategory()
+    public void setImageSetLabel(String imageSetLabel)
     {
-        return dcmobj.getString(Tag.ImageSetSelectorCategory);
+        dcmobj.putString(Tag.ImageSetLabel, VR.LO, imageSetLabel);
     }
 
-    public boolean isRelativeTime()
+    public ImageSetSelectorCategory getImageSetSelectorCategory()
     {
-        return RELATIVE_TIME.equals(getImageSetSelectorCategory());
+        String category = dcmobj.getString(Tag.ImageSetSelectorCategory);
+        return category == null ? null
+                : ImageSetSelectorCategory.valueOf(category);
     }
 
-    public boolean isAbstractPrior()
+    public RelativeTime getRelativeTime()
     {
-        return ABSTRACT_PRIOR.equals(getImageSetSelectorCategory());
+        ImageSetSelectorCategory category = getImageSetSelectorCategory();
+        if (category == null || category.isAbstractPrior())
+            return null;
+        
+        RelativeTimeUnits units = 
+                RelativeTimeUnits.valueOf(dcmobj.getString(Tag.RelativeTimeUnits));
+        return new RelativeTime(dcmobj.getInts(Tag.RelativeTime), units);
     }
 
-    public int[] getRelativeTime()
+    public void setRelativeTime(RelativeTime relativeTime)
     {
-        return dcmobj.getInts(Tag.RelativeTime);
-    }
-
-    public String getRelativeTimeUnits()
-    {
-        return dcmobj.getString(Tag.RelativeTimeUnits);
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
+                ImageSetSelectorCategory.RELATIVE_TIME.getCodeString());
+        dcmobj.putInts(Tag.RelativeTime, VR.US, relativeTime.getValues());
+        dcmobj.putString(Tag.RelativeTimeUnits, VR.CS, 
+                relativeTime.getUnits().getCodeString());
     }
 
     public boolean hasAbstractPriorValue()
@@ -122,9 +152,16 @@ public class HPImageSet
         return dcmobj.containsValue(Tag.AbstractPriorValue);
     }
 
-    public int[] getAbstractPriorValue()
+    public AbstractPriorValue getAbstractPriorValue()
     {
-        return dcmobj.getInts(Tag.AbstractPriorValue);
+        return new AbstractPriorValue(dcmobj.getInts(Tag.AbstractPriorValue));
+    }
+
+    public void setAbstractPriorValue(AbstractPriorValue abstractPriorValue)
+    {
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
+                ImageSetSelectorCategory.ABSTRACT_PRIOR.getCodeString());
+        dcmobj.putInts(Tag.AbstractPriorValue, VR.US, abstractPriorValue.getValues());
     }
 
     public boolean hasAbstractPriorCode()
@@ -138,13 +175,32 @@ public class HPImageSet
                 dcmobj.getNestedDicomObject(Tag.AbstractPriorCodeSequence));
     }
 
+    public void setAbstractPriorCode(Code code)
+    {
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
+                ImageSetSelectorCategory.ABSTRACT_PRIOR.getCodeString());
+        dcmobj.putNestedDicomObject(Tag.AbstractPriorCodeSequence,
+                code.getDicomObject());
+    }
+
     public DicomElement getImageSetSelectorSequence()
     {
         return dcmobj.getParent().get(Tag.ImageSetSelectorSequence);
     }
 
+    public DicomElement getTimeBasedImageSetsSequence()
+    {
+        return dcmobj.getParent().get(Tag.TimeBasedImageSetsSequence);
+    }
+
     public List getImageSetSelectors()
     {
         return Collections.unmodifiableList(selectors);
+    }
+    
+    public void addImageSetSelector(HPSelector selector)
+    {
+        getImageSetSelectorSequence().addDicomObject(selector.getDicomObject());
+        selectors.add(selector);
     }
 }

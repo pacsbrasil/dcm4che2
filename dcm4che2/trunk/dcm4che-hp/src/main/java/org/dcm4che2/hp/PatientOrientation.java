@@ -41,51 +41,36 @@ package org.dcm4che2.hp;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 21, 2005
+ *
  */
-public class SortingDirection
+public class PatientOrientation
 {
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
+    private final String[] values;
 
-    private final String codeString;
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    PatientOrientation(String[] values)
     {
-        this.codeString = codeString;
-        this.sign = sign;
+        this.values = values;
     }
 
-    public final String getCodeString()
+    PatientOrientation(String right, String bottom)
     {
-        return codeString;
+        this.values = new String[] { right, bottom };
     }
 
-    public final int sign()
+    final String[] getValues()
     {
-        return sign;
+        return values;
     }
 
-    public static SortingDirection valueOf(String codeString)
+    public final String getRight()
     {
-        try
-        {
-            return (SortingDirection) 
-                    SortingDirection.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+        return values[0];
+    }
+
+    public final String getBottom()
+    {
+        return values[1];
     }
 }

@@ -41,42 +41,47 @@ package org.dcm4che2.hp;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 21, 2005
+ *
  */
-public class SortingDirection
+public class ImageSetSelectorCategory
 {
-
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
+    public static final ImageSetSelectorCategory ABSTRACT_PRIOR = 
+            new ImageSetSelectorCategory("ABSTRACT_PRIOR", true);
+    
+    public static final ImageSetSelectorCategory RELATIVE_TIME = 
+            new ImageSetSelectorCategory("RELATIVE_TIME", false);
 
     private final String codeString;
-    private final int sign;
+    private final boolean abstractPrior;
 
-    private SortingDirection(String codeString, int sign)
+    private ImageSetSelectorCategory(String codeString, boolean abstractPrior)
     {
         this.codeString = codeString;
-        this.sign = sign;
+        this.abstractPrior = abstractPrior;
     }
 
     public final String getCodeString()
     {
         return codeString;
     }
-
-    public final int sign()
+    
+    public final boolean isAbstractPrior()
     {
-        return sign;
+        return abstractPrior;
     }
 
-    public static SortingDirection valueOf(String codeString)
+    public final boolean isRelativeTime()
+    {
+        return abstractPrior;
+    }
+
+    public static ImageSetSelectorCategory valueOf(String codeString)
     {
         try
         {
-            return (SortingDirection) 
-                    SortingDirection.class.getField(codeString).get(null);
+            return (ImageSetSelectorCategory) 
+                    ImageSetSelectorCategory.class.getField(codeString).get(null);
         }
         catch (IllegalAccessException e)
         {

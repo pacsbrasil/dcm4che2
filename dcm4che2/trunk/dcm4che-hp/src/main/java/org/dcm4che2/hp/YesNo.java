@@ -44,21 +44,19 @@ package org.dcm4che2.hp;
  * @since Aug 7, 2005
  * 
  */
-public class SortingDirection
+public class YesNo
 {
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
+    public static final YesNo YES = new YesNo("YES", true);
+    public static final YesNo NO = new YesNo("NO", false);
 
     private final String codeString;
-    private final int sign;
+    private final boolean yes;
 
-    private SortingDirection(String codeString, int sign)
+    private YesNo(String codeString, boolean yes)
     {
         this.codeString = codeString;
-        this.sign = sign;
+        this.yes = yes;
     }
 
     public final String getCodeString()
@@ -66,17 +64,25 @@ public class SortingDirection
         return codeString;
     }
 
-    public final int sign()
+    public final boolean isYes()
     {
-        return sign;
+        return yes;
     }
 
-    public static SortingDirection valueOf(String codeString)
+    public final boolean isNo()
     {
+        return !yes;
+    }
+
+    public static YesNo valueOf(String codeString)
+    {
+        if (codeString == null)
+            return null;
+        
         try
         {
-            return (SortingDirection) 
-                    SortingDirection.class.getField(codeString).get(null);
+            return (YesNo) 
+                    YesNo.class.getField(codeString).get(null);
         }
         catch (IllegalAccessException e)
         {

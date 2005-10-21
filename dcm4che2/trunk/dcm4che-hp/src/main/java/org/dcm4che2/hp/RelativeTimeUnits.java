@@ -38,45 +38,62 @@
 
 package org.dcm4che2.hp;
 
+import java.util.Calendar;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 21, 2005
+ *
  */
-public class SortingDirection
+public class RelativeTimeUnits
 {
-
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
+    public static final RelativeTimeUnits SECONDS = 
+            new RelativeTimeUnits("SECONDS", Calendar.SECOND);
+    
+    public static final RelativeTimeUnits MINUTES = 
+            new RelativeTimeUnits("MINUTES", Calendar.MINUTE);
+    
+    public static final RelativeTimeUnits HOURS = 
+            new RelativeTimeUnits("HOURS", Calendar.HOUR_OF_DAY);
+    
+    public static final RelativeTimeUnits DAYS = 
+            new RelativeTimeUnits("DAYS", Calendar.DAY_OF_MONTH);
+    
+    public static final RelativeTimeUnits WEEKS = 
+            new RelativeTimeUnits("WEEKS", Calendar.WEEK_OF_YEAR);
+    
+    public static final RelativeTimeUnits MONTHS = 
+            new RelativeTimeUnits("MONTHS", Calendar.MONTH);
+    
+    public static final RelativeTimeUnits YEARS = 
+            new RelativeTimeUnits("YEARS", Calendar.YEAR);
+    
     private final String codeString;
-    private final int sign;
+    private final int calendarField;
 
-    private SortingDirection(String codeString, int sign)
+    private RelativeTimeUnits(String codeString, int calendarField)
     {
         this.codeString = codeString;
-        this.sign = sign;
+        this.calendarField = calendarField;
     }
 
     public final String getCodeString()
     {
         return codeString;
     }
-
-    public final int sign()
+    
+    public final int getCalendarField()
     {
-        return sign;
+        return calendarField;
     }
-
-    public static SortingDirection valueOf(String codeString)
+    
+    public static RelativeTimeUnits valueOf(String codeString)
     {
         try
         {
-            return (SortingDirection) 
-                    SortingDirection.class.getField(codeString).get(null);
+            return (RelativeTimeUnits) 
+                    RelativeTimeUnits.class.getField(codeString).get(null);
         }
         catch (IllegalAccessException e)
         {
