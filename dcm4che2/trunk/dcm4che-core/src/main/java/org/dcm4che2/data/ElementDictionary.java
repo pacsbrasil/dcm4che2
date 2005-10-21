@@ -139,7 +139,9 @@ public class ElementDictionary implements Serializable {
 	}
 
 	public static ElementDictionary getPrivateDictionary(String creatorID) {
-		return maskNull((ElementDictionary) privDicts.get(creatorID));
+		return maskNull(creatorID != null && creatorID.length() != 0 
+                ? (ElementDictionary) privDicts.get(creatorID)
+                : stdDict);
 	}
 
 	private static ElementDictionary maskNull(ElementDictionary dict) {

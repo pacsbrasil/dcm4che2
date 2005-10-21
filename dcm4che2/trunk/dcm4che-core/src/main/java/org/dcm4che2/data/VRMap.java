@@ -129,7 +129,9 @@ public class VRMap implements Serializable {
 	}
 
 	public static VRMap getPrivateVRMap(String creatorID) {
-		return maskNull((VRMap) privVRMaps.get(creatorID));
+		return maskNull(creatorID != null && creatorID.length() != 0 
+                ? (VRMap) privVRMaps.get(creatorID)
+                : vrMap);
 	}
 
 	private static VRMap maskNull(VRMap vrMap) {
