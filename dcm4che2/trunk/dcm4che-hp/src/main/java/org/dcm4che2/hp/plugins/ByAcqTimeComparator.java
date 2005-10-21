@@ -40,8 +40,10 @@ package org.dcm4che2.hp.plugins;
 
 import java.util.Date;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.AbstractHPComparator;
 import org.dcm4che2.hp.SortingDirection;
 
@@ -55,15 +57,38 @@ public class ByAcqTimeComparator
 extends AbstractHPComparator
 {
 
-    private final int sortingDirection;
+    private final SortingDirection sortingDirection;
     private final DicomObject sortOp;
 
     public ByAcqTimeComparator(DicomObject sortOp)
     {
         this.sortOp = sortOp;
-        sortingDirection = SortingDirection.toSign(sortOp.getString(Tag.SortingDirection));
+        String cs = sortOp.getString(Tag.SortingDirection);
+        if (cs == null)
+        {
+            throw new IllegalArgumentException(
+                    "Missing (0072,0604) Sorting Direction");
+        }
+        try
+        {
+            this.sortingDirection = SortingDirection.valueOf(cs);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException(
+                    "Invalid (0072,0604) Sorting Direction: " + cs);
+        }
     }
 
+    public ByAcqTimeComparator(SortingDirection sortingDirection)
+    {
+        this.sortingDirection = sortingDirection;
+        this.sortOp = new BasicDicomObject();
+        sortOp.putString(Tag.SortbyCategory, VR.CS, "BY_ACQ_TIME");
+        sortOp.putString(Tag.SortingDirection, VR.CS,
+                sortingDirection.getCodeString());
+    }
+    
     public final DicomObject getDicomObject()
     {
         return sortOp;
@@ -75,7 +100,7 @@ extends AbstractHPComparator
         Date t2 = toAcqTime(o2, frame2);
         if (t1 == null || t2 == null)
             return 0;
-        return t1.compareTo(t2) * sortingDirection;
+        return t1.compareTo(t2) * sortingDirection.sign();
     }
 
     private Date toAcqTime(DicomObject o, int frame)

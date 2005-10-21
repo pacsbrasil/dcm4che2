@@ -49,6 +49,11 @@ import org.dcm4che2.data.Tag;
 public abstract class AbstractHPSelector
 implements HPSelector
 {
+    
+    public String getImageSetSelectorUsageFlag()
+    {
+        return getDicomObject().getString(Tag.ImageSetSelectorUsageFlag);
+    }
 
     public String getFilterbyCategory()
     {

@@ -46,9 +46,10 @@ import org.dcm4che2.data.Tag;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 7, 2005
- *
+ * 
  */
-public abstract class FilterOp {
+public abstract class FilterOp
+{
     public static final FilterOp MEMBER_OF = new MemberOf();
     public static final FilterOp NOT_MEMBER_OF = new NotMemberOf();
     public static final FilterOp RANGE_INCL = new RangeIncl();
@@ -57,98 +58,127 @@ public abstract class FilterOp {
     public static final FilterOp LESS_OR_EQUAL = new LessOrEqual();
     public static final FilterOp GREATER_THAN = new GreaterThan();
     public static final FilterOp LESS_THAN = new LessThan();
-    
-    public static FilterOp valueOf(DicomObject item) {
-        String name = item.getString(Tag.FilterbyOperator);
-        if (name == null)
-            throw new IllegalArgumentException(
-                "Missing (0072,0406) Filter-by Operator");
-        try {
-            return (FilterOp) FilterOp.class.getField(name).get(null);
-         } catch (IllegalAccessException e) {
+
+    public static FilterOp valueOf(String codeValue)
+    {
+        try
+        {
+            return (FilterOp) FilterOp.class.getField(codeValue).get(null);
+        }
+        catch (IllegalAccessException e)
+        {
             throw new Error(e);
-         } catch (NoSuchFieldException e) {
-            throw new IllegalArgumentException(
-                    "Illegal (0072,0406) Filter-by Operator: " + name);
-         }        
+        }
+        catch (NoSuchFieldException e)
+        {
+            throw new IllegalArgumentException("codeValue: " + codeValue);
+        }
     }
-    
+
+    protected final String codeString;
     protected final int numParams;
-        
-    protected FilterOp(int numParams) {
+
+    protected FilterOp(String codeString, int numParams)
+    {
+        this.codeString = codeString;
         this.numParams = numParams;
     }
 
-    public final int getNumParams() {
+    public String getCodeString()
+    {
+        return codeString;
+    }
+
+    public final int getNumParams()
+    {
         return numParams;
     }
 
-    public final boolean isNumeric() {
+    public final boolean isNumeric()
+    {
         return numParams != 0;
     }
 
-    public boolean op(String[] values, int valueNumber, String[] params) {
+    public boolean op(String[] values, int valueNumber, String[] params)
+    {
         throw new UnsupportedOperationException();
     }
-    
-    public boolean op(DicomElement values, DicomElement params) {
+
+    public boolean op(DicomElement values, DicomElement params)
+    {
         throw new UnsupportedOperationException();
     }
-    
+
     public abstract boolean op(int[] values, int valueNumber, int[] params);
+
     public abstract boolean op(int[] values, int valueNumber, long[] params);
+
     public abstract boolean op(float[] values, int valueNumber, float[] params);
+
     public abstract boolean op(double[] values, int valueNumber, double[] params);
-    
-    static boolean memberOf(String value, String[] params) {
-        for (int i = 0; i < params.length; i++) {
+
+    static boolean memberOf(String value, String[] params)
+    {
+        for (int i = 0; i < params.length; i++)
+        {
             if (value.equals(params[i]))
                 return true;
         }
         return false;
     }
 
-    static boolean memberOf(int value, int[] params) {
-        for (int i = 0; i < params.length; i++) {
+    static boolean memberOf(int value, int[] params)
+    {
+        for (int i = 0; i < params.length; i++)
+        {
             if (value == params[i])
                 return true;
         }
         return false;
     }
-    
-    static boolean memberOf(int value, long[] params) {
-        for (int i = 0; i < params.length; i++) {
+
+    static boolean memberOf(int value, long[] params)
+    {
+        for (int i = 0; i < params.length; i++)
+        {
             if (value == (int) params[i])
                 return true;
         }
         return false;
     }
-    
-    static boolean memberOf(float value, float[] params) {
-        for (int i = 0; i < params.length; i++) {
+
+    static boolean memberOf(float value, float[] params)
+    {
+        for (int i = 0; i < params.length; i++)
+        {
             if (value == params[i])
                 return true;
         }
         return false;
     }
-    
-    static boolean memberOf(double value, double[] params) {
-        for (int i = 0; i < params.length; i++) {
+
+    static boolean memberOf(double value, double[] params)
+    {
+        for (int i = 0; i < params.length; i++)
+        {
             if (value == params[i])
                 return true;
         }
         return false;
     }
-    
-    static boolean memberOf(DicomObject value, DicomElement params) {
-        for (int i = 0, n = params.countItems(); i < n; i++) {
+
+    static boolean memberOf(DicomObject value, DicomElement params)
+    {
+        for (int i = 0, n = params.countItems(); i < n; i++)
+        {
             if (codeEquals(params.getDicomObject(i), value))
                 return true;
         }
         return false;
     }
 
-    static boolean codeEquals(DicomObject item1, DicomObject item2) {
+    static boolean codeEquals(DicomObject item1, DicomObject item2)
+    {
         if (!equals(item1.getString(Tag.CodeValue),
                 item2.getString(Tag.CodeValue)))
             return false;
@@ -162,447 +192,551 @@ public abstract class FilterOp {
                 item2.getString(Tag.CodingSchemeVersion));
     }
 
-    static boolean equals(Object o1, Object o2) {
+    static boolean equals(Object o1, Object o2)
+    {
         return o1 == null ? o2 == null : o1.equals(o2);
     }
-    
-    static class MemberOf extends FilterOp {
 
-        public MemberOf() {
-            super(0);
+    static class MemberOf extends FilterOp
+    {
+
+        public MemberOf()
+        {
+            super("MEMBER_OF", 0);
         }
 
-        public boolean op(String[] values, int valueNumber, String[] params) {
+        public boolean op(String[] values, int valueNumber, String[] params)
+        {
             if (valueNumber != 0)
-                return memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return true;
             }
             return false;
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return true;
             }
             return false;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return true;
             }
             return false;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return true;
             }
             return false;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return true;
             }
             return false;
         }
 
-        public boolean op(DicomElement values, DicomElement params) {
-            for (int i = 0, n = values.countItems(); i < n; i++) {
+        public boolean op(DicomElement values, DicomElement params)
+        {
+            for (int i = 0, n = values.countItems(); i < n; i++)
+            {
                 if (memberOf(values.getDicomObject(i), params))
                     return true;
             }
             return false;
-        }}
-    
-    static class NotMemberOf extends FilterOp {
+        }
+    }
 
-        public NotMemberOf() {
-            super(0);
+    static class NotMemberOf extends FilterOp
+    {
+
+        public NotMemberOf()
+        {
+            super("NOT_MEMBER_OF", 0);
         }
 
-        public boolean op(String[] values, int valueNumber, String[] params) {
+        public boolean op(String[] values, int valueNumber, String[] params)
+        {
             if (valueNumber != 0)
-                return !memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return !memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return !memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return !memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return !memberOf(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !memberOf(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (memberOf(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(DicomElement values, DicomElement params) {
-            for (int i = 0, n = values.countItems(); i < n; i++) {
+        public boolean op(DicomElement values, DicomElement params)
+        {
+            for (int i = 0, n = values.countItems(); i < n; i++)
+            {
                 if (memberOf(values.getDicomObject(i), params))
                     return false;
             }
             return true;
-        }}
+        }
+    }
 
-    static boolean inRange(int value, int[] params) {
+    static boolean inRange(int value, int[] params)
+    {
         return value >= params[0] && value <= params[1];
     }
 
-    static boolean inRange(int value, long[] params) {
+    static boolean inRange(int value, long[] params)
+    {
         long l = value & 0xffffffffL;
         return l >= params[0] && l <= params[1];
     }
 
-    static boolean inRange(float value, float[] params) {
+    static boolean inRange(float value, float[] params)
+    {
         return value >= params[0] && value <= params[1];
     }
 
-    static boolean inRange(double value, double[] params) {
+    static boolean inRange(double value, double[] params)
+    {
         return value >= params[0] && value <= params[1];
     }
 
-    static class RangeIncl extends FilterOp {
+    static class RangeIncl extends FilterOp
+    {
 
-        public RangeIncl() {
-            super(2);
+        public RangeIncl()
+        {
+            super("RANGE_INCL", 2);
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (!inRange(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (!inRange(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (!inRange(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (!inRange(values[i], params))
                     return false;
             }
             return true;
-        }}
+        }
+    }
 
-    static class RangeExcl extends FilterOp {
+    static class RangeExcl extends FilterOp
+    {
 
-        public RangeExcl() {
-            super(2);
+        public RangeExcl()
+        {
+            super("RANGE_EXCL", 2);
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return !inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (inRange(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return !inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (inRange(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return !inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (inRange(values[i], params))
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return !inRange(values[valueNumber-1], params);
-            for (int i = 0; i < values.length; i++) {
+                return !inRange(values[valueNumber - 1], params);
+            for (int i = 0; i < values.length; i++)
+            {
                 if (inRange(values[i], params))
                     return false;
             }
             return true;
-        }}
-    
-    static int compare(int value, int[] params) {
+        }
+    }
+
+    static int compare(int value, int[] params)
+    {
         return value < params[0] ? -1 : value > params[0] ? 1 : 0;
     }
 
-    static int compare(int value, long[] params) {
+    static int compare(int value, long[] params)
+    {
         long l = value & 0xffffffffL;
         return l < params[0] ? -1 : l > params[0] ? 1 : 0;
     }
-    
-    static int compare(float value, float[] params) {
+
+    static int compare(float value, float[] params)
+    {
         return value < params[0] ? -1 : value > params[0] ? 1 : 0;
     }
 
-    static int compare(double value, double[] params) {
+    static int compare(double value, double[] params)
+    {
         return value < params[0] ? -1 : value > params[0] ? 1 : 0;
     }
-    
-    static class GreaterOrEqual extends FilterOp {
 
-        public GreaterOrEqual() {
-            super(1);
+    static class GreaterOrEqual extends FilterOp
+    {
+
+        public GreaterOrEqual()
+        {
+            super("GREATER_OR_EQUAL", 1);
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) >= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) >= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) < 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) >= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) >= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) < 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) >= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) >= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) < 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) >= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) >= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) < 0)
                     return false;
             }
             return true;
-        }}
-    
-    static class LessOrEqual extends FilterOp {
+        }
+    }
 
-        public LessOrEqual() {
-            super(1);
+    static class LessOrEqual extends FilterOp
+    {
+
+        public LessOrEqual()
+        {
+            super("LESS_OR_EQUAL", 1);
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) <= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) <= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) > 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) <= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) <= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) > 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) <= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) <= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) > 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) <= 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) <= 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) > 0)
                     return false;
             }
             return true;
-        }}
-    
-    static class GreaterThan extends FilterOp {
+        }
+    }
 
-        public GreaterThan() {
-            super(1);
+    static class GreaterThan extends FilterOp
+    {
+
+        public GreaterThan()
+        {
+            super("GREATER_THAN", 1);
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) > 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) > 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) <= 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) > 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) > 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) <= 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) > 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) > 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) <= 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) > 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) > 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) <= 0)
                     return false;
             }
             return true;
-        }}
-    
-    
-    static class LessThan extends FilterOp {
+        }
+    }
 
-        public LessThan() {
-            super(1);
+    static class LessThan extends FilterOp
+    {
+
+        public LessThan()
+        {
+            super("LESS_THAN", 1);
         }
 
-        public boolean op(int[] values, int valueNumber, int[] params) {
+        public boolean op(int[] values, int valueNumber, int[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) < 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) < 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) >= 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(int[] values, int valueNumber, long[] params) {
+        public boolean op(int[] values, int valueNumber, long[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) < 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) < 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) >= 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(float[] values, int valueNumber, float[] params) {
+        public boolean op(float[] values, int valueNumber, float[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) < 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) < 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) >= 0)
                     return false;
             }
             return true;
         }
 
-        public boolean op(double[] values, int valueNumber, double[] params) {
+        public boolean op(double[] values, int valueNumber, double[] params)
+        {
             if (valueNumber != 0)
-                return compare(values[valueNumber-1], params) < 0;
-            for (int i = 0; i < values.length; i++) {
+                return compare(values[valueNumber - 1], params) < 0;
+            for (int i = 0; i < values.length; i++)
+            {
                 if (compare(values[i], params) >= 0)
                     return false;
             }
             return true;
-        }}
+        }
+    }
 
 }

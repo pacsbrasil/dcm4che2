@@ -52,6 +52,8 @@ public interface HPSelector {
     
     DicomObject getDicomObject();
 
+    String getImageSetSelectorUsageFlag();
+
     String getFilterbyCategory();
 
     String getFilterbyAttributePresence();

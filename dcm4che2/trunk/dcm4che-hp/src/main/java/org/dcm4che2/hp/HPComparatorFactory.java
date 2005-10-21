@@ -40,9 +40,11 @@ package org.dcm4che2.hp;
 
 import java.util.Date;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -57,37 +59,77 @@ public class HPComparatorFactory
     {
         if (sortingOp.containsValue(Tag.SortbyCategory))
             return HangingProtocol.createSortByCategory(sortingOp);
-        SortByAttribute cmp = new SortByAttribute(sortingOp);
-        return addContext(cmp, sortingOp);
-    }
-
-    private static HPComparator addContext(HPComparator cmp, DicomObject ctx)
-    {
-        cmp = addSequencePointer(cmp, ctx);
-        cmp = addFunctionalGroupPointer(cmp, ctx);
+        HPComparator cmp = new SortByAttribute(sortingOp);
+        cmp = addSequencePointer(cmp);
+        cmp = addFunctionalGroupPointer(cmp);
         return cmp;
     }
 
-    private static HPComparator addSequencePointer(HPComparator cmp,
-            DicomObject ctx)
+    public static HPComparator createSortByAttribute(int tag,
+            String privateCreator, int valueNumber,
+            SortingDirection sortingDirection)
     {
-        int seqTag = ctx.getInt(Tag.SelectorSequencePointer);
-        if (seqTag != 0)
+        return new SortByAttribute(tag, privateCreator, valueNumber, 
+                sortingDirection);
+    }
+    
+    public static HPComparator addSequencePointer(HPComparator cmp, int tag, 
+            String privCreator)
+    {
+        if (tag == 0)
+            return cmp;
+        
+        if (cmp.getSelectorSequencePointer() != 0)
+            throw new IllegalArgumentException("Sequence Pointer already added");
+        
+        if (cmp.getFunctionalGroupPointer() != 0)
+            throw new IllegalArgumentException("Functional Group Pointer already added");
+        
+        cmp.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT, tag);
+        if (privCreator != null)
         {
-            String seqTagPrivCreator = ctx.getString(Tag.SelectorSequencePointerPrivateCreator);
-            cmp = new Seq(seqTag, seqTagPrivCreator, cmp);
+            cmp.getDicomObject().putString(
+                    Tag.SelectorSequencePointerPrivateCreator, VR.LO, privCreator);
+        }
+        return new Seq(tag, privCreator, cmp);
+    }
+    
+    private static HPComparator addSequencePointer(HPComparator cmp)
+    {
+        int tag = cmp.getSelectorSequencePointer();
+        if (tag != 0)
+        {
+            String privCreator = cmp.getSelectorSequencePointerPrivateCreator();
+            cmp = new Seq(tag, privCreator, cmp);
         }
         return cmp;
     }
 
-    private static HPComparator addFunctionalGroupPointer(HPComparator cmp,
-            DicomObject ctx)
+    public static HPComparator addFunctionalGroupPointer(HPComparator cmp,
+            int tag, String privCreator)
     {
-        int fgTag = ctx.getInt(Tag.FunctionalGroupPointer);
-        if (fgTag != 0)
+        if (tag == 0)
+            return cmp;
+        
+        if (cmp.getFunctionalGroupPointer() != 0)
+            throw new IllegalArgumentException("Functional Group Pointer already added");
+        
+        cmp.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT, tag);
+        if (privCreator != null)
         {
-            String fgTagPrivCreator = ctx.getString(Tag.FunctionalGroupPrivateCreator);
-            cmp = new FctGrp(fgTag, fgTagPrivCreator, cmp);
+            cmp.getDicomObject().putString(
+                    Tag.FunctionalGroupPrivateCreator, VR.LO, privCreator);
+        }
+        return new FctGrp(tag, privCreator, cmp);
+    }
+    
+    private static HPComparator addFunctionalGroupPointer(HPComparator cmp)
+    {
+        int tag = cmp.getFunctionalGroupPointer();
+        if (tag != 0)
+        {
+            String privCreator = cmp.getFunctionalGroupPrivateCreator();
+            cmp = new FctGrp(tag, privCreator, cmp);
         }
         return cmp;
     }
@@ -100,6 +142,10 @@ public class HPComparatorFactory
 
         AttributeComparator(int tag, String privateCreator)
         {
+            if (tag == 0)
+            {
+                throw new IllegalArgumentException("tag: 0");
+            }
             this.tag = tag;
             this.privateCreator = privateCreator;
         }
@@ -115,16 +161,30 @@ public class HPComparatorFactory
     {
         private final DicomObject sortingOp;
         private final int valueNumber;
-        private final int sortingDirection;
+        private final SortingDirection sortingDirection;
 
-        SortByAttribute(DicomObject sortingOp) {
-            super(sortingOp.getInt(Tag.SelectorAttribute),
-                    sortingOp.getString(Tag.SelectorAttributePrivateCreator));
-            if (tag == 0)
+        SortByAttribute(int tag, String privateCreator, int valueNumber,
+                SortingDirection sortingDirection) {
+            super(tag, privateCreator);
+            if (valueNumber == 0)
             {
-                throw new IllegalArgumentException(
-                        "Missing (0072,0026) Selector Attribute");
+                throw new IllegalArgumentException("valueNumber = 0");
             }
+            this.valueNumber = valueNumber;
+            this.sortingDirection = sortingDirection;
+            sortingOp = new BasicDicomObject();
+            sortingOp.putInt(Tag.SelectorAttribute, VR.AT, tag);
+            if (privateCreator != null)
+                sortingOp.putString(Tag.SelectorAttributePrivateCreator,
+                        VR.LO, privateCreator);
+            sortingOp.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
+            sortingOp.putString(Tag.SortingDirection, VR.CS, 
+                    sortingDirection.getCodeString());
+        }
+        
+        SortByAttribute(DicomObject sortingOp) {
+            super(getSelectorAttribute(sortingOp),
+                    sortingOp.getString(Tag.SelectorAttributePrivateCreator));
             this.valueNumber = sortingOp.getInt(Tag.SelectorValueNumber);
             if (valueNumber == 0)
             {
@@ -132,9 +192,33 @@ public class HPComparatorFactory
                         "Missing or invalid (0072,0028) Selector Value Number: "
                                 + sortingOp.get(Tag.SelectorValueNumber));
             }
-            this.sortingDirection =  SortingDirection.toSign(
-                    sortingOp.getString(Tag.SortingDirection));
+            String cs = sortingOp.getString(Tag.SortingDirection);
+            if (cs == null)
+            {
+                throw new IllegalArgumentException(
+                        "Missing (0072,0604) Sorting Direction");
+            }
+            try
+            {
+                this.sortingDirection = SortingDirection.valueOf(cs);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw new IllegalArgumentException(
+                        "Invalid (0072,0604) Sorting Direction: " + cs);
+            }
             this.sortingOp = sortingOp;
+        }
+
+        private static int getSelectorAttribute(DicomObject sortingOp)
+        {
+            int tag = sortingOp.getInt(Tag.SelectorAttribute);
+            if (tag == 0)
+            {
+                throw new IllegalArgumentException(
+                        "Missing (0072,0026) Selector Attribute");
+            }
+            return tag;
         }
 
 
@@ -201,7 +285,7 @@ public class HPComparatorFactory
             String v2 = c2.getString(Tag.CodeValue);
             if (v1 == null || v2 == null)
                 return 0;
-            return v1.compareTo(v2) * sortingDirection;
+            return v1.compareTo(v2) * sortingDirection.sign();
         }
 
         private int intcmp(int[] v1, int[] v2)
@@ -211,9 +295,9 @@ public class HPComparatorFactory
                 return 0;
 
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sortingDirection;
+                return sortingDirection.sign();
             if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return -sortingDirection;
+                return -sortingDirection.sign();
             return 0;
         }
 
@@ -223,9 +307,9 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sortingDirection;
+                return sortingDirection.sign();
             if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return -sortingDirection;
+                return -sortingDirection.sign();
             return 0;
         }
 
@@ -235,9 +319,9 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sortingDirection;
+                return sortingDirection.sign();
             if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return -sortingDirection;
+                return -sortingDirection.sign();
             return 0;
         }
 
@@ -247,7 +331,7 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             return v1[valueNumber - 1].compareTo(v2[valueNumber - 1])
-                    * sortingDirection;
+                    * sortingDirection.sign();
         }
 
         private int uintcmp(int[] v1, int[] v2)
@@ -258,9 +342,9 @@ public class HPComparatorFactory
             long l1 = v1[valueNumber - 1] & 0xffffffffL;
             long l2 = v2[valueNumber - 1] & 0xffffffffL;
             if (l1 < l2)
-                return sortingDirection;
+                return sortingDirection.sign();
             if (l1 > l2)
-                return -sortingDirection;
+                return -sortingDirection.sign();
             return 0;
         }
 
@@ -270,7 +354,7 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             return v1[valueNumber - 1].compareTo(v2[valueNumber - 1])
-                    * sortingDirection;
+                    * sortingDirection.sign();
         }
     }
 

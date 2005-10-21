@@ -38,8 +38,10 @@
 
 package org.dcm4che2.hp.plugins;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.AbstractHPComparator;
 import org.dcm4che2.hp.SortingDirection;
 
@@ -64,15 +66,37 @@ extends AbstractHPComparator
     private static final int CZ = 5;
 
     private final DicomObject sortOp;
-    private final int sortingDirection;
+    private final SortingDirection sortingDirection;
 
     public AlongAxisComparator(DicomObject sortOp)
     {
         this.sortOp = sortOp;
-        sortingDirection = SortingDirection.toSign(
-                sortOp.getString(Tag.SortingDirection));
+        String cs = sortOp.getString(Tag.SortingDirection);
+        if (cs == null)
+        {
+            throw new IllegalArgumentException(
+                    "Missing (0072,0604) Sorting Direction");
+        }
+        try
+        {
+            this.sortingDirection = SortingDirection.valueOf(cs);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException(
+                    "Invalid (0072,0604) Sorting Direction: " + cs);
+        }
     }
 
+    public AlongAxisComparator(SortingDirection sortingDirection)
+    {
+        this.sortingDirection = sortingDirection;
+        this.sortOp = new BasicDicomObject();
+        sortOp.putString(Tag.SortbyCategory, VR.CS, "ALONG_AXIS");
+        sortOp.putString(Tag.SortingDirection, VR.CS,
+                sortingDirection.getCodeString());
+    }
+    
     public final DicomObject getDicomObject()
     {
         return sortOp;
@@ -85,9 +109,9 @@ extends AbstractHPComparator
             float v1 = dot(o1, frame1);
             float v2 = dot(o2, frame2);
             if (v1 < v2)
-                return sortingDirection;
+                return sortingDirection.sign();
             if (v1 > v2)
-                return -sortingDirection;
+                return -sortingDirection.sign();
         }
         catch (RuntimeException ignore)
         {

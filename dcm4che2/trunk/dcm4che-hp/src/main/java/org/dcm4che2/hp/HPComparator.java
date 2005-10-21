@@ -62,7 +62,7 @@ public interface HPComparator {
 
     String getSelectorSequencePointerPrivateCreator();
 
-    String FunctionalGroupPrivateCreator();
+    String getFunctionalGroupPrivateCreator();
 
     String getSelectorAttributePrivateCreator();
 

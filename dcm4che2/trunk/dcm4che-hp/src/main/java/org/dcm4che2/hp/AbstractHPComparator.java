@@ -75,7 +75,7 @@ implements HPComparator
         return getDicomObject().getString(Tag.SelectorSequencePointerPrivateCreator);
     }
 
-    public String FunctionalGroupPrivateCreator()
+    public String getFunctionalGroupPrivateCreator()
     {
         return getDicomObject().getString(Tag.FunctionalGroupPrivateCreator);
     }
