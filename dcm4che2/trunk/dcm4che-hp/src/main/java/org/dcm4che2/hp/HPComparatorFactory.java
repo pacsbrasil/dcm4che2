@@ -45,6 +45,8 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.hp.plugins.AlongAxisComparator;
+import org.dcm4che2.hp.plugins.ByAcqTimeComparator;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -55,6 +57,14 @@ import org.dcm4che2.data.VR;
 public class HPComparatorFactory
 {
 
+    /**
+     * Create HPComparator from Sorting Operations Sequence (0072,0600) item.
+     * The created HPComparator is backed by the given item
+     * {@link #getDicomObject DicomObject}.
+     * 
+     * @param item DicomObject of Sorting Operations Sequence (0072,0600)
+     * @return the new HPComparator
+     */
     public static HPComparator createHPComparator(DicomObject sortingOp)
     {
         if (sortingOp.containsValue(Tag.SortbyCategory))
@@ -65,33 +75,120 @@ public class HPComparatorFactory
         return cmp;
     }
 
-    public static HPComparator createSortByAttribute(int tag,
-            String privateCreator, int valueNumber,
-            SortingDirection sortingDirection)
+    /**
+     * Create Sort By Attribute Comparator.
+     * A new {@link #getDicomObject DicomObject}, representing the according
+     * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param privateCreator Selector Attribute Private Creator, if Selector
+     *   Attribute is contained by a Private Group, otherwise <code>null</code>.
+     * @param tag Selector Attribute
+     * @param sortingDirection {@link SortingDirection#INCREASING} or
+     *                         {@link SortingDirection#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByAttribute(String privateCreator,
+            int tag, int valueNumber, SortingDirection sortingDirection)
     {
-        return new SortByAttribute(tag, privateCreator, valueNumber, 
+        return new SortByAttribute(privateCreator, tag, valueNumber, 
                 sortingDirection);
     }
     
-    public static HPComparator addSequencePointer(HPComparator cmp, int tag, 
-            String privCreator)
+    /**
+     * Create Sort Category Comparator with Sort-by Category ALONG_AXIS.
+     * A new {@link #getDicomObject DicomObject}, representing the according
+     * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection {@link SortingDirection#INCREASING} or
+     *                         {@link SortingDirection#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortAlongAxis(
+            SortingDirection sortingDirection)
+    {
+        return new AlongAxisComparator(sortingDirection);
+    }
+    
+    /**
+     * Create Sort Category Comparator with Sort-by Category BY_ACQ_TIME.
+     * A new {@link #getDicomObject DicomObject}, representing the according
+     * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection {@link SortingDirection#INCREASING} or
+     *                         {@link SortingDirection#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByAcqTime(
+            SortingDirection sortingDirection)
+    {
+        return new ByAcqTimeComparator(sortingDirection);
+    }
+    
+    /**
+     * Decorate Sort By Attribute Comparator with Selector Sequence Pointer, defining 
+     * the Selector Attribute as nested in a Sequence. If the Sequence is itself
+     * nested in a Frunctional Group Sequence, the returned Comparator has to
+     * be additional decorated by {@link #addFunctionalGroupPointer}.
+     * The associated {@link #getDicomObject DicomObject} is updated correspondingly.
+     * If <code>tag = 0</tag>, the given comparator is returned unmodified.
+     * 
+     * @param privateCreator Selector Sequence Pointer Private Creator, if 
+     *        Selector Sequence Pointer is contained by a Private Group,
+     *        otherwise <code>null</code>.
+     * @param tag Functional Group Pointer
+     * @param comparator to decorate
+     * @return the decorated Comparator
+     */
+    public static HPComparator addSequencePointer(String privCreator, int tag, 
+            HPComparator comparator)
     {
         if (tag == 0)
-            return cmp;
+            return comparator;
         
-        if (cmp.getSelectorSequencePointer() != 0)
+        if (comparator.getSelectorSequencePointer() != 0)
             throw new IllegalArgumentException("Sequence Pointer already added");
         
-        if (cmp.getFunctionalGroupPointer() != 0)
+        if (comparator.getFunctionalGroupPointer() != 0)
             throw new IllegalArgumentException("Functional Group Pointer already added");
         
-        cmp.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT, tag);
+        comparator.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT, tag);
         if (privCreator != null)
         {
-            cmp.getDicomObject().putString(
+            comparator.getDicomObject().putString(
                     Tag.SelectorSequencePointerPrivateCreator, VR.LO, privCreator);
         }
-        return new Seq(tag, privCreator, cmp);
+        return new Seq(privCreator, tag, comparator);
+    }
+    
+    /**
+     * Decorate Sort By Attribute Comparator with Functional Group Pointer, defining 
+     * the Selector Attribute as nested in a Functional Group Sequence.
+     * The associated {@link #getDicomObject DicomObject} is updated correspondingly.
+     * If <code>tag = 0</tag>, the given comparator is returned unmodified.
+     * 
+     * @param privateCreator Functional Group Private Creator, if Functional
+     *        Group Pointer is contained by a Private Group,
+     *        otherwise <code>null</code>.
+     * @param tag Functional Group Pointer
+     * @param comparator to decorate
+     * @return decorated Comparator
+     */
+    public static HPComparator addFunctionalGroupPointer(String privCreator,
+            int tag, HPComparator comparator)
+    {
+        if (tag == 0)
+            return comparator;
+        
+        if (comparator.getFunctionalGroupPointer() != 0)
+            throw new IllegalArgumentException("Functional Group Pointer already added");
+        
+        comparator.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT, tag);
+        if (privCreator != null)
+        {
+            comparator.getDicomObject().putString(
+                    Tag.FunctionalGroupPrivateCreator, VR.LO, privCreator);
+        }
+        return new FctGrp(tag, privCreator, comparator);
     }
     
     private static HPComparator addSequencePointer(HPComparator cmp)
@@ -100,27 +197,9 @@ public class HPComparatorFactory
         if (tag != 0)
         {
             String privCreator = cmp.getSelectorSequencePointerPrivateCreator();
-            cmp = new Seq(tag, privCreator, cmp);
+            cmp = new Seq(privCreator, tag, cmp);
         }
         return cmp;
-    }
-
-    public static HPComparator addFunctionalGroupPointer(HPComparator cmp,
-            int tag, String privCreator)
-    {
-        if (tag == 0)
-            return cmp;
-        
-        if (cmp.getFunctionalGroupPointer() != 0)
-            throw new IllegalArgumentException("Functional Group Pointer already added");
-        
-        cmp.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT, tag);
-        if (privCreator != null)
-        {
-            cmp.getDicomObject().putString(
-                    Tag.FunctionalGroupPrivateCreator, VR.LO, privCreator);
-        }
-        return new FctGrp(tag, privCreator, cmp);
     }
     
     private static HPComparator addFunctionalGroupPointer(HPComparator cmp)
@@ -163,7 +242,7 @@ public class HPComparatorFactory
         private final int valueNumber;
         private final SortingDirection sortingDirection;
 
-        SortByAttribute(int tag, String privateCreator, int valueNumber,
+        SortByAttribute(String privateCreator, int tag, int valueNumber,
                 SortingDirection sortingDirection) {
             super(tag, privateCreator);
             if (valueNumber == 0)
@@ -379,7 +458,7 @@ public class HPComparatorFactory
     
     private static class Seq extends AttributeComparatorDecorator
     {
-        Seq(int tag, String privateCreator, HPComparator cmp)
+        Seq(String privateCreator, int tag, HPComparator cmp)
         {
             super(tag, privateCreator, cmp);
         }
