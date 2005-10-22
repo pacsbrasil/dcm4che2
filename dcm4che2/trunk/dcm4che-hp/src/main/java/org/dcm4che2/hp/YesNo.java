@@ -44,24 +44,18 @@ package org.dcm4che2.hp;
  * @since Aug 7, 2005
  * 
  */
-public class YesNo
+public class YesNo extends CodeString
 {
 
     public static final YesNo YES = new YesNo("YES", true);
     public static final YesNo NO = new YesNo("NO", false);
 
-    private final String codeString;
     private final boolean yes;
 
     private YesNo(String codeString, boolean yes)
     {
-        this.codeString = codeString;
+        super(codeString);
         this.yes = yes;
-    }
-
-    public final String getCodeString()
-    {
-        return codeString;
     }
 
     public final boolean isYes()
@@ -76,22 +70,7 @@ public class YesNo
 
     public static YesNo valueOf(String codeString)
     {
-        if (codeString == null)
-            return null;
-        
-        try
-        {
-            return (YesNo) 
-                    YesNo.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+        return (YesNo) CodeString.valueOf(
+                YesNo.class, codeString);
     }
 }

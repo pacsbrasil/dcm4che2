@@ -44,7 +44,7 @@ package org.dcm4che2.hp;
  * @since Oct 20, 2005
  *
  */
-public class ImageSetSelectorUsageFlag
+public class ImageSetSelectorUsageFlag extends CodeString
 {
 
     public static final ImageSetSelectorUsageFlag MATCH = 
@@ -52,20 +52,14 @@ public class ImageSetSelectorUsageFlag
     public static final ImageSetSelectorUsageFlag NO_MATCH =
             new ImageSetSelectorUsageFlag("NO_MATCH", false);
 
-    private final String codeString;
     private final boolean match;
 
     private ImageSetSelectorUsageFlag(String codeString, boolean match)
     {
-        this.codeString = codeString;
+        super(codeString);
         this.match = match;
     }
 
-    public final String getCodeString()
-    {
-        return codeString;
-    }
-    
     public final boolean match()
     {
         return match;
@@ -73,20 +67,8 @@ public class ImageSetSelectorUsageFlag
 
     public static ImageSetSelectorUsageFlag valueOf(String codeString)
     {
-        try
-        {
-            return (ImageSetSelectorUsageFlag) 
-                    ImageSetSelectorUsageFlag.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+        return (ImageSetSelectorUsageFlag) CodeString.valueOf(
+                ImageSetSelectorUsageFlag.class, codeString);
     }
 
 }

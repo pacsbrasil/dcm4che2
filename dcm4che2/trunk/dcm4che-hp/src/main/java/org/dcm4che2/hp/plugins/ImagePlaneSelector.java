@@ -38,110 +38,113 @@
 
 package org.dcm4che2.hp.plugins;
 
-import java.util.Arrays;
-import java.util.List;
-
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.AbstractHPSelector;
+import org.dcm4che2.hp.ImageOrientation;
+import org.dcm4che2.hp.ImagePlane;
+import org.dcm4che2.hp.PatientOrientation;
 
-class ImagePlaneSelector extends AbstractHPSelector {
-    private static final String[] VALUES = {
-        "SAGITTAL", "CORONAL", "AXIAL", "OBLIQUE"
-    };
-    private static final int SAGITTAL = 0;
-    private static final int CORONAL = 1;
-    private static final int AXIAL = 2;
-    private static final int OBLIQUE = 3;
-    private static final int R = 0;
-    private static final int C = 1;
-    private static final int RX = 0;
-    private static final int RY = 1;
-    private static final int RZ = 2;
-    private static final int CX = 3;
-    private static final int CY = 4;
-    private static final int CZ = 5;
+class ImagePlaneSelector extends AbstractHPSelector
+{
+    public static final float DEF_MIN_COSINE = 0.9f;
 
     private final DicomObject filterOp;
-    private final float minCosine;
-    private final int[] values;
+    private float minCosine = DEF_MIN_COSINE;
+    private final ImagePlane[] imagePlanes;
 
-    public ImagePlaneSelector(DicomObject filterOp, float minCosine) {
+    public ImagePlaneSelector(DicomObject filterOp)
+    {
         String vrStr = filterOp.getString(Tag.SelectorAttributeVR);
-        if (vrStr == null) {
+        if (vrStr == null)
+        {
             throw new IllegalArgumentException(
-                    "Missing (0072,0050) AbstractHPSelector Attribute VR in " +
-                    "Item of (0072,0022) Image Set AbstractHPSelector Sequence");
+                    "Missing (0072,0050) Selector Attribute VR");
         }
-        if (!"CS".equals(vrStr)) {
+        if (!"CS".equals(vrStr))
+        {
             throw new IllegalArgumentException(
-                "(0072,0050) AbstractHPSelector Attribute VR: " + vrStr + 
-                " in Item of (0072,0400) Filter Operations Sequence");                
+                    "(0072,0050) Selector Attribute VR: " + vrStr);
         }
         String[] ss = filterOp.getStrings(Tag.SelectorCSValue);
         if (ss == null || ss.length == 0)
             throw new IllegalArgumentException(
                     "Missing (0072,0062) AbstractHPSelector CS Value");
-        values = new int[ss.length];
-        List VALUE_LIST = Arrays.asList(VALUES);
-        for (int i = 0; i < ss.length; i++) {
-            if ((values[i] = VALUE_LIST.indexOf(ss[i])) == -1)
-                throw new IllegalArgumentException(
-                        "" + filterOp.get(Tag.SelectorCSValue));
+        imagePlanes = new ImagePlane[ss.length];
+        for (int i = 0; i < ss.length; i++)
+        {
+            try
+            {
+                imagePlanes[i] = ImagePlane.valueOf(ss[i]);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw new IllegalArgumentException(""
+                        + filterOp.get(Tag.SelectorCSValue));
+            }
         }
-        this.minCosine = minCosine;
         this.filterOp = filterOp;
     }
 
-
+    public ImagePlaneSelector(ImagePlane[] imagePlanes)
+    {
+        this.imagePlanes = (ImagePlane[]) imagePlanes.clone();
+        this.filterOp = new BasicDicomObject();
+        filterOp.putString(Tag.FilterbyCategory, VR.CS, "IMAGE_PLANE");
+        filterOp.putString(Tag.SelectorAttributeVR, VR.CS, "CS");
+        String[] ss = new String[imagePlanes.length];
+        for (int i = 0; i < ss.length; i++)
+        {
+            ss[i] = imagePlanes[i].getCodeString();
+        }
+        filterOp.putStrings(Tag.SelectorCSValue, VR.CS, ss);
+    }
+    
     public final DicomObject getDicomObject()
     {
         return filterOp;
     }
-    
-    public boolean matches(DicomObject dcmobj, int frame) {
-        int value1;
-        float[] iop = dcmobj.getFloats(Tag.ImageOrientationPatient);
-        if (iop != null && iop.length == 6) {
-            value1 = fromImageOrientation(iop);
-        } else {
-            String[] po = dcmobj.getStrings(Tag.PatientOrientation);
-            if (po != null && po.length == 2) {
-                value1 = fromPatientOrientation(po);                 
-            } else {
+
+    public final float getMinCosine()
+    {
+        return minCosine;
+    }
+
+    public final void setMinCosine(float minCosine)
+    {
+        this.minCosine = minCosine;
+    }
+
+    public boolean matches(DicomObject dcmobj, int frame)
+    {
+        ImagePlane value1;
+        float[] floats = dcmobj.getFloats(Tag.ImageOrientationPatient);
+        if (floats != null && floats.length == 6)
+        {
+            ImageOrientation orientation = new ImageOrientation(floats);
+            value1 = orientation.toImagePlane(minCosine);
+        }
+        else
+        {
+            String[] ss = dcmobj.getStrings(Tag.PatientOrientation);
+            if (ss != null && ss.length == 2)
+            {
+                PatientOrientation orientation = new PatientOrientation(ss);
+                value1 = orientation.toImagePlane();
+            }
+            else
+            {
                 return true;
             }
         }
-        for (int i = 0; i < values.length; i++) {
-            if (value1 == values[i])
+        for (int i = 0; i < imagePlanes.length; i++)
+        {
+            if (value1 == imagePlanes[i])
                 return true;
         }
         return false;
-    }
-
-    private int fromPatientOrientation(String[] po) {
-        final String r = po[R];
-        final String c = po[C];
-        if (r.indexOf('H') == -1 && r.indexOf('F') == -1 
-                && c.indexOf('H') == -1 && c.indexOf('F') == -1)
-            return AXIAL;
-        if (r.indexOf('A') == -1 && r.indexOf('P') == -1 
-                && c.indexOf('A') == -1 && c.indexOf('P') == -1)
-            return CORONAL;
-        if (r.indexOf('L') == -1 && r.indexOf('R') == -1
-                && c.indexOf('L') == -1 && c.indexOf('R') == -1)
-            return SAGITTAL;
-        return OBLIQUE;
-    }
-
-    private int fromImageOrientation(float[] iop) {
-        if (Math.abs(iop[RX] * iop[CY] - iop[RY] * iop[CX]) >= minCosine)
-            return AXIAL;
-        if (Math.abs(iop[RY] * iop[CZ] - iop[RZ] * iop[CY]) >= minCosine)
-            return SAGITTAL;
-        if (Math.abs(iop[RZ] * iop[CX] - iop[RX] * iop[CZ]) >= minCosine)
-            return CORONAL;
-        return OBLIQUE;
     }
 
 }

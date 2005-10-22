@@ -38,36 +38,50 @@
 
 package org.dcm4che2.hp;
 
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 22, 2005
+ *
  */
-public class SortingDirection extends CodeString
+public class ImageOrientation
 {
-
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    private final float rx; 
+    private final float ry; 
+    private final float rz; 
+    private final float cx; 
+    private final float cy; 
+    private final float cz;
+    
+    public ImageOrientation(float[] values)
     {
-        super(codeString);
-        this.sign = sign;
+        this(values[0], values[1], values[2], values[3], values[4], values[5]);
+    }
+    
+    public ImageOrientation(float rx, float ry, float rz, float cx, float cy, float cz)
+    {
+        this.rx = rx;
+        this.ry = ry;
+        this.rz = rz;
+        this.cx = cx;
+        this.cy = cy;
+        this.cz = cz;
+    }
+    
+    public float[] values()
+    {
+        return new float[]{rx, ry, rz, cx, cy, cz};
     }
 
-    public final int sign()
+    public ImagePlane toImagePlane(float minCosine)
     {
-        return sign;
-    }
-
-    public static SortingDirection valueOf(String codeString)
-    {
-        return (SortingDirection) CodeString.valueOf(
-                SortingDirection.class, codeString);
+        if (Math.abs(rx * cy - ry * cx) >= minCosine)
+            return ImagePlane.AXIAL;
+        if (Math.abs(ry * cz - rz * cy) >= minCosine)
+            return ImagePlane.SAGITTAL;
+        if (Math.abs(rz * cx - rx * cz) >= minCosine)
+            return ImagePlane.CORONAL;
+        return ImagePlane.OBLIQUE;        
     }
 }

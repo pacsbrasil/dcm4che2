@@ -46,31 +46,46 @@ package org.dcm4che2.hp;
  */
 public class PatientOrientation
 {
+    private final String r;
+    private final String c;
 
-    private final String[] values;
-
-    PatientOrientation(String[] values)
+    public PatientOrientation(String[] values)
     {
-        this.values = values;
+        this(values[0], values[1]);
     }
 
-    PatientOrientation(String right, String bottom)
+    public PatientOrientation(String r, String c)
     {
-        this.values = new String[] { right, bottom };
+        this.r = r;
+        this.c = c;
     }
 
-    final String[] getValues()
+    final String[] values()
     {
-        return values;
+        return new String[]{r, c};
     }
 
-    public final String getRight()
+    public final String getRowOrientation()
     {
-        return values[0];
+        return r;
     }
 
-    public final String getBottom()
+    public final String getColumnOrientation()
     {
-        return values[1];
+        return c;
+    }
+    
+    public ImagePlane toImagePlane()
+    {
+        if (r.indexOf('H') == -1 && r.indexOf('F') == -1
+                && c.indexOf('H') == -1 && c.indexOf('F') == -1)
+            return ImagePlane.AXIAL;
+        if (r.indexOf('A') == -1 && r.indexOf('P') == -1
+                && c.indexOf('A') == -1 && c.indexOf('P') == -1)
+            return ImagePlane.CORONAL;
+        if (r.indexOf('L') == -1 && r.indexOf('R') == -1
+                && c.indexOf('L') == -1 && c.indexOf('R') == -1)
+            return ImagePlane.SAGITTAL;
+        return ImagePlane.OBLIQUE;
     }
 }

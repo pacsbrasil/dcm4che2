@@ -44,7 +44,7 @@ package org.dcm4che2.hp;
  * @since Oct 21, 2005
  *
  */
-public class ImageSetSelectorCategory
+public class ImageSetSelectorCategory extends CodeString
 {
     public static final ImageSetSelectorCategory ABSTRACT_PRIOR = 
             new ImageSetSelectorCategory("ABSTRACT_PRIOR", true);
@@ -52,20 +52,14 @@ public class ImageSetSelectorCategory
     public static final ImageSetSelectorCategory RELATIVE_TIME = 
             new ImageSetSelectorCategory("RELATIVE_TIME", false);
 
-    private final String codeString;
     private final boolean abstractPrior;
 
     private ImageSetSelectorCategory(String codeString, boolean abstractPrior)
     {
-        this.codeString = codeString;
+        super(codeString);
         this.abstractPrior = abstractPrior;
     }
 
-    public final String getCodeString()
-    {
-        return codeString;
-    }
-    
     public final boolean isAbstractPrior()
     {
         return abstractPrior;
@@ -78,19 +72,7 @@ public class ImageSetSelectorCategory
 
     public static ImageSetSelectorCategory valueOf(String codeString)
     {
-        try
-        {
-            return (ImageSetSelectorCategory) 
-                    ImageSetSelectorCategory.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+         return (ImageSetSelectorCategory) CodeString.valueOf(
+                 ImageSetSelectorCategory.class, codeString);
     }
 }

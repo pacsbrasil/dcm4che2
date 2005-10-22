@@ -41,33 +41,25 @@ package org.dcm4che2.hp;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 22, 2005
+ *
  */
-public class SortingDirection extends CodeString
+public class ImagePlane extends CodeString
 {
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    public static final ImagePlane AXIAL = new ImagePlane("AXIAL");
+    public static final ImagePlane SAGITTAL = new ImagePlane("SAGITTAL");
+    public static final ImagePlane CORONAL = new ImagePlane("CORONAL");
+    public static final ImagePlane OBLIQUE = new ImagePlane("OBLIQUE");
+    
+    private ImagePlane(String codeString)
     {
         super(codeString);
-        this.sign = sign;
+    }
+    
+    public static ImagePlane valueOf(String codeString)
+    {
+        return (ImagePlane) CodeString.valueOf(ImagePlane.class, codeString);
     }
 
-    public final int sign()
-    {
-        return sign;
-    }
-
-    public static SortingDirection valueOf(String codeString)
-    {
-        return (SortingDirection) CodeString.valueOf(
-                SortingDirection.class, codeString);
-    }
 }

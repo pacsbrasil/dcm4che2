@@ -41,33 +41,42 @@ package org.dcm4che2.hp;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 22, 2005
+ *
  */
-public class SortingDirection extends CodeString
+class CodeString
 {
+    protected final String codeString;
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    protected CodeString(String codeString)
     {
-        super(codeString);
-        this.sign = sign;
+        this.codeString = codeString;
     }
 
-    public final int sign()
+    public final String getCodeString()
     {
-        return sign;
+        return codeString;
     }
 
-    public static SortingDirection valueOf(String codeString)
+    protected static CodeString valueOf(Class clazz, String codeString)
     {
-        return (SortingDirection) CodeString.valueOf(
-                SortingDirection.class, codeString);
+        if (codeString == null)
+            throw new NullPointerException("codeString");
+        
+        try
+        {
+            return (CodeString) 
+                    clazz.getField(codeString).get(null);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new Error(e);
+        }
+        catch (NoSuchFieldException e)
+        {
+            throw new IllegalArgumentException("codeString: " + codeString);
+        }
+        
     }
+
 }

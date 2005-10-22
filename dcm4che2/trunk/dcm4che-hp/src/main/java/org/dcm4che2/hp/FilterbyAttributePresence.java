@@ -44,7 +44,7 @@ package org.dcm4che2.hp;
  * @since Oct 20, 2005
  *
  */
-public class FilterbyAttributePresence
+public class FilterbyAttributePresence extends CodeString
 {
     public static final FilterbyAttributePresence PRESENT 
             = new FilterbyAttributePresence("PRESENT", false);
@@ -52,20 +52,14 @@ public class FilterbyAttributePresence
     public static final FilterbyAttributePresence NOT_PRESENT 
             = new FilterbyAttributePresence("NOT_PRESENT", true);
 
-    private final String codeString;
     private final boolean match;
 
     public FilterbyAttributePresence(String codeString, boolean match)
     {
-        this.codeString = codeString;
+        super(codeString);
         this.match = match;
     }
 
-    public final String getCodeString()
-    {
-        return codeString;
-    }
-    
     public boolean isMatchIfNotPresent()
     {
         return match;
@@ -73,20 +67,8 @@ public class FilterbyAttributePresence
     
     public static FilterbyAttributePresence valueOf(String codeString)
     {
-        try
-        {
-            return (FilterbyAttributePresence) 
-                    FilterbyAttributePresence.class.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+        return (FilterbyAttributePresence) CodeString.valueOf(
+                FilterbyAttributePresence.class, codeString);
     }
 
 }

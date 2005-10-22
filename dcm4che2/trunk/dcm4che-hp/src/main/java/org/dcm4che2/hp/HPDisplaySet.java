@@ -57,9 +57,6 @@ import org.dcm4che2.data.VR;
 public class HPDisplaySet
 {
 
-    public static final String YES = "YES";
-    public static final String NO = "NO";
-
     public static final String COLOR = "COLOR";
 
     public static final String MPR = "MPR";
@@ -323,7 +320,7 @@ public class HPDisplaySet
     public void setDisplaySetPatientOrientation(PatientOrientation orientation)
     {
         dcmobj.putStrings(Tag.DisplaySetPatientOrientation, VR.CS,
-                orientation.getValues());
+                orientation.values());
     }
     
     public String getVOIType()
