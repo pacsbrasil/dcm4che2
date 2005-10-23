@@ -47,19 +47,32 @@ package org.dcm4che2.hp;
 public class PartialDataDisplayHandling extends CodeString
 {
     public static final PartialDataDisplayHandling MAINTAIN_LAYOUT =
-            new PartialDataDisplayHandling("MAINTAIN_LAYOUT");
+            new PartialDataDisplayHandling("MAINTAIN_LAYOUT", true);
     public static final PartialDataDisplayHandling ADAPT_LAYOUT =
-            new PartialDataDisplayHandling("ADAPT_LAYOUT");
+            new PartialDataDisplayHandling("ADAPT_LAYOUT", false);
     
-    private PartialDataDisplayHandling(String codeString)
+    private final boolean maintain;
+    
+    private PartialDataDisplayHandling(String codeString, boolean maintain)
     {
         super(codeString);
+        this.maintain = maintain;
     }
     
     public static PartialDataDisplayHandling valueOf(String codeString)
     {
         return (PartialDataDisplayHandling) CodeString.valueOf(
                 PartialDataDisplayHandling.class, codeString);
+    }
+
+    public final boolean isMaintainLayout()
+    {
+        return maintain;
+    }
+
+    public final boolean isAdaptLayout()
+    {
+        return !maintain;
     }
 
 }
