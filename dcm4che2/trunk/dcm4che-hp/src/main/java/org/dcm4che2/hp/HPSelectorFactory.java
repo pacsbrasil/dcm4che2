@@ -45,6 +45,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.data.VRMap;
 import org.dcm4che2.hp.plugins.ImagePlaneSelector;
+import org.dcm4che2.hp.spi.HPSelectorSpi;
 import org.dcm4che2.util.TagUtils;
 
 /**
@@ -208,7 +209,7 @@ public class HPSelectorFactory
     {
         if (item.containsValue(Tag.FilterbyCategory))
         {
-            return HangingProtocol.createFilterByCategory(item);
+            return HPSelectorFactory.createFilterByCategory(item);
         }
         HPSelector sel = createDisplaySetSelector(item);
         sel = addSequencePointer(sel);
@@ -216,6 +217,18 @@ public class HPSelectorFactory
         return sel;
     }
 
+
+    private static HPSelector createFilterByCategory(DicomObject filterOp)
+    {
+        HPSelectorSpi spi = HangingProtocol.getHPSelectorSpi(filterOp
+                .getString(Tag.FilterbyCategory));
+        if (spi == null)
+            throw new IllegalArgumentException(
+                    "Unsupported Filter-by Category: "
+                            + filterOp.get(Tag.FilterbyCategory));
+        return spi.createHPSelector(filterOp);
+    }
+    
     /**
      * Create Display Set Filter with Filter-by Category IMAGE_PLANE.
      * A new {@link #getDicomObject DicomObject}, representing the according

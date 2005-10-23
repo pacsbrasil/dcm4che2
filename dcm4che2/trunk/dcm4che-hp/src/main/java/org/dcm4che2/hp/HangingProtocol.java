@@ -60,9 +60,6 @@ import org.dcm4che2.hp.spi.HPSelectorSpi;
 public class HangingProtocol
 {
 
-    public static final String MAINTAIN_LAYOUT = "MAINTAIN_LAYOUT";
-    public static final String ADAPT_LAYOUT = "ADAPT_LAYOUT";
-
     private static final List[] EMPTY_LIST_ARRAY = {};
 
     private final DicomObject dcmobj;
@@ -171,13 +168,14 @@ public class HangingProtocol
 
     public String getDisplaySetPresentationGroupDescription(int pgNo)
     {
-        String desc = null;
-        for (int i = 0, n = displaySets.size(); desc == null && i < n; i++)
+        for (int i = 0, n = displaySets.size(); i < n; i++)
         {
             HPDisplaySet ds = (HPDisplaySet) displaySets.get(i);
             if (ds.getDisplaySetPresentationGroup() == pgNo)
             {
-                desc = ds.getDisplaySetPresentationGroupDescription();
+                String desc = ds.getDisplaySetPresentationGroupDescription();
+                if (desc != null)
+                    return desc;
             }
         }
         return null;
@@ -188,14 +186,10 @@ public class HangingProtocol
         return Collections.unmodifiableList(displaySets);
     }
 
-    public String getPartialDataDisplayHandling()
+    public PartialDataDisplayHandling getPartialDataDisplayHandling()
     {
-        return dcmobj.getString(Tag.PartialDataDisplayHandling);
-    }
-
-    public boolean isPartialDataDisplayHandling(String type)
-    {
-        return type.equals(getPartialDataDisplayHandling());
+        String cs = dcmobj.getString(Tag.PartialDataDisplayHandling);
+        return cs == null ? null : PartialDataDisplayHandling.valueOf(cs);
     }
 
     public List[] getDisplaySetScrollingGroups()
@@ -359,16 +353,16 @@ public class HangingProtocol
 
     public static HPSelectorSpi getHPSelectorSpi(String category)
     {
-        return (HPSelectorSpi) getHPSelectorSpi(HPSelectorSpi.class, category);
+        return (HPSelectorSpi) getHPCategorySpi(HPSelectorSpi.class, category);
     }
 
     public static HPComparatorSpi getHPComparatorSpi(String category)
     {
-        return (HPComparatorSpi) getHPSelectorSpi(HPComparatorSpi.class,
+        return (HPComparatorSpi) getHPCategorySpi(HPComparatorSpi.class,
                 category);
     }
 
-    private static HPCategorySpi getHPSelectorSpi(Class serviceClass,
+    private static HPCategorySpi getHPCategorySpi(Class serviceClass,
             final String category)
     {
         Iterator iter = HPRegistry.getHPRegistry().getServiceProviders(
@@ -383,27 +377,6 @@ public class HangingProtocol
                 },
                 true);
         return (HPCategorySpi) (iter.hasNext() ? iter.next() : null);
-    }
-
-    public static HPSelector createFilterByCategory(DicomObject filterOp)
-    {
-        HPSelectorSpi spi = getHPSelectorSpi(filterOp
-                .getString(Tag.FilterbyCategory));
-        if (spi == null)
-            throw new IllegalArgumentException(
-                    "Unsupported Filter-by Category: "
-                            + filterOp.get(Tag.FilterbyCategory));
-        return spi.createHPSelector(filterOp);
-    }
-
-    public static HPComparator createSortByCategory(DicomObject sortingOp)
-    {
-        HPComparatorSpi spi = getHPComparatorSpi(sortingOp
-                .getString(Tag.SortbyCategory));
-        if (spi == null)
-            throw new IllegalArgumentException("Unsupported Sort-by Category: "
-                    + sortingOp.get(Tag.SortbyCategory));
-        return spi.createHPComparator(sortingOp);
     }
 
 }

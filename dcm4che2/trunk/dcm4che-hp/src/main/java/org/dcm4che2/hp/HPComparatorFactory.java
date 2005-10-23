@@ -47,6 +47,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.plugins.AlongAxisComparator;
 import org.dcm4che2.hp.plugins.ByAcqTimeComparator;
+import org.dcm4che2.hp.spi.HPComparatorSpi;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -68,13 +69,24 @@ public class HPComparatorFactory
     public static HPComparator createHPComparator(DicomObject sortingOp)
     {
         if (sortingOp.containsValue(Tag.SortbyCategory))
-            return HangingProtocol.createSortByCategory(sortingOp);
+            return HPComparatorFactory.createSortByCategory(sortingOp);
         HPComparator cmp = new SortByAttribute(sortingOp);
         cmp = addSequencePointer(cmp);
         cmp = addFunctionalGroupPointer(cmp);
         return cmp;
     }
 
+
+    private static HPComparator createSortByCategory(DicomObject sortingOp)
+    {
+        HPComparatorSpi spi = HangingProtocol.getHPComparatorSpi(sortingOp
+                .getString(Tag.SortbyCategory));
+        if (spi == null)
+            throw new IllegalArgumentException("Unsupported Sort-by Category: "
+                    + sortingOp.get(Tag.SortbyCategory));
+        return spi.createHPComparator(sortingOp);
+    }
+    
     /**
      * Create Sort By Attribute Comparator.
      * A new {@link #getDicomObject DicomObject}, representing the according
