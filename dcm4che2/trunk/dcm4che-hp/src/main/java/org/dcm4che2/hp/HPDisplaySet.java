@@ -82,7 +82,7 @@ public class HPDisplaySet
     public static final String DEFAULT = "DEFAULT";
 
     private final DicomObject dcmobj;
-    private final HPImageSet imageSet;
+    private HPImageSet imageSet;
     private final List imageBoxes;
     private final List filters;
     private final List cmps;
@@ -132,14 +132,12 @@ public class HPDisplaySet
         }
     }
 
-    public HPDisplaySet(HPImageSet imageSet)
+    public HPDisplaySet()
     {
-        this.imageSet = imageSet;
         imageBoxes = new ArrayList();
         filters = new ArrayList();
         cmps = new ArrayList();
         dcmobj = new BasicDicomObject();
-        dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSet.getImageSetNumber());
         dcmobj.putSequence(Tag.ImageBoxesSequence);
         dcmobj.putSequence(Tag.FilterOperationsSequence);
         dcmobj.putSequence(Tag.SortingOperationsSequence);
@@ -153,6 +151,12 @@ public class HPDisplaySet
     public final HPImageSet getImageSet()
     {
         return imageSet;
+    }
+
+    public void setImageSet(HPImageSet imageSet)
+    {
+        dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSet.getImageSetNumber());
+        this.imageSet = imageSet;
     }
 
     public List getImageBoxes()
@@ -355,9 +359,9 @@ public class HPDisplaySet
 
     public YesNo getShowGrayscaleInverted()
     {
-        return YesNo.valueOf(dcmobj.getString(Tag.ShowGrayscaleInverted));
+        return getYesNo(Tag.ShowGrayscaleInverted);
     }
-    
+
     public void setShowGrayscaleInverted(YesNo flag)
     {
         dcmobj.putString(Tag.ShowGrayscaleInverted, VR.CS, flag.getCodeString());
@@ -365,7 +369,7 @@ public class HPDisplaySet
 
     public YesNo getShowImageTrueSizeFlag()
     {
-        return YesNo.valueOf(dcmobj.getString(Tag.ShowImageTrueSizeFlag));
+        return getYesNo(Tag.ShowImageTrueSizeFlag);
     }
 
     public void setShowImageTrueSizeFlag(YesNo flag)
@@ -375,7 +379,7 @@ public class HPDisplaySet
 
     public YesNo getShowGraphicAnnotationFlag()
     {
-        return YesNo.valueOf(dcmobj.getString(Tag.ShowGraphicAnnotationFlag));
+        return getYesNo(Tag.ShowGraphicAnnotationFlag);
     }
 
     public void setShowGraphicAnnotationFlag(YesNo flag)
@@ -385,7 +389,7 @@ public class HPDisplaySet
 
     public YesNo getShowAcquisitionTechniquesFlag()
     {
-        return YesNo.valueOf(dcmobj.getString(Tag.ShowAcquisitionTechniquesFlag));
+        return getYesNo(Tag.ShowAcquisitionTechniquesFlag);
     }
 
     public void setShowAcquisitionTechniquesFlag(YesNo flag)
@@ -401,6 +405,12 @@ public class HPDisplaySet
     public void setDisplaySetPresentationGroupDescription(String description)
     {
         dcmobj.putString(Tag.DisplaySetPresentationGroupDescription, VR.CS, description);
+    }
+    
+    private YesNo getYesNo(int tag)
+    {
+        String cs = dcmobj.getString(tag);
+        return cs == null ? null : YesNo.valueOf(cs);
     }
     
 }
