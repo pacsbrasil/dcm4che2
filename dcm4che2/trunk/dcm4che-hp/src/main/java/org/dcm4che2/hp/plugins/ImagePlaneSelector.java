@@ -47,7 +47,7 @@ import org.dcm4che2.hp.ImageOrientation;
 import org.dcm4che2.hp.ImagePlane;
 import org.dcm4che2.hp.PatientOrientation;
 
-class ImagePlaneSelector extends AbstractHPSelector
+public class ImagePlaneSelector extends AbstractHPSelector
 {
     public static final float DEF_MIN_COSINE = 0.9f;
 
