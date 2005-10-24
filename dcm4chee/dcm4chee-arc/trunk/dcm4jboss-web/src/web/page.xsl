@@ -7,59 +7,94 @@
 			<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 		</head>
 		<body onLoad="checkError('{model/errorCode}');checkPopup('{model/popupMsg}')" background="images/bg.jpg" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
-		<table width="100%" border="0" cellpadding="0" cellspacing="0">
-	  		<tr valign="middle" bgcolor="#dddddd" style="center">
-	    		<td width="50" align="left"><img src="images/logo.jpg" alt="TIANI Medgraph AG" border="0"/></td>
+		<table class="dcm4jboss_header" width="100%" cellspacing="0">
+	  		<tr valign="middle" style="center">
+	    		<td class="logo" width="50" align="left"><img class="logo" src="images/logo.jpg" border="0"/></td>
 	    		<td width="100" align="center">
-	    			<xsl:if test="model/modelName = 'FOLDER' and model/trashFolder = 'false'">
-						<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-					</xsl:if>
-	    			<a href="foldersubmit.m?trashFolder=false&amp;filter=true">Folder</a>
+	    			<xsl:choose>
+		    			<xsl:when test="model/modelName = 'FOLDER' and model/trashFolder = 'false'">
+							<xsl:attribute name="class">tab-selected</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="class">tab</xsl:attribute>
+						</xsl:otherwise>
+	    			</xsl:choose>
+	    			<a class="tab" href="foldersubmit.m?trashFolder=false&amp;filter=true">Folder</a>
 	    		</td>
 	    		<xsl:if test="model/admin='true'">
 	    			<td width="100" align="center">
-		    			<xsl:if test="model/modelName = 'FOLDER' and model/trashFolder = 'true'">
-							<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-						</xsl:if>
-	    				<a href="foldersubmit.m?trashFolder=true&amp;filter=true">Trash</a>
+		    			<xsl:choose>
+			    			<xsl:when test="model/modelName = 'FOLDER' and model/trashFolder = 'true'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+	    				<a class="tab" href="foldersubmit.m?trashFolder=true&amp;filter=true">Trash</a>
 	    			</td>
 		    		<td width="120" align="center">
-		    			<xsl:if test="model/modelName = 'AEMgr'">
-							<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-						</xsl:if>
-		    			<a href="ae.m">AE Management</a>
+		    			<xsl:choose>
+			    			<xsl:when test="model/modelName = 'AEMgr'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+		    			<a class="tab" href="ae.m">AE Management</a>
 		    		</td>
 		      	</xsl:if>
 	    		<xsl:if test="model/admin='true' or model/mcmUser='true'">
 		      		<td width="120" align="center">
-		    			<xsl:if test="model/modelName = 'MCM'">
-							<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-						</xsl:if>
-		      			<a href="mcm_console.m">Offline Storage</a>
+		      			<xsl:choose>
+		    				<xsl:when test="model/modelName = 'MCM'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+		      			<a class="tab" href="mcm_console.m">Offline Storage</a>
 		      		</td>
 		      	</xsl:if>
 	    		<xsl:if test="model/admin='true'">
 		      		<td width="120" align="center">
-		    			<xsl:if test="model/modelName = 'MWL'">
-							<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-						</xsl:if>
-		      			<a href="mwl_console.m">Worklist Console</a>
+		      			<xsl:choose>
+		    				<xsl:when test="model/modelName = 'MWL'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+		      			<a class="tab" href="mwl_console.m">Worklist Console</a>
 		      		</td>
 		      		<td width="120" align="center">
-		    			<xsl:if test="model/modelName = 'MPPS'">
-							<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-						</xsl:if>
-		      			<a href="mpps_console.m">MPPS Console</a>
+		      			<xsl:choose>
+			    			<xsl:when test="model/modelName = 'MPPS'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+		      			<a class="tab" href="mpps_console.m">MPPS Console</a>
 		      		</td>
 		      	</xsl:if>
 	      		<td width="120" align="center">
-	    			<xsl:if test="model/modelName = 'UserAdmin'">
-						<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-					</xsl:if>
-	      			<a href="useradmin_console.m">User Admin</a>
+	      			<xsl:choose>
+		    			<xsl:when test="model/modelName = 'UserAdmin'">
+							<xsl:attribute name="class">tab-selected</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="class">tab</xsl:attribute>
+						</xsl:otherwise>
+	    			</xsl:choose>
+	      			<a class="tab" href="useradmin_console.m">User Admin</a>
 	      		</td>
-		      	<td width="120" align="center"><a href="../dcm4jboss-arr">Audit Repository</a></td>
-		      	<td width="120" align="center"><a href="foldersubmit.m?logout=">Logout</a></td>
+		      	<td class="tab" width="120" align="center"><a class="tab" href="../dcm4jboss-arr">Audit Repository</a></td>
+		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Logout</a></td>
 				<td width="40%"></td>
 			  	<xsl:apply-templates select="model"/>
 		     </tr>
