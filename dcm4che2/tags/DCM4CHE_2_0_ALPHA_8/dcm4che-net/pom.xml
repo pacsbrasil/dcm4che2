@@ -1,0 +1,33 @@
+<model>
+  <parent>
+    <artifactId>dcm4che</artifactId>
+    <groupId>dcm4che</groupId>
+    <version>2.0-alpha-8</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>dcm4che-net</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>2.0-alpha-8</version>
+    </dependency>
+    <dependency>
+      <groupId>directory-network</groupId>
+      <artifactId>mina</artifactId>
+      <version>0.8.0</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.8</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</model>

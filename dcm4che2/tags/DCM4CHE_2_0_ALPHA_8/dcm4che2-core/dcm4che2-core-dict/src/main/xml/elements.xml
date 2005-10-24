@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE elements [
+<!ENTITY p04_07 SYSTEM "../../../target/xml/p7_element/04_07_09.xml">
+<!ENTITY p04_06 SYSTEM "../../../target/xml/p6_element/04_06_14.xml">
+<!ENTITY sup60 SYSTEM "../../../target/xml/p6_element/sup60_ft.xml">
+<!ENTITY sup83 SYSTEM "../../../target/xml/p6_element/sup83_ft2.xml">
+<!ENTITY sup100 SYSTEM "../../../target/xml/p6_element/sup100_ft.xml">
+<!ENTITY sup101 SYSTEM "../../../target/xml/p6_element/sup101_ft.xml">
+<!ENTITY sup103 SYSTEM "../../../target/xml/p6_element/sup103_ft.xml">
+<!ENTITY sup104 SYSTEM "../../../target/xml/p6_element/sup104_ft.xml">
+<!ENTITY cp465 SYSTEM "../../../target/xml/p6_element/cp465_ft2.xml">
+<!ENTITY cp483 SYSTEM "../../../target/xml/p6_element/cp483_ft.xml">
+<!ENTITY cp486 SYSTEM "../../../target/xml/p6_element/cp486_ft.xml">
+<!ENTITY cp487 SYSTEM "../../../target/xml/p6_element/cp487_ft.xml">
+<!ENTITY cp491 SYSTEM "../../../target/xml/p6_element/cp491_ft.xml">
+<!ENTITY cp507 SYSTEM "../../../target/xml/p6_element/cp507_ft.xml">
+]>
+<elements>
+&p04_07;
+&p04_06;
+&sup60;
+&sup83;
+&sup100;
+&sup101;
+&sup103;
+&sup104;
+&cp465;
+&cp483;
+&cp486;
+&cp487;
+&cp491;
+&cp507;
+</elements>
