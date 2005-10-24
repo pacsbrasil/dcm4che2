@@ -89,6 +89,7 @@ public class MWLModel {
 	private Comparator comparator = new SpsDSComparator();
 
 	private boolean admin = false;
+	private boolean mcmUser = false;
 	
 	/**
 	 * Creates the model.
@@ -114,6 +115,7 @@ public class MWLModel {
 		MWLModel model = (MWLModel) request.getSession().getAttribute(MWLMODEL_ATTR_NAME);
 		if (model == null) {
 				model = new MWLModel(request.isUserInRole("WebAdmin"));
+				model.mcmUser = request.isUserInRole("McmUser");
 				request.getSession().setAttribute(MWLMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
@@ -121,6 +123,8 @@ public class MWLModel {
 		return model;
 	}
 
+	public String getModelName() { return "MWL"; }
+	
 	/**
 	 * @return Returns true if the user have WebAdmin role.
 	 */
@@ -128,6 +132,13 @@ public class MWLModel {
 		return admin;
 	}
 
+	/**
+	 * @return Returns the mcmUser.
+	 */
+	public boolean isMcmUser() {
+		return mcmUser;
+	}
+	
 	/**
 	 * Set the error code of this model.
 	 * 

@@ -88,6 +88,7 @@ public class MPPSModel {
 	private Comparator comparator = new MppsDSComparator();
 
 	private boolean admin = false;
+	private boolean mcmUser = false;
 	
 	/**
 	 * Creates the model.
@@ -113,6 +114,7 @@ public class MPPSModel {
 		MPPSModel model = (MPPSModel) request.getSession().getAttribute(MPPS_MODEL_ATTR_NAME);
 		if (model == null) {
 				model = new MPPSModel(request.isUserInRole("WebAdmin"));
+				model.mcmUser = request.isUserInRole("McmUser");
 				request.getSession().setAttribute(MPPS_MODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
@@ -120,11 +122,20 @@ public class MPPSModel {
 		return model;
 	}
 
+	public String getModelName() { return "MPPS"; }
+	
 	/**
 	 * @return Returns true if the user have WebAdmin role.
 	 */
 	public boolean isAdmin() {
 		return admin;
+	}
+
+	/**
+	 * @return Returns the mcmUser.
+	 */
+	public boolean isMcmUser() {
+		return mcmUser;
 	}
 
 	/**
