@@ -43,10 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
-import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 
 /**
  * @author franz.willer
