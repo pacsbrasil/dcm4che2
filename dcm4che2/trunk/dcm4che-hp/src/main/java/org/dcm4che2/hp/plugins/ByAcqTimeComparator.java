@@ -45,7 +45,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.AbstractHPComparator;
-import org.dcm4che2.hp.SortingDirection;
+import org.dcm4che2.hp.CodeString;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -57,7 +57,7 @@ public class ByAcqTimeComparator
 extends AbstractHPComparator
 {
 
-    private final SortingDirection sortingDirection;
+    private final int sign;
     private final DicomObject sortOp;
 
     public ByAcqTimeComparator(DicomObject sortOp)
@@ -69,24 +69,15 @@ extends AbstractHPComparator
             throw new IllegalArgumentException(
                     "Missing (0072,0604) Sorting Direction");
         }
-        try
-        {
-            this.sortingDirection = SortingDirection.valueOf(cs);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new IllegalArgumentException(
-                    "Invalid (0072,0604) Sorting Direction: " + cs);
-        }
+        this.sign = CodeString.sortingDirectionToSign(cs);
     }
 
-    public ByAcqTimeComparator(SortingDirection sortingDirection)
+    public ByAcqTimeComparator(String sortingDirection)
     {
-        this.sortingDirection = sortingDirection;
+        this.sign = CodeString.sortingDirectionToSign(sortingDirection);
         this.sortOp = new BasicDicomObject();
-        sortOp.putString(Tag.SortbyCategory, VR.CS, "BY_ACQ_TIME");
-        sortOp.putString(Tag.SortingDirection, VR.CS,
-                sortingDirection.getCodeString());
+        sortOp.putString(Tag.SortbyCategory, VR.CS, CodeString.BY_ACQ_TIME);
+        sortOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
     }
     
     public final DicomObject getDicomObject()
@@ -100,7 +91,7 @@ extends AbstractHPComparator
         Date t2 = toAcqTime(o2, frame2);
         if (t1 == null || t2 == null)
             return 0;
-        return t1.compareTo(t2) * sortingDirection.sign();
+        return t1.compareTo(t2) * sign;
     }
 
     private Date toAcqTime(DicomObject o, int frame)

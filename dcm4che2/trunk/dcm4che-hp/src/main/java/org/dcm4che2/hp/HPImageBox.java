@@ -38,117 +38,174 @@
 
 package org.dcm4che2.hp;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 8, 2005
- *
+ * 
  */
-public class HPImageBox {
-    public static final String TILED = "TILED";
-    public static final String STACK = "STACK";
-    public static final String CINE = "CINE";
-    public static final String PROCESSED = "PROCESSED";
-    public static final String SINGLE = "SINGLE";
-    
-    public static final String VERTICAL = "VERTICAL";
-    public static final String HORIZONTAL = "HORIZONTAL";
-    
-    public static final String PAGE = "PAGE";
-    public static final String ROW_COLUMN = "ROW_COLUMN";
-    public static final String IMAGE = "IMAGE";
-    
+public class HPImageBox
+{
+
     private final DicomObject dcmobj;
-    
-    public HPImageBox(DicomObject item, int tot) {
+
+    public HPImageBox(DicomObject item, int tot)
+    {
         if (item.getInt(Tag.ImageBoxNumber) != item.getItemPosition())
-            throw new IllegalArgumentException(
-                    "" + item.get(Tag.ImageBoxNumber));
-        if (tot > 1) {
-            if (!TILED.equals(item.getString(Tag.ImageBoxLayoutType)))
-                throw new IllegalArgumentException(
-                        "" + item.get(Tag.ImageBoxLayoutType));
+            throw new IllegalArgumentException(""
+                    + item.get(Tag.ImageBoxNumber));
+        if (tot > 1)
+        {
+            if (!CodeString.TILED.equals(item.getString(Tag.ImageBoxLayoutType)))
+                throw new IllegalArgumentException(""
+                        + item.get(Tag.ImageBoxLayoutType));
         }
         this.dcmobj = item;
     }
-    
-    public DicomObject getDicomObject() {
-        return dcmobj;        
+
+    public HPImageBox()
+    {
+        this.dcmobj = new BasicDicomObject();
     }
     
-    public int getImageBoxNumber() {
-        return dcmobj.getInt(Tag.ImageBoxNumber);
-    }    
+    public DicomObject getDicomObject()
+    {
+        return dcmobj;
+    }
 
-    public double[] getDisplayEnvironmentSpatialPosition() {
+    public int getImageBoxNumber()
+    {
+        return dcmobj.getInt(Tag.ImageBoxNumber);
+    }
+
+    public void setImageBoxNumber(int value)
+    {
+        dcmobj.putInt(Tag.ImageBoxNumber, VR.US, value);
+    }
+
+    public double[] getDisplayEnvironmentSpatialPosition()
+    {
         return dcmobj.getDoubles(Tag.DisplayEnvironmentSpatialPosition);
     }
 
-    public String getImageBoxLayoutType() {
+    public void setDisplayEnvironmentSpatialPosition(double[] values)
+    {
+        dcmobj.putDoubles(Tag.DisplayEnvironmentSpatialPosition, VR.FD, values);
+    }
+
+    public String getImageBoxLayoutType()
+    {
         return dcmobj.getString(Tag.ImageBoxLayoutType);
     }
 
-    public boolean isImageBoxLayoutType(String type) {
-        return type.equals(getImageBoxLayoutType());
+    public void setImageBoxLayoutType(String type)
+    {
+        dcmobj.putString(Tag.ImageBoxLayoutType, VR.CS, type);
     }
 
-    public int getImageBoxTileHorizontalDimension() {
+    public int getImageBoxTileHorizontalDimension()
+    {
         return dcmobj.getInt(Tag.ImageBoxTileHorizontalDimension);
-    }    
+    }
 
-    public int getImageBoxTileVerticalDimension() {
+    public void setImageBoxTileHorizontalDimension(int value)
+    {
+        dcmobj.putInt(Tag.ImageBoxTileHorizontalDimension, VR.US, value);
+    }
+
+    public int getImageBoxTileVerticalDimension()
+    {
         return dcmobj.getInt(Tag.ImageBoxTileVerticalDimension);
-    }    
+    }
 
-    public String getImageBoxScrollDirection() {
+    public void setImageBoxTileVerticalDimension(int value)
+    {
+        dcmobj.putInt(Tag.ImageBoxTileVerticalDimension, VR.US, value);
+    }
+
+    public String getImageBoxScrollDirection()
+    {
         return dcmobj.getString(Tag.ImageBoxScrollDirection);
     }
 
-    public boolean isImageBoxScrollDirection(String direction) {
-        return direction.equals(getImageBoxScrollDirection());
+    public void setImageBoxScrollDirection(String value)
+    {
+        dcmobj.putString(Tag.ImageBoxScrollDirection, VR.CS, value);
     }
 
-    public String getImageBoxSmallScrollType() {
+    public String getImageBoxSmallScrollType()
+    {
         return dcmobj.getString(Tag.ImageBoxSmallScrollType);
     }
 
-    public boolean isImageBoxSmallScrollType(String type) {
-        return type.equals(getImageBoxSmallScrollType());
+    public void setImageBoxSmallScrollType(String value)
+    {
+        dcmobj.putString(Tag.ImageBoxSmallScrollType, VR.CS, value);
     }
 
-    public int getImageBoxSmallScrollAmount() {
+    public int getImageBoxSmallScrollAmount()
+    {
         return dcmobj.getInt(Tag.ImageBoxSmallScrollAmount);
-    }    
+    }
 
-    public String getImageBoxLargeScrollType() {
+    public void setImageBoxSmallScrollAmount(int value)
+    {
+        dcmobj.putInt(Tag.ImageBoxSmallScrollAmount, VR.US, value);
+    }
+
+    public String getImageBoxLargeScrollType()
+    {
         return dcmobj.getString(Tag.ImageBoxLargeScrollType);
     }
 
-    public boolean isImageBoxLargeScrollType(String type) {
-        return type.equals(getImageBoxLargeScrollType());
+    public void setImageBoxLargeScrollType(String value)
+    {
+        dcmobj.putString(Tag.ImageBoxLargeScrollType, VR.CS, value);
     }
 
-    public int getImageBoxLargeScrollAmount() {
-        return dcmobj.getInt(Tag.ImageBoxLargeScrollAmount);
-    }    
-
-    public int getImageBoxOverlapPriority() {
+    public int getImageBoxOverlapPriority()
+    {
         return dcmobj.getInt(Tag.ImageBoxOverlapPriority);
-    }    
+    }
 
-    public int getPreferredPlaybackSequencing() {
+    public void setImageBoxOverlapPriority(int value)
+    {
+        dcmobj.putInt(Tag.ImageBoxOverlapPriority, VR.US, value);
+    }
+
+    public int getPreferredPlaybackSequencing()
+    {
         return dcmobj.getInt(Tag.PreferredPlaybackSequencing);
-    }    
+    }
 
-    public int getRecommendedDisplayFrameRate() {
+    public void setPreferredPlaybackSequencing(int value)
+    {
+        dcmobj.putInt(Tag.PreferredPlaybackSequencing, VR.US, value);
+    }
+
+    public int getRecommendedDisplayFrameRate()
+    {
         return dcmobj.getInt(Tag.RecommendedDisplayFrameRate);
-    }    
+    }
 
-    public double getCineRelativetoRealTime() {
+    public void setRecommendedDisplayFrameRate(int value)
+    {
+        dcmobj.putInt(Tag.RecommendedDisplayFrameRate, VR.IS, value);
+    }
+
+    public double getCineRelativetoRealTime()
+    {
         return dcmobj.getDouble(Tag.CineRelativetoRealTime);
-    }    
+    }
 
- }
+    public void setCineRelativetoRealTime(double value)
+    {
+        dcmobj.putDouble(Tag.CineRelativetoRealTime, VR.FD, value);
+    }
+
+}

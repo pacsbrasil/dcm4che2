@@ -38,28 +38,54 @@
 
 package org.dcm4che2.hp;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 15, 2005
- *
+ * 
  */
-public class ReferencedSOP {
+public class ReferencedSOP
+{
     private final DicomObject dcmobj;
 
-    public ReferencedSOP(DicomObject dcmobj) {
-         this.dcmobj = dcmobj;
+    public ReferencedSOP(DicomObject dcmobj)
+    {
+        this.dcmobj = dcmobj;
     }
-    
-    public String getReferencedSOPInstanceUID() {    
+
+    public ReferencedSOP()
+    {
+        this.dcmobj = new BasicDicomObject();
+    }
+
+    public final DicomObject getDicomObject()
+    {
+        return dcmobj;
+    }
+
+    public String getReferencedSOPInstanceUID()
+    {
         return dcmobj.getString(Tag.ReferencedSOPInstanceUID);
     }
-    
-    public String getReferencedSOPClassUID() {    
+
+    public void setReferencedSOPInstanceUID(String uid)
+    {
+        dcmobj.putString(Tag.ReferencedSOPInstanceUID, VR.UI, uid);
+    }
+
+    public String getReferencedSOPClassUID()
+    {
         return dcmobj.getString(Tag.ReferencedSOPClassUID);
+    }
+
+    public void setReferencedSOPClassUID(String uid)
+    {
+        dcmobj.putString(Tag.ReferencedSOPClassUID, VR.UI, uid);
     }
 
 }

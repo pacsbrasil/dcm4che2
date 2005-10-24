@@ -38,41 +38,74 @@
 
 package org.dcm4che2.hp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Oct 23, 2005
  *
  */
-public class PartialDataDisplayHandling extends CodeString
+public class HPNavigationGroup
 {
-    public static final PartialDataDisplayHandling MAINTAIN_LAYOUT =
-            new PartialDataDisplayHandling("MAINTAIN_LAYOUT", true);
-    public static final PartialDataDisplayHandling ADAPT_LAYOUT =
-            new PartialDataDisplayHandling("ADAPT_LAYOUT", false);
-    
-    private final boolean maintain;
-    
-    private PartialDataDisplayHandling(String codeString, boolean maintain)
+    private HPDisplaySet navDisplaySet;
+    private final List refDisplaySets;
+
+    public HPNavigationGroup()
     {
-        super(codeString);
-        this.maintain = maintain;
-    }
-    
-    public static PartialDataDisplayHandling valueOf(String codeString)
-    {
-        return (PartialDataDisplayHandling) CodeString.valueOf(
-                PartialDataDisplayHandling.class, codeString);
+        refDisplaySets = new ArrayList();
     }
 
-    public final boolean isMaintainLayout()
+    public HPNavigationGroup(int initalCapacity)
     {
-        return maintain;
+        refDisplaySets = new ArrayList(initalCapacity);
     }
 
-    public final boolean isAdaptLayout()
+    public final HPDisplaySet getNavigationDisplaySet()
     {
-        return !maintain;
+        return navDisplaySet;
+    }
+
+    public final void setNavigationDisplaySet(HPDisplaySet displaySet)
+    {
+        this.navDisplaySet = displaySet;
+    }
+
+    public List getReferenceDisplaySets()
+    {
+        return Collections.unmodifiableList(refDisplaySets);
+    }
+    
+    public void addReferenceDisplaySet(HPDisplaySet displaySet)
+    {
+        if (displaySet == null)
+            throw new NullPointerException();
+        
+        refDisplaySets.add(displaySet);        
+    }
+    
+    public DicomObject getDicomObject()
+    {
+        DicomObject item = new BasicDicomObject();
+        if (navDisplaySet != null)
+        {
+            item.putInt(Tag.NavigationDisplaySet, VR.US,
+                    navDisplaySet.getDisplaySetNumber());            
+        }
+        int[] val = new int[refDisplaySets.size()];
+        for (int i = 0; i < val.length; i++)
+        {
+            val[i] = ((HPDisplaySet) refDisplaySets.get(i)).getDisplaySetNumber();
+        }
+        item.putInts(Tag.ReferenceDisplaySets, VR.US, val);
+        return item;
     }
 
 }

@@ -71,30 +71,32 @@ public class HPSelectorFactory
         if (usageFlag == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0024) Image Set Selector Usage Flag");
-        
-        ImageSetSelectorUsageFlag flag;
-        try
-        {
-            flag = ImageSetSelectorUsageFlag.valueOf(usageFlag);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new IllegalArgumentException(
-                    "Invalid (0072,0024) Image Set Selector Usage Flag: "
-                    + usageFlag);
-        }
-        HPSelector sel = createAttributeValueSelector(item, flag, FilterOp.MEMBER_OF);
+        HPSelector sel = createAttributeValueSelector(item, isMatch(usageFlag),
+                FilterOp.MEMBER_OF);
         sel = addSequencePointer(sel);
         sel = addFunctionalGroupPointer(sel);
         return sel;
     }
+
+    private static boolean isMatch(String usageFlag)
+    {
+        if (usageFlag.equals(CodeString.MATCH))
+            return true;
+        
+        if (usageFlag.equals(CodeString.NO_MATCH))
+            return false;
+        
+        throw new IllegalArgumentException(
+            "Invalid (0072,0024) Image Set Selector Usage Flag: " + usageFlag);
+    }
+    
 
     /**
      * Create Image Set Selector with {@link String} Selector Attribute Values.
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
      * 
-     * @param usageFlag Image Set Selector Usage Flag
+     * @param usageFlag {@link CodeString#MATCH} or {@link CodeString#NO_MATCH}
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
@@ -103,9 +105,9 @@ public class HPSelectorFactory
      * @param values Selector Values
      * @return new Image Set Selector
      */
-    public static HPSelector createAttributeValueSelector(
-            ImageSetSelectorUsageFlag usageFlag, String privateCreator, int tag,
-            int valueNumber, VR vr, String[] values)
+    public static HPSelector createAttributeValueSelector(String usageFlag, 
+            String privateCreator, int tag, int valueNumber, VR vr,
+            String[] values)
     {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
                 valueNumber, vr, values, FilterOp.MEMBER_OF);
@@ -116,7 +118,7 @@ public class HPSelectorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
      * 
-     * @param usageFlag Image Set Selector Usage Flag
+     * @param usageFlag {@link CodeString#MATCH} or {@link CodeString#NO_MATCH}
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
@@ -125,9 +127,8 @@ public class HPSelectorFactory
      * @param values Selector Values
      * @return new Image Set Selector
      */
-    public static HPSelector createAttributeValueSelector(
-            ImageSetSelectorUsageFlag usageFlag, String privateCreator, int tag,
-            int valueNumber, VR vr, int[] values)
+    public static HPSelector createAttributeValueSelector(String usageFlag, 
+            String privateCreator, int tag, int valueNumber, VR vr, int[] values)
     {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
                 valueNumber, vr, values, FilterOp.MEMBER_OF);
@@ -138,7 +139,7 @@ public class HPSelectorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
      * 
-     * @param usageFlag Image Set Selector Usage Flag
+     * @param usageFlag {@link CodeString#MATCH} or {@link CodeString#NO_MATCH}
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
@@ -147,9 +148,8 @@ public class HPSelectorFactory
      * @param values Selector Values
      * @return new Image Set Selector
      */
-    public static HPSelector createAttributeValueSelector(
-            ImageSetSelectorUsageFlag usageFlag, String privateCreator, int tag,
-            int valueNumber, VR vr, float[] values)
+    public static HPSelector createAttributeValueSelector(String usageFlag, 
+            String privateCreator, int tag, int valueNumber, VR vr, float[] values)
     {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
                 valueNumber, vr, values, FilterOp.MEMBER_OF);
@@ -160,7 +160,7 @@ public class HPSelectorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
      * 
-     * @param usageFlag Image Set Selector Usage Flag
+    * @param usageFlag {@link CodeString#MATCH} or {@link CodeString#NO_MATCH}
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
@@ -168,9 +168,8 @@ public class HPSelectorFactory
      * @param values Selector Values
      * @return new Image Set Selector
      */
-    public static HPSelector createAttributeValueSelector(
-            ImageSetSelectorUsageFlag usageFlag, String privateCreator, int tag,
-            int valueNumber, double[] values)
+    public static HPSelector createAttributeValueSelector(String usageFlag, 
+            String privateCreator, int tag, int valueNumber, double[] values)
     {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
                 valueNumber, values, FilterOp.MEMBER_OF);
@@ -181,7 +180,7 @@ public class HPSelectorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
      * 
-     * @param usageFlag Image Set Selector Usage Flag
+    * @param usageFlag {@link CodeString#MATCH} or {@link CodeString#NO_MATCH}
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
@@ -189,9 +188,8 @@ public class HPSelectorFactory
      * @param valueNumber Selector Value Number
      * @return new Image Set Selector
      */
-    public static HPSelector createCodeValueSelector(
-            ImageSetSelectorUsageFlag usageFlag, String privateCreator, int tag,
-            Code[] values)
+    public static HPSelector createCodeValueSelector(String usageFlag, 
+            String privateCreator, int tag, Code[] values)
     {
         return new CodeValueSelector(usageFlag, privateCreator, tag, values,
                 FilterOp.MEMBER_OF);
@@ -234,7 +232,7 @@ public class HPSelectorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Filter Operations Sequence (0072,0400) item, is allocated and initialized.
      * 
-     * @param imagePlanes array of matching {@link ImagePlane ImagePlanes}.
+     * @param imagePlanes array of matching image planes.
      * @return new Display Set Filter
      */
     public static HPSelector createImagePlaneSelector(ImagePlane[] imagePlanes)
@@ -250,12 +248,11 @@ public class HPSelectorFactory
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
-     * @param filter {@link FilterbyAttributePresence#PRESENT} or 
-     *               {@link FilterbyAttributePresence#NOT_PRESENT} 
+     * @param filter <code>"PRESENT"</code> or <code>"NOT_PRESENT"</code> 
      * @return new Display Set Filter
      */
     public static HPSelector createAttributePresenceSelector(
-            String privateCreator, int tag, FilterbyAttributePresence filter)
+            String privateCreator, int tag, String filter)
     {
         return new AttributePresenceSelector(filter, tag, privateCreator);
     }
@@ -296,8 +293,7 @@ public class HPSelectorFactory
      * @return new Display Set Filter
      */
     public static HPSelector createAttributeValueSelector(String privateCreator,
-            int tag, int valueNumber, VR vr, int[] values,
-            FilterOp filterOp)
+            int tag, int valueNumber, VR vr, int[] values, FilterOp filterOp)
     {
         return createAttributeValueSelector(null, privateCreator, tag,
                 valueNumber, vr, values, filterOp);
@@ -464,7 +460,7 @@ public class HPSelectorFactory
 
     
     private static HPSelector createAttributeValueSelector(DicomObject item,
-            ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp)
+            boolean match, FilterOp filterOp)
     {
         String vrStr = item.getString(Tag.SelectorAttributeVR);
         if (vrStr == null)
@@ -477,39 +473,39 @@ public class HPSelectorFactory
             switch (vrStr.charAt(0) << 8 | vrStr.charAt(1))
             {
                 case 0x4154:
-                    return new Int(item, Tag.SelectorATValue, usageFlag, filterOp);
+                    return new Int(item, Tag.SelectorATValue, match, filterOp);
                 case 0x4353:
-                    return new Str(item, Tag.SelectorCSValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorCSValue, match, filterOp);
                 case 0x4453:
-                    return new Flt(item, Tag.SelectorDSValue, usageFlag, filterOp);
+                    return new Flt(item, Tag.SelectorDSValue, match, filterOp);
                 case 0x4644:
-                    return new Dbl(item, Tag.SelectorFDValue, usageFlag, filterOp);
+                    return new Dbl(item, Tag.SelectorFDValue, match, filterOp);
                 case 0x464c:
-                    return new Flt(item, Tag.SelectorFLValue, usageFlag, filterOp);
+                    return new Flt(item, Tag.SelectorFLValue, match, filterOp);
                 case 0x4953:
-                    return new Int(item, Tag.SelectorISValue, usageFlag, filterOp);
+                    return new Int(item, Tag.SelectorISValue, match, filterOp);
                 case 0x4c4f:
-                    return new Str(item, Tag.SelectorLOValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorLOValue, match, filterOp);
                 case 0x4c54:
-                    return new Str(item, Tag.SelectorLTValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorLTValue, match, filterOp);
                 case 0x504e:
-                    return new Str(item, Tag.SelectorPNValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorPNValue, match, filterOp);
                 case 0x5348:
-                    return new Str(item, Tag.SelectorSHValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorSHValue, match, filterOp);
                 case 0x534c:
-                    return new Int(item, Tag.SelectorSLValue, usageFlag, filterOp);
+                    return new Int(item, Tag.SelectorSLValue, match, filterOp);
                 case 0x5351:
-                    return new CodeValueSelector(item, usageFlag, filterOp);
+                    return new CodeValueSelector(item, match, filterOp);
                 case 0x5353:
-                    return new Int(item, Tag.SelectorSSValue, usageFlag, filterOp);
+                    return new Int(item, Tag.SelectorSSValue, match, filterOp);
                 case 0x5354:
-                    return new Str(item, Tag.SelectorSTValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorSTValue, match, filterOp);
                 case 0x554c:
-                    return new UInt(item, Tag.SelectorULValue, usageFlag, filterOp);
+                    return new UInt(item, Tag.SelectorULValue, match, filterOp);
                 case 0x5553:
-                    return new Int(item, Tag.SelectorUSValue, usageFlag, filterOp);
+                    return new Int(item, Tag.SelectorUSValue, match, filterOp);
                 case 0x5554:
-                    return new Str(item, Tag.SelectorUTValue, usageFlag, filterOp);
+                    return new Str(item, Tag.SelectorUTValue, match, filterOp);
             }
         }
         throw new IllegalArgumentException(
@@ -518,22 +514,9 @@ public class HPSelectorFactory
 
     private static HPSelector createDisplaySetSelector(DicomObject item)
     {
-        String presence = item.getString(Tag.FilterbyAttributePresence);
-        if (presence != null)
-        {
-            try
-            {
-                FilterbyAttributePresence filter = 
-                        FilterbyAttributePresence.valueOf(presence);
-                return new AttributePresenceSelector(item, filter);
-            }
-            catch (IllegalArgumentException e)
-            {
-                throw new IllegalArgumentException(
-                        "(0072,0404) Filter-by Attribute Presence Attribute: "
-                                + presence);
-            }
-        }
+        if (item.containsValue(Tag.FilterbyAttributePresence))
+            return new AttributePresenceSelector(item);
+        
         String filterOp = item.getString(Tag.FilterbyOperator);
         if (filterOp == null)
             throw new IllegalArgumentException(
@@ -541,7 +524,7 @@ public class HPSelectorFactory
         try
         {
             FilterOp filter = FilterOp.valueOf(filterOp);
-            return createAttributeValueSelector(item, null, filter);
+            return createAttributeValueSelector(item, true, filter);
         }
         catch (IllegalArgumentException e)
         {
@@ -615,21 +598,28 @@ public class HPSelectorFactory
         
     }
     
+    private static boolean isPresent(String val)
+    {
+        if (val.equals(CodeString.PRESENT))
+            return true;
+        if (val.equals(CodeString.NOT_PRESENT))
+            return false;
+        throw new IllegalArgumentException(
+                "Illegal (0072,0404) Filter-by Attribute Presence: " + val);
+    }
+
     private static class AttributePresenceSelector
     extends BaseAttributeSelector
     {
-        AttributePresenceSelector(DicomObject item, 
-                FilterbyAttributePresence filter)
+        AttributePresenceSelector(DicomObject item)
         {
-            super(item, filter.isMatchIfNotPresent());
+            super(item, !isPresent(item.getString(Tag.FilterbyAttributePresence)));
         }
 
-        AttributePresenceSelector(FilterbyAttributePresence filter, int tag,
-                String privateCreator)
+        AttributePresenceSelector(String filter, int tag, String privateCreator)
         {
-            super(tag, privateCreator, filter.isMatchIfNotPresent());
-            item.putString(Tag.FilterbyAttributePresence, VR.CS,
-                    filter.getCodeString());
+            super(tag, privateCreator, !isPresent(filter));
+            item.putString(Tag.FilterbyAttributePresence, VR.CS, filter);
         }
         
         public boolean matches(DicomObject dcmobj, int frame)
@@ -644,18 +634,17 @@ public class HPSelectorFactory
         protected final int valueNumber;
         protected final FilterOp filterOp;
 
-        AttributeValueSelector(DicomObject item,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp)
+        AttributeValueSelector(DicomObject item, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag == null || usageFlag.match());
+            super(item, match);
             this.valueNumber = item.getInt(Tag.SelectorValueNumber);
             this.filterOp = filterOp;
         }
 
         AttributeValueSelector(int tag, String privateCreator, int valueNumber,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp, VR vr)
+                String usageFlag, FilterOp filterOp, VR vr)
         {
-            super(tag, privateCreator, usageFlag == null || usageFlag.match());
+            super(tag, privateCreator, usageFlag == null || isMatch(usageFlag));
             this.valueNumber = valueNumber;
             this.filterOp = filterOp;
             item.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
@@ -663,16 +652,14 @@ public class HPSelectorFactory
             item.putString(Tag.SelectorAttributeVR, VR.CS, vr.toString());
             if (usageFlag != null)
             {
-                item.putString(Tag.ImageSetSelectorUsageFlag, VR.CS,
-                        usageFlag.getCodeString());
+                item.putString(Tag.ImageSetSelectorUsageFlag, VR.CS, usageFlag);
             }
         }
         
     }
 
-    private static HPSelector createAttributeValueSelector(ImageSetSelectorUsageFlag usageFlag,
-            String privateCreator, int tag,
-            int valueNumber, VR vr, String[] values,
+    private static HPSelector createAttributeValueSelector(String usageFlag,
+            String privateCreator, int tag, int valueNumber, VR vr, String[] values,
             FilterOp filterOp)
     {
         VR vr1 = vr != null ? vr : VRMap.getPrivateVRMap(privateCreator).vrOf(tag);
@@ -704,10 +691,9 @@ public class HPSelectorFactory
     {
         protected final String[] params;
 
-        Str(DicomObject item, int valueTag, ImageSetSelectorUsageFlag usageFlag,
-                FilterOp filterOp)
+        Str(DicomObject item, int valueTag, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag, filterOp);
+            super(item, match, filterOp);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
                         + item.get(Tag.FilterbyOperator)
@@ -721,12 +707,11 @@ public class HPSelectorFactory
         }
 
         Str(int tag, String privateCreator, int valueNumber, int valueTag,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp, VR vr,
-                String[] params)
+                String usageFlag, FilterOp filterOp, VR vr, String[] values)
         {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (String[]) params.clone();
-            item.putStrings(valueTag, vr, params);
+            this.params = (String[]) values.clone();
+            item.putStrings(valueTag, vr, values);
         }
 
         public boolean matches(DicomObject dcmobj, int frame)
@@ -738,9 +723,8 @@ public class HPSelectorFactory
         }
     }
 
-    private static HPSelector createAttributeValueSelector(ImageSetSelectorUsageFlag usageFlag,
-            String privateCreator, int tag,
-            int valueNumber, VR vr, int[] values,
+    private static HPSelector createAttributeValueSelector(String usageFlag,
+            String privateCreator, int tag, int valueNumber, VR vr, int[] values,
             FilterOp filterOp)
     {
         VR vr1 = vr != null ? vr : VRMap.getPrivateVRMap(privateCreator).vrOf(tag);
@@ -774,10 +758,9 @@ public class HPSelectorFactory
     {
         private final int[] params;
 
-        Int(DicomObject item, int valueTag, ImageSetSelectorUsageFlag usageFlag,
-                FilterOp filterOp)
+        Int(DicomObject item, int valueTag, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag, filterOp);
+            super(item, match, filterOp);
             this.params = item.getInts(valueTag);
             if (params == null || params.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -791,12 +774,11 @@ public class HPSelectorFactory
         }
 
         Int(int tag, String privateCreator, int valueNumber, int valueTag,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp, VR vr,
-                int[] params)
+                String usageFlag, FilterOp filterOp, VR vr, int[] values)
         {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (int[]) params.clone();
-            item.putInts(valueTag, vr, params);
+            this.params = (int[]) values.clone();
+            item.putInts(valueTag, vr, values);
         }
         
         public boolean matches(DicomObject dcmobj, int frame)
@@ -822,10 +804,9 @@ public class HPSelectorFactory
     {
         private final long[] params;
 
-        UInt(DicomObject item, int valueTag, ImageSetSelectorUsageFlag usageFlag,
-                FilterOp filterOp)
+        UInt(DicomObject item, int valueTag, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag, filterOp);
+            super(item, match, filterOp);
             int[] tmp = item.getInts(valueTag);
             if (tmp == null || tmp.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -839,12 +820,11 @@ public class HPSelectorFactory
         }
 
         UInt(int tag, String privateCreator, int valueNumber, int valueTag,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp, VR vr,
-                int[] params)
+                String usageFlag, FilterOp filterOp, VR vr, int[] values)
         {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = toLong(params);
-            item.putInts(valueTag, vr, params);
+            this.params = toLong(values);
+            item.putInts(valueTag, vr, values);
         }
         
        public boolean matches(DicomObject dcmobj, int frame)
@@ -856,9 +836,8 @@ public class HPSelectorFactory
         }
     }
 
-    private static HPSelector createAttributeValueSelector(ImageSetSelectorUsageFlag usageFlag,
-            String privateCreator, int tag,
-            int valueNumber, VR vr, float[] params,
+    private static HPSelector createAttributeValueSelector(String usageFlag,
+            String privateCreator, int tag, int valueNumber, VR vr, float[] values,
             FilterOp filterOp)
     {
         VR vr1 = vr != null ? vr : VRMap.getPrivateVRMap(privateCreator).vrOf(tag);
@@ -873,17 +852,16 @@ public class HPSelectorFactory
                 throw new IllegalArgumentException("vr: " + vr);
         }
         return new Flt(tag, privateCreator, valueNumber, valueTag, usageFlag,
-                filterOp, vr, params);
+                filterOp, vr, values);
     }
     
     private static class Flt extends AttributeValueSelector
     {
         private final float[] params;
 
-        Flt(DicomObject item, int valueTag, ImageSetSelectorUsageFlag usageFlag,
-                FilterOp filterOp)
+        Flt(DicomObject item, int valueTag, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag, filterOp);
+            super(item, match, filterOp);
             this.params = item.getFloats(valueTag);
             if (params == null || params.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -897,12 +875,11 @@ public class HPSelectorFactory
         }
 
         Flt(int tag, String privateCreator, int valueNumber, int valueTag,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp, VR vr,
-                float[] params)
+                String usageFlag, FilterOp filterOp, VR vr, float[] values)
         {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (float[]) params.clone();
-            item.putFloats(valueTag, vr, params);
+            this.params = (float[]) values.clone();
+            item.putFloats(valueTag, vr, values);
         }        
         
         public boolean matches(DicomObject dcmobj, int frame)
@@ -914,22 +891,21 @@ public class HPSelectorFactory
         }
     }
 
-    private static HPSelector createAttributeValueSelector(ImageSetSelectorUsageFlag usageFlag,
-            String privateCreator, int tag,
-            int valueNumber, double[] params, FilterOp filterOp)
+    private static HPSelector createAttributeValueSelector(
+            String usageFlag, String privateCreator, int tag,
+            int valueNumber, double[] values, FilterOp filterOp)
     {
        return new Dbl(tag, privateCreator, valueNumber, Tag.SelectorFDValue,
-               usageFlag, filterOp, VR.FD, params);
+               usageFlag, filterOp, VR.FD, values);
     }
     
     private static class Dbl extends AttributeValueSelector
     {
         private final double[] params;
 
-        Dbl(DicomObject item, int valueTag, ImageSetSelectorUsageFlag usageFlag,
-                FilterOp filterOp)
+        Dbl(DicomObject item, int valueTag, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag, filterOp);
+            super(item, match, filterOp);
             this.params = item.getDoubles(valueTag);
             if (params == null || params.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -943,12 +919,11 @@ public class HPSelectorFactory
         }
 
         Dbl(int tag, String privateCreator, int valueNumber, int valueTag,
-                ImageSetSelectorUsageFlag usageFlag, FilterOp filterOp, VR vr,
-                double[] params)
+                String usageFlag, FilterOp filterOp, VR vr, double[] values)
         {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (double[]) params.clone();
-            item.putDoubles(valueTag, vr, params);
+            this.params = (double[]) values.clone();
+            item.putDoubles(valueTag, vr, values);
         }        
                 
         public boolean matches(DicomObject dcmobj, int frame)
@@ -964,10 +939,9 @@ public class HPSelectorFactory
     {
         private final DicomElement params;
 
-        CodeValueSelector(DicomObject item, ImageSetSelectorUsageFlag usageFlag,
-                FilterOp filterOp)
+        CodeValueSelector(DicomObject item, boolean match, FilterOp filterOp)
         {
-            super(item, usageFlag, filterOp);
+            super(item, match, filterOp);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
                         + item.get(Tag.FilterbyOperator)
@@ -978,16 +952,15 @@ public class HPSelectorFactory
                         "Missing (0072,0080) Selector Code Sequence Value");
         }
 
-        CodeValueSelector(ImageSetSelectorUsageFlag usageFlag, String privateCreator,
-                int tag, Code[] params,
-                FilterOp filterOp)
+        CodeValueSelector(String usageFlag, String privateCreator, int tag, 
+                Code[] values, FilterOp filterOp)
         {
             super(tag, privateCreator, 0, usageFlag, filterOp, VR.SQ);
             this.params = item.putSequence(Tag.SelectorCodeSequenceValue,
-                    params.length);
-            for (int i = 0; i < params.length; i++)
+                    values.length);
+            for (int i = 0; i < values.length; i++)
             {
-                this.params.addDicomObject(params[i].getDicomObject());
+                this.params.addDicomObject(values[i].getDicomObject());
             }
         }        
         

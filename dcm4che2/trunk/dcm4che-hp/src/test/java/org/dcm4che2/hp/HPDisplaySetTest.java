@@ -115,7 +115,7 @@ public class HPDisplaySetTest extends TestCase {
         HangingProtocol neurosurgeryPlan = 
                 new HangingProtocol(loadXML("NeurosurgeryPlan.xml"));
         
-        assertEquals(4, neurosurgeryPlan.countPresentationGroups());
+        assertEquals(4, neurosurgeryPlan.getNumberOfPresentationGroups());
         List ctOnlyDisplay = 
                 neurosurgeryPlan.getDisplaySetsOfPresentationGroup(1);
         assertEquals(5, ctOnlyDisplay.size());

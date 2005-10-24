@@ -44,39 +44,79 @@ package org.dcm4che2.hp;
  * @since Oct 22, 2005
  *
  */
-class CodeString
+public class CodeString
 {
-    protected final String codeString;
+    public static final String YES = "YES";
+    public static final String NO = "NO";
 
-    protected CodeString(String codeString)
-    {
-        this.codeString = codeString;
-    }
+    public static final String MATCH = "MATCH";
+    public static final String NO_MATCH = "NO_MATCH";
+    
+    public static final String PRESENT = "PRESENT";
+    public static final String NOT_PRESENT = "NOT_PRESENT";
+    
+    public static final String ABSTRACT_PRIOR = "ABSTRACT_PRIOR";
+    public static final String RELATIVE_TIME = "RELATIVE_TIME";
+    
+    public static final String INCREASING = "INCREASING";
+    public static final String DECREASING = "DECREASING";
+    
+    public static final String ALONG_AXIS = "ALONG_AXIS";
+    public static final String BY_ACQ_TIME = "BY_ACQ_TIME";
 
-    public final String getCodeString()
-    {
-        return codeString;
-    }
+    public static final String MAINTAIN_LAYOUT = "MAINTAIN_LAYOUT";
+    public static final String ADAPT_LAYOUT = "ADAPT_LAYOUT";
+    
+    public static final String MANUFACTURER = "MANUFACTURER";
+    public static final String SITE = "SITE";
+    public static final String SINGLE_USER = "SINGLE_USER";
+    public static final String USER_GROUP = "USER_GROUP";
 
-    protected static CodeString valueOf(Class clazz, String codeString)
+    public static final String COLOR = "COLOR";
+
+    public static final String MPR = "MPR";
+    public static final String _3D_RENDERING = "3D_RENDERING";
+    public static final String SLAB = "SLAB";
+
+    public static final String SAGITTAL = "SAGITTAL";
+    public static final String AXIAL = "AXIAL";
+    public static final String CORONAL = "CORONAL";
+    public static final String OBLIQUE = "OBLIQUE";
+
+    public static final String LUNG = "LUNG";
+    public static final String MEDIASTINUM = "MEDIASTINUM";
+    public static final String ABDO_PELVIS = "ABDO_PELVIS";
+    public static final String LIVER = "LIVER";
+    public static final String SOFT_TISSUE = "SOFT_TISSUE";
+    public static final String BONE = "BONE";
+    public static final String BRAIN = "BRAIN";
+    public static final String POST_FOSSA = "POST_FOSSA";
+
+    public static final String BLACK_BODY = "BLACK_BODY";
+    public static final String HOT_IRON = "HOT_IRON";
+    public static final String DEFAULT = "DEFAULT";
+
+    public static final String TILED = "TILED";
+    public static final String STACK = "STACK";
+    public static final String CINE = "CINE";
+    public static final String PROCESSED = "PROCESSED";
+    public static final String SINGLE = "SINGLE";
+    
+    public static final String VERTICAL = "VERTICAL";
+    public static final String HORIZONTAL = "HORIZONTAL";
+    
+    public static final String PAGE = "PAGE";
+    public static final String ROW_COLUMN = "ROW_COLUMN";
+    public static final String IMAGE = "IMAGE";
+    
+    public static int sortingDirectionToSign(String cs)
     {
-        if (codeString == null)
-            throw new NullPointerException("codeString");
-        
-        try
-        {
-            return (CodeString) 
-                    clazz.getField(codeString).get(null);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new Error(e);
-        }
-        catch (NoSuchFieldException e)
-        {
-            throw new IllegalArgumentException("codeString: " + codeString);
-        }
-        
+        if (cs.equals(INCREASING))
+            return 1;
+        if (cs.equals(DECREASING))
+            return -1;
+        throw new IllegalArgumentException(
+            "Invalid (0072,0604) Sorting Direction: " + cs);
     }
 
 }

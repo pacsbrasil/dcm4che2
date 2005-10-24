@@ -46,7 +46,7 @@ import java.util.Calendar;
  * @since Oct 21, 2005
  *
  */
-public class RelativeTimeUnits extends CodeString
+public class RelativeTimeUnits
 {
     public static final RelativeTimeUnits SECONDS = 
             new RelativeTimeUnits("SECONDS", Calendar.SECOND);
@@ -71,9 +71,11 @@ public class RelativeTimeUnits extends CodeString
     
     private final int calendarField;
 
+    protected final String codeString;
+
     private RelativeTimeUnits(String codeString, int calendarField)
     {
-        super(codeString);
+        this.codeString = codeString;
         this.calendarField = calendarField;
     }
 
@@ -82,9 +84,25 @@ public class RelativeTimeUnits extends CodeString
         return calendarField;
     }
     
+    public final String getCodeString()
+    {
+        return codeString;
+    }
+
     public static RelativeTimeUnits valueOf(String codeString)
     {
-        return (RelativeTimeUnits) CodeString.valueOf(
-                RelativeTimeUnits.class, codeString);
+        try
+        {
+            return (RelativeTimeUnits) 
+                    RelativeTimeUnits.class.getField(codeString).get(null);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new Error(e);
+        }
+        catch (NoSuchFieldException e)
+        {
+            throw new IllegalArgumentException("codeString: " + codeString);
+        }
     }
 }

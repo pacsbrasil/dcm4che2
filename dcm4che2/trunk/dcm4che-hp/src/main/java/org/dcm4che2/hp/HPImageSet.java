@@ -120,19 +120,18 @@ public class HPImageSet
         dcmobj.putString(Tag.ImageSetLabel, VR.LO, imageSetLabel);
     }
 
-    public ImageSetSelectorCategory getImageSetSelectorCategory()
+    public String getImageSetSelectorCategory()
     {
-        String category = dcmobj.getString(Tag.ImageSetSelectorCategory);
-        return category == null ? null
-                : ImageSetSelectorCategory.valueOf(category);
+        return dcmobj.getString(Tag.ImageSetSelectorCategory);
     }
 
+    public boolean hasRelativeTime()
+    {
+        return dcmobj.containsValue(Tag.RelativeTime);
+    }
+    
     public RelativeTime getRelativeTime()
     {
-        ImageSetSelectorCategory category = getImageSetSelectorCategory();
-        if (category == null || category.isAbstractPrior())
-            return null;
-        
         RelativeTimeUnits units = 
                 RelativeTimeUnits.valueOf(dcmobj.getString(Tag.RelativeTimeUnits));
         return new RelativeTime(dcmobj.getInts(Tag.RelativeTime), units);
@@ -141,7 +140,7 @@ public class HPImageSet
     public void setRelativeTime(RelativeTime relativeTime)
     {
         dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
-                ImageSetSelectorCategory.RELATIVE_TIME.getCodeString());
+                CodeString.RELATIVE_TIME);
         dcmobj.putInts(Tag.RelativeTime, VR.US, relativeTime.getValues());
         dcmobj.putString(Tag.RelativeTimeUnits, VR.CS, 
                 relativeTime.getUnits().getCodeString());
@@ -160,7 +159,7 @@ public class HPImageSet
     public void setAbstractPriorValue(AbstractPriorValue abstractPriorValue)
     {
         dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
-                ImageSetSelectorCategory.ABSTRACT_PRIOR.getCodeString());
+                CodeString.ABSTRACT_PRIOR);
         dcmobj.putInts(Tag.AbstractPriorValue, VR.US, abstractPriorValue.getValues());
     }
 
@@ -178,7 +177,7 @@ public class HPImageSet
     public void setAbstractPriorCode(Code code)
     {
         dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
-                ImageSetSelectorCategory.ABSTRACT_PRIOR.getCodeString());
+                CodeString.ABSTRACT_PRIOR);
         dcmobj.putNestedDicomObject(Tag.AbstractPriorCodeSequence,
                 code.getDicomObject());
     }

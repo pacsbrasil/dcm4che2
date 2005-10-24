@@ -38,49 +38,99 @@
 
 package org.dcm4che2.hp;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 8, 2005
- *
+ * 
  */
-public class HPDefinition {
+public class HPDefinition
+{
     private final DicomObject dcmobj;
-    
-    public HPDefinition(DicomObject item) {
+
+    public HPDefinition(DicomObject item)
+    {
         this.dcmobj = item;
     }
-    
-    public DicomObject getDicomObject() {
-        return dcmobj;        
+
+    public HPDefinition()
+    {
+        this.dcmobj = new BasicDicomObject();
+        dcmobj.putSequence(Tag.ProcedureCodeSequence);
+        dcmobj.putSequence(Tag.ReasonforRequestedProcedureCodeSequence);
     }
-    
-    public String getModality() {
+
+    public DicomObject getDicomObject()
+    {
+        return dcmobj;
+    }
+
+    public String getModality()
+    {
         return dcmobj.getString(Tag.Modality);
     }
-    
-    public String getLaterality() {
+
+    public void setModality(String modality)
+    {
+        dcmobj.putString(Tag.Modality, VR.CS, modality);
+    }
+
+    public String getLaterality()
+    {
         return dcmobj.getString(Tag.Laterality);
     }
-    
-    public Code[] getAnatomicRegionCodes() {
+
+    public void setLaterality(String laterality)
+    {
+        dcmobj.putString(Tag.Laterality, VR.CS, laterality);
+    }
+
+    public Code[] getAnatomicRegionCode()
+    {
         DicomElement sq = dcmobj.get(Tag.AnatomicRegionSequence);
         return sq != null && sq.hasItems() ? Code.toArray(sq) : null;
     }
 
-    public Code[] getProcedureCodes() {
+    public void addAnatomicRegionCodes(Code code)
+    {
+        addCode(Tag.AnatomicRegionSequence, code);
+    }
+
+    public Code[] getProcedureCodes()
+    {
         DicomElement sq = dcmobj.get(Tag.ProcedureCodeSequence);
         return sq != null && sq.hasItems() ? Code.toArray(sq) : null;
     }
 
-    public Code[] getReasonforRequestedProcedureCodes() {
-        DicomElement sq = 
-                dcmobj.get(Tag.ReasonforRequestedProcedureCodeSequence);
+    public void addProcedureCode(Code code)
+    {
+        addCode(Tag.ProcedureCodeSequence, code);
+    }
+
+    public Code[] getReasonforRequestedProcedureCodes()
+    {
+        DicomElement sq = dcmobj.get(Tag.ReasonforRequestedProcedureCodeSequence);
         return sq != null && sq.hasItems() ? Code.toArray(sq) : null;
+    }
+
+    public void addReasonforRequestedProcedureCode(Code code)
+    {
+        addCode(Tag.ReasonforRequestedProcedureCodeSequence, code);
+    }
+
+    private void addCode(int tag, Code code)
+    {
+        DicomElement sq = dcmobj.get(tag);
+        if (sq == null)
+            dcmobj.putSequence(tag);
+
+        sq.addDicomObject(code.getDicomObject());
     }
 
 }

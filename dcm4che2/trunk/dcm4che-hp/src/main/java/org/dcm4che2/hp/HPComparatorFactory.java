@@ -95,12 +95,12 @@ public class HPComparatorFactory
      * @param privateCreator Selector Attribute Private Creator, if Selector
      *   Attribute is contained by a Private Group, otherwise <code>null</code>.
      * @param tag Selector Attribute
-     * @param sortingDirection {@link SortingDirection#INCREASING} or
-     *                         {@link SortingDirection#DECREASING}
+     * @param sortingDirection {@link CodeString#INCREASING} or
+     *                         {@link CodeString#DECREASING}
      * @return the new Comparator
      */
     public static HPComparator createSortByAttribute(String privateCreator,
-            int tag, int valueNumber, SortingDirection sortingDirection)
+            int tag, int valueNumber, String sortingDirection)
     {
         return new SortByAttribute(privateCreator, tag, valueNumber, 
                 sortingDirection);
@@ -111,12 +111,11 @@ public class HPComparatorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
      * 
-     * @param sortingDirection {@link SortingDirection#INCREASING} or
-     *                         {@link SortingDirection#DECREASING}
+     * @param sortingDirection {@link CodeString#INCREASING} or
+     *                         {@link CodeString#DECREASING}
      * @return the new Comparator
      */
-    public static HPComparator createSortAlongAxis(
-            SortingDirection sortingDirection)
+    public static HPComparator createSortAlongAxis(String sortingDirection)
     {
         return new AlongAxisComparator(sortingDirection);
     }
@@ -126,12 +125,11 @@ public class HPComparatorFactory
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
      * 
-     * @param sortingDirection {@link SortingDirection#INCREASING} or
-     *                         {@link SortingDirection#DECREASING}
+     * @param sortingDirection {@link CodeString#INCREASING} or
+     *                         {@link CodeString#DECREASING}
      * @return the new Comparator
      */
-    public static HPComparator createSortByAcqTime(
-            SortingDirection sortingDirection)
+    public static HPComparator createSortByAcqTime(String sortingDirection)
     {
         return new ByAcqTimeComparator(sortingDirection);
     }
@@ -248,29 +246,29 @@ public class HPComparatorFactory
         }
     }
 
+
     private static class SortByAttribute extends AttributeComparator
     {
         private final DicomObject sortingOp;
         private final int valueNumber;
-        private final SortingDirection sortingDirection;
+        private final int sign;
 
         SortByAttribute(String privateCreator, int tag, int valueNumber,
-                SortingDirection sortingDirection) {
+                String sortingDirection) {
             super(tag, privateCreator);
             if (valueNumber == 0)
             {
                 throw new IllegalArgumentException("valueNumber = 0");
             }
             this.valueNumber = valueNumber;
-            this.sortingDirection = sortingDirection;
+            this.sign = CodeString.sortingDirectionToSign(sortingDirection);
             sortingOp = new BasicDicomObject();
             sortingOp.putInt(Tag.SelectorAttribute, VR.AT, tag);
             if (privateCreator != null)
                 sortingOp.putString(Tag.SelectorAttributePrivateCreator,
                         VR.LO, privateCreator);
             sortingOp.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
-            sortingOp.putString(Tag.SortingDirection, VR.CS, 
-                    sortingDirection.getCodeString());
+            sortingOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
         }
         
         SortByAttribute(DicomObject sortingOp) {
@@ -289,15 +287,7 @@ public class HPComparatorFactory
                 throw new IllegalArgumentException(
                         "Missing (0072,0604) Sorting Direction");
             }
-            try
-            {
-                this.sortingDirection = SortingDirection.valueOf(cs);
-            }
-            catch (IllegalArgumentException e)
-            {
-                throw new IllegalArgumentException(
-                        "Invalid (0072,0604) Sorting Direction: " + cs);
-            }
+            this.sign = CodeString.sortingDirectionToSign(cs);
             this.sortingOp = sortingOp;
         }
 
@@ -376,7 +366,7 @@ public class HPComparatorFactory
             String v2 = c2.getString(Tag.CodeValue);
             if (v1 == null || v2 == null)
                 return 0;
-            return v1.compareTo(v2) * sortingDirection.sign();
+            return v1.compareTo(v2) * sign;
         }
 
         private int intcmp(int[] v1, int[] v2)
@@ -386,9 +376,9 @@ public class HPComparatorFactory
                 return 0;
 
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sortingDirection.sign();
+                return sign;
             if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return -sortingDirection.sign();
+                return -sign;
             return 0;
         }
 
@@ -398,9 +388,9 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sortingDirection.sign();
+                return sign;
             if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return -sortingDirection.sign();
+                return -sign;
             return 0;
         }
 
@@ -410,9 +400,9 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sortingDirection.sign();
+                return sign;
             if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return -sortingDirection.sign();
+                return -sign;
             return 0;
         }
 
@@ -421,8 +411,7 @@ public class HPComparatorFactory
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
-            return v1[valueNumber - 1].compareTo(v2[valueNumber - 1])
-                    * sortingDirection.sign();
+            return v1[valueNumber - 1].compareTo(v2[valueNumber - 1]) * sign;
         }
 
         private int uintcmp(int[] v1, int[] v2)
@@ -433,9 +422,9 @@ public class HPComparatorFactory
             long l1 = v1[valueNumber - 1] & 0xffffffffL;
             long l2 = v2[valueNumber - 1] & 0xffffffffL;
             if (l1 < l2)
-                return sortingDirection.sign();
+                return sign;
             if (l1 > l2)
-                return -sortingDirection.sign();
+                return -sign;
             return 0;
         }
 
@@ -444,8 +433,7 @@ public class HPComparatorFactory
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
-            return v1[valueNumber - 1].compareTo(v2[valueNumber - 1])
-                    * sortingDirection.sign();
+            return v1[valueNumber - 1].compareTo(v2[valueNumber - 1]) * sign;
         }
     }
 

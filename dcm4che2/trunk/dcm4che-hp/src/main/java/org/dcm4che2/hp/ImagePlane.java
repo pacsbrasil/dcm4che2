@@ -41,25 +41,41 @@ package org.dcm4che2.hp;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Oct 22, 2005
+ * @since Oct 24, 2005
  *
  */
-public class ImagePlane extends CodeString
+public class ImagePlane
 {
-
     public static final ImagePlane AXIAL = new ImagePlane("AXIAL");
     public static final ImagePlane SAGITTAL = new ImagePlane("SAGITTAL");
     public static final ImagePlane CORONAL = new ImagePlane("CORONAL");
     public static final ImagePlane OBLIQUE = new ImagePlane("OBLIQUE");
     
+    private final String codeString;
+    
     private ImagePlane(String codeString)
     {
-        super(codeString);
-    }
-    
-    public static ImagePlane valueOf(String codeString)
-    {
-        return (ImagePlane) CodeString.valueOf(ImagePlane.class, codeString);
+        this.codeString = codeString;
     }
 
+    public final String getCodeString()
+    {
+        return codeString;
+    }
+
+    public static ImagePlane valueOf(String codeString)
+    {
+        try
+        {
+            return (ImagePlane) ImagePlane.class.getField(codeString).get(null);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new Error(e);
+        }
+        catch (NoSuchFieldException e)
+        {
+            throw new IllegalArgumentException("codeString: " + codeString);
+        }
+    }
 }

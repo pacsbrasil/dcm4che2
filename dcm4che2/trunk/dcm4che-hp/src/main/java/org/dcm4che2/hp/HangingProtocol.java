@@ -44,9 +44,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.spi.HPCategorySpi;
 import org.dcm4che2.hp.spi.HPComparatorSpi;
 import org.dcm4che2.hp.spi.HPRegistry;
@@ -60,19 +62,34 @@ import org.dcm4che2.hp.spi.HPSelectorSpi;
 public class HangingProtocol
 {
 
-    private static final List[] EMPTY_LIST_ARRAY = {};
-
     private final DicomObject dcmobj;
     private List definitions;
     private List screenDefs;
     private List imageSets;
     private List displaySets;
+    private List scrollingGroups;
+    private List navigationGroups;
     private int maxPresGroup = 0;
 
     public HangingProtocol(DicomObject dcmobj)
     {
         this.dcmobj = dcmobj;
         init();
+    }
+
+    public HangingProtocol()
+    {
+        definitions = new ArrayList();
+        screenDefs = new ArrayList();
+        imageSets = new ArrayList();
+        displaySets = new ArrayList();
+        scrollingGroups = new ArrayList();
+        navigationGroups = new ArrayList();
+        this.dcmobj = new BasicDicomObject();
+        dcmobj.putSequence(Tag.HangingProtocolDefinitionSequence);
+        dcmobj.putSequence(Tag.NominalScreenDefinitionSequence);
+        dcmobj.putSequence(Tag.ImageSetsSequence);
+        dcmobj.putSequence(Tag.DisplaySetsSequence);
     }
 
     public DicomObject getDicomObject()
@@ -85,9 +102,19 @@ public class HangingProtocol
         return dcmobj.getString(Tag.HangingProtocolName);
     }
 
+    public void setHangingProtocolName(String name)
+    {
+        dcmobj.putString(Tag.HangingProtocolName, VR.SH, name);
+    }
+
     public String getHangingProtocolDescription()
     {
         return dcmobj.getString(Tag.HangingProtocolDescription);
+    }
+
+    public void setHangingProtocolDescription(String description)
+    {
+        dcmobj.putString(Tag.HangingProtocolDescription, VR.LO, description);
     }
 
     public String getHangingProtocolLevel()
@@ -95,9 +122,19 @@ public class HangingProtocol
         return dcmobj.getString(Tag.HangingProtocolLevel);
     }
 
+    public void setHangingProtocolLevel(String level)
+    {
+        dcmobj.putString(Tag.HangingProtocolLevel, VR.CS, level);
+    }
+    
     public String getHangingProtocolCreator()
     {
         return dcmobj.getString(Tag.HangingProtocolCreator);
+    }
+
+    public void setHangingProtocolCreator(String creator)
+    {
+        dcmobj.putString(Tag.HangingProtocolCreator, VR.LO, creator);
     }
 
     public Date getHangingProtocolCreationDatetime()
@@ -105,14 +142,29 @@ public class HangingProtocol
         return dcmobj.getDate(Tag.HangingProtocolCreationDatetime);
     }
 
+    public void setHangingProtocolCreationDatetime(Date datetime)
+    {
+        dcmobj.putDate(Tag.HangingProtocolCreationDatetime, VR.DT, datetime);
+    }
+
     public int getNumberOfPriorsReferenced()
     {
         return dcmobj.getInt(Tag.NumberofPriorsReferenced);
     }
 
+    public void setNumberofPriorsReferenced(int priors)
+    {
+        dcmobj.putInt(Tag.NumberofPriorsReferenced, VR.US, priors);
+    }
+
     public int getNumberOfScreens()
     {
         return dcmobj.getInt(Tag.NumberofScreens);
+    }
+
+    public void setNumberofScreens(int screens)
+    {
+        dcmobj.putInt(Tag.NumberofScreens, VR.US, screens);
     }
 
     public Code getHangingProtocolUserIdentificationCode()
@@ -122,21 +174,59 @@ public class HangingProtocol
         return item != null ? new Code(item) : null;
     }
 
-    public ReferencedSOP getSourceHangingProtocolSOPInstanceUID()
+    public void setHangingProtocolUserIdentificationCodeSequence(Code user)
+    {
+        dcmobj.putNestedDicomObject(
+                Tag.HangingProtocolUserIdentificationCodeSequence,
+                user.getDicomObject());
+    }
+   
+    public ReferencedSOP getSourceHangingProtocol()
     {
         DicomObject item = dcmobj
                 .getNestedDicomObject(Tag.SourceHangingProtocolSequence);
         return item != null ? new ReferencedSOP(item) : null;
     }
 
+    public void setSourceHangingProtocol(ReferencedSOP sop)
+    {
+        dcmobj.putNestedDicomObject(
+                Tag.SourceHangingProtocolSequence,
+                sop.getDicomObject());
+    }
+   
     public String getHangingProtocolUserGroupName()
     {
         return dcmobj.getString(Tag.HangingProtocolUserGroupName);
     }
 
+    public void setHangingProtocolUserGroupName(String name)
+    {
+        dcmobj.putString(Tag.HangingProtocolUserGroupName, VR.LO, name);
+    }
+    
+    public String getPartialDataDisplayHandling()
+    {
+        return dcmobj.getString(Tag.PartialDataDisplayHandling);
+    }
+
+    public void setPartialDataDisplayHandling(String type)
+    {
+        dcmobj.putString(Tag.PartialDataDisplayHandling, VR.CS, type);
+    }
+        
     public List getHangingProtocolDefinitions()
     {
         return Collections.unmodifiableList(definitions);
+    }
+
+    public void addHangingProtocolDefinition(HPDefinition def)
+    {
+        if (def == null)
+            throw new NullPointerException();
+        
+        getHangingProtocolDefinationSequence().addDicomObject(def.getDicomObject());
+        definitions.add(def);        
     }
 
     public List getImageSets()
@@ -144,12 +234,31 @@ public class HangingProtocol
         return Collections.unmodifiableList(imageSets);
     }
 
+    public void addImageSet(HPImageSet imageSet)
+    {
+        if (imageSet == null)
+            throw new NullPointerException();
+        
+        imageSet.setImageSetNumber(imageSets.size() + 1);
+        getImageSetsSequence().addDicomObject(imageSet.getDicomObject());
+        imageSets.add(imageSet);        
+    }
+
     public List getNominalScreenDefinitions()
     {
         return Collections.unmodifiableList(screenDefs);
     }
 
-    public int countPresentationGroups()
+    public void addNominalScreenDefinition(HPScreenDefinition def)
+    {
+        if (def == null)
+            throw new NullPointerException();
+        
+        getNominalScreenDefinitionSequence().addDicomObject(def.getDicomObject());
+        screenDefs.add(def);        
+    }
+
+    public int getNumberOfPresentationGroups()
     {
         return maxPresGroup;
     }
@@ -186,127 +295,155 @@ public class HangingProtocol
         return Collections.unmodifiableList(displaySets);
     }
 
-    public PartialDataDisplayHandling getPartialDataDisplayHandling()
+    public void addDisplaySet(HPDisplaySet displaySet)
     {
-        String cs = dcmobj.getString(Tag.PartialDataDisplayHandling);
-        return cs == null ? null : PartialDataDisplayHandling.valueOf(cs);
+        if (displaySet == null)
+            throw new NullPointerException();
+        
+        displaySet.setDisplaySetNumber(displaySets.size() + 1);
+        int group = displaySet.getDisplaySetPresentationGroup();
+        if (group == 0)
+        {
+            group = Math.max(maxPresGroup, 1);
+            displaySet.setDisplaySetPresentationGroup(group);
+        }
+        maxPresGroup = Math.max(maxPresGroup, group);
+        getDisplaySetsSequence().addDicomObject(displaySet.getDicomObject());
+        displaySets.add(displaySet);
     }
 
-    public List[] getDisplaySetScrollingGroups()
+    public List getScrollingGroups()
     {
+        return maskNull(scrollingGroups);
+    }
+
+    public void addScrollingGroup(HPScrollingGroup scrollingGroup)
+    {        
         DicomElement sq = dcmobj.get(Tag.SynchronizedScrollingSequence);
-        if (sq != null && !sq.isEmpty())
-            return EMPTY_LIST_ARRAY;
-        List[] result = new List[sq.countItems()];
-        for (int i = 0, n = sq.countItems(); i < n; i++)
-        {
-            int[] group = sq.getDicomObject(i).getInts(
-                    Tag.DisplaySetScrollingGroup);
-            result[i] = new ArrayList(group.length);
-            for (int j = 0; j < group.length; j++)
-            {
-                result[i].add(displaySets.get(group[j]));
-            }
-        }
-        return result;
+        if (sq == null)
+            sq = dcmobj.putSequence(Tag.SynchronizedScrollingSequence);
+        sq.addDicomObject(scrollingGroup.getDicomObject());
+        scrollingGroups.add(scrollingGroup);
     }
-
-    public List[] getNavigationDisplaySets()
+    
+    public List getNavigationGroups()
     {
-        DicomElement sq = dcmobj.get(Tag.NavigationIndicatorSequence);
-        if (sq != null && !sq.isEmpty())
-            return EMPTY_LIST_ARRAY;
-        List[] result = new List[sq.countItems()];
-        for (int i = 0, n = sq.countItems(); i < n; i++)
-        {
-            DicomObject item = sq.getDicomObject(i);
-            int[] group = item.getInts(Tag.ReferenceDisplaySets);
-            result[i] = new ArrayList(group.length + 1);
-            int nav = item.getInt(Tag.NavigationDisplaySet);
-            result[i].add(nav != 0 ? displaySets.get(nav) : null);
-            for (int j = 0; j < group.length; j++)
-            {
-                result[i].add(displaySets.get(group[j]));
-            }
-        }
-        return result;
+        return maskNull(navigationGroups);
     }
 
+    private List maskNull(List list)
+    {
+        return list == null ? Collections.EMPTY_LIST 
+                : Collections.unmodifiableList(list);
+    }
+    
+    public void addNavigationGroup(HPNavigationGroup navigationGroup)
+    {        
+        DicomElement sq = dcmobj.get(Tag.NavigationIndicatorSequence);
+        if (sq == null)
+            sq = dcmobj.putSequence(Tag.NavigationIndicatorSequence);
+        sq.addDicomObject(navigationGroup.getDicomObject());
+        navigationGroups.add(navigationGroup);
+    }
+    
     private void init()
     {
-        DicomElement defsq = dcmobj.get(Tag.HangingProtocolDefinitionSequence);
-        if (defsq == null)
-            throw new IllegalArgumentException(
-                    "Missing (0072,000C) Hanging Protocol Definition Sequence");
-        if (defsq.isEmpty())
-            throw new IllegalArgumentException(
-                    "Empty (0072,000C) Hanging Protocol Definition Sequence");
-        int numDefinitions = defsq.countItems();
-        definitions = new ArrayList(numDefinitions);
-        for (int i = 0; i < numDefinitions; i++)
+        initHangingProtocolDefinition();
+        initNominalScreenDefinition();
+        initImageSets();
+        initDisplaySets();
+        initScrollingGroups();
+        initNavigationGroups();
+    }
+
+    private void initNavigationGroups()
+    {
+        DicomElement nis = dcmobj.get(Tag.NavigationIndicatorSequence);
+        if (nis == null || nis.isEmpty())
+            return;
+        
+        int numNavGroups = nis.countItems();
+        navigationGroups = new ArrayList(numNavGroups);
+        for (int i = 0; i < numNavGroups; i++)
         {
-            definitions.add(new HPDefinition(defsq.getDicomObject(i)));
-        }
-        DicomElement nsdsq = dcmobj.get(Tag.NominalScreenDefinitionSequence);
-        if (nsdsq == null || nsdsq.isEmpty())
-        {
-            screenDefs = Collections.EMPTY_LIST;
-        }
-        else
-        {
-            int numScreenDef = nsdsq.countItems();
-            screenDefs = new ArrayList(numScreenDef);
-            for (int i = 0; i < numScreenDef; i++)
+            DicomObject ni = nis.getDicomObject(i);
+            int[] group = ni.getInts(Tag.ReferenceDisplaySets);
+            if (group == null)
+                throw new IllegalArgumentException(
+                "Missing (0072,0218) Reference Display Sets");
+            HPNavigationGroup ng = new HPNavigationGroup(group.length);
+            int nds = ni.getInt(Tag.NavigationDisplaySet);
+            if (nds != 0)
             {
-                screenDefs.add(new HPScreenDefinition(nsdsq.getDicomObject(i)));
-            }
-        }
-        DicomElement issq = dcmobj.get(Tag.ImageSetsSequence);
-        if (issq == null)
-            throw new IllegalArgumentException(
-                    "Missing (0072,0020) Image Sets Sequence");
-        if (issq.isEmpty())
-            throw new IllegalArgumentException(
-                    "Empty (0072,0020) Image Sets Sequence");
-        imageSets = new ArrayList();
-        for (int i = 0, n = issq.countItems(); i < n; i++)
-        {
-            DicomObject is = issq.getDicomObject(i);
-            DicomElement isssq = is.get(Tag.ImageSetSelectorSequence);
-            if (isssq == null)
-                throw new IllegalArgumentException(
-                        "Missing (0072,0022) Image Set AbstractHPSelector Sequence");
-            if (isssq.isEmpty())
-                throw new IllegalArgumentException(
-                        "Empty (0072,0022) Image Set AbstractHPSelector Sequence");
-            int isssqCount = isssq.countItems();
-            List selectors = new ArrayList(isssqCount);
-            for (int j = 0; j < isssqCount; j++)
-            {
-                selectors.add(HPSelectorFactory.createImageSetSelector(isssq
-                        .getDicomObject(j)));
-            }
-            DicomElement tbissq = is.get(Tag.TimeBasedImageSetsSequence);
-            if (tbissq == null)
-                throw new IllegalArgumentException(
-                        "Missing (0072,0030) Time Based Image Sets Sequence");
-            if (tbissq.isEmpty())
-                throw new IllegalArgumentException(
-                        "Empty (0072,0030) Time Based Image Sets Sequence");
-            for (int j = 0, m = tbissq.countItems(); j < m; j++)
-            {
-                DicomObject timeBasedSelector = tbissq.getDicomObject(j);
-                if (timeBasedSelector.getInt(Tag.ImageSetNumber) != imageSets
-                        .size() + 1)
+                try
+                {
+                    ng.setNavigationDisplaySet((HPDisplaySet) displaySets.get(nds-1));
+                }
+                catch (IndexOutOfBoundsException e)
                 {
                     throw new IllegalArgumentException(
-                            "Missing or invalid (0072,0032) Image Set Number: "
-                                    + timeBasedSelector.get(Tag.ImageSetNumber));
+                            "Referenced Display Set does not exists: " +
+                            ni.get(Tag.NavigationDisplaySet));
                 }
-                imageSets.add(new HPImageSet(selectors, timeBasedSelector));
             }
-        }
-        DicomElement dssq = dcmobj.get(Tag.DisplaySetsSequence);
+            for (int j = 0; j < group.length; j++)
+            {
+                try
+                {
+                    ng.addReferenceDisplaySet((HPDisplaySet) displaySets.get(group[j]-1));
+                }
+                catch (IndexOutOfBoundsException e)
+                {
+                    throw new IllegalArgumentException(
+                            "Referenced Display Set does not exists: " +
+                            ni.get(Tag.ReferenceDisplaySets));
+                }
+            }
+            navigationGroups.add(ng);
+        }            
+    }
+
+    private void initScrollingGroups()
+    {
+        DicomElement ssq = dcmobj.get(Tag.SynchronizedScrollingSequence);
+        if (ssq == null || ssq.isEmpty())
+            return;
+        
+        int numScrollingGroups = ssq.countItems();
+        scrollingGroups = new ArrayList(numScrollingGroups);
+        for (int i = 0; i < numScrollingGroups; i++)
+        {
+            DicomObject dssg = ssq.getDicomObject(i);
+            int[] group = dssg.getInts(
+                    Tag.DisplaySetScrollingGroup);
+            if (group == null)
+                throw new IllegalArgumentException(
+                "Missing (0072,0212) Display Set Scrolling Group");
+            if (group.length < 2)
+                throw new IllegalArgumentException(
+                        "" + dssg.get(Tag.DisplaySetScrollingGroup));
+            HPScrollingGroup sg = new HPScrollingGroup(group.length);
+            for (int j = 0; j < group.length; j++)
+            {
+                try
+                {
+                    sg.addDisplaySet((HPDisplaySet) displaySets.get(group[j]-1));
+                }
+                catch (IndexOutOfBoundsException e)
+                {
+                    throw new IllegalArgumentException(
+                            "Referenced Display Set does not exists: " +
+                            dssg.get(Tag.DisplaySetScrollingGroup));
+                }
+            }
+            scrollingGroups.add(sg);
+        }            
+        
+    }
+
+    private void initDisplaySets()
+    {
+        DicomElement dssq = getDisplaySetsSequence();
         if (dssq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0200) Display Sets Sequence");
@@ -344,6 +481,110 @@ public class HangingProtocol
             }
             displaySets.add(new HPDisplaySet(ds, is));
         }
+    }
+
+    private void initImageSets()
+    {
+        DicomElement issq = getImageSetsSequence();
+        if (issq == null)
+            throw new IllegalArgumentException(
+                    "Missing (0072,0020) Image Sets Sequence");
+        if (issq.isEmpty())
+            throw new IllegalArgumentException(
+                    "Empty (0072,0020) Image Sets Sequence");
+        imageSets = new ArrayList();
+        for (int i = 0, n = issq.countItems(); i < n; i++)
+        {
+            DicomObject is = issq.getDicomObject(i);
+            DicomElement isssq = is.get(Tag.ImageSetSelectorSequence);
+            if (isssq == null)
+                throw new IllegalArgumentException(
+                        "Missing (0072,0022) Image Set Selector Sequence");
+            if (isssq.isEmpty())
+                throw new IllegalArgumentException(
+                        "Empty (0072,0022) Image Set Selector Sequence");
+            int isssqCount = isssq.countItems();
+            List selectors = new ArrayList(isssqCount);
+            for (int j = 0; j < isssqCount; j++)
+            {
+                selectors.add(HPSelectorFactory.createImageSetSelector(isssq
+                        .getDicomObject(j)));
+            }
+            DicomElement tbissq = is.get(Tag.TimeBasedImageSetsSequence);
+            if (tbissq == null)
+                throw new IllegalArgumentException(
+                        "Missing (0072,0030) Time Based Image Sets Sequence");
+            if (tbissq.isEmpty())
+                throw new IllegalArgumentException(
+                        "Empty (0072,0030) Time Based Image Sets Sequence");
+            for (int j = 0, m = tbissq.countItems(); j < m; j++)
+            {
+                DicomObject timeBasedSelector = tbissq.getDicomObject(j);
+                if (timeBasedSelector.getInt(Tag.ImageSetNumber) != imageSets
+                        .size() + 1)
+                {
+                    throw new IllegalArgumentException(
+                            "Missing or invalid (0072,0032) Image Set Number: "
+                                    + timeBasedSelector.get(Tag.ImageSetNumber));
+                }
+                imageSets.add(new HPImageSet(selectors, timeBasedSelector));
+            }
+        }
+    }
+
+    private void initNominalScreenDefinition()
+    {
+        DicomElement nsdsq = getNominalScreenDefinitionSequence();
+        if (nsdsq == null || nsdsq.isEmpty())
+        {
+            screenDefs = Collections.EMPTY_LIST;
+        }
+        else
+        {
+            int numScreenDef = nsdsq.countItems();
+            screenDefs = new ArrayList(numScreenDef);
+            for (int i = 0; i < numScreenDef; i++)
+            {
+                screenDefs.add(new HPScreenDefinition(nsdsq.getDicomObject(i)));
+            }
+        }
+    }
+
+    private void initHangingProtocolDefinition()
+    {
+        DicomElement defsq = getHangingProtocolDefinationSequence();
+        if (defsq == null)
+            throw new IllegalArgumentException(
+                    "Missing (0072,000C) Hanging Protocol Definition Sequence");
+        if (defsq.isEmpty())
+            throw new IllegalArgumentException(
+                    "Empty (0072,000C) Hanging Protocol Definition Sequence");
+        int numDefinitions = defsq.countItems();
+        definitions = new ArrayList(numDefinitions);
+        for (int i = 0; i < numDefinitions; i++)
+        {
+            definitions.add(new HPDefinition(defsq.getDicomObject(i)));
+        }
+    }
+
+    public DicomElement getDisplaySetsSequence()
+    {
+        return dcmobj.get(Tag.DisplaySetsSequence);
+    }
+
+    public DicomElement getImageSetsSequence()
+    {
+        return dcmobj.get(Tag.ImageSetsSequence);
+    }
+
+    public DicomElement getNominalScreenDefinitionSequence()
+    {
+        return dcmobj.get(Tag.NominalScreenDefinitionSequence);
+    }
+
+    public DicomElement getHangingProtocolDefinationSequence()
+    {
+        return dcmobj.get(Tag.HangingProtocolDefinitionSequence);
     }
 
     public static void scanForPlugins(ClassLoader cl)

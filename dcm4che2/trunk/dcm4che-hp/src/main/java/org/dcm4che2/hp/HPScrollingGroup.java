@@ -38,36 +38,58 @@
 
 package org.dcm4che2.hp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Aug 7, 2005
- * 
+ * @since Oct 23, 2005
+ *
  */
-public class SortingDirection extends CodeString
+public class HPScrollingGroup
 {
+    private final List displaySets;
 
-    public static final SortingDirection INCREASING = 
-            new SortingDirection("INCREASING", 1);
-    public static final SortingDirection DECREASING = 
-            new SortingDirection("DECREASING", -1);
-
-    private final int sign;
-
-    private SortingDirection(String codeString, int sign)
+    public HPScrollingGroup()
     {
-        super(codeString);
-        this.sign = sign;
+        displaySets = new ArrayList();
     }
 
-    public final int sign()
+    public HPScrollingGroup(int initalCapacity)
     {
-        return sign;
+        displaySets = new ArrayList(initalCapacity);
     }
 
-    public static SortingDirection valueOf(String codeString)
+    public List getDisplaySets()
     {
-        return (SortingDirection) CodeString.valueOf(
-                SortingDirection.class, codeString);
+        return Collections.unmodifiableList(displaySets);
     }
+    
+    public void addDisplaySet(HPDisplaySet displaySet)
+    {
+        if (displaySet == null)
+            throw new NullPointerException();
+        
+        displaySets.add(displaySet);        
+    }
+    
+    public DicomObject getDicomObject()
+    {
+        DicomObject item = new BasicDicomObject();
+        int[] val = new int[displaySets.size()];
+        for (int i = 0; i < val.length; i++)
+        {
+            val[i] = ((HPDisplaySet) displaySets.get(i)).getDisplaySetNumber();
+        }
+        item.putInts(Tag.DisplaySetScrollingGroup, VR.US, val);
+        return item;
+    }
+
 }

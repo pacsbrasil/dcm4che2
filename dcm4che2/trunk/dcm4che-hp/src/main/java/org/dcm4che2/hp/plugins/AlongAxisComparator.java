@@ -43,7 +43,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.AbstractHPComparator;
-import org.dcm4che2.hp.SortingDirection;
+import org.dcm4che2.hp.CodeString;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -66,7 +66,7 @@ extends AbstractHPComparator
     private static final int CZ = 5;
 
     private final DicomObject sortOp;
-    private final SortingDirection sortingDirection;
+    private final int sign;
 
     public AlongAxisComparator(DicomObject sortOp)
     {
@@ -79,7 +79,7 @@ extends AbstractHPComparator
         }
         try
         {
-            this.sortingDirection = SortingDirection.valueOf(cs);
+            this.sign = CodeString.sortingDirectionToSign(cs);
         }
         catch (IllegalArgumentException e)
         {
@@ -88,13 +88,12 @@ extends AbstractHPComparator
         }
     }
 
-    public AlongAxisComparator(SortingDirection sortingDirection)
+    public AlongAxisComparator(String sortingDirection)
     {
-        this.sortingDirection = sortingDirection;
+        this.sign = CodeString.sortingDirectionToSign(sortingDirection);
         this.sortOp = new BasicDicomObject();
-        sortOp.putString(Tag.SortbyCategory, VR.CS, "ALONG_AXIS");
-        sortOp.putString(Tag.SortingDirection, VR.CS,
-                sortingDirection.getCodeString());
+        sortOp.putString(Tag.SortbyCategory, VR.CS, CodeString.ALONG_AXIS);
+        sortOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
     }
     
     public final DicomObject getDicomObject()
@@ -109,9 +108,9 @@ extends AbstractHPComparator
             float v1 = dot(o1, frame1);
             float v2 = dot(o2, frame2);
             if (v1 < v2)
-                return sortingDirection.sign();
+                return sign;
             if (v1 > v2)
-                return -sortingDirection.sign();
+                return -sign;
         }
         catch (RuntimeException ignore)
         {

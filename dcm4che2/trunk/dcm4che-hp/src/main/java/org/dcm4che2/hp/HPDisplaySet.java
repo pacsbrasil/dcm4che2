@@ -57,30 +57,6 @@ import org.dcm4che2.data.VR;
 public class HPDisplaySet
 {
 
-    public static final String COLOR = "COLOR";
-
-    public static final String MPR = "MPR";
-    public static final String _3D_RENDERING = "3D_RENDERING";
-    public static final String SLAB = "SLAB";
-
-    public static final String SAGITTAL = "SAGITTAL";
-    public static final String AXIAL = "AXIAL";
-    public static final String CORONAL = "CORONAL";
-    public static final String OBLIQUE = "OBLIQUE";
-
-    public static final String LUNG = "LUNG";
-    public static final String MEDIASTINUM = "MEDIASTINUM";
-    public static final String ABDO_PELVIS = "ABDO_PELVIS";
-    public static final String LIVER = "LIVER";
-    public static final String SOFT_TISSUE = "SOFT_TISSUE";
-    public static final String BONE = "BONE";
-    public static final String BRAIN = "BRAIN";
-    public static final String POST_FOSSA = "POST_FOSSA";
-
-    public static final String BLACK_BODY = "BLACK_BODY";
-    public static final String HOT_IRON = "HOT_IRON";
-    public static final String DEFAULT = "DEFAULT";
-
     private final DicomObject dcmobj;
     private HPImageSet imageSet;
     private final List imageBoxes;
@@ -166,6 +142,7 @@ public class HPDisplaySet
 
     public void addImageBox(HPImageBox imageBox)
     {
+        imageBox.setImageBoxNumber(imageBoxes.size() + 1);
         dcmobj.get(Tag.ImageBoxesSequence).addDicomObject(imageBox.getDicomObject());
         imageBoxes.add(imageBox);
     }
@@ -244,11 +221,6 @@ public class HPDisplaySet
         dcmobj.putString(Tag.BlendingOperationType, VR.CS, type);
     }
     
-    public boolean isBlendingOperationType(String type)
-    {
-        return type.equals(getBlendingOperationType());
-    }
-
     public String getReformattingOperationType()
     {
         return dcmobj.getString(Tag.ReformattingOperationType);
@@ -259,11 +231,6 @@ public class HPDisplaySet
         dcmobj.putString(Tag.ReformattingOperationType, VR.CS, type);
     }
     
-    public boolean isReformattingOperationType(String type)
-    {
-        return type.equals(getReformattingOperationType());
-    }
-
     public double getReformattingThickness()
     {
         return dcmobj.getDouble(Tag.ReformattingThickness);
@@ -294,11 +261,6 @@ public class HPDisplaySet
         dcmobj.putString(Tag.ReformattingOperationInitialViewDirection, VR.CS, direction);
     }
     
-    public boolean isReformattingOperationInitialViewDirection(String direction)
-    {
-        return direction.equals(getReformattingOperationInitialViewDirection());
-    }
-
     public String[] get3DRenderingType()
     {
         return dcmobj.getStrings(Tag._3DRenderingType);
@@ -309,12 +271,6 @@ public class HPDisplaySet
         dcmobj.putStrings(Tag._3DRenderingType, VR.CS, type);
     }
     
-    public boolean is3DRenderingType(String type, int index)
-    {
-        String[] types = get3DRenderingType();
-        return index < types.length ? type.equals(types[index]) : false;
-    }
-
     public PatientOrientation getDisplaySetPatientOrientation()
     {
         String[] orientation = dcmobj.getStrings(Tag.DisplaySetPatientOrientation);
@@ -337,11 +293,6 @@ public class HPDisplaySet
         dcmobj.putString(Tag.VOIType, VR.CS, type);
     }
     
-    public boolean isVOIType(String type)
-    {
-        return type.equals(getVOIType());
-    }
-
     public String getPseudoColorType()
     {
         return dcmobj.getString(Tag.PseudocolorType);
@@ -352,49 +303,44 @@ public class HPDisplaySet
         dcmobj.putString(Tag.PseudocolorType, VR.CS, type);
     }
     
-    public boolean isPseudoColorType(String type)
+    public String getShowGrayscaleInverted()
     {
-        return type.equals(getPseudoColorType());
+        return dcmobj.getString(Tag.ShowGrayscaleInverted);
     }
 
-    public YesNo getShowGrayscaleInverted()
+    public void setShowGrayscaleInverted(String flag)
     {
-        return getYesNo(Tag.ShowGrayscaleInverted);
-    }
-
-    public void setShowGrayscaleInverted(YesNo flag)
-    {
-        dcmobj.putString(Tag.ShowGrayscaleInverted, VR.CS, flag.getCodeString());
+        dcmobj.putString(Tag.ShowGrayscaleInverted, VR.CS, flag);
     }    
 
-    public YesNo getShowImageTrueSizeFlag()
+    public String getShowImageTrueSizeFlag()
     {
-        return getYesNo(Tag.ShowImageTrueSizeFlag);
+        return dcmobj.getString(Tag.ShowImageTrueSizeFlag);
     }
 
-    public void setShowImageTrueSizeFlag(YesNo flag)
+    public void setShowImageTrueSizeFlag(String flag)
     {
-        dcmobj.putString(Tag.ShowImageTrueSizeFlag, VR.CS, flag.getCodeString());
+        dcmobj.putString(Tag.ShowImageTrueSizeFlag, VR.CS, flag);
     }    
 
-    public YesNo getShowGraphicAnnotationFlag()
+    public String getShowGraphicAnnotationFlag()
     {
-        return getYesNo(Tag.ShowGraphicAnnotationFlag);
+        return dcmobj.getString(Tag.ShowGraphicAnnotationFlag);
     }
 
-    public void setShowGraphicAnnotationFlag(YesNo flag)
+    public void setShowGraphicAnnotationFlag(String flag)
     {
-        dcmobj.putString(Tag.ShowGraphicAnnotationFlag, VR.CS, flag.getCodeString());
+        dcmobj.putString(Tag.ShowGraphicAnnotationFlag, VR.CS, flag);
     }    
 
-    public YesNo getShowAcquisitionTechniquesFlag()
+    public String getShowAcquisitionTechniquesFlag()
     {
-        return getYesNo(Tag.ShowAcquisitionTechniquesFlag);
+        return dcmobj.getString(Tag.ShowAcquisitionTechniquesFlag);
     }
 
-    public void setShowAcquisitionTechniquesFlag(YesNo flag)
+    public void setShowAcquisitionTechniquesFlag(String flag)
     {
-        dcmobj.putString(Tag.ShowAcquisitionTechniquesFlag, VR.CS, flag.getCodeString());
+        dcmobj.putString(Tag.ShowAcquisitionTechniquesFlag, VR.CS, flag);
     }    
 
     public String getDisplaySetPresentationGroupDescription()
@@ -406,11 +352,5 @@ public class HPDisplaySet
     {
         dcmobj.putString(Tag.DisplaySetPresentationGroupDescription, VR.CS, description);
     }
-    
-    private YesNo getYesNo(int tag)
-    {
-        String cs = dcmobj.getString(tag);
-        return cs == null ? null : YesNo.valueOf(cs);
-    }
-    
+        
 }

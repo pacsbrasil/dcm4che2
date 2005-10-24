@@ -38,46 +38,82 @@
 
 package org.dcm4che2.hp;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 14, 2005
- *
+ * 
  */
-public class Code {
+public class Code
+{
     private final DicomObject dcmobj;
 
-    public Code(DicomObject dcmobj) {
+    public Code(DicomObject dcmobj)
+    {
         this.dcmobj = dcmobj;
     }
-    
-    public DicomObject getDicomObject() {
-         return dcmobj;
+
+    public Code()
+    {
+        this.dcmobj = new BasicDicomObject();
     }
-    
-    public String getCodeValue() {
+
+    public DicomObject getDicomObject()
+    {
+        return dcmobj;
+    }
+
+    public String getCodeValue()
+    {
         return dcmobj.getString(Tag.CodeValue);
     }
-    
-    public String getCodingSchemeDesignator() {
+
+    public void setCodeValue(String value)
+    {
+        dcmobj.putString(Tag.CodeValue, VR.SH, value);
+    }
+
+    public String getCodingSchemeDesignator()
+    {
         return dcmobj.getString(Tag.CodingSchemeDesignator);
     }
-    
-    public String getCodingSchemeVersion() {
+
+    public void setCodingSchemeDesignator(String designator)
+    {
+        dcmobj.putString(Tag.CodingSchemeDesignator, VR.SH, designator);
+    }
+
+    public String getCodingSchemeVersion()
+    {
         return dcmobj.getString(Tag.CodingSchemeVersion);
     }
-    
-    public String getCodeMeaning() {
+
+    public void setCodingSchemeVersion(String version)
+    {
+        dcmobj.putString(Tag.CodingSchemeVersion, VR.SH, version);
+    }
+
+    public String getCodeMeaning()
+    {
         return dcmobj.getString(Tag.CodeMeaning);
     }
 
-    public static Code[] toArray(DicomElement sq) {
+    public void setCodeMeaning(String meaning)
+    {
+        dcmobj.putString(Tag.CodeMeaning, VR.LO, meaning);
+    }
+
+    public static Code[] toArray(DicomElement sq)
+    {
         Code[] a = new Code[sq.countItems()];
-        for (int i = 0; i < a.length; i++) {
+        for (int i = 0; i < a.length; i++)
+        {
             a[i] = new Code(sq.getDicomObject(i));
         }
         return a;

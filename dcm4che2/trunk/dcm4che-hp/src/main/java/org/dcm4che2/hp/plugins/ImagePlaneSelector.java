@@ -68,22 +68,14 @@ public class ImagePlaneSelector extends AbstractHPSelector
             throw new IllegalArgumentException(
                     "(0072,0050) Selector Attribute VR: " + vrStr);
         }
-        String[] ss = filterOp.getStrings(Tag.SelectorCSValue);
-        if (ss == null || ss.length == 0)
+        String[] values = filterOp.getStrings(Tag.SelectorCSValue);
+        if (values == null || values.length == 0)
             throw new IllegalArgumentException(
                     "Missing (0072,0062) AbstractHPSelector CS Value");
-        imagePlanes = new ImagePlane[ss.length];
-        for (int i = 0; i < ss.length; i++)
+        this.imagePlanes = new ImagePlane[values.length];
+        for (int i = 0; i < values.length; i++)
         {
-            try
-            {
-                imagePlanes[i] = ImagePlane.valueOf(ss[i]);
-            }
-            catch (IllegalArgumentException e)
-            {
-                throw new IllegalArgumentException(""
-                        + filterOp.get(Tag.SelectorCSValue));
-            }
+            imagePlanes[i] = ImagePlane.valueOf(values[i]);
         }
         this.filterOp = filterOp;
     }
@@ -94,12 +86,12 @@ public class ImagePlaneSelector extends AbstractHPSelector
         this.filterOp = new BasicDicomObject();
         filterOp.putString(Tag.FilterbyCategory, VR.CS, "IMAGE_PLANE");
         filterOp.putString(Tag.SelectorAttributeVR, VR.CS, "CS");
-        String[] ss = new String[imagePlanes.length];
-        for (int i = 0; i < ss.length; i++)
+        String[] values = new String[imagePlanes.length];
+        for (int i = 0; i < values.length; i++)
         {
-            ss[i] = imagePlanes[i].getCodeString();
+            values[i] = imagePlanes[i].getCodeString();
         }
-        filterOp.putStrings(Tag.SelectorCSValue, VR.CS, ss);
+        filterOp.putStrings(Tag.SelectorCSValue, VR.CS, values);
     }
     
     public final DicomObject getDicomObject()
@@ -119,12 +111,12 @@ public class ImagePlaneSelector extends AbstractHPSelector
 
     public boolean matches(DicomObject dcmobj, int frame)
     {
-        ImagePlane value1;
+        ImagePlane imagePlane;
         float[] floats = dcmobj.getFloats(Tag.ImageOrientationPatient);
         if (floats != null && floats.length == 6)
         {
             ImageOrientation orientation = new ImageOrientation(floats);
-            value1 = orientation.toImagePlane(minCosine);
+            imagePlane = orientation.toImagePlane(minCosine);
         }
         else
         {
@@ -132,7 +124,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
             if (ss != null && ss.length == 2)
             {
                 PatientOrientation orientation = new PatientOrientation(ss);
-                value1 = orientation.toImagePlane();
+                imagePlane = orientation.toImagePlane();
             }
             else
             {
@@ -141,7 +133,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
         }
         for (int i = 0; i < imagePlanes.length; i++)
         {
-            if (value1 == imagePlanes[i])
+            if (imagePlane == imagePlanes[i])
                 return true;
         }
         return false;

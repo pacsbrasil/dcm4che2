@@ -48,7 +48,7 @@ import org.dcm4che2.data.Tag;
  * @since Aug 7, 2005
  * 
  */
-public abstract class FilterOp extends CodeString
+public abstract class FilterOp
 {
     public static final FilterOp MEMBER_OF = new MemberOf();
     public static final FilterOp NOT_MEMBER_OF = new NotMemberOf();
@@ -60,17 +60,29 @@ public abstract class FilterOp extends CodeString
     public static final FilterOp LESS_THAN = new LessThan();
 
     protected final int numParams;
+    protected final String codeString;
 
     protected FilterOp(String codeString, int numParams)
     {
-        super(codeString);
+        this.codeString = codeString;
         this.numParams = numParams;
     }
 
-    public static FilterOp valueOf(String codeValue)
+    public static FilterOp valueOf(String codeString)
     {
-        return (FilterOp) CodeString.valueOf(FilterOp.class, codeValue);
-    }
+        try
+        {
+            return (FilterOp) FilterOp.class.getField(codeString).get(null);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new Error(e);
+        }
+        catch (NoSuchFieldException e)
+        {
+            throw new IllegalArgumentException("codeString: " + codeString);
+        }
+   }
 
     public final int getNumParams()
     {
@@ -99,6 +111,11 @@ public abstract class FilterOp extends CodeString
     public abstract boolean op(float[] values, int valueNumber, float[] params);
 
     public abstract boolean op(double[] values, int valueNumber, double[] params);
+
+    public final String getCodeString()
+    {
+        return codeString;
+    }
 
     static boolean memberOf(String value, String[] params)
     {

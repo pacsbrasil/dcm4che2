@@ -46,31 +46,33 @@ package org.dcm4che2.hp;
  */
 public class AbstractPriorValue
 {
-    private final int[] values;
+    private final int start;
+    private final int end;
 
     public AbstractPriorValue(int start, int end)
     {
-        this(new int[]{ start, end });
+        this.start = start;
+        this.end = end;
     }
     
     AbstractPriorValue(int[] value)
     {
-        this.values = value;
+        this(value[0], value[1]);
     }
     
     final int[] getValues()
     {
-        return values;
+        return new int[]{start, end};
     }
 
     public final int getStart()
     {
-        return values[0];
+        return start;
     }
 
     public final int getEnd()
     {
-        return values[1];
+        return end;
     }
 
 }
