@@ -355,7 +355,7 @@ public class FolderForm {
     }
 
     public final void setPrev(String prev) {
-        offset = Math.max(0, offset - LIMIT);
+        offset = offset < LIMIT ? 0 : offset - LIMIT;
     }
 
     public final StudyFilterModel getStudyFilter() {
