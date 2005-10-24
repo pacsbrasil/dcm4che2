@@ -140,6 +140,8 @@ public class MCMModel {
 		return model;
 	}
 
+	public String getModelName() { return "MCM"; }
+	
 	/**
 	 * @return Returns true if the user have WebAdmin role.
 	 */
