@@ -80,23 +80,28 @@ public class QueryStudiesCmd extends BaseReadCmd {
     	"Series", null, "Study.pk", "Series.study_fk",
     	"Instance", null, "Series.pk", "Instance.series_fk"};
 
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
+	private boolean hideMissingStudies;
     
+    private final SqlBuilder sqlBuilder = new SqlBuilder();
+
     public QueryStudiesCmd(Dataset filter, boolean showHidden, boolean hideMissingStudies)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
         if ( showHidden ) {
+        	sqlBuilder.setDistinct(true);
         	sqlBuilder.setFrom(ENTITY);
         	sqlBuilder.setLeftJoin(LEFT_JOIN_FOR_HIDDEN);
         	Match.Node node = sqlBuilder.addNodeMatch("OR",false);
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE2,true));
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Series.hidden",SqlBuilder.TYPE2,true));
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Instance.hidden",SqlBuilder.TYPE2,true));
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE1,true));
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Series.hidden",SqlBuilder.TYPE1,true));
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Instance.hidden",SqlBuilder.TYPE1,true));
+        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Patient.hidden",SqlBuilder.TYPE1,true));
         } else {
         	sqlBuilder.setFrom(ENTITY);
             sqlBuilder.setLeftJoin(LEFT_JOIN);
     		sqlBuilder.addBooleanMatch(null, "Study.hidden", SqlBuilder.TYPE2, false );
+    		sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE2, false );
         }
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
@@ -120,16 +125,31 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 false);
         sqlBuilder.addModalitiesInStudyMatch(null, filter
                 .getString(Tags.ModalitiesInStudy));
-        if ( hideMissingStudies && !showHidden )
+    	this.hideMissingStudies = hideMissingStudies && !showHidden;	
+        if ( this.hideMissingStudies ) {
         	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
+    	}
+        	
     }
 
     public int count() throws SQLException {
         try {
-            sqlBuilder.setSelectCount();
-            execute(sqlBuilder.getSql());
+            sqlBuilder.setSelectCount(new String[]{"Study.pk"}, true);
+            execute( sqlBuilder.getSql() );
             next();
-            return rs.getInt(1);
+            if (hideMissingStudies) return rs.getInt(1);
+            //we have to add number of studies and number of patients without studies.
+            int studies = rs.getInt(1);
+            rs.close();
+            rs = null;
+            sqlBuilder.setSelectCount(new String[]{"Patient.pk"}, true);
+        	sqlBuilder.addNULLValueMatch(null,"Study.pk", false);
+            execute( sqlBuilder.getSql() );
+            next();
+            int emptyPatients = rs.getInt(1);
+            List matches = sqlBuilder.getMatches();
+            matches.remove( matches.size() - 1);//removes the Study.pk NULLValue match!
+            return studies + emptyPatients;
         } finally {
             close();
         }
