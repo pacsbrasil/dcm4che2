@@ -1,28 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-net">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry sourcepath="/COMMONS_CLI_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/commons-cli/commons-cli/1.0/commons-cli-1.0.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry sourcepath="/MINA_SRC/src/java" kind="var" path="MAVEN_REPOSITORY/mina/mina/0.7.4/mina-0.7.4.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-net"/>
+	<classpathentry sourcepath="/COMMONS_CLI_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/commons-cli/commons-cli/1.0/commons-cli-1.0.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/slf4j-simple/1.0-beta9/slf4j-simple-1.0-beta9.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
