@@ -57,7 +57,6 @@ class SqlBuilder {
     public static final String ASC = " ASC";
     public static final String WHERE = " WHERE ";
     public static final String AND = " AND ";
-    public static final String[] SELECT_COUNT = { "count(*)" };
     private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
     private static final String ORA_DATE_FORMAT = 
     	"'TO_TIMESTAMP('''yyyy-MM-dd HH:mm:ss.SSS'','''YYYY-MM-DD HH24:MI:SS.FF''')";
@@ -84,8 +83,21 @@ class SqlBuilder {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
 
-    public void setSelectCount() {
-        select = SELECT_COUNT;
+    public void setSelectCount( String[] fields, boolean distinct) {
+    	StringBuffer sb = new StringBuffer();
+    	sb.append("count(");
+    	if ( distinct ) sb.append("DISTINCT ");
+    	JdbcProperties jdbcProps = JdbcProperties.getInstance();
+    	if ( fields == null || fields.length < 1 ) {
+    		sb.append('*');
+    	} else {
+    		sb.append( jdbcProps.getProperty(fields[0]) );
+    		for ( int i=1 ; i < fields.length ; i++) {
+    			sb.append(',').append( jdbcProps.getProperty(fields[i]) );
+    		}
+    	}
+    	sb.append(')');
+        select = new String[]{ sb.toString() };
     }
 
     public void setFrom(String[] entities) {
@@ -139,7 +151,26 @@ class SqlBuilder {
         this.relations = JdbcProperties.getInstance().getProperties(relations);
     }
 
-    private void addMatch(Match match) {
+	/**
+	 * @return Returns the matches.
+	 */
+	protected ArrayList getMatches() {
+		return matches;
+	}
+	/**
+	 * Set the matches for where clause.
+	 * <p>
+	 * if <code>matches is null</code> the current matches are cleared.
+	 * @param matches The matches to set.
+	 */
+	protected void setMatches(ArrayList matches) {
+		if ( matches == null ) 
+			this.matches.clear();
+		else
+			this.matches = matches;
+	}
+
+	private void addMatch(Match match) {
         if (!match.isUniveralMatch())
             matches.add(match);
     }
