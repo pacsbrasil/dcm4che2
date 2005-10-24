@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
 	<classpathentry kind="var" path="MAVEN_REPOSITORY/log4j/log4j/1.2.8/log4j-1.2.8.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPOSITORY/mina/mina/0.7.4/mina-0.7.4.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
