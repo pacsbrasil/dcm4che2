@@ -196,13 +196,21 @@ public abstract class MWLManagerBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
-	public void updateWorklistItem(Dataset ds) {
+	public boolean updateWorklistItem(Dataset ds) {
 		try {
-			Dataset sps = ds.getItem(Tags.SPSSeq);
-			MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps.getString(Tags.SPSID));
-            Dataset attrs = mwlItem.getAttributes();
-            attrs.putAll(ds.subSet(PATIENT_ATTRS, true, true));
-			mwlItem.setAttributes(attrs);
+            final Dataset woPatAttrs = ds.subSet(PATIENT_ATTRS, true, true);
+			try {
+				Dataset sps = ds.getItem(Tags.SPSSeq);
+				MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps
+						.getString(Tags.SPSID));
+	            Dataset attrs = mwlItem.getAttributes();
+				attrs.putAll(woPatAttrs);
+				mwlItem.setAttributes(attrs);
+				return true;
+			} catch (ObjectNotFoundException onfe) {
+				mwlItemHome.create(woPatAttrs, getPatient(ds));
+				return false;
+			}
 		} catch (Exception e) {
 			throw new EJBException(e);
 		}
