@@ -325,11 +325,11 @@ public class SyslogWriter extends OutputStreamWriter {
         this.tag = tag;
     }
     
-    public void writeHeader(int level) throws IOException {
+    public synchronized void writeHeader(int level) throws IOException {
         writeHeader(level, System.currentTimeMillis());
     }
     
-    public void writeHeader(int level, long millis) throws IOException {
+    public synchronized void writeHeader(int level, long millis) throws IOException {
         if ((level & ~7) != 0) {
             throw new IllegalArgumentException("level: " + level);
         }
@@ -362,41 +362,41 @@ public class SyslogWriter extends OutputStreamWriter {
         this.write(contentPrefix);
     }
     
-    public void writeTo(OutputStream out) throws IOException {
+    public synchronized void writeTo(OutputStream out) throws IOException {
         super.flush();
         bout.writeTo(out);
     }
     
-    public void write(int level, String msg)
+    public synchronized void write(int level, String msg)
     throws IOException {
         write(level, msg, System.currentTimeMillis());
     }
     
-    public void write(int level, String msg, long millis)
+    public synchronized void write(int level, String msg, long millis)
     throws IOException {
         writeHeader(level, millis);
         write(msg);
         flush();
     }
     
-    public void writeTo(int level, String msg, OutputStream out)
+    public synchronized void writeTo(int level, String msg, OutputStream out)
     throws IOException {
         writeTo(level, msg, out, System.currentTimeMillis());
     }
 
-    public void writeTo(int level, String msg, OutputStream out, long millis)
+    public synchronized void writeTo(int level, String msg, OutputStream out, long millis)
     throws IOException {
         writeHeader(level, millis);
         write(msg);
         writeTo(out);
     }
     
-    public void reset() throws IOException {
+    public synchronized void reset() throws IOException {
         super.flush();
         bout.reset();
     }
     
-    public void flush() throws IOException {
+    public synchronized void flush() throws IOException {
         if (address == null)
             address = InetAddress.getLocalHost();
         
