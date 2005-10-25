@@ -68,19 +68,21 @@ import org.xml.sax.ContentHandler;
 
 public class ORMService extends AbstractHL7Service {
 
-	private static final String[] CONTROL_CODES = { "NW", "XA", "CA", "DC" };
+	private static final String[] CONTROL_CODES = { "NW", "XO", "CA", "DC", "OC" };
 
 	private static final List CONTROL_CODES_LIST = Arrays.asList(CONTROL_CODES);
 
 	private static final int NW = 0;
 
-	private static final int XA = 1;
+	private static final int XO = 1;
 
 	private static final int CA = 2;
 
 	private static final int DC = 3;
 	
-    private ObjectName deviceServiceName;
+	private static final int OC = 4;
+
+	private ObjectName deviceServiceName;
 
 	private String stylesheetURL = "resource:xsl/hl7/orm2dcm.xsl";
 
@@ -148,7 +150,7 @@ public class ORMService extends AbstractHL7Service {
 				throw new HL7Exception("AR",
 						"Missing required PID-5: Patient Name");
 			mergeProtocolCodes(ds);
-			if (msgType == NW || msgType == XA) {
+			if (msgType == NW || msgType == XO) {
 				ds = addScheduledStationInfo(ds);
 			}
 			MWLManager mwlManager = getMWLManagerHome().create();
@@ -166,7 +168,7 @@ public class ORMService extends AbstractHL7Service {
 						logDataset("Insert MWL Item:", ds);
 						mwlManager.addWorklistItem(ds);
 						break;
-					case XA:
+					case XO:
 						ds.putSQ(Tags.SPSSeq).addItem(sps);
 						adjustAttributes(ds);
 						log("Update", ds);
@@ -175,6 +177,7 @@ public class ORMService extends AbstractHL7Service {
 						break;
 					case CA:
 					case DC:
+					case OC:
 						log("Cancel", ds);
 						mwlManager.removeWorklistItem(sps.getString(Tags.SPSID));
 						break;
