@@ -71,13 +71,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
             "Study.availability", "Study.filesetId", "Patient.hidden", "Study.hidden"};
 
     private static final String[] ENTITY = {"Patient"};
-    private static final String[] ENTITY_FOR_HIDDEN = {"Patient", "Study", "Series", "Instance"};
+    private static final String[] ENTITY_FOR_HIDDEN = {"Series"};
 
     private static final String[] LEFT_JOIN = { 
             "Study", null, "Patient.pk", "Study.patient_fk",};
     private static final String[] LEFT_JOIN_FOR_HIDDEN = new String[] { 
-    	"Study", null, "Patient.pk", "Study.patient_fk",
-    	"Series", null, "Study.pk", "Series.study_fk",
     	"Instance", null, "Series.pk", "Instance.series_fk"};
 
 	private boolean hideMissingStudies;
@@ -88,18 +86,42 @@ public class QueryStudiesCmd extends BaseReadCmd {
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+    	sqlBuilder.setFrom(ENTITY);
+        sqlBuilder.setLeftJoin(LEFT_JOIN);
         if ( showHidden ) {
-        	sqlBuilder.setDistinct(true);
-        	sqlBuilder.setFrom(ENTITY);
-        	sqlBuilder.setLeftJoin(LEFT_JOIN_FOR_HIDDEN);
-        	Match.Node node = sqlBuilder.addNodeMatch("OR",false);
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE1,true));
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Series.hidden",SqlBuilder.TYPE1,true));
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Instance.hidden",SqlBuilder.TYPE1,true));
-        	node.addMatch( sqlBuilder.getBooleanMatch(null,"Patient.hidden",SqlBuilder.TYPE1,true));
+         	//Match.Node node = sqlBuilder.addNodeMatch("OR",false);
+        	/* we have to build something like this:
+        	 SELECT patient.pat_name, ....
+        	 	FROM patient LEFT JOIN study ON (patient.pk = study.patient_fk) 
+        	 	WHERE ( exists (SELECT series.pk FROM series  LEFT JOIN instance ON (series.pk = instance.series_fk)
+                                WHERE ((study.pk = series.study_fk or (  study.hidden != 0)) 
+                              		    AND ((patient.hidden != 0)OR(study.hidden != 0)OR(series.hidden != 0)OR(instance.hidden != 0) )) 
+                                      ) 
+                        OR (patient.hidden != 0)
+                      )  
+                
+                AND (patient.merge_fk IS NULL) [AND ..] 
+                ORDER BY patient.pat_name ASC, patient.pk ASC, study.study_datetime ASC 
+
+        	 */
+        	SqlBuilder subQuery = new SqlBuilder();
+        	subQuery.setSelect(new String[]{"Series.pk"});
+        	subQuery.setFrom(ENTITY_FOR_HIDDEN );
+        	subQuery.setLeftJoin(LEFT_JOIN_FOR_HIDDEN);
+           	Match.Node node0 = sqlBuilder.addNodeMatch("OR",false);
+           	//define the subquery
+           	Match.Node node1 = subQuery.addNodeMatch("OR",false);
+           	node1.addMatch( new Match.FieldValue(null, "Study.pk", SqlBuilder.TYPE1, null, "Series.study_fk") );
+           	node1.addMatch( subQuery.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE1,true) );
+        	Match.Node node2 = subQuery.addNodeMatch("OR",false);
+        	node2.addMatch( subQuery.getBooleanMatch(null,"Patient.hidden",SqlBuilder.TYPE1,true));
+        	node2.addMatch( subQuery.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE1,true));
+        	node2.addMatch( subQuery.getBooleanMatch(null,"Series.hidden",SqlBuilder.TYPE1,true));
+        	node2.addMatch( subQuery.getBooleanMatch(null,"Instance.hidden",SqlBuilder.TYPE1,true));
+
+        	node0.addMatch( new Match.Subquery(subQuery, null, null));
+        	node0.addMatch( sqlBuilder.getBooleanMatch(null, "Patient.hidden",SqlBuilder.TYPE1, true));
         } else {
-        	sqlBuilder.setFrom(ENTITY);
-            sqlBuilder.setLeftJoin(LEFT_JOIN);
     		sqlBuilder.addBooleanMatch(null, "Study.hidden", SqlBuilder.TYPE2, false );
     		sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE2, false );
         }

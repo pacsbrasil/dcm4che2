@@ -104,6 +104,10 @@ class SqlBuilder {
         JdbcProperties jp = JdbcProperties.getInstance();
         from = jp.getProperties(entities);
     }
+    
+    public void setSubquery( SqlBuilder subQuery ) {
+    	from = new String[]{ "("+subQuery.getSql()+")" };
+    }
 
     public void setLeftJoin(String[] leftJoin) {
         if (leftJoin == null) {
@@ -194,6 +198,11 @@ class SqlBuilder {
         addMatch(new Match.SingleValue(alias, field, type2, value));
     }
 
+    public void addFieldValueMatch(String alias1, String field1, boolean type2,
+            String alias2, String field2) {
+            addMatch(new Match.FieldValue(alias1, field1, type2, alias2, field2));
+        }
+    
     public void addLiteralMatch(String alias, String field, boolean type2,
             String literal) {
         addMatch(new Match.AppendLiteral(alias, field, type2, literal));
@@ -253,7 +262,15 @@ class SqlBuilder {
     	addMatch( m );
     	return m;
     }
+    
+    public void addCorrelatedSubquery( SqlBuilder subQuery ) {
+    	addMatch( new Match.Subquery(subQuery, null, null) );
+    }
 
+    public void addUncorrelatedSubquery( SqlBuilder subQuery, String field, String alias ) {
+    	addMatch( new Match.Subquery(subQuery, field, alias) );
+    }
+    
     public String getSql() {
         if (select == null)
             throw new IllegalStateException("select not initalized");

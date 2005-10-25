@@ -68,13 +68,18 @@ abstract class Match
     
     protected Match(String alias, String field, boolean type2)
     {
-        this.column = JdbcProperties.getInstance().getProperty(field);
-        if (column == null)
+        this.column = formatColumn( alias, field);
+        this.type2 = type2;
+    }
+    
+    private static String formatColumn(String alias, String field) {
+        String col = JdbcProperties.getInstance().getProperty(field);
+        if (col == null)
             throw new IllegalArgumentException("field: " + field);
         if (alias != null) {
-            this.column = alias + column.substring(column.indexOf('.'));
+            col = alias + col.substring(col.indexOf('.'));
         }
-        this.type2 = type2;
+    	return col;
     }
 
     public boolean appendTo(StringBuffer sb)
@@ -142,6 +147,30 @@ abstract class Match
         }
     }
 
+    static class FieldValue extends Match
+    {
+        private final String column1;
+        
+        public FieldValue(String alias1, String field1, boolean type2, String alias2, String field2)
+        {
+            super(alias1, field1, type2);
+            column1 = formatColumn( alias2, field2);
+            
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return column1 == null || column1.length() == 0;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            sb.append(" = ");
+            sb.append(column1);
+        }
+    }
+    
     static class IntValue extends Match
     {
         private final int value;
@@ -461,4 +490,37 @@ abstract class Match
         }
     }
 
+    static class Subquery extends Match
+    {
+        private String subQueryStr;
+        
+        public Subquery(SqlBuilder subQuery, String field, String alias){
+        	StringBuffer sb = new StringBuffer();
+        	if ( field == null ) { //correlated
+        		sb.append("exists (");
+        	} else {
+                String column = JdbcProperties.getInstance().getProperty(field);
+                if (column == null)
+                    throw new IllegalArgumentException("field for uncorrelated subquery does not exist: " + field);
+                if (alias != null) {
+                    column = alias + column.substring(column.indexOf('.'));
+                }
+        		sb.append( column ).append(" in ");
+        	}
+        	sb.append( subQuery.getSql() );
+        	sb.append(")");
+        	subQueryStr = sb.toString();
+        }
+        
+        public boolean isUniveralMatch()
+        {
+            return false;
+        }
+
+        protected void appendBodyTo(StringBuffer sb) {
+            sb.append(subQueryStr);
+        }
+        
+    }
+    
 }
