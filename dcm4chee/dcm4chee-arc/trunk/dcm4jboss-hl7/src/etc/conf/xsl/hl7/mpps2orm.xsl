@@ -29,27 +29,27 @@
             <PID>
                 <field/>
                 <field/>
-                <field><xsl:value-of select="attr[@tag='00100020']"/>
+                <field><xsl:value-of select="normalize-space(attr[@tag='00100020'])"/>
                     <component/>
                     <component/>
-                    <component><xsl:value-of select="attr[@tag='00100021']"/></component>
+                    <component><xsl:value-of select="normalize-space(attr[@tag='00100021'])"/></component>
                 </field>
                 <field/>
                 <field>
                     <xsl:call-template name="pn2xpn">
-                        <xsl:with-param name="pn" select="attr[@tag='00100010']"/>
+                        <xsl:with-param name="pn" select="normalize-space(attr[@tag='00100010'])"/>
                     </xsl:call-template>
                  </field>
                 <field/>
-                <field><xsl:value-of select="attr[@tag='00100030']"/></field>
-                <field><xsl:value-of select="attr[@tag='00100040']"/></field>
+                <field><xsl:value-of select="normalize-space(attr[@tag='00100030'])"/></field>
+                <field><xsl:value-of select="normalize-space(attr[@tag='00100040'])"/></field>
             </PID>
             <xsl:apply-templates select="attr[@tag='00400270']/item"/>
         </hl7>
     </xsl:template>
     
     <xsl:template match="item">
-        <xsl:variable name="accno" select="attr[@tag='00080050']"/>
+        <xsl:variable name="accno" select="normalize-space(attr[@tag='00080050'])"/>
          <OBC>
             <field>SC</field>
             <!-- Use Accession Number as Order Placer Number -->
@@ -60,7 +60,7 @@
             <!-- Order Status -->
             <field>
                 <xsl:call-template name="ppsstatus2orderstatus">
-                    <xsl:with-param name="ppsstatus" select="../../attr[@tag='00400252']"/>
+                    <xsl:with-param name="ppsstatus" select="normalize-space(../../attr[@tag='00400252'])"/>
                 </xsl:call-template>
             </field>
         </OBC>
@@ -77,7 +77,7 @@
             </field>
         </OBR>
         <ZDS>
-            <field><xsl:value-of select="attr[@tag='0020000D']"/>
+            <field><xsl:value-of select="normalize-space(attr[@tag='0020000D'])"/>
                 <component><xsl:value-of select="$SendingApplication"/></component>
                 <component>Application</component>
                 <component>DICOM</component>
@@ -113,21 +113,21 @@
     <xsl:template name="ppsstatus2orderstatus">
         <xsl:param name="ppsstatus"/>
         <xsl:choose>
-            <xsl:when test="$ppsstatus='COMPLETED'">CM</xsl:when>
-            <xsl:when test="$ppsstatus='DISCONTINUED'">DC</xsl:when>
-            <xsl:when test="$ppsstatus='IN PROGRESS'">IP</xsl:when>
+            <xsl:when test="$ppsstatus = 'COMPLETED'">CM</xsl:when>
+            <xsl:when test="$ppsstatus = 'DISCONTINUED'">DC</xsl:when>
+            <xsl:when test="$ppsstatus = 'IN PROGRESS'">IP</xsl:when>
          </xsl:choose>             
     </xsl:template>
     
     
     <xsl:template name="code2ce">
         <xsl:param name="code"/>
-        <xsl:value-of select="$code/attr[@tag='00080100']"/>
+        <xsl:value-of select="normalize-space($code/attr[@tag='00080100'])"/>
         <component>
-            <xsl:value-of select="$code/attr[@tag='00080104']"/>
+            <xsl:value-of select="normalize-space($code/attr[@tag='00080104'])"/>
         </component>
         <component>
-            <xsl:value-of select="$code/attr[@tag='00080102']"/>
+            <xsl:value-of select="normalize-space($code/attr[@tag='00080102'])"/>
         </component>
     </xsl:template>
     
