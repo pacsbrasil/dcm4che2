@@ -70,6 +70,7 @@ class SqlBuilder {
     private int offset = 0;
     private String whereOrAnd = WHERE;
     private boolean distinct = false;
+    private boolean subQueryMode = false;
 
     private static int getDatabase() {
         return JdbcProperties.getInstance().getDatabase();
@@ -78,7 +79,10 @@ class SqlBuilder {
     public final void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
-    
+    public final void setSubQueryMode(boolean subQuery) {
+        this.subQueryMode = subQuery;
+    }
+
     public void setSelect(String[] fields) {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
@@ -347,7 +351,7 @@ class SqlBuilder {
                     break;
             }
         }
-        if (getDatabase() == JdbcProperties.DB2)
+        if (getDatabase() == JdbcProperties.DB2 && !subQueryMode)
             sb.append(" FOR READ ONLY");
         return sb.toString();
     }

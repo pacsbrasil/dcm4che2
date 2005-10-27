@@ -495,6 +495,7 @@ abstract class Match
         private String subQueryStr;
         
         public Subquery(SqlBuilder subQuery, String field, String alias){
+        	subQuery.setSubQueryMode(true);
         	StringBuffer sb = new StringBuffer();
         	if ( field == null ) { //correlated
         		sb.append("exists (");
