@@ -89,7 +89,7 @@
 							</input>
 						</td>
 						<td class="folder_header" width="40">
-							<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
+							<input type="image" value="Del" name="del" src="images/trash.gif" alt="delete" border="0"
 								title="Delete selected Entities"
 								onclick="return confirm('Delete selected Entities?')">
 								<xsl:if test="total &lt;= 0">
