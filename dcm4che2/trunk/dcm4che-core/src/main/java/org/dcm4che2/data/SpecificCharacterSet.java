@@ -81,7 +81,7 @@ public class SpecificCharacterSet {
 	}
 
 	public static SpecificCharacterSet valueOf(String[] codes) {
-		if (codes == null)
+		if (codes == null || codes.length == 0)
 			return null;
 		String charset = (String) CHARSET.get(codes[0]);
 		if (charset == null)
