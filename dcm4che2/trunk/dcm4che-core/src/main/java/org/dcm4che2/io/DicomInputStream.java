@@ -50,7 +50,6 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.log4j.Logger;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -59,12 +58,14 @@ import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DicomInputStream extends FilterInputStream
         implements DicomInputHandler
 {
 
-    private static Logger log = Logger.getLogger(DicomInputStream.class);
+    private static Logger log = LoggerFactory.getLogger(DicomInputStream.class);
 
     private static final byte[] EMPTY_BYTES = {};
     private DicomInputHandler handler = this;
@@ -73,8 +74,8 @@ public class DicomInputStream extends FilterInputStream
     private ArrayList sqStack;
     private long pos = 0;
     private long tagpos = 0;
+    private boolean expectFmiEnd = false;
     private long fmiEndPos = -1;
-    private boolean ignoreFmiTs = false;
     private long markedPos = 0;
     private byte[] preamble;
     private byte[] header = new byte[8];
@@ -105,7 +106,7 @@ public class DicomInputStream extends FilterInputStream
             throws IOException
     {
         super(in);
-        this.ts = (ignoreFmiTs = ts != null) ? ts : guessTransferSyntax();
+        this.ts = (ts != null) ? ts : guessTransferSyntax();
     }
 
     public byte[] getPreamble()
@@ -194,21 +195,24 @@ public class DicomInputStream extends FilterInputStream
                 && header[3] == 'M')
             {
                 preamble = b;
+                expectFmiEnd = true;
                 return TransferSyntax.ExplicitVRLittleEndian;
             }
         } catch (IOException ignore)
         {
         }
         reset();
+        boolean bigEndian = b[1] != 0;
+        expectFmiEnd = b[bigEndian ? 1 : 0] == 2;
         try
         {
             VR.valueOf(((b[4] & 0xff) << 8) | (b[5] & 0xff));
-            return b[1] == 0 ? TransferSyntax.ExplicitVRLittleEndian
-                    : TransferSyntax.ExplicitVRBigEndian;
+            return bigEndian ? TransferSyntax.ExplicitVRBigEndian
+                    : TransferSyntax.ExplicitVRLittleEndian;
         } catch (IllegalArgumentException e)
         {
-            return b[1] == 0 ? TransferSyntax.ImplicitVRLittleEndian
-                    : TransferSyntax.ImplicitVRBigEndian;
+            return bigEndian ? TransferSyntax.ImplicitVRBigEndian
+                    : TransferSyntax.ImplicitVRLittleEndian;
         }
     }
 
@@ -279,6 +283,13 @@ public class DicomInputStream extends FilterInputStream
         readFully(header, 0, 8);
         tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
                 .bytesLE2tag(header, 0);
+        if (expectFmiEnd && !TagUtils.isFileMetaInfoElement(tag))
+        {
+            ts = attrs.getTransferSyntax();
+            expectFmiEnd = false;
+            tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
+                    .bytesLE2tag(header, 0);
+        }
         if (tag == Tag.Item || tag == Tag.ItemDelimitationItem
                 || tag == Tag.SequenceDelimitationItem)
         {
@@ -361,9 +372,10 @@ public class DicomInputStream extends FilterInputStream
                 vallen = 0;
             }
             quit = !handler.readValue(this);
-            if (!ignoreFmiTs && pos == fmiEndPos)
+            if (expectFmiEnd && pos == fmiEndPos)
             {
                 switchTransferSyntax(attrs.getTransferSyntax());
+                this.expectFmiEnd = false;
             }
         }
     }
