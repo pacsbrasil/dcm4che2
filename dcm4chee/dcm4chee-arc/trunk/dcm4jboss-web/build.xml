@@ -3,39 +3,40 @@
 	<property file="build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.dir" value="${user.home}/jboss-4.0.2" />
-	<property name="jboss.lib.dir" value="${jboss.dir}/lib"/>
+	<property name="jboss.home" value="${user.home}/jboss-4.0.2" />
+	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
 	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
-	<property name="jboss.server.lib.dir" value="${jboss.dir}/server/default/lib"/>
+	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 
 	<!-- Override with your Maverick dist location -->
-	<property name="maverick.dir" value="../maverick" />
-	<property name="maverick.lib.dir" value="${maverick.dir}/lib"/>
-	<property name="maverick.dist.dir" value="${maverick.dir}/dist"/>
+	<property name="maverick.home" value="../maverick" />
+	<property name="maverick.lib.dir" value="${maverick.home}/lib"/>
+	<property name="maverick.dist.dir" value="${maverick.home}/dist"/>
 	<property name="maverick.jar" value="${maverick.dist.dir}/maverick.jar"/>
 	<property name="commons-beanutils.jar" value="${maverick.lib.dir}/commons-beanutils.jar"/>
 
 	<!-- Override with your Domify dist location -->
-	<property name="opt-domify.dir" value="../opt-domify" />
-	<property name="opt-domify.dist.dir" value="${opt-domify.dir}/dist"/>
-	<property name="opt-domify.lib.dir" value="${opt-domify.dir}/lib"/>
+	<property name="opt-domify.home" value="../opt-domify" />
+	<property name="opt-domify.dist.dir" value="${opt-domify.home}/dist"/>
+	<property name="opt-domify.lib.dir" value="${opt-domify.home}/lib"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
 	<!-- Override with your dcm4jboss-ejb working directory -->
-	<property name="dcm4jboss-ejb.dir" value="../dcm4jboss-ejb/target" />
-	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.dir}/common/lib/dcm4jboss-ejb-client.jar" />
+	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
+	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target"/>		
+	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar" />
 	<!-- TODO dependence should be eliminated -->
-	<property name="dcm4jboss-jdbc-hsql.jar" value="${dcm4jboss-ejb.dir}/hsql/lib/dcm4jboss-jdbc-hsql.jar" />
+	<property name="dcm4jboss-jdbc-hsql.jar" value="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar" />
 
 	<!-- Override with your dcm4jboss-sar working directory -->
-	<property name="dcm4jboss-sar.dir" value="../dcm4jboss-sar/target" />
-	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.dir}/lib/dcm4jboss.jar" />
+	<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.home}/target/lib/dcm4jboss.jar" />
 	
 	
 	<property name="target.dir" value="target"/>

@@ -3,13 +3,13 @@
 	<property file="build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.dir" value="${user.home}/jboss-4.0.2" />
-	<property name="jboss.lib.dir" value="${jboss.dir}/lib"/>
+	<property name="jboss.home" value="${user.home}/jboss-4.0.2" />
+	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
 	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
-	<property name="jboss.server.lib.dir" value="${jboss.dir}/server/default/lib"/>
+	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
-	<property name="tomcat.dir" value="${jboss.dir}/server/default/deploy/jbossweb-tomcat50.sar"/>
+	<property name="tomcat.dir" value="${jboss.home}/server/default/deploy/jbossweb-tomcat50.sar"/>
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 	<property name="commons-beanutils.jar" value="${tomcat.dir}/commons-beanutils.jar"/>
 
@@ -18,13 +18,15 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
 	<!-- Override with your dcm4jboss-ejb working directory -->
-	<property name="dcm4jboss-ejb.dir" value="../dcm4jboss-ejb/target" />
-	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.dir}/common/lib/dcm4jboss-ejb-client.jar" />
-	<property name="dcm4jboss-ejb-server.jar" value="${dcm4jboss-ejb.dir}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
+	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb" />
+	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target" />
+	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar" />
+	<property name="dcm4jboss-ejb-server.jar" value="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 
 	<!-- Override with your dcm4jboss-sar working directory -->
-	<property name="dcm4jboss-sar.dir" value="../dcm4jboss-sar/target" />
-	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.dir}/lib/dcm4jboss.jar" />
+	<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4jboss-sar.target" value="${dcm4jboss-sar.home}/target" />
+	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.target}/lib/dcm4jboss.jar" />
 	
       <!-- Override with your FOP dist location -->
       <property name="fop.home" value="${user.home}/fop-0.20.5"/>
@@ -45,7 +47,7 @@
 	<property name="xmbean.xml.dir" value="${etc.dir}/config/xmdesc"/>
 	
 	<!-- deploy properties. Overwrite deploy.root with your running application instance. -->
-	<property name="deploy.root" value="${jboss.dir}/server/pacs"/>
+	<property name="deploy.root" value="${jboss.home}/server/pacs"/>
 	<property name="war.deploy.dir" value="${deploy.root}/deploy"/>
 	<property name="jar.deploy.dir" value="${deploy.root}/lib"/>
 	<property name="service.deploy.dir" value="${deploy.root}/deploy"/>
