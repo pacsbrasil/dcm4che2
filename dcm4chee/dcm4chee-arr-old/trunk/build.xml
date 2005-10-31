@@ -20,6 +20,10 @@
 	<property name="xdoclet.force" value="off"/>	
 	<property name="xdoclet.verbose" value="off"/>	
 
+	<!-- Uncomment to skip patch task (=not available on Windows) -->
+	<!--property name="oracle.nobuild" value="true" -->
+	<!--property name="db2.nobuild" value="true" -->
+		
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
