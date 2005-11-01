@@ -48,6 +48,7 @@ import org.apache.mina.protocol.ProtocolSession;
 import org.apache.mina.protocol.ProtocolViolationException;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.AReleaseRP;
 import org.dcm4che2.net.pdu.AReleaseRQ;
@@ -68,6 +69,7 @@ public class DULProtocolEncoder implements ProtocolEncoder
     {
         encoders.put(AAssociateRQ.class, new AAssociateRQEncoder());
         encoders.put(AAssociateAC.class, new AAssociateACEncoder());
+        encoders.put(AAssociateRJ.class, new AAssociateRJEncoder());
         encoders.put(PDataTF.class, new PDataTFEncoder());
         encoders.put(AReleaseRQ.class, new AReleaseRQEncoder());
         encoders.put(AReleaseRP.class, new AReleaseRPEncoder());
