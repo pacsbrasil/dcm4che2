@@ -69,7 +69,7 @@ extends AbstractAssociationHandler
 
     public void onAAssociateRQ(Association as, AAssociateRQ rq)
     {
-        as.write(acceptorPolicy.negotiate(rq));
+        as.write(acceptorPolicy.negotiate(as, rq));
     }
 
     public void onAAssociateAC(Association as, AAssociateAC ac)

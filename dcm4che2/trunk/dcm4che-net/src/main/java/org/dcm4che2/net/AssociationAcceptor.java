@@ -41,11 +41,12 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.net.SocketAddress;
 
-import org.apache.log4j.Logger;
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.io.socket.SocketAcceptor;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
 import org.apache.mina.protocol.io.IoProtocolAcceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -55,7 +56,7 @@ import org.apache.mina.protocol.io.IoProtocolAcceptor;
  */
 public class AssociationAcceptor extends AssociationConfig {
     
-    static final Logger log = Logger.getLogger(AssociationAcceptor.class);
+    static final Logger log = LoggerFactory.getLogger(AssociationAcceptor.class);
 
     protected final SocketAcceptor socketIoAcceptor = new SocketAcceptor();
     protected final IoProtocolAcceptor acceptor = 
@@ -103,12 +104,12 @@ public class AssociationAcceptor extends AssociationConfig {
         DULProtocolProvider provider =
                 new DULProtocolProvider(executor, handler, false);
         super.configure(provider);
-        log.debug("Start Acceptor listening on " + address);
+        log.debug("Start Acceptor listening on {}", address);
         acceptor.bind(address, provider);
     }
 
     public void unbind(SocketAddress address) {
-        log.debug("Stop Acceptor listening on " + address);
+        log.debug("Stop Acceptor listening on {}", address);
         acceptor.unbind(address);
     }
 

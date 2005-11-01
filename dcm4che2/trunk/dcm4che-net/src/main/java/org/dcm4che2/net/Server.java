@@ -41,44 +41,18 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
+import org.dcm4che2.config.NetworkAE;
+import org.dcm4che2.config.Role;
+import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.UID;
-import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.PDU;
-import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.service.DicomServiceRegistry;
 import org.dcm4che2.net.service.VerificationService;
 
 public class Server
 {
-    private static AcceptorPolicy policy = new AcceptorPolicy(){
-
-        public PDU negotiate(AAssociateRQ rq)
-        {
-            AAssociateAC ac = new AAssociateAC();
-            ac.setCallingAET(rq.getCallingAET());
-            ac.setCalledAET(rq.getCalledAET());
-            Collection pcs = rq.getPresentationContexts();
-            for (Iterator iter = pcs.iterator(); iter.hasNext();)
-            {
-                PresentationContext rqpc = (PresentationContext) iter.next();
-                PresentationContext acpc = new PresentationContext();
-                acpc.setPCID(rqpc.getPCID());
-                acpc.setResult(
-                        UID.VerificationSOPClass.equals(rqpc.getAbstractSyntax())
-                                ? PresentationContext.ACCEPTANCE
-                                : PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED);
-                acpc.addTransferSyntax(rqpc.getTransferSyntax());
-                ac.addPresentationContext(acpc);
-            }
-            return ac ;
-        }};
-
     private static SocketAddress makeSocketAddress()
     {
         return new InetSocketAddress(11112);
@@ -98,6 +72,15 @@ public class Server
         AssociationAcceptor acceptor = new AssociationAcceptor();
         DicomServiceRegistry registry = new DicomServiceRegistry();
         registry.register(new VerificationService());
+        ConfigurableAcceptorPolicy policy = new ConfigurableAcceptorPolicy();
+        NetworkAE ae = new NetworkAE();
+        ae.setAssociationAcceptor(true);
+        TransferCapability tc = new TransferCapability();
+        tc.setSopClass(UID.VerificationSOPClass);
+        tc.setRole(Role.SCP);
+        tc.addTransferSyntaxes(UID.ImplicitVRLittleEndian);
+        ae.addTransferCapability(tc);
+        policy.addNetworkAE(ae);
         AssociationAcceptorHandler handler = new AssociationAcceptorHandler(policy, registry);
         // acceptor.setIoThreadPoolFilter(ioThreadPoolFilter);
         // acceptor.setProtocolThreadPoolFilter(protocolThreadPoolFilter);

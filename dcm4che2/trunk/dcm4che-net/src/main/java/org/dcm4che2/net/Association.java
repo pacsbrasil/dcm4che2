@@ -42,10 +42,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedOutputStream;
+import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.protocol.ProtocolSession;
@@ -66,6 +66,8 @@ import org.dcm4che2.net.pdu.PDU;
 import org.dcm4che2.net.pdu.PDataTF;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.util.IntHashtable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -75,7 +77,7 @@ import org.dcm4che2.util.IntHashtable;
 public class Association
 {
 
-    private static final Logger log = Logger.getLogger(Association.class);
+    private static final Logger log = LoggerFactory.getLogger(Association.class);
     private static final int DATA = 0;
     private static final int COMMAND = 1;
     private static final int PENDING = 0;
@@ -140,6 +142,11 @@ public class Association
     public final AssociationHandler getHandler()
     {
         return handler;
+    }
+
+    public final InetSocketAddress getRemoteAddress()
+    {
+        return (InetSocketAddress) session.getRemoteAddress();
     }
     
     public void addAssociationHandlerFilter(AssociationHandlerFilter af)
@@ -269,10 +276,7 @@ public class Association
 
     public void write(PDU pdu)
     {
-        if (log.isDebugEnabled())
-        {
-            log.debug("Sending: " + pdu);
-        }
+        log.debug("Sending: {}", pdu);
         state.write(this, pdu);
     }
     
@@ -292,10 +296,7 @@ public class Association
     public void write(int pcid, DicomObject command, DataWriter dataWriter)
     throws IOException
     {
-        if (log.isDebugEnabled()) {
-            log.debug("Sending DIMSE[pcid=" + pcid + "]");
-            log.debug(command);
-        }
+        log.debug("Sending DIMSE[pcid={}]:\n{}", new Integer(pcid),  command);
         
         PresentationContext pc;
         try
@@ -356,8 +357,7 @@ public class Association
             return;
 
         this.state = state;
-        if (log.isDebugEnabled())
-            log.debug("Enter State: " + state);
+        log.debug("Enter State: {}", state);
         notifyAll();
     }
 
@@ -563,7 +563,10 @@ public class Association
     private AAssociateRJ acceptable(AAssociateRQ associateRQ)
     {
         if ((associateRQ.getProtocolVersion() & 1) == 0)
-            return AAssociateRJ.protocolVersionNotSupported();
+            return new AAssociateRJ(
+                    AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                    AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
         else
             return null;
     }

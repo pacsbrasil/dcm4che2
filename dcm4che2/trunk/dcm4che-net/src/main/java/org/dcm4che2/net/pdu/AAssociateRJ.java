@@ -67,55 +67,38 @@ public class AAssociateRJ implements PDU
     private static final String UNDEFINED = "undefined";
 
     private static final String[] RESULT =
-    {
-            UNDEFINED,
-            "rejected-permanent",
-            "rejected-transient"
-    };
+    { UNDEFINED, "rejected-permanent", "rejected-transient" };
 
     private static final String[] SOURCE =
-    {
-            UNDEFINED,
-            "DICOM UL service-user",
+    { UNDEFINED, "DICOM UL service-user",
             "DICOM UL service-provider (ACSE related function)",
-            "DICOM UL service-provider (Presentation related function)"
-    };
+            "DICOM UL service-provider (Presentation related function)" };
 
     private static final String[][] REASON =
     {
-            {
-                    UNDEFINED,
-                    "no-reason-given",
+            { UNDEFINED, "no-reason-given",
                     "application-context-name-not-supported",
-                    "calling-AE-title-not-recognized",
-                    RESERVED,
-                    RESERVED,
-                    RESERVED,
-                    "called-AE-title-not-recognized",
-                    RESERVED,
-                    RESERVED,
-                    RESERVED
-            },
-            {
-                    UNDEFINED,
-                    "no-reason-given",
-                    "protocol-version-not-supported"
-            },
-            {
-                    RESERVED,
-                    "temporary-congestion",
-                    "local-limit-exceeded",
-                    RESERVED,
-                    RESERVED,
-                    RESERVED,
-                    RESERVED,
-                    RESERVED
-            }
-    };
+                    "calling-AE-title-not-recognized", RESERVED, RESERVED,
+                    RESERVED, "called-AE-title-not-recognized", RESERVED,
+                    RESERVED, RESERVED },
+            { UNDEFINED, "no-reason-given", "protocol-version-not-supported" },
+            { RESERVED, "temporary-congestion", "local-limit-exceeded",
+                    RESERVED, RESERVED, RESERVED, RESERVED, RESERVED } };
 
     private int result;
     private int source;
     private int reason;
+
+    public AAssociateRJ()
+    {
+    }
+
+    public AAssociateRJ(int result, int source, int reason)
+    {
+        this.result = result;
+        this.source = source;
+        this.reason = reason;
+    }
 
     public final int length()
     {
@@ -152,15 +135,6 @@ public class AAssociateRJ implements PDU
         this.reason = reason;
     }
 
-    public static AAssociateRJ protocolVersionNotSupported()
-    {
-        AAssociateRJ rj = new AAssociateRJ();
-        rj.setResult(RESULT_REJECTED_PERMANENT);
-        rj.setSource(SOURCE_SERVICE_PROVIDER_ACSE);
-        rj.setReason(REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
-        return rj;
-    }
-
     public String toString()
     {
         return "A-ASSOCIATE_RJ[\n  result = " + result + " - "
@@ -174,7 +148,8 @@ public class AAssociateRJ implements PDU
         try
         {
             return prompts[code];
-        } catch (IndexOutOfBoundsException e)
+        }
+        catch (IndexOutOfBoundsException e)
         {
             return UNDEFINED;
         }
@@ -185,7 +160,8 @@ public class AAssociateRJ implements PDU
         try
         {
             return code2str(reason, REASON[source - 1]);
-        } catch (IndexOutOfBoundsException e)
+        }
+        catch (IndexOutOfBoundsException e)
         {
             return UNDEFINED;
         }

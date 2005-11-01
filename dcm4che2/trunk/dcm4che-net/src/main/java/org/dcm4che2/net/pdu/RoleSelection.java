@@ -50,6 +50,17 @@ public class RoleSelection
     private boolean scu;
     private boolean scp;
 
+    public RoleSelection()
+    {        
+    }
+    
+    public RoleSelection(String cuid, boolean scu, boolean scp)
+    {
+        this.cuid = cuid;
+        this.scu = scu;
+        this.scp = scp;
+    }
+
     public final String getSOPClassUID()
     {
         return cuid;

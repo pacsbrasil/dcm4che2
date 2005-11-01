@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.tool.dcmecho.DcmEcho
-MAIN_JAR=dcm4che-tool-dcmecho-2.0-alpha-8.jar
+MAIN_JAR=dcm4che-tool-dcmecho-2.0-alpha-9-SNAPSHOT.jar
 
 DIRNAME=`dirname $0`
 
@@ -43,12 +43,11 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0-alpha-8.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-2.0-alpha-8.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0-alpha-9-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-2.0-alpha-9-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/mina-0.8.0.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-simple-1.0-beta9.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
-CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.8.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

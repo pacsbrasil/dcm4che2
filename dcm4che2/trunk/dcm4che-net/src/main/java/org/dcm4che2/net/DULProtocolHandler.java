@@ -40,13 +40,14 @@ package org.dcm4che2.net;
 
 import java.net.SocketException;
 
-import org.apache.log4j.Logger;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.SessionConfig;
 import org.apache.mina.io.socket.SocketSessionConfig;
 import org.apache.mina.protocol.ProtocolHandler;
 import org.apache.mina.protocol.ProtocolSession;
 import org.dcm4che2.net.pdu.PDU;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -56,7 +57,7 @@ import org.dcm4che2.net.pdu.PDU;
 public class DULProtocolHandler implements ProtocolHandler
 {
 
-    static final Logger log = Logger.getLogger(DULProtocolHandler.class);
+    static final Logger log = LoggerFactory.getLogger(DULProtocolHandler.class);
 
     private final Executor executor;
     private final AssociationHandler listener;

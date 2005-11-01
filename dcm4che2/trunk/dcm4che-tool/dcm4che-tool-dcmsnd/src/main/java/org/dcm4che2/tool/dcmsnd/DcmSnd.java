@@ -78,8 +78,8 @@ import org.dcm4che2.util.StringUtils;
  */
 public class DcmSnd extends DimseRSPHandlerAdapter {
 
-    private static final float MB = 0x100000;
     private static final int KB = 1024;
+    private static final int MB = KB * KB;
     private static final int PEEK_LEN = 1024;
     private static final String USAGE = 
         "dcmsnd [Options] <aet>[@<host>[:<port>]] <file>|<directory>...";
@@ -221,66 +221,64 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option calling = new Option("l", "calling", true,
-                "use specified calling AET in A-ASSOCIATE-RQ, ANONYMOUS by default.");
-        calling.setArgName("<calling>");
-        opts.addOption(calling);
+        Option localAddr = new Option("L", "local", true,
+                "set AET, local address and port of local Application Entity, " +
+                "use ANONYMOUS as calling AET and pick up an ephemeral port " +
+                "and a valid local address to bind the socket by default");
+        localAddr.setArgName("calling[@host[:port]]");
+        opts.addOption(localAddr);
         Option maxOpsInvoked = new Option("a", "async", true,
                 "maximum number of outstanding operations it may invoke " +
                 "asynchronously, 1 by default.");
-        calling.setArgName("<max-ops>");
+        maxOpsInvoked.setArgName("max-ops");
         opts.addOption(maxOpsInvoked);
         opts.addOption("k", "pack-pdv", false, 
                 "pack command and (first) data PDV in one P-DATA-TF PDU, " +
                 "send command and data PDVs in separate P-Data-TF PDUs by default");
         opts.addOption("y", "tcp-no-delay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
-        Option localAddr = new Option("L", "local-addr", true,
-                "local Address and port to bind socket, unspecified by default");
-        localAddr.setArgName("<host[:port]>");
-        opts.addOption(localAddr);
         Option conTimeout = new Option("C", "connect-timeout", true,
                 "timeout in ms for TCP connect, no timeout by default");
-        conTimeout.setArgName("<timeout>");
+        conTimeout.setArgName("timeout");
         opts.addOption(conTimeout);
         Option closeDelay = new Option("c", "close-delay", true,
                 "delay in ms for Socket close after sending A-ABORT, 100ms by default");
-        closeDelay.setArgName("<delay>");
+        closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
         Option acTimeout = new Option("T", "accept-timeout", true,
                 "timeout in ms for receiving A-ASSOCIATE-AC, no timeout by default");
-        acTimeout.setArgName("<timeout>");
+        acTimeout.setArgName("timeout");
         opts.addOption(acTimeout);
         Option rpTimeout = new Option("t", "release-timeout", true,
                 "timeout in ms for receiving A-RELEASE-RP, no timeout by default");
-        rpTimeout.setArgName("<timeout>");
+        rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
         Option rcvPduLen = new Option("u", "rcv-pdu-len", true,
                 "maximal length in KB of received P-DATA-TF PDUs, unlimited by default");
-        rcvPduLen.setArgName("<max-len>");
+        rcvPduLen.setArgName("max-len");
         opts.addOption(rcvPduLen);
         Option sndPduLen = new Option("U", "snd-pdu-len", true,
                 "maximal length in KB of sent P-DATA-TF PDUs, 1024KB(=1MB) by default");
-        sndPduLen.setArgName("<max-len>");
+        sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
         Option soRcvBufSize = new Option("s", "so-rcv-buf-size", true,
                 "set SO_RCVBUF socket option to specified value in KB");
-        soRcvBufSize.setArgName("<size>");
+        soRcvBufSize.setArgName("size");
         opts.addOption(soRcvBufSize);
         Option soSndBufSize = new Option("S", "so-snd-buf-size", true,
                 "set SO_SNDBUF socket option to specified value in KB");
-        soSndBufSize.setArgName("<size>");
+        soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
         Option pdvPipeBufSize = new Option("v", "pdv-pipe-buf-size", true,
                 "PDV pipe buffer size in KB, 1KB by default");
-        pdvPipeBufSize.setArgName("<size>");
+        pdvPipeBufSize.setArgName("size");
         Option readBufSize = new Option("r", "read-buf-size", true,
                 "association read buffer size in KB, 1KB by default");
-        readBufSize.setArgName("<size>");
+        readBufSize.setArgName("size");
         opts.addOption(readBufSize);
         Option transcoderBufSize = new Option("b", "transcoder-buf-size", true,
                 "transcoder buffer size in KB, 1KB by default");
-        transcoderBufSize.setArgName("<size>");
+        transcoderBufSize.setArgName("size");
         opts.addOption(transcoderBufSize);
         opts.addOption("p", "low-priority", false, 
                 "LOW priority of the C-STORE operation, MEDIUM by default");
@@ -318,23 +316,20 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         CommandLine cl = parse(args);
         DcmSnd dcmsnd = new DcmSnd();
         final List argList = cl.getArgList();
-        String dest = (String) argList.get(0);
-        int startHost = dest.indexOf('@');
-        if (startHost == -1)
-        {
-            dcmsnd.setCalledAET(dest);
-            dcmsnd.setRemoteAddress(new InetSocketAddress("localhost", 104));
-        }
-        else
-        {
-            dcmsnd.setCalledAET(dest.substring(0, startHost));
-            dcmsnd.setRemoteAddress(
-                    toSocketAddress(dest.substring(startHost+1), 104));
-        }
-        if (cl.hasOption("l"))
-            dcmsnd.setCalling(cl.getOptionValue("l"));
+        String remoteAE = (String) argList.get(0);
+        String[] calledAETAddress = split(remoteAE, '@');
+        dcmsnd.setCalledAET(calledAETAddress[0]);
+        dcmsnd.setRemoteAddress(calledAETAddress[1] == null
+                ? new InetSocketAddress("localhost", 104)
+                : toSocketAddress(calledAETAddress[1], 104));
         if (cl.hasOption("L"))
-            dcmsnd.setLocalAddress(toSocketAddress(cl.getOptionValue("L"), 0));
+        {
+            String localAE = (String) cl.getOptionValue("L");
+            String[] callingAETAddress = split(localAE, '@');
+            dcmsnd.setCalling(callingAETAddress[0]);
+            if (callingAETAddress[1] != null)
+                dcmsnd.setLocalAddress(toSocketAddress(callingAETAddress[1], 0));
+        }
         if (cl.hasOption("C"))
             dcmsnd.setConnectTimeout(
                     parseInt(cl.getOptionValue("C"),
@@ -413,33 +408,63 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
             System.exit(2);
         }
         t2 = System.currentTimeMillis();
-        System.out.println("Connected to " + dest + " in "
+        System.out.println("Connected to " + remoteAE + " in "
                 + ((t2 - t1) / 1000F) + "s");       
         
         t1 = System.currentTimeMillis();
         dcmsnd.send();
         t2 = System.currentTimeMillis();
-        System.out.println("\nSent " + dcmsnd.getNumberOfFilesSent()
-                + " objects (=" + (dcmsnd.getTotalSizeSent() / MB)
-                + "MB) in " + ((t2 - t1) / 1000F)
-                + "s (=" + (dcmsnd.getTotalSizeSent() * 1000 / (MB * (t2 - t1)))
-                + "MB/s)");       
+        prompt(dcmsnd, (t2 - t1) / 1000F);
         dcmsnd.close();
-        System.out.println("Released connection to " + dest);     
+        System.out.println("Released connection to " + remoteAE);     
+    }
+
+    private static void prompt(DcmSnd dcmsnd, float seconds)
+    {
+        System.out.print("\nSent ");
+        System.out.print(dcmsnd.getNumberOfFilesSent());
+        System.out.print(" objects (=");
+        promptBytes(dcmsnd.getTotalSizeSent());
+        System.out.print(") in ");
+        System.out.print(seconds);
+        System.out.print("s (=");
+        promptBytes(dcmsnd.getTotalSizeSent() / seconds);
+        System.out.println("/s)");
+    }
+
+    private static void promptBytes(float totalSizeSent)
+    {
+        if (totalSizeSent > MB)
+        {
+            System.out.print(totalSizeSent / MB);
+            System.out.print("MB");
+        }
+        else
+        {
+            System.out.print(totalSizeSent / KB);
+            System.out.print("KB");
+        }
     }
 
     private static InetSocketAddress toSocketAddress(String s, int defPort)
     {
-        String host = s;
-        int port = defPort;
-        int startPort = s.indexOf(':');
-        if (startPort != -1)
+        String[] s2 = split(s, ':');
+        return new InetSocketAddress(s2[0], 
+                s2[1] != null 
+                    ? parseInt(s2[1], "illegal port number", 1, 0xffff)
+                    : defPort);
+    }
+
+    private static String[] split(String s, char delim)
+    {
+        String[] s2 = { s, null };
+        int pos = s.indexOf(delim);
+        if (pos != -1)
         {
-            host = s.substring(0, startPort);
-            port = parseInt(s.substring(startPort + 1),
-                    "illegal port number", 1, 0xffff);
+            s2[0] = s.substring(0, pos);
+            s2[1] = s.substring(pos + 1);
         }
-        return new InetSocketAddress(host, port);
+        return s2;
     }
 
     private static void exit(String msg)

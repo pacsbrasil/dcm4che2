@@ -3,7 +3,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
-	<classpathentry kind="var" path="MAVEN_REPOSITORY/log4j/log4j/1.2.8/log4j-1.2.8.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
+	<classpathentry sourcepath="/MINA_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-config"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/nlog4j/1.2.18/nlog4j-1.2.18.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

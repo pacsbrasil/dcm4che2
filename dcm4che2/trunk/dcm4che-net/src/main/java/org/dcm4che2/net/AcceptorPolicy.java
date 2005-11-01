@@ -50,6 +50,6 @@ import org.dcm4che2.net.pdu.PDU;
 public interface AcceptorPolicy
 {
 
-    PDU negotiate(AAssociateRQ rq);
+    PDU negotiate(Association as, AAssociateRQ rq);
 
 }

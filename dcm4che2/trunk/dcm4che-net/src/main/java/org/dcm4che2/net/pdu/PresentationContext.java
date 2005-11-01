@@ -39,7 +39,6 @@
 package org.dcm4che2.net.pdu;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -111,9 +110,9 @@ public class PresentationContext
         this.abstractSyntax = abstractSyntax;
     }
 
-    public final Collection getTransferSyntaxes()
+    public final Set getTransferSyntaxes()
     {
-        return Collections.unmodifiableCollection(transferSyntaxes);
+        return Collections.unmodifiableSet(transferSyntaxes);
     }
 
     public String getTransferSyntax()

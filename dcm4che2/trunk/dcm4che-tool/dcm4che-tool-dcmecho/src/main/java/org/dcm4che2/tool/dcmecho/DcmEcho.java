@@ -119,13 +119,11 @@ public class DcmEcho {
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option calling = new Option("l", "calling", true,
-                "use specified calling AET in A-ASSOCIATE-RQ, ANONYMOUS by default.");
-        calling.setArgName("<aet>");
-        opts.addOption(calling);
-        Option localAddr = new Option("L", "local-addr", true,
-                "Local Address and port to bind socket, unspecified by default");
-        localAddr.setArgName("<host>[:<port>]");
+        Option localAddr = new Option("L", "local", true,
+                "set AET, local address and port of local Application Entity," +
+                "use ANONYMOUS and pick up an ephemeral port and a valid local" +
+                "address to bind the socket by default");
+        localAddr.setArgName("calling[@host[:port]]");
         opts.addOption(localAddr);
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
@@ -159,23 +157,20 @@ public class DcmEcho {
         CommandLine cl = parse(args);
         DcmEcho dcmecho = new DcmEcho();
         final List argList = cl.getArgList();
-        String dest = (String) argList.get(0);
-        int startHost = dest.indexOf('@');
-        if (startHost == -1)
-        {
-            dcmecho.setCalledAET(dest);
-            dcmecho.setRemoteAddress(new InetSocketAddress("localhost", 104));
-        }
-        else
-        {
-            dcmecho.setCalledAET(dest.substring(0, startHost));
-            dcmecho.setRemoteAddress(
-                    toSocketAddress(dest.substring(startHost+1), 104));
-        }
-        if (cl.hasOption("l"))
-            dcmecho.setCalling(cl.getOptionValue("l"));
+        String remoteAE = (String) argList.get(0);
+        String[] calledAETAddress = split(remoteAE, '@');
+        dcmecho.setCalledAET(calledAETAddress[0]);
+        dcmecho.setRemoteAddress(calledAETAddress[1] == null
+                ? new InetSocketAddress("localhost", 104)
+                : toSocketAddress(calledAETAddress[1], 104));
         if (cl.hasOption("L"))
-            dcmecho.setLocalAddress(toSocketAddress(cl.getOptionValue("L"), 0));
+        {
+            String localAE = (String) cl.getOptionValue("L");
+            String[] callingAETAddress = split(localAE, '@');
+            dcmecho.setCalling(callingAETAddress[0]);
+            if (callingAETAddress[1] != null)
+                dcmecho.setLocalAddress(toSocketAddress(callingAETAddress[1], 0));
+        }
 
         long t1 = System.currentTimeMillis();
         try
@@ -189,26 +184,33 @@ public class DcmEcho {
             System.exit(2);
         }
         long t2 = System.currentTimeMillis();
-        System.out.println("Connected to " + dest + " in "
+        System.out.println("Connected to " + remoteAE + " in "
                 + ((t2 - t1) / 1000F) + "s");       
         
         dcmecho.echo();
         dcmecho.close();
-        System.out.println("Released connection to " + dest);     
+        System.out.println("Released connection to " + remoteAE);     
     }
 
     private static InetSocketAddress toSocketAddress(String s, int defPort)
     {
-        String host = s;
-        int port = defPort;
-        int startPort = s.indexOf(':');
-        if (startPort != -1)
+        String[] s2 = split(s, ':');
+        return new InetSocketAddress(s2[0], 
+                s2[1] != null 
+                    ? parseInt(s2[1], "illegal port number", 1, 0xffff)
+                    : defPort);
+    }
+
+    private static String[] split(String s, char delim)
+    {
+        String[] s2 = { s, null };
+        int pos = s.indexOf(delim);
+        if (pos != -1)
         {
-            host = s.substring(0, startPort);
-            port = parseInt(s.substring(startPort + 1),
-                    "illegal port number", 1, 0xffff);
+            s2[0] = s.substring(0, pos);
+            s2[1] = s.substring(pos + 1);
         }
-        return new InetSocketAddress(host, port);
+        return s2;
     }
 
     private static void exit(String msg)

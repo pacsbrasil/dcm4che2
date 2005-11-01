@@ -61,7 +61,7 @@ class AAssociateRJEncoder extends PDUEncoder
     {
         AAssociateRJ rj = (AAssociateRJ) pdu;
         out.put((byte) 0);
-        out.put((byte) rj.getReason());
+        out.put((byte) rj.getResult());
         out.put((byte) rj.getSource());
         out.put((byte) rj.getReason());
     }
