@@ -120,6 +120,8 @@
         <exclude>junit:junit</exclude>
         <exclude>commons-lang:commons-lang</exclude>
         <exclude>commons-logging:commons-logging</exclude>
+        <exclude>commons-net:commons-net</exclude>
+        <exclude>oro:oro</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>
