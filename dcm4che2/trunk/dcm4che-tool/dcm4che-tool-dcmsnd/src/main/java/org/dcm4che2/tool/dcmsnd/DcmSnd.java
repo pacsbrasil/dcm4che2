@@ -63,6 +63,7 @@ import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.io.TranscoderInputHandler;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.AssociationConfig;
 import org.dcm4che2.net.AssociationRequestor;
 import org.dcm4che2.net.CommandFactory;
 import org.dcm4che2.net.DimseRSPHandlerAdapter;
@@ -97,6 +98,7 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
 
     private AAssociateRQ aarq = new AAssociateRQ();
     private AssociationRequestor requestor = new AssociationRequestor();
+    private AssociationConfig config = requestor.getAssocConfig();
     private ArrayList files = new ArrayList();
     private Association assoc;
     private int priority = 0;
@@ -150,52 +152,52 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
 
     public final void setPackPDV(boolean packPDV)
     {
-        requestor.setPackPDV(packPDV);
+        config.setPackPDV(packPDV);
     }
 
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        requestor.setTcpNoDelay(tcpNoDelay);
+        config.setTcpNoDelay(tcpNoDelay);
     }
 
     public final void setAssociationAcceptTimeout(long timeout)
     {
-        requestor.setAssociationAcceptTimeout(timeout);
+        config.setAssociationAcceptTimeout(timeout);
     }
 
     public final void setReleaseResponseTimeout(long timeout)
     {
-        requestor.setReleaseResponseTimeout(timeout);
+        config.setReleaseResponseTimeout(timeout);
     }
 
     public final void setSocketCloseDelay(long timeout)
     {
-        requestor.setSocketCloseDelay(timeout);
+        config.setSocketCloseDelay(timeout);
     }
 
     public final void setMaxSendPDULength(int maxPDULength)
     {
-        requestor.setMaxSendPDULength(maxPDULength);
+        config.setMaxSendPDULength(maxPDULength);
     }
 
     public final void setAssociationReceiveBufferSize(int bufferSize)
     {
-        requestor.setAssociationReceiveBufferSize(bufferSize);
+        config.setSessionReceiveBufferSize(bufferSize);
     }
 
     public final void setPDVPipeBufferSize(int bufferSize)
     {
-        requestor.setPDVPipeBufferSize(bufferSize);
+        config.setPDVPipeBufferSize(bufferSize);
     }
 
     public final void setSocketReceiveBufferSize(int bufferSize)
     {
-        requestor.setSocketReceiveBufferSize(bufferSize);
+        config.setSocketReceiveBufferSize(bufferSize);
     }
 
     public final void setSocketSendBufferSize(int bufferSize)
     {
-        requestor.setSocketSendBufferSize(bufferSize);
+        config.setSocketSendBufferSize(bufferSize);
     }
 
     public final void setTranscoderBufferSize(int transcoderBufferSize)
