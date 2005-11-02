@@ -46,6 +46,7 @@ set CP=%DCM4CHE_HOME%\etc\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0-alpha-9-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-2.0-alpha-9-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-config-2.0-alpha-9-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\mina-0.8.0.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-simple-1.0-beta9.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.0.jar
