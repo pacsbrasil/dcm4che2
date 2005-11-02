@@ -47,23 +47,23 @@ import org.apache.mina.protocol.ProtocolSession;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
 import org.apache.mina.protocol.io.IoProtocolConnector;
 import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.service.DicomServiceRegistry;
 
-public class AssociationRequestor extends AssociationConfig
+public class AssociationRequestor extends DULProtocolProvider
 {
-
     private final SocketConnector socketIoConnector = new SocketConnector();
 
     private final IoProtocolConnector connector = new IoProtocolConnector(
             socketIoConnector);
 
-    public AssociationRequestor(Executor executor)
+    public AssociationRequestor(DicomServiceRegistry registry, Executor executor)
     {
-        super(executor);
+        super(registry, executor, true);
     }
 
     public AssociationRequestor()
     {
-        this(new NewThreadExecutor("Association"));
+        this(new DicomServiceRegistry(), new NewThreadExecutor("Association"));
     }
 
     public final void setIoThreadPoolFilter(
@@ -92,37 +92,14 @@ public class AssociationRequestor extends AssociationConfig
         }
     }
 
-    public Association connect(AssociationHandler handler,
-            SocketAddress address)
-    throws IOException
-    {
-        return connect(handler, address, null, Integer.MAX_VALUE);
-    }
-
-    public Association connect(AssociationHandler handler,
-            SocketAddress address, SocketAddress localAddress)
-    throws IOException
-    {
-        return connect(handler, address, localAddress, Integer.MAX_VALUE);
-    }
-
-    public Association connect(AssociationHandler handler,
-            SocketAddress address, int timeout)
-    throws IOException
-    {
-        return connect(handler, address, null, timeout);
-    }
-
-    public Association connect(AssociationHandler handler,
+    public Association connect(AAssociateRQ aarq,
             SocketAddress address, SocketAddress localAddress, int timeout)
     throws IOException
     {
-        DULProtocolProvider provider = new DULProtocolProvider(executor,
-                handler, true);
-        super.configure(provider);
         ProtocolSession session = connector.connect(address, localAddress,
-                timeout, provider);
+                timeout, this);
         Association a = (Association) session.getAttachment();
+        a.write(aarq);
         synchronized (a)
         {
             while (a.getState() == Association.STA4 
@@ -166,13 +143,5 @@ public class AssociationRequestor extends AssociationConfig
     throws IOException
     {
         return connect(aarq, address, null, timeout);
-    }
-
-    public Association connect(AAssociateRQ aarq,
-            SocketAddress address, SocketAddress localAddress, int timeout)
-    throws IOException
-    {
-        AssociationHandler handler = new AssociationRequestorHandler(aarq);
-        return connect(handler, address, localAddress, timeout);
     }
 }

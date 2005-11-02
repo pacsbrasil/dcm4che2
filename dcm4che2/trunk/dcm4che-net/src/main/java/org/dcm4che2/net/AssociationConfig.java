@@ -38,42 +38,35 @@
 
 package org.dcm4che2.net;
 
+import org.dcm4che2.config.VendorData;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 10, 2005
  *
  */
-class AssociationConfig
+public class AssociationConfig implements VendorData
 {
 
-    protected final Executor executor;
-    protected long associationRequestTimeout = 0;
-    protected long associationAcceptTimeout = 0;
-    protected long releaseResponseTimeout = 0;
-    protected long socketCloseDelay = 100L;
-    protected int pdvPipeBufferSize = 1024;
-    protected boolean packPDV = false;
-    protected int idleTime = 0;
-    protected int writeTimeout = 0;
-    protected int receiveBufferSize;
-    protected int sendBufferSize;
-    protected int sessionReceiveBufferSize;
-    protected int soLinger = -1;
-    protected int trafficClass;
-    protected boolean oobInline;
-    protected boolean keepAlive;
-    protected boolean tcpNoDelay;
-    protected boolean reuseAddress = true;
+    private long associationRequestTimeout = 0;
+    private long associationAcceptTimeout = 0;
+    private long releaseResponseTimeout = 0;
+    private long socketCloseDelay = 100L;
+    private int pdvPipeBufferSize = 1024;
+    private boolean packPDV = false;
+    private int idleTime = 0;
+    private int writeTimeout = 0;
+    private int receiveBufferSize;
+    private int sendBufferSize;
+    private int sessionReceiveBufferSize;
+    private int soLinger = -1;
+    private int trafficClass;
+    private boolean oobInline;
+    private boolean keepAlive;
+    private boolean tcpNoDelay;
+    private boolean reuseAddress = true;
     private int maxSendPDULength;
-
-    public AssociationConfig(Executor executor)
-    {
-        if (executor == null)
-            throw new NullPointerException();
-
-        this.executor = executor;
-    }
 
     public final long getAssociationRequestTimeout()
     {
@@ -115,7 +108,7 @@ class AssociationConfig
         this.maxSendPDULength = bufferSize;
     }
     
-    public final boolean isPackPDV()
+    public final boolean getPackPDV()
     {
         return packPDV;
     }
@@ -145,7 +138,7 @@ class AssociationConfig
         this.socketCloseDelay = socketCloseDelay;
     }
 
-    public final boolean isSocketKeepAlive()
+    public final boolean getSocketKeepAlive()
     {
         return keepAlive;
     }
@@ -155,7 +148,7 @@ class AssociationConfig
         this.keepAlive = keepAlive;
     }
 
-    public final boolean isSocketOobInline()
+    public final boolean getSocketOobInline()
     {
         return oobInline;
     }
@@ -175,7 +168,7 @@ class AssociationConfig
         this.receiveBufferSize = receiveBufferSize;
     }
 
-    public final boolean isReuseAddress()
+    public final boolean getReuseAddress()
     {
         return reuseAddress;
     }
@@ -195,12 +188,12 @@ class AssociationConfig
         this.sendBufferSize = sendBufferSize;
     }
 
-    public final int getAssociationReceiveBufferSize()
+    public final int getSessionReceiveBufferSize()
     {
         return sessionReceiveBufferSize;
     }
 
-    public final void setAssociationReceiveBufferSize(int sessionReceiveBufferSize)
+    public final void setSessionReceiveBufferSize(int sessionReceiveBufferSize)
     {
         this.sessionReceiveBufferSize = sessionReceiveBufferSize;
     }
@@ -215,7 +208,7 @@ class AssociationConfig
         this.soLinger = soLinger;
     }
 
-    public final boolean isTcpNoDelay()
+    public final boolean getTcpNoDelay()
     {
         return tcpNoDelay;
     }
@@ -254,26 +247,4 @@ class AssociationConfig
     {
         this.writeTimeout = writeTimeout;
     }
-
-    protected void configure(DULProtocolProvider provider)
-    {
-        provider.setAssociationRequestTimeout(associationRequestTimeout);
-        provider.setAssociationAcceptTimeout(associationAcceptTimeout);
-        provider.setReleaseResponseTimeout(releaseResponseTimeout);
-        provider.setIdleTime(idleTime);
-        provider.setPDVPipeBufferSize(pdvPipeBufferSize);
-        provider.setMaxSendPDULength(maxSendPDULength);
-        provider.setPackPDV(packPDV);
-        provider.setWriteTimeout(writeTimeout);
-        provider.setSocketReceiveBufferSize(receiveBufferSize);
-        provider.setSocketSendBufferSize(sendBufferSize);
-        provider.setSessionReceiveBufferSize(sessionReceiveBufferSize);
-        provider.setSoLinger(soLinger);
-        provider.setTrafficClass(trafficClass);
-        provider.setOOBInline(oobInline);
-        provider.setKeepAlive(keepAlive);
-        provider.setTcpNoDelay(tcpNoDelay);
-        provider.setReuseAddress(reuseAddress);
-    }
-
 }

@@ -45,8 +45,8 @@ import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.io.socket.SocketAcceptor;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
 import org.apache.mina.protocol.io.IoProtocolAcceptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.service.DicomServiceRegistry;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -54,22 +54,24 @@ import org.slf4j.LoggerFactory;
  * @since Sep 24, 2005
  *
  */
-public class AssociationAcceptor extends AssociationConfig {
+public class AssociationAcceptor extends DULProtocolProvider {
     
-    static final Logger log = LoggerFactory.getLogger(AssociationAcceptor.class);
-
     protected final SocketAcceptor socketIoAcceptor = new SocketAcceptor();
     protected final IoProtocolAcceptor acceptor = 
             new IoProtocolAcceptor(socketIoAcceptor );
+    protected final AcceptorPolicy acceptorPolicy;
     
-    public AssociationAcceptor(Executor executor)
+    public AssociationAcceptor(AcceptorPolicy acceptorPolicy,
+            DicomServiceRegistry registry, Executor executor)
     {
-        super(executor);
+        super(registry, executor, false);
+        this.acceptorPolicy = acceptorPolicy;
     }
 
-    public AssociationAcceptor()
+    public AssociationAcceptor(AcceptorPolicy acceptorPolicy, 
+            DicomServiceRegistry registry)
     {
-        this(new NewThreadExecutor("Association"));
+        this(acceptorPolicy, registry, new NewThreadExecutor("Association"));
     }
 
     public void setIoThreadPoolFilter(IoThreadPoolFilter ioThreadPoolFilter) {
@@ -98,14 +100,11 @@ public class AssociationAcceptor extends AssociationConfig {
     public void setBacklog(int defaultBacklog) {
         socketIoAcceptor.setBacklog(defaultBacklog);
     }
-    
-    public void bind(AssociationHandler handler, SocketAddress address)
+
+    public void bind(SocketAddress address)
     throws IOException {
-        DULProtocolProvider provider =
-                new DULProtocolProvider(executor, handler, false);
-        super.configure(provider);
         log.debug("Start Acceptor listening on {}", address);
-        acceptor.bind(address, provider);
+        acceptor.bind(address, this);
     }
 
     public void unbind(SocketAddress address) {
@@ -113,5 +112,9 @@ public class AssociationAcceptor extends AssociationConfig {
         acceptor.unbind(address);
     }
 
-    
+    public void onAAssociateRQ(Association as, AAssociateRQ rq)
+    {
+        as.write(acceptorPolicy.negotiate(as, rq));
+    }
+        
 }

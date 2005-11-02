@@ -38,22 +38,42 @@
 
 package org.dcm4che2.net;
 
+import java.io.InputStream;
+import java.net.SocketException;
+
+import org.apache.mina.common.IdleStatus;
+import org.apache.mina.common.SessionConfig;
+import org.apache.mina.io.socket.SocketSessionConfig;
 import org.apache.mina.protocol.ProtocolCodecFactory;
 import org.apache.mina.protocol.ProtocolDecoder;
 import org.apache.mina.protocol.ProtocolEncoder;
 import org.apache.mina.protocol.ProtocolHandler;
 import org.apache.mina.protocol.ProtocolProvider;
+import org.apache.mina.protocol.ProtocolSession;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.codec.DULProtocolDecoder;
 import org.dcm4che2.net.codec.DULProtocolEncoder;
+import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.net.pdu.AAssociateAC;
+import org.dcm4che2.net.pdu.AAssociateRJ;
+import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.AReleaseRP;
+import org.dcm4che2.net.pdu.AReleaseRQ;
+import org.dcm4che2.net.pdu.PDU;
+import org.dcm4che2.net.service.DicomServiceRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Sep 22, 2005
  */
-public class DULProtocolProvider implements ProtocolProvider
+class DULProtocolProvider
+implements ProtocolProvider, ProtocolHandler, AssociationHandler
 {
 
+    static final Logger log = LoggerFactory.getLogger(DULProtocolProvider.class);
     private static final ProtocolCodecFactory CODEC_FACTORY = 
             new ProtocolCodecFactory()
             {
@@ -68,13 +88,19 @@ public class DULProtocolProvider implements ProtocolProvider
                     return new DULProtocolDecoder();
                 }
             };
-
-    private final DULProtocolHandler handler;
-
-    public DULProtocolProvider(Executor executor, AssociationHandler listener,
-            boolean requestor)
+    
+    protected final DicomServiceRegistry serviceRegistry;
+    protected final Executor executor;
+    protected final boolean requestor;
+    protected final AssociationConfig assocConfig = new AssociationConfig();
+            
+    public DULProtocolProvider(DicomServiceRegistry serviceRegistry,
+            Executor executor, boolean requestor)
     {
-        this.handler = new DULProtocolHandler(executor, listener, requestor);
+        this.executor = executor;
+        this.serviceRegistry = serviceRegistry;
+        this.requestor = requestor;
+//        this.handler = new DULProtocolHandler(executor, listener, requestor);
     }
 
     public ProtocolCodecFactory getCodecFactory()
@@ -84,182 +110,215 @@ public class DULProtocolProvider implements ProtocolProvider
 
     public ProtocolHandler getHandler()
     {
-        return handler;
+        return this;
     }
 
-    public final long getAssociationRequestTimeout()
-    {
-        return handler.getAssociationRequestTimeout();
-    }
 
-    public final void setAssociationRequestTimeout(long timeout)
+    public final AssociationConfig getAssocConfig()
     {
-        handler.setAssociationRequestTimeout(timeout);
-    }
-
-    public final long getAssociationAcceptTimeout()
-    {
-        return handler.getAssociationAcceptTimeout();
-    }
-
-    public final void setAssociationAcceptTimeout(long timeout)
-    {
-        handler.setAssociationAcceptTimeout(timeout);
-    }
-
-    public final long getReleaseResponseTimeout()
-    {
-        return handler.getReleaseResponseTimeout();
-    }
-
-    public final void setReleaseResponseTimeout(long timeout)
-    {
-        handler.setReleaseResponseTimeout(timeout);
-    }
-
-    public final long getSocketCloseDelay()
-    {
-        return handler.getSocketCloseDelay();
-    }
-
-    public final void getSocketCloseDelay(long socketCloseDelay)
-    {
-        handler.setSocketCloseDelay(socketCloseDelay);
-    }
-
-    public final int getIdleTime()
-    {
-        return handler.getIdleTime();
-    }
-
-    public final void setIdleTime(int idleTime)
-    {
-        handler.setIdleTime(idleTime);
-    }
-
-    public final int getPDVPipeBufferSize()
-    {
-        return handler.getPDVPipeBufferSize();
-    }
-
-    public final void setPDVPipeBufferSize(int bufferSize)
-    {
-        handler.setPDVPipeBufferSize(bufferSize);
-    }
-
-    public void setMaxSendPDULength(int bufferSize)
-    {
-        handler.setMaxSendPDULength(bufferSize);
+        return assocConfig;
     }
     
-    public boolean getPackPDV()
+    public void sessionCreated(ProtocolSession session) throws Exception
     {
-        return handler.isPackPDV();        
+        Association service = new Association(executor, this, requestor,
+                session);
+        session.setAttachment(service);
+        configureAssociation(service);
+        configureSession(session);
     }
 
-    public void setPackPDV(boolean packPDV)
+    private void configureSession(ProtocolSession session)
     {
-        handler.setPackPDV(packPDV);        
-    }
-    
-    public int getWriteTimeout()
-    {
-        return handler.getWriteTimeout();        
-    }
-
-    public void setWriteTimeout(int timeout)
-    {
-        handler.setWriteTimeout(timeout);        
+        SessionConfig config = session.getConfig();
+        if (assocConfig.getIdleTime() > 0)
+            config.setIdleTime(IdleStatus.BOTH_IDLE, assocConfig.getIdleTime());
+        if (assocConfig.getWriteTimeout() > 0)
+            config.setWriteTimeout(assocConfig.getWriteTimeout());
+        if (config instanceof SocketSessionConfig)
+            configSocketSession((SocketSessionConfig) config);            
     }
 
-    public int getReceiveBufferSize()
+    private void configSocketSession(SocketSessionConfig config)
     {
-        return handler.getReceiveBufferSize();        
+        if (assocConfig.getSessionReceiveBufferSize() > 0)
+            config.setSessionReceiveBufferSize(assocConfig.getSessionReceiveBufferSize());
+        if (assocConfig.getSocketReceiveBufferSize() > 0)
+        {
+            try
+            {
+                config.setReceiveBufferSize(assocConfig.getSocketReceiveBufferSize());
+            } catch (SocketException e)
+            {
+                log.info("Failed to set ReceivedBufferSize="
+                        + assocConfig.getSocketReceiveBufferSize(), e);
+            }
+        }
+        if (assocConfig.getSocketSendBufferSize() > 0)
+        {
+            try
+            {
+                config.setSendBufferSize(assocConfig.getSocketSendBufferSize());
+            } catch (SocketException e)
+            {
+                log.info("Failed to set SendBufferSize=" + assocConfig.getSocketSendBufferSize(), e);
+            }
+        }
+        if (assocConfig.getSoLinger() > 0)
+        {
+            try
+            {
+                config.setSoLinger(true, assocConfig.getSoLinger());
+            } catch (SocketException e)
+            {
+                log.info("Failed to enable SoLinger=" + assocConfig.getSoLinger(), e);
+            }
+        }
+        if (assocConfig.getTrafficClass() > 0)
+        {
+            try
+            {
+                config.setTrafficClass(assocConfig.getTrafficClass());
+            } catch (SocketException e)
+            {
+                log.info("Failed to set TrafficClass=" + assocConfig.getTrafficClass(), e);
+            }
+        }
+        try
+        {
+            config.setTcpNoDelay(assocConfig.getTcpNoDelay());
+        } catch (SocketException e)
+        {
+            log.info("Failed to set TcpNoDelay=" + assocConfig.getTcpNoDelay(), e);
+        }
+        try
+        {
+            config.setReuseAddress(assocConfig.getReuseAddress());
+        } catch (SocketException e)
+        {
+            log.info("Failed to set ReuseAddress=" + assocConfig.getReuseAddress(), e);
+        }
+        try
+        {
+            config.setKeepAlive(assocConfig.getSocketKeepAlive());
+        } catch (SocketException e)
+        {
+            log.info("Failed to set KeepAlive=" + assocConfig.getSocketKeepAlive(), e);
+        }
+        try
+        {
+            config.setOOBInline(assocConfig.getSocketOobInline());
+        } catch (SocketException e)
+        {
+            log.info("Failed to set OOBInline=" + assocConfig.getSocketOobInline(), e);
+        }
     }
 
-    public void setSocketReceiveBufferSize(int receiveBufferSize)
+    private void configureAssociation(Association a)
     {
-        handler.setReceiveBufferSize(receiveBufferSize);        
+        a.setAssociationRequestTimeout(assocConfig.getAssociationRequestTimeout());
+        a.setAssociationAcceptTimeout(assocConfig.getAssociationAcceptTimeout());
+        a.setReleaseResponseTimeout(assocConfig.getReleaseResponseTimeout());
+        a.setPDVPipeBufferSize(assocConfig.getPDVPipeBufferSize());
+        a.setPackPDV(assocConfig.getPackPDV());
     }
 
-    public int getSendBufferSize()
+    public void sessionOpened(ProtocolSession session) throws Exception
     {
-        return handler.getSendBufferSize();        
+        Association provider = (Association) session.getAttachment();
+        provider.opened();
     }
 
-    public void setSocketSendBufferSize(int sendBufferSize)
+    public void sessionClosed(ProtocolSession session) throws Exception
     {
-        handler.setSendBufferSize(sendBufferSize);        
+        Association provider = (Association) session.getAttachment();
+        provider.closed();
     }
 
-    public int getSessionReceiveBufferSize()
+    public void sessionIdle(ProtocolSession session, IdleStatus status)
+            throws Exception
     {
-        return handler.getSessionReceiveBufferSize();        
+        Association provider = (Association) session.getAttachment();
+        provider.idle(status);
     }
 
-    public void setSessionReceiveBufferSize(int sessionReceiveBufferSize)
+    public void exceptionCaught(ProtocolSession session, Throwable cause)
+            throws Exception
     {
-        handler.setSessionReceiveBufferSize(sessionReceiveBufferSize);        
-    }
-    
-    public int getSoLinger()
-    {
-        return handler.getSoLinger();        
+        Association provider = (Association) session.getAttachment();
+        provider.exception(cause);
     }
 
-    public void setSoLinger(int soLinger)
+    public void messageReceived(ProtocolSession session, Object message)
+            throws Exception
     {
-        handler.setSoLinger(soLinger);        
+        Association provider = (Association) session.getAttachment();
+        provider.received((PDU) message);
     }
 
-    public int getTrafficClass()
+    public void messageSent(ProtocolSession session, Object message)
+            throws Exception
     {
-        return handler.getTrafficClass();        
+        Association provider = (Association) session.getAttachment();
+        provider.sent((PDU) message);
     }
 
-    public void setTrafficClass(int trafficClass)
-    {
-        handler.setTrafficClass(trafficClass);        
+    public void onAReleaseRQ(Association as, AReleaseRQ rq)
+    {        
+        synchronized (as)
+        {
+            // wait for receiving A-RELEASE RP in case of release collision
+            while (as.getState() == Association.STA10)
+                try
+                {
+                    as.wait();
+                } catch (InterruptedException e)
+                {
+                }
+        }
+        synchronized (this)
+        {
+            // finish onDIMSE, before sending release response
+            as.write(new AReleaseRP());
+        }
     }
 
-    public boolean getOOBInline()
+    public synchronized void onDIMSE(Association as, int pcid,
+            DicomObject cmd, InputStream dataStream)
     {
-        return handler.getOOBInline();        
+        if (CommandFactory.isResponse(cmd))
+            as.onDimseRSP(pcid, cmd, dataStream);
+        else if (CommandFactory.isCancelRQ(cmd))
+            as.onCancelRQ(pcid, cmd, dataStream);
+        else
+            serviceRegistry.process(as, pcid, cmd, dataStream);
     }
 
-    public void setOOBInline(boolean oobInline)
+    public void onOpened(Association as)
     {
-        handler.setOOBInline(oobInline);        
     }
 
-    public boolean getKeepAlive()
+    public void onAAssociateRQ(Association as, AAssociateRQ rq)
     {
-        return handler.getKeepAlive();        
     }
 
-    public void setKeepAlive(boolean keepAlive)
+    public void onAAssociateAC(Association as, AAssociateAC ac)
     {
-        handler.setKeepAlive(keepAlive);        
     }
 
-    public boolean getTcpNoDelay()
+    public void onAAssociateRJ(Association as, AAssociateRJ rj)
     {
-        return handler.getTcpNoDelay();        
     }
 
-    public void setTcpNoDelay(boolean tcpNoDelay)
+    public void onAReleaseRP(Association as, AReleaseRP rp)
     {
-        handler.setTcpNoDelay(tcpNoDelay);        
     }
 
-    public boolean getReuseAddress()
+    public void onAbort(Association as, AAbort abort)
     {
-        return handler.getReuseAddress();        
     }
 
-    public void setReuseAddress(boolean reuseAddress)
+    public void onClosed(Association association)
     {
-        handler.setReuseAddress(reuseAddress);        
     }
-
 }

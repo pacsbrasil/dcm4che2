@@ -5,6 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
 	<classpathentry sourcepath="/MINA_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-config"/>
-	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/nlog4j/1.2.18/nlog4j-1.2.18.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/slf4j-simple/1.0-beta9/slf4j-simple-1.0-beta9.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -69,7 +69,6 @@ public class Server
         ioThreadPoolFilter.start();
         protocolThreadPoolFilter.start();
 
-        AssociationAcceptor acceptor = new AssociationAcceptor();
         DicomServiceRegistry registry = new DicomServiceRegistry();
         registry.register(new VerificationService());
         ConfigurableAcceptorPolicy policy = new ConfigurableAcceptorPolicy();
@@ -81,12 +80,12 @@ public class Server
         tc.addTransferSyntaxes(UID.ImplicitVRLittleEndian);
         ae.addTransferCapability(tc);
         policy.addNetworkAE(ae);
-        AssociationAcceptorHandler handler = new AssociationAcceptorHandler(policy, registry);
+        AssociationAcceptor acceptor = new AssociationAcceptor(policy, registry);
         // acceptor.setIoThreadPoolFilter(ioThreadPoolFilter);
         // acceptor.setProtocolThreadPoolFilter(protocolThreadPoolFilter);
         try
         {
-            acceptor.bind(handler, makeSocketAddress());
+            acceptor.bind(makeSocketAddress());
         } catch (IOException e)
         {
             e.printStackTrace();
