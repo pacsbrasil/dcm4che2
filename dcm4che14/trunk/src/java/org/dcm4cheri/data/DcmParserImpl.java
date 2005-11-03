@@ -216,10 +216,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             retval = detectFileFormat((ImageInputStream)in);
         else
             throw new UnsupportedOperationException("" + in);
-        if (retval == null) {
-            log.info("Failed to detect format - try decode as ACR/NEMA Stream");
-            return FileFormat.ACRNEMA_STREAM;
-        }
         if (log.isDebugEnabled())
             log.debug("detect " + retval);
         return retval;
@@ -487,8 +483,13 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 
     public long parseDcmFile(FileFormat format, int stopTag)
             throws IOException {
-       if (format == null)
+       if (format == null) {
            format = detectFileFormat();
+           if (format == null) {
+               log.info("Failed to detect format - try decode as ACR/NEMA Stream");
+               format = FileFormat.ACRNEMA_STREAM;
+           }
+       }
        if (handler != null)
            handler.startDcmFile();
        DcmDecodeParam param = format.decodeParam;
