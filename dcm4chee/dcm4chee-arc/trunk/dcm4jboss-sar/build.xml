@@ -140,6 +140,7 @@
    				<include name="mysql/**"/>
    				<include name="oracle/**"/>
    				<include name="db2/**"/>
+   				<include name="mssql/**"/>
    				<exclude name="**/test.war"/>
    			</fileset>
    			<fileset dir="${dcm4jboss-ejb.src}/etc">
@@ -155,6 +156,7 @@
    				<include name="mysql/**"/>
    				<include name="oracle/**"/>
    				<include name="db2/**"/>
+   				<include name="mssql/**"/>
    			</fileset>
    		</copy>
    		<copy todir="${dist.dir}/common">
@@ -224,6 +226,9 @@
     	</antcall>
    		<antcall target="standalone-dist">
       		<param name="db.name" value="db2"/>
+    	</antcall>
+   		<antcall target="standalone-dist">
+      		<param name="db.name" value="mssql"/>
     	</antcall>
     </target>
     
