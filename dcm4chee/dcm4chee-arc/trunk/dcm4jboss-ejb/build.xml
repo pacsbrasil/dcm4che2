@@ -110,18 +110,21 @@
 	<property name="target.meta-inf-hsql" value="${target.xdoclet}/META-INF-hsql"/>
 	<property name="target.meta-inf-psql" value="${target.xdoclet}/META-INF-psql"/>
 	<property name="target.meta-inf-mysql" value="${target.xdoclet}/META-INF-mysql"/>
+	<property name="target.meta-inf-mssql" value="${target.xdoclet}/META-INF-mssql"/>
 	<property name="target.meta-inf-oracle" value="${target.xdoclet}/META-INF-oracle"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.res" value="${target.dir}/res"/>
 	<property name="target.res-hsql" value="${target.res}-hsql"/>
 	<property name="target.res-psql" value="${target.res}-psql"/>
 	<property name="target.res-mysql" value="${target.res}-mysql"/>
+	<property name="target.res-mssql" value="${target.res}-mssql"/>
 	<property name="target.res-oracle" value="${target.res}-oracle"/>
 	<property name="target.res-db2" value="${target.res}-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.hsql.deploy" value="${target.dir}/hsql/deploy"/>
 	<property name="target.psql.deploy" value="${target.dir}/psql/deploy"/>
 	<property name="target.mysql.deploy" value="${target.dir}/mysql/deploy"/>
+	<property name="target.mssql.deploy" value="${target.dir}/mssql/deploy"/>
 	<property name="target.oracle.deploy" value="${target.dir}/oracle/deploy"/>
 	<property name="target.db2.deploy" value="${target.dir}/db2/deploy"/>
 	<property name="target.common.bin" value="${target.dir}/common/bin"/>	
@@ -129,6 +132,7 @@
 	<property name="target.hsql.lib" value="${target.dir}/hsql/lib"/>
 	<property name="target.psql.lib" value="${target.dir}/psql/lib"/>
 	<property name="target.mysql.lib" value="${target.dir}/mysql/lib"/>
+	<property name="target.mssql.lib" value="${target.dir}/mssql/lib"/>
 	<property name="target.oracle.lib" value="${target.dir}/oracle/lib"/>
 	<property name="target.db2.lib" value="${target.dir}/db2/lib"/>
 	<property name="target.test.web-inf" value="${target.dir}/test/WEB-INF"/>
@@ -176,16 +180,19 @@
         <mkdir dir="${target.res-hsql}"/>
         <mkdir dir="${target.res-psql}"/>
         <mkdir dir="${target.res-mysql}"/>
+        <mkdir dir="${target.res-mssql}"/>
         <mkdir dir="${target.res-oracle}"/>
         <mkdir dir="${target.res-db2}"/>
         <mkdir dir="${target.meta-inf-hsql}"/>
         <mkdir dir="${target.meta-inf-psql}"/>
         <mkdir dir="${target.meta-inf-mysql}"/>
+        <mkdir dir="${target.meta-inf-mssql}"/>
         <mkdir dir="${target.meta-inf-oracle}"/>
         <mkdir dir="${target.meta-inf-db2}"/>
         <mkdir dir="${target.hsql.deploy}"/>
         <mkdir dir="${target.psql.deploy}"/>
         <mkdir dir="${target.mysql.deploy}"/>
+        <mkdir dir="${target.mssql.deploy}"/>
         <mkdir dir="${target.oracle.deploy}"/>
         <mkdir dir="${target.db2.deploy}"/>
         <mkdir dir="${target.common.bin}"/>
@@ -193,6 +200,7 @@
         <mkdir dir="${target.hsql.lib}"/>
         <mkdir dir="${target.psql.lib}"/>
         <mkdir dir="${target.mysql.lib}"/>
+        <mkdir dir="${target.mssql.lib}"/>
         <mkdir dir="${target.oracle.lib}"/>
         <mkdir dir="${target.db2.lib}"/>
         <mkdir dir="${target.test.web-inf}"/>
@@ -296,6 +304,23 @@
 		</replace>
     </target>
 
+    <target name="meta-inf-mssql" unless="meta-inf-mssql.notRequired">
+    	<copy todir="${target.meta-inf-mssql}">
+    		<fileset dir="${target.meta-inf-hsql}"/>
+    	</copy>
+    	<replace dir="${target.meta-inf-mssql}"
+  				token="DefaultDS"
+  				value="MsSqlDS"/>
+    	<replace file="${target.meta-inf-mssql}/jbosscmp-jdbc.xml">
+  			<replacefilter
+  				token="Hypersonic SQL"
+  				value="MS SQLSERVER2000"/>
+  			<replacefilter
+  				token="hsqldb-fetch-key"
+  				value="mssql-fetch-key"/>
+		</replace>
+    </target>
+	
     <target name="meta-inf-oracle" unless="meta-inf-oracle.notRequired">
     	<copy todir="${target.meta-inf-oracle}">
     		<fileset dir="${target.meta-inf-hsql}"/>
@@ -344,7 +369,7 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-jar and jdbc-jar                                    -->
    <!-- =================================================================== -->
-    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,oracle-jar,db2-jar,common-jar"/>
+    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,mssql-jar,oracle-jar,db2-jar,common-jar"/>
     <target name="hsql-jar" depends="compile" unless="hsql.nobuild">
      	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="hsql"/>
@@ -370,6 +395,16 @@
     	<antcall target="meta-inf-mysql"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="mysql"/>
+    	</antcall>
+    </target>
+    <target name="mssql-jar" depends="compile" unless="mssql.nobuild">
+    	<uptodate property="meta-inf-mssql.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-mssql}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-mssql"/>
+    	<antcall target="ejb-jdbc-jar">
+    		<param name="db.name" value="mssql"/>
     	</antcall>
     </target>
 

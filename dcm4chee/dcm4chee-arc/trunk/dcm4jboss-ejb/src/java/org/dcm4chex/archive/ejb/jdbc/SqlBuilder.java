@@ -228,6 +228,7 @@ class SqlBuilder {
         case JdbcProperties.DB2 :
         case JdbcProperties.ORACLE :
         case JdbcProperties.MYSQL :
+        case JdbcProperties.MSSQL :
             return value ? " != 0" : " = 0";
         default:
             return value ? " = true" : " = false";
@@ -308,6 +309,20 @@ class SqlBuilder {
                     sb.append(", ROWNUM as r1 FROM ( SELECT ");
                     appendTo(sb, selectAsC1C2CN());
                     break;
+                case JdbcProperties.MSSQL :
+                    if (!orderby.isEmpty()) {
+	                    sb.append("* FROM ( SELECT TOP ").append(limit).append(' ');
+	                    appendTo(sb, selectC1C2CN());
+	                    sb.append(',');
+	                    appendTo(sb, selectSort());
+			            sb.append(" FROM ( SELECT TOP ").append(limit+offset).append(' ');
+	                    appendTo(sb, selectAsC1C2CN());
+	                    sb.append(',');
+	                    appendTo(sb, selectOrderByAsSort());
+                    } else {
+                		throw new IllegalArgumentException("LIMIT OFFSET feature needs order by in MS SQL Server!!");
+                    }                    
+                    break;
                 default:
                     appendTo(sb, select);
                     break;
@@ -349,12 +364,29 @@ class SqlBuilder {
                     sb.append(" ) WHERE r1 > ");
                     sb.append(offset);
                     break;
+    	        case JdbcProperties.MSSQL:
+		            sb.append(") AS loTemp1 ORDER BY ");
+		            appendTo(sb,getOrderByWithSort(true));
+		            sb.append(") AS loTemp2 ORDER BY ");
+		            appendTo(sb,getOrderByWithSort(false));
+    	            break;
             }
         }
         if (getDatabase() == JdbcProperties.DB2 && !subQueryMode)
             sb.append(" FOR READ ONLY");
         return sb.toString();
     }
+    
+	private String[] getOrderByWithSort(boolean invert) {
+		String[] inverted = new String[ orderby.size() ];
+		int pos;
+		for ( int i=0 ; i < inverted.length ; i++) {
+			pos = ((String)orderby.get(i)).lastIndexOf(ASC);
+			inverted[i] = "sort"+(i+1)+ ((pos==-1 ^ invert ) ? DESC : ASC);
+		}
+		return inverted;
+	}
+    
 
     private String[] selectC1C2CN() {
         String[] retval = new String[select.length]; 
@@ -370,6 +402,22 @@ class SqlBuilder {
         return retval;
     }
 
+    private String[] selectSort() {
+        String[] retval = new String[orderby.size()]; 
+        for (int i = 0; i < retval.length; i++)
+            retval[i] = "sort" + (i+1);
+        return retval;
+    }
+    private String[] selectOrderByAsSort() {
+        String[] retval = new String[orderby.size()];
+        String s;
+        for (int i = 0; i < retval.length; i++) {
+        	s = (String) orderby.get(i);
+            retval[i] =  s.substring(0,s.lastIndexOf(' '))+ " AS sort" + (i+1);
+        }
+        return retval;
+    }
+    
     private void appendTo(StringBuffer sb, String[] a) {
         for (int i = 0; i < a.length; i++) {
             if (i > 0)
