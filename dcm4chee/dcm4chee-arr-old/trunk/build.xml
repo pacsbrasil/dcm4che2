@@ -142,6 +142,24 @@
 		</replace>
     </target>
 
+	<target name="meta-inf-mssql" unless="meta-inf-mssql.notRequired">
+	    	<copy todir="${basedir}/target/meta-inf-mssql">
+	    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
+	    	</copy>
+	    	<replace dir="${basedir}/target/meta-inf-mssql">
+	  			<replacefilter
+	  				token="DefaultDS"
+	  				value="MsSqlDS"/>
+	  			<replacefilter
+	  				token="Hypersonic SQL"
+	  				value="MS SQLSERVER2000"/>
+	  			<replacefilter
+	  				token="hsqldb-fetch-key"
+	  				value="mssql-fetch-key"/>
+			</replace>
+    </target>
+	
+ 
     <target name="meta-inf-oracle" unless="meta-inf-oracle.notRequired">
     	<copy todir="${basedir}/target/meta-inf-oracle">
     		<fileset dir="${basedir}/target/meta-inf-hsql"/>
@@ -226,7 +244,7 @@
       	</javac>
 	</target>
 
-    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,oracle-jar,db2-jar,common-jar"/>
+    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,mssql-jar,oracle-jar,db2-jar,common-jar"/>
     <target name="hsql-jar" depends="compile" unless="hsql.nobuild">
     	<antcall target="ejb-jar">
     		<param name="db.name" value="hsql"/>
@@ -254,6 +272,17 @@
     		<param name="db.name" value="mysql"/>
     	</antcall>
     </target>
+	
+    <target name="mssql-jar" depends="compile" unless="mssql.nobuild">
+	   	<uptodate property="meta-inf-mssql.notRequired"
+	   		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+	   		targetfile="${basedir}/target/meta-inf-mssql/jbosscmp-jdbc.xml"
+	   	/>
+	   	<antcall target="meta-inf-mssql"/> 
+	   	<antcall target="ejb-jar">
+	   		<param name="db.name" value="mssql"/>
+	   	</antcall>
+   </target>
 
     <target name="db2-jar" depends="compile" unless="db2.nobuild">
     	<uptodate property="meta-inf-db2.notRequired"
