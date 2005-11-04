@@ -106,12 +106,16 @@ import org.dcm4chex.arr.ejb.entity.AuditRecordLocalHome;
  */
 public abstract class QueryAuditRecordBean implements SessionBean {
 
-    static final Logger log = Logger.getLogger(QueryAuditRecordBean.class);
+    private static final String ORDER_BY_TIMESTAMP = "timestamp";
+	private static final String ORDER_BY_HOST = "host";
+	private static final String ORDER_BY_TYPE = "type";
+	static final Logger log = Logger.getLogger(QueryAuditRecordBean.class);
 
     static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZ";
 
+    // Be aware of correct order ( implicit mapping to HSQL, PSQL, MYSQL,..) !
     static final String[] DATABASE = { "Hypersonic SQL", "PostgreSQL 7.2",
-            "mySQL", "DB2", "Oracle9i"};
+            "mySQL", "DB2", "Oracle9i", "MS SQLSERVER2000"};
 
     static final int HSQL = 0;
 
@@ -123,6 +127,7 @@ public abstract class QueryAuditRecordBean implements SessionBean {
 
     static final int ORACLE = 4;
 
+    static final int MSSQL = 5;
     
     private AuditRecordLocalHome home;
 
@@ -263,9 +268,9 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     private final static String COLUMNS = "pk, msg_type, host_name, time_stamp, aet, user_name, patient_name, patient_id";
     private final static Hashtable TO_COLUMN = new Hashtable();
     static {
-    	TO_COLUMN.put("type", "msg_type");
-    	TO_COLUMN.put("host", "host_name");
-    	TO_COLUMN.put("timestamp", "time_stamp");
+    	TO_COLUMN.put(ORDER_BY_TYPE, "msg_type");
+    	TO_COLUMN.put(ORDER_BY_HOST, "host_name");
+    	TO_COLUMN.put(ORDER_BY_TIMESTAMP, "time_stamp");
     }
 	
     private String buildCountSQL(String[] type, String host, String from,
@@ -280,6 +285,11 @@ public abstract class QueryAuditRecordBean implements SessionBean {
             String aet, String userName, String patientName, String patientId,
             int offset, int limit, String[] orderBy, String[] orderDir) {
         StringBuffer sb = new StringBuffer("SELECT ");
+        if ( orderBy == null ) orderBy = new String[]{ORDER_BY_TIMESTAMP};
+        if ( orderDir == null || orderDir.length != orderBy.length) {
+	        orderDir = new String[ orderBy.length ];
+	        for (int i = 0 ; i < orderDir.length ; i++ ) orderDir[i]="DESC";
+        }
         if (limit > 0) {
 	        switch (database) {
 	        case HSQL:
@@ -301,6 +311,12 @@ public abstract class QueryAuditRecordBean implements SessionBean {
 	            sb.append("* FROM ( SELECT ");
 	            sb.append(COLUMNS);
 	            sb.append(", ROWNUM as r1 FROM ( SELECT ");
+	            sb.append(COLUMNS);
+	            break;
+	        case MSSQL:
+	            sb.append("* FROM ( SELECT TOP ").append(limit).append(" ");
+	            sb.append(COLUMNS);
+	            sb.append(" FROM ( SELECT TOP ").append(limit+offset).append(" ");
 	            sb.append(COLUMNS);
 	            break;
 	        default:
@@ -334,12 +350,31 @@ public abstract class QueryAuditRecordBean implements SessionBean {
 	            sb.append(") WHERE r1>");
 	            sb.append(offset);
 	            break;
+	        case MSSQL:
+	            sb.append(") AS temp1");
+	            appendOrderBy(sb, orderBy, invertOrderBy(orderDir));
+	            sb.append(") AS temp2");
+	            appendOrderBy(sb, orderBy, orderDir);
+	            break;
 	        }
         }
         return sb.toString();
     }
 
-    private StringBuffer appendOrderBy(StringBuffer sb, String[] orderBy,
+    /**
+	 * @param orderDir
+	 * @return
+	 */
+	private String[] invertOrderBy(String[] orderDir) {
+		
+		String[] inverted = new String[ orderDir.length ];
+		for ( int i=0 ; i < orderDir.length ; i++) {
+			inverted[i] = "ASC".equalsIgnoreCase(orderDir[i]) ? "DESC" : "ASC";
+		}
+		return inverted;
+	}
+
+	private StringBuffer appendOrderBy(StringBuffer sb, String[] orderBy,
             String[] orderDir) {
         if (orderBy != null) {
             for (int i = 0; i < orderBy.length; i++) {
@@ -420,11 +455,11 @@ public abstract class QueryAuditRecordBean implements SessionBean {
         String orderDirType = "", orderDirHost = "", orderDirTimestamp = "";
         if (orderBy != null) {
             for (int i = 0; i < orderBy.length; i++) {
-                if (orderBy[i].equalsIgnoreCase("msg_type")) {
+                if (orderBy[i].equalsIgnoreCase(ORDER_BY_TYPE)) {
                     orderDirType = orderDir[i];
-                } else if (orderBy[i].equalsIgnoreCase("host_name")) {
+                } else if (orderBy[i].equalsIgnoreCase(ORDER_BY_HOST)) {
                     orderDirHost = orderDir[i];
-                } else if (orderBy[i].equalsIgnoreCase("time_stamp")) {
+                } else if (orderBy[i].equalsIgnoreCase(ORDER_BY_TIMESTAMP)) {
                     orderDirTimestamp = orderDir[i];
                 }
             }
