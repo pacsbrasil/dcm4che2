@@ -190,14 +190,15 @@ public class QueryStudiesCmd extends BaseReadCmd {
             ArrayList result = new ArrayList();
             
             while (next()) {
-                final byte[] patAttrs = getBytes(2);
-                final byte[] styAttrs = getBytes(4);
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putUL(PrivateTags.PatientPk, rs.getInt(1));
+                final byte[] patAttrs = getBytes(2);
+                int studyPk = rs.getInt(3);
+                final byte[] styAttrs = getBytes(4);
                 DatasetUtils.fromByteArray(patAttrs, DcmDecodeParam.EVR_LE, ds);
                 if (styAttrs != null) {
-                    ds.putUL(PrivateTags.StudyPk, rs.getInt(3));
+                    ds.putUL(PrivateTags.StudyPk, studyPk);
                     DatasetUtils.fromByteArray(styAttrs,
                             DcmDecodeParam.EVR_LE,
                             ds);
@@ -210,11 +211,14 @@ public class QueryStudiesCmd extends BaseReadCmd {
                     ds.putCS(Tags.InstanceAvailability, Availability
                             .toString(rs.getInt(9)));
                     ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
+                    if ( rs.getBoolean(11) ) 
+                    	ds.putSS(PrivateTags.HiddenPatient,1);
                     if ( rs.getBoolean(12) ) 
                        	ds.putSS(PrivateTags.HiddenStudy,1);
+                } else {
+	                if ( rs.getBoolean(11) ) 
+	                	ds.putSS(PrivateTags.HiddenPatient,1);
                 }
-                if ( rs.getBoolean(11) ) 
-                	ds.putSS(PrivateTags.HiddenPatient,1);
                 result.add(ds);
             }
             return result;
