@@ -7,9 +7,9 @@
 	<title>DCM Folder Login</title>
 	<h1>DCM Folder Login</h1>
 </head>
-<body>
+<body onload="self.focus();document.login.j_username.focus()">
 
-	<form method="POST" action="j_security_check">
+	<form name="login" method="POST" action="j_security_check">
 		<table width="100" border="0" cellpadding="2" cellspacing="2">
 	  		<tr valign="middle" bgcolor="#eeeeee" style="center">
 	  			<td>Name:</td>
