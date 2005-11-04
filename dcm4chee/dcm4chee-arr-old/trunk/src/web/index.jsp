@@ -1,1 +1,1 @@
-<jsp:forward page="arr-list.do?orderby=timestamp&orderdir=DESC" />
+<jsp:forward page="arr-list.do" />
