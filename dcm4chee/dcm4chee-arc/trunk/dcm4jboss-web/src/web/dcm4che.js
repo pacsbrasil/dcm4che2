@@ -31,12 +31,43 @@ function validateRadios(radios, radio_type)  //checks if a radio button have bee
 
 function checkNotEmpty( field,field_type ) //checks if a field value is not null and not empty
 {
-	if ( field.length < 1 ) {
+	if ( isBlank(field.value) ) {
 		alert('Field ' + field_type + ' is empty!' );
+		field.focus();
 		return false;
 	}
 	return true;
 }
+
+function checkPatientFields( id,name ) //checks if a field value is not null and not empty
+{
+	if ( isBlank(id.value) ) {
+		alert('Field Patient ID is empty!' );
+		id.focus();
+		return false;
+	}
+	if ( isBlank(name.value) ) {
+		alert('Field Patient Name is empty!' );
+		name.focus();
+		return false;
+	}
+	return true;
+}
+
+//-------------------------------------------------------------------
+// isBlank(value)
+//   Returns true if value only contains spaces
+//-------------------------------------------------------------------
+function isBlank(val){
+	if(val==null){return true;}
+	for(var i=0;i<val.length;i++) {
+		if ((val.charAt(i)!=' ')&&(val.charAt(i)!="\t")&&(val.charAt(i)!="\n")&&(val.charAt(i)!="\r")){
+			return false;
+		}
+	}
+	return true;
+}
+
 
 function checkError( errCode )
 {
