@@ -147,11 +147,11 @@ public class ForwardService extends ServiceMBeanSupport implements
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
-        		contentEditNotificationListener,
+        		this,
                 StoreScpService.NOTIF_FILTER,
                 null);
         server.removeNotificationListener(editContentServiceName,
-                this,
+                contentEditNotificationListener,
                 null,
                 "contentEdit");
     }
