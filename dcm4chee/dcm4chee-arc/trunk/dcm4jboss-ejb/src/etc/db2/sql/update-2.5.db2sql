@@ -21,7 +21,10 @@ CREATE INDEX pat_hidden ON patient(hidden);
 CREATE INDEX study_hidden ON study(hidden);
 CREATE INDEX series_hidden ON series(hidden);
 CREATE INDEX inst_hidden ON instance(hidden);
-
+DROP INDEX i_study_on_fs;
+CREATE INDEX i_study_on_fs ON study_on_fs(study_fk);
+CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
+CREATE INDEX access_time ON study_on_fs(access_time);
 
 CREATE SEQUENCE hp_pk_seq;
 CREATE TABLE hp (
