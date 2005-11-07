@@ -108,7 +108,7 @@ public class TransferCapability
     
     public final void addTransferSyntaxes(String uid)
     {
-        if (role == null)
+        if (uid == null)
             throw new NullPointerException("TransferSyntax");
         
         this.transferSyntaxes.add(uid);
