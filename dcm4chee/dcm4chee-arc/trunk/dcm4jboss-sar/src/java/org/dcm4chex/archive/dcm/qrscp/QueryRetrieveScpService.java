@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.management.JMException;
@@ -64,6 +65,8 @@ import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
@@ -71,6 +74,7 @@ import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -137,6 +141,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private boolean retrieveLastReceived = true;
 
     private boolean forwardAsMoveOriginator = true;
+	
+	private boolean recordStudyAccessTime = true;
 
     private int acTimeout = 5000;
 
@@ -424,7 +430,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.forwardAsMoveOriginator = forwardAsMoveOriginator;
     }
     
-    public final String getSendNoPixelDataToAETs() {
+    public final boolean isRecordStudyAccessTime() {
+		return recordStudyAccessTime;
+	}
+
+	public final void setRecordStudyAccessTime(boolean updateAccessTime) {
+		this.recordStudyAccessTime = updateAccessTime;
+	}
+
+	public final String getSendNoPixelDataToAETs() {
         return sendNoPixelDataToAETs == null ? NONE
                 : StringUtils.toString(callingAETs, '\\');
     }
@@ -681,4 +695,41 @@ public class QueryRetrieveScpService extends AbstractScpService {
             log.error("Failed to queue Storage C0mmitment Request", e);
         }
     }
+
+	FileSystemMgtHome getFileSystemMgtHome()
+	        throws HomeFactoryException {
+	    return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+	            FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
+	}
+
+	void updateStudyAccessTime(Set studyInfos) {
+		if (!recordStudyAccessTime)
+			return;
+		
+	    FileSystemMgt fsMgt;
+	    try {
+	        fsMgt = getFileSystemMgtHome().create();
+	    } catch (Exception e) {
+	        log.fatal("Failed to access FileSystemMgt EJB");
+	        return;
+	    }
+	    try {
+	        for (Iterator it = studyInfos.iterator(); it.hasNext();) {
+	            String studyInfo = (String) it.next();
+	            int delim = studyInfo.indexOf('@');
+	            try {
+	                fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
+	                        studyInfo.substring(delim + 1));
+	            } catch (Exception e) {
+	                log.warn("Failed to update access time for study "
+	                        + studyInfo, e);
+	            }
+	        }
+	    } finally {
+	        try {
+	            fsMgt.remove();
+	        } catch (Exception ignore) {
+	        }
+	    }
+	}
 }

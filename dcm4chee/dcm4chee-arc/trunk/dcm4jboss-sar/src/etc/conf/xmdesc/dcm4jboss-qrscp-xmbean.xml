@@ -239,6 +239,17 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isRecordStudyAccessTime" setMethod="setRecordStudyAccessTime">
+      <description>Record last retrieve time of instances of a study. Should be enabled,
+      if delete functions of the File System Management Service are activated, to delete
+      the most infrequently accessed studies.      
+      </description>
+      <name>RecordStudyAccessTime</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getMaxBlockedFindRSP" setMethod="setMaxBlockedFindRSP">
       <description>Maximum number of result records blocked in one 
       Find Response from Tiani Blocked Find services.

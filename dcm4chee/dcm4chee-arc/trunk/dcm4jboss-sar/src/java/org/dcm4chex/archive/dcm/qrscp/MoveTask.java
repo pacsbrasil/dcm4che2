@@ -75,14 +75,10 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
-import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
 /**
@@ -113,9 +109,9 @@ class MoveTask implements Runnable {
     private static final UIDDictionary uidDict = DictionaryFactory
             .getInstance().getDefaultUIDDictionary();
 
-    private final QueryRetrieveScpService service;
+	private final QueryRetrieveScpService service;
 
-    private final Logger log;
+	private final Logger log;
 
     private final String moveDest;
 
@@ -509,46 +505,12 @@ class MoveTask implements Runnable {
             failedIUIDs.addAll(remainingIUIDs);
         }
         service.logInstancesSent(remoteNode, instancesAction);
-        updateStudyAccessTime(studyInfos);
+        service.updateStudyAccessTime(studyInfos);
         String stgCmtAET = service.getStgCmtAET(moveDest);
         if (stgCmtAET != null && refSOPSeq.vm() > 0)
             service
                     .queueStgCmtOrder(moveCalledAET, stgCmtAET,
                             stgCmtActionInfo);
-    }
-
-    private FileSystemMgtHome getFileSystemMgtHome()
-            throws HomeFactoryException {
-        return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
-    }
-
-    private void updateStudyAccessTime(Set studyInfos) {
-        FileSystemMgt fsMgt;
-        try {
-            fsMgt = getFileSystemMgtHome().create();
-        } catch (Exception e) {
-            log.fatal("Failed to access FileSystemMgt EJB");
-            return;
-        }
-        try {
-            for (Iterator it = studyInfos.iterator(); it.hasNext();) {
-                String studyInfo = (String) it.next();
-                int delim = studyInfo.indexOf('@');
-                try {
-                    fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
-                            studyInfo.substring(delim + 1));
-                } catch (Exception e) {
-                    log.warn("Failed to update access time for study "
-                            + studyInfo, e);
-                }
-            }
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
     }
 
     private void updateInstancesAction(final FileInfo info) {
