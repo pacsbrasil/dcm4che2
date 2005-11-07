@@ -17,8 +17,8 @@
 <datasources>
   <local-tx-datasource>
     <jndi-name>MsSqlDS</jndi-name>
-    <connection-url>jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=pacsdb</connection-url>
-    <driver-class>com.microsoft.jdbc.sqlserver.SQLServerDriver</driver-class>
+    <connection-url>jdbc:jtds:sqlserver://localhost:1433;DatabaseName=pacsdb</connection-url>
+    <driver-class>net.sourceforge.jtds.jdbc.Driver</driver-class>
     <user-name>pacs</user-name>
     <password>pacs</password>
         <!-- sql to call when connection is created
