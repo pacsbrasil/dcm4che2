@@ -89,7 +89,8 @@
                <td align="left">
 							   <xsl:choose>
 								 	<xsl:when test="pk = -1">
-										<input type="submit" name="submit" value="Add Patient" onclick="return checkNotEmpty(this.form.patientID.value, 'Patient ID')"/>									
+										<input type="submit" name="submit" value="Add Patient" 
+											onclick="return checkPatientFields(this.form.patientID, this.form.patientName)"/>									
 									</xsl:when>
 									<xsl:otherwise>
 										<input type="submit" name="submit" value="Update" />
