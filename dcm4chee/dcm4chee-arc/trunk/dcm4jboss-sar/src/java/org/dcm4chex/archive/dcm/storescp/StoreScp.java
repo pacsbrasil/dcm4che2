@@ -94,6 +94,7 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
+import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -401,10 +402,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putAT(Tags.OffendingElement, coercedTags);
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
+			if (!duplicates.isEmpty())
+				unhide(iuid);
             ds.putAll(coercedElements);
             updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
             updateInstancesStored(assoc, ds);
             updateStudyInfos(assoc, ds, fsInfo.getPath());
+			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo);
+			if (seriesStored != null) {
+				service.sendJMXNotification(seriesStored);
+			}
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -416,7 +423,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
     
-    private void unhide (String iuid ) throws RemoteException, FinderException, CreateException, HomeFactoryException {
+	private void unhide (String iuid ) throws RemoteException, FinderException, CreateException, HomeFactoryException {
     	if ( getStorageHome().create().unhide(iuid) ) {
             log.info("Received Instance[uid=" + iuid
                     + "] was hidden - changed to be visible");
@@ -739,6 +746,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closed(Association assoc) {
+		SeriesStored seriesStored = 
+			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
+		if (seriesStored != null) {
+			service.sendJMXNotification(seriesStored);
+		}
         final Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         if (ians != null) {
             updateDBStudiesAndSeries(ians);
@@ -848,6 +860,45 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
+	private SeriesStored updateSeriesStored(Association assoc, Dataset ds,
+			FileSystemInfo fsInfo) {
+		SeriesStored prev = null;
+		SeriesStored cur = 
+			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
+		final String seriesIUID = ds.getString(Tags.SeriesInstanceUID);
+		if (cur != null 
+				&& seriesIUID.equals(cur.getSeriesInstanceUID())) {
+			prev = cur;
+			cur = null;
+		}
+		if (cur == null) {
+			cur = new SeriesStored();
+			cur.setCalledAET(assoc.getCalledAET());
+			cur.setCallingAET(assoc.getCallingAET());
+			cur.setRetrieveAET(fsInfo.getRetrieveAET());
+			cur.setFileSystemPath(fsInfo.getPath());
+			cur.setPatientID(ds.getString(Tags.PatientID));
+			cur.setPatientName(ds.getString(Tags.PatientName));
+			cur.setAccessionNumber(ds.getString(Tags.AccessionNumber));
+			cur.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
+			cur.setSeriesInstanceUID(seriesIUID);
+			cur.setModality(ds.getString(Tags.Modality));
+			Dataset refSOP = ds.getItem(Tags.RefPPSSeq);
+			if (refSOP != null) {
+				cur.getRefPpsSOPInstanceUID(
+						refSOP.getString(Tags.RefSOPInstanceUID));
+				cur.getRefPpsSOPClassUID(
+						refSOP.getString(Tags.RefSOPClassUID));
+			}
+			assoc.putProperty(SeriesStored.class.getName(), cur);
+		}
+		cur.addSOP(
+				ds.getString(Tags.SOPInstanceUID), 
+				ds.getString(Tags.SOPClassUID)); 
+		return prev;
+	}
+
+	
     private void updateIANInfo(Association assoc, Dataset ds, String retrieveAET) {
         Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         if (ians == null) {
