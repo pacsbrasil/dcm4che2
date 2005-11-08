@@ -1,7 +1,7 @@
 <project name="dcm4jboss-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.5.4"/>
+	<property name="version" value="2.5.5"/>
 	<property name="javac.debug" value="on"/>
 	
 	<!-- Override with your dcm4che14 dist location -->
@@ -66,7 +66,6 @@
         <mkdir dir="${target.lib}"/>
         <jar jarfile="${target.lib}/dcm4jboss-hl7.jar">
         	<manifest>
-        		<attribute name="Class-Path" value="${hapi.jar} ${ejb-client.jar}"/>
 				<attribute name="Implementation-Title" value="dcm4jboss-hl7"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
