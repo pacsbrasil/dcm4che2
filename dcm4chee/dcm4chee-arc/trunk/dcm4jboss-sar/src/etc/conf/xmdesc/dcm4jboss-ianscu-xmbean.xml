@@ -27,6 +27,17 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isOnStudyDeleted"
+      setMethod="setOnStudyDeleted">
+      <description>Enables sending Instance Availability Notifications after Study deletion by FileSystemMgt.
+      </description>
+      <name>OnStudyDeleted</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>Calling AE title used in the Association Request.
       </description>

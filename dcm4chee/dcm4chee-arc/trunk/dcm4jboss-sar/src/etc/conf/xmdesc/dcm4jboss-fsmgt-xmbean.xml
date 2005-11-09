@@ -221,19 +221,7 @@ accessed studies.</description>
       <descriptors>
          <value value="true"/>
       </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isSendIANs"
-      setMethod="setSendIANs">
-      <description>Enables sending Instance Availability Notifications after free disk space.
-      </description>
-      <name>SendIANs</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   
+   </attribute>   
    <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.

@@ -131,8 +131,6 @@ public class FileSystemMgtService extends TimerSupport {
     
     private boolean freeDiskSpaceOnDemand = true;
 
-	private boolean sendIANs = true;
-	
 	private boolean isPurging = false;
 
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
@@ -455,18 +453,6 @@ public class FileSystemMgtService extends TimerSupport {
         this.mountFailedCheckFile = mountFailedCheckFile;
     }
     
-	/**
-	 * @return Returns the sendIANs.
-	 */
-	public boolean isSendIANs() {
-		return sendIANs;
-	}
-	/**
-	 * @param sendIANs The sendIANs to set.
-	 */
-	public void setSendIANs(boolean sendIANs) {
-		this.sendIANs = sendIANs;
-	}
     public final boolean isLocalFileSystem(String fsdir) {
         return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
     }
@@ -708,7 +694,7 @@ public class FileSystemMgtService extends TimerSupport {
                 try {
                 	Map ians = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, maxSizeToDel);
-                    if ( sendIANs ) sendIANs(ians);
+                    sendIANs(ians);
                     if ( autoPurge ) {
                     	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
                     	this.purgeFiles();
@@ -723,7 +709,7 @@ public class FileSystemMgtService extends TimerSupport {
                 try {
                 	Map ians = fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, accessedBefore);
-                    if ( sendIANs ) sendIANs(ians);
+                    sendIANs(ians);
                     return ians.size();
                 } finally {
                     fsMgt.remove();

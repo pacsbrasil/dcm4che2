@@ -122,11 +122,12 @@ public class IANScuService extends ServiceMBeanSupport
 				public void handleNotification(Notification notif, Object handback) {
 					schedule(((SeriesStored) notif.getUserData()).getInstanceAvailabilityNotification());					
 				}};
-	
+
 	private final NotificationListener studyDeletedListener =
 			new NotificationListener(){
 				public void handleNotification(Notification notif, Object handback) {
-					schedule(((StudyDeleted) notif.getUserData()).getInstanceAvailabilityNotification());					
+					if (onStudyDeleted)
+						schedule(((StudyDeleted) notif.getUserData()).getInstanceAvailabilityNotification());					
 				}};
 	
 	
@@ -155,6 +156,8 @@ public class IANScuService extends ServiceMBeanSupport
 
 	private String[] notifiedAETs = EMPTY;
 
+	private boolean onStudyDeleted;
+	
 	private int concurrency = 1;
 
 	public final int getConcurrency() {
@@ -182,6 +185,14 @@ public class IANScuService extends ServiceMBeanSupport
 	public final void setNotifiedAETs(String notifiedAETs) {
 		this.notifiedAETs = NONE.equalsIgnoreCase(notifiedAETs) ? EMPTY
 				: StringUtils.split(notifiedAETs, '\\');
+	}
+
+	public final boolean isOnStudyDeleted() {
+		return onStudyDeleted;
+	}
+
+	public final void setOnStudyDeleted(boolean onStudyDeleted) {
+		this.onStudyDeleted = onStudyDeleted;
 	}
 
 	public final String getCallingAET() {
