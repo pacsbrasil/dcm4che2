@@ -122,6 +122,12 @@ public class DcmRcv extends DcmServiceBase
     private long rspDelay = 0L;
     private int rspStatus = 0;
 
+    private ThreadLocal buffer = new ThreadLocal() {
+        protected synchronized Object initialValue() {
+            return new byte[bufferSize];
+        }
+    };
+    
     // Static --------------------------------------------------------
     private final static LongOpt[] LONG_OPTS = new LongOpt[]{
             new LongOpt("max-clients", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -400,16 +406,16 @@ public class DcmRcv extends DcmServiceBase
     {
         int toRead = totLen == -1 ? Integer.MAX_VALUE : totLen;
         if (bufferSize > 0) {
-            byte[] buffer = new byte[bufferSize];
+            byte[] b = (byte[]) buffer.get();
             for (int len; toRead > 0; toRead -= len) {
-                len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+                len = in.read(b, 0, Math.min(toRead, b.length));
                 if (len == -1) {
                     if (totLen == -1) {
                         return;
                     }
                     throw new EOFException();
                 }
-                out.write(buffer, 0, len);
+                out.write(b, 0, len);
             }
         } else {
             for (int ch; toRead > 0; --toRead) {
