@@ -42,6 +42,12 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  *
+ * @ejb.finder signature="Collection findAll(int offset, int limit)"
+ *  query=""
+ *  transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findAll(int offset, int limit)"
+ *  query="SELECT OBJECT(a) FROM Study AS a ORDER BY a.pk OFFSET ?1 LIMIT ?2"
+ *
  * @ejb.finder transaction-type="Supports"
  *             signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"

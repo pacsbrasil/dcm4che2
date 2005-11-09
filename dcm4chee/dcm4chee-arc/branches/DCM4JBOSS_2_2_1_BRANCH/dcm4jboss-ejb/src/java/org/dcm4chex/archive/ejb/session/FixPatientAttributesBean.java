@@ -26,6 +26,8 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 
 /**
  * FixPatientAttributes Bean
@@ -47,6 +49,11 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  *  view-type="local"
  *  ref-name="ejb/Patient" 
  * 
+ * @ejb.ejb-ref
+ *  ejb-name="Study" 
+ *  view-type="local"
+ *  ref-name="ejb/Study" 
+ * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-filter.xml"
  * 
@@ -61,6 +68,7 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private PatientLocalHome patHome;
+    private StudyLocalHome studyHome;
 
     private AttributeFilter attrFilter;
 
@@ -73,6 +81,8 @@ public abstract class FixPatientAttributesBean implements SessionBean {
             jndiCtx = new InitialContext();
             patHome = (PatientLocalHome) jndiCtx
             .lookup("java:comp/env/ejb/Patient");
+            studyHome = (StudyLocalHome) jndiCtx
+            .lookup("java:comp/env/ejb/Study");
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
             try {
@@ -139,4 +149,44 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     	return result;
     }
 
+    /**
+     * Check study attributes.
+     * <p>
+     * 
+     * @param offset first study to check (paging)
+     * @param limit  number of studies to check (paging)
+     * @param doUpdate true will update study record, false leave patient record unchanged.
+     * 
+     * @return int[2] containing number of 'fixed/toBeFixed' study records
+     *                and number of checked study records
+     * 
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public int[] checkStudyAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
+    	Collection col = studyHome.findAll(offset,limit);
+    	if ( col.isEmpty() ) return null;
+    	StudyLocal study;
+    	Dataset studyAttrs, filtered;
+    	int[] result = { 0, 0 };
+    	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
+			study = (StudyLocal) iter.next();
+			studyAttrs = study.getAttributes(false);
+			filtered = studyAttrs.subSet(attrFilter.getStudyFilter());
+			if (studyAttrs.size() > filtered.size()) {
+			    log.warn("Detect Study Record [pk= " + study.getPk() +
+			    		"] with non-study attributes:");
+				log.warn(studyAttrs);
+				if (doUpdate) {
+				    study.setAttributes(filtered);
+				    log.warn(
+						"Remove non-study attributes from Study Record [pk= "
+							+ study.getPk() + "]");
+				}
+				result[0]++;
+			}
+     	}
+    	return result;
+    }
+    
 }

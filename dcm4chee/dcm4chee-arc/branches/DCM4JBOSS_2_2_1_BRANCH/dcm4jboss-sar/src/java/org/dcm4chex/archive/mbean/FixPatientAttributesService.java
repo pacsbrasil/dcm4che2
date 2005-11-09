@@ -27,26 +27,26 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class FixPatientAttributesService extends ServiceMBeanSupport {
 
-     private int limitNumberOfPatientsPerTask;
+     private int limitNumberOfRecordsPerTask;
 
     private static final Logger log = Logger.getLogger(FixPatientAttributesService.class);
 
 
 
 
-    public int getLimitNumberOfPatientsPerTask() {
-        return limitNumberOfPatientsPerTask;
+    public int getLimitNumberOfRecordsPerTask() {
+        return limitNumberOfRecordsPerTask;
     }
 
-    public void setLimitNumberOfPatientsPerTask(int limit) {
-        this.limitNumberOfPatientsPerTask = limit;
+    public void setLimitNumberOfRecordsPerTask(int limit) {
+        this.limitNumberOfRecordsPerTask = limit;
     }
 
   
-    public int check() throws RemoteException, FinderException, CreateException {
+    public int checkPatientAttributes() throws RemoteException, FinderException, CreateException {
     	return checkPatientAttributes(false);
     }
-    public int repair() throws RemoteException, FinderException, CreateException {
+    public int repairPatientAttributes() throws RemoteException, FinderException, CreateException {
      	return checkPatientAttributes(true);
     }
     
@@ -55,13 +55,31 @@ public class FixPatientAttributesService extends ServiceMBeanSupport {
     	int offset = 0, total = 0;
     	int[] fixed;
 		do {
-			fixed = checker.checkPatientAttributes(offset,limitNumberOfPatientsPerTask, doUpdate);
+			fixed = checker.checkPatientAttributes(offset,limitNumberOfRecordsPerTask, doUpdate);
 			total += fixed[0];
-    		offset += limitNumberOfPatientsPerTask;
-		} while (fixed[1] == limitNumberOfPatientsPerTask);
+    		offset += limitNumberOfRecordsPerTask;
+		} while (fixed[1] == limitNumberOfRecordsPerTask);
     	return total;
     }
     
+    public int checkStudyAttributes() throws RemoteException, FinderException, CreateException {
+    	return checkStudyAttributes(false);
+    }
+    public int repairStudyAttributes() throws RemoteException, FinderException, CreateException {
+     	return checkStudyAttributes(true);
+    }
+    
+    private int checkStudyAttributes(boolean doUpdate) throws RemoteException, FinderException {
+    	FixPatientAttributes checker = newFixPatientAttributes();
+    	int offset = 0, total = 0;
+    	int[] fixed;
+		do {
+			fixed = checker.checkStudyAttributes(offset,limitNumberOfRecordsPerTask, doUpdate);
+			total += fixed[0];
+    		offset += limitNumberOfRecordsPerTask;
+		} while (fixed[1] == limitNumberOfRecordsPerTask);
+    	return total;
+    }
 
     private FixPatientAttributes newFixPatientAttributes() {
         try {

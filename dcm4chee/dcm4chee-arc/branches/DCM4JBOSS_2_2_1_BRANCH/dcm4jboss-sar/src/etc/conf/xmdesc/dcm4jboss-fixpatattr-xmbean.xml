@@ -18,10 +18,10 @@
 
    <!-- Attributes -->
 
-   <attribute access="read-write" getMethod="getLimitNumberOfPatientsPerTask" setMethod="setLimitNumberOfPatientsPerTask">
-      <description>Maximum number of patient that are checked in one task.
+   <attribute access="read-write" getMethod="getLimitNumberOfRecordsPerTask" setMethod="setLimitNumberOfRecordsPerTask">
+      <description>Maximum number of records (patients or studies) that are checked in one task.
       </description>
-      <name>LimitNumberOfPatientsPerTask</name>
+      <name>LimitNumberOfRecordsPerTask</name>
       <type>int</type>
       <descriptors>
          <value value="500"/>
@@ -35,13 +35,25 @@
 
    <operation impact="ACTION">
       <description>Check all patients if attributes contains only patient relevant attributes.</description>
-      <name>check</name>
+      <name>checkPatientAttributes</name>
       <return-type>int</return-type>
    </operation>
    
    <operation impact="ACTION">
       <description>Fix patient attributes. Return number of updated patients</description>
-      <name>repair</name>
+      <name>repairPatientAttributes</name>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description>Check all studies if attributes contains only study relevant attributes.</description>
+      <name>checkStudyAttributes</name>
+      <return-type>int</return-type>
+   </operation>
+   
+   <operation impact="ACTION">
+      <description>Fix study attributes. Return number of updated studies</description>
+      <name>repairStudyAttributes</name>
       <return-type>int</return-type>
    </operation>
 
