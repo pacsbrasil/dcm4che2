@@ -39,29 +39,31 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import javax.management.JMException;
 import javax.management.Notification;
-import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.notif.IANNotificationVO;
+import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 
@@ -73,19 +75,6 @@ import org.dcm4chex.archive.util.FileUtils;
 public class StoreScpService extends AbstractScpService {
 
     private static final long MIN_OUT_OF_RESOURCES_THRESHOLD = 20 * FileUtils.MEGA;    
-
-    public static final String IANS_KEY = "ians";
-
-    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.storescp";
-
-    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
-
-		private static final long serialVersionUID = 3257288045601634608L;
-
-		public boolean isNotificationEnabled(Notification notif) {
-            return EVENT_TYPE.equals(notif.getType());
-        }
-    };
 
     /** Map containing all image SOP Class UID. (key is name (as in config string), value is real uid) */
     private Map imageCUIDS = new TreeMap();
@@ -571,13 +560,6 @@ public class StoreScpService extends AbstractScpService {
         }
      }
 
-    void sendReleaseNotification(Association assoc) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(EVENT_TYPE, this, eventID);
-        notif.setUserData(new IANNotificationVO((Map)assoc.getProperty(IANS_KEY), assoc.getCalledAET(), assoc.getCallingAET()));
-        super.sendNotification(notif);
-    }
-
     FileSystemInfo selectStorageFileSystem() {
         try {
             return (FileSystemInfo) server.invoke(fileSystemMgtName,
@@ -589,19 +571,6 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    void logInstancesStored(RemoteNode node, InstancesAction action) {
-        if (auditLogName == null) return;
-        try {
-            server.invoke(auditLogName,
-                    "logInstancesStored",
-                    new Object[] { node, action},
-                    new String[] { RemoteNode.class.getName(), 
-                    	InstancesAction.class.getName()});
-        } catch (Exception e) {
-            log.warn("Audit Log failed:", e);
-        }
-    }
-    
     boolean isLocalFileSystem(String dirpath) {
         try {
             Boolean b = (Boolean) server.invoke(fileSystemMgtName,
@@ -642,4 +611,33 @@ public class StoreScpService extends AbstractScpService {
         notif.setUserData(o);
         super.sendNotification(notif);
 	}
+
+	void logInstancesStored(Socket s, SeriesStored seriesStored) {
+        if (auditLogName == null) return;
+	    final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+	    InstancesAction action = alf.newInstancesAction("Create", 
+				seriesStored.getStudyInstanceUID(),
+	            alf.newPatient(
+						seriesStored.getPatientID(),
+						seriesStored.getPatientName()));
+		action.setMPPSInstanceUID(seriesStored.getPPSInstanceUID());
+	    action.setAccessionNumber(seriesStored.getAccessionNumber());
+		DcmElement sq = seriesStored.getRefSOPSeq();
+		int n = sq.vm();
+		for (int i = 0; i < n; i++) {
+			action.addSOPClassUID(sq.getItem(i).getString(Tags.SOPClassUID));
+		}
+		action.setNumberOfInstances(seriesStored.getNumberOfInstances());
+	    RemoteNode remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
+        try {
+            server.invoke(auditLogName,
+                    "logInstancesStored",
+                    new Object[] { remoteNode, action},
+                    new String[] { RemoteNode.class.getName(), 
+                    	InstancesAction.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }		
+	}    
+	
 }

@@ -42,14 +42,13 @@ package org.dcm4chex.archive.dcm.ianscu;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -71,13 +70,12 @@ import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
-import org.dcm4chex.archive.mbean.FileSystemMgtService;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.notif.IANNotificationVO;
+import org.dcm4chex.archive.notif.SeriesStored;
+import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -86,8 +84,8 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Revision$ $Date$
  * @since 27.08.2004
  */
-public class IANScuService extends ServiceMBeanSupport implements
-		MessageListener, NotificationListener {
+public class IANScuService extends ServiceMBeanSupport
+						implements MessageListener {
 
 	private static final String NONE = "NONE";
 
@@ -110,6 +108,28 @@ public class IANScuService extends ServiceMBeanSupport implements
 
 	private static final String DEFAULT_CALLING_AET = "IAN_SCU";
 
+	private static final NotificationFilterSupport seriesStoredFilter = 
+			new NotificationFilterSupport();
+	private static final NotificationFilterSupport studyDeletedFilter =
+			new NotificationFilterSupport();
+	static {
+		seriesStoredFilter.enableType(SeriesStored.class.getName());
+		studyDeletedFilter.enableType(StudyDeleted.class.getName());
+	}
+	
+	private final NotificationListener seriesStoredListener = 
+			new NotificationListener(){
+				public void handleNotification(Notification notif, Object handback) {
+					schedule(((SeriesStored) notif.getUserData()).getInstanceAvailabilityNotification());					
+				}};
+	
+	private final NotificationListener studyDeletedListener =
+			new NotificationListener(){
+				public void handleNotification(Notification notif, Object handback) {
+					schedule(((StudyDeleted) notif.getUserData()).getInstanceAvailabilityNotification());					
+				}};
+	
+	
 	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
 	private ObjectName storeScpServiceName;
@@ -271,41 +291,34 @@ public class IANScuService extends ServiceMBeanSupport implements
 
 	protected void startService() throws Exception {
 		JMSDelegate.startListening(queueName, this, concurrency);
-		server.addNotificationListener(storeScpServiceName, this,
-				StoreScpService.NOTIF_FILTER, null);
-		server.addNotificationListener(fileSystemMgtServiceName, this,
-				FileSystemMgtService.NOTIF_FILTER, null);
+		server.addNotificationListener(storeScpServiceName,
+				seriesStoredListener, seriesStoredFilter, null);
+		server.addNotificationListener(fileSystemMgtServiceName,
+				studyDeletedListener, studyDeletedFilter, null);
 	}
 
 	protected void stopService() throws Exception {
-		server.removeNotificationListener(storeScpServiceName, this,
-				StoreScpService.NOTIF_FILTER, null);
-		server.removeNotificationListener(fileSystemMgtServiceName, this,
-				FileSystemMgtService.NOTIF_FILTER, null);
+		server.removeNotificationListener(storeScpServiceName,
+				seriesStoredListener, seriesStoredFilter, null);
+		server.removeNotificationListener(fileSystemMgtServiceName,
+				studyDeletedListener, studyDeletedFilter, null);
 		JMSDelegate.stopListening(queueName);
 	}
 
-	public void handleNotification(Notification notif, Object handback) {
-    	IANNotificationVO ianVO = (IANNotificationVO) notif.getUserData();
-        Map ians = ianVO.getIANs();
-		if (ians == null)
-			return;
-		for (Iterator it = ians.values().iterator(); it.hasNext();) {
-			Dataset ian = (Dataset) it.next();
-			if (log.isDebugEnabled()) { log.debug("IAN Dataset:");log.debug(ian); }
-			for (int i = 0; i < notifiedAETs.length; ++i) {
-				IANOrder order = new IANOrder(notifiedAETs[i], ian);
-				try {
-					log.info("Scheduling " + order);
-					JMSDelegate.queue(queueName, order,
-							Message.DEFAULT_PRIORITY, 0L);
-				} catch (JMSException e) {
-					log.error("Failed to schedule " + order, e);
-				}
+	private void schedule(Dataset ian) {
+		if (log.isDebugEnabled()) { log.debug("IAN Dataset:");log.debug(ian); }
+		for (int i = 0; i < notifiedAETs.length; ++i) {
+			IANOrder order = new IANOrder(notifiedAETs[i], ian);
+			try {
+				log.info("Scheduling " + order);
+				JMSDelegate.queue(queueName, order,
+						Message.DEFAULT_PRIORITY, 0L);
+			} catch (JMSException e) {
+				log.error("Failed to schedule " + order, e);
 			}
 		}
-	}
-
+	}	
+	
 	public void onMessage(Message message) {
 		ObjectMessage om = (ObjectMessage) message;
 		try {

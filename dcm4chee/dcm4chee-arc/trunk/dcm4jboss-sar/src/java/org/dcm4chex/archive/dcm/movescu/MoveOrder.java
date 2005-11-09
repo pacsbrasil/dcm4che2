@@ -81,6 +81,40 @@ public final class MoveOrder implements Serializable {
         this.sopIuids = sopIuids;
     }
 
+    public MoveOrder(String retrieveAET, String moveDestination, int priority,
+			String patientId, String studyIuid, String seriesIuid,
+			String[] sopIuids) {
+		this(retrieveAET, moveDestination, priority, patientId,
+				studyIuid != null ? new String[] { studyIuid } : null,
+				seriesIuid != null ? new String[] { seriesIuid } : null,
+				sopIuids);
+	}
+	
+    public MoveOrder(String retrieveAET, String moveDestination, int priority,
+			String patientId, String studyIuid, String seriesIuid) {
+		this(retrieveAET, moveDestination, priority, patientId,
+				studyIuid, seriesIuid, null);
+	}
+	
+    public MoveOrder(String retrieveAET, String moveDestination, int priority,
+			String patientId, String studyIuid, String[] seriesIuids) {
+		this(retrieveAET, moveDestination, priority, patientId,
+				studyIuid != null ? new String[] { studyIuid } : null,
+				seriesIuids, null);
+	}
+
+    public MoveOrder(String retrieveAET, String moveDestination, int priority,
+			String patientId, String studyIuid) {
+		this(retrieveAET, moveDestination, priority, patientId,
+				studyIuid, null, null);
+	}
+	
+	
+    public MoveOrder(String retrieveAET, String moveDestination, int priority,
+			String patientId, String[] studyIuids) {
+		this(retrieveAET, moveDestination, priority, patientId, studyIuids, null, null);
+	}
+	
     public String toString() {
         StringBuffer sb = new StringBuffer("MoveOrder[");
         if (sopIuids != null) {

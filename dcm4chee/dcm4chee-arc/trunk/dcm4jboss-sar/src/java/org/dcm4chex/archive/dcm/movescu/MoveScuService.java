@@ -179,7 +179,24 @@ public class MoveScuService extends ServiceMBeanSupport implements
 	public void setCallingAET(String aet) {
 		this.callingAET = aet;
 	}
+	
+	public void scheduleMoveSeries(String retrieveAET, String destAET,
+			int priority, String pid, String studyIUID, String seriesIUID,
+			long scheduledTime) {
+		scheduleMoveOrder(new MoveOrder(retrieveAET, destAET, priority, pid,
+				studyIUID, seriesIUID), scheduledTime);
+	}
 
+	private void scheduleMoveOrder(MoveOrder order, long scheduledTime) {
+		try {
+			JMSDelegate.queue(MoveOrder.QUEUE, order,
+					JMSDelegate.toJMSPriority(order.getPriority()),
+					scheduledTime);
+		} catch (JMSException e) {
+			log.error("Failed to schedule order: " + order);
+		}
+	}
+	
 	protected void startService() throws Exception {
 		JMSDelegate.startListening(MoveOrder.QUEUE, this, concurrency);
 	}
@@ -187,23 +204,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 	protected void stopService() throws Exception {
 		JMSDelegate.stopListening(MoveOrder.QUEUE);
 	}
-
-	void queueFailedMoveOrder(MoveOrder order) {
-		final long delay = retryIntervalls
-				.getIntervall(order.getFailureCount());
-		if (delay == -1L) {
-			log.error("Give up to process move order: " + order);
-		} else {
-			log.warn("Failed to process " + order + ". Scheduling retry.");
-			try {
-				JMSDelegate.queue(MoveOrder.QUEUE, order, 0, System
-						.currentTimeMillis()
-						+ delay);
-			} catch (JMSException e) {
-				log.error("Failed to reschedule order: " + order);
-			}
-		}
-	}
+	
 
 	public void onMessage(Message message) {
 		ObjectMessage om = (ObjectMessage) message;
@@ -222,13 +223,9 @@ public class MoveScuService extends ServiceMBeanSupport implements
 				} else {
 					log.warn("Failed to process " + order
 							+ ". Scheduling retry.", e);
-					JMSDelegate.queue(MoveOrder.QUEUE, order, 0, System
-							.currentTimeMillis()
-							+ delay);
+					scheduleMoveOrder(order, System.currentTimeMillis() + delay);
 				}
 			}
-		} catch (JMSException e) {
-			log.error("jms error during processing message: " + message, e);
 		} catch (Throwable e) {
 			log.error("unexpected error during processing message: " + message,
 					e);

@@ -53,23 +53,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Status;
@@ -110,7 +105,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
 
-    private final StoreScpService service;
+    final StoreScpService service;
 
     private final Logger log;
 
@@ -405,12 +400,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			if (!duplicates.isEmpty())
 				unhide(iuid);
             ds.putAll(coercedElements);
-            updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
-            updateInstancesStored(assoc, ds);
-            updateStudyInfos(assoc, ds, fsInfo.getPath());
+//            updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
 			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo);
 			if (seriesStored != null) {
 				service.sendJMXNotification(seriesStored);
+				updateDBStudiesAndSeries(seriesStored);
+				updateStudyAccessTime(seriesStored);
+		        service.logInstancesStored(assoc.getSocket(), seriesStored);
 			}
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
@@ -749,49 +745,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		SeriesStored seriesStored = 
 			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
 		if (seriesStored != null) {
+			updateDBStudiesAndSeries(seriesStored);
+			updateStudyAccessTime(seriesStored);
+	        service.logInstancesStored(assoc.getSocket(), seriesStored);
 			service.sendJMXNotification(seriesStored);
 		}
-        final Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
-        if (ians != null) {
-            updateDBStudiesAndSeries(ians);
-            updateStudyAccessTime((HashSet) assoc.getProperty("StudyInfos"));
-        }
-        logInstancesStored(assoc);
-        service.sendReleaseNotification(assoc);
+//        service.sendReleaseNotification(assoc);
         if ( service.isFreeDiskSpaceOnDemand() ) {
         	service.callFreeDiskSpace();
         }
     }
 
-    private void updateDBStudiesAndSeries(Map ians) {
-        Storage store;
+	private void updateDBStudiesAndSeries(SeriesStored seriesStored) {
         try {
-            store = getStorageHome().create();
+			Storage store = getStorageHome().create();
+			try {
+				updateDBSeries(store, seriesStored.getSeriesInstanceUID());
+				updateDBStudy(store, seriesStored.getStudyInstanceUID());
+	        } finally {
+	            try {
+	                store.remove();
+	            } catch (Exception ignore) {
+	            }
+	        }
         } catch (Exception e) {
-            log.fatal("Failed to access Storage EJB");
-            return;
+            log.warn("Failed to update derived fields for series - "
+					+ seriesStored.getSeriesInstanceUID(), e);
         }
-        try {
-            for (Iterator it = ians.values().iterator(); it.hasNext();) {
-                Dataset ian = (Dataset) it.next();
-                DcmElement seq = ian.get(Tags.RefSeriesSeq);
-                for (int i = 0, n = seq != null ? seq.vm() : 0; i < n; ++i) {
-                    Dataset ser = seq.getItem(i);
-                    final String seriuid = ser
-                            .getString(Tags.SeriesInstanceUID);
-                    updateDBSeries(store, seriuid);
-                }
-                final String suid = ian.getString(Tags.StudyInstanceUID);
-                updateDBStudy(store, suid);
-            }
-        } finally {
-            try {
-                store.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
+	}
 
+	
     private void updateDBStudy(Storage store, final String suid) {
         int retry = 0;
         for (;;) {
@@ -867,7 +850,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
 		final String seriesIUID = ds.getString(Tags.SeriesInstanceUID);
 		if (cur != null 
-				&& seriesIUID.equals(cur.getSeriesInstanceUID())) {
+				&& !seriesIUID.equals(cur.getSeriesInstanceUID())) {
 			prev = cur;
 			cur = null;
 		}
@@ -882,143 +865,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			cur.setAccessionNumber(ds.getString(Tags.AccessionNumber));
 			cur.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
 			cur.setSeriesInstanceUID(seriesIUID);
-			cur.setModality(ds.getString(Tags.Modality));
 			Dataset refSOP = ds.getItem(Tags.RefPPSSeq);
 			if (refSOP != null) {
-				cur.getRefPpsSOPInstanceUID(
-						refSOP.getString(Tags.RefSOPInstanceUID));
-				cur.getRefPpsSOPClassUID(
+				cur.setRefPPS(
+						refSOP.getString(Tags.RefSOPInstanceUID),
 						refSOP.getString(Tags.RefSOPClassUID));
 			}
 			assoc.putProperty(SeriesStored.class.getName(), cur);
 		}
-		cur.addSOP(
+		cur.addRefSOP(
 				ds.getString(Tags.SOPInstanceUID), 
 				ds.getString(Tags.SOPClassUID)); 
 		return prev;
 	}
 
-	
-    private void updateIANInfo(Association assoc, Dataset ds, String retrieveAET) {
-        Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
-        if (ians == null) {
-            assoc.putProperty(StoreScpService.IANS_KEY, ians = new HashMap());
-        }
-        Dataset refSOP = getRefSOPSeq(ds, getRefSeriesSeq(ds, ians))
-                .addNewItem();
-        refSOP.putAE(Tags.RetrieveAET, retrieveAET);
-        refSOP.putCS(Tags.InstanceAvailability, "ONLINE");
-        refSOP.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
-        refSOP.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
-    }
-
-    private DcmElement getRefSeriesSeq(Dataset ds, Map ians) {
-        final String siud = ds.getString(Tags.StudyInstanceUID);
-        Dataset ian = (Dataset) ians.get(siud);
-        if (ian != null) {
-            return ian.get(Tags.RefSeriesSeq);
-        }
-        ians.put(siud, ian = DcmObjectFactory.getInstance().newDataset());
-        ian.putAll(ds.subSet(SCN_TAGS));
-        DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);
-        Dataset pps = ds.getItem(Tags.RefPPSSeq);
-        if (pps != null) {
-            // add IAN Type 2 Attribute
-            if (!pps.contains(Tags.PerformedWorkitemCodeSeq))
-                pps.putSQ(Tags.PerformedWorkitemCodeSeq);
-            ppsSeq.addItem(pps);
-        }
-        return ian.putSQ(Tags.RefSeriesSeq);
-    }
-
-    private DcmElement getRefSOPSeq(Dataset ds, DcmElement seriesSq) {
-        final String siud = ds.getString(Tags.SeriesInstanceUID);
-        Dataset info;
-        for (int i = 0, n = seriesSq.vm(); i < n; ++i) {
-            info = seriesSq.getItem(i);
-            if (siud.equals(info.getString(Tags.SeriesInstanceUID))) {
-                return info.get(Tags.RefSOPSeq);
-            }
-        }
-        info = seriesSq.addNewItem();
-        info.putUI(Tags.SeriesInstanceUID, siud);
-        return info.putSQ(Tags.RefSOPSeq);
-    }
-
-    void updateInstancesStored(Association assoc, Dataset ds) {
+    private void updateStudyAccessTime(SeriesStored seriesStored) {
         try {
-            InstancesAction stored = (InstancesAction) assoc
-                    .getProperty("InstancesStored");
-            String suid = ds.getString(Tags.StudyInstanceUID);
-            if (stored != null
-                    && !stored.listStudyInstanceUIDs()[0].equals(suid)) {
-                logInstancesStored(assoc);
-                stored = null;
-            }
-            if (stored == null) {
-                final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-                stored = alf.newInstancesAction("Create", suid,
-                        alf.newPatient(
-                            ds.getString(Tags.PatientID), 
-                            ds.getString(Tags.PatientName)));
-                stored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
-                assoc.putProperty("InstancesStored", stored);
-            }
-            stored.incNumberOfInstances(1);
-            stored.addSOPClassUID(ds.getString(Tags.SOPClassUID));
+			FileSystemMgt fsMgt = getFileSystemMgtHome().create();
+			try {
+				fsMgt.touchStudyOnFileSystem(seriesStored.getSeriesInstanceUID(),
+						seriesStored.getFileSystemPath());
+			} finally {
+				try {
+					fsMgt.remove();
+				} catch (Exception ignore) {}
+			}
         } catch (Exception e) {
-            log.error("Could not audit log InstancesStored:", e);
-        }
-    }
-
-    void logInstancesStored(Association assoc) {
-        InstancesAction stored = (InstancesAction) assoc
-                .getProperty("InstancesStored");
-        if (stored != null) {
-            service.logInstancesStored(
-                    AuditLoggerFactory.getInstance().newRemoteNode(assoc.getSocket(),
-                            assoc.getCallingAET()), stored);
-        }
-        assoc.putProperty("InstancesStored", null);
-    }
-
-    private void updateStudyInfos(Association assoc, Dataset ds, String basedir) {
-        HashSet studyInfos = (HashSet) assoc.getProperty("StudyInfos");
-        if (studyInfos == null) {
-            studyInfos = new HashSet();
-            assoc.putProperty("StudyInfos", studyInfos);
-        }
-        String suid = ds.getString(Tags.StudyInstanceUID);
-        studyInfos.add(suid + '@' + basedir);
-    }
-
-    private void updateStudyAccessTime(HashSet studyInfos) {
-        if (studyInfos == null)
-            return;
-        FileSystemMgt fsMgt;
-        try {
-            fsMgt = getFileSystemMgtHome().create();
-        } catch (Exception e) {
-            log.fatal("Failed to access FileSystemMgt EJB");
+            log.warn("Failed to update access time for study "
+					+ seriesStored.getStudyInstanceUID(), e);
             return;
         }
-        try {
-            for (Iterator it = studyInfos.iterator(); it.hasNext();) {
-                String studyInfo = (String) it.next();
-                int delim = studyInfo.indexOf('@');
-                try {
-                    fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
-                            studyInfo.substring(delim + 1));
-                } catch (Exception e) {
-                    log.warn("Failed to update access time for study "
-                            + studyInfo, e);
-                }
-            }
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
     }
+
 }

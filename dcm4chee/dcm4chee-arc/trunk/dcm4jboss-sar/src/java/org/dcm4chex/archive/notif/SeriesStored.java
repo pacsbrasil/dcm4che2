@@ -10,7 +10,11 @@
 package org.dcm4chex.archive.notif;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -19,36 +23,35 @@ import java.util.ArrayList;
  */
 public class SeriesStored implements Serializable {
 	
-	private static final long serialVersionUID = 3690755090114032947L;
+	private static final long serialVersionUID = 3256442495306118960L;
 
 	private String callingAET;
 
 	private String calledAET;
 	
-	private String retrieveAET;
-	
 	private String patientID;
 
 	private String patientName;
 
+	private String retrieveAET;
+
 	private String accessionNumber;
 	
-	private String studyIUID;
-
-	private String seriesIUID;
-
-	private String modality;
-	
-	private String ppsCUID;
-
-	private String ppsIUID;
-	
 	private String fsPath;
+	
+	private final Dataset ian;
+	
+	public SeriesStored() {
+		ian = DcmObjectFactory.getInstance().newDataset();
+		ian.putSQ(Tags.RefPPSSeq);
+		DcmElement sq = ian.putSQ(Tags.RefSeriesSeq);
+		sq.addNewItem().putSQ(Tags.RefSOPSeq);
+	}
 
-	private final ArrayList iuids = new ArrayList();
-
-	private final ArrayList cuids = new ArrayList();
-
+	public final Dataset getInstanceAvailabilityNotification() {
+		return ian;
+	}
+	
 	public final String getCalledAET() {
 		return calledAET;
 	}
@@ -71,38 +74,6 @@ public class SeriesStored implements Serializable {
 
 	public final void setRetrieveAET(String retrieveAET) {
 		this.retrieveAET = retrieveAET;
-	}
-
-	public final String getFileSystemPath() {
-		return fsPath;
-	}
-
-	public final void setFileSystemPath(String fsPath) {
-		this.fsPath = fsPath;
-	}
-
-	public final String getModality() {
-		return modality;
-	}
-
-	public final void setModality(String modality) {
-		this.modality = modality;
-	}
-
-	public final String getRefPpsSOPInstanceUID(String iuid) {
-		return ppsIUID;
-	}
-
-	public final void setRefPpsSOPInstanceUID(String iuid) {
-		ppsIUID = iuid;
-	}
-
-	public final String getRefPpsSOPClassUID(String cuid) {
-		return ppsCUID;
-	}
-
-	public final void setRefPpsSOPClassUID(String cuid) {
-		ppsCUID = cuid;
 	}
 
 	public final String getPatientID() {
@@ -129,37 +100,70 @@ public class SeriesStored implements Serializable {
 		this.accessionNumber = accessionNumber;
 	}
 
-	public final String getSeriesInstanceUID() {
-		return seriesIUID;
+	public final String getFileSystemPath() {
+		return fsPath;
 	}
 
-	public final void setSeriesInstanceUID(String seriesIUID) {
-		this.seriesIUID = seriesIUID;
+	public final void setFileSystemPath(String fsPath) {
+		this.fsPath = fsPath;
 	}
 
-	public final String getStudyInstanceUID() {
-		return studyIUID;
+	private Dataset getSeries() {
+		return ian.getItem(Tags.RefSeriesSeq);
 	}
 
-	public final void setStudyInstanceUID(String studyIUID) {
-		this.studyIUID = studyIUID;
-	}
-	
-	public void addSOP(String iuid, String cuid) {
-		iuids.add(iuid);
-		cuids.add(cuid);
-	}
-	
-	public String getSOPInstanceUID(int index) {
-		return (String) iuids.get(index);
+	public String getStudyInstanceUID() {
+		return ian.getString(Tags.StudyInstanceUID);
 	}
 
-	public String getSOPClassUID(int index) {
-		return (String) cuids.get(index);
+	public void setStudyInstanceUID(String iuid) {
+		ian.putUI(Tags.StudyInstanceUID, iuid);
 	}
-	
+
+	public String getSeriesInstanceUID() {
+		return  getSeries().getString(Tags.SeriesInstanceUID);
+	}
+
+	public void setSeriesInstanceUID(String iuid) {
+		getSeries().putUI(Tags.SeriesInstanceUID, iuid);
+	}
+
 	public int getNumberOfInstances() {
-		return iuids.size();
+		return getSeries().vm(Tags.RefSOPSeq);
 	}
 
+	public String getPPSInstanceUID() {
+		return getPPS(Tags.RefSOPInstanceUID);
+	}
+
+	public String getPPSClassUID() {
+		return getPPS(Tags.RefSOPClassUID);
+	}
+
+	private String getPPS(int tag) {
+		Dataset pps = ian.getItem(Tags.RefPPSSeq);
+		return pps != null ? pps.getString(tag) : null;
+	}
+
+	public void setRefPPS(String instanceUID, String classUID) {
+		DcmElement sq = ian.putSQ(Tags.RefPPSSeq);
+		Dataset item = sq.addNewItem();
+		item.putUI(Tags.RefSOPInstanceUID, instanceUID);
+		item.putUI(Tags.RefSOPClassUID, classUID);
+		item.putSQ(Tags.PerformedWorkitemCodeSeq);
+	}
+
+	public DcmElement getRefSOPSeq() {
+		return getSeries().get(Tags.RefSOPSeq);
+	}
+	
+	public void addRefSOP(String instanceUID, String classUID) {
+		Dataset item = getRefSOPSeq().addNewItem();
+		item.putAE(Tags.RetrieveAET, retrieveAET);
+		item.putCS(Tags.InstanceAvailability, "ONLINE");
+		item.putUI(Tags.RefSOPInstanceUID, instanceUID);
+		item.putUI(Tags.RefSOPClassUID, classUID);
+	}
+	
+	
 }

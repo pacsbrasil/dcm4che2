@@ -39,26 +39,18 @@
 
 package org.dcm4chex.archive.dcm.movescu;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.JMSException;
 import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
-import org.dcm4chex.archive.dcm.storescp.StoreScpService;
-import org.dcm4chex.archive.notif.IANNotificationVO;
-import org.dcm4chex.archive.util.JMSDelegate;
+import org.dcm4chex.archive.notif.SeriesStored;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -70,14 +62,18 @@ import org.jboss.system.ServiceMBeanSupport;
 public class ForwardService extends ServiceMBeanSupport implements
         NotificationListener {
 
+	private static final NotificationFilterSupport filter = 
+			new NotificationFilterSupport();
+	static {
+		filter.enableType(SeriesStored.class.getName());
+	}
+	
     private static final String NONE = "NONE";
     private static final String[] EMPTY = {};
 
     private ObjectName storeScpServiceName;
-    private ObjectName editContentServiceName;
+	private ObjectName moveScuServiceName;
 
-    private int maxSOPInstanceUIDsPerMoveRQ = 100;
-    
     private String[] forwardModifiedToAETs = {};
 
     private int forwardPriority = 0;
@@ -108,14 +104,14 @@ public class ForwardService extends ServiceMBeanSupport implements
         this.storeScpServiceName = storeScpServiceName;
     }
 
-	public ObjectName getEditContentServiceName() {
-		return editContentServiceName;
+	public final ObjectName getMoveScuServiceName() {
+		return moveScuServiceName;
 	}
-    
-	public void setEditContentServiceName(ObjectName editContentServiceName) {
-		this.editContentServiceName = editContentServiceName;
+
+	public final void setMoveScuServiceName(ObjectName moveScuServiceName) {
+		this.moveScuServiceName = moveScuServiceName;
 	}
-	
+
 	public String getForwardModifiedToAETs() {
 		return forwardModifiedToAETs.length == 0 ? NONE
                 : StringUtils.toString( forwardModifiedToAETs, ',');
@@ -126,127 +122,58 @@ public class ForwardService extends ServiceMBeanSupport implements
                 : StringUtils.split( s, ',');
 	}
 
-    public final int getMaxSOPInstanceUIDsPerMoveRQ() {
-        return maxSOPInstanceUIDsPerMoveRQ;
-    }
-    
-    public final void setMaxSOPInstanceUIDsPerMoveRQ(int max) {
-        this.maxSOPInstanceUIDsPerMoveRQ = max;
-    }
-    
     protected void startService() throws Exception {
-        server.addNotificationListener(storeScpServiceName,
-                this,
-                StoreScpService.NOTIF_FILTER,
-                null);
-        server.addNotificationListener(editContentServiceName,
-        		contentEditNotificationListener,
-                null,
-                "contentEdit");
+        server.addNotificationListener(storeScpServiceName, this, filter, null);
     }
 
     protected void stopService() throws Exception {
-        server.removeNotificationListener(storeScpServiceName,
-        		this,
-                StoreScpService.NOTIF_FILTER,
-                null);
-        server.removeNotificationListener(editContentServiceName,
-                contentEditNotificationListener,
-                null,
-                "contentEdit");
+        server.removeNotificationListener(storeScpServiceName, this, filter, null);
     }
 
     public void handleNotification(Notification notif, Object handback) {
-    	IANNotificationVO ianVO = (IANNotificationVO) notif.getUserData();
-        Map ians = ianVO.getIANs();
-        if (ians != null) {
-	        Map param = new HashMap();
-			param.put("calling", new String[]{ianVO.getCallingAET()});
-			param.put("called", new String[]{ianVO.getCalledAET()});
-            String[] destAETs = forwardingRules
+    	SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+        Map param = new HashMap();
+		param.put("calling", new String[]{seriesStored.getCallingAET()});
+		param.put("called", new String[]{seriesStored.getCalledAET()});
+        String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(param);
-            if (destAETs.length != 0) forward(destAETs, ians);
-        }
-    }
-
-    private void forward(String[] destAETs, Map ians) {
-        String[] studyIUIDs = new String[1];
-        String[] seriesIUIDs = new String[1];
-        ArrayList sopIUIDs = new ArrayList();
-        Dataset refSOP;
-        String retrAET = null;
-        for (Iterator it = ians.values().iterator(); it.hasNext();) {
-            Dataset ian = (Dataset) it.next();
-            studyIUIDs[0] = ian.getString(Tags.StudyInstanceUID);
-            DcmElement refSeriesSeq = ian.get(Tags.RefSeriesSeq);
-            for (int i = 0, n = refSeriesSeq.vm(); i < n; ++i) {
-                Dataset refSeries = refSeriesSeq.getItem(i);
-                seriesIUIDs[0] = refSeries.getString(Tags.SeriesInstanceUID);
-                DcmElement refSOPSeq = refSeries.get(Tags.RefSOPSeq);
-                for (int j = 0, m = refSOPSeq.vm(); j < m; ++j) {
-                    refSOP = refSOPSeq.getItem(j);
-                    retrAET = refSOP.getString(Tags.RetrieveAET);
-                    sopIUIDs.add(refSOP.getString(Tags.RefSOPInstanceUID));
-                    if (sopIUIDs.size() >= maxSOPInstanceUIDsPerMoveRQ) {
-                        scheduleMoveOrders(studyIUIDs, seriesIUIDs, sopIUIDs, destAETs, retrAET);
-                    }
-                }
-                scheduleMoveOrders(studyIUIDs, seriesIUIDs, sopIUIDs, destAETs, retrAET);
-            }
-        }
-    }
-
-    private void scheduleMoveOrders(String[] studyIUIDs, String[] seriesIUIDs, 
-            ArrayList sopIUIDs, String[] destAETs, String retrAET) {
-        if (sopIUIDs.isEmpty())
-            return;
-        String[] iuids = (String[]) sopIUIDs
-                .toArray(new String[sopIUIDs.size()]);
-        sopIUIDs.clear();
-        for (int k = 0; k < destAETs.length; ++k) {
-            final String destAET = ForwardingRules.toAET(destAETs[k]);
+		for (int i = 0; i < destAETs.length; i++) {
+            final String destAET = ForwardingRules.toAET(destAETs[i]);
             final long scheduledTime = ForwardingRules
-                .toScheduledTime(destAETs[k]);
-            MoveOrder order = new MoveOrder(retrAET, destAET, forwardPriority, null,
-                    studyIUIDs, seriesIUIDs, iuids);
-            log.info("Scheduling " + order
-                    + (scheduledTime > 0L ? (" for " + new Date(
-                            scheduledTime)) : " now"));
-            try {
-                JMSDelegate.queue(MoveOrder.QUEUE, order, JMSDelegate
-                        .toJMSPriority(forwardPriority), scheduledTime);
-            } catch (JMSException e) {
-                log.error("Failed to schedule " + order, e);
-            }
-        }
+                .toScheduledTime(destAETs[i]);
+			scheduleMove(seriesStored.getRetrieveAET(), destAET, forwardPriority,
+					seriesStored.getPatientID(), 
+					seriesStored.getStudyInstanceUID(),
+					seriesStored.getSeriesInstanceUID(),
+					scheduledTime);
+		}
     }
 
-    public final NotificationListener contentEditNotificationListener = new NotificationListener() {
-
-		/**
-		 * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
-		 */
-		public void handleNotification(Notification notif, Object ctx) {
-			if ( forwardModifiedToAETs == null || forwardModifiedToAETs.length < 1 ) return;
-			Object o = notif.getUserData();
-			if ( o == null ) return;
-			if ( log.isDebugEnabled() ) {
-				log.debug("ContentEditNotification:"); 
-				log.debug( o );
-			}
-			Map map = null;
-			if ( o instanceof Dataset) {
-				map = new HashMap();
-				map.put("ds", o );
-			} else if ( o instanceof Map ) {
-				map = (Map) o;
-			} else {
-				log.error("Ignored! ContentEditNotification with wrong userObject type! "+o.getClass().getName());
-				return;
-			}
-			forward( forwardModifiedToAETs, map);
-		}
-    	
-    };
+	private void scheduleMove(String retrieveAET, String destAET,
+			int priority, String pid, String studyIUID, String seriesIUID,
+			long scheduledTime) {
+        try {
+            server.invoke(moveScuServiceName,
+                    "scheduleMoveSeries",
+                    new Object[] { 
+						retrieveAET,
+						destAET,
+						new Integer(priority),
+						pid,
+						studyIUID,
+						seriesIUID,
+						new Long(scheduledTime)},
+                    new String[] {
+						String.class.getName(), 
+						String.class.getName(), 
+						int.class.getName(), 
+						String.class.getName(), 
+						String.class.getName(), 
+						String.class.getName(), 
+                    	long.class.getName()});
+        } catch (Exception e) {
+            log.error("Schedule Move failed:", e);
+        }		
+	}
 
 }

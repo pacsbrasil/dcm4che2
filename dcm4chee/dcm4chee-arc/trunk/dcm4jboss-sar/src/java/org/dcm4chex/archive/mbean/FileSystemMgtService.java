@@ -56,7 +56,6 @@ import java.util.StringTokenizer;
 import javax.ejb.FinderException;
 import javax.management.Attribute;
 import javax.management.Notification;
-import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 
 import org.dcm4che.data.Dataset;
@@ -72,7 +71,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.notif.IANNotificationVO;
+import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
@@ -85,17 +84,6 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class FileSystemMgtService extends TimerSupport {
 
-    public static final String EVENT_TYPE = "org.dcm4chex.archive.mbean.FileSystemMgtService";
-
-    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
-
-		private static final long serialVersionUID = 3257288045601634612L;
-
-		public boolean isNotificationEnabled(Notification notif) {
-            return EVENT_TYPE.equals(notif.getType());
-        }
-    };
-	
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     private static final String LOCAL = "local";
     
@@ -749,14 +737,20 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
     
-	/**
-	 * @param ians
-	 */
 	private void sendIANs(Map ians) {
-	        Notification notif = new Notification(EVENT_TYPE, this, super.getNextNotificationSequenceNumber());
-	        notif.setUserData(new IANNotificationVO(ians,null,null));
-	        super.sendNotification(notif);
+		for (Iterator iter = ians.values().iterator(); iter.hasNext();) {
+			Dataset ian = (Dataset) iter.next();
+			sendJMXNotification(new StudyDeleted(ian));
+		}		
 	}
+
+	void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this, eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
+	}
+
 
 	/**
      * Check if a cleaning process is ncessary.

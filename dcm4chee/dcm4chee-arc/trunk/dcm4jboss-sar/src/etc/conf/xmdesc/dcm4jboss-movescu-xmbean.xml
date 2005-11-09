@@ -123,5 +123,45 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Schedule Retrieve of single Series.</description>
+      <name>scheduleMoveSeries</name>
+      <parameter>
+        <description>Retieve AE Title</description>
+        <name>retrieveAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Move Destination</description>
+        <name>destAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>DICOM Priority (0 = MEDIUM, 1 = HIGH, 2 = LOW)</description>
+        <name>priority</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Patient ID</description>
+        <name>pid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>studyIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>seriesIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Scheduled Time in ms from 1970-01-01 00:00</description>
+        <name>scheduledTime</name>
+        <type>long</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
    
 </mbean>
