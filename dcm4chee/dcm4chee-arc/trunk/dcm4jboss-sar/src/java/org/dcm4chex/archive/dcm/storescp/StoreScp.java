@@ -883,7 +883,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         try {
 			FileSystemMgt fsMgt = getFileSystemMgtHome().create();
 			try {
-				fsMgt.touchStudyOnFileSystem(seriesStored.getSeriesInstanceUID(),
+				fsMgt.touchStudyOnFileSystem(seriesStored.getStudyInstanceUID(),
 						seriesStored.getFileSystemPath());
 			} finally {
 				try {
