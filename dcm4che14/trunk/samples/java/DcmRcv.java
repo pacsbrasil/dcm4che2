@@ -118,6 +118,7 @@ public class DcmRcv extends DcmServiceBase
     private Server server = srvFact.newServer(handler);
     private int bufferSize = 512;
     private File dir = null;
+    private boolean devnull = false;
     private DcmRcvFSU fsu = null;
     private long rspDelay = 0L;
     private int rspStatus = 0;
@@ -306,26 +307,13 @@ public class DcmRcv extends DcmServiceBase
     }
 
 
-    private OutputStream openOutputStream(File file)
-        throws IOException
-    {
-        File parent = file.getParentFile();
-        if (!parent.exists()) {
-            if (!parent.mkdirs()) {
-                throw new IOException("Could not create " + parent);
-            }
-            log.info("M-WRITE " + parent);
-        }
-        log.info("M-WRITE " + file);
-        return new BufferedOutputStream(new FileOutputStream(file));
-    }
-
-
     private void storeToDir(InputStream in, FileMetaInfo fmi)
         throws IOException
     {
-        OutputStream out = openOutputStream(
-                new File(dir, fmi.getMediaStorageSOPInstanceUID()));
+        File file = devnull ? dir 
+                : new File(dir, fmi.getMediaStorageSOPInstanceUID());
+        log.info("M-WRITE " + file);
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(file)); 
         try {
             fmi.write(out);
             copy(in, out, -1);
@@ -349,7 +337,14 @@ public class DcmRcv extends DcmServiceBase
         parser.parseDataset(decParam, Tags.PixelData);
         doOverwrite(ds);
         File file = fsu.toFile(ds);
-        OutputStream out = openOutputStream(file);
+        File parent = file.getParentFile();
+        if (!parent.exists()) {
+            if (!parent.mkdirs()) {
+                throw new IOException("Could not create " + parent);
+            }
+            log.info("M-WRITE " + parent);
+        }
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
         try {
             ds.setFileMetaInfo(fmi);
             ds.writeFile(out, (DcmEncodeParam) decParam);
@@ -468,24 +463,27 @@ public class DcmRcv extends DcmServiceBase
         }
 
         this.dir = new File(dest);
+        if ("/dev/null".equals(dest)) {
+            this.devnull = true;
+            return;
+        }
         if ("DICOMDIR".equals(dir.getName())) {
             this.fsu = new DcmRcvFSU(dir, cfg);
             handler.addAssociationListener(fsu);
             dir = dir.getParentFile();
-        } else {
-            if (!dir.exists()) {
-                if (dir.mkdirs()) {
-                    log.info(MessageFormat.format(messages.getString("mkdir"),
-                            new Object[]{dir}));
-                } else {
-                    exit(MessageFormat.format(messages.getString("failmkdir"),
-                            new Object[]{dest}), true);
-                }
+        }
+        if (!dir.exists()) {
+            if (dir.mkdirs()) {
+                log.info(MessageFormat.format(messages.getString("mkdir"),
+                        new Object[]{dir}));
             } else {
-                if (!dir.isDirectory()) {
-                    exit(MessageFormat.format(messages.getString("errdir"),
-                            new Object[]{dest}), true);
-                }
+                exit(MessageFormat.format(messages.getString("failmkdir"),
+                        new Object[]{dest}), true);
+            }
+        } else {
+            if (!dir.isDirectory()) {
+                exit(MessageFormat.format(messages.getString("errdir"),
+                        new Object[]{dest}), true);
             }
         }
     }
