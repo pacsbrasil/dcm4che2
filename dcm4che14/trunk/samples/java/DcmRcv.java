@@ -372,9 +372,8 @@ public class DcmRcv extends DcmServiceBase
             } else {
                 copy(in, out, len);
             }
-            ds.clear();
             parser.parseDataset(decParam, -1);
-            ds.writeDataset(out, encParam);
+            ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
         } finally {
             try {
                 out.close();

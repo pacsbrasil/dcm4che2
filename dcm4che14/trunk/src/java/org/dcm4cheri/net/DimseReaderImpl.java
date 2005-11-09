@@ -227,23 +227,21 @@ final class DimseReaderImpl {
         }
         
         public int read(byte b[], int off, int len) throws IOException {
-            if (in == null) {
-                return -1;
-            } else if (b == null) {
+            if (b == null) {
                 throw new NullPointerException();
             } else if ((off < 0) || (off > b.length) || (len < 0) ||
                        ((off + len) > b.length) || ((off + len) < 0)) {
                 throw new IndexOutOfBoundsException();
             } else if (len == 0) {
                 return 0;
-            }
-
-            int n = in.read(b, off, len);
-            if (n <= 0) {
+            } 
+            while (in != null) {  
+                int n = in.read(b, off, len);
+                if (n > 0)
+                    return n;
                 in = nextStream();
-                return read(b, off, len);
             }
-            return n;
+            return -1;
         }
         
         public void close() throws IOException {

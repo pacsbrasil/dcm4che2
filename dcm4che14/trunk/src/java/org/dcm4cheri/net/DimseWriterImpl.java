@@ -145,12 +145,13 @@ final class DimseWriterImpl {
             if (len == 0) {
                 return;
             }
-            int n = 0;
+            int toWrite = len;
             for (;;) {
-                int c = Math.min(pDataTF.free(), len - n);
-                pDataTF.write(b, off + n, c);
-                n += c;
-                if (n == len) {
+                int n = Math.min(pDataTF.free(), toWrite);
+                pDataTF.write(b, off, n);
+                off += n;
+                toWrite -= n;
+                if (toWrite == 0) {
                     return;
                 }
                 flushPDataTF();
