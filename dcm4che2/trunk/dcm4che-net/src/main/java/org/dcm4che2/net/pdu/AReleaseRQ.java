@@ -46,7 +46,12 @@ package org.dcm4che2.net.pdu;
 public class AReleaseRQ implements PDU
 {
 
-    public int length()
+    public final int type()
+    {
+         return PDUType.A_RELEASE_RQ;
+    }
+
+    public final int length()
     {
         return 4;
     }

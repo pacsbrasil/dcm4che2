@@ -51,11 +51,6 @@ import org.dcm4che2.net.pdu.PDataTF;
 public class PDataTFEncoder extends PDUEncoder
 {
 
-    public PDataTFEncoder()
-    {
-        super(PDUType.P_DATA_TF);
-    }
-
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

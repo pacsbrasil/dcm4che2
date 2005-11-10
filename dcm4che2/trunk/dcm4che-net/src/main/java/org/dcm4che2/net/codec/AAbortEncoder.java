@@ -51,11 +51,6 @@ import org.dcm4che2.net.pdu.PDU;
 class AAbortEncoder extends PDUEncoder
 {
 
-    public AAbortEncoder()
-    {
-        super(PDUType.A_ABORT);
-    }
-
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

@@ -48,6 +48,6 @@ class AAssociateRQEncoder extends AAssociateRQACEncoder
 
     public AAssociateRQEncoder()
     {
-        super(PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
+        super(ItemType.RQ_PRES_CONTEXT);
     }
 }

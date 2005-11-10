@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.codec;
+package org.dcm4che2.net.pdu;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)

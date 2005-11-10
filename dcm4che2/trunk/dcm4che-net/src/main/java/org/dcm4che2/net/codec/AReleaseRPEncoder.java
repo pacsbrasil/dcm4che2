@@ -50,11 +50,6 @@ import org.dcm4che2.net.pdu.PDU;
 class AReleaseRPEncoder extends PDUEncoder
 {
 
-    public AReleaseRPEncoder()
-    {
-        super(PDUType.A_RELEASE_RP);
-    }
-
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

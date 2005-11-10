@@ -100,6 +100,11 @@ public class AAssociateRJ implements PDU
         this.reason = reason;
     }
 
+    public final int type()
+    {
+         return PDUType.A_ASSOCIATE_RJ;
+    }
+
     public final int length()
     {
         return 4;

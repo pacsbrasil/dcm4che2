@@ -55,6 +55,11 @@ public class PDataTF implements PDU
         this.buf = buf;
     }
 
+    public final int type()
+    {
+         return PDUType.P_DATA_TF;
+    }
+
     public final ByteBuffer getByteBuffer()
     {
         return buf;

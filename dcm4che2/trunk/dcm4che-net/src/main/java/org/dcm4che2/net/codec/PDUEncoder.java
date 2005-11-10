@@ -50,18 +50,11 @@ import org.dcm4che2.net.pdu.PDU;
 public abstract class PDUEncoder
 {
 
-    private final int type;
-
-    public PDUEncoder(int type)
-    {
-        this.type = type;
-    }
-
     public ByteBuffer encodePDU(ProtocolSession session, PDU pdu)
     {
         int pdulen = pdu.length();
         ByteBuffer buf = ByteBuffer.allocate(pdulen + 6);
-        buf.put((byte) type);
+        buf.put((byte) pdu.type());
         buf.put((byte) 0);
         buf.putInt(pdulen);
         encodePDUBody(session, pdu, buf);

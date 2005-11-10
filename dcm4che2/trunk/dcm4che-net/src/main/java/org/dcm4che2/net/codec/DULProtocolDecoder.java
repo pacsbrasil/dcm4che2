@@ -56,16 +56,14 @@ public class DULProtocolDecoder extends CumulativeProtocolDecoder
 
     private static final int HEADER_LEN = 6;
 
-    private final PDUDecoder[] decoder =
+    private final PDUDecoder[] decoders =
     { new AAssociateRQDecoder(), new AAssociateACDecoder(),
             new AAssociateRJDecoder(), new PDataTFDecoder(),
             new AReleaseRQDecoder(), new AReleaseRPDecoder(),
             new AAbortDecoder() };
 
-    private boolean readHeader;
-
-    private int type;
-
+    private PDUDecoder decoder;
+    
     private int length;
 
     public DULProtocolDecoder()
@@ -79,17 +77,20 @@ public class DULProtocolDecoder extends CumulativeProtocolDecoder
 
         if (in.remaining() < HEADER_LEN)
             return false;
-
-        if (!readHeader)
+        if (decoder == null)
         {
-            type = in.get() & 0xff;
-            if (type == 0 || type > PDUType.A_ABORT)
+            int type = in.get() & 0xff;
+            try
+            {
+                decoder = decoders[type - 1];
+            }
+            catch (IndexOutOfBoundsException e)
+            {
                 throw new DULProtocolViolationException(
                         AAbort.UNRECOGNIZED_PDU, "Unkown PDU type: " + type);
-
+            }
             in.get(); // reserved byte
             length = in.getInt();
-            readHeader = true;
         }
 
         if (in.remaining() < length)
@@ -97,9 +98,9 @@ public class DULProtocolDecoder extends CumulativeProtocolDecoder
         
         int prevLimit = in.limit();
         in.limit(in.position() + length);
-        out.write(decoder[type - 1].decodePDU(session, in));
+        out.write(decoder.decodePDU(session, in));
         in.limit(prevLimit);
-        readHeader = false;
+        decoder = null;
         return true;
     }
 

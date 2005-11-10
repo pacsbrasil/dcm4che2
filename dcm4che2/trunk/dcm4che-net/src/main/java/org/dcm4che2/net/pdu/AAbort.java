@@ -96,6 +96,11 @@ public class AAbort implements PDU
         setReason(reason);
     }
 
+    public final int type()
+    {
+         return PDUType.A_ABORT;
+    }
+
     public final int length()
     {
         return 4;

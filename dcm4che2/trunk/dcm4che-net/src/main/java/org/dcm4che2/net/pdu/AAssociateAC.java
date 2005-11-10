@@ -46,6 +46,11 @@ package org.dcm4che2.net.pdu;
 public class AAssociateAC extends AAssociateRQAC
 {
 
+    public final int type()
+    {
+         return PDUType.A_ASSOCIATE_AC;
+    }
+
     public String toString()
     {
         return super.toString("A-ASSOCIATE-AC");

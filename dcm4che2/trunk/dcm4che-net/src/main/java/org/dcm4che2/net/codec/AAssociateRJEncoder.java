@@ -51,11 +51,6 @@ import org.dcm4che2.net.pdu.PDU;
 class AAssociateRJEncoder extends PDUEncoder
 {
 
-    public AAssociateRJEncoder()
-    {
-        super(PDUType.A_ASSOCIATE_RJ);
-    }
-
     protected void encodePDUBody(ProtocolSession session, PDU pdu,
             ByteBuffer out)
     {

@@ -48,6 +48,11 @@ public class AAssociateRQ extends AAssociateRQAC
 {
     protected int pcid = -1;
 
+    public final int type()
+    {
+         return PDUType.A_ASSOCIATE_RQ;
+    }
+
     public String toString()
     {
         return super.toString("A-ASSOCIATE-RQ");

@@ -46,6 +46,8 @@ package org.dcm4che2.net.pdu;
  */
 public interface PDU {
 
+    int type();
+    
     int length();
 
 }

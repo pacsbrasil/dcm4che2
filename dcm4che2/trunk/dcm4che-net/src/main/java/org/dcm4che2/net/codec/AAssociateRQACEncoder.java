@@ -67,9 +67,8 @@ abstract class AAssociateRQACEncoder extends PDUEncoder
 
     private final int pcItemType;
 
-    protected AAssociateRQACEncoder(int type, int pcItemType)
+    protected AAssociateRQACEncoder(int pcItemType)
     {
-        super(type);
         this.pcItemType = pcItemType;
     }
 
