@@ -38,10 +38,6 @@
 
 package org.dcm4che2.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -50,25 +46,12 @@ import java.util.List;
  */
 public class NetworkConnection
 {
-    private Device device;
-    private Boolean installed;
     private String commonName;
     private String hostname;
     private int port;
-    private List tlsCipherSuites = new ArrayList();
-
-    private List networkAEs = new ArrayList();
+    private String[] tlsCipherSuite = {};
+    private Boolean installed;
     
-    public final Device getDevice()
-    {
-        return device;
-    }
-    
-    void setDevice(Device device)
-    {
-        this.device = device;        
-    }
-
     public final String getHostname()
     {
         return hostname;
@@ -77,17 +60,6 @@ public class NetworkConnection
     public final void setHostname(String hostname)
     {
         this.hostname = hostname;
-    }
-
-    public final Boolean getInstalled()
-    {
-        return installed == null && device != null
-                ? Boolean.valueOf(device.isInstalled()) : installed;
-    }
-
-    public final void setInstalled(Boolean installed)
-    {
-        this.installed = installed;
     }
 
     public final String getCommonName()
@@ -100,16 +72,6 @@ public class NetworkConnection
         this.commonName = name;
     }
 
-    public final List getNetworkAEs()
-    {
-        return Collections.unmodifiableList(networkAEs);
-    }
-
-    void addNetworkAE(NetworkAE networkAE)
-    {
-        networkAEs.add(networkAE);        
-    }
-
     public final int getPort()
     {
         return port;
@@ -120,13 +82,24 @@ public class NetworkConnection
         this.port = port;
     }
 
-    public final List getTlsCipherSuites()
+    public final String[] getTlsCipherSuite()
     {
-        return Collections.unmodifiableList(tlsCipherSuites);
+        return tlsCipherSuite;
     }
 
-    public final void addTlsCipherSuites(String tlsCipherSuite)
+    public final void setTlsCipherSuite(String[] tlsCipherSuite)
     {
-        this.tlsCipherSuites.add(tlsCipherSuite);
+        this.tlsCipherSuite = tlsCipherSuite;
     }
+
+    public final Boolean getInstalled()
+    {
+        return installed;
+    }
+
+    public final void setInstalled(Boolean installed)
+    {
+        this.installed = installed;
+    }
+
 }

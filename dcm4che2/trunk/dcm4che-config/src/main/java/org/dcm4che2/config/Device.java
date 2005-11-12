@@ -38,9 +38,7 @@
 
 package org.dcm4che2.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.security.cert.X509Certificate;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -50,7 +48,6 @@ import java.util.List;
  */
 public class Device
 {
-    private boolean installed;
     private String deviceName;
     private String description;
     private String manufactorer;
@@ -58,18 +55,19 @@ public class Device
     private String stationName;
     private String deviceSerialNumber;
     private String issuerOfPatientID;
-    private List softwareVersions = new ArrayList();
-    private List primaryDeviceTypes = new ArrayList();
-    private List institutionNames = new ArrayList();
-    private List institutionAddresses = new ArrayList();
-    private List institutionalDepartmentNames = new ArrayList();
-    private List authorizedNodeCertificateRefs = new ArrayList();
-    private List thisNodeCertificatesRefs = new ArrayList();
-    private List relatedDeviceRefs = new ArrayList();
-    private List vendorDeviceData = new ArrayList();
+    private String[] softwareVersion = {};
+    private String[] primaryDeviceType = {};
+    private String[] institutionName = {};
+    private String[] institutionAddress = {};
+    private String[] institutionalDepartmentName = {};
+    private X509Certificate[] authorizedNodeCertificate = {};
+    private X509Certificate[] thisNodeCertificate = {};
+    private Object[] relatedDevice = {};
+    private Object[] vendorDeviceData = {};
+    private boolean installed;
 
-    private List networkConnections = new ArrayList();
-    private List networkAEs = new ArrayList();
+    private NetworkConnection[] networkConnection = {};
+    private NetworkApplicationEntity[] networkAE = {};
     
     public final String getDeviceName()
     {
@@ -111,6 +109,16 @@ public class Device
         this.manufactorerModelName = manufactorerModelName;
     }
     
+    public final String[] getSoftwareVersion()
+    {
+        return softwareVersion;
+    }
+    
+    public final void setSoftwareVersion(String[] softwareVersion)
+    {
+        this.softwareVersion = softwareVersion;
+    }
+    
     public final String getStationName()
     {
         return stationName;
@@ -119,18 +127,6 @@ public class Device
     public final void setStationName(String stationName)
     {
         this.stationName = stationName;
-    }
-    
-    public final List getAuthorizedNodeCertificateRefs()
-    {
-        return Collections.unmodifiableList(authorizedNodeCertificateRefs);
-    }
-    
-    public final void addAuthorizedNodeCertificateRef(CertificateReference certRef)
-    {
-        if (certRef == null)
-            throw new NullPointerException();
-        this.authorizedNodeCertificateRefs.add(certRef);
     }
     
     public final String getDeviceSerialNumber()
@@ -143,6 +139,96 @@ public class Device
         this.deviceSerialNumber = deviceSerialNumber;
     }
     
+    public final String[] getPrimaryDeviceType()
+    {
+        return primaryDeviceType;
+    }
+    
+    public final void setPrimaryDeviceType(String[] primaryDeviceType)
+    {
+        this.primaryDeviceType = primaryDeviceType;
+    }
+    
+    public final String[] getInstitutionName()
+    {
+        return institutionName;
+    }
+    
+    public final void setInstitutionName(String[] name)
+    {
+        this.institutionName = name;
+    }
+    
+    public final String[] getInstitutionAddress()
+    {
+        return institutionAddress;
+    }
+    
+    public final void setInstitutionAddresses(String[] addr)
+    {
+        this.institutionAddress = addr;
+    }
+    
+    public final String[] getInstitutionalDepartmentName()
+    {
+        return institutionalDepartmentName;
+    }
+    
+    public final void setInstitutionalDepartmentName(String[] name)
+    {
+        this.institutionalDepartmentName = name;
+    }
+    
+    public final String getIssuerOfPatientID()
+    {
+        return issuerOfPatientID;
+    }
+    
+    public final void setIssuerOfPatientID(String issuerOfPatientID)
+    {
+        this.issuerOfPatientID = issuerOfPatientID;
+    }
+    
+    public final Object[] getRelatedDevice()
+    {
+        return relatedDevice;
+    }
+    
+    public final void setRelatedDeviceReference(Object[] relatedDevice)
+    {
+        this.relatedDevice = relatedDevice;
+    }
+    
+    public final X509Certificate[] getAuthorizedNodeCertificate()
+    {
+        return authorizedNodeCertificate;
+    }
+    
+    public final void setAuthorizedNodeCertificate(X509Certificate[] cert)
+    {
+        this.authorizedNodeCertificate = cert;
+    }
+    
+    public final X509Certificate[] getThisNodeCertificate()
+    {
+        return thisNodeCertificate;
+    }
+    
+    public final void setThisNodeCertificate(X509Certificate[] cert)
+    {
+        this.thisNodeCertificate = cert;
+    }
+    
+    public final Object[] getVendorDeviceData()
+    {
+        return vendorDeviceData;
+    }
+    
+    public final void setVendorDeviceData(Object[] vendorDeviceData)
+    {
+        this.vendorDeviceData = vendorDeviceData;
+    }
+    
     public final boolean isInstalled()
     {
         return installed;
@@ -153,115 +239,24 @@ public class Device
         this.installed = installed;
     }
     
-    public final List getInstitutionAddresses()
+    public final NetworkApplicationEntity[] getNetworkNetworkApplicationEntity()
     {
-        return Collections.unmodifiableList(institutionAddresses);
+        return networkAE;
     }
     
-    public final void addInstitutionAddresses(String addr)
+    public final void setNetworkNetworkApplicationEntity(NetworkApplicationEntity[] networkAE)
     {
-        this.institutionAddresses.add(addr);
+        this.networkAE = networkAE;
     }
     
-    public final List getInstitutionalDepartmentNames()
+    public final NetworkConnection[] getNetworkConnection()
     {
-        return Collections.unmodifiableList(institutionalDepartmentNames);
+        return networkConnection;
     }
     
-    public final void addInstitutionalDepartmentName(String name)
+    public final void setNetworkConnection(NetworkConnection[] networkConnection)
     {
-        this.institutionalDepartmentNames.add(name);
-    }
-    
-    public final List getInstitutionNames()
-    {
-        return Collections.unmodifiableList(institutionNames);
-    }
-    
-    public final void addInstitutionName(String name)
-    {
-        this.institutionNames.add(name);
-    }
-    
-    public final String getIssuerOfPatientID()
-    {
-        return issuerOfPatientID;
-    }
-    public final void setIssuerOfPatientID(String issuerOfPatientID)
-    {
-        this.issuerOfPatientID = issuerOfPatientID;
-    }
-    
-    public final List getNetworkAEs()
-    {
-        return Collections.unmodifiableList(networkAEs);
-    }
-    
-    public final void addNetworkAEs(NetworkAE networkAE)
-    {
-        networkAE.setDevice(this);
-        this.networkAEs.add(networkAE);
-    }
-    
-    public final List getNetworkConnections()
-    {
-        return Collections.unmodifiableList(networkConnections);
-    }
-    
-    public final void addNetworkConnections(NetworkConnection networkConnection)
-    {
-        networkConnection.setDevice(this);
-        this.networkConnections.add(networkConnection);
-    }
-    
-    public final List getPrimaryDeviceTypes()
-    {
-        return Collections.unmodifiableList(primaryDeviceTypes);
-    }
-    
-    public final void addPrimaryDeviceType(String primaryDeviceType)
-    {
-        this.primaryDeviceTypes.add(primaryDeviceType);
-    }
-    
-    public final List getRelatedDeviceRefs()
-    {
-        return Collections.unmodifiableList(relatedDeviceRefs);
-    }
-    
-    public final void addRelatedDeviceRefs(DNReference deviceRef)
-    {
-        this.relatedDeviceRefs.add(deviceRef);
-    }
-    
-    public final List getSoftwareVersions()
-    {
-        return Collections.unmodifiableList(softwareVersions);
-    }
-    
-    public final void addSoftwareVersion(String softwareVersion)
-    {
-        this.softwareVersions.add(softwareVersion);
-    }
-    
-    public final List getThisNodeCertificatesRefs()
-    {
-        return Collections.unmodifiableList(thisNodeCertificatesRefs);
-    }
-    
-    public final void addThisNodeCertificateRef(CertificateReference certRef)
-    {
-        this.thisNodeCertificatesRefs.add(certRef);
-    }
-    
-    public final List getVendorDeviceData()
-    {
-        return Collections.unmodifiableList(vendorDeviceData);
-    }
-    
-    public final void addVendorDeviceData(VendorData vendorDeviceData)
-    {
-        this.vendorDeviceData.add(vendorDeviceData);
+        this.networkConnection = networkConnection;
     }
     
 }

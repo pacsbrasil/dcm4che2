@@ -38,10 +38,6 @@
 
 package org.dcm4che2.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -50,10 +46,13 @@ import java.util.List;
  */
 public class TransferCapability
 {
+    public static final String SCU = "SCU";
+    public static final String SCP = "SCP";
+    
     private String commonName;
     private String sopClass;
-    private Role role;
-    private List transferSyntaxes = new ArrayList();
+    private boolean scp;
+    private String[] transferSyntax = {};
     
     public final String getCommonName()
     {
@@ -65,27 +64,32 @@ public class TransferCapability
         this.commonName = commonName;
     }
     
-    public final Role getRole()
+    public final String getRole()
     {
-        return role;
+        return scp ? SCP : SCU;
     }
     
-    public final void setRole(Role role)
+    public final void setRole(String role)
     {
         if (role == null)
             throw new NullPointerException("Role");
         
-        this.role = role;
+        if (role.equals(SCP))
+            scp = true;
+        else if (role.equals(SCU))
+            scp = false;
+        else
+            throw new IllegalArgumentException("Role:" +  role);
     }
-    
+
     public final boolean isSCP()
     {
-        return role == Role.SCP;
+         return scp;
     }
     
     public final boolean isSCU()
     {
-        return role == Role.SCU;
+         return !scp;
     }
     
     public final String getSopClass()
@@ -101,16 +105,14 @@ public class TransferCapability
         this.sopClass = sopClass;
     }
     
-    public final List getTransferSyntaxes()
+    public String[] getTransferSyntax()
     {
-        return Collections.unmodifiableList(transferSyntaxes);
+        return transferSyntax;
     }
     
-    public final void addTransferSyntaxes(String uid)
+    public void setTransferSyntax(String[] transferSyntax)
     {
-        if (uid == null)
-            throw new NullPointerException("TransferSyntax");
-        
-        this.transferSyntaxes.add(uid);
+        this.transferSyntax = transferSyntax;
     }
+
 }
