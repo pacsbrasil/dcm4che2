@@ -44,8 +44,7 @@ import java.net.SocketAddress;
 
 import org.apache.mina.io.filter.IoThreadPoolFilter;
 import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
-import org.dcm4che2.config.NetworkAE;
-import org.dcm4che2.config.Role;
+import org.dcm4che2.config.NetworkApplicationEntity;
 import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.service.DicomServiceRegistry;
@@ -72,13 +71,13 @@ public class Server
         DicomServiceRegistry registry = new DicomServiceRegistry();
         registry.register(new VerificationService());
         ConfigurableAcceptorPolicy policy = new ConfigurableAcceptorPolicy();
-        NetworkAE ae = new NetworkAE();
+        NetworkApplicationEntity ae = new NetworkApplicationEntity();
         ae.setAssociationAcceptor(true);
         TransferCapability tc = new TransferCapability();
         tc.setSopClass(UID.VerificationSOPClass);
-        tc.setRole(Role.SCP);
-        tc.addTransferSyntaxes(UID.ImplicitVRLittleEndian);
-        ae.addTransferCapability(tc);
+        tc.setRole(TransferCapability.SCP);
+        tc.setTransferSyntax(new String[] { UID.ImplicitVRLittleEndian });
+        ae.setTransferCapability(new TransferCapability[] { tc });
         policy.addNetworkAE(ae);
         AssociationAcceptor acceptor = new AssociationAcceptor(policy, registry);
         // acceptor.setIoThreadPoolFilter(ioThreadPoolFilter);

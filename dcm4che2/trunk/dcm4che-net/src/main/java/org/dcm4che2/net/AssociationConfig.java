@@ -38,15 +38,13 @@
 
 package org.dcm4che2.net;
 
-import org.dcm4che2.config.VendorData;
-
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 10, 2005
  *
  */
-public class AssociationConfig implements VendorData
+public class AssociationConfig
 {
 
     private long associationRequestTimeout = 0;

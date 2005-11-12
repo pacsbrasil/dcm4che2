@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.dcm4che2.config.NetworkAE;
+import org.dcm4che2.config.NetworkApplicationEntity;
 import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.pdu.AAssociateAC;
@@ -64,7 +64,7 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
 {
     private List networkAEs = new ArrayList();
 
-    public void addNetworkAE(NetworkAE networkAE)
+    public void addNetworkAE(NetworkApplicationEntity networkAE)
     {
         networkAEs.add(networkAE);        
     }
@@ -80,19 +80,12 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
         String calledAET = rq.getCalledAET();
         for (Iterator iter = networkAEs.iterator(); iter.hasNext();)
         {
-            NetworkAE ae = (NetworkAE) iter.next();
+            NetworkApplicationEntity ae = (NetworkApplicationEntity) iter.next();
             String aet = ae.getAEtitle();
             if ((aet == null || aet.equals(calledAET)) && ae.isAssociationAcceptor())
             {
-                if (!ae.isInstalled())
-                    return new AAssociateRJ(
-                            AAssociateRJ.RESULT_REJECTED_TRANSIENT,
-                            AAssociateRJ.SOURCE_SERVICE_USER,
-                            AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-                
-                List callingAETs = ae.getPreferredCallingAETitles();
-                if (callingAETs.isEmpty()
-                        || callingAETs.indexOf(rq.getCallingAET()) != -1)                
+                if (!ae.hasPreferredCallingAETitle()
+                        || ae.isPreferredCallingAETitle(rq.getCallingAET()))                
                     return negotiate(as, rq, ae);
                 
                 return new AAssociateRJ(
@@ -107,7 +100,7 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
                 AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
     }
 
-    private PDU negotiate(Association as, AAssociateRQ rq, NetworkAE ae)
+    private PDU negotiate(Association as, AAssociateRQ rq, NetworkApplicationEntity ae)
     {        
         AAssociateAC ac = new AAssociateAC();
         ac.setApplicationContext(UID.DICOMApplicationContextName);
@@ -121,10 +114,10 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
             RoleSelection rqRoleSel = rq.getRoleSelectionFor(asuid);
             TransferCapability scu = null;
             TransferCapability scp = null;
-            List tcs = ae.getTransferCapabilities();
-            for (Iterator iterator = tcs.iterator(); iterator.hasNext();)
+            TransferCapability[] tcs = ae.getTransferCapability();
+            for (int i = 0; i < tcs.length; ++i)
             {
-                TransferCapability tc = (TransferCapability) iterator.next();
+                final TransferCapability tc = tcs[i];
                 if (asuid.equals(tc.getSopClass()))
                 {
                     if (tc.isSCP())
@@ -144,7 +137,7 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
             {
                 TransferCapability tc = scu == null 
                         || (scp != null && rqRoleSel.isSCP()) ? scp : scu;
-                String tsuid = selectTransferSyntax(tc.getTransferSyntaxes(), 
+                String tsuid = selectTransferSyntax(tc.getTransferSyntax(), 
                         rqpc.getTransferSyntaxes());
                 if (tsuid == null)
                 {
@@ -169,11 +162,11 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
         return ac;
     }
 
-    private String selectTransferSyntax(List supported, Set offered)
+    private String selectTransferSyntax(String[] supported, Set offered)
     {
-        for (Iterator iterator = supported.iterator(); iterator.hasNext();)
+        for (int i = 0; i < supported.length; i++)
         {
-            String tsuid = (String) iterator.next();
+            String tsuid = supported[i];
             if (offered.contains(tsuid))
                 return tsuid;
         }
