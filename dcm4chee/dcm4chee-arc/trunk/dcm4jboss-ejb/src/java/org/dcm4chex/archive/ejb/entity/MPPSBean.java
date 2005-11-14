@@ -75,7 +75,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
- *             query="SELECT OBJECT(a) FROM Instance AS a" transaction-type="Supports"
+ *             query="SELECT OBJECT(a) FROM MPPS AS a" transaction-type="Supports"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.MPPSLocal findBySopIuid(java.lang.String uid)"
  * 	           query="SELECT OBJECT(a) FROM MPPS AS a WHERE a.sopIuid = ?1"
