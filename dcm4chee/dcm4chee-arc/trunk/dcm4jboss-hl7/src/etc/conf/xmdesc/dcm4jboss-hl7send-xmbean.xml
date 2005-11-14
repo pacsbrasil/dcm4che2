@@ -27,7 +27,7 @@
       <name>SendingApplication</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="DCM4JBOSS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -38,7 +38,7 @@
       <name>SendingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TIANI" />
+         <value value="DCM4JBOSS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -52,7 +52,7 @@
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[sending=PACS_NODEXX^TIANI]PACS_CENTRAL^TIANI" />
+         <value value="[sending=PACS_NODEXX^DCM4JBOSS]PACS_CENTRAL^DCM4JBOSS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

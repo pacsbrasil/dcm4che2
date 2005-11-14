@@ -32,7 +32,7 @@
       <name>ReceivingApplication</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getReceivingFacility" setMethod="setReceivingFacility">
@@ -45,7 +45,7 @@
          attribute of this service.</description>      <name>ReceivingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TIANI"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getSendingApplication" setMethod="setSendingApplication">
@@ -59,7 +59,7 @@
       <name>SendingApplication</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getSendingFacility" setMethod="setSendingFacility">
@@ -73,7 +73,7 @@
       <name>SendingFacility</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TIANI"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="isIgnoreUnscheduled" setMethod="setIgnoreUnscheduled">
