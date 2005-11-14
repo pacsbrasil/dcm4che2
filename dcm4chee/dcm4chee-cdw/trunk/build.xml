@@ -168,6 +168,8 @@
    			</zipfileset>	
 			<zipfileset dir="${basedir}" prefix="${dist.standalone}">
 				<include name="bin/*"/>
+				<!-- Patch from http://jira.jboss.com/jira/browse/JBAS-1776 -->
+				<include name="lib/jboss-common.jar"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
 				<include name="bin/run.bat"/>
@@ -179,6 +181,7 @@
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
 				<include name="lib/**"/>
+				<exclude name="lib/jboss-common.jar"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
 				<include name="bin/run.sh"/>
