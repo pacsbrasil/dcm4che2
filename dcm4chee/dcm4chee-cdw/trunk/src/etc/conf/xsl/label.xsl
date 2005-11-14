@@ -18,8 +18,8 @@
         <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
             <fo:layout-master-set>
                 <!-- ajust page-size and margins according the label printer -->
-                <fo:simple-page-master master-name="page" page-height="297mm" page-width="210mm"
-                    margin-left="45mm" margin-right="45mm" margin-top="20mm" margin-bottom="157mm">
+                <fo:simple-page-master master-name="page" page-height="120mm" page-width="120mm"
+                    margin-left="0mm" margin-right="0mm" margin-top="0mm" margin-bottom="0mm">
                     <fo:region-body>
                         <xsl:attribute name="background-image">url(label_bg.jpg)</xsl:attribute>
                         <xsl:attribute name="background-attachment">fixed</xsl:attribute>
