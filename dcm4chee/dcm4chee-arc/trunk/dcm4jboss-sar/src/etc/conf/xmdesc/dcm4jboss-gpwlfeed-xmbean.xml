@@ -61,7 +61,7 @@
       <name>HumanPerformerList</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="doc1^PACS_TIANI^Dr. Allis,doc2^HUGO^Dr. Suse"/>
+         <value value="doc1^DCM4JBOSS^Dr. Allis,doc2^HUGO^Dr. Suse"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

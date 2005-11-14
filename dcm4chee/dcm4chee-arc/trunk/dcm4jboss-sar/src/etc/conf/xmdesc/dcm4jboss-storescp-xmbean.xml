@@ -23,12 +23,12 @@
    <!-- Attributes -->
    <attribute access="read-write" getMethod="getCalledAETs" setMethod="setCalledAETs">
       <description>List of accepted called AE titles, separated by \(backslash). 
-      For example, PACS_TIANI\PACS_TIANI2.
+      For example, DCM4JBOSS\DCM4JBOSS2.
       </description>
       <name>CalledAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getCallingAETs" setMethod="setCallingAETs">
@@ -144,14 +144,14 @@
       Format: 
       <br><i>regExpression</i>:<i>issuer</i>
       <br>Example:
-      <br>^PACS- \d*:PACS_TIANI 
+      <br>^PACS- \d*:DCM4JBOSS 
       <br>If no regular expression is specified,
       the issuer is added for all patient IDs.]]>
       </description>
       <name>IssuerOfPatientIDRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="^PACS-\d*:PACS_TIANI"/>
+         <value value="^PACS-\d*:DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="isStoreDuplicateIfDiffMD5" setMethod="setStoreDuplicateIfDiffMD5">

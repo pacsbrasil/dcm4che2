@@ -54,7 +54,7 @@ accessed studies.</description>
       <name>RetrieveAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getMinFreeDiskSpace" setMethod="setMinFreeDiskSpace">

@@ -28,7 +28,7 @@
       <name>ActorName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="DCM4JBOSS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -89,7 +89,7 @@
       <name>SupressLogForAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="DCM4JBOSS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
