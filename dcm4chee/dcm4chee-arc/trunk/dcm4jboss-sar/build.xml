@@ -249,6 +249,7 @@
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}">
 				<include name="bin/**"/>
 				<exclude name="bin/*.sh"/>
+				<!-- Patch from http://jira.jboss.com/jira/browse/JBAS-1776 -->
 				<include name="lib/jboss-common.jar"/>
 				<include name="test/**"/>
 			</zipfileset>
