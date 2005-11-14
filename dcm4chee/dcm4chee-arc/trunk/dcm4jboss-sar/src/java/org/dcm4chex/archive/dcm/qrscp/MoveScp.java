@@ -88,23 +88,26 @@ public class MoveScp extends DcmServiceBase {
     			InetAddress host = dest.equals( assoc.getAssociation().getCallingAET()) ? assoc.getAssociation().getSocket().getInetAddress() : null;
                 aeData = service.queryAEData(dest, host);
                 fileInfos = RetrieveCmd.create(rqData).getFileInfos();
+	            new Thread(
+	                new MoveTask(
+	                    service,
+	                    assoc,
+	                    rq.pcid(),
+	                    rqCmd,
+	                    rqData,
+	                    fileInfos,
+	                    aeData,
+	                    dest))
+	                .start();
+            } catch (UnkownAETException e) {
+                throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);
-            } catch (UnkownAETException e) {
-                throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
+            } catch (Throwable e) {
+                service.getLog().error("Unexpected exception:", e);
+                throw new DcmServiceException(Status.ProcessingFailure, e);
             }
-            new Thread(
-                new MoveTask(
-                    service,
-                    assoc,
-                    rq.pcid(),
-                    rqCmd,
-                    rqData,
-                    fileInfos,
-                    aeData,
-                    dest))
-                .start();
         } catch (DcmServiceException e) {
             Command rspCmd = objFact.newCommand();
             rspCmd.initCMoveRSP(

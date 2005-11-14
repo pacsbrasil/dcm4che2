@@ -165,7 +165,7 @@ final class RetrieveInfo {
     }
     
     public boolean isRetrieveFromLocal() {
-        return  isAllLocal() || isAnyLocal() && !isAetWithAllIuids();  
+        return  isAnyLocal() && (isAllLocal() || !isAetWithAllIuids());  
     }
    
     public void addPresContext(AAssociateRQ rq) {

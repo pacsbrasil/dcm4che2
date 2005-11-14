@@ -203,13 +203,12 @@ class MoveTask implements Runnable {
         this.priority = moveRqCmd.getInt(Tags.Priority, Command.MEDIUM);
         this.msgID = moveRqCmd.getMessageID();
         this.size = fileInfo.length;
-        if ((remaining = size) > 0) {
-            retrieveInfo = new RetrieveInfo(service, fileInfo);
-            if (retrieveInfo.isRetrieveFromLocal()) {
-                openAssociation();
-            }
-            moveAssoc.addCancelListener(msgID, cancelListener);
+        this.remaining = size;
+		this.retrieveInfo = new RetrieveInfo(service, fileInfo);
+        if (retrieveInfo.isRetrieveFromLocal()) {
+            openAssociation();
         }
+        moveAssoc.addCancelListener(msgID, cancelListener);
     }
 
     private void openAssociation() throws DcmServiceException {
