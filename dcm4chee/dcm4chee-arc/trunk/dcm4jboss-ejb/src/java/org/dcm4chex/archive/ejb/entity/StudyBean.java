@@ -93,7 +93,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.hidden = FALSE AND i.series.study.pk = ?1" AND f.fileSystem.retrieveAET = ?2"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
