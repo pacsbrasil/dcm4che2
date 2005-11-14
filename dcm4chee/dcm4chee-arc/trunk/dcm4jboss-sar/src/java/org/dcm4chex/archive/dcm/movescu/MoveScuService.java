@@ -252,7 +252,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 		rq.setCalledAET(aet);
 		rq.setCallingAET(callingAET);
         rq.addPresContext(af.newPresContext(PCID_MOVE,
-                UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 NATIVE_TS));
 		PDU ac = a.connect(rq);
 		if (!(ac instanceof AAssociateAC)) {
@@ -287,12 +287,12 @@ public class MoveScuService extends ServiceMBeanSupport implements
 		DcmObjectFactory dof = DcmObjectFactory.getInstance();
 		Command cmd = dof.newCommand();
 		cmd.initCMoveRQ(aa.getAssociation().nextMsgID(),
-                UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 order.getPriority(),
                 order.getMoveDestination());
         Dataset ds = dof.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
-        putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
+        putLO(ds, Tags.PatientID, order.getPatientId());
         putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
         putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
         putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
@@ -316,6 +316,11 @@ public class MoveScuService extends ServiceMBeanSupport implements
 			throw new DcmServiceException(status, cmdRsp
 					.getString(Tags.ErrorComment));
 		}
+	}
+
+	private static void putLO(Dataset ds, int tag, String s) {
+		if (s != null)
+			ds.putLO(tag, s);
 	}
 
 	private static void putUI(Dataset ds, int tag, String[] uids) {
