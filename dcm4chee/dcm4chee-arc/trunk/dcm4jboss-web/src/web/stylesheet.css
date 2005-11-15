@@ -62,19 +62,19 @@ table.folder_search {
 
 table.folder_overview {
 	background : #eeeeee;
-	color : red;
+	color : #335533;
 }
 table.patient_line {
-	background : #f8f8f8;
+	background : #99bbaa;
 } 
 table.study_line {
-	background : #eaeaff;
+	background : #ccddcc;
 } 
 table.series_line {
-	background : #e8ffe8;
+	background : #cecece;
 } 
 table.instance_line {
-	background : #ffffef;
+	background : #dddddd;
 } 
 table.file_line {
 	background : #ffffff;
@@ -91,19 +91,19 @@ td.tab-selected {
 } 
 
 td.patient_mark {
-	background : #cccccc;
+	background : #99bbaa;
 	color : black;
 } 
 td.study_mark {
-	background : #ccccff;
+	background : #ccddcc;;
 	color : black;
 } 
 td.series_mark {
-	background : #ccffcc;
+	background : #cecece;
 	color : black;
 } 
 td.instance_mark {
-	background : #ffffcc;
+	background : #dddddd;
 	color : black;
 } 
 
@@ -112,7 +112,7 @@ td.logo {
 }
 
 a.tab {
-	color : red
+	color : #335533;
 }
 
 img.logo {	
@@ -130,8 +130,8 @@ P {
 }
 
 A       {text-decoration: none; font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
-	font-size : 11px;}
-A:hover {text-decoration: underline; color: #FF0000}
+	font-size : 11px; color : #335533}
+A:hover {text-decoration: underline; color: #335533}
 
 UL, LI {
 	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
