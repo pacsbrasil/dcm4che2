@@ -124,7 +124,9 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * @ejb.interface-method
      */
     public int[] checkPatientAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
+    	log.info("Check patient attributes: offset:"+offset+" limit:"+limit+" doUpdate:"+doUpdate);
     	Collection col = patHome.findAll(offset,limit);
+    	log.info( "Found "+col.size()+" patients to check!");
     	if ( col.isEmpty() ) return null;
     	PatientLocal patient;
     	Dataset patAttrs, filtered;
@@ -146,6 +148,7 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 				result[0]++;
 			}
      	}
+    	log.info( result[1]+" patients checked! "+result[0]+" patients with non-patient attributes!");
     	return result;
     }
 
@@ -155,7 +158,7 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * 
      * @param offset first study to check (paging)
      * @param limit  number of studies to check (paging)
-     * @param doUpdate true will update study record, false leave patient record unchanged.
+     * @param doUpdate true will update study record, false leave study record unchanged.
      * 
      * @return int[2] containing number of 'fixed/toBeFixed' study records
      *                and number of checked study records
@@ -164,7 +167,9 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * @ejb.interface-method
      */
     public int[] checkStudyAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
+    	log.info("Check study attributes: offset:"+offset+" limit:"+limit+" doUpdate:"+doUpdate);
     	Collection col = studyHome.findAll(offset,limit);
+    	log.info( "Found "+col.size()+" studies to check!");
     	if ( col.isEmpty() ) return null;
     	StudyLocal study;
     	Dataset studyAttrs, filtered;
@@ -186,6 +191,7 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 				result[0]++;
 			}
      	}
+    	log.info( result[1]+" studies checked! "+result[0]+" studies with non-study attributes!");
     	return result;
     }
     
