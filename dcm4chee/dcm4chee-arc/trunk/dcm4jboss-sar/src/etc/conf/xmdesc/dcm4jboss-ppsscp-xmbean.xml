@@ -17,7 +17,9 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getCalledAETs" setMethod="setCalledAETs">
+   <attribute access="read-write"
+      getMethod="getCalledAETs"
+      setMethod="setCalledAETs">
       <description>List of accepted called AE titles, separated by \(backslash). 
       For example, DCM4JBOSS\DCM4JBOSS2.
       </description>
@@ -27,7 +29,9 @@
          <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getCallingAETs" setMethod="setCallingAETs">
+   <attribute access="read-write"
+      getMethod="getCallingAETs"
+      setMethod="setCallingAETs">
       <description>List of accepted calling AE titles, separated by \(backslash).
       ANY = accept any. 
        
@@ -38,7 +42,9 @@
          <value value="ANY"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptExplicitVRLE" setMethod="setAcceptExplicitVRLE">
+   <attribute access="read-write"
+      getMethod="isAcceptExplicitVRLE"
+      setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
       </description>
       <name>AcceptExplicitVRLE</name>
@@ -47,8 +53,13 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
-      <description>Maximum protocol data unit (PDU) package length for receiving PDUs, in bytes.
+   <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
       </description>
       <name>MaximumPDULength</name>
       <type>int</type>
@@ -56,7 +67,41 @@
          <value value="16352"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDcmServerName" setMethod="setDcmServerName">
+   <attribute access="read-write"
+      getMethod="getMaxOpsInvoked"
+      setMethod="setMaxOpsInvoked">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to invoke asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsInvoked</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxOpsPerformed"
+      setMethod="setMaxOpsPerformed">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to perform asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsPerformed</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
       <description>Used internally. Do not modify.
       </description>
       <name>DcmServerName</name>
@@ -65,7 +110,9 @@
          <value value="tiani.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
       <description>Used internally. Do not modify.
       </description>
       <name>AuditLoggerName</name>

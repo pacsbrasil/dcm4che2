@@ -2,8 +2,14 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>AE Configuration Service. Use this service to configure the various AE titles that communicate with the archive. Use the Echo Service to test these configurations.</description>
-
+   <description><![CDATA[AE Configuration Service.
+   Used to list/add/remove AE configuration entities - alternatively to more convenient
+   AE Management Page of the <a href='http://localhost:8080/dcm4jboss-web/'>
+   Administration Web Application</a>.
+   Used/Required by various DICOM services (Query/Retrieve SCP, Storage Commitment SCU/SCP,
+   DICOM Hanging Protocol SCP) to 'guess' the port number of DICOM peer Application Entities,
+   if no AE configuration entry for a given AE Title matches.
+   ]]></description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>

@@ -4,8 +4,17 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Audit Logger. Used by all other services to record audit logs 
-   to a remote audit log repository.</description>
+   <description><![CDATA[Audit Logger.
+   Used/Required by various other services to transmit Audit Records to an
+   Audit Record Repository using BSD Syslog Protocol, according IHE ITI 
+   Audit Trail and Node Authentication Profile and the Radiology Audit Trail
+   Option described in <a
+   href='http://www.ihe.net/Technical_Framework/upload/IHE_TF_Suppl_Radiology_Audit_Trail_Option_TI_2005-04-14.pdf'
+   >RAD TF-3 5.1</a>.
+   The Audit Record Repository can be provided by a standalone, third-party application, or by <a 
+   href='http://localhost:8080/jmx-console/HtmlAdaptor?action=inspectMBean&name=tiani.audit%3Aservice%3DAuditRecordRepository'
+   >dcm4jboss's Audit Record Repository Service</a>.
+   ]]></description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>

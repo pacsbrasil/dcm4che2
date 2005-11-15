@@ -19,7 +19,9 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getCalledAETs" setMethod="setCalledAETs">
+   <attribute access="read-write"
+      getMethod="getCalledAETs"
+      setMethod="setCalledAETs">
       <description>Accepted called AE titles, separated by \ (backslash). 
        
       </description>
@@ -29,7 +31,9 @@
          <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getCallingAETs" setMethod="setCallingAETs">
+   <attribute access="read-write"
+      getMethod="getCallingAETs"
+      setMethod="setCallingAETs">
       <description>Accepted calling AE titles, separated by \ (backslash).
       ANY = accept any. 
       </description>
@@ -39,7 +43,9 @@
          <value value="ANY"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptExplicitVRLE" setMethod="setAcceptExplicitVRLE">
+   <attribute access="read-write"
+      getMethod="isAcceptExplicitVRLE"
+      setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
       </description>
       <name>AcceptExplicitVRLE</name>
@@ -48,7 +54,9 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getOnMPPSReceived" setMethod="setOnMPPSReceived">
+   <attribute access="read-write"
+      getMethod="getOnMPPSReceived"
+      setMethod="setOnMPPSReceived">
       <description>Defines the behavior when MPPS messages that reference one or several worklist items
       in its Scheduled Step Attributes Sequence are received by the
       associated MPPS SCP. (Use the MPPSScp service to set the associated SCPs.) Possible values: NO_OP,
@@ -60,8 +68,13 @@
          <value value="UPDATE_STATUS"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
-      <description>Maximum protocol data unit (PDU) package length for receiving PDUs, in bytes.
+   <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
       </description>
       <name>MaximumPDULength</name>
       <type>int</type>
@@ -69,7 +82,41 @@
          <value value="16352"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
+   <attribute access="read-write"
+      getMethod="getMaxOpsInvoked"
+      setMethod="setMaxOpsInvoked">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to invoke asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsInvoked</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxOpsPerformed"
+      setMethod="setMaxOpsPerformed">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to perform asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsPerformed</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
@@ -79,7 +126,9 @@
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDcmServerName" setMethod="setDcmServerName">
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
       <description>Used internally. Do not modify.
       </description>
       <name>DcmServerName</name>
@@ -88,7 +137,9 @@
          <value value="tiani.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
+   <attribute access="read-write"
+      getMethod="getMppsScpServiceName"
+      setMethod="setMppsScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>MppsScpServiceName</name>
@@ -97,7 +148,9 @@
          <value value="tiani.archive:service=MPPSScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
       <description>Used internally. Do not modify.
       </description>
       <name>AuditLoggerName</name>

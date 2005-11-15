@@ -47,13 +47,50 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
+   <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
       </description>
       <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
          <value value="16352"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxOpsInvoked"
+      setMethod="setMaxOpsInvoked">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to invoke asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsInvoked</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxOpsPerformed"
+      setMethod="setMaxOpsPerformed">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to perform asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsPerformed</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">

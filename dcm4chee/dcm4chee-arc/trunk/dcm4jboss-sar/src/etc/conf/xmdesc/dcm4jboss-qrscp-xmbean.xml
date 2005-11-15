@@ -19,7 +19,9 @@ QueryRetrieveScp service.</description>
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getCalledAETs" setMethod="setCalledAETs">
+   <attribute access="read-write"
+      getMethod="getCalledAETs"
+      setMethod="setCalledAETs">
       <description>Accepted called AE titles, separated by \(backslash).
       </description>
       <name>CalledAETitles</name>
@@ -28,7 +30,9 @@ QueryRetrieveScp service.</description>
          <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getCallingAETs" setMethod="setCallingAETs">
+   <attribute access="read-write"
+      getMethod="getCallingAETs"
+      setMethod="setCallingAETs">
       <description>Accepted calling AE titles, separated by \(backslash).
       ANY = accept any. 
       </description>
@@ -38,7 +42,9 @@ QueryRetrieveScp service.</description>
          <value value="ANY"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getSendNoPixelDataToAETs" setMethod="setSendNoPixelDataToAETs">
+   <attribute access="read-write"
+      getMethod="getSendNoPixelDataToAETs"
+      setMethod="setSendNoPixelDataToAETs">
       <description>Move Destination AE titles to which images are sent 
       without pixel data. Separate multiple values by \(backslash).
       NONE = no AE titles match this criteria.
@@ -49,7 +55,9 @@ QueryRetrieveScp service.</description>
          <value value="NONE"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getIgnoreUnsupportedSOPClassFailuresByAETs" setMethod="setIgnoreUnsupportedSOPClassFailuresByAETs">
+   <attribute access="read-write"
+      getMethod="getIgnoreUnsupportedSOPClassFailuresByAETs"
+      setMethod="setIgnoreUnsupportedSOPClassFailuresByAETs">
       <description>Move Destination AE titles to which failures, 
       caused by unsupported SOP Classes, in transmitting
       objects shall NOT return a warning status "Sub-Operation fails" 
@@ -63,7 +71,9 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    
-   <attribute access="read-write" getMethod="getRequestStgCmtFromAETs" setMethod="setRequestStgCmtFromAETs">
+   <attribute access="read-write"
+      getMethod="getRequestStgCmtFromAETs"
+      setMethod="setRequestStgCmtFromAETs">
       <description><![CDATA[Move Destination AE titles, from which Storage Commitment
       for transmitted objects shall be requested.
       <br>Format: 
@@ -81,7 +91,9 @@ QueryRetrieveScp service.</description>
          <value value="NONE"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write" getMethod="isAcceptPatientRootFind" setMethod="setAcceptPatientRootFind">
+   <attribute access="read-write"
+      getMethod="isAcceptPatientRootFind"
+      setMethod="setAcceptPatientRootFind">
       <description>Support Patient Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptPatientRootFind</name>
@@ -90,7 +102,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptStudyRootFind" setMethod="setAcceptStudyRootFind">
+   <attribute access="read-write"
+      getMethod="isAcceptStudyRootFind"
+      setMethod="setAcceptStudyRootFind">
       <description>Support Study Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptStudyRootFind</name>
@@ -99,7 +113,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptPatientStudyOnlyFind" setMethod="setAcceptPatientStudyOnlyFind">
+   <attribute access="read-write"
+      getMethod="isAcceptPatientStudyOnlyFind"
+      setMethod="setAcceptPatientStudyOnlyFind">
       <description>Support Patient Study Only Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptPatientStudyOnlyFind</name>
@@ -108,7 +124,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptPatientRootMove" setMethod="setAcceptPatientRootMove">
+   <attribute access="read-write"
+      getMethod="isAcceptPatientRootMove"
+      setMethod="setAcceptPatientRootMove">
       <description>Support Patient Root Query/Retrieve Information Model - MOVE SOP Class
       </description>
       <name>AcceptPatientRootMove</name>
@@ -117,7 +135,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptStudyRootMove" setMethod="setAcceptStudyRootMove">
+   <attribute access="read-write"
+      getMethod="isAcceptStudyRootMove"
+      setMethod="setAcceptStudyRootMove">
       <description>Support Study Root Query/Retrieve Information Model - MOVE SOP Class
       </description>
       <name>AcceptStudyRootMove</name>
@@ -126,7 +146,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptPatientStudyOnlyMove" setMethod="setAcceptPatientStudyOnlyMove">
+   <attribute access="read-write"
+      getMethod="isAcceptPatientStudyOnlyMove"
+      setMethod="setAcceptPatientStudyOnlyMove">
       <description>Support Patient Study Only Query/Retrieve Information Model - MOVE SOP Class
       </description>
       <name>AcceptPatientStudyOnlyMove</name>
@@ -135,7 +157,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptTianiPatientRootFind" setMethod="setAcceptTianiPatientRootFind">
+   <attribute access="read-write"
+      getMethod="isAcceptTianiPatientRootFind"
+      setMethod="setAcceptTianiPatientRootFind">
       <description>Support Private Tiani Patient Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptTianiPatientRootFind</name>
@@ -144,7 +168,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptTianiStudyRootFind" setMethod="setAcceptTianiStudyRootFind">
+   <attribute access="read-write"
+      getMethod="isAcceptTianiStudyRootFind"
+      setMethod="setAcceptTianiStudyRootFind">
       <description>Support Private Tiani Study Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptTianiStudyRootFind</name>
@@ -153,7 +179,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptTianiPatientStudyOnlyFind" setMethod="setAcceptTianiPatientStudyOnlyFind">
+   <attribute access="read-write"
+      getMethod="isAcceptTianiPatientStudyOnlyFind"
+      setMethod="setAcceptTianiPatientStudyOnlyFind">
       <description>Support Private Tiani Patient Study Only Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptTianiPatientStudyOnlyFind</name>
@@ -162,7 +190,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptTianiBlockedPatientRootFind" setMethod="setAcceptTianiBlockedPatientRootFind">
+   <attribute access="read-write"
+      getMethod="isAcceptTianiBlockedPatientRootFind"
+      setMethod="setAcceptTianiBlockedPatientRootFind">
       <description>Support Private Tiani Blocked Patient Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptTianiBlockedPatientRootFind</name>
@@ -171,7 +201,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptTianiBlockedStudyRootFind" setMethod="setAcceptTianiBlockedStudyRootFind">
+   <attribute access="read-write"
+      getMethod="isAcceptTianiBlockedStudyRootFind"
+      setMethod="setAcceptTianiBlockedStudyRootFind">
       <description>Support Private Tiani Blocked Study Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptTianiBlockedStudyRootFind</name>
@@ -180,7 +212,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptTianiBlockedPatientStudyOnlyFind" setMethod="setAcceptTianiBlockedPatientStudyOnlyFind">
+   <attribute access="read-write"
+      getMethod="isAcceptTianiBlockedPatientStudyOnlyFind"
+      setMethod="setAcceptTianiBlockedPatientStudyOnlyFind">
       <description>Support Private Tiani Blocked Patient Study Only Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptTianiBlockedPatientStudyOnlyFind</name>
@@ -189,7 +223,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptExplicitVRLE" setMethod="setAcceptExplicitVRLE">
+   <attribute access="read-write"
+      getMethod="isAcceptExplicitVRLE"
+      setMethod="setAcceptExplicitVRLE">
       <description>Accept Explicit Value Representation Little Endian Transfer Syntax
           for all provided Query/Response services.
       </description>
@@ -199,7 +235,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAcceptDeflatedBlockedFind" setMethod="setAcceptDeflatedBlockedFind">
+   <attribute access="read-write"
+      getMethod="isAcceptDeflatedBlockedFind"
+      setMethod="setAcceptDeflatedBlockedFind">
       <description>Accept Deflated Explicit Value Representation Little Endian
          Transfer Syntax for Tiani Blocked FIND Services.
       </description>
@@ -209,7 +247,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isSendPendingMoveRSP" setMethod="setSendPendingMoveRSP">
+   <attribute access="read-write"
+      getMethod="isSendPendingMoveRSP"
+      setMethod="setSendPendingMoveRSP">
       <description>Return optional C-Move Response DICOM message with pending status.
       </description>
       <name>SendPendingMoveResponse</name>
@@ -218,7 +258,9 @@ QueryRetrieveScp service.</description>
          <value value="false"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isRetrieveLastReceived" setMethod="setRetrieveLastReceived">
+   <attribute access="read-write"
+      getMethod="isRetrieveLastReceived"
+      setMethod="setRetrieveLastReceived">
       <description>Select the last received instances for retrieval, in the case
       where several instances with an equal SOP Instance UID were received.
       </description>
@@ -228,7 +270,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isForwardAsMoveOriginator" setMethod="setForwardAsMoveOriginator">
+   <attribute access="read-write"
+      getMethod="isForwardAsMoveOriginator"
+      setMethod="setForwardAsMoveOriginator">
       <description>Use the calling AE title of the requesting 
       Move SCU instead of the called AE title when opening an 
       association to another Move SCP to forward a Move Request.
@@ -239,7 +283,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isRecordStudyAccessTime" setMethod="setRecordStudyAccessTime">
+   <attribute access="read-write"
+      getMethod="isRecordStudyAccessTime"
+      setMethod="setRecordStudyAccessTime">
       <description>Record last retrieve time of instances of a study. Should be enabled,
       if delete functions of the File System Management Service are activated, to delete
       the most infrequently accessed studies.      
@@ -250,7 +296,9 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMaxBlockedFindRSP" setMethod="setMaxBlockedFindRSP">
+   <attribute access="read-write"
+      getMethod="getMaxBlockedFindRSP"
+      setMethod="setMaxBlockedFindRSP">
       <description>Maximum number of result records blocked in one 
       Find Response from Tiani Blocked Find services.
       </description>
@@ -260,7 +308,9 @@ QueryRetrieveScp service.</description>
          <value value="1000"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write" getMethod="getMaxUIDsPerMoveRQ" setMethod="setMaxUIDsPerMoveRQ">
+   <attribute access="read-write"
+      getMethod="getMaxUIDsPerMoveRQ"
+      setMethod="setMaxUIDsPerMoveRQ">
       <description>Maximum number of SOP Instance UIDs in forwarded Move Requests.
       Larger Move Requests are split into smaller ones according to this constraint.
       </description>
@@ -270,8 +320,13 @@ QueryRetrieveScp service.</description>
          <value value="100"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write" getMethod="getMaxPDULength" setMethod="setMaxPDULength">
+   <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
       </description>
       <name>MaximumPDULength</name>
       <type>int</type>
@@ -279,7 +334,41 @@ QueryRetrieveScp service.</description>
          <value value="16352"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
+   <attribute access="read-write"
+      getMethod="getMaxOpsInvoked"
+      setMethod="setMaxOpsInvoked">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to invoke asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsInvoked</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxOpsPerformed"
+      setMethod="setMaxOpsPerformed">
+      <description>The maximum number of outstanding operations and/or
+      sub-operations it allows the Association-requester to perform asynchronously.
+      A value of zero indicates an unlimited number of outstanding operations.
+      Attention: This property should be set to equal values for all DICOM SCP
+      services with same called AE Title(s)! Otherwise it is non-deterministic,
+      which configured value is effective! 
+      </description>
+      <name>MaximumOperationsPerformed</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAcTimeout"
+      setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
       <name>AcceptTimeout</name>
@@ -288,7 +377,9 @@ QueryRetrieveScp service.</description>
          <value value="10000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
+   <attribute access="read-write"
+      getMethod="getDimseTimeout"
+      setMethod="setDimseTimeout">
       <description>DIMSE message timeout in milliseconds. 0 = no timeout.
       </description>
       <name>DIMSETimeout</name>
@@ -297,7 +388,9 @@ QueryRetrieveScp service.</description>
          <value value="60000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
+   <attribute access="read-write"
+      getMethod="getSoCloseDelay"
+      setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after an A-Release response.
       </description>
       <name>SocketCloseDelay</name>
@@ -306,7 +399,9 @@ QueryRetrieveScp service.</description>
          <value value="50"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getQueryTransactionIsolationLevel" setMethod="setQueryTransactionIsolationLevel">
+   <attribute access="read-write"
+      getMethod="getQueryTransactionIsolationLevel"
+      setMethod="setQueryTransactionIsolationLevel">
       <description>Transaction isolation level for queries. Values can be one of: 
       DEFAULT|READ_UNCOMMITTED|READ_COMMITTED|REPEATABLE_READ|SERIALIZABLE
       </description>
@@ -316,7 +411,9 @@ QueryRetrieveScp service.</description>
          <value value="DEFAULT"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getRetrieveTransactionIsolationLevel" setMethod="setRetrieveTransactionIsolationLevel">
+   <attribute access="read-write"
+      getMethod="getRetrieveTransactionIsolationLevel"
+      setMethod="setRetrieveTransactionIsolationLevel">
       <description>Transaction isolation level for retrieves. Values can be one of:
           DEFAULT|READ_UNCOMMITTED|READ_COMMITTED|REPEATABLE_READ|SERIALIZABLE
       </description>
@@ -326,7 +423,9 @@ QueryRetrieveScp service.</description>
          <value value="DEFAULT"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getBufferSize" setMethod="setBufferSize">
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
       <description>Size of buffer used to copy data files to the TCP channel.
      Keep the default value: 512.
       </description>
@@ -336,7 +435,9 @@ QueryRetrieveScp service.</description>
          <value value="512"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
+   <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       "LOCAL", if EJBs are deployed in same JBoss instance.
       </description>
@@ -346,7 +447,9 @@ QueryRetrieveScp service.</description>
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getFileSystemMgtName" setMethod="setFileSystemMgtName">
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
@@ -355,7 +458,9 @@ QueryRetrieveScp service.</description>
          <value value="tiani.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDcmServerName" setMethod="setDcmServerName">
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>DcmServerName</name>
@@ -364,7 +469,9 @@ QueryRetrieveScp service.</description>
          <value value="tiani.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getStgCmtScuScpName" setMethod="setStgCmtScuScpName">
+   <attribute access="read-write"
+      getMethod="getStgCmtScuScpName"
+      setMethod="setStgCmtScuScpName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>StgCmtScuScpName</name>
@@ -373,7 +480,9 @@ QueryRetrieveScp service.</description>
          <value value="tiani.archive:service=StgCmtScuScp"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+   <attribute access="read-write"
+      getMethod="getTLSConfigName"
+      setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
@@ -382,7 +491,9 @@ QueryRetrieveScp service.</description>
          <value value="tiani.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>AuditLoggerName</name>
@@ -391,7 +502,9 @@ QueryRetrieveScp service.</description>
          <value value="tiani.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAEServiceName" setMethod="setAEServiceName">
+   <attribute access="read-write"
+      getMethod="getAEServiceName"
+      setMethod="setAEServiceName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>AEServiceName</name>
