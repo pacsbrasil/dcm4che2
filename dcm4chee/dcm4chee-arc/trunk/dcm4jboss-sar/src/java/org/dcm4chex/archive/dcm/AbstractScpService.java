@@ -78,6 +78,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected boolean acceptExplicitVRLE = true;
     
     protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
+    protected int maxOpsInvoked = 1;
+    protected int maxOpsPerformed = 1;
         
     public final ObjectName getDcmServerName() {
         return dcmServerName;
@@ -116,7 +118,27 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 		enableService();
 	}
 	
-    protected void enableService() {
+    public final int getMaxOpsInvoked() {
+		return maxOpsInvoked;
+	}
+
+	public final void setMaxOpsInvoked(int maxOpsInvoked) {
+		if ( this.maxOpsInvoked == maxOpsInvoked ) return;
+		this.maxOpsInvoked = maxOpsInvoked;
+		enableService();
+	}
+
+	public final int getMaxOpsPerformed() {
+		return maxOpsPerformed;
+	}
+
+	public final void setMaxOpsPerformed(int maxOpsPerformed) {
+		if ( this.maxOpsPerformed == maxOpsPerformed ) return;
+		this.maxOpsPerformed = maxOpsPerformed;
+		enableService();
+	}
+
+	protected void enableService() {
         if (dcmHandler == null) return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
@@ -137,6 +159,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 }
             }
             policy1.setMaxPDULength(maxPDULength);
+ 			policy1.setAsyncOpsWindow(maxOpsInvoked, maxOpsPerformed);
             updatePresContexts(policy1, true);
         }
     }
