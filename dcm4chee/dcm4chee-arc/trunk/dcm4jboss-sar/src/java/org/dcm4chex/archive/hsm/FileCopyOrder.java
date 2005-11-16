@@ -37,28 +37,42 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.notif;
+package org.dcm4chex.archive.hsm;
 
 import java.io.Serializable;
-
-import org.dcm4che.data.Dataset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since Nov 8, 2005
+ * @since Nov 9, 2005
  */
-public class StudyDeleted implements Serializable {
-
-	private static final long serialVersionUID = 3256722883605704752L;
+public class FileCopyOrder implements Serializable {
+		
+	private static final long serialVersionUID = 3258409538737550129L;
+	private final ArrayList fileInfos;
+	private final String dstFsPath;
+    private int failureCount = 0;
 	
-	private final Dataset ian;
-
-	public StudyDeleted(Dataset ian) {
-		this.ian = ian;
+	public FileCopyOrder(List fileInfos, String dstFsPath) {
+		this.fileInfos = new ArrayList(fileInfos);
+		this.dstFsPath = dstFsPath;
+	}
+	
+	public final List getFileInfos() {
+		return fileInfos;
 	}
 
-	public final Dataset getInstanceAvailabilityNotification() {
-		return ian;
+	public final String getDestinationFileSystemPath() {
+		return dstFsPath;
 	}
+
+    public final int getFailureCount() {
+        return failureCount;
+    }
+
+    public final void setFailureCount(int failureCount) {
+        this.failureCount = failureCount;
+    }
 }

@@ -5,8 +5,7 @@
   <mbean code="org.dcm4chex.archive.dcm.hpscp.HPScpService" 
          name="tiani.archive:service=HPScp"
          xmbean-dd="xmdesc/dcm4jboss-hpscp-xmbean.xml">
-    <depends>
-      tiani.archive:service=DcmServer
-    </depends>
+    <depends>tiani.archive:service=AE</depends>
+    <depends>tiani.archive:service=DcmServer</depends>
   </mbean>
 </server>

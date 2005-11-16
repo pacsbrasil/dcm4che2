@@ -41,24 +41,60 @@ package org.dcm4chex.archive.notif;
 
 import java.io.Serializable;
 
-import org.dcm4che.data.Dataset;
-
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since Nov 8, 2005
+ * @since Nov 9, 2005
  */
-public class StudyDeleted implements Serializable {
-
-	private static final long serialVersionUID = 3256722883605704752L;
+public class FileInfo implements Serializable {
 	
-	private final Dataset ian;
-
-	public StudyDeleted(Dataset ian) {
-		this.ian = ian;
+	private static final long serialVersionUID = 3257853194511004982L;
+	
+	private final String sopInstanceUID;
+	private final String sopClassUID;
+	private final String transferSyntaxUID;
+	private final String fsPath;
+	private final String filePath;
+	private final long size;
+	private final byte[] md5sum;
+	
+	public FileInfo(String iuid, String cuid, String tsuid, String fsPath,
+			String filePath, long size, byte[] md5sum) {
+		this.sopInstanceUID = iuid;
+		this.sopClassUID = cuid;
+		this.transferSyntaxUID = tsuid;
+		this.fsPath = fsPath;
+		this.filePath = filePath;
+		this.size = size;
+		this.md5sum = md5sum;
 	}
 
-	public final Dataset getInstanceAvailabilityNotification() {
-		return ian;
+	public final String getFilePath() {
+		return filePath;
 	}
+
+	public final String getFileSystemPath() {
+		return fsPath;
+	}
+
+    public final long getFileSize() {
+		return size;
+    }
+	
+	public final byte[] getMd5sum() {
+		return md5sum;
+	}
+
+	public final String getSOPClassUID() {
+		return sopClassUID;
+	}
+
+	public final String getSOPInstanceUID() {
+		return sopInstanceUID;
+	}
+
+	public final String getTransferSyntaxUID() {
+		return transferSyntaxUID;
+	}
+
 }

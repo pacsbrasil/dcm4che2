@@ -5,14 +5,8 @@
   <mbean code="org.dcm4chex.archive.dcm.movescu.ForwardService" 
 	     name="tiani.archive:service=Forward"
 	     xmbean-dd="xmdesc/dcm4jboss-forward-xmbean.xml">
-    <depends>
-      tiani.archive:service=StoreScp
-    </depends>
-	<depends>
-	  tiani.archive:service=Queue,name=MoveScu
-	</depends>
-	<depends>
-	  jboss.mq:service=InvocationLayer,type=JVM
-	</depends>
+    <depends>tiani.archive:service=StoreScp</depends>
+	<depends>tiani.archive:service=Queue,name=MoveScu</depends>
+	<depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
   </mbean>
 </server>

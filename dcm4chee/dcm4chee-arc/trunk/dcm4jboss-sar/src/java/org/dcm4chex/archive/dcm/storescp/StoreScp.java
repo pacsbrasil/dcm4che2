@@ -89,6 +89,7 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
+import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -361,11 +362,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             String compressTSUID = parser.getReadTag() == Tags.PixelData
                     && parser.getReadLength() != -1 ? compressionRules
                     .getTransferSyntaxFor(assoc, ds) : null;
-            ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                    .getAffectedSOPClassUID(), rqCmd
-                    .getAffectedSOPInstanceUID(),
-                    compressTSUID != null ? compressTSUID : rq
-                            .getTransferSyntaxUID()));
+            String tsuid = compressTSUID != null ? compressTSUID : rq
+                    .getTransferSyntaxUID();
+			ds.setFileMetaInfo(objFact.newFileMetaInfo(
+					rqCmd.getAffectedSOPClassUID(),
+					rqCmd.getAffectedSOPInstanceUID(),
+                    tsuid ));
 
             byte[] md5sum = storeToFile(parser, ds, file);
             if (ignoreDuplicate(duplicates, md5sum)) {
@@ -400,8 +402,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			if (!duplicates.isEmpty())
 				unhide(iuid);
             ds.putAll(coercedElements);
-//            updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
-			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo);
+			FileInfo fileInfo = new FileInfo(iuid, cuid, tsuid,
+					fsInfo.getPath(), filePath, file.length(), md5sum);
+			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo, fileInfo);
 			if (seriesStored != null) {
 				service.sendJMXNotification(seriesStored);
 				updateDBStudiesAndSeries(seriesStored);
@@ -750,7 +753,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	        service.logInstancesStored(assoc.getSocket(), seriesStored);
 			service.sendJMXNotification(seriesStored);
 		}
-//        service.sendReleaseNotification(assoc);
         if ( service.isFreeDiskSpaceOnDemand() ) {
         	service.callFreeDiskSpace();
         }
@@ -844,7 +846,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
 	private SeriesStored updateSeriesStored(Association assoc, Dataset ds,
-			FileSystemInfo fsInfo) {
+			FileSystemInfo fsInfo, FileInfo fileInfo) {
 		SeriesStored prev = null;
 		SeriesStored cur = 
 			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
@@ -873,9 +875,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			}
 			assoc.putProperty(SeriesStored.class.getName(), cur);
 		}
-		cur.addRefSOP(
-				ds.getString(Tags.SOPInstanceUID), 
-				ds.getString(Tags.SOPClassUID)); 
+		cur.addFileInfo(fileInfo); 
 		return prev;
 	}
 
