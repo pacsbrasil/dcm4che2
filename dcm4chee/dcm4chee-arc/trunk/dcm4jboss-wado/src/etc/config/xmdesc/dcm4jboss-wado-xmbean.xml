@@ -4,7 +4,21 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>WADO Service</description>
+   <description><![CDATA[<b>WADO Service</b><br/>
+		Provides a Web Enabled DICOM Server to allow <b>W</b>eb <b>A</b>ccess for <b>D</b>ICOM persistent <b>O</b>bjects.<br/>
+		Supported mime-types are <tt>application/dicom</tt> and <tt>image/jpeg</tt>.<br>
+		Supported Optional request parameter: <i>rows, column, frameNumber, transferSyntax</i> and <i>contentType</i>.
+		<p>
+		<dl> 
+			<dt>particular features:</dt>
+			<dd>This implementation use relational query support.<br>
+				Therefore the request parameter <i>studyUID</i> and <i>seriesUID</i> may be empty. 
+				(it is NOT allowed to omit these parameters due to WADO specification)</dd>
+			<dd>Redirect: If this WADO service handles a request for an object that is external retrievable,
+				a client- or server side redirect can be initiated (see <tt>useClientRedirect</tt>).</dd>
+		</dl>
+		</p>
+		]]> </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>

@@ -4,7 +4,19 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>RID (Retrieve Information for Display) Service</description>
+   <description><![CDATA[<b>Retrieve Information for Display Service</b><br/>
+		Provides a RID Information Source Actor with ECG support.<br/>
+		This Information Source is based on this PACs system and therefore only allows access to DICOM documents (Structured Reports, Waveforms (RID-ECG) and encapsulated PDF) <br/>
+		The enumerated DICOM objects can be queried via RID retrieve information request 
+		and are rendered (and cached) as PDF documents for a RID retrieve document request.<br/>
+		DICOM waveform objects are only visible in cardiology related queries and due to the resolution requirements 
+		of ECG RID profile rendered as vector graphic (PDF or xml+svg).
+		<p>
+		To allow radiology or cardiology specific queries, the Concept Name Code is used to seperate radiology and cardiology domain
+		Use the code lists (<tt>RadiologyConceptNames,CardiologyConceptNames,RadiologyPDFConceptCodeNames,..</tt>) to assign 'document titles'
+		to radiology or cardiology domain. 
+   		</p>]]> 
+   </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
