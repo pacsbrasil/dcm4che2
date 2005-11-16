@@ -325,6 +325,93 @@
 			<property name="deploy.root" value="${dist.dir}/common"/>
 		</ant>
     </target>
+	
+	<!-- Build a standalone fixpatient module for a specific database
+		 e.g.: ant fixpatient -Ddb.name=db2
+		 This target depends on dist (will fail if dist.dir doesnt exist)
+	 -->
+   	<target name="fixpatient">
+   		<property name="dist.standalone" value="dcm4jboss-fixpat-${db.name}-${version}"/>
+   		<zip destfile="${target.dir}/${dist.standalone}.zip">
+			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}/server/pacs">
+				<include name="conf/*.dtd"/>
+				<include name="conf/*.xml"/>
+				<include name="conf/xmdesc/dcm4jboss-fixpatattr-xmbean.xml"/>
+				<include name="lib/dcm4che.jar"/>
+				<include name="lib/dcm4jboss.jar"/>
+				<include name="lib/dcm4jboss-ejb-client.jar"/>
+				<include name="lib/jboss-common.jar"/>
+				<include name="deploy/dcm4jboss-fixpatattr-service.xml"/>
+				<include name="deploy/ejb-deployer.xml"/>
+				<include name="deploy/jmx-console.war/**"/>
+				<include name="deploy/jms/**"/>
+
+			</zipfileset>
+			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}/server/pacs">
+				<exclude name="sql/**"/>
+				<exclude name="deploy/dcm4jboss-arr-ejb.jar"/>
+			</zipfileset>
+			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}">
+				<include name="bin/**"/>
+				<include name="test/**"/>
+			</zipfileset>
+			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}">
+				<include name="sql/**"/>
+			</zipfileset>
+			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
+				<include name="bin/*.sh"/>
+			</zipfileset>
+			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
+				<include name="bin/*"/>
+				<exclude name="bin/*.sh"/>
+				<exclude name="bin/run.log"/>
+				<exclude name="bin/run.conf"/>
+				<exclude name="bin/twiddle.jar"/>
+				<include name="lib/*"/>
+				<include name="client/getopt.jar"/>
+				<include name="client/jbossall-client.jar"/>
+				<include name="client/log4j.jar"/>
+			</zipfileset>
+			<zipfileset dir="${jboss.server.home}" prefix="${dist.standalone}/server/pacs">
+				<include name="conf/**"/>
+				<exclude name="conf/log4j.xml"/>
+				<exclude name="conf/login-config.xml"/>
+				<exclude name="conf/standardjbosscmp-jdbc.xml"/>
+				<include name="conf/jbossmq-state.xml"/>
+				<include name="deploy/jbossweb-tomcat50.sar/**"/>
+				<include name="deploy/jms/jvm-il-service.xml"/>
+				<include name="deploy/jmx-console.war/**"/>
+				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
+				<exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
+				<include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
+				<include name="deploy/jboss-jca.sar"/>
+				<include name="deploy/jboss-local-jdbc.rar"/>
+				<include name="deploy/transaction-service.xml"/>
+				<include name="lib/bcel.jar"/>
+				<include name="lib/bsh-core-1.3.0.jar"/>
+				<include name="lib/bsh-deployer.jar"/>
+				<include name="lib/hsqldb.jar"/>
+				<include name="lib/hsqldb-plugin.jar"/>
+				<include name="lib/javax.servlet.jar"/>
+				<include name="lib/jboss-common-jdbc-wrapper.jar"/>
+				<include name="lib/jboss-j2ee.jar"/>
+				<include name="lib/jboss-jaas.jar"/>
+				<include name="lib/jboss-jsr77.jar"/>
+				<include name="lib/jboss-management.jar"/>
+				<include name="lib/jboss-transaction.jar"/>
+				<include name="lib/jboss.jar"/>
+				<include name="lib/jbossmq.jar"/>
+				<include name="lib/jbosssx.jar"/>
+				<include name="lib/jmx-adaptor-plugin.jar"/>
+				<include name="lib/jnpserver.jar"/>
+				<include name="lib/jpl-pattern.jar"/>
+				<include name="lib/jpl-util.jar"/>
+				<include name="lib/jts.jar"/>
+				<include name="lib/log4j.jar"/>
+			</zipfileset>
+		</zip>
+   	</target>
+	
    	<!-- =================================================================== -->
    	<!-- Cleans up the current build                                         -->
    	<!-- =================================================================== -->
