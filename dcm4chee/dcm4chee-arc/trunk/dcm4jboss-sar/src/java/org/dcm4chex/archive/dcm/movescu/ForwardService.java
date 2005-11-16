@@ -42,6 +42,7 @@ package org.dcm4chex.archive.dcm.movescu;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
@@ -50,7 +51,9 @@ import javax.management.ObjectName;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
+import org.dcm4chex.archive.notif.PatientUpdated;
 import org.dcm4chex.archive.notif.SeriesStored;
+import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -59,20 +62,62 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 27.08.2004
  *
  */
-public class ForwardService extends ServiceMBeanSupport implements
-        NotificationListener {
+public class ForwardService extends ServiceMBeanSupport {
 
-	private static final NotificationFilterSupport filter = 
-			new NotificationFilterSupport();
+	private static final NotificationFilterSupport seriesStoredFilter = 
+		new NotificationFilterSupport();
+	private static final NotificationFilterSupport seriesUpdatedFilter =
+		new NotificationFilterSupport();
+	private static final NotificationFilterSupport patientUpdatedFilter =
+		new NotificationFilterSupport();
 	static {
-		filter.enableType(SeriesStored.class.getName());
+		seriesStoredFilter.enableType(SeriesStored.class.getName());
 	}
-	
+
+	private final NotificationListener seriesStoredListener = 
+		new NotificationListener(){
+			public void handleNotification(Notification notif, Object handback) {
+		    	SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+		        Map param = new HashMap();
+				param.put("calling", new String[]{seriesStored.getCallingAET()});
+				param.put("called", new String[]{seriesStored.getCalledAET()});
+		        String[] destAETs = forwardingRules
+		                    .getForwardDestinationsFor(param);
+				for (int i = 0; i < destAETs.length; i++) {
+		            final String destAET = ForwardingRules.toAET(destAETs[i]);
+		            final long scheduledTime = ForwardingRules
+		                .toScheduledTime(destAETs[i]);
+					scheduleMove(seriesStored.getRetrieveAET(), destAET, forwardPriority,
+							seriesStored.getPatientID(), 
+							seriesStored.getStudyInstanceUID(),
+							seriesStored.getSeriesInstanceUID(),
+							scheduledTime);
+				}
+			}};
+			
+	private final NotificationListener seriesUpdatedListener = 
+		new NotificationListener(){
+		public void handleNotification(Notification notif, Object handback) {
+	    	SeriesUpdated seriesUpdated = (SeriesUpdated) notif.getUserData();
+	    	log.info("seriesUpdatedListener: series updated:"+seriesUpdated.getSeriesIUID()+
+	    									" Description:"+seriesUpdated.getDescription());
+	    	sendUpdatedNotification(seriesUpdated.getRetrieveAET(), null, null, seriesUpdated.getSeriesIUID() );
+		}};
+	private final NotificationListener patientUpdatedListener = 
+		new NotificationListener(){
+		public void handleNotification(Notification notif, Object handback) {
+	    	PatientUpdated patientUpdated = (PatientUpdated) notif.getUserData();
+	    	log.info("patientUpdatedListener: updated for patient "+ patientUpdated.getPatientID()+
+	    			" Description:"+patientUpdated.getDescription());
+	    	sendUpdatedNotification(patientUpdated.getRetrieveAET(), patientUpdated.getPatientID(), null,null );
+		}};
+			
     private static final String NONE = "NONE";
     private static final String[] EMPTY = {};
 
     private ObjectName storeScpServiceName;
 	private ObjectName moveScuServiceName;
+    private ObjectName editContentServiceName;
 
     private String[] forwardModifiedToAETs = {};
 
@@ -112,6 +157,52 @@ public class ForwardService extends ServiceMBeanSupport implements
 		this.moveScuServiceName = moveScuServiceName;
 	}
 
+	/**
+	 * @return Returns the editContentServiceName.
+	 */
+	public final ObjectName getEditContentServiceName() {
+		return editContentServiceName;
+	}
+	/**
+	 * @param editContentServiceName The editContentServiceName to set.
+	 */
+	public final void setEditContentServiceName(ObjectName editContentServiceName) {
+		this.editContentServiceName = editContentServiceName;
+	}
+	
+	/**
+	 * @return Returns the enablePatientUpdated.
+	 */
+	public boolean isEnablePatientUpdated() {
+		return !patientUpdatedFilter.getEnabledTypes().isEmpty();
+	}
+	/**
+	 * @param enablePatientUpdated The enablePatientUpdated to set.
+	 * @throws InstanceNotFoundException
+	 */
+	public void setEnablePatientUpdated(boolean enablePatientUpdated) {
+		if ( enablePatientUpdated ) { 
+			patientUpdatedFilter.enableType(PatientUpdated.class.getName());
+		} else {
+			patientUpdatedFilter.disableAllTypes();
+		}
+	}
+	/**
+	 * @return Returns the enableSeriesUpdated.
+	 */
+	public boolean isEnableSeriesUpdated() {
+		return !seriesUpdatedFilter.getEnabledTypes().isEmpty();
+	}
+	/**
+	 * @param enableSeriesUpdated The enableSeriesUpdated to set.
+	 */
+	public void setEnableSeriesUpdated(boolean enableSeriesUpdated) {
+		if ( enableSeriesUpdated ) { 
+			seriesUpdatedFilter.enableType(SeriesUpdated.class.getName());
+		} else {
+			seriesUpdatedFilter.disableAllTypes();
+		}
+	}
 	public String getForwardModifiedToAETs() {
 		return forwardModifiedToAETs.length == 0 ? NONE
                 : StringUtils.toString( forwardModifiedToAETs, ',');
@@ -123,31 +214,22 @@ public class ForwardService extends ServiceMBeanSupport implements
 	}
 
     protected void startService() throws Exception {
-        server.addNotificationListener(storeScpServiceName, this, filter, null);
-    }
+		server.addNotificationListener(storeScpServiceName,
+				seriesStoredListener, seriesStoredFilter, null);
+		server.addNotificationListener(editContentServiceName,
+				seriesUpdatedListener, seriesUpdatedFilter, null);
+		server.addNotificationListener(editContentServiceName,
+				patientUpdatedListener, patientUpdatedFilter, null);
+}
 
     protected void stopService() throws Exception {
-        server.removeNotificationListener(storeScpServiceName, this, filter, null);
-    }
-
-    public void handleNotification(Notification notif, Object handback) {
-    	SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-        Map param = new HashMap();
-		param.put("calling", new String[]{seriesStored.getCallingAET()});
-		param.put("called", new String[]{seriesStored.getCalledAET()});
-        String[] destAETs = forwardingRules
-                    .getForwardDestinationsFor(param);
-		for (int i = 0; i < destAETs.length; i++) {
-            final String destAET = ForwardingRules.toAET(destAETs[i]);
-            final long scheduledTime = ForwardingRules
-                .toScheduledTime(destAETs[i]);
-			scheduleMove(seriesStored.getRetrieveAET(), destAET, forwardPriority,
-					seriesStored.getPatientID(), 
-					seriesStored.getStudyInstanceUID(),
-					seriesStored.getSeriesInstanceUID(),
-					scheduledTime);
-		}
-    }
+		server.removeNotificationListener(storeScpServiceName,
+				seriesStoredListener, seriesStoredFilter, null);
+		server.removeNotificationListener(editContentServiceName,
+				seriesUpdatedListener, seriesUpdatedFilter, null);
+		server.removeNotificationListener(editContentServiceName,
+				patientUpdatedListener, patientUpdatedFilter, null);
+   }
 
 	private void scheduleMove(String retrieveAET, String destAET,
 			int priority, String pid, String studyIUID, String seriesIUID,
@@ -176,4 +258,14 @@ public class ForwardService extends ServiceMBeanSupport implements
         }		
 	}
 
+	private void sendUpdatedNotification(String retrieveAET, String patientID, String studyIUID, String seriesIUID) {
+    	for ( int i = 0 ; i < forwardModifiedToAETs.length ; i++ ) {
+			scheduleMove(retrieveAET, forwardModifiedToAETs[i], forwardPriority,
+					patientID, 
+					studyIUID,
+					seriesIUID,
+					0l);
+    	}
+	}
+	
 }
