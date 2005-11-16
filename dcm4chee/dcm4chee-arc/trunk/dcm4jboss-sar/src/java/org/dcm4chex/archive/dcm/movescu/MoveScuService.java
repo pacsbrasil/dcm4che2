@@ -264,7 +264,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 		try {
 	        if (a.getAcceptedTransferSyntaxUID(PCID_MOVE) == null)
 				throw new DcmServiceException(ERR_MOVE_RJ, 
-						"Study Root Query Retrieve IM MOVE not supported by remote AE: " 
+						"Patient Root Query Retrieve IM MOVE not supported by remote AE: " 
 						+ aet);
 			invokeDimse(aa, order);
 		} finally {
