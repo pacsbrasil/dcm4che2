@@ -251,18 +251,18 @@ public abstract class FileBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(String path, String tsuid, int size, byte[] md5,
-            InstanceLocal instance, FileSystemLocal filesystem)
+    		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setFilePath(path);
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
-        setFileStatus(0);
+        setFileStatus(status);
         return null;
     }
 
     public void ejbPostCreate(String path, String tsuid, int size, byte[] md5,
-            InstanceLocal instance, FileSystemLocal filesystem)
+    		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setInstance(instance);
         setFileSystem(filesystem);

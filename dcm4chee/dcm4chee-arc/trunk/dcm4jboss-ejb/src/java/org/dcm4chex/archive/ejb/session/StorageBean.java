@@ -202,15 +202,12 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.create(ds.subSet(filter),
                         getSeries(ds, coercedElements));
             }
-            FileSystemLocal fs = getFileSystem(ds, dirpath);
+            final String retrieveAET = ds.getString(Tags.RetrieveAET);
+			FileSystemLocal fs = getFileSystem(dirpath, retrieveAET);
+            FileLocal file = fileHome.create(fileid, tsuid, size, md5,
+                    0, instance, fs);
             instance.setAvailability(Availability.ONLINE);
             instance.addRetrieveAET(fs.getRetrieveAET());
-            FileLocal file = fileHome.create(fileid,
-                    tsuid,
-                    size,
-                    md5,
-                    instance,
-                    fs);
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
@@ -220,14 +217,27 @@ public abstract class StorageBean implements SessionBean {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void storeFile(java.lang.String iuid, java.lang.String tsuid,
+    		java.lang.String retrieveAET, java.lang.String dirpath,
+    		java.lang.String fileid, int size, byte[] md5, int status)
+    throws CreateException, FinderException
+    {
+		FileSystemLocal fs = getFileSystem(dirpath, retrieveAET);
+		InstanceLocal instance = instHome.findBySopIuid(iuid);
+        fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
+    }
 
-	private FileSystemLocal getFileSystem(Dataset ds, String dirpath)
+	private FileSystemLocal getFileSystem(String dirpath, String retrieveAET)
 	throws FinderException {
 		try {
 		    return fileSystemHome.findByDirectoryPath(dirpath);
 		} catch (ObjectNotFoundException onfe) {
 		    try {
-				return fileSystemHome.create(dirpath, ds.getString(Tags.RetrieveAET));
+				return fileSystemHome.create(dirpath, retrieveAET);
 			} catch (CreateException e) {
 				// try to find again, in case it was concurrently created by another thread
 				return fileSystemHome.findByDirectoryPath(dirpath);

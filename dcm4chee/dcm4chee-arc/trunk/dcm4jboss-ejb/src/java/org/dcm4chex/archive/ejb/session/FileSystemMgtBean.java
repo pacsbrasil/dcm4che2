@@ -216,7 +216,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	public void replaceFile(int pk, String path, String tsuid, int size,
 			byte[] md5) throws FinderException, CreateException {
 		FileLocal oldFile = fileHome.findByPrimaryKey(new Integer(pk));
-		FileLocal newFile = fileHome.create(path, tsuid, size, md5, 
+		FileLocal newFile = fileHome.create(path, tsuid, size, md5, 0,
 				oldFile.getInstance(), oldFile.getFileSystem());
 		oldFile.setInstance(null);
 	}
