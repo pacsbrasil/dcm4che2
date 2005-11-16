@@ -49,16 +49,20 @@ import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.notif.PatientUpdated;
+import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -72,8 +76,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
 
-	public static final String EVENT_TYPE = "org.dcm4chex.archive.mbean.ContentEditService";
-
     private ContentEdit ce;
 	private ContentEdit contentEdit;
     private static Logger log = Logger.getLogger( ContentEditService.class.getName() );
@@ -85,7 +87,9 @@ public class ContentEditService extends ServiceMBeanSupport {
 	private String receivingFacility;
 
 	private ObjectName studyMgtScuServiceName;
-	private String callingAET;
+    private ObjectName fileSystemMgtName;
+
+    private String callingAET;
 	private String calledAET;
 	
 	private ContentManager contentMgr;
@@ -109,6 +113,18 @@ public class ContentEditService extends ServiceMBeanSupport {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+	/**
+	 * @return Returns the fileSystemMgtName.
+	 */
+	public ObjectName getFileSystemMgtName() {
+		return fileSystemMgtName;
+	}
+	/**
+	 * @param fileSystemMgtName The fileSystemMgtName to set.
+	 */
+	public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+		this.fileSystemMgtName = fileSystemMgtName;
+	}
     public final ObjectName getHL7SendServiceName() {
         return hl7SendServiceName;
     }
@@ -208,10 +224,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     public void mergePatients(Integer patPk, int[] mergedPks) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("merge Partient");
     	Map map = lookupContentEdit().mergePatients( patPk.intValue(), mergedPks );
-    	Collection col = (Collection)map.get("NOTIFICATION_DS");
-    	Iterator iter = col.iterator();
     	sendHL7PatientMerge((Dataset) map.get("DOMINANT"), (Dataset[]) map.get("MERGED") );
-    	
+		String patID = ((Dataset) map.get("DOMINANT")).getString(Tags.PatientID);
+		sendJMXNotification( new PatientUpdated(patID, "Patient merge", getRetrieveAET()));
     }
     
     public Dataset createStudy(Dataset ds, Integer patPk) throws CreateException, RemoteException, HomeFactoryException {
@@ -232,8 +247,20 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     public void updatePatient(Dataset ds) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("update Partient");
-    	lookupContentEdit().updatePatient( ds );
+    	Collection col = lookupContentEdit().updatePatient( ds );
     	sendHL7PatientXXX( ds, "ADT^A08" );
+
+		String patID = ds.getString(Tags.PatientID);
+		sendJMXNotification( new PatientUpdated(patID, "Patient update", getRetrieveAET()));
+    }
+    
+    private String getRetrieveAET() {
+    	try {
+    		return (String)server.getAttribute(fileSystemMgtName, "RetrieveAETitle");
+        } catch (Exception e) {
+            log.error("Failed to get RetrieveAET from FilesystemMgtService:"+fileSystemMgtName, e);
+            return null;
+        }
     }
     
     private void sendStudyMgt(String iuid, int commandField, int actionTypeID, Dataset dataset) {
@@ -383,7 +410,8 @@ public class ContentEditService extends ServiceMBeanSupport {
 	public void updateStudy(Dataset ds) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("update Study");
     	Dataset dsN = lookupContentEdit().updateStudy( ds );
-		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds);
+		sendStudyMgt( dsN.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsN);
+		sendSeriesUpdatedNotifications(dsN, "Study update");
     }
     
     public void updateSeries(Dataset ds) throws RemoteException, HomeFactoryException, CreateException {
@@ -391,6 +419,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     	Dataset dsN = lookupContentEdit().updateSeries( ds );
     	if ( log.isDebugEnabled() ) {log.debug("update series: dsN:");log.debug(dsN);}
 		sendStudyMgt( dsN.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsN);
+		sendSeriesUpdatedNotifications(dsN, "Series update");
     }
     
     public void markAsDeleted(String type, int pk, boolean delete) throws RemoteException, HomeFactoryException, CreateException {
@@ -448,6 +477,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     	while( iter.hasNext() ) {
     		ds = (Dataset) iter.next();
     		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds);
+  			sendSeriesUpdatedNotifications(ds, "Move studies");
     	}
     }   
     
@@ -455,13 +485,15 @@ public class ContentEditService extends ServiceMBeanSupport {
     	if ( log.isDebugEnabled() ) log.debug("move Series");
     	Dataset ds = lookupContentEdit().moveSeries( series_pks, study_pk.intValue() );
 		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds);
+		sendSeriesUpdatedNotifications(ds, "Move series");
     }
     
     public void moveInstances(int[] instance_pks, Integer series_pk) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("move Instances");
     	Dataset ds = lookupContentEdit().moveInstances(instance_pks, series_pk.intValue() );
 		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds);
-    }
+		this.sendSeriesUpdatedNotifications(ds, "Move instances");
+   }
     
    
 
@@ -480,5 +512,29 @@ public class ContentEditService extends ServiceMBeanSupport {
         contentMgr = home.create();
         return contentMgr;
     }
- 
+    
+    /**
+     * Send a SeriesUpdated JMX notification for each series referenced in studyMgt dataset.
+     * 
+     * This notification is used in ForwardService to forward the series referenced in SeriesUpdated.
+     * 
+     * @param studyMgtDS StudyMgt dataset (Dataset with Referenced Series Sequence)
+     */
+    private void sendSeriesUpdatedNotifications( Dataset studyMgtDS, String description ) {
+		DcmElement sq = studyMgtDS.get(Tags.RefSeriesSeq);
+		String aet = getRetrieveAET();
+		for ( int i = 0, len = sq.vm(); i < len ; i++ ) {
+			sendJMXNotification( new SeriesUpdated(sq.getItem(i).getString(Tags.SeriesInstanceUID), 
+								description, aet));
+		}
+    	
+    }
+
+	void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this, eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
+	}
+    
 }

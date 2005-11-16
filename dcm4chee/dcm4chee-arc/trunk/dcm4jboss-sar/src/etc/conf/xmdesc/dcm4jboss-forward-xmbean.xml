@@ -2,10 +2,16 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Forward Service. Provides auto-routing of DICOM objects 
-   that are received by the DICOM Storage Service to remote DICOM applications. 
-   This is done by queuing corresponding retrieve requests to the 
-   Move SCU service.</description>
+   <description><![CDATA[Forward Service.<br>
+		Provides auto-routing of DICOM objects that are received by the DICOM Storage Service 
+		to remote DICOM applications. <br>
+		This is done by queuing corresponding retrieve requests to the <b>Move SCU</b> service.
+		<p>
+		This Forward Service supports two additional Notifications <tt>PatientUpdated</tt> and <tt>SeriesUpdated</tt>
+		from <b>ContentEditService</b> to allow forwarding DICOM objects to serve the purpose of update.<br>
+		(Works only if the received objects are used for updating!) 
+		</p>]]>
+   </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
@@ -25,7 +31,7 @@
 - identified by the Calling AE title - sent the objects, and also dependent
 upon which called AE title was used in the Association Request. When
 the StoreScp service accepts several called AE titles (configured by the
- <b>CalledAETitles</b> attribute in the StoreScp service),  different Store SCU applications (e.g.
+ <tt>CalledAETitles</tt> attribute in the <b>StoreScp</b> service),  different Store SCU applications (e.g.
 modalities) can be configured to use different called AE titles in
 their Association Requests to the same DICOM server of the archive.
 
@@ -54,17 +60,44 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
          <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]SAMPLE_SCP3,SAMPLE_SCP4!8-16;NONE"/>
       </descriptors>
    </attribute>
-   <!--attribute access="read-write" getMethod="getForwardModifiedToAETs" setMethod="setForwardModifiedToAETs">
-      <description>Comma separated list of AE titles to which objects modified
-          by using the web application are re-forwarded. NONE = do not forward
-          modified objects.
+  <attribute access="read-write" getMethod="isEnablePatientUpdated" setMethod="setEnablePatientUpdated">
+      <description><![CDATA[Enable/Disable PatientUpdated notification support.<br> 
+      		If enabled a <tt>PatientUpdated</tt> notification will forward all instances of 
+      		the related patient to each AET listed in <tt>ForwardModifiedToAETs</tt>.<p>
+      		You should enable this feature only if you have to update a system that doesnt support
+      		<b>HL7 ADT</b> update messages]]>
+      </description>
+      <name>EnablePatientUpdated</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+  <attribute access="read-write" getMethod="isEnableSeriesUpdated" setMethod="setEnableSeriesUpdated">
+      <description><![CDATA[Enable/Disable <tt>SeriesUpdated</tt> notification support. 
+      		If enabled a SeriesUpdated notification will forward all instances of 
+      		the series to each AET listed in <tt>ForwardModifiedToAETs</tt>.<p>
+      		You should enable this feature only if you have to update a system that doesnt support
+      		<b>StudyMgtScu</b> service.]]>
+      </description>
+      <name>EnableSeriesUpdated</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getForwardModifiedToAETs" setMethod="setForwardModifiedToAETs">
+      <description><![CDATA[Comma separated list of AE titles to which objects modified
+          by using the web application are re-forwarded.<br> <tt>NONE</tt> = do not forward
+          modified objects.<p>
+          see also <tt>EnablePatientUpdated</tt> and <tt>EnableSeriesUpdated</tt>.]]>
       </description>
       <name>ForwardModifiedToAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
       </descriptors>
-   </attribute-->
+   </attribute>
    <attribute access="read-write" getMethod="getForwardPriority" setMethod="setForwardPriority">
       <description>Forwarding priority. Enumerated Values: LOW, MEDIUM, HIGH.
       </description>
@@ -96,7 +129,7 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
          <value value="tiani.archive:service=MoveScu"/>
       </descriptors>
    </attribute>
-   <!--attribute access="read-write"
+   <attribute access="read-write"
       getMethod="getEditContentServiceName"
       setMethod="setEditContentServiceName">
       <description>Used internally. Do NOT modify.
@@ -106,7 +139,7 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
       <descriptors>
          <value value="tiani.archive:service=ContentEditService"/>
       </descriptors>
-   </attribute-->
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

@@ -2,12 +2,21 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Content Edit service. Identifies where patient information and study information updates are sent and received. Use the values in ReceivingApplication and ReceivingFacility attributes or the 
-         SendingApplication or SendingFacility attributes to configure specific
-         forwarding rules in the HL7SendService for patient information updates received from this
-         Content Edit Service. Use the values in the CalledAETitle and the CallingAETitle attributes to configure
-         specific forwarding rules in the StudyMgtScu Service for study information updates
+   <description><![CDATA[Content Edit service. <br>
+   		 Identifies where patient information and study information updates are sent and received. <br>
+   		 Use the values in <tt>ReceivingApplication</tt> and <tt>ReceivingFacility</tt> attributes or the 
+         <tt>SendingApplication</tt> or <tt>SendingFacility</tt> attributes to configure specific
+         forwarding rules in the <b>HL7SendService</b> for patient information updates received from this
+         Content Edit Service. <br>
+         Use the values in the <tt>CalledAETitle</tt> and the <tt>CallingAETitle</tt> attributes to configure
+         specific forwarding rules in the <b>StudyMgtScu</b> Service for study information updates
          received from this Content Edit Service.
+         <p>
+         The Content Edit Service sends also <tt>PatientUpdated</tt> and <tt>SeriesUpdated</tt> <b>JMX Notifications</b>.<br> 
+         This allows to forward instances to systems not supporting either StudyMgtScu or HL7 ADT patient updates.<br>
+         In this case the receiver must use the received instances for updating!<br>
+         Use the <b>ForwardService</b> to configure this forward option.
+         </p>]]>
       </description>
 
    <descriptors>
@@ -109,6 +118,15 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getFileSystemMgtName" setMethod="setFileSystemMgtName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getHL7SendServiceName" setMethod="setHL7SendServiceName">
