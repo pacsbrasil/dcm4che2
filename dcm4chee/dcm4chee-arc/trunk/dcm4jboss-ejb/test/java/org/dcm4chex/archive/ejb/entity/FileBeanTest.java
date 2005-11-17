@@ -105,6 +105,7 @@ public class FileBeanTest extends ServletTestCase {
                 TSUID,
                 SIZE,
                 MD5,
+                0,
                 null,
                 fs);
         file.remove();
