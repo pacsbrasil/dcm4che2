@@ -139,6 +139,20 @@ public class CommandFactory
        rq.putInt(Tag.MoveOriginatorMessageID, VR.US, moveOriginatorMsgId);
        return rq;
     }
+
+    public static DicomObject newCStoreRSP(DicomObject rq, int status)
+    {
+       DicomObject rsp = newRSP(rq, C_STORE_RSP, NO_DATASET, status);
+       if (includeUIDinRSP)
+       {
+           rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
+                   rq.getString(Tag.AffectedSOPClassUID));
+           rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI,
+                   rq.getString(Tag.AffectedSOPInstanceUID));
+       }
+       return rsp;
+    }
+
     
     private static DicomObject newRQ(int msgId, int cmdfield, int datasetType)
     {

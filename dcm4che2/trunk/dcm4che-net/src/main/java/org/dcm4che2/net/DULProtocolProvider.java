@@ -219,7 +219,6 @@ implements ProtocolProvider, ProtocolHandler, AssociationHandler
         a.setAssociationRequestTimeout(assocConfig.getAssociationRequestTimeout());
         a.setAssociationAcceptTimeout(assocConfig.getAssociationAcceptTimeout());
         a.setReleaseResponseTimeout(assocConfig.getReleaseResponseTimeout());
-        a.setPDVPipeBufferSize(assocConfig.getPDVPipeBufferSize());
         a.setPackPDV(assocConfig.getPackPDV());
     }
 

@@ -41,6 +41,7 @@ package org.dcm4che2.net;
 import java.io.InputStream;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.TransferSyntax;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -57,7 +58,8 @@ public class DimseRSPHandlerAdapter implements DimseRSPHandler
         DicomObject ds = null;
         if (dataStream != null)
         {
-            ds = a.readDicomObject(dataStream, a.getTransferSyntax(pcid));
+            TransferSyntax ts = TransferSyntax.valueOf(a.getTransferSyntax(pcid));
+            ds = a.readDicomObject(dataStream, ts);
             if (ds == null)
                 return;
         }

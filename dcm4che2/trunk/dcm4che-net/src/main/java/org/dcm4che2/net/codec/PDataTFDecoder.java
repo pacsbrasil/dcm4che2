@@ -49,13 +49,13 @@ import org.dcm4che2.net.pdu.PDataTF;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public class PDataTFDecoder implements PDUDecoder
+class PDataTFDecoder implements PDUDecoder
 {
 
     public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
-        ByteBuffer buf = ByteBuffer.allocate(in.remaining(), false);
+        ByteBuffer buf = ByteBuffer.allocate(in.remaining());
         buf.put(in);
         buf.flip();
         return new PDataTF(buf);

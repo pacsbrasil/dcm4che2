@@ -38,13 +38,13 @@
 
 package org.dcm4che2.net;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.dcm4che2.config.NetworkApplicationEntity;
+import org.dcm4che2.config.NetworkApplicationEntityExt;
 import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.pdu.AAssociateAC;
@@ -62,11 +62,31 @@ import org.dcm4che2.net.pdu.RoleSelection;
  */
 public class ConfigurableAcceptorPolicy implements AcceptorPolicy
 {
-    private List networkAEs = new ArrayList();
+    private static class Entry {
+        final NetworkApplicationEntity ae;
+        final NetworkApplicationEntityExt ext;
+        Entry(NetworkApplicationEntity ae,
+                NetworkApplicationEntityExt ext)
+        {
+            this.ae = ae;
+            this.ext = ext;
+        }
+    }
+    private static NetworkApplicationEntityExt defExt =
+            new NetworkApplicationEntityExt();
+    
+    private Entry unkownAE;
+    private HashMap map = new HashMap();
 
-    public void addNetworkAE(NetworkApplicationEntity networkAE)
+    public void addNetworkAE(NetworkApplicationEntity networkAE,
+            NetworkApplicationEntityExt aeExt)
     {
-        networkAEs.add(networkAE);        
+        String aet = networkAE.getAEtitle();
+        Entry entry = new Entry(networkAE, aeExt != null ? aeExt : defExt);
+        if (aet != null && aet.length() != 0)
+            map.put(aet, entry);
+        else
+            unkownAE = entry;
     }
     
     public PDU negotiate(Association as, AAssociateRQ rq)
@@ -78,29 +98,25 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
                     AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
 
         String calledAET = rq.getCalledAET();
-        for (Iterator iter = networkAEs.iterator(); iter.hasNext();)
-        {
-            NetworkApplicationEntity ae = (NetworkApplicationEntity) iter.next();
-            String aet = ae.getAEtitle();
-            if ((aet == null || aet.equals(calledAET)) && ae.isAssociationAcceptor())
-            {
-                if (!ae.hasPreferredCallingAETitle()
-                        || ae.isPreferredCallingAETitle(rq.getCallingAET()))                
-                    return negotiate(as, rq, ae);
-                
-                return new AAssociateRJ(
-                        AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJ.SOURCE_SERVICE_USER,
-                        AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
-            }                      
-        }
-        return new AAssociateRJ(
-                AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                AAssociateRJ.SOURCE_SERVICE_USER,
-                AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
+        Entry e = (Entry) map.get(calledAET);
+        if (e == null)
+            e = unkownAE;
+        if (e == null || !e.ae.isAssociationAcceptor())
+            return new AAssociateRJ(
+                    AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                    AAssociateRJ.SOURCE_SERVICE_USER,
+                    AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
+        if (e.ae.hasPreferredCallingAETitle() 
+                && !e.ae.isPreferredCallingAETitle(rq.getCallingAET()))
+            return new AAssociateRJ(
+                    AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                    AAssociateRJ.SOURCE_SERVICE_USER,
+                    AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
+        return negotiate(as, rq, e.ae, e.ext);
     }
 
-    private PDU negotiate(Association as, AAssociateRQ rq, NetworkApplicationEntity ae)
+    private PDU negotiate(Association as, AAssociateRQ rq,
+            NetworkApplicationEntity ae, NetworkApplicationEntityExt ext)
     {        
         AAssociateAC ac = new AAssociateAC();
         ac.setApplicationContext(UID.DICOMApplicationContextName);
@@ -159,7 +175,20 @@ public class ConfigurableAcceptorPolicy implements AcceptorPolicy
             }
             ac.addPresentationContext(acpc);
         }
+        ac.setMaxPDULength(ext.getMaxPDULengthReceive());
+        if (rq.isAsyncOps() && ext.isAsyncOps())
+        {
+            ac.setMaxOpsInvoked(maxOps(rq.getMaxOpsInvoked(),
+                    ext.getMaxOpsPerformed()));
+            ac.setMaxOpsPerformed(maxOps(rq.getMaxOpsPerformed(),
+                    ext.getMaxOpsInvoked()));
+        }
         return ac;
+    }
+
+    private static int maxOps(int a, int b)
+    {
+        return a == 0 ? b : b == 0 ? a : Math.min(a, b);
     }
 
     private String selectTransferSyntax(String[] supported, Set offered)

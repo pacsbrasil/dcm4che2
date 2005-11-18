@@ -41,7 +41,6 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedOutputStream;
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -111,11 +110,10 @@ public class Association
     private long associationAcceptTimeout = 0;
     private long releaseResponseTimeout = 0;
     private long socketCloseDelay = 100L;
-    private int pdvPipeBufferSize = 1024;
     private boolean packPDV = true;
 
-    private PipedOutputStream pipedOut;
-    private PipedInputStream pipedIn;
+    private ByteBufferChannel readDataChannel = new ByteBufferChannel();
+    private Thread readDataThread;
     
     private AAssociateRQ associateRQ;
     private AAssociateAC associateAC;
@@ -202,16 +200,6 @@ public class Association
         this.socketCloseDelay = socketCloseDelay;
     }
 
-    public final int getPDVPipeBufferSize()
-    {
-        return pdvPipeBufferSize;
-    }
-
-    public final void setPDVPipeBufferSize(int bufferSize)
-    {
-        this.pdvPipeBufferSize = bufferSize;
-    }
-
     public final int getMaxSendPDULength()
     {
         return maxSendPDULength;
@@ -257,13 +245,12 @@ public class Association
         return associateRQ;
     }
 
-    public TransferSyntax getTransferSyntax(int pcid)
+    public String getTransferSyntax(int pcid)
     {
         try
         {
             PresentationContext pc = associateAC.getPresentationContext(pcid);
-            return pc.isAccepted() ? TransferSyntax.valueOf(pc
-                    .getTransferSyntax()) : null;
+            return pc.isAccepted() ? pc.getTransferSyntax() : null;
         } catch (NullPointerException e)
         {
             throw new IllegalStateException(state.toString());
@@ -441,8 +428,8 @@ public class Association
             log.debug("Closed: " + this);
         }
         state.closed(this);
-        if (pipedOut != null)
-            closePipedOut(); // wait until parsePDVs exits
+        if (readDataThread != null)
+            readDataThread.interrupt();
         setState(STA1);
         handler.onClosed(this);
         rspHandlerForMsgId.accept(new IntHashtable.Visitor(){
@@ -452,19 +439,6 @@ public class Association
                 ((DimseRSPHandler) value).onClosed(Association.this);
                 return true;
             }});
-    }
-
-    private synchronized void closePipedOut()
-    {
-        try
-        {
-            pipedOut.close();
-            while (pipedOut != null) // wait until parsePDVs exits
-                wait();
-        } catch (Exception e)
-        {
-            log.warn("closing PDV stream throws " + e, e);
-        }
     }
 
     void exception(Throwable cause)
@@ -689,37 +663,13 @@ public class Association
 
     private void onPDataTF(PDataTF dataTF)
     {
-        ByteBuffer buf = dataTF.getByteBuffer();
-        java.nio.ByteBuffer nioBuf = buf.buf();
-        int offset = nioBuf.position();
-        int length = nioBuf.limit() - offset;
-        if (!nioBuf.hasArray())
-        {
-            ByteBuffer heapBuf = ByteBuffer.allocate(length, false);
-            heapBuf.put(buf);
-            heapBuf.flip();
-            nioBuf = heapBuf.buf();
-            offset = 0;
-        }
-        try
-        {
-            if (pipedOut == null)
-            {
-                pipedOut = new PipedOutputStream();
-                pipedIn = new PipedInputStream(pipedOut, pdvPipeBufferSize);
-                executor.execute(new Runnable(){
-                    public void run()
-                    {
-                        parsePDVs();                        
-                    }});
-            }
-            pipedOut.write(nioBuf.array(), offset, length);
-            pipedOut.flush();
-        } catch (IOException e)
-        {
-            log.warn("reading P-DATA-TF throws i/o exception", e);
-            abort(AAbort.REASON_NOT_SPECIFIED);
-        }
+        if (readDataThread == null)
+            executor.execute(new Runnable(){
+                public void run()
+                {
+                    readData();                        
+                }});
+        readDataChannel.put(dataTF.getByteBuffer());
     }
     
     /**
@@ -1295,20 +1245,18 @@ public class Association
         }
     }
     
-    void parsePDVs()
+    void readData()
     {
+        if (readDataThread != null)
+            return;
+        
+        readDataThread = Thread.currentThread(); 
         if (log.isDebugEnabled())
-            log.debug("" + this + ": Enter parsePDVs");
+            log.debug("" + this + ": Enter readData");
         while (nextDIMSE())
             ;
         if (log.isDebugEnabled())
-            log.debug("" + this + ": Exit parsePDVs");
-        synchronized (this)
-        {
-            pipedIn = null;
-            pipedOut = null;
-            notifyAll();
-        }
+            log.debug("" + this + ": Exit readData");
     }
 
     private boolean nextDIMSE()
@@ -1316,10 +1264,12 @@ public class Association
         if (log.isDebugEnabled())
             log.debug("Waiting for next DIMSE");
         
-        PDVInputStream pdvStream = new PDVInputStream(COMMAND, -1);
-        final int pcid = pdvStream.getPCID();
-        if (pcid == -1) // marks end of pipedIn
+        final ByteBuffer dataTF = readDataChannel.get();
+        if (dataTF == null)
             return false;
+        
+        PDVInputStream cmdStream = new PDVInputStream(dataTF, COMMAND, -1);
+        final int pcid = cmdStream.getPCID();
         
         PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
@@ -1336,18 +1286,33 @@ public class Association
             return false;
         }
         
-        DicomObject cmd = readDicomObject(pdvStream,
+        DicomObject cmd = readDicomObject(cmdStream,
                 TransferSyntax.ImplicitVRLittleEndian);
         
         if (cmd == null)
             return false;
         
-        if (log.isDebugEnabled())
+        log.debug("Command:\n{}", cmd);
+        if (CommandFactory.hasDataset(cmd))
         {
-            log.debug("Command:\n" + cmd);
+            PDVInputStream dataStream =
+                new PDVInputStream(cmdStream.getDataTF(), DATA, pcid);
+            handler.onDIMSE(this, pcid, cmd, dataStream);
+            try
+            {
+                long skipped = dataStream.skipAll();
+                if (log.isDebugEnabled() && skipped > 0)
+                    log.debug("" + skipped + " bytes of DIMSE data not consumed by handler.onDIMSE().");                               
+            }
+            catch (IOException e)
+            {
+                // already handled by PDVInputStream
+            }
         }
-        handler.onDIMSE(this, pcid, cmd, CommandFactory.hasDataset(cmd)
-                ? new PDVInputStream(DATA, pcid) : null);
+        else
+        {
+            handler.onDIMSE(this, pcid, cmd, null);
+        }
         return true;
     }
 
@@ -1367,33 +1332,66 @@ public class Association
         }
     }
 
-    private static class PipedInputStream extends java.io.PipedInputStream
+    class ByteBufferChannel
     {
-
-        public PipedInputStream(PipedOutputStream pipedOut, int pipeSize)
-        throws IOException
+        private ByteBuffer buffer;    
+        
+        synchronized public void put(ByteBuffer buffer)
         {
-            super(pipedOut);
-            if (pipeSize != this.buffer.length)
-                this.buffer = new byte[pipeSize];
+            try
+            {
+                while (this.buffer != null)
+                    wait();
+                this.buffer = buffer;
+                notify();
+            }
+            catch (InterruptedException e)
+            {
+                Association.log.warn("Take over of P_DATA_TF to read thread interrupted:", e);
+                Association.this.abort(AAbort.REASON_NOT_SPECIFIED);
+            }
         }
-
+        
+        synchronized ByteBuffer get()
+        {
+            try
+            {
+                while (buffer == null)
+                    wait();
+            }
+            catch (InterruptedException e)
+            {
+                return null;
+            }
+            ByteBuffer tmp = buffer;
+            buffer = null;
+            notify();
+            return tmp;
+        }
+        
     }
     
     private class PDVInputStream extends InputStream
     {
-        private int pcid = -1; // marks end of pipedIn
+        private int pcid;
         private int mch;
         private int available;
+        private ByteBuffer dataTF;
 
-        public PDVInputStream(int command, int pcid)
+        public PDVInputStream(ByteBuffer dataTF, int command, int pcid)
         {
+            this.dataTF = dataTF;
             nextPDV(command, pcid);
         }
 
         public final int getPCID()
         {
             return pcid;
+        }
+        
+        public final ByteBuffer getDataTF()
+        {
+            return dataTF;
         }
         
         private boolean isEOF() throws IOException
@@ -1409,15 +1407,10 @@ public class Association
         
         private boolean nextPDV(int command, int expectPCID)
         {
-            try
+            if (!dataTF.hasRemaining())
             {
-                final int b1 = pipedIn.read();
-                final int b2 = pipedIn.read();
-                final int b3 = pipedIn.read();
-                final int b4 = pipedIn.read();
-                this.pcid = pipedIn.read();
-                this.mch = pipedIn.read();
-                if ((b1 | b2 | b3 | b4 | pcid | mch) < 0)
+                dataTF = readDataChannel.get();
+                if (dataTF == null)
                 {
                     if (expectPCID != -1)
                     {
@@ -1426,18 +1419,13 @@ public class Association
                     }
                     return false;
                 }
-
-                this.available = ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4) - 2;
-                if (log.isDebugEnabled())
-                    log.debug("Parsed PDV[len = " + available
-                            + ", pcid = " + pcid + ", mch = " + mch + "]");
-                
-            } catch (IOException e)
-            {
-                log.warn("Unexpected i/o exception " + e, e);
-                abort(AAbort.REASON_NOT_SPECIFIED);
-                return false;
             }
+            this.available = dataTF.getInt() - 2;
+            this.pcid = dataTF.get() & 0xff;
+            this.mch = dataTF.get() & 0xff;
+            if (log.isDebugEnabled())
+                log.debug("Parsed PDV[len = " + available
+                        + ", pcid = " + pcid + ", mch = " + mch + "]");
             if (this.available < 0)
             {
                 log.warn("Invalid PDV item length: " + (available + 2));
@@ -1466,15 +1454,7 @@ public class Association
                 return -1;
             
             --available;
-            try
-            {
-                return pipedIn.read();
-            } catch (IOException e)
-            {
-                log.warn("Unexpected i/o exception " + e, e);
-                abort(AAbort.REASON_NOT_SPECIFIED);
-                throw e;
-            }
+            return dataTF.get() & 0xff;
         }
 
         public int read(byte[] b, int off, int len) throws IOException
@@ -1482,19 +1462,10 @@ public class Association
             if (isEOF())
                 return -1;
             
-            try
-            {
-                final int read = pipedIn.read(b, off, Math.min(len, available));
-                if (read > 0)
-                    available -= read;
-                
-                return read;
-            } catch (IOException e)
-            {
-                log.warn("Unexpected i/o exception " + e, e);
-                abort(AAbort.REASON_NOT_SPECIFIED);
-                throw e;
-            }
+            int read = Math.min(len, available);
+            dataTF.get(b, off, read);
+            available -= read;
+            return read;
         }
 
         public int available() throws IOException
@@ -1506,21 +1477,26 @@ public class Association
         {
             if (n <= 0 || isEOF())
                 return 0;
-            
-            try
-            {
-                final long skipped = pipedIn.skip(Math.min(n, available));
-                available -= skipped;
 
-                return skipped;
-            } catch (IOException e)
-            {
-                log.warn("Unexpected i/o exception " + e, e);
-                abort(AAbort.REASON_NOT_SPECIFIED);
-                throw e;
-            }
+            int skipped = (int) Math.min(n, available);
+            dataTF.position(dataTF.position() + skipped);
+            available -= skipped;
+            return skipped;
         }
 
+
+        private long skipAll() throws IOException
+        {
+            long n = 0;            
+            while (!isEOF())
+            {
+                n += available;
+                dataTF.position(dataTF.position() + available);
+                available = 0;
+            }
+            return n;
+        }
+        
     }
 
     private void throwAbortException() throws IOException

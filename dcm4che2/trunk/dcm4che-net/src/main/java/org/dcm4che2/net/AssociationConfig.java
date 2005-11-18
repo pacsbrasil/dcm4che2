@@ -47,11 +47,11 @@ package org.dcm4che2.net;
 public class AssociationConfig
 {
 
+    private int connectTimeout = Integer.MAX_VALUE;
     private long associationRequestTimeout = 0;
     private long associationAcceptTimeout = 0;
     private long releaseResponseTimeout = 0;
     private long socketCloseDelay = 100L;
-    private int pdvPipeBufferSize = 1024;
     private boolean packPDV = false;
     private int idleTime = 0;
     private int writeTimeout = 0;
@@ -65,6 +65,16 @@ public class AssociationConfig
     private boolean tcpNoDelay;
     private boolean reuseAddress = true;
     private int maxSendPDULength;
+
+    public final int getConnectTimeout()
+    {
+        return connectTimeout;
+    }
+
+    public final void setConnectTimeout(int connectTimeout)
+    {
+        this.connectTimeout = connectTimeout;
+    }
 
     public final long getAssociationRequestTimeout()
     {
@@ -84,16 +94,6 @@ public class AssociationConfig
     public final void setAssociationAcceptTimeout(long timeout)
     {
         this.associationAcceptTimeout = timeout;
-    }
-
-    public final int getPDVPipeBufferSize()
-    {
-        return pdvPipeBufferSize;
-    }
-
-    public final void setPDVPipeBufferSize(int bufferSize)
-    {
-        this.pdvPipeBufferSize = bufferSize;
     }
 
     public final int getMaxSendPDULength()

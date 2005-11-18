@@ -36,59 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net;
+package org.dcm4che2.net.service;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.io.InputStream;
 
-import org.apache.mina.io.filter.IoThreadPoolFilter;
-import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
-import org.dcm4che2.config.NetworkApplicationEntity;
-import org.dcm4che2.config.TransferCapability;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
-import org.dcm4che2.net.service.DicomServiceRegistry;
-import org.dcm4che2.net.service.VerificationService;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandFactory;
 
-public class Server
+/**
+ * @author gunter zeilinger(gunterze@gmail.com)
+ * @version $Revision$ $Date$
+ * @since Nov 14, 2005
+ *
+ */
+public class StorageService
+extends DicomService
+implements CStoreSCP
 {
-    private static SocketAddress makeSocketAddress()
+
+    protected StorageService(String[] sopClasses)
     {
-        return new InetSocketAddress(11112);
+        super(sopClasses, UID.StorageServiceClass);
     }
-    
-    /**
-     * @param args
-     */
-    public static void main(String[] args)
+
+    public void cstore(Association as, int pcid, DicomObject cmd, InputStream dataStream)
     {
-        IoThreadPoolFilter ioThreadPoolFilter = new IoThreadPoolFilter();
-        ProtocolThreadPoolFilter protocolThreadPoolFilter = new ProtocolThreadPoolFilter();
-
-        ioThreadPoolFilter.start();
-        protocolThreadPoolFilter.start();
-
-        DicomServiceRegistry registry = new DicomServiceRegistry();
-        registry.register(new VerificationService());
-        ConfigurableAcceptorPolicy policy = new ConfigurableAcceptorPolicy();
-        NetworkApplicationEntity ae = new NetworkApplicationEntity();
-        ae.setAssociationAcceptor(true);
-        TransferCapability tc = new TransferCapability();
-        tc.setSopClass(UID.VerificationSOPClass);
-        tc.setRole(TransferCapability.SCP);
-        tc.setTransferSyntax(new String[] { UID.ImplicitVRLittleEndian });
-        ae.setTransferCapability(new TransferCapability[] { tc });
-        policy.addNetworkAE(ae);
-        AssociationAcceptor acceptor = new AssociationAcceptor(policy, registry);
-        // acceptor.setIoThreadPoolFilter(ioThreadPoolFilter);
-        // acceptor.setProtocolThreadPoolFilter(protocolThreadPoolFilter);
         try
         {
-            acceptor.bind(makeSocketAddress());
+            as.write(pcid, doCStore(as, pcid, cmd, dataStream), null);
         } catch (IOException e)
         {
-            e.printStackTrace();
-        }
+            // already handled by as.write
+        }        
+        
     }
 
+    protected DicomObject doCStore(Association as, int pcid,
+            DicomObject rq, InputStream dataStream)
+    {
+        return CommandFactory.newCStoreRSP(rq, CommandFactory.SUCCESS);
+    }
 }
