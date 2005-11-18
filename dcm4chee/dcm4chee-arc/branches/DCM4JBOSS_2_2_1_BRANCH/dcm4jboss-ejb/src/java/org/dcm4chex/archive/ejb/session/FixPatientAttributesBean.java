@@ -13,8 +13,10 @@ import java.util.Iterator;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.ejb.TransactionRolledbackLocalException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -133,19 +135,25 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     	int[] result = { 0, 0 };
     	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
 			patient = (PatientLocal) iter.next();
-			patAttrs = patient.getAttributes(false);
-			filtered = patAttrs.subSet(attrFilter.getPatientFilter());
-			if (patAttrs.size() > filtered.size()) {
-			    log.warn("Detect Patient Record [pk= " + patient.getPk() +
-			    		"] with non-patient attributes:");
-				log.warn(patAttrs);
-				if (doUpdate) {
-				    patient.setAttributes(filtered);
-				    log.warn(
-						"Remove non-patient attributes from Patient Record [pk= "
-							+ patient.getPk() + "]");
+			try {
+				patAttrs = patient.getAttributes(false);
+				filtered = patAttrs.subSet(attrFilter.getPatientFilter());
+				if (patAttrs.size() > filtered.size()) {
+				    log.warn("Detect Patient Record [pk= " + patient.getPk() +
+				    		"] with non-patient attributes:");
+					log.warn(patAttrs);
+					if (doUpdate) {
+					    patient.setAttributes(filtered);
+					    log.warn(
+							"Remove non-patient attributes from Patient Record [pk= "
+								+ patient.getPk() + "]");
+					}
+					result[0]++;
 				}
-				result[0]++;
+			} catch ( TransactionRolledbackLocalException ignore ){
+				log.warn("Study object ["+result[1]+"] not longer available! Ignored!");
+			} catch ( NoSuchObjectLocalException ignore ){
+				log.warn("Patient object ["+result[1]+"] not longer available! Ignored!");
 			}
      	}
     	log.info( result[1]+" patients checked! "+result[0]+" patients with non-patient attributes!");
@@ -176,19 +184,25 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     	int[] result = { 0, 0 };
     	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
 			study = (StudyLocal) iter.next();
-			studyAttrs = study.getAttributes(false);
-			filtered = studyAttrs.subSet(attrFilter.getStudyFilter());
-			if (studyAttrs.size() > filtered.size()) {
-			    log.warn("Detect Study Record [pk= " + study.getPk() +
-			    		"] with non-study attributes:");
-				log.warn(studyAttrs);
-				if (doUpdate) {
-				    study.setAttributes(filtered);
-				    log.warn(
-						"Remove non-study attributes from Study Record [pk= "
-							+ study.getPk() + "]");
+			try {
+				studyAttrs = study.getAttributes(false);
+				filtered = studyAttrs.subSet(attrFilter.getStudyFilter());
+				if (studyAttrs.size() > filtered.size()) {
+				    log.warn("Detect Study Record [pk= " + study.getPk() +
+				    		"] with non-study attributes:");
+					log.warn(studyAttrs);
+					if (doUpdate) {
+					    study.setAttributes(filtered);
+					    log.warn(
+							"Remove non-study attributes from Study Record [pk= "
+								+ study.getPk() + "]");
+					}
+					result[0]++;
 				}
-				result[0]++;
+			} catch ( TransactionRolledbackLocalException ignore ){
+				log.warn("Study object ["+result[1]+"] not longer available! Ignored!");
+			} catch ( NoSuchObjectLocalException ignore ){
+				log.warn("Study object ["+result[1]+"] not longer available! Ignored!");
 			}
      	}
     	log.info( result[1]+" studies checked! "+result[0]+" studies with non-study attributes!");
