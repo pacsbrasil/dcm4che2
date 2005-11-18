@@ -78,6 +78,23 @@
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src/bin</directory>
       <includes>
         <include>*.bat</include>
@@ -117,11 +134,19 @@
       <outputDirectory>lib</outputDirectory>
       <scope>runtime</scope>
       <excludes>
-        <exclude>junit:junit</exclude>
+        <exclude>checkstyle:checkstyle</exclude>
+        <exclude>com.sun.jmx:jmxri</exclude>
+        <exclude>com.sun.jdmk:jmxtools</exclude>
         <exclude>commons-lang:commons-lang</exclude>
         <exclude>commons-logging:commons-logging</exclude>
         <exclude>commons-net:commons-net</exclude>
+        <exclude>javax.activation:activation</exclude>
+        <exclude>javax.jms:jms</exclude>
+        <exclude>javax.mail:mail</exclude>
+        <exclude>junit:junit</exclude>
+        <exclude>org.slf4j:nlog4j</exclude>
         <exclude>oro:oro</exclude>
+        <exclude>xerces:xerces</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>
