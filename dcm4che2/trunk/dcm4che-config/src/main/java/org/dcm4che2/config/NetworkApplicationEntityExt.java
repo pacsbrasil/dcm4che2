@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2005
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,88 +38,66 @@
 
 package org.dcm4che2.config;
 
+import java.io.Serializable;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @version $Revision$ $Date$
+ * @since Nov 18, 2005
  *
  */
-public class TransferCapability
+public class NetworkApplicationEntityExt implements Serializable
 {
-    public static final String SCU = "SCU";
-    public static final String SCP = "SCP";
+    private static final long serialVersionUID = -8161358123139654409L;
     
-    private String commonName;
-    private String sopClass;
-    private boolean scp = true;
-    private String[] transferSyntax = {};
+    private int maxOpsInvoked = 1;
+    private int maxOpsPerformed = 1;
+    private int maxPDULengthReceive = 0x4000; //=16384
+    private int maxPDULengthSend = 0x4000;
     
-    public TransferCapability()
+    public final int getMaxOpsInvoked()
     {
+        return maxOpsInvoked;
     }
     
-    public TransferCapability(String sopClass, String[] transferSyntax)
+    public final void setMaxOpsInvoked(int maxOpsInvoked)
     {
-        this.sopClass = sopClass;
-        this.transferSyntax = transferSyntax;
+        this.maxOpsInvoked = maxOpsInvoked;
     }
     
-    public final String getCommonName()
+    public final int getMaxOpsPerformed()
     {
-        return commonName;
+        return maxOpsPerformed;
     }
     
-    public final void setCommonName(String commonName)
+    public final void setMaxOpsPerformed(int maxOpsPerformed)
     {
-        this.commonName = commonName;
+        this.maxOpsPerformed = maxOpsPerformed;
     }
     
-    public final String getRole()
+    public final boolean isAsyncOps()
     {
-        return scp ? SCP : SCU;
+        return maxOpsInvoked != 1 || maxOpsPerformed != 1;
     }
     
-    public final void setRole(String role)
+    public final int getMaxPDULengthReceive()
     {
-        if (role == null)
-            throw new NullPointerException("Role");
-        
-        if (role.equals(SCP))
-            scp = true;
-        else if (role.equals(SCU))
-            scp = false;
-        else
-            throw new IllegalArgumentException("Role:" +  role);
-    }
-
-    public final boolean isSCP()
-    {
-         return scp;
+        return maxPDULengthReceive;
     }
     
-    public final boolean isSCU()
+    public final void setMaxPDULengthReceive(int maxPDULengthReceive)
     {
-         return !scp;
+        this.maxPDULengthReceive = maxPDULengthReceive;
     }
     
-    public final String getSopClass()
+    public final int getMaxPDULengthSend()
     {
-        return sopClass;
+        return maxPDULengthSend;
     }
     
-    public final void setSopClass(String sopClass)
+    public final void setMaxPDULengthSend(int maxPDULengthSend)
     {
-        this.sopClass = sopClass;
-    }
-    
-    public String[] getTransferSyntax()
-    {
-        return transferSyntax;
-    }
-    
-    public void setTransferSyntax(String[] transferSyntax)
-    {
-        this.transferSyntax = transferSyntax;
+        this.maxPDULengthSend = maxPDULengthSend;
     }
 
 }

@@ -38,6 +38,9 @@
 
 package org.dcm4che2.config;
 
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -51,6 +54,20 @@ public class NetworkConnection
     private int port;
     private String[] tlsCipherSuite = {};
     private Boolean installed;
+    
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer("NetworkConnection[");
+        sb.append(getSocketAddress());
+        if (tlsCipherSuite.length != 0)
+            sb.append(", TLS").append(Arrays.asList(tlsCipherSuite));
+        if (installed != null)
+            sb.append(", installed=").append(installed);
+        if (commonName != null)
+            sb.append(", cn=").append(commonName);
+        sb.append(']');
+        return sb.toString();
+    }
     
     public final String getHostname()
     {
@@ -100,6 +117,12 @@ public class NetworkConnection
     public final void setInstalled(Boolean installed)
     {
         this.installed = installed;
+    }
+    
+    public InetSocketAddress getSocketAddress()
+    {
+        return hostname == null ? new InetSocketAddress(port)
+                                : new InetSocketAddress(hostname, port);
     }
 
 }
