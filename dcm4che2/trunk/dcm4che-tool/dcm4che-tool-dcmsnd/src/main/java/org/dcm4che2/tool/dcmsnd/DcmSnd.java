@@ -185,11 +185,6 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         config.setSessionReceiveBufferSize(bufferSize);
     }
 
-    public final void setPDVPipeBufferSize(int bufferSize)
-    {
-        config.setPDVPipeBufferSize(bufferSize);
-    }
-
     public final void setSocketReceiveBufferSize(int bufferSize)
     {
         config.setSocketReceiveBufferSize(bufferSize);
@@ -231,12 +226,12 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         opts.addOption(localAddr);
         Option maxOpsInvoked = new Option("a", "async", true,
                 "maximum number of outstanding operations it may invoke " +
-                "asynchronously, 1 by default.");
+                "asynchronously, 1 (=synchronous) by default.");
         maxOpsInvoked.setArgName("max-ops");
         opts.addOption(maxOpsInvoked);
         opts.addOption("k", "pack-pdv", false, 
-                "pack command and (first) data PDV in one P-DATA-TF PDU, " +
-                "send command and data PDVs in separate P-Data-TF PDUs by default");
+                "pack command and data PDV in one P-DATA-TF PDU, " +
+        "send only one PDV in one P-Data-TF PDU by default.");
         opts.addOption("y", "tcp-no-delay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
         Option conTimeout = new Option("C", "connect-timeout", true,
@@ -271,9 +266,6 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
                 "set SO_SNDBUF socket option to specified value in KB");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
-        Option pdvPipeBufSize = new Option("v", "pdv-pipe-buf-size", true,
-                "PDV pipe buffer size in KB, 1KB by default");
-        pdvPipeBufSize.setArgName("size");
         Option readBufSize = new Option("r", "read-buf-size", true,
                 "association read buffer size in KB, 1KB by default");
         readBufSize.setArgName("size");
@@ -372,10 +364,6 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
             dcmsnd.setAssociationReceiveBufferSize(
                     parseInt(cl.getOptionValue("r"),
                     "illegal argument of option -r", 1, 10000) * KB);
-        if (cl.hasOption("v"))
-            dcmsnd.setPDVPipeBufferSize(
-                    parseInt(cl.getOptionValue("v"),
-                    "illegal argument of option -v", 1, 10000) * KB);
         dcmsnd.setPackPDV(cl.hasOption("k"));
         dcmsnd.setTcpNoDelay(cl.hasOption("y"));
         if (cl.hasOption("a"))
