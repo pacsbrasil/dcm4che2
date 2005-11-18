@@ -312,5 +312,7 @@ public interface DicomObject extends Serializable
 
     void initFileMetaInformation(String tsuid);
 
+    void initFileMetaInformation(String cuid, String iuid, String tsuid);
+    
     int toStringBuffer(StringBuffer sb, DicomObjectToStringParam param);
 }
