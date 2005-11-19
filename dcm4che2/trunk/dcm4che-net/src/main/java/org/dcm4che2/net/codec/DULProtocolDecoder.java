@@ -39,10 +39,10 @@
 package org.dcm4che2.net.codec;
 
 import org.apache.mina.common.ByteBuffer;
+import org.apache.mina.protocol.ProtocolDecoder;
 import org.apache.mina.protocol.ProtocolDecoderOutput;
 import org.apache.mina.protocol.ProtocolSession;
 import org.apache.mina.protocol.ProtocolViolationException;
-import org.apache.mina.protocol.codec.CumulativeProtocolDecoder;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateRQAC;
 
@@ -51,7 +51,7 @@ import org.dcm4che2.net.pdu.AAssociateRQAC;
  * @version $Reversion$ $Date$
  * @since Sep 19, 2005
  */
-public class DULProtocolDecoder extends CumulativeProtocolDecoder
+public class DULProtocolDecoder implements ProtocolDecoder
 {
 
     private static final int HEADER_LEN = 6;
@@ -64,44 +64,64 @@ public class DULProtocolDecoder extends CumulativeProtocolDecoder
 
     private PDUDecoder decoder;
     
-    private int length;
+    private ByteBuffer buf;
+    private byte[] header = new byte[HEADER_LEN];
+    private int headerIndex = 0;
+    private int toRead;
+    
 
-    public DULProtocolDecoder()
+    public void decode( ProtocolSession session, ByteBuffer in,
+            ProtocolDecoderOutput out ) throws ProtocolViolationException
     {
-        super(AAssociateRQAC.DEF_MAX_PDU_LENGTH + 6);
-    }
-
-    protected boolean doDecode(ProtocolSession session, ByteBuffer in,
-            ProtocolDecoderOutput out) throws ProtocolViolationException
-    {
-
-        if (in.remaining() < HEADER_LEN)
-            return false;
-        if (decoder == null)
+        while (in.hasRemaining())
         {
-            int type = in.get() & 0xff;
-            try
+            if (decoder == null)
             {
-                decoder = decoders[type - 1];
+                while (headerIndex < HEADER_LEN && in.hasRemaining())
+                {
+                    header[headerIndex] = in.get();
+                    ++headerIndex;
+                }
+                if (headerIndex < HEADER_LEN)
+                    return;
+                
+                headerIndex = 0;
+                try
+                {
+                    decoder = decoders[header[0] - 1];
+                }
+                catch (IndexOutOfBoundsException e)
+                {
+                    throw new DULProtocolViolationException(
+                            AAbort.UNRECOGNIZED_PDU, "Unkown PDU type: "
+                            + (header[0] & 0xff));
+                }
+                toRead = ((header[2] & 0xff) << 24) 
+                        | ((header[3] & 0xff) << 16) 
+                        | ((header[4] & 0xff) << 8) 
+                        | (header[5] & 0xff);
+                buf = ByteBuffer.allocate(toRead);
             }
-            catch (IndexOutOfBoundsException e)
+            int rem = in.remaining();
+            if (toRead >= rem)
             {
-                throw new DULProtocolViolationException(
-                        AAbort.UNRECOGNIZED_PDU, "Unkown PDU type: " + type);
+                buf.put(in);
+                toRead -= rem;
+                if (toRead > 0)
+                    return;
             }
-            in.get(); // reserved byte
-            length = in.getInt();
+            else
+            {
+                int prevLimit = in.limit();
+                in.limit(in.position() + toRead);
+                buf.put(in);
+                in.limit(prevLimit);
+            }
+            buf.flip();
+            out.write(decoder.decodePDU(session, buf));
+            decoder = null;
+            buf = null;
         }
-
-        if (in.remaining() < length)
-            return false;
-        
-        int prevLimit = in.limit();
-        in.limit(in.position() + length);
-        out.write(decoder.decodePDU(session, in));
-        in.limit(prevLimit);
-        decoder = null;
-        return true;
     }
-
+    
 }

@@ -55,9 +55,6 @@ class PDataTFDecoder implements PDUDecoder
     public PDU decodePDU(ProtocolSession session, ByteBuffer in)
             throws ProtocolViolationException
     {
-        ByteBuffer buf = ByteBuffer.allocate(in.remaining());
-        buf.put(in);
-        buf.flip();
-        return new PDataTF(buf);
+        return new PDataTF(in);
     }
 }
