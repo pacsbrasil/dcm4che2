@@ -9,6 +9,8 @@
 package org.dcm4chex.archive.mbean;
 
 import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -16,6 +18,7 @@ import javax.ejb.FinderException;
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.FixPatientAttributes;
 import org.dcm4chex.archive.ejb.interfaces.FixPatientAttributesHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryAllStudiesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -62,22 +65,27 @@ public class FixPatientAttributesService extends ServiceMBeanSupport {
     	return total;
     }
     
-    public int checkStudyAttributes() throws RemoteException, FinderException, CreateException {
+    public int checkStudyAttributes() throws RemoteException, FinderException, CreateException, SQLException {
     	return checkStudyAttributes(false);
     }
-    public int repairStudyAttributes() throws RemoteException, FinderException, CreateException {
+    public int repairStudyAttributes() throws RemoteException, FinderException, CreateException, SQLException {
      	return checkStudyAttributes(true);
     }
     
-    private int checkStudyAttributes(boolean doUpdate) throws RemoteException, FinderException {
+    private int checkStudyAttributes(boolean doUpdate) throws RemoteException, SQLException {
     	FixPatientAttributes checker = newFixPatientAttributes();
     	int offset = 0, total = 0;
-    	int[] fixed;
-		do {
-			fixed = checker.checkStudyAttributes(offset,limitNumberOfRecordsPerTask, doUpdate);
-			total += fixed[0];
-    		offset += limitNumberOfRecordsPerTask;
-		} while (fixed[1] == limitNumberOfRecordsPerTask);
+    	QueryAllStudiesCmd cmd = new QueryAllStudiesCmd();
+    	log.info(cmd.count()+" studies found to check study attributes!");
+    	List studyPks;
+    	try {
+	    	while ( (studyPks = cmd.list( offset, limitNumberOfRecordsPerTask)).size() > 0 ) {
+				total += checker.checkStudyAttributes(studyPks, doUpdate);
+	    		offset += limitNumberOfRecordsPerTask;
+			}
+    	} finally {
+    		cmd.close();
+    	}
     	return total;
     }
 
