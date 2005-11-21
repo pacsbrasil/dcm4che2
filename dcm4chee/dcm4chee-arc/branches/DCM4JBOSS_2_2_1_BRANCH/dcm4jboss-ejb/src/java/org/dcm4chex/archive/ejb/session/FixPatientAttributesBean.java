@@ -10,6 +10,7 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -164,27 +165,24 @@ public abstract class FixPatientAttributesBean implements SessionBean {
      * Check study attributes.
      * <p>
      * 
-     * @param offset first study to check (paging)
-     * @param limit  number of studies to check (paging)
+     * @param studyPks Array of StudyBean primary keys.
      * @param doUpdate true will update study record, false leave study record unchanged.
      * 
-     * @return int[2] containing number of 'fixed/toBeFixed' study records
-     *                and number of checked study records
+     * @return number of 'fixed/toBeFixed' study records
      * 
      * @throws FinderException
      * @ejb.interface-method
      */
-    public int[] checkStudyAttributes(int offset, int limit, boolean doUpdate) throws FinderException {
-    	log.info("Check study attributes: offset:"+offset+" limit:"+limit+" doUpdate:"+doUpdate);
-    	Collection col = studyHome.findAll(offset,limit);
-    	log.info( "Found "+col.size()+" studies to check!");
-    	if ( col.isEmpty() ) return null;
+    public int checkStudyAttributes(List studyPks, boolean doUpdate) {
+    	log.info("Check "+studyPks.size()+"study attributes: doUpdate:"+doUpdate);
     	StudyLocal study;
     	Dataset studyAttrs, filtered;
-    	int[] result = { 0, 0 };
-    	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
-			study = (StudyLocal) iter.next();
+    	int result = 0;
+    	Integer studyPk;
+    	for ( Iterator iter = studyPks.iterator() ; iter.hasNext() ; ) {
+    		studyPk = (Integer) iter.next();
 			try {
+				study = (StudyLocal) studyHome.findByPrimaryKey( studyPk );
 				studyAttrs = study.getAttributes(false);
 				filtered = studyAttrs.subSet(attrFilter.getStudyFilter());
 				if (studyAttrs.size() > filtered.size()) {
@@ -197,15 +195,20 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 							"Remove non-study attributes from Study Record [pk= "
 								+ study.getPk() + "]");
 					}
-					result[0]++;
+					result++;
 				}
+			} catch ( FinderException ignore ){
+				log.warn("Study object [pk="+studyPk+"] not longer exists! Ignored!");
 			} catch ( TransactionRolledbackLocalException ignore ){
-				log.warn("Study object ["+result[1]+"] not longer available! Ignored!");
+				if ( ignore.getCause() instanceof NoSuchObjectLocalException )
+					log.warn("Study object [pk="+studyPk+"] not longer available! Ignored!");
+				else
+					log.warn("Study object (pk="+studyPk+") check ignored! cause:"+ignore.getCause());
 			} catch ( NoSuchObjectLocalException ignore ){
-				log.warn("Study object ["+result[1]+"] not longer available! Ignored!");
+				log.warn("Study object [pk="+studyPk+"] not longer available! Ignored!");
 			}
      	}
-    	log.info( result[1]+" studies checked! "+result[0]+" studies with non-study attributes!");
+    	log.info( studyPks.size()+" studies checked! "+result+" studies with non-study attributes!");
     	return result;
     }
     
