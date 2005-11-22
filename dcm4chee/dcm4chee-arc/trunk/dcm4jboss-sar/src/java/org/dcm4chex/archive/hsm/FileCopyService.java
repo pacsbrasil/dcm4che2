@@ -90,6 +90,8 @@ public class FileCopyService extends ServiceMBeanSupport implements
 
 	private String retrieveAET;
 
+	private String userInfo;
+	
 	private int availability = 1;
 	
 	private int concurrency = 1;
@@ -130,6 +132,14 @@ public class FileCopyService extends ServiceMBeanSupport implements
 
 	public final void setRetrieveAET(String aet) {
 		this.retrieveAET = aet;
+	}
+
+	public final String getUserInfo() {
+		return userInfo;
+	}
+
+	public final void setUserInfo(String userInfo) {
+		this.userInfo = userInfo;
 	}
 
 	public final String getAvailability() {
@@ -276,8 +286,8 @@ public class FileCopyService extends ServiceMBeanSupport implements
 			copy(src, dst);
 			storage.storeFile(finfo.getSOPInstanceUID(),
 					finfo.getTransferSyntaxUID(), retrieveAET, availability,
-					destPath, finfo.getFilePath(), (int) finfo.getFileSize(),
-					finfo.getMd5sum(), fileStatus);
+					userInfo, destPath, finfo.getFilePath(),
+					(int) finfo.getFileSize(), finfo.getMd5sum(), fileStatus);
 		}
 	}
 

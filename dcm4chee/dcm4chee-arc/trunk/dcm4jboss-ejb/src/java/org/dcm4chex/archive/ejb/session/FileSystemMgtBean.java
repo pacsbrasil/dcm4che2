@@ -201,6 +201,21 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws FinderException 
      * @ejb.interface-method
      */
+    public FileDTO[] findFilesByStatusAndFileSystem(String dirPath,
+            int status, int limit) throws FinderException {
+        if (log.isDebugEnabled())
+            log.debug("Querying for files with status " + status + " in " + dirPath);
+        Collection c = fileHome.findByStatusAndFileSystem(dirPath, status, limit);
+        if (log.isDebugEnabled())
+            log.debug("Found " + c.size() + " files with status " + status 
+            		+ " in " + dirPath);
+        return toFileDTOs(c);        
+    }
+
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
     public void updateTimeOfLastMd5Check(int pk) throws FinderException {
     	Timestamp ts = new Timestamp( System.currentTimeMillis() );
         if (log.isDebugEnabled())
@@ -233,7 +248,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	public FileSystemDTO addFileSystem(FileSystemDTO dto)
 			throws CreateException {
 		return toDTO(fileSystemHome.create(dto.getDirectoryPath(),
-				dto.getRetrieveAET(), dto.getAvailability()));
+				dto.getRetrieveAET(), dto.getAvailability(), dto.getUserInfo()));
 	}
 
 	/**
@@ -300,6 +315,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		dto.setRetrieveAET(fs.getRetrieveAET());
 		dto.setDirectoryPath(fs.getDirectoryPath());
 		dto.setAvailability(fs.getAvailability());
+		dto.setUserInfo(fs.getUserInfo());
 		dto.setFilePath(file.getFilePath());
 		dto.setFileTsuid(file.getFileTsuid());
 		dto.setFileMd5(file.getFileMd5());

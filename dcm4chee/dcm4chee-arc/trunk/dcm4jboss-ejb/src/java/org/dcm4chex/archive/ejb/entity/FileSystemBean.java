@@ -76,7 +76,6 @@ import org.apache.log4j.Logger;
 public abstract class FileSystemBean implements EntityBean {
 
     private EntityContext ctx;
-
     
     private static final Logger log = Logger.getLogger(FileSystemBean.class);
 
@@ -94,16 +93,19 @@ public abstract class FileSystemBean implements EntityBean {
 	 * 
 	 * @ejb.create-method
 	 */
-    public Integer ejbCreate(String dirpath, String aet, int availability)
+    public Integer ejbCreate(String dirpath, String aet, int availability,
+    		String userInfo)
         throws CreateException
     {
 		setDirectoryPath(dirpath);      
 		setRetrieveAET(aet);
 		setAvailability(availability);
+		setUserInfo(userInfo);
         return null;
     }
 
-    public void ejbPostCreate(String dirpath, String aets, int availability)
+    public void ejbPostCreate(String dirpath, String aets, int availability,
+    		String userInfo)
         throws CreateException
     {
         log.info("Created " + asString());
@@ -127,6 +129,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getRetrieveAET()
             + ", availability="
             + getAvailability()
+            + ", userInfo="
+            + getUserInfo()
             + "]";
     }
     
@@ -142,8 +146,6 @@ public abstract class FileSystemBean implements EntityBean {
     public abstract Integer getPk();
 
     /**
-	 * Directory Path
-	 * 
 	 * @ejb.interface-method
 	 * @ejb.persistence column-name="dirpath"
 	 */
@@ -155,11 +157,8 @@ public abstract class FileSystemBean implements EntityBean {
     public abstract void setDirectoryPath(String dirpath);
 
     /**
-	 * Retrieve AET
-	 * 
      * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="retrieve_aet"
+	 * @ejb.persistence column-name="retrieve_aet"
 	 */
     public abstract String getRetrieveAET();
 
@@ -178,5 +177,17 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setAvailability(int availability);
+    
+    /**
+     * @ejb.interface-method
+	 * @ejb.persistence column-name="user_info"
+	 */
+    public abstract String getUserInfo();
+
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setUserInfo(String info);
+
 
 }

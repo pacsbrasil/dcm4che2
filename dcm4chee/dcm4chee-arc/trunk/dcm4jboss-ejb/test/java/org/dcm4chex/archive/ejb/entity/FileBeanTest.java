@@ -100,7 +100,8 @@ public class FileBeanTest extends ServletTestCase {
             fileSystemHome.create(
                 DIRPATH,
                 RETRIEVE_AETS,
-                Availability.ONLINE);
+                Availability.ONLINE,
+                null);
         FileLocal file =
             fileHome.create(
                 FILEID,

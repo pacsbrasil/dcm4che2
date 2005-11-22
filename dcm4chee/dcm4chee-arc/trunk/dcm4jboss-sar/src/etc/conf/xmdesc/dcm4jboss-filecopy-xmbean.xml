@@ -111,6 +111,15 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
          <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getUserInfo" setMethod="setUserInfo">
+      <description>User Info associated with new initiated file systems.
+      </description>
+      <name>UserInfo</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value=""/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">

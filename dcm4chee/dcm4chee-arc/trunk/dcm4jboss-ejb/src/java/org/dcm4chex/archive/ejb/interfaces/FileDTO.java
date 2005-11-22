@@ -54,6 +54,8 @@ public final class FileDTO implements Serializable {
 
     private String aet;
 
+    private String userInfo;
+    
     private String basedir;
 
     private String path;
@@ -100,7 +102,15 @@ public final class FileDTO implements Serializable {
         this.aet = aet;
     }
 
-    /**
+    public final String getUserInfo() {
+		return userInfo;
+	}
+
+	public final void setUserInfo(String userInfo) {
+		this.userInfo = userInfo;
+	}
+
+	/**
      * @return Returns the baseDir.
      */
     public final String getDirectoryPath() {

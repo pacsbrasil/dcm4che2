@@ -192,7 +192,8 @@ CREATE TABLE filesystem (
 	pk              IDENTITY PRIMARY KEY,
 	dirpath			VARCHAR(256) NOT NULL,
 	retrieve_aet	VARCHAR(256) NOT NULL,
-	availability	INTEGER NOT NULL
+	availability	INTEGER NOT NULL,
+	user_info		VARCHAR(256)
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);

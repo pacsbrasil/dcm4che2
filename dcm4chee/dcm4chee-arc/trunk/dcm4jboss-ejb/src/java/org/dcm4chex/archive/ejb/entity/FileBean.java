@@ -73,8 +73,13 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @ejb.finder signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
- *              query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
- *              strategy="on-find" eager-load-group="*"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
+ *             strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, int limit)"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND f.fileStatus = ?2 LIMIT ?3"
+ *             strategy="on-find" eager-load-group="*"
  */
 public abstract class FileBean implements EntityBean {
 
@@ -225,6 +230,7 @@ public abstract class FileBean implements EntityBean {
         retval.setRetrieveAET(fs.getRetrieveAET());
         retval.setDirectoryPath(fs.getDirectoryPath());
         retval.setAvailability(fs.getAvailability());
+        retval.setUserInfo(fs.getUserInfo());
         retval.setFilePath(getFilePath());
         retval.setFileTsuid(getFileTsuid());
         retval.setFileSize(getFileSize());
