@@ -57,6 +57,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -89,6 +90,8 @@ public class FileCopyService extends ServiceMBeanSupport implements
 
 	private String retrieveAET;
 
+	private int availability = 1;
+	
 	private int concurrency = 1;
 	
 	private int fileStatus = 0;
@@ -127,6 +130,14 @@ public class FileCopyService extends ServiceMBeanSupport implements
 
 	public final void setRetrieveAET(String aet) {
 		this.retrieveAET = aet;
+	}
+
+	public final String getAvailability() {
+		return Availability.toString(availability);
+	}
+
+	public final void setAvailability(String availability) {
+		this.availability = Availability.toInt(availability);
 	}
 
 	public final int getConcurrency() {
@@ -264,8 +275,8 @@ public class FileCopyService extends ServiceMBeanSupport implements
 			File dst = FileUtils.toFile(destPath + '/' + finfo.getFilePath());
 			copy(src, dst);
 			storage.storeFile(finfo.getSOPInstanceUID(),
-					finfo.getTransferSyntaxUID(), retrieveAET, destPath,
-					finfo.getFilePath(), (int) finfo.getFileSize(),
+					finfo.getTransferSyntaxUID(), retrieveAET, availability,
+					destPath, finfo.getFilePath(), (int) finfo.getFileSize(),
 					finfo.getMd5sum(), fileStatus);
 		}
 	}

@@ -148,7 +148,7 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 	 * @param performer The human performer(s) to set.
 	 */
 	public void setHumanPerformer(String performer) {
-		this.humanPerformer = string2Codes( performer, "PACS_TIANI" );
+		this.humanPerformer = string2Codes( performer, "DCM4JBOSS" );
 	}
 
 	public String getTemplates() {
