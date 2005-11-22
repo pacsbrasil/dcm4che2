@@ -218,6 +218,8 @@ class MoveTask implements Runnable {
         try {
             a = asf.newRequestor(service.createSocket(aeData));
             a.setAcTimeout(service.getAcTimeout());
+            a.setDimseTimeout(service.getDimseTimeout());
+            a.setSoCloseDelay(service.getSoCloseDelay());
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(moveDest);
             rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
@@ -334,6 +336,8 @@ class MoveTask implements Runnable {
                     .queryAEData(retrieveAET, null);
 			Association a = asf.newRequestor(service.createSocket(retrieveAEData));
             a.setAcTimeout(service.getAcTimeout());
+            a.setDimseTimeout(service.getDimseTimeout());
+            a.setSoCloseDelay(service.getSoCloseDelay());
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(retrieveAEData.getTitle());
             rq.setCallingAET(callingAET);
