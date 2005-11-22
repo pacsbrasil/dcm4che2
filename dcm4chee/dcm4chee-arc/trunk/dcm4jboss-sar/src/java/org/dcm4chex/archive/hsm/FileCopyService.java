@@ -149,7 +149,7 @@ public class FileCopyService extends ServiceMBeanSupport implements
 	}
 
 	public final void setCopyingRules(String copyingRules) {
-		this.copyingRules = new ForwardingRules(copyingRules);
+		this.copyingRules = new ForwardingRules(copyingRules.replace('\\', '/'));
 	}
 
 	public final int getFileStatus() {
