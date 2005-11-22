@@ -457,4 +457,4 @@ INSERT INTO users VALUES('user','user');
 INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 
-INSERT INTO ae (aet,hostname,port) VALUES('PACS_TIANI','localhost',11112);
+INSERT INTO ae (aet,hostname,port) VALUES('DCM4JBOSS','localhost',11112);

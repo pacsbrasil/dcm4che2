@@ -493,7 +493,7 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
-	VALUES(NEXTVAL FOR ae_pk_seq,'PACS_TIANI','localhost',11112);
+	VALUES(NEXTVAL FOR ae_pk_seq,'DCM4JBOSS','localhost',11112);
 
 GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE code TO USER tiani;
