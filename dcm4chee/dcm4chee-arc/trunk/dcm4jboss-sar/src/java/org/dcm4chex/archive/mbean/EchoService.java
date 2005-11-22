@@ -75,6 +75,10 @@ public class EchoService extends ServiceMBeanSupport
     private static final DcmObjectFactory oFact =
         DcmObjectFactory.getInstance();
     
+    private int acTimeout = 5000;
+    private int dimseTimeout = 0;
+    private int soCloseDelay = 500;
+
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
  
     private String callingAET;
@@ -103,7 +107,29 @@ public class EchoService extends ServiceMBeanSupport
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
     
+	public final int getAcTimeout() {
+        return acTimeout;
+    }
+
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
+
+    public final int getDimseTimeout() {
+        return dimseTimeout;
+    }
+
+    public final void setDimseTimeout(int dimseTimeout) {
+        this.dimseTimeout = dimseTimeout;
+    }
     
+    public final int getSoCloseDelay() {
+        return soCloseDelay;
+    }
+
+    public final void setSoCloseDelay(int soCloseDelay) {
+        this.soCloseDelay = soCloseDelay;
+    }
     
     public String[] echoAll() throws RemoteException, Exception {
     	List l = lookupAEManager().getAes();
@@ -178,6 +204,9 @@ public class EchoService extends ServiceMBeanSupport
 	    Association assoc =
 	        aFact.newRequestor( tlsConfig.createSocket(aeData) );
 	
+	    assoc.setAcTimeout(acTimeout);
+	    assoc.setDimseTimeout(dimseTimeout);
+	    assoc.setSoCloseDelay(soCloseDelay);
 	    AAssociateRQ assocRQ = aFact.newAAssociateRQ();
 	    assocRQ.setCallingAET( this.callingAET );
 	    assocRQ.setCalledAET( aeData.getTitle() );
