@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.common;
 
+import java.util.Arrays;
+
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
@@ -59,19 +61,10 @@ public class Availability {
         return AVAILABILITY[value];
     }
 
-    private final int value;
-
-    public Availability(int value) {
-        if (value < 0 || value >= AVAILABILITY.length)
-                throw new IllegalArgumentException("value: " + value);
-        this.value = value;
-    }
-
-    public final String toString() {
-        return AVAILABILITY[value];
-    }
-
-    public final int getValue() {
-        return value;
+    public static final int toInt(String s) {        
+        final int index = Arrays.asList(AVAILABILITY).indexOf(s);
+        if (index == -1)
+            throw new IllegalArgumentException(s);
+        return index;
     }
 }

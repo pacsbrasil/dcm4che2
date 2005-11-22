@@ -203,7 +203,8 @@ public abstract class StorageBean implements SessionBean {
                         getSeries(ds, coercedElements));
             }
             final String retrieveAET = ds.getString(Tags.RetrieveAET);
-			FileSystemLocal fs = getFileSystem(dirpath, retrieveAET);
+			FileSystemLocal fs = getFileSystem(dirpath, retrieveAET, 
+					Availability.ONLINE);
             FileLocal file = fileHome.create(fileid, tsuid, size, md5,
                     0, instance, fs);
             instance.setAvailability(Availability.ONLINE);
@@ -222,22 +223,24 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void storeFile(java.lang.String iuid, java.lang.String tsuid,
-    		java.lang.String retrieveAET, java.lang.String dirpath,
-    		java.lang.String fileid, int size, byte[] md5, int status)
+    		java.lang.String retrieveAET, int availability,
+    		java.lang.String dirpath, java.lang.String fileid,
+    		int size, byte[] md5, int status)
     throws CreateException, FinderException
     {
-		FileSystemLocal fs = getFileSystem(dirpath, retrieveAET);
+		FileSystemLocal fs = getFileSystem(dirpath, retrieveAET, availability);
 		InstanceLocal instance = instHome.findBySopIuid(iuid);
         fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
     }
 
-	private FileSystemLocal getFileSystem(String dirpath, String retrieveAET)
+	private FileSystemLocal getFileSystem(String dirpath, String retrieveAET,
+			int availability)
 	throws FinderException {
 		try {
 		    return fileSystemHome.findByDirectoryPath(dirpath);
 		} catch (ObjectNotFoundException onfe) {
 		    try {
-				return fileSystemHome.create(dirpath, retrieveAET);
+				return fileSystemHome.create(dirpath, retrieveAET, availability);
 			} catch (CreateException e) {
 				// try to find again, in case it was concurrently created by another thread
 				return fileSystemHome.findByDirectoryPath(dirpath);

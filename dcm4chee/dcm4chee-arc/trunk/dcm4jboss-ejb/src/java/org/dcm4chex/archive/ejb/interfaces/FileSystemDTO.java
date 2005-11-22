@@ -57,10 +57,13 @@ public class FileSystemDTO implements Serializable {
 
     private String retrieveAET;
 
+    private int availability;
+    
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", dir=").append(directoryPath);
         sb.append(", aet=").append(retrieveAET);
+        sb.append(", availability=").append(availability);
         sb.append("]");
         return sb;
     }
@@ -92,4 +95,12 @@ public class FileSystemDTO implements Serializable {
     public final void setRetrieveAET(String retrieveAET) {
         this.retrieveAET = retrieveAET;
     }
+
+	public final int getAvailability() {
+		return availability;
+	}
+
+	public final void setAvailability(int availability) {
+		this.availability = availability;
+	}
 }

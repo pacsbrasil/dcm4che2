@@ -66,6 +66,8 @@ public final class FileDTO implements Serializable {
     
     private int status;
 
+	private int availability;
+
 	public static final int COMPRESS_FAILED = -1;
 
 	public static final int VERIFY_COMPRESS_FAILED = -2;
@@ -179,4 +181,12 @@ public final class FileDTO implements Serializable {
         this.tsuid = tsuid;
     }
 
+
+	public final int getAvailability() {
+		return availability;
+	}
+
+	public final void setAvailability(int availability) {
+		this.availability = availability;
+	}
 }

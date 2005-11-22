@@ -46,6 +46,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.apache.cactus.ServletTestCase;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
@@ -98,7 +99,8 @@ public class FileBeanTest extends ServletTestCase {
         FileSystemLocal fs =
             fileSystemHome.create(
                 DIRPATH,
-                RETRIEVE_AETS);
+                RETRIEVE_AETS,
+                Availability.ONLINE);
         FileLocal file =
             fileHome.create(
                 FILEID,

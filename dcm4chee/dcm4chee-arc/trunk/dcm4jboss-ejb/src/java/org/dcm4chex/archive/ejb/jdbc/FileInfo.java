@@ -96,12 +96,15 @@ public class FileInfo {
     public final int size;
 
     public final int status;
+    
+    public final int availability;
 
     public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
             String studyIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
-            String extRetrieveAET, String fileRetrieveAET, String basedir,
-            String fileID, String tsUID, String md5, int size, int status) {
+            String extRetrieveAET, String fileRetrieveAET, int availability,
+            String basedir, String fileID, String tsUID, String md5, int size,
+            int status) {
         this.pk = pk;
         this.patID = patID;
         this.patName = patName;
@@ -114,6 +117,7 @@ public class FileInfo {
         this.sopCUID = sopCUID;
         this.extRetrieveAET = extRetrieveAET;
         this.fileRetrieveAET = fileRetrieveAET;
+        this.availability = availability;
         this.basedir = basedir;
         this.fileID = fileID;
         this.tsUID = tsUID;

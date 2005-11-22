@@ -1,0 +1,4 @@
+-- Update DB from dcm4jboss-2.5.x to dcm4jboss-2.6.x
+
+ALTER TABLE filesystem ADD availability INTEGER;
+UPDATE filesystem SET availability=0;

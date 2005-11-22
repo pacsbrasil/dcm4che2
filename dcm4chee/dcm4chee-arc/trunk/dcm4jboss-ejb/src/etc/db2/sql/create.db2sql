@@ -211,7 +211,8 @@ CREATE SEQUENCE filesystem_pk_seq;
 CREATE TABLE filesystem (
 	pk              INTEGER PRIMARY KEY NOT NULL,
 	dirpath			VARCHAR(254) NOT NULL,
-	retrieve_aet	VARCHAR(254) NOT NULL
+	retrieve_aet	VARCHAR(254) NOT NULL,
+	availability	INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);

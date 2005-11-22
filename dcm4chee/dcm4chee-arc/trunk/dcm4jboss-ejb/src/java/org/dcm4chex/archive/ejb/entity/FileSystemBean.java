@@ -94,15 +94,16 @@ public abstract class FileSystemBean implements EntityBean {
 	 * 
 	 * @ejb.create-method
 	 */
-    public Integer ejbCreate(String dirpath, String aet)
+    public Integer ejbCreate(String dirpath, String aet, int availability)
         throws CreateException
     {
 		setDirectoryPath(dirpath);      
-		setRetrieveAET(aet);      
+		setRetrieveAET(aet);
+		setAvailability(availability);
         return null;
     }
 
-    public void ejbPostCreate(String dirpath, String aets)
+    public void ejbPostCreate(String dirpath, String aets, int availability)
         throws CreateException
     {
         log.info("Created " + asString());
@@ -124,6 +125,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getDirectoryPath()
             + ", retrieveAET="
             + getRetrieveAET()
+            + ", availability="
+            + getAvailability()
             + "]";
     }
     
@@ -164,4 +167,16 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */ 
     public abstract void setRetrieveAET(String aet);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="availability"
+     */
+    public abstract int getAvailability();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setAvailability(int availability);
+
 }

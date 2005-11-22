@@ -65,8 +65,8 @@ public class RetrieveCmd extends BaseReadCmd {
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",
             "Instance.sopCuid", "Instance.externalRetrieveAET",
-            "FileSystem.retrieveAET", "FileSystem.directoryPath",
-            "File.filePath", "File.fileTsuid",
+            "FileSystem.retrieveAET", "FileSystem.availability",
+            "FileSystem.directoryPath", "File.filePath", "File.fileTsuid",
             "File.fileMd5Field", "File.fileSize", "File.fileStatus", "Series.pk"};
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
@@ -122,9 +122,9 @@ public class RetrieveCmd extends BaseReadCmd {
 						.getString(4), getBytes(5), rs.getString(6),
 						getBytes(7), getBytes(8), getBytes(9),
 						rs.getString(10), rs.getString(11), rs.getString(12),
-						rs.getString(13), rs.getString(14), rs.getString(15),
-						rs.getString(16), rs.getString(17), rs.getInt(18), rs
-								.getInt(19));
+						rs.getString(13), rs.getInt(14), rs.getString(15),
+						rs.getString(16), rs.getString(17), rs.getString(18),
+						rs.getInt(19), rs.getInt(20));
 				key = key();
 				list = (ArrayList) result.get(key);
 				if (list == null) {
@@ -150,9 +150,9 @@ public class RetrieveCmd extends BaseReadCmd {
 						.getString(4), getBytes(5), rs.getString(6),
 						getBytes(7), getBytes(8), getBytes(9),
 						rs.getString(10), rs.getString(11), rs.getString(12),
-						rs.getString(13), rs.getString(14), rs.getString(15),
-						rs.getString(16), rs.getString(17), rs.getInt(18), rs
-								.getInt(19));
+						rs.getString(13), rs.getInt(14), rs.getString(15),
+						rs.getString(16), rs.getString(17), rs.getString(18),
+						rs.getInt(19), rs.getInt(20));
 				seriesKey = new Integer( rs.getInt(20));//series.pk
 				instKey = new Integer( rs.getInt(1));//instance.pk
 				series = (Map) all.get(seriesKey);

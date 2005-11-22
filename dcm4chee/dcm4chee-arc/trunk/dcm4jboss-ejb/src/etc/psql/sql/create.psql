@@ -191,7 +191,8 @@ CREATE INDEX inst_hidden ON instance(hidden);
 CREATE TABLE filesystem (
 	pk          	SERIAL PRIMARY KEY,
 	dirpath			TEXT NOT NULL,
-	retrieve_aet	TEXT NOT NULL
+	retrieve_aet	TEXT NOT NULL,
+	availability	INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);

@@ -224,6 +224,7 @@ public abstract class FileBean implements EntityBean {
         retval.setPk(getPk().intValue());
         retval.setRetrieveAET(fs.getRetrieveAET());
         retval.setDirectoryPath(fs.getDirectoryPath());
+        retval.setAvailability(fs.getAvailability());
         retval.setFilePath(getFilePath());
         retval.setFileTsuid(getFileTsuid());
         retval.setFileSize(getFileSize());

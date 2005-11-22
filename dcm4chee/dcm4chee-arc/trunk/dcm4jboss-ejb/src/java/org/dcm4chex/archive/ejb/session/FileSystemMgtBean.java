@@ -233,8 +233,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 */
 	public FileSystemDTO addFileSystem(FileSystemDTO dto)
 			throws CreateException {
-		return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto
-				.getRetrieveAET()));
+		return toDTO(fileSystemHome.create(dto.getDirectoryPath(),
+				dto.getRetrieveAET(), dto.getAvailability()));
 	}
 
 	/**
@@ -300,6 +300,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		dto.setPk(file.getPk().intValue());
 		dto.setRetrieveAET(fs.getRetrieveAET());
 		dto.setDirectoryPath(fs.getDirectoryPath());
+		dto.setAvailability(fs.getAvailability());
 		dto.setFilePath(file.getFilePath());
 		dto.setFileTsuid(file.getFileTsuid());
 		dto.setFileMd5(file.getFileMd5());
