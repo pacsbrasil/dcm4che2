@@ -68,8 +68,8 @@ public final class FileDTO implements Serializable {
 
 	private int availability;
 
+	public static final int STATUS_OK = 0;
 	public static final int COMPRESS_FAILED = -1;
-
 	public static final int VERIFY_COMPRESS_FAILED = -2;
 
     /**

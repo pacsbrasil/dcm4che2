@@ -60,7 +60,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -321,14 +320,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public Map releaseStudies(Set fsPathSet, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, long accessedBefore)
+            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, long accessedBefore)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
         Timestamp tsBefore = new Timestamp(accessedBefore);
         log.info("Releasing studies not accessed since " + tsBefore);
         Map ians = new HashMap();
         releaseStudies(fsPathSet, ians, checkUncommited, checkOnMedia,
-                checkExternal, Long.MAX_VALUE, new Timestamp(accessedBefore));
+                checkExternal, listOfROFs, Long.MAX_VALUE, new Timestamp(accessedBefore));
         return ians;
     }
 
@@ -336,13 +335,13 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public Map freeDiskSpace(Set fsPathSet, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, long maxSizeToDel)
+            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, long maxSizeToDel)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
     	Map ians = new HashMap();
         log.info("Free Disk Space: try to release " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
         releaseStudies(fsPathSet, ians, checkUncommited, checkOnMedia,
-                checkExternal, maxSizeToDel, null);
+                checkExternal, listOfROFs, maxSizeToDel, null);
         return ians;
    }
     
@@ -361,6 +360,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @param checkUncommited	Flag of freeDiskSpacePolicy: Check if storage of study was not commited.
      * @param checkOnMedia	Flag of freeDiskSpacePolicy: Check if study is stored on media (offline storage).
      * @param checkExternal	Flag of freeDiskSpacePolicy: Check if study is on an external AET.
+     * @param listOfROFs List of filesystems int[a][b] with filesystem pk(b=0) and filestatus(b=1)
      * @param tsBefore date study have to be accessed.
      *  
      * @return Total size of released studies.
@@ -372,7 +372,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws CreateException 
      */
     private long releaseStudies(Set fsPathSet, Map ians, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, long maxSizeToDel,
+            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, long maxSizeToDel,
             Timestamp tsBefore) throws IOException, FinderException,
             EJBException, RemoveException, CreateException {
         Collection c = getStudiesOnFilesystems(fsPathSet, tsBefore);
@@ -381,18 +381,18 @@ public abstract class FileSystemMgtBean implements SessionBean {
         	log.debug(" checkUncommited: "+checkUncommited);
         	log.debug(" checkOnMedia: "+checkOnMedia);
         	log.debug(" checkExternal: "+checkExternal);
+        	log.debug(" checkCopyAvailable: "+listOfROFs);
         	log.debug(" maxSizeToDel: "+maxSizeToDel);
         }
         long sizeToDelete = 0L;
         FileSystemMgtSupportLocal spacer = fileSystemMgtSupportHome.create();
-        Dataset ianDS;
         try {
             for (Iterator iter = c.iterator(); iter.hasNext()
                     && sizeToDelete < maxSizeToDel;) {
                 StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
                         .next();
                 sizeToDelete += spacer.releaseStudy(studyOnFs, ians, checkUncommited,
-                        checkOnMedia, checkExternal);
+                        checkOnMedia, checkExternal,listOfROFs );
                 
             }
         } finally {

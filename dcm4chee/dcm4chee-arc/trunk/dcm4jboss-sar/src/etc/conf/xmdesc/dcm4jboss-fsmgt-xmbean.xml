@@ -135,6 +135,17 @@ accessed studies.</description>
          <value value="false"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isFlushOnROFsAvailable" setMethod="setFlushOnROFsAvailable">
+      <description>Enables the deletion studies in local cache that have a valid copy
+      stored on a read only filesystem. Database entries for the studies are not
+      be removed. 
+      </description>
+      <name>DeleteLocalStudiesCopyAvailable</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="isDeleteStudiesStorageNotCommited" setMethod="setDeleteStudiesStorageNotCommited">
       <description>Enables deletion of the most infrequently accessed studies for
           which no storage commitment request was received. Enabling this feature

@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -104,7 +105,9 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.hidden = FALSE AND f.instance.series.study.pk = ?1"
- * 
+ * @jboss.query 
+ * 	signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
+ *  dynamic="true"
  *
  */
 public abstract class StudyBean implements EntityBean {
@@ -480,6 +483,32 @@ public abstract class StudyBean implements EntityBean {
     public abstract long ejbSelectStudyFileSize(Integer pk)
             throws FinderException;
 
+ 
+    /**
+     * @ejb.select query=""
+     *  transaction-type="Supports"
+     */ 
+    public abstract int ejbSelectGenericInt(String jbossQl, Object[] args)
+    		throws FinderException;
+    
+    /**
+     * @ejb.select query=""
+     */
+    private int countStudyRelatedInstancesWithCopyOnROFS( Integer pk, Collection fsPks, Integer fileStatus )
+    		throws FinderException {
+    	Object[] args = new Object[]{pk,fileStatus};
+        StringBuffer jbossQl = new StringBuffer();
+        jbossQl.append("SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f");
+		jbossQl.append(" WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND f.fileStatus = ?2");
+		jbossQl.append(" AND f.fileSystem.directoryPath IN (");
+		for ( Iterator iter = fsPks.iterator() ; iter.hasNext();){
+			jbossQl.append("'").append(iter.next()).append("'");
+			if ( iter.hasNext() ) jbossQl.append(',');
+		}
+        jbossQl.append(")");
+        // call dynamic-ql query
+        return ejbSelectGenericInt(jbossQl.toString(), args);
+    }
     /**    
      * @throws FinderException
      * @ejb.home-method
@@ -666,6 +695,14 @@ public abstract class StudyBean implements EntityBean {
                         getPk(), MediaDTO.COMPLETED) == getNumberOfStudyRelatedInstances();
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isStudyAvailableOnROFs(Collection listOfROFsPks) throws FinderException {
+        return ( countStudyRelatedInstancesWithCopyOnROFS(
+                        getPk(), listOfROFsPks, new Integer(0)) == getNumberOfStudyRelatedInstances() );
+    }
+    
     /**
      * @ejb.interface-method
      */

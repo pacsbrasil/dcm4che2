@@ -45,6 +45,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,6 +65,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -113,7 +115,10 @@ public class FileSystemMgtService extends TimerSupport {
 	
 	private boolean flushOnMedia = false;
 	
+	private boolean flushOnROFsAvailable = false;
+	
 	private boolean deleteUncommited = false;
+
 	
 	private long studyCacheTimeout = 0L;
     
@@ -360,6 +365,22 @@ public class FileSystemMgtService extends TimerSupport {
 	}
 	
 	/**
+	 * @return Returns the flushOnHSM.
+	 */
+	public boolean isFlushOnROFsAvailable() {
+		return flushOnROFsAvailable;
+	}
+	/**
+	 * Set the freeDiskSpace policy flushOnHSM.
+	 * <p>
+	 * Set this policy active if studies must be on media (offline storage) for deletion.
+	 * 
+	 * @param flushOnROAvailable The flushOnHSM to set.
+	 */
+	public void setFlushOnROFsAvailable(boolean flushOnROAvailable) {
+		this.flushOnROFsAvailable = flushOnROAvailable;
+	}
+	/**
 	 * Return string representation 
 	 * 
 	 * @return Returns the StudyCacheTimeout.
@@ -562,8 +583,7 @@ public class FileSystemMgtService extends TimerSupport {
         
         try {
             fsMgt.remove();
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) {}
         isPurging = false;
     }
     public void purgeFiles( String purgeDirPath ) {
@@ -693,7 +713,8 @@ public class FileSystemMgtService extends TimerSupport {
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
                 	Map ians = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, maxSizeToDel);
+                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, 
+                            maxSizeToDel);
                     sendIANs(ians);
                     if ( autoPurge ) {
                     	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
@@ -708,7 +729,7 @@ public class FileSystemMgtService extends TimerSupport {
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
                 	Map ians = fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, accessedBefore);
+                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, accessedBefore);
                     sendIANs(ians);
                     return ians.size();
                 } finally {
@@ -723,6 +744,7 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
     
+
 	private void sendIANs(Map ians) {
 		for (Iterator iter = ians.values().iterator(); iter.hasNext();) {
 			Dataset ian = (Dataset) iter.next();

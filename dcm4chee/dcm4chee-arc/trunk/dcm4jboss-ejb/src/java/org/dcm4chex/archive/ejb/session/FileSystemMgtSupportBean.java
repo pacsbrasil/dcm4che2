@@ -54,6 +54,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -82,7 +83,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
      * @ejb.interface-method
      */
     public long releaseStudy(StudyOnFileSystemLocal studyOnFs, Map ians, boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal) throws EJBException, RemoveException,
+            boolean flushExternal, Collection listOfROFs) throws EJBException, RemoveException,
             FinderException {
         long size = 0L;
         Dataset ian = null;
@@ -93,6 +94,9 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         StudyLocal study = studyOnFs.getStudy();
         boolean release = flushExternal && study.isStudyExternalRetrievable() || flushOnMedia
         && study.isStudyAvailableOnMedia();
+        if ( !release && listOfROFs != null ) {
+        	release = study.isStudyAvailableOnROFs(listOfROFs);
+        }
         boolean delete = deleteUncommited && study.getNumberOfCommitedInstances() == 0;
         if ( release || delete ) {
         	ian = DcmObjectFactory.getInstance().newDataset();
@@ -129,7 +133,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
                 	refSopSeq = (DcmElement) seriesSopSeq.get( sl.getPk() );
                 }
                 Dataset refSOP = refSopSeq.addNewItem();
-                refSOP.putAE(Tags.RetrieveAET, il.getRetrieveAETs());
+                refSOP.putAE(Tags.RetrieveAET, StringUtils.split(il.getRetrieveAETs(),'\\') );
                 refSOP.putUI(Tags.RefSOPClassUID, il.getSopCuid());
                 refSOP.putUI(Tags.RefSOPInstanceUID, il.getSopIuid());
                 if ( release ) {
