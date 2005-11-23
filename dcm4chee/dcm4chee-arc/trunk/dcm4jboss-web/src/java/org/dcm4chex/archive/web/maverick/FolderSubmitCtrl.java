@@ -121,7 +121,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
             	return query(true); 
             }
-            if (rq.getParameter("filter") != null
+            if (folderForm.getTotal() < 1 || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
