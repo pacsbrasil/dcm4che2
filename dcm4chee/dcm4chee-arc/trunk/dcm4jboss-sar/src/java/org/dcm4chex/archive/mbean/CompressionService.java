@@ -61,6 +61,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CodecCmd;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.codec.DecompressCmd;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
@@ -365,7 +366,7 @@ public class CompressionService extends TimerSupport {
                                         + "! Keep original uncompressed file.");
                         destFile.delete();
                         fsMgt.setFileStatus(fileDTO.getPk(),
-                                FileDTO.VERIFY_COMPRESS_FAILED);
+                        		FileStatus.VERIFY_COMPRESS_FAILED);
                         if (keepTempFileIfVerificationFails <= 0L)
                             decFile.delete();
                         return;
@@ -385,7 +386,7 @@ public class CompressionService extends TimerSupport {
             if (destFile != null && destFile.exists())
                 destFile.delete();
             try {
-                fsMgt.setFileStatus(fileDTO.getPk(), FileDTO.COMPRESS_FAILED);
+                fsMgt.setFileStatus(fileDTO.getPk(), FileStatus.COMPRESS_FAILED);
             } catch (Exception x1) {
                 log.error("Failed to set FAILED_TO_COMPRESS for file "
                         + srcFile);

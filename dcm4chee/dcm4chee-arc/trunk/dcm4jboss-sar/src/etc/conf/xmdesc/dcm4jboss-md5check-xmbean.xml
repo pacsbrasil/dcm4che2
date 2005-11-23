@@ -23,11 +23,17 @@
      <attribute access="read-write"
       getMethod="getTaskInterval"
       setMethod="setTaskInterval">
-      <description>Interval in which the MD5 sum is checked for local files.&lt;br&gt;Format: 
-			 &lt;br&gt;&lt;i&gt;interval&lt;/i&gt;!&lt;i&gt;from&lt;/i&gt;-&lt;i&gt;to&lt;/i&gt; or NEVER
-          &lt;br&gt;&lt;i&gt;interval&lt;/i&gt; = ##s (in seconds), ##m (in minutes), ##h (in hours).
-          &lt;br&gt;&lt;i&gt;from&lt;/i&gt; = start hour (0-23) when no MD5 check should be performed &lt;br&gt;&lt;i&gt;to&lt;/i&gt; = end hour (0-23) when no MD5 check should be performed
-          &lt;br&gt;NEVER = disable MD5 checking&lt;br&gt;Example:&lt;br&gt;10s!9-17 means every 10 seconds, check the MD5 sum of local files, except between the hours of 9:00am and 5:00pm. By setting this type of TaskInterval, you can perform MD5 checks outside of peak hours. </description>
+      <description><![CDATA[Interval in which the File sum is checked for local files.
+         <br>Format: 
+		 <br><i>interval</i>!<i>from</i>-<i>to</i> or NEVER
+         <br><i>interval</i> = ##s (in seconds), ##m (in minutes), ##h (in hours).
+         <br><i>from</i> = start hour (0-23) when no MD5 check should be performed
+         <br><i>to</i> = end hour (0-23) when no MD5 check should be performed
+         <br>NEVER = disable MD5 checking<br>Example:<br>10s!9-17 means every 10 seconds,
+         check the MD5 sum of local files, except between the hours of 9:00am and 5:00pm.
+         By setting this type of TaskInterval, you can perform MD5 checks outside of peak hours.
+         ]]>
+      </description>
       <name>TaskInterval</name>
       <type>java.lang.String</type>
       <descriptors>

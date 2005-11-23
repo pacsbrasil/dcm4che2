@@ -53,14 +53,24 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
    <attribute access="read-write"
       getMethod="getFileStatus"
       setMethod="setFileStatus">
-      <description>Status of copied file.
+      <description>Status of copied file. Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED
       </description>
       <name>FileStatus</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="0"/>
+         <value value="TO_ARCHIVE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isVerifyCopy" setMethod="setVerifyCopy">
+      <description>Verify MD5 sum of copied file.
+      </description>
+      <name>VerifyCopy</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write"
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">

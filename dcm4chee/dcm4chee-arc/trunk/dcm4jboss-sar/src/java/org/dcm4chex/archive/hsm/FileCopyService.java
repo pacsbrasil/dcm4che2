@@ -58,6 +58,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -96,7 +97,9 @@ public class FileCopyService extends ServiceMBeanSupport implements
 	
 	private int concurrency = 1;
 	
-	private int fileStatus = 0;
+	private int fileStatus = FileStatus.TO_ARCHIVE;
+	
+	private boolean verifyCopy;
 
 	private ForwardingRules copyingRules = new ForwardingRules("");
 
@@ -162,12 +165,20 @@ public class FileCopyService extends ServiceMBeanSupport implements
 		this.copyingRules = new ForwardingRules(copyingRules.replace('\\', '/'));
 	}
 
-	public final int getFileStatus() {
-		return fileStatus;
+	public final String getFileStatus() {
+		return FileStatus.toString(fileStatus);
 	}
 
-	public final void setFileStatus(int fileStatus) {
-		this.fileStatus = fileStatus;
+	public final void setFileStatus(String fileStatus) {
+		this.fileStatus = FileStatus.toInt(fileStatus);
+	}
+
+	public final boolean isVerifyCopy() {
+		return verifyCopy;
+	}
+
+	public final void setVerifyCopy(boolean verifyCopy) {
+		this.verifyCopy = verifyCopy;
 	}
 
 	public final String getRetryIntervalls() {

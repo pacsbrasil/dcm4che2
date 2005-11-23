@@ -202,10 +202,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public FileDTO[] findFilesByStatusAndFileSystem(String dirPath,
-            int status, int limit) throws FinderException {
+            int status, Timestamp before, int limit) throws FinderException {
         if (log.isDebugEnabled())
             log.debug("Querying for files with status " + status + " in " + dirPath);
-        Collection c = fileHome.findByStatusAndFileSystem(dirPath, status, limit);
+        Collection c = fileHome.findByStatusAndFileSystem(dirPath, status, before, limit);
         if (log.isDebugEnabled())
             log.debug("Found " + c.size() + " files with status " + status 
             		+ " in " + dirPath);

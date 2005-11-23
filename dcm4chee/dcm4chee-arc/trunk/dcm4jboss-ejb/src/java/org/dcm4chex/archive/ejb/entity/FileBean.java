@@ -75,10 +75,10 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @jboss.query signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
  *             strategy="on-find" eager-load-group="*"
- * @ejb.finder signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, int limit)"
+ * @ejb.finder signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, int limit)"
- *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND f.fileStatus = ?2 LIMIT ?3"
+ * @jboss.query signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, java.sql.Timestamp before, int limit)"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND f.fileStatus = ?2 AND (f.createdTime IS NULL OR f.createdTime < ?3) ORDER BY f.pk LIMIT ?4"
  *             strategy="on-find" eager-load-group="*"
  */
 public abstract class FileBean implements EntityBean {

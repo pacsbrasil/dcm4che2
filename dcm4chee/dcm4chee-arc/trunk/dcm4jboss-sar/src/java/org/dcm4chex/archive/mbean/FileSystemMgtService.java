@@ -45,7 +45,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +64,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -87,7 +85,6 @@ import org.dcm4chex.archive.util.FileUtils;
 public class FileSystemMgtService extends TimerSupport {
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
-    private static final String LOCAL = "local";
     
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
@@ -153,20 +150,12 @@ public class FileSystemMgtService extends TimerSupport {
                 freeDiskSpace();
             }};
             
-    private static String null2local(String s) {
-        return s == null ? LOCAL : s;
-    }
-
-    private static String local2null(String s) {
-        return LOCAL.equals(s) ? null : s;
-    }
-
     public String getEjbProviderURL() {
-        return null2local(EJBHomeFactory.getEjbProviderURL());
+        return EJBHomeFactory.getEjbProviderURL();
     }
 
     public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(local2null(ejbProviderURL));
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     public final String getDirectoryPathList() {
@@ -182,7 +171,7 @@ public class FileSystemMgtService extends TimerSupport {
     }
 
     public final void setDirectoryPathList(String str) {
-        StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
+        StringTokenizer st = new StringTokenizer(str, " ,:;");
         ArrayList list = new ArrayList();
         HashSet set = new HashSet();
         int dirIndex = 0;
