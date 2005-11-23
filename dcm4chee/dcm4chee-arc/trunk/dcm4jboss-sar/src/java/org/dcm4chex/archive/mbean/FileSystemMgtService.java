@@ -46,6 +46,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -115,7 +116,6 @@ public class FileSystemMgtService extends TimerSupport {
 	private boolean flushOnROFsAvailable = false;
 	
 	private boolean deleteUncommited = false;
-
 	
 	private long studyCacheTimeout = 0L;
     
@@ -134,9 +134,31 @@ public class FileSystemMgtService extends TimerSupport {
     private boolean freeDiskSpaceOnDemand = true;
 
 	private boolean isPurging = false;
+	
+    private boolean retrieveLastReceived = true;
 
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
+
+    private static final Comparator ASC_FILE_PK = new Comparator() {
+
+        public int compare(Object o1, Object o2) {
+            FileDTO fi1 = (FileDTO) o1;
+            FileDTO fi2 = (FileDTO) o2;
+            int diffAvail = fi1.getAvailability() - fi2.getAvailability();
+            return diffAvail != 0 ? diffAvail : fi1.getPk() - fi2.getPk();
+        }
+    };
+
+    private static final Comparator DESC_FILE_PK = new Comparator() {
+
+        public int compare(Object o1, Object o2) {
+            FileDTO fi1 = (FileDTO) o1;
+            FileDTO fi2 = (FileDTO) o2;
+            int diffAvail = fi1.getAvailability() - fi2.getAvailability();
+            return diffAvail != 0 ? diffAvail : fi2.getPk() - fi1.getPk();
+        }
+    };
     
     private final NotificationListener purgeFilesListener = 
         new NotificationListener(){
@@ -240,7 +262,15 @@ public class FileSystemMgtService extends TimerSupport {
         this.retrieveAET = aet;
     }
 
-    public final String getMinFreeDiskSpace() {
+    public final boolean isRetrieveLastReceived() {
+		return retrieveLastReceived;
+	}
+
+	public final void setRetrieveLastReceived(boolean retrieveLastReceived) {
+		this.retrieveLastReceived = retrieveLastReceived;
+	}
+
+	public final String getMinFreeDiskSpace() {
         return FileUtils.formatSize(minFreeDiskSpace);
     }
 
@@ -653,6 +683,7 @@ public class FileSystemMgtService extends TimerSupport {
 		}
         if (list.isEmpty())
             return null;
+        Collections.sort(list, retrieveLastReceived ? DESC_FILE_PK : ASC_FILE_PK);
         for (int i = 0, n = list.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) list.get(i);
             String dirPath = dto.getDirectoryPath();

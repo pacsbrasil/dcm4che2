@@ -259,18 +259,6 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isRetrieveLastReceived"
-      setMethod="setRetrieveLastReceived">
-      <description>Select the last received instances for retrieval, in the case
-      where several instances with an equal SOP Instance UID were received.
-      </description>
-      <name>RetrieveLastReceived</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isForwardAsMoveOriginator"
       setMethod="setForwardAsMoveOriginator">
       <description>Use the calling AE title of the requesting 

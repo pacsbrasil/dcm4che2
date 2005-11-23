@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -67,7 +66,6 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -124,10 +122,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
     
-    private String queryTransactionIsolationLevel;
-
-    private String retrieveTransactionIsolationLevel;
-    
     private ObjectName fileSystemMgtName;
 
     private ObjectName stgCmtScuScpName;
@@ -137,8 +131,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean sendPendingMoveRSP = true;
-
-    private boolean retrieveLastReceived = true;
 
     private boolean forwardAsMoveOriginator = true;
 	
@@ -414,12 +406,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
 
-    public final boolean isRetrieveLastReceived() {
-        return retrieveLastReceived;
-    }
-
-    public final void setRetrieveLastReceived(boolean retrieveLastReceived) {
-        this.retrieveLastReceived = retrieveLastReceived;
+    boolean isRetrieveLastReceived() {
+        try {
+            Boolean b = (Boolean) server.getAttribute(
+            		fileSystemMgtName, "RetrieveLastReceived");
+            return b.booleanValue();
+        } catch (Exception e) {
+            log.warn("Failed to access Attribute RetrieveLastReceived", e);
+        	return true;
+        }
     }
 
     public final boolean isForwardAsMoveOriginator() {
