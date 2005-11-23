@@ -458,12 +458,17 @@ public abstract class InstanceBean implements EntityBean {
             setRetrieveAETs(aets);
         return updated;
     }
+ 
+    /**
+     * @ejb.select query="SELECT MIN(f.fileSystem.availability) FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
+     */ 
+    public abstract int ejbSelectLocalAvailability(Integer pk) throws FinderException;
     
     private boolean updateAvailability(Integer pk, String retrieveAETs) throws FinderException {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
         if (retrieveAETs != null)
-            availability = Availability.ONLINE;
+            availability = ejbSelectLocalAvailability(pk);
         else if (getExternalRetrieveAET() != null)
             availability = Availability.NEARLINE;
         else if ((media = getMedia()) != null 
