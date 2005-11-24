@@ -182,6 +182,24 @@ accessed studies.</description>
          <value value="false"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getValidFileStatus" setMethod="setValidFileStatus">
+      <description><![CDATA[Defines the 'VALID' File Status if <tt>isFlushOnROFsAvailable</tt> is enabled.<p/> 
+      		This value is used to check if a valid study copy is available on RO Filesystem.<br/>
+      		(all instances of a study must be also stored on a RO filesystem with this filestatus.)
+      		<dl>
+    		<dt>Use one of the following stati:</dt>
+    		<dd>DEFAULT</dd>
+    		<dd>TO_ARCHIVE</dd>
+    		<dd>ARCHIVED</dd>
+    		</dl>
+    		]]> 
+      </description>
+      <name>ValidFileStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DEFAULT"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="isDeleteStudiesStorageNotCommited"
       setMethod="setDeleteStudiesStorageNotCommited">

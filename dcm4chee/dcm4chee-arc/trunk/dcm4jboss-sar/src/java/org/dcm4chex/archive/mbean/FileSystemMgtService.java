@@ -63,6 +63,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
@@ -114,6 +115,7 @@ public class FileSystemMgtService extends TimerSupport {
 	private boolean flushOnMedia = false;
 	
 	private boolean flushOnROFsAvailable = false;
+	private int validFileStatus = 0;
 	
 	private boolean deleteUncommited = false;
 	
@@ -398,6 +400,18 @@ public class FileSystemMgtService extends TimerSupport {
 	 */
 	public void setFlushOnROFsAvailable(boolean flushOnROAvailable) {
 		this.flushOnROFsAvailable = flushOnROAvailable;
+	}
+	/**
+	 * @return Returns the validFileStatus.
+	 */
+	public String getValidFileStatus() {
+		return FileStatus.toString(validFileStatus);
+	}
+	/**
+	 * @param validFileStatus The validFileStatus to set.
+	 */
+	public void setValidFileStatus(String validFileStatus) {
+		this.validFileStatus = FileStatus.toInt(validFileStatus);
 	}
 	/**
 	 * Return string representation 
@@ -733,7 +747,7 @@ public class FileSystemMgtService extends TimerSupport {
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
                 	Map ians = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, 
+                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, validFileStatus,
                             maxSizeToDel);
                     sendIANs(ians);
                     if ( autoPurge ) {
@@ -749,7 +763,7 @@ public class FileSystemMgtService extends TimerSupport {
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
                 	Map ians = fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, accessedBefore);
+                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, validFileStatus, accessedBefore);
                     sendIANs(ians);
                     return ians.size();
                 } finally {
