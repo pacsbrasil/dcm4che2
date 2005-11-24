@@ -1061,8 +1061,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.FileDTO']">
+<xsl:variable name="line_name">
+	<xsl:choose>
+		<xsl:when test="fileStatus &lt; 0">error_line</xsl:when>
+		<xsl:otherwise>file_line</xsl:otherwise>
+	</xsl:choose>
+</xsl:variable>
 	<tr>
-<table class="file_line" width="100%" cellpadding="0" cellspacing="0" border="0">
+<table class="{$line_name}" width="100%" cellpadding="0" cellspacing="0" border="0">
 		<colgroup>
 			<col width="5%"/>
 			<col width="10%"/>
@@ -1082,8 +1088,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
                             <td title="Status">
                                         <xsl:choose>
                                             <xsl:when test="fileStatus=0">OK</xsl:when>
+                                            <xsl:when test="fileStatus=1">to archive</xsl:when>
+                                            <xsl:when test="fileStatus=2">archived</xsl:when>
                                             <xsl:when test="fileStatus=-1">compress failed</xsl:when>
                                             <xsl:when test="fileStatus=-2">verify compress failed</xsl:when>
+                                            <xsl:when test="fileStatus=-3">MD5 check failed</xsl:when>
+                                            <xsl:when test="fileStatus=-3">HSM query failed</xsl:when>
                                             <xsl:otherwise>unknown(<xsl:value-of select="fileStatus"/>)</xsl:otherwise>
                                         </xsl:choose>&#160;
                             </td>

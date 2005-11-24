@@ -79,6 +79,10 @@ table.instance_line {
 table.file_line {
 	background : #ffffff;
 } 
+table.error_line {
+	background : #ff3f3f;
+	color : #000000;
+} 
 
 td.tab {
 	background : #cccccc;
