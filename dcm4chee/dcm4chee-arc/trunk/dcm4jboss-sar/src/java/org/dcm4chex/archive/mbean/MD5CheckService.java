@@ -55,6 +55,7 @@ import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -86,7 +87,6 @@ public class MD5CheckService extends TimerSupport {
     
     
     private static final Logger log = Logger.getLogger(MD5CheckService.class);
-    private static final Logger md5log = Logger.getLogger(MD5CheckService.class.getName()+".corrupted");
 
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -210,7 +210,8 @@ public class MD5CheckService extends TimerSupport {
 		MD5Utils.md5sum(file, fileMD5, digest, new byte[ BUF_SIZE ]);
         fsMgt.updateTimeOfLastMd5Check( fileDTO.getPk() );
         if (!Arrays.equals(fileMD5, storedMD5 ) ) {
-        	md5log.warn("File (pk="+fileDTO.getPk()+") " + file + " corrupted! MD5 of file:"+new String(fileMD5)+" should be "+new String(storedMD5) );
+        	fsMgt.setFileStatus( fileDTO.getPk(), FileStatus.MD5_CHECK_FAILED );
+        	log.warn("File (pk="+fileDTO.getPk()+") " + file + " corrupted! MD5 of file:"+new String(fileMD5)+" should be "+new String(storedMD5) );
             return false;
         }
         return true;
