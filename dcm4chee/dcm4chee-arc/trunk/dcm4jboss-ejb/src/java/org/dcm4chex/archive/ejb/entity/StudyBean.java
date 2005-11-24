@@ -698,9 +698,9 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean isStudyAvailableOnROFs(Collection listOfROFsPks) throws FinderException {
+    public boolean isStudyAvailableOnROFs(Collection listOfROFsPks, int validFileStatus) throws FinderException {
         return ( countStudyRelatedInstancesWithCopyOnROFS(
-                        getPk(), listOfROFsPks, new Integer(0)) == getNumberOfStudyRelatedInstances() );
+                        getPk(), listOfROFsPks, new Integer(validFileStatus)) == getNumberOfStudyRelatedInstances() );
     }
     
     /**

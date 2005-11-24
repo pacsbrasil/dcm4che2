@@ -83,7 +83,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
      * @ejb.interface-method
      */
     public long releaseStudy(StudyOnFileSystemLocal studyOnFs, Map ians, boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal, Collection listOfROFs) throws EJBException, RemoveException,
+            boolean flushExternal, Collection listOfROFs, int validFileStatus) throws EJBException, RemoveException,
             FinderException {
         long size = 0L;
         Dataset ian = null;
@@ -95,7 +95,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         boolean release = flushExternal && study.isStudyExternalRetrievable() || flushOnMedia
         && study.isStudyAvailableOnMedia();
         if ( !release && listOfROFs != null ) {
-        	release = study.isStudyAvailableOnROFs(listOfROFs);
+        	release = study.isStudyAvailableOnROFs(listOfROFs,validFileStatus);
         }
         boolean delete = deleteUncommited && study.getNumberOfCommitedInstances() == 0;
         if ( release || delete ) {

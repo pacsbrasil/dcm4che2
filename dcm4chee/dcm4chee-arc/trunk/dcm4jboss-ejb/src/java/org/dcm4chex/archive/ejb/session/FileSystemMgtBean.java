@@ -336,14 +336,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public Map releaseStudies(Set fsPathSet, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, long accessedBefore)
+            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, int validFileStatus, long accessedBefore)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
         Timestamp tsBefore = new Timestamp(accessedBefore);
         log.info("Releasing studies not accessed since " + tsBefore);
         Map ians = new HashMap();
         releaseStudies(fsPathSet, ians, checkUncommited, checkOnMedia,
-                checkExternal, listOfROFs, Long.MAX_VALUE, new Timestamp(accessedBefore));
+                checkExternal, listOfROFs, validFileStatus, Long.MAX_VALUE, new Timestamp(accessedBefore));
         return ians;
     }
 
@@ -351,13 +351,13 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public Map freeDiskSpace(Set fsPathSet, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, long maxSizeToDel)
+            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, int validFileStatus, long maxSizeToDel)
             throws IOException, FinderException, EJBException, RemoveException,
             CreateException {
     	Map ians = new HashMap();
         log.info("Free Disk Space: try to release " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
         releaseStudies(fsPathSet, ians, checkUncommited, checkOnMedia,
-                checkExternal, listOfROFs, maxSizeToDel, null);
+                checkExternal, listOfROFs, validFileStatus, maxSizeToDel, null);
         return ians;
    }
     
@@ -388,7 +388,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws CreateException 
      */
     private long releaseStudies(Set fsPathSet, Map ians, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, long maxSizeToDel,
+            boolean checkOnMedia, boolean checkExternal, Collection listOfROFs, int validFileStatus, long maxSizeToDel,
             Timestamp tsBefore) throws IOException, FinderException,
             EJBException, RemoveException, CreateException {
         Collection c = getStudiesOnFilesystems(fsPathSet, tsBefore);
@@ -408,7 +408,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
                         .next();
                 sizeToDelete += spacer.releaseStudy(studyOnFs, ians, checkUncommited,
-                        checkOnMedia, checkExternal,listOfROFs );
+                        checkOnMedia, checkExternal,listOfROFs,validFileStatus );
                 
             }
         } finally {
