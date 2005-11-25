@@ -586,12 +586,12 @@ Use either the SOP Class UID or the symbolic name:
       getMethod="getBufferSize"
       setMethod="setBufferSize">
       <description>Size of the buffer used to copy data from the TCP channel 
-      to file. Keep the default value: 512.
+      to file. Keep the default value: 8192.
       </description>
       <name>BufferSize</name>
       <type>int</type>
       <descriptors>
-         <value value="512"/>
+         <value value="8192"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

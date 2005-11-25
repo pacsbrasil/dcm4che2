@@ -155,12 +155,12 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
    <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
-      <description>Size of the buffer used to copy data. Keep the default value: 512.
+      <description>Size of the buffer used to copy data. Keep the default value: 8192.
       </description>
       <name>BufferSize</name>
       <type>int</type>
       <descriptors>
-         <value value="512"/>
+         <value value="8192"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

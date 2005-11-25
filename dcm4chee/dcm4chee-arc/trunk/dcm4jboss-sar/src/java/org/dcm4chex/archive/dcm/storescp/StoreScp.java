@@ -562,7 +562,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         log.info("M-WRITE file:" + file);
         MessageDigest md = MessageDigest.getInstance("MD5");
         BufferedOutputStream os = new BufferedOutputStream(
-                new FileOutputStream(file));
+                new FileOutputStream(file), service.getBufferSize());
         DigestOutputStream dos = new DigestOutputStream(os, md);
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
