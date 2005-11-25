@@ -41,6 +41,8 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -63,6 +65,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -77,6 +80,7 @@ import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.NumericCharacterReference;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -195,12 +199,15 @@ public class FileSystemMgtService extends TimerSupport {
     }
 
     public final void setDirectoryPathList(String str) {
+    	str = NumericCharacterReference.decode(str,(char)250);
         StringTokenizer st = new StringTokenizer(str, " ,:;");
         ArrayList list = new ArrayList();
         HashSet set = new HashSet();
         int dirIndex = 0;
         for (int i = 0; st.hasMoreTokens(); ++i) {
             String tk = st.nextToken();
+            if ( ! checkASCII( tk ) ) 
+            	throw new IllegalArgumentException("Path contains non-ASCII character! '"+tk+"'"); 
             int len = tk.length();
             if (tk.charAt(len-1) == '*') {
                 dirIndex = i;
@@ -215,6 +222,15 @@ public class FileSystemMgtService extends TimerSupport {
         dirPathList = list;
         fsPathSet = set;
         curDirIndex = dirIndex;
+    }
+    
+    private boolean checkASCII(String s) {
+    	char[] ch = s.toCharArray();
+    	for (int i = 0; i < ch.length; ++i) {
+    		if (ch[i] < '\u0020' || ch[i] >= '\u007f')
+    			return false;
+    	}
+		return true;
     }
 
     private void storeDirectoryPathList() {
@@ -243,12 +259,15 @@ public class FileSystemMgtService extends TimerSupport {
             rofsPathSet = Collections.EMPTY_SET;
             return;
         }
+    	str = NumericCharacterReference.decode(str,(char)250);
         StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
         ArrayList list = new ArrayList();
         HashSet set = new HashSet();
         int dirIndex = 0;
         for (int i = 0; st.hasMoreTokens(); ++i) {
             String tk = st.nextToken();
+            if ( ! checkASCII( tk ) ) 
+            	throw new IllegalArgumentException("Path contains non-ASCII character! '"+tk+"'"); 
             set.add(tk.replace(File.separatorChar, '/'));
             list.add(new File(tk));
         }
@@ -260,7 +279,16 @@ public class FileSystemMgtService extends TimerSupport {
         return retrieveAET;
     }
 
+    /**
+     * Set the AE Title which is associated with this DICOM Node.
+     * <p>
+     * Checks the String (len must be 0<x<=16, only ASCII (without ctrl chars) )
+     * 
+     * @param aet The AE Title to set.
+     */
     public final void setRetrieveAET(String aet) {
+    	aet = NumericCharacterReference.decode(aet,(char)250);
+        aet = StringUtils.checkAET(aet); 
         this.retrieveAET = aet;
     }
 
