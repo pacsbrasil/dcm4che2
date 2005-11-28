@@ -52,6 +52,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
@@ -65,6 +66,7 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
+import org.dcm4chex.archive.util.BufferedOutputStream;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -105,13 +107,15 @@ public class FileCopyService extends ServiceMBeanSupport implements
 
 	private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
-	private int bufferSize = 512;
+	private ObjectName fileSystemMgtName;
 
-	private ThreadLocal buffer = new ThreadLocal() {
-		protected Object initialValue() {
-			return new byte[bufferSize];
-		}
-	};
+    public final ObjectName getFileSystemMgtName() {
+        return fileSystemMgtName;
+    }
+
+    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+        this.fileSystemMgtName = fileSystemMgtName;
+    }
 
 	public String getEjbProviderURL() {
 		return EJBHomeFactory.getEjbProviderURL();
@@ -210,14 +214,6 @@ public class FileCopyService extends ServiceMBeanSupport implements
 		this.queueName = queueName;
 	}
 
-	public final int getBufferSize() {
-		return bufferSize;
-	}
-
-	public final void setBufferSize(int bufferSize) {
-		this.bufferSize = bufferSize;
-	}
-
 	protected void startService() throws Exception {
 		JMSDelegate.startListening(queueName, this, concurrency);
 		server.addNotificationListener(storeScpServiceName, this,
@@ -288,13 +284,14 @@ public class FileCopyService extends ServiceMBeanSupport implements
 	private void process(FileCopyOrder order) throws Exception {
 		String destPath = order.getDestinationFileSystemPath();
 		List fileInfos = order.getFileInfos();
+		byte[] buffer = allocateBuffer();
 		Storage storage = getStorageHome().create();
 		for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
 			FileInfo finfo = (FileInfo) iter.next();
 			File src = FileUtils.toFile(finfo.getFileSystemPath() + '/'
 					+ finfo.getFilePath());
 			File dst = FileUtils.toFile(destPath + '/' + finfo.getFilePath());
-			copy(src, dst);
+			copy(src, dst, buffer );
 			storage.storeFile(finfo.getSOPInstanceUID(),
 					finfo.getTransferSyntaxUID(), retrieveAET, availability,
 					userInfo, destPath, finfo.getFilePath(),
@@ -302,22 +299,25 @@ public class FileCopyService extends ServiceMBeanSupport implements
 		}
 	}
 
-	private void copy(File src, File dst) throws IOException {
+	byte[] allocateBuffer() {
+        try {
+			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
+		} catch (JMException e) {
+            throw new RuntimeException(
+                    "Failed to invoke allocateBuffer", e);
+		}
+ 	}    
+	
+	private void copy(File src, File dst, byte[] buffer) throws IOException {
 		FileInputStream fis = new FileInputStream(src);
 		try {
 			mkdirs(dst.getParentFile());
-			FileOutputStream fos = new FileOutputStream(dst);
+			BufferedOutputStream bos = new BufferedOutputStream(
+					new FileOutputStream(dst), buffer);
 			try {
-				byte[] buffer = (byte[]) this.buffer.get();
-				long rem = src.length();
-				while (rem > 0) {
-					int read = fis.read(buffer, 0, (int) Math.min(
-							buffer.length, rem));
-					fos.write(buffer, 0, read);
-					rem -= read;
-				}
+				bos.write(fis, (int) src.length());
 			} finally {
-				fos.close();
+				bos.close();
 			}
 		} catch (IOException e) {
 			dst.delete();

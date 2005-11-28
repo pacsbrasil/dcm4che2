@@ -68,7 +68,6 @@ import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
-import org.dcm4che.net.DataSource;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
@@ -352,7 +351,6 @@ class MoveTask implements Runnable {
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(retrieveAEData.getTitle());
             rq.setCallingAET(callingAET);
-            String asuid = moveRqCmd.getAffectedSOPClassUID();
             rq.addPresContext(asf.newPresContext(PCID,
                     UIDs.StudyRootQueryRetrieveInformationModelMOVE, NATIVE_LE_TS));
             rq.addExtNegotiation(asf.newExtNegotiation(
@@ -449,8 +447,6 @@ class MoveTask implements Runnable {
         this.stgCmtActionInfo = DcmObjectFactory.getInstance().newDataset();
         this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
         Set studyInfos = new HashSet();
-        byte[] buffer = withoutPixeldata ? null : new byte[service
-                .getBufferSize()];
         Association a = storeAssoc.getAssociation();
         Collection localFiles = retrieveInfo.getLocalFiles();
         final Set remainingIUIDs = new HashSet(retrieveInfo.getLocalIUIDs());
@@ -489,8 +485,7 @@ class MoveTask implements Runnable {
                 }
             };
             try {
-                storeAssoc.invoke(makeCStoreRQ(fileInfo, buffer),
-                        storeScpListener);
+                storeAssoc.invoke(makeCStoreRQ(fileInfo), storeScpListener);
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
@@ -547,8 +542,7 @@ class MoveTask implements Runnable {
         item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
-    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer)
-            throws NoPresContextException {
+    private Dimse makeCStoreRQ(FileInfo info) throws NoPresContextException {
         Association assoc = storeAssoc.getAssociation();
         PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
                 info.tsUID);
@@ -570,7 +564,9 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        DataSource ds = new FileDataSource(service.getLog(), info, buffer);
+        FileDataSource ds = new FileDataSource(service.getLog(), info, 
+        		service.allocateBuffer());
+        ds.setWithoutPixeldata(withoutPixeldata);
         return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);
     }

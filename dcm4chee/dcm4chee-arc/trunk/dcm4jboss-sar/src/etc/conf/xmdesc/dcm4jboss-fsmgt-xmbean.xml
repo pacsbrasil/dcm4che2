@@ -302,6 +302,18 @@ accessed studies.</description>
       </descriptors>
    </attribute>   
    <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of the buffer used to copy files and to copy data between 
+      TCP channel and file.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -408,6 +420,11 @@ accessed studies.</description>
         <type>java.lang.Integer</type>
       </parameter>
       <return-type>long</return-type>
+   </operation>   
+   <operation impact="ACTION">
+      <description>Used internally</description>
+      <name>allocateBuffer</name>
+      <return-type>[B</return-type>
    </operation>   
    
 </mbean>

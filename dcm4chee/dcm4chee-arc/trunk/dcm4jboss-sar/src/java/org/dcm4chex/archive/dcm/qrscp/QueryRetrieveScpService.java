@@ -142,8 +142,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private int soCloseDelay = 500;
 
-    private int bufferSize = 512;
-
     private boolean patientRootFind;
 
     private boolean studyRootFind;
@@ -488,14 +486,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
     
-    public final int getBufferSize() {
-        return bufferSize;
-    }
-
-    public final void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
-
 	public final int getMaxUIDsPerMoveRQ() {
 		return maxUIDsPerMoveRQ;
 	}
@@ -635,6 +625,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
+	byte[] allocateBuffer() {
+        try {
+			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
+		} catch (JMException e) {
+            throw new RuntimeException(
+                    "Failed to invoke allocateBuffer", e);
+		}
+ 	}    
+    
     boolean isWithoutPixelData(String moveDest) {
         return sendNoPixelDataToAETs != null
             && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);

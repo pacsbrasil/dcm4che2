@@ -365,14 +365,6 @@ public class StoreScpService extends AbstractScpService {
         enableService();
     }
 
-    public final int getBufferSize() {
-        return scp.getBufferSize();
-    }
-
-    public final void setBufferSize(int bufferSize) {
-        scp.setBufferSize(bufferSize);
-    }
-    
     public String getImageCUIDs() {
     	return toString(imageCUIDS);
     }
@@ -457,7 +449,6 @@ public class StoreScpService extends AbstractScpService {
         StringTokenizer st = new StringTokenizer(uids, "\r\n;");
         String uid,name;
         Map map = new TreeMap();
-        int i = 0;
         while ( st.hasMoreTokens() ) {
         	uid = st.nextToken().trim();
     		name = uid;
@@ -638,6 +629,15 @@ public class StoreScpService extends AbstractScpService {
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }		
-	}    
+	}
+
+	byte[] allocateBuffer() {
+        try {
+			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
+		} catch (JMException e) {
+            throw new RuntimeException(
+                    "Failed to invoke allocateBuffer", e);
+		}
+ 	}    
 	
 }

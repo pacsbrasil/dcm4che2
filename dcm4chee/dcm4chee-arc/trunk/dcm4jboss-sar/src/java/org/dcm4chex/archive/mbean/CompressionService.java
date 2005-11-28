@@ -222,19 +222,13 @@ public class CompressionService extends TimerSupport {
         return tmpDir.toString();
     }
         
-	/**
-	 * @return Returns the autoPurge.
-	 */
-	public boolean isAutoPurge() {
+	public final boolean isAutoPurge() {
 		return autoPurge;
 	}
-	/**
-	 * @param autoPurge The autoPurge to set.
-	 */
-	public void setAutoPurge(boolean autoPurge) {
-		this.autoPurge = autoPurge;
-	}
 	
+	public final void setAutoPurge(boolean autoPurge) {
+		this.autoPurge = autoPurge;
+	}	
 	
     public void checkForTempFilesToDelete() {
         if (keepTempFileIfVerificationFails <= 0)
@@ -272,13 +266,13 @@ public class CompressionService extends TimerSupport {
                 cuid = info.getCUID();
                 before = new Timestamp(System.currentTimeMillis() - info.getDelay());
                 for (int j = 0; j < fsdirs.length; j++) {
-                    files = fsMgt.findFilesToCompress(fsdirs[j],
-                            info.getCUID(), before, limit);
+                    files = fsMgt.findFilesToCompress(fsdirs[j], cuid, before, limit);
                     if (files.length > 0) {
+                        byte[] buffer = allocateBuffer();
                         log.debug("Compress " + files.length + " files on filesystem "
                                 + fsdirs[j] + " triggered by " + info);
                         for (int k = 0; k < files.length; k++) {
-                            doCompress(fsMgt, files[k], info);
+                            doCompress(fsMgt, files[k], info, buffer);
                             if ( autoPurge ) autoPurge( files[k], minDiskFree);
                         }
                         limit -= files.length;
@@ -332,8 +326,17 @@ public class CompressionService extends TimerSupport {
     	
     }
 
+	byte[] allocateBuffer() {
+        try {
+			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
+		} catch (JMException e) {
+            throw new RuntimeException(
+                    "Failed to invoke allocateBuffer", e);
+		}
+ 	}    
+    
      private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
-            CompressionRule info) {
+            CompressionRule info, byte[] buffer) {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
@@ -346,8 +349,8 @@ public class CompressionService extends TimerSupport {
 	                    + " with CODEC:" + info.getCodec() + "("
 	                    + info.getTransferSyntax() + ")");
             int[] pxvalVR = new int[1];
-            byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
-                    .getTransferSyntax(), pxvalVR);
+			byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
+                    .getTransferSyntax(), pxvalVR, buffer);
             if (verifyCompression) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
@@ -356,7 +359,7 @@ public class CompressionService extends TimerSupport {
                 		fileDTO.getFilePath().replace('/', '-') 
                 		+ _DCM);
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
-                        decFile, fileDTO.getFileTsuid(), pxvalVR[0]);
+                        decFile, fileDTO.getFileTsuid(), pxvalVR[0], buffer);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
                     log.info("MD5 sum after compression+decompression of " + srcFile
                             + " differs - compare pixel matrix");

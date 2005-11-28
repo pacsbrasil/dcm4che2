@@ -53,7 +53,6 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,6 +81,7 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
+import org.dcm4chex.archive.util.BufferedOutputStream;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
@@ -168,7 +168,7 @@ public abstract class CompressCmd extends CodecCmd {
     };
     
     public static byte[] compressFile(File inFile, File outFile, String tsuid,
-    		int[] pxdataVR)
+    		int[] pxdataVR, byte[] buffer)
     		throws Exception {
         log.info("M-READ file:" + inFile);
     	InputStream in = new BufferedInputStream(new FileInputStream(inFile));
@@ -183,25 +183,24 @@ public abstract class CompressCmd extends CodecCmd {
     		FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
     		ds.setFileMetaInfo(fmi);
             log.info("M-WRITE file:" + outFile);
-            BufferedOutputStream os = new BufferedOutputStream(
-                    new FileOutputStream(outFile));
             MessageDigest md = MessageDigest.getInstance("MD5");
-            DigestOutputStream dos = new DigestOutputStream(os, md);
+            DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(outFile), md);
+            BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
                 DcmDecodeParam decParam = p.getDcmDecodeParam();
     			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
                 CompressCmd compressCmd = CompressCmd.createCompressCmd(ds);
                 compressCmd.coerceDataset(ds);
-                ds.writeFile(dos, encParam);
-                ds.writeHeader(dos, encParam, Tags.PixelData, VRs.OB, -1);
-                int read = compressCmd.compress(decParam.byteOrder, in, dos);
-                ds.writeHeader(dos, encParam, Tags.SeqDelimitationItem,
+                ds.writeFile(bos, encParam);
+                ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
+                int read = compressCmd.compress(decParam.byteOrder, in, bos);
+                ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
                         VRs.NONE, 0);
                 in.skip(p.getReadLength() - read);
                 p.parseDataset(decParam, -1);
-                ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
+                ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             } finally {
-                dos.close();
+                bos.close();
             }
             return md.digest();
     	} finally {
@@ -220,15 +219,10 @@ public abstract class CompressCmd extends CodecCmd {
         throw new IllegalArgumentException("tsuid:" + tsuid);
     }
 
-    private final DcmEncodeParam encParam;
-
     protected final int dataType;
 
     protected CompressCmd(Dataset ds, boolean supportSigned) {
     	super(ds);
-        this.encParam = DcmEncodeParam.valueOf(ds.getFileMetaInfo()
-                .getTransferSyntaxUID());
-
         switch (bitsAllocated) {
         case 8:
             this.dataType = DataBuffer.TYPE_BYTE;

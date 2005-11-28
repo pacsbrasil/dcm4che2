@@ -41,8 +41,6 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -143,6 +141,14 @@ public class FileSystemMgtService extends TimerSupport {
 	
     private boolean retrieveLastReceived = true;
 
+	private int bufferSize = 8192;
+	
+	private ThreadLocal buffer = new ThreadLocal(){
+
+		protected Object initialValue() {
+			return new byte[bufferSize];
+		}};
+        
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
 
@@ -177,13 +183,25 @@ public class FileSystemMgtService extends TimerSupport {
             public void handleNotification(Notification notif, Object handback) {
                 freeDiskSpace();
             }};
-            
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
 
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+
+    public final int getBufferSize() {
+        return bufferSize;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+    
+    public byte[] allocateBuffer() {
+    	return (byte[]) buffer.get();
     }
 
     public final String getDirectoryPathList() {
@@ -263,7 +281,6 @@ public class FileSystemMgtService extends TimerSupport {
         StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
         ArrayList list = new ArrayList();
         HashSet set = new HashSet();
-        int dirIndex = 0;
         for (int i = 0; st.hasMoreTokens(); ++i) {
             String tk = st.nextToken();
             if ( ! checkASCII( tk ) ) 
@@ -636,7 +653,6 @@ public class FileSystemMgtService extends TimerSupport {
 	        isPurging = true;
         }
         FileSystemMgt fsMgt = newFileSystemMgt();
-        FileDTO[] toDelete;
         for (int i = 0, n = dirPathList.size(); i < n; ++i) {
             File dirPath = (File) dirPathList.get(i);
             if ( ! purgeFiles(dirPath,fsMgt) ) break;
@@ -747,7 +763,7 @@ public class FileSystemMgtService extends TimerSupport {
     	RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
     	FileInfo infoList[][] = retrieveCmd.getFileInfos();
     	final FileInfo fileInfo = infoList[0][0];
-    	FileDataSource ds = new FileDataSource(log, fileInfo, new byte[512]);
+    	FileDataSource ds = new FileDataSource(log, fileInfo, allocateBuffer());
     	ds.setWriteFile(true);//write FileMetaInfo!
     	return ds;
     }

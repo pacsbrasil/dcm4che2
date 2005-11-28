@@ -153,17 +153,6 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getBufferSize"
-      setMethod="setBufferSize">
-      <description>Size of the buffer used to copy data. Keep the default value: 8192.
-      </description>
-      <name>BufferSize</name>
-      <type>int</type>
-      <descriptors>
-         <value value="8192"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -173,6 +162,17 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

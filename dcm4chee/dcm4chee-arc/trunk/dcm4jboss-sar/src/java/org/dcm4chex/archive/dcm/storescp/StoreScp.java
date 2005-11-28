@@ -39,13 +39,10 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -91,6 +88,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
+import org.dcm4chex.archive.util.BufferedOutputStream;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -109,8 +107,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     final StoreScpService service;
 
     private final Logger log;
-
-    private int bufferSize = 512;
 
 	private boolean studyDateInFilePath = false;
 
@@ -276,14 +272,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setCompressionRules(CompressionRules compressionRules) {
         this.compressionRules = compressionRules;
-    }
-
-    public final int getBufferSize() {
-        return bufferSize;
-    }
-
-    public final void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
     }
 
     public final int getUpdateDatabaseMaxRetries() {
@@ -561,9 +549,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     		throws Exception {
         log.info("M-WRITE file:" + file);
         MessageDigest md = MessageDigest.getInstance("MD5");
-        BufferedOutputStream os = new BufferedOutputStream(
-                new FileOutputStream(file), service.getBufferSize());
-        DigestOutputStream dos = new DigestOutputStream(os, md);
+        DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(file), md);
+        BufferedOutputStream bos = new BufferedOutputStream(dos, service.allocateBuffer());
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
             String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
@@ -573,54 +560,42 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 compressCmd = CompressCmd.createCompressCmd(ds);
                 compressCmd.coerceDataset(ds);
             }
-            ds.writeFile(dos, encParam);
+            ds.writeFile(bos, encParam);
             if (parser.getReadTag() != Tags.PixelData)
                 return md.digest();
             int len = parser.getReadLength();
             InputStream in = parser.getInputStream();
-            byte[] buffer = new byte[bufferSize];
             if (encParam.encapsulated) {
-                ds.writeHeader(dos, encParam, Tags.PixelData, VRs.OB, -1);
+                ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
                 if (decParam.encapsulated) {
                     parser.parseHeader();
                     while (parser.getReadTag() == Tags.Item) {
                         len = parser.getReadLength();
-                        ds.writeHeader(dos, encParam, Tags.Item, VRs.NONE, len);
-                        copy(in, dos, len, buffer);
+                        ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
+                        bos.write(in, len);
                         parser.parseHeader();
                     }
                 } else {
                     int read = compressCmd.compress(decParam.byteOrder, parser
-                            .getInputStream(), dos);
+                            .getInputStream(), bos);
                     in.skip(parser.getReadLength() - read);
                 }
-                ds.writeHeader(dos, encParam, Tags.SeqDelimitationItem,
+                ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
                         VRs.NONE, 0);
             } else {
-                ds.writeHeader(dos, encParam, Tags.PixelData, parser
+                ds.writeHeader(bos, encParam, Tags.PixelData, parser
                         .getReadVR(), len);
-                copy(in, dos, len, buffer);
+                bos.write(in, len);
             }
             parser.parseDataset(decParam, -1);
-            ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
+            ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
         } finally {
             try {
-                dos.close();
+                bos.close();
             } catch (IOException ignore) {
             }
         }
         return md.digest();
-    }
-
-    private void copy(InputStream in, OutputStream out, int totLen,
-            byte[] buffer) throws IOException {
-        for (int len, toRead = totLen; toRead > 0; toRead -= len) {
-            len = in.read(buffer, 0, Math.min(toRead, buffer.length));
-            if (len == -1) {
-                throw new EOFException();
-            }
-            out.write(buffer, 0, len);
-        }
     }
 
     private void checkDataset(Command rqCmd, Dataset ds)
@@ -704,9 +679,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-	private static final int[] SCN_TAGS = { Tags.SpecificCharacterSet,
-		Tags.PatientID, Tags.PatientName, Tags.StudyID, Tags.StudyInstanceUID };
-
     private String toHex(int val) {
         char[] ch8 = new char[8];
         for (int i = 8; --i >= 0; val >>= 4) {
@@ -715,16 +687,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return String.valueOf(ch8);
     }
 
-    private String toDec(int val) {
-        return String.valueOf(new char[] { HEX_DIGIT[val / 10],
-                HEX_DIGIT[val % 10] });
-    }
-
-    private void mkdir(File dir) {
-        if (dir.mkdir()) {
-            log.info("M-WRITE dir:" + dir);
-        }
-    } // Implementation of AssociationListener
+    // Implementation of AssociationListener
 
     public void write(Association src, PDU pdu) {
     }

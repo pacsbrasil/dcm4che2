@@ -46,7 +46,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.WritableRaster;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -70,6 +69,7 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.image.ItemParser;
+import org.dcm4chex.archive.util.BufferedOutputStream;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
@@ -83,14 +83,12 @@ public class DecompressCmd extends CodecCmd {
 
     private final String tsuid;
 
-    private final DcmParser parser;
-
     private final ItemParser itemParser;
     
     private final ImageInputStream iis;
 
     public static byte[] decompressFile(File inFile, File outFile, String tsuid,
-    		int pxdataVR)
+    		int pxdataVR, byte[] buffer)
 		throws Exception {
         log.info("M-READ file:" + inFile);
         FileImageInputStream fiis = new FileImageInputStream(inFile);
@@ -101,31 +99,30 @@ public class DecompressCmd extends CodecCmd {
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
             log.info("M-WRITE file:" + outFile);
-            BufferedOutputStream os = new BufferedOutputStream(
-                    new FileOutputStream(outFile));
             MessageDigest md = MessageDigest.getInstance("MD5");
-            DigestOutputStream dos = new DigestOutputStream(os, md);
+            DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(outFile), md);
+            BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
     			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
                 DecompressCmd cmd = new DecompressCmd(ds, null, parser);
                 int len = cmd.getPixelDataLength();
         		FileMetaInfo fmi = dof.newFileMetaInfo(ds, tsuid);
         		ds.setFileMetaInfo(fmi);
-                ds.writeFile(dos, encParam);
-                ds.writeHeader(dos, encParam, Tags.PixelData, pxdataVR, (len+1)&~1);
+                ds.writeFile(bos, encParam);
+                ds.writeHeader(bos, encParam, Tags.PixelData, pxdataVR, (len+1)&~1);
                 try {
-	                cmd.decompress(encParam.byteOrder, dos);
+	                cmd.decompress(encParam.byteOrder, bos);
 				} catch (IOException e) {
 				    throw e;
 				} catch (Throwable e) {
 				    throw new RuntimeException("Decompression failed:", e);
 				}
 				if ((len&1)!=0)
-					dos.write(0);
+					bos.write(0);
 				parser.parseDataset(parser.getDcmDecodeParam(), -1);
-				ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
+				ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             } finally {
-            	dos.close();
+            	bos.close();
             }
             return md.digest();
         } finally {
@@ -138,7 +135,6 @@ public class DecompressCmd extends CodecCmd {
     
     public DecompressCmd(Dataset ds,String tsuid, DcmParser parser) throws IOException {
     	super(ds);
-        this.parser = parser;
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
         if ( tsuid != null ) {
