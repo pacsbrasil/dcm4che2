@@ -41,6 +41,8 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -79,6 +81,17 @@ public class RetrieveCmd extends BaseReadCmd {
     private static final String[] RELATIONS = { "Patient.pk",
             "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",
             "Instance.series_fk"};
+
+    private static final Comparator DESC_FILE_PK = new Comparator() {
+
+        public int compare(Object o1, Object o2) {
+            FileInfo fi1 = (FileInfo) o1;
+            FileInfo fi2 = (FileInfo) o2;
+            int diffAvail = fi2.availability - fi1.availability;
+            return diffAvail != 0 ? diffAvail : fi2.pk - fi1.pk;
+        }
+    };
+
     
     public static RetrieveCmd create(Dataset keys)
             throws SQLException {
@@ -139,7 +152,6 @@ public class RetrieveCmd extends BaseReadCmd {
 	}
 
     public Map getStudyFileInfo() throws SQLException {
-		Map result = map();
 		Map all = map();
 		Map series;
 		try {
@@ -189,7 +201,8 @@ public class RetrieveCmd extends BaseReadCmd {
         Iterator it = result.values().iterator();
         for (int i = 0; i < array.length; i++) {
             list = (ArrayList) it.next();
-            array[i] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
+			array[i] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
+			Arrays.sort(array[i], DESC_FILE_PK);
         }
         return array;
     }
@@ -215,7 +228,9 @@ public class RetrieveCmd extends BaseReadCmd {
             for (int i = 0, j = 0; j < uids.length; ++j) {
                 list = (ArrayList) result.remove(uids[j]);
                 if (list != null) {
-                    array[i++] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
+                	array[i] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
+        			Arrays.sort(array[i], DESC_FILE_PK);
+        			++i;
                 }
             }
             if (!result.isEmpty()) {

@@ -40,6 +40,10 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
@@ -51,6 +55,15 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  */
 public final class QueryFilesCmd extends BaseReadCmd {
 
+    private static final Comparator DESC_FILE_PK = new Comparator() {
+
+        public int compare(Object o1, Object o2) {
+            FileDTO fi1 = (FileDTO) o1;
+            FileDTO fi2 = (FileDTO) o2;
+            int diffAvail = fi1.getAvailability() - fi2.getAvailability();
+            return diffAvail != 0 ? diffAvail : fi2.getPk() - fi1.getPk();
+        }
+    };
     public static int transactionIsolationLevel = 0;
 
     private static final String[] SELECT_ATTRIBUTE = { "File.pk", "File.filePath",
@@ -74,7 +87,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
 		execute(sqlBuilder.getSql());
     }
     
-    public FileDTO getFileDTO() throws SQLException {
+    private FileDTO getFileDTO() throws SQLException {
         FileDTO dto = new FileDTO();
         dto.setPk(rs.getInt(1));
         dto.setFilePath(rs.getString(2));
@@ -86,5 +99,17 @@ public final class QueryFilesCmd extends BaseReadCmd {
 		dto.setUserInfo(rs.getString(8));
 		return dto;
     }
+    
+    public List getFileDTOs() throws SQLException {
+        List list = new ArrayList();
+		try {
+			while (next())
+				list.add(getFileDTO());
+		} finally {
+			close();
+		}
+		Collections.sort(list, DESC_FILE_PK);
+		return list;
+    }    
 
 }
