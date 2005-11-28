@@ -59,6 +59,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
+import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -75,6 +77,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.transaction type="Required"
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
+ * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  */
 public abstract class MPPSManagerBean implements SessionBean {
 
@@ -97,6 +100,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     };
     private PatientLocalHome patHome;
     private MPPSLocalHome mppsHome;
+	private MWLItemLocalHome mwlItemHome;
     private SessionContext sessionCtx;    
 
     public void setSessionContext(SessionContext ctx) {
@@ -107,6 +111,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
             mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
+			mwlItemHome = (MWLItemLocalHome) jndiCtx.lookup("java:comp/env/ejb/MWLItem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -224,4 +229,30 @@ public abstract class MPPSManagerBean implements SessionBean {
                 }
         }
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset linkMppsToMwl(String spsID, String mppsIUID) throws DcmServiceException {
+		MWLItemLocal mwlItem;
+        MPPSLocal mpps;
+        try {
+			mwlItem = mwlItemHome.findBySpsId(spsID);
+            mpps = mppsHome.findBySopIuid(mppsIUID);
+            String accNo = mwlItem.getAccessionNumber();
+            PatientLocal pat = mwlItem.getPatient();
+            Dataset mppsAttrs = mpps.getAttributes();
+            mppsAttrs.putAll(pat.getAttributes(false));
+    		Dataset ssa = mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq);
+            ssa.putSH(Tags.SPSID, spsID);
+    		ssa.putSH(Tags.AccessionNumber,accNo);
+            mpps.setAttributes(mppsAttrs);
+            return mppsAttrs;
+        } catch (ObjectNotFoundException e) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+        } catch (FinderException e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+    }
+
 }
