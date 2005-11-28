@@ -41,12 +41,12 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -139,38 +139,17 @@ public class FileSystemMgtService extends TimerSupport {
 
 	private boolean isPurging = false;
 	
-    private boolean retrieveLastReceived = true;
-
 	private int bufferSize = 8192;
 	
-	private ThreadLocal buffer = new ThreadLocal(){
+	private ThreadLocal refBuffer = new ThreadLocal(){
 
 		protected Object initialValue() {
-			return new byte[bufferSize];
+    		log.debug("allocate thread local byte[]");
+			return new SoftReference(new byte[bufferSize]);
 		}};
         
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
-
-    private static final Comparator ASC_FILE_PK = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-            FileDTO fi1 = (FileDTO) o1;
-            FileDTO fi2 = (FileDTO) o2;
-            int diffAvail = fi1.getAvailability() - fi2.getAvailability();
-            return diffAvail != 0 ? diffAvail : fi1.getPk() - fi2.getPk();
-        }
-    };
-
-    private static final Comparator DESC_FILE_PK = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-            FileDTO fi1 = (FileDTO) o1;
-            FileDTO fi2 = (FileDTO) o2;
-            int diffAvail = fi1.getAvailability() - fi2.getAvailability();
-            return diffAvail != 0 ? diffAvail : fi2.getPk() - fi1.getPk();
-        }
-    };
     
     private final NotificationListener purgeFilesListener = 
         new NotificationListener(){
@@ -201,7 +180,17 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     public byte[] allocateBuffer() {
-    	return (byte[]) buffer.get();
+    	SoftReference ref = (SoftReference) refBuffer.get();
+    	byte[] buf = (byte[]) ref.get();
+    	if (buf == null)
+    	{
+    		log.debug("reallocate thread local byte[]");
+    		buf = new byte[bufferSize];
+    		refBuffer.set(new SoftReference(buf));
+    	} else {
+    		log.debug("reuse thread local byte[]");
+    	}
+    	return buf;
     }
 
     public final String getDirectoryPathList() {
@@ -308,14 +297,6 @@ public class FileSystemMgtService extends TimerSupport {
         aet = StringUtils.checkAET(aet); 
         this.retrieveAET = aet;
     }
-
-    public final boolean isRetrieveLastReceived() {
-		return retrieveLastReceived;
-	}
-
-	public final void setRetrieveLastReceived(boolean retrieveLastReceived) {
-		this.retrieveLastReceived = retrieveLastReceived;
-	}
 
 	public final String getMinFreeDiskSpace() {
         return FileUtils.formatSize(minFreeDiskSpace);
@@ -731,17 +712,9 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     public Object locateInstance(String iuid) throws SQLException {
-        List list = new ArrayList();
-		QueryFilesCmd cmd = new QueryFilesCmd(iuid);
-		try {
-			while (cmd.next())
-				list.add(cmd.getFileDTO());
-		} finally {
-			cmd.close();
-		}
+        List list = new QueryFilesCmd(iuid).getFileDTOs();
         if (list.isEmpty())
             return null;
-        Collections.sort(list, retrieveLastReceived ? DESC_FILE_PK : ASC_FILE_PK);
         for (int i = 0, n = list.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) list.get(i);
             String dirPath = dto.getDirectoryPath();
@@ -753,19 +726,29 @@ public class FileSystemMgtService extends TimerSupport {
         return aeData.getHostName();
     }
     
-    public DataSource getDatasourceOfInstance(String iuid) throws SQLException, IOException {
-    	Object o = locateInstance(iuid);
-    	if ( o == null || o instanceof String ) return null;
-    	File file = (File) o;
+    public DataSource getDatasourceOfInstance(String iuid) throws SQLException {
     	Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
     	dsQ.putUI(Tags.SOPInstanceUID, iuid);
     	dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
     	RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
     	FileInfo infoList[][] = retrieveCmd.getFileInfos();
-    	final FileInfo fileInfo = infoList[0][0];
-    	FileDataSource ds = new FileDataSource(log, fileInfo, allocateBuffer());
-    	ds.setWriteFile(true);//write FileMetaInfo!
-    	return ds;
+    	if (infoList.length == 0)
+    		return null;
+    	FileInfo[] fileInfos = infoList[0];
+        for (int i = 0; i < fileInfos.length; ++i) {
+            if (isLocalFileSystem(fileInfos[i].basedir))
+            {
+            	FileDataSource ds = new FileDataSource(log, fileInfos[i], allocateBuffer());
+            	ds.setWriteFile(true);//write FileMetaInfo!
+            	return ds;
+            }
+        }
+        return null;
+//        String aet = fileInfos[0].fileRetrieveAET;
+//        if (aet == null)
+//        	aet = fileInfos[0].extRetrieveAET;
+//        AEData aeData = new AECmd(fileInfos[0].).getAEData();
+//        return aeData.getHostName();
     }
     
   
