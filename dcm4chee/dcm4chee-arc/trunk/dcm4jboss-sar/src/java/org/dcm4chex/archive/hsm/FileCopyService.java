@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +60,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.ForwardingRules;
@@ -286,17 +289,39 @@ public class FileCopyService extends ServiceMBeanSupport implements
 		List fileInfos = order.getFileInfos();
 		byte[] buffer = allocateBuffer();
 		Storage storage = getStorageHome().create();
+		Exception ex = null;
+		MessageDigest digest = null;
+		if (verifyCopy)
+	        digest  = MessageDigest.getInstance("MD5");
 		for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
 			FileInfo finfo = (FileInfo) iter.next();
 			File src = FileUtils.toFile(finfo.getFileSystemPath() + '/'
 					+ finfo.getFilePath());
 			File dst = FileUtils.toFile(destPath + '/' + finfo.getFilePath());
-			copy(src, dst, buffer );
-			storage.storeFile(finfo.getSOPInstanceUID(),
-					finfo.getTransferSyntaxUID(), retrieveAET, availability,
-					userInfo, destPath, finfo.getFilePath(),
-					(int) finfo.getFileSize(), finfo.getMd5sum(), fileStatus);
+			try {
+				copy(src, dst, buffer);
+				if (digest != null) {
+					byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
+				    if (!Arrays.equals(finfo.getMd5sum(), md5sum))
+				    {
+				    	String prompt = "md5 sum of copy " + dst
+				    		+ " differs from md5 sum in DB for file " + src;
+				    	log.warn(prompt);
+				    	throw new IOException(prompt);
+				    }
+				}
+				storage.storeFile(finfo.getSOPInstanceUID(),
+						finfo.getTransferSyntaxUID(), retrieveAET, availability,
+						userInfo, destPath, finfo.getFilePath(),
+						(int) finfo.getFileSize(), finfo.getMd5sum(), fileStatus);
+				iter.remove();
+			} catch (Exception e) {
+				dst.delete();
+				ex = e;
+			}
 		}
+		if (ex != null)
+			throw ex;
 	}
 
 	byte[] allocateBuffer() {

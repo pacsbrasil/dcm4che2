@@ -72,8 +72,6 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class MD5CheckService extends TimerSupport {
 
-    private static final int BUF_SIZE = 512;
-	
     private long taskInterval = 0L;
 	private long maxCheckedBefore;
 
@@ -165,11 +163,19 @@ public class MD5CheckService extends TimerSupport {
         this.maxCheckedBefore = RetryIntervalls.parseInterval(maxCheckedBefore);
     }
     
+	byte[] allocateBuffer() {
+        try {
+			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
+		} catch (JMException e) {
+            throw new RuntimeException(
+                    "Failed to invoke allocateBuffer", e);
+		}
+ 	}    
+	
     public String check() throws FinderException, IOException, NoSuchAlgorithmException {
     	if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
     	int corrupted = 0;
     	int total = 0;
-    	long l = System.currentTimeMillis();
         Timestamp before = new Timestamp( System.currentTimeMillis() - this.maxCheckedBefore );
         FileDTO[] files;
         int limit = limitNumberOfFilesPerTask;
@@ -179,9 +185,10 @@ public class MD5CheckService extends TimerSupport {
             files = fsMgt.findFilesForMD5Check(fsdirs[j].getDirectoryPath(), before, limit);
         	if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
             if (files.length > 0) {
+            	byte[] buffer = allocateBuffer();
                 total += files.length;
                 for (int k = 0; k < files.length; k++) {
-                    if ( ! doCheck(fsMgt, files[k]) ) 
+					if ( ! doCheck(fsMgt, files[k], buffer) ) 
                     	corrupted++;
                 }
                 limit -= files.length;
@@ -195,23 +202,27 @@ public class MD5CheckService extends TimerSupport {
     /**
 	 * @param fsMgt
 	 * @param fileDTO
+     * @param buffer 
      * @throws IOException
      * @throws NoSuchAlgorithmException
      * @throws FinderException
 	 */
-	private boolean doCheck(FileSystemMgt fsMgt, FileDTO fileDTO) throws IOException, NoSuchAlgorithmException, FinderException {
+	private boolean doCheck(FileSystemMgt fsMgt, FileDTO fileDTO, byte[] buffer)
+	throws IOException, NoSuchAlgorithmException, FinderException {
 		if ( log.isDebugEnabled() ) log.debug("check md5 for file "+fileDTO );
-        MessageDigest digest = MessageDigest.getInstance("MD5");
         char[] storedMD5 = MD5Utils.toHexChars(fileDTO.getFileMd5());
         final char[] fileMD5 = new char[32];
         File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
         
-		MD5Utils.md5sum(file, fileMD5, digest, new byte[ BUF_SIZE ]);
+        MessageDigest digest = MessageDigest.getInstance("MD5");
+		MD5Utils.md5sum(file, fileMD5, digest, buffer);
         fsMgt.updateTimeOfLastMd5Check( fileDTO.getPk() );
         if (!Arrays.equals(fileMD5, storedMD5 ) ) {
         	fsMgt.setFileStatus( fileDTO.getPk(), FileStatus.MD5_CHECK_FAILED );
-        	log.warn("File (pk="+fileDTO.getPk()+") " + file + " corrupted! MD5 of file:"+new String(fileMD5)+" should be "+new String(storedMD5) );
+        	log.warn("File (pk="+fileDTO.getPk()+") " + file 
+        			+ " corrupted! MD5 of file:"+ new String(fileMD5)
+        			+" should be "+ new String(storedMD5) );
             return false;
         }
         return true;
