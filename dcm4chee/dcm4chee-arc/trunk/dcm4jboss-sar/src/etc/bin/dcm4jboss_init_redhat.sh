@@ -34,7 +34,7 @@ JAVAPTH=${JAVAPTH:-"/usr/local/jdk/bin"}
 JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar"}
 
 #define the script to use to start jboss
-JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c pacs"}
+JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh"}
 
 if [ -n "$JBOSS_CONSOLE" -a ! -d "$JBOSS_CONSOLE" ]; then
   # ensure the file exists

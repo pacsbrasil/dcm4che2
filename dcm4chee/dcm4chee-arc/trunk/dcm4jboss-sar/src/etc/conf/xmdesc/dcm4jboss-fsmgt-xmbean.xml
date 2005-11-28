@@ -62,21 +62,7 @@ accessed studies.</description>
       <descriptors>
          <value value="DCM4JBOSS"/>
       </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isRetrieveLastReceived"
-      setMethod="setRetrieveLastReceived">
-      <description>Select the last received instances for retrieval - 
-      by DICOM Retrieve Service or WADO - in the case where several instances
-      with an equal SOP Instance UID were received.
-      </description>
-      <name>RetrieveLastReceived</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   
+   </attribute>   
    <attribute access="read-write" 
       getMethod="getMinFreeDiskSpace"
       setMethod="setMinFreeDiskSpace">

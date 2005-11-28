@@ -43,8 +43,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -95,26 +93,6 @@ class MoveTask implements Runnable {
     private static final int PCID = 1;
 
     private static final String IMAGE = "IMAGE";
-
-    private static final Comparator ASC_FILE_PK = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-            FileInfo fi1 = (FileInfo) o1;
-            FileInfo fi2 = (FileInfo) o2;
-            int diffAvail = fi2.availability - fi1.availability;
-            return diffAvail != 0 ? diffAvail : fi1.pk - fi2.pk;
-        }
-    };
-
-    private static final Comparator DESC_FILE_PK = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-            FileInfo fi1 = (FileInfo) o1;
-            FileInfo fi2 = (FileInfo) o2;
-            int diffAvail = fi2.availability - fi1.availability;
-            return diffAvail != 0 ? diffAvail : fi2.pk - fi1.pk;
-        }
-    };
 
     private static final UIDDictionary uidDict = DictionaryFactory
             .getInstance().getDefaultUIDDictionary();
@@ -454,8 +432,7 @@ class MoveTask implements Runnable {
         while (a.getState() == Association.ASSOCIATION_ESTABLISHED && !canceled
                 && it.hasNext()) {
             final List list = (List) it.next();
-            final FileInfo fileInfo = (FileInfo) Collections.max(list,
-                    		service.isRetrieveLastReceived() ? ASC_FILE_PK : DESC_FILE_PK);
+            final FileInfo fileInfo = (FileInfo) list.get(0);
             final String iuid = fileInfo.sopIUID;
             DimseListener storeScpListener = new DimseListener() {
 

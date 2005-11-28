@@ -28,7 +28,7 @@ PID_FILE=/var/run/dcm4jboss.pid
 JAVA="$JAVA_HOME/bin/java"
 JAVA_OPTS="-server -Xmx100m -Djava.awt.headless=true"
 JAVA_CP="$DCM4JBOSS_HOME/bin/run.jar:$JAVA_HOME/lib/tools.jar"
-ARGS="$JAVA_OPTS -cp $JAVA_CP org.jboss.Main -c pacs"
+ARGS="$JAVA_OPTS -cp $JAVA_CP org.jboss.Main"
 
 case "$1" in
   start)

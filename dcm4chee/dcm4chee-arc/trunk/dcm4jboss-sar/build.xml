@@ -21,6 +21,7 @@
 
 	<property name="dist.name" value="dcm4jboss-${version}"/>
 	<property name="dist.dir" value="${target.dir}/${dist.name}"/>
+	<property name="dist.config" value="default"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -234,13 +235,14 @@
     
    	<target name="standalone-dist">
    		<property name="dist.standalone" value="dcm4jboss-standalone-${db.name}-${version}"/>
+   		<property name="dist.standalone.config" value="${dist.standalone}/server/${dist.config}"/>
    		<zip destfile="${target.dir}/${dist.standalone}.zip">
-			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}/server/pacs">
+			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone.config}">
 				<exclude name="bin/**"/>
 				<exclude name="lib/jboss-common.jar"/>
 				<exclude name="test/**"/>
 			</zipfileset>
-			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}/server/pacs">
+			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone.config}">
 				<exclude name="sql/**"/>
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}" filemode="755">
@@ -271,10 +273,10 @@
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone}/server/pacs">
+			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone.config}">
 				<include name="conf/jbossmq-state.xml"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.server.home}" prefix="${dist.standalone}/server/pacs">
+			<zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
 				<include name="conf/**"/>
 				<exclude name="conf/log4j.xml"/>
 				<exclude name="conf/login-config.xml"/>
@@ -314,10 +316,10 @@
 				<include name="lib/log4j.jar"/>
 				<include name="lib/mail.jar"/>
 			</zipfileset>
-			<zipfileset dir="${fop.home}/build" prefix="${dist.standalone}/server/pacs/lib">
+			<zipfileset dir="${fop.home}/build" prefix="${dist.standalone.config}/lib">
 				<include name="fop.jar"/>				
 			</zipfileset>
-			<zipfileset dir="${fop.home}" prefix="${dist.standalone}/server/pacs">
+			<zipfileset dir="${fop.home}" prefix="${dist.standalone.config}">
 				<include name="lib/avalon-framework-cvs-20020806.jar"/>				
 				<include name="lib/batik.jar"/>				
 			</zipfileset>

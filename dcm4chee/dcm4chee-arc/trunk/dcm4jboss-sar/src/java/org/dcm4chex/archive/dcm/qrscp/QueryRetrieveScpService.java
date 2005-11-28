@@ -404,17 +404,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
 
-    boolean isRetrieveLastReceived() {
-        try {
-            Boolean b = (Boolean) server.getAttribute(
-            		fileSystemMgtName, "RetrieveLastReceived");
-            return b.booleanValue();
-        } catch (Exception e) {
-            log.warn("Failed to access Attribute RetrieveLastReceived", e);
-        	return true;
-        }
-    }
-
     public final boolean isForwardAsMoveOriginator() {
         return forwardAsMoveOriginator;
     }

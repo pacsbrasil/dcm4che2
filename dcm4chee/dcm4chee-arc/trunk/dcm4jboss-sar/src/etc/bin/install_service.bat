@@ -42,7 +42,7 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install "DICOM Archive" "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -params -c pacs -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
+JavaService.exe -install "DICOM Archive" "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
 goto eof
 
 :uninstall
