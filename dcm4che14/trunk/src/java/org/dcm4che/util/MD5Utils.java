@@ -92,19 +92,23 @@ public class MD5Utils {
         }
     }
 
-    public static void md5sum(File fileOrDir, char[] cbuf,
+    public static void md5sum(File f, char[] cbuf,
             MessageDigest digest, byte[] bbuf) throws IOException {
+        toHexChars(md5sum(f, digest, bbuf), cbuf);
+    }
+    
+	public static byte[] md5sum(File dst, MessageDigest digest, byte[] buf) 
+	throws IOException {
         digest.reset();
-        InputStream in = new DigestInputStream(new FileInputStream(fileOrDir),
-                digest);
+        InputStream in = new DigestInputStream(new FileInputStream(dst), digest);
         try {
-            while (in.read(bbuf) != -1)
+            while (in.read(buf) != -1)
                 ;
         } finally {
             in.close();
         }
-        toHexChars(digest.digest(), cbuf);
-    }
+		return digest.digest();
+	}   
 
     public static boolean verify(File driveDir, File fsDir)
             throws IOException {
@@ -220,4 +224,5 @@ public class MD5Utils {
         }
         throw new IllegalArgumentException(s);
     }
+
 }
