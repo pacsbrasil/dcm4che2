@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -316,14 +315,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         File file = null;
         try {
 			
-            List duplicates = new ArrayList();
-			QueryFilesCmd cmd = new QueryFilesCmd(iuid);
-			try {
-				while (cmd.next())
-					duplicates.add(cmd.getFileDTO());
-			} finally {
-				cmd.close();
-			}
+            List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
             if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
                     && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
@@ -561,34 +553,34 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 compressCmd.coerceDataset(ds);
             }
             ds.writeFile(bos, encParam);
-            if (parser.getReadTag() != Tags.PixelData)
-                return md.digest();
-            int len = parser.getReadLength();
-            InputStream in = parser.getInputStream();
-            if (encParam.encapsulated) {
-                ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
-                if (decParam.encapsulated) {
-                    parser.parseHeader();
-                    while (parser.getReadTag() == Tags.Item) {
-                        len = parser.getReadLength();
-                        ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
-                        bos.write(in, len);
-                        parser.parseHeader();
-                    }
-                } else {
-                    int read = compressCmd.compress(decParam.byteOrder, parser
-                            .getInputStream(), bos);
-                    in.skip(parser.getReadLength() - read);
-                }
-                ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
-                        VRs.NONE, 0);
-            } else {
-                ds.writeHeader(bos, encParam, Tags.PixelData, parser
-                        .getReadVR(), len);
-                bos.write(in, len);
+            if (parser.getReadTag() == Tags.PixelData) {
+	            int len = parser.getReadLength();
+	            InputStream in = parser.getInputStream();
+	            if (encParam.encapsulated) {
+	                ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
+	                if (decParam.encapsulated) {
+	                    parser.parseHeader();
+	                    while (parser.getReadTag() == Tags.Item) {
+	                        len = parser.getReadLength();
+	                        ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
+	                        bos.write(in, len);
+	                        parser.parseHeader();
+	                    }
+	                } else {
+	                    int read = compressCmd.compress(decParam.byteOrder, parser
+	                            .getInputStream(), bos);
+	                    in.skip(parser.getReadLength() - read);
+	                }
+	                ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
+	                        VRs.NONE, 0);
+	            } else {
+	                ds.writeHeader(bos, encParam, Tags.PixelData, parser
+	                        .getReadVR(), len);
+	                bos.write(in, len);
+	            }
+	            parser.parseDataset(decParam, -1);
+	            ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
-            parser.parseDataset(decParam, -1);
-            ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
         } finally {
             try {
                 bos.close();
