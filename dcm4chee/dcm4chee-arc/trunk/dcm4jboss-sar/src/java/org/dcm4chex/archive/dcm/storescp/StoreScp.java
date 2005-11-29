@@ -100,7 +100,9 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
-    private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
+    private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
+
+	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
 
     final StoreScpService service;
@@ -349,7 +351,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 					rqCmd.getAffectedSOPInstanceUID(),
                     tsuid ));
 
-            byte[] md5sum = storeToFile(parser, ds, file);
+            byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
             if (ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
@@ -402,6 +404,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
     
+	private byte[] getByteBuffer(Association assoc) {
+		byte[] buf = (byte[]) assoc.getProperty(RECEIVE_BUFFER);
+		if (buf == null) {
+			buf = new byte[service.getBufferSize()];
+			assoc.putProperty(RECEIVE_BUFFER, buf);
+		}
+		return buf;
+	}
+
 	private void unhide (String iuid ) throws RemoteException, FinderException, CreateException, HomeFactoryException {
     	if ( getStorageHome().create().unhide(iuid) ) {
             log.info("Received Instance[uid=" + iuid
@@ -537,12 +548,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
     }
 
-    private byte[] storeToFile(DcmParser parser, Dataset ds, File file)
+    private byte[] storeToFile(DcmParser parser, Dataset ds, File file, byte[] buffer)
     		throws Exception {
         log.info("M-WRITE file:" + file);
         MessageDigest md = MessageDigest.getInstance("MD5");
         DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(file), md);
-        BufferedOutputStream bos = new BufferedOutputStream(dos, service.allocateBuffer());
+        BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
             String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();

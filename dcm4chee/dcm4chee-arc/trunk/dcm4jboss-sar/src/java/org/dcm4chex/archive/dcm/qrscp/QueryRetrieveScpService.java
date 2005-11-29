@@ -179,6 +179,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int maxUIDsPerMoveRQ = 100;
 
     private int maxBlockedFindRSP = 10000;
+
+	private int bufferSize = 8192;
 	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -614,14 +616,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-	byte[] allocateBuffer() {
-        try {
-			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
-		} catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke allocateBuffer", e);
-		}
- 	}    
+    public final int getBufferSize() {
+        return bufferSize ;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
     
     boolean isWithoutPixelData(String moveDest) {
         return sendNoPixelDataToAETs != null

@@ -112,6 +112,16 @@ public class FileCopyService extends ServiceMBeanSupport implements
 
 	private ObjectName fileSystemMgtName;
 
+	private int bufferSize = 8192;
+
+    public final int getBufferSize() {
+        return bufferSize;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize  = bufferSize;
+    }
+	
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -287,7 +297,7 @@ public class FileCopyService extends ServiceMBeanSupport implements
 	private void process(FileCopyOrder order) throws Exception {
 		String destPath = order.getDestinationFileSystemPath();
 		List fileInfos = order.getFileInfos();
-		byte[] buffer = allocateBuffer();
+		byte[] buffer = new byte[bufferSize];
 		Storage storage = getStorageHome().create();
 		Exception ex = null;
 		MessageDigest digest = null;
@@ -324,15 +334,6 @@ public class FileCopyService extends ServiceMBeanSupport implements
 			throw ex;
 	}
 
-	byte[] allocateBuffer() {
-        try {
-			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
-		} catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke allocateBuffer", e);
-		}
- 	}    
-	
 	private void copy(File src, File dst, byte[] buffer) throws IOException {
 		FileInputStream fis = new FileInputStream(src);
 		try {

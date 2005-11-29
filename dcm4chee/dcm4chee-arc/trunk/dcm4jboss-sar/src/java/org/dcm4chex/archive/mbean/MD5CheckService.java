@@ -57,6 +57,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.dcm.storescp.StoreScp;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
@@ -78,6 +79,7 @@ public class MD5CheckService extends TimerSupport {
     private int disabledStartHour;
     private int disabledEndHour;
     private int limitNumberOfFilesPerTask;
+    private int bufferSize = 8192;
 
     private Integer listenerID;
 
@@ -104,6 +106,14 @@ public class MD5CheckService extends TimerSupport {
             }
         }
     };
+
+    public final int getBufferSize() {
+        return bufferSize ;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 
     public final String getTaskInterval() {
         String s = RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
@@ -163,15 +173,6 @@ public class MD5CheckService extends TimerSupport {
         this.maxCheckedBefore = RetryIntervalls.parseInterval(maxCheckedBefore);
     }
     
-	byte[] allocateBuffer() {
-        try {
-			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
-		} catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke allocateBuffer", e);
-		}
- 	}    
-	
     public String check() throws FinderException, IOException, NoSuchAlgorithmException {
     	if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
     	int corrupted = 0;
@@ -181,11 +182,13 @@ public class MD5CheckService extends TimerSupport {
         int limit = limitNumberOfFilesPerTask;
         FileSystemMgt fsMgt = newFileSystemMgt();
         FileSystemDTO[] fsdirs =fsMgt.getAllFileSystems();
+        byte[] buffer = null;
         for (int j = 0; j < fsdirs.length; j++) {
             files = fsMgt.findFilesForMD5Check(fsdirs[j].getDirectoryPath(), before, limit);
         	if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
             if (files.length > 0) {
-            	byte[] buffer = allocateBuffer();
+            	if (buffer == null)
+            		buffer = new byte[bufferSize];
                 total += files.length;
                 for (int k = 0; k < files.length; k++) {
 					if ( ! doCheck(fsMgt, files[k], buffer) ) 

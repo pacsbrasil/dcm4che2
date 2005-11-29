@@ -104,8 +104,18 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean acceptRLELossless = false;
 
+    private int bufferSize = 8192;
+
     private StoreScp scp = new StoreScp(this);
 
+    public final int getBufferSize() {
+        return bufferSize ;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+    
     public final boolean isStudyDateInFilePath() {
 		return scp.isStudyDateInFilePath();
 	}
@@ -630,14 +640,6 @@ public class StoreScpService extends AbstractScpService {
             log.warn("Audit Log failed:", e);
         }		
 	}
-
-	byte[] allocateBuffer() {
-        try {
-			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
-		} catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke allocateBuffer", e);
-		}
- 	}    
+    
 	
 }

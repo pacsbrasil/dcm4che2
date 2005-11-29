@@ -131,6 +131,17 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of write byte buffer.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">
       <description>Used internally. Do NOT modify.

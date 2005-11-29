@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,7 +58,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
-import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.jboss.logging.Logger;
@@ -77,8 +77,11 @@ public class FileDataSource implements DataSource {
 	private boolean writeFile = false;
 	private boolean withoutPixeldata = false;
 
-    // buffer == null => send no Pixeldata
-    public FileDataSource(Logger logger, FileInfo fileInfo, byte[] buffer) {
+	// buffer == null => send no Pixeldata
+    public FileDataSource(
+        Logger logger,
+        FileInfo fileInfo,
+        byte[] buffer) {
     	if ( logger != null ) {
     		this.log = logger;
     	} else {
@@ -87,15 +90,10 @@ public class FileDataSource implements DataSource {
         this.fileInfo = fileInfo;
         this.buffer = buffer;
     }
-    
-	public void setWithoutPixeldata(boolean withoutPixeldata) {
-		this.withoutPixeldata = withoutPixeldata;
-	}
-
 	/**
 	 * @return Returns the writeFile.
 	 */
-	public boolean isWriteFile() {
+	public final boolean isWriteFile() {
 		return writeFile;
 	}
 	/**
@@ -106,9 +104,17 @@ public class FileDataSource implements DataSource {
 	 * 
 	 * @param writeFile The writeFile to set.
 	 */
-	public void setWriteFile(boolean writeFile) {
+	public final void setWriteFile(boolean writeFile) {
 		this.writeFile = writeFile;
 	}
+	
+    public final boolean isWithoutPixeldata() {
+		return withoutPixeldata;
+	}
+	public final void setWithoutPixeldata(boolean withoutPixelData) {
+		this.withoutPixeldata = withoutPixelData;
+	}
+	
     /**
      * 
      * @param out
@@ -143,70 +149,74 @@ public class FileDataSource implements DataSource {
             	}
             }
             DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
-        	BufferedOutputStream bos = new BufferedOutputStream(out, buffer);
-        	try {
-	            if (withoutPixeldata || parser.getReadTag() != Tags.PixelData) {
-					log.debug("Dataset:\n");
-					log.debug(ds);
-					if ( writeFile )
-						ds.writeFile(bos, enc);
-					else
-						ds.writeDataset(bos, enc);
-	                return;                
-	            }
-	            int len = parser.getReadLength();
-	            if (len == -1 && !enc.encapsulated) {
-	                DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
-	                len = cmd.getPixelDataLength();
-					log.debug("Dataset:\n");
-					log.debug(ds);
-					if ( writeFile )
-						ds.writeFile(bos, enc);
-					else
-						ds.writeDataset(bos, enc);
-	                ds.writeHeader(bos, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
-	                try {
-		                cmd.decompress(enc.byteOrder, bos);
-					} catch (IOException e) {
-					    throw e;
-					} catch (Throwable e) {
-					    throw new RuntimeException("Decompression failed:", e);
-					}
-					if ((len&1)!=0)
-	                    bos.write(0);
+            if (withoutPixeldata || parser.getReadTag() != Tags.PixelData) {
+				log.debug("Dataset:\n");
+				log.debug(ds);
+				if ( writeFile )
+					ds.writeFile(out, enc);
+				else
+					ds.writeDataset(out, enc);
+                return;                
+            }
+            int len = parser.getReadLength();
+            if (len == -1 && !enc.encapsulated) {
+                DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
+                len = cmd.getPixelDataLength();
+				log.debug("Dataset:\n");
+				log.debug(ds);
+				if ( writeFile )
+					ds.writeFile(out, enc);
+				else
+					ds.writeDataset(out, enc);
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
+                try {
+	                cmd.decompress(enc.byteOrder, out);
+				} catch (IOException e) {
+				    throw e;
+				} catch (Throwable e) {
+				    throw new RuntimeException("Decompression failed:", e);
+				}
+				if ((len&1)!=0)
+                    out.write(0);
+            } else {
+				log.debug("Dataset:\n");
+				log.debug(ds);
+				if ( writeFile )
+					ds.writeFile(out, enc);
+				else
+					ds.writeDataset(out, enc);
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
+                if (len == -1) {
+		            parser.parseHeader();
+		            int itemlen;
+	                while (parser.getReadTag() == Tags.Item) {
+	                    itemlen = parser.getReadLength();
+	                    ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+	                    copy(fiis, out, itemlen, buffer);
+	                    parser.parseHeader();
+	                }
+	                ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
+	                        VRs.NONE, 0);
 	            } else {
-					log.debug("Dataset:\n");
-					log.debug(ds);
-					if ( writeFile )
-						ds.writeFile(bos, enc);
-					else
-						ds.writeDataset(bos, enc);
-	                ds.writeHeader(bos, enc, Tags.PixelData, VRs.OB, len);
-	                if (len == -1) {
-			            parser.parseHeader();
-			            int itemlen;
-		                while (parser.getReadTag() == Tags.Item) {
-		                    itemlen = parser.getReadLength();
-		                    ds.writeHeader(bos, enc, Tags.Item, VRs.NONE, itemlen);
-		                    bos.copyFrom(fiis, itemlen);
-		                    parser.parseHeader();
-		                }
-		                ds.writeHeader(bos, enc, Tags.SeqDelimitationItem,
-		                        VRs.NONE, 0);
-		            } else {
-		            	bos.copyFrom(fiis, len);
-		            }
+	                copy(fiis, out, len, buffer);
 	            }
-	            parser.parseDataset(parser.getDcmDecodeParam(), -1);
-	            ds.subSet(Tags.PixelData, -1).writeDataset(bos, enc);
-        	} finally {
-        		bos.flush();
-        	}
+            }
+            parser.parseDataset(parser.getDcmDecodeParam(), -1);
+            ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
         } finally {
             try {
                 fiis.close();
             } catch (IOException ignore) {
             }
+        }
+    }
+
+    private void copy(FileImageInputStream fiis, OutputStream out, int totLen,
+            byte[] buffer) throws IOException {
+        for (int len, toRead = totLen; toRead > 0; toRead -= len) {
+            len = fiis.read(buffer, 0, Math.min(toRead, buffer.length));
+            if (len == -1) { throw new EOFException(); }
+            out.write(buffer, 0, len);
         }
     }
 

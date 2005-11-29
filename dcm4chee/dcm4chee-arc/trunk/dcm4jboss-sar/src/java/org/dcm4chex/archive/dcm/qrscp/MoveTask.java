@@ -85,7 +85,9 @@ import org.jboss.logging.Logger;
  */
 class MoveTask implements Runnable {
 
-    private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
+    private static final String SEND_BUFFER = "SEND_BUFFER";
+
+	private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian, };
 
     private static final byte[] RELATIONAL_RETRIEVE = { 1 };
@@ -462,7 +464,8 @@ class MoveTask implements Runnable {
                 }
             };
             try {
-                storeAssoc.invoke(makeCStoreRQ(fileInfo), storeScpListener);
+                storeAssoc.invoke(makeCStoreRQ(fileInfo, getByteBuffer(a)),
+                		storeScpListener);
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
@@ -498,7 +501,16 @@ class MoveTask implements Runnable {
                             stgCmtActionInfo);
     }
 
-    private void updateInstancesAction(final FileInfo info) {
+	private byte[] getByteBuffer(Association assoc) {
+		byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
+		if (buf == null) {
+			buf = new byte[service.getBufferSize()];
+			assoc.putProperty(SEND_BUFFER, buf);
+		}
+		return buf;
+	}
+
+	private void updateInstancesAction(final FileInfo info) {
         if (instancesAction == null) {
             AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
             instancesAction = alf.newInstancesAction("Access", info.studyIUID,
@@ -519,7 +531,8 @@ class MoveTask implements Runnable {
         item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
-    private Dimse makeCStoreRQ(FileInfo info) throws NoPresContextException {
+    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer)
+    throws NoPresContextException {
         Association assoc = storeAssoc.getAssociation();
         PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
                 info.tsUID);
@@ -541,8 +554,7 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        FileDataSource ds = new FileDataSource(service.getLog(), info, 
-        		service.allocateBuffer());
+        FileDataSource ds = new FileDataSource(service.getLog(), info, buffer);
         ds.setWithoutPixeldata(withoutPixeldata);
         return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);

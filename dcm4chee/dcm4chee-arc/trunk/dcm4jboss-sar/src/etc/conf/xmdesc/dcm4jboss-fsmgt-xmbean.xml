@@ -290,8 +290,8 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
-      <description>Size of the buffer used to copy files and to copy data between 
-      TCP channel and file.
+      <description>Size of byte buffer used by WADO/RID service for copying data
+      from file to TCP channel.
       </description>
       <name>BufferSize</name>
       <type>int</type>
@@ -406,11 +406,6 @@ accessed studies.</description>
         <type>java.lang.Integer</type>
       </parameter>
       <return-type>long</return-type>
-   </operation>   
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>allocateBuffer</name>
-      <return-type>[B</return-type>
    </operation>   
    
 </mbean>

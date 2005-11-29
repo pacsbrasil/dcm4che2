@@ -101,6 +101,8 @@ public class CompressionService extends TimerSupport {
     
     private boolean autoPurge = true;
 
+    private int bufferSize = 8192;
+    
     private static final String[] CODEC_NAMES = new String[] { "JPLL", "JLSL",
             "J2KR" };
 
@@ -127,6 +129,14 @@ public class CompressionService extends TimerSupport {
         }
     };
 
+    public final int getBufferSize() {
+        return bufferSize ;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+	
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -260,29 +270,25 @@ public class CompressionService extends TimerSupport {
         int limit = limitNumberOfFilesPerTask;
         String[] fsdirs = fileSystemDirPaths();
         FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
-                info = (CompressionRule) compressionRuleList.get(i);
-                cuid = info.getCUID();
-                before = new Timestamp(System.currentTimeMillis() - info.getDelay());
-                for (int j = 0; j < fsdirs.length; j++) {
-                    files = fsMgt.findFilesToCompress(fsdirs[j], cuid, before, limit);
-                    if (files.length > 0) {
-                        byte[] buffer = allocateBuffer();
-                        log.debug("Compress " + files.length + " files on filesystem "
-                                + fsdirs[j] + " triggered by " + info);
-                        for (int k = 0; k < files.length; k++) {
-                            doCompress(fsMgt, files[k], info, buffer);
-                            if ( autoPurge ) autoPurge( files[k], minDiskFree);
-                        }
-                        limit -= files.length;
+        byte[] buffer = null;
+        for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
+            info = (CompressionRule) compressionRuleList.get(i);
+            cuid = info.getCUID();
+            before = new Timestamp(System.currentTimeMillis() - info.getDelay());
+            for (int j = 0; j < fsdirs.length; j++) {
+                files = fsMgt.findFilesToCompress(fsdirs[j], cuid, before, limit);
+                if (files.length > 0) {
+                	if (buffer == null)
+                		buffer = new byte[bufferSize];
+                    log.debug("Compress " + files.length + " files on filesystem "
+                            + fsdirs[j] + " triggered by " + info);
+                    for (int k = 0; k < files.length; k++) {
+                        doCompress(fsMgt, files[k], info, buffer);
+                        if ( autoPurge ) autoPurge( files[k], minDiskFree);
                     }
+                    limit -= files.length;
                 }
             }
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {}
         }
     }
 
@@ -326,15 +332,6 @@ public class CompressionService extends TimerSupport {
     	
     }
 
-	byte[] allocateBuffer() {
-        try {
-			return (byte[]) server.invoke(fileSystemMgtName, "allocateBuffer", null, null);
-		} catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke allocateBuffer", e);
-		}
- 	}    
-    
      private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
             CompressionRule info, byte[] buffer) {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());

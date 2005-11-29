@@ -388,6 +388,17 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of byte buffer used for copying data from TCP channel to file.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getQueryTransactionIsolationLevel"
       setMethod="setQueryTransactionIsolationLevel">
       <description>Transaction isolation level for queries. Values can be one of: 

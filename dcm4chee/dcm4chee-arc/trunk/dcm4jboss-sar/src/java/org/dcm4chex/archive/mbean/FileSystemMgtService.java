@@ -41,7 +41,6 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -140,14 +139,7 @@ public class FileSystemMgtService extends TimerSupport {
 	private boolean isPurging = false;
 	
 	private int bufferSize = 8192;
-	
-	private ThreadLocal refBuffer = new ThreadLocal(){
-
-		protected Object initialValue() {
-    		log.debug("allocate thread local byte[]");
-			return new SoftReference(new byte[bufferSize]);
-		}};
-        
+	        
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
     
@@ -179,20 +171,6 @@ public class FileSystemMgtService extends TimerSupport {
         this.bufferSize = bufferSize;
     }
     
-    public byte[] allocateBuffer() {
-    	SoftReference ref = (SoftReference) refBuffer.get();
-    	byte[] buf = (byte[]) ref.get();
-    	if (buf == null)
-    	{
-    		log.debug("reallocate thread local byte[]");
-    		buf = new byte[bufferSize];
-    		refBuffer.set(new SoftReference(buf));
-    	} else {
-    		log.debug("reuse thread local byte[]");
-    	}
-    	return buf;
-    }
-
     public final String getDirectoryPathList() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0, n = dirPathList.size(); i < n; i++) {
@@ -738,7 +716,8 @@ public class FileSystemMgtService extends TimerSupport {
         for (int i = 0; i < fileInfos.length; ++i) {
             if (isLocalFileSystem(fileInfos[i].basedir))
             {
-            	FileDataSource ds = new FileDataSource(log, fileInfos[i], allocateBuffer());
+            	FileDataSource ds = new FileDataSource(log, fileInfos[i],
+            			new byte[bufferSize]);
             	ds.setWriteFile(true);//write FileMetaInfo!
             	return ds;
             }
