@@ -73,6 +73,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
+import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -87,7 +88,6 @@ import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
-import org.dcm4chex.archive.util.BufferedOutputStream;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -563,7 +563,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	                    while (parser.getReadTag() == Tags.Item) {
 	                        len = parser.getReadLength();
 	                        ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
-	                        bos.write(in, len);
+	                        bos.copyFrom(in, len);
 	                        parser.parseHeader();
 	                    }
 	                } else {
@@ -576,7 +576,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	            } else {
 	                ds.writeHeader(bos, encParam, Tags.PixelData, parser
 	                        .getReadVR(), len);
-	                bos.write(in, len);
+	                bos.copyFrom(in, len);
 	            }
 	            parser.parseDataset(decParam, -1);
 	            ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);

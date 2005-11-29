@@ -81,7 +81,7 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
-import org.dcm4chex.archive.util.BufferedOutputStream;
+import org.dcm4che.util.BufferedOutputStream;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 

@@ -60,6 +60,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileStatus;
@@ -69,7 +70,6 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
-import org.dcm4chex.archive.util.BufferedOutputStream;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -340,7 +340,7 @@ public class FileCopyService extends ServiceMBeanSupport implements
 			BufferedOutputStream bos = new BufferedOutputStream(
 					new FileOutputStream(dst), buffer);
 			try {
-				bos.write(fis, (int) src.length());
+				bos.copyFrom(fis, (int) src.length());
 			} finally {
 				bos.close();
 			}

@@ -57,6 +57,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
+import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.jboss.logging.Logger;
@@ -187,13 +188,13 @@ public class FileDataSource implements DataSource {
 		                while (parser.getReadTag() == Tags.Item) {
 		                    itemlen = parser.getReadLength();
 		                    ds.writeHeader(bos, enc, Tags.Item, VRs.NONE, itemlen);
-		                    bos.write(fiis, itemlen);
+		                    bos.copyFrom(fiis, itemlen);
 		                    parser.parseHeader();
 		                }
 		                ds.writeHeader(bos, enc, Tags.SeqDelimitationItem,
 		                        VRs.NONE, 0);
 		            } else {
-		            	bos.write(fiis, len);
+		            	bos.copyFrom(fiis, len);
 		            }
 	            }
 	            parser.parseDataset(parser.getDcmDecodeParam(), -1);

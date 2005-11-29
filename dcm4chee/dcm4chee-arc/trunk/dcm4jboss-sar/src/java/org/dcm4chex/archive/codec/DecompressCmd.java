@@ -68,8 +68,8 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4cheri.image.ItemParser;
-import org.dcm4chex.archive.util.BufferedOutputStream;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
