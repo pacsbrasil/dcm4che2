@@ -1,3 +1,10 @@
+/*
+ * Based on java.io.BufferedOutputStream
+ *
+ * Copyright 2003 Sun Microsystems, Inc. All rights reserved.
+ * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ */
+
 package org.dcm4che.util;
 
 import java.io.EOFException;
@@ -74,6 +81,8 @@ public class BufferedOutputStream extends FilterOutputStream
     public synchronized void copyFrom(InputStream in, int len)
     throws IOException
     {
+		if (in == null)
+			throw new NullPointerException("in");
     	if (len < -1)
     		throw new IllegalArgumentException("len:" + len);
         for (int toWrite = len == -1 ? Integer.MAX_VALUE : len, read = 0;
@@ -105,6 +114,8 @@ public class BufferedOutputStream extends FilterOutputStream
     public synchronized void copyFrom(ImageInputStream in, int len)
     throws IOException
     {
+		if (in == null)
+			throw new NullPointerException("in");
     	if (len < -1)
     		throw new IllegalArgumentException("len:" + len);
         for (int toWrite = len == -1 ? Integer.MAX_VALUE : len, read = 0;
