@@ -40,8 +40,6 @@ import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -79,6 +77,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
+import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.DcmProtocol;
 import org.dcm4che.util.SSLContextAdapter;
 
@@ -116,7 +115,7 @@ public class DcmRcv extends DcmServiceBase
     private DcmServiceRegistry services = fact.newDcmServiceRegistry();
     private DcmHandler handler = srvFact.newDcmHandler(policy, services);
     private Server server = srvFact.newServer(handler);
-    private int bufferSize = 512;
+    private int bufferSize = 8192;
     private File dir = null;
     private boolean devnull = false;
     private DcmRcvFSU fsu = null;
@@ -313,10 +312,11 @@ public class DcmRcv extends DcmServiceBase
         File file = devnull ? dir 
                 : new File(dir, fmi.getMediaStorageSOPInstanceUID());
         log.info("M-WRITE " + file);
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(file)); 
+        BufferedOutputStream out = new BufferedOutputStream(
+        		new FileOutputStream(file), (byte[]) buffer.get()); 
         try {
             fmi.write(out);
-            copy(in, out, -1);
+            out.copyFrom(in);
         } finally {
             try {
                 out.close();
@@ -344,7 +344,8 @@ public class DcmRcv extends DcmServiceBase
             }
             log.info("M-WRITE " + parent);
         }
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+        BufferedOutputStream out = new BufferedOutputStream(
+        		new FileOutputStream(file), (byte[]) buffer.get());
         try {
             ds.setFileMetaInfo(fmi);
             ds.writeFile(out, (DcmEncodeParam) decParam);
@@ -361,7 +362,7 @@ public class DcmRcv extends DcmServiceBase
                 while (parser.getReadTag() == Tags.Item) {
                     len = parser.getReadLength();
                     ds.writeHeader(out, encParam, Tags.Item, VRs.NONE, len);
-                    copy(in, out, len);
+                    out.copyFrom(in, len);
                     parser.parseHeader();
                 }
                 ds.writeHeader(
@@ -371,7 +372,7 @@ public class DcmRcv extends DcmServiceBase
                         VRs.NONE,
                         0);                
             } else {
-                copy(in, out, len);
+                out.copyFrom(in, len);
             }
             parser.parseDataset(decParam, -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
@@ -390,42 +391,6 @@ public class DcmRcv extends DcmServiceBase
             ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
         }
     }
-
-    // Package protected ---------------------------------------------
-
-    // Protected -----------------------------------------------------
-
-    // Private -------------------------------------------------------
-    private void copy(InputStream in, OutputStream out, int totLen)
-        throws IOException
-    {
-        int toRead = totLen == -1 ? Integer.MAX_VALUE : totLen;
-        if (bufferSize > 0) {
-            byte[] b = (byte[]) buffer.get();
-            for (int len; toRead > 0; toRead -= len) {
-                len = in.read(b, 0, Math.min(toRead, b.length));
-                if (len == -1) {
-                    if (totLen == -1) {
-                        return;
-                    }
-                    throw new EOFException();
-                }
-                out.write(b, 0, len);
-            }
-        } else {
-            for (int ch; toRead > 0; --toRead) {
-                ch = in.read();
-                if (ch == -1) {
-                    if (totLen == -1) {
-                        return;
-                    }
-                    throw new EOFException();
-                }
-                out.write(ch);
-            }
-        }
-    }
-
 
     private static void listConfig(Configuration cfg)
     {
@@ -645,7 +610,6 @@ public class DcmRcv extends DcmServiceBase
         throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset (should be NULL!)
         Command rqCmd = rq.getCommand();
-        String cuid = rqCmd.getRequestedSOPClassUID();
         String iuid = rqCmd.getRequestedSOPInstanceUID();
         if (dir != null && dir.isDirectory()) {            
             File f = new File(dir, iuid);
@@ -664,7 +628,6 @@ public class DcmRcv extends DcmServiceBase
         rq.getDataset(); // read out dataset (should be NULL!)
         Dataset ds = oFact.newDataset();
         Command rqCmd = rq.getCommand();
-        String cuid = rqCmd.getRequestedSOPClassUID();
         String iuid = rqCmd.getRequestedSOPInstanceUID();
         if (dir != null && dir.isDirectory()) {            
             File f = new File(dir, iuid);
@@ -700,7 +663,6 @@ public class DcmRcv extends DcmServiceBase
         if (DEBUG)
             log.debug("Dataset:\n" + modify);
         Command rqCmd = rq.getCommand();
-        String cuid = rqCmd.getRequestedSOPClassUID();
         String iuid = rqCmd.getRequestedSOPInstanceUID();
         if (dir != null && dir.isDirectory()) {            
             File f = new File(dir, iuid);
@@ -725,7 +687,6 @@ public class DcmRcv extends DcmServiceBase
         if (DEBUG)
             log.debug("Dataset:\n" + ds);
         Command rqCmd = rq.getCommand();
-        String cuid = rqCmd.getRequestedSOPClassUID();
         String iuid = rqCmd.getRequestedSOPInstanceUID();
         if (dir != null && dir.isDirectory()) {            
             File f = new File(dir, iuid);
@@ -744,7 +705,6 @@ public class DcmRcv extends DcmServiceBase
         if (DEBUG)
             log.debug("Dataset:\n" + ds);
         Command rqCmd = rq.getCommand();
-        String cuid = rqCmd.getRequestedSOPClassUID();
         String iuid = rqCmd.getRequestedSOPInstanceUID();
         if (dir != null && dir.isDirectory()) {            
             File f = new File(dir, iuid);
