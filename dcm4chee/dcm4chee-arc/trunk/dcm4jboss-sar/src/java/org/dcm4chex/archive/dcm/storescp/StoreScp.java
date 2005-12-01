@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -74,6 +75,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4che.util.Executer;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -82,6 +84,7 @@ import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
@@ -100,6 +103,7 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
+    private static final String PURE_JAVA = "PURE_JAVA";
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
 
 	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
@@ -108,6 +112,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     final StoreScpService service;
 
     private final Logger log;
+
+    private String md5sum = null;
 
 	private boolean studyDateInFilePath = false;
 
@@ -146,7 +152,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private long outOfResourcesThreshold = 30000000L;
 
-	public final boolean isAcceptMissingPatientID() {
+	public final String getMD5SUMCommand()
+    {
+        return md5sum != null ? md5sum : PURE_JAVA;
+    }
+
+    public final void setMD5SUMCommand(String cmd)
+    {
+        this.md5sum = !cmd.equalsIgnoreCase(PURE_JAVA) ? cmd : null;
+    }
+
+    public final boolean isAcceptMissingPatientID() {
 		return acceptMissingPatientID;
 	}
 
@@ -551,9 +567,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private byte[] storeToFile(DcmParser parser, Dataset ds, File file, byte[] buffer)
     		throws Exception {
         log.info("M-WRITE file:" + file);
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(file), md);
-        BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
+        MessageDigest md = null;
+        BufferedOutputStream bos = null;
+        if (md5sum == null) {
+            md = MessageDigest.getInstance("MD5");
+            DigestOutputStream dos = new DigestOutputStream(
+                    new FileOutputStream(file), md);
+            bos = new BufferedOutputStream(dos, buffer);
+        } else {
+            bos = new BufferedOutputStream(new FileOutputStream(file), buffer);
+        }
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
             String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
@@ -598,7 +621,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             } catch (IOException ignore) {
             }
         }
-        return md.digest();
+        return md != null ? md.digest(): md5sum(file);
+    }
+
+    private byte[] md5sum(File file) throws Exception
+    {
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+        String[] cmd = { md5sum, file.getAbsolutePath() };
+        Executer ex = new Executer(cmd, stdout, null);
+        int exit = ex.waitFor();
+        if (exit != 0)
+            throw new RuntimeException("Non-zero exit code(" + exit + ") of " + ex.cmd());
+        String result = stdout.toString();
+        return MD5.toBytes(result.substring(0,32));
     }
 
     private void checkDataset(Command rqCmd, Dataset ds)

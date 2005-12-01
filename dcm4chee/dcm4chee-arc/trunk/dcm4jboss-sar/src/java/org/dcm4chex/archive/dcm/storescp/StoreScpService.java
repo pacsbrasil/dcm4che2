@@ -105,9 +105,19 @@ public class StoreScpService extends AbstractScpService {
     private boolean acceptRLELossless = false;
 
     private int bufferSize = 8192;
-
+    
     private StoreScp scp = new StoreScp(this);
 
+    public final String getMD5SUMCommand()
+    {
+        return scp.getMD5SUMCommand();
+    }
+
+    public final void setMD5SUMCommand(String cmd)
+    {
+        scp.setMD5SUMCommand(cmd);
+    }
+    
     public final int getBufferSize() {
         return bufferSize ;
     }

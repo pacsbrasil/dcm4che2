@@ -179,6 +179,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMD5SUMCommand"
+      setMethod="setMD5SUMCommand">
+      <description><![CDATA[System command invoked to calculate MD5SUM of stored
+         files - or PURE_JAVA]]>
+      </description>
+      <name>MD5SUMCommand</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PURE_JAVA"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isStoreDuplicateIfDiffMD5"
       setMethod="setStoreDuplicateIfDiffMD5">
       <description><![CDATA[Store a duplicate object if the MD5 sum of the
