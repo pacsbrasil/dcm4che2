@@ -113,7 +113,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private final Logger log;
 
-    private String md5sum = null;
+    private String md5sumCmd = null;
 
 	private boolean studyDateInFilePath = false;
 
@@ -154,12 +154,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
 	public final String getMD5SUMCommand()
     {
-        return md5sum != null ? md5sum : PURE_JAVA;
+        return md5sumCmd != null ? md5sumCmd : PURE_JAVA;
     }
 
     public final void setMD5SUMCommand(String cmd)
     {
-        this.md5sum = !cmd.equalsIgnoreCase(PURE_JAVA) ? cmd : null;
+        this.md5sumCmd = !cmd.equalsIgnoreCase(PURE_JAVA) ? cmd : null;
     }
 
     public final boolean isAcceptMissingPatientID() {
@@ -569,7 +569,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         log.info("M-WRITE file:" + file);
         MessageDigest md = null;
         BufferedOutputStream bos = null;
-        if (md5sum == null) {
+        if (md5sumCmd == null) {
             md = MessageDigest.getInstance("MD5");
             DigestOutputStream dos = new DigestOutputStream(
                     new FileOutputStream(file), md);
@@ -627,7 +627,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private byte[] md5sum(File file) throws Exception
     {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-        String[] cmd = { md5sum, file.getAbsolutePath() };
+        String[] cmd = { md5sumCmd, file.getAbsolutePath() };
         Executer ex = new Executer(cmd, stdout, null);
         int exit = ex.waitFor();
         if (exit != 0)
