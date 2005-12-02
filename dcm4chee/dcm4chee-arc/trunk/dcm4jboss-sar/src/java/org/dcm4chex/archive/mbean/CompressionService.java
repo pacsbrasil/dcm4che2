@@ -348,7 +348,7 @@ public class CompressionService extends TimerSupport {
             int[] pxvalVR = new int[1];
 			byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
                     .getTransferSyntax(), pxvalVR, buffer);
-            if (verifyCompression) {
+            if (verifyCompression && fileDTO.getFileMd5() != null) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
                     log.info("Create directory for decompressed files");

@@ -87,6 +87,7 @@ import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -511,7 +512,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     private void checkFile(FileInfo info) throws IOException {
-        if (info.basedir == null || !isLocalFileSystem(info.basedir))
+        if (info.md5 == null
+                || info.basedir == null || !isLocalFileSystem(info.basedir))
             return;
         File file = FileUtils.toFile(info.basedir, info.fileID);
         log.info("M-READ file:" + file);
@@ -543,7 +545,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
             }
         }
         byte[] md5 = md.digest();
-        if (!Arrays.equals(md5, info.getFileMd5())) {
+        if (!Arrays.equals(md5, MD5.toBytes(info.md5))) {
             throw new IOException("MD5 mismatch");
         }
     }

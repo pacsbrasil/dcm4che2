@@ -179,15 +179,15 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMD5SUMCommand"
-      setMethod="setMD5SUMCommand">
-      <description><![CDATA[System command invoked to calculate MD5SUM of stored
-         files - or PURE_JAVA]]>
+      getMethod="isMd5sum"
+      setMethod="setMd5sum">
+      <description><![CDATA[Generates MD5 file check sum during storage and 
+      keep it in DB record]]>
       </description>
-      <name>MD5SUMCommand</name>
-      <type>java.lang.String</type>
+      <name>Md5sum</name>
+      <type>boolean</type>
       <descriptors>
-         <value value="PURE_JAVA"/>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -54,7 +54,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
@@ -310,7 +309,7 @@ public class FileCopyService extends ServiceMBeanSupport implements
 			File dst = FileUtils.toFile(destPath + '/' + finfo.getFilePath());
 			try {
 				copy(src, dst, buffer);
-				if (digest != null) {
+				if (finfo.getMd5sum() != null && digest != null) {
 					byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
 				    if (!Arrays.equals(finfo.getMd5sum(), md5sum))
 				    {
