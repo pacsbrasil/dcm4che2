@@ -132,14 +132,4 @@ public class FileInfo {
                 + ", fileRetrieveAET=" + fileRetrieveAET + ", basedir="
                 + basedir + ", fileid=" + fileID + ", tsuid=" + tsUID;
     }
-    
-    public byte[] getFileMd5() {
-        char[] md5Hex = md5.toCharArray();
-        byte[] retval = new byte[16];
-        for (int i = 0; i < retval.length; i++) {
-            retval[i] = (byte) ((Character.digit(md5Hex[i << 1], 16) << 4) + Character
-                    .digit(md5Hex[(i << 1) + 1], 16));
-        }
-        return retval;
-    }
 }

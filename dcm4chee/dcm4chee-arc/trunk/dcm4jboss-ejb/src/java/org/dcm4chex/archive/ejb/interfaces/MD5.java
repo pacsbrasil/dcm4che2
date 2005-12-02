@@ -46,6 +46,8 @@ package org.dcm4chex.archive.ejb.interfaces;
  */
 public class MD5 {
     public static byte[] toBytes(String s) {
+        if (s == null)
+            return null;
         char[] md5Hex = s.toCharArray();
         byte[] md5 = new byte[16];
         for (int i = 0; i < md5.length; i++)
@@ -58,6 +60,8 @@ public class MD5 {
     }
 
     public static String toString(byte[] md5) {
+        if (md5 == null)
+            return null;
         if (md5.length != 16)
         {
             throw new IllegalArgumentException("md5.length=" + md5.length);

@@ -73,7 +73,7 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @ejb.finder signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
- *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND f.fileMd5Field IS NOT NULL AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
  *             strategy="on-find" eager-load-group="*"
  * @ejb.finder signature="java.util.Collection findByStatusAndFileSystem(java.lang.String dirPath, int status, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
