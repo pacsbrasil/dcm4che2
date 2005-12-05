@@ -49,8 +49,8 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.ejb.CreateException;
@@ -124,7 +124,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	private boolean acceptMissingPatientName = true;
 	
 	private boolean serializeDBUpdate = false;
-	
+		
 	private String generatePatientID = "PACS-##########";
 	
 	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
@@ -140,12 +140,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private CompressionRules compressionRules = new CompressionRules("");
 
-    private HashSet coerceWarnCallingAETs = new HashSet();
+    private LinkedHashSet coerceWarnCallingAETs = new LinkedHashSet();
 
+	private LinkedHashSet ignorePatientIDCallingAETs = new LinkedHashSet();
+    
     private long updateDatabaseRetryInterval = 0L;
 
     private long outOfResourcesThreshold = 30000000L;
-
+    
     public final boolean isAcceptMissingPatientID() {
 		return acceptMissingPatientID;
 	}
@@ -192,24 +194,40 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.log = service.getLog();
     }
 
-    public final String getCoerceWarnCallingAETs() {
-        if (coerceWarnCallingAETs.isEmpty())
-            return "NONE";
-        StringBuffer sb = new StringBuffer();
-        Iterator it = coerceWarnCallingAETs.iterator();
-        sb.append(it.next());
-        while (it.hasNext())
-            sb.append(',').append(it.next());
-        return sb.toString();
+    public final String getIgnorePatientIDCallingAETs() {
+        return toStr(ignorePatientIDCallingAETs, '\\');
+	}
+
+	public final void setIgnorePatientIDCallingAETs(String aets) {
+        str2set(aets, ignorePatientIDCallingAETs, '\\');
+	}
+
+	public final String getCoerceWarnCallingAETs() {
+        return toStr(coerceWarnCallingAETs, '\\');
     }
 
+	private String toStr(LinkedHashSet set, char delim) {
+		if (set.isEmpty())
+            return "NONE";
+        StringBuffer sb = new StringBuffer();
+        Iterator it = set.iterator();
+        sb.append(it.next());
+        while (it.hasNext())
+            sb.append(delim).append(it.next());
+        return sb.toString();
+	}
+
     public final void setCoerceWarnCallingAETs(String aets) {
-        coerceWarnCallingAETs.clear();
+        str2set(aets, coerceWarnCallingAETs, '\\');
+    }
+
+	private void str2set(String aets, LinkedHashSet set, char delim) {
+		set.clear();
         if ("NONE".equals(aets))
             return;
-        coerceWarnCallingAETs.addAll(Arrays.asList(StringUtils
-                .split(aets, '\\')));
-    }
+        set.addAll(Arrays.asList(StringUtils
+                .split(aets, delim)));
+	}
 
 	public final boolean isStudyDateInFilePath() {
 		return studyDateInFilePath;
@@ -334,7 +352,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             parser.parseDataset(decParam, Tags.PixelData);
 			log.debug("Dataset:\n");
 			log.debug(ds);
-            checkDataset(rqCmd, ds);
+            checkDataset(assoc, rqCmd, ds);
 
             FileSystemInfo fsInfo = service.selectStorageFileSystem();
             if (fsInfo.getAvailable() < outOfResourcesThreshold)
@@ -608,7 +626,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return md != null ? md.digest(): null;
     }
 
-    private void checkDataset(Command rqCmd, Dataset ds)
+    private void checkDataset(Association assoc, Command rqCmd, Dataset ds)
             throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
             if (ds.vm(TYPE1_ATTR[i]) <= 0) {
@@ -641,6 +659,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Acceptance of objects without Patient Name is disabled");			
+		}
+		if (ignorePatientIDCallingAETs.contains(assoc.getCallingAET())) {
+			log.info("Ignore Patient ID " + pid 
+					+ " for Patient Name " + pname
+					+ " in object received from " + assoc.getCallingAET());
+			pid = null;
+			ds.putLO(Tags.PatientID, pid);
 		}
 		if (pid == null && generatePatientID != null) {
 			if (generatePatientID != null) {

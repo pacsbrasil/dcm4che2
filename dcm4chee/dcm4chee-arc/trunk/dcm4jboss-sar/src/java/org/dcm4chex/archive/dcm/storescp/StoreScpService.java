@@ -233,7 +233,15 @@ public class StoreScpService extends AbstractScpService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
-    public String getCoerceWarnCallingAETs() {
+    public final String getIgnorePatientIDCallingAETs() {
+        return scp.getIgnorePatientIDCallingAETs();
+	}
+
+	public final void setIgnorePatientIDCallingAETs(String aets) {
+        scp.setIgnorePatientIDCallingAETs(aets);
+	}
+
+	public String getCoerceWarnCallingAETs() {
         return scp.getCoerceWarnCallingAETs();
     }
 
