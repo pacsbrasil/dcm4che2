@@ -44,6 +44,7 @@ import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -138,6 +139,9 @@ public class ADTService extends AbstractHL7Service {
                 			throw x;
                 		}
                 	}
+                } else if ( isArrived(msh)) {
+                    log.info("Set MWL entries for Patient " + pname + ", PID:" + pid + " to arrived");
+                    update.patientArrived(pat);
                 } else {
                     log.info("Update Patient Info of " + pname + ", PID:" + pid);
                     update.updatePatient(pat);					
@@ -156,6 +160,10 @@ public class ADTService extends AbstractHL7Service {
         return true;
     }
 
+	private boolean isArrived(MSH msh) {
+        return "A10".equals(msh.triggerEvent);
+	}
+
 	private boolean isMerge(MSH msh) {
         return "A40".equals(msh.triggerEvent);
     }
@@ -169,4 +177,5 @@ public class ADTService extends AbstractHL7Service {
         return (PatientUpdateHome) EJBHomeFactory.getFactory().lookup(
                 PatientUpdateHome.class, PatientUpdateHome.JNDI_NAME);
     }
+
 }

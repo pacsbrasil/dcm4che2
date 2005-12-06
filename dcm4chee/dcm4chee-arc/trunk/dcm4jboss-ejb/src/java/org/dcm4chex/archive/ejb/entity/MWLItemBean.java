@@ -287,7 +287,6 @@ public abstract class MWLItemBean implements EntityBean {
             throw new IllegalArgumentException("Missing Scheduled Procedure Step Sequence (0040,0100) Item");
         }
         setSpsId(spsItem.getString(Tags.SPSID));
-        String s = spsItem.getString(Tags.SPSStatus);
         setSpsStatus(spsItem.getString(Tags.SPSStatus, "SCHEDULED"));
         setSpsStartDateTime(
             spsItem.getDateTime(Tags.SPSStartDate, Tags.SPSStartTime));
@@ -324,6 +323,20 @@ public abstract class MWLItemBean implements EntityBean {
 
     public void setSpsStatus(String status) {
         setSpsStatusAsInt(SPSStatus.toInt(status));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateSpsStatus(int status) {
+    	if (status == getSpsStatusAsInt())
+    		return;
+    	Dataset ds = getAttributes();
+        Dataset spsItem = ds.getItem(Tags.SPSSeq);
+        spsItem.putCS(Tags.SPSStatus, SPSStatus.toString(status));
+        setEncodedAttributes(
+                DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));        
+    	setSpsStatusAsInt(status);
     }
     
     /**
