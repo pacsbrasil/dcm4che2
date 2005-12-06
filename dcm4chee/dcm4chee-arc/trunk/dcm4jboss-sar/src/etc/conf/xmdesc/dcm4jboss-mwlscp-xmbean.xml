@@ -44,39 +44,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getLogCallingAETs"
-      setMethod="setLogCallingAETs">
-      <description><![CDATA[List of the AE titles for the MWL SCUs for which XMLized
-      query and result attributes shall in logged into files 
-      <i>AET</i>/<i>timestamp</i>-mwl-cfindrq.xml and 
-      <i>AET</i>/<i>timestamp</i>-mwl-cfindrsp.xml in the log directory.
-      Useful for creation of XSL stylesheets for query/result attribute coercion.
-      Separate multiple values by \(backslash).
-      NONE = no calling AE titles.]]>  
-      </description>
-      <name>LogAETitles</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getCoerceConfigDir"
-      setMethod="setCoerceConfigDir">
-      <description><![CDATA[Directory where configuration files for query/result
-      attribute coercion are located: if XSL stylesheet "mwl-cfindrq.xsl" or 
-      "mwl-cfindrsp.xsl" exists in a sub-directory equal to the AE Title of 
-      a MWL SCU, query/result attributes from/to this SCU will be coerced 
-      according these stylesheets. A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>  
-      </description>
-      <name>CoerceConfigDirectory</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4jboss-ae"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
@@ -148,6 +115,39 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLogCallingAETs"
+      setMethod="setLogCallingAETs">
+      <description><![CDATA[List of the AE titles for the MWL SCUs for which XMLized
+      query and result attributes are logged into files 
+      <i>AET</i>/<i>timestamp</i>-mwl-cfindrq.xml and 
+      <i>AET</i>/<i>timestamp</i>-mwl-cfindrsp.xml in the log directory.
+      Useful for creation of XSL stylesheets for query/result attribute coercion.
+      Separate multiple values by \(backslash).
+      NONE = no calling AE titles.]]>  
+      </description>
+      <name>LogAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCoerceConfigDir"
+      setMethod="setCoerceConfigDir">
+      <description><![CDATA[Directory where configuration files for query/result
+      attribute coercion are located: if XSL stylesheet "mwl-cfindrq.xsl" or 
+      "mwl-cfindrsp.xsl" exists in a sub-directory equal to the AE Title of 
+      a MWL SCU, query/result attributes from/to this SCU will be coerced 
+      according these stylesheets. A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>CoerceConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-ae"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -196,5 +196,10 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Reload Stylesheets</description>
+      <name>reloadStylesheets</name>
+      <return-type>void</return-type>
+   </operation>
 </mbean>
 

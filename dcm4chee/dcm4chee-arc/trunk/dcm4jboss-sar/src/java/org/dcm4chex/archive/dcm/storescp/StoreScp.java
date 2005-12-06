@@ -49,12 +49,15 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -74,6 +77,8 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4che.util.DAFormat;
+import org.dcm4che.util.TMFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -91,6 +96,7 @@ import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -110,45 +116,40 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final Logger log;
 
 	private boolean studyDateInFilePath = false;
-
 	private boolean yearInFilePath = true;
-
 	private boolean monthInFilePath = true;
-
 	private boolean dayInFilePath = true;
-
 	private boolean hourInFilePath = false;
 	
 	private boolean acceptMissingPatientID = true;
-
 	private boolean acceptMissingPatientName = true;
-	
-	private boolean serializeDBUpdate = false;
-		
 	private String generatePatientID = "PACS-##########";
-	
 	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
 			new IssuerOfPatientIDRules("PACS-:TIANI");
 
+	private boolean serializeDBUpdate = false;
     private int updateDatabaseMaxRetries = 2;
-
     private int maxCountUpdateDatabaseRetries = 0;
 
     private boolean storeDuplicateIfDiffMD5 = true;
-
     private boolean storeDuplicateIfDiffHost = true;
+    private long updateDatabaseRetryInterval = 0L;
 
     private CompressionRules compressionRules = new CompressionRules("");
 
     private LinkedHashSet coerceWarnCallingAETs = new LinkedHashSet();
-
 	private LinkedHashSet ignorePatientIDCallingAETs = new LinkedHashSet();
-    
-    private long updateDatabaseRetryInterval = 0L;
+	private LinkedHashSet logCallingAETs = new LinkedHashSet();
 
     private long outOfResourcesThreshold = 30000000L;
     
-    public final boolean isAcceptMissingPatientID() {
+    
+	public StoreScp(StoreScpService service) {
+        this.service = service;
+        this.log = service.getLog();
+    }
+
+	public final boolean isAcceptMissingPatientID() {
 		return acceptMissingPatientID;
 	}
 
@@ -189,24 +190,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		this.issuerOfPatientIDRules = new IssuerOfPatientIDRules(rules);
 	}
 
-	public StoreScp(StoreScpService service) {
-        this.service = service;
-        this.log = service.getLog();
-    }
-
-    public final String getIgnorePatientIDCallingAETs() {
-        return toStr(ignorePatientIDCallingAETs, '\\');
-	}
-
-	public final void setIgnorePatientIDCallingAETs(String aets) {
-        str2set(aets, ignorePatientIDCallingAETs, '\\');
-	}
-
-	public final String getCoerceWarnCallingAETs() {
-        return toStr(coerceWarnCallingAETs, '\\');
-    }
-
-	private String toStr(LinkedHashSet set, char delim) {
+	private String set2str(LinkedHashSet set, char delim) {
 		if (set.isEmpty())
             return "NONE";
         StringBuffer sb = new StringBuffer();
@@ -217,16 +201,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return sb.toString();
 	}
 
-    public final void setCoerceWarnCallingAETs(String aets) {
-        str2set(aets, coerceWarnCallingAETs, '\\');
-    }
-
 	private void str2set(String aets, LinkedHashSet set, char delim) {
 		set.clear();
         if ("NONE".equals(aets))
             return;
         set.addAll(Arrays.asList(StringUtils
                 .split(aets, delim)));
+	}
+
+    public final String getIgnorePatientIDCallingAETs() {
+        return set2str(ignorePatientIDCallingAETs, '\\');
+	}
+
+	public final void setIgnorePatientIDCallingAETs(String aets) {
+        str2set(aets, ignorePatientIDCallingAETs, '\\');
+	}
+
+	public final String getCoerceWarnCallingAETs() {
+        return set2str(coerceWarnCallingAETs, '\\');
+    }
+
+    public final void setCoerceWarnCallingAETs(String aets) {
+        str2set(aets, coerceWarnCallingAETs, '\\');
+    }
+
+    public final String getLogCallingAETs() {
+		return set2str(logCallingAETs, '\\');
+	}
+
+	public final void setLogCallingAETs(String aets) {
+		str2set(aets, logCallingAETs, '\\');
 	}
 
 	public final boolean isStudyDateInFilePath() {
@@ -332,6 +336,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         String cuid = rqCmd.getAffectedSOPClassUID();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
+        String callingAET = assoc.getCallingAET();
         File file = null;
         try {
 			
@@ -352,6 +357,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             parser.parseDataset(decParam, Tags.PixelData);
 			log.debug("Dataset:\n");
 			log.debug(ds);
+			Date now = new Date();
+			if (logCallingAETs.contains(callingAET))
+				try {
+					XSLTUtils.writeTo(ds, service.getLogFile(now, callingAET));
+				} catch (Exception e) {
+					log.warn("Logging of attributes failed:", e);
+				}
             checkDataset(assoc, rqCmd, ds);
 
             FileSystemInfo fsInfo = service.selectStorageFileSystem();
@@ -385,14 +397,30 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsInfo.getRetrieveAET());
+            Dataset coerced = null;
+    		try {
+    			Templates stylesheet = service.getCoercionTemplatesFor(callingAET);
+    			if (stylesheet != null)
+    			{
+    				coerced = XSLTUtils.coerce(ds, stylesheet,
+    						toXsltParam(assoc, now));
+    			}
+    		} catch (Exception e) {
+    			log.warn("Coercion of attributes failed:", e);
+    		}
             Dataset coercedElements = updateDB(ds, fsInfo, filePath, file, 
             		md5sum);
-            if (coercedElements.isEmpty()
+            ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
+            if (coerced == null)
+            	coerced = coercedElements;
+            else
+            	coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
+            if (coerced.isEmpty()
                     || !coerceWarnCallingAETs.contains(assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
             } else {
-                int[] coercedTags = new int[coercedElements.size()];
-                Iterator it = coercedElements.iterator();
+                int[] coercedTags = new int[coerced.size()];
+                Iterator it = coerced.iterator();
                 for (int i = 0; i < coercedTags.length; i++) {
                     coercedTags[i] = ((DcmElement) it.next()).tag();
                 }
@@ -401,7 +429,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
 			if (!duplicates.isEmpty())
 				unhide(iuid);
-            ds.putAll(coercedElements);
 			FileInfo fileInfo = new FileInfo(iuid, cuid, tsuid,
 					fsInfo.getPath(), filePath, file.length(), md5sum);
 			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo, fileInfo);
@@ -421,6 +448,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
+ 
+	private Map toXsltParam(Association a, Date now) {
+		HashMap param = new HashMap();
+		param.put("calling", a.getCallingAET());
+		param.put("called", a.getCalledAET());
+		param.put("date", new DAFormat().format(now));
+		param.put("time", new TMFormat().format(now));
+		return null;
+	}
     
 	private byte[] getByteBuffer(Association assoc) {
 		byte[] buf = (byte[]) assoc.getProperty(RECEIVE_BUFFER);

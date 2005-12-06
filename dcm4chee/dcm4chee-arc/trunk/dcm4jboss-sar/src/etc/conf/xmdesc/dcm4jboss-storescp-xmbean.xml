@@ -622,6 +622,38 @@ Use either the SOP Class UID or the symbolic name:
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLogCallingAETs"
+      setMethod="setLogCallingAETs">
+      <description><![CDATA[List of the AE titles for the Storage SCUs for which
+      XMLized object attributes are logged into files 
+      <i>AET</i>/<i>timestamp</i>-cstorerq.xml in the log directory.
+      Useful for creation of XSL stylesheets for attribute coercion.
+      Separate multiple values by \ (backslash).
+      NONE = no calling AE titles.]]>  
+      </description>
+      <name>LogAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCoerceConfigDir"
+      setMethod="setCoerceConfigDir">
+      <description><![CDATA[Directory where configuration files for
+      attribute coercion are located: if XSL stylesheet "cstorerq.xsl" 
+      exists in a sub-directory equal to the AE Title of a Storage SCU, 
+      attributes from this SCU will be coerced  according these stylesheets.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>CoerceConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-ae"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -680,20 +712,18 @@ Use either the SOP Class UID or the symbolic name:
    &defaultAttributes;
 
    <!-- Operations -->
+   &defaultOperations;
    <operation impact="ACTION">
      <description>Reset Update Database - Performed Retries to 0.</description>
      <name>resetMaxCountUpdateDatabaseRetries</name>
      <return-type>void</return-type>
-	</operation>
-   &defaultOperations;
+   </operation>
+   <operation impact="ACTION">
+      <description>Reload Stylesheets</description>
+      <name>reloadStylesheets</name>
+      <return-type>void</return-type>
+   </operation>
 
    <!-- Notifications -->
-   <notification>
-      <description>Emitted after association release with collected info
-      about received objects in that association
-      </description>
-      <name>javax.management.Notification</name>
-      <notification-type>org.dcm4chex.archive.dcm.storescp</notification-type>
-   </notification>
 </mbean>
 

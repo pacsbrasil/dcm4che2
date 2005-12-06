@@ -65,7 +65,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
@@ -98,8 +97,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-filter.xml"
- * @ejb.env-entry name="AttributeCoercionConfigURL" type="java.lang.String"
- *                value="resource:dcm4jboss-attribute-coercion.xml"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$
@@ -127,8 +124,6 @@ public abstract class StorageBean implements SessionBean {
 
     private AttributeFilter attrFilter;
 
-    private AttributeCoercions attrCoercions;
-
     private SessionContext sessionCtx;
 
     public void setSessionContext(SessionContext ctx) {
@@ -149,8 +144,6 @@ public abstract class StorageBean implements SessionBean {
                     .lookup("java:comp/env/ejb/FileSystem");
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
-            attrCoercions = new AttributeCoercions((String) jndiCtx
-                    .lookup("java:comp/env/AttributeCoercionConfigURL"));
             try {
             } catch ( Throwable t ) {
             	t.printStackTrace();
@@ -197,7 +190,6 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                attrCoercions.coerce(ds, coercedElements);
                 final int[] filter = attrFilter.getInstanceFilter();
                 instance = instHome.create(ds.subSet(filter),
                         getSeries(ds, coercedElements));

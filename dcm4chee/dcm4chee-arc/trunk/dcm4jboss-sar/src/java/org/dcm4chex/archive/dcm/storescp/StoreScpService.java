@@ -39,9 +39,12 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
+import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -50,6 +53,10 @@ import java.util.TreeMap;
 import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.ObjectName;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
@@ -59,6 +66,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.util.DTFormat;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
@@ -66,6 +74,7 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -75,6 +84,8 @@ import org.dcm4chex.archive.util.FileUtils;
 public class StoreScpService extends AbstractScpService {
 
     private static final long MIN_OUT_OF_RESOURCES_THRESHOLD = 20 * FileUtils.MEGA;    
+	private static final String STORE_XSL = "cstorerq.xsl";
+	private static final String STORE_XML = "-cstorerq.xml";
 
     /** Map containing all image SOP Class UID. (key is name (as in config string), value is real uid) */
     private Map imageCUIDS = new TreeMap();
@@ -84,32 +95,26 @@ public class StoreScpService extends AbstractScpService {
 
     private ObjectName fileSystemMgtName;
 
+    private File coerceConfigDir;
+    private File logDir;
+    
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean acceptJPEGBaseline = true;
-
     private boolean acceptJPEGExtended = true;
-
     private boolean acceptJPEGLossless = true;
-
     private boolean acceptJPEGLossless14 = true;
-
     private boolean acceptJPEGLSLossless = true;
-
     private boolean acceptJPEGLSLossy = true;
-
     private boolean acceptJPEG2000Lossless = true;
-
     private boolean acceptJPEG2000Lossy = true;
-
     private boolean acceptRLELossless = false;
 
     private int bufferSize = 8192;
-    
     private boolean md5sum = true;
     
     private StoreScp scp = new StoreScp(this);
-
+    private Hashtable templates = new Hashtable();
     
     public final boolean isMd5sum()
     {
@@ -508,7 +513,50 @@ public class StoreScpService extends AbstractScpService {
         return c >= '0' && c <= '9';
     }
 
+	public final String getCoerceConfigDir() {
+		return coerceConfigDir.getPath();
+	}
+
+	public final void setCoerceConfigDir(String path) {
+		this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
+	}
+
+    public final String getLogCallingAETs() {
+		return scp.getLogCallingAETs();
+	}
+
+	public final void setLogCallingAETs(String aets) {
+		scp.setLogCallingAETs(aets);
+	}
+	
+	Templates getCoercionTemplatesFor(String aet)
+	throws TransformerConfigurationException {
+		File f = FileUtils.resolve(
+				new File(new File(coerceConfigDir, aet), STORE_XSL));
+		if (!f.exists())
+			return null;
+		Templates tpl = (Templates) templates.get(f);
+		if (tpl == null) {
+			tpl = TransformerFactory.newInstance().newTemplates(
+					new StreamSource(f));
+			templates.put(f, tpl);
+		}
+		return tpl;
+	}
+
+
+	File getLogFile(Date now, String callingAET) {
+		File dir = new File(logDir, callingAET);
+		dir.mkdir();
+		return new File(dir, new DTFormat().format(now) + STORE_XML);
+	}
+
+	public void reloadStylesheets() {
+		templates.clear();
+	}	
+
 	protected void startService() throws Exception {
+        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
         super.startService();
     }
 

@@ -47,7 +47,9 @@ package org.dcm4chex.archive.ejb.conf;
  */
 public class ConfigurationException extends Exception {
 
-    /**
+	private static final long serialVersionUID = -2127461855902772106L;
+
+	/**
      * 
      */
     public ConfigurationException() {
