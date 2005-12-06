@@ -172,6 +172,7 @@ public abstract class MWLManagerBean implements SessionBean {
 			}
 		}
 		PatientLocal patient = patHome.create(ds.subSet(PATIENT_ATTRS));
+		if ( patient.getHiddenSafe() ) patient.setHidden(false);
 		return patient;
 	}
 
@@ -206,6 +207,8 @@ public abstract class MWLManagerBean implements SessionBean {
 	            Dataset attrs = mwlItem.getAttributes();
 				attrs.putAll(woPatAttrs);
 				mwlItem.setAttributes(attrs);
+				PatientLocal pat = mwlItem.getPatient();
+				if ( pat.getHiddenSafe() ) pat.setHidden(false);
 				return true;
 			} catch (ObjectNotFoundException onfe) {
 				mwlItemHome.create(woPatAttrs, getPatient(ds));

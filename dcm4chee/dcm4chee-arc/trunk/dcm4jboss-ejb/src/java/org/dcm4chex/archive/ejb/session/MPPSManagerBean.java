@@ -40,7 +40,9 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -135,7 +137,8 @@ public abstract class MPPSManagerBean implements SessionBean {
     public void createMPPS(Dataset ds)
         throws DcmServiceException {
         try {
-            mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), getPatient(ds));
+        	PatientLocal pat = getPatient(ds);
+            mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), pat);
         } catch (CreateException ce) {
             try {
                 mppsHome.findBySopIuid(ds.getString(Tags.SOPInstanceUID));
@@ -210,20 +213,25 @@ public abstract class MPPSManagerBean implements SessionBean {
         Dataset attrs = mpps.getAttributes();
         attrs.putAll(ds);
         mpps.setAttributes(attrs);
-        if (mpps.isIncorrectWorklistEntrySelected()) {
+        boolean hidden = mpps.getPatient().getHiddenSafe();
+        //hide if incorrect WL (and pat not already hidden).
+        //unhide if not a incorrect WL and patient is hidden.
+        if (mpps.isIncorrectWorklistEntrySelected() ^ hidden) { 
             Collection c = mpps.getSeries();
             SeriesLocal ser = null;
             for (Iterator it = c.iterator(); it.hasNext();) {
                 ser = (SeriesLocal) it.next();
-                ser.markDeleted(true);
+                ser.markDeleted(!hidden);
             }
             if (ser != null)
                 try {
                 	StudyLocal study = ser.getStudy();
-                	if ( study.getSeries().size() == 1)
-                		study.setHidden(true);
+                	if ( !hidden && study.getSeries().size() == 1)
+                		study.setHidden(!hidden);
                 	else
                 		study.updateDerivedFields(true, true, true, true, true, true, true);
+               		if ( hidden )
+               			mpps.getPatient().updateDerivedFields();
                 } catch (FinderException e1) {
                     throw new DcmServiceException(Status.ProcessingFailure, e1);
                 }
@@ -231,28 +239,79 @@ public abstract class MPPSManagerBean implements SessionBean {
     }
     
     /**
+     * Links a mpps to a mwl entry.
+     * <p>
+     * Sets SpsID and AccessionNumber from mwl entry.
+     * <P>
+     * Returns a Map with following key/value pairs.
+     * <dl>
+     * <dt>mppsAttrs: (Dataset)</dt>
+     * <dd>  Attributes of mpps entry. (for notification)</dd>
+     * <dt>mwlPat: (Dataset)</dt>
+     * <dd>  Patient of MWL entry.</dd>
+     * <dd>  (The dominant patient of patient merge).</dd>
+     * <dt>mppsPat: (Dataset)</dt>
+     * <dd>  Patient of MPPS entry.</dd>
+     * <dd>  (The merged patient).</dd>
+     * <dt>userAction: (Boolean)</dt>
+     * <dd>  Indicates that a user action is necessary.</dd>
+     * <dd>  (the MPPS patient has more than one Study!)
+     * </dl>
+     * @param spsID spsID to select MWL entry
+     * @param mppsIUID Instance UID of mpps.
+     * 
+     * @return A map with mpps attributes and patient attributes to merge.
+     * 
      * @ejb.interface-method
      */
-    public Dataset linkMppsToMwl(String spsID, String mppsIUID) throws DcmServiceException {
+    public Map linkMppsToMwl(String spsID, String mppsIUID) throws DcmServiceException {
+    	log.info("linkMppsToMwl sps:"+spsID+" mpps:"+mppsIUID);
 		MWLItemLocal mwlItem;
         MPPSLocal mpps;
+        Map map = new HashMap();
         try {
 			mwlItem = mwlItemHome.findBySpsId(spsID);
             mpps = mppsHome.findBySopIuid(mppsIUID);
             String accNo = mwlItem.getAccessionNumber();
-            PatientLocal pat = mwlItem.getPatient();
+            PatientLocal mwlPat = mwlItem.getPatient();
+            PatientLocal mppsPat = mpps.getPatient();
             Dataset mppsAttrs = mpps.getAttributes();
-            mppsAttrs.putAll(pat.getAttributes(false));
     		Dataset ssa = mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq);
             ssa.putSH(Tags.SPSID, spsID);
     		ssa.putSH(Tags.AccessionNumber,accNo);
             mpps.setAttributes(mppsAttrs);
-            return mppsAttrs;
+            mppsAttrs.putAll(mppsPat.getAttributes(false));
+            map.put("mppsAttrs",mppsAttrs);
+            if ( ! mwlPat.equals(mppsPat) ) {
+        		if ( mppsPat.getStudies().size() == 1 ) {
+            		map.put( "mwlPat", mwlPat.getAttributes(true));
+            		map.put("mppsPat",mppsPat.getAttributes(true));
+        		} else {
+        			map.put("userAction", Boolean.TRUE );
+        		}
+            }
+            return map;
         } catch (ObjectNotFoundException e) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
         } catch (FinderException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
-
+    
+    /**
+     * Delete a list of mpps entries.
+     *  
+     * @ejb.interface-method
+     */
+    public boolean deleteMPPSEntries( String[] iuids ) {
+    	MPPSLocal mpps;
+    	for ( int i = 0 ; i < iuids.length ; i++ ) {
+    		try {
+				mppsHome.findBySopIuid( iuids[i] ).remove();
+			} catch (Exception x) {
+				log.error("Cant delete mpps:"+iuids[i], x);
+			}
+    	}
+    	return true;
+    }
 }
