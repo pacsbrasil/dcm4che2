@@ -175,11 +175,12 @@
    			</fileset>
   			<fileset dir="${src.etc}">
    				<include name="bin/*"/>
-   				<include name="conf/*.jks"/>
+   				<include name="conf/**"/>
+   				<!-- include name="conf/*.jks"/>
    				<include name="conf/*.p12"/>
   				<include name="conf/gpwl/*.xml"/>
   				<include name="conf/xmdesc/*.xml"/>
-  				<include name="conf/xsl/**"/>
+  				<include name="conf/xsl/**"/-->
    				<include name="deploy/*.xml"/>
    				<include name="deploy/jms/*.xml"/>
    			</fileset>

@@ -96,7 +96,7 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
    <attribute access="read-write" getMethod="getTempDir" setMethod="setTempDir">
       <description><![CDATA[Directory used to spool decompressed files for 
       compression verification. Relative path names are resolved relative to
-      <i>archive-install-directory</i>/server/pacs/.]]>
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>TempDirectory</name>
       <type>java.lang.String</type>

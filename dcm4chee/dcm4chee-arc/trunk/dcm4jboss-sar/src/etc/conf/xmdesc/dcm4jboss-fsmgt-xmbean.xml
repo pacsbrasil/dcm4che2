@@ -26,7 +26,7 @@ accessed studies.</description>
       <description>List directories (mount points) on this DICOM node.
       To separate multiple directories, use ; (semi-colon) on Windows and 
       : (colon) on UNIX-like platforms. Relative path names are
-      resolved relative to the archive-install-directory/server/pacs/. 
+      resolved relative to the archive-install-directory/server/default/. 
       To mark the directory used for storage of newly received DICOM Instances 
       by the Storage SCP on this DICOM node, 
       add * (asterisk) to the end of the directory path name.
@@ -43,7 +43,7 @@ accessed studies.</description>
       <description>List read-only directories (mount points) on this 
       DICOM node. To separate multiple directories, use ; (semi-colon) on Windows and 
       : (colon) on UNIX-like platforms. Relative path names are
-      resolved relative to the archive-install-directory/server/pacs/.
+      resolved relative to the archive-install-directory/server/default/.
       NONE = no read-only directory or mount point.
       </description>
       <name>ReadOnlyDirectoryPaths</name>
