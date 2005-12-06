@@ -50,16 +50,23 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.xml.transform.TransformerException;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -79,6 +86,10 @@ import org.xml.sax.XMLReader;
 public class HL7SendService 
 		extends ServiceMBeanSupport 
 		implements NotificationListener, MessageListener {
+
+    private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
+	private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
+	private static long msgCtrlid = System.currentTimeMillis();
 	
 	private String queueName;
 	
@@ -249,7 +260,7 @@ public class HL7SendService
 		}
 		return count;
 	}
-
+	
 	public void onMessage(Message message) {
         ObjectMessage om = (ObjectMessage) message;
         try {
@@ -284,10 +295,16 @@ public class HL7SendService
 	public void sendTo(byte[] message, String receiving) 
 			throws SQLException, IOException, UnkownAETException, 
 					TransformerException, SAXException, HL7Exception {
-		AEData aeData = new AECmd(receiving).getAEData();
-		if (aeData == null) {
-			throw new UnkownAETException("Unkown HL7 receiver application "
-					+ receiving);
+		AEData aeData;
+		if (LOCAL_HL7_AET.equals(receiving)) {
+			aeData = new AEData(-1, receiving, "localhost", getLocalHL7Port(), null);
+			
+		} else {
+			aeData = new AECmd(receiving).getAEData();
+			if (aeData == null) {
+				throw new UnkownAETException("Unkown HL7 receiver application "
+						+ receiving);
+			}
 		}
 		Socket s = tlsConfig.createSocket(aeData);
 		MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
@@ -314,6 +331,18 @@ public class HL7SendService
 			} catch (InterruptedException ignore) {
 			}
 		s.close();
+	}
+
+	/**
+	 * @return
+	 */
+	private int getLocalHL7Port() {
+		try {
+			return ((Integer) this.getServer().getAttribute( hl7ServerName, "Port")).intValue();
+		} catch (Exception x) {
+			log.error("Cant get local HL7 port!", x);
+			return -1;
+		}
 	}
 
 	private Document readMessage(InputStream mllpIn)
@@ -358,4 +387,128 @@ public class HL7SendService
 		// write remaining message
 		out.write(message, right - 1, message.length - right + 1);
 	}
+	
+    /**
+	 * @param ds
+     * @throws HL7Exception
+     * @throws SAXException
+     * @throws TransformerException
+     * @throws UnkownAETException
+     * @throws IOException
+     * @throws SQLException
+	 */
+	public void sendHL7PatientXXX(Dataset ds,String msgType, String sending, String receiving, boolean useForward) 
+				throws SQLException, IOException, UnkownAETException, TransformerException, SAXException, HL7Exception {
+		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
+		StringBuffer sb = getMSH(msgType, sending, receiving);//get MSH for patient information update (ADT^A08)
+		addEVN(sb);
+		addPID( sb, ds );
+		sb.append("\r");
+		sb.append("PV1||||||||||||||||||||||||||||||||||||||||||||||||||||");//PatientClass(2),VisitNr(19) and VisitIndicator(51) ???
+		if ( useForward ) {
+			forward( sb.toString().getBytes("ISO-8859-1") );
+		} else {
+			sendTo( sb.toString().getBytes("ISO-8859-1"), receiving );
+		}
+	}
+
+	public void sendHL7PatientMerge(Dataset dsDominant, Dataset[] priorPats, String sending, String receiving, boolean useForward) 
+				throws SQLException, IOException, UnkownAETException, TransformerException, SAXException, HL7Exception {
+		StringBuffer sb = getMSH("ADT^A40", sending, receiving);//get MSH for patient merge (ADT^A40)
+		addEVN(sb);
+		addPID( sb, dsDominant );
+		int SBlen = sb.length();
+		for ( int i = 0, len = priorPats.length ; i < len ; i++ ) {
+			sb.setLength( SBlen );
+			addMRG( sb, priorPats[i] );
+			if ( useForward ) {
+				forward( sb.toString().getBytes("ISO-8859-1") );
+			} else {
+				sendTo( sb.toString().getBytes("ISO-8859-1"), receiving );
+			}
+		}
+		
+	}
+
+	private StringBuffer getMSH(String msgType, String sending, String receiving) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("MSH|^~\\&|");
+		sb.append( getSendingApplication() ).append("|").append( getSendingFacility() ).append("|");
+		final int delim = receiving.indexOf('^');
+		sb.append( receiving.substring(0,delim)).append("|").append( receiving.substring(delim+1) );
+		sb.append("|");
+		sb.append( new SimpleDateFormat(DATETIME_FORMAT).format( new Date() ) ).append("||").append(msgType).append("|");
+		sb.append( getMsgCtrlId() ).append("|P|2.3.1||||||||");
+		return sb;
+	}
+
+	private void addEVN( StringBuffer sb) {
+		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
+		sb.append("\rEVN||").append(timeStamp).append("||||").append(timeStamp);
+	}
+	/**
+	 * @param sb PID will be added to this StringBuffer. 
+	 * @param ds Dataset to get PID informations
+	 */
+	private void addPID( StringBuffer sb, Dataset ds) {
+		String s;
+		Date d;
+		sb.append("\rPID|||");
+		appendPatIDwithIssuer(sb,ds);
+		sb.append("||");
+		addPersonName(sb, ds.getString( Tags.PatientName ));
+		sb.append("||");
+		d = ds.getDateTime( Tags.PatientBirthDate, Tags.PatientBirthTime );
+		if ( d != null ) sb.append( new SimpleDateFormat(DATETIME_FORMAT).format(d) );
+		sb.append("|");
+		s = ds.getString( Tags.PatientSex );
+		if ( s != null ) sb.append( s );
+		sb.append("||||||||||||||||||||||");//patient Account number ???(field 18)
+	}
+
+	// concerns different order of name suffix, prefix in HL7 XPN compared to DICOM PN
+	private void addPersonName(StringBuffer sb, final String patName) {
+		StringTokenizer stk = new StringTokenizer(patName, "^", true);
+		for (int i = 0; i < 6 && stk.hasMoreTokens(); ++i) {
+			sb.append(stk.nextToken());
+		}
+		if (stk.hasMoreTokens()) {
+			String prefix = stk.nextToken();
+			if (stk.hasMoreTokens()) {
+				stk.nextToken(); // skip delim
+				if (stk.hasMoreTokens()) {
+					sb.append(stk.nextToken()); // name suffix
+				}
+			}
+			sb.append('^').append(prefix);
+		}
+	}
+	
+	private void appendPatIDwithIssuer( StringBuffer sb, Dataset ds ) {
+		sb.append( ds.getString(Tags.PatientID));
+		String s = ds.getString( Tags.IssuerOfPatientID );
+		if ( s != null )
+			sb.append("^^^").append(s); //issuer of patient ID
+	}
+
+	/**
+	 * @param sb
+	 * @param ds
+	 */
+	private void addMRG(StringBuffer sb, Dataset ds) {
+		sb.append("\rMRG|");
+		appendPatIDwithIssuer(sb,ds);
+		sb.append("||||||");
+		String name = ds.getString(Tags.PatientName);
+		if ( name != null ) sb.append("patName");
+	}
+	
+	/**
+	 * should this method on a central hl7 sending place? 
+	 * @return
+	 */
+	public long getMsgCtrlId() {
+		return msgCtrlid++;
+	}
+	
 }

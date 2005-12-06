@@ -164,5 +164,61 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Send/Forward HL7 message with message Type and Patient data</description>
+      <name>sendHL7PatientXXX</name>
+      <parameter>
+        <description>Patient data (Dataset)</description>
+        <name>patient</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>Type of message (ADT^A02,ADT^A03,..)</description>
+        <name>msgType</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Sending. Format: SendingApplication^SendingFacility</description>
+        <name>patient</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Destination. Format: ReceivingApplication^ReceivingFacility</description>
+        <name>destination</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Select false if the message should be sent directly or true to send via forwarding rules.</description>
+        <name>useForward</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Send/Forward HL7 Patient Merge message.</description>
+      <name>sendHL7PatientMerge</name>
+      <parameter>
+        <description>Dominant Patient data (Dataset)</description>
+        <name>dominant</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>List of prior patients</description>
+        <name>priorPats</name>
+        <type>[Lorg.dcm4che.data.Dataset;</type>
+      </parameter>
+      <parameter>
+        <description>Sending. Format: SendingApplication^SendingFacility</description>
+        <name>patient</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Destination. Format: ReceivingApplication^ReceivingFacility</description>
+        <name>destination</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   
 </mbean>
     
