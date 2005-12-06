@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.dcm.mppsscp;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -109,7 +110,7 @@ class MPPSScp extends DcmServiceBase {
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         createMPPS(mpps);
-        service.sendMPPSNotification(mpps);
+        service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }
 
@@ -143,7 +144,7 @@ class MPPSScp extends DcmServiceBase {
         checkSetAttributs(mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         updateMPPS(mpps);
-        service.sendMPPSNotification(mpps);
+        service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }
     
@@ -166,7 +167,8 @@ class MPPSScp extends DcmServiceBase {
         }
     }
 
-    private void checkCreateAttributs(Dataset mpps) throws DcmServiceException {
+
+	private void checkCreateAttributs(Dataset mpps) throws DcmServiceException {
         for (int i = 0; i < TYPE1_NCREATE_ATTR.length; ++i) {
             if (mpps.vm(TYPE1_NCREATE_ATTR[i]) <= 0)
                     throw new DcmServiceException(Status.MissingAttributeValue,
