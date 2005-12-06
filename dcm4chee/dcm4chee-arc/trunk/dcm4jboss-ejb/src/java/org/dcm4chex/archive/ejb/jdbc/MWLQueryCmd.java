@@ -91,6 +91,7 @@ public class MWLQueryCmd extends BaseReadCmd {
         String status = null;
         if (spsItem != null) {
         	status = spsItem.getString(Tags.SPSStatus);
+            sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE1, false);
             sqlBuilder.addSingleValueMatch(null, "MWLItem.spsId",
                     SqlBuilder.TYPE1,
                     spsItem.getString(Tags.SPSID));
