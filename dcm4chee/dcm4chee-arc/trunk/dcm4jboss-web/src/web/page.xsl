@@ -68,7 +68,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="mwl_console.m">Worklist Console</a>
+		      			<a class="tab" href="mwl_console.m?filter.x=1">Worklist Console</a>
 		      		</td>
 		      		<td width="120" align="center">
 		      			<xsl:choose>
@@ -79,7 +79,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="mpps_console.m">MPPS Console</a>
+		      			<a class="tab" href="mpps_console.m?filter.x=1">MPPS Console</a>
 		      		</td>
 		      	</xsl:if>
 	      		<td width="120" align="center">

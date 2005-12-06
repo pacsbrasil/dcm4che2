@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
+import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 
 /**
  * @author franz.willer
@@ -66,6 +67,7 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
     protected Object makeFormBean() {
         if ( delegate == null ) {
         	delegate = new MPPSDelegate();
+        	delegate.init( getCtx().getServletConfig() );
         }
         model =  MPPSModel.getModel(getCtx().getRequest());
         return model;
@@ -78,6 +80,8 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
             HttpServletRequest request = getCtx().getRequest();
     		model = MPPSModel.getModel(request);
     		model.setErrorCode( MPPSModel.NO_ERROR );
+    		model.setPopupMsg(null);
+    		model.setMppsIUIDs( request.getParameterValues("mppsIUID"));
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
 	        		checkFilter( request );
@@ -85,12 +89,21 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
             	} catch ( ParseException x ) {
             		model.setErrorCode( ERROR_PARSE_DATETIME );
             	}
-            } else if ( request.getParameter("nav") != null ) {//action from a nav button. (next or previous)
-            	String nav = request.getParameter("nav");
-            	if ( nav.equals("prev") ) {
-            		model.performPrevious();
-            	} else if ( nav.equals("next") ) {
-            		model.performNext();
+            } else if ( request.getParameter("prev.x") != null ) { 
+        		model.performPrevious();
+            } else if ( request.getParameter("next.x") != null ) { 
+        		model.performNext();
+            } else if ( request.getParameter("link.x") != null ) {//action from link button. (sticky support;redirect to mwl ctrl.)
+            	model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ) );
+            	model.getFilter().setPatientName( request.getParameter("patientName"));
+            	return "link";
+            } else if ( request.getParameter("del.x") != null ) {//action from delete button.
+            	if ( model.getMppsIUIDs() != null ) {
+	            	delegate.deleteMPPSEntries(model.getMppsIUIDs());
+	            	model.setMppsIUIDs(null);
+	            	model.filterWorkList( true );
+            	} else {
+            		model.setPopupMsg("Please select at least one MPPS entry!");
             	}
             } else {
             	String action = request.getParameter("action");
@@ -110,7 +123,10 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
 	 * @param request
 	 */
 	private void performAction(String action, HttpServletRequest request) {
-		
+		if ( "linkDone".equals(action) ) {
+        	model.filterWorkList( true );
+			model.setPopupMsg( MWLModel.getModel( request ).getPopupMsg() ); //popup message of doLink is set in MWL!
+		}
 	}
 
 

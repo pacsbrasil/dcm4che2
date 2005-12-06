@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
@@ -85,6 +86,13 @@ public class MWLFindScpService extends AbstractScpService
     private static final String[] ON_MPPS_RECEIVED = {
     		"NO_OP", "UPDATE_STATUS", "REMOVE_ITEM"
     };
+
+	private static final NotificationFilterSupport mppsFilter = 
+		new NotificationFilterSupport();
+	static {
+		mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
+		mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+	}
 	private static final String QUERY_XSL = "mwl-cfindrq.xsl";
 	private static final String RESULT_XSL = "mwl-cfindrsp.xsl";
 	private static final String QUERY_XML = "-mwl-cfindrq.xml";
@@ -191,7 +199,7 @@ public class MWLFindScpService extends AbstractScpService
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
         server.addNotificationListener(mppsScpServiceName,
                 this,
-                MPPSScpService.NOTIF_FILTER,
+                mppsFilter,
                 null);
         super.startService();
     }
@@ -200,7 +208,7 @@ public class MWLFindScpService extends AbstractScpService
         super.stopService();
         server.removeNotificationListener(mppsScpServiceName,
                 this,
-                MPPSScpService.NOTIF_FILTER,
+                mppsFilter,
                 null);
 		templates.clear();
     }

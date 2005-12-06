@@ -56,6 +56,15 @@
 		</init-param>
 
 		<!-- 
+			Used by dcm4jboss-web folder application to limit results of studies.
+			Value must be an integer > 0
+		-->
+		<init-param>
+			<param-name>limitNrOfStudies</param-name>
+			<param-value>25</param-value>
+		</init-param>
+
+		<!-- 
 			Used by dcm4jboss-web application to find AuditLogger MBean.
 			Value must match mbean name in configured in
 			deploy/dcm4jboss-auditlog-service.xml.
@@ -83,6 +92,16 @@
 		<init-param>
 			<param-name>mwlScuServiceName</param-name>
 			<param-value>tiani.archive:service=MWLScu</param-value>
+		</init-param>
+
+		<!-- 
+			Used by dcm4jboss-web application to find MppsScpService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-mppsscp-service.xml.
+		-->
+		<init-param>
+			<param-name>mppsScpServiceName</param-name>
+			<param-value>tiani.archive:service=MPPSScp</param-value>
 		</init-param>
 
 		<!-- 
@@ -124,6 +143,17 @@
 			<param-name>aeServiceName</param-name>
 			<param-value>tiani.archive:service=AE</param-value>
 		</init-param>
+
+		<!-- 
+			Used by dcm4jboss-web application to find MppsScpService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-mppsscp-service.xml.
+		-->
+		<init-param>
+			<param-name>mppsScpServiceName</param-name>
+			<param-value>tiani.archive:service=MPPSScp</param-value>
+		</init-param>
+
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>

@@ -40,10 +40,12 @@
 package org.dcm4chex.archive.web.maverick.mwl;
 
 import java.text.ParseException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLFilter;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 
@@ -80,6 +82,7 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
             HttpServletRequest request = getCtx().getRequest();
     		model = MWLModel.getModel(request);
     		model.setErrorCode( MWLModel.NO_ERROR );
+    		model.setPopupMsg(null);
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
 	        		checkFilter( request );
@@ -94,10 +97,12 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
             	} else if ( nav.equals("next") ) {
             		model.performNext();
             	}
+            } else if ( request.getParameter("link.x") != null ) {//action from a global link button.
+            	return performAction( "link", request );
             } else {
             	String action = request.getParameter("action");
             	if ( action != null ) {
-            		performAction( action, request );
+            		return performAction( action, request );
             	}
             }
             return "success";
@@ -110,16 +115,52 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 	/**
 	 * @param action
 	 * @param request
+	 * @throws ParseException
 	 */
-	private void performAction(String action, HttpServletRequest request) {
+	private String performAction(String action, HttpServletRequest request) throws ParseException {
 		if ( "delete".equalsIgnoreCase( action ) ) {
 			if ( delegate.deleteMWLEntry( request.getParameter("spsid") ) ) {
 				model.filterWorkList( false );
 			} else {
 				model.setErrorCode( ERROR_MWLENTRY_DELETE );
 			}
+		} else if ("link".equals(action)) {
+			MWLFilter filter = model.getFilter();
+			model.setLinkMode(true);
+			if ( request.getParameter("mppsIUID") != null ) {
+				model.setMppsIDs( request.getParameterValues("mppsIUID")); // direct url call
+				filter.setPatientName(request.getParameter("patientName"));
+			} else {
+				MPPSModel mppsModel = MPPSModel.getModel(request);
+				model.setMppsIDs( mppsModel.getMppsIUIDs() );//redirect from mpps controller
+				filter.setPatientName(mppsModel.getFilter().getPatientName());
+			}
+			filter.setAccessionNumber(null);
+			filter.setEndDate(request.getParameter("endDate"));
+			filter.setModality(request.getParameter("modality"));
+			filter.setStartDate(request.getParameter("startDate"));
+			filter.setStationAET(request.getParameter("stationAET"));
+			model.filterWorkList( true );
+		} else if ("doLink".equals(action)) {
+			System.out.println("link mpps "+model.getMppsIDs());
+			String[] mppsIUIDs = model.getMppsIDs();
+			if ( mppsIUIDs != null ) {
+				for ( int i = mppsIUIDs.length-1 ; i >= 0 ; i-- ) {
+					Map map = delegate.linkMppsToMwl( request.getParameter("spsID"), mppsIUIDs[i], i==0 ); //send notification on last link (i==0)
+					if ( map == null ) {
+						model.setPopupMsg("Link mpps to mwl failed!");
+					} else if ( map.get("userAction") != null ) {
+						model.setPopupMsg("Patient cant be merged automatically! (MPPS patient has more than one study)!");
+					}
+				}
+			}
+			model.setLinkMode(false);
+			return "linkDone";
+		} else if ("cancelLink".equals(action)) {
+			model.setLinkMode(false);
+			return "cancelLink";
 		}
-		
+		return "success";
 	}
 
 

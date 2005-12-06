@@ -39,7 +39,9 @@
 
 package org.dcm4chex.archive.web.maverick.mwl;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -55,6 +57,7 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class MWLScuDelegate {
 	private static ObjectName mwlScuServiceName = null;
+	private static ObjectName mppsScpServiceName = null;
 
 	private static MBeanServer server;
 
@@ -77,7 +80,8 @@ public class MWLScuDelegate {
 		String s = config.getInitParameter("mwlScuServiceName");
 		try {
 			mwlScuServiceName = new ObjectName(s);
-
+			s = config.getInitParameter("mppsScpServiceName");
+			mppsScpServiceName = new ObjectName(s);
 		} catch (Exception e) {
 			log.error("Exception in init! ", e);
 		}
@@ -153,4 +157,16 @@ public class MWLScuDelegate {
 		return false;
 	}
 
+	public Map linkMppsToMwl( String spsID, String mppsIUID, boolean sendNotif ) {
+		try {
+			Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
+					new Object[] { spsID, mppsIUID, new Boolean( sendNotif ) }, 
+					new String[] { String.class.getName(), String.class.getName(), boolean.class.getName() });
+			return map;
+		} catch (Exception x) {
+			log.error("Exception occured in updateMPPS: " + x.getMessage(), x);
+			return null;
+		}
+	}
+	
 }

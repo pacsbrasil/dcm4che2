@@ -35,6 +35,14 @@
 							<b>Modality Worklist:</b> No matching procedure steps found!
 						</xsl:if>
  					</td>
+					<xsl:if test="/model/linkMode = 'true'">
+						<td title="MPPS Link mode" class="mppsLinkMode">
+							LINK MPPS (id:<xsl:value-of select="mppsIUID"/>) to a MWL entry!&#160;&#160;
+							<a href="mwl_console.m?action=cancelLink&amp;mppsIUID={mppsIUID}">
+								<img src="images/cancel.gif" alt="cancel" border="0" title="Cancel LINK mode!"/>		
+							</a>
+						</td>	
+					</xsl:if>
 
 					<td width="150" bgcolor="eeeeee">
 					</td>
@@ -66,15 +74,15 @@
 								title="Patient name"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" colspan="2">Date: </td>
+						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd hh:mm">Date: </td>
 						<td bgcolor="eeeeee">
 							<input size="15" name="startDate" type="text" value="{filter/startDate}"
-								title="Query Start date"/>
+								title="Query Start date. format:yyyy/mm/dd hh:mm"/>
 						</td>
-						<td bgcolor="eeeeee">to: </td>
+						<td bgcolor="eeeeee" title="Query End date. format:yyyy/mm/dd hh:mm">to: </td>
 						<td bgcolor="eeeeee">
 							<input size="15" name="endDate" type="text" value="{filter/endDate}"
-								title="Query End date"/>
+								title="Query End date. format:yyyy/mm/dd hh:mm"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Modality: </td>
@@ -218,11 +226,19 @@
 				<xsl:value-of select="stationAET"/>[<xsl:value-of select="modality"/>]
 	        </td>
 	        <td align="left" title="Patient" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=1&amp;trashFolder=false">
 					<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
 				</a>
 			</td>
 			<xsl:choose>
+				<xsl:when test="/model/linkMode = 'true'">
+					<td title="Function" align="center" valign="bottom">
+						<a href="mwl_console.m?action=doLink&amp;spsID={spsID}&amp;mppsIUID={/model/mppsIUID}">
+							<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsIUID"/> ?')</xsl:attribute>
+							<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
+						</a>
+					</td>	
+				</xsl:when>
 				<xsl:when test="/model/local = 'true'">
 					<td title="Function" align="center" valign="bottom">
 						<a href="mwl_console.m?action=delete&amp;spsid={spsID}">

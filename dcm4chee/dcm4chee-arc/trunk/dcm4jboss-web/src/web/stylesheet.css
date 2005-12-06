@@ -99,7 +99,7 @@ td.patient_mark {
 	color : black;
 } 
 td.study_mark {
-	background : #ccddcc;;
+	background : #ccddcc;
 	color : black;
 } 
 td.series_mark {
@@ -113,6 +113,15 @@ td.instance_mark {
 
 td.logo {
 	color : blue;
+}
+
+td.mppsLinkMode {
+	background : #cccccc;
+	padding: 6;
+	border-style: inset;
+	border-color: #ff0000;
+	vertical-align: middle;
+	text-align: center;
 }
 
 a.tab {

@@ -73,13 +73,27 @@ public class MPPSEntry {
 	/** The Date formatter to format date values. */
 	private static final SimpleDateFormat dformatter = new SimpleDateFormat("yyyy/MM/dd");
 	
+	private MPPSEntry() { //for dummy
+		
+	}
 	
 	public MPPSEntry( Dataset ds ) {
 		this.ds = ds;
 		initSSA( ds );
 		initPSeries( ds );
 	}
-
+	
+	public boolean equals(Object o) {
+		if ( o != null && (o instanceof MPPSEntry )) {
+			return this.getMppsIUID().equals( ((MPPSEntry) o).getMppsIUID());
+		} 
+		return false;
+	}
+	
+	public int hashCode() {
+		return getMppsIUID().hashCode();
+	}
+	
 	private void initSSA( Dataset ds ) {
 		ssAttrs = new ArrayList();
 		DcmElement e = ds.get( Tags.ScheduledStepAttributesSeq );
@@ -102,6 +116,9 @@ public class MPPSEntry {
 		
 	}
 	
+	public String getMppsIUID() {
+		return ds.getString( Tags.SOPInstanceUID );
+	}
 	
 	/**
 	 * @return Returns the performed Procedure Step ID.
@@ -367,5 +384,16 @@ public class MPPSEntry {
 			return numberOfInstances;
 		}
 		
+	}
+	
+	public class DummyMPPSEntry extends MPPSEntry{
+		private String uid;
+		public DummyMPPSEntry(String mppsIUID) {
+			uid = mppsIUID;
+		}
+		
+		public String getMppsIUID() { return uid; }
+		
+		public int hashCode() { return uid.hashCode(); }
 	}
 }

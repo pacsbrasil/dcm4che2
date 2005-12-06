@@ -241,6 +241,8 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="mwlc/mwl_console.xsl" />
 	    </view>
+	    <view name="cancelLink" type="redirect" path="mpps_console.m?filter.x=1"/>
+	    <view name="linkDone" type="redirect" path="mpps_console.m?action=linkDone"/>
      </command>
 
 	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->
@@ -250,6 +252,7 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="mppsc/mpps_console.xsl" />
 	    </view>
+	    <view name="link" type="redirect" path="mwl_console.m?action=link"/>
      </command>
      
 	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->

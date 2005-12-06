@@ -226,7 +226,7 @@ public class MWLFilter {
 	 * @param accessionNumber The accessionNumber to set.
 	 */
 	public void setAccessionNumber(String accessionNumber) {
-		if ( accessionNumber == null | accessionNumber.trim().length() < 1 )
+		if ( accessionNumber == null || accessionNumber.trim().length() < 1 )
 			this.accessionNumber = null;
 		else
 			this.accessionNumber = accessionNumber;

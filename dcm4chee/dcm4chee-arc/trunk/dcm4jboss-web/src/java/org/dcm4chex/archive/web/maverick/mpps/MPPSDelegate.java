@@ -42,9 +42,14 @@ package org.dcm4chex.archive.web.maverick.mpps;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.servlet.ServletConfig;
+
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
+import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * @author franz.willer
@@ -54,11 +59,40 @@ import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
  */
 public class MPPSDelegate {
 		
-	    private static Logger log = Logger.getLogger( MPPSDelegate.class.getName() );
 
-		public Logger getLogger() {
-			return log;
+	private static MBeanServer server;
+
+	private static Logger log = Logger.getLogger( MPPSDelegate.class.getName() );
+
+	private ObjectName mppsScpServiceName;
+
+
+	public Logger getLogger() {
+		return log;
+	}
+	
+	/**
+	 * Iinitialize the MPPS service delegator.
+	 * <p>
+	 * Set the name of the MppsService MBean with the servlet config param
+	 * 'mppsScpServiceName'.
+	 * 
+	 * @param config
+	 *            The ServletConfig object.
+	 */
+	public void init(ServletConfig config) {
+		if (server != null)
+			return;
+		server = MBeanServerLocator.locate();
+		String s = config.getInitParameter("mppsScpServiceName");
+		try {
+			mppsScpServiceName = new ObjectName(s);
+		} catch (Exception e) {
+			log.error("Exception in init! ", e);
 		}
+
+	}
+	
 		
 		/**
 		 * Makes the MBean call to get the list of worklist entries for given filter (ds).
@@ -84,5 +118,25 @@ public class MPPSDelegate {
 	        return resp;
 		}
 		
+		
+		/**
+		 * Deletes MPPS entries specified by an array of MPPS IUIDs.
+		 * <p>
+		 * 
+		 * @param iuids  The List of Instance UIDs of the MPPS Entries to delete.
+		 * @return
+		 */
+		public boolean deleteMPPSEntries(String[] iuids) {
+			try {
+				Object o = server.invoke(mppsScpServiceName, "deleteMPPSEntries",
+						new Object[] { iuids }, new String[] { String[].class
+								.getName() });
+				return ((Boolean) o).booleanValue();
+			} catch (Exception x) {
+				log.error("Exception occured in deleteMPPSEntries: " + x.getMessage(),
+						x);
+			}
+			return false;
+		}
 
 }

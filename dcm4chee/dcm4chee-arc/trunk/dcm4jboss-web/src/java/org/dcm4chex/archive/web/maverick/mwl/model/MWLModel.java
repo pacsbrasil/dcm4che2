@@ -70,6 +70,9 @@ public class MWLModel {
 
 	/** holds current error code. */
 	private String errorCode = NO_ERROR;
+    /** Popup message */
+    private String popupMsg = null;
+
 	/** Holds the current offset for paging */
 	private int offset = 0;
 	/** Holds the limit for paging */
@@ -77,6 +80,9 @@ public class MWLModel {
 	/** Holds the total number of results of last search. */
 	private int total = 0;
 
+	private boolean linkMode = false;
+	private String[] mppsIDs = null;
+	
 	/** Holds list of MWLEntries */
 	private List mwlEntries = new ArrayList();
 
@@ -160,6 +166,18 @@ public class MWLModel {
 	
 	
 	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
+	}
+	/**
 	 * Returns current page limit.
 	 * 
 	 * @return Returns the limit.
@@ -233,6 +251,34 @@ public class MWLModel {
 		return isLocal;
 	}
 
+	/**
+	 * Returns true if MWL console is in 'link' mode.
+	 * <p>
+	 * This mode is set if mwl_console.m is called with action=link.
+	 * 
+	 * @return Returns the linkMode.
+	 */
+	public boolean isLinkMode() {
+		return linkMode;
+	}
+	/**
+	 * @param linkMode The linkMode to set.
+	 */
+	public void setLinkMode(boolean linkMode) {
+		this.linkMode = linkMode;
+	}
+	/**
+	 * @return Returns the mppsIDs.
+	 */
+	public String[] getMppsIDs() {
+		return mppsIDs;
+	}
+	/**
+	 * @param mppsIDs The mppsIDs to set.
+	 */
+	public void setMppsIDs(String[] mppsIDs) {
+		this.mppsIDs = mppsIDs;
+	}
 	/**
 	 * Update the list of MWLEntries for the view.
 	 * <p>

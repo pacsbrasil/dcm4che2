@@ -18,6 +18,13 @@ function validateChecks(check,check_type,total)  //checks if at least <<total>> 
 	return false;
 }
 
+function validateChecksAndConfirm(check,check_type,total,confirmMsg)  //checks if at least <<total>> checks have been checked
+{
+	if ( validateChecks(check,check_type, total) ) {
+		return confirm(confirmMsg);
+	}
+	return false;
+}
 function validateRadios(radios, radio_type)  //checks if a radio button have been selected
 {
 	for (var i = 0; i < radios.length; i++)

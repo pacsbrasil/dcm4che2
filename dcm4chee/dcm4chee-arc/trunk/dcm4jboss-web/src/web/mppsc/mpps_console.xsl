@@ -44,17 +44,35 @@
 					</td>
 					<td width="40" bgcolor="eeeeee">
 						<xsl:if test="offset &gt; 0">
-							<a href="mpps_console.m?nav=prev">
-								<img src="images/prev.gif" alt="prev" border="0" title="Previous Search Results"/>		
-							</a>
+							<input type="image" value="Search" name="prev" src="images/prev.gif" border="0"
+						 		title="Previous Search Results"/>
 						</xsl:if>
 					</td>
 					<td width="40" bgcolor="eeeeee">
 						<xsl:if test="offset + limit &lt; total">
-							<a href="mpps_console.m?nav=next">
-								<img src="images/next.gif" alt="next" border="0" title="Next Search Results"/>		
-							</a>
+							<input type="image" value="Search" name="next" src="images/next.gif" border="0"
+						 		title="Next Search Results"/>
 						</xsl:if>
+					</td>
+					<xsl:if test="/model/filter/emptyAccNo = 'true'">
+						<td width="40" bgcolor="eeeeee">	
+							<input type="image" name="link" value="link" src="images/link.gif" 
+									border="0" title="Link one ore more MPPS to a MWL entry">
+							<xsl:if test="total &lt;= 0">
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
+							</xsl:if>
+							</input>
+						</td>
+					</xsl:if>
+					<td bgcolor="eeeeee">&#160;&#160;</td>
+					<td width="40" bgcolor="eeeeee">	
+						<input type="image" name="del" value="del" src="images/loeschen.gif" 
+								border="0" title="Delete selected MPPS entries"
+								onclick="return confirm('Delete selected MPPS entries?')">
+							<xsl:if test="total &lt;= 0">
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
+							</xsl:if>
+						</input>
 					</td>
 				</table>
 				<table border="0" cellpadding="0" cellspacing="0" bgcolor="eeeeee">
@@ -65,13 +83,16 @@
 							<input size="10" name="patientName" type="text" value="{filter/patientName}"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" colspan="2">Date: </td>
+						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd hh:mm">Date: </td>
 						<td bgcolor="eeeeee">
-							<input size="12" name="startDate" type="text" value="{filter/startDate}"/>
+							<input size="12" name="startDate" 
+									title="Query Start date. format:yyyy/mm/dd hh:mm" 
+									type="text" value="{filter/startDate}"/>
 						</td>
-						<td bgcolor="eeeeee">to: </td>
+						<td bgcolor="eeeeee" title="Query End date. format:yyyy/mm/dd hh:mm">to: </td>
 						<td bgcolor="eeeeee">
-							<input size="12" name="endDate" type="text" value="{filter/endDate}"/>
+							<input size="12" name="endDate" title="Query End date. format:yyyy/mm/dd hh:mm" 
+									type="text" value="{filter/endDate}"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Modality: </td>
@@ -127,7 +148,7 @@
 		<xsl:apply-templates select="mppsEntries/item">
 		</xsl:apply-templates>
 
-</form>
+	</form>
 </xsl:template>
 
 <xsl:template name="tableheader">
@@ -142,27 +163,20 @@
 			<col width="30%"/>
 			<col width="20%"/>
 			<col width="5%"/>
-			<col width="15%"/>
 			<col width="12%"/>
+			<col width="5%"/>
 		</colgroup>
 		<tr >
 			<td bgcolor="eeeeee" style="height:7px" colspan="7"></td> <!-- spacer -->
 		</tr>
-		<tr>
+		<tr bgcolor="eeeeee">
 			<th title="PatientName: " align="left">Patient</th>
 			<th title="Performed Step Start Date" align="left">Start Date</th>
 			<th title="Performed Procedure Description" align="left">Proc. Desc.</th>
 			<th title="Perf. Station: (&lt;Name&gt;-&lt;AET&gt;[&lt;Mod.&gt;]" align="left">Station</th>
 			<th title="Number of Instances: " align="left">NoI</th>
 			<th title="Procedure Step Status" align="left">Status</th>
-			<xsl:choose>
-				<xsl:when test="unscheduled = 'true'">
-					<th nowrap="nowrap">Function</th>	
-				</xsl:when>
-				<xsl:otherwise>
-					<th >&#160;&#160;</th>
-				</xsl:otherwise>
-			</xsl:choose>
+			<th nowrap="nowrap">Function</th>
 		</tr>
 	</table>
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -170,9 +184,10 @@
 			<col width="5%"/>
 			<col width="35%"/>
 			<col width="35%"/>
-			<col width="25%"/>
+			<col width="13%"/>
+			<col width="12%"/>
 		</colgroup>
-		<tr>
+		<tr bgcolor="eeeeee">
 			<th >&#160;</th>
 			<th title="Scheduled Procedure Step ID" align="left">Scheduled Procedure Step ID</th>
 			<th title="Study Instance UID" align="left">Study Instance UID</th>
@@ -197,15 +212,15 @@
 			<col width="30%"/>
 			<col width="20%"/>
 			<col width="5%"/>
-			<col width="15%"/>
 			<col width="12%"/>
+			<col width="5%"/>
 		</colgroup>
 		<tr >
 			<td bgcolor="999999" style="height:2px" colspan="9"></td> <!-- spacer -->
 		</tr>
 		<tr>
 	        <td align="left" title="Patient" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=1&amp;trashFolder=false">
 					<xsl:value-of select="patientName"/>
 				</a>
 			</td>
@@ -227,16 +242,25 @@
 	        <td align="left" title="PPSStatus" >
 				<xsl:value-of select="PPSStatus"/>
 		 	</td>
-			<xsl:choose> <!-- TODO -->
-				<xsl:when test="/model/unscheduled = 'true'">
-					<td title="Function" align="center" valign="bottom">
-						&#160;&#160;
+			<xsl:choose> 
+				<xsl:when test="accNumbers=''">
+					<td title="Function">
+						<a href="mwl_console.m?action=link&amp;patientName={patientName}&amp;mppsIUID={mppsIUID}&amp;">
+							<img src="images/link.gif" alt="link" border="0" title="Link this MPPS entry with a MWL entry"/>		
+						</a>
 					</td>	
 				</xsl:when>
 				<xsl:otherwise>
 					<td>&#160;&#160;</td>
 				</xsl:otherwise>
 			</xsl:choose>
+			<td title="Function">
+				<input type="checkbox" name="mppsIUID" value="{mppsIUID}">
+					<xsl:if test="/model/mppsIUIDs/item = mppsIUID">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+			</td>	
 		</tr>
 	</table>
 
@@ -262,12 +286,12 @@
 	        	<xsl:value-of select="spsID"/>
 			</td>
 	        <td  title="StudyIUID">
-				<a href="foldersubmit.m?destination=LOCAL&amp;studyUID={studyUID}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+				<a href="foldersubmit.m?destination=LOCAL&amp;studyUID={studyUID}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=1&amp;trashFolder=false">
 					<xsl:value-of select="studyUID"/>
 				</a>
 		 	</td>
 	        <td  align="left" title="Accession Number" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;accessionNumber={accessionNumber}&amp;patientName=&amp;patientID=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
+				<a href="foldersubmit.m?destination=LOCAL&amp;accessionNumber={accessionNumber}&amp;patientName=&amp;patientID=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=1&amp;trashFolder=false">
 					<xsl:value-of select="accessionNumber"/>
 				</a>
 		 	</td>

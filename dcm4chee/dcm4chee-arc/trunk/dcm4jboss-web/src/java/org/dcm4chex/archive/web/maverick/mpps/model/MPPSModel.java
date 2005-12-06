@@ -39,17 +39,17 @@
 
 package org.dcm4chex.archive.web.maverick.mpps.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.web.maverick.mpps.MPPSConsoleCtrl;
@@ -71,15 +71,22 @@ public class MPPSModel {
 
 	/** holds current error code. */
 	private String errorCode = NO_ERROR;
-	/** Holds the current offset for paging */
+    /** Popup message */
+    private String popupMsg = null;
+
+    /** Holds the current offset for paging */
 	private int offset = 0;
 	/** Holds the limit for paging */
 	private int limit = 20;
 	/** Holds the total number of results of last search. */
 	private int total = 0;
 
+	private String[] mppsIDs = null;
+	//Holds MPPSEntries with sticky
+	Set stickyList;
+	
 	/** Holds list of MPPSEntries */
-	private List mppsEntries = new ArrayList();
+	private Set mppsEntries = new LinkedHashSet();
 
 	private MPPSFilter mppsFilter;
 	
@@ -159,6 +166,18 @@ public class MPPSModel {
 	
 	
 	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
+	}
+	/**
 	 * Returns current page limit.
 	 * 
 	 * @return Returns the limit.
@@ -211,11 +230,30 @@ public class MPPSModel {
 	}
 	
 	/**
+	 * @return Returns the stickies.
+	 */
+	public String[] getMppsIUIDs() {
+		return mppsIDs;
+	}
+	/**
+	 * @param stickies The stickies to set.
+	 */
+	public void setMppsIUIDs(String[] stickies) {
+		this.mppsIDs = stickies;
+		stickyList = new HashSet();
+		if ( mppsEntries.isEmpty() || mppsIDs == null) return;
+		MPPSEntry base = (MPPSEntry) mppsEntries.iterator().next(); 
+		MPPSEntry stickyEntry;
+		for ( int i = 0; i < mppsIDs.length ; i++ ) {
+			stickyList.add( base.new DummyMPPSEntry(mppsIDs[i]) );
+		}
+	}
+	/**
 	 * Return a list of MPPSEntries for display.
 	 * 
 	 * @return Returns the mppsEntries.
 	 */
-	public List getMppsEntries() {
+	public Set getMppsEntries() {
 		return mppsEntries;
 	}
 
@@ -230,7 +268,6 @@ public class MPPSModel {
 	public void filterWorkList(boolean newSearch) {
 		
 		if ( newSearch ) offset = 0;
-		//_filterTest();
 		List l = MPPSConsoleCtrl.getMppsDelegate().findMppsEntries( this.mppsFilter );
 		Collections.sort( l, comparator );
 		total = l.size();
@@ -243,7 +280,7 @@ public class MPPSModel {
 			if ( end > total ) end = total;
 		}
 		Dataset ds;
-		mppsEntries.clear();
+		mppsEntries.retainAll(stickyList);
 		int countNull = 0;
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
@@ -255,6 +292,7 @@ public class MPPSModel {
 		}
 		total -= countNull; // the real total (without null entries!)
 	}
+
 
 
 	/**
