@@ -65,7 +65,14 @@ import org.xml.sax.helpers.DefaultHandler;
  * </ul>
  */
 public interface DcmObject {
-   
+
+	/** Constant for itemTreatment param of @link {#putAll(dcmObj, int itemTreatment)} */ 
+	int REPLACE_ITEMS = 0;
+	/** Constant for itemTreatment param of @link {#putAll(dcmObj, int itemTreatment)} */ 
+	int ADD_ITEMS = 1;
+	/** Constant for itemTreatment param of @link {#putAll(dcmObj, int itemTreatment)} */ 
+	int MERGE_ITEMS = 2;
+	
    void setPrivateCreatorID(String privateCreatorID);
 
    String getPrivateCreatorID();
@@ -419,6 +426,8 @@ public interface DcmObject {
    DcmElement putXXsq(int tag);
    
    void putAll(DcmObject dcmObj);
+
+   void putAll(DcmObject dcmObj, int itemTreatment);
    
    void writeHeader(OutputStream out, DcmEncodeParam encParam, int tag, int vr, int len)
    throws IOException;

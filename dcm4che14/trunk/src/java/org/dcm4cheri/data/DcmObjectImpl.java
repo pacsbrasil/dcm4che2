@@ -86,6 +86,7 @@ abstract class DcmObjectImpl implements DcmObject {
     protected ArrayList list = new ArrayList();
     private final static int MIN_TRUNCATE_STRING_LEN = 16;
 
+
     /**
      *  Gets the dcmHandler attribute of the DcmObjectImpl object
      *
@@ -2820,23 +2821,28 @@ abstract class DcmObjectImpl implements DcmObject {
         return list.iterator();
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  dcmObj  Description of the Parameter
-     */
     public void putAll(DcmObject dcmObj) {
+    	putAll(dcmObj, REPLACE_ITEMS);
+    }
+    
+    public void putAll(DcmObject dcmObj, int itemTreatment) {
         for (Iterator it = dcmObj.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
             if (el.isEmpty()) {
                 putXX(el.tag(), el.vr());
             } else {
                 DcmElement sq;
+                Dataset item;
                 switch (el.vr()) {
                     case VRs.SQ :
-                        sq = putSQ(el.tag());
+                    	sq = itemTreatment != REPLACE_ITEMS ? get(el.tag()) : null;
+                    	if (sq == null || sq.vr() != VRs.SQ)
+                    		sq = putSQ(el.tag());
                         for (int i = 0, n = el.vm(); i < n; ++i) {
-                            sq.addNewItem().putAll(el.getItem(i));
+                        	item = itemTreatment == MERGE_ITEMS ? sq.getItem(i) : null;
+                        	if (item == null)
+                        		item = sq.addNewItem();
+                        	item.putAll(el.getItem(i), itemTreatment);
                         }
                         break;
                     case VRs.OB :
