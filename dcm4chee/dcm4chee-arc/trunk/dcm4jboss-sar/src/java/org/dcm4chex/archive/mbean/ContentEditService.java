@@ -40,12 +40,9 @@
 package org.dcm4chex.archive.mbean;
 
 import java.rmi.RemoteException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -290,122 +287,44 @@ public class ContentEditService extends ServiceMBeanSupport {
 	 * @param ds
 	 */
 	private void sendHL7PatientXXX(Dataset ds,String msgType) {
-		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
-		StringBuffer sb = getMSH(msgType);//get MSH for patient information update (ADT^A08)
-		addEVN(sb);
-		addPID( sb, ds );
-		sb.append("\r");
-		sb.append("PV1||||||||||||||||||||||||||||||||||||||||||||||||||||");//PatientClass(2),VisitNr(19) and VisitIndicator(51) ???
-		sendHL7Msg( sb.toString() );
+        try {
+            server.invoke(this.hl7SendServiceName,
+                    "sendHL7PatientXXX",
+                    new Object[] {  ds, 
+            						msgType, 
+            						getSendingApplication()+"^"+getSendingFacility(),
+									getReceivingApplication()+"^"+getReceivingFacility(),
+									Boolean.TRUE },
+                    new String[] { Dataset.class.getName(),
+								   String.class.getName(),
+								   String.class.getName(),
+								   String.class.getName(),
+								   boolean.class.getName() });
+        } catch (Exception e) {
+            log.error("Failed to send HL7 message:"+msgType, e);log.error(ds);
+        }
 	}
 
 	private void sendHL7PatientMerge(Dataset dsDominant, Dataset[] priorPats) {
-		StringBuffer sb = getMSH("ADT^A40");//get MSH for patient merge (ADT^A40)
-		addEVN(sb);
-		addPID( sb, dsDominant );
-		int SBlen = sb.length();
-		for ( int i = 0, len = priorPats.length ; i < len ; i++ ) {
-			sb.setLength( SBlen );
-			addMRG( sb, priorPats[i] );
-			sendHL7Msg( sb.toString() );
-		}
-		
-	}
-	
-	private void sendHL7Msg( String msg ) {
-		log.debug("send HL7 message:"+msg);
         try {
             server.invoke(this.hl7SendServiceName,
-                    "forward",
-                    new Object[] { msg.getBytes("ISO-8859-1") },
-                    new String[] { byte[].class.getName() });
+                    "sendHL7PatientMerge",
+                    new Object[] {  dsDominant, 
+            					priorPats, 
+								getSendingApplication()+"^"+getSendingFacility(),
+								getReceivingApplication()+"^"+getReceivingFacility(),
+								Boolean.TRUE },
+                    new String[] { Dataset.class.getName(),
+        					   Dataset[].class.getName(),
+							   String.class.getName(),
+							   String.class.getName(),
+							   boolean.class.getName() });
         } catch (Exception e) {
-            log.error("Failed to send HL7 message:"+msg, e);
+            log.error("Failed to send HL7 patient merge message:", e);log.error(dsDominant);
         }
 		
 	}
 	
-	/**
-	 * @return
-	 */
-	private StringBuffer getMSH(String msgType) {
-		StringBuffer sb = new StringBuffer();
-		sb.append("MSH|^~\\&|");
-		sb.append( getSendingApplication() ).append("|").append( getSendingFacility() ).append("|");
-		sb.append( getReceivingApplication() ).append("|").append( getReceivingFacility() ).append("|");
-		sb.append( new SimpleDateFormat(DATETIME_FORMAT).format( new Date() ) ).append("||").append(msgType).append("|");
-		sb.append( getMsgCtrlId() ).append("|P|2.3.1||||||||");
-		return sb;
-	}
-
-	private void addEVN( StringBuffer sb) {
-		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
-		sb.append("\rEVN||").append(timeStamp).append("||||").append(timeStamp);
-	}
-	/**
-	 * @param sb PID will be added to this StringBuffer. 
-	 * @param ds Dataset to get PID informations
-	 */
-	private void addPID( StringBuffer sb, Dataset ds) {
-		String s;
-		Date d;
-		sb.append("\rPID|||");
-		appendPatIDwithIssuer(sb,ds);
-		sb.append("||");
-		addPersonName(sb, ds.getString( Tags.PatientName ));
-		sb.append("||");
-		d = ds.getDateTime( Tags.PatientBirthDate, Tags.PatientBirthTime );
-		if ( d != null ) sb.append( new SimpleDateFormat(DATETIME_FORMAT).format(d) );
-		sb.append("|");
-		s = ds.getString( Tags.PatientSex );
-		if ( s != null ) sb.append( s );
-		sb.append("||||||||||||||||||||||");//patient Account number ???(field 18)
-	}
-
-	// concerns different order of name suffix, prefix in HL7 XPN compared to DICOM PN
-	private void addPersonName(StringBuffer sb, final String patName) {
-		StringTokenizer stk = new StringTokenizer(patName, "^", true);
-		for (int i = 0; i < 6 && stk.hasMoreTokens(); ++i) {
-			sb.append(stk.nextToken());
-		}
-		if (stk.hasMoreTokens()) {
-			String prefix = stk.nextToken();
-			if (stk.hasMoreTokens()) {
-				stk.nextToken(); // skip delim
-				if (stk.hasMoreTokens()) {
-					sb.append(stk.nextToken()); // name suffix
-				}
-			}
-			sb.append('^').append(prefix);
-		}
-	}
-	
-	private void appendPatIDwithIssuer( StringBuffer sb, Dataset ds ) {
-		sb.append( ds.getString(Tags.PatientID));
-		String s = ds.getString( Tags.IssuerOfPatientID );
-		if ( s != null )
-			sb.append("^^^").append(s); //issuer of patient ID
-	}
-
-	/**
-	 * @param sb
-	 * @param ds
-	 */
-	private void addMRG(StringBuffer sb, Dataset ds) {
-		sb.append("\rMRG|");
-		appendPatIDwithIssuer(sb,ds);
-		sb.append("||||||");
-		String name = ds.getString(Tags.PatientName);
-		if ( name != null ) sb.append("patName");
-	}
-	
-	/**
-	 * should this method on a central hl7 sending place? 
-	 * @return
-	 */
-	private long getMsgCtrlId() {
-		return msgCtrlid++;
-	}
 
 	public void updateStudy(Dataset ds) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("update Study");
