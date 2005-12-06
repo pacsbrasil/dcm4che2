@@ -480,7 +480,8 @@ public abstract class StorageBean implements SessionBean {
     public void updateStudy(String iuid) throws FinderException {
         final StudyLocal study = studyHome.findByStudyIuid(iuid);
 		study.updateDerivedFields(true, true, false, true, true, true, false);
-		if ( study.updateDerivedFields(false, false, false, false, false, false, true) )
+		study.updateDerivedFields(false, false, false, false, false, false, true);
+		if ( ! study.getHiddenSafe() )
 			study.getPatient().updateDerivedFields();
 		
     }
