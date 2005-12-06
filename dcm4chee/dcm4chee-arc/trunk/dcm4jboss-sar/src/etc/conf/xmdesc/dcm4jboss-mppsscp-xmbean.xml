@@ -124,6 +124,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getHl7SendServiceName"
+      setMethod="setHl7SendServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>Hl7SendServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=HL7Send"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
       <description>Used internally - do NOT modify.
@@ -138,5 +149,36 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Link a MPPS to a MWL entry.</description>
+      <name>linkMppsToMwl</name>
+      <parameter>
+        <description>Scheduled procedure step ID</description>
+        <name>spsID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>MPPS SOP Instance UID</description>
+        <name>mppsIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>If true send a Notification MPPSLinked</description>
+        <name>sendNotif</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>java.util.Map</return-type>
+   </operation>   
+   <operation impact="ACTION">
+      <description>Deletes a list of MPPS entries.</description>
+      <name>deleteMPPSEntries</name>
+      <parameter>
+        <description>List of MPPS Instance UIDs</description>
+        <name>iuids</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>   
+   
 </mbean>
 
