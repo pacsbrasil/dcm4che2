@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.6.0"/>
+	<property name="version" value="2.6.4"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -34,8 +34,8 @@
 
     <!-- Override with your dcm4jboss installation -->
 	<property name="dcm4jboss.home" value="${user.home}/dcm4jboss"/>		
-    <property name="dcm4jboss.lib" value="${dcm4jboss.home}/server/pacs/lib"/>
-    <property name="dcm4jboss.deploy" value="${dcm4jboss.home}/server/pacs/deploy"/>
+    <property name="dcm4jboss.lib" value="${dcm4jboss.home}/server/default/lib"/>
+    <property name="dcm4jboss.deploy" value="${dcm4jboss.home}/server/default/deploy"/>
 	
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
@@ -446,7 +446,7 @@
         <jar jarfile="${target.common.bin}/editgpwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditGpwl"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar"/>
+				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4jboss-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editgpwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
@@ -461,7 +461,7 @@
         <jar jarfile="${target.common.bin}/editmwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar"/>
+				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4jboss-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editmwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
