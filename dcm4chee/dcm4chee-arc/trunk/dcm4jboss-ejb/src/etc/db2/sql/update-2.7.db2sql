@@ -3,12 +3,11 @@
 CONNECT TO tiani;
 SET CURRENT SCHEMA TIANI;
 
-ALTER TABLE study ADD study_status INTEGER;
+ALTER TABLE study ADD study_status_id VARCHAR(254);
 ALTER TABLE study ADD study_desc VARCHAR(254);
-UPDATE study SET study_status=6;
 
 CREATE INDEX study_desc ON study(study_desc_up);
-CREATE INDEX study_status ON study(study_status);
+CREATE INDEX study_status_id ON study(study_status_id);
 
 CREATE TABLE rel_study_pcode (
 	study_fk       INTEGER,

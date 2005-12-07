@@ -137,26 +137,29 @@ public abstract class GPSPSBean implements EntityBean {
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
+    public void ejbPostCreate(Dataset ds, PatientLocal patient)
+    throws CreateException {
         setPatient(patient);
-        DcmElement sq;
-        Collection c;
         try {
-            setScheduledWorkItemCode(CodeBean.valueOf(codeHome, ds
-                    .getItem(Tags.ScheduledWorkitemCodeSeq)));
-            initCodes(ds.get(Tags.ScheduledProcessingApplicationsCodeSeq),
+            setScheduledWorkItemCode(CodeBean.valueOf(codeHome,
+            		ds.getItem(Tags.ScheduledWorkitemCodeSeq)));
+            CodeBean.addCodesTo(codeHome, 
+            		ds.get(Tags.ScheduledProcessingApplicationsCodeSeq),
                     getScheduledProcessingApplicationsCodes());
-            initCodes(ds.get(Tags.ScheduledStationNameCodeSeq),
+            CodeBean.addCodesTo(codeHome,
+            		ds.get(Tags.ScheduledStationNameCodeSeq),
                     getScheduledStationNameCodes());
-            initCodes(ds.get(Tags.ScheduledStationClassCodeSeq),
+            CodeBean.addCodesTo(codeHome,
+            		ds.get(Tags.ScheduledStationClassCodeSeq),
                     getScheduledStationClassCodes());
-            initCodes(ds.get(Tags.ScheduledStationGeographicLocationCodeSeq),
+            CodeBean.addCodesTo(codeHome,
+            		ds.get(Tags.ScheduledStationGeographicLocationCodeSeq),
                     getScheduledStationGeographicLocationCodes());
             createScheduledHumanPerformers(
                     ds.get(Tags.ScheduledHumanPerformersSeq));
             createRefRequests(ds.get(Tags.RefRequestSeq));            
         } catch (CreateException e) {
-            throw new CreateException(e.getMessage());
+            throw e;
         } catch (FinderException e) {
             throw new CreateException(e.getMessage());
         }
@@ -179,14 +182,6 @@ public abstract class GPSPSBean implements EntityBean {
         GPSPSLocal gpsps = (GPSPSLocal) ejbctx.getEJBLocalObject();
         for (int i = 0, n = sq.vm(); i < n; i++) {
             c.add(rqHome.create(sq.getItem(i), gpsps));
-        }
-    }
-
-    private void initCodes(DcmElement sq, Collection c) throws CreateException,
-            FinderException {
-        if (sq == null) return;
-        for (int i = 0, n = sq.vm(); i < n; i++) {
-            c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
         }
     }
 

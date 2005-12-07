@@ -45,6 +45,8 @@ CREATE TABLE study (
 	study_datetime	TIMESTAMP,
 	accession_no	VARCHAR(256),
 	ref_physician   VARCHAR_IGNORECASE(256),
+	study_desc      VARCHAR_IGNORECASE(256),
+	study_status_id VARCHAR(256),
 	mods_in_study	VARCHAR(256),
 	num_series		INTEGER NOT NULL,
 	num_instances	INTEGER NOT NULL,
@@ -66,9 +68,21 @@ CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician);
+CREATE INDEX study_desc ON study(study_desc);
+CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
 CREATE INDEX study_hidden ON study(hidden);
+
+CREATE TABLE rel_study_pcode (
+	study_fk       INTEGER,
+	pcode_fk       INTEGER,
+FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (pcode_fk) REFERENCES code(pk)
+);
+CREATE INDEX pcode_study_fk ON rel_study_pcode(study_fk);
+CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
+
 
 CREATE TABLE mpps (
 	pk          		IDENTITY PRIMARY KEY,
@@ -257,6 +271,7 @@ CREATE INDEX mwl_modality ON mwl_item(modality);
 CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
+CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
 
 CREATE TABLE gpsps (
 	pk              IDENTITY PRIMARY KEY,
@@ -360,7 +375,6 @@ CREATE UNIQUE INDEX hp_iuid ON hp(hp_iuid);
 CREATE INDEX hp_cuid ON hp(hp_cuid);
 CREATE INDEX hp_name ON hp(hp_name);
 CREATE INDEX hp_level ON hp(hp_level);
-CREATE INDEX num_screens ON hp(num_screens);
 CREATE INDEX num_screens ON hp(num_screens);
 
 CREATE TABLE hpdef (

@@ -49,6 +49,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
@@ -189,5 +190,13 @@ public abstract class CodeBean implements EntityBean {
             if (version2 == null || version2.equals(version)) { return code; }
         }
         return codeHome.create(value, designator, version, meaning);
+    }
+    
+    public static void addCodesTo(CodeLocalHome codeHome, DcmElement sq, Collection c) 
+    throws CreateException, FinderException {
+    	if (sq == null) return;
+    	for (int i = 0, n = sq.vm(); i < n; i++) {
+    		c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
+    	}
     }
 }

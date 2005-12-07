@@ -44,9 +44,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -56,6 +61,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -105,9 +111,10 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.hidden = FALSE AND f.instance.series.study.pk = ?1"
- * @jboss.query 
- * 	signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
- *  dynamic="true"
+ * @jboss.query signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
+ *              dynamic="true"
+ *
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
  */
 public abstract class StudyBean implements EntityBean {
@@ -116,9 +123,33 @@ public abstract class StudyBean implements EntityBean {
 
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
             Tags.InstanceAvailability, Tags.NumberOfStudyRelatedSeries,
-            Tags.NumberOfStudyRelatedInstances, Tags.StorageMediaFileSetID,
-            Tags.StorageMediaFileSetUID };
+            Tags.NumberOfStudyRelatedInstances, Tags.StudyStatusID,
+            Tags.StorageMediaFileSetID, Tags.StorageMediaFileSetUID };
 
+    private CodeLocalHome codeHome;
+
+    public void setEntityContext(EntityContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            codeHome = (CodeLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/Code");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
+
+    public void unsetEntityContext() {
+        codeHome = null;
+    }
+    
     /**
      * Auto-generated Primary Key
      *
@@ -198,6 +229,30 @@ public abstract class StudyBean implements EntityBean {
 
     public abstract void setReferringPhysicianName(String physician);
 
+    /**
+     * Study Description
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="study_desc"
+     */
+    public abstract String getStudyDescription();
+
+    public abstract void setStudyDescription(String description);
+    
+    /**
+     * Study Status ID
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="study_status_id"
+     */
+    public abstract String getStudyStatusId();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setStudyStatusId(String statusId);
+    
+    
     /**
      * Number Of Study Related Series
      *
@@ -378,19 +433,39 @@ public abstract class StudyBean implements EntityBean {
     public abstract java.util.Collection getSeries();
 
     /**
+     * @ejb.relation name="study-pcode" role-name="study-with-pcode"
+     *               target-ejb="Code" target-role-name="pcode-for-study"
+     *               target-multiple="yes"
+     * @jboss.relation-table table-name="rel_study_pcode"
+     * @jboss.relation fk-column="pcode_fk" related-pk-field="pk"     
+     * @jboss.target-relation fk-column="study_fk" related-pk-field="pk"     
+     */    
+    public abstract java.util.Collection getProcedureCodes();
+    public abstract void setProcedureCodes(java.util.Collection codes);
+
+    /**
      * Create study.
      *
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient)
-            throws CreateException {
+            throws CreateException {    	
         setAttributes(ds);
-        return null;
+       return null;
     }
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient)
             throws CreateException {
-        setPatient(patient);
+        try {
+        	setPatient(patient);
+        	CodeBean.addCodesTo(codeHome, 
+        			ds.get(Tags.ProcedureCodeSeq),
+        			getProcedureCodes());
+        } catch (CreateException e) {
+        	throw e;
+        } catch (FinderException e) {
+        	throw new CreateException(e.getMessage());
+        }
         log.info("Created " + prompt());
     }
 
@@ -726,6 +801,7 @@ public abstract class StudyBean implements EntityBean {
             		getExternalRetrieveAET());
             ds.putCS(Tags.InstanceAvailability, Availability
                     .toString(getAvailabilitySafe()));
+            ds.putCS(Tags.StudyStatusID, getStudyStatusId());
         }
         return ds;
     }
@@ -743,6 +819,7 @@ public abstract class StudyBean implements EntityBean {
         }
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
+        setStudyDescription(ds.getString(Tags.StudyDescription));
         Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
         setEncodedAttributes(DatasetUtils.toByteArray(tmp,
                 DcmDecodeParam.EVR_LE));

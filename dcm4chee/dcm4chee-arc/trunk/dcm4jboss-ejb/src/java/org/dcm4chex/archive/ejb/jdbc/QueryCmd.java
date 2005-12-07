@@ -171,6 +171,13 @@ public abstract class QueryCmd extends BaseReadCmd {
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.ReferringPhysicianName),
                 true);
+        sqlBuilder.addWildCardMatch(null, "Study.studyDescription",
+                SqlBuilder.TYPE2,
+                keys.getString(Tags.StudyDescription),
+                true);
+        sqlBuilder.addSingleValueMatch(null, "Study.studyStatusId",
+        		SqlBuilder.TYPE2,
+        		keys.getString(Tags.StudyStatusID));
         sqlBuilder.addModalitiesInStudyMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));
     }
@@ -219,14 +226,12 @@ public abstract class QueryCmd extends BaseReadCmd {
                 false);
         sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", SqlBuilder.TYPE2,
                 keys.getDateTimeRange(Tags.ContentDate, Tags.ContentTime));
-        sqlBuilder.addWildCardMatch(null, "Instance.srCompletionFlag",
+        sqlBuilder.addSingleValueMatch(null, "Instance.srCompletionFlag",
                 SqlBuilder.TYPE2,
-                keys.getString(Tags.CompletionFlag),
-                false);
-        sqlBuilder.addWildCardMatch(null, "Instance.srVerificationFlag",
+                keys.getString(Tags.CompletionFlag));
+        sqlBuilder.addSingleValueMatch(null, "Instance.srVerificationFlag",
                 SqlBuilder.TYPE2,
-                keys.getString(Tags.VerificationFlag),
-                false);
+                keys.getString(Tags.VerificationFlag));
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         if (code != null) {
             sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codeValue",
