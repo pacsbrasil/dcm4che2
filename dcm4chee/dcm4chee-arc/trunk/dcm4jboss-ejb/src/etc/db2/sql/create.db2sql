@@ -267,6 +267,7 @@ CREATE TABLE mwl_item (
 	perf_physician_up GENERATED ALWAYS AS (UPPER(perf_physician)),
 	req_proc_id    	VARCHAR(254) NOT NULL,
 	accession_no	VARCHAR(254),
+	study_iuid      VARCHAR(254) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	item_attrs		BLOB(64000),

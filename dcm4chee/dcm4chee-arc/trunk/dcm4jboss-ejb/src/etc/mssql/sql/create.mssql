@@ -240,6 +240,7 @@ CREATE TABLE mwl_item (
 	perf_physician  VARCHAR(255),
 	req_proc_id    	VARCHAR(255) NOT NULL,
 	accession_no	VARCHAR(255),
+	study_iuid      VARCHAR(255) NOT NULL,
 	created_time	DATETIME,
 	updated_time	DATETIME,
 	item_attrs		IMAGE,

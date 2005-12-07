@@ -242,6 +242,7 @@ CREATE TABLE mwl_item (
 	perf_physician  TEXT,
 	req_proc_id    	TEXT NOT NULL,
 	accession_no	TEXT,
+	study_iuid      TEXT NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	item_attrs		BYTEA,

@@ -242,6 +242,7 @@ CREATE TABLE mwl_item (
 	perf_physician  VARCHAR_IGNORECASE(256),
 	req_proc_id    	VARCHAR(256) NOT NULL,
 	accession_no	VARCHAR(256),
+	study_iuid      VARCHAR(256) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	item_attrs		VARBINARY,
