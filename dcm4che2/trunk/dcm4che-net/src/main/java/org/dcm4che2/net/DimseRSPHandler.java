@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2005
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,21 +38,21 @@
 
 package org.dcm4che2.net;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @version $Revision$ $Date$
+ * @since Dec 1, 2005
  *
  */
 public interface DimseRSPHandler
 {
 
-    void onDimseRSP(Association association, int pcid, DicomObject cmd,
-            InputStream dataStream);
+    void onDimseRSP(Association as, DicomObject cmd, DicomObject data)
+    throws IOException;
 
-    void onClosed(Association association);
+    void onClosed(Association as);
 }

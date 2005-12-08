@@ -39,12 +39,12 @@
 package org.dcm4che2.net.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.CommandFactory;
+import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.PDVInputStream;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -62,21 +62,23 @@ implements CStoreSCP
         super(sopClasses, UID.StorageServiceClass);
     }
 
-    public void cstore(Association as, int pcid, DicomObject cmd, InputStream dataStream)
+    public void cstore(Association as, int pcid, DicomObject cmd,
+            PDVInputStream dataStream, String tsuid)
     {
         try
         {
-            as.write(pcid, doCStore(as, pcid, cmd, dataStream), null);
-        } catch (IOException e)
+            DicomObject rsp = doCStore(as, pcid, cmd, dataStream, tsuid);
+            as.writeDimseRSP(pcid, rsp);
+        }
+        catch (IOException e)
         {
-            // already handled by as.write
-        }        
-        
+            as.abort();
+        }
     }
 
     protected DicomObject doCStore(Association as, int pcid,
-            DicomObject rq, InputStream dataStream)
+            DicomObject rq, PDVInputStream dataStream, String tsuid)
     {
-        return CommandFactory.newCStoreRSP(rq, CommandFactory.SUCCESS);
+        return CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
     }
 }

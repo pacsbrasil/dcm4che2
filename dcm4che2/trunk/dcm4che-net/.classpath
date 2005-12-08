@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
-	<classpathentry sourcepath="/MINA_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-config"/>
 	<classpathentry kind="var" path="SLF4J_JAR"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

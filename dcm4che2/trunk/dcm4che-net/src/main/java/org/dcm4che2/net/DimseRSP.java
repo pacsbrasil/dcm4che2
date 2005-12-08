@@ -48,7 +48,7 @@ import org.dcm4che2.data.DicomObject;
  * @since Oct 8, 2005
  *
  */
-public class DimseRSP extends DimseRSPHandlerAdapter
+public class DimseRSP 
 {
     private static class Entry
     {
@@ -65,62 +65,63 @@ public class DimseRSP extends DimseRSPHandlerAdapter
     private Entry entry = new Entry(null, null);
     private boolean finished;
     private IOException ex;
+    private final DimseRSPHandler handler = new DimseRSPHandler(){
+
+        public synchronized void onDimseRSP(Association as, DicomObject cmd,
+                DicomObject data) throws IOException
+        {
+            Entry last = entry;
+            while (last.next != null)
+                last = last.next;
+
+            last.next = new Entry(cmd, data);
+            finished = !CommandUtils.isPending(cmd);
+            notifyAll();
+        }
+
+        public synchronized void onClosed(Association as)
+        {
+            if (!finished)
+            {
+                ex = as.getException();
+                notifyAll();
+            }
+        }};
     
-    public DicomObject getCommand()
+    final DimseRSPHandler getHandler()
+    {
+        return handler;        
+    }
+    
+    public final DicomObject getCommand()
     {
         return entry.command;
     }
 
-    public DicomObject getDataset()
+    public final DicomObject getDataset()
     {
         return entry.dataset;
     }
 
-    public synchronized boolean next()
-    throws IOException
+    public boolean next()
+    throws IOException, InterruptedException
     {
-        if (entry.next == null) {
-            if (finished)
-                return false;
-            
-            while (entry.next == null && ex == null)
-                try
-                {
-                    wait();
-                }
-                catch (InterruptedException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            
-            if (ex != null)
-                throw ex;
-         }
-        entry = entry.next;
-        return true;
-    }
+        synchronized (handler)
+        {
+            if (entry.next == null)
+            {
+                if (finished)
+                    return false;
 
-    protected synchronized void onDimseRSP(Association a, int pcid,
-            DicomObject cmd, DicomObject ds)
-    {
-        Entry last = entry;
-        while (last.next != null)
-            last = last.next;
-        
-        last.next = new Entry(cmd, ds);
-         finished = !CommandFactory.isPending(cmd);
-        notifyAll();
-     }
+                while (entry.next == null && ex == null)
+                    handler.wait();
 
-    public synchronized void onClosed(Association a)
-    {
-        if (!finished) {
-            if (a.getAbort() != null)
-                ex = new AbortException(a.getAbort());
-            else
-                ex = new ReleasedException();
+                if (ex != null)
+                    throw ex;
+            }
+            entry = entry.next;
+            return true;
         }
-        notifyAll();
     }
 
 }

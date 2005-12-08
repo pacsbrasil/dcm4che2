@@ -63,10 +63,10 @@ public class DataWriterAdapter implements DataWriter
         this.data = data;
     }
 
-    public void writeTo(OutputStream out, TransferSyntax ts) throws IOException
+    public void writeTo(OutputStream out, String tsuid) throws IOException
     {
         DicomOutputStream dos = new DicomOutputStream(out);
-        dos.writeDataset(data);
+        dos.writeDataset(data, TransferSyntax.valueOf(tsuid));
     }
 
 }

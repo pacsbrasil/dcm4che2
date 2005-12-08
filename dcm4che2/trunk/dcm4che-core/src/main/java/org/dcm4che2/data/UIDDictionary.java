@@ -108,6 +108,10 @@ public class UIDDictionary implements Serializable {
 		this.table = new Hashtable(initialCapacity);
 	}
 
+    public String prompt(String uid) {
+        return uid + "/" + nameOf(uid);
+    }
+    
 	public String nameOf(String uid) {
 		if (table == null)
 			return UNKOWN;

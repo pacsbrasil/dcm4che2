@@ -41,28 +41,21 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.net.Socket;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.protocol.ProtocolSession;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.TransferSyntax;
-import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.io.DicomOutputStream;
-import org.dcm4che2.net.codec.DULProtocolViolationException;
-import org.dcm4che2.net.pdu.AAbort;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.data.UIDDictionary;
+import org.dcm4che2.net.pdu.AAbortException;
 import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJ;
+import org.dcm4che2.net.pdu.AAssociateRJException;
 import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.AReleaseRP;
-import org.dcm4che2.net.pdu.AReleaseRQ;
-import org.dcm4che2.net.pdu.PDU;
-import org.dcm4che2.net.pdu.PDataTF;
+import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.util.IntHashtable;
 import org.slf4j.Logger;
@@ -70,1575 +63,405 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Sep 20, 2005
+ * @version $Revision$ $Date$
+ * @since Nov 25, 2005
+ *
  */
-public class Association
+public class Association implements Runnable
 {
+    static Logger log = LoggerFactory.getLogger(Association.class);
 
-    private static final Logger log = LoggerFactory.getLogger(Association.class);
-    private static final int DATA = 0;
-    private static final int COMMAND = 1;
-    private static final int PENDING = 0;
-    private static final int LAST = 2;
-
-    public static final State STA1 = new Sta1();
-    public static final State STA2 = new Sta2();
-    public static final State STA3 = new Sta3();
-    public static final State STA4 = new Sta4();
-    public static final State STA5 = new Sta5();
-    public static final State STA6 = new Sta6();
-    public static final State STA7 = new Sta7();
-    public static final State STA8 = new Sta8();
-    public static final State STA9 = new Sta9();
-    public static final State STA10 = new Sta10();
-    public static final State STA11 = new Sta11();
-    public static final State STA12 = new Sta12();
-    public static final State STA13 = new Sta13();
-
-    private static Timer artim = new Timer(true);
-
-    private TimerTask artimTask = null;
-
-    private final boolean requestor;
-    private final Executor executor;
-    private AssociationHandler handler;
-    private final ProtocolSession session;
-    
+    private final Connector connector;
+    private ApplicationEntity ae;
+    private Socket socket;
+    private boolean requestor = false;
+    private InputStream in;
+    private OutputStream out;
+    private PDUEncoder encoder;
+    private PDUDecoder decoder;
     private State state;
-    private long associationRequestTimeout = 0;
-    private long associationAcceptTimeout = 0;
-    private long releaseResponseTimeout = 0;
-    private long socketCloseDelay = 100L;
-    private boolean packPDV = true;
 
-    private ByteBufferChannel readDataChannel = new ByteBufferChannel();
-    private Thread readDataThread;
-    
     private AAssociateRQ associateRQ;
     private AAssociateAC associateAC;
-    private AAssociateRJ associateRJ;
-    private AAbort abort;
-    private int messageID = 0;
-    private IntHashtable rspHandlerForMsgId = new IntHashtable();
-    private IntHashtable cancelHandlerForMsgId = new IntHashtable();
+    private IOException exception;
     
-    private int maxSendPDULength = 0x100000;
-    private int sendPDULength;
     private int maxOpsInvoked;
 
-    Association(Executor executor, AssociationHandler handler,
-            boolean requestor, ProtocolSession session)
+    private int msgID = 0;
+    private int performing = 0;
+    private IntHashtable rspHandlerForMsgId = new IntHashtable();
+    private IntHashtable cancelHandlerForMsgId = new IntHashtable();
+    private HashMap acceptedPCs = new HashMap();
+    
+    private Association(Socket socket, Connector connector, boolean requestor)
+    throws IOException
     {
-        this.executor = executor;
-        this.handler = handler;
+        if (socket == null)
+            throw new NullPointerException("socket");
+        if (connector == null)
+            throw new NullPointerException("connector");
+        this.connector = connector;
+        this.socket = socket;
         this.requestor = requestor;
-        this.session = session;
-        setState(requestor ? STA4 : STA2);
-    }
-
-    public final AssociationHandler getHandler()
-    {
-        return handler;
-    }
-
-    public final InetSocketAddress getRemoteAddress()
-    {
-        return (InetSocketAddress) session.getRemoteAddress();
+        this.in = socket.getInputStream();
+        this.out = socket.getOutputStream();
+        this.encoder = new PDUEncoder(this, out);
+        this.state = State.STA1;
     }
     
-    public void addAssociationHandlerFilter(AssociationHandlerFilter af)
+    static Association request(Socket socket, Connector connector, ApplicationEntity ae) 
+    throws IOException
     {
-        if (af.getHandler() != handler)
-            throw new IllegalArgumentException(
-                    "Filter does not match current Association Handler");
-        this.handler = af;        
+        Association a = new Association(socket, connector, true);
+        a.setApplicationEntity(ae);
+        a.setState(State.STA4);
+        return a;
     }
 
-    public final boolean isRequestor()
+    static Association accept(Socket socket, Connector connector) 
+    throws IOException
     {
-        return requestor;
-    }
-
-    public final long getAssociationRequestTimeout()
-    {
-        return associationRequestTimeout;
-    }
-
-    public final void setAssociationRequestTimeout(long timeout)
-    {
-        this.associationRequestTimeout = timeout;
-    }
-
-    public final long getAssociationAcceptTimeout()
-    {
-        return associationAcceptTimeout;
-    }
-
-    public final void setAssociationAcceptTimeout(long timeout)
-    {
-        this.associationAcceptTimeout = timeout;
-    }
-
-    public final long getReleaseResponseTimeout()
-    {
-        return releaseResponseTimeout;
-    }
-
-    public final void setReleaseResponseTimeout(long releaseResponseTimeout)
-    {
-        this.releaseResponseTimeout = releaseResponseTimeout;
-    }
-
-    public final long getSocketCloseDelay()
-    {
-        return socketCloseDelay;
-    }
-
-    public final void setSocketCloseDelay(long socketCloseDelay)
-    {
-        this.socketCloseDelay = socketCloseDelay;
-    }
-
-    public final int getMaxSendPDULength()
-    {
-        return maxSendPDULength;
-    }
-
-    public final void setMaxSendPDULength(int bufferSize)
-    {
-        this.maxSendPDULength = bufferSize;
-    }
-
-    public final boolean isPackPDV()
-    {
-        return packPDV;
-    }
-
-    public final void setPackPDV(boolean packPDV)
-    {
-        this.packPDV = packPDV;
-    }
-
-    public final State getState()
-    {
-        return state;
+        Association a = new Association(socket, connector, false);
+        a.setState(State.STA2);
+        a.startARTIM(connector.getRequestTimeout());
+        return a;
     }
     
-    public final AAbort getAbort()
+    final void setApplicationEntity(ApplicationEntity ae)
     {
-        return abort;
+        this.ae = ae;
     }
     
-    public final AAssociateRJ getAssociateRJ()
-    {
-        return associateRJ;
-    }
-    
-    public final AAssociateAC getAssociateAC()
+    final AAssociateAC getAssociateAC()
     {
         return associateAC;
     }
 
-    public final AAssociateRQ getAssociateRQ()
+    final AAssociateRQ getAssociateRQ()
     {
         return associateRQ;
     }
-
-    public String getTransferSyntax(int pcid)
-    {
-        try
-        {
-            PresentationContext pc = associateAC.getPresentationContext(pcid);
-            return pc.isAccepted() ? pc.getTransferSyntax() : null;
-        } catch (NullPointerException e)
-        {
-            throw new IllegalStateException(state.toString());
-        }
-    }
-    
-    public int nextMessageID() {
-        return ++messageID;
-    }
-
-    public void write(PDU pdu)
-    {
-        log.debug("Sending: {}", pdu);
-        state.write(this, pdu);
-    }
-    
-    public void abort(int reason) 
-    {
-        if (abort != null) // already aborted
-            write(new AAbort(reason));
-    }
-
-    public void abort() 
-    {
-        if (abort != null) // already aborted
-            write(new AAbort());
-    }
-    
-   
-    public void write(int pcid, DicomObject command, DataWriter dataWriter)
-    throws IOException
-    {
-        log.debug("Sending DIMSE[pcid={}]:\n{}", new Integer(pcid),  command);
         
-        PresentationContext pc;
-        try
+    final IOException getException()
+    {
+        return exception;
+    }
+    
+    void checkException() throws IOException
+    {
+        if (exception != null)
+            throw exception;
+    }
+    
+    public final boolean isReadyForDataTransfer()
+    {
+        return state.isReadyForDataTransfer();
+    }
+
+    private boolean isReadyForDataReceive()
+    {
+        return state.isReadyForDataReceive();
+    }
+    
+    private boolean isReadyForDataSend()
+    {
+        return state.isReadyForDataSend();
+    }
+    
+    void setState(State state)
+    {
+        if (this.state == state)
+            return;
+
+        boolean wasReadyForDataReceive = isReadyForDataReceive();
+        synchronized (this)
         {
-            pc = associateAC.getPresentationContext(pcid);
-        } catch (NullPointerException e)
-        {
-            throw new IllegalStateException(state.toString());
+            this.state = state;
+            log.debug("Enter State: {}", state);
+            notifyAll();
         }
+        if (wasReadyForDataReceive && !isReadyForDataReceive())
+            fireEndOfData();
+    }
+    
+    private void fireEndOfData()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private Map acceptedPC(String asuid)
+    {
+        return (Map) acceptedPCs.get(asuid);
+    }
+    
+    private void checkAAAC()
+    {
+        Collection c = associateAC.getPresentationContexts();
+        for (Iterator iter = c.iterator(); iter.hasNext();)
+        {
+            PresentationContext pc = (PresentationContext) iter.next();
+            if (!pc.isAccepted())
+                continue;
+            PresentationContext pcrq = 
+                associateRQ.getPresentationContext(pc.getPCID());
+            if (pcrq == null)
+            {
+                log.warn("A-ASSOCIATE-AC contains not offered Presentation Context: " + pc);
+                continue;
+            }
+            String as = pcrq.getAbstractSyntax();
+            Map ts2pc = (Map) acceptedPCs.get(as);
+            if (ts2pc == null)
+            {
+                ts2pc = new HashMap();
+                acceptedPCs.put(as, ts2pc);
+            }
+            ts2pc.put(pc.getTransferSyntax(), pc);
+        }
+    }
+
+    public AAssociateAC negotiate(AAssociateRQ rq)
+    throws IOException, InterruptedException
+    {
+        sendAssociateRQ(rq);        
+        synchronized (this)
+        {
+            while (state == State.STA5)
+                wait();
+        }
+        checkException();
+        if (state != State.STA6)
+        {
+            throw new RuntimeException("unexpected state: " + state);
+        }        
+        return associateAC;        
+    }
+    
+    void pabort(int reason)
+    {
+        abort(new AAbortException(AAbortException.UL_SERIVE_PROVIDER, reason));        
+    }
+
+    public void release(boolean waitForRSP) throws InterruptedException
+    {
+        if (waitForRSP)
+            waitForDimseRSP();
+        
+        sendReleaseRQ();
+        synchronized (this)
+        {
+            while (state != State.STA1)
+                wait();
+        }
+    }
+
+    public void waitForDimseRSP() throws InterruptedException
+    {
+        synchronized (rspHandlerForMsgId)
+        {
+            while (!rspHandlerForMsgId.isEmpty() && isReadyForDataReceive())
+                rspHandlerForMsgId.wait();
+        }
+    }
+
+    public void abort()
+    {
+        abort(new AAbortException());       
+    }
+    
+    private PresentationContext pcFor(String cuid, String[] tsuids) 
+    throws NoPresentationContextException
+    {
+        Map ts2pc = acceptedPC(cuid);
+        if (ts2pc == null)
+            throw new NoPresentationContextException("Abstract Syntax "
+                    + UIDDictionary.getDictionary().prompt(cuid)
+                    + " not supported");
+        if (tsuids == null)
+            return (PresentationContext) ts2pc.values().iterator().next();
+        for (int i = 0; i < tsuids.length; i++)
+        {
+            PresentationContext pc = (PresentationContext) ts2pc.get(tsuids[i]);
+            if (pc != null)
+                return pc;
+        }
+        throw new NoPresentationContextException("Abstract Syntax "
+                + UIDDictionary.getDictionary().prompt(cuid)
+                + " with Transfer Syntax "
+                + UIDDictionary.getDictionary().prompt(tsuids[0])
+                + " not supported");
+    }
+    
+    public DicomObject cecho()
+    throws IOException, InterruptedException
+    {
+        return cecho(UID.VerificationSOPClass);
+    }
+    
+    public DicomObject cecho(String cuid)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, null);
+        DicomObject cechorq = CommandUtils.newCEchoRQ(++msgID, cuid);
+        DimseRSP rsp = invoke(pc.getPCID(), cechorq);
+        rsp.next();
+        return rsp.getCommand();
+    }
+
+    public void cstore(String cuid, String iuid, int priority,
+            DataWriter data, String[] tsuids, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject cstorerq = CommandUtils.newCStoreRQ(
+                ++msgID, cuid, iuid, priority);
+        invoke(pc.getPCID(), cstorerq, data, rspHandler);
+    }
+    
+    public DicomObject cstore(String cuid, String iuid, int priority,
+            DataWriter data, String[] tsuids)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        cstore(cuid, iuid, priority, data, tsuids, rsp.getHandler());
+        rsp.next();
+        return rsp.getCommand();
+    }
+    
+    DimseRSP invoke(int pcid, DicomObject cmd)
+    throws IOException, InterruptedException
+    {
+        return invoke(pcid, cmd, (DataWriter) null);
+    }
+    
+    DimseRSP invoke(int pcid, DicomObject cmd, DicomObject data)
+    throws IOException, InterruptedException
+    {
+        return invoke(pcid, cmd, new DataWriterAdapter(data));
+    }
+    
+    DimseRSP invoke(int pcid, DicomObject cmd, DataWriter dw)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        invoke(pcid, cmd, dw, rsp.getHandler());
+        return rsp;
+    }
+    
+    void invoke(int pcid, DicomObject cmd, DicomObject data, 
+            DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        invoke(pcid, cmd, new DataWriterAdapter(data), rspHandler);
+    }
+    
+    void invoke(int pcid, DicomObject cmd, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        invoke(pcid, cmd, (DataWriter) null, rspHandler);
+    }
+
+    void invoke(int pcid, DicomObject cmd, DataWriter data, 
+            DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        if (CommandUtils.isResponse(cmd))
+            throw new IllegalArgumentException("cmd:\n" + cmd);
+        checkException();
+        if (!isReadyForDataTransfer())
+            throw new IllegalStateException(state.toString());
+        PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
             throw new IllegalStateException("No Presentation State with id - " + pcid);
         if (!pc.isAccepted())
             throw new IllegalStateException("Presentation State not accepted - " + pc);
         
-        ByteBuffer buf = ByteBuffer.allocate(sendPDULength);
-        PDVOutputStream out = new PDVOutputStream(pcid, COMMAND, buf, sendPDULength);
-        DicomOutputStream dos = new DicomOutputStream(out);
-        try
-        {
-            dos.writeCommand(command);
-            dos.close();
-        } catch (IOException e)
-        {
-            // should never happen!
-            log.error("Failed to encode Command into PDV", e);
-            write(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-            throw e;
-        }
-        if (dataWriter != null) {
-            if (!packPDV) 
-                writePDataTF(buf);
-            out = new PDVOutputStream(pcid, DATA, buf, sendPDULength);
-            try
-            {
-                dataWriter.writeTo(out, TransferSyntax.valueOf(pc
-                        .getTransferSyntax()));
-                out.close(); 
-            } catch (IOException e)
-            {
-                log.error("Failed to encode Data into PDVs", e);
-                write(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-                throw e;
-            }            
-        }
-        writePDataTF(buf);
+        addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
+        log.debug("Sending DIMSE-RQ[pcid={}]:\n{}", new Integer(pcid),  cmd);
+        encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());      
     }
 
-    private void writePDataTF(ByteBuffer buf)
-    {
-        buf.flip();
-        write(new PDataTF(buf));
-        buf.clear();
-    }
-   
-    private synchronized void setState(State state)
-    {
-        if (this.state == state)
-            return;
-
-        this.state = state;
-        log.debug("Enter State: {}", state);
-        notifyAll();
-    }
-
-    private void startARTIM(long delay)
-    {
-        stopARTIM();
-        if (delay <= 0)
-            return;
-        
-        if (log.isDebugEnabled())
-        {
-            log.debug("Start ARTIM: " + (delay / 1000f) + "s");
-        }
-        artimTask = new TimerTask()
-        {
-            public void run()
-            {
-                artimExpired();
-            }
-        };
-        artim.schedule(artimTask, delay);
-    }
-
-    private void stopARTIM()
-    {
-        if (artimTask != null)
-        {
-            if (log.isDebugEnabled())
-            {
-                log.debug("Stop ARTIM");
-            }
-            artimTask.cancel();
-            artimTask = null;
-        }
-    }
-
-    void opened()
-    {
-        if (log.isDebugEnabled())
-        {
-            log.debug("Opened: " + this);
-        }
-        handler.onOpened(this);
-        if (!requestor)
-        {
-            startARTIM(associationRequestTimeout);
-        }
-    }
-
-    void received(PDU pdu)
+    public void writeDimseRSP(int pcid, DicomObject cmd)
     throws IOException
     {
-        if (log.isDebugEnabled())
-        {
-            log.debug("Received: " + pdu);
-        }
-        state.received(this, pdu);
-    }
-
-    void sent(PDU pdu)
-    {
-//        if (log.isDebugEnabled())
-//        {
-//            log.debug("Sent: " + pdu);
-//        }
-    }
-
-    void artimExpired()
-    {
-        if (log.isDebugEnabled())
-        {
-            log.debug("ARTIM expired: " + this);
-        }
-        state.artimExpired(this);
-
-    }
-
-    void closed() {
-        if (log.isDebugEnabled())
-        {
-            log.debug("Closed: " + this);
-        }
-        state.closed(this);
-        if (readDataThread != null)
-            readDataThread.interrupt();
-        setState(STA1);
-        handler.onClosed(this);
-        rspHandlerForMsgId.accept(new IntHashtable.Visitor(){
-
-            public boolean visit(int key, Object value)
-            {
-                ((DimseRSPHandler) value).onClosed(Association.this);
-                return true;
-            }});
-    }
-
-    void exception(Throwable cause)
-    {
-        if (log.isDebugEnabled())
-        {
-            log.debug("Exception: " + cause);
-        }
-        state.exception(this, cause);
-    }
-
-    void idle(IdleStatus status)
-    {
-        if (state == STA6)
-        {
-            log.info("Release idle association");
-            write(new AReleaseRQ());
-        }
-    }
-
-    /**
-     * Send A-ASSOCIATE-RQ-PDU. Next state is Sta5.
-     * 
-     * @param associateRQ
-     */
-    private void ae2(AAssociateRQ associateRQ)
-    {
-        this.associateRQ = associateRQ;
-        session.write(associateRQ);
-        startARTIM(associationAcceptTimeout);
-        setState(STA5);
-    }
-
-    /**
-     * Issue A-ASSOCIATE confirmation (accept) primitive. Next state is Sta6
-     * 
-     * @param associateAC
-     * @throws IOException
-     */
-    private void ae3(AAssociateAC associateAC)
-    {
-        this.associateAC = associateAC;
-        this.maxOpsInvoked = associateAC.getMaxOpsInvoked();
-        this.sendPDULength = toSendPDULength(associateAC.getMaxPDULength());
-        stopARTIM();
-        setState(STA6);
-        handler.onAAssociateAC(this, associateAC);
-    }
-
-    private int toSendPDULength(int len)
-    {
-        return len == 0 || len > maxSendPDULength ? maxSendPDULength : len;
-    }
-
-    /**
-     * Issue A-ASSOCIATE confirmation (reject) primitive and close transport
-     * connection. Next state is Sta1.
-     * 
-     * @param associateRJ
-     */
-    private void ae4(AAssociateRJ associateRJ)
-    {
-        this.associateRJ = associateRJ;
-        stopARTIM();
-        handler.onAAssociateRJ(this, associateRJ);
-        session.close();
-//        setState(STA1);
-    }
-
-    /**
-     * Stop ARTIM timer and if A-ASSOCIATE-RQ acceptable by service-provider: -
-     * issue A-ASSOCIATE indication primitive Next state is Sta3 otherwise: -
-     * issue A-ASSOCIATE-RJ-PDU and start ARTIM timer Next state is Sta13
-     * 
-     * @param associateRQ
-     * @throws IOException 
-     */
-    private void ae6(AAssociateRQ associateRQ)
-    {
-        this.associateRQ = associateRQ;
-        this.sendPDULength = toSendPDULength(associateRQ.getMaxPDULength());
-        stopARTIM();
-        AAssociateRJ rj = acceptable(associateRQ);
-        if (rj != null)
-        {
-            session.write(rj);
-            startARTIM(socketCloseDelay);
-            setState(STA13);
-        } else
-        {
-            setState(STA3);
-            handler.onAAssociateRQ(this, associateRQ);
-        }
-    }
-
-    private AAssociateRJ acceptable(AAssociateRQ associateRQ)
-    {
-        if ((associateRQ.getProtocolVersion() & 1) == 0)
-            return new AAssociateRJ(
-                    AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
-                    AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
-        else
-            return null;
-    }
-
-    /**
-     * Send A-ASSOCIATE-AC PDU Next state is Sta6
-     * 
-     * @param associateAC
-     * @throws IOException
-     */
-    private void ae7(AAssociateAC associateAC)
-    {
-        this.associateAC = associateAC;
-        this.maxOpsInvoked = associateAC.getMaxOpsPerformed();
-        session.write(associateAC);
-        setState(STA6);
-    }
-
-    /**
-     * Send A-ASSOCIATE-RJ PDU and start ARTIM timer Next state is Sta13
-     * 
-     * @param associateRJ
-     */
-    private void ae8(AAssociateRJ associateRJ)
-    {
-        session.write(associateRJ);
-        startARTIM(socketCloseDelay);
-        setState(STA13);
-    }
-
-    /**
-     * Send P-DATA-TF PDU Next state is Sta6
-     * 
-     * @param dataTF
-     */
-    private void dt1(PDataTF dataTF)
-    {
-        session.write(dataTF);
-    }
-
-    /**
-     * Send P-DATA indication primitive Next state is Sta6
-     * 
-     * @param dataTF
-     */
-    private void dt2(PDataTF dataTF)
-    {
-        onPDataTF(dataTF);
-        setState(STA6);
-    }
-
-    /**
-     * Send A-RELEASE-RQ PDU Next state is Sta7
-     * 
-     * @param releaseRQ
-     */
-    private void ar1(AReleaseRQ releaseRQ)
-    {
-        session.write(releaseRQ);
-        startARTIM(releaseResponseTimeout);
-        setState(STA7);
-    }
-
-    /**
-     * Issue A-RELEASE indication primitive Next state is Sta8
-     * 
-     * @param releaseRQ
-     * @throws IOException 
-     */
-    private void ar2(AReleaseRQ releaseRQ)
-    {
-        setState(STA8);
-        handler.onAReleaseRQ(this, releaseRQ);
-    }
-
-    /**
-     * Issue A-RELEASE confirmation primitive, and close transport connection.
-     * Next state is Sta1
-     * 
-     * @param releaseRP
-     */
-    private void ar3(AReleaseRP releaseRP)
-    {
-//        setState(STA1);
-        stopARTIM();
-        handler.onAReleaseRP(this, releaseRP);
-        session.close();
-    }
-
-    /**
-     * Issue A-RELEASE-RP PDU and start ARTIM timer. Next state is Sta13
-     */
-    private void ar4(AReleaseRP releaseRP)
-    {
-        session.write(releaseRP);
-        startARTIM(socketCloseDelay);
-        setState(STA13);
-    }
-
-    /**
-     * Stop ARTIM timer Next state is Sta1
-     */
-    private void ar5()
-    {
-        stopARTIM();
-//        setState(STA1);
-    }
-
-    /**
-     * Issue P-DATA indication Next state is Sta7
-     * 
-     * @param dataTF
-     * @throws DULProtocolViolationException
-     */
-    private void ar6(PDataTF dataTF)
-    {
-        onPDataTF(dataTF);
-        setState(STA7);
-    }
-
-    private void onPDataTF(PDataTF dataTF)
-    {
-        if (readDataThread == null)
-            executor.execute(new Runnable(){
-                public void run()
-                {
-                    readData();                        
-                }});
-        readDataChannel.put(dataTF.getByteBuffer());
+        writeDimseRSP(pcid, cmd, null);
     }
     
-    /**
-     * Issue P-DATA-TF PDU Next state is Sta8
-     * 
-     * @param dataTF
-     */
-    private void ar7(PDataTF dataTF)
+    public void writeDimseRSP(int pcid, DicomObject cmd, DicomObject data)
+    throws IOException
     {
-        session.write(dataTF);
-        setState(STA8);
-    }
-
-    /**
-     * Issue A-RELEASE indication (release collision): 
-     * - if association-requestor, next state is Sta9
-     * - if not, next state is Sta10
-     * 
-     * @param releaseRP
-     */
-    private void ar8(AReleaseRQ releaseRQ)
-    {
-        setState(requestor ? STA9 : STA10);
-        handler.onAReleaseRQ(this, releaseRQ);
-    }
-
-    /**
-     * Send A-RELEASE-RP PDU Next state is Sta11.
-     */
-    private void ar9(AReleaseRP releaseRP)
-    {
-        session.write(releaseRP);
-        setState(STA11);
-    }
-
-    /**
-     * Issue A-RELEASE confirmation primitive. Next state is Sta12
-     * 
-     * @param releaseRP
-     */
-    private void ar10(AReleaseRP releaseRP)
-    {
-        stopARTIM();
-        setState(STA12);
-        handler.onAReleaseRP(this, releaseRP);
-    }
-
-    /**
-     * Send A-ABORT PDU (service-user source) and start (or restart if already
-     * started) ARTIM timer; Next state is Sta13
-     * 
-     * @param abort
-     */
-    private void aa1(AAbort abort)
-    {
-        this.abort = abort;
-        session.write(abort);
-        startARTIM(socketCloseDelay);
-        setState(STA13);
-    }
-
-    /**
-     * If cause is no i/o exception, send A-ABORT PDU (service-user source) and
-     * start (or restart if already started) ARTIM timer; Next state is Sta13. -
-     * otherwise stop ARTIM timer if running, Close transport connection; Next
-     * state is Sta1.
-     * 
-     * @param cause
-     */
-    private void aa1(Throwable cause)
-    {
-        if (cause instanceof DULProtocolViolationException)
-        {
-            DULProtocolViolationException e = (DULProtocolViolationException) cause;
-            aa1(new AAbort(e.getReason()));
-        } else if (cause instanceof IOException)
-        {
-            // do NOT try to send AAbort in case of I/O exception
-            aa2();
-        } else
-        {
-            aa1(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-        }
-    }
-
-    /**
-     * Stop ARTIM timer if running. Close transport connection Next state is
-     * Sta1
-     */
-    private void aa2()
-    {
-        stopARTIM();
-        session.close();
-//        setState(STA1);
-    }
-
-    /**
-     * If (service-user inititated abort) - issue A-ABORT indication and close
-     * transport connection otherwise (service-provider inititated abort): -
-     * issue A-P-ABORT indication and close transport connection Next state is
-     * Sta1
-     * 
-     * @param abort
-     */
-    private void aa3(AAbort abort)
-    {
-        this.abort = abort;
-        handler.onAbort(this, abort);
-        session.close();
-//        setState(STA1);
-    }
-
-    /**
-     * Issue A-P-ABORT indication primitive, Next state is Sta1.
-     * 
-     * @param abort
-     */
-    private void aa4(AAbort abort)
-    {
-        this.abort = abort;
-        handler.onAbort(this, abort);
-//        setState(STA1);
-    }
-
-    /**
-     * Stop ARTIM timer, Next state is Sta1.
-     */
-    private void aa5()
-    {
-        stopARTIM();
-//        setState(STA1);
-    }
-
-    /**
-     * Ignore PDU, Next state is Sta13.
-     */
-    private void aa6()
-    {
-        setState(STA13);
-    }
-
-    /**
-     * Send A-ABORT PDU, Next state is Sta13
-     * 
-     * @param abort
-     */
-    private void aa7(AAbort abort)
-    {
-        this.abort = abort;
-        session.write(abort);
-        setState(STA13);
-    }
-
-    /**
-     * If cause is no i/o exception, send A-ABORT PDU (service-user source);
-     * Next state is Sta13. Otherwise, stop ARTIM timer if running, Close
-     * transport connection; Next state is Sta1.
-     * 
-     * @param cause
-     */
-    private void aa7(Throwable cause)
-    {
-        if (cause instanceof DULProtocolViolationException)
-        {
-            DULProtocolViolationException e = (DULProtocolViolationException) cause;
-            aa7(new AAbort(e.getReason()));
-        } else if (cause instanceof IOException)
-        {
-            // do NOT try to send AAbort in case of I/O exception
-            aa2();
-        } else
-        {
-            aa7(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-        }
-    }
-
-    /**
-     * Send A-ABORT PDU (service-provider source-), issue an A-P-ABORT
-     * indication, and start ARTIM timer; Next state is Sta13
-     * 
-     * @param abort
-     */
-    private void aa8(AAbort abort)
-    {
-        this.abort = abort;
-        session.write(abort);
-        handler.onAbort(this, abort);
-        startARTIM(socketCloseDelay);
-        setState(STA13);
-    }
-
-    /**
-     * If cause is no i/o exception, send A-ABORT PDU (service-provider source),
-     * issue an A-P-ABORT indication, and start ARTIM timer; Next state is
-     * Sta13. Otherwise, issue A-P-ABORT indication primitive; Next state is
-     * Sta1.
-     * 
-     * @param cause
-     */
-    private void aa8(Throwable cause)
-    {
-        if (cause instanceof DULProtocolViolationException)
-        {
-            DULProtocolViolationException e = (DULProtocolViolationException) cause;
-            aa8(new AAbort(e.getReason()));
-        } else if (cause instanceof IOException)
-        {
-            // do NOT try to send AAbort in case of I/O exception
-            aa4(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-        } else
-        {
-            aa8(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-        }
-    }
-
-    void releaseResponseTimeoutExpired()
-    {
-        log.warn("Timeout for receiving A-RELEASE-RP expired - abort");
-        aa8(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-    }
-    
-    public static abstract class State
-    {
-
-        protected final String name;
-
-        protected State(String name)
-        {
-            this.name = name;
-        }
-
-        public String toString()
-        {
-            return name;
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof AAbort)
-                as.aa1((AAbort) pdu);
-            else
-                throw new IllegalStateException(name);
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof AAbort)
-                as.aa3((AAbort) pdu);
-            else
-                as.aa8(new AAbort(AAbort.UNEXPECTED_PDU));
-        }
-
-        protected void exception(Association as, Throwable cause)
-        {
-            as.aa8(cause);
-        }
-
-        protected void closed(Association as)
-        {
-            as.aa4(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-        }
-
-        protected void artimExpired(Association as)
-        {
-            as.aa2();
-        }
-    }
-
-    private static class Sta1 extends State
-    {
-
-        Sta1()
-        {
-            super("Sta1 - Idle");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (!(pdu instanceof AAbort))
-                throw new IllegalStateException(name);
-        }
-    }
-
-    private static class Sta2 extends State
-    {
-
-        Sta2()
-        {
-            super("Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            throw new IllegalStateException(name);
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof AAssociateRQ)
-                as.ae6((AAssociateRQ) pdu);
-            else if (pdu instanceof AAbort)
-                as.aa2();
-            else
-                as.aa1(new AAbort(AAbort.UNEXPECTED_PDU));
-        }
-
-        protected void exception(Association provider, Throwable cause)
-        {
-            provider.aa1(cause);
-        }
-
-        protected void closed(Association provider)
-        {
-            provider.aa5();
-        }
-
-    }
-
-    private static class Sta3 extends State
-    {
-
-        Sta3()
-        {
-            super("Sta3 - Awaiting local A-ASSOCIATE response primitive");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof AAssociateAC)
-                as.ae7((AAssociateAC) pdu);
-            else if (pdu instanceof AAssociateRJ)
-                as.ae8((AAssociateRJ) pdu);
-            else
-                super.write(as, pdu);
-        }
-    }
-
-    private static class Sta4 extends State
-    {
-
-        Sta4()
-        {
-            super("Sta4 - Awaiting transport connection opening to complete.");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof AAssociateRQ)
-                as.ae2((AAssociateRQ) pdu);
-            else if (pdu instanceof AAbort)
-                as.aa2();
-            else
-                throw new IllegalStateException(name);
-        }
-    }
-
-    private static class Sta5 extends State
-    {
-
-        Sta5()
-        {
-            super("Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU");
-        }
-
-        protected void received(Association as, PDU pdu)
-        {            
-            if (pdu instanceof AAssociateAC)
-                as.ae3((AAssociateAC) pdu);
-            else if (pdu instanceof AAssociateRJ)
-                as.ae4((AAssociateRJ) pdu);
-            else
-                super.received(as, pdu);
-        }
-
-        protected void artimExpired(Association as)
-        {
-            log.warn("Timeout for receiving A-ASSOCIATE-AC expired - abort");
-            as.aa8(new AAbort(AAbort.REASON_NOT_SPECIFIED));
-        }
-    }
-
-    private static class Sta6 extends State
-    {
-
-        Sta6()
-        {
-            super("Sta6 - Association established and ready for data transfer");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof PDataTF)
-                as.dt1((PDataTF) pdu);
-            else if (pdu instanceof AReleaseRQ)
-                as.ar1((AReleaseRQ) pdu);
-            else
-                super.write(as, pdu);
-
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof PDataTF)
-                as.dt2((PDataTF) pdu);
-            else if (pdu instanceof AReleaseRQ)
-                as.ar2((AReleaseRQ) pdu);
-            else
-                super.received(as, pdu);
-        }
-    }
-
-    private static class Sta7 extends State
-    {
-
-        Sta7()
-        {
-            super("Sta7 - Awaiting A-RELEASE-RP PDU");
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof PDataTF)
-                as.ar6((PDataTF) pdu);
-            else if (pdu instanceof AReleaseRP)
-                as.ar3((AReleaseRP) pdu);
-            else if (pdu instanceof AReleaseRQ)
-                as.ar8((AReleaseRQ) pdu);
-            else
-                super.received(as, pdu);
-        }
-        
-        protected void artimExpired(Association as)
-        {
-            as.releaseResponseTimeoutExpired();
-        }
-    }
-
-    private static class Sta8 extends State
-    {
-
-        public Sta8()
-        {
-            super("Sta8 - Awaiting local A-RELEASE response primitive");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof PDataTF)
-                as.ar7((PDataTF) pdu);
-            else if (pdu instanceof AReleaseRP)
-                as.ar4((AReleaseRP) pdu);
-            else
-                super.write(as, pdu);
-        }
-    }
-
-    private static class Sta9 extends State
-    {
-
-        public Sta9()
-        {
-            super("Sta9 - Release collision requestor side; awaiting A-RELEASE response primitive");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof AReleaseRP)
-                as.ar9((AReleaseRP) pdu);
-            else
-                super.write(as, pdu);
-        }
-                
-        protected void artimExpired(Association as)
-        {
-            as.releaseResponseTimeoutExpired();
-        }
-    }
-
-    private static class Sta10 extends State
-    {
-
-        public Sta10()
-        {
-            super("Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU");
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof AReleaseRP)
-                as.ar10((AReleaseRP) pdu);
-            else
-                super.received(as, pdu);
-        }
-
-        protected void artimExpired(Association as)
-        {
-            as.releaseResponseTimeoutExpired();
-        }
-    }
-
-    private static class Sta11 extends State
-    {
-
-        public Sta11()
-        {
-            super("Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU");
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof AReleaseRP)
-                as.ar3((AReleaseRP) pdu);
-            else
-                super.received(as, pdu);
-        }
-
-        protected void artimExpired(Association as)
-        {
-            as.releaseResponseTimeoutExpired();
-        }
-    }
-
-    private static class Sta12 extends State
-    {
-
-        public Sta12()
-        {
-            super(
-                    "Sta12 - Release collision acceptor side; awaiting A-RELEASE response primitive");
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (pdu instanceof AReleaseRP)
-                as.ar4((AReleaseRP) pdu);
-            else
-                super.write(as, pdu);
-        }
-    }
-
-    private static class Sta13 extends State
-    {
-
-        public Sta13()
-        {
-            super("Sta13 - Awaiting Transport Connection Close Indication");
-        }
-
-        protected void received(Association as, PDU pdu)
-        {
-            if (pdu instanceof AAssociateRQ)
-                as.aa7(new AAbort(AAbort.UNEXPECTED_PDU));
-            else if (pdu instanceof AAbort)
-                as.aa2();
-            else
-                as.aa6();
-        }
-
-        protected void write(Association as, PDU pdu)
-        {
-            if (!(pdu instanceof AAbort))
-                throw new IllegalStateException(name);
-        }
-
-        protected void exception(Association as, Throwable cause)
-        {
-            as.aa7(cause);
-        }
-
-        protected void closed(Association as)
-        {
-            as.ar5();
-        }
-    }
-    
-    void readData()
-    {
-        if (readDataThread != null)
-            return;
-        
-        readDataThread = Thread.currentThread(); 
-        if (log.isDebugEnabled())
-            log.debug("" + this + ": Enter readData");
-        while (nextDIMSE())
-            ;
-        if (log.isDebugEnabled())
-            log.debug("" + this + ": Exit readData");
-    }
-
-    private boolean nextDIMSE()
-    {
-        if (log.isDebugEnabled())
-            log.debug("Waiting for next DIMSE");
-        
-        final ByteBuffer dataTF = readDataChannel.get();
-        if (dataTF == null)
-            return false;
-        
-        PDVInputStream cmdStream = new PDVInputStream(dataTF, COMMAND, -1);
-        final int pcid = cmdStream.getPCID();
-        
+        if (!CommandUtils.isResponse(cmd))
+            throw new IllegalArgumentException("cmd:\n" + cmd);
         PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
-        {
-            log.warn("No Presentation Context with given ID - " + pcid);
-            abort(AAbort.UNEXPECTED_PDU_PARAMETER);
-            return false;
-        }
-        
+            throw new IllegalStateException("No Presentation State with id - " + pcid);
         if (!pc.isAccepted())
-        {
-            log.warn("No accepted Presentation Context with given ID - " + pcid);
-            abort(AAbort.UNEXPECTED_PDU_PARAMETER);
-            return false;
-        }
+            throw new IllegalStateException("Presentation State not accepted - " + pc);
         
-        DicomObject cmd = readDicomObject(cmdStream,
-                TransferSyntax.ImplicitVRLittleEndian);
-        
-        if (cmd == null)
-            return false;
-        
-        log.debug("Command:\n{}", cmd);
-        if (CommandFactory.hasDataset(cmd))
-        {
-            PDVInputStream dataStream =
-                new PDVInputStream(cmdStream.getDataTF(), DATA, pcid);
-            handler.onDIMSE(this, pcid, cmd, dataStream);
-            try
-            {
-                long skipped = dataStream.skipAll();
-                if (log.isDebugEnabled() && skipped > 0)
-                    log.debug("" + skipped + " bytes of DIMSE data not consumed by handler.onDIMSE().");                               
-            }
-            catch (IOException e)
-            {
-                // already handled by PDVInputStream
-            }
-        }
-        else
-        {
-            handler.onDIMSE(this, pcid, cmd, null);
-        }
-        return true;
+        log.debug("Sending DIMSE-RSP[pcid={}]:\n{}", new Integer(pcid),  cmd);
+        DataWriter writer = data != null ? new DataWriterAdapter(data) : null;
+        encoder.writeDIMSE(pcid, cmd, writer , pc.getTransferSyntax());      
     }
 
-    DicomObject readDicomObject(InputStream pdvStream,
-            TransferSyntax ts)
+    void onCancelRQ(DicomObject cmd)
     {
-        try {
-            DicomInputStream din = new DicomInputStream(pdvStream, ts);
-            DicomObject dcmobj = new BasicDicomObject();
-            din.readDicomObject(dcmobj, -1);
-            return dcmobj;
-        } catch (IOException e)
+        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
+        CancelRQHandler handler = removeCancelRQHandler(msgId);
+        if (handler != null)
         {
-            log.warn("Read Dicom Object throws i/o exepction:", e);
-            abort();
-            return null;
-        }
-    }
-
-    class ByteBufferChannel
-    {
-        private ByteBuffer buffer;    
-        
-        synchronized public void put(ByteBuffer buffer)
-        {
-            try
-            {
-                while (this.buffer != null)
-                    wait();
-                this.buffer = buffer;
-                notify();
-            }
-            catch (InterruptedException e)
-            {
-                Association.log.warn("Take over of P_DATA_TF to read thread interrupted:", e);
-                Association.this.abort(AAbort.REASON_NOT_SPECIFIED);
-            }
-        }
-        
-        synchronized ByteBuffer get()
-        {
-            try
-            {
-                while (buffer == null)
-                    wait();
-            }
-            catch (InterruptedException e)
-            {
-                return null;
-            }
-            ByteBuffer tmp = buffer;
-            buffer = null;
-            notify();
-            return tmp;
+            handler.cancel(this);
         }
         
     }
     
-    private class PDVInputStream extends InputStream
+    public void registerCancelRQHandler(DicomObject cmd, CancelRQHandler handler)
     {
-        private int pcid;
-        private int mch;
-        private int available;
-        private ByteBuffer dataTF;
-
-        public PDVInputStream(ByteBuffer dataTF, int command, int pcid)
+        synchronized (cancelHandlerForMsgId)
         {
-            this.dataTF = dataTF;
-            nextPDV(command, pcid);
+            cancelHandlerForMsgId.put(cmd.getInt(Tag.MessageID), handler);
         }
-
-        public final int getPCID()
-        {
-            return pcid;
-        }
-        
-        public final ByteBuffer getDataTF()
-        {
-            return dataTF;
-        }
-        
-        private boolean isEOF() throws IOException
-        {
-            while (available == 0) {
-                if ((mch & LAST) != 0)
-                    return true;
-                nextPDV(mch & COMMAND, pcid);
-                throwAbortException();
-            }
-            return false;
-        }
-        
-        private boolean nextPDV(int command, int expectPCID)
-        {
-            if (!dataTF.hasRemaining())
-            {
-                dataTF = readDataChannel.get();
-                if (dataTF == null)
-                {
-                    if (expectPCID != -1)
-                    {
-                        log.warn("Unexpected End of PDV Stream");
-                        abort(AAbort.REASON_NOT_SPECIFIED);
-                    }
-                    return false;
-                }
-            }
-            this.available = dataTF.getInt() - 2;
-            this.pcid = dataTF.get() & 0xff;
-            this.mch = dataTF.get() & 0xff;
-            if (log.isDebugEnabled())
-                log.debug("Parsed PDV[len = " + available
-                        + ", pcid = " + pcid + ", mch = " + mch + "]");
-            if (this.available < 0)
-            {
-                log.warn("Invalid PDV item length: " + (available + 2));
-                abort(AAbort.INVALID_PDU_PARAMETER_VALUE);
-                return false;
-            }
-            if ((mch & COMMAND) != command)
-            {
-                log.warn(command == 0 ? "Expected Data but received Command PDV"
-                                : "Expected Command but received Data PDV");
-                abort(AAbort.INVALID_PDU_PARAMETER_VALUE);
-                return false;
-            }
-            if (expectPCID != -1 && expectPCID != pcid)
-            {
-                log.warn("Expected PCID: " + expectPCID + " but received: " + pcid);
-                abort(AAbort.INVALID_PDU_PARAMETER_VALUE);
-                return false;
-            }
-            return true;
-        }
-     
-        public int read() throws IOException
-        {
-            if (isEOF())
-                return -1;
-            
-            --available;
-            return dataTF.get() & 0xff;
-        }
-
-        public int read(byte[] b, int off, int len) throws IOException
-        {
-            if (isEOF())
-                return -1;
-            
-            int read = Math.min(len, available);
-            dataTF.get(b, off, read);
-            available -= read;
-            return read;
-        }
-
-        public int available() throws IOException
-        {
-             return available;
-        }
-
-        public long skip(long n) throws IOException
-        {
-            if (n <= 0 || isEOF())
-                return 0;
-
-            int skipped = (int) Math.min(n, available);
-            dataTF.position(dataTF.position() + skipped);
-            available -= skipped;
-            return skipped;
-        }
-
-
-        private long skipAll() throws IOException
-        {
-            long n = 0;            
-            while (!isEOF())
-            {
-                n += available;
-                dataTF.position(dataTF.position() + available);
-                available = 0;
-            }
-            return n;
-        }
-        
     }
-
-    private void throwAbortException() throws IOException
-    {
-        if (abort != null)
-        {
-            throw new AbortException(abort);
-        }
-    }    
     
-    private class PDVOutputStream extends OutputStream
+    private CancelRQHandler removeCancelRQHandler(int msgId)
     {
-        private final int pcid;
-        private final ByteBuffer buf;
-        private final int maxPduLen;
-        private int command;
-        private int pdvPos;
-        private int pdvLen;
-        private int free;
-
-        public PDVOutputStream(int pcid, int command, ByteBuffer buf, int maxPduLen)
+        synchronized (cancelHandlerForMsgId)
         {
-            this.pcid = pcid;
-            this.command = command;
-            this.buf = buf;
-            this.maxPduLen = maxPduLen;
-            init();
+            return (CancelRQHandler) cancelHandlerForMsgId.remove(msgId);
         }
-
-        private void init()
-        {
-            pdvPos = buf.position();
-            pdvLen = 2;
-            free = maxPduLen - pdvPos - 6;
-            buf.position(pdvPos + 6);
-        }
-
-        private void writePDVHeader(int last)
-        {
-            int prev = buf.position();
-            buf.position(pdvPos);
-            buf.put((byte) (pdvLen >> 24));
-            buf.put((byte) (pdvLen >> 16));
-            buf.put((byte) (pdvLen >> 8));
-            buf.put((byte) pdvLen);
-            buf.put((byte) pcid);
-            buf.put((byte) (command | last));
-            buf.position(prev);
-        }
-
-        public void write(int b) throws IOException
-        {
-            throwAbortException();
-            if (free == 0)
-                flushPDataTF();
-            buf.put((byte) b);
-            --free;
-            ++pdvLen;            
-        }
-
-        public void write(byte[] b, int off, int len)
-        throws IOException
-        {
-            throwAbortException();
-            int pos = off;
-            int remaining = len;
-            while (remaining > 0)
-            {
-                if (free == 0)
-                    flushPDataTF();
-                int write = Math.min(remaining, free);
-                buf.put(b, pos, write);
-                pos += write;
-                free -= write;
-                pdvLen += write;
-                remaining -= write;
-            }
-        }
-
-        private void flushPDataTF() throws IOException
-        {
-            throwAbortException();
-            writePDVHeader(PENDING);
-            writePDataTF(buf);
-            init();
-        }
-
-        public void close() throws IOException
-        {
-            throwAbortException();
-            writePDVHeader(LAST);
-        }
-
     }
 
-    public void invoke(int pcid, DicomObject cmd, DicomObject data, 
-            DimseRSPHandler rspHandler)
+    void onDimseRSP(DicomObject cmd, DicomObject data)
     throws IOException
-    {
-        invoke(pcid, cmd, new DataWriterAdapter(data), rspHandler);
-    }
-    
-    public void invoke(int pcid, DicomObject cmd, DimseRSPHandler rspHandler)
-    throws IOException
-    {
-        invoke(pcid, cmd, (DataWriter) null, rspHandler);
-    }
-
-    public void invoke(int pcid, DicomObject cmd, DataWriter data, 
-            DimseRSPHandler rspHandler)
-    throws IOException
-    {
-        addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
-        write(pcid, cmd, data);
-    }
-    
-    void onDimseRSP(int pcid, DicomObject cmd, InputStream dataStream)
     {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
         DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
-        rspHandler.onDimseRSP(this, pcid, cmd, dataStream);
-        if (!CommandFactory.isPending(cmd))
-            removeDimseRSPHandler(msgId);
+        if (rspHandler == null)
+        {
+            log.warn("unexpected message ID in DIMSE RSP:\n{}", cmd);
+            throw new AAbortException();
+        }
+        try
+        {
+            rspHandler.onDimseRSP(this, cmd, data);
+        }
+        finally
+        {
+            if (!CommandUtils.isPending(cmd))
+                removeDimseRSPHandler(msgId);
+        }
     }
 
     private void addDimseRSPHandler(int msgId, DimseRSPHandler rspHandler)
+    throws InterruptedException
     {
         synchronized (rspHandlerForMsgId)
         {
             if (maxOpsInvoked > 0)
                 while (rspHandlerForMsgId.size() >= maxOpsInvoked)
-                {
-                    try
-                    {
-                        rspHandlerForMsgId.wait();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                }
-            rspHandlerForMsgId.put(msgId, rspHandler);
+                    rspHandlerForMsgId.wait();
+            if (isReadyForDataReceive())
+                rspHandlerForMsgId.put(msgId, rspHandler);
         }
     }
 
@@ -1661,75 +484,335 @@ public class Association
         }
     }
 
-    void onCancelRQ(int pcid, DicomObject cmd, InputStream dataStream)
+    public void run()
     {
-        // TODO Auto-generated method stub
+        try
+        {
+            this.decoder = new PDUDecoder(this, in);
+            while (!(state == State.STA1 || state == State.STA13))
+                decoder.nextPDU();
+        }
+        catch (AAbortException aa)
+        {
+            abort(aa);
+        }
+        catch (Throwable e)
+        {
+            setState(State.STA1);
+        }
+        finally
+        {
+            closeSocket();
+        }        
+    }
+    
+    private void closeSocket()
+    {
+        if (state != State.STA1)
+        {
+            try
+            {
+                Thread.sleep(connector.getSocketCloseDelay());
+            }
+            catch (InterruptedException e)
+            {
+                log.warn("Interrupted Socket Close Delay", e);
+            }
+            setState(State.STA1);
+        }
+        if (out != null)
+        {
+            try
+            {
+                out.close();
+            }
+            catch (IOException e)
+            {
+                log.warn("I/O error during close of socket output stream", e);
+            }
+            out = null;
+            encoder = null;
+        }
+        if (in != null)
+        {
+            try
+            {
+                in.close();
+            }
+            catch (IOException e)
+            {
+                log.warn("I/O error during close of socket input stream", e);
+            }
+            in = null;
+            decoder = null;
+        }
+        if (!socket.isClosed()) {
+            try
+            {
+                socket.close();
+            }
+            catch (IOException e)
+            {
+                log.warn("I/O error during close of socket", e);
+            }
+            onClosed();
+        }
+    }
+
+    private void onClosed()
+    {
+        synchronized (rspHandlerForMsgId)
+        {
+            rspHandlerForMsgId.accept(new IntHashtable.Visitor(){
+                
+                public boolean visit(int key, Object value)
+                {
+                    ((DimseRSPHandler)value).onClosed(Association.this);
+                    return true;
+                }});
+            rspHandlerForMsgId.clear();
+            rspHandlerForMsgId.notifyAll();
+        }
+//        if (ae != null)
+//            ae.onClosed(this);
         
     }
 
-    public DimseRSP invoke(int pcid, DicomObject cmd, DicomObject data)
-    throws IOException
+    int getMaxPDULengthSend()
     {
-        return invoke(pcid, cmd, new DataWriterAdapter(data));
-    }
-    
-    public DimseRSP invoke(int pcid, DicomObject cmd)
-    throws IOException
-    {
-        return invoke(pcid, cmd, (DataWriter) null);
-    }
-    
-    public DimseRSP invoke(int pcid, DicomObject cmd, DataWriter dw)
-    throws IOException
-    {
-        DimseRSP rsp = new DimseRSP();
-        invoke(pcid, cmd, dw, rsp);
-        return rsp;
+        AAssociateRQAC rqac = requestor 
+                ? (AAssociateRQAC) associateAC 
+                : (AAssociateRQAC) associateRQ;
+        return Math.min(rqac.getMaxPDULength(), ae.getMaxPDULengthSend());
     }
 
-    public void release()
+    boolean isPackPDV()
     {
-        write(new AReleaseRQ());
+        return ae.isPackPDV();
     }
 
-    public boolean waitForDimseRSP(long timeout)
+    private void startARTIM(int timeout) throws IOException
     {
-        if (!rspHandlerForMsgId.isEmpty()) {
-            synchronized (rspHandlerForMsgId)
-            {
-                while (!rspHandlerForMsgId.isEmpty())
-                {
-                    try
-                    {
-                        rspHandlerForMsgId.wait(timeout);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+        socket.setSoTimeout(timeout);        
+    }
+    
+    private void stopARTIM() throws IOException
+    {
+        socket.setSoTimeout(0);        
+    }
+
+    void receivedAssociateRQ(AAssociateRQ rq) throws IOException
+    {
+        state.received(this, rq);        
+    }
+
+    void receivedAssociateAC(AAssociateAC ac) throws IOException
+    {
+        state.received(this, ac);
+    }
+
+    void receivedAssociateRJ(AAssociateRJException rj) throws IOException
+    {
+        state.received(this, rj);        
+    }
+
+    void receivedPDataTF() throws IOException
+    {
+        state.receivedPDataTF(this);        
+    }
+
+    void onPDataTF() throws IOException
+    {
+        decoder.decodeDIMSE();        
+    }
+    
+    void receivedReleaseRQ() throws IOException
+    {
+        state.receivedReleaseRQ(this);        
+    }
+   
+    void receivedReleaseRP() throws IOException
+    {
+        state.receivedReleaseRP(this);        
+    }
+
+    void receivedAbort(AAbortException aa)
+    {
+        exception = aa;
+        setState(State.STA1);
+    }
+
+    void onDimseRQ(int pcid, DicomObject cmd, PDVInputStream data, String tsuid)
+    throws IOException
+    {
+        ae.process(this, pcid, cmd, data, tsuid);
+    }
+    
+    void sendPDataTF() throws IOException
+    {
+        try
+        {
+            state.sendPDataTF(this);
         }
-        return rspHandlerForMsgId.isEmpty();
+        catch (IOException e)
+        {
+            closeSocket();
+            throw e;
+        }        
     }
 
-    public void waitForDimseRSP()
+    void writePDataTF() throws IOException
     {
-        if (!rspHandlerForMsgId.isEmpty()) {
-            synchronized (rspHandlerForMsgId)
-            {
-                while (!rspHandlerForMsgId.isEmpty())
-                {
-                    try
-                    {
-                        rspHandlerForMsgId.wait();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+        encoder.writePDataTF();
+    }
+
+    void sendAssociateRQ(AAssociateRQ rq) throws IOException
+    {
+        try
+        {
+            state.send(this, rq);
+            startARTIM(connector.getAcceptTimeout());
+        }
+        catch (IOException e)
+        {
+            closeSocket();
+            throw e;
+        }
+    }
+        
+    void sendReleaseRQ()
+    {
+        try
+        {
+            state.sendReleaseRQ(this);
+        }
+        catch (IOException e)
+        {
+            closeSocket();
+        }
+    }
+    
+    void abort(AAbortException aa)
+    {
+        state.abort(this, aa);       
+    }
+
+    void writeAbort(AAbortException aa)
+    {
+        exception = aa;
+        try
+        {
+            setState(State.STA13);
+            encoder.write(aa);
+        }
+        catch (Throwable e)
+        {
+            setState(State.STA1);
+        }
+        closeSocket();
+    }
+    
+    void unexpectedPDU(String name) throws AAbortException
+    {
+        log.warn("received unexpected " + name + " in state: " + state);
+        throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER, 
+                AAbortException.UNEXPECTED_PDU);
+    }
+
+    void illegalStateForSending(String name) throws IOException
+    {
+        log.warn("unable to send " + name + " in state: " + state);
+        checkException();
+        throw new AAbortException();
+    }
+    
+    void writeAssociationRQ(AAssociateRQ rq) throws IOException
+    {
+        associateRQ = rq;
+        setState(State.STA5);
+        encoder.write(rq);
+    }
+
+    void onAAssociateRQ(AAssociateRQ rq) throws IOException
+    {
+        associateRQ = rq;
+        stopARTIM();
+        setState(State.STA3);
+        try
+        {
+            associateAC = connector.getDevice().negotiate(this, rq);
+            checkAAAC();
+            setState(State.STA6);
+            encoder.write(associateAC);
+        }
+        catch (AAssociateRJException e)
+        {
+            setState(State.STA13);
+            encoder.write(e);
+        }        
+    }
+
+    void onAssociateAC(AAssociateAC ac) throws IOException
+    {
+        stopARTIM();
+        associateAC = ac;
+        checkAAAC();
+        setState(State.STA6);        
+    }
+
+    void onAssociateRJ(AAssociateRJException rj) throws IOException
+    {
+        stopARTIM();
+        exception = rj;
+        setState(State.STA1);        
+    }
+
+    void writeReleaseRQ() throws IOException
+    {
+        setState(State.STA7);                
+        encoder.writeAReleaseRQ();
+    }
+
+    void onReleaseRP() throws IOException
+    {
+        stopARTIM();
+        setState(State.STA1);        
+    }
+
+    void onCollisionReleaseRP() throws IOException
+    {
+        stopARTIM();
+        setState(State.STA12);        
+        setState(State.STA13);                
+        encoder.writeAReleaseRP();
+    }
+
+    void onReleaseRQ() throws IOException
+    {
+        setState(State.STA8);
+        waitForPerformingOps();
+        setState(State.STA13);                
+        encoder.writeAReleaseRP();
+    }
+
+    private synchronized void waitForPerformingOps()
+    {
+         while (performing > 0 && isReadyForDataReceive())
+            try { wait(); }
+            catch (InterruptedException e) {}
+    }
+
+    void onCollisionReleaseRQ() throws IOException
+    {
+        if (requestor)
+        {
+            setState(State.STA9);
+            setState(State.STA11);                
+            encoder.writeAReleaseRP();
+        }
+        else
+        {
+            setState(State.STA10);
         }
     }
 

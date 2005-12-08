@@ -58,6 +58,8 @@ public class TransferSyntax
 
     public static TransferSyntax valueOf(String uid)
     {
+        if (uid == null)
+            throw new NullPointerException("uid");
         if (uid.equals(ImplicitVRLittleEndian.uid))
             return ImplicitVRLittleEndian;
         if (uid.equals(ExplicitVRLittleEndian.uid))

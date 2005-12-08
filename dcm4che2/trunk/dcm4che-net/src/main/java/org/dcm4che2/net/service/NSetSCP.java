@@ -38,8 +38,6 @@
 
 package org.dcm4che2.net.service;
 
-import java.io.InputStream;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
 
@@ -52,6 +50,6 @@ import org.dcm4che2.net.Association;
 public interface NSetSCP
 {
 
-    void nset(Association as, int pcid, DicomObject cmd, InputStream dataStream);
+    void nset(Association as, int pcid, DicomObject cmd, DicomObject data);
 
 }

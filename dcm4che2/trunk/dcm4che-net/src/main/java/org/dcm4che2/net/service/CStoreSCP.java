@@ -38,10 +38,9 @@
 
 package org.dcm4che2.net.service;
 
-import java.io.InputStream;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.PDVInputStream;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -52,6 +51,7 @@ import org.dcm4che2.net.Association;
 public interface CStoreSCP
 {
 
-    void cstore(Association as, int pcid, DicomObject cmd, InputStream dataStream);
+    void cstore(Association as, int pcid, DicomObject cmd,
+            PDVInputStream dataStream, String tsuid);
 
 }

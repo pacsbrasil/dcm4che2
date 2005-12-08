@@ -55,7 +55,7 @@ import org.dcm4che2.util.StringUtils;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public abstract class AAssociateRQAC implements PDU
+public abstract class AAssociateRQAC
 {
     public static final int DEF_MAX_PDU_LENGTH = 16384;
 

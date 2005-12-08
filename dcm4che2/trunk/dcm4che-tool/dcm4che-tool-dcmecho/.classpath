@@ -3,9 +3,10 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-net"/>
 	<classpathentry sourcepath="/COMMONS_CLI_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/commons-cli/commons-cli/1.0/commons-cli-1.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPOSITORY/directory-network/mina/0.8.0/mina-0.8.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/slf4j-simple/1.0-beta9/slf4j-simple-1.0-beta9.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-config"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-net"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

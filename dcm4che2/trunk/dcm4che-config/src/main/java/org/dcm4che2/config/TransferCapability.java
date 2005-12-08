@@ -58,10 +58,11 @@ public class TransferCapability
     {
     }
     
-    public TransferCapability(String sopClass, String[] transferSyntax)
+    public TransferCapability(String sopClass, String[] transferSyntax, boolean scp)
     {
         this.sopClass = sopClass;
         this.transferSyntax = transferSyntax;
+        this.scp = scp;
     }
     
     public final String getCommonName()

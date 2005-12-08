@@ -97,16 +97,24 @@ public class DicomInputStream extends FilterInputStream
         this(new BufferedInputStream(new FileInputStream(f)));
     }
 
+    public DicomInputStream(InputStream in, String tsuid) throws IOException
+    {
+        this(in, TransferSyntax.valueOf(tsuid));
+    }
+
     public DicomInputStream(InputStream in) throws IOException
     {
-        this(in, null);
+        super(in);
+        this.ts = guessTransferSyntax();
     }
 
     public DicomInputStream(InputStream in, TransferSyntax ts)
             throws IOException
     {
         super(in);
-        this.ts = (ts != null) ? ts : guessTransferSyntax();
+        if (ts == null)
+            throw new NullPointerException("ts");
+        this.ts = ts;
     }
 
     public byte[] getPreamble()
@@ -327,7 +335,7 @@ public class DicomInputStream extends FilterInputStream
     {
         dest.setItemOffset(pos);
         if (readHeader() != Tag.Item)
-            throw new IOException("Expected (FFFE,E000) but read "
+            throw new DicomCodingException("Expected (FFFE,E000) but read "
                     + TagUtils.toString(tag));
         readDicomObject(dest, vallen);
     }
@@ -417,7 +425,7 @@ public class DicomInputStream extends FilterInputStream
                 }
                 if (sq.vr() != VR.SQ)
                 {
-                    throw new IOException(TagUtils.toString(tag) + " "
+                    throw new DicomCodingException(TagUtils.toString(tag) + " "
                             + sq.vr() + " contains item with unknown length.");
                 }
             }
@@ -487,7 +495,7 @@ public class DicomInputStream extends FilterInputStream
         {
             if (skip(vallen) != vallen)
             {
-                throw new IOException("Failed to skip " + vallen + " bytes");
+                throw new EOFException();
             }
             return EMPTY_BYTES;
         }

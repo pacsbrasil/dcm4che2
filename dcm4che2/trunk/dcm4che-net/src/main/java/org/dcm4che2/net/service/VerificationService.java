@@ -39,12 +39,11 @@
 package org.dcm4che2.net.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.CommandFactory;
+import org.dcm4che2.net.CommandUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -67,16 +66,16 @@ implements CEchoSCP
         super(sopClasses, null);
     }
 
-    public void cecho(Association as, int pcid, DicomObject cmd,
-            InputStream dataStream)
+    public void cecho(Association as, int pcid, DicomObject cmd)
     {
         try
         {
-            as.write(pcid, CommandFactory.newCEchoRSP(cmd), null);
-        } catch (IOException e)
+            as.writeDimseRSP(pcid, CommandUtils.newCEchoRSP(cmd));
+        }
+        catch (IOException e)
         {
-            // already handled by as.write
-        }        
+            as.abort();
+        }
     }
 
 }

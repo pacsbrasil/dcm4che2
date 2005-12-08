@@ -41,8 +41,6 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.dcm4che2.data.TransferSyntax;
-
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -52,7 +50,7 @@ import org.dcm4che2.data.TransferSyntax;
 public interface DataWriter
 {
     
-    void writeTo(OutputStream out, TransferSyntax ts)
+    void writeTo(OutputStream out, String tsuid)
     throws IOException;
 
 }

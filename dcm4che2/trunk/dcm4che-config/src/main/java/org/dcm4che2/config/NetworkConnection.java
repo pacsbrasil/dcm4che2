@@ -49,11 +49,30 @@ import java.util.Arrays;
  */
 public class NetworkConnection
 {
+    public static final int DEFAULT = -1;
+    
+    private DeviceConfiguration device;
     private String commonName;
     private String hostname;
     private int port;
     private String[] tlsCipherSuite = {};
     private Boolean installed;
+    
+    private int backlog = 50;
+    private int connectTimeout = 5000;
+    private int requestTimeout = 5000;
+    private int acceptTimeout = 5000;
+    private int releaseTimeout = 5000;
+    private int socketCloseDelay = 50;
+    private int sendBufferSize = DEFAULT;
+    private int receiveBufferSize = DEFAULT;
+    private boolean tcpNoDelay = false;
+    private boolean tlsNeedClientAuth = true;
+    private String[] tlsProtocol = { 
+            "TLSv1",
+            "SSLv3",
+//            "SSLv2Hello"
+    };
     
     public String toString()
     {
@@ -67,6 +86,16 @@ public class NetworkConnection
             sb.append(", cn=").append(commonName);
         sb.append(']');
         return sb.toString();
+    }
+    
+    public final DeviceConfiguration getDevice()
+    {
+        return device;
+    }
+
+    public final void setDevice(DeviceConfiguration device)
+    {
+        this.device = device;
     }
     
     public final String getHostname()
@@ -106,20 +135,156 @@ public class NetworkConnection
 
     public final void setTlsCipherSuite(String[] tlsCipherSuite)
     {
+        checkNotNull("tlsCipherSuite", tlsCipherSuite);
         this.tlsCipherSuite = tlsCipherSuite;
     }
 
-    public final Boolean getInstalled()
+    private static void checkNotNull(String name, Object[] a)
     {
-        return installed;
-    }
-
-    public final void setInstalled(Boolean installed)
-    {
-        this.installed = installed;
+        if (a == null)
+            throw new NullPointerException(name);
+        for (int i = 0; i < a.length; i++)
+            if (a[i] == null)
+                throw new NullPointerException(name + '[' + i + ']');        
     }
     
+    public final boolean isInstalled()
+    {
+        return installed != null ? installed.booleanValue() 
+                                 : device.isInstalled();
+    }
+
+    public final void setInstalled(boolean installed)
+    {
+        this.installed = Boolean.valueOf(installed);
+    }
+    
+    public boolean isListening()
+    {
+        return port > 0;
+    }
+
+    public boolean isTLS()
+    {
+        return tlsCipherSuite.length > 0;
+    }
+
+    public final int getBacklog()
+    {
+        return backlog;
+    }
+
+    public final void setBacklog(int backlog)
+    {
+        this.backlog = backlog;
+    }
+
+    public final int getAcceptTimeout()
+    {
+        return acceptTimeout;
+    }
+
+    public final void setAcceptTimeout(int acceptTimeout)
+    {
+        this.acceptTimeout = acceptTimeout;
+    }
+
+    public final int getConnectTimeout()
+    {
+        return connectTimeout;
+    }
+
+    public final void setConnectTimeout(int connectTimeout)
+    {
+        this.connectTimeout = connectTimeout;
+    }
+
+    public final int getRequestTimeout()
+    {
+        return requestTimeout;
+    }
+
+    public final void setRequestTimeout(int requestTimeout)
+    {
+        this.requestTimeout = requestTimeout;
+    }
+
+    public final int getReleaseTimeout()
+    {
+        return releaseTimeout;
+    }
+
+    public final void setReleaseTimeout(int releaseTimeout)
+    {
+        this.releaseTimeout = releaseTimeout;
+    }
+
+    public final int getSocketCloseDelay()
+    {
+        return socketCloseDelay;
+    }
+
+    public final void setSocketCloseDelay(int socketCloseDelay)
+    {
+        this.socketCloseDelay = socketCloseDelay;
+    }
+
+    public final int getReceiveBufferSize()
+    {
+        return receiveBufferSize;
+    }
+
+    public final void setReceiveBufferSize(int receiveBufferSize)
+    {
+        this.receiveBufferSize = receiveBufferSize;
+    }
+
+    public final int getSendBufferSize()
+    {
+        return sendBufferSize;
+    }
+
+    public final void setSendBufferSize(int sendBufferSize)
+    {
+        this.sendBufferSize = sendBufferSize;
+    }
+    
+    public final boolean isTcpNoDelay()
+    {
+        return tcpNoDelay;
+    }
+
+    public final void setTcpNoDelay(boolean tcpNoDelay)
+    {
+        this.tcpNoDelay = tcpNoDelay;        
+    }
+
+    public final boolean isTlsNeedClientAuth()
+    {
+        return tlsNeedClientAuth;
+    }
+
+    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth)
+    {
+        this.tlsNeedClientAuth = tlsNeedClientAuth;
+    }
+
+    public final String[] getTlsProtocol()
+    {
+        return tlsProtocol;
+    }
+
+    public final void setTlsProtocol(String[] tlsProtocol)
+    {
+        this.tlsProtocol = tlsProtocol;
+    }
+
     public InetSocketAddress getSocketAddress()
+    {
+        return getSocketAddress(port);
+    }
+    
+    public InetSocketAddress getSocketAddress(int port)
     {
         return hostname == null ? new InetSocketAddress(port)
                                 : new InetSocketAddress(hostname, port);

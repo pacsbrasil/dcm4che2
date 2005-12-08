@@ -42,7 +42,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -51,10 +50,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.apache.mina.io.filter.IoThreadPoolFilter;
-import org.apache.mina.protocol.filter.ProtocolThreadPoolFilter;
+import org.dcm4che2.config.DeviceConfiguration;
 import org.dcm4che2.config.NetworkApplicationEntity;
-import org.dcm4che2.config.NetworkApplicationEntityExt;
 import org.dcm4che2.config.NetworkConnection;
 import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.BasicDicomObject;
@@ -62,11 +59,11 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.AssociationAcceptor;
-import org.dcm4che2.net.AssociationConfig;
-import org.dcm4che2.net.ConfigurableAcceptorPolicy;
-import org.dcm4che2.net.service.DicomServiceRegistry;
+import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.Device;
+import org.dcm4che2.net.PDVInputStream;
 import org.dcm4che2.net.service.StorageService;
 import org.dcm4che2.net.service.VerificationService;
 
@@ -212,112 +209,101 @@ public class DcmRcv extends StorageService {
         UID.BasicVoiceAudioWaveformStorage,
         UID.HangingProtocolStorage
     };
-   
+
+    
+    private DeviceConfiguration deviceCfg = new DeviceConfiguration();
+    private NetworkApplicationEntity aeCfg = new NetworkApplicationEntity();
+    private NetworkConnection connCfg = new NetworkConnection();
     private String[] tsuids = NON_RETIRED_TS;
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
-    private NetworkApplicationEntityExt aeExt = 
-            new NetworkApplicationEntityExt();
-    private NetworkConnection nc = new NetworkConnection();
-    private DicomServiceRegistry registry = new DicomServiceRegistry();
-    private ConfigurableAcceptorPolicy policy = new ConfigurableAcceptorPolicy();
-    private AssociationAcceptor acceptor = new AssociationAcceptor(policy, registry);
-    private AssociationConfig config = acceptor.getAssocConfig();
+    private final Device device;
+    private final ApplicationEntity ae;
     private File destination;
     private boolean devnull;
-    private int fileBufferSize = 1024;
+    private int fileBufferSize = 8192;
     private ThreadLocal fileBuffer = new ThreadLocal(){
+
         protected Object initialValue()
         {
-            return new byte[fileBufferSize];
+            return new byte[fileBufferSize ];
         }};
     
     public DcmRcv()
     {
         super(CUIDS);
-        registry.register(new VerificationService());
-        registry.register(this);
-        ae.setAssociationAcceptor(true);  
-        policy.addNetworkAE(ae, aeExt);
+        deviceCfg.setDeviceName("DCMRCV");
+        deviceCfg.setNetworkApplicationEntity(
+                new NetworkApplicationEntity[] { aeCfg });
+        deviceCfg.setNetworkConnection(
+                new NetworkConnection[] { connCfg });
+        aeCfg.setAssociationInitiator(true);
+        aeCfg.setNetworkConnection(
+                new NetworkConnection[] { connCfg });
+        aeCfg.setAssociationAcceptor(true);
+        device = new Device(deviceCfg);
+        ae = device.getApplicationEntity(aeCfg);
+        ae.register(new VerificationService());
+        ae.register(this);
     }
        
-    public void initTransferCapability()
-    {
-        TransferCapability[] tc = new TransferCapability[CUIDS.length + 1];
-        tc[0] = new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS);
-        for (int i = 1; i < tc.length; i++)
-        {
-            tc[i] = new TransferCapability(CUIDS[i-1], tsuids);
-        }
-        ae.setTransferCapability(tc);
-    }    
-        
     public final void setAEtitle(String aet)
     {
-        ae.setAEtitle(aet);
+        aeCfg.setAEtitle(aet);
     }
 
     public final void setHostname(String hostname)
     {
-        nc.setHostname(hostname);
+        connCfg.setHostname(hostname);
     }
     
     public final void setPort(int port)
     {
-        nc.setPort(port);
+        connCfg.setPort(port);
     }
     
     public final void setPackPDV(boolean packPDV)
     {
-        config.setPackPDV(packPDV);
+        aeCfg.setPackPDV(packPDV);
     }
 
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        config.setTcpNoDelay(tcpNoDelay);
+        connCfg.setTcpNoDelay(tcpNoDelay);
     }
 
-    public final void setAssociationRequestTimeout(long timeout)
+    public final void setRequestTimeout(int timeout)
     {
-        config.setAssociationRequestTimeout(timeout);
+        connCfg.setRequestTimeout(timeout);
     }
 
-    public final void setReleaseResponseTimeout(long timeout)
+    public final void setReleaseTimeout(int timeout)
     {
-        config.setReleaseResponseTimeout(timeout);
+        connCfg.setReleaseTimeout(timeout);
     }
 
-    public final void setSocketCloseDelay(long timeout)
+    public final void setSocketCloseDelay(int timeout)
     {
-        config.setSocketCloseDelay(timeout);
+        connCfg.setSocketCloseDelay(timeout);
     }
 
     public final void setMaxPDULengthSend(int maxLength)
     {
-        config.setMaxSendPDULength(maxLength);
-        aeExt.setMaxPDULengthSend(maxLength);        
+        aeCfg.setMaxPDULengthSend(maxLength);        
     }
     
     public void setMaxPDULengthReceive(int maxLength)
     {
-        aeExt.setMaxPDULengthReceive(maxLength);        
+        aeCfg.setMaxPDULengthReceive(maxLength);        
     }
     
-
-    public final void setAssociationReceiveBufferSize(int bufferSize)
+    public final void setReceiveBufferSize(int bufferSize)
     {
-        config.setSessionReceiveBufferSize(bufferSize);
+        connCfg.setReceiveBufferSize(bufferSize);
     }
 
-    public final void setSocketReceiveBufferSize(int bufferSize)
+    public final void setSendBufferSize(int bufferSize)
     {
-        config.setSocketReceiveBufferSize(bufferSize);
+        connCfg.setSendBufferSize(bufferSize);
     }
-
-    public final void setSocketSendBufferSize(int bufferSize)
-    {
-        config.setSocketSendBufferSize(bufferSize);
-    }
-
 
     private static CommandLine parse(String[] args)
     {
@@ -352,10 +338,6 @@ public class DcmRcv extends StorageService {
                 "set SO_SNDBUF socket option to specified value in KB");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
-        Option readBufSize = new Option("r", "read-buf-size", true,
-                "association read buffer size in KB, 1KB by default");
-        readBufSize.setArgName("size");
-        opts.addOption(readBufSize);
         Option rcvPduLen = new Option("u", "rcv-pdu-len", true,
                 "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         rcvPduLen.setArgName("max-len");
@@ -365,13 +347,9 @@ public class DcmRcv extends StorageService {
         sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
         Option fileBufSize = new Option("b", "file-buf-size", true,
-                "buffer size in KB to write received object to file, 1KB by default");
+                "buffer size in KB to write received object to file, 8KB by default");
         fileBufSize.setArgName("size");
         opts.addOption(fileBufSize);
-        opts.addOption("p", "io-thread-pool", false, 
-                "decode message objects in own thread");
-        opts.addOption("P", "protocol-thread-pool", false,
-                "process message in own thread");
         Option maxOpsInvoked = new Option("a", "async", true,
                 "maximum number of outstanding operations performed " +
                 "asynchronously, 1 (=synchronous) by default.");
@@ -401,22 +379,7 @@ public class DcmRcv extends StorageService {
             System.exit(0);
         }
         return cl;
-    }
-    
-    public void startIoThreadPool()
-    {
-        IoThreadPoolFilter ioThreadPoolFilter = new IoThreadPoolFilter();
-        ioThreadPoolFilter.start();
-        acceptor.setIoThreadPoolFilter(ioThreadPoolFilter);        
-    }
-
-    public void startProtocolThreadPool()
-    {
-        ProtocolThreadPoolFilter protocolThreadPoolFilter = new ProtocolThreadPoolFilter();
-        protocolThreadPoolFilter.start();
-        acceptor.setProtocolThreadPoolFilter(protocolThreadPoolFilter);        
-    }
-
+    }    
 
     public static void main(String[] args)
     {
@@ -436,11 +399,11 @@ public class DcmRcv extends StorageService {
         if (cl.hasOption("d"))
             dcmrcv.setDestination(cl.getOptionValue("d"));
         if (cl.hasOption("T"))
-            dcmrcv.setAssociationRequestTimeout(
+            dcmrcv.setRequestTimeout(
                     parseInt(cl.getOptionValue("T"),
                     "illegal argument of option -T", 1, Integer.MAX_VALUE));
         if (cl.hasOption("t"))
-            dcmrcv.setReleaseResponseTimeout(
+            dcmrcv.setReleaseTimeout(
                     parseInt(cl.getOptionValue("t"),
                     "illegal argument of option -t", 1, Integer.MAX_VALUE));
         if (cl.hasOption("c"))
@@ -456,30 +419,22 @@ public class DcmRcv extends StorageService {
                     parseInt(cl.getOptionValue("U"),
                     "illegal argument of option -U", 1, 10000) * KB);
         if (cl.hasOption("S"))
-            dcmrcv.setSocketSendBufferSize(
+            dcmrcv.setSendBufferSize(
                     parseInt(cl.getOptionValue("S"),
                     "illegal argument of option -S", 1, 10000) * KB);
         if (cl.hasOption("s"))
-            dcmrcv.setSocketReceiveBufferSize(
+            dcmrcv.setReceiveBufferSize(
                     parseInt(cl.getOptionValue("s"),
                     "illegal argument of option -s", 1, 10000) * KB);
         if (cl.hasOption("b"))
             dcmrcv.setFileBufferSize(
                     parseInt(cl.getOptionValue("b"),
                     "illegal argument of option -b", 1, 10000) * KB);
-        if (cl.hasOption("r"))
-            dcmrcv.setAssociationReceiveBufferSize(
-                    parseInt(cl.getOptionValue("r"),
-                    "illegal argument of option -r", 1, 10000) * KB);
-        dcmrcv.setPackPDV(cl.hasOption("k"));
+       dcmrcv.setPackPDV(cl.hasOption("k"));
         dcmrcv.setTcpNoDelay(cl.hasOption("y"));
-        if (cl.hasOption("p"))
-            dcmrcv.startIoThreadPool();
-        if (cl.hasOption("P"))
-            dcmrcv.startProtocolThreadPool();
         if (cl.hasOption("a"))
             dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue("a"),
-                    "illegal max-opts", 0, 0xffff));
+                    "illegal max-opts", 1, 0xffff));
         dcmrcv.initTransferCapability();
         try
         {
@@ -492,14 +447,23 @@ public class DcmRcv extends StorageService {
         }
     }
 
-    private void setMaxOpsPerformed(int maxOps)
+    private void initTransferCapability()
     {
-        aeExt.setMaxOpsPerformed(maxOps);        
+        TransferCapability[] tc = new TransferCapability[CUIDS.length+1];
+        tc[0] = new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS, true);
+        for (int i = 0; i < CUIDS.length; i++)
+            tc[i+1] = new TransferCapability(CUIDS[i], tsuids, true);
+        aeCfg.setTransferCapability(tc);        
     }
 
     private void setFileBufferSize(int size)
     {
-        this.fileBufferSize = size;        
+        fileBufferSize = size;        
+    }
+
+    private void setMaxOpsPerformed(int maxOps)
+    {
+        aeCfg.setMaxOpsPerformed(maxOps);        
     }
 
     private void setDestination(String filePath)
@@ -511,9 +475,9 @@ public class DcmRcv extends StorageService {
     }
 
     public void start() throws IOException
-    {
-        acceptor.bind(nc.getSocketAddress());
-        System.out.print("Start Server listening on " + nc);
+    {        
+        device.startListening();
+        System.out.println("Start Server listening on port " + connCfg.getPort());
     }
 
     private static String[] split(String s, char delim, int defPos)
@@ -546,16 +510,18 @@ public class DcmRcv extends StorageService {
         throw new RuntimeException();
     }
 
-    protected DicomObject doCStore(Association as, int pcid, DicomObject rq,
-            InputStream dataStream)
-    {
+    protected DicomObject doCStore(Association as, int pcid,
+            DicomObject rq, PDVInputStream dataStream, String tsuid)    {
         try
         {
-            if (destination != null)
+            if (destination == null)
+            {
+                dataStream.skipAll();
+            }
+            else
             {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);
                 String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-                String tsuid = as.getTransferSyntax(pcid);
                 BasicDicomObject fmi = new BasicDicomObject();
                 fmi.initFileMetaInformation(cuid, iuid, tsuid);
                 File file = devnull ? destination : new File(destination, iuid);
@@ -575,7 +541,7 @@ public class DcmRcv extends StorageService {
         {
             // TODO Auto-generated catch block
         }
-        return super.doCStore(as, pcid, rq, dataStream);
+        return CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
     }
         
 }

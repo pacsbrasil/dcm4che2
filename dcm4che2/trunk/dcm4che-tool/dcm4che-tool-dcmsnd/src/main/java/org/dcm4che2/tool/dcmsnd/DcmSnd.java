@@ -41,11 +41,12 @@ package org.dcm4che2.tool.dcmsnd;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -53,6 +54,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.dcm4che2.config.DeviceConfiguration;
+import org.dcm4che2.config.NetworkApplicationEntity;
+import org.dcm4che2.config.NetworkConnection;
+import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -62,14 +67,13 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.io.TranscoderInputHandler;
+import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.AssociationConfig;
-import org.dcm4che2.net.AssociationRequestor;
-import org.dcm4che2.net.CommandFactory;
-import org.dcm4che2.net.DimseRSPHandlerAdapter;
-import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.PresentationContext;
+import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.ConfigurationException;
+import org.dcm4che2.net.Device;
+import org.dcm4che2.net.DimseRSPHandler;
+import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.util.StringUtils;
 
 /**
@@ -77,7 +81,7 @@ import org.dcm4che2.util.StringUtils;
  * @version $Revision$ $Date$
  * @since Oct 13, 2005
  */
-public class DcmSnd extends DimseRSPHandlerAdapter {
+public class DcmSnd implements DimseRSPHandler {
 
     private static final int KB = 1024;
     private static final int MB = KB * KB;
@@ -95,104 +99,136 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         "\nExample: dcmsnd STORESCP@localhost:11112 image.dcm \n" +
         "=> Send DICOM object image.dcm to Application Entity STORESCP, " +
         "listening on local port 11112.";
+    private static String[] NATIVE_TS_PREFER_LE = {
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian        
+    };
+    private static String[] NATIVE_TS_PREFER_BE = {
+        UID.ExplicitVRBigEndian,       
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian
+    };
 
-    private AAssociateRQ aarq = new AAssociateRQ();
-    private AssociationRequestor requestor = new AssociationRequestor();
-    private AssociationConfig config = requestor.getAssocConfig();
+    private DeviceConfiguration remoteDeviceCfg = new DeviceConfiguration();
+    private NetworkApplicationEntity remoteAECfg = new NetworkApplicationEntity();
+    private NetworkConnection remoteConnCfg = new NetworkConnection();
+    private DeviceConfiguration localDeviceCfg = new DeviceConfiguration();
+    private NetworkApplicationEntity localAECfg = new NetworkApplicationEntity();
+    private NetworkConnection localConnCfg = new NetworkConnection();
+    
+    private HashMap as2ts = new HashMap();
     private ArrayList files = new ArrayList();
     private Association assoc;
     private int priority = 0;
     private int transcoderBufferSize = 1024;
     private int filesSent = 0;
     private long totalSize = 0L;
-    private int connectTimeout = Integer.MAX_VALUE;
-    private InetSocketAddress remoteAddress;
-    private InetSocketAddress localAddress;
 
-
-    public final void setLocalAddress(InetSocketAddress localAddress)
+    public DcmSnd()
     {
-        this.localAddress = localAddress;
+        remoteDeviceCfg.setNetworkApplicationEntity(
+                new NetworkApplicationEntity[] { remoteAECfg });
+        remoteDeviceCfg.setNetworkConnection(
+                new NetworkConnection[] { remoteConnCfg });
+        remoteAECfg.setAssociationAcceptor(true);
+        remoteAECfg.setNetworkConnection(
+                new NetworkConnection[] { remoteConnCfg });
+
+        localDeviceCfg.setDeviceName("DCMSEND");
+        localDeviceCfg.setNetworkApplicationEntity(
+                new NetworkApplicationEntity[] { localAECfg });
+        localDeviceCfg.setNetworkConnection(
+                new NetworkConnection[] { localConnCfg });
+        localAECfg.setAssociationInitiator(true);
+        localAECfg.setAEtitle("DCMSEND");
+        localAECfg.setNetworkConnection(
+                new NetworkConnection[] { localConnCfg });        
     }
 
-    public final void setRemoteAddress(InetSocketAddress remoteAddress)
+    public final void setLocalHost(String hostname)
     {
-        this.remoteAddress = remoteAddress;
+        localConnCfg.setHostname(hostname);
     }
 
-    public final void setConnectTimeout(int connectTimeout)
+    public final void setRemoteHost(String hostname)
     {
-        this.connectTimeout = connectTimeout;
+        remoteConnCfg.setHostname(hostname);
     }
-    
+
+    public final void setRemotePort(int port)
+    {
+        remoteConnCfg.setPort(port);
+    }
+
     public final void setCalledAET(String called)
     {
-        aarq.setCalledAET(called);
-    }
-
-    public final void setMaxPDULength(int maxPDULength)
-    {
-        aarq.setMaxPDULength(maxPDULength);
-    }
-
-    public final void setMaxOpsInvoked(int maxOpsInvoked)
-    {
-        aarq.setMaxOpsInvoked(maxOpsInvoked);
+        remoteAECfg.setAEtitle(called);
     }
 
     public final void setCalling(String calling)
     {
-        aarq.setCallingAET(calling);
+        localAECfg.setAEtitle(calling);
     }
 
+    public final void setConnectTimeout(int connectTimeout)
+    {
+        localConnCfg.setConnectTimeout(connectTimeout);
+    }
+    
+    public final void setMaxPDULengthReceive(int maxPDULength)
+    {
+        localAECfg.setMaxPDULengthReceive(maxPDULength);
+    }
+
+    public final void setMaxOpsInvoked(int maxOpsInvoked)
+    {
+        localAECfg.setMaxOpsInvoked(maxOpsInvoked);
+    }
+
+    public final void setPackPDV(boolean packPDV)
+    {
+        localAECfg.setPackPDV(packPDV);
+    }
+    
     public final void setPriority(int priority)
     {
         this.priority = priority;
     }
 
-    public final void setPackPDV(boolean packPDV)
-    {
-        config.setPackPDV(packPDV);
-    }
-
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        config.setTcpNoDelay(tcpNoDelay);
+        localConnCfg.setTcpNoDelay(tcpNoDelay);
     }
 
-    public final void setAssociationAcceptTimeout(long timeout)
+    public final void setAcceptTimeout(int timeout)
     {
-        config.setAssociationAcceptTimeout(timeout);
+        localConnCfg.setAcceptTimeout(timeout);
     }
 
-    public final void setReleaseResponseTimeout(long timeout)
+    public final void setReleaseTimeout(int timeout)
     {
-        config.setReleaseResponseTimeout(timeout);
+        localConnCfg.setReleaseTimeout(timeout);
     }
 
-    public final void setSocketCloseDelay(long timeout)
+    public final void setSocketCloseDelay(int timeout)
     {
-        config.setSocketCloseDelay(timeout);
+        localConnCfg.setSocketCloseDelay(timeout);
     }
 
-    public final void setMaxSendPDULength(int maxPDULength)
+    public final void setMaxPDULengthSend(int maxPDULength)
     {
-        config.setMaxSendPDULength(maxPDULength);
+        localAECfg.setMaxPDULengthSend(maxPDULength);
     }
 
-    public final void setAssociationReceiveBufferSize(int bufferSize)
+    public final void setReceiveBufferSize(int bufferSize)
     {
-        config.setSessionReceiveBufferSize(bufferSize);
+        localConnCfg.setReceiveBufferSize(bufferSize);
     }
 
-    public final void setSocketReceiveBufferSize(int bufferSize)
+    public final void setSendBufferSize(int bufferSize)
     {
-        config.setSocketReceiveBufferSize(bufferSize);
-    }
-
-    public final void setSocketSendBufferSize(int bufferSize)
-    {
-        config.setSocketSendBufferSize(bufferSize);
+        localConnCfg.setSendBufferSize(bufferSize);
     }
 
     public final void setTranscoderBufferSize(int transcoderBufferSize)
@@ -313,27 +349,34 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         String remoteAE = (String) argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmsnd.setCalledAET(calledAETAddress[0]);
-        dcmsnd.setRemoteAddress(calledAETAddress[1] == null
-                ? new InetSocketAddress("localhost", 104)
-                : toSocketAddress(calledAETAddress[1], 104));
+        if (calledAETAddress[1] == null)
+        {
+            dcmsnd.setRemoteHost("127.0.0.1");
+            dcmsnd.setRemotePort(104);
+        }
+        else
+        {
+            String[] hostPort = split(calledAETAddress[1], ':');
+            dcmsnd.setRemoteHost(hostPort[0]);
+            dcmsnd.setRemotePort(toPort(hostPort[1]));
+        }
         if (cl.hasOption("L"))
         {
             String localAE = (String) cl.getOptionValue("L");
-            String[] callingAETAddress = split(localAE, '@');
-            dcmsnd.setCalling(callingAETAddress[0]);
-            if (callingAETAddress[1] != null)
-                dcmsnd.setLocalAddress(toSocketAddress(callingAETAddress[1], 0));
+            String[] callingAETHost = split(localAE, '@');
+            dcmsnd.setCalling(callingAETHost[0]);
+            dcmsnd.setLocalHost(toHostname(callingAETHost[1]));
         }
         if (cl.hasOption("C"))
             dcmsnd.setConnectTimeout(
                     parseInt(cl.getOptionValue("C"),
                     "illegal argument of option -C", 1, Integer.MAX_VALUE));
         if (cl.hasOption("T"))
-            dcmsnd.setAssociationAcceptTimeout(
+            dcmsnd.setAcceptTimeout(
                     parseInt(cl.getOptionValue("T"),
                     "illegal argument of option -T", 1, Integer.MAX_VALUE));
         if (cl.hasOption("t"))
-            dcmsnd.setReleaseResponseTimeout(
+            dcmsnd.setReleaseTimeout(
                     parseInt(cl.getOptionValue("t"),
                     "illegal argument of option -t", 1, Integer.MAX_VALUE));
         if (cl.hasOption("c"))
@@ -341,38 +384,34 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
                     parseInt(cl.getOptionValue("c"),
                     "illegal argument of option -c", 1, 10000));
         if (cl.hasOption("u"))
-            dcmsnd.setMaxPDULength(
+            dcmsnd.setMaxPDULengthReceive(
                     parseInt(cl.getOptionValue("u"),
                     "illegal argument of option -u", 1, 10000) * KB);
         if (cl.hasOption("U"))
-            dcmsnd.setMaxSendPDULength(
+            dcmsnd.setMaxPDULengthSend(
                     parseInt(cl.getOptionValue("U"),
                     "illegal argument of option -U", 1, 10000) * KB);
         if (cl.hasOption("S"))
-            dcmsnd.setSocketSendBufferSize(
+            dcmsnd.setSendBufferSize(
                     parseInt(cl.getOptionValue("S"),
                     "illegal argument of option -S", 1, 10000) * KB);
         if (cl.hasOption("s"))
-            dcmsnd.setSocketReceiveBufferSize(
+            dcmsnd.setReceiveBufferSize(
                     parseInt(cl.getOptionValue("s"),
                     "illegal argument of option -s", 1, 10000) * KB);
         if (cl.hasOption("b"))
             dcmsnd.setTranscoderBufferSize(
                     parseInt(cl.getOptionValue("b"),
                     "illegal argument of option -b", 1, 10000) * KB);
-        if (cl.hasOption("r"))
-            dcmsnd.setAssociationReceiveBufferSize(
-                    parseInt(cl.getOptionValue("r"),
-                    "illegal argument of option -r", 1, 10000) * KB);
         dcmsnd.setPackPDV(cl.hasOption("k"));
         dcmsnd.setTcpNoDelay(cl.hasOption("y"));
         if (cl.hasOption("a"))
             dcmsnd.setMaxOpsInvoked(parseInt(cl.getOptionValue("a"),
-                    "illegal max-opts", 0, 0xffff));
+                    "illegal max-opts", 1, 0xffff));
         if (cl.hasOption("p"))
-            dcmsnd.setPriority(CommandFactory.LOW);
+            dcmsnd.setPriority(CommandUtils.LOW);
         if (cl.hasOption("P"))
-            dcmsnd.setPriority(CommandFactory.HIGH);
+            dcmsnd.setPriority(CommandUtils.HIGH);
         System.out.println("Scanning files to send");
         long t1 = System.currentTimeMillis();
         for (int i = 1, n = argList.size(); i < n; ++i)
@@ -385,13 +424,14 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         System.out.println("\nScanned " + dcmsnd.getNumberOfFilesToSend()
                 + " files in " + ((t2 - t1) / 1000F)
                 + "s (=" + ((t2 - t1) / dcmsnd.getNumberOfFilesToSend())
-                + "ms/file)");       
+                + "ms/file)");
+        dcmsnd.configureTransferCapability();
         t1 = System.currentTimeMillis();
         try
         {
             dcmsnd.open();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             System.err.println("ERROR: Failed to establish association:" 
                     + e.getMessage());
@@ -436,13 +476,15 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         }
     }
 
-    private static InetSocketAddress toSocketAddress(String s, int defPort)
+    private static String toHostname(String host)
     {
-        String[] s2 = split(s, ':');
-        return new InetSocketAddress(s2[0], 
-                s2[1] != null 
-                    ? parseInt(s2[1], "illegal port number", 1, 0xffff)
-                    : defPort);
+        return host != null ? host : "127.0.0.1";
+    }
+
+    private static int toPort(String port)
+    {
+        return port != null ? parseInt(port, "illegal port number", 1, 0xffff)
+                : 104;
     }
 
     private static String[] split(String s, char delim)
@@ -525,85 +567,108 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
             System.out.print('F');
             return;
         }   
-        int pcid = addPresentationContext(cuid, tsuid);
-        files.add(new FileInfo(f, cuid, iuid, tsuid, pcid, f.length()));
+        addTransferCapability(cuid, tsuid);
+        files.add(new FileInfo(f, cuid, iuid, tsuid, f.length()));
         System.out.print('.');
     }
 
-    private int addPresentationContext(String asuid, String tsuid)
+    private void addTransferCapability(String cuid, String tsuid)
     {
-        Collection c = aarq.getPresentationContexts();
-        for (Iterator iter = c.iterator(); iter.hasNext();)
+        HashSet ts = (HashSet) as2ts.get(cuid);
+        if (ts == null)
         {
-            PresentationContext pc = (PresentationContext) iter.next();
-            if (!pc.getAbstractSyntax().equals(asuid))
-                continue;
-            if (pc.getTransferSyntaxes().contains(tsuid))
-                return pc.getPCID();
+            ts = new HashSet();
+            ts.add(UID.ImplicitVRLittleEndian);
+            as2ts.put(cuid, ts);
         }
-        PresentationContext pc = new PresentationContext();
-        pc.setPCID(aarq.nextPCID());
-        pc.setAbstractSyntax(asuid);
-        if (tsuid.equals(UID.ImplicitVRLittleEndian) 
-                || tsuid.equals(UID.ExplicitVRLittleEndian))
-        {
-            pc.addTransferSyntax(UID.ExplicitVRLittleEndian);
-            pc.addTransferSyntax(UID.ImplicitVRLittleEndian);
-        }
-        else
-        {
-            pc.addTransferSyntax(tsuid);
-        }
-        aarq.addPresentationContext(pc);
-        return pc.getPCID();
+        ts.add(tsuid);        
     }
 
-    public void open() throws IOException
+    private void configureTransferCapability()
     {
-        assoc = requestor.connect(aarq, remoteAddress, localAddress,
-                connectTimeout );
+        Iterator iter = as2ts.entrySet().iterator();
+        TransferCapability[] tc = new TransferCapability[as2ts.size()];
+        for (int i = 0; i < tc.length; i++)
+        {
+            Map.Entry e = (Map.Entry) iter.next();
+            String cuid = (String) e.getKey();
+            HashSet ts = (HashSet) e.getValue();
+            tc[i] = new TransferCapability(cuid, 
+                    (String[]) ts.toArray(new String[ts.size()]), false);
+        }
+        localAECfg.setTransferCapability(tc);
+    }
+
+    
+    public void open()
+    throws IOException, ConfigurationException, InterruptedException
+    {
+        Device device = new Device(localDeviceCfg);
+        ApplicationEntity ae = device.getApplicationEntity(localAECfg);
+        
+        assoc = ae.connect(remoteAECfg);
     }
 
     public void send()
     {
+        String[] tsuid = new String[1];
         for (int i = 0, n = files.size(); i < n; ++i)
         {
             FileInfo info = (FileInfo) files.get(i);
-            AAssociateAC aaac = assoc.getAssociateAC();
-            PresentationContext pc = aaac.getPresentationContext(info.pcid);
-            if (pc.getResult() == PresentationContext.ACCEPTANCE)
+            try
             {
-                DicomObject cmd = CommandFactory.newCStoreRQ(i+1,
-                        info.cuid, info.iuid, priority);
-                try
-                {
-                    assoc.invoke(info.pcid, cmd, new DataWriter(info), this);
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    System.err.println("ERROR: Failed to send - " + info.f
-                            + ": " + e.getMessage());
-                    System.out.print('F');
-                }
+                assoc.cstore(info.cuid, info.iuid, priority, new DataWriter(info), 
+                        compatibleTS(info.tsuid, tsuid), this);
             }
-            else 
+            catch (NoPresentationContextException e)
             {
-                aarq = assoc.getAssociateRQ();
-                System.err.println("WARNING: " + aarq.getCalledAET()
-                        + " rejected "
-                        + aarq.getPresentationContext(info.pcid)
+                System.err.println("WARNING: " + e.getMessage()
                         + " - cannot send " + info.f);
                 System.out.print('F');
             }
-            
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                System.err.println("ERROR: Failed to send - " + info.f
+                        + ": " + e.getMessage());
+                System.out.print('F');
+            }
+            catch (InterruptedException e)
+            {
+                // should not happen
+                e.printStackTrace();
+            }
         }
-        assoc.waitForDimseRSP();
+        try
+        {
+            assoc.waitForDimseRSP();
+        }
+        catch (InterruptedException e)
+        {
+            // should not happen
+            e.printStackTrace();
+        }
     }        
     
+    private String[] compatibleTS(String tsuid, String[] s1)
+    {
+        s1[0] = tsuid;
+        TransferSyntax ts = TransferSyntax.valueOf(tsuid);
+        return ts.uncompressed() 
+                ? (ts.bigEndian() ? NATIVE_TS_PREFER_BE : NATIVE_TS_PREFER_LE)
+                : s1;
+    }
+
     public void close()
     {
-        assoc.release();
+        try
+        {
+            assoc.release(false);
+        }
+        catch (InterruptedException e)
+        {
+             e.printStackTrace();
+        }
     }    
     
     private static final class FileInfo
@@ -613,17 +678,15 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         final String cuid;
         final String iuid;
         final String tsuid;
-        final int pcid;
         final long length;
 
         public FileInfo(File f, String cuid, String iuid, String tsuid,
-                int pcid, long length)
+                long length)
         {
             this.f = f;
             this.cuid = cuid;
             this.iuid = iuid;
             this.tsuid = tsuid;
-            this.pcid = pcid;
             this.length = length;
         }
         
@@ -638,15 +701,14 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         {
             this.info = info;
         }
-
-        public void writeTo(OutputStream out, TransferSyntax ts)
-        throws IOException
+        
+        public void writeTo(OutputStream out, String tsuid) throws IOException
         {
             DicomInputStream dis = new DicomInputStream(info.f);
             try
             {
                 DicomOutputStream dos = new DicomOutputStream(out);
-                dos.setTransferSyntax(ts);
+                dos.setTransferSyntax(tsuid);
                 TranscoderInputHandler h = 
                     new TranscoderInputHandler(dos, transcoderBufferSize);
                 dis.setHandler(h);
@@ -660,8 +722,16 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
 
     }
 
-    protected void onDimseRSP(Association a, int pcid, DicomObject cmd, DicomObject ds)
-    {        
+    private void promptErrRSP(String prefix, int status, FileInfo info,
+            DicomObject cmd)
+    {
+        System.err.println(prefix + StringUtils.shortToHex(status) + "H for "
+                + info.f + ", cuid=" + info.cuid + ", tsuid=" + info.tsuid);
+        System.err.println(cmd.toString());
+    }
+
+    public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) throws IOException
+    {
         int status = cmd.getInt(Tag.Status);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
         FileInfo info = (FileInfo) files.get(msgId  - 1);
@@ -686,12 +756,10 @@ public class DcmSnd extends DimseRSPHandlerAdapter {
         }
     }
 
-    private void promptErrRSP(String prefix, int status, FileInfo info,
-            DicomObject cmd)
+    public void onClosed(Association as)
     {
-        System.err.println(prefix + StringUtils.shortToHex(status) + "H for "
-                + info.f + ", cuid=" + info.cuid + ", tsuid=" + info.tsuid);
-        System.err.println(cmd.toString());
+        // TODO Auto-generated method stub
+        
     }
 
 }

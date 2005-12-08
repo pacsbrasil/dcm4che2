@@ -46,6 +46,7 @@ package org.dcm4che2.config;
  */
 public class NetworkApplicationEntity
 {
+    private DeviceConfiguration device;
     private boolean associationAcceptor;
     private boolean associationInitiator;
     private String aeTitle;
@@ -57,10 +58,27 @@ public class NetworkApplicationEntity
     private String[] supportedCharacterSet = {};
     private Boolean installed;
 
-    private NetworkConnection[] networkConnection = {};
-    private TransferCapability[] transferCapability = {};
+    private int maxOpsInvoked = 1;
+    private int maxOpsPerformed = 1;
+    private int maxPDULengthReceive = 0x4000; //=16384
+    private int maxPDULengthSend = 0x4000;
+    private boolean packPDV;
+    private int dimseRspTimeout = 60;
     
-    public final String getAEtitle()
+    private NetworkConnection[] networkConnection;
+    private TransferCapability[] transferCapability;
+    
+    public final DeviceConfiguration getDevice()
+    {
+        return device;
+    }
+
+    public final void setDevice(DeviceConfiguration device)
+    {
+        this.device = device;
+    }
+
+    public final String getAETitle()
     {
         return aeTitle;
     }
@@ -110,14 +128,15 @@ public class NetworkApplicationEntity
         this.description = description;
     }
 
-    public final Boolean getInstalled()
+    public final boolean isInstalled()
     {
-        return installed;
+        return installed != null ? installed.booleanValue() 
+                                 : device.isInstalled();
     }
 
-    public final void setInstalled(Boolean installed)
+    public final void setInstalled(boolean installed)
     {
-        this.installed = installed;
+        this.installed = Boolean.valueOf(installed);
     }
 
     public final NetworkConnection[] getNetworkConnection()
@@ -209,4 +228,70 @@ public class NetworkApplicationEntity
     {
         this.vendorData = vendorData;
     }
+
+    public final int getMaxOpsInvoked()
+    {
+        return maxOpsInvoked;
+    }
+    
+    public final void setMaxOpsInvoked(int maxOpsInvoked)
+    {
+        this.maxOpsInvoked = maxOpsInvoked;
+    }
+    
+    public final int getMaxOpsPerformed()
+    {
+        return maxOpsPerformed;
+    }
+    
+    public final void setMaxOpsPerformed(int maxOpsPerformed)
+    {
+        this.maxOpsPerformed = maxOpsPerformed;
+    }
+    
+    public final boolean isAsyncOps()
+    {
+        return maxOpsInvoked != 1 || maxOpsPerformed != 1;
+    }
+    
+    public final int getMaxPDULengthReceive()
+    {
+        return maxPDULengthReceive;
+    }
+    
+    public final void setMaxPDULengthReceive(int maxPDULengthReceive)
+    {
+        this.maxPDULengthReceive = maxPDULengthReceive;
+    }
+    
+    public final int getMaxPDULengthSend()
+    {
+        return maxPDULengthSend;
+    }
+    
+    public final void setMaxPDULengthSend(int maxPDULengthSend)
+    {
+        this.maxPDULengthSend = maxPDULengthSend;
+    }
+
+    public final boolean isPackPDV()
+    {
+        return packPDV;
+    }
+
+    public final void setPackPDV(boolean packPDV)
+    {
+        this.packPDV = packPDV;
+    }
+
+    public final int getDimseRspTimeout()
+    {
+        return dimseRspTimeout ;
+    }
+
+    public final void setDimseRspTimeout(int dimseRspTimeout)
+    {
+        this.dimseRspTimeout = dimseRspTimeout;
+    }
+
 }

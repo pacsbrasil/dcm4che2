@@ -39,7 +39,6 @@
 package org.dcm4che2.tool.dcmecho;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -48,82 +47,107 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.config.DeviceConfiguration;
+import org.dcm4che2.config.NetworkApplicationEntity;
+import org.dcm4che2.config.NetworkConnection;
+import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.AssociationRequestor;
-import org.dcm4che2.net.CommandFactory;
-import org.dcm4che2.net.DimseRSP;
-import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.PresentationContext;
+import org.dcm4che2.net.ConfigurationException;
+import org.dcm4che2.net.Device;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Oct 13, 2005
  */
-public class DcmEcho {
+public class DcmEcho
+{
 
-    private static final String USAGE = 
-        "dcmecho [Options] <aet>[@<host>[:<port>]]";
+    private static final String USAGE = "dcmecho [Options] <aet>[@<host>[:<port>]]";
     private static final String DESCRIPTION = 
-        "Send DICOM Echo to the specified remote Application Entity. " +
-        "If <port> is not specified, DICOM default port 104 is assumed. " +
-        "If also no <host> is specified localhost is assumed.\n" +
-        "Options:";
+            "Send DICOM Echo to the specified remote Application Entity. "
+            + "If <port> is not specified, DICOM default port 104 is assumed. "
+            + "If also no <host> is specified localhost is assumed.\n"
+            + "Options:";
     private static final String EXAMPLE = 
-        "\nExample: dcmecho STORESCP@localhost:11112 \n" +
-        "=> Verify connection to Application Entity STORESCP, " +
-        "listening on local port 11112.";
-    
-    private static final int PCID = 1;
-    private static final int MSGID = 1;
+            "\nExample: dcmecho STORESCP@localhost:11112 \n"
+            + "=> Verify connection to Application Entity STORESCP, "
+            + "listening on local port 11112.";
 
-    private AAssociateRQ aarq = new AAssociateRQ();
-    private AssociationRequestor requestor = new AssociationRequestor();
+    private static final String[] DEF_TS = { UID.ImplicitVRLittleEndian };
+    private static final TransferCapability VERIFICATION_SCU = 
+            new TransferCapability(UID.VerificationSOPClass, DEF_TS, false);
+
+    private DeviceConfiguration remoteDeviceCfg = new DeviceConfiguration();
+    private NetworkApplicationEntity remoteAECfg = new NetworkApplicationEntity();
+    private NetworkConnection remoteConnCfg = new NetworkConnection();
+    private DeviceConfiguration localDeviceCfg = new DeviceConfiguration();
+    private NetworkApplicationEntity localAECfg = new NetworkApplicationEntity();
+    private NetworkConnection localConnCfg = new NetworkConnection();
     private Association assoc;
-    private InetSocketAddress remoteAddress;
-    private InetSocketAddress localAddress;
 
     public DcmEcho()
     {
-        PresentationContext pc = new PresentationContext();
-        pc.setPCID(PCID);
-        pc.setAbstractSyntax(UID.VerificationSOPClass);
-        pc.addTransferSyntax(UID.ImplicitVRLittleEndian);
-        aarq.addPresentationContext(pc);        
-    }
-    
-    public final void setLocalAddress(InetSocketAddress localAddress)
-    {
-        this.localAddress = localAddress;
+        remoteDeviceCfg.setNetworkApplicationEntity(
+                new NetworkApplicationEntity[] { remoteAECfg });
+        remoteDeviceCfg.setNetworkConnection(
+                new NetworkConnection[] { remoteConnCfg });
+        remoteAECfg.setAssociationAcceptor(true);
+        remoteAECfg.setNetworkConnection(
+                new NetworkConnection[] { remoteConnCfg });
+
+        localDeviceCfg.setDeviceName("DCMECHO");
+        localDeviceCfg.setNetworkApplicationEntity(
+                new NetworkApplicationEntity[] { localAECfg });
+        localDeviceCfg.setNetworkConnection(
+                new NetworkConnection[] { localConnCfg });
+        localAECfg.setAssociationInitiator(true);
+        localAECfg.setAEtitle("DCMECHO");
+        localAECfg.setNetworkConnection(
+                new NetworkConnection[] { localConnCfg });
+        localAECfg.setTransferCapability(
+                new TransferCapability[] { VERIFICATION_SCU });
+
     }
 
-    public final void setRemoteAddress(InetSocketAddress remoteAddress)
+    public final void setLocalHost(String hostname)
     {
-        this.remoteAddress = remoteAddress;
+        localConnCfg.setHostname(hostname);
+    }
+
+    public final void setRemoteHost(String hostname)
+    {
+        remoteConnCfg.setHostname(hostname);
+    }
+
+    public final void setRemotePort(int port)
+    {
+        remoteConnCfg.setPort(port);
     }
 
     public final void setCalledAET(String called)
     {
-        aarq.setCalledAET(called);
+        remoteAECfg.setAEtitle(called);
     }
 
     public final void setCalling(String calling)
     {
-        aarq.setCallingAET(calling);
+        localAECfg.setAEtitle(calling);
     }
-
 
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option localAddr = new Option("L", "local", true,
-                "set AET, local address and port of local Application Entity," +
-                "use ANONYMOUS and pick up an ephemeral port and a valid local" +
-                "address to bind the socket by default");
-        localAddr.setArgName("calling[@host[:port]]");
+        Option localAddr = new Option(
+                "L",
+                "local",
+                true,
+                "set AET, local address and port of local Application Entity,"
+                        + "use ANONYMOUS and pick up an ephemeral port and a valid local"
+                        + "address to bind the socket by default");
+        localAddr.setArgName("calling[@host]");
         opts.addOption(localAddr);
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
@@ -132,7 +156,8 @@ public class DcmEcho {
         try
         {
             cl = new PosixParser().parse(opts, args);
-        } catch (ParseException e)
+        }
+        catch (ParseException e)
         {
             exit("dcmecho: " + e.getMessage());
         }
@@ -151,7 +176,6 @@ public class DcmEcho {
         return cl;
     }
 
-   
     public static void main(String[] args)
     {
         CommandLine cl = parse(args);
@@ -160,16 +184,23 @@ public class DcmEcho {
         String remoteAE = (String) argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmecho.setCalledAET(calledAETAddress[0]);
-        dcmecho.setRemoteAddress(calledAETAddress[1] == null
-                ? new InetSocketAddress("localhost", 104)
-                : toSocketAddress(calledAETAddress[1], 104));
+        if (calledAETAddress[1] == null)
+        {
+            dcmecho.setRemoteHost("127.0.0.1");
+            dcmecho.setRemotePort(104);
+        }
+        else
+        {
+            String[] hostPort = split(calledAETAddress[1], ':');
+            dcmecho.setRemoteHost(hostPort[0]);
+            dcmecho.setRemotePort(toPort(hostPort[1]));
+        }
         if (cl.hasOption("L"))
         {
             String localAE = (String) cl.getOptionValue("L");
-            String[] callingAETAddress = split(localAE, '@');
-            dcmecho.setCalling(callingAETAddress[0]);
-            if (callingAETAddress[1] != null)
-                dcmecho.setLocalAddress(toSocketAddress(callingAETAddress[1], 0));
+            String[] callingAETHost = split(localAE, '@');
+            dcmecho.setCalling(callingAETHost[0]);
+            dcmecho.setLocalHost(toHostname(callingAETHost[1]));
         }
 
         long t1 = System.currentTimeMillis();
@@ -177,33 +208,67 @@ public class DcmEcho {
         {
             dcmecho.open();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            System.err.println("ERROR: Failed to establish association:" 
+            System.err.println("ERROR: Failed to establish association:"
                     + e.getMessage());
             System.exit(2);
         }
         long t2 = System.currentTimeMillis();
         System.out.println("Connected to " + remoteAE + " in "
-                + ((t2 - t1) / 1000F) + "s");       
-        
-        dcmecho.echo();
-        dcmecho.close();
-        System.out.println("Released connection to " + remoteAE);     
+                + ((t2 - t1) / 1000F) + "s");
+
+        try
+        {
+            dcmecho.echo();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try
+        {
+            dcmecho.close();
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        System.out.println("Released connection to " + remoteAE);
     }
 
-    private static InetSocketAddress toSocketAddress(String s, int defPort)
+    private static String toHostname(String host)
     {
-        String[] s2 = split(s, ':');
-        return new InetSocketAddress(s2[0], 
-                s2[1] != null 
-                    ? parseInt(s2[1], "illegal port number", 1, 0xffff)
-                    : defPort);
+        return host != null ? host : "127.0.0.1";
     }
 
+    private static int toPort(String port)
+    {
+        return port != null ? parseInt(port, "illegal port number", 1, 0xffff)
+                : 104;
+    }
+
+    private static int parseInt(String s, String errPrompt, int min, int max) {
+        try {
+            int i = Integer.parseInt(s);
+            if (i >= min && i <= max)
+                return i;
+        } catch (NumberFormatException e) {}
+        exit(errPrompt);
+        throw new RuntimeException();
+    }
+    
     private static String[] split(String s, char delim)
     {
-        String[] s2 = { s, null };
+        String[] s2 =
+        { s, null };
         int pos = s.indexOf(delim);
         if (pos != -1)
         {
@@ -220,65 +285,22 @@ public class DcmEcho {
         System.exit(1);
     }
 
-    private static int parseInt(String s, String errPrompt, int min, int max) {
-        try {
-            int i = Integer.parseInt(s);
-            if (i >= min && i <= max)
-                return i;
-        } catch (NumberFormatException e) {}
-        exit(errPrompt);
-        throw new RuntimeException();
-    }
-        
-
-    public void open() throws IOException
+    public void open()
+            throws IOException, ConfigurationException, InterruptedException
     {
-        assoc = requestor.connect(aarq, remoteAddress, localAddress);
+        Device device = new Device(localDeviceCfg);
+        ApplicationEntity ae = device.getApplicationEntity(localAECfg);
+
+        assoc = ae.connect(remoteAECfg);
     }
 
-    public void echo()
+    public void echo() throws IOException, InterruptedException
     {
-            AAssociateAC aaac = assoc.getAssociateAC();
-            PresentationContext pc = aaac.getPresentationContext(PCID);
-            if (pc.getResult() == PresentationContext.ACCEPTANCE)
-            {
-                DicomObject rq = CommandFactory.newCEchoRQ(MSGID);
-                System.out.println("Sending:\n" + rq);
-                DimseRSP rsp;
-                try
-                {
-                    rsp = assoc.invoke(PCID, rq);
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    System.err.println("ERROR: Failed to send C-ECHO-RQ: "
-                            + e.getMessage());
-                    return;
-                }
-                try
-                {
-                    rsp.next();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    System.err.println("ERROR: Failed to receive C-ECHO-RSP: "
-                            + e.getMessage());
-                    return;
-                }
-                System.out.println("Received:\n" + rsp.getCommand());
-            }
-            else 
-            {
-                aarq = assoc.getAssociateRQ();
-                System.err.println("WARNING: " + aarq.getCalledAET()
-                        + " rejected " + aarq.getPresentationContext(PCID));
-            }
-      }        
-    
-    public void close()
+        assoc.cecho();
+    }
+
+    public void close() throws InterruptedException
     {
-        assoc.release();
-    }    
+        assoc.release(true);
+    }
 }

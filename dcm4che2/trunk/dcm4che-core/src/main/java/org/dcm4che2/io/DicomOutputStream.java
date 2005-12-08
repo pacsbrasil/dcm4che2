@@ -94,6 +94,11 @@ public class DicomOutputStream extends FilterOutputStream
         this.ts = ts;
     }
 
+    public final void setTransferSyntax(String tsuid)
+    {
+        this.ts = TransferSyntax.valueOf(tsuid);        
+    }
+    
     public void write(byte[] b, int off, int len) throws IOException
     {
         out.write(b, off, len);
@@ -201,6 +206,12 @@ public class DicomOutputStream extends FilterOutputStream
         writeDataset(attrs, attrs.getTransferSyntax());
     }
 
+    public void writeDataset(DicomObject attrs, String tsuid)
+    throws IOException
+    {
+        writeDataset(attrs, TransferSyntax.valueOf(tsuid));
+    }
+    
     public void writeDataset(DicomObject attrs, TransferSyntax ts)
             throws IOException
     {
