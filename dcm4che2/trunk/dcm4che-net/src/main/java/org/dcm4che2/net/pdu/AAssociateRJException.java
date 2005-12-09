@@ -73,7 +73,7 @@ public class AAssociateRJException extends IOException
 
     public AAssociateRJException(int result, int source, int reason)
     {
-        super("A-ABORT[result=" + result + ", source=" + source
+        super("A-ASSOCIATE-RJ[result=" + result + ", source=" + source
                 + ", reason=" + reason + "]");
         this.result = result;
         this.source = source;
