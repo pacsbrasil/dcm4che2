@@ -139,13 +139,11 @@
         <exclude>com.sun.jdmk:jmxtools</exclude>
         <exclude>commons-lang:commons-lang</exclude>
         <exclude>commons-logging:commons-logging</exclude>
-        <exclude>commons-net:commons-net</exclude>
         <exclude>javax.activation:activation</exclude>
         <exclude>javax.jms:jms</exclude>
         <exclude>javax.mail:mail</exclude>
         <exclude>junit:junit</exclude>
         <exclude>org.slf4j:nlog4j</exclude>
-        <exclude>oro:oro</exclude>
         <exclude>xerces:xerces</exclude>
       </excludes>
     </dependencySet>
