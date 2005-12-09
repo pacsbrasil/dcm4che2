@@ -217,6 +217,11 @@
         <name>destination</name>
         <type>java.lang.String</type>
       </parameter>
+      <parameter>
+        <description>Enable/disable forwarding (using forward rules) instead of send direct (local)</description>
+        <name>useForward</name>
+        <type>boolean</type>
+      </parameter>
       <return-type>void</return-type>
    </operation>
    
