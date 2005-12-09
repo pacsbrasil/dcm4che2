@@ -329,8 +329,6 @@ public class MWLScuService extends ServiceMBeanSupport {
             while ( iter.hasNext() ) {
             	list.add( ( (Dimse) iter.next()).getDataset() );
             }
-            list.add( dimse.getDataset() );
-            
 		} catch (Exception e) {
 			log.error( "Cant get working list! Reason: unexpected error", e);
 			return list;
