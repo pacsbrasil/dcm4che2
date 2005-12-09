@@ -275,13 +275,20 @@ public abstract class MPPSManagerBean implements SessionBean {
             String accNo = mwlItem.getAccessionNumber();
             PatientLocal mwlPat = mwlItem.getPatient();
             PatientLocal mppsPat = mpps.getPatient();
+            Dataset mwlAttrs = mwlItem.getAttributes();
             Dataset mppsAttrs = mpps.getAttributes();
     		Dataset ssa = mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq);
             ssa.putSH(Tags.SPSID, spsID);
     		ssa.putSH(Tags.AccessionNumber,accNo);
+    		if ( !ssa.getString(Tags.StudyInstanceUID).equals( 
+    				mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
+    			mwlAttrs.putUI(Tags.StudyInstanceUID, ssa.getString(Tags.StudyInstanceUID) );
+    			mwlItem.setAttributes( mwlAttrs );
+    		}
             mpps.setAttributes(mppsAttrs);
             mppsAttrs.putAll(mppsPat.getAttributes(false));
             map.put("mppsAttrs",mppsAttrs);
+            map.put("mwlAttrs",mwlAttrs);
             if ( ! mwlPat.equals(mppsPat) ) {
         		if ( mppsPat.getStudies().size() == 1 ) {
             		map.put( "mwlPat", mwlPat.getAttributes(true));
