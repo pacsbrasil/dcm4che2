@@ -93,6 +93,11 @@ public class MPPSEmulatorService extends TimerSupport implements
     private static final int[] SPS_TAGS = {
         Tags.SPSDescription, Tags.ScheduledProtocolCodeSeq, Tags.SPSID        
     };
+
+    private static final int[] PAT_TAGS = {
+        Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
+        Tags.PatientBirthDate, Tags.PatientSex
+	};
     
     private long pollInterval = 0L;
 
@@ -107,6 +112,8 @@ public class MPPSEmulatorService extends TimerSupport implements
     private ObjectName mppsScuServiceName;
 
     private ObjectName mwlScuServiceName;
+
+    private ObjectName hl7SendServiceName;
 
     public final ObjectName getMppsScuServiceName() {
         return mppsScuServiceName;
@@ -124,6 +131,19 @@ public class MPPSEmulatorService extends TimerSupport implements
         this.mwlScuServiceName = mwlScuServiceName;
     }
 
+	/**
+	 * @return Returns the hl7SendServiceName.
+	 */
+	public ObjectName getHl7SendServiceName() {
+		return hl7SendServiceName;
+	}
+	/**
+	 * @param hl7SendServiceName The hl7SendServiceName to set.
+	 */
+	public void setHl7SendServiceName(ObjectName hl7SendServiceName) {
+		this.hl7SendServiceName = hl7SendServiceName;
+	}
+    
     public final String getCalledAET() {
         return calledAET;
     }
@@ -214,24 +234,30 @@ public class MPPSEmulatorService extends TimerSupport implements
     }
 
     private boolean addMWLAttrs(Dataset mpps) {
-        Dataset filter = DcmObjectFactory.getInstance().newDataset();
-        for (int i = 0; i < MWL_TAGS.length; i++) {
-            filter.putXX(MWL_TAGS[i]);
-        }
+        Dataset filter = getPreparedFilter();
         Dataset ssa = mpps.getItem(Tags.ScheduledStepAttributesSeq);
         final String suid = ssa.getString(Tags.StudyInstanceUID);
         filter.putUI(Tags.StudyInstanceUID, suid);
-        filter.putSQ(Tags.SPSSeq);
         List mwlEntries = findMWLEntries(filter);
         if (mwlEntries == null)
             return false;
         if (mwlEntries.isEmpty()) {
-            log.info("No matching MWL entry for Study - " + suid);
-            fillType2Attrs(ssa, MWL_TAGS);
-            fillType2Attrs(ssa, SPS_TAGS);
-            return true;
+        	log.debug("No MWL entry for Study - " + suid + " ! Try with AccessionNumber and PatientID!");
+        	filter.putUI(Tags.StudyInstanceUID, (String)null);
+        	filter.putSH(Tags.AccessionNumber, ssa.getString(Tags.AccessionNumber));
+        	filter.putLO(Tags.PatientID, mpps.getString( Tags.PatientID ) );
+        	mwlEntries = findMWLEntries(filter);
+            if (mwlEntries == null)
+                return false;
+            if (mwlEntries.isEmpty()) {
+	            log.info("No matching MWL entry for Study - " + suid);
+	            fillType2Attrs(ssa, MWL_TAGS);
+	            fillType2Attrs(ssa, SPS_TAGS);
+	            return true;
+            }
         }
         DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
+        String mppsPatID = mpps.getString(Tags.PatientID);
         for (int i = 0, n = mwlEntries.size(); i < n; ++i) {
             ssa = ssaSq.addNewItem();
             Dataset mwlItem = (Dataset) mwlEntries.get(i);
@@ -240,9 +266,28 @@ public class MPPSEmulatorService extends TimerSupport implements
             if (sps != null) {
                 ssa.putAll(sps.subSet(SPS_TAGS)); 
             }
+            if ( ! mwlItem.getString(Tags.PatientID).equals(mppsPatID) ) {
+            	log.debug("MWL and MPPS patient different! Merge "+mppsPatID+" with (dominant) "+mwlItem.getString(Tags.PatientID));
+            	sendHL7Merge(mwlItem.subSet(PAT_TAGS),mpps.subSet(PAT_TAGS));
+            }
         }
         return true;
     }
+
+	/**
+	 * @return
+	 */
+	private Dataset getPreparedFilter() {
+		Dataset filter = DcmObjectFactory.getInstance().newDataset();
+        for (int i = 0; i < MWL_TAGS.length; i++) {
+            filter.putXX(MWL_TAGS[i]);
+        }
+        for (int i = 0; i < PAT_TAGS.length; i++) {//we need pat atrributes for merge (if necessary)!
+            filter.putXX(PAT_TAGS[i]);
+        }
+        filter.putSQ(Tags.SPSSeq);
+		return filter;
+	}
 
 	private void fillType2Attrs(Dataset ds, int[] tags) {
 		for (int i = 0; i < tags.length; i++) {
@@ -290,6 +335,26 @@ public class MPPSEmulatorService extends TimerSupport implements
         }
         return null;
     }
+    
+	void sendHL7Merge(Dataset dsDominant, Dataset priorPat) {
+        try {
+            server.invoke(this.hl7SendServiceName,
+                    "sendHL7PatientMerge",
+                    new Object[] {  dsDominant, 
+            					new Dataset[] { priorPat }, 
+            					"LOCAL^LOCAL",
+								"LOCAL^LOCAL",
+								Boolean.FALSE },
+                    new String[] { Dataset.class.getName(),
+        					   Dataset[].class.getName(),
+							   String.class.getName(),
+							   String.class.getName(),
+							   boolean.class.getName() });
+        } catch (Exception e) {
+            log.error("Failed to send HL7 patient merge message:", e);log.error(dsDominant);
+        }
+	}
+    
 
     protected void startService() throws Exception {
         super.startService();
