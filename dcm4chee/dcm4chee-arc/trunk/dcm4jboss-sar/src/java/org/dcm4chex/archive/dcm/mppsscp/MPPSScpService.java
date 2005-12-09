@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.dcm.mppsscp;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Map;
 
@@ -49,7 +48,6 @@ import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -154,7 +152,7 @@ public class MPPSScpService extends AbstractScpService {
             					new Dataset[] { priorPat }, 
             					"LOCAL^LOCAL",
 								"LOCAL^LOCAL",
-								Boolean.TRUE },
+								Boolean.FALSE },
                     new String[] { Dataset.class.getName(),
         					   Dataset[].class.getName(),
 							   String.class.getName(),
@@ -216,14 +214,17 @@ public class MPPSScpService extends AbstractScpService {
 
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
     	Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
+    	Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
         try {
             server.invoke(auditLogName,
                     "logProcedureRecord",
                     new Object[] { "Modify", 
             		mppsAttrs.getString(Tags.PatientID), 
             		mppsAttrs.getString(Tags.PatientName),
-            		null, null, null, 
-					mppsAttrs.getString(Tags.AccessionNumber),
+            		mwlAttrs.getString(Tags.PlacerOrderNumber), 
+            		mwlAttrs.getString(Tags.FillerOrderNumber), 
+            		mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID), 
+					mwlAttrs.getString(Tags.AccessionNumber),
 					"MPPS "+mppsIUID+" linked with MWL entry "+spsID},
                     new String[] { String.class.getName(),
                             String.class.getName(), String.class.getName(),
