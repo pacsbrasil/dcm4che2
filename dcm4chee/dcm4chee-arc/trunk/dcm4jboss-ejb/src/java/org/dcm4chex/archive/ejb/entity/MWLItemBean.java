@@ -212,6 +212,17 @@ public abstract class MWLItemBean implements EntityBean {
     public abstract void setAccessionNumber(String no);
 
     /**
+     * Study Instance UID
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="study_iuid"
+     */
+    public abstract String getStudyIuid();
+
+    public abstract void setStudyIuid(String uid);
+    
+    /**
      * MWL Item DICOM Attributes
      *
      * @ejb.persistence
@@ -296,6 +307,7 @@ public abstract class MWLItemBean implements EntityBean {
         setModality(spsItem.getString(Tags.Modality));
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
+        setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setEncodedAttributes(
                 DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
     }

@@ -125,6 +125,9 @@ public class MWLQueryCmd extends BaseReadCmd {
         sqlBuilder.addSingleValueMatch(null, "MWLItem.accessionNumber",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.AccessionNumber));
+        sqlBuilder.addSingleValueMatch(null, "MWLItem.studyIuid",
+                SqlBuilder.TYPE1,
+                keys.getString(Tags.StudyInstanceUID));
         sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.PatientID));
