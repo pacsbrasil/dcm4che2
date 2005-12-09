@@ -247,8 +247,8 @@ class PDUDecoder extends PDVInputStream
             rqac.setProtocolVersion(getUnsignedShort());
             get();
             get();
-            rqac.setCalledAET(decodeASCIIString(16));
-            rqac.setCallingAET(decodeASCIIString(16));
+            rqac.setCalledAET(decodeASCIIString(16).trim());
+            rqac.setCallingAET(decodeASCIIString(16).trim());
             rqac.setReservedBytes(decodeBytes(32));
             while (pos < pdulen)
                 decodeItem(rqac);
