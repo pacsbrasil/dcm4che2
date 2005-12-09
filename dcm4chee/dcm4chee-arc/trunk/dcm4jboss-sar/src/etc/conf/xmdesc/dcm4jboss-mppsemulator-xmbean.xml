@@ -65,6 +65,17 @@
          <value value="tiani.archive:service=MWLScu"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getHl7SendServiceName"
+      setMethod="setHl7SendServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>Hl7SendServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=HL7Send"/>
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
