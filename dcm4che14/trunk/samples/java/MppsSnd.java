@@ -385,6 +385,11 @@ public class MppsSnd implements PollDirSrv.Handler {
         	cuid = UIDs.GeneralPurposePerformedProcedureStepSOPClass;
             pcid = PCID_GPPPS;        	
         }
+        if (active.getAssociation().getAcceptedTransferSyntaxUID(pcid) == null)
+        {
+            log.error(messages.getString(pcid == PCID_MPPS ? "noPCMPPS" : "noPCGPPPS"));
+            return null;
+        }
         return active.invoke(aFact.newDimse(pcid,
         		oFact.newCommand().initNCreateRQ(
         				active.getAssociation().nextMsgID(),
