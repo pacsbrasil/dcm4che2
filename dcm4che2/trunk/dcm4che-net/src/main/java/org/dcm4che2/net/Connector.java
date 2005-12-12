@@ -59,22 +59,23 @@ import org.slf4j.LoggerFactory;
  * @since Nov 24, 2005
  *
  */
-class Connector
+public class Connector
 {
     static Logger log = LoggerFactory.getLogger(Connector.class);
     
-    private final Device device;
     private final NetworkConnection config;
+    private Device device;
     private ServerSocket server;
 
-
-    public Connector(Device device, NetworkConnection config)
+    public Connector()
     {
-        if (device == null)
-            throw new NullPointerException("device");
+        this(new NetworkConnection());
+    }
+
+    public Connector(NetworkConnection config)
+    {
         if (config == null)
             throw new NullPointerException("config");
-        this.device = device;
         this.config = config;
     }
 
@@ -83,14 +84,191 @@ class Connector
         return device;
     }
 
+    final void setDevice(Device device)
+    {
+        this.device = device;
+    }
+
     public final NetworkConnection getConfiguration()
     {
         return config;
     }
     
+    public final String getHostname()
+    {
+        return config.getHostname();
+    }
+
+    public final void setHostname(String hostname)
+    {
+        config.setHostname(hostname);
+    }
+
+    public final String getCommonName()
+    {
+        return config.getCommonName();
+    }
+
+    public final void setCommonName(String name)
+    {
+        config.setCommonName(name);
+    }
+
+    public final int getPort()
+    {
+        return config.getPort();
+    }
+
+    public final void setPort(int port)
+    {
+        config.setPort(port);
+    }
+
+    public final String[] getTlsCipherSuite()
+    {
+        return config.getTlsCipherSuite();
+    }
+
+    public final void setTlsCipherSuite(String[] tlsCipherSuite)
+    {
+        config.setTlsCipherSuite(tlsCipherSuite);
+    }
+
+    public final boolean isInstalled()
+    {
+        return config.isInstalled();
+    }
+
+    public final void setInstalled(boolean installed)
+    {
+        config.setInstalled(installed);
+    }
+    
+    public final int getBacklog()
+    {
+        return config.getBacklog();
+    }
+
+    public final void setBacklog(int backlog)
+    {
+        config.setBacklog(backlog);
+    }
+
+    public final int getAcceptTimeout()
+    {
+        return config.getAcceptTimeout();
+    }
+
+    public final void setAcceptTimeout(int timeout)
+    {
+        config.setAcceptTimeout(timeout);
+    }
+
+    public final int getConnectTimeout()
+    {
+        return config.getConnectTimeout();
+    }
+
+    public final void setConnectTimeout(int timeout)
+    {
+        config.setConnectTimeout(timeout);
+    }
+
+    public final int getRequestTimeout()
+    {
+        return config.getRequestTimeout();
+    }
+
+    public final void setRequestTimeout(int timeout)
+    {
+        config.setRequestTimeout(timeout);
+    }
+
+    public final int getReleaseTimeout()
+    {
+        return config.getRequestTimeout();
+    }
+
+    public final void setReleaseTimeout(int timeout)
+    {
+        config.setReleaseTimeout(timeout);
+    }
+
+    public final int getSocketCloseDelay()
+    {
+        return config.getSocketCloseDelay();
+    }
+
+    public final void setSocketCloseDelay(int delay)
+    {
+        config.setSocketCloseDelay(delay);
+    }
+
+    public final int getReceiveBufferSize()
+    {
+        return config.getReceiveBufferSize();
+    }
+
+    public final void setReceiveBufferSize(int size)
+    {
+        config.setReceiveBufferSize(size);
+    }
+
+    public final int getSendBufferSize()
+    {
+        return config.getSendBufferSize();
+    }
+
+    public final void setSendBufferSize(int size)
+    {
+        config.setSendBufferSize(size);
+    }
+    
+    public final boolean isTcpNoDelay()
+    {
+        return config.isTcpNoDelay();
+    }
+
+    public final void setTcpNoDelay(boolean tcpNoDelay)
+    {
+        config.setTcpNoDelay(tcpNoDelay);
+    }
+
+    public final boolean isTlsNeedClientAuth()
+    {
+        return config.isTlsNeedClientAuth();
+    }
+
+    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth)
+    {
+        config.setTlsNeedClientAuth(tlsNeedClientAuth);
+    }
+
+    public final String[] getTlsProtocol()
+    {
+        return config.getTlsProtocol();
+    }
+
+    public final void setTlsProtocol(String[] tlsProtocol)
+    {
+        config.setTlsProtocol(tlsProtocol);
+    }
+
+    public boolean isListening()
+    {
+        return config.isListening();
+    }
+
+    public boolean isTLS()
+    {
+        return config.isTLS();
+    }    
+    
     public Socket connect(NetworkConnection peerConfig)
     throws IOException
     {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
         if (!peerConfig.isListening())
             throw new IllegalArgumentException("Only initiates associations - " 
                     + peerConfig);
@@ -108,6 +286,8 @@ class Connector
     public synchronized void bind()
     throws IOException
     {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
         if (!config.isListening())
             throw new IllegalStateException("Only initiates associations - " 
                     + config);
@@ -169,21 +349,6 @@ class Connector
         ss.setEnabledCipherSuites(config.getTlsCipherSuite());
         ss.setNeedClientAuth(config.isTlsNeedClientAuth());
         return ss;
-    }
-
-    public final int getRequestTimeout()
-    {
-        return config.getRequestTimeout();
-    }
-
-    public final long getSocketCloseDelay()
-    {
-        return config.getSocketCloseDelay();
-    }
-
-    public final int getAcceptTimeout()
-    {
-        return config.getAcceptTimeout();
     }
 
 }

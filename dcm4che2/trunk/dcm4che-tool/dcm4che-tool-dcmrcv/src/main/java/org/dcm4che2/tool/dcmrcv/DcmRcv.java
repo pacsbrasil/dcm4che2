@@ -50,9 +50,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.dcm4che2.config.DeviceConfiguration;
-import org.dcm4che2.config.NetworkApplicationEntity;
-import org.dcm4che2.config.NetworkConnection;
 import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -62,6 +59,7 @@ import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.PDVInputStream;
 import org.dcm4che2.net.service.StorageService;
@@ -74,7 +72,7 @@ import org.dcm4che2.net.service.VerificationService;
  */
 public class DcmRcv extends StorageService {
 
-    private static final int KB = 1024;
+    private static final int MEGABYTE = 1048576;
     private static final String USAGE = 
         "dcmrcv [Options] [<aet>[@<ip>]:]<port>";
     private static final String DESCRIPTION = 
@@ -211,98 +209,97 @@ public class DcmRcv extends StorageService {
     };
 
     
-    private DeviceConfiguration deviceCfg = new DeviceConfiguration();
-    private NetworkApplicationEntity aeCfg = new NetworkApplicationEntity();
-    private NetworkConnection connCfg = new NetworkConnection();
+    private Device device = new Device("DCMRCV");
+    private ApplicationEntity ae = new ApplicationEntity();
+    private Connector connector = new Connector();
     private String[] tsuids = NON_RETIRED_TS;
-    private final Device device;
-    private final ApplicationEntity ae;
     private File destination;
     private boolean devnull;
-    private int fileBufferSize = 8192;
-    private ThreadLocal fileBuffer = new ThreadLocal(){
-
-        protected Object initialValue()
-        {
-            return new byte[fileBufferSize ];
-        }};
+    private int fileBufferSize = 256;
     
     public DcmRcv()
     {
         super(CUIDS);
-        deviceCfg.setDeviceName("DCMRCV");
-        deviceCfg.setNetworkApplicationEntity(
-                new NetworkApplicationEntity[] { aeCfg });
-        deviceCfg.setNetworkConnection(
-                new NetworkConnection[] { connCfg });
-        aeCfg.setAssociationInitiator(true);
-        aeCfg.setNetworkConnection(
-                new NetworkConnection[] { connCfg });
-        aeCfg.setAssociationAcceptor(true);
-        device = new Device(deviceCfg);
-        ae = device.getApplicationEntity(aeCfg);
+        device.addApplicationEntity(ae);
+        ae.addConnector(connector);
+        ae.setAssociationAcceptor(true);
         ae.register(new VerificationService());
         ae.register(this);
     }
        
     public final void setAEtitle(String aet)
     {
-        aeCfg.setAEtitle(aet);
+        ae.setAETitle(aet);
     }
 
     public final void setHostname(String hostname)
     {
-        connCfg.setHostname(hostname);
+        connector.setHostname(hostname);
     }
     
     public final void setPort(int port)
     {
-        connCfg.setPort(port);
+        connector.setPort(port);
     }
     
     public final void setPackPDV(boolean packPDV)
     {
-        aeCfg.setPackPDV(packPDV);
+        ae.setPackPDV(packPDV);
     }
 
+    public final void setAssociationReaperPeriod(int period)
+    {
+        device.setAssociationReaperPeriod(period);
+    }
+    
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        connCfg.setTcpNoDelay(tcpNoDelay);
+        connector.setTcpNoDelay(tcpNoDelay);
     }
 
     public final void setRequestTimeout(int timeout)
     {
-        connCfg.setRequestTimeout(timeout);
+        connector.setRequestTimeout(timeout);
     }
 
     public final void setReleaseTimeout(int timeout)
     {
-        connCfg.setReleaseTimeout(timeout);
+        connector.setReleaseTimeout(timeout);
     }
 
     public final void setSocketCloseDelay(int timeout)
     {
-        connCfg.setSocketCloseDelay(timeout);
+        connector.setSocketCloseDelay(timeout);
     }
 
+    public final void setIdleTimeout(int timeout)
+    {
+        ae.setIdleTimeout(timeout);        
+    }
+    
+    public final void setDimseRspTimeout(int timeout)
+    {
+        ae.setDimseRspTimeout(timeout);        
+    }
+    
     public final void setMaxPDULengthSend(int maxLength)
     {
-        aeCfg.setMaxPDULengthSend(maxLength);        
+        ae.setMaxPDULengthSend(maxLength);        
     }
     
     public void setMaxPDULengthReceive(int maxLength)
     {
-        aeCfg.setMaxPDULengthReceive(maxLength);        
+        ae.setMaxPDULengthReceive(maxLength);        
     }
     
     public final void setReceiveBufferSize(int bufferSize)
     {
-        connCfg.setReceiveBufferSize(bufferSize);
+        connector.setReceiveBufferSize(bufferSize);
     }
 
     public final void setSendBufferSize(int bufferSize)
     {
-        connCfg.setSendBufferSize(bufferSize);
+        connector.setSendBufferSize(bufferSize);
     }
 
     private static CommandLine parse(String[] args)
@@ -319,35 +316,42 @@ public class DcmRcv extends StorageService {
         opts.addOption("y", "tcp-no-delay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
         Option closeDelay = new Option("c", "close-delay", true,
-                "delay in ms for Socket close after sending A-ABORT, 100ms by default");
+                "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
         Option acTimeout = new Option("T", "request-timeout", true,
-                "timeout in ms for receiving A-ASSOCIATE-RQ, no timeout by default");
+                "timeout in ms for receiving A-ASSOCIATE-RQ, 5s by default");
         acTimeout.setArgName("timeout");
         opts.addOption(acTimeout);
         Option rpTimeout = new Option("t", "release-timeout", true,
-                "timeout in ms for receiving A-RELEASE-RP, no timeout by default");
+                "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
+        Option checkPeriod = new Option("D", "reaper-period", true,
+                "period in ms to check idleness, 10s by default");
+        checkPeriod.setArgName("period");
+        Option idleTimeout = new Option("I", "idle-timeout", true,
+                "timeout in ms for receiving DIMSE-RQ, 60s by default");
+        acTimeout.setArgName("timeout");
+        opts.addOption(idleTimeout);
         Option soRcvBufSize = new Option("s", "so-rcv-buf-size", true,
-                "set SO_RCVBUF socket option to specified value in KB");
+                "set SO_RCVBUF socket option to specified value");
         soRcvBufSize.setArgName("size");
         opts.addOption(soRcvBufSize);
         Option soSndBufSize = new Option("S", "so-snd-buf-size", true,
-                "set SO_SNDBUF socket option to specified value in KB");
+                "set SO_SNDBUF socket option to specified value");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
         Option rcvPduLen = new Option("u", "rcv-pdu-len", true,
-                "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
+                "maximal length of received P-DATA-TF PDUs, 16384 by default");
         rcvPduLen.setArgName("max-len");
         opts.addOption(rcvPduLen);
         Option sndPduLen = new Option("U", "snd-pdu-len", true,
-                "maximal length in KB of sent P-DATA-TF PDUs, 1024KB(=1MB) by default");
+                "maximal length of sent P-DATA-TF PDUs, 16384 by default");
         sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
         Option fileBufSize = new Option("b", "file-buf-size", true,
-                "buffer size in KB to write received object to file, 8KB by default");
+                "minimal buffer size to write received object to file, 256 by default");
         fileBufSize.setArgName("size");
         opts.addOption(fileBufSize);
         Option maxOpsInvoked = new Option("a", "async", true,
@@ -410,27 +414,35 @@ public class DcmRcv extends StorageService {
             dcmrcv.setSocketCloseDelay(
                     parseInt(cl.getOptionValue("c"),
                     "illegal argument of option -c", 1, 10000));
+        if (cl.hasOption("D"))
+            dcmrcv.setAssociationReaperPeriod(
+                    parseInt(cl.getOptionValue("D"),
+                    "illegal argument of option -D", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("I"))
+            dcmrcv.setIdleTimeout(
+                    parseInt(cl.getOptionValue("D"),
+                    "illegal argument of option -I", 1, Integer.MAX_VALUE));
         if (cl.hasOption("u"))
             dcmrcv.setMaxPDULengthReceive(
                     parseInt(cl.getOptionValue("u"),
-                    "illegal argument of option -u", 1, 10000) * KB);
+                    "illegal argument of option -u", 256, MEGABYTE));
         if (cl.hasOption("U"))
             dcmrcv.setMaxPDULengthSend(
                     parseInt(cl.getOptionValue("U"),
-                    "illegal argument of option -U", 1, 10000) * KB);
+                    "illegal argument of option -U", 256, MEGABYTE));
         if (cl.hasOption("S"))
             dcmrcv.setSendBufferSize(
                     parseInt(cl.getOptionValue("S"),
-                    "illegal argument of option -S", 1, 10000) * KB);
+                    "illegal argument of option -S", 256, MEGABYTE));
         if (cl.hasOption("s"))
             dcmrcv.setReceiveBufferSize(
                     parseInt(cl.getOptionValue("s"),
-                    "illegal argument of option -s", 1, 10000) * KB);
+                    "illegal argument of option -s", 256, MEGABYTE));
         if (cl.hasOption("b"))
             dcmrcv.setFileBufferSize(
                     parseInt(cl.getOptionValue("b"),
-                    "illegal argument of option -b", 1, 10000) * KB);
-       dcmrcv.setPackPDV(cl.hasOption("k"));
+                    "illegal argument of option -b", 256, MEGABYTE));
+        dcmrcv.setPackPDV(cl.hasOption("k"));
         dcmrcv.setTcpNoDelay(cl.hasOption("y"));
         if (cl.hasOption("a"))
             dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue("a"),
@@ -453,7 +465,7 @@ public class DcmRcv extends StorageService {
         tc[0] = new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS, true);
         for (int i = 0; i < CUIDS.length; i++)
             tc[i+1] = new TransferCapability(CUIDS[i], tsuids, true);
-        aeCfg.setTransferCapability(tc);        
+        ae.setTransferCapability(tc);        
     }
 
     private void setFileBufferSize(int size)
@@ -463,7 +475,7 @@ public class DcmRcv extends StorageService {
 
     private void setMaxOpsPerformed(int maxOps)
     {
-        aeCfg.setMaxOpsPerformed(maxOps);        
+        ae.setMaxOpsPerformed(maxOps);        
     }
 
     private void setDestination(String filePath)
@@ -477,7 +489,7 @@ public class DcmRcv extends StorageService {
     public void start() throws IOException
     {        
         device.startListening();
-        System.out.println("Start Server listening on port " + connCfg.getPort());
+        System.out.println("Start Server listening on port " + connector.getPort());
     }
 
     private static String[] split(String s, char delim, int defPos)
@@ -509,7 +521,7 @@ public class DcmRcv extends StorageService {
         exit(errPrompt);
         throw new RuntimeException();
     }
-
+    
     protected DicomObject doCStore(Association as, int pcid,
             DicomObject rq, PDVInputStream dataStream, String tsuid)    {
         try
@@ -526,15 +538,11 @@ public class DcmRcv extends StorageService {
                 fmi.initFileMetaInformation(cuid, iuid, tsuid);
                 File file = devnull ? destination : new File(destination, iuid);
                 FileOutputStream fos = new FileOutputStream(file);
-                BufferedOutputStream bos = new BufferedOutputStream(fos);
+                BufferedOutputStream bos = new BufferedOutputStream(fos, fileBufferSize);
                 DicomOutputStream dos = new DicomOutputStream(bos);
                 dos.writeFileMetaInformation(fmi);
-                dos.flush();
-                byte[] b = (byte[]) fileBuffer.get();
-                int read;
-                while ((read = dataStream.read(b, 0, b.length)) > 0)
-                    fos.write(b, 0, read);
-                fos.close();
+                dataStream.copyTo(dos);
+                dos.close();
             }
         }
         catch (IOException e)

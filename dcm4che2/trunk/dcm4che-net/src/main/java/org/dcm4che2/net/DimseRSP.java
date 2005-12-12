@@ -86,7 +86,9 @@ public class DimseRSP
                 ex = as.getException();
                 notifyAll();
             }
-        }};
+        }
+
+        };
     
     final DimseRSPHandler getHandler()
     {

@@ -41,6 +41,7 @@ package org.dcm4che2.net;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -644,6 +645,8 @@ class PDUDecoder extends PDVInputStream
 
     public long skipAll() throws IOException
     {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
         long n = 0;
         while (!isEOF())
         {
@@ -651,5 +654,32 @@ class PDUDecoder extends PDVInputStream
             pos = pdvend;
         }
         return n;
+    }
+
+    public void copyTo(OutputStream out, int length) throws IOException
+    {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        int remaining = length;
+        while (remaining > 0)
+        {
+            if (isEOF())
+                throw new EOFException("remaining: " + remaining);
+            int read = Math.min(remaining, pdvend - pos);
+            out.write(buf, pos, read);
+            remaining -= read;
+            pos += read;
+        }                    
+    }
+
+    public void copyTo(OutputStream out) throws IOException
+    {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        while (!isEOF())
+        {
+            out.write(buf, pos, pdvend - pos);
+            pos = pdvend;
+        }
     }
 }

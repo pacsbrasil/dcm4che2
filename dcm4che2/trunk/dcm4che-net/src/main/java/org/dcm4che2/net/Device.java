@@ -44,6 +44,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -56,7 +58,6 @@ import org.dcm4che2.data.UID;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJException;
 import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.service.BasicDicomServiceRegistry;
 import org.dcm4che2.net.service.DicomService;
 
 /**
@@ -67,53 +68,302 @@ import org.dcm4che2.net.service.DicomService;
  */
 public class Device
 {
-    private final DeviceConfiguration conf;
-    private final Connector[] connector;
-    private final ApplicationEntity[] ae;
+    private final DeviceConfiguration config;
+    private final ArrayList connectors;
+    private final ArrayList aes;
     private Executor executor;
     private SSLContext sslContext;
     private SecureRandom random;
-    private BasicDicomServiceRegistry serviceRegistry = 
-            new BasicDicomServiceRegistry();
+    private DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+    private AssociationReaper reaper;
 
-    public final BasicDicomServiceRegistry getServiceRegistry()
+    public Device(String deviceName)
     {
-        return serviceRegistry;
+        this(new DeviceConfiguration(deviceName));        
     }
-
-    public Device(DeviceConfiguration conf)
+    
+    public Device(DeviceConfiguration config)
     {
-        if (conf == null)
-            throw new NullPointerException("conf");
+        if (config == null)
+            throw new NullPointerException("config");
         
-        this.conf = conf;
-        this.executor = new NewThreadExecutor(conf.getDeviceName());
-        final NetworkConnection[] connections = conf.getNetworkConnection();
-        this.connector = new Connector[connections.length];
+        this.config = config;
+        
+        final NetworkConnection[] connections = config.getNetworkConnection();
+        this.connectors = new ArrayList(connections.length);
         for (int i = 0; i < connections.length; i++)
-            connector[i] = new Connector(this, connections[i]);
-        final NetworkApplicationEntity[] nae = conf.getNetworkApplicationEntity();
-        this.ae = new ApplicationEntity[nae.length];
-        for (int i = 0; i < ae.length; i++)
-            ae[i] = new ApplicationEntity(this, nae[i]);
+            addConnector(new Connector(connections[i]));
+        
+        final NetworkApplicationEntity[] nae = config.getNetworkApplicationEntity();
+        this.aes = new ArrayList(nae.length);
+        for (int i = 0; i < nae.length; i++)
+            addApplicationEntity(new ApplicationEntity(nae[i]));
+    }
+
+    public final void setExecutor(Executor executor)
+    {
+        this.executor = executor;
+    }
+
+    public DeviceConfiguration getConfiguration()
+    {
+        config.setNetworkApplicationEntity(getNetworkApplicationEntity());
+        config.setNetworkConnection(getNetworkConnection());
+        return config;
+    }
+
+    public final NetworkApplicationEntity[] getNetworkApplicationEntity()
+    {
+        NetworkApplicationEntity[] a = new NetworkApplicationEntity[aes.size()];
+        for (int i = 0; i < a.length; i++)
+            a[i] = ((ApplicationEntity) aes.get(i)).getConfiguration();
+        return a;
     }
     
-    public final DeviceConfiguration getConfiguration()
+    public NetworkConnection[] getNetworkConnection()
     {
-        return conf;
+        NetworkConnection[] a = new NetworkConnection[connectors.size()];
+        for (int i = 0; i < a.length; i++)
+            a[i] = ((Connector) connectors.get(i)).getConfiguration();
+        return a;
+    }
+        
+    public final String getDeviceName()
+    {
+        return config.getDeviceName();
     }
     
-    public final Executor getExecutor()
+    public final void setDeviceName(String deviceName)
     {
+        config.setDeviceName(deviceName);
+    }
+    
+    public final String getDescription()
+    {
+        return config.getDeviceName();
+    }
+    
+    public final void setDescription(String description)
+    {
+        config.setDescription(description);
+    }
+    
+    public final String getManufactorer()
+    {
+        return config.getManufactorer();
+    }
+    
+    public final void setManufactorer(String manufactorer)
+    {
+        config.setManufactorer(manufactorer);
+    }
+    
+    public final String getManufactorerModelName()
+    {
+        return config.getManufactorerModelName();
+    }
+    
+    public final void setManufactorerModelName(String manufactorerModelName)
+    {
+        config.setManufactorerModelName(manufactorerModelName);
+    }
+    
+    public final String[] getSoftwareVersion()
+    {
+        return config.getSoftwareVersion();
+    }
+    
+    public final void setSoftwareVersion(String[] softwareVersion)
+    {
+        config.setSoftwareVersion(softwareVersion);
+    }
+    
+    public final String getStationName()
+    {
+        return config.getStationName();
+    }
+    
+    public final void setStationName(String stationName)
+    {
+        config.setStationName(stationName);
+    }
+    
+    public final String getDeviceSerialNumber()
+    {
+        return config.getDeviceSerialNumber();
+    }
+    
+    public final void setDeviceSerialNumber(String deviceSerialNumber)
+    {
+        config.setDeviceSerialNumber(deviceSerialNumber);
+    }
+    
+    public final String[] getPrimaryDeviceType()
+    {
+        return config.getPrimaryDeviceType();
+    }
+    
+    public final void setPrimaryDeviceType(String[] primaryDeviceType)
+    {
+        config.setPrimaryDeviceType(primaryDeviceType);
+    }
+    
+    public final String[] getInstitutionName()
+    {
+        return config.getInstitutionName();
+    }
+    
+    public final void setInstitutionName(String[] name)
+    {
+        config.setInstitutionName(name);
+    }
+    
+    public final String[] getInstitutionAddress()
+    {
+        return config.getInstitutionAddress();
+    }
+    
+    public final void setInstitutionAddresses(String[] addr)
+    {
+        config.setInstitutionAddresses(addr);
+    }
+    
+    public final String[] getInstitutionalDepartmentName()
+    {
+        return config.getInstitutionalDepartmentName();
+    }
+    
+    public final void setInstitutionalDepartmentName(String[] name)
+    {
+        config.setInstitutionalDepartmentName(name);
+    }
+    
+    public final String getIssuerOfPatientID()
+    {
+        return config.getDeviceName();
+    }
+    
+    public final void setIssuerOfPatientID(String issuerOfPatientID)
+    {
+        config.setIssuerOfPatientID(issuerOfPatientID);
+    }
+    
+    public final Object[] getRelatedDevice()
+    {
+        return config.getRelatedDevice();
+    }
+    
+    public final void setRelatedDeviceReference(Object[] relatedDevice)
+    {
+        config.setRelatedDeviceReference(relatedDevice);
+    }
+    
+    public final X509Certificate[] getAuthorizedNodeCertificate()
+    {
+        return config.getAuthorizedNodeCertificate();
+    }
+    
+    public final void setAuthorizedNodeCertificate(X509Certificate[] cert)
+    {
+        config.setAuthorizedNodeCertificate(cert);
+    }
+    
+    public final X509Certificate[] getThisNodeCertificate()
+    {
+        return config.getThisNodeCertificate();
+    }
+    
+    public final void setThisNodeCertificate(X509Certificate[] cert)
+    {
+        config.setThisNodeCertificate(cert);
+    }
+    
+    public final Object[] getVendorDeviceData()
+    {
+        return config.getVendorDeviceData();
+    }
+    
+    public final void setVendorDeviceData(Object[] vendorDeviceData)
+    {
+        config.setVendorDeviceData(vendorDeviceData);
+    }
+    
+    public final boolean isInstalled()
+    {
+        return config.isInstalled();
+    }
+    
+    public final void setInstalled(boolean installed)
+    {
+        config.setInstalled(installed);
+    }
+    
+    public final int getAssociationReaperPeriod()
+    {
+        return config.getAssociationReaperPeriod();
+    }
+
+    public final void setAssociationReaperPeriod(int period)
+    {
+        config.setAssociationReaperPeriod(period);
+    }
+    
+    synchronized final Executor getExecutor()
+    {
+        if (executor == null)
+            executor = new NewThreadExecutor(getDeviceName());
         return executor;
     }
+ 
+
+    synchronized final AssociationReaper getAssociationReaper()
+    {
+        if (reaper == null)
+            reaper = new AssociationReaper(getAssociationReaperPeriod());
+        return reaper;
+    }
     
+    public void addConnector(Connector c)
+    {
+        if (c.getDevice() == null)
+        {
+            connectors.add(c);
+            c.setDevice(this);
+        }
+        else if (c.getDevice() != this)
+        {
+            throw new IllegalArgumentException(
+                    "Connector already associated to other device");
+        }
+    }
+
+    
+    public void addApplicationEntity(ApplicationEntity ae)
+    {
+        if (ae.getDevice() == null)
+        {
+            aes.add(ae);
+            ae.setDefaultServiceRegistry(serviceRegistry);
+            
+            for (Iterator iter = ae.getConnectors().iterator(); iter.hasNext();)
+                addConnector((Connector) iter.next());
+            
+            ae.setDevice(this);
+            ae.initConnectors();
+        }
+        else if (ae.getDevice() != this)
+        {
+            throw new IllegalArgumentException(
+                    "Application Entity already associated to other device");
+        }
+    }
+        
     public void initTLS(KeyStore key, char[] password)
     throws GeneralSecurityException
     {
         KeyStore trust = KeyStore.getInstance(KeyStore.getDefaultType());
-        addCertificate(trust, conf.getThisNodeCertificate());
-        addCertificate(trust, conf.getAuthorizedNodeCertificate());
+        addCertificate(trust, getThisNodeCertificate());
+        addCertificate(trust, getAuthorizedNodeCertificate());
         initTLS(key, password, trust );
     }
 
@@ -141,32 +391,50 @@ public class Device
     }
     
     
-    public Connector getConnector(NetworkConnection nc)
+    Connector getConnector(NetworkConnection nc)
     {
-        for (int i = 0; i < connector.length; i++)
-            if (connector[i].getConfiguration() == nc)
-                return connector[i];
+        for (Iterator iter = connectors.iterator(); iter.hasNext();)
+        {
+            Connector c = (Connector) iter.next();
+            if (c.getConfiguration() == nc)
+                return c;
+        }
         return null;
     }
     
-    public ApplicationEntity getApplicationEntity(NetworkApplicationEntity nae)
+    ApplicationEntity getApplicationEntity(NetworkApplicationEntity nae)
     {
-        for (int i = 0; i < ae.length; i++)
-            if (ae[i].getConfiguration() == nae)
-                return ae[i];
+        for (Iterator iter = aes.iterator(); iter.hasNext();)
+        {
+            ApplicationEntity ae = (ApplicationEntity) iter.next();
+            if (ae.getConfiguration() == nae)
+                return ae;
+        }
         return null;
+    }
+    
+    public void register(DicomService service)
+    {
+        serviceRegistry.register(service);        
     }
     
     public void startListening() throws IOException
     {
-        for (int i = 0; i < connector.length; i++)
-            connector[i].bind();
-    }
+        for (Iterator iter = connectors.iterator(); iter.hasNext();)
+        {
+            Connector c = (Connector) iter.next();
+            if (c.isInstalled() && c.isListening())
+                c.bind();
+        }
+   }
 
     public void stopListening()
     {
-        for (int i = 0; i < connector.length; i++)
-            connector[i].unbind();
+        for (Iterator iter = connectors.iterator(); iter.hasNext();)
+        {
+            Connector c = (Connector) iter.next();
+            c.unbind();
+        }
     }
 
     final SSLContext getSSLContext()
@@ -190,24 +458,20 @@ public class Device
                     AAssociateRJException.SOURCE_SERVICE_USER,
                     AAssociateRJException.REASON_APP_CTX_NAME_NOT_SUPPORTED);
         String aet = rq.getCalledAET();
-        for (int i = 0; i < ae.length; i++)
+        for (Iterator iter = aes.iterator(); iter.hasNext();)
         {
-            String aeti = ae[i].getAETitle();
+            ApplicationEntity ae = (ApplicationEntity) iter.next();
+            String aeti = ae.getAETitle();
             if (aeti == null || aeti.equals(aet))
             {
-                a.setApplicationEntity(ae[i]);
-                return ae[i].negotiate(a, rq);
+                a.setApplicationEntity(ae);
+                return ae.negotiate(a, rq);
             }
         }
         throw new AAssociateRJException(
                 AAssociateRJException.RESULT_REJECTED_PERMANENT,
                 AAssociateRJException.SOURCE_SERVICE_USER,
                 AAssociateRJException.REASON_CALLED_AET_NOT_RECOGNIZED);
-    }
-
-    public void register(DicomService service)
-    {
-        serviceRegistry.register(service);        
     }
 
 }

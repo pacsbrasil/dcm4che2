@@ -54,7 +54,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.dcm4che2.config.DeviceConfiguration;
 import org.dcm4che2.config.NetworkApplicationEntity;
 import org.dcm4che2.config.NetworkConnection;
 import org.dcm4che2.config.TransferCapability;
@@ -71,6 +70,7 @@ import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
+import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.NoPresentationContextException;
@@ -81,7 +81,7 @@ import org.dcm4che2.util.StringUtils;
  * @version $Revision$ $Date$
  * @since Oct 13, 2005
  */
-public class DcmSnd implements DimseRSPHandler {
+public class DcmSnd {
 
     private static final int KB = 1024;
     private static final int MB = KB * KB;
@@ -110,12 +110,11 @@ public class DcmSnd implements DimseRSPHandler {
         UID.ImplicitVRLittleEndian
     };
 
-    private DeviceConfiguration remoteDeviceCfg = new DeviceConfiguration();
     private NetworkApplicationEntity remoteAECfg = new NetworkApplicationEntity();
     private NetworkConnection remoteConnCfg = new NetworkConnection();
-    private DeviceConfiguration localDeviceCfg = new DeviceConfiguration();
-    private NetworkApplicationEntity localAECfg = new NetworkApplicationEntity();
-    private NetworkConnection localConnCfg = new NetworkConnection();
+    private Device device = new Device("DCMECHO");
+    private ApplicationEntity ae = new ApplicationEntity();
+    private Connector connector = new Connector();
     
     private HashMap as2ts = new HashMap();
     private ArrayList files = new ArrayList();
@@ -127,28 +126,20 @@ public class DcmSnd implements DimseRSPHandler {
 
     public DcmSnd()
     {
-        remoteDeviceCfg.setNetworkApplicationEntity(
-                new NetworkApplicationEntity[] { remoteAECfg });
-        remoteDeviceCfg.setNetworkConnection(
-                new NetworkConnection[] { remoteConnCfg });
+        remoteAECfg.setInstalled(true);
         remoteAECfg.setAssociationAcceptor(true);
         remoteAECfg.setNetworkConnection(
                 new NetworkConnection[] { remoteConnCfg });
 
-        localDeviceCfg.setDeviceName("DCMSEND");
-        localDeviceCfg.setNetworkApplicationEntity(
-                new NetworkApplicationEntity[] { localAECfg });
-        localDeviceCfg.setNetworkConnection(
-                new NetworkConnection[] { localConnCfg });
-        localAECfg.setAssociationInitiator(true);
-        localAECfg.setAEtitle("DCMSEND");
-        localAECfg.setNetworkConnection(
-                new NetworkConnection[] { localConnCfg });        
+        device.addApplicationEntity(ae);
+        ae.addConnector(connector);
+        ae.setAssociationInitiator(true);
+        ae.setAETitle("DCMSND");
     }
 
     public final void setLocalHost(String hostname)
     {
-        localConnCfg.setHostname(hostname);
+        connector.setHostname(hostname);
     }
 
     public final void setRemoteHost(String hostname)
@@ -163,32 +154,42 @@ public class DcmSnd implements DimseRSPHandler {
 
     public final void setCalledAET(String called)
     {
-        remoteAECfg.setAEtitle(called);
+        remoteAECfg.setAETitle(called);
     }
 
     public final void setCalling(String calling)
     {
-        localAECfg.setAEtitle(calling);
+        ae.setAETitle(calling);
     }
 
     public final void setConnectTimeout(int connectTimeout)
     {
-        localConnCfg.setConnectTimeout(connectTimeout);
+        connector.setConnectTimeout(connectTimeout);
     }
     
     public final void setMaxPDULengthReceive(int maxPDULength)
     {
-        localAECfg.setMaxPDULengthReceive(maxPDULength);
+        ae.setMaxPDULengthReceive(maxPDULength);
     }
 
     public final void setMaxOpsInvoked(int maxOpsInvoked)
     {
-        localAECfg.setMaxOpsInvoked(maxOpsInvoked);
+        ae.setMaxOpsInvoked(maxOpsInvoked);
     }
 
     public final void setPackPDV(boolean packPDV)
     {
-        localAECfg.setPackPDV(packPDV);
+        ae.setPackPDV(packPDV);
+    }
+
+    public final void setAssociationReaperPeriod(int period)
+    {
+        device.setAssociationReaperPeriod(period);
+    }
+
+    public final void setDimseRspTimeout(int timeout)
+    {
+        ae.setDimseRspTimeout(timeout);
     }
     
     public final void setPriority(int priority)
@@ -198,37 +199,37 @@ public class DcmSnd implements DimseRSPHandler {
 
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        localConnCfg.setTcpNoDelay(tcpNoDelay);
+        connector.setTcpNoDelay(tcpNoDelay);
     }
 
     public final void setAcceptTimeout(int timeout)
     {
-        localConnCfg.setAcceptTimeout(timeout);
+        connector.setAcceptTimeout(timeout);
     }
 
     public final void setReleaseTimeout(int timeout)
     {
-        localConnCfg.setReleaseTimeout(timeout);
+        connector.setReleaseTimeout(timeout);
     }
 
     public final void setSocketCloseDelay(int timeout)
     {
-        localConnCfg.setSocketCloseDelay(timeout);
+        connector.setSocketCloseDelay(timeout);
     }
 
     public final void setMaxPDULengthSend(int maxPDULength)
     {
-        localAECfg.setMaxPDULengthSend(maxPDULength);
+        ae.setMaxPDULengthSend(maxPDULength);
     }
 
     public final void setReceiveBufferSize(int bufferSize)
     {
-        localConnCfg.setReceiveBufferSize(bufferSize);
+        connector.setReceiveBufferSize(bufferSize);
     }
 
     public final void setSendBufferSize(int bufferSize)
     {
-        localConnCfg.setSendBufferSize(bufferSize);
+        connector.setSendBufferSize(bufferSize);
     }
 
     public final void setTranscoderBufferSize(int transcoderBufferSize)
@@ -275,23 +276,30 @@ public class DcmSnd implements DimseRSPHandler {
         conTimeout.setArgName("timeout");
         opts.addOption(conTimeout);
         Option closeDelay = new Option("c", "close-delay", true,
-                "delay in ms for Socket close after sending A-ABORT, 100ms by default");
+                "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
+        Option checkPeriod = new Option("D", "reaper-period", true,
+                "period in ms to check for outstanding DIMSE-RSP, 10s by default");
+        checkPeriod.setArgName("period");
+        Option rspTimeout = new Option("R", "rsp-timeout", true,
+                "timeout in ms for receiving DIMSE-RSP, 60s by default");
+        rspTimeout.setArgName("timeout");
+        opts.addOption(rspTimeout);
         Option acTimeout = new Option("T", "accept-timeout", true,
-                "timeout in ms for receiving A-ASSOCIATE-AC, no timeout by default");
+                "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
         acTimeout.setArgName("timeout");
         opts.addOption(acTimeout);
         Option rpTimeout = new Option("t", "release-timeout", true,
-                "timeout in ms for receiving A-RELEASE-RP, no timeout by default");
+                "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
         Option rcvPduLen = new Option("u", "rcv-pdu-len", true,
-                "maximal length in KB of received P-DATA-TF PDUs, unlimited by default");
+                "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         rcvPduLen.setArgName("max-len");
         opts.addOption(rcvPduLen);
         Option sndPduLen = new Option("U", "snd-pdu-len", true,
-                "maximal length in KB of sent P-DATA-TF PDUs, 1024KB(=1MB) by default");
+                "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
         sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
         Option soRcvBufSize = new Option("s", "so-rcv-buf-size", true,
@@ -302,10 +310,6 @@ public class DcmSnd implements DimseRSPHandler {
                 "set SO_SNDBUF socket option to specified value in KB");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
-        Option readBufSize = new Option("r", "read-buf-size", true,
-                "association read buffer size in KB, 1KB by default");
-        readBufSize.setArgName("size");
-        opts.addOption(readBufSize);
         Option transcoderBufSize = new Option("b", "transcoder-buf-size", true,
                 "transcoder buffer size in KB, 1KB by default");
         transcoderBufSize.setArgName("size");
@@ -371,6 +375,14 @@ public class DcmSnd implements DimseRSPHandler {
             dcmsnd.setConnectTimeout(
                     parseInt(cl.getOptionValue("C"),
                     "illegal argument of option -C", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("D"))
+            dcmsnd.setAssociationReaperPeriod(
+                    parseInt(cl.getOptionValue("D"),
+                    "illegal argument of option -D", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("R"))
+            dcmsnd.setDimseRspTimeout(
+                    parseInt(cl.getOptionValue("R"),
+                    "illegal argument of option -R", 1, Integer.MAX_VALUE));
         if (cl.hasOption("T"))
             dcmsnd.setAcceptTimeout(
                     parseInt(cl.getOptionValue("T"),
@@ -596,16 +608,13 @@ public class DcmSnd implements DimseRSPHandler {
             tc[i] = new TransferCapability(cuid, 
                     (String[]) ts.toArray(new String[ts.size()]), false);
         }
-        localAECfg.setTransferCapability(tc);
+        ae.setTransferCapability(tc);
     }
 
     
     public void open()
     throws IOException, ConfigurationException, InterruptedException
     {
-        Device device = new Device(localDeviceCfg);
-        ApplicationEntity ae = device.getApplicationEntity(localAECfg);
-        
         assoc = ae.connect(remoteAECfg);
     }
 
@@ -617,8 +626,15 @@ public class DcmSnd implements DimseRSPHandler {
             FileInfo info = (FileInfo) files.get(i);
             try
             {
+                DimseRSPHandler rspHandler = new DimseRSPHandler(){
+                    public void onDimseRSP(Association as, DicomObject cmd, 
+                            DicomObject data) throws IOException
+                    {
+                        DcmSnd.this.onDimseRSP(as, cmd, data);
+                    }
+                };
                 assoc.cstore(info.cuid, info.iuid, priority, new DataWriter(info), 
-                        compatibleTS(info.tsuid, tsuid), this);
+                        compatibleTS(info.tsuid, tsuid), rspHandler);
             }
             catch (NoPresentationContextException e)
             {
@@ -730,7 +746,7 @@ public class DcmSnd implements DimseRSPHandler {
         System.err.println(cmd.toString());
     }
 
-    public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) throws IOException
+    private void onDimseRSP(Association as, DicomObject cmd, DicomObject data) throws IOException
     {
         int status = cmd.getInt(Tag.Status);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
@@ -754,12 +770,6 @@ public class DcmSnd implements DimseRSPHandler {
             promptErrRSP("ERROR: Received RSP with Status ", status, info, cmd);
             System.out.print('F');
         }
-    }
-
-    public void onClosed(Association as)
-    {
-        // TODO Auto-generated method stub
-        
     }
 
 }

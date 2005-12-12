@@ -38,39 +38,52 @@
 
 package org.dcm4che2.net;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import org.dcm4che2.data.DicomObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Dec 1, 2005
+ * @since Dec 10, 2005
  *
  */
-public class DimseRSPHandler
+class AssociationReaper
 {
-    private long timeout;
-
-    public void onDimseRSP(Association as, DicomObject cmd, DicomObject data)
-    throws IOException
+    static Logger log = LoggerFactory.getLogger(AssociationReaper.class);
+    private final Timer timer = new Timer(true);
+    private List list = Collections.synchronizedList(new ArrayList());
+    
+    public AssociationReaper(int period) 
     {
-        // NO OP
+        if (log.isDebugEnabled())
+            log.debug("Check for idle Associations every " + (period / 1000f) + "s.");
+        timer.schedule(new TimerTask(){
+
+            public void run()
+            {
+                long now = System.currentTimeMillis();
+                Object[] a = list.toArray();
+                for (int i = 0; i < a.length; i++)
+                    ((Association)a[i]).checkIdle(now);
+            }}, period, period);
     }
 
-    public void onClosed(Association as) 
+    public void register(Association a)
     {
-        // NO OP
+        log.debug("Start check for idle {}", a);
+        list.add(a);
     }
 
-    final long getTimeout()
+    public void unregister(Association a)
     {
-        return timeout;
-    }
-
-    final void setTimeout(long timeout)
-    {
-        this.timeout = timeout;
+        log.debug("Stop check for idle {}", a);
+        list.remove(a);
     }
     
 }

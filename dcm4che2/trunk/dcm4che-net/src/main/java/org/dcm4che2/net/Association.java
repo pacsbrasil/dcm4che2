@@ -72,6 +72,7 @@ public class Association implements Runnable
     static Logger log = LoggerFactory.getLogger(Association.class);
 
     private final Connector connector;
+    private final AssociationReaper reaper;
     private ApplicationEntity ae;
     private Socket socket;
     private boolean requestor = false;
@@ -89,9 +90,12 @@ public class Association implements Runnable
 
     private int msgID = 0;
     private int performing = 0;
+    private boolean closed = false;
     private IntHashtable rspHandlerForMsgId = new IntHashtable();
     private IntHashtable cancelHandlerForMsgId = new IntHashtable();
     private HashMap acceptedPCs = new HashMap();
+    private long idleTimeout = Long.MAX_VALUE;
+
     
     private Association(Socket socket, Connector connector, boolean requestor)
     throws IOException
@@ -101,12 +105,35 @@ public class Association implements Runnable
         if (connector == null)
             throw new NullPointerException("connector");
         this.connector = connector;
+        this.reaper = connector.getDevice().getAssociationReaper();
         this.socket = socket;
         this.requestor = requestor;
         this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
         this.state = State.STA1;
+    }
+    
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer("Association[");
+        if (associateRQ != null) {
+            if (requestor)
+            {
+                sb.append(associateRQ.getCallingAET());
+                sb.append(">>");
+                sb.append(associateRQ.getCalledAET());
+            }
+            else
+            {
+                sb.append(associateRQ.getCalledAET());                
+                sb.append("<<");
+                sb.append(associateRQ.getCallingAET());
+            }
+            sb.append(", ");
+       }
+       sb.append(socket).append("]");
+       return sb.toString();
     }
     
     static Association request(Socket socket, Connector connector, ApplicationEntity ae) 
@@ -376,7 +403,9 @@ public class Association implements Runnable
             throw new IllegalStateException("No Presentation State with id - " + pcid);
         if (!pc.isAccepted())
             throw new IllegalStateException("Presentation State not accepted - " + pc);
-        
+        rspHandler.setTimeout(System.currentTimeMillis() 
+                + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RQ ?
+                        ae.getMoveRspTimeout() : ae.getDimseRspTimeout()));
         addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
         log.debug("Sending DIMSE-RQ[pcid={}]:\n{}", new Integer(pcid),  cmd);
         encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());      
@@ -401,7 +430,12 @@ public class Association implements Runnable
         
         log.debug("Sending DIMSE-RSP[pcid={}]:\n{}", new Integer(pcid),  cmd);
         DataWriter writer = data != null ? new DataWriterAdapter(data) : null;
-        encoder.writeDIMSE(pcid, cmd, writer , pc.getTransferSyntax());      
+        encoder.writeDIMSE(pcid, cmd, writer, pc.getTransferSyntax());
+        if (!CommandUtils.isPending(cmd))
+        {
+            updateIdleTimeout();
+            decPerforming();
+        }
     }
 
     void onCancelRQ(DicomObject cmd)
@@ -448,7 +482,17 @@ public class Association implements Runnable
         finally
         {
             if (!CommandUtils.isPending(cmd))
+            {
+                updateIdleTimeout();
                 removeDimseRSPHandler(msgId);
+            }
+            else
+            {
+                rspHandler.setTimeout(System.currentTimeMillis() 
+                        + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RSP ?
+                                ae.getMoveRspTimeout() : ae.getDimseRspTimeout()));
+                
+            }
         }
     }
 
@@ -546,21 +590,22 @@ public class Association implements Runnable
             in = null;
             decoder = null;
         }
-        if (!socket.isClosed()) {
-            try
-            {
-                socket.close();
-            }
-            catch (IOException e)
-            {
-                log.warn("I/O error during close of socket", e);
-            }
-            onClosed();
+        try
+        {
+            socket.close();
         }
+        catch (IOException e)
+        {
+            log.warn("I/O error during close of socket", e);
+        }
+        if (!closed)
+            onClosed();
     }
 
     private void onClosed()
     {
+        closed  = true;
+        reaper.unregister(this);
         synchronized (rspHandlerForMsgId)
         {
             rspHandlerForMsgId.accept(new IntHashtable.Visitor(){
@@ -645,7 +690,19 @@ public class Association implements Runnable
     void onDimseRQ(int pcid, DicomObject cmd, PDVInputStream data, String tsuid)
     throws IOException
     {
-        ae.process(this, pcid, cmd, data, tsuid);
+        incPerforming();
+        ae.perform(this, pcid, cmd, data, tsuid);
+    }
+
+    private synchronized void incPerforming()
+    {
+        ++performing;
+    }
+
+    private synchronized void decPerforming()
+    {
+        --performing;
+        notifyAll();
     }
     
     void sendPDataTF() throws IOException
@@ -744,6 +801,8 @@ public class Association implements Runnable
             checkAAAC();
             setState(State.STA6);
             encoder.write(associateAC);
+            updateIdleTimeout();
+            reaper.register(this);
         }
         catch (AAssociateRJException e)
         {
@@ -757,7 +816,14 @@ public class Association implements Runnable
         stopARTIM();
         associateAC = ac;
         checkAAAC();
-        setState(State.STA6);        
+        setState(State.STA6);
+        updateIdleTimeout();
+        reaper.register(this);
+    }
+
+    private void updateIdleTimeout()
+    {
+        idleTimeout = System.currentTimeMillis() + ae.getIdleTimeout();        
     }
 
     void onAssociateRJ(AAssociateRJException rj) throws IOException
@@ -782,7 +848,7 @@ public class Association implements Runnable
     void onCollisionReleaseRP() throws IOException
     {
         stopARTIM();
-        setState(State.STA12);        
+//        setState(State.STA12);        
         setState(State.STA13);                
         encoder.writeAReleaseRP();
     }
@@ -806,13 +872,44 @@ public class Association implements Runnable
     {
         if (requestor)
         {
-            setState(State.STA9);
+//            setState(State.STA9);
             setState(State.STA11);                
             encoder.writeAReleaseRP();
         }
         else
         {
             setState(State.STA10);
+        }
+    }
+
+    void checkIdle(final long now)
+    {
+        if (performing > 0)
+            return;
+        if (rspHandlerForMsgId.isEmpty())
+        {
+            if (now > idleTimeout)
+                try
+                {
+                    release(false);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+        }
+        else
+        {
+            rspHandlerForMsgId.accept(new IntHashtable.Visitor(){
+
+                public boolean visit(int key, Object value)
+                {
+                    DimseRSPHandler rspHandler = (DimseRSPHandler) value;
+                    if (now < rspHandler.getTimeout())
+                        return true;
+                    Association.this.abort();                        
+                    return false;
+                }});
         }
     }
 

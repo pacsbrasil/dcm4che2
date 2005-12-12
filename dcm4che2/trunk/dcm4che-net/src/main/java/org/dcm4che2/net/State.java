@@ -61,10 +61,10 @@ public class State
     public static final State STA6 = new Sta6();
     public static final State STA7 = new Sta7();
     public static final State STA8 = new Sta8();
-    public static final State STA9 = new Sta9();
+//    public static final State STA9 = new Sta9();
     public static final State STA10 = new Sta10();
     public static final State STA11 = new Sta11();
-    public static final State STA12 = new Sta12();
+//    public static final State STA12 = new Sta12();
     public static final State STA13 = new Sta13();
     
     protected final String name;
@@ -245,7 +245,7 @@ public class State
         }
 
     }
-
+/*
     private static class Sta9 extends State
     {
 
@@ -256,7 +256,7 @@ public class State
         }
 
     }
-
+*/
     private static class Sta10 extends State
     {
 
@@ -286,7 +286,7 @@ public class State
             as.onReleaseRP();
         }
     }
-
+/*
     private static class Sta12 extends State
     {
 
@@ -297,7 +297,7 @@ public class State
         }
 
     }
-
+*/
     private static class Sta13 extends State
     {
 
