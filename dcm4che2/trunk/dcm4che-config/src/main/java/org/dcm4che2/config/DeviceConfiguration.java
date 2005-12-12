@@ -64,11 +64,21 @@ public class DeviceConfiguration
     private X509Certificate[] thisNodeCertificate = {};
     private Object[] relatedDevice = {};
     private Object[] vendorDeviceData = {};
+    private int associationReaperPeriod = 10000;
     private boolean installed = true;
 
     private NetworkConnection[] networkConnection = {};
     private NetworkApplicationEntity[] networkAE = {};
     
+    public DeviceConfiguration()
+    {
+    }
+    
+    public DeviceConfiguration(String deviceName)
+    {
+        setDeviceName(deviceName);
+    }
+
     public final String getDeviceName()
     {
         return deviceName;
@@ -264,6 +274,16 @@ public class DeviceConfiguration
             networkConnection[i].setDevice(this);
         
         this.networkConnection = networkConnection;
+    }
+
+    public final int getAssociationReaperPeriod()
+    {
+        return associationReaperPeriod;
+    }
+
+    public final void setAssociationReaperPeriod(int associationReaperPeriod)
+    {
+        this.associationReaperPeriod = associationReaperPeriod;
     }
     
 }

@@ -151,7 +151,7 @@ public class NetworkConnection
     public final boolean isInstalled()
     {
         return installed != null ? installed.booleanValue() 
-                                 : device.isInstalled();
+                                 : device == null || device.isInstalled();
     }
 
     public final void setInstalled(boolean installed)
@@ -184,9 +184,9 @@ public class NetworkConnection
         return acceptTimeout;
     }
 
-    public final void setAcceptTimeout(int acceptTimeout)
+    public final void setAcceptTimeout(int timeout)
     {
-        this.acceptTimeout = acceptTimeout;
+        this.acceptTimeout = timeout;
     }
 
     public final int getConnectTimeout()
@@ -194,9 +194,9 @@ public class NetworkConnection
         return connectTimeout;
     }
 
-    public final void setConnectTimeout(int connectTimeout)
+    public final void setConnectTimeout(int timeout)
     {
-        this.connectTimeout = connectTimeout;
+        this.connectTimeout = timeout;
     }
 
     public final int getRequestTimeout()
@@ -204,9 +204,9 @@ public class NetworkConnection
         return requestTimeout;
     }
 
-    public final void setRequestTimeout(int requestTimeout)
+    public final void setRequestTimeout(int timeout)
     {
-        this.requestTimeout = requestTimeout;
+        this.requestTimeout = timeout;
     }
 
     public final int getReleaseTimeout()
@@ -214,9 +214,9 @@ public class NetworkConnection
         return releaseTimeout;
     }
 
-    public final void setReleaseTimeout(int releaseTimeout)
+    public final void setReleaseTimeout(int timeout)
     {
-        this.releaseTimeout = releaseTimeout;
+        this.releaseTimeout = timeout;
     }
 
     public final int getSocketCloseDelay()
@@ -224,9 +224,9 @@ public class NetworkConnection
         return socketCloseDelay;
     }
 
-    public final void setSocketCloseDelay(int socketCloseDelay)
+    public final void setSocketCloseDelay(int delay)
     {
-        this.socketCloseDelay = socketCloseDelay;
+        this.socketCloseDelay = delay;
     }
 
     public final int getReceiveBufferSize()
@@ -234,9 +234,9 @@ public class NetworkConnection
         return receiveBufferSize;
     }
 
-    public final void setReceiveBufferSize(int receiveBufferSize)
+    public final void setReceiveBufferSize(int size)
     {
-        this.receiveBufferSize = receiveBufferSize;
+        this.receiveBufferSize = size;
     }
 
     public final int getSendBufferSize()
@@ -244,9 +244,9 @@ public class NetworkConnection
         return sendBufferSize;
     }
 
-    public final void setSendBufferSize(int sendBufferSize)
+    public final void setSendBufferSize(int size)
     {
-        this.sendBufferSize = sendBufferSize;
+        this.sendBufferSize = size;
     }
     
     public final boolean isTcpNoDelay()

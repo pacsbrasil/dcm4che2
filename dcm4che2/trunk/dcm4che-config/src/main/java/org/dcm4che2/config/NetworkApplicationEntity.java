@@ -63,10 +63,12 @@ public class NetworkApplicationEntity
     private int maxPDULengthReceive = 0x4000; //=16384
     private int maxPDULengthSend = 0x4000;
     private boolean packPDV;
-    private int dimseRspTimeout = 60;
+    private int dimseRspTimeout = 60000;
+    private int moveRspTimeout = 600000;
+    private int idleTimeout = 60000;
     
-    private NetworkConnection[] networkConnection;
-    private TransferCapability[] transferCapability;
+    private NetworkConnection[] networkConnection = {};
+    private TransferCapability[] transferCapability = {};
     
     public final DeviceConfiguration getDevice()
     {
@@ -83,7 +85,7 @@ public class NetworkApplicationEntity
         return aeTitle;
     }
 
-    public final void setAEtitle(String aetitle)
+    public final void setAETitle(String aetitle)
     {
         this.aeTitle = aetitle;
     }
@@ -131,7 +133,7 @@ public class NetworkApplicationEntity
     public final boolean isInstalled()
     {
         return installed != null ? installed.booleanValue() 
-                                 : device.isInstalled();
+                                 : device == null || device.isInstalled();
     }
 
     public final void setInstalled(boolean installed)
@@ -292,6 +294,26 @@ public class NetworkApplicationEntity
     public final void setDimseRspTimeout(int dimseRspTimeout)
     {
         this.dimseRspTimeout = dimseRspTimeout;
+    }
+
+    public final int getIdleTimeout()
+    {
+        return idleTimeout;
+    }
+
+    public final void setIdleTimeout(int idleTimeout)
+    {
+        this.idleTimeout = idleTimeout;
+    }
+
+    public final int getMoveRspTimeout()
+    {
+        return moveRspTimeout;
+    }
+
+    public final void setMoveRspTimeout(int moveRspTimeout)
+    {
+        this.moveRspTimeout = moveRspTimeout;
     }
 
 }
