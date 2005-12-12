@@ -58,6 +58,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDDictionary;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
@@ -83,6 +84,7 @@ public class MppsSnd implements PollDirSrv.Handler {
     private static final String[] DEF_TS = { UIDs.ImplicitVRLittleEndian };
     private static final int PCID_ECHO = 1;
     private static final int PCID_MPPS = 3;
+    private static final int PCID_GPPPS = 5;
     
     // Attributes ----------------------------------------------------
     static final Logger log = Logger.getLogger("MppsSnd");
@@ -243,10 +245,7 @@ public class MppsSnd implements PollDirSrv.Handler {
         int count = 0;
         ActiveAssociation active = openAssoc();
         if (active != null) {
-            if (active.getAssociation().getAcceptedTransferSyntaxUID(PCID_MPPS)
-            == null) {
-                log.error(messages.getString("noPCMpps"));
-            } else for (int k = offset; k < args.length; ++k) {
+            for (int k = offset; k < args.length; ++k) {
                 if (sendFile(active, new File(args[k]))) {
                     ++count;
                 }
@@ -332,8 +331,12 @@ public class MppsSnd implements PollDirSrv.Handler {
                 new Object[]{ file }));
             return null;
         }
-        if (!UIDs.ModalityPerformedProcedureStep.equals(
-        fmi.getMediaStorageSOPClassUID())) {
+        String cuid = fmi.getMediaStorageSOPClassUID();
+        int pcid = PCID_MPPS;
+        if (UIDs.GeneralPurposePerformedProcedureStepSOPClass.equals(cuid))
+        {
+            pcid = PCID_GPPPS;
+        } else if (!UIDs.ModalityPerformedProcedureStep.equals(cuid)) {
             log.error(
                 MessageFormat.format(messages.getString("errSOPClass"),
                 new Object[]{
@@ -342,11 +345,15 @@ public class MppsSnd implements PollDirSrv.Handler {
                 }));    
             return null;
         }
-        return active.invoke(aFact.newDimse(PCID_MPPS,
-        oFact.newCommand().initNSetRQ(
-        active.getAssociation().nextMsgID(),
-        UIDs.ModalityPerformedProcedureStep,
-        fmi.getMediaStorageSOPInstanceUID()), ds));
+        if (active.getAssociation().getAcceptedTransferSyntaxUID(pcid) == null)
+        {
+            log.error(messages.getString(pcid == PCID_MPPS ? "noPCMPPS" : "noPCGPPPS"));
+            return null;
+        }
+        return active.invoke(aFact.newDimse(pcid,
+        		oFact.newCommand().initNSetRQ(
+        				active.getAssociation().nextMsgID(),
+        				cuid, fmi.getMediaStorageSOPInstanceUID()), ds));
     }
     
     private FutureRSP sendCreate(ActiveAssociation active, File file)
@@ -357,25 +364,31 @@ public class MppsSnd implements PollDirSrv.Handler {
         }
         FileMetaInfo fmi = ds.getFileMetaInfo();
         String instUID = null;
+        String cuid = UIDs.ModalityPerformedProcedureStep;
+        int pcid = PCID_MPPS;
         if (fmi != null) {
-            if (!UIDs.ModalityPerformedProcedureStep.equals(
-            fmi.getMediaStorageSOPClassUID())) {
+            cuid = fmi.getMediaStorageSOPClassUID();
+            if (UIDs.GeneralPurposePerformedProcedureStepSOPClass.equals(cuid))
+            {
+                pcid = PCID_GPPPS;
+            } else if (!UIDs.ModalityPerformedProcedureStep.equals(cuid)) {
                 log.error(
                     MessageFormat.format(messages.getString("errSOPClass"),
                         new Object[]{
                             file,
-                            uidDict.toString(fmi.getMediaStorageSOPClassUID())
+                            uidDict.toString(cuid)
                     }));
                 return null;
             }
             instUID = fmi.getMediaStorageSOPInstanceUID();
+        } else if (ds.contains(Tags.PerformedWorkitemCodeSeq)){
+        	cuid = UIDs.GeneralPurposePerformedProcedureStepSOPClass;
+            pcid = PCID_GPPPS;        	
         }
-        return active.invoke(aFact.newDimse(PCID_MPPS,
-        oFact.newCommand().initNCreateRQ(
-        active.getAssociation().nextMsgID(),
-        UIDs.ModalityPerformedProcedureStep,
-        instUID),
-        ds));
+        return active.invoke(aFact.newDimse(pcid,
+        		oFact.newCommand().initNCreateRQ(
+        				active.getAssociation().nextMsgID(),
+        				cuid, instUID), ds));
     }
     
     private Dataset loadDataset(File file) {
@@ -443,6 +456,8 @@ public class MppsSnd implements PollDirSrv.Handler {
             }
             assocRQ.addPresContext(aFact.newPresContext(
                 PCID_MPPS, UIDs.ModalityPerformedProcedureStep, tsUIDs));
+            assocRQ.addPresContext(aFact.newPresContext(
+                    PCID_GPPPS, UIDs.GeneralPurposePerformedProcedureStepSOPClass, tsUIDs));
         }
     }
     
