@@ -51,9 +51,25 @@ import org.dcm4che2.data.DicomObject;
 public class DimseRSPHandler
 {
     private long timeout;
+    private int msgId;
+    private int pcid;
 
+    final void setPcid(int pcid)
+    {
+        this.pcid = pcid;
+    }
+
+    final void setMsgId(int msgId)
+    {
+        this.msgId = msgId;
+    }
+
+    public void cancel(Association as) throws IOException
+    {
+        as.cancel(pcid, msgId);
+    }
+    
     public void onDimseRSP(Association as, DicomObject cmd, DicomObject data)
-    throws IOException
     {
         // NO OP
     }
@@ -62,6 +78,7 @@ public class DimseRSPHandler
     {
         // NO OP
     }
+
 
     final long getTimeout()
     {

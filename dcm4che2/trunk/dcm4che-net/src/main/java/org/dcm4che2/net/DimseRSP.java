@@ -64,18 +64,35 @@ public class DimseRSP
     
     private Entry entry = new Entry(null, null);
     private boolean finished;
+    private int autoCancel;
     private IOException ex;
     private final DimseRSPHandler handler = new DimseRSPHandler(){
 
         public synchronized void onDimseRSP(Association as, DicomObject cmd,
-                DicomObject data) throws IOException
+                DicomObject data)
         {
+            super.onDimseRSP(as, cmd, data);
             Entry last = entry;
             while (last.next != null)
                 last = last.next;
 
             last.next = new Entry(cmd, data);
-            finished = !CommandUtils.isPending(cmd);
+            if (CommandUtils.isPending(cmd))
+            {
+                if (--autoCancel == 0)
+                    try
+                    {
+                        handler.cancel(as);
+                    }
+                    catch (IOException e)
+                    {
+                        ex = e;
+                    }
+            }
+            else
+            {
+                finished = true;
+            }
             notifyAll();
         }
 
@@ -93,6 +110,19 @@ public class DimseRSP
     final DimseRSPHandler getHandler()
     {
         return handler;        
+    }
+    
+    public final void setAutoCancel(int autoCancel)
+    {
+        this.autoCancel = autoCancel;
+    }
+    
+    public void cancel(Association a) throws IOException
+    {
+        if (ex != null)
+            throw ex;
+        if (!finished)
+            handler.cancel(a);
     }
     
     public final DicomObject getCommand()

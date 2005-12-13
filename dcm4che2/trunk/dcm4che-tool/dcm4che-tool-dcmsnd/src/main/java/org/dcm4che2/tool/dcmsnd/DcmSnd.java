@@ -628,7 +628,7 @@ public class DcmSnd {
             {
                 DimseRSPHandler rspHandler = new DimseRSPHandler(){
                     public void onDimseRSP(Association as, DicomObject cmd, 
-                            DicomObject data) throws IOException
+                            DicomObject data)
                     {
                         DcmSnd.this.onDimseRSP(as, cmd, data);
                     }
@@ -746,7 +746,7 @@ public class DcmSnd {
         System.err.println(cmd.toString());
     }
 
-    private void onDimseRSP(Association as, DicomObject cmd, DicomObject data) throws IOException
+    private void onDimseRSP(Association as, DicomObject cmd, DicomObject data)
     {
         int status = cmd.getInt(Tag.Status);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);

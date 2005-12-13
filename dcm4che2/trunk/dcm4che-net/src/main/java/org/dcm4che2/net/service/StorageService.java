@@ -62,23 +62,31 @@ implements CStoreSCP
         super(sopClasses, UID.StorageServiceClass);
     }
 
-    public void cstore(Association as, int pcid, DicomObject cmd,
+    public void cstore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid)
     {
         try
         {
-            DicomObject rsp = doCStore(as, pcid, cmd, dataStream, tsuid);
+            DicomObject rsp = CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
+            doCStore(as, pcid, rq, dataStream, tsuid, rsp);
             as.writeDimseRSP(pcid, rsp);
         }
-        catch (IOException e)
+        catch (Throwable e)
         {
             as.abort();
         }
     }
 
-    protected DicomObject doCStore(Association as, int pcid,
-            DicomObject rq, PDVInputStream dataStream, String tsuid)
+    protected void doCStore(Association as, int pcid, DicomObject rq,
+            PDVInputStream dataStream, String tsuid, DicomObject rsp)
     {
-        return CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
+        try
+        {
+            dataStream.skipAll();
+        }
+        catch (IOException e)
+        {
+            as.abort();
+        }
     }
 }

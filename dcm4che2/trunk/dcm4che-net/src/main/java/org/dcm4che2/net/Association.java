@@ -320,22 +320,6 @@ public class Association implements Runnable
                 + " not supported");
     }
     
-    public DicomObject cecho()
-    throws IOException, InterruptedException
-    {
-        return cecho(UID.VerificationSOPClass);
-    }
-    
-    public DicomObject cecho(String cuid)
-    throws IOException, InterruptedException
-    {
-        PresentationContext pc = pcFor(cuid, null);
-        DicomObject cechorq = CommandUtils.newCEchoRQ(++msgID, cuid);
-        DimseRSP rsp = invoke(pc.getPCID(), cechorq);
-        rsp.next();
-        return rsp.getCommand();
-    }
-
     public void cstore(String cuid, String iuid, int priority,
             DataWriter data, String[] tsuids, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
@@ -346,49 +330,197 @@ public class Association implements Runnable
         invoke(pc.getPCID(), cstorerq, data, rspHandler);
     }
     
-    public DicomObject cstore(String cuid, String iuid, int priority,
+    public DimseRSP cstore(String cuid, String iuid, int priority,
             DataWriter data, String[] tsuids)
     throws IOException, InterruptedException
     {
         DimseRSP rsp = new DimseRSP();
         cstore(cuid, iuid, priority, data, tsuids, rsp.getHandler());
-        rsp.next();
-        return rsp.getCommand();
+        return rsp;
     }
-    
-    DimseRSP invoke(int pcid, DicomObject cmd)
+
+    public void cfind(String cuid, int priority,
+            DicomObject data, String[] tsuids, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        return invoke(pcid, cmd, (DataWriter) null);
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject cfindrq = CommandUtils.newCFindRQ(
+                ++msgID, cuid, priority);
+        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
     
-    DimseRSP invoke(int pcid, DicomObject cmd, DicomObject data)
-    throws IOException, InterruptedException
-    {
-        return invoke(pcid, cmd, new DataWriterAdapter(data));
-    }
-    
-    DimseRSP invoke(int pcid, DicomObject cmd, DataWriter dw)
+    public DimseRSP cfind(String cuid, int priority,
+            DicomObject data, String[] tsuids, int autoCancel)
     throws IOException, InterruptedException
     {
         DimseRSP rsp = new DimseRSP();
-        invoke(pcid, cmd, dw, rsp.getHandler());
+        rsp.setAutoCancel(autoCancel);
+        cfind(cuid, priority, data, tsuids, rsp.getHandler());
         return rsp;
     }
     
-    void invoke(int pcid, DicomObject cmd, DicomObject data, 
-            DimseRSPHandler rspHandler)
+    public void cget(String cuid, int priority,
+            DicomObject data, String[] tsuids, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        invoke(pcid, cmd, new DataWriterAdapter(data), rspHandler);
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject cfindrq = CommandUtils.newCGetRQ(
+                ++msgID, cuid, priority);
+        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
     
-    void invoke(int pcid, DicomObject cmd, DimseRSPHandler rspHandler)
+    public DimseRSP cget(String cuid, int priority,
+            DicomObject data, String[] tsuids)
     throws IOException, InterruptedException
     {
-        invoke(pcid, cmd, (DataWriter) null, rspHandler);
+        DimseRSP rsp = new DimseRSP();
+        cget(cuid, priority, data, tsuids, rsp.getHandler());
+        return rsp;
+    }
+    
+    public void cmove(String cuid, int priority, DicomObject data,
+            String[] tsuids, String destination, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject cfindrq = CommandUtils.newCMoveRQ(
+                ++msgID, cuid, priority, destination);
+        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
+    }
+    
+    public DimseRSP cmove(String cuid, int priority, DicomObject data,
+            String[] tsuids, String destination)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        cmove(cuid, priority, data, tsuids, destination, rsp.getHandler());
+        return rsp;
+    }
+    
+    public DimseRSP cecho()
+    throws IOException, InterruptedException
+    {
+        return cecho(UID.VerificationSOPClass);
+    }
+    
+    public DimseRSP cecho(String cuid)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        PresentationContext pc = pcFor(cuid, null);
+        DicomObject cechorq = CommandUtils.newCEchoRQ(++msgID, cuid);
+        invoke(pc.getPCID(), cechorq, null, rsp.getHandler());
+        return rsp;
     }
 
+    public void nevent(String cuid, String iuid, int eventTypeId,
+            DicomObject attrs, String[] tsuids, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject neventrq = CommandUtils.newNEventReportRQ(
+                ++msgID, cuid, iuid, eventTypeId, attrs);
+        invoke(pc.getPCID(), neventrq, new DataWriterAdapter(attrs), rspHandler);
+    }
+
+    public DimseRSP nevent(String cuid, String iuid, int eventTypeId,
+            DicomObject attrs, String[] tsuids)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        nevent(cuid, iuid, eventTypeId, attrs, tsuids, rsp.getHandler());
+        return rsp;
+    }    
+
+    public void nget(String cuid, String iuid, DicomObject attrs,
+            String[] tsuids, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject ngetrq = CommandUtils.newNGetRQ(++msgID, cuid, iuid, attrs);
+        invoke(pc.getPCID(), ngetrq, new DataWriterAdapter(attrs), rspHandler);
+    }
+
+    public DimseRSP nget(String cuid, String iuid, DicomObject attrs,
+            String[] tsuids)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        nget(cuid, iuid, attrs, tsuids, rsp.getHandler());
+        return rsp;
+    }    
+    
+    public void nset(String cuid, String iuid, DicomObject attrs,
+            String[] tsuids, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject nsetrq = CommandUtils.newNSetRQ(++msgID, cuid, iuid);
+        invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler);
+    }
+
+    public DimseRSP nset(String cuid, String iuid, DicomObject attrs,
+            String[] tsuids)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        nset(cuid, iuid, attrs, tsuids, rsp.getHandler());
+        return rsp;
+    }    
+
+    public void naction(String cuid, String iuid, int actionTypeId,
+            DicomObject attrs, String[] tsuids, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject nactionrq = CommandUtils.newNActionRQ(
+                ++msgID, cuid, iuid, actionTypeId, attrs);
+        invoke(pc.getPCID(), nactionrq, new DataWriterAdapter(attrs), rspHandler);
+    }
+
+    public DimseRSP naction(String cuid, String iuid, int actionTypeId,
+            DicomObject attrs, String[] tsuids)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        naction(cuid, iuid, actionTypeId, attrs, tsuids, rsp.getHandler());
+        return rsp;
+    }    
+    
+    public void ncreate(String cuid, String iuid, DicomObject attrs,
+            String[] tsuids, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, tsuids);
+        DicomObject ncreaterq = CommandUtils.newNCreateRQ(++msgID, cuid, iuid);
+        invoke(pc.getPCID(), ncreaterq, new DataWriterAdapter(attrs), rspHandler);
+    }
+    
+    public DimseRSP ncreate(String cuid, String iuid, DicomObject attrs,
+            String[] tsuids)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        ncreate(cuid, iuid, attrs, tsuids, rsp.getHandler());
+        return rsp;
+    }
+    
+    public void ndelete(String cuid, String iuid, DimseRSPHandler rspHandler)
+    throws IOException, InterruptedException
+    {
+        PresentationContext pc = pcFor(cuid, null);
+        DicomObject nsetrq = CommandUtils.newNDeleteRQ(++msgID, cuid, iuid);
+        invoke(pc.getPCID(), nsetrq, null, rspHandler);
+    }
+
+    public DimseRSP ndelete(String cuid, String iuid)
+    throws IOException, InterruptedException
+    {
+        DimseRSP rsp = new DimseRSP();
+        ndelete(cuid, iuid, rsp.getHandler());
+        return rsp;
+    }   
+    
     void invoke(int pcid, DicomObject cmd, DataWriter data, 
             DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
@@ -403,12 +535,21 @@ public class Association implements Runnable
             throw new IllegalStateException("No Presentation State with id - " + pcid);
         if (!pc.isAccepted())
             throw new IllegalStateException("Presentation State not accepted - " + pc);
+        rspHandler.setPcid(pcid);
+        rspHandler.setMsgId(cmd.getInt(Tag.MessageID));
         rspHandler.setTimeout(System.currentTimeMillis() 
                 + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RQ ?
                         ae.getMoveRspTimeout() : ae.getDimseRspTimeout()));
         addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
         log.debug("Sending DIMSE-RQ[pcid={}]:\n{}", new Integer(pcid),  cmd);
         encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());      
+    }
+    
+    void cancel(int pcid, int msgid)
+    throws IOException
+    {
+        log.debug("Sending C-CANCEL-RQ");
+        encoder.writeDIMSE(pcid, CommandUtils.newCCancelRQ(msgid), null, null);      
     }
 
     public void writeDimseRSP(int pcid, DicomObject cmd)

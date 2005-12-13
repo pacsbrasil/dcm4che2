@@ -55,10 +55,10 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.PDVInputStream;
@@ -522,15 +522,16 @@ public class DcmRcv extends StorageService {
         throw new RuntimeException();
     }
     
-    protected DicomObject doCStore(Association as, int pcid,
-            DicomObject rq, PDVInputStream dataStream, String tsuid)    {
-        try
+    protected void doCStore(Association as, int pcid, DicomObject rq,
+            PDVInputStream dataStream, String tsuid, DicomObject rsp)
+    {
+        if (destination == null)
         {
-            if (destination == null)
-            {
-                dataStream.skipAll();
-            }
-            else
+            super.doCStore(as, pcid, rq, dataStream, tsuid, rsp);
+        }
+        else
+        {
+            try
             {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);
                 String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
@@ -544,12 +545,12 @@ public class DcmRcv extends StorageService {
                 dataStream.copyTo(dos);
                 dos.close();
             }
+            catch (IOException e)
+            {
+                rsp.putInt(Tag.Status, VR.US, 0x110);
+                rsp.putString(Tag.ErrorComment, VR.LO, e.getMessage());
+            }
         }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-        }
-        return CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
     }
         
 }

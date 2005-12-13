@@ -98,22 +98,6 @@ public class CommandUtils
         return dcmobj.getInt(Tag.CommandField) == C_CANCEL_RQ;
     }
 
-    public static DicomObject newCEchoRSP(DicomObject dcmobj)
-    {
-       DicomObject rsp = newRSP(dcmobj, C_ECHO_RSP, NO_DATASET, SUCCESS);
-       if (includeUIDinRSP)
-           rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
-                   dcmobj.getString(Tag.AffectedSOPClassUID));
-       return rsp;
-    }
-
-    public static DicomObject newCEchoRQ(int msgId, String cuid)
-    {
-       DicomObject rq = newRQ(msgId, C_ECHO_RQ, NO_DATASET);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-       return rq;
-    }
-    
     public static DicomObject newCStoreRQ(int msgId, String cuid, String iuid,
             int priority)
     {
@@ -147,6 +131,113 @@ public class CommandUtils
        return rsp;
     }
 
+    public static DicomObject newCFindRQ(int msgId, String cuid, int priority)
+    {
+       DicomObject rq = newRQ(msgId, C_FIND_RQ, withDatasetType);
+       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       rq.putInt(Tag.Priority, VR.US, priority);
+       return rq;
+    }
+    
+    public static DicomObject newCGetRQ(int msgId, String cuid, int priority)
+    {
+       DicomObject rq = newRQ(msgId, C_GET_RQ, withDatasetType);
+       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       rq.putInt(Tag.Priority, VR.US, priority);
+       return rq;
+    }
+    
+    public static DicomObject newCMoveRQ(int msgId, String cuid, int priority,
+            String destination)
+    {
+       DicomObject rq = newRQ(msgId, C_MOVE_RQ, withDatasetType);
+       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       rq.putInt(Tag.Priority, VR.US, priority);
+       rq.putString(Tag.MoveDestination, VR.AE, destination);
+       return rq;
+    }
+
+    public static DicomObject newCCancelRQ(int msgId)
+    {
+        DicomObject rq = new BasicDicomObject();
+        rq.putInt(Tag.CommandField, VR.US, C_CANCEL_RQ);
+        rq.putInt(Tag.DataSetType, VR.US, NO_DATASET);
+        rq.putInt(Tag.MessageIDBeingRespondedTo, VR.US, msgId);
+        return rq;
+    }
+    
+    public static DicomObject newCEchoRQ(int msgId, String cuid)
+    {
+       DicomObject rq = newRQ(msgId, C_ECHO_RQ, NO_DATASET);
+       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       return rq;
+    }
+    
+    public static DicomObject newCEchoRSP(DicomObject dcmobj)
+    {
+       DicomObject rsp = newRSP(dcmobj, C_ECHO_RSP, NO_DATASET, SUCCESS);
+       if (includeUIDinRSP)
+           rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
+                   dcmobj.getString(Tag.AffectedSOPClassUID));
+       return rsp;
+    }
+
+    public static DicomObject newNEventReportRQ(int msgId, String cuid,
+            String iuid, int eventTypeID, DicomObject data)
+    {
+       DicomObject rq = newRQ(msgId, N_EVENT_REPORT_RQ, 
+               data == null ? NO_DATASET : withDatasetType);
+       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+       rq.putInt(Tag.EventTypeID, VR.US, eventTypeID);
+       return rq;
+    }
+    
+    public static DicomObject newNGetRQ(int msgId, String cuid, String iuid,
+            DicomObject data)
+    {
+       DicomObject rq = newRQ(msgId, N_GET_RQ, 
+               data == null ? NO_DATASET : withDatasetType);
+       rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
+       rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+       return rq;
+    }
+    
+    public static DicomObject newNSetRQ(int msgId, String cuid, String iuid)
+    {
+        DicomObject rq = newRQ(msgId, N_SET_RQ, withDatasetType);
+        rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
+        rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+        return rq;
+    }
+    
+    public static DicomObject newNActionRQ(int msgId, String cuid,
+            String iuid, int actionTypeID, DicomObject data)
+    {
+       DicomObject rq = newRQ(msgId, N_ACTION_RQ, 
+               data == null ? NO_DATASET : withDatasetType);
+       rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
+       rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+       rq.putInt(Tag.ActionTypeID, VR.US, actionTypeID);
+       return rq;
+    }
+       
+    public static DicomObject newNCreateRQ(int msgId, String cuid, String iuid)
+    {
+        DicomObject rq = newRQ(msgId, N_CREATE_RQ, withDatasetType);
+        if (cuid != null)
+            rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+        rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+        return rq;
+    }
+
+    public static DicomObject newNDeleteRQ(int msgId, String cuid, String iuid)
+    {
+        DicomObject rq = newRQ(msgId, N_DELETE_RQ, NO_DATASET);
+        rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
+        rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+        return rq;
+    }    
     
     private static DicomObject newRQ(int msgId, int cmdfield, int datasetType)
     {

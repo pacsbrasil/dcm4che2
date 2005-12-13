@@ -282,7 +282,7 @@ public class DcmEcho
 
     public void echo() throws IOException, InterruptedException
     {
-        assoc.cecho();
+        assoc.cecho().next();
     }
 
     public void close() throws InterruptedException
