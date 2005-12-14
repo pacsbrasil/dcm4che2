@@ -415,6 +415,69 @@ FOREIGN KEY (reason_fk) REFERENCES code(pk)
 CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
 CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
 
+CREATE TABLE priv_patient (
+	pk          	IDENTITY PRIMARY KEY,
+	priv_type		INTEGER NOT NULL,
+	pat_id         	VARCHAR(256),
+	pat_id_issuer  	VARCHAR(256),
+	pat_attrs		VARBINARY
+);
+CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
+CREATE INDEX priv_pat_type ON priv_patient(priv_type);
+
+CREATE TABLE priv_study (
+	pk              IDENTITY PRIMARY KEY,
+	patient_fk      INTEGER,
+	priv_type		INTEGER NOT NULL,
+	study_iuid      VARCHAR(256) NOT NULL,
+	study_attrs		VARBINARY,
+FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
+);
+CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
+CREATE INDEX priv_study_type ON priv_study(priv_type);
+CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
+
+CREATE TABLE priv_series (
+	pk              IDENTITY PRIMARY KEY,
+	study_fk		INTEGER,
+	priv_type		INTEGER NOT NULL,
+	series_iuid     VARCHAR(256) NOT NULL,
+	series_attrs	VARBINARY,
+FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
+);
+CREATE INDEX priv_study_fk ON priv_series(study_fk);
+CREATE INDEX priv_series_type ON priv_series(priv_type);
+CREATE INDEX priv_series_iuid ON priv_series(series_iuid);
+
+
+CREATE TABLE priv_instance (
+	pk             	IDENTITY PRIMARY KEY,
+	series_fk		INTEGER,
+	priv_type		INTEGER NOT NULL,
+	sop_iuid		VARCHAR(256) NOT NULL,
+	inst_attrs		VARBINARY,
+FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
+);
+CREATE INDEX priv_series_fk ON priv_instance(series_fk);
+CREATE INDEX priv_inst_type ON priv_instance(priv_type);
+CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
+
+CREATE TABLE priv_file (
+	pk              IDENTITY PRIMARY KEY,
+	instance_fk     INTEGER,
+	filesystem_fk   INTEGER,
+	filepath		VARCHAR(256) NOT NULL,
+	file_tsuid      VARCHAR(256) NOT NULL,
+	file_md5        VARCHAR(256),
+	file_size       INTEGER,
+	file_status     INTEGER,
+FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
+FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
+);
+CREATE INDEX priv_instance_fk ON priv_file(instance_fk);
+CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
+
+
 CREATE TABLE device (
 	pk          	IDENTITY PRIMARY KEY,
 	station_name    VARCHAR(256) NOT NULL,

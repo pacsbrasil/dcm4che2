@@ -416,6 +416,68 @@ FOREIGN KEY (reason_fk) REFERENCES code(pk)
 CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
 CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
 
+CREATE TABLE priv_patient (
+	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	priv_type		INTEGER NOT NULL,
+	pat_id         	VARCHAR(250) BINARY,
+	pat_id_issuer  	VARCHAR(250) BINARY,
+	pat_attrs		BLOB
+);
+CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
+CREATE INDEX priv_pat_type ON priv_patient(priv_type);
+
+CREATE TABLE priv_study (
+	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	patient_fk      INTEGER,
+	priv_type		INTEGER NOT NULL,
+	study_iuid      VARCHAR(250) BINARY NOT NULL,
+	study_attrs		BLOB,
+FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
+);
+CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
+CREATE INDEX priv_study_type ON priv_study(priv_type);
+CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
+
+CREATE TABLE priv_series (
+	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	study_fk		INTEGER,
+	priv_type		INTEGER NOT NULL,
+	series_iuid     VARCHAR(250) BINARY NOT NULL,
+	series_attrs	BLOB,
+FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
+);
+CREATE INDEX priv_study_fk ON priv_series(study_fk);
+CREATE INDEX priv_series_type ON priv_series(priv_type);
+CREATE INDEX priv_series_iuid ON priv_series(series_iuid);
+
+
+CREATE TABLE priv_instance (
+	pk             	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	series_fk		INTEGER,
+	priv_type		INTEGER NOT NULL,
+	sop_iuid		VARCHAR(250) BINARY NOT NULL,
+	inst_attrs		BLOB,
+FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
+);
+CREATE INDEX priv_series_fk ON priv_instance(series_fk);
+CREATE INDEX priv_inst_type ON priv_instance(priv_type);
+CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
+
+CREATE TABLE priv_file (
+	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	instance_fk     INTEGER,
+	filesystem_fk   INTEGER,
+	filepath		VARCHAR(250) BINARY NOT NULL,
+	file_tsuid      VARCHAR(250) BINARY NOT NULL,
+	file_md5        VARCHAR(250) BINARY,
+	file_size       INTEGER,
+	file_status     INTEGER,
+FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
+FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
+);
+CREATE INDEX priv_instance_fk ON priv_file(instance_fk);
+CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
+
 
 CREATE TABLE device (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,

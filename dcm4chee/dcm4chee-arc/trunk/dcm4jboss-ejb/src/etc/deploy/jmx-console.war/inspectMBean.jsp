@@ -3,16 +3,18 @@
    org.jboss.jmx.adaptor.control.Server,
    org.jboss.jmx.adaptor.control.AttrResultInfo,
    org.jboss.jmx.adaptor.model.*,
-   java.lang.reflect.Array"
+   java.lang.reflect.Array,
+   org.jboss.util.propertyeditor.PropertyEditors"
 %>
-<%! public String fixDescription(String desc)
-    {
+<%!
+   public String fixDescription(String desc)
+   {
       if (desc == null || desc.equals(""))
       {
         return "(no description)";
       }
       return desc;
-    }
+   }
 %>
 <html>
 <head>
@@ -119,13 +121,21 @@
          if( attrType.equals("boolean") || attrType.equals("java.lang.Boolean") )
          {
             // Boolean true/false radio boxes
-            Boolean value = Boolean.valueOf(attrValue);
+            Boolean value = attrValue == null || "".equals( attrValue ) ? null : Boolean.valueOf(attrValue);
             String trueChecked = (value == Boolean.TRUE ? "checked" : "");
             String falseChecked = (value == Boolean.FALSE ? "checked" : "");
+            String naChecked = value == null ? "checked" : "";
 %>
             <input type="radio" name="<%= attrName %>" value="True" <%=trueChecked%>>True
             <input type="radio" name="<%= attrName %>" value="False" <%=falseChecked%>>False
 <%
+            // For wrappers, enable a 'null' selection
+            if ( attrType.equals( "java.lang.Boolean" ) && PropertyEditors.isNullHandlingEnabled() )
+            {
+%>
+            <input type="radio" name="<%= attrName %>" value="" <%=naChecked%>>Null
+<%
+            }
          }
          else if( attrInfo.isReadable() )
          {  // Text fields for read-write string values

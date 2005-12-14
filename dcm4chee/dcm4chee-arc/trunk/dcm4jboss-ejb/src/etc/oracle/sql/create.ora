@@ -434,6 +434,75 @@ FOREIGN KEY (reason_fk) REFERENCES code(pk)
 CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
 CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
 
+
+CREATE SEQUENCE priv_patient_pk_seq;
+CREATE TABLE priv_patient (
+	pk          	NUMBER PRIMARY KEY,
+	priv_type		INTEGER NOT NULL,
+	pat_id         	VARCHAR2(255),
+	pat_id_issuer  	VARCHAR2(255),
+	pat_attrs		BLOB
+);
+CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
+CREATE INDEX priv_pat_type ON priv_patient(priv_type);
+
+CREATE SEQUENCE priv_study_pk_seq;
+CREATE TABLE priv_study (
+	pk              NUMBER PRIMARY KEY,
+	patient_fk      INTEGER,
+	priv_type		INTEGER NOT NULL,
+	study_iuid      VARCHAR2(255) NOT NULL,
+	study_attrs		BLOB,
+FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
+);
+CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
+CREATE INDEX priv_study_type ON priv_study(priv_type);
+CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
+
+CREATE SEQUENCE priv_series_pk_seq;
+CREATE TABLE priv_series (
+	pk              NUMBER PRIMARY KEY,
+	study_fk		INTEGER,
+	priv_type		INTEGER NOT NULL,
+	series_iuid     VARCHAR2(255) NOT NULL,
+	series_attrs	BLOB,
+FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
+);
+CREATE INDEX priv_study_fk ON priv_series(study_fk);
+CREATE INDEX priv_series_type ON priv_series(priv_type);
+CREATE INDEX priv_series_iuid ON priv_series(series_iuid);
+
+
+CREATE SEQUENCE priv_instance_pk_seq;
+CREATE TABLE priv_instance (
+	pk             	NUMBER PRIMARY KEY,
+	series_fk		INTEGER,
+	priv_type		INTEGER NOT NULL,
+	sop_iuid		VARCHAR2(255) NOT NULL,
+	inst_attrs		BLOB,
+FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
+);
+CREATE INDEX priv_series_fk ON priv_instance(series_fk);
+CREATE INDEX priv_inst_type ON priv_instance(priv_type);
+CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
+
+CREATE SEQUENCE priv_file_pk_seq;
+CREATE TABLE priv_file (
+	pk              NUMBER PRIMARY KEY,
+	instance_fk     INTEGER,
+	filesystem_fk   INTEGER,
+	filepath		VARCHAR2(255) NOT NULL,
+	file_tsuid      VARCHAR2(255) NOT NULL,
+	file_md5        VARCHAR2(255),
+	file_size       INTEGER,
+	file_status     INTEGER,
+FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
+FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
+);
+CREATE INDEX priv_instance_fk ON priv_file(instance_fk);
+CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
+
+
 CREATE SEQUENCE device_pk_seq;
 CREATE TABLE device (
 	pk          	NUMBER PRIMARY KEY,
