@@ -16,7 +16,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>MsSqlDS</jndi-name>
+    <jndi-name>MSSQLDS</jndi-name>
     <connection-url>jdbc:jtds:sqlserver://localhost:1433;DatabaseName=pacsdb</connection-url>
     <driver-class>net.sourceforge.jtds.jdbc.Driver</driver-class>
     <user-name>pacs</user-name>

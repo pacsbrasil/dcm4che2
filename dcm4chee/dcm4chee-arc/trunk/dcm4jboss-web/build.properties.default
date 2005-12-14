@@ -8,7 +8,7 @@ dcm4jboss-ejb.home=../dcm4jboss-ejb
 dcm4jboss-sar.home=../dcm4jboss-sar
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-4.0.2
+jboss.home=${user.home}/jboss-4.0.3SP1
 
 #Maverik
 maverick.home=../maverick
