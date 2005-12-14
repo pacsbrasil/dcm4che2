@@ -54,6 +54,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
@@ -291,111 +292,67 @@ public class MppsSnd implements PollDirSrv.Handler {
     // Private -------------------------------------------------------
     private boolean sendFile(ActiveAssociation active, File file)
     throws InterruptedException, IOException {
-        String fname = file.getName();
-        if (fname.endsWith(".create")) {
-            return evalRSP(sendCreate(active, file));
-        }
-        if (fname.endsWith(".set")) {
-            return evalRSP(sendSet(active, file));
-        }
-        
-        log.error(MessageFormat.format(messages.getString("errfname"),
-            new Object[]{ file }));
-        return false;
-    }
-    
-    private boolean evalRSP(FutureRSP futureRSP)
-    throws InterruptedException, IOException {
-        if (futureRSP == null) {
+        Dataset ds = loadDataset(file);
+        if (ds == null) {
             return false;
         }
-        Dimse rsp = futureRSP.get();
-        switch (rsp.getCommand().getStatus()) {
-            case 0:
-                return true;
-            default:
-                throw new IOException("" + rsp);
-        }
-    }
-    
-    private FutureRSP sendSet(ActiveAssociation active, File file)
-    throws InterruptedException, IOException {
-        Dataset ds = loadDataset(file);
-        if (ds == null) {
-            return null;
-        }
+        boolean mpps = ds.contains(Tags.ScheduledStepAttributesSeq);
+        boolean ncreate = mpps || ds.contains(Tags.PerformedWorkitemCodeSeq);
+        String iuid;
+        String cuid;
+        int pcid;
         FileMetaInfo fmi = ds.getFileMetaInfo();
         if (fmi == null) {
-            log.error(
-                MessageFormat.format(messages.getString("noFMI"),
-                new Object[]{ file }));
-            return null;
-        }
-        String cuid = fmi.getMediaStorageSOPClassUID();
-        int pcid = PCID_MPPS;
-        if (UIDs.GeneralPurposePerformedProcedureStepSOPClass.equals(cuid))
-        {
-            pcid = PCID_GPPPS;
-        } else if (!UIDs.ModalityPerformedProcedureStep.equals(cuid)) {
-            log.error(
-                MessageFormat.format(messages.getString("errSOPClass"),
-                new Object[]{
-                    file,
-                    uidDict.toString(fmi.getMediaStorageSOPClassUID())
-                }));    
-            return null;
-        }
-        if (active.getAssociation().getAcceptedTransferSyntaxUID(pcid) == null)
-        {
-            log.error(messages.getString(pcid == PCID_MPPS ? "noPCMPPS" : "noPCGPPPS"));
-            return null;
-        }
-        return active.invoke(aFact.newDimse(pcid,
-        		oFact.newCommand().initNSetRQ(
-        				active.getAssociation().nextMsgID(),
-        				cuid, fmi.getMediaStorageSOPInstanceUID()), ds));
-    }
-    
-    private FutureRSP sendCreate(ActiveAssociation active, File file)
-    throws InterruptedException, IOException {
-        Dataset ds = loadDataset(file);
-        if (ds == null) {
-            return null;
-        }
-        FileMetaInfo fmi = ds.getFileMetaInfo();
-        String instUID = null;
-        String cuid = UIDs.ModalityPerformedProcedureStep;
-        int pcid = PCID_MPPS;
-        if (fmi != null) {
+            if (!ncreate) {
+                log.error(
+                    MessageFormat.format(messages.getString("noFMI"),
+                    new Object[]{ file }));
+                return false;
+            }
+            iuid = null;
+            cuid = mpps ? UIDs.ModalityPerformedProcedureStep
+                        : UIDs.GeneralPurposePerformedProcedureStepSOPClass;
+            pcid = mpps ? PCID_MPPS : PCID_GPPPS;
+        } else {
+            iuid = fmi.getMediaStorageSOPInstanceUID();
             cuid = fmi.getMediaStorageSOPClassUID();
-            if (UIDs.GeneralPurposePerformedProcedureStepSOPClass.equals(cuid))
+            if (UIDs.ModalityPerformedProcedureStep.equals(cuid)) {
+                mpps = true;
+                pcid = PCID_MPPS;
+            } else if (UIDs.GeneralPurposePerformedProcedureStepSOPClass.equals(cuid))
             {
+                mpps = false;
                 pcid = PCID_GPPPS;
-            } else if (!UIDs.ModalityPerformedProcedureStep.equals(cuid)) {
+            } else {
                 log.error(
                     MessageFormat.format(messages.getString("errSOPClass"),
-                        new Object[]{
-                            file,
-                            uidDict.toString(cuid)
+                        new Object[]{ file, uidDict.toString(cuid)
                     }));
-                return null;
+                return false;
             }
-            instUID = fmi.getMediaStorageSOPInstanceUID();
-        } else if (ds.contains(Tags.PerformedWorkitemCodeSeq)){
-        	cuid = UIDs.GeneralPurposePerformedProcedureStepSOPClass;
-            pcid = PCID_GPPPS;        	
         }
         if (active.getAssociation().getAcceptedTransferSyntaxUID(pcid) == null)
         {
-            log.error(messages.getString(pcid == PCID_MPPS ? "noPCMPPS" : "noPCGPPPS"));
-            return null;
+            log.error(messages.getString(mpps ? "noPCMPPS" : "noPCGPPPS"));
+            return false;
         }
-        return active.invoke(aFact.newDimse(pcid,
-        		oFact.newCommand().initNCreateRQ(
-        				active.getAssociation().nextMsgID(),
-        				cuid, instUID), ds));
+        int msgId = active.getAssociation().nextMsgID();
+        Command cmd = ncreate
+                ? oFact.newCommand().initNCreateRQ(msgId, cuid, iuid)
+                : oFact.newCommand().initNSetRQ(msgId,cuid, iuid);
+        FutureRSP futureRSP = active.invoke(aFact.newDimse(pcid, cmd, ds));
+        Dimse rsp = futureRSP.get();
+        int status = rsp.getCommand().getStatus();
+        if (status != 0) {
+            log.error(
+                    MessageFormat.format(messages.getString("errRSP"),
+                        new Object[]{ file, Integer.toHexString(status)
+                    }));
+            return false;
+        }
+        return true;
     }
-    
+        
     private Dataset loadDataset(File file) {
         InputStream in = null;
         try {
