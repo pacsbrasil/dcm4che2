@@ -119,6 +119,12 @@
       </td>
     </tr>
     <tr>
+      <td class="label" bgcolor="#eeeeee">Study Status Id:</td>
+      <td>
+        <xsl:value-of select="studyStatusId"/>
+      </td>
+    </tr>
+    <tr>
       <td align="left">
 	    <xsl:choose>
 		 	<xsl:when test="../studyPk = -1">
