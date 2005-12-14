@@ -263,16 +263,38 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	
 	<table class="folder_overview" border="0" cellspacing="0" cellpadding="0" width="100%">
 		<colgroup>
-			<col width="5%"/>
-			<col width="11%"/>
-			<col width="12%"/>
-			<col width="10%"/>
-			<col width="26%"/>
-			<col width="9%"/>
-			<col width="16%"/>
-			<col width="3%"/>
-			<col width="4%"/>
-			<col width="4%"/>
+			<col width="5%"/><!-- margin -->
+			<col width="11%"/><!-- Date/time -->
+			<col width="12%"/><!-- StudyID -->
+			<col width="10%"/><!-- Modalities -->
+			<col width="26%"/><!-- Study Desc -->
+			<col width="9%"/><!-- Acc No --><!-- 73 -->
+			<xsl:choose>
+				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+		    		<col width="11%"/><!-- Ref. Physician -->
+				</xsl:when>
+	            <xsl:when test="/model/admin='true'">    
+				    <col width="13%"/>
+				</xsl:when>
+	            <xsl:when test="/model/webViewer='true'">    
+				    <col width="15%"/>
+				</xsl:when>
+				<xsl:otherwise>
+				    <col width="17%"/>
+				</xsl:otherwise>
+			</xsl:choose><!-- 16 -->
+		    <col width="4%"/><!-- Study Status ID -->
+			<col width="2%"/><!-- No. of Series -->
+		    <col width="2%"/><!-- No. of Instances -->
+		    
+			<xsl:if test="/model/webViewer='true'">
+				<col width="2%"/><!-- Webviewer -->
+			</xsl:if>
+			<xsl:if test="/model/admin='true'">
+				<col width="2%"/><!-- add -->
+				<col width="2%"/><!-- edit -->
+			</xsl:if>
+			<col width="2%"/><!-- sticky -->
 		</colgroup>
 		<tr>
 			<td class="study_mark" >
@@ -315,29 +337,58 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1">
+					Status:</font>
+			</td>
+			<td>
+				<font size="1">
 					NoS:</font>
 			</td>
 			<td>
 				<font size="1">
 					NoI:</font>
 			</td>
-			<td> 
-			</td>
+			<xsl:if test="/model/webViewer='true'">
+				<td>&#160;</td>
+			</xsl:if>
+			<xsl:if test="/model/admin='true'">
+				<td>&#160;</td>
+				<td>&#160;</td>
+			</xsl:if>
+			<td>&#160;</td>
 		</tr>
 	</table>
 	
 	<table class="folder_overview" border="0" cellspacing="0" cellpadding="0" width="100%">
 		<colgroup>
-			<col width="5%"/>
-			<col width="12%"/>
-			<col width="12%"/>
-			<col width="10%"/>
-			<col width="35%"/>
-			<col width="10%"/>
-			<col width="8%"/>
-			<col width="4%"/>
-			<col width="4%"/>
-			<col width="4%"/>
+			<col width="5%"/><!-- margin -->
+			<col width="12%"/><!-- date/time -->
+			<col width="12%"/><!-- Series No -->
+			<col width="10%"/><!-- Modality -->
+			<col width="35%"/><!-- Series Desc. -->
+			<col width="10%"/><!-- Vendor/Model -->
+			
+			<xsl:choose>
+				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+		    		<col width="8%"/><!-- PPS Status -->
+				</xsl:when>
+	            <xsl:when test="/model/admin='true'">    
+				    <col width="10%"/>
+				</xsl:when>
+	            <xsl:when test="/model/webViewer='true'">    
+				    <col width="10%"/>
+				</xsl:when>
+				<xsl:otherwise>
+				    <col width="12%"/>
+				</xsl:otherwise>
+			</xsl:choose>
+			
+            <xsl:if test="/model/webViewer='true'">
+				<col width="2%"/><!-- web viewer -->
+			</xsl:if>
+            <xsl:if test="/model/admin='true'">
+				<col width="2%"/><!-- edit -->
+			</xsl:if>
+			<col width="2%"/><!-- sticky -->
 		</colgroup>
 		<tr>
 			<td class="series_mark" >
@@ -382,8 +433,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<font size="1">
 					NoI:</font>
 			</td>
-			<td>
-			</td>
+            <xsl:if test="/model/webViewer='true'">
+				<td>&#160;</td>
+			</xsl:if>
+            <xsl:if test="/model/admin='true'">
+				<td>&#160;</td>
+			</xsl:if>
+			<td>&#160;</td>
 		</tr>
 	</table>
 </table>
@@ -483,24 +539,38 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	<table class="study_line" width="100%" cellpadding="0" cellspacing="0" border="0">
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		<colgroup>
-			<col width="2%"/>
-			<col width="14%"/>
-			<col width="12%"/>
-			<col width="10%"/>
-			<col width="26%"/>
-			<col width="9%"/>
-              		              <xsl:if test="/model/admin='true'">    
-			    <col width="15%"/>
-    			    <col width="2%"/>
-			    <col width="2%"/>
-              		              </xsl:if>
-              		              <xsl:if test="/model/admin!='true'">    
-			    <col width="19%"/>
-              		              </xsl:if>
-			<col width="2%"/>
-			<col width="2%"/>
-			<col width="2%"/>
-			<col width="2%"/>
+			<col width="2%"/><!-- margin -->
+			<col width="14%"/><!-- Date/time -->
+			<col width="12%"/><!-- StudyID -->
+			<col width="10%"/><!-- Modalities -->
+			<col width="26%"/><!-- Study Desc -->
+			<col width="9%"/><!-- Acc No -->
+			<xsl:choose>
+				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+		    		<col width="11%"/><!-- Ref. Physician -->
+				</xsl:when>
+	            <xsl:when test="/model/admin='true'">    
+				    <col width="13%"/>
+				</xsl:when>
+	            <xsl:when test="/model/webViewer='true'">    
+				    <col width="15%"/>
+				</xsl:when>
+				<xsl:otherwise>
+				    <col width="17%"/>
+				</xsl:otherwise>
+			</xsl:choose><!-- 16 -->
+		    <col width="4%"/><!-- Study Status ID -->
+			<col width="2%"/><!-- No. of Series -->
+		    <col width="2%"/><!-- No. of Instances -->
+		    
+			<xsl:if test="/model/webViewer='true'">
+				<col width="2%"/><!-- Webviewer -->
+			</xsl:if>
+			<xsl:if test="/model/admin='true'">
+				<col width="2%"/><!-- add -->
+				<col width="2%"/><!-- edit -->
+			</xsl:if>
+			<col width="2%"/><!-- sticky -->
 		</colgroup>
 			<td class="study_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
@@ -543,10 +613,21 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
       		<td title="Referring Physican">
 				<xsl:value-of select="referringPhysician"/>&#160;
 			</td>
-      		<td title="Number of Series">
+      		<td title="Study Status ID" align="center">
+      			<xsl:choose>
+      				<xsl:when test="studyStatusImage!=''">
+		      			<img src="{studyStatusImage}" border="0" alt="{studyStatusId}"/>
+		      		</xsl:when>
+      				<xsl:when test="studyStatusId!=''">
+      					<xsl:value-of select="studyStatusId"/>
+      				</xsl:when>
+      				<xsl:otherwise>&#160;</xsl:otherwise>
+	      		</xsl:choose>
+			</td>
+      		<td title="Number of Series" align="center">
 				<xsl:value-of select="numberOfSeries"/>&#160;
 			</td>
-      		<td title="Number of Instances">
+      		<td title="Number of Instances" align="center">
 				<xsl:value-of select="numberOfInstances"/>&#160;
 			</td>
 			<xsl:if test="/model/webViewer='true'">
@@ -565,10 +646,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
     			          </xsl:choose>
     			    </td>
 			</xsl:if>
-	        <xsl:if test="/model/webViewer!='true'">
-	        	<td></td>
-	        </xsl:if>
-		    <xsl:if test="/model/admin='true' and /model/trashFolder='false'">    
+	        <xsl:if test="/model/admin='true' and /model/trashFolder='false'">    
 			    <td class="series_mark" align="right">
 	      			<xsl:choose>
 						<xsl:when test="/model/addWorklist='false'">
@@ -590,6 +668,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			    </td>
 	       	</xsl:if>
 		    <xsl:if test="/model/admin='true' and /model/trashFolder='true'">
+				<td>&#160;</td>
 			    <td class="study_mark" align="right" colspan="2">
 					<a href="foldersubmit.m?undel=study&amp;stickyStudy={pk}" onclick="return confirm('Undelete study {studyID}?')">
 						<img src="images/undel.gif" alt="Undelete Study" border="0" title="Undelete Study"/>		
@@ -616,22 +695,35 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	<tr>
 <table class="series_line" width="100%" cellpadding="0" cellspacing="0" border="0" >	  
 		<colgroup>
-			<col width="3%"/>
-			<col width="14%"/>
-			<col width="12%"/>
-			<col width="10%"/>
-			<col width="35%"/>
-			<col width="10%"/>
+			<col width="3%"/><!-- left margin -->
+			<col width="14%"/><!-- Date/Time -->
+			<col width="12%"/><!-- Series No -->
+			<col width="10%"/><!-- Modality -->
+			<col width="35%"/><!-- Series Desc. -->
+			<col width="10%"/><!-- Vendor/Model -->
+			
+			<xsl:choose>
+				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+		    		<col width="8%"/><!-- PPS Status -->
+				</xsl:when>
+	            <xsl:when test="/model/admin='true'">    
+				    <col width="10%"/>
+				</xsl:when>
+	            <xsl:when test="/model/webViewer='true'">    
+				    <col width="10%"/>
+				</xsl:when>
+				<xsl:otherwise>
+				    <col width="12%"/>
+				</xsl:otherwise>
+			</xsl:choose>
+
+            <xsl:if test="/model/webViewer='true'">
+				<col width="2%"/><!-- web viewer -->
+			</xsl:if>
             <xsl:if test="/model/admin='true'">
-    			<col width="8%"/>
-			    <col width="2%"/>
-            </xsl:if>
-            <xsl:if test="/model/admin!='true'">
-    			    <col width="10%"/>
-            </xsl:if>
-			<col width="2%"/>
-			<col width="2%"/>
-			<col width="2%"/>
+				<col width="2%"/><!-- edit -->
+			</xsl:if>
+			<col width="2%"/><!-- sticky -->
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		  <td class="series_mark" align="right" rowspan="{$rowspan}">
@@ -673,7 +765,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
       	</td>
 		<td title="Modality Vendors / Modelname">
     		<xsl:value-of select="manufacturer"/>
-				\ <xsl:value-of select="manufacturerModelName"/>
+				\ <xsl:value-of select="manufacturerModelName"/>&#160;
       	</td>
 		<td title="PPS Status"  >
 			<xsl:choose>
@@ -684,9 +776,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					<xsl:attribute name="style">color: black</xsl:attribute>
 				</xsl:when>
 			</xsl:choose>
-    		<xsl:value-of select="PPSStatus"/>
+    		<xsl:value-of select="PPSStatus"/>&#160;
       	</td>
-		<td title="Number of Instances">
+		<td title="Number of Instances" align="center">
 			<xsl:value-of select="numberOfInstances"/>
 		</td>
         <xsl:if test="/model/webViewer='true'">
@@ -705,15 +797,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 							<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
 						</a>
 					</xsl:when>
+					<xsl:otherwise>&#160;</xsl:otherwise>
 	            </xsl:choose>
 	    	</td>
      	</xsl:if>
-		<xsl:if test="/model/webViewer!='true'">
-       		<td></td>
-		</xsl:if>
 
            <xsl:if test="/model/admin='true' and /model/trashFolder='false'">
-                <td class="series_mark" align="right" >
+                <td class="series_mark" align="right">
 					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
 						<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
 					</a>
@@ -726,7 +816,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</a>
 			    </td>
 			</xsl:if>
-            <td class="series_mark" align="right" >
+            <td class="series_mark" align="right">
 				<xsl:if test="/model/trashFolder='false' or hidden='true'">
 					<input type="checkbox" name="stickySeries" value="{pk}">
 						<xsl:if test="/model/stickySeries/item = pk">
