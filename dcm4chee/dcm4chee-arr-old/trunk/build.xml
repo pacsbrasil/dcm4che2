@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.6.4"/>
+	<property name="version" value="2.7.0"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -25,7 +25,7 @@
 	<!--property name="db2.nobuild" value="true" -->
 		
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
+	<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 
 	<path id="class.path">
