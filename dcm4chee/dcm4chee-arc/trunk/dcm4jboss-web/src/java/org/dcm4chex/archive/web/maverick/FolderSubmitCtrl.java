@@ -95,6 +95,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         	} catch( Exception x ) {
         		log.error("Cant make form bean!", x );
         	}
+        	StudyModel.setHttpRoot(getCtx().getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
         }
        return super.makeFormBean();
     }
@@ -119,8 +120,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
             if (rq.getParameter("sessionChanged") != null ) {
             	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
+            	rq.getSession().setAttribute("dcm4jboss-session", "RELOADED");
             	return query(true); 
             }
+        	rq.getSession().setAttribute("dcm4jboss-session", "ACTIVE");
             if (folderForm.getTotal() < 1 || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null
