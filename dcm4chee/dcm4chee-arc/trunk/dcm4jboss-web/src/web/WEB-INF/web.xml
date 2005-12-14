@@ -61,7 +61,7 @@
 		-->
 		<init-param>
 			<param-name>limitNrOfStudies</param-name>
-			<param-value>25</param-value>
+			<param-value>20</param-value>
 		</init-param>
 
 		<!-- 
