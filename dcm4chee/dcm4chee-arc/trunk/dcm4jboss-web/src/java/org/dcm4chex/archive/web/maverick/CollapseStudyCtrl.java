@@ -61,7 +61,7 @@ public class CollapseStudyCtrl extends Dcm4JbossController {
     }
 
     protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
         folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
         return SUCCESS;
     }

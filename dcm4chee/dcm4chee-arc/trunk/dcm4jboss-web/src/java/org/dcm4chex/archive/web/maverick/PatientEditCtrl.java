@@ -57,7 +57,7 @@ public class PatientEditCtrl extends Dcm4JbossController
 	}
 	
 	public PatientModel getPatient() {
-		return pk == -1 ? newPatient() : FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(pk);
+		return pk == -1 ? newPatient() : FolderForm.getFolderForm(getCtx()).getPatientByPk(pk);
 	}
 
     private PatientModel newPatient() {

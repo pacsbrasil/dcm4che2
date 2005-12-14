@@ -144,7 +144,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             study.setStudyDescription(studyDescription);
             study.setStudyID(studyID);
             FolderSubmitCtrl.getDelegate().createStudy( study.toDataset(), patPk );
-            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+            FolderForm form = FolderForm.getFolderForm(getCtx());
             PatientModel pat = form.getPatientByPk(patPk);
 
             ContentManager cm = lookupContentManager();
@@ -170,7 +170,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
  
     private void executeUpdate() {
         try {
-            StudyModel study = FolderForm.getFolderForm(getCtx().getRequest())
+            StudyModel study = FolderForm.getFolderForm(getCtx())
                     .getStudyByPk(patPk, studyPk);
             //updating data model
             StringBuffer sb = new StringBuffer();
@@ -212,7 +212,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             }
             if (modified) {
 	            FolderSubmitCtrl.getDelegate().updateStudy(study.toDataset());
-	            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+	            FolderForm form = FolderForm.getFolderForm(getCtx());
 	            PatientModel pat = form.getPatientByPk(patPk);
 	            AuditLoggerDelegate.logProcedureRecord(getCtx(),
 	                    AuditLoggerDelegate.MODIFY,

@@ -82,17 +82,17 @@ public class SeriesEditCtrl extends Dcm4JbossController {
     }
 
     public PatientModel getPatient() {
-        return FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(
+        return FolderForm.getFolderForm(getCtx()).getPatientByPk(
                 patPk);
     }
 
     public StudyModel getStudy() {
-        return FolderForm.getFolderForm(getCtx().getRequest()).getStudyByPk(
+        return FolderForm.getFolderForm(getCtx()).getStudyByPk(
                 patPk, studyPk);
     }
     
     public SeriesModel getSeries() {
-    	return seriesPk == -1 ? newSeries() :  FolderForm.getFolderForm(getCtx().getRequest())
+    	return seriesPk == -1 ? newSeries() :  FolderForm.getFolderForm(getCtx())
                 .getSeriesByPk(patPk, studyPk, seriesPk);
     }
 

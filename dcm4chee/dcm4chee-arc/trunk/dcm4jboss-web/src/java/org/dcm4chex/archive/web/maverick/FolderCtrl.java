@@ -57,7 +57,7 @@ public class FolderCtrl extends Dcm4JbossFormController {
     
     
     protected Object makeFormBean() {
-        return FolderForm.getFolderForm(getCtx().getRequest());
+        return FolderForm.getFolderForm(getCtx());
     }
 
     protected String perform() throws Exception {

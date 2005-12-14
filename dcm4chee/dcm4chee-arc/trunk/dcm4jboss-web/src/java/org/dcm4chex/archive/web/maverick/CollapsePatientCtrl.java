@@ -55,7 +55,7 @@ public class CollapsePatientCtrl extends Dcm4JbossController {
     }
     
     protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
         folderForm.getPatientByPk(patPk).getStudies().clear();
         return SUCCESS;
     }

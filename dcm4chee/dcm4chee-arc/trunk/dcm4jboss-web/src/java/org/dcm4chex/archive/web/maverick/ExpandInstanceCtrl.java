@@ -84,7 +84,7 @@ public class ExpandInstanceCtrl extends Dcm4JbossController {
     
     protected String perform() throws Exception {
         try {
-            FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+            FolderForm folderForm = FolderForm.getFolderForm(getCtx());
             InstanceModel m = folderForm.getInstanceByPk(patPk,studyPk,seriesPk,instancePk);
         	if ( expand ) {
 	            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory

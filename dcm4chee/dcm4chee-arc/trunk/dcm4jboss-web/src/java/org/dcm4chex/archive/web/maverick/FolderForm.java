@@ -50,11 +50,13 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.infohazard.maverick.flow.ControllerContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -65,7 +67,7 @@ public class FolderForm {
 
     static final String FOLDER_ATTRNAME = "folderFrom";
 
-    public static final int LIMIT = 10;
+    private static int LIMIT = 20;
     
     public static final String NO_ERROR ="OK";
     /** Error code: General move Error. */
@@ -157,8 +159,11 @@ public class FolderForm {
 	private boolean showWithoutStudies;
 
 	private boolean isTrashFolder = false;
+	
+	protected static Logger log = Logger.getLogger(FolderForm.class);
     
-    static FolderForm getFolderForm(HttpServletRequest request) {
+    static FolderForm getFolderForm(ControllerContext ctx) {
+    	HttpServletRequest request = ctx.getRequest();
         FolderForm form = (FolderForm) request.getSession()
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
@@ -183,6 +188,16 @@ public class FolderForm {
 				e.printStackTrace();
 			}
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
+            String limit = ctx.getServletConfig().getInitParameter("limitNrOfStudies");
+            try {
+            	LIMIT = limit == null ? 20 : Integer.parseInt(limit);
+            	if ( LIMIT <= 0 ) {
+            		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be greater 0! Ignored");
+            	}
+            } catch (Exception x) {
+        		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
+            	LIMIT = 20;
+            }
         }
         form.setErrorCode( NO_ERROR ); //reset error code
 		form.setPopupMsg(null);

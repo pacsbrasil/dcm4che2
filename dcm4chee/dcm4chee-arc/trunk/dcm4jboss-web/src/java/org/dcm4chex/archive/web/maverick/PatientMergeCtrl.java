@@ -112,7 +112,7 @@ public class PatientMergeCtrl extends Errable {
     }
 
     public PatientModel getPatient(int ppk) {
-        return FolderForm.getFolderForm(getCtx().getRequest())
+        return FolderForm.getFolderForm(getCtx())
                 .getPatientByPk(ppk);
     }
 

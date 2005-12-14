@@ -158,7 +158,7 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
         	series.setSeriesNumber(seriesNumber);
         	
             FolderSubmitCtrl.getDelegate().createSeries( series.toDataset(), studyPk );
-            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+            FolderForm form = FolderForm.getFolderForm(getCtx());
             PatientModel pat = form.getPatientByPk(patPk);
             StudyModel study = form.getStudyByPk(patPk, studyPk);
             
@@ -186,7 +186,7 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
     
     private void executeUpdate() {
         try {
-            SeriesModel series = FolderForm.getFolderForm(getCtx().getRequest())
+            SeriesModel series = FolderForm.getFolderForm(getCtx())
                     .getSeriesByPk(patPk, studyPk, seriesPk);
             
             //updating data model
@@ -225,7 +225,7 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
             }
             if (modified) {
 	            FolderSubmitCtrl.getDelegate().updateSeries(series.toDataset());
-	            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+	            FolderForm form = FolderForm.getFolderForm(getCtx());
 	            PatientModel pat = form.getPatientByPk(patPk);
 	            StudyModel study = form.getStudyByPk(patPk, studyPk);
 	            AuditLoggerDelegate.logProcedureRecord(getCtx(),

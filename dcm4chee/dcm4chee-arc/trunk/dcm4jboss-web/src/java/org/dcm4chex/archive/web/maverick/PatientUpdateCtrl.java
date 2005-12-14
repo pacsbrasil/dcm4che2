@@ -85,7 +85,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        
 	        //add new patient to model (as first element) and set sticky flag!
 	        pat = new PatientModel( ds );
-	        FolderForm form = FolderForm.getFolderForm( getCtx().getRequest() );
+	        FolderForm form = FolderForm.getFolderForm( getCtx() );
 	        form.getStickyPatients().add( String.valueOf( pat.getPk() ) );
 	        form.getPatients().add(0, pat);
 	        
@@ -101,7 +101,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
     private void executeUpdate() {
         try {
             PatientModel pat = FolderForm.getFolderForm(
-                    getCtx().getRequest()).getPatientByPk(pk);
+                    getCtx()).getPatientByPk(pk);
             StringBuffer sb = new StringBuffer();
             boolean modified = false;            
             if (AuditLoggerDelegate.isModified("Patient Name",

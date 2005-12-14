@@ -70,12 +70,12 @@ public class StudyEditCtrl extends Dcm4JbossController {
     }
 
     public PatientModel getPatient() {
-        return FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(
+        return FolderForm.getFolderForm(getCtx()).getPatientByPk(
                 patPk);
     }
 
     public StudyModel getStudy() {
-		return studyPk == -1 ? newStudy() : FolderForm.getFolderForm(getCtx().getRequest()).getStudyByPk(patPk, studyPk);
+		return studyPk == -1 ? newStudy() : FolderForm.getFolderForm(getCtx()).getStudyByPk(patPk, studyPk);
     }
     
     private StudyModel newStudy() {
