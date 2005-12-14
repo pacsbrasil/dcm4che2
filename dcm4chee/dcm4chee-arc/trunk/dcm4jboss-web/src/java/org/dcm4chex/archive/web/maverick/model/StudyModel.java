@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick.model;
 
+import java.io.File;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -56,6 +57,8 @@ import org.dcm4chex.archive.common.PrivateTags;
 public class StudyModel extends AbstractModel {
 
     private int pk;
+    
+    private static String httpRoot = "";
 
     public StudyModel() {
     }
@@ -66,7 +69,12 @@ public class StudyModel extends AbstractModel {
         this.pk = ds.getInt(PrivateTags.StudyPk, -1);
         isHidden = ds.getInt( PrivateTags.HiddenStudy, 0) != 0;
     }
-
+    
+    public static void setHttpRoot(String root) {
+    	if ( root == null ) return;
+    	httpRoot = root;
+    }
+    
     public final int getPk() {
         return pk;
     }
@@ -177,6 +185,20 @@ public class StudyModel extends AbstractModel {
         String s = ds.getString(Tags.StorageMediaFileSetID);
         if ( s == null || s.trim().length() < 1 ) s = "_NA_";
         return s;
+    }
+    
+    /**
+     * @return Study Status ID
+     */
+    public final String getStudyStatusId() {
+    	return ds.getString(Tags.StudyStatusID);
+    }
+    
+    public final String getStudyStatusImage() {
+    	String s = getStudyStatusId();
+    	if ( s == null ) return null;
+    	s = "images/s_"+s.toLowerCase()+".jpg";
+    	return new File(httpRoot, s).exists() ? s : null;
     }
     
     /**
