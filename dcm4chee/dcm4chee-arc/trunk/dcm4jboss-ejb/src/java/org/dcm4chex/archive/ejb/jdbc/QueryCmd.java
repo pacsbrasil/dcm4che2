@@ -326,7 +326,7 @@ public abstract class QueryCmd extends BaseReadCmd {
         protected String[] getSelectAttributes() {
             return new String[] { "Patient.encodedAttributes",
                     "Study.encodedAttributes", "Study.modalitiesInStudy",
-                    "Study.numberOfStudyRelatedSeries",
+                    "Study.studyStatusId", "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
                     "Study.filesetId", "Study.filesetIuid",                    
                     "Study.retrieveAETs", "Study.externalRetrieveAET",
@@ -346,12 +346,13 @@ public abstract class QueryCmd extends BaseReadCmd {
             fillDataset(ds, 2);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
                     '\\'));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(8), rs.getString(9));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(10)]);
+            ds.putCS(Tags.StudyStatusID, rs.getString(4));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(5));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(6));
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(9), rs.getString(10));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(11)]);
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
 
