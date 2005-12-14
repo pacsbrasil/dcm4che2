@@ -68,7 +68,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
             "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
             "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability", "Study.filesetId", "Patient.hidden", "Study.hidden"};
+            "Study.availability", "Study.filesetId", "Patient.hidden", 
+			"Study.hidden", "Study.studyStatusId"};
 
     private static final String[] ENTITY = {"Patient"};
     private static final String[] ENTITY_FOR_HIDDEN = {"Series"};
@@ -215,6 +216,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                     	ds.putSS(PrivateTags.HiddenPatient,1);
                     if ( rs.getBoolean(12) ) 
                        	ds.putSS(PrivateTags.HiddenStudy,1);
+                    ds.putCS(Tags.StudyStatusID, rs.getString(13) );
                 } else {
 	                if ( rs.getBoolean(11) ) 
 	                	ds.putSS(PrivateTags.HiddenPatient,1);
