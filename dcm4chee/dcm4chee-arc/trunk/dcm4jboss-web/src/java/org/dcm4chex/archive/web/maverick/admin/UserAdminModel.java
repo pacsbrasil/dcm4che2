@@ -186,7 +186,7 @@ public class UserAdminModel {
 	 * @return User object if user is created or null.
 	 */
 	public DCMUser createUser( DCMUser user, String passwd ) {
-		if ( userList.contains( user ) ) {
+		if ( getUserList().contains( user ) ) {
 			log.warn("Cant create user! UserID "+user.getUserID()+" already exists!");
 			this.popupMsg = "Cant create user! UserID "+user.getUserID()+" already exists!";
 			editUser = user;
@@ -217,12 +217,12 @@ public class UserAdminModel {
 	 */
 	public DCMUser updateUser( int userHash, DCMUser user ) {
 		DCMUser qUser = DCMUser.getQueryUser(userHash );
-		int idx = userList.indexOf(qUser);
+		int idx = getUserList().indexOf(qUser);
 		if ( idx == -1 ) {
 			log.error("User doesnt exist! UserID "+user.getUserID());
 			return null;
 		} else {
-			String userID = ((DCMUser)userList.get(idx)).getUserID();
+			String userID = ((DCMUser)getUserList().get(idx)).getUserID();
 			Collection roles = user.roles();
 			String role;
 			try {
@@ -258,7 +258,7 @@ public class UserAdminModel {
 	 * @return user object or null.
 	 */
 	public DCMUser getUser( int userHash ) {
-		return (DCMUser) userList.get( userList.indexOf( DCMUser.getQueryUser(userHash) ) );
+		return (DCMUser) getUserList().get( getUserList().indexOf( DCMUser.getQueryUser(userHash) ) );
 	}
 
 	/**
