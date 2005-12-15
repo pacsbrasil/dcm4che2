@@ -369,19 +369,19 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			
 			<xsl:choose>
 				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
-		    		<col width="8%"/><!-- PPS Status -->
+		    		<col width="6%"/><!-- PPS Status -->
 				</xsl:when>
 	            <xsl:when test="/model/admin='true'">    
-				    <col width="10%"/>
+				    <col width="8%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="10%"/>
+				    <col width="8%"/>
 				</xsl:when>
 				<xsl:otherwise>
-				    <col width="12%"/>
+				    <col width="10%"/>
 				</xsl:otherwise>
 			</xsl:choose>
-			
+			<col width="2%"/><!-- spacer -->
             <xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- web viewer -->
 			</xsl:if>
@@ -433,6 +433,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<font size="1">
 					NoI:</font>
 			</td>
+			<td>&#160;</td>
             <xsl:if test="/model/webViewer='true'">
 				<td>&#160;</td>
 			</xsl:if>
@@ -704,19 +705,19 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			
 			<xsl:choose>
 				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
-		    		<col width="8%"/><!-- PPS Status -->
+		    		<col width="6%"/><!-- PPS Status -->
 				</xsl:when>
 	            <xsl:when test="/model/admin='true'">    
-				    <col width="10%"/>
+				    <col width="8%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="10%"/>
+				    <col width="8%"/>
 				</xsl:when>
 				<xsl:otherwise>
-				    <col width="12%"/>
+				    <col width="10%"/>
 				</xsl:otherwise>
 			</xsl:choose>
-
+			<col width="2%"/><!-- spacer -->
             <xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- web viewer -->
 			</xsl:if>
@@ -781,6 +782,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		<td title="Number of Instances" align="center">
 			<xsl:value-of select="numberOfInstances"/>
 		</td>
+		<td>&#160;</td>
         <xsl:if test="/model/webViewer='true'">
 		    <td class="series_mark" align="right">
 	            <xsl:choose>
