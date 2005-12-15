@@ -149,7 +149,7 @@
 	    	<replace dir="${basedir}/target/meta-inf-mssql">
 	  			<replacefilter
 	  				token="DefaultDS"
-	  				value="MsSqlDS"/>
+	  				value="MSSQLDS"/>
 	  			<replacefilter
 	  				token="Hypersonic SQL"
 	  				value="MS SQLSERVER2000"/>
