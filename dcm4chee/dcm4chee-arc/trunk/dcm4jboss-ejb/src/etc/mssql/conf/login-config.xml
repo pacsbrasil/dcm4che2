@@ -96,7 +96,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/MsSqlDS</module-option>
+             <module-option name = "dsJndiName">java:/MSSQLDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>
@@ -111,7 +111,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/MsSqlDS</module-option>
+             <module-option name = "dsJndiName">java:/MSSQLDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>
@@ -126,7 +126,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/MsSqlDS</module-option>
+             <module-option name = "dsJndiName">java:/MSSQLDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>

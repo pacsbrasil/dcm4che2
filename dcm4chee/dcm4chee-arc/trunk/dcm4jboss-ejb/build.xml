@@ -310,7 +310,7 @@
     	</copy>
     	<replace dir="${target.meta-inf-mssql}"
   				token="DefaultDS"
-  				value="MsSqlDS"/>
+  				value="MSSQLDS"/>
     	<replace file="${target.meta-inf-mssql}/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="Hypersonic SQL"
