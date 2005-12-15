@@ -39,7 +39,6 @@
 package org.dcm4che2.net;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -50,7 +49,7 @@ import java.io.OutputStream;
 public interface DataWriter
 {
     
-    void writeTo(OutputStream out, String tsuid)
+    void writeTo(PDVOutputStream out, String tsuid)
     throws IOException;
 
 }

@@ -39,7 +39,6 @@
 package org.dcm4che2.net;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.TransferSyntax;
@@ -63,7 +62,7 @@ public class DataWriterAdapter implements DataWriter
         this.data = data;
     }
 
-    public void writeTo(OutputStream out, String tsuid) throws IOException
+    public void writeTo(PDVOutputStream out, String tsuid) throws IOException
     {
         DicomOutputStream dos = new DicomOutputStream(out);
         dos.writeDataset(data, TransferSyntax.valueOf(tsuid));

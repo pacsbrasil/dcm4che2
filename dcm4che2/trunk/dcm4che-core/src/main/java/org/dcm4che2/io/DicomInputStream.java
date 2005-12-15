@@ -75,7 +75,7 @@ public class DicomInputStream extends FilterInputStream
     private long pos = 0;
     private long tagpos = 0;
     private boolean expectFmiEnd = false;
-    private long fmiEndPos = -1;
+    private long fmiEndPos = 0;
     private long markedPos = 0;
     private byte[] preamble;
     private byte[] header = new byte[8];

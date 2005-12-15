@@ -38,7 +38,9 @@
 
 package org.dcm4che2.net;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
@@ -63,7 +65,7 @@ import org.dcm4che2.net.pdu.UserIdentity;
  * @since Nov 25, 2005
  *
  */
-class PDUEncoder extends OutputStream
+class PDUEncoder extends PDVOutputStream
 {
     private static final int DEF_PDU_LEN = 0x4000; // 16KB
     private final Association as;
@@ -428,5 +430,35 @@ class PDUEncoder extends OutputStream
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         encodePDVHeader(PDVType.LAST);
+    }
+
+    public void copyFrom(InputStream in, int len) throws IOException
+    {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        int remaining = len;
+        while (remaining > 0)
+        {
+            flushPDataTF();
+            int copy = in.read(buf, pos, Math.min(remaining, free()));
+            if (copy == -1)
+                throw new EOFException();
+            pos += copy;
+            remaining -= copy;
+        }
+    }
+
+    public void copyFrom(InputStream in) throws IOException
+    {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        for (;;)
+        {
+            flushPDataTF();
+            int copy = in.read(buf, pos, free());
+            if (copy == -1)
+                return;
+            pos += copy;
+        }
     }
 }

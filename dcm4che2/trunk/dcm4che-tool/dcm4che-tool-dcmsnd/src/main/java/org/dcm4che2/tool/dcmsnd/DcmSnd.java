@@ -39,8 +39,8 @@
 package org.dcm4che2.tool.dcmsnd;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +60,6 @@ import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
@@ -74,6 +73,7 @@ import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.NoPresentationContextException;
+import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.util.StringUtils;
 
 /**
@@ -99,16 +99,6 @@ public class DcmSnd {
         "\nExample: dcmsnd STORESCP@localhost:11112 image.dcm \n" +
         "=> Send DICOM object image.dcm to Application Entity STORESCP, " +
         "listening on local port 11112.";
-    private static String[] NATIVE_TS_PREFER_LE = {
-        UID.ExplicitVRLittleEndian,
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRBigEndian        
-    };
-    private static String[] NATIVE_TS_PREFER_BE = {
-        UID.ExplicitVRBigEndian,       
-        UID.ExplicitVRLittleEndian,
-        UID.ImplicitVRLittleEndian
-    };
 
     private NetworkApplicationEntity remoteAECfg = new NetworkApplicationEntity();
     private NetworkConnection remoteConnCfg = new NetworkConnection();
@@ -537,8 +527,8 @@ public class DcmSnd {
                 addFile(fs[i]);
             return;
         }
+        FileInfo info = new FileInfo(f);
         DicomObject dcmObj = new BasicDicomObject();
-        String tsuid;
         try
         {
             DicomInputStream in = new DicomInputStream(f);
@@ -546,7 +536,8 @@ public class DcmSnd {
             {
                 in.setHandler(new StopTagInputHandler(Tag.StudyDate));
                 in.readDicomObject(dcmObj, PEEK_LEN);
-                tsuid = in.getTransferSyntax().uid();
+                info.tsuid = in.getTransferSyntax().uid();
+                info.fmiEndPos = in.getEndOfFileMetaInfoPosition();
             }
             finally
             {
@@ -563,24 +554,24 @@ public class DcmSnd {
             System.out.print('F');
             return;
         }
-        String cuid = dcmObj.getString(Tag.SOPClassUID);
-        if (cuid == null)
+        info.cuid = dcmObj.getString(Tag.SOPClassUID);
+        if (info.cuid == null)
         {
             System.err.println("WARNING: Missing SOP Class UID in " + f 
                     + " - skipped.");
             System.out.print('F');
             return;
         }   
-        String iuid = dcmObj.getString(Tag.SOPInstanceUID);
-        if (iuid == null)
+        info.iuid = dcmObj.getString(Tag.SOPInstanceUID);
+        if (info.iuid == null)
         {
             System.err.println("WARNING: Missing SOP Instance UID in " + f 
                     + " - skipped.");
             System.out.print('F');
             return;
         }   
-        addTransferCapability(cuid, tsuid);
-        files.add(new FileInfo(f, cuid, iuid, tsuid, f.length()));
+        addTransferCapability(info.cuid, info.tsuid);
+        files.add(info);
         System.out.print('.');
     }
 
@@ -620,7 +611,8 @@ public class DcmSnd {
 
     public void send()
     {
-        String[] tsuid = new String[1];
+        String[] s1 = new String[1];
+        String[] s3 = new String[3];
         for (int i = 0, n = files.size(); i < n; ++i)
         {
             FileInfo info = (FileInfo) files.get(i);
@@ -634,7 +626,7 @@ public class DcmSnd {
                     }
                 };
                 assoc.cstore(info.cuid, info.iuid, priority, new DataWriter(info), 
-                        compatibleTS(info.tsuid, tsuid), rspHandler);
+                        compatibleTS(info.tsuid, s1, s3), rspHandler);
             }
             catch (NoPresentationContextException e)
             {
@@ -666,13 +658,31 @@ public class DcmSnd {
         }
     }        
     
-    private String[] compatibleTS(String tsuid, String[] s1)
+    private String[] compatibleTS(String tsuid, String[] s1, String[] s3)
     {
+        if (tsuid.equals(UID.ExplicitVRLittleEndian))
+        {
+            s3[0] = UID.ExplicitVRLittleEndian;
+            s3[1] = UID.ImplicitVRLittleEndian;
+            s3[2] = UID.ExplicitVRBigEndian;
+            return s3;
+        }
+        if (tsuid.equals(UID.ImplicitVRLittleEndian))
+        {
+            s3[0] = UID.ImplicitVRLittleEndian;
+            s3[1] = UID.ExplicitVRLittleEndian;
+            s3[2] = UID.ExplicitVRBigEndian;
+            return s3;
+        }
+        if (tsuid.equals(UID.ExplicitVRBigEndian))
+        {
+            s3[0] = UID.ExplicitVRBigEndian;
+            s3[1] = UID.ExplicitVRLittleEndian;
+            s3[2] = UID.ImplicitVRLittleEndian;
+            return s3;
+        }
         s1[0] = tsuid;
-        TransferSyntax ts = TransferSyntax.valueOf(tsuid);
-        return ts.uncompressed() 
-                ? (ts.bigEndian() ? NATIVE_TS_PREFER_BE : NATIVE_TS_PREFER_LE)
-                : s1;
+        return s1;
     }
 
     public void close()
@@ -689,21 +699,17 @@ public class DcmSnd {
     
     private static final class FileInfo
     {
+        File f;
+        String cuid;
+        String iuid;
+        String tsuid;
+        long fmiEndPos;
+        long length;
 
-        final File f;
-        final String cuid;
-        final String iuid;
-        final String tsuid;
-        final long length;
-
-        public FileInfo(File f, String cuid, String iuid, String tsuid,
-                long length)
+        public FileInfo(File f)
         {
             this.f = f;
-            this.cuid = cuid;
-            this.iuid = iuid;
-            this.tsuid = tsuid;
-            this.length = length;
+            this.length = f.length();
         }
         
     }
@@ -718,21 +724,39 @@ public class DcmSnd {
             this.info = info;
         }
         
-        public void writeTo(OutputStream out, String tsuid) throws IOException
+        public void writeTo(PDVOutputStream out, String tsuid) throws IOException
         {
-            DicomInputStream dis = new DicomInputStream(info.f);
-            try
+            if (tsuid.equals(info.tsuid))
             {
-                DicomOutputStream dos = new DicomOutputStream(out);
-                dos.setTransferSyntax(tsuid);
-                TranscoderInputHandler h = 
-                    new TranscoderInputHandler(dos, transcoderBufferSize);
-                dis.setHandler(h);
-                dis.readDicomObject();
+                FileInputStream fis = new FileInputStream(info.f);
+                try
+                {
+                    long skip = info.fmiEndPos;
+                    while (skip > 0)
+                        skip -= fis.skip(skip);
+                    out.copyFrom(fis);
+                }
+                finally
+                {
+                    fis.close();
+                }
             }
-            finally
+            else
             {
-                dis.close();
+                DicomInputStream dis = new DicomInputStream(info.f);
+                try
+                {
+                    DicomOutputStream dos = new DicomOutputStream(out);
+                    dos.setTransferSyntax(tsuid);
+                    TranscoderInputHandler h = 
+                        new TranscoderInputHandler(dos, transcoderBufferSize);
+                    dis.setHandler(h);
+                    dis.readDicomObject();
+                }
+                finally
+                {
+                    dis.close();
+                }
             }
         }
 
