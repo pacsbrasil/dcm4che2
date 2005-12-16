@@ -314,8 +314,10 @@ public class IntHashtable {
 				next = value0;
 				--index;
 			} else {
-				if (index != incIndex(endIndex)) {
-					next = get(sortedKeys[index]);
+ 				if (index != incIndex(endIndex)) {
+					while ((next = get(sortedKeys[index])) == null 
+                            && index != endIndex)
+                        index = incIndex(index);
 				}
 			}
 		}
@@ -332,9 +334,9 @@ public class IntHashtable {
 			if (next == null)
 				throw new NoSuchElementException();
 			Object v = next;
-			if (index == endIndex) {
-				next = null;
-			} else {
+            next = null;
+            while (next == null && index != endIndex)
+			{
 				index = incIndex(index);
 				next = get(sortedKeys[index]);
 			}

@@ -76,18 +76,28 @@ public class IntHashtableTest extends TestCase {
 		assertNull(table.get(-11));
 	}
 
-	public final void testRemove() {
-		for (int i = -10; i < 0; i++) {
+	public final void testRemove1() {
+		for (int i = -10; i < 10; i++, i++) {
 			assertEquals(new Integer(i), table.remove(i));
 		}
 		assertEquals(10, table.size());
-		for (int i = -10; i < 0; i++) {
+		for (int i = -10; i < 10; i++, i++) {
 			assertNull(table.get(i));
 		}
-		for (int i = 0; i < 10; i++) {
+		for (int i = -9; i < 10; i++, i++) {
 			assertEquals(new Integer(i), table.get(i));
 		}
-		for (int i = 0; i < 10; i++) {
+		Iterator it = table.iterator(0, -1);
+        for (int i = 1; i < 10; i++, i++) {
+            assertEquals(true, it.hasNext());
+            assertEquals(new Integer(i), it.next());
+        }
+        for (int i = -9; i < 0; i++, i++) {
+            assertEquals(true, it.hasNext());
+            assertEquals(new Integer(i), it.next());
+        }
+        assertEquals(false, it.hasNext());
+		for (int i = -9; i < 10; i++, i++) {
 			assertEquals(new Integer(i), table.remove(i));
 		}
 		assertEquals(true, table.isEmpty());
@@ -96,6 +106,37 @@ public class IntHashtableTest extends TestCase {
 			assertNull(table.get(i));
 		}
 	}
+
+    public final void testRemove2() {
+        for (int i = -9; i < 10; i++, i++) {
+            assertEquals(new Integer(i), table.remove(i));
+        }
+        assertEquals(10, table.size());
+        for (int i = -9; i < 10; i++, i++) {
+            assertNull(table.get(i));
+        }
+        for (int i = -10; i < 10; i++, i++) {
+            assertEquals(new Integer(i), table.get(i));
+        }
+        Iterator it = table.iterator(0, -1);
+        for (int i = 0; i < 10; i++, i++) {
+            assertEquals(true, it.hasNext());
+            assertEquals(new Integer(i), it.next());
+        }
+        for (int i = -10; i < 0; i++, i++) {
+            assertEquals(true, it.hasNext());
+            assertEquals(new Integer(i), it.next());
+        }
+        assertEquals(false, it.hasNext());
+        for (int i = -10; i < 10; i++, i++) {
+            assertEquals(new Integer(i), table.remove(i));
+        }
+        assertEquals(true, table.isEmpty());
+        assertEquals(0, table.size());
+        for (int i = -10; i < 10; i++) {
+            assertNull(table.get(i));
+        }
+    }
 
 	public final void testAccept() {
 		table.accept(new IntHashtable.Visitor() {
