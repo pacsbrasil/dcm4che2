@@ -279,6 +279,7 @@ public class Connector
             s.setSendBufferSize(config.getSendBufferSize());
         s.setTcpNoDelay(config.isTcpNoDelay());
         s.bind(config.getSocketAddress(0));
+        log.debug("Initiate connection to {}", peerConfig.getSocketAddress());
         s.connect(peerConfig.getSocketAddress(), config.getConnectTimeout());
         return s;
     }
@@ -302,11 +303,12 @@ public class Connector
             public void run()
             {
                 SocketAddress addr = server.getLocalSocketAddress();
-                log.info("Start listening on " + addr);
+                log.info("Start listening on {}", addr);
                 try
                 {
                    for (;;)
                    {
+                        log.debug("Wait for connection on {}", addr);
                         Socket s = server.accept();
                         if (config.getSendBufferSize() != NetworkConnection.DEFAULT)
                             s.setSendBufferSize(config.getSendBufferSize());
@@ -319,7 +321,7 @@ public class Connector
                 {
                     // assume exception was raised by graceful stop of server
                 }
-                log.info("Stop listening on " + addr);
+                log.info("Stop listening on {}", addr);
             }});
     }
 

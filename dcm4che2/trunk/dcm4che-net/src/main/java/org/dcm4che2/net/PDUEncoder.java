@@ -58,6 +58,8 @@ import org.dcm4che2.net.pdu.ExtendedNegotiation;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
 import org.dcm4che2.net.pdu.UserIdentity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -67,6 +69,7 @@ import org.dcm4che2.net.pdu.UserIdentity;
  */
 class PDUEncoder extends PDVOutputStream
 {
+    static Logger log = LoggerFactory.getLogger(PDUEncoder.class);
     private static final int DEF_PDU_LEN = 0x4000; // 16KB
     private final Association as;
     private final OutputStream out;
@@ -94,30 +97,35 @@ class PDUEncoder extends PDVOutputStream
         buf10[8] = (byte) source;
         buf10[9] = (byte) reason;
         out.write(buf10, 0, 10);
+        out.flush();
     }
     
     public synchronized void write(AAssociateRJException rj)
     throws IOException
     {
+        log.info("{} << {}", as.toString(), rj.getMessage());
         write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(), rj.getReason());        
     }
 
     public synchronized void writeAReleaseRQ()
     throws IOException
     {
+        log.info("{} << A-RELEASE-RQ", as.toString());
         write(PDUType.A_RELEASE_RQ, 0, 0, 0);       
     }
 
     public synchronized void writeAReleaseRP()
     throws IOException
     {
+        log.info("{} << A-RELEASE-RP", as.toString());
         write(PDUType.A_RELEASE_RP, 0, 0, 0);        
     }
 
     public synchronized void write(AAbortException aa)
     throws IOException
     {
-        write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());        
+       log.info("{} << {}", as, aa.getMessage());
+       write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());        
     }
 
     public synchronized void writePDataTF()
@@ -128,20 +136,22 @@ class PDUEncoder extends PDVOutputStream
         put(PDUType.P_DATA_TF);
         put(0);
         putInt(pdulen);
-        out.write(buf, 0, pdulen + 6);
-        pdvpos = 6;
-        pos = 12;
+        if (log.isDebugEnabled())
+            log.debug(as.toString() + " send P-DATA-TF[len=" + pdulen + "]");
+        writePDU(pdulen);
     }
 
     public synchronized void write(AAssociateRQ rq)
     throws IOException
     {
+        log.info("{} << {}", as, rq);
         write(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);        
     }
 
     public synchronized void write(AAssociateAC ac)
     throws IOException
     {
+        log.info("{} << {}", as, ac);
         write(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);        
     }
 
@@ -164,7 +174,13 @@ class PDUEncoder extends PDVOutputStream
         encodeStringItem(ItemType.APP_CONTEXT, rqac.getApplicationContext());
         encodePCs(pcItemType, rqac.getPresentationContexts());
         encodeUserInfo(rqac);
+        writePDU(pdulen);
+    }
+
+    private void writePDU(int pdulen) throws IOException
+    {
         out.write(buf, 0, 6 + pdulen);
+        out.flush();
         pdvpos = 6;
         pos = 12;
     }
@@ -350,6 +366,8 @@ class PDUEncoder extends PDVOutputStream
             String tsuid)
     throws IOException
     {
+        if (log.isInfoEnabled())
+            log.info(as.toString() + " << " + CommandUtils.toString(cmd, pcid, tsuid));
         synchronized (dimseLock)
         {
             this.th = Thread.currentThread();
@@ -385,11 +403,15 @@ class PDUEncoder extends PDVOutputStream
     private void encodePDVHeader(int last)
     {
         final int endpos = pos;
+        final int pdvlen = endpos - pdvpos - 4;
         pos = pdvpos;
-        putInt(endpos - pdvpos - 4);
+        putInt(pdvlen);
         put(pdvpcid);
         put(pdvcmd | last);
         pos = endpos;
+        if (log.isDebugEnabled())
+            log.debug(as.toString() + " << PDV[len = " + pdvlen
+                    + ", pcid = " + pdvpcid + ", mch = " + (pdvcmd | last) + "]");
     }
 
     public void write(int b) throws IOException

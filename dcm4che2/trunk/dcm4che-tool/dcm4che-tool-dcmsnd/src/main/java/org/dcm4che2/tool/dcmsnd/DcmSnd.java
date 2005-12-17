@@ -253,7 +253,7 @@ public class DcmSnd {
         opts.addOption(localAddr);
         Option maxOpsInvoked = new Option("a", "async", true,
                 "maximum number of outstanding operations it may invoke " +
-                "asynchronously, 1 (=synchronous) by default.");
+                "asynchronously, unlimited by default.");
         maxOpsInvoked.setArgName("max-ops");
         opts.addOption(maxOpsInvoked);
         opts.addOption("k", "pack-pdv", false, 
@@ -269,10 +269,10 @@ public class DcmSnd {
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
-        Option checkPeriod = new Option("D", "reaper-period", true,
+        Option checkPeriod = new Option("R", "reaper-period", true,
                 "period in ms to check for outstanding DIMSE-RSP, 10s by default");
         checkPeriod.setArgName("period");
-        Option rspTimeout = new Option("R", "rsp-timeout", true,
+        Option rspTimeout = new Option("r", "rsp-timeout", true,
                 "timeout in ms for receiving DIMSE-RSP, 60s by default");
         rspTimeout.setArgName("timeout");
         opts.addOption(rspTimeout);
@@ -365,14 +365,14 @@ public class DcmSnd {
             dcmsnd.setConnectTimeout(
                     parseInt(cl.getOptionValue("C"),
                     "illegal argument of option -C", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("D"))
-            dcmsnd.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("D"),
-                    "illegal argument of option -D", 1, Integer.MAX_VALUE));
         if (cl.hasOption("R"))
-            dcmsnd.setDimseRspTimeout(
+            dcmsnd.setAssociationReaperPeriod(
                     parseInt(cl.getOptionValue("R"),
                     "illegal argument of option -R", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("r"))
+            dcmsnd.setDimseRspTimeout(
+                    parseInt(cl.getOptionValue("r"),
+                    "illegal argument of option -r", 1, Integer.MAX_VALUE));
         if (cl.hasOption("T"))
             dcmsnd.setAcceptTimeout(
                     parseInt(cl.getOptionValue("T"),
@@ -408,8 +408,8 @@ public class DcmSnd {
         dcmsnd.setPackPDV(cl.hasOption("k"));
         dcmsnd.setTcpNoDelay(cl.hasOption("y"));
         if (cl.hasOption("a"))
-            dcmsnd.setMaxOpsInvoked(parseInt(cl.getOptionValue("a"),
-                    "illegal max-opts", 1, 0xffff));
+            dcmsnd.setMaxOpsInvoked(zeroAsMaxInt(parseInt(
+                    cl.getOptionValue("a"), "illegal max-opts", 0, 0xffff)));
         if (cl.hasOption("p"))
             dcmsnd.setPriority(CommandUtils.LOW);
         if (cl.hasOption("P"))
@@ -449,6 +449,11 @@ public class DcmSnd {
         prompt(dcmsnd, (t2 - t1) / 1000F);
         dcmsnd.close();
         System.out.println("Released connection to " + remoteAE);     
+    }
+
+    private static int zeroAsMaxInt(int val)
+    {
+        return val > 0 ? val : Integer.MAX_VALUE;
     }
 
     private static void prompt(DcmSnd dcmsnd, float seconds)

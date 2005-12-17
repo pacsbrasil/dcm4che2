@@ -79,13 +79,13 @@ public class State
         return name;
     }
 
-
+    /** Sta1 - Idle */
     private static class Sta1 extends State
     {
 
         Sta1()
         {
-            super("Sta1 - Idle");
+            super("Sta1");
         }
 
         void abort(Association as, AAbortException aa)
@@ -94,69 +94,74 @@ public class State
         }
     }
 
+    /** Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU) */
     private static class Sta2 extends State
     {
 
         Sta2()
         {
-            super("Sta2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)");
+            super("Sta2");
         }
         
-        void received(Association as, AAssociateRQ rq) throws IOException
+        void receivedAssociateRQ(Association as, AAssociateRQ rq) throws IOException
         {
             as.onAAssociateRQ(rq);
         }
     }
 
+    /** Sta3 - Awaiting local A-ASSOCIATE response primitive */
     private static class Sta3 extends State
     {
 
         Sta3()
         {
-            super("Sta3 - Awaiting local A-ASSOCIATE response primitive");
+            super("Sta3");
         }
 
     }
 
+    /** Sta4 - Awaiting local A-ASSOCIATE request primitive. */
     private static class Sta4 extends State
     {
 
         Sta4()
         {
-            super("Sta4 - Awaiting local A-ASSOCIATE request primitive.");
+            super("Sta4");
         }
 
-        void send(Association as, AAssociateRQ rq) throws IOException
+        void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException
         {
             as.writeAssociationRQ(rq);
         }
     }
 
+    /** Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU */
     private static class Sta5 extends State
     {
 
         Sta5()
         {
-            super("Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU");
+            super("Sta5");
         }
 
-        void received(Association as, AAssociateAC ac) throws IOException
+        void receivedAssociateAC(Association as, AAssociateAC ac) throws IOException
         {
             as.onAssociateAC(ac);
         }
         
-        void received(Association as, AAssociateRJException rj) throws IOException
+        void receivedAssociateRJ(Association as, AAssociateRJException rj) throws IOException
         {
             as.onAssociateRJ(rj);
         }
     }
 
+    /** Sta6 - Association established and ready for data transfer */
     private static class Sta6 extends State
     {
 
         Sta6()
         {
-            super("Sta6 - Association established and ready for data transfer");
+            super("Sta6");
         }
 
         void receivedPDataTF(Association as) throws IOException
@@ -196,12 +201,13 @@ public class State
         
     }
 
+    /** Sta7 - Awaiting A-RELEASE-RP PDU */
     private static class Sta7 extends State
     {
 
         Sta7()
         {
-            super("Sta7 - Awaiting A-RELEASE-RP PDU");
+            super("Sta7");
         }
 
         void receivedPDataTF(Association as) throws IOException
@@ -226,12 +232,13 @@ public class State
         
     }
 
+    /** Sta8 - Awaiting local A-RELEASE response primitive */
     private static class Sta8 extends State
     {
 
         public Sta8()
         {
-            super("Sta8 - Awaiting local A-RELEASE response primitive");
+            super("Sta8");
         }
 
         void sendPDataTF(Association as) throws IOException
@@ -245,6 +252,8 @@ public class State
         }
 
     }
+    /** Sta9 - Release collision requestor side;
+     * awaiting A-RELEASE response primitive */
 /*
     private static class Sta9 extends State
     {
@@ -257,13 +266,14 @@ public class State
 
     }
 */
+    /** Sta10 - Release collision acceptor side;
+     * awaiting A-RELEASE-RP PDU */
     private static class Sta10 extends State
     {
 
         public Sta10()
         {
-            super("Sta10 - Release collision acceptor side; " +
-                    "awaiting A-RELEASE-RP PDU");
+            super("Sta10");
         }
 
         void receivedReleaseRP(Association as) throws IOException
@@ -272,13 +282,14 @@ public class State
         }
     }
 
+    /** Sta11 - Release collision requestor side;
+     * awaiting A-RELEASE-RP PDU */
     private static class Sta11 extends State
     {
 
         public Sta11()
         {
-            super("Sta11 - Release collision requestor side; " +
-                    "awaiting A-RELEASE-RP PDU");
+            super("Sta11");
         }
 
         void receivedReleaseRP(Association as) throws IOException
@@ -286,24 +297,26 @@ public class State
             as.onReleaseRP();
         }
     }
+    /** Sta12 - Release collision acceptor side; 
+     * awaiting A-RELEASE response primitive */
 /*
     private static class Sta12 extends State
     {
 
         public Sta12()
         {
-            super("Sta12 - Release collision acceptor side; " +
-                    "awaiting A-RELEASE response primitive");
+            super("Sta12");
         }
 
     }
 */
+    /** Sta13 - Awaiting Transport Connection Close Indication */
     private static class Sta13 extends State
     {
 
         public Sta13()
         {
-            super("Sta13 - Awaiting Transport Connection Close Indication");
+            super("Sta13 ");
         }
 
         void abort(Association as, AAbortException aa)
@@ -313,17 +326,17 @@ public class State
 
     }
 
-    void received(Association as, AAssociateRQ rq) throws IOException
+    void receivedAssociateRQ(Association as, AAssociateRQ rq) throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-RQ");
     }
 
-    void received(Association as, AAssociateAC ac) throws IOException
+    void receivedAssociateAC(Association as, AAssociateAC ac) throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-AC");
     }
     
-    void received(Association as, AAssociateRJException rj) throws IOException
+    void receivedAssociateRJ(Association as, AAssociateRJException rj) throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-RJ");
     }
@@ -343,7 +356,7 @@ public class State
         as.unexpectedPDU("A-RELEASE-RP");
     }
 
-    void send(Association as, AAssociateRQ rq) throws IOException
+    void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException
     {
         //as.illegalStateForSending("A-ASSOCIATE-RQ");
         throw new IllegalStateException(toString());

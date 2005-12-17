@@ -55,7 +55,6 @@ import org.dcm4che2.net.pdu.AAbortException;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJException;
 import org.dcm4che2.net.pdu.AAssociateRQ;
-import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.util.IntHashtable;
 import org.slf4j.Logger;
@@ -70,7 +69,8 @@ import org.slf4j.LoggerFactory;
 public class Association implements Runnable
 {
     static Logger log = LoggerFactory.getLogger(Association.class);
-
+    static int nextSerialNo = 0;
+    private final int serialNo = ++nextSerialNo;
     private final Connector connector;
     private final AssociationReaper reaper;
     private ApplicationEntity ae;
@@ -81,12 +81,14 @@ public class Association implements Runnable
     private PDUEncoder encoder;
     private PDUDecoder decoder;
     private State state;
+    private String name = "Association(" + serialNo + ")";
 
     private AAssociateRQ associateRQ;
     private AAssociateAC associateAC;
     private IOException exception;
     
     private int maxOpsInvoked;
+    private int maxPDULength;
 
     private int msgID = 0;
     private int performing = 0;
@@ -112,28 +114,12 @@ public class Association implements Runnable
         this.out = socket.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
         this.state = State.STA1;
+        log.info(requestor ? "{} initiated {}" : "{} accepted {}", name, socket);
     }
     
     public String toString()
     {
-        StringBuffer sb = new StringBuffer("Association[");
-        if (associateRQ != null) {
-            if (requestor)
-            {
-                sb.append(associateRQ.getCallingAET());
-                sb.append(">>");
-                sb.append(associateRQ.getCalledAET());
-            }
-            else
-            {
-                sb.append(associateRQ.getCalledAET());                
-                sb.append("<<");
-                sb.append(associateRQ.getCallingAET());
-            }
-            sb.append(", ");
-       }
-       sb.append(socket).append("]");
-       return sb.toString();
+        return name;
     }
     
     static Association request(Socket socket, Connector connector, ApplicationEntity ae) 
@@ -200,23 +186,14 @@ public class Association implements Runnable
         if (this.state == state)
             return;
 
-        boolean wasReadyForDataReceive = isReadyForDataReceive();
         synchronized (this)
         {
+            log.debug("{} enter state: {}", this, state);
             this.state = state;
-            log.debug("Enter State: {}", state);
             notifyAll();
         }
-        if (wasReadyForDataReceive && !isReadyForDataReceive())
-            fireEndOfData();
     }
     
-    private void fireEndOfData()
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
     private Map acceptedPC(String asuid)
     {
         return (Map) acceptedPCs.get(asuid);
@@ -234,7 +211,7 @@ public class Association implements Runnable
                 associateRQ.getPresentationContext(pc.getPCID());
             if (pcrq == null)
             {
-                log.warn("A-ASSOCIATE-AC contains not offered Presentation Context: " + pc);
+                log.warn("{}: A-ASSOCIATE-AC contains not offered Presentation Context: {}", name, pc);
                 continue;
             }
             String as = pcrq.getAbstractSyntax();
@@ -541,15 +518,14 @@ public class Association implements Runnable
                 + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RQ ?
                         ae.getMoveRspTimeout() : ae.getDimseRspTimeout()));
         addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
-        log.debug("Sending DIMSE-RQ[pcid={}]:\n{}", new Integer(pcid),  cmd);
         encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());      
     }
     
     void cancel(int pcid, int msgid)
     throws IOException
     {
-        log.debug("Sending C-CANCEL-RQ");
-        encoder.writeDIMSE(pcid, CommandUtils.newCCancelRQ(msgid), null, null);      
+        DicomObject cmd = CommandUtils.newCCancelRQ(msgid);
+        encoder.writeDIMSE(pcid, cmd, null, null);      
     }
 
     public void writeDimseRSP(int pcid, DicomObject cmd)
@@ -569,7 +545,6 @@ public class Association implements Runnable
         if (!pc.isAccepted())
             throw new IllegalStateException("Presentation State not accepted - " + pc);
         
-        log.debug("Sending DIMSE-RSP[pcid={}]:\n{}", new Integer(pcid),  cmd);
         DataWriter writer = data != null ? new DataWriterAdapter(data) : null;
         encoder.writeDIMSE(pcid, cmd, writer, pc.getTransferSyntax());
         if (!CommandUtils.isPending(cmd))
@@ -642,9 +617,8 @@ public class Association implements Runnable
     {
         synchronized (rspHandlerForMsgId)
         {
-            if (maxOpsInvoked > 0)
-                while (rspHandlerForMsgId.size() >= maxOpsInvoked)
-                    rspHandlerForMsgId.wait();
+            while (rspHandlerForMsgId.size() >= maxOpsInvoked)
+                rspHandlerForMsgId.wait();
             if (isReadyForDataReceive())
                 rspHandlerForMsgId.put(msgId, rspHandler);
         }
@@ -705,47 +679,40 @@ public class Association implements Runnable
             }
             setState(State.STA1);
         }
-        if (out != null)
-        {
-            try
-            {
-                out.close();
-            }
-            catch (IOException e)
-            {
-                log.warn("I/O error during close of socket output stream", e);
-            }
-            out = null;
-            encoder = null;
-        }
-        if (in != null)
-        {
-            try
-            {
-                in.close();
-            }
-            catch (IOException e)
-            {
-                log.warn("I/O error during close of socket input stream", e);
-            }
-            in = null;
-            decoder = null;
-        }
         try
         {
-            socket.close();
+            out.close();
         }
         catch (IOException e)
         {
-            log.warn("I/O error during close of socket", e);
+            log.warn("I/O error during close of socket output stream", e);
+        }
+        try
+        {
+            in.close();
+        }
+        catch (IOException e)
+        {
+            log.warn("I/O error during close of socket input stream", e);
         }
         if (!closed)
+        {
+            log.info("{}: close {}", name, socket);
+            try
+            {
+                socket.close();
+            }
+            catch (IOException e)
+            {
+                log.warn("I/O error during close of socket", e);
+            }
+            closed  = true;
             onClosed();
+        }
     }
 
     private void onClosed()
     {
-        closed  = true;
         reaper.unregister(this);
         synchronized (rspHandlerForMsgId)
         {
@@ -766,10 +733,7 @@ public class Association implements Runnable
 
     int getMaxPDULengthSend()
     {
-        AAssociateRQAC rqac = requestor 
-                ? (AAssociateRQAC) associateAC 
-                : (AAssociateRQAC) associateRQ;
-        return Math.min(rqac.getMaxPDULength(), ae.getMaxPDULengthSend());
+        return maxPDULength;
     }
 
     boolean isPackPDV()
@@ -779,27 +743,33 @@ public class Association implements Runnable
 
     private void startARTIM(int timeout) throws IOException
     {
+        if (log.isDebugEnabled())
+            log.debug(name + ": start ARTIM " + timeout + "ms");
         socket.setSoTimeout(timeout);        
     }
     
     private void stopARTIM() throws IOException
     {
+        log.debug("{}: stop ARTIM", name);
         socket.setSoTimeout(0);        
     }
 
     void receivedAssociateRQ(AAssociateRQ rq) throws IOException
     {
-        state.received(this, rq);        
+        log.info("{} >> {}", name, rq);
+        state.receivedAssociateRQ(this, rq);        
     }
 
     void receivedAssociateAC(AAssociateAC ac) throws IOException
     {
-        state.received(this, ac);
+        log.info("{} >> {}", name, ac);
+        state.receivedAssociateAC(this, ac);
     }
 
     void receivedAssociateRJ(AAssociateRJException rj) throws IOException
     {
-        state.received(this, rj);        
+        log.info("{} >> {}", name, rj);
+        state.receivedAssociateRJ(this, rj);        
     }
 
     void receivedPDataTF() throws IOException
@@ -814,16 +784,19 @@ public class Association implements Runnable
     
     void receivedReleaseRQ() throws IOException
     {
+        log.info("{} >> A-RELEASE-RQ", name);
         state.receivedReleaseRQ(this);        
     }
    
     void receivedReleaseRP() throws IOException
     {
+        log.info("{} >> A-RELEASE-RP", name);
         state.receivedReleaseRP(this);        
     }
 
     void receivedAbort(AAbortException aa)
     {
+        log.info("{}: receive {}", name, aa);
         exception = aa;
         setState(State.STA1);
     }
@@ -868,7 +841,7 @@ public class Association implements Runnable
     {
         try
         {
-            state.send(this, rq);
+            state.sendAssociateRQ(this, rq);
             startARTIM(connector.getAcceptTimeout());
         }
         catch (IOException e)
@@ -927,6 +900,7 @@ public class Association implements Runnable
     void writeAssociationRQ(AAssociateRQ rq) throws IOException
     {
         associateRQ = rq;
+        name = rq.getCalledAET() + '(' + serialNo + ")";
         setState(State.STA5);
         encoder.write(rq);
     }
@@ -934,12 +908,15 @@ public class Association implements Runnable
     void onAAssociateRQ(AAssociateRQ rq) throws IOException
     {
         associateRQ = rq;
+        name = rq.getCallingAET() + '(' + serialNo + ")";
         stopARTIM();
         setState(State.STA3);
         try
         {
             associateAC = connector.getDevice().negotiate(this, rq);
             checkAAAC();
+            maxOpsInvoked = associateAC.getMaxOpsPerformed();
+            maxPDULength = Math.min(rq.getMaxPDULength(), ae.getMaxPDULengthSend());
             setState(State.STA6);
             encoder.write(associateAC);
             updateIdleTimeout();
@@ -954,9 +931,12 @@ public class Association implements Runnable
 
     void onAssociateAC(AAssociateAC ac) throws IOException
     {
-        stopARTIM();
         associateAC = ac;
+        log.info("{}: receive {}", name, ac);
+        stopARTIM();
         checkAAAC();
+        maxOpsInvoked = associateAC.getMaxOpsInvoked();
+        maxPDULength = Math.min(associateAC.getMaxPDULength(), ae.getMaxPDULengthSend());
         setState(State.STA6);
         updateIdleTimeout();
         reaper.register(this);
@@ -990,6 +970,7 @@ public class Association implements Runnable
     {
         stopARTIM();
 //        setState(State.STA12);        
+        log.info("{} << A-RELEASE-RP", name);
         setState(State.STA13);                
         encoder.writeAReleaseRP();
     }

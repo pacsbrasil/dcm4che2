@@ -58,8 +58,8 @@ public class NetworkApplicationEntity
     private String[] supportedCharacterSet = {};
     private Boolean installed;
 
-    private int maxOpsInvoked = 1;
-    private int maxOpsPerformed = 1;
+    private int maxOpsInvoked = Integer.MAX_VALUE;
+    private int maxOpsPerformed = Integer.MAX_VALUE;
     private int maxPDULengthReceive = 0x4000; //=16384
     private int maxPDULengthSend = 0x4000;
     private boolean packPDV;

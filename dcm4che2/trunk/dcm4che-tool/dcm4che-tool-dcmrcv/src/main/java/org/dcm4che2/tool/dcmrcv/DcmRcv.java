@@ -59,6 +59,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.PDVInputStream;
@@ -216,6 +217,7 @@ public class DcmRcv extends StorageService {
     private File destination;
     private boolean devnull;
     private int fileBufferSize = 256;
+    private int rspdelay = 0;
     
     public DcmRcv()
     {
@@ -267,9 +269,9 @@ public class DcmRcv extends StorageService {
         connector.setReleaseTimeout(timeout);
     }
 
-    public final void setSocketCloseDelay(int timeout)
+    public final void setSocketCloseDelay(int delay)
     {
-        connector.setSocketCloseDelay(timeout);
+        connector.setSocketCloseDelay(delay);
     }
 
     public final void setIdleTimeout(int timeout)
@@ -302,6 +304,12 @@ public class DcmRcv extends StorageService {
         connector.setSendBufferSize(bufferSize);
     }
 
+    private void setDimseRspDelay(int delay)
+    {
+        rspdelay = delay;        
+    }
+
+
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
@@ -319,6 +327,10 @@ public class DcmRcv extends StorageService {
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
+        Option rspDelay = new Option("r", "rsp-delay", true,
+                "delay in ms for DIMSE-RSP; useful for testing asynchronous mode");
+        rspDelay.setArgName("delay");
+        opts.addOption(rspDelay);
         Option acTimeout = new Option("T", "request-timeout", true,
                 "timeout in ms for receiving A-ASSOCIATE-RQ, 5s by default");
         acTimeout.setArgName("timeout");
@@ -327,7 +339,7 @@ public class DcmRcv extends StorageService {
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
-        Option checkPeriod = new Option("D", "reaper-period", true,
+        Option checkPeriod = new Option("R", "reaper-period", true,
                 "period in ms to check idleness, 10s by default");
         checkPeriod.setArgName("period");
         Option idleTimeout = new Option("I", "idle-timeout", true,
@@ -356,7 +368,7 @@ public class DcmRcv extends StorageService {
         opts.addOption(fileBufSize);
         Option maxOpsInvoked = new Option("a", "async", true,
                 "maximum number of outstanding operations performed " +
-                "asynchronously, 1 (=synchronous) by default.");
+                "asynchronously, unlimited by default.");
         maxOpsInvoked.setArgName("max-ops");
         opts.addOption(maxOpsInvoked);
         opts.addOption("h", "help", false, "print this message");
@@ -414,13 +426,17 @@ public class DcmRcv extends StorageService {
             dcmrcv.setSocketCloseDelay(
                     parseInt(cl.getOptionValue("c"),
                     "illegal argument of option -c", 1, 10000));
-        if (cl.hasOption("D"))
+        if (cl.hasOption("r"))
+            dcmrcv.setDimseRspDelay(
+                    parseInt(cl.getOptionValue("r"),
+                    "illegal argument of option -r", 0, 10000));
+        if (cl.hasOption("R"))
             dcmrcv.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("D"),
-                    "illegal argument of option -D", 1, Integer.MAX_VALUE));
+                    parseInt(cl.getOptionValue("R"),
+                    "illegal argument of option -R", 1, Integer.MAX_VALUE));
         if (cl.hasOption("I"))
             dcmrcv.setIdleTimeout(
-                    parseInt(cl.getOptionValue("D"),
+                    parseInt(cl.getOptionValue("I"),
                     "illegal argument of option -I", 1, Integer.MAX_VALUE));
         if (cl.hasOption("u"))
             dcmrcv.setMaxPDULengthReceive(
@@ -445,8 +461,8 @@ public class DcmRcv extends StorageService {
         dcmrcv.setPackPDV(cl.hasOption("k"));
         dcmrcv.setTcpNoDelay(cl.hasOption("y"));
         if (cl.hasOption("a"))
-            dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue("a"),
-                    "illegal max-opts", 1, 0xffff));
+            dcmrcv.setMaxOpsPerformed(zeroAsMaxInt(parseInt(
+                    cl.getOptionValue("a"), "illegal max-opts", 0, 0xffff)));
         dcmrcv.initTransferCapability();
         try
         {
@@ -459,6 +475,11 @@ public class DcmRcv extends StorageService {
         }
     }
 
+    private static int zeroAsMaxInt(int val)
+    {
+        return val > 0 ? val : Integer.MAX_VALUE;
+    }
+    
     private void initTransferCapability()
     {
         TransferCapability[] tc = new TransferCapability[CUIDS.length+1];
@@ -551,6 +572,12 @@ public class DcmRcv extends StorageService {
                 rsp.putString(Tag.ErrorComment, VR.LO, e.getMessage());
             }
         }
+        if (rspdelay > 0)
+            try
+            {
+                Thread.sleep(rspdelay);
+            }
+            catch (InterruptedException e) {}
     }
         
 }

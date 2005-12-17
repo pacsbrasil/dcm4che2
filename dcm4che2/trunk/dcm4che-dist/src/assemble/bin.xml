@@ -27,6 +27,14 @@
       <outputDirectory>/bin</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-core/src/test/resources</directory>
+      <includes>
+        <include>log4j.properties</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>/etc</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2txt/src/bin</directory>
       <includes>
         <include>*.bat</include>
@@ -143,7 +151,6 @@
         <exclude>javax.jms:jms</exclude>
         <exclude>javax.mail:mail</exclude>
         <exclude>junit:junit</exclude>
-        <exclude>org.slf4j:nlog4j</exclude>
         <exclude>xerces:xerces</exclude>
       </excludes>
     </dependencySet>

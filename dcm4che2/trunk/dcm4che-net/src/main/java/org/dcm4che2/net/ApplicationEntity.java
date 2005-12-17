@@ -525,8 +525,8 @@ public class ApplicationEntity
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
         ac.setMaxPDULength(getMaxPDULengthReceive());
-        ac.setMaxOpsInvoked(getMaxOpsPerformed());
-        ac.setMaxOpsPerformed(getMaxOpsInvoked());
+        ac.setMaxOpsInvoked(Math.min(rq.getMaxOpsInvoked(), getMaxOpsPerformed()));
+        ac.setMaxOpsPerformed(Math.min(rq.getMaxOpsPerformed(), getMaxOpsInvoked()));
         Collection pcs = rq.getPresentationContexts();
         for (Iterator iter = pcs.iterator(); iter.hasNext();)
         {
