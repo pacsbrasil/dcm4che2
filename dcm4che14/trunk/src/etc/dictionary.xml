@@ -287,6 +287,9 @@
   <element tag="(0012,0050)" name="Clinical Trial Time Point ID" vr="LO" vm="1" key="ClinicalTrialTimePointID" />
   <element tag="(0012,0051)" name="Clinical Trial Time Point Description" vr="ST" vm="1" key="ClinicalTrialTimePointDescription" />
   <element tag="(0012,0060)" name="Clinical Trial Coordinating Center Name" vr="LO" vm="1" key="CoordinatingCenterName" />
+  <element tag="(0012,0062)" name="Patient Identify Removed" vr="CS" vm="1" key="PatientIdentifyRemoved" />
+  <element tag="(0012,0063)" name="De-identification Method" vr="LO" vm="1-n" key="DeIdentificationMethod" />
+  <element tag="(0012,0064)" name="De-identification Method Code Sequence" vr="SQ" vm="1" key="DeIdentificationMethodCodeSeq" />
   
   <element tag="(0018,0010)" name="Contrast/Bolus Agent" vr="LO" vm="1" key="ContrastBolusAgent" />
   <element tag="(0018,0012)" name="Contrast/Bolus Agent Sequence" vr="SQ" vm="1" key="ContrastBolusAgentSeq" />
