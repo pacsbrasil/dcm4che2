@@ -869,7 +869,40 @@
   <element tag="(0020,9228)" name="Concatenation Frame Offset Number" vr="UL" vm="1" key="ConcatenationFrameOffsetNumber" />
   <element tag="(0020,9238)" name="Functional Group Private Creator" vr="LO" vm="1" key="FunctionalGroupPrivateCreator" />
 
+  <element tag="(0022,0001)" name="Light Path Filter Pass-Through Wavelength" vr="US" vm="1" key="LightPathFilterPassThroughWavelength" />
+  <element tag="(0022,0002)" name="Light Path Filter Pass Band" vr="US" vm="2" key="LightPathFilterPassBand" />
+  <element tag="(0022,0003)" name="Image Path Filter Pass-Through Wavelength" vr="US" vm="1" key="ImagePathFilterPassThroughWavelength" />
+  <element tag="(0022,0004)" name="Image Path Filter Pass Band" vr="US" vm="2" key="ImagePathFilterPassBand" />
+  <element tag="(0022,0005)" name="Patient Eye Movement Commanded" vr="CS" vm="1" key="PatientEyeMovementCommanded" />
+  <element tag="(0022,0006)" name="Patient Eye Movement Command Code Sequence" vr="SQ" vm="1" key="PatientEyeMovementCommandCodeSeq" />
+  <element tag="(0022,0007)" name="Spherical Lens Power" vr="FL" vm="1" key="SphericalLensPower" />
+  <element tag="(0022,0008)" name="Cylinder Lens Power" vr="FL" vm="1" key="CylinderLensPower" />
+  <element tag="(0022,0009)" name="Cylinder Axis" vr="FL" vm="1" key="CylinderAxis" />
+  <element tag="(0022,000A)" name="Emmetropic Magnification" vr="FL" vm="1" key="EmmetropicMagnification" />
+  <element tag="(0022,000B)" name="Intra Ocular Pressure" vr="FL" vm="1" key="IntraOcularPressure" />
+  <element tag="(0022,000C)" name="Horizontal Field of View" vr="FL" vm="1" key="HorizontalFieldOfView" />
+  <element tag="(0022,000D)" name="Pupil Dilated" vr="CS" vm="1" key="PupilDilated" />
+  <element tag="(0022,000E)" name="Degree of Dilation" vr="FL" vm="1" key="DegreeOfDilation" />
+  <element tag="(0022,0010)" name="Stereo Baseline Angle" vr="FL" vm="1" key="StereoBaselineAngle" />
+  <element tag="(0022,0011)" name="Stereo Baseline Displacement" vr="FL" vm="1" key="StereoBaselineDisplacement" />
+  <element tag="(0022,0012)" name="Stereo Horizontal Pixel Offset" vr="FL" vm="1" key="StereoHorizontalPixelOffset" />
+  <element tag="(0022,0013)" name="Stereo Vertical Pixel Offset" vr="FL" vm="1" key="StereoVerticalPixelOffset" />
+  <element tag="(0022,0014)" name="Stereo Rotation" vr="FL" vm="1" key="StereoRotation" />
+  <element tag="(0022,0015)" name="Acquisition Device Type Code Sequence" vr="SQ" vm="1" key="AcquisitionDeviceTypeCodeSeq" />
+  <element tag="(0022,0016)" name="Illumination Type Code Sequence" vr="SQ" vm="1" key="IlluminationTypeCodeSeq" />
+  <element tag="(0022,0017)" name="Light Path Filter Type Stack Code Sequence" vr="SQ" vm="1" key="LightPathFilterTypeStackCodeSeq" />
+  <element tag="(0022,0018)" name="Image Path Filter Type Stack Code Sequence" vr="SQ" vm="1" key="ImagePathFilterTypeStackCodeSeq" />
+  <element tag="(0022,0019)" name="Lenses Code Sequence" vr="SQ" vm="1" key="LensesCodeSeq" />
+  <element tag="(0022,001A)" name="Channel Description Code Sequence" vr="SQ" vm="1" key="ChannelDescriptionCodeSeq" />
+  <element tag="(0022,001B)" name="Refractive State Sequence" vr="SQ" vm="1" key="RefractiveStateSeq" />
+  <element tag="(0022,001C)" name="Mydriatic Agent Code Sequence" vr="SQ" vm="1" key="MydriaticAgentCodeSeq" />
+  <element tag="(0022,001D)" name="Relative Image Position Code Sequence" vr="SQ" vm="1" key="RelativeImagePositionCodeSeq" />
+  <element tag="(0022,0020)" name="Stereo Pairs Sequence" vr="SQ" vm="1" key="StereoPairsSeq" />
+  <element tag="(0022,0021)" name="Left Image Sequence" vr="SQ" vm="1" key="LeftImageSeq" />
+  <element tag="(0022,0022)" name="Right Image Sequence" vr="SQ" vm="1" key="RightImageSeq" />
+
   <element tag="(0028,0002)" name="Samples per Pixel" vr="US" vm="1" key="SamplesPerPixel" />
+  <element tag="(0028,0003)" name="Samples per Pixel Used" vr="US" vm="1" key="SamplesPerPixelUsed" />
   <element tag="(0028,0005)" name="Image Dimensions (Retired)" key="ImageDimensionsRetired" retired="true" />
   <element tag="(0028,0004)" name="Photometric Interpretation" vr="CS" vm="1" key="PhotometricInterpretation" />
   <element tag="(0028,0006)" name="Planar Configuration" vr="US" vm="1" key="PlanarConfiguration" />
@@ -2278,6 +2311,9 @@
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.1.1" name="Video Endoscopic Image Storage" key="VideoEndoscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.2.1" name="Video Microscopic Image Storage" key="VideoMicroscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.4.1" name="Video Photographic Image Storage" key="VideoPhotographicImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.1" name="Ophthalmic Photography 8 Bit Image Storage" key="OphthalmicPhotography8BitImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.2" name="Ophthalmic Photography 16 Bit Image Storage" key="OphthalmicPhotography16BitImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.3" name="Stereometric Relationship Storage" key="StereometricRelationshipStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.11" name="Basic Text SR" key="BasicTextSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.22" name="Enhanced SR" key="EnhancedSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.33" name="Comprehensive SR" key="ComprehensiveSR" />
