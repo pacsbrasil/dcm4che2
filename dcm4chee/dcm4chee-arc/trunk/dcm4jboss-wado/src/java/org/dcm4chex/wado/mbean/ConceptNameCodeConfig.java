@@ -114,7 +114,7 @@ class ConceptNameCodeConfig {
 		for ( Iterator iter = names.iterator() ; iter.hasNext() ; ) {
 			ds = (Dataset) iter.next();
 			sb.append(ds.getString(Tags.CodeValue)).append(":");
-			sb.append(ds.getString(Tags.CodingSchemeDesignator)).append('\r').append('\n');
+			sb.append(ds.getString(Tags.CodingSchemeDesignator)).append(System.getProperty("line.separator", "\n"));
 		}
 		return sb.toString();
 	}

@@ -131,12 +131,11 @@ public class RIDService extends AbstractCacheService  {
 	 */
 	public String getECGSopCuids() {
 		Map uids = support.getECGSopCuids();
-		if ( uids == null || uids.size() < 1 ) return "";
+		if ( uids == null || uids.isEmpty() ) return "";
 		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
 		Iterator iter = uids.keySet().iterator();
-		sb.append(iter.next());
 		while ( iter.hasNext() ) {
-			sb.append('\r').append('\n').append(iter.next());
+			sb.append(iter.next()).append(System.getProperty("line.separator", "\n"));
 		}
 		return sb.toString();
 	}
