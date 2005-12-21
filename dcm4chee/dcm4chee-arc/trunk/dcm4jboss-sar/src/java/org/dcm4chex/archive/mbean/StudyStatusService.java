@@ -76,7 +76,7 @@ implements NotificationListener {
 		StringBuffer sb = new StringBuffer();
 		for (Iterator iter = code2status.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry e = (Map.Entry) iter.next();
-			sb.append(e.getKey()).append(':').append(e.getValue()).append('\n');
+			sb.append(e.getKey()).append(':').append(e.getValue()).append('\r').append('\n');
 		}
 		return sb.toString();
 	}
