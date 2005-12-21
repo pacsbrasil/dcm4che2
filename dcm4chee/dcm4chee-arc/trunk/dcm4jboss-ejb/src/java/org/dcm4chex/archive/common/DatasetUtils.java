@@ -77,14 +77,16 @@ public class DatasetUtils {
 		}
 	}
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+	public static Dataset fromByteArray(byte[] data) {
+		return fromByteArray(data, DcmDecodeParam.EVR_LE, null);
+	}
 
-    public static Dataset fromByteArray(
+	public static Dataset fromByteArray(
         byte[] data,
         DcmDecodeParam decodeParam, Dataset ds) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         if (ds == null)
-            ds = dof.newDataset();
+            ds = DcmObjectFactory.getInstance().newDataset();
         try {
             ds.readDataset(bin, decodeParam, -1);
         } catch (IOException e) {
@@ -114,7 +116,7 @@ public class DatasetUtils {
 
     public static Dataset fromXML(InputSource is)
         throws SAXException, IOException {
-        Dataset ds = dof.newDataset();
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
         getSAXParser().parse(is, ds.getSAXHandler2(null));
         return ds;
     }

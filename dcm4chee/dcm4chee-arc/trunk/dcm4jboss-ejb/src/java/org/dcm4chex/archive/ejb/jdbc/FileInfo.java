@@ -77,6 +77,8 @@ public class FileInfo {
 
     public final String studyIUID;
 
+    public final String seriesIUID;
+
     public final String sopIUID;
 
     public final String sopCUID;
@@ -100,7 +102,7 @@ public class FileInfo {
     public final int availability;
 
     public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
-            String studyIUID, byte[] studyAttrs, byte[] seriesAttrs,
+            String studyIUID, String seriesIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
             String extRetrieveAET, String fileRetrieveAET, int availability,
             String basedir, String fileID, String tsUID, String md5, int size,
@@ -110,6 +112,7 @@ public class FileInfo {
         this.patName = patName;
         this.patAttrs = patAttrs;
         this.studyIUID = studyIUID;
+        this.seriesIUID = seriesIUID;
         this.studyAttrs = studyAttrs;
         this.seriesAttrs = seriesAttrs;
         this.instAttrs = instAttrs;

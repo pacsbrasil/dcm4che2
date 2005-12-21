@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description><![CDATA[Teaching File and Clinical Trial Export Manager.]]>/description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
+   </descriptors>
+
+   <class>org.dcm4chex.archive.dcm.tce.ExportManagerService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>ExportManagerService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="getExportSelectorTitles"
+      setMethod="setExportSelectorTitles">
+      <description><![CDATA[Document Title of Export Selection Key Object
+      considered by this service. Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
+      Separate multiple values by comma. NONE = service disabled.
+      E.g: TCE001^IHERADTF,TCE002^IHERADTF,TCE007^IHERADTF]]>
+      </description>
+      <name>ExportSelectorTitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDispositionConfigDir"
+      setMethod="setDispositionConfigDir">
+      <description><![CDATA[Directory where configuration files for
+      different disposition encoded in the TEXT context item with a 
+      concept name of (113012, DCM, “Key Object Description”) of the
+      Export Selector are located. Configuration files are associated to
+      disposition by their file names: <i>encoded disposition</i>.properties. 
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>DispositionConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-tce"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultDisposition"
+      setMethod="setDefaultDisposition">
+      <description><![CDATA[Default Disposition values,
+      if no disposition is encoded in the TEXT context item with a concept name
+      of (113012, DCM, “Key Object Description”) of the Export Selector.]]>  
+      </description>
+      <name>DefaultDisposition</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="default"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximum number of concurrent processed Export Requests.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=StoreScp"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getQueueName"
+      setMethod="setQueueName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>QueueName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ExportManager"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
+      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+      Use LOCAL if EJBs are deployed in same JBoss instance.
+      </description>
+      <name>EJBProviderURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+   &defaultAttributes;
+
+   <!-- Operations -->
+   &defaultOperations;
+</mbean>
+

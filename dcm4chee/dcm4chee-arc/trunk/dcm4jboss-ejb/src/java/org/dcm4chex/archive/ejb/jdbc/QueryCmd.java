@@ -63,9 +63,6 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private static final String[] QRLEVEL = { "PATIENT", "STUDY", "SERIES",
-            "IMAGE"};
-
     private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
             "OFFLINE", "UNAVAILABLE"};
 
@@ -76,27 +73,45 @@ public abstract class QueryCmd extends BaseReadCmd {
     
     public static QueryCmd create(Dataset keys, boolean filterResult)
             throws SQLException {
-        QueryCmd cmd;
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
-        switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
-        case 0:
-            cmd = new PatientQueryCmd(keys, filterResult);
-            break;
-        case 1:
-            cmd = new StudyQueryCmd(keys, filterResult);
-            break;
-        case 2:
-            cmd = new SeriesQueryCmd(keys, filterResult);
-            break;
-        case 3:
-            cmd = new ImageQueryCmd(keys, filterResult);
-            break;
-        default:
-            throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
-        }
-        cmd.init();
-        return cmd;
+        if ("IMAGE".equals(qrLevel))
+        	return createInstanceQuery(keys, filterResult);
+        if ("SERIES".equals(qrLevel))
+        	return createSeriesQuery(keys, filterResult);
+        if ("STUDY".equals(qrLevel))
+            return createStudyQuery(keys, filterResult);
+        if ("PATIENT".equals(qrLevel))
+        	return createPatientQuery(keys, filterResult);
+        throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
     }
+
+	public static PatientQueryCmd createPatientQuery(Dataset keys, 
+			boolean filterResult) throws SQLException {
+		final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult);
+		cmd.init();
+		return cmd;
+	}
+
+	private static StudyQueryCmd createStudyQuery(Dataset keys,
+			boolean filterResult) throws SQLException {
+		final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult);
+		cmd.init();
+		return cmd;
+	}
+
+	public static SeriesQueryCmd createSeriesQuery(Dataset keys,
+			boolean filterResult) throws SQLException {
+		final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult);
+		cmd.init();
+		return cmd;
+	}
+
+	public static ImageQueryCmd createInstanceQuery(Dataset keys,
+			boolean filterResult) throws SQLException {
+		final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult);
+		cmd.init();
+		return cmd;
+	}
 
     protected final Dataset keys;
 

@@ -63,7 +63,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
     private static final String[] SELECT_ATTRIBUTE = { "Instance.pk", "File.pk",
             "Patient.patientId", "Patient.patientName",
-            "Patient.encodedAttributes", "Study.studyIuid",
+            "Patient.encodedAttributes", "Study.studyIuid", "Series.seriesIuid",
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",
             "Instance.sopCuid", "Instance.externalRetrieveAET",
@@ -98,21 +98,34 @@ public class RetrieveCmd extends BaseReadCmd {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if (qrLevel == null || qrLevel.length() == 0)
             throw new IllegalArgumentException("Missing QueryRetrieveLevel");
-		if ("IMAGE".equals(qrLevel)) {
-            return new ImageRetrieveCmd(new ImageSql(keys).getSql(), 
-					keys.getStrings(Tags.SOPInstanceUID));
-        }
-		if ("SERIES".equals(qrLevel)) {
-			return new RetrieveCmd(new SeriesSql(keys, true).getSql());
-        }
-		if ("STUDY".equals(qrLevel)) {
-			return new RetrieveCmd(new StudySql(keys, true).getSql());
-        }
-        if ("PATIENT".equals(qrLevel)) {			
-			return new RetrieveCmd(new PatientSql(keys, true).getSql());
-        }
+		if ("IMAGE".equals(qrLevel))
+            return createInstanceRetrieve(keys);
+		if ("SERIES".equals(qrLevel))
+			return createSeriesRetrieve(keys);
+		if ("STUDY".equals(qrLevel))
+			return createStudyRetrieve(keys);
+        if ("PATIENT".equals(qrLevel))			
+			return createPatientRetrieve(keys);
         throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
      }
+
+    public static RetrieveCmd createPatientRetrieve(Dataset keys) throws SQLException {
+		return new RetrieveCmd(new PatientSql(keys, true).getSql());
+	}
+
+	public static RetrieveCmd createStudyRetrieve(Dataset keys) throws SQLException {
+		return new RetrieveCmd(new StudySql(keys, true).getSql());
+	}
+
+	public static RetrieveCmd createSeriesRetrieve(Dataset keys) throws SQLException {
+		return new RetrieveCmd(new SeriesSql(keys, true).getSql());
+	}
+
+	public static ImageRetrieveCmd createInstanceRetrieve(Dataset keys)
+		throws SQLException {
+		return new ImageRetrieveCmd(new ImageSql(keys).getSql(), 
+				keys.getStrings(Tags.SOPInstanceUID));
+	}
 
     public static RetrieveCmd create(DcmElement refSOPSeq)
             throws SQLException {
@@ -131,13 +144,13 @@ public class RetrieveCmd extends BaseReadCmd {
 			ArrayList list;
 			Object key;
 			while (next()) {
-				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3), rs
-						.getString(4), getBytes(5), rs.getString(6),
-						getBytes(7), getBytes(8), getBytes(9),
-						rs.getString(10), rs.getString(11), rs.getString(12),
-						rs.getString(13), rs.getInt(14), rs.getString(15),
-						rs.getString(16), rs.getString(17), rs.getString(18),
-						rs.getInt(19), rs.getInt(20));
+				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3),
+						rs.getString(4), getBytes(5), rs.getString(6),
+						rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
+						rs.getString(11), rs.getString(12), rs.getString(13),
+						rs.getString(14), rs.getInt(15), rs.getString(16),
+						rs.getString(17), rs.getString(18), rs.getString(19),
+						rs.getInt(20), rs.getInt(21));
 				key = key();
 				list = (ArrayList) result.get(key);
 				if (list == null) {
@@ -158,14 +171,14 @@ public class RetrieveCmd extends BaseReadCmd {
 			ArrayList list;
 			Object seriesKey, instKey;
 			while (next()) {
-				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3), rs
-						.getString(4), getBytes(5), rs.getString(6),
-						getBytes(7), getBytes(8), getBytes(9),
-						rs.getString(10), rs.getString(11), rs.getString(12),
-						rs.getString(13), rs.getInt(14), rs.getString(15),
-						rs.getString(16), rs.getString(17), rs.getString(18),
-						rs.getInt(19), rs.getInt(20));
-				seriesKey = new Integer( rs.getInt(20));//series.pk
+				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3),
+						rs.getString(4), getBytes(5), rs.getString(6),
+						rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
+						rs.getString(11), rs.getString(12), rs.getString(13),
+						rs.getString(14), rs.getInt(15), rs.getString(16),
+						rs.getString(17), rs.getString(18), rs.getString(19),
+						rs.getInt(20), rs.getInt(21));
+				seriesKey = new Integer( rs.getInt(22));//series.pk
 				instKey = new Integer( rs.getInt(1));//instance.pk
 				series = (Map) all.get(seriesKey);
 				if (series == null) {
