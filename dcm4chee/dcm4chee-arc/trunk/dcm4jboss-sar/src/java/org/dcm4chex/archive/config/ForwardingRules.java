@@ -158,7 +158,7 @@ private static final long MS_PER_HOUR = 3600000L;
                     sb.append(e.forwardAETs[i]).append(',');
                 sb.setLength(sb.length() - 1);
             }
-            sb.append('\r').append('\n');
+            sb.append(System.getProperty("line.separator", "\n"));
         }
         sb.setLength(sb.length() - 2);
         return sb.toString();

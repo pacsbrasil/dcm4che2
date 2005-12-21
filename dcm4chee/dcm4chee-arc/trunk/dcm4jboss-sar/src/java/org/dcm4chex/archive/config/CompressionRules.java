@@ -133,7 +133,7 @@ public class CompressionRules {
             Entry e = (Entry) it.next();
             e.condition.toStringBuffer(sb);
             sb.append(CODES[e.compression]);
-            sb.append('\r').append('\n');
+            sb.append(System.getProperty("line.separator", "\n"));
         }
         sb.setLength(sb.length() - 2);
         return sb.toString();
