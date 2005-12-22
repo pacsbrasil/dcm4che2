@@ -64,10 +64,21 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -111,6 +122,36 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  view-type="local"
  *  ref-name="ejb/Instance" 
  *  
+ * @ejb.ejb-ref
+ *  ejb-name="File" 
+ *  view-type="local"
+ *  ref-name="ejb/File" 
+ *  
+ * @ejb.ejb-ref
+ *  ejb-name="PrivatePatient" 
+ *  view-type="local"
+ *  ref-name="ejb/PrivatePatient" 
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="PrivateStudy" 
+ *  view-type="local"
+ *  ref-name="ejb/PrivateStudy" 
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="PrivateSeries" 
+ *  view-type="local"
+ *  ref-name="ejb/PrivateSeries" 
+ *  
+ * @ejb.ejb-ref
+ *  ejb-name="PrivateInstance" 
+ *  view-type="local"
+ *  ref-name="ejb/PrivateInstance" 
+ *  
+ * @ejb.ejb-ref
+ *  ejb-name="PrivateFile" 
+ *  view-type="local"
+ *  ref-name="ejb/PrivateFile" 
+ *  
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-filter.xml"
  *  
@@ -122,14 +163,19 @@ public abstract class ContentEditBean implements SessionBean {
 	private static final int CHANGE_MODE_SERIES = 0x02;
 	private static final int CHANGE_MODE_INSTANCE = 0x01;
 
+	private static final int DELETED = 1;
+	
     private PatientLocalHome patHome;
-
     private StudyLocalHome studyHome;
-
     private SeriesLocalHome seriesHome;
-
     private InstanceLocalHome instHome;
-    
+
+    private PrivatePatientLocalHome privPatHome;
+    private PrivateStudyLocalHome privStudyHome;
+    private PrivateSeriesLocalHome privSeriesHome;
+    private PrivateInstanceLocalHome privInstHome;
+    private PrivateFileLocalHome privFileHome;
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
     private AttributeFilter attrFilter;
@@ -148,6 +194,18 @@ public abstract class ContentEditBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
+
+            privPatHome = (PrivatePatientLocalHome) jndiCtx
+            		.lookup("java:comp/env/ejb/PrivatePatient");
+            privStudyHome = (PrivateStudyLocalHome) jndiCtx
+            		.lookup("java:comp/env/ejb/PrivateStudy");
+            privSeriesHome = (PrivateSeriesLocalHome) jndiCtx
+            		.lookup("java:comp/env/ejb/PrivateSeries");
+            privInstHome = (PrivateInstanceLocalHome) jndiCtx
+    		.lookup("java:comp/env/ejb/PrivateInstance");
+            privFileHome = (PrivateFileLocalHome) jndiCtx
+    		.lookup("java:comp/env/ejb/PrivateFile");
+            
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
         } catch (NamingException e) {
@@ -339,23 +397,24 @@ public abstract class ContentEditBean implements SessionBean {
         }
     }
     /**
+     * @throws FinderException
      * @ejb.interface-method
      */
-    public Dataset deleteSeries(int series_pk) throws RemoteException {
+    public void deletePrivateSeries(int series_pk) throws RemoteException, FinderException {
         try {
-            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
-                    series_pk));
-            StudyLocal study = series.getStudy();
-	        Collection col = new ArrayList(); col.add( series );
-        	Dataset ds = getStudyMgtDataset( study, col, series.getInstances() );
-            series.remove();
-            study.updateDerivedFields(true, true, true, true, true, true, false);
-            return ds;
+        	PrivateSeriesLocal series = privSeriesHome.findByPrimaryKey(new Integer(series_pk));
+    		PrivateStudyLocal study = series.getStudy();
+    		series.remove();
+    		if ( study.getSeries().isEmpty()) {
+    			PrivatePatientLocal pat = study.getPatient();
+    			study.remove();
+    			if( pat.getStudies().isEmpty()) {
+    				pat.remove();
+    			}
+    		}
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
             throw new RemoteException(e.getMessage());
         }
     }
@@ -380,21 +439,22 @@ public abstract class ContentEditBean implements SessionBean {
     }
     
     /**
+     * @throws FinderException
      * @ejb.interface-method
      */
-    public Dataset deleteStudy(int study_pk) throws RemoteException {
+    public void deletePrivateStudy(int study_pk) throws RemoteException, FinderException {
         try {
-        	StudyLocal study = studyHome.findByPrimaryKey( new Integer(study_pk) );
-        	Dataset ds = getStudyMgtDataset( study, study.getSeries(), null );
-            studyHome.remove(new Integer(study_pk));
-            return ds;
+    		PrivateStudyLocal study = privStudyHome.findByPrimaryKey(new Integer(study_pk));
+			PrivatePatientLocal pat = study.getPatient();
+			study.remove();
+			if( pat.getStudies().isEmpty()) {
+				pat.remove();
+			}
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
             throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
-        }
+         }
     }
 
     /**
@@ -416,16 +476,12 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset deletePatient(int patient_pk) throws RemoteException {
+    public void deletePrivatePatient(int patient_pk) throws RemoteException {
         try {
-        	Dataset ds = patHome.findByPrimaryKey( new Integer(patient_pk) ).getAttributes(true);
-            patHome.remove(new Integer(patient_pk));
-            return ds;
+        	privPatHome.remove( new Integer(patient_pk) );
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
             throw new RemoteException(e.getMessage());
 		}
     }
@@ -456,26 +512,58 @@ public abstract class ContentEditBean implements SessionBean {
     }
 
     /**
+     * @throws FinderException
+     * @throws FinderException
      * @ejb.interface-method
      */
-    public Dataset deleteInstance(int instance_pk) throws RemoteException {
+    public void deletePrivateInstance(int instance_pk) throws RemoteException, FinderException {
         try {
-            InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
-                    instance_pk));
-            String iuid = instance.getSopIuid();
-            SeriesLocal series = instance.getSeries();
-            Collection colSeries = new ArrayList(); colSeries.add( series );
-            Collection colInstance = new ArrayList(); colInstance.add( instance );
-        	Dataset ds = getStudyMgtDataset( series.getStudy(), colSeries, colInstance );
-            instance.remove();
-            series.updateDerivedFields(true, true, true, true, true, true);
-            series.getStudy().updateDerivedFields(true, true, true, true, true, true, true);
-            return ds;
+        	PrivateInstanceLocal instance = privInstHome.findByPrimaryKey(new Integer(instance_pk));
+        	PrivateSeriesLocal series = instance.getSeries();
+        	instance.remove();
+        	if ( series.getInstances().isEmpty() ) {
+        		PrivateStudyLocal study = series.getStudy();
+        		series.remove();
+        		if ( study.getSeries().isEmpty()) {
+        			PrivatePatientLocal pat = study.getPatient();
+        			study.remove();
+        			if( pat.getStudies().isEmpty()) {
+        				pat.remove();
+        			}
+        		}
+        	}
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
             throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
+        }
+    }
+    
+    /**
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public void deletePrivateFile(int file_pk) throws RemoteException {
+        try {
+        	privFileHome.remove(new Integer(file_pk));
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+    /**
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public void deletePrivateFiles(Collection fileDTOs) throws RemoteException {
+        try {
+        	for ( Iterator iter = fileDTOs.iterator() ; iter.hasNext() ; ) {
+        		privFileHome.remove(new Integer( ((FileDTO) iter.next()).getPk()));
+        	}
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
             throw new RemoteException(e.getMessage());
         }
     }
@@ -567,6 +655,181 @@ public abstract class ContentEditBean implements SessionBean {
             throw new RemoteException(e.getMessage());
         }
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset moveInstanceToTrash(int instance_pk) throws RemoteException {
+        try {
+            InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
+                    instance_pk));
+            SeriesLocal series = instance.getSeries();
+            Collection colSeries = new ArrayList(); colSeries.add( series );
+            Collection colInstance = new ArrayList(); colInstance.add( instance );
+        	Dataset ds = getStudyMgtDataset( series.getStudy(), colSeries, colInstance );
+            PrivateInstanceLocal privInstance =getPrivateInstance( instance, DELETED, null, true );
+            instance.remove();
+            series.updateDerivedFields(true, true, true, true, true, true);
+            series.getStudy().updateDerivedFields(true, true, true, true, true, true, true);
+            series.getStudy().getPatient().updateDerivedFields();
+            return ds;
+        } catch (CreateException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+		}
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset moveSeriesToTrash(int series_pk) throws RemoteException {
+        try {
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(series_pk));
+            StudyLocal study = series.getStudy();
+            Collection colSeries = new ArrayList(); colSeries.add( series );
+            Collection colInstance = series.getInstances();
+        	Dataset ds = getStudyMgtDataset( series.getStudy(), colSeries, colInstance );
+            PrivateSeriesLocal privSeries =getPrivateSeries( series, DELETED, null, true );
+            series.remove();
+            study.updateDerivedFields(true, true, true, true, true, true, true);
+            study.getPatient().updateDerivedFields();
+            return ds;
+        } catch (CreateException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+		}
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset moveStudyToTrash(int study_pk) throws RemoteException {
+        try {
+            StudyLocal study = studyHome.findByPrimaryKey(new Integer(study_pk));
+            Collection colSeries = study.getSeries();
+        	Dataset ds = getStudyMgtDataset( study, colSeries, null );
+            PrivateStudyLocal privStudy =getPrivateStudy( study, DELETED, null, true );
+            PatientLocal patient = study.getPatient();
+            study.remove();
+            patient.updateDerivedFields();
+            return ds;
+        } catch (CreateException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+		}
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset movePatientToTrash(int pat_pk) throws RemoteException {
+        try {
+        	PatientLocal patient = patHome.findByPrimaryKey(new Integer(pat_pk));
+        	Dataset ds = patient.getAttributes(true);
+            PrivatePatientLocal privPat =getPrivatePatient( patient, DELETED, true );
+            patient.remove();
+            return ds;
+        } catch (CreateException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+		}
+    }
+    
+    private PrivateInstanceLocal getPrivateInstance( InstanceLocal instance, int type, PrivateSeriesLocal privSeries, boolean includeFiles ) throws FinderException, CreateException {
+    	 Collection col = privInstHome.findBySopIuid( type, instance.getSopIuid() );
+    	 PrivateInstanceLocal privInstance;
+    	 if ( col.isEmpty() ) {
+    	 	if ( privSeries == null ) {
+    	 		privSeries = getPrivateSeries( instance.getSeries(), type, null, false );
+    	 	}
+    	 	privInstance = privInstHome.create(type, instance.getAttributes(true), privSeries );
+    	 } else {
+    	 	privInstance = (PrivateInstanceLocal) col.iterator().next();
+    	 }
+    	 if ( includeFiles ) {
+	         Collection colFiles = instance.getFiles();
+	         FileLocal file;
+	         for ( Iterator iter = colFiles.iterator() ; iter.hasNext() ; ) {
+	         	file = (FileLocal) iter.next();
+	         	privFileHome.create(file.getFilePath(), file.getFileTsuid(), 
+	         			file.getFileSize(),file.getFileMd5(),file.getFileStatus(), 
+							privInstance, file.getFileSystem() );
+	         }
+    	 }
+         return privInstance;
+    }
+    private PrivateSeriesLocal getPrivateSeries( SeriesLocal series, int type, PrivateStudyLocal privStudy, boolean includeInstances ) throws FinderException, CreateException {
+    	Collection col = privSeriesHome.findBySeriesIuid( type, series.getSeriesIuid() );
+    	PrivateSeriesLocal privSeries;
+    	if ( col.isEmpty() ) { 
+    	 	if ( privStudy == null ) {
+    	 		privStudy = getPrivateStudy(series.getStudy(), type, null, false);
+    	 	}
+    	 	privSeries = privSeriesHome.create(type, series.getAttributes(true), privStudy );
+    	} else {
+    		privSeries = (PrivateSeriesLocal) col.iterator().next();
+    	}
+    	if ( includeInstances ) {
+	        for ( Iterator iter = series.getInstances().iterator() ; iter.hasNext() ; ) {
+	        	getPrivateInstance((InstanceLocal) iter.next(), type, privSeries, true);//move also all instances
+	        }
+    	}
+    	return privSeries;
+    }
+    private PrivateStudyLocal getPrivateStudy( StudyLocal study, int type, PrivatePatientLocal privPat, boolean includeSeries ) throws FinderException, CreateException {
+    	Collection col = privStudyHome.findByStudyIuid( type, study.getStudyIuid() );
+    	PrivateStudyLocal privStudy;
+    	if ( col.isEmpty() ) { 
+    	 	if ( privPat == null ) {
+    	 		privPat = getPrivatePatient(study.getPatient(), type, false);
+    	 	}
+    	 	privStudy = privStudyHome.create(type, study.getAttributes(true), privPat );
+    	} else {
+    		privStudy = (PrivateStudyLocal) col.iterator().next();
+    	}
+    	if ( includeSeries ) {
+	        for ( Iterator iter = study.getSeries().iterator() ; iter.hasNext() ; ) {
+	        	getPrivateSeries((SeriesLocal) iter.next(), type, privStudy, true);//move also all instances
+	        }
+    	}
+    	return privStudy;
+    }
+    
+    private PrivatePatientLocal getPrivatePatient( PatientLocal patient, int type, boolean includeStudies ) throws FinderException, CreateException {
+     	 Collection col = privPatHome.findByPatientIdWithIssuer( type, patient.getPatientId(), patient.getIssuerOfPatientId() );
+     	 PrivatePatientLocal privPat;
+     	 if ( col.isEmpty() ) { 
+     	 	privPat = privPatHome.create(type, patient.getAttributes(true) );
+     	 } else {
+     	 	privPat = (PrivatePatientLocal) col.iterator().next();
+     	 }
+     	if ( includeStudies ) {
+	        for ( Iterator iter = patient.getStudies().iterator() ; iter.hasNext() ; ) {
+	        	getPrivateStudy((StudyLocal) iter.next(), type, privPat, true);//move also all instances
+	        }
+    	}
+     	 return privPat;
+   }
     
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {
     	return getStudyMgtDataset( study, series, instances, 0, null );

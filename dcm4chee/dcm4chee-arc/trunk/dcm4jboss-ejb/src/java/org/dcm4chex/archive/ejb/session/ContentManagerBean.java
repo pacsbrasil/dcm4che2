@@ -60,15 +60,26 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryPrivateStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 
 /**
@@ -85,8 +96,15 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient" 
  * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study" 
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series" 
- * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance" 
+ * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
+ * 
+ * @ejb.ejb-ref ejb-name="PrivatePatient" view-type="local" ref-name="ejb/PrivatePatient" 
+ * @ejb.ejb-ref ejb-name="PrivateStudy" view-type="local" ref-name="ejb/PrivateStudy" 
+ * @ejb.ejb-ref ejb-name="PrivateSeries" view-type="local" ref-name="ejb/PrivateSeries" 
+ * @ejb.ejb-ref ejb-name="PrivateInstance" view-type="local" ref-name="ejb/PrivateInstance" 
+ *  
  */
+
 public abstract class ContentManagerBean implements SessionBean {
 
     private static final int[] MPPS_FILTER_TAGS = { 
@@ -103,6 +121,11 @@ public abstract class ContentManagerBean implements SessionBean {
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instanceHome;
 
+    private PrivatePatientLocalHome privPatHome;
+    private PrivateStudyLocalHome privStudyHome;
+    private PrivateSeriesLocalHome privSeriesHome;
+    private PrivateInstanceLocalHome privInstanceHome;
+    
     public void setSessionContext(SessionContext arg0)
         throws EJBException, RemoteException {
         Context jndiCtx = null;
@@ -116,6 +139,15 @@ public abstract class ContentManagerBean implements SessionBean {
                 (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
             instanceHome =
                 (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
+
+            privPatHome =
+                (PrivatePatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivatePatient");
+            privStudyHome =
+                (PrivateStudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivateStudy");
+            privSeriesHome =
+                (PrivateSeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivateSeries");
+            privInstanceHome =
+                (PrivateInstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivateInstance");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -132,6 +164,11 @@ public abstract class ContentManagerBean implements SessionBean {
         patHome = null;
         studyHome = null;
         seriesHome = null;
+        instanceHome = null;
+        privPatHome = null;
+        privStudyHome = null;
+        privSeriesHome = null;
+        privInstanceHome = null;
     }
 
     /**
@@ -170,7 +207,7 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public int countStudies(Dataset filter, boolean showHidden, boolean hideWithoutStudies) {
         try {
-            return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).count();
+       		return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -181,12 +218,34 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public List listStudies(Dataset filter, boolean showHidden, boolean hideWithoutStudies, int offset, int limit) {
         try {
-            return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).list(offset, limit);
+       		return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public int countPrivateStudies(Dataset filter, int privateType, boolean hideWithoutStudies) {
+        try {
+       		return new QueryPrivateStudiesCmd(null, privateType, hideWithoutStudies).count();
+        } catch (SQLException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public List listPrivateStudies(Dataset filter, int privateType, boolean hideWithoutStudies, int offset, int limit) {
+        try {
+       		return new QueryPrivateStudiesCmd(filter, privateType, hideWithoutStudies).list(offset, limit);
+        } catch (SQLException e) {
+            throw new EJBException(e);
+        }
+    }
+    
     /**
      * @ejb.interface-method
      * @ejb.transaction type="Required"
@@ -272,8 +331,162 @@ public abstract class ContentManagerBean implements SessionBean {
         }
         return result;
     }
+
     
     /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listStudiesOfPrivatePatient(int patientPk) throws FinderException {
+        Collection c =
+            privPatHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
+        List result = new ArrayList(c.size());
+        PrivateStudyLocal study;
+        Dataset ds;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            study = (PrivateStudyLocal) it.next();
+            ds = study.getAttributes();
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putUL(PrivateTags.StudyPk, study.getPk().intValue() );
+        	result.add(ds);
+        }
+        return result;
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listSeriesOfPrivateStudy(int studyPk) throws FinderException {
+        Collection c =
+            privStudyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
+        List result = new ArrayList(c.size());
+        PrivateSeriesLocal series;
+        Dataset ds;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            series = (PrivateSeriesLocal) it.next();
+            ds = series.getAttributes();
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putUL(PrivateTags.SeriesPk, series.getPk().intValue() );
+           	result.add( ds );
+        }
+        return result;
+    }
+
+	/**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listInstancesOfPrivateSeries(int seriesPk) throws FinderException {
+        Collection c =
+            privSeriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
+        List result = new ArrayList(c.size());
+        PrivateInstanceLocal inst;
+        Dataset ds;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            inst = (PrivateInstanceLocal) it.next();
+        	ds = inst.getAttributes();
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putUL(PrivateTags.InstancePk, inst.getPk().intValue() );
+        	result.add(ds);
+        }
+        return result;
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listFilesOfPrivateInstance(int instancePk) throws FinderException {
+        Collection c =
+            privInstanceHome.findByPrimaryKey(new Integer(instancePk)).getFiles();
+        List result = new ArrayList(c.size());
+        PrivateFileLocal file;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            file = (PrivateFileLocal) it.next();
+            result.add(file.getFileDTO());
+        }
+        return result;
+    }
+
+	/**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List[] listInstanceFilesToRecover(int pk) throws FinderException {
+    	List[] result = new List[]{new ArrayList(),new ArrayList()};
+    	addInstanceFilesToRecover(privInstanceHome.findByPrimaryKey(new Integer(pk)), result, null);
+        return result;
+    }
+    
+	/**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List[] listSeriesFilesToRecover(int pk) throws FinderException {
+    	List[] result = new List[]{new ArrayList(),new ArrayList()};
+    	addSeriesToRecover(privSeriesHome.findByPrimaryKey(new Integer(pk)), result, null);
+        return result;
+    }
+    
+	/**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List[] listStudyFilesToRecover(int pk) throws FinderException {
+    	List[] result = new List[]{new ArrayList(),new ArrayList()};
+    	addStudyToRecover(privStudyHome.findByPrimaryKey(new Integer(pk)), result, null);
+        return result;
+    }
+
+	/**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List[] listPatientFilesToRecover(int pk) throws FinderException {
+    	List[] result = new List[]{new ArrayList(),new ArrayList()};
+    	PrivatePatientLocal pat = privPatHome.findByPrimaryKey(new Integer(pk));
+    	for ( Iterator iter = pat.getStudies().iterator() ; iter.hasNext() ; ) {
+        	addStudyToRecover((PrivateStudyLocal)iter.next(), result, pat.getAttributes());
+    	}
+        return result;
+    }
+    
+    private void addStudyToRecover(PrivateStudyLocal study, List[] result, Dataset patAttrs) throws FinderException {
+    	Dataset studyAttrs = study.getAttributes();
+    	if ( patAttrs == null ) patAttrs = study.getPatient().getAttributes();
+    	studyAttrs.putAll(patAttrs);
+    	for ( Iterator iter = study.getSeries().iterator() ; iter.hasNext() ; ) {
+        	addSeriesToRecover((PrivateSeriesLocal)iter.next(), result, studyAttrs);
+    	}
+    }
+    private void addSeriesToRecover(PrivateSeriesLocal series, List[] result, Dataset studyAttrs) throws FinderException {
+    	Dataset seriesAttrs = series.getAttributes();
+    	if ( studyAttrs == null ) {
+    		studyAttrs = series.getStudy().getAttributes();
+    		studyAttrs.putAll( series.getStudy().getPatient().getAttributes() );
+    	}
+    	seriesAttrs.putAll(studyAttrs);
+    	for ( Iterator iter = series.getInstances().iterator() ; iter.hasNext() ; ) {
+        	addInstanceFilesToRecover((PrivateInstanceLocal)iter.next(), result, seriesAttrs);
+    	}
+    }
+	private void addInstanceFilesToRecover(PrivateInstanceLocal instance, List[] result, Dataset seriesAttrs) throws FinderException {
+    	Dataset instanceAttrs = instance.getAttributes();
+    	if ( seriesAttrs == null ) {
+    		seriesAttrs = instance.getSeries().getAttributes();
+    		seriesAttrs.putAll(instance.getSeries().getStudy().getAttributes());
+    		seriesAttrs.putAll( instance.getSeries().getStudy().getPatient().getAttributes() );
+    	}
+    	instanceAttrs.putAll(seriesAttrs);
+    	Iterator iter = listFilesOfPrivateInstance( instance.getPk().intValue() ).iterator();
+    	if ( iter.hasNext() ) {
+			result[0].add( iter.next() );
+			result[1].add( instanceAttrs );
+    	}
+	}
+    
+	/**
      * @throws FinderException
      * @ejb.interface-method
      * @ejb.transaction type="Required"

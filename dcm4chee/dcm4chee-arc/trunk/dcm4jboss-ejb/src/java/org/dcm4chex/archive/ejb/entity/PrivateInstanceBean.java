@@ -137,7 +137,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.relation name="priv-series-instance" role-name="priv-instance-of-series"
+     * @ejb.relation name="priv-series-instance" role-name="priv-instance-of-series" cascade-delete="yes"
      * @jboss.relation fk-column="series_fk" related-pk-field="pk"
      */
     public abstract PrivateSeriesLocal getSeries();

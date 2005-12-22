@@ -43,6 +43,7 @@ package org.dcm4chex.archive.ejb.entity;
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
@@ -57,6 +58,12 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
  * @ejb.persistence table-name="priv_file"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ *  
+ * @ejb.finder signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
+ *             query="SELECT OBJECT(f) FROM PrivateFile AS f WHERE f.instance IS NULL AND f.fileSystem.directoryPath = ?1 LIMIT ?2"
+ *              strategy="on-find" eager-load-group="*"
  *  
  *  */
 public abstract class PrivateFileBean implements EntityBean {
@@ -171,4 +178,25 @@ public abstract class PrivateFileBean implements EntityBean {
      */
     public abstract FileSystemLocal getFileSystem();
     public abstract void setFileSystem(FileSystemLocal fs);
+    
+    /**
+     * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
+     */
+    public FileDTO getFileDTO() {
+        FileSystemLocal fs = getFileSystem();
+        FileDTO retval = new FileDTO();
+        retval.setPk(getPk().intValue());
+        retval.setRetrieveAET(fs.getRetrieveAET());
+        retval.setDirectoryPath(fs.getDirectoryPath());
+        retval.setAvailability(fs.getAvailability());
+        retval.setUserInfo(fs.getUserInfo());
+        retval.setFilePath(getFilePath());
+        retval.setFileTsuid(getFileTsuid());
+        retval.setFileSize(getFileSize());
+        retval.setFileMd5(getFileMd5());
+        retval.setFileStatus(getFileStatus());
+        return retval;
+    }
+    
 }

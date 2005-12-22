@@ -137,7 +137,7 @@ public abstract class PrivateStudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.relation name="priv-patient-study" role-name="priv-study-of-patient"
+     * @ejb.relation name="priv-patient-study" role-name="priv-study-of-patient" cascade-delete="yes"
      * @jboss.relation fk-column="patient_fk" related-pk-field="pk"
      */
     public abstract PrivatePatientLocal getPatient();

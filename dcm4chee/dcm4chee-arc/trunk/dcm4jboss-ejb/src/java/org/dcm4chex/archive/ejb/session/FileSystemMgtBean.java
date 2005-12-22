@@ -68,6 +68,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtSupportLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtSupportLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
@@ -83,6 +85,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
  * @ejb.transaction type="Required"
  * 
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
+ * @ejb.ejb-ref ejb-name="PrivateFile" view-type="local" ref-name="ejb/PrivateFile"
  * @ejb.ejb-ref ejb-name="FileSystem" ref-name="ejb/FileSystem"
  *              view-type="local"
  * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
@@ -93,6 +96,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
  */
 public abstract class FileSystemMgtBean implements SessionBean {
 
+	private static final int DELETED = 1;
+	
 	private static Logger log = Logger.getLogger(FileSystemMgtBean.class);
 
 	private StudyLocalHome studyHome;
@@ -100,6 +105,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	private StudyOnFileSystemLocalHome sofHome;
 
 	private FileLocalHome fileHome; 
+	private PrivateFileLocalHome privFileHome; 
 
 	private FileSystemLocalHome fileSystemHome;
 
@@ -115,6 +121,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 					.lookup("java:comp/env/ejb/StudyOnFileSystem");
 			this.fileHome = (FileLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/File");
+			this.privFileHome = (PrivateFileLocalHome) jndiCtx
+					.lookup("java:comp/env/ejb/PrivateFile");
 			this.fileSystemHome = (FileSystemLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/FileSystem");
             this.fileSystemMgtSupportHome = (FileSystemMgtSupportLocalHome) jndiCtx
@@ -150,6 +158,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
+	public void deletePrivateFile(int file_pk) throws RemoteException, EJBException,
+			RemoveException {
+		privFileHome.remove(new Integer(file_pk));
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
 	public FileDTO[] getDereferencedFiles(String dirPath, int limit)
 			throws FinderException {
 		log.debug("Querying for dereferenced files in " + dirPath);
@@ -158,11 +174,31 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		return toFileDTOs(c);
 	}
 
+	/**
+	 * @ejb.interface-method
+	 */
+	public FileDTO[] getDereferencedPrivateFiles(String dirPath, int limit)
+			throws FinderException {
+		log.debug("Querying for dereferenced files in " + dirPath);
+		Collection c = privFileHome.findDereferencedInFileSystem(dirPath, limit);
+		log.debug("Found " + c.size() + " dereferenced files in " + dirPath);
+		return toFileDTOsPrivate(c);
+	}
+
+	private FileDTO[] toFileDTOsPrivate(Collection c) {
+		FileDTO[] dto = new FileDTO[c.size()];
+		Iterator it = c.iterator();
+		for (int i = 0; i < dto.length; ++i) {
+			dto[i] = ((PrivateFileLocal) it.next()).getFileDTO();
+		}
+		return dto;
+	}
+	
 	private FileDTO[] toFileDTOs(Collection c) {
 		FileDTO[] dto = new FileDTO[c.size()];
 		Iterator it = c.iterator();
 		for (int i = 0; i < dto.length; ++i) {
-			dto[i] = toDTO((FileLocal) it.next());
+			dto[i] = ((FileLocal) it.next()).getFileDTO();
 		}
 		return dto;
 	}
@@ -308,22 +344,6 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		return dto;
 	}
 
-	private FileDTO toDTO(FileLocal file) {
-		FileSystemLocal fs = file.getFileSystem();
-		FileDTO dto = new FileDTO();
-		dto.setPk(file.getPk().intValue());
-		dto.setRetrieveAET(fs.getRetrieveAET());
-		dto.setDirectoryPath(fs.getDirectoryPath());
-		dto.setAvailability(fs.getAvailability());
-		dto.setUserInfo(fs.getUserInfo());
-		dto.setFilePath(file.getFilePath());
-		dto.setFileTsuid(file.getFileTsuid());
-		dto.setFileMd5(file.getFileMd5());
-		dto.setFileSize(file.getFileSize());
-		dto.setFileStatus(file.getFileStatus());
-		return dto;
-	}
-	
 	/**
 	 * @param tsBefore
 	 * @ejb.interface-method
