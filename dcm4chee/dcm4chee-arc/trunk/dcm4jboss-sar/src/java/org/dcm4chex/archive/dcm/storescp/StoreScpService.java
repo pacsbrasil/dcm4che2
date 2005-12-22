@@ -40,7 +40,10 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -50,6 +53,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import javax.ejb.CreateException;
 import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -61,19 +65,26 @@ import javax.xml.transform.stream.StreamSource;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
+import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.util.DTFormat;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -467,12 +478,11 @@ public class StoreScpService extends AbstractScpService {
 	 * @return
 	 */
 	private String toString(Map uids) {
-		if ( uids == null || uids.size() < 1 ) return "";
+		if ( uids == null || uids.isEmpty() ) return "";
 		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
 		Iterator iter = uids.keySet().iterator();
-		sb.append(iter.next());
 		while ( iter.hasNext() ) {
-			sb.append('\r').append('\n').append(iter.next());
+			sb.append(iter.next()).append(System.getProperty("line.separator", "\n"));
 		}
 		return sb.toString();
 	}
@@ -698,7 +708,17 @@ public class StoreScpService extends AbstractScpService {
 			action.addSOPClassUID(sq.getItem(i).getString(Tags.SOPClassUID));
 		}
 		action.setNumberOfInstances(seriesStored.getNumberOfInstances());
-	    RemoteNode remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
+	    RemoteNode remoteNode;
+	    if (s != null) {
+	    	remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
+	    } else {
+	    	try {
+				InetAddress iAddr = InetAddress.getLocalHost();
+				remoteNode = alf.newRemoteNode(iAddr.getHostAddress(), iAddr.getHostName(), "LOCAL");
+	    	} catch ( UnknownHostException x ) {
+	    		remoteNode = alf.newRemoteNode("127.0.0.1", "localhost", "LOCAL");
+			}
+	    }
         try {
             server.invoke(auditLogName,
                     "logInstancesStored",
@@ -709,6 +729,60 @@ public class StoreScpService extends AbstractScpService {
             log.warn("Audit Log failed:", e);
         }		
 	}
-    
-	
+    /**
+     * Imports a DICOM file.
+     * <p>
+     * The FileDTO object refers to an existing DICOM file (This method does NOT check this file!) and the
+     * Dataset object holds the meta data for database.
+     * <p>
+     * The SeriesStored object can be used to collect instances for a series to minimize db update on series level.
+     * Therefore, if the SeriesIUID of the given Dataset and the seriesStored differs, the db will be updated
+     * with the <code>seriesStored</code> object and a new SeriesStored object will be created for the 
+     * current import file. 
+     * <p>
+     * <code>doSeriesStored</code> forces the database update after the import.
+     * (Usual set to true when importing the last file of a fileset) 
+     * 
+     * @param fileDTO			Refers the DICOM file.
+     * @param ds				Dataset with metadata for database.
+     * @param seriesStored		Notification object to collect instances for db updates on series level.
+     * @param doSeriesStored	Force DB update after import.
+     * @param sendNotification	Enable/disable sending SeriesStored notification.
+     * 
+     * @return Updated or new SeriesStored notification object.
+     * @throws DcmServiceException
+     * @throws CreateException
+     * @throws HomeFactoryException
+     * @throws IOException
+     */
+	public SeriesStored importFile(FileDTO fileDTO, Dataset ds, SeriesStored seriesStored, 
+									boolean doSeriesStored, boolean sendNotification) 
+						throws DcmServiceException, CreateException, HomeFactoryException, IOException {
+		if ( seriesStored != null && 
+				!ds.getString(Tags.SOPInstanceUID).equals(seriesStored.getSeriesInstanceUID()) ) {//a new series begins
+			scp.doAfterSeriesIsStored(null, seriesStored, sendNotification); //null means remoteNode = localhost
+			seriesStored = null;
+		}
+		if ( seriesStored == null ) {
+			seriesStored = scp.newSeriesStored(ds, "IMPORT", "IMPORT", 
+						fileDTO.getRetrieveAET(), fileDTO.getDirectoryPath());
+		}
+		String cuid = ds.getString(Tags.SOPClassUID);
+		String iuid = ds.getString(Tags.SOPInstanceUID);
+		FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,iuid,fileDTO.getFileTsuid());
+		ds.setFileMetaInfo(fmi);
+		File f = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
+		scp.updateDB(ds, fileDTO.getDirectoryPath(), fileDTO.getFilePath(),f, fileDTO.getFileMd5() );
+		FileInfo fileInfo = new FileInfo(iuid, 
+										 cuid, 
+										 fileDTO.getFileTsuid(),
+										 fileDTO.getDirectoryPath(),
+										 fileDTO.getFilePath(), fileDTO.getFileSize(), 
+										 fileDTO.getFileMd5() );
+		seriesStored.addFileInfo(fileInfo);
+		if ( doSeriesStored ) {
+			scp.doAfterSeriesIsStored(null, seriesStored, sendNotification); //null means remoteNode = localhost
+		}
+		return seriesStored;
+	}
 }

@@ -40,8 +40,10 @@
 package org.dcm4chex.archive.mbean;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -58,7 +60,9 @@ import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.notif.PatientUpdated;
+import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -85,6 +89,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
 	private ObjectName studyMgtScuServiceName;
     private ObjectName fileSystemMgtName;
+    private ObjectName storeScpServiceName;
 
     private String callingAET;
 	private String calledAET;
@@ -138,6 +143,18 @@ public class ContentEditService extends ServiceMBeanSupport {
         this.studyMgtScuServiceName = name;
     }
     
+	/**
+	 * @return Returns the storeScpServiceName.
+	 */
+	public ObjectName getStoreScpServiceName() {
+		return storeScpServiceName;
+	}
+	/**
+	 * @param storeScpServiceName The storeScpServiceName to set.
+	 */
+	public void setStoreScpServiceName(ObjectName storeScpServiceName) {
+		this.storeScpServiceName = storeScpServiceName;
+	}
 	/**
 	 * @return Returns the receivingApplication.
 	 */
@@ -341,51 +358,115 @@ public class ContentEditService extends ServiceMBeanSupport {
 		sendSeriesUpdatedNotifications(dsN, "Series update");
     }
     
-    public void markAsDeleted(String type, int pk, boolean delete) throws RemoteException, HomeFactoryException, CreateException {
-    	if ( log.isDebugEnabled() ) log.debug("mark "+type+" (pk="+pk+") as deleted:"+delete);
-    	Dataset ds = null;
-    	if ( type.equalsIgnoreCase("PATIENT") ) {
-        	ds = lookupContentEdit().markPatientAsDeleted( pk, delete );
-        	sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
-    	} else if ( type.equalsIgnoreCase("STUDY") ){
-    		ds = lookupContentEdit().markStudyAsDeleted( pk, delete );
-    		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_DELETE_RQ, 0, ds);
-    	} else if ( type.equalsIgnoreCase("SERIES") ){
-    		ds = lookupContentEdit().markSeriesAsDeleted( pk, delete );
-    		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 1, ds);
-    	} else if ( type.equalsIgnoreCase("INSTANCE") ){
-    		 ds = lookupContentEdit().markInstanceAsDeleted( pk, delete );
-    		 sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
-    	} else {
-    		log.error("Unknown type "+type+"! Cant process markAsDeleted!");
-    		return;
-    	}
-    	if ( log.isDebugEnabled() ) {log.debug("mark "+type+": as deleted. ds:");log.debug(ds); }
-    }
-    public void deleteSeries(Integer seriesPk) throws RemoteException, HomeFactoryException, CreateException {
-    	if ( log.isDebugEnabled() ) log.debug("delete Series");
-    	Dataset ds = lookupContentEdit().deleteSeries( seriesPk.intValue() );
-    	if ( log.isDebugEnabled() ) {log.debug("delete series: ds:");log.debug(ds); }
-		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 1, ds);
-    }
-    
-    public void deleteStudy(Integer studyPk) throws RemoteException, HomeFactoryException, CreateException {
-    	if ( log.isDebugEnabled() ) log.debug("delete Study");
-    	Dataset ds = lookupContentEdit().deleteStudy( studyPk.intValue() );
-    	if ( log.isDebugEnabled() ) {log.debug("delete study: ds:");log.debug(ds); }
-		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_DELETE_RQ, 0, ds);
-   }
-    
-    public void deletePatient(Integer patPk) throws RemoteException, HomeFactoryException, CreateException {
-    	if ( log.isDebugEnabled() ) log.debug("delete Patient");
-    	Dataset ds = lookupContentEdit().deletePatient( patPk.intValue() );
+    public void movePatientToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
+    	Dataset ds = lookupContentEdit().movePatientToTrash(pk);
     	sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
+    	if ( log.isDebugEnabled() ) {log.debug("Patient moved to trash. ds:");log.debug(ds); }
+    }
+    public void moveStudyToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("Move Study (pk="+pk+") to trash.");
+    	Dataset ds = lookupContentEdit().moveStudyToTrash(pk);
+    	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_DELETE_RQ, 0, ds);
+    	if ( log.isDebugEnabled() ) {log.debug("Study moved to trash. ds:");log.debug(ds); }
+    }
+    public void moveSeriesToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("Move Series (pk="+pk+") to trash.");
+    	Dataset ds = lookupContentEdit().moveSeriesToTrash(pk);
+   		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 1, ds);
+    	if ( log.isDebugEnabled() ) {log.debug("Series moved to trash. ds:");log.debug(ds); }
+    }
+    public void moveInstanceToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("Move Instance (pk="+pk+") to trash.");
+    	Dataset ds = lookupContentEdit().moveInstanceToTrash(pk);
+    	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
+    	if ( log.isDebugEnabled() ) {log.debug("Instance moved to trash. ds:");log.debug(ds); }
+    }
+
+    public List undeletePatient(int privPatPk) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("undelete Patient from trash. pk:"+privPatPk);
+    	List[] files = lookupContentManager().listPatientFilesToRecover(privPatPk);
+    	List failed = recoverFiles( files );
+    	if ( failed.isEmpty() ) {
+    		lookupContentEdit().deletePrivateFiles(files[0]);
+    		lookupContentEdit().deletePrivatePatient(privPatPk);
+    	}
+    	return failed;
     }    
-    
-    public void deleteInstance(Integer pk) throws RemoteException, HomeFactoryException, CreateException {
-    	Dataset ds = lookupContentEdit().deleteInstance( pk.intValue() );
-    	if ( log.isDebugEnabled() ) {log.debug("delete instance: ds:");log.debug(ds); }
-		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
+    public List undeleteStudy(int privStudyPk) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("undelete Study from trash. pk:"+privStudyPk);
+    	List[] files = lookupContentManager().listStudyFilesToRecover(privStudyPk);
+    	List failed = recoverFiles( files );
+    	if ( failed.isEmpty() ) {
+    		lookupContentEdit().deletePrivateFiles(files[0]);
+    		lookupContentEdit().deletePrivateStudy(privStudyPk);
+    	}
+    	return failed;
+   }
+    public List undeleteSeries(int privSeriesPk) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("undelete Series from trash. pk:"+privSeriesPk);
+    	List[] files = lookupContentManager().listSeriesFilesToRecover(privSeriesPk);
+    	List failed = recoverFiles( files );
+    	if ( failed.isEmpty() ) {
+    		lookupContentEdit().deletePrivateFiles(files[0]);
+    		lookupContentEdit().deletePrivateSeries(privSeriesPk);
+    	}
+    	return failed;
+    }
+    public List undeleteInstance(int privInstancePk) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("undelete Instance from trash. pk:"+privInstancePk);
+    	List[] files = lookupContentManager().listInstanceFilesToRecover(privInstancePk);
+    	List failed = recoverFiles( files );
+    	if ( failed.isEmpty() ) {
+    		lookupContentEdit().deletePrivateFiles(files[0]);
+    		lookupContentEdit().deletePrivateInstance(privInstancePk);
+    	}
+    	return failed;
+    }
+
+    /**
+	 * @param files
+	 */
+	private List recoverFiles(List[] files) {
+		if ( files == null || files.length != 2 || 
+				files[0] == null || files[1] == null || 
+				files[0].size() != files[1].size() ) {
+			throw new IllegalArgumentException("List array for files to recover is illegal:"+files);
+		}
+		List failed = new ArrayList();
+		FileDTO fileDTO;
+		Dataset ds;
+		Iterator iterFileDTO = files[0].iterator();
+		Iterator iterDS = files[1].iterator();
+		SeriesStored tmp, seriesStored = null;
+		while ( iterFileDTO.hasNext() ) {
+			fileDTO = (FileDTO) iterFileDTO.next();
+			ds = (Dataset) iterDS.next();
+			tmp = importFile(fileDTO, ds, seriesStored, !iterFileDTO.hasNext() );
+			if ( tmp != null ) {
+				seriesStored = tmp;
+			} else {
+				failed.add(fileDTO);
+				log.warn("Undelete failed for file "+fileDTO+" ds:");log.warn(ds);
+			}
+		}
+		return failed;
+	}
+
+	public void deletePatient(int patPk) throws RemoteException, HomeFactoryException, CreateException {
+    	if ( log.isDebugEnabled() ) log.debug("delete Patient from trash. pk:"+patPk);
+    	lookupContentEdit().deletePrivatePatient( patPk );
+    }    
+    public void deleteStudy(int studyPk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
+    	if ( log.isDebugEnabled() ) log.debug("delete Study from trash. pk:"+studyPk);
+    	lookupContentEdit().deletePrivateStudy( studyPk );
+   }
+    public void deleteSeries(int seriesPk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
+    	if ( log.isDebugEnabled() ) log.debug("delete Series from trash. pk:"+seriesPk);
+    	lookupContentEdit().deletePrivateSeries( seriesPk );
+    }
+    public void deleteInstance(int pk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
+    	if ( log.isDebugEnabled() ) log.debug("delete Instance from trash. pk:"+pk);
+    	lookupContentEdit().deletePrivateInstance( pk );//dont delete files of instance (needed for purge process)
     }
     
     public void moveStudies(int[] study_pks, Integer patient_pk) throws RemoteException, HomeFactoryException, CreateException {
@@ -455,5 +536,20 @@ public class ContentEditService extends ServiceMBeanSupport {
         notif.setUserData(o);
         super.sendNotification(notif);
 	}
+	
+	private SeriesStored importFile(FileDTO fileDTO, Dataset ds, SeriesStored seriesStored, boolean doSeriesStored) {
+        try {
+            return (SeriesStored) server.invoke(this.storeScpServiceName,
+                    "importFile",
+                    new Object[] {  fileDTO, ds, seriesStored, new Boolean(doSeriesStored), Boolean.TRUE },
+                    new String[] { FileDTO.class.getName(), Dataset.class.getName(),
+            						SeriesStored.class.getName(), boolean.class.getName(), boolean.class.getName() });
+        } catch (Exception e) {
+            log.error("Failed to importFile:", e);log.error(ds);
+            return null;
+        }
+		
+	}
+/*_*/	
     
 }

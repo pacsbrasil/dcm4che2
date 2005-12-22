@@ -147,6 +147,15 @@
          <value value="tiani.archive:service=StudyMgtScu"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getStoreScpServiceName" setMethod="setStoreScpServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=StoreScp"/>
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
@@ -246,32 +255,99 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
-<!-- mark as deleted/undeleted -->
+<!-- move to trash -->
    <operation impact="ACTION">
-      <description>mark PATIENT/STUDY/SERIES/INSTANCE as deleted or undeleted.
+      <description>Move patient to trash.
       </description>
-      <name>markAsDeleted</name>
+      <name>movePatientToTrash</name>
       <parameter>
-        <description>Entity type (PATIENT,STUDY,SERIES or INSTANCE)</description>
-        <name>type</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Primary key to mark as deleted.</description>
+        <description>Primary key of patient.</description>
         <name>pk</name>
         <type>int</type>
       </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Move study to trash.
+      </description>
+      <name>moveStudyToTrash</name>
       <parameter>
-        <description>Delete (true) or undelete (false). 
-        	Series of an MPPS of status IncorrectWorklistEntry cant be undeleted!
-        </description>
-        <name>delete</name>
-        <type>boolean</type>
+        <description>Primary key of study.</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Move series to trash.
+      </description>
+      <name>moveSeriesToTrash</name>
+      <parameter>
+        <description>Primary key of series.</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Move instance to trash.
+      </description>
+      <name>moveInstanceToTrash</name>
+      <parameter>
+        <description>Primary key of instance.</description>
+        <name>pk</name>
+        <type>int</type>
       </parameter>
       <return-type>void</return-type>
    </operation>
 
-<!-- delete -->
+<!-- undelete (recover from trash) -->
+   <operation impact="ACTION">
+      <description>Undelete patient.
+      </description>
+      <name>undeletePatient</name>
+      <parameter>
+        <description>Primary key of patient (PrivatePatient).</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Undelete study.
+      </description>
+      <name>undeleteStudy</name>
+      <parameter>
+        <description>Primary key of study (PrivateStudy).</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Undelete series.
+      </description>
+      <name>undeleteSeries</name>
+      <parameter>
+        <description>Primary key of series (PrivateSeries).</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Undelete instance.
+      </description>
+      <name>undeleteInstance</name>
+      <parameter>
+        <description>Primary key of instance.</description>
+        <name>pk</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+
+<!-- delete (from trash) -->
    <operation impact="ACTION">
       <description>delete patient.
       </description>
@@ -279,7 +355,7 @@
       <parameter>
         <description>Primary key of patient to delete.</description>
         <name>pk</name>
-        <type>java.lang.Integer</type>
+        <type>int</type>
       </parameter>
       <return-type>void</return-type>
    </operation>
@@ -290,7 +366,7 @@
       <parameter>
         <description>Primary key of study to delete.</description>
         <name>pk</name>
-        <type>java.lang.Integer</type>
+        <type>int</type>
       </parameter>
       <return-type>void</return-type>
    </operation>
@@ -301,7 +377,7 @@
       <parameter>
         <description>Primary key of series to delete.</description>
         <name>pk</name>
-        <type>java.lang.Integer</type>
+        <type>int</type>
       </parameter>
       <return-type>void</return-type>
    </operation>
@@ -312,7 +388,7 @@
       <parameter>
         <description>Primary key of instance to delete.</description>
         <name>pk</name>
-        <type>java.lang.Integer</type>
+        <type>int</type>
       </parameter>
       <return-type>void</return-type>
    </operation>

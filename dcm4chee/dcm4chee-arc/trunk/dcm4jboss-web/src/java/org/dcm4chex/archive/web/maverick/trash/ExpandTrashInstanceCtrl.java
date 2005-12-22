@@ -37,7 +37,13 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick;
+package org.dcm4chex.archive.web.maverick.trash;
+
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
+import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 
 /**
  * 
@@ -45,30 +51,53 @@ package org.dcm4chex.archive.web.maverick;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class CollapseSeriesCtrl extends Dcm4JbossController {
+public class ExpandTrashInstanceCtrl extends Dcm4JbossController {
 
     private int patPk;
+
     private int studyPk;
+
     private int seriesPk;
     
-    public final void setPatPk(int patPk)
-    {
+    private int instancePk;
+    
+    private boolean expand;
+
+    public final void setPatPk(int patPk) {
         this.patPk = patPk;
     }
 
-    public final void setSeriesPk(int seriesPk)
-    {
+    public final void setSeriesPk(int seriesPk) {
         this.seriesPk = seriesPk;
     }
 
-    public final void setStudyPk(int studyPk)
-    {
+    public final void setStudyPk(int studyPk) {
         this.studyPk = studyPk;
     }
 
+    public final void setInstancePk(int pk) {
+        this.instancePk = pk;
+    }
+    
+    public final void setExpand( boolean expand ) {
+    	this.expand = expand;
+    }
+    
     protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
+        TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
+        InstanceModel m = folderForm.getInstanceByPk(patPk,studyPk,seriesPk,instancePk);
+    	if ( expand ) {
+	        try {
+		            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+		            	.getFactory().lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+		            ContentManager cm = home.create();
+		            if ( m != null ) m.setFiles(cm.listFilesOfPrivateInstance( instancePk ));
+	        } catch (Exception e) {
+	        	
+	        }
+    	} else {
+    		if ( m != null ) m.setFiles(null);
+    	}
         return SUCCESS;
     }
 

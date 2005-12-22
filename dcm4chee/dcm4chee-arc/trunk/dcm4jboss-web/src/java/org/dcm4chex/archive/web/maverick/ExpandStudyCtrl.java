@@ -57,6 +57,7 @@ public class ExpandStudyCtrl extends Dcm4JbossController {
 
     private int patPk;
     private int studyPk;
+    private boolean expand;
 
     public final void setPatPk(int patPk)
     {
@@ -68,23 +69,31 @@ public class ExpandStudyCtrl extends Dcm4JbossController {
         this.studyPk = studyPk;
     }
 
+    public final void setExpand( boolean expand ) {
+    	this.expand = expand;
+    }
+
     protected String perform() throws Exception {
-        ContentManagerHome home =
-            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-                ContentManagerHome.class,
-                ContentManagerHome.JNDI_NAME);
-        ContentManager cm = home.create();
-        try {
-            FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-            List series = cm.listSeriesOfStudy(studyPk, folderForm.isTrashFolder());
-            for (int i = 0, n = series.size(); i < n; i++)
-                series.set(i, new SeriesModel((Dataset) series.get(i)));
-            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
-        } finally {
-            try {
-                cm.remove();
-            } catch (Exception e) {
-            }
+        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
+        if ( expand ) {
+	        ContentManagerHome home =
+	            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
+	                ContentManagerHome.class,
+	                ContentManagerHome.JNDI_NAME);
+	        ContentManager cm = home.create();
+	        try {
+	            List series = cm.listSeriesOfStudy(studyPk, false);
+	            for (int i = 0, n = series.size(); i < n; i++)
+	                series.set(i, new SeriesModel((Dataset) series.get(i)));
+	            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
+	        } finally {
+	            try {
+	                cm.remove();
+	            } catch (Exception e) {
+	            }
+	        }
+        } else {
+            folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
         }
         return SUCCESS;
     }

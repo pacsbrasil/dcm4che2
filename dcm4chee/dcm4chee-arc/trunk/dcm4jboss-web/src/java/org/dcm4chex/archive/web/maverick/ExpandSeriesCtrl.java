@@ -56,10 +56,9 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 public class ExpandSeriesCtrl extends Dcm4JbossController {
 
     private int patPk;
-
     private int studyPk;
-
     private int seriesPk;
+    private boolean expand;
 
     public final void setPatPk(int patPk) {
         this.patPk = patPk;
@@ -73,24 +72,32 @@ public class ExpandSeriesCtrl extends Dcm4JbossController {
         this.studyPk = studyPk;
     }
 
+    public final void setExpand( boolean expand ) {
+    	this.expand = expand;
+    }
+    
     protected String perform() throws Exception {
-        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
-        ContentManager cm = home.create();
-        try {
-            FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-            List instances = cm.listInstancesOfSeries(seriesPk, folderForm.isTrashFolder());
-            for (int i = 0, n = instances.size(); i < n; i++)
-                instances.set(i, InstanceModel.valueOf((Dataset) instances
-                        .get(i)));
-            folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
-                    .setInstances(instances);
-        } finally {
-            try {
-                cm.remove();
-            } catch (Exception e) {
-            }
+        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
+        if ( expand ) {
+	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+	                .getFactory().lookup(ContentManagerHome.class,
+	                        ContentManagerHome.JNDI_NAME);
+	        ContentManager cm = home.create();
+	        try {
+	            List instances = cm.listInstancesOfSeries(seriesPk, false);
+	            for (int i = 0, n = instances.size(); i < n; i++)
+	                instances.set(i, InstanceModel.valueOf((Dataset) instances
+	                        .get(i)));
+	            folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
+	                    .setInstances(instances);
+	        } finally {
+	            try {
+	                cm.remove();
+	            } catch (Exception e) {
+	            }
+	        }
+        } else {
+            folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
         }
         return SUCCESS;
     }

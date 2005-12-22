@@ -37,32 +37,69 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick;
+package org.dcm4chex.archive.web.maverick.trash;
+
+import java.util.List;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
+import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 
 /**
  * 
- * @author gunter.zeilinger@tiani.com
+ * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 28.01.2004
+ * @since 19.12.2005
  */
-public class CollapseStudyCtrl extends Dcm4JbossController {
+public class ExpandTrashSeriesCtrl extends Dcm4JbossController {
 
     private int patPk;
     private int studyPk;
+    private int seriesPk;
+    private boolean expand;
 
-    public final void setPatPk(int patPk)
-    {
+    public final void setPatPk(int patPk) {
         this.patPk = patPk;
     }
 
-    public final void setStudyPk(int studyPk)
-    {
+    public final void setSeriesPk(int seriesPk) {
+        this.seriesPk = seriesPk;
+    }
+
+    public final void setStudyPk(int studyPk) {
         this.studyPk = studyPk;
     }
 
+    public final void setExpand(boolean expand) {
+        this.expand = expand;
+    }
+    
     protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
+        TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
+        if ( expand ) {
+	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+	                .getFactory().lookup(ContentManagerHome.class,
+	                        ContentManagerHome.JNDI_NAME);
+	        ContentManager cm = home.create();
+	        try {
+	            List instances = cm.listInstancesOfPrivateSeries(seriesPk);
+	            for (int i = 0, n = instances.size(); i < n; i++)
+	                instances.set(i, InstanceModel.valueOf((Dataset) instances
+	                        .get(i)));
+	            folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
+	                    .setInstances(instances);
+	        } finally {
+	            try {
+	                cm.remove();
+	            } catch (Exception e) {
+	            }
+	        }
+        } else {
+            folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
+        }
         return SUCCESS;
     }
 

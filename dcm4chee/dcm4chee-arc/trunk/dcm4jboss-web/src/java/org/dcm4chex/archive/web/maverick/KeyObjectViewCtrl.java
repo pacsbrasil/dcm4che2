@@ -107,8 +107,7 @@ public class KeyObjectViewCtrl extends Dcm4JbossController {
     	ContentManager cm = lookupContentManager();
     	patient = new PatientModel( cm.getPatientForStudy( studyPk ) );
     	if ( sopIUID == null && seriesPk >= 0 ) {
-    		List l = cm.listInstancesOfSeries( seriesPk, 
-    				FolderForm.getFolderForm(getCtx()).isTrashFolder() );
+    		List l = cm.listInstancesOfSeries( seriesPk, false );
     		if ( l != null && !l.isEmpty() ) {
     			sopIUID = ((Dataset) l.get(0)).getString( Tags.SOPInstanceUID);
     		}

@@ -37,7 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick;
+package org.dcm4chex.archive.web.maverick.trash;
 
 import java.util.List;
 
@@ -45,47 +45,48 @@ import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
  * 
- * @author gunter.zeilinger@tiani.com
+ * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 28.01.2004
+ * @since 19.12.2005
  */
-public class ExpandPatientCtrl extends Dcm4JbossController {
+public class ExpandTrashPatientCtrl extends Dcm4JbossController {
 
     private int patPk;
     private boolean expand;
-
+    
     public final void setPatPk(int patPk) {
         this.patPk = patPk;
     }
-    
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
+
+    public final void setExpand(boolean expand) {
+        this.expand = expand;
     }
 
     protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk, false);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
+        TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
+        if ( expand ) { 
+		    ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+		            .getFactory().lookup(ContentManagerHome.class,
+		                    ContentManagerHome.JNDI_NAME);
+		    ContentManager cm = home.create();
+		    try {
+		        List studies = cm.listStudiesOfPrivatePatient(patPk);
+		        for (int i = 0, n = studies.size(); i < n; i++)
+		            studies.set(i, new StudyModel((Dataset) studies.get(i)));
+		        folderForm.getPatientByPk(patPk).setStudies(studies);
+		    } finally {
+		        try {
+		            cm.remove();
+		        } catch (Exception e) {
+		        }
+		    }
         } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
+        	folderForm.getPatientByPk(patPk).getStudies().clear();
         }
         return SUCCESS;
     }

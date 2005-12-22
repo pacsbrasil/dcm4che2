@@ -134,9 +134,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("send.x") != null) { return send(); }
             if ( folderForm.isAdmin() ) {
 	            if (rq.getParameter("del") != null
-	                    || rq.getParameter("del.x") != null) { return delete(true); }
-	            if (rq.getParameter("undel") != null
-	                    || rq.getParameter("undel.x") != null) { return delete(false); }
+	                    || rq.getParameter("del.x") != null) { return delete(); }
 	            if (rq.getParameter("merge") != null
 	                    || rq.getParameter("merge.x") != null) { return MERGE; }
 	            if (rq.getParameter("move") != null
@@ -168,12 +166,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
             if (newQuery) {
                 folderForm.setTotal(cm.countStudies(filter.toDataset(), 
-                		folderForm.isTrashFolder(),
+                		false,
                 		!folderForm.isShowWithoutStudies()));
                 folderForm.setAets(getAEDelegate().getAEs());
             }
             List studyList = cm.listStudies(filter.toDataset(),
-            		folderForm.isTrashFolder(),
+            		false,
 					!folderForm.isShowWithoutStudies(), 
 					folderForm.getOffset(), folderForm.getLimit());
             List patList = new ArrayList();
@@ -293,73 +291,56 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
-    private String delete(boolean delete) throws Exception {
+    private String delete() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
-        deletePatients(folderForm.getPatients(), delete);
+        deletePatients(folderForm.getPatients());
         query(true);
         folderForm.removeStickies();
         
         return FOLDER;
     }
 
-    private void deletePatients(List patients, boolean delete)
+    private void deletePatients(List patients)
             throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
                 List studies = listStudiesOfPatient(pat.getPk());
-                if ( delete & folderForm.isTrashFolder() ) {
-                	delegate.deletePatient(pat.getPk());
-                } else {
-                	delegate.markAsDeleted("PATIENT",pat.getPk(), delete);
-                	if ( delete ) {
-                        for (int j = 0, m = studies.size(); j < m; j++) {
-                            Dataset study = (Dataset) studies.get(j);
-                            AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
-                                    .getPatientID(), pat.getPatientName(), study
-                                    .getString(Tags.StudyInstanceUID), study
-                                    .getInt(Tags.NumberOfStudyRelatedInstances, 0),
-                                    null);
-                        }
-                        AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
-                                .getPatientID(), pat.getPatientName(), null);
-                	} else {
-                		AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
-                                .getPatientID(), pat.getPatientName(), "(undelete)");
-                	}
-                	
+            	delegate.movePatientToTrash(pat.getPk());
+                for (int j = 0, m = studies.size(); j < m; j++) {
+                    Dataset study = (Dataset) studies.get(j);
+                    AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
+                            .getPatientID(), pat.getPatientName(), study
+                            .getString(Tags.StudyInstanceUID), study
+                            .getInt(Tags.NumberOfStudyRelatedInstances, 0),
+                            null);
                 }
+                AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
+                        .getPatientID(), pat.getPatientName(), null);
             } else
-                deleteStudies( pat, delete );
+                deleteStudies( pat );
         }
     }
 
-    private void deleteStudies( PatientModel pat, boolean delete )
+    private void deleteStudies( PatientModel pat )
             throws Exception {
         List studies = pat.getStudies();
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
-                if ( delete & folderForm.isTrashFolder() ) {
-                	delegate.deleteStudy(study.getPk());
-                } else {
-                	delegate.markAsDeleted("STUDY",study.getPk(), delete);
-                	if ( delete ) {
-                        AuditLoggerDelegate.logStudyDeleted(getCtx(),
-                                pat.getPatientID(),
-                                pat.getPatientName(),
-                                study.getStudyIUID(),
-                                study.getNumberOfInstances(),
-                                null);
-                		
-                	}
-                }
+            	delegate.moveStudyToTrash(study.getPk());
+                AuditLoggerDelegate.logStudyDeleted(getCtx(),
+                        pat.getPatientID(),
+                        pat.getPatientName(),
+                        study.getStudyIUID(),
+                        study.getNumberOfInstances(),
+                        null);
             } else {
                 StringBuffer sb = new StringBuffer("Deleted ");
-                final int deletedInstances = deleteSeries( study.getSeries(), delete, sb);
-                if (delete && folderForm.isTrashFolder() && deletedInstances > 0) {
+                final int deletedInstances = deleteSeries( study.getSeries(), sb);
+                if (deletedInstances > 0) {
                     AuditLoggerDelegate.logStudyDeleted(getCtx(),
                             pat.getPatientID(),
                             pat.getPatientName(),
@@ -372,41 +353,32 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
-    private int deleteSeries(List series, boolean delete, StringBuffer sb)
+    private int deleteSeries(List series, StringBuffer sb)
     		throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie)) {
-                if ( delete & folderForm.isTrashFolder() ) {
-                	delegate.deleteSeries(serie.getPk());
-                } else {
-                	delegate.markAsDeleted("SERIES",serie.getPk(), delete);
-                }
+               	delegate.moveSeriesToTrash(serie.getPk());
                 numInsts += serie.getNumberOfInstances();
                 sb.append("Series[");
                 sb.append(serie.getSeriesIUID());
                 sb.append("], ");
             } else {
-                numInsts += deleteInstances(serie.getInstances(), delete, sb);
+                numInsts += deleteInstances(serie.getInstances(), sb);
             }
         }
         return numInsts;
     }
 
-    private int deleteInstances(List instances, boolean delete,
-            StringBuffer sb) throws Exception {
+    private int deleteInstances(List instances, StringBuffer sb) throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance)) {
-                if ( delete & folderForm.isTrashFolder() ) {
-                	delegate.deleteInstance(instance.getPk());
-                } else {
-                	delegate.markAsDeleted("INSTANCE",instance.getPk(), delete);
-                }
+               	delegate.moveInstanceToTrash(instance.getPk());
                 ++numInsts;
                 sb.append("Object[");
                 sb.append(instance.getSopIUID());
@@ -437,7 +409,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                         ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            return cm.listStudiesOfPatient(patPk, ((FolderForm) getForm()).isTrashFolder() );
+            return cm.listStudiesOfPatient(patPk, false );
         } finally {
             try {
                 cm.remove();

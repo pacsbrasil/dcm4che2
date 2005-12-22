@@ -63,13 +63,10 @@ import org.infohazard.maverick.flow.ControllerContext;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class FolderForm {
+public class FolderForm extends BasicFolderForm {
 
     static final String FOLDER_ATTRNAME = "folderFrom";
 
-    private static int LIMIT = 20;
-    
-    public static final String NO_ERROR ="OK";
     /** Error code: General move Error. */
     public static final String ERROR_MOVE ="moveError";
     /** Error code: nothing is selected. */
@@ -115,37 +112,13 @@ public class FolderForm {
 
     private StudyFilterModel studyFilter = null;
 
-    private List patients;
-
     private List aets;
 
     private String destination;
 
-    private final Set stickyPatients = new HashSet();
-
-    private final Set stickyStudies = new HashSet();
-
-    private final Set stickySeries = new HashSet();
-
-    private final Set stickyInstances = new HashSet();
-
-    private int offset;
-
-    private int total;
-    
-    private final boolean admin;
     private boolean mcmUser;
     
     private boolean webViewer;
-    
-    
-    private boolean deleteAllowed = false; 
-    
-    /** Error code for rendering message. */
-    private String errorCode = NO_ERROR;
-    
-    /** Popup message */
-    private String popupMsg = null;
     
     /** Base URL for WADO service. Used for image view */
     private String wadoBaseURL;
@@ -155,10 +128,6 @@ public class FolderForm {
 	private boolean showSeriesIUID;
 	
 	private boolean addWorklist = false;
-	
-	private boolean showWithoutStudies;
-
-	private boolean isTrashFolder = false;
 	
 	protected static Logger log = Logger.getLogger(FolderForm.class);
     
@@ -188,15 +157,15 @@ public class FolderForm {
 				e.printStackTrace();
 			}
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
-            String limit = ctx.getServletConfig().getInitParameter("limitNrOfStudies");
             try {
-            	LIMIT = limit == null ? 20 : Integer.parseInt(limit);
-            	if ( LIMIT <= 0 ) {
+                int limit = Integer.parseInt( ctx.getServletConfig().getInitParameter("limitNrOfStudies") );
+            	if ( limit > 0 ) {
+            		form.setLimit( limit );
+            	} else {
             		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be greater 0! Ignored");
             	}
             } catch (Exception x) {
         		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
-            	LIMIT = 20;
             }
         }
         form.setErrorCode( NO_ERROR ); //reset error code
@@ -214,17 +183,11 @@ public class FolderForm {
 	}
 
 	private FolderForm( boolean adm ) {
-    	admin = adm;
+    	super(adm);
     }
 	
 	public String getModelName() { return "FOLDER"; }
 
-	/**
-	 * @return Returns the admin.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
 	/**
 	 * @return Returns the mcmUser.
 	 */
@@ -251,10 +214,6 @@ public class FolderForm {
 		this.wadoBaseURL = wadoBaseURL;
 	}
 	
-    public final int getLimit() {
-        return LIMIT;
-    }
-
     public final String getAccessionNumber() {
         return accessionNumber;
     }
@@ -315,33 +274,6 @@ public class FolderForm {
 	public void setStudyUID(String studyUID) {
 		this.studyUID = studyUID;
 	}
-    public final void setTotal(int total) {
-        this.total = total;
-    }
-
-    public final Set getStickyInstances() {
-        return stickyInstances;
-    }
-
-    public final Set getStickyPatients() {
-        return stickyPatients;
-    }
-    
-    public final Set getStickySeries() {
-        return stickySeries;
-    }
-
-    public final Set getStickyStudies() {
-        return stickyStudies;
-    }
-
-    public final int getOffset() {
-        return offset;
-    }
-
-    public final List getPatients() {
-        return patients;
-    }
 
     public final List getAets() {
         return aets;
@@ -360,17 +292,8 @@ public class FolderForm {
     }
 
     public final void setFilter(String filter) {
-        offset = 0;
-        total = -1;
+        resetOffset();
         studyFilter = null;
-    }
-
-    public final void setNext(String next) {
-        offset += LIMIT;
-    }
-
-    public final void setPrev(String prev) {
-        offset = offset < LIMIT ? 0 : offset - LIMIT;
     }
 
     public final StudyFilterModel getStudyFilter() {
@@ -387,243 +310,6 @@ public class FolderForm {
         return studyFilter;
     }
 
-    public final int getTotal() {
-        return total;
-    }
-    
-    public final String getErrorCode() {
-    	return errorCode;
-    }
-    
-    
-    public final void setErrorCode( String err ) {
-    	errorCode = err;
-    }
-
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
-    public void updatePatients(List newPatients) {
-        List sticky = patients;
-        patients = newPatients;
-        if (sticky != null) {
-            for (int i = sticky.size(); --i >= 0;) {
-                PatientModel pat = (PatientModel) sticky.get(i);
-                if (keepSticky(pat)) {
-                    mergeSticky(pat);
-                }
-            }
-        }
-    }
-
-    private void mergeSticky(PatientModel stickyPat) {
-        for (int i = patients.size(); --i >= 0;) {
-            PatientModel pat = (PatientModel) patients.get(i);
-            if (pat.getPk() == stickyPat.getPk()) {
-                List stickyStudies = stickyPat.getStudies();
-                for (int j = stickyStudies.size(); --j >= 0;) {
-                    mergeSticky((StudyModel) stickyStudies.get(j), pat
-                            .getStudies());
-                }
-                return;
-            }
-        }
-        patients.add(0, stickyPat);
-    }
-
-    private void mergeSticky(StudyModel stickyStudy, List studies) {
-        for (int i = studies.size(); --i >= 0;) {
-            StudyModel study = (StudyModel) studies.get(i);
-            if (study.getPk() == stickyStudy.getPk()) {
-                List stickySeries = stickyStudy.getSeries();
-                for (int j = stickySeries.size(); --j >= 0;) {
-                    mergeSticky((SeriesModel) stickySeries.get(j), study
-                            .getSeries());
-                }
-                return;
-            }
-        }
-        studies.add(0, stickyStudy);
-    }
-
-    private void mergeSticky(SeriesModel stickySerie, List series) {
-        for (int i = series.size(); --i >= 0;) {
-            SeriesModel serie = (SeriesModel) series.get(i);
-            if (serie.getPk() == stickySerie.getPk()) {
-                List stickyInstances = stickySerie.getInstances();
-                for (int j = stickyInstances.size(); --j >= 0;) {
-                    mergeSticky((InstanceModel) stickyInstances.get(j), serie
-                            .getInstances());
-                }
-                return;
-            }
-        }
-        series.add(0, stickySerie);
-    }
-
-    private void mergeSticky(InstanceModel stickyInst, List instances) {
-        for (int i = instances.size(); --i >= 0;) {
-            InstanceModel inst = (InstanceModel) instances.get(i);
-            if (inst.getPk() == stickyInst.getPk()) { return; }
-        }
-        instances.add(0, stickyInst);
-    }
-
-    private boolean keepSticky(PatientModel patient) {
-        boolean sticky = isSticky(patient);
-        for (Iterator it = patient.getStudies().iterator(); it.hasNext();) {
-            if (keepSticky((StudyModel) it.next())) {
-                sticky = true;
-            } else {
-                it.remove();
-            }
-        }
-        return sticky;
-    }
-
-    private boolean keepSticky(StudyModel study) {
-        boolean sticky = isSticky(study);
-        for (Iterator it = study.getSeries().iterator(); it.hasNext();) {
-            if (keepSticky((SeriesModel) it.next())) {
-                sticky = true;
-            } else {
-                it.remove();
-            }
-        }
-        return sticky;
-    }
-
-    private boolean keepSticky(SeriesModel series) {
-        boolean sticky = isSticky(series);
-        for (Iterator it = series.getInstances().iterator(); it.hasNext();) {
-            if (isSticky((InstanceModel) it.next())) {
-                sticky = true;
-            } else {
-                it.remove();
-            }
-        }
-        return sticky;
-    }
-
-    public final boolean isSticky(PatientModel patient) {
-        return  stickyPatients.contains("" + patient.getPk());
-    }
-
-    public final boolean isSticky(StudyModel study) {
-        return stickyStudies.contains("" + study.getPk());
-    }
-
-    public final boolean isSticky(SeriesModel series) {
-        return stickySeries.contains("" + series.getPk());
-    }
-
-    public final boolean isSticky(InstanceModel instance) {
-        return stickyInstances.contains("" + instance.getPk());
-    }
-
-    public PatientModel getPatientByPk(int patPk) {
-        for (int i = 0, n = patients.size(); i < n; i++) {
-            PatientModel pat = (PatientModel) patients.get(i);
-            if (pat.getPk() == patPk) { return pat; }
-        }
-        return null;
-    }
-
-    public StudyModel getStudyByPk(int patPk, int studyPk) {
-        return getStudyByPk(getPatientByPk(patPk), studyPk);
-    }
-
-    public StudyModel getStudyByPk(PatientModel patient, int studyPk) {
-        if (patient == null) { return null; }
-        List studies = patient.getStudies();
-        for (int i = 0, n = studies.size(); i < n; i++) {
-            StudyModel study = (StudyModel) studies.get(i);
-            if (study.getPk() == studyPk) { return study; }
-        }
-        return null;
-    }
-
-    public SeriesModel getSeriesByPk(int patPk, int studyPk, int seriesPk) {
-        return getSeriesByPk(getStudyByPk(patPk, studyPk), seriesPk);
-    }
-
-    public SeriesModel getSeriesByPk(StudyModel study, int seriesPk) {
-        if (study == null) { return null; }
-        List series = study.getSeries();
-        for (int i = 0, n = series.size(); i < n; i++) {
-            SeriesModel serie = (SeriesModel) series.get(i);
-            if (serie.getPk() == seriesPk) { return serie; }
-        }
-        return null;
-    }
-    
-    public InstanceModel getInstanceByPk(int patPk, int studyPk, int seriesPk, int instancePk) {
-        return getInstanceByPk(getSeriesByPk(patPk, studyPk, seriesPk), instancePk);
-    }
-
-    public InstanceModel getInstanceByPk(SeriesModel series, int instancePk) {
-        if (series == null) { return null; }
-        List instances = series.getInstances();
-        for (int i = 0, n = instances.size(); i < n; i++) {
-            InstanceModel inst = (InstanceModel) instances.get(i);
-            if (inst.getPk() == instancePk) { return inst; }
-        }
-        return null;
-    }
-    
-
-    public void removeStickies() {
-        PatientModel patient;
-        StudyModel study;
-        SeriesModel series;
-        InstanceModel instance;
-        for (Iterator patient_iter = patients.iterator(); patient_iter
-                .hasNext();) {
-            patient = (PatientModel) patient_iter.next();
-            if (stickyPatients.contains(String.valueOf(patient.getPk()))) {
-                patient_iter.remove();
-                stickyPatients.remove(String.valueOf(patient.getPk()));
-            } else
-                for (Iterator study_iter = patient.getStudies().iterator(); study_iter
-                        .hasNext();) {
-                    study = (StudyModel) study_iter.next();
-                    if (stickyStudies.contains(String.valueOf(study.getPk()))) {
-                        study_iter.remove();
-                        stickyStudies.remove(String.valueOf(study.getPk()));
-                    } else
-                        for (Iterator series_iter = study.getSeries()
-                                .iterator(); series_iter.hasNext();) {
-                            series = (SeriesModel) series_iter.next();
-                            if (stickySeries.contains(String.valueOf(series
-                                    .getPk()))) {
-                                series_iter.remove();
-                                stickySeries.remove(String.valueOf(series
-                                        .getPk()));
-                            } else
-                                for (Iterator instance_iter = series
-                                        .getInstances().iterator(); instance_iter
-                                        .hasNext();) {
-                                    instance = (InstanceModel) instance_iter
-                                            .next();
-                                    if (isSticky(instance)) {
-                                        instance_iter.remove();
-                                        stickyInstances.remove(String
-                                                .valueOf(instance.getPk()));
-                                    }
-                                }
-                        }
-                }
-        }
-    }
 	/**
 	 * @param b
 	 */
@@ -663,27 +349,5 @@ public class FolderForm {
 	public void setAddWorklist(boolean addWorklist) {
 		this.addWorklist = addWorklist;
 	}
-	/**
-	 * @return Returns the hideStudyLess.
-	 */
-	public boolean isShowWithoutStudies() {
-		return showWithoutStudies;
-	}
-	/**
-	 * @param hideStudyLess The hideStudyLess to set.
-	 */
-	public void setShowWithoutStudies(boolean showWithoutStudies) {
-		this.showWithoutStudies = showWithoutStudies;
-	}
 
-	/**
-	 * @return
-	 */
-	public boolean isTrashFolder() {
-		return isTrashFolder ;
-	}
-	
-	public void setTrashFolder( boolean b ) {
-		isTrashFolder=b;
-	}
 }

@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -408,7 +409,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     		} catch (Exception e) {
     			log.warn("Coercion of attributes failed:", e);
     		}
-            Dataset coercedElements = updateDB(ds, fsInfo, filePath, file, 
+            Dataset coercedElements = updateDB(ds, fsInfo.getPath(), filePath, file, 
             		md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             if (coerced == null)
@@ -433,10 +434,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 					fsInfo.getPath(), filePath, file.length(), md5sum);
 			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo, fileInfo);
 			if (seriesStored != null) {
-				service.sendJMXNotification(seriesStored);
-				updateDBStudiesAndSeries(seriesStored);
-				updateStudyAccessTime(seriesStored);
-		        service.logInstancesStored(assoc.getSocket(), seriesStored);
+				doAfterSeriesIsStored( assoc.getSocket(), seriesStored, true );
 			}
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
@@ -509,7 +507,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             seriesDir.getParentFile().delete();
     }
 
-    private Dataset updateDB(Dataset ds, FileSystemInfo fsInfo, String filePath,
+    protected Dataset updateDB(Dataset ds, String baseDir, String filePath,
     		File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             IOException {
@@ -520,11 +518,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 try {
 					if (serializeDBUpdate) {
 	                    synchronized (this) {
-	                        return storage.store(ds, fsInfo.getPath(), filePath,
+	                        return storage.store(ds, baseDir, filePath,
 	                                (int) file.length(), md5);
 	                    }
 					} else {
-                        return storage.store(ds, fsInfo.getPath(), filePath,
+                        return storage.store(ds, baseDir, filePath,
                                 (int) file.length(), md5);						
 					}
                 } catch (Exception e) {
@@ -782,15 +780,33 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		SeriesStored seriesStored = 
 			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
 		if (seriesStored != null) {
-			updateDBStudiesAndSeries(seriesStored);
-			updateStudyAccessTime(seriesStored);
-	        service.logInstancesStored(assoc.getSocket(), seriesStored);
-			service.sendJMXNotification(seriesStored);
+			doAfterSeriesIsStored(assoc.getSocket(), seriesStored, true);
 		}
         if ( service.isFreeDiskSpaceOnDemand() ) {
         	service.callFreeDiskSpace();
         }
     }
+
+	/**
+	 * Finalize a stored series.
+	 * <p>
+	 * <dl>
+	 * <dd>1) update database</dd>
+	 * <dd>2) update study access time.</dd>
+	 * <dd>3) Create Audit log entries for instances stored</dd>
+	 * <dd>4) send SeriesStored JMX notification</dd>
+	 * </dl>
+	 * 
+	 * @param s	The Association socket or null if series is stored local (e.g. undelete)
+	 * @param seriesStored
+	 */
+	protected void doAfterSeriesIsStored(Socket s, SeriesStored seriesStored, boolean sendNotification) {
+		updateDBStudiesAndSeries(seriesStored);
+		updateStudyAccessTime(seriesStored);
+		service.logInstancesStored(s, seriesStored);
+		if ( sendNotification )
+			service.sendJMXNotification(seriesStored);
+	}
 
 	private void updateDBStudiesAndSeries(SeriesStored seriesStored) {
         try {
@@ -891,26 +907,32 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			cur = null;
 		}
 		if (cur == null) {
-			cur = new SeriesStored();
-			cur.setCalledAET(assoc.getCalledAET());
-			cur.setCallingAET(assoc.getCallingAET());
-			cur.setRetrieveAET(fsInfo.getRetrieveAET());
-			cur.setFileSystemPath(fsInfo.getPath());
-			cur.setPatientID(ds.getString(Tags.PatientID));
-			cur.setPatientName(ds.getString(Tags.PatientName));
-			cur.setAccessionNumber(ds.getString(Tags.AccessionNumber));
-			cur.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
-			cur.setSeriesInstanceUID(seriesIUID);
-			Dataset refSOP = ds.getItem(Tags.RefPPSSeq);
-			if (refSOP != null) {
-				cur.setRefPPS(
-						refSOP.getString(Tags.RefSOPInstanceUID),
-						refSOP.getString(Tags.RefSOPClassUID));
-			}
+			cur = newSeriesStored(ds, assoc.getCallingAET(), assoc.getCalledAET(), 
+					fsInfo.getRetrieveAET(), fsInfo.getPath());
 			assoc.putProperty(SeriesStored.class.getName(), cur);
 		}
 		cur.addFileInfo(fileInfo); 
 		return prev;
+	}
+	
+	protected SeriesStored newSeriesStored( Dataset ds, String callingAET, String calledAET, String retrieveAET, String fsPath ){
+		SeriesStored seriesStrored = new SeriesStored();
+		seriesStrored.setCalledAET(calledAET);
+		seriesStrored.setCallingAET(callingAET);
+		seriesStrored.setRetrieveAET(retrieveAET);
+		seriesStrored.setFileSystemPath(fsPath);
+		seriesStrored.setPatientID(ds.getString(Tags.PatientID));
+		seriesStrored.setPatientName(ds.getString(Tags.PatientName));
+		seriesStrored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
+		seriesStrored.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
+		seriesStrored.setSeriesInstanceUID(ds.getString(Tags.SeriesInstanceUID));
+		Dataset refSOP = ds.getItem(Tags.RefPPSSeq);
+		if (refSOP != null) {
+			seriesStrored.setRefPPS(
+					refSOP.getString(Tags.RefSOPInstanceUID),
+					refSOP.getString(Tags.RefSOPClassUID));
+		}
+		return seriesStrored;
 	}
 
     private void updateStudyAccessTime(SeriesStored seriesStored) {

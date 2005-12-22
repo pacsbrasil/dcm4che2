@@ -723,6 +723,36 @@ Use either the SOP Class UID or the symbolic name:
       <name>reloadStylesheets</name>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Import a DICOM file (internal use only)</description>
+      <name>importFile</name>
+      <parameter>
+        <description>Transfer object for File</description>
+        <name>fileDTO</name>
+        <type>org.dcm4chex.archive.ejb.interfaces.FileDTO</type>
+      </parameter>
+      <parameter>
+        <description>Dataset.</description>
+        <name>ds</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>SeriesStored Notification object to collect instances stored for a series.</description>
+        <name>seriesStored</name>
+        <type>org.dcm4chex.archive.notif.SeriesStored</type>
+      </parameter>
+      <parameter>
+        <description>Force series related database update after import.</description>
+        <name>doSeriesStored</name>
+        <type>boolean</type>
+      </parameter>
+      <parameter>
+        <description>Enable/Disable sending SeriesStored notification after DB update on series level.</description>
+        <name>sendNotification</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>org.dcm4chex.archive.notif.SeriesStored</return-type>
+   </operation>
 
    <!-- Notifications -->
 </mbean>

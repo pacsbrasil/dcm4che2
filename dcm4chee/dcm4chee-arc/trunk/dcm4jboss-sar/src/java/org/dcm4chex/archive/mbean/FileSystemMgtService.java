@@ -602,64 +602,90 @@ public class FileSystemMgtService extends TimerSupport {
         return info;
     }
 
-    public void purgeFiles() {
+    public int purgeFiles() {
         log.info("Check for unreferenced files to delete");
         synchronized (this) {  
 	        if ( isPurging ) {
 	        	log.info("A purge task is already in progress! Ignore this purge order!");
-	        	return;
+	        	return 0;
 	        }
 	        isPurging = true;
         }
         FileSystemMgt fsMgt = newFileSystemMgt();
+        int deleted, total = 0;
         for (int i = 0, n = dirPathList.size(); i < n; ++i) {
             File dirPath = (File) dirPathList.get(i);
-            if ( ! purgeFiles(dirPath,fsMgt) ) break;
+            deleted = purgeFiles(dirPath,fsMgt);
+            if ( deleted < 0 ) break;
+            total += deleted;
+            if ( total >= this.getLimitNumberOfFilesPerTask() ) break; 
         }
         
         try {
             fsMgt.remove();
         } catch (Exception ignore) {}
         isPurging = false;
+        return total;
     }
-    public void purgeFiles( String purgeDirPath ) {
+    public int purgeFiles( String purgeDirPath ) {
+    	int total;
     	if ( purgeDirPath == null ) {
-    		purgeFiles();
+    		total = purgeFiles();
     	} else {
             synchronized (this) {  
     	        if ( isPurging ) {
     	        	log.info("A purge task is already in progress! Ignore this purge order!");
-    	        	return;
+    	        	return 0;
     	        }
     	        isPurging = true;
             }
             log.info("Check for unreferenced files to delete in filesystem:"+purgeDirPath);
 		    FileSystemMgt fsMgt = newFileSystemMgt();
-			purgeFiles(new File(purgeDirPath),fsMgt);
+			total = purgeFiles(new File(purgeDirPath),fsMgt);
 			isPurging = false;
 		    try {
 		        fsMgt.remove();
 		    } catch (Exception ignore) {
 		    }
-    	}   	
+    	}
+    	return total;
     }
     
-    private boolean purgeFiles( File purgeDirPath, FileSystemMgt fsMgt ) {
+    private int purgeFiles( File purgeDirPath, FileSystemMgt fsMgt ) {
+    	String path = FileUtils.slashify(purgeDirPath);
+    	int limit = getLimitNumberOfFilesPerTask();
+    	int deleted = purgeFiles( path, fsMgt, false, limit );
+    	if ( deleted < 0 ) return -1;//mark error
+    	int total = deleted;
+    	if ( total < limit ) { //try also in trash (PrivateFiles) for remaining number of files per task
+    		deleted = purgeFiles( path, fsMgt, true, limit - total );
+    		if ( deleted > 0 ) {
+    			total += deleted;
+    		}
+    	}
+    	return total;
+    }
+    private int purgeFiles( String purgeDirPath, FileSystemMgt fsMgt, boolean fromPrivate, int limit ) {
         FileDTO[] toDelete;
     	try {
-    		toDelete = fsMgt.getDereferencedFiles(
-					FileUtils.slashify(purgeDirPath), getLimitNumberOfFilesPerTask() );
-            if ( log.isDebugEnabled()) log.debug("purgeFiles: found "+toDelete.length+" files to delete on dirPath:"+purgeDirPath);
+    		toDelete = fromPrivate ? fsMgt.getDereferencedPrivateFiles( purgeDirPath, limit ) :
+    					fsMgt.getDereferencedFiles( purgeDirPath, limit );
+            if ( log.isDebugEnabled()) 
+            	log.debug("purgeFiles: found "+toDelete.length+" files to delete on dirPath:"+purgeDirPath);
         } catch (Exception e) {
             log.warn("Failed to query dereferenced files:", e);
-            return false;
+            return -1;
         }
         for (int j = 0; j < toDelete.length; j++) {
             FileDTO fileDTO = toDelete[j];
 			File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
                     fileDTO.getFilePath());
             try {
-                fsMgt.deleteFile(fileDTO.getPk());
+            	if ( fromPrivate ) {
+                    fsMgt.deletePrivateFile(fileDTO.getPk());
+            	} else {
+            		fsMgt.deleteFile(fileDTO.getPk());
+            	}
             } catch (Exception e) {
                 log.warn("Failed to remove File Record[pk=" 
 						+ fileDTO.getPk() + "] from DB:", e);
@@ -668,7 +694,7 @@ public class FileSystemMgtService extends TimerSupport {
             }
             delete(file);
         }
-        return true;
+        return toDelete.length;
     }
 
     private boolean delete(File file) {

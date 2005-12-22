@@ -37,26 +37,66 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick;
+package org.dcm4chex.archive.web.maverick.trash;
+
+import java.util.List;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
+import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 
 /**
  * 
- * @author gunter.zeilinger@tiani.com
+ * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 28.01.2004
+ * @since 19.12.2005
  */
-public class CollapsePatientCtrl extends Dcm4JbossController {
-    
+public class ExpandTrashStudyCtrl extends Dcm4JbossController {
+
     private int patPk;
+    private int studyPk;
+    private boolean expand;
 
     public final void setPatPk(int patPk)
     {
         this.patPk = patPk;
     }
-    
+
+    public final void setStudyPk(int studyPk)
+    {
+        this.studyPk = studyPk;
+    }
+
+    public final void setExpand(boolean expand) {
+        this.expand = expand;
+    }
+
     protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        folderForm.getPatientByPk(patPk).getStudies().clear();
+    	TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
+    	if ( expand ) {
+	        ContentManagerHome home =
+	            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
+	                ContentManagerHome.class,
+	                ContentManagerHome.JNDI_NAME);
+	        ContentManager cm = home.create();
+	        try {
+	            List series = cm.listSeriesOfPrivateStudy(studyPk);
+	            for (int i = 0, n = series.size(); i < n; i++)
+	                series.set(i, new SeriesModel((Dataset) series.get(i)));
+	            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
+	        } finally {
+	            try {
+	                cm.remove();
+	            } catch (Exception e) {
+	            }
+	        }
+    	} else {
+            folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
+    	}
         return SUCCESS;
     }
+
 }

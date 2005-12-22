@@ -13,6 +13,9 @@ default-transform-type="xslt">
     <view id="folder" name="folder">
       <transform path="folder.xsl" />
     </view>
+    <view id="trash" name="trash">
+      <transform path="trash.xsl" />
+    </view>
     <view id="echoresult" name="echoresult">
       <transform path="ae_echo.xsl" />
     </view>
@@ -45,17 +48,10 @@ default-transform-type="xslt">
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
+
     <command name="expandPat">
       <controller
       class="org.dcm4chex.archive.web.maverick.ExpandPatientCtrl" />
-
-	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
-    </command>
-
-    <command name="collapsePat">
-      <controller
-      class="org.dcm4chex.archive.web.maverick.CollapsePatientCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
@@ -69,14 +65,6 @@ default-transform-type="xslt">
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
-    <command name="collapseStudy">
-      <controller
-      class="org.dcm4chex.archive.web.maverick.CollapseStudyCtrl" />
-
-	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
-    </command>
-
     <command name="expandSeries">
       <controller
       class="org.dcm4chex.archive.web.maverick.ExpandSeriesCtrl" />
@@ -85,12 +73,6 @@ default-transform-type="xslt">
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
-    <command name="collapseSeries">
-      <controller class="org.dcm4chex.archive.web.maverick.CollapseSeriesCtrl" />
-	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
-    </command>
-    
     <command name="expandInstance">
       <controller
       class="org.dcm4chex.archive.web.maverick.ExpandInstanceCtrl" />
@@ -171,6 +153,48 @@ default-transform-type="xslt">
         <controller class="org.dcm4chex.archive.web.maverick.SeriesUpdateCtrl" />    
 	    <view type="redirect" path="folder.m" name="success"/>
      </command>
+
+	<!-- ****** trashfolder related commands ******-->
+
+    <command name="trashfolder">
+      	<controller	class="org.dcm4chex.archive.web.maverick.trash.TrashFolderCtrl" />
+		<view ref="trash" />
+	  	<view name="folder" type="redirect" path="folder.m"/>
+      	<view ref="logout" />
+	  	<view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
+    </command>
+
+    <command name="expandTrashPatient">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashPatientCtrl" />
+
+	  <view name="success" type="redirect" path="trashfolder.m"/>
+	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
+    </command>
+
+    <command name="expandTrashStudy">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashStudyCtrl" />
+
+	  <view name="success" type="redirect" path="trashfolder.m"/>
+	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
+    </command>
+
+    <command name="expandTrashSeries">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashSeriesCtrl" />
+
+	  <view name="success" type="redirect" path="trashfolder.m"/>
+	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
+    </command>
+    
+    <command name="expandTrashInstance">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashInstanceCtrl" />
+
+	  <view name="success" type="redirect" path="trashfolder.m"/>
+	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
+    </command>
 
 	<!-- ****** AE related commands ******-->
 

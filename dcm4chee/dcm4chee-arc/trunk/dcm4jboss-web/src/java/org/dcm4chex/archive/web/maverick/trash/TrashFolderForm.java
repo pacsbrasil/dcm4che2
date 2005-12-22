@@ -37,57 +37,53 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick;
+package org.dcm4chex.archive.web.maverick.trash;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.apache.log4j.Logger;
+import org.dcm4chex.archive.web.maverick.BasicFolderForm;
+import org.infohazard.maverick.flow.ControllerContext;
 
 /**
- * 
- * @author gunter.zeilinger@tiani.com
+ * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 28.01.2004
+ * @since 19.12.2005
  */
-public class ExpandPatientCtrl extends Dcm4JbossController {
+public class TrashFolderForm extends BasicFolderForm {
 
-    private int patPk;
-    private boolean expand;
+    static final String FOLDER_ATTRNAME = "trashFolderFrom";
 
-    public final void setPatPk(int patPk) {
-        this.patPk = patPk;
+	protected static Logger log = Logger.getLogger(TrashFolderForm.class);
+    
+    static TrashFolderForm getTrashFolderForm(ControllerContext ctx) {
+    	HttpServletRequest request = ctx.getRequest();
+        TrashFolderForm form = (TrashFolderForm) request.getSession()
+                .getAttribute(FOLDER_ATTRNAME);
+        if (form == null) {
+            form = new TrashFolderForm(request.isUserInRole("WebAdmin"));
+            request.getSession().setAttribute(FOLDER_ATTRNAME, form);
+            try {
+                int limit = Integer.parseInt( ctx.getServletConfig().getInitParameter("limitNrOfStudies") );
+            	if ( limit > 0 ) {
+            		form.setLimit( limit );
+            	} else {
+            		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be greater 0! Ignored");
+            	}
+            } catch (Exception x) {
+        		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
+            }
+        }
+        form.setErrorCode( NO_ERROR ); //reset error code
+		form.setPopupMsg(null);
+        
+        return form;
     }
     
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
+	private TrashFolderForm( boolean adm ) {
+    	super(adm);
     }
-
-    protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk, false);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
-        } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
-        }
-        return SUCCESS;
-    }
+	
+	public String getModelName() { return "TRASH"; }
 
 }

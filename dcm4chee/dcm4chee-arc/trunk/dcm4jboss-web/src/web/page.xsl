@@ -12,26 +12,26 @@
 	    		<td class="logo" width="50" align="left"><img class="logo" src="images/logo.jpg" border="0"/></td>
 	    		<td width="100" align="center">
 	    			<xsl:choose>
-		    			<xsl:when test="model/modelName = 'FOLDER' and model/trashFolder = 'false'">
+		    			<xsl:when test="model/modelName = 'FOLDER'">
 							<xsl:attribute name="class">tab-selected</xsl:attribute>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:attribute name="class">tab</xsl:attribute>
 						</xsl:otherwise>
 	    			</xsl:choose>
-	    			<a class="tab" href="foldersubmit.m?trashFolder=false&amp;filter=true">Folder</a>
+	    			<a class="tab" href="foldersubmit.m?filter=true">Folder</a>
 	    		</td>
 	    		<xsl:if test="model/admin='true'">
 	    			<td width="100" align="center">
 		    			<xsl:choose>
-			    			<xsl:when test="model/modelName = 'FOLDER' and model/trashFolder = 'true'">
+			    			<xsl:when test="model/modelName = 'TRASH'">
 								<xsl:attribute name="class">tab-selected</xsl:attribute>
 							</xsl:when>
 							<xsl:otherwise>
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-	    				<a class="tab" href="foldersubmit.m?trashFolder=true&amp;filter=true">Trash</a>
+	    				<a class="tab" href="trashfolder.m?filter=true">Trash</a>
 	    			</td>
 		    		<td width="120" align="center">
 		    			<xsl:choose>

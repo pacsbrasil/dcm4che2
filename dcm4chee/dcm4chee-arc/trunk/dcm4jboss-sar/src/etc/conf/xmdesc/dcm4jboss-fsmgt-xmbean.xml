@@ -345,7 +345,7 @@ accessed studies.</description>
    <operation impact="ACTION">
       <description>Purge unreferenced Files</description>
       <name>purgeFiles</name>
-      <return-type>void</return-type>
+      <return-type>int</return-type>
    </operation>   
    <operation impact="ACTION">
       <description>Delete unreferenced files on specific directories or mount points.</description>
@@ -357,7 +357,7 @@ accessed studies.</description>
         <name>purgeDirPath</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>void</return-type>
+      <return-type>int</return-type>
    </operation>   
    <operation impact="INFO">
       <description>Locate SOP Instance. Return a File object, if the instance

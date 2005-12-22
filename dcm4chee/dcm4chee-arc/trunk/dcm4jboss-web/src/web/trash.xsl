@@ -8,7 +8,7 @@
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
-	<form action="foldersubmit.m" method="get" name="myForm">
+	<form action="trashfolder.m" method="get" name="myForm">
 		<table class="folder_header" border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td class="folder_header" valign="top">
 				<table class="folder_header" border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
@@ -65,28 +65,28 @@
 					</td>
 					<xsl:if test="/model/admin='true'">
 						<td class="folder_header" width="40">
-							<a href="patientEdit.m?pk=-1">
-								<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
-							</a>
+							&#160;
+<!-- not implemented yet.						
+							<input type="image" value="DelTrash" name="deltrash" src="images/deltrash.gif" alt="delete Trash" border="0"
+								title="Delete Trash"
+								onclick="return confirm('Delete trash folder?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+-->						
 						</td>
 						<td class="folder_header" width="40">
-							<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
-								title="Merge selected Patients" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+							<input type="image" value="Undel" name="undel" src="images/undel.gif" alt="undelete" border="0"
+								title="Undelete selected Entities"
+								onclick="return confirm('Undelete selected Entities?')">
 								<xsl:if test="total &lt;= 0">
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
 						<td class="folder_header" width="40">
-							<input type="image" value="Move" name="move" src="images/move.gif" alt="move" border="0"
-								title="Move selected Entities">
-								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">disabled</xsl:attribute>
-								</xsl:if>
-							</input>
-						</td>
-						<td class="folder_header" width="40">
-							<input type="image" value="Del" name="del" src="images/trash.gif" alt="delete" border="0"
+							<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
 								title="Delete selected Entities"
 								onclick="return confirm('Delete selected Entities?')">
 								<xsl:if test="total &lt;= 0">
@@ -95,75 +95,9 @@
 							</input>
 						</td>
 					</xsl:if>
-					<td class="folder_header" width="40">
-						<input type="image" value="Send" name="send" src="images/send.gif" alt="send" border="0"
-							title="Send selected Entities to specified Destination"
-							onclick="return confirm('Send selected entities to ' + 
-document.myForm.destination.options[document.myForm.destination.selectedIndex ].text + '?')">
-							<xsl:if test="total &lt;= 0">
-								<xsl:attribute name="disabled">disabled</xsl:attribute>
-							</xsl:if>
-						</input>
-					</td>
-					<td class="folder_header" width="50">
-						<select size="1" name="destination" title="Send Destination">
-							<xsl:for-each select="aets/item">
-								<xsl:sort data-type="text" order="ascending" select="title"/>
-								<option>
-									<xsl:if test="/model/destination = title">
-										<xsl:attribute name="selected"/>
-									</xsl:if>
-									<xsl:value-of select="title"/>
-								</option>
-							</xsl:for-each>						
-						</select>
-					</td>
 				</table>
 				<table class="folder_search" border="0" width="100%" cellpadding="0" cellspacing="0">
 				  <tr>
-					<td class="folder_search" >Patient Name:
-					</td>
-					<td>
-						<input size="10" name="patientName" type="text" value="{patientName}"/>
-      				</td>
-					<td class="folder_search" >Patient ID:
-					</td>
-					<td>
-						<input size="10" name="patientID" type="text" value="{patientID}"/>
-					</td>
-	
-					<xsl:choose>
-						<xsl:when test="showStudyIUID='true'">
-				      		<td class="label">Study IUID:</td>
-				      		<td>
-				        		<input size="45" name="studyUID" type="text" value="{studyUID}"/>
-				      		</td>
-						</xsl:when>
-						<xsl:otherwise>
-							<td class="label">Study ID:</td>
-				      		<td>
-				        		<input size="10" name="studyID" type="text" value="{studyID}"/>
-				      		</td>
-							<td class="label" title="Study date. format:yyyy/mm/dd or range:yyyy/mm/dd-yyyy/mm/dd">Study Date:
-							</td>
-				      		<td> 
-				        		    <input size="10" name="studyDateRange" type="text" value="{studyDateRange}"
-				        		    title="Study date. format:yyyy/mm/dd or range:yyyy/mm/dd-yyyy/mm/dd" />
-				      		    <input name="studyUID" type="hidden" value=""/>
-				      		</td>
-						</xsl:otherwise>
-					</xsl:choose>
-
-		      		<td class="label">Accession No.:
-							</td>
-		      		<td>
-		        		<input size="10" name="accessionNumber" type="text" value="{accessionNumber}"/>
-		      		</td>
-		      		<td class="label">Modality:
-							</td>
-		      		<td>
-		        		<input size="10" name="modality" type="text" value="{modality}"/>
-		      		</td>
 		      	  </tr>
 				</table>
 					<xsl:call-template name="overview"/>
@@ -226,33 +160,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="11%"/><!-- Date/time -->
 			<col width="12%"/><!-- StudyID -->
 			<col width="10%"/><!-- Modalities -->
-			<col width="26%"/><!-- Study Desc -->
+			<col width="26%"/><!-- Study Instance UID -->
 			<col width="9%"/><!-- Acc No --><!-- 73 -->
-			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
-		    		<col width="11%"/><!-- Ref. Physician -->
-				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
-				    <col width="13%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="15%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="17%"/>
-				</xsl:otherwise>
-			</xsl:choose><!-- 16 -->
+    		<col width="13%"/><!-- Ref. Physician -->
 		    <col width="4%"/><!-- Study Status ID -->
 			<col width="2%"/><!-- No. of Series -->
 		    <col width="2%"/><!-- No. of Instances -->
-		    
-			<xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- Webviewer -->
-			</xsl:if>
-			<xsl:if test="/model/admin='true'">
-				<col width="2%"/><!-- add -->
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
+			<col width="2%"/><!-- add -->
+			<col width="2%"/><!-- edit -->
 			<col width="2%"/><!-- sticky -->
 		</colgroup>
 		<tr>
@@ -274,16 +189,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1">
-				<xsl:choose>
-					<xsl:when test="showStudyIUID='false'">
-							<b>Study Description</b> / 
-						<a title="Show StudyIUID" href="foldersubmit.m?showStudyIUID=true&amp;studyID=">IUID</a>
-					</xsl:when>
-					<xsl:otherwise>
-						<a title="Show Study Description" href="foldersubmit.m?showStudyIUID=false&amp;studyUID=">Study Description</a>
-							/ <b>IUID</b>
-					</xsl:otherwise>
-				</xsl:choose> :
+				Study IUID:
 				</font>
 			</td>
 			<td>
@@ -306,13 +212,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<font size="1">
 					NoI:</font>
 			</td>
-			<xsl:if test="/model/webViewer='true'">
-				<td>&#160;</td>
-			</xsl:if>
-			<xsl:if test="/model/admin='true'">
-				<td>&#160;</td>
-				<td>&#160;</td>
-			</xsl:if>
+			<td>&#160;</td>
+			<td>&#160;</td>
 			<td>&#160;</td>
 		</tr>
 	</table>
@@ -323,30 +224,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="12%"/><!-- date/time -->
 			<col width="12%"/><!-- Series No -->
 			<col width="10%"/><!-- Modality -->
-			<col width="35%"/><!-- Series Desc. -->
+			<col width="35%"/><!-- Series Instance UID. -->
 			<col width="10%"/><!-- Vendor/Model -->
 			
-			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
-		    		<col width="6%"/><!-- PPS Status -->
-				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="10%"/>
-				</xsl:otherwise>
-			</xsl:choose>
+    		<col width="8%"/><!-- PPS Status -->
 			<col width="2%"/><!-- spacer -->
-            <xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- web viewer -->
-			</xsl:if>
-            <xsl:if test="/model/admin='true'">
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
+			<col width="2%"/><!-- edit -->
 			<col width="2%"/><!-- sticky -->
 		</colgroup>
 		<tr>
@@ -368,16 +251,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1">
-				<xsl:choose>
-					<xsl:when test="showSeriesIUID='false'">
-							<b>Series Description/Body Part</b> / 
-						<a title="Show SeriesIUID" href="foldersubmit.m?showSeriesIUID=true">IUID</a>
-					</xsl:when>
-					<xsl:otherwise>
-						<a title="Show Description" href="foldersubmit.m?showSeriesIUID=false">Series Description/Body Part</a>
-							/ <b>IUID</b>
-					</xsl:otherwise>
-				</xsl:choose> :
+				Series Instance UID:
 				</font>
 			</td>
 			<td>
@@ -393,12 +267,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					NoI:</font>
 			</td>
 			<td>&#160;</td>
-            <xsl:if test="/model/webViewer='true'">
-				<td>&#160;</td>
-			</xsl:if>
-            <xsl:if test="/model/admin='true'">
-				<td>&#160;</td>
-			</xsl:if>
+			<td>&#160;</td>
 			<td>&#160;</td>
 		</tr>
 	</table>
@@ -414,63 +283,45 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="26%"/>
 			<col width="10%"/>
 			<col width="12%"/>
-		               <xsl:if test="/model/admin='true'">
-			    <col width="45%"/>
-			    <col width="2%"/>
-			    <col width="2%"/>
-		               </xsl:if>
-		               <xsl:if test="/model/admin!='true'">
-                    		    <col width="49%"/>
-		               </xsl:if>
+		    <col width="45%"/>
+		    <col width="2%"/>
+		    <col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 			<td class="patient_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
-						<a title="Show Studies" href="expandPat.m?patPk={pk}&amp;expand=true">
-						<img src="images/plus.gif" border="0" alt="+"/>
-              </a>				
+						<a title="Show Studies" href="expandTrashPatient.m?patPk={pk}&amp;expand=true">
+							<img src="images/plus.gif" border="0" alt="+"/>
+              			</a>				
 					</xsl:when>
 					<xsl:otherwise>
-							<a title="Hide Studies" href="expandPat.m?patPk={pk}&amp;expand=false">							
+						<a title="Hide Studies" href="expandTrashPatient.m?patPk={pk}&amp;expand=false">							
 							<img src="images/minus.gif" border="0" alt="-"/>
-              </a>				
+              			</a>				
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
-      <td title="Patient Name">
-				<strong>
-            <xsl:value-of select="patientName"/>&#160;
-				</strong>
-      </td>
-      <td title="Patient ID">
-				<strong>
-            <xsl:value-of select="patientID"/>&#160;
-				</strong>
+			<td title="Patient Name">
+				<strong><xsl:value-of select="patientName"/>&#160;</strong>
+  			</td>
+			<td title="Patient ID">
+				<strong><xsl:value-of select="patientID"/>&#160;</strong>
 			</td>
-      <td title="Birth Date">
-				<strong>
-            <xsl:value-of select="patientBirthDate"/>&#160;
-				</strong>
-      </td>
-      <td title="Patient Sex">
-				<strong>
-            <xsl:value-of select="patientSex"/>&#160;
-				</strong>
-      </td>
-		    <xsl:if test="/model/admin='true'">
-			    <td class="study_mark" align="right">
-					<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
-						<img src="images/add.gif" alt="Add Study" border="0" title="Add new Study"/>		
-					</a>
-			    </td>
-			    <td class="patient_mark" align="right">
-					<a href="patientEdit.m?pk={pk}">
-						<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
-					</a>
-			    </td>
-			</xsl:if>
+			<td title="Birth Date">
+				<strong><xsl:value-of select="patientBirthDate"/>&#160;</strong>
+			</td>
+			<td title="Patient Sex">
+				<strong><xsl:value-of select="patientSex"/>&#160;</strong>
+			</td>
+            <td>&#160;</td>
+			<td class="patient_mark" align="right">
+				<a href="trashfolder.m?undel=patient&amp;patPk={pk}"
+					onclick="return confirm('Undelete this patient ?')">
+					<img src="images/undel.gif" alt="Undelete Patient" border="0" title="Undelete Patient"/>		
+				</a>
+			</td>
 			<td class="patient_mark" align="right">
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
@@ -478,66 +329,47 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</xsl:if>
 				</input>
 			</td>
-	</table>
-</tr>
-			<xsl:apply-templates select="studies/item">
-				<xsl:sort data-type="text" order="ascending" select="studyDateTime"/>
-			</xsl:apply-templates>
+		</table>
+	</tr>
+	<xsl:apply-templates select="studies/item">
+		<xsl:sort data-type="text" order="ascending" select="studyDateTime"/>
+	</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StudyModel']">
-<tr>
-	<table class="study_line" width="100%" cellpadding="0" cellspacing="0" border="0">
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
-		<colgroup>
-			<col width="2%"/><!-- margin -->
-			<col width="14%"/><!-- Date/time -->
-			<col width="12%"/><!-- StudyID -->
-			<col width="10%"/><!-- Modalities -->
-			<col width="26%"/><!-- Study Desc -->
-			<col width="9%"/><!-- Acc No -->
-			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
-		    		<col width="11%"/><!-- Ref. Physician -->
-				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
-				    <col width="13%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="15%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="17%"/>
-				</xsl:otherwise>
-			</xsl:choose><!-- 16 -->
-		    <col width="4%"/><!-- Study Status ID -->
-			<col width="2%"/><!-- No. of Series -->
-		    <col width="2%"/><!-- No. of Instances -->
-		    
-			<xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- Webviewer -->
-			</xsl:if>
-			<xsl:if test="/model/admin='true'">
+	<tr>
+		<table class="study_line" width="100%" cellpadding="0" cellspacing="0" border="0">
+			<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+			<colgroup>
+				<col width="2%"/><!-- margin -->
+				<col width="14%"/><!-- Date/time -->
+				<col width="12%"/><!-- StudyID -->
+				<col width="10%"/><!-- Modalities -->
+				<col width="26%"/><!-- Study Instance UID -->
+				<col width="9%"/><!-- Acc No -->
+	    		<col width="13%"/><!-- Ref. Physician -->
+			    <col width="4%"/><!-- Study Status ID -->
+				<col width="2%"/><!-- No. of Series -->
+			    <col width="2%"/><!-- No. of Instances -->
 				<col width="2%"/><!-- add -->
 				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
-		</colgroup>
+				<col width="2%"/><!-- sticky -->
+			</colgroup>
 			<td class="study_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
-						<a title="Show Series" href="expandStudy.m?patPk={../../pk}&amp;studyPk={pk}&amp;expand=true">
+						<a title="Show Series" href="expandTrashStudy.m?patPk={../../pk}&amp;studyPk={pk}&amp;expand=true">
 						    <img src="images/plus.gif" border="0" alt="+"/>
-                                                                                        </a>				
+	                                                                                    </a>				
 					</xsl:when>
 					<xsl:otherwise>
-						<a title="Hide Series" href="expandStudy.m?patPk={../../pk}&amp;studyPk={pk}&amp;expand=false">							
+						<a title="Hide Series" href="expandTrashStudy.m?patPk={../../pk}&amp;studyPk={pk}&amp;expand=false">							
 						    <img src="images/minus.gif" border="0" alt="-"/>
-                                                                                        </a>				
+	                                                                                    </a>				
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
-      		<td title="Study Date">
+	  		<td title="Study Date">
 				<xsl:value-of select="studyDateTime"/>&#160;
 			</td>
 			<td title="Study ID (@Media)" >
@@ -548,76 +380,39 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		 	<td title="Modalities">
 				<xsl:value-of select="modalitiesInStudy"/>&#160;
 			</td>
-      		<td title="Study Description">
-      			<xsl:choose>
-					<xsl:when test="/model/showStudyIUID='false'">
-						<xsl:value-of select="studyDescription"/>&#160;
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="studyIUID"/>&#160;
-					</xsl:otherwise>
-				</xsl:choose>
+	  		<td title="Study IUID">
+				<xsl:value-of select="studyIUID"/>&#160;
 			</td>
 			<td title="Accession Number">
 				&#160;<xsl:value-of select="accessionNumber"/>&#160;
 			</td>
-      		<td title="Referring Physican">
+	  		<td title="Referring Physican">
 				<xsl:value-of select="referringPhysician"/>&#160;
 			</td>
-      		<td title="Study Status ID" align="center">
-      			<xsl:choose>
-      				<xsl:when test="studyStatusImage!=''">
+	  		<td title="Study Status ID" align="center">
+	  			<xsl:choose>
+	  				<xsl:when test="studyStatusImage!=''">
 		      			<img src="{studyStatusImage}" border="0" alt="{studyStatusId}"/>
 		      		</xsl:when>
-      				<xsl:when test="studyStatusId!=''">
-      					<xsl:value-of select="studyStatusId"/>
-      				</xsl:when>
-      				<xsl:otherwise>&#160;</xsl:otherwise>
+	  				<xsl:when test="studyStatusId!=''">
+	  					<xsl:value-of select="studyStatusId"/>
+	  				</xsl:when>
+	  				<xsl:otherwise>&#160;</xsl:otherwise>
 	      		</xsl:choose>
 			</td>
-      		<td title="Number of Series" align="center">
+	  		<td title="Number of Series" align="center">
 				<xsl:value-of select="numberOfSeries"/>&#160;
 			</td>
-      		<td title="Number of Instances" align="center">
+	  		<td title="Number of Instances" align="center">
 				<xsl:value-of select="numberOfInstances"/>&#160;
 			</td>
-			<xsl:if test="/model/webViewer='true'">
-    			    <td class="study_mark" align="right">
-    			          <xsl:choose>
-    			                  <xsl:when test="modalitiesInStudy='SR'"><!-- no webviewer action for SR! -->
-    			                  </xsl:when>
-    			                  <xsl:when test="modalitiesInStudy='KO'"><!-- no webviewer action if study contains only KO ! -->
-    			                  </xsl:when>
-    			                  <xsl:otherwise>
-    			                      <a href="studyView.m?patPk={../../pk}&amp;studyPk={pk}" >
-					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../pk" />&amp;studyPk=<xsl:value-of select="pk" />')</xsl:attribute>
-					<img src="images/webview.gif" alt="View Study" border="0" title="View Study in Webviewer"/>		
-    			                      </a>
-    			                  </xsl:otherwise>
-    			          </xsl:choose>
-    			    </td>
-			</xsl:if>
-	        <xsl:if test="/model/admin='true'">    
-			    <td class="series_mark" align="right">
-	      			<xsl:choose>
-						<xsl:when test="/model/addWorklist='false'">
-							<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
-								<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
-							</a>
-						</xsl:when>
-						<xsl:otherwise>
-							<a href="addWorklist.m?studyPk={pk}">
-								<img src="images/worklist.gif" alt="Add worklist item" border="0" title="Add worklist item"/>		
-							</a>
-						</xsl:otherwise>
-					</xsl:choose>
-				    </td>
-				    <td class="study_mark" align="right">
-					<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
-						<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
-					</a>
-			    </td>
-	       	</xsl:if>
+            <td>&#160;</td>
+		    <td class="study_mark" align="right">
+				<a href="trashfolder.m?undel=study&amp;studyPk={pk}"
+					onclick="return confirm('Undelete this study ?')">
+					<img src="images/undel.gif" alt="Undelete this Series" border="0" title="Undelete this series"/>		
+				</a>
+		    </td>
 			<td class="study_mark" align="right">
 				<input type="checkbox" name="stickyStudy" value="{pk}">
 					<xsl:if test="/model/stickyStudies/item = pk">
@@ -625,8 +420,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</xsl:if>
 				</input>
 			</td>
-	</table>
-</tr>
+		</table>
+	</tr>
 	<xsl:apply-templates select="series/item">
 		<xsl:sort data-type="number" order="ascending" select="seriesNumber"/>
 	</xsl:apply-templates>
@@ -634,50 +429,31 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.SeriesModel']">
 	<tr>
-<table class="series_line" width="100%" cellpadding="0" cellspacing="0" border="0" >	  
-		<colgroup>
-			<col width="3%"/><!-- left margin -->
-			<col width="14%"/><!-- Date/Time -->
-			<col width="12%"/><!-- Series No -->
-			<col width="10%"/><!-- Modality -->
-			<col width="35%"/><!-- Series Desc. -->
-			<col width="10%"/><!-- Vendor/Model -->
-			
-			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
-		    		<col width="6%"/><!-- PPS Status -->
-				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="10%"/>
-				</xsl:otherwise>
-			</xsl:choose>
-			<col width="2%"/><!-- spacer -->
-            <xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- web viewer -->
-			</xsl:if>
-            <xsl:if test="/model/admin='true'">
+		<table class="series_line" width="100%" cellpadding="0" cellspacing="0" border="0" >	  
+			<colgroup>
+				<col width="3%"/><!-- left margin -->
+				<col width="14%"/><!-- Date/Time -->
+				<col width="12%"/><!-- Series No -->
+				<col width="10%"/><!-- Modality -->
+				<col width="35%"/><!-- Series Instance UID. -->
+				<col width="10%"/><!-- Vendor/Model -->
+	    		<col width="8%"/><!-- PPS Status -->
+				<col width="2%"/><!-- spacer -->
 				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
-		</colgroup>
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
-		  <td class="series_mark" align="right" rowspan="{$rowspan}">
+				<col width="2%"/><!-- sticky -->
+			</colgroup>
+			<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+			<td class="series_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
-		  				<a title="Show Instances" href="expandSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}&amp;expand=true">
+		  				<a title="Show Instances" href="expandTrashSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}&amp;expand=true">
 							<img src="images/plus.gif" border="0" alt="+"/>
               			</a>				
 					</xsl:when>
 					<xsl:otherwise>
-		  			<a title="Hide Instances" href="expandSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}&amp;expand=false">
-						<img src="images/minus.gif" border="0" alt="-"/>
-              </a>				
+			  			<a title="Hide Instances" href="expandTrashSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}&amp;expand=false">
+							<img src="images/minus.gif" border="0" alt="-"/>
+	              		</a>				
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
@@ -689,68 +465,37 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<xsl:if test="filesetId != '_NA_'"> @<xsl:value-of select="filesetId"/> </xsl:if>
 				&#160;
 			</td>
-      <td title="Modality">
+		    <td title="Modality">
 				<xsl:value-of select="modality"/>&#160;
 			</td>
-      <td title="Series Description / Body Part">
-      			<xsl:choose>
-					<xsl:when test="/model/showSeriesIUID='false'">
-						<xsl:value-of select="seriesDescription"/>
-						\ <xsl:value-of select="bodyPartExamined"/>
+      		<td title="Series Instance UID">
+						<xsl:value-of select="seriesIUID"/>&#160;
+	      	</td>
+			<td title="Modality Vendors / Modelname">
+    			<xsl:value-of select="manufacturer"/>
+					\ <xsl:value-of select="manufacturerModelName"/>&#160;
+      		</td>
+			<td title="PPS Status"  >
+				<xsl:choose>
+					<xsl:when test="PPSStatus='DISCONTINUED'">
+						<xsl:attribute name="style">color: red</xsl:attribute>
 					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="seriesIUID"/>
-					</xsl:otherwise>
-				</xsl:choose>&#160;
-    		
-      	</td>
-		<td title="Modality Vendors / Modelname">
-    		<xsl:value-of select="manufacturer"/>
-				\ <xsl:value-of select="manufacturerModelName"/>&#160;
-      	</td>
-		<td title="PPS Status"  >
-			<xsl:choose>
-				<xsl:when test="PPSStatus='DISCONTINUED'">
-					<xsl:attribute name="style">color: red</xsl:attribute>
-				</xsl:when>
-				<xsl:when test="PPSStatus!=''">
-					<xsl:attribute name="style">color: black</xsl:attribute>
-				</xsl:when>
-			</xsl:choose>
-    		<xsl:value-of select="PPSStatus"/>&#160;
-      	</td>
-		<td title="Number of Instances" align="center">
-			<xsl:value-of select="numberOfInstances"/>
-		</td>
-		<td>&#160;</td>
-        <xsl:if test="/model/webViewer='true'">
-		    <td class="series_mark" align="right">
-	            <xsl:choose>
-	                <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
-	
-	    				<a href="studyView.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" >
-	    					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../../../pk" />&amp;studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-	    					<img src="images/webview.gif" alt="View Study" border="0" title="View Series in Webviewer"/>		
-	    				</a>					
-	                </xsl:when>
-	                <xsl:when test="modality = 'KO'">
-						<a href="koView.m?studyPk={../../pk}&amp;seriesPk={pk}" >
-							<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-							<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
-						</a>
+					<xsl:when test="PPSStatus!=''">
+						<xsl:attribute name="style">color: black</xsl:attribute>
 					</xsl:when>
-					<xsl:otherwise>&#160;</xsl:otherwise>
-	            </xsl:choose>
-	    	</td>
-     	</xsl:if>
-
-           <xsl:if test="/model/admin='true'">
-                <td class="series_mark" align="right">
-					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
-						<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
-					</a>
-    	        </td>
-            </xsl:if>
+				</xsl:choose>
+	    		<xsl:value-of select="PPSStatus"/>&#160;
+    	  	</td>
+			<td title="Number of Instances" align="center">
+				<xsl:value-of select="numberOfInstances"/>
+			</td>
+            <td>&#160;</td>
+            <td class="series_mark" align="right">
+				<a href="trashfolder.m?undel=series&amp;seriesPk={pk}"
+					onclick="return confirm('Undelete this series ?')">
+					<img src="images/undel.gif" alt="Undelete Series" border="0" title="Undel Series"/>		
+				</a>
+	        </td>
             <td class="series_mark" align="right">
 				<input type="checkbox" name="stickySeries" value="{pk}">
 					<xsl:if test="/model/stickySeries/item = pk">
@@ -760,9 +505,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
       </table>
 	</tr>
-		<xsl:apply-templates select="instances/item">
-			<xsl:sort data-type="number" order="ascending" select="instanceNumber"/>
-		</xsl:apply-templates>
+	<xsl:apply-templates select="instances/item">
+		<xsl:sort data-type="number" order="ascending" select="instanceNumber"/>
+	</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.ImageModel']">
@@ -784,14 +529,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
-	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  				<a title="Show files" href="expandTrashInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 						<img src="images/plus.gif" border="0" alt="+"/>
-              		                                            </a>				
+  		            </a>				
 				</xsl:when>
 				<xsl:otherwise>
-	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
-					<img src="images/minus.gif" border="0" alt="-"/>
-                                                                              </a>				
+  			        <a title="Hide Instances" href="expandTrashInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/minus.gif" border="0" alt="-"/>
+                    </a>				
 				</xsl:otherwise>
 			</xsl:choose>
                                 </td>
@@ -821,18 +566,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  	<td title="SopIUID" >
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
-		<td class="instance_mark" align="right" >
-			<xsl:choose>
-				<xsl:when test="availability='ONLINE'" >			
-					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
-						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
-					</a>
-				</xsl:when>
-				<xsl:otherwise>
-					<img src="images/invalid.gif" alt="Image not online" border="0" title="Image not online"/>		
-				</xsl:otherwise>
-			</xsl:choose>				
-		</td>
+        <td class="instance_mark" align="right">
+			<a href="trashfolder.m?undel=instance&amp;instancePk={pk}"
+				onclick="return confirm('Undelete this instance ?')">
+				<img src="images/undel.gif" alt="Undelete Instance" border="0" title="Undelete Instance"/>		
+			</a>
+        </td>
+		
 		<td class="instance_mark" align="right">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
@@ -858,20 +598,21 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="5%"/>
 			<col width="5%"/>
 			<col width="5%"/>
-			<col width="13%"/>
-			<col width="25%"/>
+			<col width="12%"/>
+			<col width="24%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
-	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  				<a title="Show files" href="expandTrashInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 						<img src="images/plus.gif" border="0" alt="+"/>
               		                                            </a>				
 				</xsl:when>
 				<xsl:otherwise>
-	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  			        <a title="Hide Instances" href="expandTrashInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 					<img src="images/minus.gif" border="0" alt="-"/>
                                                                               </a>				
 				</xsl:otherwise>
@@ -901,6 +642,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  	<td title="SopIUID" >
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
+        <td class="instance_mark" align="right">
+			<a href="trashfolder.m?undel=instance&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}"
+				onclick="return confirm('Undelete this instance ?')">
+				<img src="images/undel.gif" alt="Undelete Instance" border="0" title="Undelete Instance"/>		
+			</a>
+        </td>
 		<td class="instance_mark" align="right">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
@@ -925,8 +672,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="15%"/>
 			<col width="15%"/>
 			<col width="5%"/>
-			<col width="18%"/>
-			<col width="18"/>
+			<col width="13%"/>
+			<col width="23"/>
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
@@ -935,12 +682,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
-	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  				<a title="Show files" href="expandTrashInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 						<img src="images/plus.gif" border="0" alt="+"/>
               		                                            </a>				
 				</xsl:when>
 				<xsl:otherwise>
-	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  			        <a title="Hide Instances" href="expandTrashInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 					<img src="images/minus.gif" border="0" alt="-"/>
                                                                               </a>				
 				</xsl:otherwise>
@@ -967,28 +714,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  	<td title="SopIUID" >
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
-		<td class="instance_mark" align="right" >
-			<xsl:choose>
-				<xsl:when test="availability='ONLINE'" >			
-					<xsl:choose>
-						<xsl:when test="/model/webViewer='true' and sopCUID='1.2.840.10008.5.1.4.1.1.88.59'" >
-							<a href="koView.m?studyPk={../../../../pk}&amp;sopIUID={sopIUID}" >
-								<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../../../pk" />&amp;sopIUID=<xsl:value-of select="sopIUID" />')</xsl:attribute>
-								<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
-							</a>
-						</xsl:when>
-						<xsl:otherwise>
-							<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="SRview" >
-								<img src="images/sr.gif" alt="View Report" border="0" title="View Report"/>		
-							</a>
-						</xsl:otherwise>
-					</xsl:choose>				
-				</xsl:when>
-				<xsl:otherwise>
-					<img src="images/invalid.gif" alt="Report not online" border="0" title="Report not online"/>		
-				</xsl:otherwise>
-			</xsl:choose>				
-		</td>
+        <td class="instance_mark" align="right">
+			<a href="trashfolder.m?undel=instance&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}"
+				onclick="return confirm('Undelete this instance ?')">
+				<img src="images/undel.gif" alt="Undelete Instance" border="0" title="Undelete Instance"/>		
+			</a>
+        </td>
 		<td class="instance_mark" align="right">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
@@ -1012,21 +743,21 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="3%"/>
 			<col width="21%"/>
 			<col width="25%"/>
-			<col width="5%"/>
 			<col width="10%"/>
-			<col width="20%"/>
+			<col width="23%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
-	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  				<a title="Show files" href="expandTrashInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 						<img src="images/plus.gif" border="0" alt="+"/>
               		                                            </a>				
 				</xsl:when>
 				<xsl:otherwise>
-	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+	  			        <a title="Hide Instances" href="expandTrashInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
 					<img src="images/minus.gif" border="0" alt="-"/>
                                                                               </a>				
 				</xsl:otherwise>
@@ -1042,25 +773,18 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<xsl:value-of select="waveformType"/>&#160;
 		</td>
 	    <td title="dummy" >&#160;&#160;</td>
-		<td title="dummy" >&#160;&#160;</td>
  	  	<td title="Retrieve AETs" >
 			<xsl:value-of select="retrieveAETs"/>&#160;
     	</td>
 	  	<td title="SopIUID" >
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
-		<td class="instance_mark" align="right">
-			<xsl:choose>
-				<xsl:when test="availability='ONLINE'" >			
-					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
-						<img src="images/waveform.gif" alt="View waveform" border="0" title="View waveform"/>		
-					</a>
-				</xsl:when>
-				<xsl:otherwise>
-					<img src="images/invalid.gif" alt="Image not online" border="0" title="Image not online"/>		
-				</xsl:otherwise>
-			</xsl:choose>				
-		</td>
+        <td class="instance_mark" align="right">
+			<a href="trashfolder.m?undel=instance&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}"
+				onclick="return confirm('Undelete this instance ?')">
+				<img src="images/undel.gif" alt="Undelete Instance" border="0" title="Undelete Instance"/>		
+			</a>
+        </td>
 		<td class="instance_mark" align="right" >
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">

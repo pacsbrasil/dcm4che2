@@ -62,7 +62,7 @@ public class ContentEditDelegate {
     private static ObjectName contentEditName;
 
 
-    void init(ControllerContext ctx) throws Exception {
+    public void init(ControllerContext ctx) throws Exception {
         if (contentEditName != null) return;
         ContentEditDelegate.server = MBeanServerLocator.locate();
         String s = ctx.getServletConfig().getInitParameter("contentEditName");
@@ -152,61 +152,57 @@ public class ContentEditDelegate {
         }
     }
  
-    public void markAsDeleted( String type, int pk, boolean delete ) {
-        try {
-            server.invoke(contentEditName,
-                    "markAsDeleted",
-                    new Object[] { type, new Integer( pk ), new Boolean(delete) },
-                    new String[] { String.class.getName(), int.class.getName(), boolean.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to mark "+type+" (pk="+pk+") as "+(delete ? "deleted":"undeleted")+"!", e);
-        }
+    public void movePatientToTrash(int pk) {
+    	invokeCmd("movePatientToTrash", pk);
     }
-    
-    public void deleteInstance( int pk ) {
-        try {
-            server.invoke(contentEditName,
-                    "deleteInstance",
-                    new Object[] { new Integer( pk ) },
-                    new String[] { Integer.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to delete Instance:", e);
-        }
+    public void moveStudyToTrash(int pk) {
+    	invokeCmd("moveStudyToTrash", pk);
     }
-    
-    public void deleteSeries( int pk ) {
-        try {
-            server.invoke(contentEditName,
-                    "deleteSeries",
-                    new Object[] { new Integer( pk ) },
-                    new String[] { Integer.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to delete Series:", e);
-        }
+    public void moveSeriesToTrash(int pk) {
+    	invokeCmd("moveSeriesToTrash", pk);
     }
- 
-    public void deleteStudy( int pk ) {
-        try {
-            server.invoke(contentEditName,
-                    "deleteStudy",
-                    new Object[] { new Integer( pk ) },
-                    new String[] { Integer.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to delete Study:", e);
-        }
+    public void moveInstanceToTrash(int pk) {
+    	invokeCmd("moveInstanceToTrash", pk);
     }
 
+    public void undeletePatient( int pk ) {
+    	invokeCmd("undeletePatient", pk);
+    }
+    public void undeleteStudy( int pk ) {
+    	invokeCmd("undeleteStudy", pk);
+    }
+    public void undeleteSeries( int pk ) {
+    	invokeCmd("undeleteSeries", pk);
+    }
+    public void undeleteInstance( int pk ) {
+    	invokeCmd("undeleteInstance", pk);
+    }
+    
     public void deletePatient( int pk ) {
-        try {
-            server.invoke(contentEditName,
-                    "deletePatient",
-                    new Object[] { new Integer( pk ) },
-                    new String[] { Integer.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to delete Patient:", e);
-        }
+    	invokeCmd("deletePatient", pk);
+    }
+    public void deleteStudy( int pk ) {
+    	invokeCmd("deleteStudy", pk);
+    }
+    public void deleteSeries( int pk ) {
+    	invokeCmd("deleteSeries", pk);
+    }
+    public void deleteInstance( int pk ) {
+    	invokeCmd("deleteInstance", pk);
     }
 
+    private void invokeCmd( String cmd, int pk ) {
+        try {
+            server.invoke(contentEditName,
+                    cmd,
+                    new Object[] { new Integer( pk ) },
+                    new String[] { int.class.getName() });
+        } catch (Exception e) {
+            log.warn("Failed to invoke command '"+cmd+"' with (pk="+pk+") !", e);
+        }
+    }
+    
+    
     public void moveStudies(int[] study_pks, int patient_pk) {
         try {
             server.invoke(contentEditName,
