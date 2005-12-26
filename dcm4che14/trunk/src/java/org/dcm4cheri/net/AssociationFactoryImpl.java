@@ -156,6 +156,12 @@ public final class AssociationFactoryImpl extends AssociationFactory {
 			new String[]{ UIDs.ImplicitVRLittleEndian });
 	}
 	
+    public PresContext newPresContext(int pcid, String asuid, String tsuid) {
+        return new PresContextImpl(0x020, pcid, 0,
+            StringUtils.checkUID(asuid),
+            new String[]{ StringUtils.checkUID(tsuid) });
+    }
+
     public PresContext newPresContext(int pcid, int result, String tsuid) {
         return new PresContextImpl(0x021, pcid, result, null,
                 new String[]{ StringUtils.checkUID(tsuid) } );

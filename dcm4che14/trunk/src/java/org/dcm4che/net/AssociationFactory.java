@@ -97,6 +97,9 @@ public abstract class AssociationFactory {
     public abstract PresContext newPresContext(int pcid, String asuid,
             String[] tsuids);
 
+    public abstract PresContext newPresContext(int pcid, String asuid,
+            String tsuid);
+    
     public abstract PresContext newPresContext(int pcid, int result,
             String tsuid);
 
