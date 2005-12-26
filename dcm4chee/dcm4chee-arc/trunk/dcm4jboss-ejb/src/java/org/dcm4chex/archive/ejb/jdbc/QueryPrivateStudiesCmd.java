@@ -44,11 +44,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 
@@ -142,12 +139,10 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
                 final byte[] patAttrs = getBytes(3);
                 int studyPk = rs.getInt(4);
                 final byte[] styAttrs = getBytes(5);
-                DatasetUtils.fromByteArray(patAttrs, DcmDecodeParam.EVR_LE, ds);
+                DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
                     ds.putUL(PrivateTags.StudyPk, studyPk);
-                    DatasetUtils.fromByteArray(styAttrs,
-                            DcmDecodeParam.EVR_LE,
-                            ds);
+                    DatasetUtils.fromByteArray(styAttrs, ds);
                 } 
                 result.add(ds);
             }

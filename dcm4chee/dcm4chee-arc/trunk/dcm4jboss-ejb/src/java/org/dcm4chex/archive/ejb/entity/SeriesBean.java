@@ -56,7 +56,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
@@ -659,8 +658,7 @@ public abstract class SeriesBean implements EntityBean {
             setPpsIuid(ppsUID);
         }
         Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp,
-                DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
     /**
@@ -675,14 +673,11 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
-        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE,
-                null);
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.SeriesPk, getPk().intValue());
             ds.putAE(PrivateTags.CallingAET, getSourceAET());
-    		String ppsiuid = getPpsIuid();
             if ( getHiddenSafe() )
             	ds.putSS(PrivateTags.HiddenSeries,1);
             ds.putIS(Tags.NumberOfSeriesRelatedInstances,

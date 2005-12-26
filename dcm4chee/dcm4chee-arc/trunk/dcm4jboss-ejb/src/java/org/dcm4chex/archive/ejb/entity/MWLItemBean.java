@@ -53,7 +53,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
@@ -283,9 +282,7 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(
-            getEncodedAttributes(),
-            DcmDecodeParam.EVR_LE, null);
+        return DatasetUtils.fromByteArray(getEncodedAttributes());
     }
 
     /**
@@ -308,8 +305,7 @@ public abstract class MWLItemBean implements EntityBean {
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
-        setEncodedAttributes(
-                DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(ds));
     }
 
     /**
@@ -346,8 +342,7 @@ public abstract class MWLItemBean implements EntityBean {
     	Dataset ds = getAttributes();
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         spsItem.putCS(Tags.SPSStatus, SPSStatus.toString(status));
-        setEncodedAttributes(
-                DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));        
+        setEncodedAttributes(DatasetUtils.toByteArray(ds));        
     	setSpsStatusAsInt(status);
     }
     

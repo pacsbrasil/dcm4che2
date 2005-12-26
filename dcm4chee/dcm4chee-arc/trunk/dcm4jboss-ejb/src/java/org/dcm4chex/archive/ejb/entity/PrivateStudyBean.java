@@ -120,7 +120,7 @@ public abstract class PrivateStudyBean implements EntityBean {
      */
     public Dataset getAttributes() {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE, null);
+                null, DcmDecodeParam.EVR_LE);
         return ds;
     }
 

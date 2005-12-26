@@ -78,12 +78,15 @@ public class DatasetUtils {
 	}
 
 	public static Dataset fromByteArray(byte[] data) {
-		return fromByteArray(data, DcmDecodeParam.EVR_LE, null);
+		return fromByteArray(data, null, DcmDecodeParam.EVR_LE);
 	}
 
-	public static Dataset fromByteArray(
-        byte[] data,
-        DcmDecodeParam decodeParam, Dataset ds) {
+    public static Dataset fromByteArray(byte[] data, Dataset ds) {
+        return fromByteArray(data, ds, DcmDecodeParam.EVR_LE);
+    }
+
+	public static Dataset fromByteArray(byte[] data, Dataset ds,
+            DcmDecodeParam decodeParam) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         if (ds == null)
             ds = DcmObjectFactory.getInstance().newDataset();
@@ -95,6 +98,12 @@ public class DatasetUtils {
         return ds;
     }
 
+
+    public static byte[] toByteArray(Dataset ds)
+    {
+        return toByteArray(ds, DcmDecodeParam.EVR_LE);
+    }
+    
     public static byte[] toByteArray(Dataset ds, DcmEncodeParam encodeParam) {
         ByteArrayOutputStream bos =
             new ByteArrayOutputStream(ds.calcLength(encodeParam));

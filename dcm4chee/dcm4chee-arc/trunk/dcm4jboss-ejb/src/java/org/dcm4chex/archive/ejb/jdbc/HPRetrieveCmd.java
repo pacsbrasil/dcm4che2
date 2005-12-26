@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 
@@ -77,8 +76,7 @@ public class HPRetrieveCmd extends BaseReadCmd {
 		try {
 	        execute(sqlBuilder.getSql());
 			while (next()) {
-				result.add(DatasetUtils.fromByteArray(
-						getBytes(1), DcmDecodeParam.EVR_LE, null));			
+				result.add(DatasetUtils.fromByteArray(getBytes(1)));			
 			}
 		} finally {
 			close();

@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
@@ -345,7 +344,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     public void doFillDataset(Dataset ds, int column) throws SQLException {
     	if(column > 0)
-    		DatasetUtils.fromByteArray(getBytes(column), DcmDecodeParam.EVR_LE, ds);
+    		DatasetUtils.fromByteArray(getBytes(column), ds);
     	else
     		fillDatasetLocal(ds);
 	}

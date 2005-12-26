@@ -44,7 +44,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
@@ -119,8 +118,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE, null);
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         return ds;
     }
 
@@ -130,8 +128,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
     public void setAttributes(Dataset ds) {
     	setSopIuid(ds.getString(Tags.SOPInstanceUID));
         Dataset tmp = ds.excludePrivate();
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp,
-                DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
 

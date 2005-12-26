@@ -41,11 +41,9 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
@@ -297,7 +295,7 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected abstract void fillDataset(Dataset ds) throws SQLException;
 
     protected void fillDataset(Dataset ds, int column) throws SQLException {
-		DatasetUtils.fromByteArray(getBytes(column), DcmDecodeParam.EVR_LE, ds);
+		DatasetUtils.fromByteArray(getBytes(column), ds);
 	}
 
     static class PatientQueryCmd extends QueryCmd {

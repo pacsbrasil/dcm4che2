@@ -53,7 +53,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
@@ -90,8 +89,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 public abstract class MPPSBean implements EntityBean {
 	private static final Logger log = Logger.getLogger(MPPSBean.class);
 
-	private EntityContext ctx;
-
 	private SeriesLocalHome seriesHome;
 
 	private CodeLocalHome codeHome;
@@ -106,7 +103,6 @@ public abstract class MPPSBean implements EntityBean {
 	private static final int DISCONTINUED = 2;
 
 	public void setEntityContext(EntityContext ctx) {
-		this.ctx = ctx;
 		Context jndiCtx = null;
 		try {
 			jndiCtx = new InitialContext();
@@ -126,7 +122,6 @@ public abstract class MPPSBean implements EntityBean {
 	}
 
 	public void unsetEntityContext() {
-		ctx = null;
 		seriesHome = null;
 		codeHome = null;
 	}
@@ -346,8 +341,7 @@ public abstract class MPPSBean implements EntityBean {
 	 * @ejb.interface-method
 	 */
 	public Dataset getAttributes() {
-		return DatasetUtils.fromByteArray(getEncodedAttributes(),
-				DcmDecodeParam.EVR_LE, null);
+		return DatasetUtils.fromByteArray(getEncodedAttributes());
 	}
 
 	/**
@@ -368,8 +362,7 @@ public abstract class MPPSBean implements EntityBean {
 		} catch (FinderException e) {
 			throw new EJBException(e);
 		}
-		setEncodedAttributes(DatasetUtils
-				.toByteArray(ds, DcmDecodeParam.EVR_LE));
+		setEncodedAttributes(DatasetUtils.toByteArray(ds));
 	}
 
 	/**

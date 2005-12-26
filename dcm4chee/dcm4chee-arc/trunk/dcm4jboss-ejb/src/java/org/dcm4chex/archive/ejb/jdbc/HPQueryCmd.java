@@ -43,7 +43,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -196,7 +195,7 @@ public class HPQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray( getBytes(1), DcmDecodeParam.EVR_LE, ds);
+        DatasetUtils.fromByteArray( getBytes(1), ds);
         QueryCmd.adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

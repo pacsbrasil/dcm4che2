@@ -55,7 +55,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
@@ -506,9 +505,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
-        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE,
-                null);
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.InstancePk, getPk().intValue());
@@ -543,8 +540,7 @@ public abstract class InstanceBean implements EntityBean {
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
         Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
-        setEncodedAttributes(DatasetUtils
-                .toByteArray(tmp, DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
     /**

@@ -42,7 +42,6 @@ package org.dcm4chex.archive.ejb.jdbc;
 import java.sql.SQLException;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -143,8 +142,8 @@ public class MWLQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1), DcmDecodeParam.EVR_LE, ds);
-        DatasetUtils.fromByteArray(getBytes(2), DcmDecodeParam.EVR_LE, ds);
+        DatasetUtils.fromByteArray( getBytes(1), ds);
+        DatasetUtils.fromByteArray(getBytes(2), ds);
         QueryCmd.adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

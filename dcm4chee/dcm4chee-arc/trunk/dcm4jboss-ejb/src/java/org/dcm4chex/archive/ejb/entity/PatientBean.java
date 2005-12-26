@@ -47,12 +47,10 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
-import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
@@ -328,9 +326,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
-        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE,
-                null);
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.PatientPk, getPk().intValue());
@@ -354,8 +350,7 @@ public abstract class PatientBean implements EntityBean {
 	    }
         setPatientSex(ds.getString(Tags.PatientSex));
         Dataset tmp = ds.excludePrivate();
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp,
-                DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
     /**

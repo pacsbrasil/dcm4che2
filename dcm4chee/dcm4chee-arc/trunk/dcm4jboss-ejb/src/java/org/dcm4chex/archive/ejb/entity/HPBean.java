@@ -53,7 +53,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -125,8 +124,6 @@ public abstract class HPBean implements EntityBean {
     }
 
     public void ejbPostCreate(Dataset ds) throws CreateException {
-        DcmElement sq;
-        Collection c;
         try {
 			setHangingProtocolUserIdCode(CodeBean.valueOf(codeHome, ds
                     .getItem(Tags.HangingProtocolUserIdentificationCodeSeq)));
@@ -262,8 +259,7 @@ public abstract class HPBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(
-                getEncodedAttributes(), DcmDecodeParam.EVR_LE, null);
+        return DatasetUtils.fromByteArray(getEncodedAttributes());
     }
 
     /**
@@ -277,8 +273,7 @@ public abstract class HPBean implements EntityBean {
 		setNumberOfPriorsReferenced(ds.getInt(Tags.NumberOfPriorsReferenced, 0));
 		setHangingProtocolUserGroupName(ds.getString(Tags.HangingProtocolUserGroupName));
 		setNumberOfScreens(ds.getInt(Tags.NumberOfScreens, 0));
-        setEncodedAttributes(
-                DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(ds));
     }
 
 }
