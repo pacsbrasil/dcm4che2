@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +47,6 @@ import java.io.OutputStream;
 import javax.imageio.stream.FileImageInputStream;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -59,7 +57,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.codec.DecompressCmd;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.jboss.logging.Logger;
 
 /**
@@ -69,25 +66,19 @@ import org.jboss.logging.Logger;
  */
 public class FileDataSource implements DataSource {
 
-    private final FileInfo fileInfo;
+    private static final Logger log = Logger.getLogger(FileDataSource.class);;
+    private final File file;
+    private final Dataset mergeAttrs;
     private final byte[] buffer;
-	private final Logger log;
 	
 	/** if true use Dataset.writeFile instead of writeDataset */
 	private boolean writeFile = false;
 	private boolean withoutPixeldata = false;
 
 	// buffer == null => send no Pixeldata
-    public FileDataSource(
-        Logger logger,
-        FileInfo fileInfo,
-        byte[] buffer) {
-    	if ( logger != null ) {
-    		this.log = logger;
-    	} else {
-    		this.log = Logger.getLogger(FileDataSource.class);
-    	}
-        this.fileInfo = fileInfo;
+    public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
+        this.file = file;
+        this.mergeAttrs = mergeAttrs;
         this.buffer = buffer;
     }
 	/**
@@ -124,7 +115,6 @@ public class FileDataSource implements DataSource {
      */
     public void writeTo(OutputStream out, String tsUID) throws IOException {
         
-        File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
         log.info("M-READ file:" + file);
         FileImageInputStream fiis = new FileImageInputStream(file);
         try {
@@ -132,10 +122,7 @@ public class FileDataSource implements DataSource {
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-            updateAttrs(ds, fileInfo.patAttrs);
-            updateAttrs(ds, fileInfo.studyAttrs);
-            updateAttrs(ds, fileInfo.seriesAttrs);
-            updateAttrs(ds, fileInfo.instAttrs);
+            ds.putAll(mergeAttrs);
             String tsOrig = null;
             if ( writeFile && ds.getFileMetaInfo() != null ) {
             	tsOrig = ds.getFileMetaInfo().getTransferSyntaxUID();
@@ -218,13 +205,5 @@ public class FileDataSource implements DataSource {
             if (len == -1) { throw new EOFException(); }
             out.write(buffer, 0, len);
         }
-    }
-
-    private void updateAttrs(Dataset ds, byte[] attrs) throws IOException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
-        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(bis);
-        parser.setDcmHandler(ds.getDcmHandler());
-        parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
-        bis.close();
     }
 }

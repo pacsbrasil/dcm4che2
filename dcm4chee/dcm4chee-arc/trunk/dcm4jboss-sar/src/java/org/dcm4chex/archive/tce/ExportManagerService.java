@@ -48,10 +48,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.jms.JMSException;
@@ -63,18 +66,42 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.FileFormat;
+import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDDictionary;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.AAssociateRQ;
+import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.PDU;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.ejb.jdbc.AECmd;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
@@ -85,9 +112,11 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Dec 19, 2005
  */
 public class ExportManagerService extends ServiceMBeanSupport implements
-		NotificationListener, MessageListener {
+		NotificationListener, MessageListener, DimseListener {
 
-	private static final String[] NONE = {};
+    private static final UIDGenerator uidgen = UIDGenerator.getInstance();
+
+    private static final String[] NONE = {};
 	
 	private static final NotificationFilterSupport seriesStoredFilter 
 			= new NotificationFilterSupport();
@@ -104,34 +133,71 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	
 	private String[] exportSelectorTitles = NONE;
 
-	private File dispConfigDir;
+	private File dispConfigFile;
+	private Hashtable configs = new Hashtable();
 	
-	private String defaultDisposition;
-	
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+
+    private String callingAET;
+
+    private int acTimeout;
+
+    private int dimseTimeout;
+
+    private int soCloseDelay;
+
+    private int bufferSize;
+
+    private int exportPriority;
+
+    public final String getExportPriority() {
+        return DicomPriority.toString(exportPriority);
+    }
+
+    public final void setExportPriority(String exportPriority) {
+        this.exportPriority = DicomPriority.toCode(exportPriority);
+    }
+   
+    public final int getBufferSize() {
+        return bufferSize ;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+    
 	public final String getExportSelectorTitles() {
-		if (exportSelectorTitles.length == 0)
-			return "NONE";
-		
-		StringBuffer sb = new StringBuffer(exportSelectorTitles[0]);		
-		for (int i = 1; i < exportSelectorTitles.length; ++i)
-			sb.append((i & 1) != 0 ? '^' : ',').append(exportSelectorTitles[i]);
-		
-		return sb.toString();
+        return codes2str(exportSelectorTitles);
 	}
 
-	public final void setExportSelectorTitles(String s) {
-		if (s.equalsIgnoreCase("NONE"))
-			this.exportSelectorTitles = NONE;
-		else
-		{
-			StringTokenizer stk = new StringTokenizer(s, "^,; \r\n\t");
-			this.exportSelectorTitles = new String[stk.countTokens() & ~1];
-			for (int i = 0; i < exportSelectorTitles.length; i++)
-				exportSelectorTitles[i] = stk.nextToken();
-		}
+    public final void setExportSelectorTitles(String s) {
+        this.exportSelectorTitles = str2codes(s);
 	}
 
-	public String getEjbProviderURL() {
+    private String codes2str(String[] codes)
+    {
+        if (codes.length == 0)
+            return "NONE";
+        
+        StringBuffer sb = new StringBuffer(codes[0]);        
+        for (int i = 1; i < codes.length; ++i)
+            sb.append((i & 1) != 0 ? '^' : ',').append(codes[i]);
+        
+        return sb.toString();
+    }
+
+	private String[] str2codes(String s)
+	{
+	    if (s.equalsIgnoreCase("NONE"))
+	        return NONE;
+	    StringTokenizer stk = new StringTokenizer(s, "^,; \r\n\t");
+	    String[] tmp = new String[stk.countTokens() & ~1];
+	    for (int i = 0; i < tmp.length; i++)
+	        tmp[i] = stk.nextToken();
+	    return tmp;
+	}
+
+    public String getEjbProviderURL() {
 		return EJBHomeFactory.getEjbProviderURL();
 	}
 
@@ -139,23 +205,46 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
 	}
 
-	public final String getDispositionConfigDir() {
-		return dispConfigDir.getPath();
+	public final String getDispositionConfigFile() {
+		return dispConfigFile.getPath();
 	}
 
-	public final void setDispositionConfigDir(String path) {
-		this.dispConfigDir = new File(path.replace('/', File.separatorChar));
+	public final void setDispositionConfigFile(String path) {
+		this.dispConfigFile = new File(path.replace('/', File.separatorChar));
 	}
 
+    public String getCallingAET() {
+        return callingAET;
+    }
 
-	public final String getDefaultDisposition() {
-		return defaultDisposition;
-	}
+    public void setCallingAET(String aet) {
+        this.callingAET = aet;
+    }
+    
+    public final int getAcTimeout() {
+        return acTimeout;
+    }
 
-	public final void setDefaultDisposition(String defaultDisposition) {
-		this.defaultDisposition = defaultDisposition;
-	}
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
 
+    public final int getDimseTimeout() {
+        return dimseTimeout;
+    }
+
+    public final void setDimseTimeout(int dimseTimeout) {
+        this.dimseTimeout = dimseTimeout;
+    }
+
+    public final int getSoCloseDelay() {
+        return soCloseDelay;
+    }
+
+    public final void setSoCloseDelay(int soCloseDelay) {
+        this.soCloseDelay = soCloseDelay;
+    }
+    
 	public final ObjectName getStoreScpServiceName() {
 		return storeScpServiceName;
 	}
@@ -189,6 +278,14 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		}
 	}
 
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+    
 	protected void startService() throws Exception {
 		JMSDelegate.startListening(queueName, this, concurrency);
 		server.addNotificationListener(storeScpServiceName, this,
@@ -211,30 +308,50 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	private void onSeriesStored(String suid, String code, String designator) {
 		List list = queryExportSelectors(suid, code, designator);
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			Dataset sel = (Dataset) iter.next();
-			if (isScheduled(sel))
-				continue;
-			if (isAllReceived(sel))
-			{				
-				if (schedule(new ExportTFOrder(sel), 0L))
-					setScheduled(sel);
-			}
+			Dataset manifest = (Dataset) iter.next();
+            if (isAllReceived(manifest)) {
+                try
+                {
+                    manifest = loadManifest(manifest);
+                }
+                catch (Exception e)
+                {
+                    log.error("Load Export Selector " 
+                            + manifest.getString(Tags.SOPInstanceUID) + " failed!", e);
+                    continue;
+                }
+                schedule(new ExportTFOrder(manifest), 0L);
+            }
 		}		
 	}
-	
-	private String toDisposition(Dataset sel) {
-		DcmElement sq = sel.get(Tags.ContentSeq);
-		for (int i = 0, n = sq.vm(); i < n; i++) {
-			Dataset item = sq.getItem(i);
-			if (!"TEXT".equals(item.getString(Tags.ValueType)))
-				continue;
-			Dataset cn = item.getItem(Tags.ConceptNameCodeSeq);
-			if (cn != null && "113012".equals(cn.getString(Tags.CodeValue))
-					&& "DCM".equals(cn.getString(Tags.CodingSchemeDesignator)))
-				return item.getString(Tags.TextValue, defaultDisposition);
-		}
-		return defaultDisposition;
-	}
+
+    private Dataset loadManifest(Dataset sel) throws SQLException, IOException
+    {
+        Dataset keys = DcmObjectFactory.getInstance().newDataset();
+        keys.putUI(Tags.SOPInstanceUID, sel.getString(Tags.SOPInstanceUID));
+        RetrieveCmd cmd = RetrieveCmd.createInstanceRetrieve(keys);
+        FileInfo fileInfo = cmd.getFileInfos()[0][0];
+        File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
+        log.info("M-READ file:" + file);
+        FileInputStream fis = new FileInputStream(file);
+        try
+        {
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(bis);
+            Dataset ds = DcmObjectFactory.getInstance().newDataset();
+            parser.setDcmHandler(ds.getDcmHandler());
+            parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
+            DatasetUtils.fromByteArray(fileInfo.instAttrs, ds);
+            DatasetUtils.fromByteArray(fileInfo.seriesAttrs, ds);
+            DatasetUtils.fromByteArray(fileInfo.studyAttrs, ds);
+            DatasetUtils.fromByteArray(fileInfo.patAttrs, ds);
+            return ds;
+        }
+        finally
+        {
+            fis.close();
+        }
+    }
 
 	private List queryExportSelectors(String suid, String code, String designator) {
 		ArrayList list = new ArrayList();
@@ -262,6 +379,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	private boolean isAllReceived(Dataset sel) {
 		Dataset keys = DcmObjectFactory.getInstance().newDataset();
 		ArrayList list = new ArrayList();
+        copyIUIDs(sel.get(Tags.IdenticalDocumentsSeq), list);
 		copyIUIDs(sel.get(Tags.CurrentRequestedProcedureEvidenceSeq), list);
 		final String[] iuids = (String[]) list.toArray(new String[list.size()]);
 		keys.putUI(Tags.SOPInstanceUID, iuids);
@@ -283,17 +401,6 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		return false;
 	}
 	
-	private boolean isScheduled(Dataset selector) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	private void setScheduled(Dataset selector) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-
 	public void onMessage(Message message) {
 		ObjectMessage om = (ObjectMessage) message;
 		try {
@@ -311,60 +418,277 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		}
 	}
 
-	private boolean schedule(ExportTFOrder order, long scheduledTime) {
+	private void schedule(ExportTFOrder order, long scheduledTime) {
 		try {
 			log.info("Scheduling " + order);
 			JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
 					scheduledTime);
-			return true;
 		} catch (JMSException e) {
 			log.error("Failed to schedule " + order, e);
-			return false;
 		}
 	}
 	
 	private void process(ExportTFOrder order) throws Exception {
-		Dataset sel = order.getSelector();
-		Properties config = loadConfig(sel);
-		HashMap studies = new HashMap();
-		HashMap series = new HashMap();
-		HashMap instances = new HashMap();
-		HashMap fileInfos = new HashMap();
-		Dataset patAttrs = queryAttrs(sel, studies, series, instances, fileInfos);
-		int numpasses = Integer.parseInt(config.getProperty("numpasses", "1"));
-		for (int i = 1; i < numpasses; i++)	
-			coerceAttributes(config, Integer.toString(i), patAttrs, studies, series, instances);
-		replaceUIDs(sel, studies, series, instances);
-		updateDB(patAttrs, studies, series, instances, fileInfos);
-		scheduleMoveOrders(sel, config.getProperty("destination"));
+		Dataset manifest = order.getManifest();
+		Properties config = getConfig(manifest);
+		String dest = config.getProperty("destination");
+        final String export = config.getProperty("export");
+        final int exportManifest = export.indexOf("MANIFEST");
+        final boolean exportInstances = export.indexOf("INSTANCES") != -1;
+        HashMap attrs = new HashMap();
+		FileInfo[] fileInfos = queryAttrs(manifest, attrs);
+        int[] pcids = new int[fileInfos.length + 1];
+        ActiveAssociation a = openAssociation(fileInfos, pcids, dest, 
+                exportManifest != -1, exportInstances);
+        HashMap iuidMap = new HashMap(); 
+        if (exportManifest == 0)
+            sendManifests(a, pcids[fileInfos.length], manifest, config, iuidMap);
+        if (exportInstances)
+        {
+            byte[] b = new byte[bufferSize];
+            for (int i = 0; i < fileInfos.length; i++)
+            {
+                FileInfo info = fileInfos[i];
+                Dataset ds = (Dataset) attrs.get(info.sopIUID);
+                sendInstance(a, pcids[i], ds, info, config,  iuidMap, b);
+            }
+        }
+        if (exportManifest > 0)
+            sendManifests(a, pcids[fileInfos.length], manifest, config, iuidMap);
+        a.release(true);
 	}
 
-	private Properties loadConfig(Dataset sel) throws IOException {
-		String disposition = toDisposition(sel);
-		File dispConfigFile = FileUtils.resolve(
-				new File(dispConfigDir, disposition + ".disp"));
-		if (!dispConfigFile.exists()) {
-			log.warn("No configuration for disposition " + disposition + " - use default.");
-			dispConfigFile = FileUtils.resolve(
-					new File(dispConfigDir, defaultDisposition + ".disp"));
-		}
-			
-		FileInputStream fin = new FileInputStream(dispConfigFile);
-		BufferedInputStream bis = new BufferedInputStream(fin);
-		try {
-			Properties config = new Properties();
-			config.load(bis);
-			return config;
-		} finally {
-			bis.close();
-		}
+    private void sendInstance(ActiveAssociation a, int pcid, Dataset attrs, 
+            FileInfo fileInfo, Properties config, HashMap iuidMap, byte[] buffer) 
+    throws InterruptedException, IOException
+    {
+        coerceAttributes(attrs, config, iuidMap);
+        File f = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
+        Command cmd = DcmObjectFactory.getInstance().newCommand();
+        cmd.initCStoreRQ(a.getAssociation().nextMsgID(), fileInfo.sopCUID,
+                fileInfo.sopIUID, exportPriority);
+        FileDataSource src = new FileDataSource(f, attrs, buffer);
+        Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, src);
+        a.invoke(dimse, this);        
+    }
+
+    private void coerceAttributes(Dataset attrs, Properties config, HashMap iuidMap)
+    throws DcmValueException
+    {
+        int numpasses = Integer.parseInt(config.getProperty("num-coerce-passes", "1"));
+        for (int i = 1; i < numpasses; i++)
+        {
+            String prefix = "" + i + ".";
+            for (Iterator iter = config.entrySet().iterator(); iter.hasNext();)
+            {
+                Map.Entry e = (Map.Entry) iter.next();
+                String key = (String) e.getKey();
+                if (key.startsWith(prefix))
+                    coerceAttribute(attrs, key.substring(prefix.length()), (String) e.getValue());
+            }
+        }
+        boolean replaceUIDs = "YES".equalsIgnoreCase(
+                config.getProperty("replace-uids"));
+        if (replaceUIDs)
+            replaceUIDs(attrs, iuidMap);
+    }
+
+    private void sendManifests(ActiveAssociation a, int pcid, Dataset manifest, 
+            Properties config, HashMap iuidMap)
+    throws InterruptedException, IOException
+    {
+        coerceAttributes(manifest, config, iuidMap);
+        if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
+            removeDelayReason(manifest);
+        sendManifest(a, pcid, manifest);
+        DcmElement identicalsq = manifest.get(Tags.IdenticalDocumentsSeq);
+        if (identicalsq != null && !identicalsq.isEmpty())
+        {
+            Dataset studyItem = DcmObjectFactory.getInstance().newDataset();
+            studyItem.putUI(Tags.StudyInstanceUID, manifest.getString(Tags.StudyInstanceUID));
+            Dataset seriesItem = studyItem.putSQ(Tags.RefSeriesSeq).addNewItem();
+            seriesItem.putUI(Tags.SeriesInstanceUID, manifest.getString(Tags.SeriesInstanceUID));
+            Dataset refSOPItem = seriesItem.putSQ(Tags.RefSOPSeq).addNewItem();
+            refSOPItem.putUI(Tags.RefSOPInstanceUID, manifest.getString(Tags.SOPInstanceUID));
+            refSOPItem.putUI(Tags.RefSOPClassUID, manifest.getString(Tags.SOPClassUID));
+            for (int i = 0, n = identicalsq.vm(); i < n; i++)
+            {
+                Dataset otherStudyItem = identicalsq.getItem(i);
+                Dataset otherSeriesItem = otherStudyItem.getItem(Tags.RefSeriesSeq);
+                Dataset otherRefSOPItem = otherSeriesItem.getItem(Tags.RefSOPSeq);
+                manifest.putUI(Tags.SOPInstanceUID, 
+                        otherRefSOPItem.getString(Tags.RefSOPInstanceUID));
+                DcmElement otherIdenticalsq = manifest.putSQ(Tags.IdenticalDocumentsSeq);
+                for (int j = 0; j < n; j++)
+                    otherIdenticalsq.addItem(i == j ? studyItem : identicalsq.getItem(j));                 
+                sendManifest(a, pcid, manifest);
+            }
+        }
+    }
+
+    private void removeDelayReason(Dataset manifest)
+    {
+        DcmElement oldsq = manifest.get(Tags.ContentSeq);
+        DcmElement newsq = manifest.putSQ(Tags.ContentSeq);
+        for (int i = 0, n = oldsq.vm(); i < n; i++) {
+            Dataset item = oldsq.getItem(i);
+            Dataset cn = item.getItem(Tags.ConceptNameCodeSeq);
+            if (cn != null && "113011".equals(cn.getString(Tags.CodeValue))
+                    && "DCM".equals(cn.getString(Tags.CodingSchemeDesignator)))
+                        continue;
+            newsq.addItem(item);
+        }        
+    }
+
+    private void sendManifest(ActiveAssociation a, int pcid, Dataset manifest)
+    throws InterruptedException, IOException
+    {
+        Command cmd = DcmObjectFactory.getInstance().newCommand();
+        cmd.initCStoreRQ(a.getAssociation().nextMsgID(),
+                manifest.getString(Tags.SOPClassUID),
+                manifest.getString(Tags.SOPInstanceUID), exportPriority);
+        Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, manifest);
+        a.invoke(dimse, this);        
+    }
+
+    private ActiveAssociation openAssociation(FileInfo[] fileInfos, int[] pcids,
+            String dest, boolean exportManifest, boolean exportInstances)
+    throws SQLException, UnkownAETException, IOException, InterruptedException
+    {
+        AEData aeData = new AECmd(dest).getAEData();
+        if (aeData == null) {
+            throw new UnkownAETException("Unkown Destination AET: " + dest);
+        }
+        AssociationFactory af = AssociationFactory.getInstance();
+
+        AAssociateRQ rq = af.newAAssociateRQ();
+        rq.setCallingAET(callingAET);
+        rq.setCalledAET(dest);
+        HashMap cuids = new HashMap();
+        if (exportManifest)
+            cuids.put(UIDs.KeyObjectSelectionDocument, new HashSet());
+        if (exportInstances)
+            for (int i = 0; i < fileInfos.length; i++)
+            {
+                FileInfo info = fileInfos[i];
+                Set tsuids = (Set) cuids.get(info.sopCUID);
+                if (tsuids == null)
+                     cuids.put(info.sopCUID, tsuids = new HashSet());
+                tsuids.add(info.tsUID);
+            }
+        for (Iterator iter = cuids.entrySet().iterator(); iter.hasNext();)
+        {
+            Map.Entry e = (Map.Entry) iter.next();
+            String cuid = (String) e.getKey();
+            Set tsuids = (Set) e.getValue();
+            tsuids.add(UIDs.ImplicitVRLittleEndian);
+            for (Iterator iterator = tsuids.iterator(); iterator.hasNext();)
+            {
+                String tsuid = (String) iterator.next();
+                PresContext pc = af.newPresContext(rq.nextPCID(), cuid, tsuid);
+                rq.addPresContext(pc);
+            }
+        }
+        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
+        a.setAcTimeout(acTimeout);
+        a.setDimseTimeout(dimseTimeout);
+        a.setSoCloseDelay(soCloseDelay);
+        PDU ac = a.connect(rq);
+        if (!(ac instanceof AAssociateAC)) {
+            throw new IOException("Association not accepted by " + dest + ": " + ac);
+        }
+        ActiveAssociation aa = af.newActiveAssociation(a, null);
+        aa.start();
+        if (exportManifest)
+        {
+            PresContext pc = a.getAcceptedPresContext(
+                    UIDs.KeyObjectSelectionDocument, UIDs.ImplicitVRLittleEndian);
+            if (pc == null)
+                throwStorageNotSupported(aa, UIDs.KeyObjectSelectionDocument, dest);
+            pcids[fileInfos.length] = pc.pcid();
+        }
+        if (exportInstances)
+            for (int i = 0; i < fileInfos.length; i++)
+            {
+                FileInfo info = fileInfos[i];
+                PresContext pc = a.getAcceptedPresContext(
+                        info.sopCUID, info.tsUID);
+                if (pc == null)
+                {
+                    pc = a.getAcceptedPresContext(
+                            info.sopCUID, UIDs.ImplicitVRLittleEndian);
+                    if (pc == null)
+                        throwStorageNotSupported(aa, info.sopCUID, dest);
+                }
+                pcids[i] = pc.pcid();
+            }
+        return aa;
+    }
+
+    private void throwStorageNotSupported(ActiveAssociation aa, String uid, String dest)
+    throws IOException, InterruptedException
+    {
+        aa.release(false);
+        UIDDictionary dd = DictionaryFactory.getInstance().getDefaultUIDDictionary();
+        throw new IOException(dd.toString(uid) + " not supported by " + dest);
+    }
+
+    private Properties getConfig(Dataset manifest) throws IOException {
+        File indexFile = FileUtils.resolve(dispConfigFile);
+        Properties index = getProperties(indexFile);
+        DcmElement sq = manifest.get(Tags.ContentSeq);
+        for (int i = 0, n = sq.vm(); i < n; i++) {
+            Dataset item = sq.getItem(i);
+            if (!"TEXT".equals(item.getString(Tags.ValueType)))
+                continue;
+            Dataset cn = item.getItem(Tags.ConceptNameCodeSeq);
+            if (cn != null && "113012".equals(cn.getString(Tags.CodeValue))
+                    && "DCM".equals(cn.getString(Tags.CodingSchemeDesignator)))
+            {
+                String fname = index.getProperty(item.getString(Tags.TextValue));
+                if (fname != null)
+                    return getProperties(toConfigFile(indexFile, fname));
+                break;
+            }
+        }
+        Dataset code = manifest.getItem(Tags.ConceptNameCodeSeq);
+        final String key = code.getString(Tags.CodeValue) + '^' 
+                + code.getString(Tags.CodingSchemeDesignator);
+        String fname = index.getProperty(key);
+        if (fname == null) {
+            throw new ConfigurationException(
+                    "Missing entry for Concept Name Code " + key + " in "
+                    +  indexFile);
+        }            
+        return getProperties(toConfigFile(indexFile, fname));
 	}
+
+    private File toConfigFile(File indexFile, String fname)
+    {
+        return new File(indexFile.getParentFile(), 
+                fname.replace('/', File.separatorChar));
+    }       
+
+    private Properties getProperties(File f) throws IOException
+    {
+        Properties config = (Properties) configs .get(f);
+        if (config == null)
+        {
+            config = new Properties();
+            FileInputStream in = new FileInputStream(f);
+    		try {
+    			config.load(new BufferedInputStream(in));
+    		} finally {
+    			in.close();
+    		}
+    		configs.put(f, config);
+        }
+        return config;
+    }
 	
-	private Dataset queryAttrs(Dataset sel, Map studies, Map series, Map instances, Map fileInfos)
+	private FileInfo[] queryAttrs(Dataset sel, Map attrs)
 	throws Exception {
 		ArrayList list = new ArrayList();
-		list.add(sel.getString(Tags.SOPInstanceUID));
-		copyIUIDs(sel.get(Tags.IdenticalDocumentsSeq), list);
 		copyIUIDs(sel.get(Tags.CurrentRequestedProcedureEvidenceSeq), list);
 		Dataset keys = DcmObjectFactory.getInstance().newDataset();
 		keys.putUI(Tags.SOPInstanceUID,
@@ -372,24 +696,18 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		RetrieveCmd cmd = RetrieveCmd.createInstanceRetrieve(keys);
 		String patID = sel.getString(Tags.PatientID);
 		FileInfo[][] a = cmd.getFileInfos();
+        FileInfo[] b = new FileInfo[a.length];
 		for (int i = 0; i < a.length; i++) {
-			FileInfo fi = a[i][0];
-			if (!equals(patID, fi.patID))
+			FileInfo info = b[i] = a[i][0];
+			if (!equals(patID, info.patID))
 				throw new Exception("Export Selector references studies for different patients");
-			Dataset studyAttr = (Dataset) studies.get(fi.studyIUID);
-			if (studyAttr  == null) {
-				studyAttr = DatasetUtils.fromByteArray(fi.studyAttrs);
-				studies.put(fi.studyIUID, studyAttr);
-			}
-			Dataset seriesAttr = (Dataset) series.get(fi.seriesIUID);
-			if (seriesAttr == null) {
-				seriesAttr = DatasetUtils.fromByteArray(fi.seriesAttrs);
-				series.put(fi.seriesIUID, seriesAttr);
-			}
-			fileInfos.put(fi.sopIUID, DatasetUtils.fromByteArray(fi.instAttrs));
-			fileInfos.put(fi.sopIUID, fi);
+            Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
+                    DatasetUtils.fromByteArray(info.studyAttrs,
+                            DatasetUtils.fromByteArray(info.seriesAttrs,
+                                    DatasetUtils.fromByteArray(info.instAttrs))));
+            attrs.put(info.sopIUID, mergeAttrs);
 		}
-		return DatasetUtils.fromByteArray(a[0][0].patAttrs);
+		return b;
 	}
 
 	private void copyIUIDs(DcmElement sq1, List list) {
@@ -412,46 +730,14 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		return o1 == null ? o2 == null : o1.equals(o2);
 	}
 	
-	private void coerceAttributes(Properties config, String pass,
-			Dataset patAttrs, Map studies, Map series, Map instances) {
-		String patientPrefix = pass + ".patient.";
-		String studyPrefix = pass + ".study.";
-		String seriesPrefix = pass + ".series.";
-		String instPrefix = pass + ".instance.";
-		for (Iterator iter = config.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry e = (Map.Entry) iter.next();
-			String key = (String) e.getKey();
-			String value = (String) e.getValue();
-			if (key.startsWith(patientPrefix))
-				coerceAttribute(patAttrs, 
-						key.substring(patientPrefix.length()), value);
-			else if (key.startsWith(studyPrefix))
-				coerceAttribute(studies, 
-						key.substring(studyPrefix.length()), value);
-			else if (key.startsWith(seriesPrefix))
-				coerceAttribute(series, 
-						key.substring(seriesPrefix.length()), value);
-			else if (key.startsWith(instPrefix))
-				coerceAttribute(instances, 
-						key.substring(instPrefix.length()), value);
-		}
-	}
-	
-	private void coerceAttribute(Map map, String key, String value) {
-		for (Iterator iter = map.values().iterator(); iter.hasNext();) {
-			Dataset ds = (Dataset) iter.next();
-			coerceAttribute(ds, key, value);
-		}
-	}
-
-	private void coerceAttribute(Dataset attrs, String key, String value) {
+	private void coerceAttribute(Dataset attrs, String key, String pattern) {
 		int tag = Tags.valueOf(key);
-		if (value.length() == 0)
+		if (pattern.length() == 0)
 			deleteValue(attrs, tag);
-		else if (value.equals("firstDayOfMonth()"))
+		else if (pattern.equals("firstDayOfMonth()"))
 			setFirstDayOfMonth(attrs, tag);
 		else
-			changeValue(attrs, tag, value);
+			changeValue(attrs, tag, pattern);
 	}
 
 	private void deleteValue(Dataset attrs, int tag) {
@@ -479,9 +765,9 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		}
 	}
 
-	private void changeValue(Dataset attrs, int tag, String value) {
+	private void changeValue(Dataset attrs, int tag, String pattern) {
 		StringBuffer sb = new StringBuffer();
-		StringTokenizer stk = new StringTokenizer(value, "#${}", true);
+		StringTokenizer stk = new StringTokenizer(pattern, "#${}", true);
 		while (stk.hasMoreTokens()) {
 			String tk = stk.nextToken();
 			int ch = tk.charAt(0);
@@ -511,16 +797,37 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		attrs.putXX(tag, sb.toString());
 	}
 
-	private void replaceUIDs(Dataset sel, Map studies, Map series, Map instances) {
-		// TODO Auto-generated method stub
-		
-	}
+    private void replaceUIDs(Dataset ds, HashMap uidmap)
+    throws DcmValueException
+    {
+        for (Iterator iter = ds.iterator(); iter.hasNext();)
+        {
+            DcmElement elm = (DcmElement) iter.next();
+            int tag = elm.tag();
+            if (tag == Tags.SOPInstanceUID 
+                    || tag == Tags.RefSOPInstanceUID 
+                    || tag == Tags.SeriesInstanceUID
+                    || tag == Tags.StudyInstanceUID) {
+                String from = elm.getString(null);
+                String to = (String) uidmap.get(from);
+                if (to == null)
+                {
+                    to = uidgen.createUID();
+                    uidmap.put(from, to);
+                }
+                ds.putUI(elm.tag(), to);
+            } else if (elm.vr() == VRs.SQ) {
+                for (int i = 0, n = elm.vm(); i < n; i++)
+                    replaceUIDs(elm.getItem(i), uidmap);
+            }
+        }
+        
+    }
 
-	private void updateDB(Dataset patAttrs, Map studies, Map series, Map instances, Map fileInfos) {
-		// TODO Auto-generated method stub		
-	}
+    public void dimseReceived(Association assoc, Dimse dimse)
+    {
+        // TODO Auto-generated method stub
+        
+    }
 
-	private void scheduleMoveOrders(Dataset sel, String destination) {
-		// TODO Auto-generated method stub		
-	}
 }

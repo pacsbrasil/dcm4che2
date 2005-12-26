@@ -63,6 +63,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -740,10 +741,15 @@ public class FileSystemMgtService extends TimerSupport {
     		return null;
     	FileInfo[] fileInfos = infoList[0];
         for (int i = 0; i < fileInfos.length; ++i) {
-            if (isLocalFileSystem(fileInfos[i].basedir))
+            final FileInfo info = fileInfos[i];
+            if (isLocalFileSystem(info.basedir))
             {
-            	FileDataSource ds = new FileDataSource(log, fileInfos[i],
-            			new byte[bufferSize]);
+                File f = FileUtils.toFile(info.basedir, info.fileID);
+                Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
+                        DatasetUtils.fromByteArray(info.studyAttrs,
+                                DatasetUtils.fromByteArray(info.seriesAttrs,
+                                        DatasetUtils.fromByteArray(info.instAttrs))));
+                FileDataSource ds = new FileDataSource(f, mergeAttrs, new byte[bufferSize]);
             	ds.setWriteFile(true);//write FileMetaInfo!
             	return ds;
             }

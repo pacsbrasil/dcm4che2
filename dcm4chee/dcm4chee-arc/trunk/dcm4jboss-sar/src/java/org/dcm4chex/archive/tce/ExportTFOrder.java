@@ -57,7 +57,7 @@ class ExportTFOrder implements Serializable {
 		this.selector = selector;
 	}
 
-	public final Dataset getSelector() {
+	public final Dataset getManifest() {
 		return selector;
 	}
 }

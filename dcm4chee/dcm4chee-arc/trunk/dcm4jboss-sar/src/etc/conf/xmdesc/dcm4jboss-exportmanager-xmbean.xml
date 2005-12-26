@@ -21,7 +21,8 @@
       getMethod="getExportSelectorTitles"
       setMethod="setExportSelectorTitles">
       <description><![CDATA[Document Title of Export Selection Key Object
-      considered by this service. Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
+      (Manifest) considered by this service.
+      Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
       Separate multiple values by comma. NONE = service disabled.
       E.g: TCE001^IHERADTF,TCE002^IHERADTF,TCE007^IHERADTF]]>
       </description>
@@ -32,33 +33,73 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDispositionConfigDir"
-      setMethod="setDispositionConfigDir">
-      <description><![CDATA[Directory where configuration files for
-      different disposition encoded in the TEXT context item with a 
-      concept name of (113012, DCM, “Key Object Description”) of the
-      Export Selector are located. Configuration files are associated to
-      disposition by their file names: <i>encoded disposition</i>.properties. 
+      getMethod="getDispositionConfigFile"
+      setMethod="setDispositionConfigFile">
+      <description><![CDATA[Configuration file, which maps
+      different Document Titles or Key Object Descriptions of the manifest
+      to different configurations about destination and de-identification.
       A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>  
       </description>
-      <name>DispositionConfigDirectory</name>
+      <name>DispositionConfigFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-tce"/>
+         <value value="conf/dcm4jboss-tce.conf"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDefaultDisposition"
-      setMethod="setDefaultDisposition">
-      <description><![CDATA[Default Disposition values,
-      if no disposition is encoded in the TEXT context item with a concept name
-      of (113012, DCM, “Key Object Description”) of the Export Selector.]]>  
+      getMethod="getAcTimeout"
+      setMethod="setAcTimeout">
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
       </description>
-      <name>DefaultDisposition</name>
+      <name>AcceptTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDimseTimeout"
+      setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
+      </description>
+      <name>DIMSETimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="60000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSoCloseDelay"
+      setMethod="setSoCloseDelay">
+      <description>Socket close delay in milliseconds after an A-Release response.
+      </description>
+      <name>SocketCloseDelay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getExportPriority"
+      setMethod="setExportPriority">
+      <description>Export priority. Enumerated Values: LOW, MEDIUM, HIGH.
+      </description>
+      <name>ExportPriority</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="default"/>
+         <value value="MEDIUM"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of byte buffer used for copying data from TCP channel to file.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

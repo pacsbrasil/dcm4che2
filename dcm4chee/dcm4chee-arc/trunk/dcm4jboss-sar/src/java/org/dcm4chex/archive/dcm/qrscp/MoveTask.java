@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,10 +73,12 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
 import org.dcm4chex.archive.util.FileDataSource;
+import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -554,7 +557,12 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        FileDataSource ds = new FileDataSource(service.getLog(), info, buffer);
+        File f = FileUtils.toFile(info.basedir, info.fileID);
+        Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
+                DatasetUtils.fromByteArray(info.studyAttrs,
+                        DatasetUtils.fromByteArray(info.seriesAttrs,
+                                DatasetUtils.fromByteArray(info.instAttrs))));
+        FileDataSource ds = new FileDataSource(f, mergeAttrs, buffer);
         ds.setWithoutPixeldata(withoutPixeldata);
         return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);
