@@ -56,9 +56,6 @@ import java.util.Date;
  */
 public final class UIDGeneratorImpl extends UIDGenerator {
     
-    private static final SimpleDateFormat FORMAT = 
-            new SimpleDateFormat("yyyyMMddHHmmssSSS");
-
     private static final String IP;
     static {
        String tmp;
@@ -99,7 +96,8 @@ public final class UIDGeneratorImpl extends UIDGenerator {
                     }
                 }
                 public void writeLong(long v) {
-                    sb.append('.').append(FORMAT.format(new Date(v)));
+                    sb.append('.').append(
+                            new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date(v)));
                 }
                 public void writeFloat(float v) {}
                 public void writeDouble(double v) {}
