@@ -207,6 +207,14 @@ public abstract class QueryCmd extends BaseReadCmd {
                 false);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
                 keys.getString(Tags.Modality), false);
+        sqlBuilder.addWildCardMatch(null, "Series.institutionName",
+                SqlBuilder.TYPE2,
+                keys.getString(Tags.InstitutionName),
+                true);
+        sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
+                SqlBuilder.TYPE2,
+                keys.getString(Tags.InstitutionalDepartmentName),
+                true);
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
                 SqlBuilder.TYPE2,
                 keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));

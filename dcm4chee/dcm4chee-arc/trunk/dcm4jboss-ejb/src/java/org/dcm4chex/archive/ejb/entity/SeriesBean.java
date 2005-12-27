@@ -215,6 +215,26 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setModality(String md);
 
     /**
+     * Department Name
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="department"
+     */
+    public abstract String getInstitutionalDepartmentName();
+
+    public abstract void setInstitutionalDepartmentName(String name);
+
+    /**
+     * Institution Name
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="institution"
+     */
+    public abstract String getInstitutionName();
+
+    public abstract void setInstitutionName(String name);
+
+    /**
      * PPS Start Datetime
      *
      * @ejb.interface-method
@@ -646,6 +666,8 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
+        setInstitutionName(ds.getString(Tags.InstitutionName));
+        setInstitutionalDepartmentName(ds.getString(Tags.InstitutionalDepartmentName));
         try {
 	        setPpsStartDateTime(ds
 	                .getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));

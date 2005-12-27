@@ -6,6 +6,12 @@ ALTER TABLE study ADD study_desc TEXT;
 CREATE INDEX study_desc ON study(UPPER(study_desc));
 CREATE INDEX study_status_id ON study(study_status_id);
 
+ALTER TABLE series ADD institution TEXT;
+ALTER TABLE series ADD department TEXT;
+
+CREATE INDEX institution ON series(UPPER(institution));
+CREATE INDEX department ON series(UPPER(department));
+
 CREATE TABLE rel_study_pcode (
 	study_fk       INTEGER,
 	pcode_fk       INTEGER,

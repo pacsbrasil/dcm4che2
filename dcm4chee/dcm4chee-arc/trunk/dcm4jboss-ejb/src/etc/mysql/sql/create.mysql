@@ -114,6 +114,8 @@ CREATE TABLE series (
 	series_iuid     VARCHAR(250) BINARY NOT NULL,
 	series_no		VARCHAR(250) BINARY,
 	modality		VARCHAR(250) BINARY,
+	institution		VARCHAR(250),
+	department		VARCHAR(250),
 	pps_start		DATETIME,
 	pps_iuid		VARCHAR(250) BINARY,
 	num_instances	INTEGER,
@@ -135,6 +137,8 @@ CREATE INDEX series_mpps_fk ON series(mpps_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
+CREATE INDEX institution ON series(institution);
+CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
