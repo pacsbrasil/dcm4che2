@@ -44,8 +44,11 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +60,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -65,6 +71,7 @@ import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.print.attribute.standard.PresentationDirection;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -91,6 +98,9 @@ import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -103,6 +113,7 @@ import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -114,7 +125,9 @@ import org.jboss.system.ServiceMBeanSupport;
 public class ExportManagerService extends ServiceMBeanSupport implements
 		NotificationListener, MessageListener, DimseListener {
 
-    private static final UIDGenerator uidgen = UIDGenerator.getInstance();
+    private static final int PCID = 1;
+
+	private static final UIDGenerator uidgen = UIDGenerator.getInstance();
 
     private static final String[] NONE = {};
 	
@@ -148,16 +161,6 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private int bufferSize;
 
-    private int exportPriority;
-
-    public final String getExportPriority() {
-        return DicomPriority.toString(exportPriority);
-    }
-
-    public final void setExportPriority(String exportPriority) {
-        this.exportPriority = DicomPriority.toCode(exportPriority);
-    }
-   
     public final int getBufferSize() {
         return bufferSize ;
     }
@@ -313,19 +316,34 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 try
                 {
                     manifest = loadManifest(manifest);
+                    schedule(new ExportTFOrder(manifest), 0L);
+                    delete(manifest);
                 }
                 catch (Exception e)
                 {
-                    log.error("Load Export Selector " 
-                            + manifest.getString(Tags.SOPInstanceUID) + " failed!", e);
-                    continue;
+        			log.error("Failed to process export selector with iuid=" 
+        					+ manifest.getString(Tags.SOPInstanceUID), e);
                 }
-                schedule(new ExportTFOrder(manifest), 0L);
             }
 		}		
 	}
 
-    private Dataset loadManifest(Dataset sel) throws SQLException, IOException
+    private StorageHome getStorageHome() throws HomeFactoryException {
+        return (StorageHome) EJBHomeFactory.getFactory().lookup(
+                StorageHome.class, StorageHome.JNDI_NAME);
+    }
+
+    private void delete(Dataset manifest) 
+    throws RemoteException, FinderException, RemoveException, CreateException, 
+    		HomeFactoryException {
+		ArrayList list = new ArrayList();
+		list.add(manifest.getString(Tags.SOPInstanceUID));
+        copyIUIDs(manifest.get(Tags.IdenticalDocumentsSeq), list);
+        final String[] uids = (String[]) list.toArray(new String[list.size()]);
+		getStorageHome().create().deleteInstances(uids, true, false);
+	}
+
+	private Dataset loadManifest(Dataset sel) throws SQLException, IOException
     {
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SOPInstanceUID, sel.getString(Tags.SOPInstanceUID));
@@ -418,14 +436,11 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		}
 	}
 
-	private void schedule(ExportTFOrder order, long scheduledTime) {
-		try {
-			log.info("Scheduling " + order);
-			JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
-					scheduledTime);
-		} catch (JMSException e) {
-			log.error("Failed to schedule " + order, e);
-		}
+	private void schedule(ExportTFOrder order, long scheduledTime)
+	throws JMSException {
+		log.info("Scheduling " + order);
+		JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+				scheduledTime);
 	}
 	
 	private void process(ExportTFOrder order) throws Exception {
@@ -433,16 +448,21 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		Properties config = getConfig(manifest);
 		String dest = config.getProperty("destination");
         final String export = config.getProperty("export");
+        final int prior = DicomPriority.toCode(config.getProperty("export-priority", "MEDIUM"));
         final int exportManifest = export.indexOf("MANIFEST");
         final boolean exportInstances = export.indexOf("INSTANCES") != -1;
+        
         HashMap attrs = new HashMap();
 		FileInfo[] fileInfos = queryAttrs(manifest, attrs);
         int[] pcids = new int[fileInfos.length + 1];
         ActiveAssociation a = openAssociation(fileInfos, pcids, dest, 
                 exportManifest != -1, exportInstances);
         HashMap iuidMap = new HashMap(); 
+        coerceAttributes(manifest, config, iuidMap);
+        if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
+            removeDelayReason(manifest);
         if (exportManifest == 0)
-            sendManifests(a, pcids[fileInfos.length], manifest, config, iuidMap);
+            sendManifests(a, pcids[fileInfos.length], manifest, prior);
         if (exportInstances)
         {
             byte[] b = new byte[bufferSize];
@@ -450,23 +470,29 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             {
                 FileInfo info = fileInfos[i];
                 Dataset ds = (Dataset) attrs.get(info.sopIUID);
-                sendInstance(a, pcids[i], ds, info, config,  iuidMap, b);
+                sendInstance(a, pcids[i], ds, info, config,  iuidMap, b, prior);
             }
         }
         if (exportManifest > 0)
-            sendManifests(a, pcids[fileInfos.length], manifest, config, iuidMap);
+            sendManifests(a, pcids[fileInfos.length], manifest, prior);
         a.release(true);
 	}
 
+    public void dimseReceived(Association assoc, Dimse dimse)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+    	
     private void sendInstance(ActiveAssociation a, int pcid, Dataset attrs, 
-            FileInfo fileInfo, Properties config, HashMap iuidMap, byte[] buffer) 
+            FileInfo fileInfo, Properties config, HashMap iuidMap, byte[] buffer, int prior) 
     throws InterruptedException, IOException
     {
         coerceAttributes(attrs, config, iuidMap);
         File f = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initCStoreRQ(a.getAssociation().nextMsgID(), fileInfo.sopCUID,
-                fileInfo.sopIUID, exportPriority);
+                fileInfo.sopIUID, prior);
         FileDataSource src = new FileDataSource(f, attrs, buffer);
         Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, src);
         a.invoke(dimse, this);        
@@ -494,13 +520,10 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     private void sendManifests(ActiveAssociation a, int pcid, Dataset manifest, 
-            Properties config, HashMap iuidMap)
+            int prior)
     throws InterruptedException, IOException
     {
-        coerceAttributes(manifest, config, iuidMap);
-        if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
-            removeDelayReason(manifest);
-        sendManifest(a, pcid, manifest);
+        sendManifest(a, pcid, manifest, prior);
         DcmElement identicalsq = manifest.get(Tags.IdenticalDocumentsSeq);
         if (identicalsq != null && !identicalsq.isEmpty())
         {
@@ -521,7 +544,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 DcmElement otherIdenticalsq = manifest.putSQ(Tags.IdenticalDocumentsSeq);
                 for (int j = 0; j < n; j++)
                     otherIdenticalsq.addItem(i == j ? studyItem : identicalsq.getItem(j));                 
-                sendManifest(a, pcid, manifest);
+                sendManifest(a, pcid, manifest, prior);
             }
         }
     }
@@ -540,13 +563,13 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         }        
     }
 
-    private void sendManifest(ActiveAssociation a, int pcid, Dataset manifest)
+    private void sendManifest(ActiveAssociation a, int pcid, Dataset manifest, int prior)
     throws InterruptedException, IOException
     {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initCStoreRQ(a.getAssociation().nextMsgID(),
                 manifest.getString(Tags.SOPClassUID),
-                manifest.getString(Tags.SOPInstanceUID), exportPriority);
+                manifest.getString(Tags.SOPInstanceUID), prior);
         Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, manifest);
         a.invoke(dimse, this);        
     }
@@ -824,10 +847,49 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         
     }
 
-    public void dimseReceived(Association assoc, Dimse dimse)
+    public Collection listConfiguredDispositions() throws IOException
     {
-        // TODO Auto-generated method stub
-        
+        File indexFile = FileUtils.resolve(dispConfigFile);
+        Properties index = getProperties(indexFile);
+        ArrayList list = new ArrayList(index.keySet());
+        Collections.sort(list);
+        return list;
+    }
+    
+    public void storeExportSelection(Dataset manifest, int prior, String dest)
+    throws SQLException, UnkownAETException, IOException, InterruptedException
+    {
+    	ActiveAssociation aa = openAssociation(manifest.getString(Tags.SOPClassUID), dest);
+    	sendManifests(aa, PCID, manifest, prior);
+    	aa.release(true);
     }
 
+    private ActiveAssociation openAssociation(String cuid, String dest)
+    throws SQLException, UnkownAETException, IOException, InterruptedException
+    {
+        AEData aeData = new AECmd(dest).getAEData();
+        if (aeData == null) {
+            throw new UnkownAETException("Unkown Destination AET: " + dest);
+        }
+        AssociationFactory af = AssociationFactory.getInstance();
+
+        AAssociateRQ rq = af.newAAssociateRQ();
+        rq.setCallingAET(callingAET);
+        rq.setCalledAET(dest);
+        PresContext pc = af.newPresContext(PCID, cuid, UIDs.ImplicitVRLittleEndian);
+        rq.addPresContext(pc);
+        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
+        a.setAcTimeout(acTimeout);
+        a.setDimseTimeout(dimseTimeout);
+        a.setSoCloseDelay(soCloseDelay);
+        PDU ac = a.connect(rq);
+        if (!(ac instanceof AAssociateAC)) {
+            throw new IOException("Association not accepted by " + dest + ": " + ac);
+        }
+        ActiveAssociation aa = af.newActiveAssociation(a, null);
+        aa.start();
+        if (((AAssociateAC) ac).getPresContext(PCID).result() != PresContext.ACCEPTANCE)
+            throwStorageNotSupported(aa, cuid, dest);
+        return aa;
+    }
 }
