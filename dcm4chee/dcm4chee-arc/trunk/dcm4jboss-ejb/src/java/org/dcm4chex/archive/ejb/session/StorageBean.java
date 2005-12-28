@@ -48,6 +48,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -493,4 +494,30 @@ public abstract class StorageBean implements SessionBean {
         final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
         series.updateDerivedFields(true, true, false, true, true, true);
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void deleteInstances(String[] iuids, boolean deleteSeries, 
+    		boolean deleteStudy) 
+    throws FinderException, EJBException, RemoveException
+    {
+    	if (iuids.length == 0)
+    		return;
+    	InstanceLocal inst = instHome.findBySopIuid(iuids[0]);
+    	SeriesLocal series = inst.getSeries();
+    	StudyLocal study = series.getStudy();
+    	inst.remove();
+    	for (int i = 1; i < iuids.length; i++)
+        	instHome.findBySopIuid(iuids[i]).remove();
+		
+    	series.updateDerivedFields(true, true, true, true, true, false);
+    	if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
+    		series.remove();
+    	
+    	study.updateDerivedFields(true, true, true, true, true, true, false);
+    	if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
+    		study.remove();
+    }
 }
+
