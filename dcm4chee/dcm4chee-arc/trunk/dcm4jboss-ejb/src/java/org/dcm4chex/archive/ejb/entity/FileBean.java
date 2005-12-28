@@ -183,7 +183,7 @@ public abstract class FileBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.relation name="instance-files"
-     * 	             role-name="files-of-instance" cascade-delete="yes"
+     * 	             role-name="files-of-instance"
      * @jboss.relation fk-column="instance_fk"
      * 	               related-pk-field="pk"
      */
