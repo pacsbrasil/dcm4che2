@@ -186,7 +186,7 @@ public class FileSystemMgtService extends TimerSupport {
 
     public final void setDirectoryPathList(String str) {
     	str = NumericCharacterReference.decode(str,(char)250);
-        StringTokenizer st = new StringTokenizer(str, " ,:;");
+        StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
         ArrayList list = new ArrayList();
         HashSet set = new HashSet();
         int dirIndex = 0;
