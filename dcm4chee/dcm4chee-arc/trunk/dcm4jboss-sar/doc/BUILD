@@ -16,9 +16,11 @@ to download and install:
 
 - XDoclet 1.2.3 [http://xdoclet.sourceforge.net]
 
-- JBoss 4.0.2 [http://jboss.org]
+- JBoss 4.0.3SP1 [http://jboss.org]
 
 - Maverick 2.2.3 + Domify 2.0.3 [http://mav.sourceforge.net]
+
+- Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
 
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
@@ -63,7 +65,7 @@ components required for building dcm4jboss-arr:
 <property name="xdoclet.home" value="${user.home}/xdoclet-1.2.3"/>
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>	
+<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>	
 
 You may also disable the build of versions for Oracle9i/10g and/or DB2 V8.1.
 Otherwise you may have to install a patch utility, neeed for that builds.
@@ -158,7 +160,7 @@ components required for building dcm4jboss-sar:
 <property name="xdoclet.home" value="${user.home}/xdoclet-1.2.3"/>
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
+<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
@@ -195,7 +197,7 @@ components required for building dcm4jboss-hl7:
 <property name="dcm4jboss-sar.home" value="../dcm4jboss-sar"/>		
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
+<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
@@ -235,7 +237,7 @@ components required for building dcm4jboss-wado:
 <property name="fop.home" value="${user.home}/fop-0.20.5"/>
     
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
+<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
@@ -273,7 +275,7 @@ components required for building dcm4jboss-web:
 <property name="dcm4jboss-sar.home" value="../dcm4jboss-sar"/>		
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-4.0.2" />
+<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1" />
 
 <!-- Override with your Maverick dist location -->
 <property name="maverick.home" value="../maverick" />
