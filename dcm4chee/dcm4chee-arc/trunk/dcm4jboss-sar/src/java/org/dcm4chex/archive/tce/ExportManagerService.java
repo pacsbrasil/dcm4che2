@@ -71,7 +71,6 @@ import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.print.attribute.standard.PresentationDirection;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -98,8 +97,6 @@ import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.config.DicomPriority;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
