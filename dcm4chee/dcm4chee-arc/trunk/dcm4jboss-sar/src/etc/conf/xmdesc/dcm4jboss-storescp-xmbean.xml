@@ -565,6 +565,17 @@ Use either the SOP Class UID or the symbolic name:
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCheckIncorrectWorklistEntry"
+      setMethod="setCheckIncorrectWorklistEntry">
+      <description>Check if a received instance should be ignored due to 'Incorrect Worklist Entry Selected'.
+      </description>
+      <name>CheckIncorrectWorklistEntry</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
