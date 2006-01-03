@@ -438,6 +438,21 @@ public class StoreScpService extends AbstractScpService {
     	otherCUIDS.clear();
     	otherCUIDS = map;
     }
+    
+	/**
+	 * @return Returns the checkIncorrectWorklistEntry.
+	 */
+	public boolean isCheckIncorrectWorklistEntry() {
+		return scp.isCheckIncorrectWorklistEntry();
+	}
+	/**
+	 * Enable/disable check if an MPPS with Discontinued reason 'Incorrect worklist selected' is referenced.
+	 * 
+	 * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
+	 */
+	public void setCheckIncorrectWorklistEntry(boolean check) {
+		scp.setCheckIncorrectWorklistEntry(check);
+	}
 
     /**
      * Updates the service bindigs.

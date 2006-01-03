@@ -44,9 +44,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
@@ -90,6 +89,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
+import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.notif.FileInfo;
@@ -144,6 +145,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private long outOfResourcesThreshold = 30000000L;
     
+    private boolean checkIncorrectWorklistEntry = true;
     
 	public StoreScp(StoreScpService service) {
         this.service = service;
@@ -330,6 +332,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.outOfResourcesThreshold = threshold;
     }
 
+	/**
+	 * @return Returns the checkIncorrectWorklistEntry.
+	 */
+	public boolean isCheckIncorrectWorklistEntry() {
+		return checkIncorrectWorklistEntry;
+	}
+	/**
+	 * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
+	 */
+	public void setCheckIncorrectWorklistEntry(
+			boolean checkIncorrectWorklistEntry) {
+		this.checkIncorrectWorklistEntry = checkIncorrectWorklistEntry;
+	}
+	
+	
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
@@ -346,7 +363,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
-                unhide(iuid);
                 return;
             }
 
@@ -366,7 +382,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 					log.warn("Logging of attributes failed:", e);
 				}
             checkDataset(assoc, rqCmd, ds);
-
+            if ( isCheckIncorrectWorklistEntry() && checkIncorrectWorklistEntry(ds) ) {
+                log.info("Received Instance[uid=" + iuid
+                        + "] ignored! Reason: Incorrect Worklist entry selected!");
+                return;
+            }            	
             FileSystemInfo fsInfo = service.selectStorageFileSystem();
             if (fsInfo.getAvailable() < outOfResourcesThreshold)
                 throw new DcmServiceException(Status.OutOfResources);
@@ -387,7 +407,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 deleteFailedStorage(file);
-                unhide( iuid );
                 return;
             }
 
@@ -428,12 +447,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putAT(Tags.OffendingElement, coercedTags);
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
-			if (!duplicates.isEmpty())
-				unhide(iuid);
 			FileInfo fileInfo = new FileInfo(iuid, cuid, tsuid,
 					fsInfo.getPath(), filePath, file.length(), md5sum);
 			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo, fileInfo);
 			if (seriesStored != null) {
+				log.debug("Send SeriesStoredNotification - series changed");
 				doAfterSeriesIsStored( assoc.getSocket(), seriesStored, true );
 			}
         } catch (DcmServiceException e) {
@@ -447,6 +465,38 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
  
+	/**
+	 * @param ds
+	 * @return
+	 * @throws SQLException
+	 */
+	private boolean checkIncorrectWorklistEntry(Dataset ds) throws SQLException {
+		boolean isIncorrectWL = false;
+        Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
+        if (refPPS != null) {
+            final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
+            if ( ppsUID != null ) {
+        		MPPSFilter filter = new MPPSFilter();
+        		filter.setSopIuid(ppsUID);
+        		MPPSQueryCmd cmd = new MPPSQueryCmd( filter );
+        		try {
+        			cmd.execute();
+        			if ( cmd.next() ) {
+        				Dataset mppsDS = cmd.getDataset();
+        	        	Dataset item = mppsDS.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        	        	if ( "110514".equals(item.getString(Tags.CodeValue)) && 
+        	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+        	        		isIncorrectWL = true;
+        	        	}
+        			}
+        		} finally {
+        			cmd.close();
+        		}
+            }
+    	}
+        return isIncorrectWL;
+	}
+
 	private Map toXsltParam(Association a, Date now) {
 		HashMap param = new HashMap();
 		param.put("calling", a.getCallingAET());
@@ -464,14 +514,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		}
 		return buf;
 	}
-
-	private void unhide (String iuid ) throws RemoteException, FinderException, CreateException, HomeFactoryException {
-    	if ( getStorageHome().create().unhide(iuid) ) {
-            log.info("Received Instance[uid=" + iuid
-                    + "] was hidden - changed to be visible");
-    		
-    	}
-    }
 
 	private boolean containsLocal(List duplicates) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
@@ -780,6 +822,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		SeriesStored seriesStored = 
 			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
 		if (seriesStored != null) {
+			log.debug("Send SeriesStoredNotification - association closed");
 			doAfterSeriesIsStored(assoc.getSocket(), seriesStored, true);
 		}
         if ( service.isFreeDiskSpaceOnDemand() ) {
@@ -916,23 +959,23 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	}
 	
 	protected SeriesStored newSeriesStored( Dataset ds, String callingAET, String calledAET, String retrieveAET, String fsPath ){
-		SeriesStored seriesStrored = new SeriesStored();
-		seriesStrored.setCalledAET(calledAET);
-		seriesStrored.setCallingAET(callingAET);
-		seriesStrored.setRetrieveAET(retrieveAET);
-		seriesStrored.setFileSystemPath(fsPath);
-		seriesStrored.setPatientID(ds.getString(Tags.PatientID));
-		seriesStrored.setPatientName(ds.getString(Tags.PatientName));
-		seriesStrored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
-		seriesStrored.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
-		seriesStrored.setSeriesInstanceUID(ds.getString(Tags.SeriesInstanceUID));
+		SeriesStored seriesStored = new SeriesStored();
+		seriesStored.setCalledAET(calledAET);
+		seriesStored.setCallingAET(callingAET);
+		seriesStored.setRetrieveAET(retrieveAET);
+		seriesStored.setFileSystemPath(fsPath);
+		seriesStored.setPatientID(ds.getString(Tags.PatientID));
+		seriesStored.setPatientName(ds.getString(Tags.PatientName));
+		seriesStored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
+		seriesStored.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
+		seriesStored.setSeriesInstanceUID(ds.getString(Tags.SeriesInstanceUID));
 		Dataset refSOP = ds.getItem(Tags.RefPPSSeq);
 		if (refSOP != null) {
-			seriesStrored.setRefPPS(
+			seriesStored.setRefPPS(
 					refSOP.getString(Tags.RefSOPInstanceUID),
 					refSOP.getString(Tags.RefSOPClassUID));
 		}
-		return seriesStrored;
+		return seriesStored;
 	}
 
     private void updateStudyAccessTime(SeriesStored seriesStored) {
