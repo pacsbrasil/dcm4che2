@@ -61,6 +61,8 @@ import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.PrivateManager;
+import org.dcm4chex.archive.ejb.interfaces.PrivateManagerHome;
 import org.dcm4chex.archive.notif.PatientUpdated;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.notif.SeriesUpdated;
@@ -77,7 +79,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
 
-    private ContentEdit ce;
 	private ContentEdit contentEdit;
     private static Logger log = Logger.getLogger( ContentEditService.class.getName() );
 
@@ -95,6 +96,8 @@ public class ContentEditService extends ServiceMBeanSupport {
 	private String calledAET;
 	
 	private ContentManager contentMgr;
+	
+	private PrivateManager privateMgr;
 	
 	private static long msgCtrlid = System.currentTimeMillis();
 
@@ -359,25 +362,25 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public void movePatientToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
-    	Dataset ds = lookupContentEdit().movePatientToTrash(pk);
+    	Dataset ds = lookupPrivateManager().movePatientToTrash(pk);
     	sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
     	if ( log.isDebugEnabled() ) {log.debug("Patient moved to trash. ds:");log.debug(ds); }
     }
     public void moveStudyToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("Move Study (pk="+pk+") to trash.");
-    	Dataset ds = lookupContentEdit().moveStudyToTrash(pk);
+    	Dataset ds = lookupPrivateManager().moveStudyToTrash(pk);
     	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_DELETE_RQ, 0, ds);
     	if ( log.isDebugEnabled() ) {log.debug("Study moved to trash. ds:");log.debug(ds); }
     }
     public void moveSeriesToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("Move Series (pk="+pk+") to trash.");
-    	Dataset ds = lookupContentEdit().moveSeriesToTrash(pk);
+    	Dataset ds = lookupPrivateManager().moveSeriesToTrash(pk);
    		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 1, ds);
     	if ( log.isDebugEnabled() ) {log.debug("Series moved to trash. ds:");log.debug(ds); }
     }
     public void moveInstanceToTrash(int pk) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("Move Instance (pk="+pk+") to trash.");
-    	Dataset ds = lookupContentEdit().moveInstanceToTrash(pk);
+    	Dataset ds = lookupPrivateManager().moveInstanceToTrash(pk);
     	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
     	if ( log.isDebugEnabled() ) {log.debug("Instance moved to trash. ds:");log.debug(ds); }
     }
@@ -387,8 +390,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     	List[] files = lookupContentManager().listPatientFilesToRecover(privPatPk);
     	List failed = recoverFiles( files );
     	if ( failed.isEmpty() ) {
-    		lookupContentEdit().deletePrivateFiles(files[0]);
-    		lookupContentEdit().deletePrivatePatient(privPatPk);
+    		lookupPrivateManager().deletePrivateFiles(files[0]);
+    		lookupPrivateManager().deletePrivatePatient(privPatPk);
     	}
     	return failed;
     }    
@@ -397,8 +400,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     	List[] files = lookupContentManager().listStudyFilesToRecover(privStudyPk);
     	List failed = recoverFiles( files );
     	if ( failed.isEmpty() ) {
-    		lookupContentEdit().deletePrivateFiles(files[0]);
-    		lookupContentEdit().deletePrivateStudy(privStudyPk);
+    		lookupPrivateManager().deletePrivateFiles(files[0]);
+    		lookupPrivateManager().deletePrivateStudy(privStudyPk);
     	}
     	return failed;
    }
@@ -407,8 +410,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     	List[] files = lookupContentManager().listSeriesFilesToRecover(privSeriesPk);
     	List failed = recoverFiles( files );
     	if ( failed.isEmpty() ) {
-    		lookupContentEdit().deletePrivateFiles(files[0]);
-    		lookupContentEdit().deletePrivateSeries(privSeriesPk);
+    		lookupPrivateManager().deletePrivateFiles(files[0]);
+    		lookupPrivateManager().deletePrivateSeries(privSeriesPk);
     	}
     	return failed;
     }
@@ -417,8 +420,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     	List[] files = lookupContentManager().listInstanceFilesToRecover(privInstancePk);
     	List failed = recoverFiles( files );
     	if ( failed.isEmpty() ) {
-    		lookupContentEdit().deletePrivateFiles(files[0]);
-    		lookupContentEdit().deletePrivateInstance(privInstancePk);
+    		lookupPrivateManager().deletePrivateFiles(files[0]);
+    		lookupPrivateManager().deletePrivateInstance(privInstancePk);
     	}
     	return failed;
     }
@@ -454,19 +457,19 @@ public class ContentEditService extends ServiceMBeanSupport {
 
 	public void deletePatient(int patPk) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("delete Patient from trash. pk:"+patPk);
-    	lookupContentEdit().deletePrivatePatient( patPk );
+    	lookupPrivateManager().deletePrivatePatient( patPk );
     }    
     public void deleteStudy(int studyPk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("delete Study from trash. pk:"+studyPk);
-    	lookupContentEdit().deletePrivateStudy( studyPk );
+    	lookupPrivateManager().deletePrivateStudy( studyPk );
    }
     public void deleteSeries(int seriesPk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("delete Series from trash. pk:"+seriesPk);
-    	lookupContentEdit().deletePrivateSeries( seriesPk );
+    	lookupPrivateManager().deletePrivateSeries( seriesPk );
     }
     public void deleteInstance(int pk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("delete Instance from trash. pk:"+pk);
-    	lookupContentEdit().deletePrivateInstance( pk );//dont delete files of instance (needed for purge process)
+    	lookupPrivateManager().deletePrivateInstance( pk );//dont delete files of instance (needed for purge process)
     }
     
     public void moveStudies(int[] study_pks, Integer patient_pk) throws RemoteException, HomeFactoryException, CreateException {
@@ -511,6 +514,14 @@ public class ContentEditService extends ServiceMBeanSupport {
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         contentMgr = home.create();
         return contentMgr;
+    }
+
+    private PrivateManager lookupPrivateManager() throws HomeFactoryException, RemoteException, CreateException  {
+    	if ( privateMgr != null ) return privateMgr;
+    	PrivateManagerHome home = (PrivateManagerHome) EJBHomeFactory.getFactory()
+                .lookup(PrivateManagerHome.class, PrivateManagerHome.JNDI_NAME);
+    	privateMgr = home.create();
+        return privateMgr;
     }
     
     /**
