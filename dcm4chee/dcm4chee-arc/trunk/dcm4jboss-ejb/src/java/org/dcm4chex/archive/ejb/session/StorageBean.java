@@ -498,11 +498,11 @@ public abstract class StorageBean implements SessionBean {
     	for (int i = 1; i < iuids.length; i++)
         	instHome.findBySopIuid(iuids[i]).remove();
 		
-    	series.updateDerivedFields(true, true, true, true, true, false);
+    	series.updateDerivedFields(true, true, true, true, true);
     	if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
     		series.remove();
     	
-    	study.updateDerivedFields(true, true, true, true, true, true, false);
+    	study.updateDerivedFields(true, true, true, true, true, true);
     	if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
     		study.remove();
     }
