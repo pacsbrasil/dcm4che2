@@ -84,7 +84,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.finder signature="java.util.Collection findByNameAndBirthdate(java.lang.String name, java.sql.Timestamp birthdate)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByNameAndBirthdate(java.lang.String name, java.sql.Timestamp birthdate)"
- *              query="SELECT OBJECT(a) FROM Patient AS a WHERE a.hidden = FALSE AND a.patientName = ?1 AND a.patientBirthDate = ?2"
+ *              query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientName = ?1 AND a.patientBirthDate = ?2"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -184,38 +184,6 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract void setPatientSex(String sex);
 
-    /**
-     * @ejb.persistence column-name="hidden"
-     */
-    public abstract boolean getHidden();
-
-    /**
-     * @ejb.interface-method
-     */
-    public boolean getHiddenSafe() {
-        try {
-            return getHidden();
-        } catch (NullPointerException npe) {
-            return false;
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setHidden(boolean hidden);
-
-    /**
-     * @ejb.interface-method
-     */
-    public void markDeleted(boolean deleted) {
-    	Iterator iter = getStudies().iterator();
-    	while( iter.hasNext() ) {
-    		( (StudyLocal) iter.next() ).markDeleted( deleted );
-    	}
-    	setHidden(deleted);
-    }
-    
 	/**
      * Patient DICOM Attributes
      *
@@ -330,8 +298,6 @@ public abstract class PatientBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.PatientPk, getPk().intValue());
-            if ( getHiddenSafe() )
-            	ds.putSS(PrivateTags.HiddenPatient,1);
         }
         return ds;
     }
@@ -373,21 +339,4 @@ public abstract class PatientBean implements EntityBean {
         return "Patient[pk=" + getPk() + ", pid=" + getPatientId() + ", name="
                 + getPatientName() + "]";
     }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public boolean updateDerivedFields() {
-		if (getHiddenSafe()) {//we have only to check if this patient can be really marked deleted (only if all childs are marked deleted)!
-			Iterator iter = getStudies().iterator();
-			while ( iter.hasNext() ) {
-				if ( !((StudyLocal) iter.next()).getHiddenSafe() ) {
-					setHidden(false);
-					return true;
-				}
-			}
-		}
-		return false;
-    }
-
 }

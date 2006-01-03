@@ -178,8 +178,6 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     }
 
     protected void addSeriesMatch() {
-        sqlBuilder.addBooleanMatch(null, "Series.hidden", SqlBuilder.TYPE2,
-                false);
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SeriesInstanceUID));

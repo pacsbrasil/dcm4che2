@@ -64,7 +64,6 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
-import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -92,24 +91,24 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @ejb.finder signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
- *              query="SELECT OBJECT(s) FROM Study AS s WHERE s.hidden = FALSE AND (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
+ *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
  *  
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
+ * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
- *              query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.commitment = TRUE"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.commitment = TRUE"
  * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Integer pk)"
- *              query="SELECT COUNT(i) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
- * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.hidden = FALSE AND i.series.study.pk = ?1"
+ * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
- * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.hidden = FALSE AND f.instance.series.study.pk = ?1"
+ * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
  *              dynamic="true"
  *
@@ -342,38 +341,6 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
-     * @ejb.persistence column-name="hidden"
-     */
-    public abstract boolean getHidden();
-
-    /**
-     * @ejb.interface-method
-     */
-    public boolean getHiddenSafe() {
-        try {
-            return getHidden();
-        } catch (NullPointerException npe) {
-            return false;
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setHidden(boolean hidden);
-
-    /**
-     * @ejb.interface-method
-     */
-    public void markDeleted(boolean deleted) {
-    	Iterator iter = getSeries().iterator();
-    	while( iter.hasNext() ) {
-    		( (SeriesLocal) iter.next() ).markDeleted( deleted );
-    	}
-    	setHidden(deleted);
-    }
-    
-    /**
      * Modalities In Study
      *
      * @ejb.interface-method
@@ -473,13 +440,13 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE"
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1"
      */
     public abstract Set ejbSelectInternalRetrieveAETs(Integer pk)
             throws FinderException;
 
     /**
-     * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND s.hidden = FALSE"
+     * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1"
      */
     public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk)
             throws FinderException;
@@ -491,7 +458,7 @@ public abstract class StudyBean implements EntityBean {
             int status) throws FinderException;
 
     /**
-     * @ejb.select query="SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE s.hidden = FALSE AND st.pk = ?1"
+     * @ejb.select query="SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE st.pk = ?1"
      */
     public abstract Set ejbSelectModalityInStudies(Integer pk)
             throws FinderException;
@@ -573,7 +540,7 @@ public abstract class StudyBean implements EntityBean {
     	Object[] args = new Object[]{pk,fileStatus};
         StringBuffer jbossQl = new StringBuffer();
         jbossQl.append("SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f");
-		jbossQl.append(" WHERE i.hidden = FALSE AND i.series.study.pk = ?1 AND f.fileStatus = ?2");
+		jbossQl.append(" WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2");
 		jbossQl.append(" AND f.fileSystem.directoryPath IN (");
 		for ( Iterator iter = fsPks.iterator() ; iter.hasNext();){
 			jbossQl.append("'").append(iter.next()).append("'");
@@ -715,29 +682,11 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
-	 * @param pk
-	 * @return
-	 */
-	private boolean updateHidden(Integer pk) {
-		if (getHiddenSafe()) {//we have only to check if this study can be really marked deleted (only if all childs are marked deleted)!
-			Iterator iter = this.getSeries().iterator();
-			while ( iter.hasNext() ) {
-				if ( !((SeriesLocal) iter.next()).getHiddenSafe() ) {
-					setHidden(false);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-    
-
-    /**
      * @ejb.interface-method
      */
     public boolean updateDerivedFields(boolean numOfInstances,
     		boolean retrieveAETs, boolean externalRettrieveAETs, 
-            boolean filesetId, boolean availibility, boolean modsInStudies, boolean hidden)
+            boolean filesetId, boolean availibility, boolean modsInStudies)
             throws FinderException {
     	boolean updated = false;
     	final Integer pk = getPk();
@@ -754,8 +703,6 @@ public abstract class StudyBean implements EntityBean {
 			if (updateAvailability(pk, numI)) updated = true;
 		if (modsInStudies)
 			if (updateModalitiesInStudy(pk, numI)) updated = true;
-		if ( hidden ) 
-			if ( updateHidden(pk)) updated = true;
 		return updated;
     }
      
@@ -785,8 +732,6 @@ public abstract class StudyBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.StudyPk, getPk().intValue());
-            if ( getHiddenSafe() )
-            	ds.putSS(PrivateTags.HiddenStudy,1);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(
                     getModalitiesInStudy(), '\\'));
             ds.putIS(Tags.NumberOfStudyRelatedSeries,

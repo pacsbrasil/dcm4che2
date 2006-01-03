@@ -67,64 +67,23 @@ public class QueryStudiesCmd extends BaseReadCmd {
             "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
             "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability", "Study.filesetId", "Patient.hidden", 
-			"Study.hidden", "Study.studyStatusId"};
+            "Study.availability", "Study.filesetId", "Study.studyStatusId"};
 
     private static final String[] ENTITY = {"Patient"};
-    private static final String[] ENTITY_FOR_HIDDEN = {"Series"};
 
     private static final String[] LEFT_JOIN = { 
             "Study", null, "Patient.pk", "Study.patient_fk",};
-    private static final String[] LEFT_JOIN_FOR_HIDDEN = new String[] { 
-    	"Instance", null, "Series.pk", "Instance.series_fk"};
 
 	private boolean hideMissingStudies;
     
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    public QueryStudiesCmd(Dataset filter, boolean showHidden, boolean hideMissingStudies)
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
-        if ( showHidden ) {
-         	//Match.Node node = sqlBuilder.addNodeMatch("OR",false);
-        	/* we have to build something like this:
-        	 SELECT patient.pat_name, ....
-        	 	FROM patient LEFT JOIN study ON (patient.pk = study.patient_fk) 
-        	 	WHERE ( exists (SELECT series.pk FROM series  LEFT JOIN instance ON (series.pk = instance.series_fk)
-                                WHERE ((study.pk = series.study_fk or (  study.hidden != 0)) 
-                              		    AND ((patient.hidden != 0)OR(study.hidden != 0)OR(series.hidden != 0)OR(instance.hidden != 0) )) 
-                                      ) 
-                        OR (patient.hidden != 0)
-                      )  
-                
-                AND (patient.merge_fk IS NULL) [AND ..] 
-                ORDER BY patient.pat_name ASC, patient.pk ASC, study.study_datetime ASC 
-
-        	 */
-        	SqlBuilder subQuery = new SqlBuilder();
-        	subQuery.setSelect(new String[]{"Series.pk"});
-        	subQuery.setFrom(ENTITY_FOR_HIDDEN );
-        	subQuery.setLeftJoin(LEFT_JOIN_FOR_HIDDEN);
-           	Match.Node node0 = sqlBuilder.addNodeMatch("OR",false);
-           	//define the subquery
-           	Match.Node node1 = subQuery.addNodeMatch("OR",false);
-           	node1.addMatch( new Match.FieldValue(null, "Study.pk", SqlBuilder.TYPE1, null, "Series.study_fk") );
-           	node1.addMatch( subQuery.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE1,true) );
-        	Match.Node node2 = subQuery.addNodeMatch("OR",false);
-        	node2.addMatch( subQuery.getBooleanMatch(null,"Patient.hidden",SqlBuilder.TYPE1,true));
-        	node2.addMatch( subQuery.getBooleanMatch(null,"Study.hidden",SqlBuilder.TYPE1,true));
-        	node2.addMatch( subQuery.getBooleanMatch(null,"Series.hidden",SqlBuilder.TYPE1,true));
-        	node2.addMatch( subQuery.getBooleanMatch(null,"Instance.hidden",SqlBuilder.TYPE1,true));
-
-        	node0.addMatch( new Match.Subquery(subQuery, null, null));
-        	node0.addMatch( sqlBuilder.getBooleanMatch(null, "Patient.hidden",SqlBuilder.TYPE1, true));
-        } else {
-    		sqlBuilder.addBooleanMatch(null, "Study.hidden", SqlBuilder.TYPE2, false );
-    		sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE2, false );
-        }
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE2,
@@ -147,7 +106,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 false);
         sqlBuilder.addModalitiesInStudyMatch(null, filter
                 .getString(Tags.ModalitiesInStudy));
-    	this.hideMissingStudies = hideMissingStudies && !showHidden;	
+    	this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {
         	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
     	}
@@ -209,14 +168,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                     ds.putCS(Tags.InstanceAvailability, Availability
                             .toString(rs.getInt(9)));
                     ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
-                    if ( rs.getBoolean(11) ) 
-                    	ds.putSS(PrivateTags.HiddenPatient,1);
-                    if ( rs.getBoolean(12) ) 
-                       	ds.putSS(PrivateTags.HiddenStudy,1);
-                    ds.putCS(Tags.StudyStatusID, rs.getString(13) );
-                } else {
-	                if ( rs.getBoolean(11) ) 
-	                	ds.putSS(PrivateTags.HiddenPatient,1);
+                    ds.putCS(Tags.StudyStatusID, rs.getString(11) );
                 }
                 result.add(ds);
             }

@@ -75,7 +75,6 @@ public class MPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE1, false);
         sqlBuilder.addSingleValueMatch(null, "MPPS.sopIuid",
                 SqlBuilder.TYPE1,
                 filter.getSopIuid() );

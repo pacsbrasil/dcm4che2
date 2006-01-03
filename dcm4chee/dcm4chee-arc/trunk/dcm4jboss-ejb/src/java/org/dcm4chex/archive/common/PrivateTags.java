@@ -54,9 +54,4 @@ public class PrivateTags {
     public static final int InstancePk = 0x00430013;
     public static final int CallingAET = 0x00430014;
     public static final int CalledAET = 0x00430015;
-    public static final int HiddenInstance = 0x00430016;
-    public static final int HiddenSeries = 0x00430017;
-    public static final int HiddenStudy = 0x00430018;
-    public static final int HiddenPatient = 0x00430019;
-
 }

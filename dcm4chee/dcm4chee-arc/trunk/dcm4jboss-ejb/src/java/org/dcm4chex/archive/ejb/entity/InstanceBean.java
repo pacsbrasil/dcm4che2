@@ -93,15 +93,15 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *              eager-load-group="most"
  * 
  * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.hidden = false AND i.series.study.createdTime < ?1"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.series.study.createdTime < ?1"
  *             transaction-type="Supports"
  *
  * @ejb.finder signature="java.util.Collection findByPatientAndSopCuid(org.dcm4chex.archive.ejb.interfaces.PatientLocal patient, java.lang.String uid)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.hidden = false AND i.series.study.patient = ?1 AND i.sopCuid = ?2"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.sopCuid = ?2"
  *             transaction-type="Supports"
  *
  * @ejb.finder signature="java.util.Collection findByPatientAndSrCode(org.dcm4chex.archive.ejb.interfaces.PatientLocal patient, org.dcm4chex.archive.ejb.interfaces.CodeLocal srcode)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.hidden = false AND i.series.study.patient = ?1 AND i.srCode = ?2"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.srCode = ?2"
  *             transaction-type="Supports"
  *
  * @ejb.ejb-ref ejb-name="Code"
@@ -315,27 +315,6 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setCommitment(boolean commitment);
 
     /**
-     * @ejb.persistence column-name="hidden"
-     */
-    public abstract boolean getHidden();
-
-    /**
-     * @ejb.interface-method
-     */
-    public boolean getHiddenSafe() {
-        try {
-            return getHidden();
-        } catch (NullPointerException npe) {
-            return false;
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setHidden(boolean hidden);
-	
-    /**
      * @ejb.interface-method 
      * @ejb.relation name="series-instance" role-name="instance-of-series"
      *               cascade-delete="yes"
@@ -509,8 +488,6 @@ public abstract class InstanceBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.InstancePk, getPk().intValue());
-            if ( getHiddenSafe() )
-            	ds.putSS(PrivateTags.HiddenInstance,1);
             MediaLocal media = getMedia();
             if (media != null && media.getMediaStatus() == MediaDTO.COMPLETED) {
                 ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId());

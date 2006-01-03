@@ -149,8 +149,6 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addPatientMatch() {
-		sqlBuilder.addBooleanMatch(null, "Patient.hidden", SqlBuilder.TYPE2, false );
-
 		sqlBuilder.addWildCardMatch(null, "Patient.patientId", SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientID), false);
         sqlBuilder.addWildCardMatch(null, "Patient.patientName",
@@ -168,8 +166,6 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addStudyMatch() {
-    	sqlBuilder.addBooleanMatch(null, "Study.hidden", SqlBuilder.TYPE2, false );
-
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
@@ -196,8 +192,6 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addSeriesMatch() {
-   		sqlBuilder.addBooleanMatch(null, "Series.hidden", SqlBuilder.TYPE2, false );
-    	
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SeriesInstanceUID));
@@ -235,8 +229,6 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addInstanceMatch() {
-		sqlBuilder.addBooleanMatch(null, "Instance.hidden", SqlBuilder.TYPE2, false );
-    	
         sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SOPInstanceUID));
         sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid", SqlBuilder.TYPE1,
