@@ -475,16 +475,20 @@
     			<xsl:value-of select="manufacturer"/>
 					\ <xsl:value-of select="manufacturerModelName"/>&#160;
       		</td>
-			<td title="PPS Status"  >
+			<td>
 				<xsl:choose>
-					<xsl:when test="PPSStatus='DISCONTINUED'">
+					<xsl:when test="PPSStatus='DISCONTINUED' or incorrectWLEntry='true'">
 						<xsl:attribute name="style">color: red</xsl:attribute>
+						<xsl:attribute name="title">PPS Status:<xsl:value-of select="DRCodeMeaning"/></xsl:attribute>
+						<xsl:text>DISCONTINUED</xsl:text>
 					</xsl:when>
 					<xsl:when test="PPSStatus!=''">
 						<xsl:attribute name="style">color: black</xsl:attribute>
+						<xsl:attribute name="title">PPS Status</xsl:attribute>
+						<xsl:value-of select="PPSStatus"/>	
 					</xsl:when>
 				</xsl:choose>
-	    		<xsl:value-of select="PPSStatus"/>&#160;
+	    		&#160;
     	  	</td>
 			<td title="Number of Instances" align="center">
 				<xsl:value-of select="numberOfInstances"/>
