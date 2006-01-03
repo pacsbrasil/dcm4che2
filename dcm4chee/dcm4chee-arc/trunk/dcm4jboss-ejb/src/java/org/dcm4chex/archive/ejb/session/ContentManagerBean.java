@@ -65,6 +65,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
@@ -102,6 +103,8 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  * @ejb.ejb-ref ejb-name="PrivateStudy" view-type="local" ref-name="ejb/PrivateStudy" 
  * @ejb.ejb-ref ejb-name="PrivateSeries" view-type="local" ref-name="ejb/PrivateSeries" 
  * @ejb.ejb-ref ejb-name="PrivateInstance" view-type="local" ref-name="ejb/PrivateInstance" 
+ * 
+ * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
  *  
  */
 
@@ -125,6 +128,8 @@ public abstract class ContentManagerBean implements SessionBean {
     private PrivateStudyLocalHome privStudyHome;
     private PrivateSeriesLocalHome privSeriesHome;
     private PrivateInstanceLocalHome privInstanceHome;
+
+    private MPPSLocalHome mppsHome;
     
     public void setSessionContext(SessionContext arg0)
         throws EJBException, RemoteException {
@@ -148,6 +153,9 @@ public abstract class ContentManagerBean implements SessionBean {
                 (PrivateSeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivateSeries");
             privInstanceHome =
                 (PrivateInstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivateInstance");
+            
+            mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
+            
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -352,11 +360,22 @@ public abstract class ContentManagerBean implements SessionBean {
         List result = new ArrayList(c.size());
         PrivateSeriesLocal series;
         Dataset ds;
+        Dataset refPPS;
+        String ppsUID;
         for (Iterator it = c.iterator(); it.hasNext();) {
             series = (PrivateSeriesLocal) it.next();
             ds = series.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.SeriesPk, series.getPk().intValue() );
+            refPPS = ds.getItem(Tags.RefPPSSeq);
+            if ( refPPS != null) {
+            	ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
+            	if ( ppsUID != null ) {
+            		try {
+	            		this.mergeMPPSAttr(ds, mppsHome.findBySopIuid(ppsUID));
+            		} catch ( FinderException ignore ) {}
+            	}
+            }
            	result.add( ds );
         }
         return result;
