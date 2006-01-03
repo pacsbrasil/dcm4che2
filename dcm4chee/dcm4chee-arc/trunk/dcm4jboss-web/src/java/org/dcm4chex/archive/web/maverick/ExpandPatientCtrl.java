@@ -74,7 +74,7 @@ public class ExpandPatientCtrl extends Dcm4JbossController {
 	                        ContentManagerHome.JNDI_NAME);
 	        ContentManager cm = home.create();
 	        try {
-	            List studies = cm.listStudiesOfPatient(patPk, false);
+	            List studies = cm.listStudiesOfPatient(patPk);
 	            for (int i = 0, n = studies.size(); i < n; i++)
 	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
 	            folderForm.getPatientByPk(patPk).setStudies(studies);

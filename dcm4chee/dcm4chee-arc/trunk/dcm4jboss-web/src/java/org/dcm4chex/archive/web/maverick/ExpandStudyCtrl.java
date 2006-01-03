@@ -82,7 +82,7 @@ public class ExpandStudyCtrl extends Dcm4JbossController {
 	                ContentManagerHome.JNDI_NAME);
 	        ContentManager cm = home.create();
 	        try {
-	            List series = cm.listSeriesOfStudy(studyPk, false);
+	            List series = cm.listSeriesOfStudy(studyPk);
 	            for (int i = 0, n = series.size(); i < n; i++)
 	                series.set(i, new SeriesModel((Dataset) series.get(i)));
 	            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);

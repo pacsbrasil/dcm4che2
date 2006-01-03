@@ -304,7 +304,7 @@ public class FolderMoveDelegate {
 
 //*********** update model for view	
 	private void _updateStudyWithSeries(StudyModel study, ContentManager cm) throws Exception {
-		List series = cm.listSeriesOfStudy( study.getPk(), false );
+		List series = cm.listSeriesOfStudy( study.getPk() );
         for (int i = 0, n = series.size(); i < n; i++)
         	series.set(i, new SeriesModel((Dataset) series.get(i)));
         study.setSeries( series );
@@ -317,13 +317,13 @@ public class FolderMoveDelegate {
 	 * @param cm ContentManagerBean to get current list of studies.
 	 */
 	private void _updatePatientWithStudies( PatientModel patient, ContentManager cm ) throws Exception {
-		List studies = cm.listStudiesOfPatient( patient.getPk(), false );
+		List studies = cm.listStudiesOfPatient( patient.getPk() );
         for (int i = 0, n = studies.size(); i < n; i++)
             studies.set(i, new StudyModel((Dataset) studies.get(i)));
         patient.setStudies( studies );
 	}
 	private void _updateSeriesWithInstances(SeriesModel series, ContentManager cm) throws Exception {
-		List inst = cm.listInstancesOfSeries( series.getPk(), false );
+		List inst = cm.listInstancesOfSeries( series.getPk() );
         for (int i = 0, n = inst.size(); i < n; i++)
         	inst.set(i, InstanceModel.valueOf((Dataset) inst.get(i)));
         series.setInstances( inst );

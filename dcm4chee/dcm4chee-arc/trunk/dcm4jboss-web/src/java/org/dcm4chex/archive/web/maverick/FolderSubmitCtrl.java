@@ -165,14 +165,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
             	return FOLDER;
             }
             if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter.toDataset(), 
-                		false,
-                		!folderForm.isShowWithoutStudies()));
+                folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies()));
                 folderForm.setAets(getAEDelegate().getAEs());
             }
-            List studyList = cm.listStudies(filter.toDataset(),
-            		false,
-					!folderForm.isShowWithoutStudies(), 
+            List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
 					folderForm.getOffset(), folderForm.getLimit());
             List patList = new ArrayList();
             PatientModel curPat = null;
@@ -409,7 +405,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                         ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            return cm.listStudiesOfPatient(patPk, false );
+            return cm.listStudiesOfPatient(patPk);
         } finally {
             try {
                 cm.remove();

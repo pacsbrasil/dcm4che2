@@ -69,7 +69,6 @@ public class SeriesModel extends AbstractModel {
     public SeriesModel(Dataset ds) {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        isHidden = ds.getInt( PrivateTags.HiddenSeries, 0) != 0;
         Dataset item = ds.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
         if ( item != null ) {
 	        drCode = item.getString(Tags.CodeValue);

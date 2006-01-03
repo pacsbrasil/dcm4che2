@@ -336,7 +336,7 @@ public class TrashFolderCtrl extends FolderCtrl {
                         ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            return cm.listStudiesOfPatient(patPk, false );
+            return cm.listStudiesOfPrivatePatient(patPk);
         } finally {
             try {
                 cm.remove();

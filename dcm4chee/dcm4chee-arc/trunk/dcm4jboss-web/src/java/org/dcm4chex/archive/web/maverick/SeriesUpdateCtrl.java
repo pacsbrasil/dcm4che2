@@ -163,7 +163,7 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
             StudyModel study = form.getStudyByPk(patPk, studyPk);
             
             ContentManager cm = lookupContentManager();
-            List allSeries = cm.listSeriesOfStudy(studyPk, false);
+            List allSeries = cm.listSeriesOfStudy(studyPk);
             for (int i = 0, n = allSeries.size(); i < n; i++)
                 allSeries.set(i, new SeriesModel((Dataset) allSeries.get(i)));
             form.getStudyByPk(patPk, studyPk).setSeries(allSeries);

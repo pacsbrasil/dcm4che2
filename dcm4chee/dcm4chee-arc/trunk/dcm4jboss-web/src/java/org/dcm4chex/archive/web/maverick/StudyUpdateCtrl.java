@@ -148,7 +148,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             PatientModel pat = form.getPatientByPk(patPk);
 
             ContentManager cm = lookupContentManager();
-            List studies = cm.listStudiesOfPatient(patPk, false);
+            List studies = cm.listStudiesOfPatient(patPk);
             for (int i = 0, n = studies.size(); i < n; i++)
                 studies.set(i, new StudyModel((Dataset) studies.get(i)));
             pat.setStudies(studies);

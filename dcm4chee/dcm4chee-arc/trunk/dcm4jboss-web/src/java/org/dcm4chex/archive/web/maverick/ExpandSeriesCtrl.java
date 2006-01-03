@@ -84,7 +84,7 @@ public class ExpandSeriesCtrl extends Dcm4JbossController {
 	                        ContentManagerHome.JNDI_NAME);
 	        ContentManager cm = home.create();
 	        try {
-	            List instances = cm.listInstancesOfSeries(seriesPk, false);
+	            List instances = cm.listInstancesOfSeries(seriesPk);
 	            for (int i = 0, n = instances.size(); i < n; i++)
 	                instances.set(i, InstanceModel.valueOf((Dataset) instances
 	                        .get(i)));
