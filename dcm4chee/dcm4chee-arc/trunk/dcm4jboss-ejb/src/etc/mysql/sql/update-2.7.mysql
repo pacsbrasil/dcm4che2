@@ -1,4 +1,8 @@
 -- Update DB from dcm4jboss-2.6.x to dcm4jboss-2.7.x
+ALTER TABLE patient DROP COLUMN hidden;
+ALTER TABLE study DROP COLUMN hidden;
+ALTER TABLE series DROP COLUMN hidden;
+ALTER TABLE instance DROP COLUMN hidden;
 
 ALTER TABLE study ADD study_status_id VARCHAR(250) BINARY;
 ALTER TABLE study ADD study_desc VARCHAR(250);
