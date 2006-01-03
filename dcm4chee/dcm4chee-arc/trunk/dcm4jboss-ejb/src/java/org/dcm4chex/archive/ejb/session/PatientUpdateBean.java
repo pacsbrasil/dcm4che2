@@ -124,7 +124,6 @@ public abstract class PatientUpdateBean implements SessionBean {
         dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
         dominantPat.getGsps().addAll(priorPat.getGsps());
         priorPat.setMergedWith(dominantPat);
-        dominantPat.updateDerivedFields();
     }
 
     /**

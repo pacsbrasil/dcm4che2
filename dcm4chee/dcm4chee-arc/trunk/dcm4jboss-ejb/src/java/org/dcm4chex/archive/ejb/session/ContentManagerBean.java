@@ -205,9 +205,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int countStudies(Dataset filter, boolean showHidden, boolean hideWithoutStudies) {
+    public int countStudies(Dataset filter, boolean hideWithoutStudies) {
         try {
-       		return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).count();
+       		return new QueryStudiesCmd(filter, hideWithoutStudies).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -216,9 +216,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listStudies(Dataset filter, boolean showHidden, boolean hideWithoutStudies, int offset, int limit) {
+    public List listStudies(Dataset filter, boolean hideWithoutStudies, int offset, int limit) {
         try {
-       		return new QueryStudiesCmd(filter, showHidden, hideWithoutStudies).list(offset, limit);
+       		return new QueryStudiesCmd(filter, hideWithoutStudies).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -250,19 +250,14 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listStudiesOfPatient(int patientPk, boolean showHidden) throws FinderException {
+    public List listStudiesOfPatient(int patientPk) throws FinderException {
         Collection c =
             patHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
         List result = new ArrayList(c.size());
         StudyLocal study;
         for (Iterator it = c.iterator(); it.hasNext();) {
             study = (StudyLocal) it.next();
-            if ( study.getHiddenSafe() == showHidden ) {
-            	result.add(study.getAttributes(true));
-            } else if (showHidden) { //are childs hidden?
-            	if ( listSeriesOfStudy( study.getPk().intValue(), true).size() > 0 )
-            		result.add(study.getAttributes(true));
-            }
+           	result.add(study.getAttributes(true));
         }
         return result;
     }
@@ -271,19 +266,14 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listSeriesOfStudy(int studyPk, boolean showHidden) throws FinderException {
+    public List listSeriesOfStudy(int studyPk) throws FinderException {
         Collection c =
             studyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
         List result = new ArrayList(c.size());
         SeriesLocal series;
         for (Iterator it = c.iterator(); it.hasNext();) {
             series = (SeriesLocal) it.next();
-            if ( series.getHiddenSafe() == showHidden ) {
-            	result.add( mergeMPPSAttr(series.getAttributes(true), series.getMpps()) );
-	        } else if (showHidden) { //are childs hidden?
-	        	if ( listInstancesOfSeries( series.getPk().intValue(), true).size() > 0 )
-	        		result.add( mergeMPPSAttr(series.getAttributes(true), series.getMpps()) );
-	        }
+           	result.add( mergeMPPSAttr(series.getAttributes(true), series.getMpps()) );
         }
         return result;
     }
@@ -304,15 +294,14 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listInstancesOfSeries(int seriesPk, boolean showHidden) throws FinderException {
+    public List listInstancesOfSeries(int seriesPk) throws FinderException {
         Collection c =
             seriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
         List result = new ArrayList(c.size());
         InstanceLocal inst;
         for (Iterator it = c.iterator(); it.hasNext();) {
             inst = (InstanceLocal) it.next();
-            if ( inst.getHiddenSafe() == showHidden )
-            	result.add(inst.getAttributes(true));
+           	result.add(inst.getAttributes(true));
         }
         return result;
     }

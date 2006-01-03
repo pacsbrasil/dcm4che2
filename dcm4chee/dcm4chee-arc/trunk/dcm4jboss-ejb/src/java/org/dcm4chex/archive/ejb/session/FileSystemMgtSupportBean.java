@@ -152,9 +152,9 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
             if (release) {
             	for (Iterator iter = seriesLocals.values().iterator(); iter.hasNext();) {
             		final SeriesLocal ser = (SeriesLocal) iter.next();
-            		ser.updateDerivedFields(false, true, false, false, true, true);
+            		ser.updateDerivedFields(false, true, false, false, true);
             	}
-            	study.updateDerivedFields(false, true, false, false, true, false, true);
+            	study.updateDerivedFields(false, true, false, false, true, false);
             	log.info("Release Files of " + studyOnFs.asString() + " - "
                     + (size / 1000000.f) + "MB");
             	studyOnFs.remove();

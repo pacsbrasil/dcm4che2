@@ -153,7 +153,7 @@ public abstract class StorageBean implements SessionBean {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
             throw new EJBException(e);
-        } finally {
+  		} finally {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
@@ -418,20 +418,6 @@ public abstract class StorageBean implements SessionBean {
         }
         return true;
     }
-    /**
-     * @ejb.interface-method
-     */
-    public boolean unhide(String iuid) throws FinderException {
-        InstanceLocal il = instHome.findBySopIuid(iuid);
-        boolean wasHidden = il.getHiddenSafe();
-        il.setHidden(false);
-        SeriesLocal sl = il.getSeries();
-        sl.setHidden(false);
-        StudyLocal stl = sl.getStudy();
-        stl.setHidden(false);
-		stl.getPatient().setHidden(false);
-		return wasHidden;
-    }
 
     /**
      * @ejb.interface-method
@@ -458,11 +444,11 @@ public abstract class StorageBean implements SessionBean {
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
             final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
-			ser.updateDerivedFields(false, false, true, false, false, true);
+			ser.updateDerivedFields(false, false, true, false, false);
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
             final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
-			study.updateDerivedFields(false, false, true, false, false, false, true);
+			study.updateDerivedFields(false, false, true, false, false, false);
         }
     }
 
@@ -479,20 +465,21 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateStudy(String iuid) throws FinderException {
-        final StudyLocal study = studyHome.findByStudyIuid(iuid);
-		study.updateDerivedFields(true, true, false, true, true, true, false);
-		study.updateDerivedFields(false, false, false, false, false, false, true);
-		if ( ! study.getHiddenSafe() )
-			study.getPatient().updateDerivedFields();
-		
+    	try { 
+	   		final StudyLocal study = studyHome.findByStudyIuid(iuid);
+	   		study.updateDerivedFields(true, true, false, true, true, true);
+	   		study.updateDerivedFields(false, false, false, false, false, false);
+    	} catch ( FinderException ignore ) {}
     }
     
     /**
      * @ejb.interface-method
      */
     public void updateSeries(String iuid) throws FinderException {
-        final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
-        series.updateDerivedFields(true, true, false, true, true, true);
+    	try { 
+	   		final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
+	   		series.updateDerivedFields(true, true, false, true, true);
+		} catch ( FinderException ignore ) {}
     }
     
     /**

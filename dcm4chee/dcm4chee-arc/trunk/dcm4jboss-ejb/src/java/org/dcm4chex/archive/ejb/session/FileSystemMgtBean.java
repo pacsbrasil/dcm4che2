@@ -331,8 +331,12 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		try {
 			sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
 		} catch (ObjectNotFoundException e) {
-			sofHome.create(studyHome.findByStudyIuid(siud), fileSystemHome
+			try {
+				sofHome.create(studyHome.findByStudyIuid(siud), fileSystemHome
 					.findByDirectoryPath(dirPath));
+			} catch ( CreateException ignore ) { 
+				sofHome.findByStudyAndFileSystem(siud, dirPath).touch();//check if concurrent create
+			}
 		}
 	}
 	

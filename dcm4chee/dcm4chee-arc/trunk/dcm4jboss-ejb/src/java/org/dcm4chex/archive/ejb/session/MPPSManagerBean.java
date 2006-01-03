@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.session;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,7 +67,6 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -80,6 +80,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
+ * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
+ * 
  */
 public abstract class MPPSManagerBean implements SessionBean {
 
@@ -87,6 +89,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     private static final String NO_LONGER_BE_UPDATED_ERR_MSG =
         "Performed Procedure Step Object may no longer be updated";
     private static final int NO_LONGER_BE_UPDATED_ERR_ID = 0xA710;
+	private static final int DELETED = 1;
     private static final int[] PATIENT_ATTRS_EXC = {
             Tags.PatientName,
             Tags.PatientID,
@@ -116,7 +119,7 @@ public abstract class MPPSManagerBean implements SessionBean {
 			mwlItemHome = (MWLItemLocalHome) jndiCtx.lookup("java:comp/env/ejb/MWLItem");
         } catch (NamingException e) {
             throw new EJBException(e);
-        } finally {
+		} finally {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
@@ -213,30 +216,8 @@ public abstract class MPPSManagerBean implements SessionBean {
         Dataset attrs = mpps.getAttributes();
         attrs.putAll(ds);
         mpps.setAttributes(attrs);
-        boolean hidden = mpps.getPatient().getHiddenSafe();
-        //hide if incorrect WL (and pat not already hidden).
-        //unhide if not a incorrect WL and patient is hidden.
-        if (mpps.isIncorrectWorklistEntrySelected() ^ hidden) { 
-            Collection c = mpps.getSeries();
-            SeriesLocal ser = null;
-            for (Iterator it = c.iterator(); it.hasNext();) {
-                ser = (SeriesLocal) it.next();
-                ser.markDeleted(!hidden);
-            }
-            if (ser != null)
-                try {
-                	StudyLocal study = ser.getStudy();
-                	if ( !hidden && study.getSeries().size() == 1)
-                		study.setHidden(!hidden);
-                	else
-                		study.updateDerivedFields(true, true, true, true, true, true, true);
-               		if ( hidden )
-               			mpps.getPatient().updateDerivedFields();
-                } catch (FinderException e1) {
-                    throw new DcmServiceException(Status.ProcessingFailure, e1);
-                }
-        }
     }
+    
     
     /**
      * Links a mpps to a mwl entry.
@@ -321,4 +302,18 @@ public abstract class MPPSManagerBean implements SessionBean {
     	}
     	return true;
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public Collection getSeriesIUIDs(String mppsIUID) throws FinderException {
+    	Collection col = new ArrayList();
+        final MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
+        Iterator iter = mpps.getSeries().iterator();
+        while ( iter.hasNext() ) {
+        	col.add( ( (SeriesLocal) iter.next()).getSeriesIuid() );
+        }
+        return col;
+    }
+    
 }

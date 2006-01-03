@@ -582,13 +582,13 @@ public abstract class MediaComposerBean implements SessionBean {
     	Iterator iter = series.iterator();
     	while ( iter.hasNext() ) {
     		final SeriesLocal ser = ( (SeriesLocal) iter.next() );
-			ser.updateDerivedFields(false, false, false, true, false, false);
+			ser.updateDerivedFields(false, false, false, true, false);
     	}
     	Collection studies = studyHome.findStudiesOnMedia( media );
     	iter = studies.iterator();
     	while ( iter.hasNext() ){
     		final StudyLocal sty = ( (StudyLocal) iter.next());
-			sty.updateDerivedFields(false, false, false, true, false, false, false);
+			sty.updateDerivedFields(false, false, false, true, false, false);
     	}
     }
     
@@ -611,13 +611,13 @@ public abstract class MediaComposerBean implements SessionBean {
       	Iterator iter = series.iterator();
     	while ( iter.hasNext() ) {
     		SeriesLocal ser = (SeriesLocal) iter.next();
-			ser.updateDerivedFields(false, false, false, true, true, false);
+			ser.updateDerivedFields(false, false, false, true, true);
     	}
     	if ( log.isDebugEnabled() ) log.debug( "Series updated after media "+filesetId+" was deleted!");
     	iter = studies.iterator();
     	while ( iter.hasNext() ){
     		StudyLocal sty = (StudyLocal) iter.next();
-    		sty.updateDerivedFields(false, false, false, true, true, false, false);
+    		sty.updateDerivedFields(false, false, false, true, true, false);
      	}
     	if ( log.isDebugEnabled() ) log.debug( "Studies updated after media "+filesetId+" was deleted!");
    	
