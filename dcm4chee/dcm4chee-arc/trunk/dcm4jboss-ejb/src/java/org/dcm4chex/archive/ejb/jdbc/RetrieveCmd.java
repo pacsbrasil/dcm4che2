@@ -232,7 +232,7 @@ public class RetrieveCmd extends BaseReadCmd {
         }
 
         protected Object key() throws SQLException {
-            return rs.getString(10);
+            return rs.getString(11);
         }
         
         protected FileInfo[][] toArray(Map result) {
