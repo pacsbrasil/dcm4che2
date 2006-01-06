@@ -84,22 +84,26 @@ private static final long MS_PER_HOUR = 3600000L;
 
     public static long toScheduledTime(String s) {
         int delim = s.lastIndexOf('!');
-        if (delim != -1) {
-	        Calendar cal = Calendar.getInstance();
-	        long now = cal.getTimeInMillis();
-	        cal.set(Calendar.MILLISECOND, 0);
-	        cal.set(Calendar.SECOND, 0);
-	        cal.set(Calendar.MINUTE, 0);
-	        cal.set(Calendar.HOUR_OF_DAY, 0);
-	        long date = cal.getTimeInMillis();
-	        long time = now - date;
-	        int hypen = s.lastIndexOf('-');
-	        long start = Integer.parseInt(s.substring(delim+1, hypen)) * MS_PER_HOUR;
-	        long end = Integer.parseInt(s.substring(hypen+1)) * MS_PER_HOUR;
-	        if (time > start && time < end)
-	            return date + end;
-        }
-        return 0L;
+        if (delim == -1)
+            return 0L;
+        int hypen = s.lastIndexOf('-');
+        int notAfterHour = Integer.parseInt(s.substring(delim+1, hypen));
+        int notBeforeHour = Integer.parseInt(s.substring(hypen+1));
+        Calendar cal = Calendar.getInstance();
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        boolean sameDay = notAfterHour <= notBeforeHour;
+        boolean delay = sameDay 
+            ? hour >= notAfterHour && hour < notBeforeHour
+            : hour >= notAfterHour || hour < notBeforeHour;
+        if (!delay)
+            return 0L;
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.HOUR_OF_DAY, notBeforeHour);
+        if (!sameDay && hour >= notAfterHour)
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        return cal.getTimeInMillis();
     }
     
     public String[] getForwardDestinationsFor(Association assoc) {
