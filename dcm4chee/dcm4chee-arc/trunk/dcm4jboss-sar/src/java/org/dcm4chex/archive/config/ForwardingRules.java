@@ -102,7 +102,7 @@ public class ForwardingRules {
         int hypen = s.lastIndexOf('-');
         int start = Integer.parseInt(s.substring(delim+1, hypen));
         int end = Integer.parseInt(s.substring(hypen+1));
-        if (start < 0 || end > 24 || start >= end)
+        if (start < 0 || end > 24)
             throw new IllegalArgumentException();
     }
 
