@@ -4,7 +4,7 @@
     <property file="build.properties" />
 
     <property name="version" value="2.7.0"/>
-    <property name="dist.jboss.conf" value="dcmcdw"/>
+    <property name="dist.jboss.conf" value="default"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
     <property name="dist.src" value="dcmcdw-src-${version}"/>
     <property name="dist.standalone" value="dcmcdw-standalone-${version}"/>
@@ -185,13 +185,13 @@
 				<include name="bin/shutdown.sh"/>
 				<include name="bin/twiddle.sh"/>
 			</zipfileset>
-			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/dcmcdw">
+			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/default">
 				<include name="deploy/jmx-console.war/**"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone}/server/dcmcdw">
+			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone}/server/default">
 				<include name="conf/jbossmq-state.xml"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone}/server/dcmcdw">
+			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone}/server/default">
 				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jboss-jca.sar"/>
 				<include name="deploy/jboss-local-jdbc.rar"/>

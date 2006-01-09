@@ -116,7 +116,7 @@
       getMethod="isSortEnabled"
       setMethod="setSortEnabled">
       <description>Sort file content locations according to rules in
-      server/dcmcdw/conf/mkisofs.sort.
+      server/default/conf/mkisofs.sort.
       </description>
       <name>SortEnabled</name>
       <type>boolean</type>      
@@ -127,7 +127,7 @@
    <attribute access="read-write"
       getMethod="isLogEnabled"
       setMethod="setLogEnabled">
-      <description>Log to server/dcmcdw/log/mkisofs.log.
+      <description>Log to server/default/log/mkisofs.log.
       </description>
       <name>LogEnabled</name>
       <type>boolean</type>      

@@ -233,7 +233,7 @@
    <attribute access="read-write"
       getMethod="isLogEnabled"
       setMethod="setLogEnabled">
-      <description>Log to server/dcmcdw/log/cdrecord.log.
+      <description>Log to server/default/log/cdrecord.log.
       </description>
       <name>LogEnabled</name>
       <type>boolean</type>      

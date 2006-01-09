@@ -43,7 +43,7 @@ Installation:
  1. Unzip the ZIP archive into the server sub-directory of your JBoss
     installation
     
- 2. Open a console and change the working directory to dcmcdw/bin of
+ 2. Open a console and change the working directory to default/bin of
     the extracted file set and run:
     
     [Windows]    install
@@ -52,11 +52,11 @@ Installation:
     to copy necessary files from the JBoss installation into this file set.
     
  4. Change the working directory to the bin directory of the JBoss
-    installation and start the JBoss Application Server with dcmcdw
+    installation and start the JBoss Application Server with default
     server configuration:
     
-    [Windows]    run -c dcmcdw
-    [Unix/Linux] ./run.sh -c dcmcdw
+    [Windows]    run
+    [Unix/Linux] ./run.sh
     
     Check the console output, if any ERROR log message occurs during start up.
     After the message 
@@ -107,7 +107,7 @@ Installation:
  7. For usage of Acrobat Reader as external print utility for label print on
     Windows Printer you have to adjust the command path in batch file
     
-    dcmcdw/bin/acroread.bat
+    default/bin/acroread.bat
     
     and set Label Print Service (->"service=LabelPrint") attribute 
     
@@ -130,7 +130,7 @@ Installation:
     
 Test dcmcdw using dcmsnd.jar and mcmscu.jar command line utilities:
 
- 1. Open a (second) console and change the working directory to dcmcdw/bin of
+ 1. Open a (second) console and change the working directory to default/bin of
     the extracted file set.
     
  2. Run
@@ -175,7 +175,7 @@ Test dcmcdw using dcmsnd.jar and mcmscu.jar command line utilities:
 How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?    
  
     dcmcdw creates INDEX.HTM, HTML pages and Media Label by applying
-    XSL stylesheets, located at dcmcdw/conf/xsl/, to a XMLized version
+    XSL stylesheets, located at default/conf/xsl/, to a XMLized version
     of the DICOM directory (DICOMDIR) content. So you can change the layout
     by modifying the XSL stylesheets.
     
@@ -185,12 +185,12 @@ How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?
     
     causes dcmcdw to dump the DICOMDIR xml version into
         
-    dcmcdw/log/dicomdir.xml .
+    default/log/dicomdir.xml .
     
     Then the XSLT transformation can be applied manually:
     
     To generate INDEX.HTM in the disk root directory (assuming 
-    dcmcdw/bin as working directory) run:
+    default/bin as working directory) run:
     
     [Windows]    xalan -IN ..\log\dicomdir.xml -XSL ..\conf\xsl\index.xsl 
                     -OUT INDEX.HTM

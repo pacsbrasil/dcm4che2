@@ -115,7 +115,7 @@
       <description>Path of File-set Spool Directory, where the File-set Composer
       Service prepares media content directories and the Make ISO Image
       Service stores generated ISO image files. Relative path names will
-      be resolved against directory $DCMCDW_HOME/server/dcmcdw/data/."
+      be resolved against directory $DCMCDW_HOME/server/default/data/."
       </description>
       <name>FilesetDirPath</name>
       <type>java.lang.String</type>      
@@ -193,7 +193,7 @@
       setMethod="setRequestDirPath">
       <description>Path of Directory where received Media Creation Requests
       are stored. Relative path names will be resolved against directory
-      $DCMCDW_HOME/server/dcmcdw/data/."
+      $DCMCDW_HOME/server/default/data/."
       </description>
       <name>RequestDirPath</name>
       <type>java.lang.String</type>      
@@ -218,7 +218,7 @@
       setMethod="setLabelDirPath">
       <description>Path of Directory where created Disk Label Files
       are stored. Relative path names will be resolved against directory
-      $DCMCDW_HOME/server/dcmcdw/data/."
+      $DCMCDW_HOME/server/default/data/."
       </description>
       <name>LabelDirPath</name>
       <type>java.lang.String</type>      

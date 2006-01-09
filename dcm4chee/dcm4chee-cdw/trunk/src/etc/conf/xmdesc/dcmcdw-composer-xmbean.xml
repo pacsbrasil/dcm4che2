@@ -207,7 +207,7 @@
       getMethod="isLogXml"
       setMethod="setLogXml">
       <description>Log XML representation of DICOMDIR to 
-      server/dcmcdw/log/dicomdir.xml. 
+      server/default/log/dicomdir.xml. 
       </description>
       <name>LogXml</name>
       <type>boolean</type>      
