@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -304,7 +305,7 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public List listInstancesOfSeries(int seriesPk) throws FinderException {
         Collection c =
-            seriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
+            instanceHome.findBySeriesPk(new Integer(seriesPk));
         List result = new ArrayList(c.size());
         InstanceLocal inst;
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -536,6 +537,49 @@ public abstract class ContentManagerBean implements SessionBean {
 			}
 		} 
     	return ds;
+    }
+
+	/**
+     * @throws FinderException
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Collection getSOPInstanceRefMacros( List instanceUIDs ) throws FinderException {
+    	HashMap result = new HashMap();
+    	HashMap mapRefSopSQ = new HashMap();
+    	InstanceLocal instance;
+    	SeriesLocal series;
+    	StudyLocal study;
+    	for ( Iterator iter = instanceUIDs.iterator() ; iter.hasNext() ; ) {
+    		instance = instanceHome.findBySopIuid( iter.next().toString() );
+    		series = instance.getSeries();
+    		study = series.getStudy();
+        	Dataset ds = (Dataset) result.get( study.getPk() );
+        	if ( ds == null ) {
+        		ds = dof.newDataset();
+        		ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
+        		ds.putSQ(Tags.RefSeriesSeq);
+        		result.put( study.getPk(), ds );
+        	}
+        	DcmElement refSopSq = (DcmElement)mapRefSopSQ.get( series.getPk() );
+        	if ( refSopSq == null ) {
+        		DcmElement refSeriesSq = ds.get(Tags.RefSeriesSeq);
+        		Dataset serDS = refSeriesSq.addNewItem();
+    			serDS.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid() );
+    			String aet = series.getRetrieveAETs(); 
+    			int pos = aet.indexOf('\\');
+    			if ( pos != -1 ) aet = aet.substring(0,pos);
+    			serDS.putAE( Tags.RetrieveAET, aet );
+    			serDS.putAE( Tags.StorageMediaFileSetID, series.getFilesetId() );
+    			serDS.putAE( Tags.StorageMediaFileSetUID, series.getFilesetIuid() );
+    			refSopSq = serDS.putSQ(Tags.RefSOPSeq);
+    			mapRefSopSQ.put( series.getPk(), refSopSq );
+        	}
+			Dataset instDS = refSopSq.addNewItem();
+			instDS.putUI( Tags.RefSOPInstanceUID, instance.getSopIuid() );
+			instDS.putUI( Tags.RefSOPClassUID, instance.getSopCuid() );
+     	}
+    	return result.values();
     }
     
     /**

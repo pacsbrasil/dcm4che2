@@ -104,6 +104,15 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.srCode = ?2"
  *             transaction-type="Supports"
  *
+ * @ejb.finder signature="java.util.Collection findBySeriesPk(java.lang.Integer seriesPk)"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1"
+ *             transaction-type="Supports"
+ *
+ * @jboss.query signature="java.util.Collection findBySeriesPk(java.lang.Integer seriesPk)"
+ *              strategy="on-find"
+ *              eager-load-group="*"
+ * 
+ *
  * @ejb.ejb-ref ejb-name="Code"
  *              view-type="local"
  *              ref-name="ejb/Code"
