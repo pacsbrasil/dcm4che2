@@ -499,10 +499,10 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private void coerceAttributes(Dataset attrs, Properties config, HashMap iuidMap)
     throws DcmValueException
     {
-        int numpasses = Integer.parseInt(config.getProperty("num-coerce-passes", "1"));
-        for (int i = 1; i < numpasses; i++)
+        int numpasses = Integer.parseInt(config.getProperty("num-coerce-passes", "0"));
+        for (int i = 0; i < numpasses; i++)
         {
-            String prefix = "" + i + ".";
+            String prefix = "" + (i+1) + ".";
             for (Iterator iter = config.entrySet().iterator(); iter.hasNext();)
             {
                 Map.Entry e = (Map.Entry) iter.next();
@@ -732,14 +732,16 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	}
 
 	private void copyIUIDs(DcmElement sq1, List list) {
+		if (sq1 == null)
+			return;
 		for (int i1 = 0, n1 = sq1.vm(); i1 < n1; ++i1) {
 			Dataset item1 = sq1.getItem(i1);
 			DcmElement sq2 = item1.get(Tags.RefSeriesSeq);
 			for (int i2 = 0, n2 = sq2.vm(); i2 < n2; ++i2) {
-				Dataset item2 = sq1.getItem(i2);
+				Dataset item2 = sq2.getItem(i2);
 				DcmElement sq3 = item2.get(Tags.RefSOPSeq);
 				for (int i3 = 0, n3 = sq3.vm(); i3 < n3; ++i3) {
-					Dataset item3 = sq1.getItem(i3);
+					Dataset item3 = sq3.getItem(i3);
 					String iuid = item3.getString(Tags.RefSOPInstanceUID);
 					list.add(iuid);
 				}
@@ -752,7 +754,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	}
 	
 	private void coerceAttribute(Dataset attrs, String key, String pattern) {
-		int tag = Tags.valueOf(key);
+		int tag = Tags.forName(key);
 		if (pattern.length() == 0)
 			deleteValue(attrs, tag);
 		else if (pattern.equals("firstDayOfMonth()"))
@@ -804,7 +806,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 				continue;
 			}
 			tk = stk.nextToken();
-			int srctag = Tags.valueOf(tk);
+			int srctag = Tags.forName(tk);
 			String s = attrs.getString(srctag);
 			if (s != null)
 			{
