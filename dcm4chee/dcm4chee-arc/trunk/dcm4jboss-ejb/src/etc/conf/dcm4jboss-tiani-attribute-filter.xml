@@ -164,8 +164,11 @@
         <attr tag="0040A043"/> <!-- Concept Name Code Sequence -->
         <attr tag="0040A073"/> <!-- Verifying Observer Sequence -->
         <attr tag="0040A370"/> <!-- Referenced Request Sequence -->
+        <attr tag="0040A375"/> <!-- Current Requested Procedure Evidence Sequence -->
+        <attr tag="0040A385"/> <!-- Pertinent Other Evidence Sequence -->
         <attr tag="0040A491"/> <!-- Completion Flag -->
         <attr tag="0040A493"/> <!-- Verification Flag -->
+        <attr tag="0040A525"/> <!-- Identical Documents Sequence -->
         <attr tag="00540010"/> <!-- Energy Window Vector -->
         <attr tag="00540011"/> <!-- Number of Energy Windows -->
         <attr tag="00540020"/> <!-- Detector Vector -->
