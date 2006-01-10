@@ -372,6 +372,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		ArrayList list = new ArrayList();
 		Dataset keys = DcmObjectFactory.getInstance().newDataset();
 		keys.putUI(Tags.StudyInstanceUID, suid);
+		keys.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
 		Dataset item = keys.putSQ(Tags.ConceptNameCodeSeq).addNewItem();
 		item.putSH(Tags.CodeValue, code);
 		item.putSH(Tags.CodingSchemeDesignator, designator);
