@@ -535,7 +535,11 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             for (int i = 0, n = identicalsq.vm(); i < n; i++)
             {
                 Dataset otherStudyItem = identicalsq.getItem(i);
+                manifest.putUI(Tags.StudyInstanceUID,
+                		otherStudyItem.getString(Tags.StudyInstanceUID));
                 Dataset otherSeriesItem = otherStudyItem.getItem(Tags.RefSeriesSeq);
+                manifest.putUI(Tags.SeriesInstanceUID,
+                		otherSeriesItem.getString(Tags.SeriesInstanceUID));
                 Dataset otherRefSOPItem = otherSeriesItem.getItem(Tags.RefSOPSeq);
                 manifest.putUI(Tags.SOPInstanceUID, 
                         otherRefSOPItem.getString(Tags.RefSOPInstanceUID));
