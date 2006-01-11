@@ -34,13 +34,28 @@
       <description><![CDATA[Document Title of Export Selection Key Object
       (Manifest) considered by this service.
       Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
-      Separate multiple values by comma. NONE = service disabled.
+      Separate multiple values by new line. NONE = service disabled.
       E.g: TCE001^IHERADTF,TCE002^IHERADTF,TCE007^IHERADTF]]>
       </description>
       <name>ExportSelectorTitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDelayReasons"
+      setMethod="setDelayReasons">
+      <description><![CDATA[Recognized Delay Reasons Codes
+      Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
+      Separate multiple values by new line. NONE = ignore Delay Reason Codes in
+      Export Selection Key Object.
+      Default: TCE011^IHERADTF,TCE012^IHERADTF,TCE013^IHERADTF,TCE014^IHERADTF,TCE015^IHERADTF,TCE016^IHERADTF,TCE017^IHERADTF,TCE018^IHERADTF]]>
+      </description>
+      <name>DelayReasons</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="TCE011^IHERADTF,TCE012^IHERADTF,TCE013^IHERADTF,TCE014^IHERADTF,TCE015^IHERADTF,TCE016^IHERADTF,TCE017^IHERADTF,TCE018^IHERADTF"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
