@@ -142,6 +142,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	private int concurrency = 1;
 	
 	private String[] exportSelectorTitles = NONE;
+	private String[] delayReasons = NONE;
 
 	private File dispConfigFile;
 	private Hashtable configs = new Hashtable();
@@ -174,14 +175,22 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         this.exportSelectorTitles = str2codes(s);
 	}
 
+	public final String getDelayReasons() {
+        return codes2str(delayReasons);
+	}
+
+    public final void setDelayReasons(String s) {
+        this.delayReasons = str2codes(s);
+	}
+
     private String codes2str(String[] codes)
     {
         if (codes.length == 0)
             return "NONE";
-        
+        String sep = System.getProperty("line.separator", "\n");
         StringBuffer sb = new StringBuffer(codes[0]);        
         for (int i = 1; i < codes.length; ++i)
-            sb.append((i & 1) != 0 ? '^' : ',').append(codes[i]);
+            sb.append((i & 1) != 0 ? "^" : sep).append(codes[i]);
         
         return sb.toString();
     }
@@ -309,23 +318,25 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		List list = queryExportSelectors(suid, code, designator);
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			Dataset manifest = (Dataset) iter.next();
-            if (isAllReceived(manifest)) {
-                try
-                {
-                    manifest = loadManifest(manifest);
-                    schedule(new ExportTFOrder(manifest), 0L);
-                    delete(manifest);
-                }
-                catch (Exception e)
-                {
-        			log.error("Failed to process export selector with iuid=" 
-        					+ manifest.getString(Tags.SOPInstanceUID), e);
-                }
+            if (!isAllReceived(manifest))
+            	return;
+            try
+            {
+                manifest = loadManifest(manifest);
+                if (isDelayed(manifest))
+                	return;
+                schedule(new ExportTFOrder(manifest), 0L);
+                delete(manifest);
+            }
+            catch (Exception e)
+            {
+    			log.error("Failed to process export selector with iuid=" 
+    					+ manifest.getString(Tags.SOPInstanceUID), e);
             }
 		}		
 	}
 
-    private StorageHome getStorageHome() throws HomeFactoryException {
+	private StorageHome getStorageHome() throws HomeFactoryException {
         return (StorageHome) EJBHomeFactory.getFactory().lookup(
                 StorageHome.class, StorageHome.JNDI_NAME);
     }
@@ -398,15 +409,21 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         copyIUIDs(sel.get(Tags.IdenticalDocumentsSeq), list);
 		copyIUIDs(sel.get(Tags.CurrentRequestedProcedureEvidenceSeq), list);
 		final String[] iuids = (String[]) list.toArray(new String[list.size()]);
+		log.info("Check if " + iuids.length + " referenced objects were already received");
 		keys.putUI(Tags.SOPInstanceUID, iuids);
 		QueryCmd query = null;
 		try {
 			query = QueryCmd.createInstanceQuery(keys, true);
 			query.execute();
-			for (int i = 0; i < iuids.length; i++) {
+			for (int i = iuids.length; i > 0; i--) {
 				if (!query.next())
+				{
+					log.info("Waiting for receive of " + i
+							+ " referenced objects");
 					return false;
+				}
 			}
+			log.info("All " + iuids.length + " referenced objects received!");
 			return true;
 		} catch (SQLException e) {
 			log.error("Query DB for Referenced Instances failed!", e);
@@ -416,6 +433,38 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		}
 		return false;
 	}
+	
+	private boolean isDelayed(Dataset manifest) {
+        DcmElement sq = manifest.get(Tags.ContentSeq);
+        for (int i = 0, n = sq.vm(); i < n; i++) {
+            Dataset item = sq.getItem(i);
+            Dataset cn = item.getItem(Tags.ConceptNameCodeSeq);
+            if (cn != null && "113011".equals(cn.getString(Tags.CodeValue))
+                    && "DCM".equals(cn.getString(Tags.CodingSchemeDesignator)))
+            {
+            	Dataset code = item.getItem(Tags.ConceptCodeSeq);
+            	if (code == null)
+            	{
+            		log.warn("Missing Value for Document Title Modifier in Export Selector:");
+            		log.warn(manifest);
+            		return false;
+            	}
+        		final String cv = code.getString(Tags.CodeValue);
+				final String cs = code.getString(Tags.CodingSchemeDesignator);
+				log.info("Detect Document Title Modifier in Export Selector:" 
+        				+ cv + "^" + cs + "^" + code.getString(Tags.CodeMeaning));
+        		for (int j = 1; j < delayReasons.length; j++,j++) {
+					if (cv.equals(delayReasons[j-1]) && cs.equals(delayReasons[j]))
+					{
+						log.info("Delay Export of teaching files");
+						return true;
+					}
+            	}
+            }
+        }
+        return false;
+	}
+	
 	
 	public void onMessage(Message message) {
 		ObjectMessage om = (ObjectMessage) message;
@@ -499,22 +548,36 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private void coerceAttributes(Dataset attrs, Properties config, HashMap iuidMap)
     throws DcmValueException
     {
+    	String cuid = attrs.getString(Tags.SOPClassUID);
+    	String iuid = attrs.getString(Tags.SOPInstanceUID);
+    	UIDDictionary dict = DictionaryFactory.getInstance().getDefaultUIDDictionary();
         int numpasses = Integer.parseInt(config.getProperty("num-coerce-passes", "0"));
         for (int i = 0; i < numpasses; i++)
         {
+        	int count = 0;
             String prefix = "" + (i+1) + ".";
             for (Iterator iter = config.entrySet().iterator(); iter.hasNext();)
             {
                 Map.Entry e = (Map.Entry) iter.next();
                 String key = (String) e.getKey();
                 if (key.startsWith(prefix))
+                {
                     coerceAttribute(attrs, key.substring(prefix.length()), (String) e.getValue());
+                    ++count;
+                }
             }
+            log.info("Coerce " + count + " attributes in " 
+            		+ dict.toString(cuid) + " with iuid:" + iuid + " in "
+            		+ prefix + "pass");
         }
         boolean replaceUIDs = "YES".equalsIgnoreCase(
                 config.getProperty("replace-uids"));
         if (replaceUIDs)
-            replaceUIDs(attrs, iuidMap);
+        {
+            int count = replaceUIDs(attrs, iuidMap);
+            log.info("Replace " + count + " UIDs in " 
+            		+ dict.toString(cuid) + " with original iuid:" + iuid);
+        }
     }
 
     private void sendManifests(ActiveAssociation a, int pcid, Dataset manifest, 
@@ -824,9 +887,10 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		attrs.putXX(tag, sb.toString());
 	}
 
-    private void replaceUIDs(Dataset ds, HashMap uidmap)
+    private int replaceUIDs(Dataset ds, HashMap uidmap)
     throws DcmValueException
     {
+    	int count = 0;
         for (Iterator iter = ds.iterator(); iter.hasNext();)
         {
             DcmElement elm = (DcmElement) iter.next();
@@ -843,12 +907,13 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                     uidmap.put(from, to);
                 }
                 ds.putUI(elm.tag(), to);
+                count++;
             } else if (elm.vr() == VRs.SQ) {
                 for (int i = 0, n = elm.vm(); i < n; i++)
-                    replaceUIDs(elm.getItem(i), uidmap);
+                    count += replaceUIDs(elm.getItem(i), uidmap);
             }
         }
-        
+        return count;        
     }
 
     public Collection listConfiguredDispositions() throws IOException
