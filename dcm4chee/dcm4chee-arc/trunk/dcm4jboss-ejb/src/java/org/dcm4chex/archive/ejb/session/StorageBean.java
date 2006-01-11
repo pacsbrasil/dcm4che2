@@ -489,22 +489,19 @@ public abstract class StorageBean implements SessionBean {
     		boolean deleteStudy) 
     throws FinderException, EJBException, RemoveException
     {
-    	if (iuids.length == 0)
-    		return;
-    	InstanceLocal inst = instHome.findBySopIuid(iuids[0]);
-    	SeriesLocal series = inst.getSeries();
-    	StudyLocal study = series.getStudy();
-    	inst.remove();
-    	for (int i = 1; i < iuids.length; i++)
-        	instHome.findBySopIuid(iuids[i]).remove();
-		
-    	series.updateDerivedFields(true, true, true, true, true);
-    	if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
-    		series.remove();
-    	
-    	study.updateDerivedFields(true, true, true, true, true, true);
-    	if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
-    		study.remove();
+    	for (int i = 0; i < iuids.length; i++)
+    	{
+    		InstanceLocal inst = instHome.findBySopIuid(iuids[i]);
+    		SeriesLocal series = inst.getSeries();
+    		StudyLocal study = series.getStudy();
+    		inst.remove();
+    		series.updateDerivedFields(true, true, true, true, true);
+    		if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
+    			series.remove();	    	
+	    	study.updateDerivedFields(true, true, true, true, true, true);
+	    	if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
+	    		study.remove();
+    	}
     }
 }
 
