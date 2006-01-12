@@ -546,7 +546,7 @@ public class WADOCacheImpl implements WADOCache {
 		cacheRoot = newRootFile;
 		
 		if ( ! cacheRoot.exists() )
-			cacheRoot.mkdirs();
+			new File(cacheRoot, defaultSubdir).mkdirs();
 		
 	}
 	/**
