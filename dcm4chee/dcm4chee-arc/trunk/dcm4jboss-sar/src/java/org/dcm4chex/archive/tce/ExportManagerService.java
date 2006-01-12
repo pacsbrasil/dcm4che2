@@ -925,9 +925,18 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         return list;
     }
     
-    public void storeExportSelection(Dataset manifest, int prior, String dest)
+    public void storeExportSelection(Dataset manifest, int prior)
     throws SQLException, UnkownAETException, IOException, InterruptedException
     {
+		String dest;
+    	try {
+    		String calledAETs = (String) server.getAttribute(this.storeScpServiceName,"CalledAETitles");
+    		int pos = calledAETs.indexOf('\\');
+    	    dest = pos == -1 ? calledAETs : calledAETs.substring(0,pos);
+    	} catch ( Exception x ) {
+    		x.printStackTrace();
+    		throw new UnkownAETException("Cant get a CalledAET from StoreSCP service! Reason:"+x.getMessage());
+    	}
     	ActiveAssociation aa = openAssociation(manifest.getString(Tags.SOPClassUID), dest);
     	sendManifests(aa, PCID, manifest, prior);
     	aa.release(true);
