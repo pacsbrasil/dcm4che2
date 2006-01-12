@@ -7,69 +7,30 @@
    <xsl:template match="/">
 	 <html>
 	    <head>
-		<style type="text/css">
-body
-{
-  background-color: #666666;
-}
-a:link {
-	text-decoration: none;
-	color: #99bbaa;
-	font-size: 14px;
-   line-height: 21px;
-   font-family: Verdana,Arial,Helvetica;
-}
-
-a:visited {
-	text-decoration: none;
-	color: #99bbaa;
-	font-size: 14px;
-   line-height: 21px;
-   font-family: Verdana,Arial,Helvetica;
-}
-
-a:hover {
-	text-decoration: none;
-	color: #99bbaa;
-	font-size: 14px;
-   line-height: 21px;
-   font-family: Verdana,Arial,Helvetica;
-}
-
-a:active {
-	text-decoration: none;
-	color: #99bbaa;
-	font-size: 14px;
-   line-height: 21px;
-   font-family: Verdana,Arial,Helvetica;
-}
-
-
-.text
-{
-  font-size: 14px;
-  color: #dddddd;
-  line-height: 21px;
-  font-family: Verdana,Arial,Helvetica;
-}
-
-.head
-{
-  font-size: 18px;
-  color: #dddddd;
-  line-height: 21px;
-  font-family: Verdana,Arial,Helvetica;
-}
-		</style>
+	    	<link href="style.css" rel="stylesheet" type="text/css"/>
 	    </head>
 	    <body>
+		<table border="0" cellspacing="0" cellpadding="0" width="100%">
+		 <tr>
+		  <td><img src="white48.jpg" width="100%" height="5px"/></td>
+		</tr>
+		<tr>
+		<td background="white48.jpg">
+		  <img src="white48.jpg" width="10px" height="24px"/><img src="logo.jpg" alt="AGFA"/>
+		</td>
+		</tr>
+		<tr>
+		<td><img src="line.jpg" width="100%" height="20px" alt="line"/></td>
+		</tr>
+		</table>
+
 	    	<center>
 	    		<b><div class="text">You have logged out from DCM Folder:</div></b> 
 	    		<p>
 	    		<a href="foldersubmit.m?filter=">Login</a>
 	    		</p>
 	    	</center>
-		</body>
+	    </body>
 	 </html>
    </xsl:template>
 

@@ -154,6 +154,24 @@
 			<param-value>tiani.archive:service=MPPSScp</param-value>
 		</init-param>
 
+		<!-- 
+			Used by dcm4jboss-web application to find KeyObjectService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-keyobject-service.xml.
+		-->
+		<init-param>
+			<param-name>keyObjectServiceName</param-name>
+			<param-value>tiani.archive:service=KeyObjectService</param-value>
+		</init-param>
+		<!-- 
+			Used by dcm4jboss-web application to find ExportManagerService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-exportmanager-service.xml.
+		-->
+		<init-param>
+			<param-name>exportManagerServiceName</param-name>
+			<param-value>tiani.archive:service=ExportManager</param-value>
+		</init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>
@@ -176,7 +194,11 @@
        <description>Only allows users with the role WebAdmin
        		to access the Archive Web Administration pages
        </description>
-       <url-pattern>/*</url-pattern>
+       <url-pattern>*.jsp</url-pattern>
+       <url-pattern>*.js</url-pattern>
+       <url-pattern>*.m</url-pattern>
+       <url-pattern>*.xsl</url-pattern>
+       <url-pattern>*/?*/*</url-pattern>
        <http-method>GET</http-method>
        <http-method>POST</http-method>
      </web-resource-collection>
