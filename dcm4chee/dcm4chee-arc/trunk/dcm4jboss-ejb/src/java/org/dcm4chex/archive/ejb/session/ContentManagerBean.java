@@ -223,6 +223,26 @@ public abstract class ContentManagerBean implements SessionBean {
     }
 
     /**
+     * Get the Info of an instance.
+     * <p>
+     * Info means the Dataset with all attributes stored in DB for the instance 
+     * (instance, series, study and patient attributes)
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getInstanceInfo(String iuid, boolean supplement) throws FinderException {
+        InstanceLocal il = instanceHome.findBySopIuid(iuid);
+		Dataset ds = il.getAttributes(supplement);
+		SeriesLocal series = il.getSeries();
+		ds.putAll( series.getAttributes(supplement));
+		StudyLocal study = series.getStudy();
+		ds.putAll( study.getAttributes(supplement));
+		ds.putAll( study.getPatient().getAttributes(supplement));
+		return ds;
+    }
+    
+    /**
      * @ejb.interface-method
      */
     public List listStudies(Dataset filter, boolean hideWithoutStudies, int offset, int limit) {
@@ -514,8 +534,10 @@ public abstract class ContentManagerBean implements SessionBean {
 			Dataset serDS = refSerSq.addNewItem();
 			serDS.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid() );
 			aet = series.getRetrieveAETs(); 
-			pos = aet.indexOf('\\');
-			if ( pos != -1 ) aet = aet.substring(0,pos);
+			if ( aet != null ) {
+				pos = aet.indexOf('\\');
+				if ( pos != -1 ) aet = aet.substring(0,pos);
+			}
 			serDS.putAE( Tags.RetrieveAET, aet );
 			serDS.putAE( Tags.StorageMediaFileSetID, series.getFilesetId() );
 			serDS.putAE( Tags.StorageMediaFileSetUID, series.getFilesetIuid() );
@@ -540,18 +562,27 @@ public abstract class ContentManagerBean implements SessionBean {
     }
 
 	/**
+	 * Get a collection of SOP Instance Reference Macro Datasets.
+	 * <p>
+	 * The parameter <code>instanceUIDs</code> can either use SOP Instance UIDs (String) or 
+	 * Instance.pk values (Integer).
+	 * 
      * @throws FinderException
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Collection getSOPInstanceRefMacros( List instanceUIDs ) throws FinderException {
+    public Collection getSOPInstanceRefMacros( Collection instanceUIDs ) throws FinderException {
     	HashMap result = new HashMap();
     	HashMap mapRefSopSQ = new HashMap();
     	InstanceLocal instance;
     	SeriesLocal series;
     	StudyLocal study;
+    	Object o;
     	for ( Iterator iter = instanceUIDs.iterator() ; iter.hasNext() ; ) {
-    		instance = instanceHome.findBySopIuid( iter.next().toString() );
+    		o = iter.next();
+    		instance = ( o instanceof Integer ) ? 
+    						instanceHome.findByPrimaryKey((Integer)o) : 
+    						instanceHome.findBySopIuid( o.toString() );
     		series = instance.getSeries();
     		study = series.getStudy();
         	Dataset ds = (Dataset) result.get( study.getPk() );
@@ -566,10 +597,12 @@ public abstract class ContentManagerBean implements SessionBean {
         		DcmElement refSeriesSq = ds.get(Tags.RefSeriesSeq);
         		Dataset serDS = refSeriesSq.addNewItem();
     			serDS.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid() );
-    			String aet = series.getRetrieveAETs(); 
-    			int pos = aet.indexOf('\\');
-    			if ( pos != -1 ) aet = aet.substring(0,pos);
-    			serDS.putAE( Tags.RetrieveAET, aet );
+    			String aet = series.getRetrieveAETs();
+    			if ( aet != null ) {
+    				int pos = aet.indexOf('\\');
+    				if ( pos != -1 ) aet = aet.substring(0,pos);
+    				serDS.putAE( Tags.RetrieveAET, aet );
+    			}
     			serDS.putAE( Tags.StorageMediaFileSetID, series.getFilesetId() );
     			serDS.putAE( Tags.StorageMediaFileSetUID, series.getFilesetIuid() );
     			refSopSq = serDS.putSQ(Tags.RefSOPSeq);
@@ -590,6 +623,17 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public Dataset getPatientForStudy(int studyPk) throws FinderException {
     	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
+    	return sl.getPatient().getAttributes(false);
+    }    
+
+    /**
+     * @throws FinderException
+     *
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getPatientForStudy(String studyIUID) throws FinderException {
+    	StudyLocal sl = studyHome.findByStudyIuid( studyIUID );
     	return sl.getPatient().getAttributes(false);
     }    
     
