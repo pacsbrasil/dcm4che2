@@ -244,9 +244,9 @@ public class SRManifestModel {
 		addTextItem( sq, CONTAINS, (String)mapTextValues.get("abstract"), "TCE104", DESIGNATOR_IHE_RAD, "Abstract" );
 		addTextItem( sq, CONTAINS, (String)mapTextValues.get("keywords"), "TCE105", DESIGNATOR_IHE_RAD, "Keywords" );
 		addTextItem( sq, CONTAINS, (String)mapTextValues.get("history"), "121060", DESIGNATOR_DCM, "History" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("finding"), "121071", DESIGNATOR_DCM, "Finding" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("discussion"), "TCE106", DESIGNATOR_IHE_RAD, "Discussion" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("impression"), "111023", DESIGNATOR_DCM, "Differential Diagnosis/Impression" );
+		addTextItem( sq, CONTAINS, (String)mapTextValues.get("findings"), "121071", DESIGNATOR_DCM, "Finding" );
+		addTextItem( sq, CONTAINS, (String)mapTextValues.get("discussions"), "TCE106", DESIGNATOR_IHE_RAD, "Discussion" );
+		addTextItem( sq, CONTAINS, (String)mapTextValues.get("impressions"), "111023", DESIGNATOR_DCM, "Differential Diagnosis/Impression" );
 		addTextItem( sq, CONTAINS, (String)mapTextValues.get("diagnosis"), "TCE107", DESIGNATOR_IHE_RAD, "Diagnosis" );
 		addTextItem( sq, CONTAINS, (String)mapTextValues.get("anatomy"), "112005", DESIGNATOR_DCM, "Radiographic anatomy" );
 		addTextItem( sq, CONTAINS, (String)mapTextValues.get("pathology"), "111042", DESIGNATOR_DCM, "Pathology" );

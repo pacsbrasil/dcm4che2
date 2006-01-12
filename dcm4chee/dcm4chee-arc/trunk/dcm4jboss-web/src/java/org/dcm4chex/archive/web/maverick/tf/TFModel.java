@@ -77,7 +77,7 @@ public class TFModel {
 															"For Clinical Trial Export",
 															"For Research Collection Export"};
 	
-	public static final String[] DOC_TITLE_CODES = new String[]{"TCE002","TCE002","TCE007"};
+	public static final String[] DOC_TITLE_CODES = new String[]{"TCE001","TCE002","TCE007"};
 
 	public static final String[] DELAY_REASONS = new String[]
 		{"Delay export until final report is available",
