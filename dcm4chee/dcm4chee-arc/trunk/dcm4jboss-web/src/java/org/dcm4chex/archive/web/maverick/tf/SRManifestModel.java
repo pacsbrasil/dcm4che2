@@ -168,14 +168,14 @@ public class SRManifestModel {
 	 */
 	public void setSelectedLevel(String level) {
 		if ( level == null ) 
-			selectedLevel = -1;;
+			selectedLevel = -1;
 		try {
 			selectedLevel = Integer.parseInt(level);
 			if ( selectedLevel < 0 || selectedLevel >= LEVELS.length ) {
-				throw new IllegalArgumentException("Illegal Level selection!");
+				selectedLevel = -1;
 			}
 		} catch ( Exception x) {
-			throw new IllegalArgumentException("Illegal Level selection! (NaN)");
+			selectedLevel = -1;
 		}
 	}
 	/**

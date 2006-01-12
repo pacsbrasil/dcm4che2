@@ -86,6 +86,14 @@
 							</input>
 						</td>
 						<td class="folder_header" width="40">
+							<input type="image" value="Export" name="exportTF" src="images/export_tf.gif" alt="TF Export" border="0"
+								title="Export selected instances to Teaching Filesystem">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+						<td class="folder_header" width="40">
 							<input type="image" value="Del" name="del" src="images/trash.gif" alt="delete" border="0"
 								title="Delete selected Entities"
 								onclick="return confirm('Delete selected Entities?')">
