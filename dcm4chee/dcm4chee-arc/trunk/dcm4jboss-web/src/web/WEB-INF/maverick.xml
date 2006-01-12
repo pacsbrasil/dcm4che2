@@ -45,6 +45,7 @@ default-transform-type="xslt">
 	      <transform path="addWorklist.xsl" />
 	    </view>
       <view ref="logout" />
+	  <view name="exportSelector" type="redirect" path="tfSelector.m"/>
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
@@ -279,7 +280,7 @@ default-transform-type="xslt">
 	    <view name="link" type="redirect" path="mwl_console.m?action=link"/>
      </command>
      
-	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->
+	<!-- ****** User admin related commands ******-->
 
     <command name="useradmin_console">
         <controller class="org.dcm4chex.archive.web.maverick.admin.UserAdminConsoleCtrl" />    
@@ -336,6 +337,20 @@ default-transform-type="xslt">
     	<controller class="org.dcm4chex.archive.web.maverick.admin.UserDeleteCtrl" />    
 	    <view name="success" type="redirect" path="useradmin_console.m"/>
 	    <view ref="error" />
+     </command>
+
+	<!-- ****** Teaching file related commands ******-->
+
+    <command name="tfSelector">
+        <controller class="org.dcm4chex.archive.web.maverick.tf.TFSelectorCtrl" />    
+	    <view name="tfselect">
+    	  <transform path="tf/tf_selector.xsl" />
+	    </view>
+	    <view name="error">
+    	  <transform path="tf/tf_selector.xsl" />
+	    </view>
+	    <view name="success" type="redirect" path="foldersubmit.m?popupMsg=Export of Teaching File done!&amp;filter.x=1" />        
+	    <view name="cancel" type="redirect" path="folder.m" />        
      </command>
     
   </commands>

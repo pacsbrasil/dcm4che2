@@ -60,6 +60,8 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.dcm4chex.archive.web.maverick.tf.TFModel;
+import org.dcm4chex.archive.web.maverick.tf.TeachingFileDelegate;
 
 /**
  * 
@@ -70,6 +72,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
 public class FolderSubmitCtrl extends FolderCtrl {
     
 	public static final String LOGOUT = "logout";
+	private static final String EXPORT_SELECTOR = "exportSelector";
 	
     private static final int MOVE_PRIOR = 0;
     
@@ -77,6 +80,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	private static AEDelegate aeDelegate = null;
     
     private FolderMoveDelegate moveDelegate = null;
+	private TeachingFileDelegate tfDelegate;
+
 
 
     public static ContentEditDelegate getDelegate() {
@@ -139,6 +144,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	                    || rq.getParameter("merge.x") != null) { return MERGE; }
 	            if (rq.getParameter("move") != null
 	                    || rq.getParameter("move.x") != null) { return move(); }
+	            if (rq.getParameter("exportTF") != null
+	                    || rq.getParameter("exportTF.x") != null) { return exportTF(); }
             }
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
@@ -437,6 +444,34 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		return FOLDER;
     }
     
+    /**
+     * Export selected instance to a Teaching Filesystem.
+     * <p>
+     * 
+     * @return the name of the next view.
+     */
+    private String exportTF() {
+		FolderForm folderForm = (FolderForm) getForm();
+    	try {
+    		if ( tfDelegate == null ) {
+    			tfDelegate = new TeachingFileDelegate();
+    			tfDelegate.init(getCtx());
+    			getCtx().getRequest().getSession().setAttribute(TeachingFileDelegate.TF_ATTRNAME, tfDelegate);
+    		}
+        	Set instances = tfDelegate.getSelectedInstances(folderForm.getStickyPatients(),
+					 folderForm.getStickyStudies(),
+					 folderForm.getStickySeries(),
+					 folderForm.getStickyInstances());
+        	if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
+
+    		TFModel.getModel( getCtx().getRequest() ).setInstances(instances); 
+    	} catch ( Exception x ) {
+    		log.error("Error in export Teaching File:", x);
+    		folderForm.setPopupMsg("Error:"+x.getMessage());
+    		return FOLDER;
+    	}
+		return EXPORT_SELECTOR;
+    }
     
     /**
 	 * 
