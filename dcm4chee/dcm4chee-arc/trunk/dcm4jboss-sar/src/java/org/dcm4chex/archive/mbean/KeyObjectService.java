@@ -61,7 +61,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.KeyObjectManager;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -81,10 +80,6 @@ public class KeyObjectService extends ServiceMBeanSupport {
     private static Logger log = Logger.getLogger( KeyObjectService.class.getName() );
 
 	private ContentManager contentMgr;
-
-	private KeyObjectManager keyObjectMgr;
-	
-
 	
 	public KeyObjectService() {
     }
