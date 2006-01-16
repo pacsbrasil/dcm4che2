@@ -191,20 +191,9 @@
    <category name="org.infohazard">
       <priority value="INFO"/>
    </category>
-
-   <!-- Limit the org.dcm4chex.archive.ejb category to INFO
-        Modify INFO to FATAL to hide error messages from EJB layer --> 
-   <category name="org.dcm4chex.archive.ejb">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4chex.archive.dcm category to INFO --> 
-   <category name="org.dcm4chex.archive.dcm">
-      <priority value="INFO"/>
-   </category>
    
-   <!-- Limit the org.dcm4chex.archive.mbean category to INFO --> 
-   <category name="org.dcm4chex.archive.mbean">
+   <!-- Limit the org.dcm4chex.archive category to INFO --> 
+   <category name="org.dcm4chex.archive">
       <priority value="INFO"/>
    </category>
    
