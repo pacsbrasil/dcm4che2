@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.BasicRequestObject;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
@@ -64,6 +65,9 @@ public class RIDServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 3258409538737483825L;
 	private RIDServiceDelegate delegate;
+	
+	private static Logger log = Logger.getLogger( RIDServlet.class.getName() );
+	
 
 	/**
 	 * Initialize the RIDServiceDelegator.
@@ -93,6 +97,7 @@ public class RIDServlet extends HttpServlet {
 	 * @param response	The http response.
 	 */
 	public void doGet( HttpServletRequest request, HttpServletResponse response ){
+		log.debug("RID URL:"+request.getRequestURI()+"?"+request.getQueryString());
 		BasicRequestObject reqObj = RequestObjectFactory.getRequestObject( request );
 		delegate.getLogger().info("doGet: reqObj:"+reqObj);
 		int reqTypeCode = RIDRequestObject.INVALID_RID_URL;

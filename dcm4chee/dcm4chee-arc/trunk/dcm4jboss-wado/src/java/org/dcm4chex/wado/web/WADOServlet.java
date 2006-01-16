@@ -45,9 +45,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.BasicRequestObject;
-import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.common.WADORequestObject;
+import org.dcm4chex.wado.common.WADOResponseObject;
 
 /**
  * @author franz.willer
@@ -64,6 +65,8 @@ public class WADOServlet extends HttpServlet {
 	
     /** serialVersionUID because super class is serializable. */
 	private static final long serialVersionUID = 3257008748022085682L;
+
+	private static Logger log = Logger.getLogger( WADOServlet.class.getName() );
 	
 	/**
 	 * Initialize the WADOServiceDelegator.
@@ -93,6 +96,7 @@ public class WADOServlet extends HttpServlet {
 	 * @param response	The http response.
 	 */
 	public void doGet( HttpServletRequest request, HttpServletResponse response ){
+		log.debug("WADO URL:"+request.getRequestURI()+"?"+request.getQueryString());
 		BasicRequestObject reqObject = RequestObjectFactory.getRequestObject( request );
 		if ( reqObject == null || ! (reqObject instanceof WADORequestObject) ) {
 			RequestObjectFactory.setWADOextRequestType( delegate.getExtendedWADORequestType() );//try if config has changed!
@@ -141,7 +145,7 @@ public class WADOServlet extends HttpServlet {
 		try {
 			response.sendError( errCode, msg );
 		} catch (IOException e) {
-			delegate.getLogger().error("Cant perform sendError( "+errCode+", "+msg+" )! reason:"+e.getMessage(), e );
+			log.error("Cant perform sendError( "+errCode+", "+msg+" )! reason:"+e.getMessage(), e );
 		}
 	}
 	
@@ -155,17 +159,16 @@ public class WADOServlet extends HttpServlet {
 	 */
 	private void sendWADOFile( HttpServletResponse response, WADOResponseObject respObject ) {
 		response.setHeader("Expires","0");//disables client side caching!!!
-		delegate.getLogger().info("sendResponse"+respObject);
+		log.debug("sendResponse:"+respObject);
 		try {
 			if ( respObject != null ) {
 				response.setContentType( respObject.getContentType() );
 				try {
-					delegate.getLogger().info("respObject execute");
-					//respObject.execute( System.out );
+					log.debug("respObject execute");
 					respObject.execute( response.getOutputStream() );
 					response.getOutputStream().close();
 				} catch ( Exception e ) {
-					delegate.getLogger().error("Exception while writing WADO response to client! reason:"+e.getMessage(), e );
+					log.error("Exception while writing WADO response to client! reason:"+e.getMessage(), e );
 				}
 				
 			}

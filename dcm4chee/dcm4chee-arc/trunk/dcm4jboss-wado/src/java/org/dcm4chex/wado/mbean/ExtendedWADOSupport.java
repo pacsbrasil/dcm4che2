@@ -159,7 +159,9 @@ private WADOResponseObject handleGetStudyInfo( WADOExtRequestObject req ) {
                 "retrieveStudyInfo",
                 new Object[] { level, dsQ },
                 new String[] { String.class.getName(), Dataset.class.getName() } );
-        
+        if ( log.isDebugEnabled() ) {
+        	log.debug("RetrieveStudyInfo Result Dataset:"); log.debug(ds);
+        }
         ds.setFileMetaInfo( DcmObjectFactory.getInstance().newFileMetaInfo(ds, ts) );
         if ( ! cacheEnabled ) {
         	return new WADODatasourceResponseObjectImpl( ds, ts, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
