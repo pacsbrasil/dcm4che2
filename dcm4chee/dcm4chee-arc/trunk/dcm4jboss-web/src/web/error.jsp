@@ -22,7 +22,7 @@
   <td><img src="line.jpg" width="100%" height="20px" alt="line"></td>
  </tr>
 </table>
-
+<center>
 <h1>DCM Folder Login Failed!</h1>
 <br>
 <form name="login" method="POST" action="j_security_check">
@@ -41,6 +41,7 @@
     <td align="center"><input class="button" type="submit" value="Log in"></td>
   </tr>
 </table>
+</center>
 </form>
 </body>
 </html>

@@ -24,7 +24,7 @@
   <td><img src="line.jpg" width="100%" height="20px" alt="line"></td>
  </tr>
 </table>
-
+<center>
 <h1>DCM Folder Login</h1>
 <br>
 
@@ -44,6 +44,7 @@
 	  <td align="center"><input class="button" type="submit" value="Log in"></td>
 	</tr>
 </table>
+</center>
 </form>
 </body>
 </html>
