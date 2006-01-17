@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -91,7 +93,9 @@ import org.xml.sax.XMLReader;
 public class HL7ServerService extends ServiceMBeanSupport
 	implements Server.Handler {
 
-    public static final String EVENT_TYPE = "org.dcm4chex.archive.hl7";
+    private static final String ISO_8859_1 = "ISO-8859-1";
+
+	public static final String EVENT_TYPE = "org.dcm4chex.archive.hl7";
 
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
 
@@ -339,8 +343,8 @@ public class HL7ServerService extends ServiceMBeanSupport
 									new FileOutputStream(logfile));
 							mllpIn = new CopyInputStream(mllpIn, loghl7);												
 						}
-	                    InputSource in = new InputSource(mllpIn);
-						in.setEncoding("ISO-8859-1");
+	                    InputSource in = new InputSource(
+	                    		new InputStreamReader(mllpIn, ISO_8859_1));
 						xmlReader.parse(in);
 					} finally {
 						if (loghl7 != null) {

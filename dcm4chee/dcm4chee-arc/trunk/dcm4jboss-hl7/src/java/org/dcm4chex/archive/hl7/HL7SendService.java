@@ -42,6 +42,7 @@ package org.dcm4chex.archive.hl7;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -83,7 +84,8 @@ public class HL7SendService
 		extends ServiceMBeanSupport 
 		implements NotificationListener, MessageListener {
 
-    private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
+    private static final String ISO_8859_1 = "ISO-8859-1";
+	private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 	private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
 	private static long msgCtrlid = System.currentTimeMillis();
 	
@@ -222,9 +224,9 @@ public class HL7SendService
         XMLReader xmlReader = new HL7XMLReader();
         SAXContentHandler hl7in = new SAXContentHandler();
         xmlReader.setContentHandler(hl7in);
-        InputSource in = new InputSource(new ByteArrayInputStream(hl7msg));
-		in.setEncoding("ISO-8859-1");
 		try {
+			InputSource in = new InputSource(new InputStreamReader(
+					new ByteArrayInputStream(hl7msg), ISO_8859_1));
 			xmlReader.parse(in);
 		} catch (Exception e) {
             log.error("Failed to parse HL7 message", e);
@@ -344,7 +346,7 @@ public class HL7SendService
 	private Document readMessage(InputStream mllpIn)
 			throws IOException, SAXException {
 		InputSource in = new InputSource(mllpIn);
-		in.setEncoding("ISO-8859-1");
+		in.setEncoding(ISO_8859_1);
 		XMLReader xmlReader = new HL7XMLReader();
 		SAXContentHandler hl7in = new SAXContentHandler();
 		xmlReader.setContentHandler(hl7in);
@@ -355,19 +357,19 @@ public class HL7SendService
 	
 	private void writeMessage(byte[] message, String receiving, OutputStream out)
 			throws UnsupportedEncodingException, IOException {
-		out.write("MSH|^~\\&|".getBytes("ISO-8859-1"));
-		out.write(sendingApplication.getBytes("ISO-8859-1"));
+		out.write("MSH|^~\\&|".getBytes(ISO_8859_1));
+		out.write(sendingApplication.getBytes(ISO_8859_1));
 		out.write('|');
-		out.write(sendingFacility.getBytes("ISO-8859-1"));
+		out.write(sendingFacility.getBytes(ISO_8859_1));
 		out.write('|');
 		final int delim = receiving.indexOf('^');
-		out.write(receiving.substring(0, delim).getBytes("ISO-8859-1"));
+		out.write(receiving.substring(0, delim).getBytes(ISO_8859_1));
 		out.write('|');
-		out.write(receiving.substring(delim + 1).getBytes("ISO-8859-1"));
+		out.write(receiving.substring(delim + 1).getBytes(ISO_8859_1));
 		out.write('|');
 		final SimpleDateFormat tsFormat = 
 			new SimpleDateFormat("yyyyMMddHHmmss.SSS");
-		out.write(tsFormat.format(new Date()).getBytes("ISO-8859-1"));
+		out.write(tsFormat.format(new Date()).getBytes(ISO_8859_1));
 		// skip MSH:1-7
 		int left = 0;
 		for (int i = 0; i < 7; ++i)
@@ -377,7 +379,7 @@ public class HL7SendService
 		while (message[right++] != '|');
 		while (message[right++] != '|');
 		out.write(message, left-1, right - left + 1);
-		out.write(String.valueOf(++messageControlID).getBytes("ISO-8859-1"));
+		out.write(String.valueOf(++messageControlID).getBytes(ISO_8859_1));
 		// skip MSH:10
 		while (message[right++] != '|');
 		// write remaining message
@@ -402,9 +404,9 @@ public class HL7SendService
 		sb.append("\r");
 		sb.append("PV1||||||||||||||||||||||||||||||||||||||||||||||||||||");//PatientClass(2),VisitNr(19) and VisitIndicator(51) ???
 		if ( useForward ) {
-			forward( sb.toString().getBytes("ISO-8859-1") );
+			forward( sb.toString().getBytes(ISO_8859_1) );
 		} else {
-			sendTo( sb.toString().getBytes("ISO-8859-1"), receiving );
+			sendTo( sb.toString().getBytes(ISO_8859_1), receiving );
 		}
 	}
 
@@ -418,9 +420,9 @@ public class HL7SendService
 			sb.setLength( SBlen );
 			addMRG( sb, priorPats[i] );
 			if ( useForward ) {
-				forward( sb.toString().getBytes("ISO-8859-1") );
+				forward( sb.toString().getBytes(ISO_8859_1) );
 			} else {
-				sendTo( sb.toString().getBytes("ISO-8859-1"), receiving );
+				sendTo( sb.toString().getBytes(ISO_8859_1), receiving );
 			}
 		}
 		

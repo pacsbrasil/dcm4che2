@@ -45,6 +45,7 @@ import org.xml.sax.SAXException;
 */
 public class HL7XMLWriter implements ContentHandler, HL7XMLLiterate, XMLWriter
 {  
+  private static final String ISO_8859_1 = "ISO-8859-1";
   private Writer _output = new OutputStreamWriter(System.out);
   private char _delimiters[] = DEFAULT_DELIMITERS.toCharArray();
 
@@ -65,7 +66,7 @@ public class HL7XMLWriter implements ContentHandler, HL7XMLLiterate, XMLWriter
    */
   public void setOutputStream(OutputStream outputStream) {
     try {
-		this._output = new OutputStreamWriter(outputStream, "ISO-8859-1");
+		this._output = new OutputStreamWriter(outputStream, ISO_8859_1);
 	} catch (UnsupportedEncodingException e) {
 		throw new RuntimeException(e);
 	}
