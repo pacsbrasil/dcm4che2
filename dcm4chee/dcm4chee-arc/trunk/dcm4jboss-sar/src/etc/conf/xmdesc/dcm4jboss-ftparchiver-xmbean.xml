@@ -2,45 +2,46 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>File Copy Service.</description>
+   <description>FTP Archiver Service.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4chex.archive.dcm.hsm.FileCopyService</class>
+   <class>org.dcm4chex.archive.dcm.hsm.FTPArchiverService</class>
 
    <constructor>
       <description>The default constructor</description>
-      <name>FileCopyService</name>
+      <name>FTPArchiverService</name>
    </constructor>
 
    <!-- Attributes -->
    <attribute access="read-write" getMethod="getCopyingRules" setMethod="setCopyingRules">
-      <description><![CDATA[List of Copying rules, dependent upon which application 
+      <description><![CDATA[List of Archiving rules, dependent upon which application 
 - identified by the Calling AE title - sent the objects, and also dependent
 upon which called AE title was used in the Association Request.
 
-The comma separated list of file system paths after the (optional) condition 
-defines the Copying destination. Each file systme path can be suffixed by !<from>-<to> to defer Copying to
+The comma separated list of ftp URLs after the (optional) condition 
+defines the destination FTP server and path. Each ftp URL can be suffixed by !<from>-<to> to defer FTP transfer to
 that destination outside a particular time interval.
       <br>Format:
-      <br>[calling|called[!]=<i>aeTitleFrom</i>]<i>dirPath</i>!<i>from</i>-<i>to</i> | NONE 
+      <br>[calling|called[!]=<i>aeTitle</i>]<i>ftpURL</i>!<i>from</i>-<i>to</i> | NONE 
       <br>where
-      <br><i>calling</i> = create a copy condition for objects sent from this calling AE title
-      <br><i>called</i> = create a copy condition for objects are forwarded from the Called AE title in the Association request. Use != to mean NOT.
-      <br><i>aeTitleFrom</i> = the calling AE titles, or the called AE titles, separated by commas
-      <br><i>dirPath</i> = the destination file system identified by its path, in a comma-separated list (optional)
+      <br><i>calling</i> = create a archiving condition for objects sent from this calling AE title
+      <br><i>called</i> = create a archiving condition for objects are forwarded from the Called AE title in the Association request. Use != to mean NOT.
+      <br><i>aeTitle</i> = the calling AE titles, or the called AE titles, separated by commas (optional)
+      <br><i>ftpURL</i> = the destination FTP server and path
       <br><i>!from</i>-<i>to</i> = start and end hour (0-23) when no Copying to this file system should be performed (optional)
-      <br>NONE = do not use any Copying rules.
+      <br>NONE = do not use any Archiving rules.
 <br>Example:      
-<br>[calling=SCU1|SCU2,called!=SCP0]/mnt/nfs1,/mnt/nfs2!8-16
+<br>[calling=SCU1|SCU2,called!=SCP0]ftp://user:passwd@ftpX/lun123,ftp://user:passwd@ftpY/lun456!8-16
 <br>Forwards objects received from AE Title SCU1 or SCU2, when the Called
-AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt/nfs1 and /mnt/nfs2. Copying of objects received between 8am and
-4pm to /mnt/nfs2 is delayed until 4 pm.]]>
+AE Title in the Association Request is NOT SCP0, and to directory lun123 on
+ftp server ftpY. Archiving of received objects between 8am and 4pm to
+ftp://user:passwd@ftpY/lun456]]>
       </description>
-      <name>CopyingRules</name>
+      <name>ArchivingRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
@@ -54,7 +55,7 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
       <name>FileStatus</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TO_ARCHIVE"/>
+         <value value="DEFAULT"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="isVerifyCopy" setMethod="setVerifyCopy">
@@ -71,7 +72,7 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
       <description><![CDATA[Number and interval of retries made for
-      failed Copy Requests.
+      failed Archive Requests.
       <br>Format:
       <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
       <br>The interval can be specified in seconds (##s),
@@ -90,7 +91,7 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
    <attribute access="read-write"
       getMethod="getConcurrency"
       setMethod="setConcurrency">
-      <description>Maximum number of concurrent invoked Copy Requests.
+      <description>Maximum number of concurrent invoked Archiving Requests.
       </description>
       <name>Concurrency</name>
       <type>int</type>
@@ -156,7 +157,7 @@ AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt
       <name>QueueName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="FileCopy"/>
+         <value value="FTPArchiver"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

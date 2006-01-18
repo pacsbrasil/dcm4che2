@@ -45,255 +45,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-import javax.management.Notification;
-import javax.management.NotificationFilterSupport;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
 
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
-import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.FileStatus;
-import org.dcm4chex.archive.config.ForwardingRules;
-import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.notif.FileInfo;
-import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since Nov 9, 2005
  */
-public class FileCopyService extends ServiceMBeanSupport implements
-		MessageListener, NotificationListener {
+public class FileCopyService extends AbstractFileCopyService {
 
-	private static final NotificationFilterSupport seriesStoredFilter 
-			= new NotificationFilterSupport();
-	static {
-		seriesStoredFilter.enableType(SeriesStored.class.getName());
-	}
 
-	private ObjectName storeScpServiceName;
-
-	private String queueName;
-
-	private String retrieveAET;
-
-	private String userInfo;
-	
-	private int availability = 1;
-	
-	private int concurrency = 1;
-	
-	private int fileStatus = FileStatus.TO_ARCHIVE;
-	
-	private boolean verifyCopy;
-
-	private ForwardingRules copyingRules = new ForwardingRules("");
-
-	private RetryIntervalls retryIntervalls = new RetryIntervalls();
-
-	private ObjectName fileSystemMgtName;
-
-	private int bufferSize = 8192;
-
-    public final int getBufferSize() {
-        return bufferSize;
-    }
-
-    public final void setBufferSize(int bufferSize) {
-        this.bufferSize  = bufferSize;
-    }
-	
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
-    }
-
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
-    }
-
-	public String getEjbProviderURL() {
-		return EJBHomeFactory.getEjbProviderURL();
-	}
-
-	public void setEjbProviderURL(String ejbProviderURL) {
-		EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-	}
-
-	public final ObjectName getStoreScpServiceName() {
-		return storeScpServiceName;
-	}
-
-	public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
-		this.storeScpServiceName = storeScpServiceName;
-	}
-
-	public final String getRetrieveAET() {
-		return retrieveAET;
-	}
-
-	public final void setRetrieveAET(String aet) {
-		this.retrieveAET = aet;
-	}
-
-	public final String getUserInfo() {
-		return userInfo;
-	}
-
-	public final void setUserInfo(String userInfo) {
-		this.userInfo = userInfo;
-	}
-
-	public final String getAvailability() {
-		return Availability.toString(availability);
-	}
-
-	public final void setAvailability(String availability) {
-		this.availability = Availability.toInt(availability);
-	}
-
-	public final int getConcurrency() {
-		return concurrency;
-	}
-
-	public final String getCopyingRules() {
-		return copyingRules.toString();
-	}
-
-	public final void setCopyingRules(String copyingRules) {
-		this.copyingRules = new ForwardingRules(copyingRules.replace('\\', '/'));
-	}
-
-	public final String getFileStatus() {
-		return FileStatus.toString(fileStatus);
-	}
-
-	public final void setFileStatus(String fileStatus) {
-		this.fileStatus = FileStatus.toInt(fileStatus);
-	}
-
-	public final boolean isVerifyCopy() {
-		return verifyCopy;
-	}
-
-	public final void setVerifyCopy(boolean verifyCopy) {
-		this.verifyCopy = verifyCopy;
-	}
-
-	public final String getRetryIntervalls() {
-		return retryIntervalls.toString();
-	}
-
-	public final void setRetryIntervalls(String s) {
-		this.retryIntervalls = new RetryIntervalls(s);
-	}
-
-	public final void setConcurrency(int concurrency) throws Exception {
-		if (concurrency <= 0)
-			throw new IllegalArgumentException("Concurrency: " + concurrency);
-		if (this.concurrency != concurrency) {
-			final boolean restart = getState() == STARTED;
-			if (restart)
-				stop();
-			this.concurrency = concurrency;
-			if (restart)
-				start();
-		}
-	}
-
-	public final String getQueueName() {
-		return queueName;
-	}
-
-	public final void setQueueName(String queueName) {
-		this.queueName = queueName;
-	}
-
-	protected void startService() throws Exception {
-		JMSDelegate.startListening(queueName, this, concurrency);
-		server.addNotificationListener(storeScpServiceName, this,
-				seriesStoredFilter, null);
-	}
-
-	protected void stopService() throws Exception {
-		server.removeNotificationListener(storeScpServiceName, this,
-				seriesStoredFilter, null);
-		JMSDelegate.stopListening(queueName);
-	}
-
-	public void handleNotification(Notification notif, Object handback) {
-		SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-		Map param = new HashMap();
-		param.put("calling", new String[] { seriesStored.getCallingAET() });
-		param.put("called", new String[] { seriesStored.getCalledAET() });
-		String[] dests = copyingRules.getForwardDestinationsFor(param);
-		for (int i = 0; i < dests.length; i++) {
-			final String dest = ForwardingRules.toAET(dests[i]);
-			final long scheduledTime = ForwardingRules
-					.toScheduledTime(dests[i]);
-			scheduleCopy(seriesStored.getFileInfos(), dest, scheduledTime);
-		}
-	}
-
-	public void scheduleCopy(List fileInfos, String destFsPath,
-			long scheduledTime) {
-		schedule(new FileCopyOrder(fileInfos, destFsPath), scheduledTime);
-	}
-
-	private void schedule(FileCopyOrder order, long scheduledTime) {
-		try {
-			log.info("Scheduling " + order);
-			JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
-					scheduledTime);
-		} catch (JMSException e) {
-			log.error("Failed to schedule " + order, e);
-		}
-	}
-
-	public void onMessage(Message message) {
-		ObjectMessage om = (ObjectMessage) message;
-		try {
-			FileCopyOrder order = (FileCopyOrder) om.getObject();
-			log.info("Start processing " + order);
-			try {
-				process(order);
-				log.info("Finished processing " + order);
-			} catch (Exception e) {
-				final int failureCount = order.getFailureCount() + 1;
-				order.setFailureCount(failureCount);
-				final long delay = retryIntervalls.getIntervall(failureCount);
-				if (delay == -1L) {
-					log.error("Give up to process " + order, e);
-				} else {
-					log.warn("Failed to process " + order
-							+ ". Scheduling retry.", e);
-					schedule(order, System.currentTimeMillis() + delay);
-				}
-			}
-		} catch (Throwable e) {
-			log.error("unexpected error during processing message: " + message,
-					e);
-		}
-	}
-
-	private void process(FileCopyOrder order) throws Exception {
+	protected void process(FileCopyOrder order) throws Exception {
 		String destPath = order.getDestinationFileSystemPath();
 		List fileInfos = order.getFileInfos();
 		byte[] buffer = new byte[bufferSize];

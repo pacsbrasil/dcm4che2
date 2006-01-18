@@ -125,7 +125,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	
 	private boolean acceptMissingPatientID = true;
 	private boolean acceptMissingPatientName = true;
-	private String generatePatientID = "PACS-##########";
+	private String[] generatePatientID = null;
 	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
 			new IssuerOfPatientIDRules("PACS-:TIANI");
 
@@ -177,12 +177,53 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	}
 
     public final String getGeneratePatientID() {
-		return generatePatientID != null  ? generatePatientID : "NONE";
+    	if (generatePatientID == null)
+    		return "NONE";
+    	StringBuffer sb = new StringBuffer();
+    	for (int i = 0; i < generatePatientID.length; i++) {
+			sb.append(generatePatientID[i]);
+		}
+		return sb.toString();
 	}
 
 	public final void setGeneratePatientID(String pattern) {
-		this.generatePatientID = pattern.equalsIgnoreCase("NONE") ? null
-				: pattern;
+		if (pattern.equalsIgnoreCase("NONE"))
+		{
+			this.generatePatientID = null;
+			return;
+		}
+		int pl = pattern.indexOf('#');
+		int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
+		int sl = pattern.indexOf('$');
+		int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;		
+		if (pl == -1 && sl == -1)
+		{
+			this.generatePatientID = new String[] { pattern };
+		} else if (pl != -1 && sl != -1)
+		{
+			this.generatePatientID = pl < sl 
+				? split(pattern, pl, pr, sl, sr)
+				: split(pattern, sl, sr, pl, pr);
+				
+		} else {
+			this.generatePatientID = pl != -1 
+				? split(pattern, pl, pr)
+				: split(pattern, sl, sr);
+		}
+			
+	}
+
+	private String[] split(String pattern, int l1, int r1) {
+		return new String[] { pattern.substring(0, l1),
+				pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1), };
+	}
+	
+	private String[] split(String pattern, int l1, int r1, int l2, int r2) {
+		if (r1 > l2)
+			throw new IllegalArgumentException(pattern);
+		return new String[] { pattern.substring(0, l1),
+				pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1, l2),
+				pattern.substring(l2, r2 + 1), pattern.substring(r2 + 1) };
 	}
 
 	public final String getIssuerOfPatientIDRules() {
@@ -766,28 +807,41 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private String generatePatientID(Dataset ds) {
-		int left = generatePatientID.indexOf('#');
-		if (left == -1) {
-			return generatePatientID;
+    	if (generatePatientID.length == 1)
+    		return generatePatientID[0];
+    	
+    	int suidHash = ds.getString(Tags.StudyInstanceUID).hashCode();
+    	String pname = ds.getString(Tags.PatientName);
+    	// generate different Patient IDs for different studies
+    	// if no Patient Name
+    	int pnameHash = pname == null || pname.length() == 0 ? suidHash
+    			:  37 * ds.getString(Tags.PatientName).hashCode()
+    					+ ds.getString(Tags.PatientBirthDate, "").hashCode();
+    	
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < generatePatientID.length; i++) {
+			append(sb, generatePatientID[i], pnameHash, suidHash);
 		}
-		StringBuffer sb = new StringBuffer(generatePatientID.substring(0,left));
-		// generate different Patient IDs for different studies
-		// if no Patient Name
-		String num = String.valueOf(0xffffffffL & (37
-				* ds.getString(Tags.PatientName,
-						ds.getString(Tags.StudyInstanceUID)).hashCode()
-				+ ds.getString(Tags.PatientBirthDate, "").hashCode()));
-		left += num.length();
-		final int right = generatePatientID.lastIndexOf('#') + 1;
-		while (left++ < right) {
-			sb.append('0');
-		}
-		sb.append(num);
-		sb.append(generatePatientID.substring(right));
 		return sb.toString();
 	}
 	
-    private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
+	private void append(StringBuffer sb, String s, int pnameHash, int suidHash) {
+		final int l = s.length();
+		if (l == 0)
+			return;
+		char c = s.charAt(0);
+		if (c != '#' && c != '$')
+		{
+			sb.append(s);
+			return;
+		}
+		String v = Long.toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
+		for (int i = v.length() - l; i < 0; i++)
+			sb.append('0');
+		sb.append(v);
+	}
+
+	private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     private String toHex(int val) {

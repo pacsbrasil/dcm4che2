@@ -101,11 +101,10 @@
       getMethod="getGeneratePatientID"
       setMethod="setGeneratePatientID">
       <description><![CDATA[Generate a patient ID from a hash of the patient name and
-          birth date, if the received study has no patient ID.
-          If the study has no patient name, the study instance UID 
-          is used to generate different patient IDs for
-          different studies in that case.
-          <br>Use ### as a placeholder for the decimal hash value. For example, PACS-##########.
+          birth date and/or study instance uid, if the received study has no patient ID or
+          if the object is received from an AE listed in "IgnorePatientIDAETitles".
+          <br>Use ### and/or $$$ as a placeholder for the decimal hash value of patient name and/or study instance uid.
+          For example, PACS-##########.
           <br>NONE = do not generate patient IDs. But, this means media creation will fail.]]>
       </description>
       <name>GeneratePatientID</name>
