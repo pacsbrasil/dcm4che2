@@ -39,11 +39,11 @@
 
 package org.dcm4chex.archive.web.maverick.tf;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -65,11 +65,12 @@ public class SRManifestModel {
 
 	private static final String DESIGNATOR_DCM = "DCM";
 	private static final String CONTAINS = "CONTAINS";
-	private Map mapTextValues;
-	private int selectedCategory;
-	private int selectedLevel;
+	private List textValues;
+	private int selectedCategory = 0;
+	private int selectedLevel = -1;
 	private boolean useManifest = false;
 	private boolean confirmed = false;
+	private String defaultAuthor;
 
 	public static final String[] CATEGORIES = new String[]
 	    {"Musculoskeletal",
@@ -98,6 +99,7 @@ public class SRManifestModel {
 	public static final String DESIGNATOR_IHE_RAD = "IHERADTF";
 
 	private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+	
 	private static final int[] BASIC_TAGS = new int[] {
 		Tags.PatientID, Tags.PatientName, Tags.IssuerOfPatientID, Tags.PatientBirthDate,
 		Tags.StudyInstanceUID, Tags.StudyID, Tags.StudyIDIssuer, Tags.StudyDate, Tags.StudyTime, Tags.StudyDescription,
@@ -107,12 +109,13 @@ public class SRManifestModel {
 	/**
 	 * @return Returns the mapTextValues.
 	 */
-	public Map getTextFields() {
-		return mapTextValues;
+	public List getTextFields() {
+		return textValues;
 	}
 	/**
 	 * Creates the model.
 	 * <p>
+	 * @param observerPersonName
 	 */
 	protected SRManifestModel() {
 		initMap();
@@ -122,39 +125,44 @@ public class SRManifestModel {
 	 * 
 	 */
 	private void initMap() {
-		mapTextValues = new HashMap();
-		mapTextValues.put("author", "");
-		mapTextValues.put("abstract", "");
-		mapTextValues.put("keywords", "");
-		mapTextValues.put("history", "");
-		mapTextValues.put("findings", "");
-		mapTextValues.put("discussions", "");
-		mapTextValues.put("impressions", "");
-		mapTextValues.put("diagnosis", "");
-		mapTextValues.put("anatomy", "");
-		mapTextValues.put("pathology", "");
+		textValues = new ArrayList();
+		textValues.add(new SRItem("Author", defaultAuthor,true,"TCE101", DESIGNATOR_IHE_RAD, "Author"));
+		textValues.add(new SRItem("Abstract", "",false, "TCE104", DESIGNATOR_IHE_RAD, "Abstract" ,3, 60)); //use TextArea here
+		textValues.add(new SRItem("Keywords", "",false,"TCE105", DESIGNATOR_IHE_RAD, "Keywords" ));
+		textValues.add(new SRItem("History", "",false,"121060", DESIGNATOR_DCM, "History" ));
+		textValues.add(new SRItem("Findings", "",false,"121071", DESIGNATOR_DCM, "Finding" ));
+		textValues.add(new SRItem("Discussions", "",false,"TCE106", DESIGNATOR_IHE_RAD, "Discussion" ));
+		textValues.add(new SRItem("Impressions", "",false,"111023", DESIGNATOR_DCM, "Differential Diagnosis/Impression" ));
+		textValues.add(new SRItem("Diagnosis", "",false,"TCE107", DESIGNATOR_IHE_RAD, "Diagnosis" ));
+		textValues.add(new SRItem("Anatomy", "",false,"112005", DESIGNATOR_DCM, "Radiographic anatomy" ));
+		textValues.add(new SRItem("Pathology", "",false,"111042", DESIGNATOR_DCM, "Pathology" ));
+		textValues.add(new SRItem("Organ system", "",false,"TCE108", DESIGNATOR_IHE_RAD, "Organ system" ));
 	}
 
 	public void fillParams(HttpServletRequest rq) {
 		String key;
-		useManifest = "yes".equals( rq.getParameter("useManifest") );
-		if ( useManifest ) {
-			setSelectedCategory(rq.getParameter("category"));
-			setSelectedLevel(rq.getParameter("level"));
-			
-			for ( Iterator iter = mapTextValues.keySet().iterator() ; iter.hasNext() ; ) {
-				key = iter.next().toString();
-				mapTextValues.put( key, rq.getParameter(key));
+		if ( rq.getParameter("useManifest") != null ) {
+			useManifest = "yes".equals( rq.getParameter("useManifest") );
+		}
+		setSelectedCategory(rq.getParameter("category"));
+		setSelectedLevel(rq.getParameter("level"));
+		SRItem item;
+		String missing = null;
+		for ( Iterator iter = textValues.iterator() ; iter.hasNext() ; ) {
+			item = (SRItem)iter.next();
+			item.setValue( rq.getParameter(item.name));
+			if ( item.isMandatory() && item.getValue() == null ) {
+				missing = missing == null ? item.getName() : missing+","+item.getName();
 			}
-			if ( mapTextValues.get("author") == null ) {
-				throw new IllegalArgumentException("Mandatory field 'Author' missing!");
-			}
-			if ( mapTextValues.get("abstract") == null ) {
-				throw new IllegalArgumentException("Mandatory field 'Abstract' missing!");
-			}
+		}
+		if ( rq.getParameter("confirmed") != null ) {
 			confirmed = "yes".equals( rq.getParameter("confirmed") );
 		}
+		if ( missing != null ) {
+			throw new IllegalArgumentException("Mandatory field '"+missing+"' missing!");
+		}
 	}
+	
 
 	/**
 	 * @return Returns the useManifest.
@@ -163,12 +171,19 @@ public class SRManifestModel {
 		return useManifest;
 	}
 	
+	public boolean isConfirmed() {
+		return confirmed;
+	}
+	
+	public int getSelectedLevel() {
+		return selectedLevel;
+	}
 	/**
 	 * @param setSelectedLevel The setSelectedLevel to set.
 	 */
 	public void setSelectedLevel(String level) {
 		if ( level == null ) 
-			selectedLevel = -1;
+			return;
 		try {
 			selectedLevel = Integer.parseInt(level);
 			if ( selectedLevel < 0 || selectedLevel >= LEVELS.length ) {
@@ -178,12 +193,15 @@ public class SRManifestModel {
 			selectedLevel = -1;
 		}
 	}
+	public int getSelectedCategory() {
+		return selectedCategory;
+	}
 	/**
 	 * @param selectedCategory The selectedCategory to set.
 	 */
 	public void setSelectedCategory(String category) {
 		if ( category == null ) 
-			throw new IllegalArgumentException("Mandatory field 'Category' missing!");
+			return;
 		try {
 			selectedCategory = Integer.parseInt(category);
 			if ( selectedCategory < 0 || selectedCategory >= CATEGORIES.length ) {
@@ -192,6 +210,19 @@ public class SRManifestModel {
 		} catch ( Exception x) {
 			throw new IllegalArgumentException("Illegal Category selection! (NaN)");
 		}
+	}
+	
+	/**
+	 * @return Returns the defaultAuthor.
+	 */
+	public String getDefaultAuthor() {
+		return defaultAuthor;
+	}
+	/**
+	 * @param defaultAuthor The defaultAuthor to set.
+	 */
+	public void setDefaultAuthor(String defaultAuthor) {
+		this.defaultAuthor = defaultAuthor;
 	}
 	
 	public String[] getCategories() {
@@ -203,12 +234,12 @@ public class SRManifestModel {
 	}
 
 
-	public Dataset getSR(Dataset rootInfo) {
+	public Dataset getSR(Dataset rootInfo, Collection contents) {
 		Dataset ds = null;
 		if ( this.isUseManifest() ) {
 			ds = newSR();
 			ds.putAll(rootInfo.subSet(BASIC_TAGS));
-			fillContent( ds );
+			fillContent( ds, contents );
 		}
 		return ds;
 	}
@@ -238,24 +269,21 @@ public class SRManifestModel {
 	/**
 	 * @param ds
 	 */
-	private void fillContent(Dataset ds) {
+	private void fillContent(Dataset ds, Collection contents) {
 		DcmElement sq = ds.get(Tags.ContentSeq);
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("author"), "TCE101", DESIGNATOR_IHE_RAD, "Author" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("abstract"), "TCE104", DESIGNATOR_IHE_RAD, "Abstract" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("keywords"), "TCE105", DESIGNATOR_IHE_RAD, "Keywords" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("history"), "121060", DESIGNATOR_DCM, "History" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("findings"), "121071", DESIGNATOR_DCM, "Finding" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("discussions"), "TCE106", DESIGNATOR_IHE_RAD, "Discussion" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("impressions"), "111023", DESIGNATOR_DCM, "Differential Diagnosis/Impression" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("diagnosis"), "TCE107", DESIGNATOR_IHE_RAD, "Diagnosis" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("anatomy"), "112005", DESIGNATOR_DCM, "Radiographic anatomy" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("pathology"), "111042", DESIGNATOR_DCM, "Pathology" );
-		addTextItem( sq, CONTAINS, (String)mapTextValues.get("organ"), "TCE108", DESIGNATOR_IHE_RAD, "Organ system" );
+		for ( Iterator iter = textValues.iterator() ; iter.hasNext() ; ) {
+			addTextItem( sq, CONTAINS, (SRItem)iter.next() );
+		}
 		addCodeItem( sq, CONTAINS, CATEGORY_CODES[selectedCategory], DESIGNATOR_IHE_RAD, CATEGORIES[selectedCategory], "TCE109", DESIGNATOR_IHE_RAD, "Category" );
 		if ( selectedLevel >= 0 ) {
-			addCodeItem( sq, CONTAINS, LEVEL_CODES[selectedLevel], DESIGNATOR_IHE_RAD, LEVELS[selectedCategory], "TCE110", DESIGNATOR_IHE_RAD, "Level" );
+			addCodeItem( sq, CONTAINS, LEVEL_CODES[selectedLevel], DESIGNATOR_IHE_RAD, LEVELS[selectedLevel], "TCE110", DESIGNATOR_IHE_RAD, "Level" );
 		}
-		addCodeItem( sq, CONTAINS, confirmed ? "R-00339":"R-0038D", "SRT", confirmed ? "Yes":"No", "TCE111", DESIGNATOR_IHE_RAD, "Diagnosis confirmed" );
+		addCodeItem( sq, CONTAINS, isConfirmed() ? "R-00339":"R-0038D", "SRT", confirmed ? "Yes":"No", "TCE111", DESIGNATOR_IHE_RAD, "Diagnosis confirmed" );
+		if ( contents != null ) {
+			for ( Iterator iter = contents.iterator() ; iter.hasNext() ;) {
+				sq.addItem((Dataset) iter.next());
+			}
+		}
 	}
 	
 	private void addCodeItem(DcmElement sq, String relation, String codeValue, String designator, String codeMeaning, String conceptCode, String conceptCodeDesignator, String conceptNameMeaning) {
@@ -275,10 +303,12 @@ public class SRManifestModel {
 		
 	}
 
-	private void addTextItem(DcmElement sq, String relation, String textValues, 
-							 String conceptCode, String conceptCodeDesignator, String conceptNameMeaning) {
-		if ( textValues == null || textValues.length() < 1 ) return;
-		String[] values = StringUtils.split( textValues, '|');
+	private void addTextItem(DcmElement sq, String relation, SRItem item) {
+		if ( item == null || item.getValue() == null || item.getValue().length() < 1 ) return;
+		String[] values = StringUtils.split( item.getValue(), '|');
+		String cnCode = item.cnCode;
+		String cnCodeDesignator = item.cnCodeDesign;
+		String cnMeaning = item.cnMeaning;
 		Dataset ds;
 		for ( int i = 0 ; i < values.length ; i++ ) {
 			ds = sq.addNewItem();
@@ -286,12 +316,96 @@ public class SRManifestModel {
 			ds.putCS(Tags.ValueType,"TEXT");
 			DcmElement cnSq1 = ds.putSQ(Tags.ConceptNameCodeSeq);
 			Dataset cnDS1 = cnSq1.addNewItem();
-			cnDS1.putSH(Tags.CodeValue, conceptCode);
-			cnDS1.putSH(Tags.CodingSchemeDesignator, conceptCodeDesignator);
-			cnDS1.putLO(Tags.CodeMeaning, conceptNameMeaning);
+			cnDS1.putSH(Tags.CodeValue, cnCode);
+			cnDS1.putSH(Tags.CodingSchemeDesignator, cnCodeDesignator);
+			cnDS1.putLO(Tags.CodeMeaning, cnMeaning);
 			ds.putLO(Tags.TextValue, values[i] );
 		}
 	}
 
+	public class SRItem {
+		private String name, value, cnCode, cnCodeDesign, cnMeaning;
+		private boolean mandatory;
+		private int rows = -1; //INPUT type=text
+		private int size = 60;
+		
+		public SRItem( String name, String value, boolean mandatory, String cnCode, String cnCodeDesign, String cnMeaning) {
+			this.name = name;
+			this.value = value;
+			this.mandatory = mandatory;
+			this.cnCode = cnCode;
+			this.cnCodeDesign = cnCodeDesign;
+			this.cnMeaning = cnMeaning;
+		}
 	
+		public SRItem( String name, String value, boolean mandatory, String cnCode, String cnCodeDesign, String cnMeaning, int rows, int size) {
+			this( name, value, mandatory, cnCode, cnCodeDesign, cnMeaning);
+			this.rows = rows;
+			this.size = size;
+		}
+		/**
+		 * @return
+		 */
+		public boolean isMandatory() {
+			return mandatory;
+		}
+
+		/**
+		 * @return Returns the value.
+		 */
+		public String getValue() {
+			return value;
+		}
+		/**
+		 * @param value The value to set.
+		 */
+		public void setValue(String value) {
+			if ( value != null ) {
+				this.value = value;
+			}
+		}
+		/**
+		 * @return Returns the name.
+		 */
+		public String getName() {
+			return name;
+		}
+		
+		public int getSize() {
+			return size;
+		}
+		
+		public int getRows() {
+			return rows;
+		}
+		/**
+		 * @return Returns the cnCode.
+		 */
+		public String cnCode() {
+			return cnCode;
+		}
+		/**
+		 * @return Returns the cnCodeDesign.
+		 */
+		public String cnCodeDesign() {
+			return cnCodeDesign;
+		}
+		/**
+		 * @return Returns the cnMeaning.
+		 */
+		public String cnMeaning() {
+			return cnMeaning;
+		}
+	}
+
+	/**
+	 * 
+	 */
+	public void clear() {
+		selectedCategory = 0;
+		selectedLevel = -1;
+		useManifest = false;
+		confirmed = false;
+		initMap();
+	}
 }

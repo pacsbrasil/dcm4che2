@@ -65,11 +65,12 @@ public class TFModel {
     private String popupMsg = null;
 
 	private boolean admin;
+	private String user;
 	
 	private Set instances;
 	
 	private int selectedTitle;
-	private int selectedDelayReason;
+	private int selectedDelayReason = -1;
 	private Collection dispositions;
 	private String disposition;
 
@@ -98,12 +99,19 @@ public class TFModel {
 	 * Creates the model.
 	 * <p>
 	 */
-	private TFModel(boolean admin) {
+	private TFModel(String user, boolean admin) {
+		this.user = user;
 		this.admin  = admin;
 		manifestModel = new SRManifestModel();
 	}
 	
 	
+	/**
+	 * @return Returns the user.
+	 */
+	public String getUser() {
+		return user;
+	}
 	/**
 	 * @return Returns the manifestModel.
 	 */
@@ -114,7 +122,9 @@ public class TFModel {
 	 * @param disposition The disposition to set.
 	 */
 	public void setDisposition(String disposition) {
-		this.disposition = disposition;
+		if ( disposition != null ) {
+			this.disposition = disposition;
+		}
 	}
 	/**
 	 * @param selectedDelayReason The selectedDelayReason to set.
@@ -142,7 +152,7 @@ public class TFModel {
 	public static final TFModel getModel( HttpServletRequest request ) {
 		TFModel model = (TFModel) request.getSession().getAttribute(TF_ATTR_NAME);
 		if (model == null) {
-				model = new TFModel(request.isUserInRole("WebAdmin"));
+				model = new TFModel(request.getUserPrincipal().getName(), request.isUserInRole("WebAdmin"));
 				request.getSession().setAttribute(TF_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
@@ -215,6 +225,9 @@ public class TFModel {
 		return instances == null ? 0 : instances.size();
 	}
 
+	public int getSelectedDocTitle() {
+		return selectedTitle;
+	}
 	/**
 	 * @return
 	 */
@@ -229,6 +242,9 @@ public class TFModel {
 		return CODE_DESIGNATOR;
 	}
 
+	public int getSelectedDelayReason() {
+		return selectedDelayReason;
+	}
 	/**
 	 * @return
 	 */
@@ -257,6 +273,17 @@ public class TFModel {
 	 */
 	public Collection getDispositions() {
 		return dispositions;
+	}
+
+
+	/**
+	 * 
+	 */
+	public void clear() {
+		selectedTitle = 0;
+		selectedDelayReason = -1;
+		disposition = null;
+		manifestModel.clear();
 	}
 	
 }

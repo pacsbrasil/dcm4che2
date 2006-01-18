@@ -54,25 +54,41 @@ public class TFSelectorCtrl extends Dcm4JbossFormController {
 	private static final String TFSELECT = "tfselect";
 
     protected Object makeFormBean() {
-        return TFModel.getModel(getCtx().getRequest());
+    	TFModel model = TFModel.getModel(getCtx().getRequest());
+    	if ( delegate == null) { 
+    		delegate = new TeachingFileDelegate();
+    		try {
+	    		delegate.init(getCtx());
+	    		model.setDispositions(delegate.getConfiguredDispositions());
+	    		model.getManifestModel().setDefaultAuthor( delegate.getObserverPerson(model.getUser()));
+	    		model.clear();
+    		} catch ( Exception x) {
+    			throw new NullPointerException("Cant create TFModel or TF delegate!");
+    		}
+    	}
+    	return model;
     }
     protected String perform() {
     	TFModel model = (TFModel) getForm();
         try {
+        	if ( model.getNumberOfInstances() < 1) {
+        		model.setPopupMsg("Nothing selected for export! Please select at least one patient, study, series or instance");
+        	}
         	model.setErrorCode("OK");
         	model.setPopupMsg(null);
         	HttpServletRequest rq = getCtx().getRequest();
+        	model.getManifestModel().fillParams(rq);
         	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
         		return CANCEL;
         	}
-        	if ( delegate == null) { 
-        		delegate = new TeachingFileDelegate();
-        		delegate.init(getCtx());
-        		model.setDispositions(delegate.getConfiguredDispositions());
+        	if ( rq.getParameter("clear") != null || rq.getParameter("clear.x") != null ) {
+        		model.clear();
+        		return TFSELECT;
         	}
+
             if ( rq.getParameter("export") != null || rq.getParameter("export.x") != null ) {
-            	model.getManifestModel().fillParams(rq);
 	        	delegate.exportTF(model);
+	        	model.clear();
 	        	return SUCCESS;//export done
         	}
             return TFSELECT;//Show selection page for docTitle, delay reason,..
