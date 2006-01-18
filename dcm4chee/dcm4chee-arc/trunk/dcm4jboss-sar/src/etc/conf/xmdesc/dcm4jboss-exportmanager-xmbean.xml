@@ -73,15 +73,30 @@
          <value value="conf/dcm4jboss-tce.conf"/>
       </descriptors>
    </attribute>
-    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
-      <description>The calling AE title.
+    <attribute access="read-write" getMethod="getPersonNameMapping" setMethod="setPersonNameMapping">
+      <description><![CDATA[Mapping login user name to Person Name to get Observer Person.<br>
+        Separate each mapping with newline or semicolon.<br>
+      	Format: &lt;user&gt;:&lt;PersonName&gt; (e.g. Smith^John or Smith^John^^Dr^)<br>
+      	If this mapping is disabled with NONE or a user is not mapped the PersonName will be created with following rule:<br>
+      	&lt;callingAET&gt;^&lt;user&gt; (e.g. DCM4JBOSS^admin).]]>
       </description>
-      <name>CallingAETitle</name>
+      <name>PersonNameMapping</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="DCM4JBOSS"/>
+         <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isDeleteKeyObjects"
+      setMethod="setDeleteKeyObjects">
+      <description>Enable/disable deletion of Key Objects after export.
+      </description>
+      <name>DeleteKeyObjectsAfterExport</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>   
    <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
@@ -175,10 +190,25 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description><![CDATA[Clear configuration cache.<br>
+      				Force to reread disposition configuration files. ]]></description>
+      <name>clearConfigCache</name>
+      <return-type>void</return-type>
+   </operation>   
    <operation impact="INFO">
       <description>List Dispositions configured in DispositionConfigFile</description>
       <name>listConfiguredDispositions</name>
       <return-type>java.util.Collection</return-type>
+   </operation>   
+   <operation impact="INFO">
+      <description>Get Observer Person Name for username</description>
+      <name>getObserverPerson</name>
+      <parameter>
+        <name>user</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>   
    <operation impact="ACTION">
       <description>Send Export Selector to specified destination</description>

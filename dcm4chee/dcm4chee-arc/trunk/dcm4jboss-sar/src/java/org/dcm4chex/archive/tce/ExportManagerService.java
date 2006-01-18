@@ -143,6 +143,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	
 	private String[] exportSelectorTitles = NONE;
 	private String[] delayReasons = NONE;
+	private String[][] personNames = null;
 
 	private File dispConfigFile;
 	private Hashtable configs = new Hashtable();
@@ -158,6 +159,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private int soCloseDelay;
 
     private int bufferSize;
+    
+    private boolean deleteKeyObjects;
 
     public final int getBufferSize() {
         return bufferSize ;
@@ -183,6 +186,34 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         this.delayReasons = str2codes(s);
 	}
 
+	public final String getPersonNameMapping() {
+	    String sep = System.getProperty("line.separator", "\n");
+		if ( personNames == null ) return "NONE"+sep;
+		StringBuffer sb = new StringBuffer();
+		for ( int i = 0 ; i < personNames.length ; i++) {
+			sb.append(personNames[i][0]).append(":").append(personNames[i][1]).append(sep);
+		}
+        return sb.toString();
+	}
+
+    public final void setPersonNameMapping(String s) {
+    	if ( s == null || s.trim().length() < 1 || "NONE".equals(s)) {
+    		personNames = null;
+    	} else {
+	    	StringTokenizer st = new StringTokenizer( s, ";\t\r\n");
+	        this.personNames = new String[st.countTokens()][2];
+	        String pn;
+	        int pos;
+	    	for ( int i = 0 ; i < personNames.length ; i++ ) {
+	    		pn = st.nextToken();
+	    		pos = pn.indexOf(':');
+	    		personNames[i] = new String[2];
+	    		personNames[i][0] = pn.substring(0,pos++);
+	    		personNames[i][1] = pn.substring(pos);
+	    	}
+    	}
+	}
+    
     private String codes2str(String[] codes)
     {
         if (codes.length == 0)
@@ -230,6 +261,18 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         this.callingAET = aet;
     }
     
+	/**
+	 * @return Returns the deleteKeyObjects.
+	 */
+	public boolean isDeleteKeyObjects() {
+		return deleteKeyObjects;
+	}
+	/**
+	 * @param deleteKeyObjects The deleteKeyObjects to set.
+	 */
+	public void setDeleteKeyObjects(boolean deleteKeyObjects) {
+		this.deleteKeyObjects = deleteKeyObjects;
+	}
     public final int getAcTimeout() {
         return acTimeout;
     }
@@ -326,7 +369,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 if (isDelayed(manifest))
                 	return;
                 schedule(new ExportTFOrder(manifest), 0L);
-                delete(manifest);
+                if ( isDeleteKeyObjects() )
+                	delete(manifest);
             }
             catch (Exception e)
             {
@@ -759,7 +803,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private Properties getProperties(File f) throws IOException
     {
-        Properties config = (Properties) configs .get(f);
+        Properties config = (Properties) configs.get(f);
         if (config == null)
         {
             config = new Properties();
@@ -923,6 +967,21 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         ArrayList list = new ArrayList(index.keySet());
         Collections.sort(list);
         return list;
+    }
+    
+    public String getObserverPerson(String user) {
+    	if ( personNames != null ) {
+	    	for ( int i = 0 ; i < personNames.length ; i++ ) {
+	    		if ( personNames[i][0].equals(user)){
+	    			return personNames[i][1];
+	    		}
+	    	}
+    	}
+    	return callingAET+"^"+user;
+    }
+    
+    public void clearConfigCache() {
+    	configs.clear();
     }
     
     public void storeExportSelection(Dataset manifest, int prior)
