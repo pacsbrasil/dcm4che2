@@ -148,7 +148,8 @@ public class ForwardingRules {
     }
     
     public String toString() {
-        if (list.isEmpty()) return "";
+        final String newline = System.getProperty("line.separator", "\n");
+        if (list.isEmpty()) return newline;
         StringBuffer sb = new StringBuffer();
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
@@ -160,9 +161,8 @@ public class ForwardingRules {
                     sb.append(e.forwardAETs[i]).append(',');
                 sb.setLength(sb.length() - 1);
             }
-            sb.append(System.getProperty("line.separator", "\n"));
+            sb.append(newline);
         }
-        sb.setLength(sb.length() - 2);
         return sb.toString();
     }
 }

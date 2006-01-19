@@ -127,15 +127,15 @@ public class CompressionRules {
 	}
 
 	public String toString() {
-        if (list.isEmpty()) return "";
+	    final String newline = System.getProperty("line.separator", "\n");
+        if (list.isEmpty()) return newline;
         StringBuffer sb = new StringBuffer();
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
             e.condition.toStringBuffer(sb);
             sb.append(CODES[e.compression]);
-            sb.append(System.getProperty("line.separator", "\n"));
+            sb.append(newline);
         }
-        sb.setLength(sb.length() - 2);
         return sb.toString();
     }
 }
