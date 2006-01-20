@@ -5,7 +5,7 @@ In order to build all components of the dcm4jboss archive application you have
 to download and install:
 
 - jai_imageio-1_0_01
-  (from http://java.sun.com/products/java-media/jai/downloads/download-iio-1_0_01.htm)
+  (from http://java.sun.com/products/java-media/jai/downloads/download-iio-1_0_01.html)
 
 - Ant 1.6.x (from http://ant.apache.org)
 
