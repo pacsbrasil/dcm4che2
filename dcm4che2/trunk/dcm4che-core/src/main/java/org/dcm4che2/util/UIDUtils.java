@@ -60,6 +60,7 @@ public class UIDUtils {
     private static boolean useHostAddress;
     private static boolean useHostUnique;
     private static Object lock = new Object();
+    private static boolean acceptLeadingZero = false;
 
     private static boolean toBoolean(String name) { 
         return ((name != null) && name.equalsIgnoreCase("true"));
@@ -77,6 +78,16 @@ public class UIDUtils {
         useHostAddress = toBoolean(p.getProperty("useHostAddress"));
         useHostUnique = toBoolean(p.getProperty("useHostUnique"));
         setRoot(p.getProperty("root"));
+    }
+
+    public static final boolean isAcceptLeadingZero()
+    {
+        return acceptLeadingZero;
+    }
+
+    public static final void setAcceptLeadingZero(boolean acceptLeadingZero)
+    {
+        UIDUtils.acceptLeadingZero = acceptLeadingZero;
     }
     
     private static String getHostAddress() {
@@ -157,30 +168,42 @@ public class UIDUtils {
     }
     
     public static void verifyUID(String uid) {
+        verifyUID(uid, acceptLeadingZero);
+    }
+    
+    public static void verifyUID(String uid, boolean acceptLeadingZero) {
+        if (!isValidUID(uid, acceptLeadingZero))
+            throw new IllegalArgumentException(uid);
+    }
+
+    public static boolean isValidUID(String uid) {
+        return isValidUID(uid, acceptLeadingZero);
+    }
+    
+    public static boolean isValidUID(String uid, boolean acceptLeadingZero) {
         int len = uid.length();
-        if (len > 64) {
-            throw new IllegalArgumentException(
-                    "exceeds maximal length - " + uid);            
-        }
-        boolean first = true;
-        boolean last = false;
+        if (len > 64)
+            return false;
+        
+        boolean expectFirstDigit = true;
+        boolean leadingZero = false;
         for (int i = 0; i < len; i++) {
             char ch = uid.charAt(i);
-            if (first) {
+            if (expectFirstDigit) {
                 if (ch < '0' || ch > '9')
-                    throw new IllegalArgumentException(uid);
-                first = false;
-                last = ch == '0';
+                    return false;
+                
+                expectFirstDigit = false;
+                leadingZero = !acceptLeadingZero && ch == '0';
             } else {
                 if (ch == '.')
-                    first = true;
+                    expectFirstDigit = true;
                 else
-                    if (last || ch < '0' || ch > '9')
-                        throw new IllegalArgumentException(uid);
+                    if (leadingZero || ch < '0' || ch > '9')
+                        return false;
             }
         }
-        if (first)
-            throw new IllegalArgumentException(uid);
+        return !expectFirstDigit;
     }
 
     public static String createUID() {
