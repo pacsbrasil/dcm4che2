@@ -218,14 +218,14 @@ public class UIDUtils
         int state = EXPECT_FIRST_DIGIT;
         for (int i = 0; i < len; i++)
         {
-            state = nextState(state, uid.charAt(i));
+            state = nextState(state, uid.charAt(i), acceptLeadingZero);
             if (state == ILLEGAL_UID)
                 return false;
         }
         return state != EXPECT_FIRST_DIGIT;
     }
 
-    private static int nextState(int state, int ch)
+    private static int nextState(int state, int ch, boolean acceptLeadingZero)
     {
         return ch == '.'
                 ? (state == EXPECT_FIRST_DIGIT
