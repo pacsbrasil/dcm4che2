@@ -163,17 +163,19 @@ public class UIDUtils {
                     "exceeds maximal length - " + uid);            
         }
         boolean first = true;
+        boolean last = false;
         for (int i = 0; i < len; i++) {
             char ch = uid.charAt(i);
             if (first) {
-                if (ch <= '0' || ch > '9')
+                if (ch < '0' || ch > '9')
                     throw new IllegalArgumentException(uid);
                 first = false;
+                last = ch == '0';
             } else {
                 if (ch == '.')
                     first = true;
                 else
-                    if (ch < '0' || ch > '9')
+                    if (last || ch < '0' || ch > '9')
                         throw new IllegalArgumentException(uid);
             }
         }
