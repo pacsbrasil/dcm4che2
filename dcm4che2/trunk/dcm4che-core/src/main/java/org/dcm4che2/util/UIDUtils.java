@@ -48,9 +48,15 @@ import java.util.Properties;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug 21, 2005
- *
+ * 
  */
-public class UIDUtils {
+public class UIDUtils
+{
+
+    private static final int EXPECT_DOT = 0;
+    private static final int EXPECT_FIRST_DIGIT = 1;
+    private static final int EXPECT_DOT_OR_DIGIT = 2;
+    private static final int ILLEGAL_UID = -1;
 
     private static final String hostAddress = getHostAddress();
     private static final String hostUnique = getHostUnique();
@@ -62,18 +68,24 @@ public class UIDUtils {
     private static Object lock = new Object();
     private static boolean acceptLeadingZero = false;
 
-    private static boolean toBoolean(String name) { 
+    private static boolean toBoolean(String name)
+    {
         return ((name != null) && name.equalsIgnoreCase("true"));
     }
-    
-    static  {
+
+    static
+    {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Properties p = new Properties();
-        try {
+        try
+        {
             p.load(cl.getResourceAsStream("org/dcm4che2/util/UIDUtils.properties"));
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new RuntimeException(
-                    "Failed to load resource org/dcm4che2/util/UIDUtils.properties", e);
+                    "Failed to load resource org/dcm4che2/util/UIDUtils.properties",
+                    e);
         }
         useHostAddress = toBoolean(p.getProperty("useHostAddress"));
         useHostUnique = toBoolean(p.getProperty("useHostUnique"));
@@ -89,23 +101,29 @@ public class UIDUtils {
     {
         UIDUtils.acceptLeadingZero = acceptLeadingZero;
     }
-    
-    private static String getHostAddress() {
-        try {
+
+    private static String getHostAddress()
+    {
+        try
+        {
             return InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e)
+        {
             return "127.0.0.1";
         }
-    }    
+    }
 
-    static private void appendInt(int i, int width, StringBuffer sb) {
+    static private void appendInt(int i, int width, StringBuffer sb)
+    {
         String s = Integer.toString(i);
         for (i = s.length(); i < width; ++i)
             sb.append('0');
         sb.append(s);
     }
-    
-    private static String getTime() {
+
+    private static String getTime()
+    {
         Calendar cal = Calendar.getInstance();
         StringBuffer sb = new StringBuffer(17);
         sb.append(cal.get(Calendar.YEAR));
@@ -118,102 +136,118 @@ public class UIDUtils {
         return sb.toString();
     }
 
-    private static String getHostUnique() {
+    private static String getHostUnique()
+    {
         return Long.toString((new Object()).hashCode() & 0xffffffffL);
     }
 
-    public static void setRoot(String root) {
+    public static void setRoot(String root)
+    {
         verifyUID(root);
         verifyMaxCreatedUIDLength(root, useHostAddress, useHostUnique);
         UIDUtils.root = root;
     }
 
-    private static void verifyMaxCreatedUIDLength(String root, 
-            boolean useHostAddress, boolean useHostUnique) {
+    private static void verifyMaxCreatedUIDLength(String root,
+            boolean useHostAddress, boolean useHostUnique)
+    {
         int len = root.length();
         if (useHostAddress)
             len += 16;
         if (useHostUnique)
             len += 11;
         if (len > 40)
-            throw new IllegalArgumentException("With root=" + root 
-                    + ", useHostAddress=" + useHostAddress
-                    + ", useHostUnique=" + useHostUnique
+            throw new IllegalArgumentException("With root=" + root
+                    + ", useHostAddress=" + useHostAddress + ", useHostUnique="
+                    + useHostUnique
                     + " created UIDs exceeds length limit of 64.");
-        
+
     }
 
-    public static String getRoot() {
+    public static String getRoot()
+    {
         return root;
     }
 
-    public static final boolean isUseHostAddress() {
+    public static final boolean isUseHostAddress()
+    {
         return useHostAddress;
     }
 
-    public static final void setUseHostAddress(boolean useHostAddress) {
+    public static final void setUseHostAddress(boolean useHostAddress)
+    {
         if (useHostAddress)
             verifyMaxCreatedUIDLength(root, useHostAddress, useHostUnique);
         UIDUtils.useHostAddress = useHostAddress;
     }
 
-    public static boolean isUseHostUnique() {
+    public static boolean isUseHostUnique()
+    {
         return useHostUnique;
     }
 
-    public static void setUseHostUnique(boolean useHostUnique) {
+    public static void setUseHostUnique(boolean useHostUnique)
+    {
         if (useHostUnique)
             verifyMaxCreatedUIDLength(root, useHostAddress, useHostUnique);
         UIDUtils.useHostUnique = useHostUnique;
     }
-    
-    public static void verifyUID(String uid) {
+
+    public static void verifyUID(String uid)
+    {
         verifyUID(uid, acceptLeadingZero);
     }
-    
-    public static void verifyUID(String uid, boolean acceptLeadingZero) {
+
+    public static void verifyUID(String uid, boolean acceptLeadingZero)
+    {
         if (!isValidUID(uid, acceptLeadingZero))
             throw new IllegalArgumentException(uid);
     }
 
-    public static boolean isValidUID(String uid) {
+    public static boolean isValidUID(String uid)
+    {
         return isValidUID(uid, acceptLeadingZero);
     }
-    
-    public static boolean isValidUID(String uid, boolean acceptLeadingZero) {
+
+    public static boolean isValidUID(String uid, boolean acceptLeadingZero)
+    {
         int len = uid.length();
         if (len > 64)
             return false;
-        
-        boolean expectFirstDigit = true;
-        boolean leadingZero = false;
-        for (int i = 0; i < len; i++) {
-            char ch = uid.charAt(i);
-            if (expectFirstDigit) {
-                if (ch < '0' || ch > '9')
-                    return false;
-                
-                expectFirstDigit = false;
-                leadingZero = !acceptLeadingZero && ch == '0';
-            } else {
-                if (ch == '.')
-                    expectFirstDigit = true;
-                else
-                    if (leadingZero || ch < '0' || ch > '9')
-                        return false;
-            }
+
+        int state = EXPECT_FIRST_DIGIT;
+        for (int i = 0; i < len; i++)
+        {
+            state = nextState(state, uid.charAt(i));
+            if (state == ILLEGAL_UID)
+                return false;
         }
-        return !expectFirstDigit;
+        return state != EXPECT_FIRST_DIGIT;
     }
 
-    public static String createUID() {
+    private static int nextState(int state, int ch)
+    {
+        return ch == '.'
+                ? (state == EXPECT_FIRST_DIGIT
+                        ? ILLEGAL_UID
+                        : EXPECT_FIRST_DIGIT)
+                : (state == EXPECT_DOT || ch < '0' || ch > '9')
+                        ? ILLEGAL_UID
+                        : !acceptLeadingZero && state == EXPECT_FIRST_DIGIT
+                                && ch == '0' ? EXPECT_DOT : EXPECT_DOT_OR_DIGIT;
+    }
+
+    public static String createUID()
+    {
         StringBuffer sb = new StringBuffer(64).append(root).append('.');
         if (useHostAddress)
             sb.append(hostAddress).append('.');
         if (useHostUnique)
             sb.append(hostUnique).append('.');
-        synchronized (lock) {
-            if (lastCount == Short.MAX_VALUE) {
+        synchronized (lock)
+        {
+            if (lastCount == Short.MAX_VALUE)
+            {
                 lastTime = getTime();
                 lastCount = Short.MIN_VALUE;
             }
