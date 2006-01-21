@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2005
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,22 +36,35 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.config;
+package org.dcm4che2.net;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Arrays;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 7, 2005
+ * @version $Revision$ $Date$
+ * @since Nov 24, 2005
  *
  */
 public class NetworkConnection
 {
+    static Logger log = LoggerFactory.getLogger(NetworkConnection.class);
     public static final int DEFAULT = -1;
     
-    private DeviceConfiguration device;
     private String commonName;
     private String hostname;
     private int port;
@@ -74,6 +87,10 @@ public class NetworkConnection
 //            "SSLv2Hello"
     };
     
+//    private final NetworkConnection config;
+    private Device device;
+    private ServerSocket server;
+
     public String toString()
     {
         StringBuffer sb = new StringBuffer("NetworkConnection[");
@@ -88,16 +105,16 @@ public class NetworkConnection
         return sb.toString();
     }
     
-    public final DeviceConfiguration getDevice()
+    public final Device getDevice()
     {
         return device;
     }
 
-    public final void setDevice(DeviceConfiguration device)
+    final void setDevice(Device device)
     {
         this.device = device;
     }
-    
+
     public final String getHostname()
     {
         return hostname;
@@ -279,15 +296,104 @@ public class NetworkConnection
         this.tlsProtocol = tlsProtocol;
     }
 
-    public InetSocketAddress getSocketAddress()
+    private InetSocketAddress getSocketAddress()
     {
         return getSocketAddress(port);
     }
     
-    public InetSocketAddress getSocketAddress(int port)
+    private InetSocketAddress getSocketAddress(int port)
     {
         return hostname == null ? new InetSocketAddress(port)
                                 : new InetSocketAddress(hostname, port);
+    }
+    
+    public Socket connect(NetworkConnection peerConfig)
+    throws IOException
+    {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
+        if (!peerConfig.isListening())
+            throw new IllegalArgumentException("Only initiates associations - " 
+                    + peerConfig);
+        Socket s = isTLS() ? createTLSSocket() : new Socket();
+        if (receiveBufferSize != DEFAULT)
+            server.setReceiveBufferSize(receiveBufferSize);
+        if (sendBufferSize != DEFAULT)
+            s.setSendBufferSize(sendBufferSize);
+        s.setTcpNoDelay(tcpNoDelay);
+        s.bind(getSocketAddress(0));
+        log.debug("Initiate connection to {}", peerConfig.getSocketAddress());
+        s.connect(peerConfig.getSocketAddress(), connectTimeout);
+        return s;
+    }
+    
+    public synchronized void bind()
+    throws IOException
+    {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
+        if (!isListening())
+            throw new IllegalStateException("Only initiates associations - " 
+                    + this);
+        if (server != null)
+            throw new IllegalStateException("Already listening - " + server);
+        server = isTLS() ? createTLSServerSocket() : new ServerSocket();
+        if (receiveBufferSize != DEFAULT)
+            server.setReceiveBufferSize(receiveBufferSize);
+        server.bind(getSocketAddress(), getBacklog());
+        device.getExecutor().execute(new Runnable(){
+
+            public void run()
+            {
+                SocketAddress addr = server.getLocalSocketAddress();
+                log.info("Start listening on {}", addr);
+                try
+                {
+                   for (;;)
+                   {
+                        log.debug("Wait for connection on {}", addr);
+                        Socket s = server.accept();
+                        if (sendBufferSize != DEFAULT)
+                            s.setSendBufferSize(sendBufferSize);
+                        s.setTcpNoDelay(tcpNoDelay);
+                        Association a = Association.accept(s, NetworkConnection.this);
+                        device.getExecutor().execute(a);
+                   }
+                }
+                catch (Throwable e)
+                {
+                    // assume exception was raised by graceful stop of server
+                }
+                log.info("Stop listening on {}", addr);
+            }});
+    }
+
+    public synchronized void unbind()
+    {
+        if (server == null)
+            return;
+        try { server.close(); }
+        catch (Throwable e) { }
+        server = null;
+    }
+    
+    private Socket createTLSSocket() throws IOException
+    {
+        SSLSocketFactory sf = device.getSSLContext().getSocketFactory();
+        SSLSocket s = (SSLSocket) sf.createSocket();
+        s.setEnabledProtocols(tlsProtocol);
+        s.setEnabledCipherSuites(tlsCipherSuite);
+        return s;
+    }
+
+    private ServerSocket createTLSServerSocket() throws IOException
+    {
+        SSLServerSocketFactory ssf = device.getSSLContext().getServerSocketFactory();
+        SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
+        ss.setEnabledProtocols(tlsProtocol);
+        ss.setEnabledCipherSuites(tlsCipherSuite);
+        ss.setNeedClientAuth(tlsNeedClientAuth);
+        return ss;
     }
 
 }

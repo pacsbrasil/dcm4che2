@@ -40,7 +40,6 @@ package org.dcm4che2.net;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -49,9 +48,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.dcm4che2.config.NetworkApplicationEntity;
-import org.dcm4che2.config.NetworkConnection;
-import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJException;
@@ -65,50 +61,34 @@ import org.dcm4che2.net.service.DicomService;
  * @since Nov 25, 2005
  *
  */
-public class ApplicationEntity
+public class NetworkApplicationEntity
 {
-    private final NetworkApplicationEntity config;
-    private final DicomServiceRegistry serviceRegistry;
-    private final ArrayList connectors;
+    private boolean associationAcceptor;
+    private boolean associationInitiator;
+    private String aeTitle;
+    private String description;
+    private Object[] vendorData = {};
+    private String[] applicationCluster = {};
+    private String[] preferredCallingAETitle = {};
+    private String[] preferredCalledAETitle = {};
+    private String[] supportedCharacterSet = {};
+    private Boolean installed;
+
+    private int maxOpsInvoked = Integer.MAX_VALUE;
+    private int maxOpsPerformed = Integer.MAX_VALUE;
+    private int maxPDULengthReceive = 0x4000; //=16384
+    private int maxPDULengthSend = 0x4000;
+    private boolean packPDV;
+    private int dimseRspTimeout = 60000;
+    private int moveRspTimeout = 600000;
+    private int idleTimeout = 60000;
+    
+    private NetworkConnection[] networkConnection = {};
+    private TransferCapability[] transferCapability = {};
+
+    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();;
     private Device device;
 
-    public ApplicationEntity()
-    {
-        this(new NetworkApplicationEntity());
-    }
-    
-    public ApplicationEntity(NetworkApplicationEntity config)
-    {
-        if (config == null)
-            throw new NullPointerException("config");
-        this.config = config;
-        this.serviceRegistry = new DicomServiceRegistry();
-        this.connectors = new ArrayList(config.getNetworkConnection().length);
-    }
-
-    final ArrayList getConnectors()
-    {
-        return connectors;
-    }
-
-    void setDefaultServiceRegistry(DicomServiceRegistry serviceRegistry)
-    {
-        serviceRegistry.setDefaultRegistry(serviceRegistry);        
-    }
-
-    void initConnectors()
-    {
-        NetworkConnection[] nc = config.getNetworkConnection();
-        for (int i = 0; i < nc.length; i++)
-            addConnector(device.getConnector(nc[i]));
-    }
-    
-    public NetworkApplicationEntity getConfiguration()
-    {
-        config.setNetworkConnection(getNetworkConnection());
-        return config;
-    }
-    
     public final Device getDevice()
     {
         return device;
@@ -118,239 +98,248 @@ public class ApplicationEntity
     {
         this.device = device;
     }
-
-    public void addConnector(Connector c)
-    {
-        connectors.add(c);
-        if (device != null)
-            device.addConnector(c);
-    }
-
+        
     public final String getAETitle()
     {
-        return config.getAETitle();
+        return aeTitle;
     }
 
     public final void setAETitle(String aetitle)
     {
-        config.setAETitle(aetitle);
+        this.aeTitle = aetitle;
     }
 
     public final String[] getApplicationCluster()
     {
-        return config.getApplicationCluster();
+        return applicationCluster;
     }
 
     public final void setApplicationCluster(String[] cluster)
     {
-        config.setApplicationCluster(cluster);
+        this.applicationCluster = cluster;
     }
 
     public final boolean isAssociationAcceptor()
     {
-        return config.isAssociationAcceptor();
+        return associationAcceptor;
     }
 
     public final void setAssociationAcceptor(boolean acceptor)
     {
-        config.setAssociationAcceptor(acceptor);
+        this.associationAcceptor = acceptor;
     }
 
     public final boolean isAssociationInitiator()
     {
-        return config.isAssociationInitiator();
+        return associationInitiator;
     }
 
     public final void setAssociationInitiator(boolean initiator)
     {
-        config.setAssociationInitiator(initiator);
+        this.associationInitiator = initiator;
     }
 
     public final String getDescription()
     {
-        return config.getDescription();
+        return description;
     }
 
     public final void setDescription(String description)
     {
-        config.setDescription(description);
+        this.description = description;
     }
 
     public final boolean isInstalled()
     {
-        return config.isInstalled();
+        return installed != null ? installed.booleanValue() 
+                                 : device == null || device.isInstalled();
     }
 
     public final void setInstalled(boolean installed)
     {
-        config.setInstalled(installed);
+        this.installed = Boolean.valueOf(installed);
     }
 
-    public NetworkConnection[] getNetworkConnection()
+    public final NetworkConnection[] getNetworkConnection()
     {
-        NetworkConnection[] a = new NetworkConnection[connectors.size()];
-        for (int i = 0; i < a.length; i++)
-            a[i] = ((Connector) connectors.get(i)).getConfiguration();
-        return a;
+        return networkConnection;
+    }
+
+    public final void setNetworkConnection(NetworkConnection nc)
+    {
+        setNetworkConnection(new NetworkConnection[]{nc});
+    }
+    
+    public final void setNetworkConnection(NetworkConnection[] nc)
+    {
+        this.networkConnection = nc;
     }
 
     public final String[] getPreferredCalledAETitle()
     {
-        return config.getPreferredCalledAETitle();
+        return preferredCalledAETitle;
     }
 
     public final boolean hasPreferredCalledAETitle()
     {
-        return config.hasPreferredCalledAETitle();
+        return preferredCalledAETitle != null
+                && preferredCalledAETitle.length > 0;
     }
     
     public boolean isPreferredCalledAETitle(String aet)
     {
-        return config.isPreferredCalledAETitle(aet);
+        return contains(preferredCalledAETitle, aet);
     }
     
+    private static boolean contains(String[] a, String s)
+    {
+        for (int i = 0; i < a.length; i++)
+            if (s.equals(a[i]))
+                return true;
+        return false;
+    }
+
     public final void setPreferredCalledAETitle(String[] aets)
     {
-        config.setPreferredCalledAETitle(aets);
+        this.preferredCalledAETitle = aets;
     }
 
     public final String[] getPreferredCallingAETitle()
     {
-        return config.getPreferredCallingAETitle();
+        return preferredCallingAETitle;
     }
 
     public final boolean hasPreferredCallingAETitle()
     {
-        return config.hasPreferredCallingAETitle();
+        return preferredCallingAETitle != null
+                && preferredCallingAETitle.length > 0;
     }
     
     public boolean isPreferredCallingAETitle(String aet)
     {
-        return config.isPreferredCallingAETitle(aet);
+        return contains(preferredCallingAETitle, aet);
     }
     
     public final void setPreferredCallingAETitle(String[] aets)
     {
-        config.setPreferredCallingAETitle(aets);
+        this.preferredCallingAETitle = aets;
     }
 
     public final String[] getSupportedCharacterSet()
     {
-        return config.getSupportedCharacterSet();
+        return supportedCharacterSet;
     }
 
     public final void setSupportedCharacterSet(String[] characterSets)
     {
-        config.setSupportedCharacterSet(characterSets);
+        this.supportedCharacterSet = characterSets;
     }
 
     public final TransferCapability[] getTransferCapability()
     {
-        return config.getTransferCapability();
+        return transferCapability;
     }
 
     public final void setTransferCapability(TransferCapability[] transferCapability)
     {
-        config.setTransferCapability(transferCapability);
+        this.transferCapability = transferCapability;
     }
 
     public final Object[] getVendorData()
     {
-        return config.getVendorData();
+        return vendorData;
     }
 
     public final void setVendorData(Object[] vendorData)
     {
-        config.setVendorData(vendorData);
+        this.vendorData = vendorData;
     }
 
     public final int getMaxOpsInvoked()
     {
-        return config.getMaxOpsInvoked();
+        return maxOpsInvoked;
     }
     
     public final void setMaxOpsInvoked(int maxOpsInvoked)
     {
-        config.setMaxOpsInvoked(maxOpsInvoked);
+        this.maxOpsInvoked = maxOpsInvoked;
     }
     
     public final int getMaxOpsPerformed()
     {
-        return config.getMaxOpsPerformed();
+        return maxOpsPerformed;
     }
     
     public final void setMaxOpsPerformed(int maxOpsPerformed)
     {
-        config.setMaxOpsPerformed(maxOpsPerformed);
+        this.maxOpsPerformed = maxOpsPerformed;
     }
     
     public final boolean isAsyncOps()
     {
-        return config.isAsyncOps();
+        return maxOpsInvoked != 1 || maxOpsPerformed != 1;
     }
     
     public final int getMaxPDULengthReceive()
     {
-        return config.getMaxPDULengthReceive();
+        return maxPDULengthReceive;
     }
     
-    public final void setMaxPDULengthReceive(int length)
+    public final void setMaxPDULengthReceive(int maxPDULengthReceive)
     {
-        config.setMaxPDULengthReceive(length);
+        this.maxPDULengthReceive = maxPDULengthReceive;
     }
     
     public final int getMaxPDULengthSend()
     {
-        return config.getMaxPDULengthSend();
+        return maxPDULengthSend;
     }
     
-    public final void setMaxPDULengthSend(int length)
+    public final void setMaxPDULengthSend(int maxPDULengthSend)
     {
-        config.setMaxPDULengthSend(length);
+        this.maxPDULengthSend = maxPDULengthSend;
     }
 
     public final boolean isPackPDV()
     {
-        return config.isPackPDV();
+        return packPDV;
     }
 
     public final void setPackPDV(boolean packPDV)
     {
-        config.setPackPDV(packPDV);
+        this.packPDV = packPDV;
     }
 
     public final int getDimseRspTimeout()
     {
-        return config.getDimseRspTimeout();
+        return dimseRspTimeout ;
     }
 
-    public final void setDimseRspTimeout(int timeout)
+    public final void setDimseRspTimeout(int dimseRspTimeout)
     {
-        config.setDimseRspTimeout(timeout);
+        this.dimseRspTimeout = dimseRspTimeout;
     }
-    
 
     public final int getIdleTimeout()
     {
-        return config.getIdleTimeout();
+        return idleTimeout;
     }
 
-    public final void setIdleTimeout(int timeout)
+    public final void setIdleTimeout(int idleTimeout)
     {
-        config.setIdleTimeout(timeout);
+        this.idleTimeout = idleTimeout;
     }
 
     public final int getMoveRspTimeout()
     {
-        return config.getMoveRspTimeout();
+        return moveRspTimeout;
     }
 
-    public final void setMoveRspTimeout(int timeout)
+    public final void setMoveRspTimeout(int moveRspTimeout)
     {
-        config.setMoveRspTimeout(timeout);
+        this.moveRspTimeout = moveRspTimeout;
     }
-    
-    
+
     public Association connect(NetworkApplicationEntity remoteAE)
     throws ConfigurationException, IOException, InterruptedException
     {
@@ -361,9 +350,9 @@ public class ApplicationEntity
             TransferCapability[] tc)
     throws ConfigurationException, IOException, InterruptedException
     {
-        if (!config.isAssociationInitiator())
+        if (!isAssociationInitiator())
             throw new ConfigurationException(
-                    "Local AE " + config.getAETitle() + " does not initiate Associations");
+                    "Local AE " + getAETitle() + " does not initiate Associations");
         if (!remoteAE.isInstalled())
             throw new ConfigurationException(
                     "Remote AE " + remoteAE.getAETitle() + " not installed");
@@ -371,14 +360,14 @@ public class ApplicationEntity
             throw new ConfigurationException(
                     "Remote AE " + remoteAE.getAETitle() + " does not accept Associations");
         NetworkConnection[] remoteConns = remoteAE.getNetworkConnection();
-        for (Iterator iter = connectors.iterator(); iter.hasNext();)
+        for (int i = 0; i < networkConnection.length; i++)
         {
-            Connector c = (Connector) iter.next();
-            if (!c.isInstalled())
+            NetworkConnection c = networkConnection[i];
+            if (!networkConnection[i].isInstalled())
                 continue;
-            for (int i = 0; i < remoteConns.length; i++)
+            for (int j = 0; j < remoteConns.length; j++)
             {
-                NetworkConnection nc = remoteConns[i];
+                NetworkConnection nc = remoteConns[j];
                 if (nc.isInstalled() && nc.isListening() 
                         && c.isTLS() == nc.isTLS())
                 {
@@ -393,7 +382,7 @@ public class ApplicationEntity
         }
         throw new ConfigurationException(
                 "No compatible Network Connection between local AE "
-                    + config.getAETitle() + " and remote AE "
+                    + getAETitle() + " and remote AE "
                     + remoteAE.getAETitle());
     }
     
@@ -401,11 +390,11 @@ public class ApplicationEntity
             TransferCapability[] tc) throws ConfigurationException
     {
         AAssociateRQ aarq = new AAssociateRQ();
-        aarq.setCallingAET(getAETitle());
+        aarq.setCallingAET(aeTitle);
         aarq.setCalledAET(remoteAE.getAETitle());
-        aarq.setMaxPDULength(getMaxPDULengthReceive());
-        aarq.setMaxOpsInvoked(getMaxOpsInvoked());
-        aarq.setMaxOpsPerformed(getMaxOpsPerformed());
+        aarq.setMaxPDULength(maxPDULengthReceive);
+        aarq.setMaxOpsInvoked(maxOpsInvoked);
+        aarq.setMaxOpsPerformed(maxOpsPerformed);
         
         LinkedHashMap as2ts = new LinkedHashMap();
         LinkedHashSet asscp = new LinkedHashSet();
@@ -453,7 +442,7 @@ public class ApplicationEntity
         if (as2ts.isEmpty())
             throw new ConfigurationException(
                     "No common Transfer Capability between local AE "
-                    + config.getAETitle() + " and remote AE "
+                    + getAETitle() + " and remote AE "
                     + remoteAE.getAETitle());
         int available = 128 - as2ts.size();
         int pcid = 1;
@@ -504,19 +493,19 @@ public class ApplicationEntity
     AAssociateAC negotiate(Association a, AAssociateRQ rq)
     throws AAssociateRJException
     {
-        if (!config.isAssociationAcceptor())
+        if (!isAssociationAcceptor())
             throw new AAssociateRJException(
                     AAssociateRJException.RESULT_REJECTED_PERMANENT,
                     AAssociateRJException.SOURCE_SERVICE_USER,
                     AAssociateRJException.REASON_NO_REASON_GIVEN);
-        String[] calling = config.getPreferredCallingAETitle();
+        String[] calling = getPreferredCallingAETitle();
         if (calling.length != 0 
                 && Arrays.asList(calling).indexOf(rq.getCallingAET()) == -1)
             throw new AAssociateRJException(
                     AAssociateRJException.RESULT_REJECTED_PERMANENT,
                     AAssociateRJException.SOURCE_SERVICE_USER,
                     AAssociateRJException.REASON_CALLING_AET_NOT_RECOGNIZED);        
-        if (!config.isInstalled())
+        if (!isInstalled())
             throw new AAssociateRJException(
                     AAssociateRJException.RESULT_REJECTED_TRANSIENT,
                     AAssociateRJException.SOURCE_SERVICE_USER,

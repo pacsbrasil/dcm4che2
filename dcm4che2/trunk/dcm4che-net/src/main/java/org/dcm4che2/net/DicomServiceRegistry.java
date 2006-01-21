@@ -79,17 +79,6 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
     private final HashMap nactionSCP = new HashMap();
     private final HashMap ncreateSCP = new HashMap();
     private final HashMap ndeleteSCP = new HashMap();
-    private DicomServiceRegistry defaultRegistry;
-    
-    public final DicomServiceRegistry getDefaultRegistry()
-    {
-        return defaultRegistry;
-    }
-
-    public final void setDefaultRegistry(DicomServiceRegistry defaultRegistry)
-    {
-        this.defaultRegistry = defaultRegistry;
-    }
 
     private void registerInto(HashMap registry, DicomService service)
     {
@@ -135,89 +124,67 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
     private CStoreSCP getCStoreSCP(Association as, DicomObject cmd)
     {
         CStoreSCP scp = (CStoreSCP) cstoreSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getCStoreSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private CGetSCP getCGetSCP(Association as, DicomObject cmd)
     {
         CGetSCP scp = (CGetSCP) cgetSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getCGetSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private CFindSCP getCFindSCP(Association as, DicomObject cmd)
     {
         CFindSCP scp = (CFindSCP) cfindSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getCFindSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private CMoveSCP getCMoveSCP(Association as, DicomObject cmd)
     {
         CMoveSCP scp = (CMoveSCP) cmoveSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getCMoveSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private CEchoSCP getCEchoSCP(Association as, DicomObject cmd)
     {
         CEchoSCP scp = (CEchoSCP) cechoSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getCEchoSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private NEventReportSCU getNEventReportSCU(Association as, DicomObject cmd)
     {
         NEventReportSCU scu = (NEventReportSCU) neventReportSCU.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scu != null ? scu 
-                : defaultRegistry != null ? defaultRegistry.getNEventReportSCU(as, cmd) 
-                : this;
+        return scu != null ? scu : this;
     }
 
     private NGetSCP getNGetSCP(Association as, DicomObject cmd)
     {
         NGetSCP scp = (NGetSCP) ngetSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getNGetSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private NSetSCP getNSetSCP(Association as, DicomObject cmd)
     {
         NSetSCP scp = (NSetSCP) nsetSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getNSetSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private NActionSCP getNActionSCP(Association as, DicomObject cmd)
     {
         NActionSCP scp = (NActionSCP) nactionSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getNActionSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private NCreateSCP getNCreateSCP(Association as, DicomObject cmd)
     {
         NCreateSCP scp = (NCreateSCP) ncreateSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getNCreateSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     private NDeleteSCP getNDeleteSCP(Association as, DicomObject cmd)
     {
         NDeleteSCP scp = (NDeleteSCP) ndeleteSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp 
-                : defaultRegistry != null ? defaultRegistry.getNDeleteSCP(as, cmd) 
-                : this;
+        return scp != null ? scp : this;
     }
 
     public void process(Association as, int pcid, DicomObject cmd,

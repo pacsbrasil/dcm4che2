@@ -54,9 +54,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.dcm4che2.config.NetworkApplicationEntity;
-import org.dcm4che2.config.NetworkConnection;
-import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -65,15 +62,16 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.io.TranscoderInputHandler;
-import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
-import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSPHandler;
+import org.dcm4che2.net.NetworkApplicationEntity;
+import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.PDVOutputStream;
+import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.util.StringUtils;
 
 /**
@@ -100,11 +98,11 @@ public class DcmSnd {
         "=> Send DICOM object image.dcm to Application Entity STORESCP, " +
         "listening on local port 11112.";
 
-    private NetworkApplicationEntity remoteAECfg = new NetworkApplicationEntity();
-    private NetworkConnection remoteConnCfg = new NetworkConnection();
+    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private NetworkConnection remoteConn = new NetworkConnection();
     private Device device = new Device("DCMECHO");
-    private ApplicationEntity ae = new ApplicationEntity();
-    private Connector connector = new Connector();
+    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private NetworkConnection conn = new NetworkConnection();
     
     private HashMap as2ts = new HashMap();
     private ArrayList files = new ArrayList();
@@ -116,35 +114,36 @@ public class DcmSnd {
 
     public DcmSnd()
     {
-        remoteAECfg.setInstalled(true);
-        remoteAECfg.setAssociationAcceptor(true);
-        remoteAECfg.setNetworkConnection(
-                new NetworkConnection[] { remoteConnCfg });
+        remoteAE.setInstalled(true);
+        remoteAE.setAssociationAcceptor(true);
+        remoteAE.setNetworkConnection(
+                new NetworkConnection[] { remoteConn });
 
-        device.addApplicationEntity(ae);
-        ae.addConnector(connector);
+        device.setNetworkApplicationEntity(ae);
+        device.setNetworkConnection(conn);
+        ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
         ae.setAETitle("DCMSND");
     }
 
     public final void setLocalHost(String hostname)
     {
-        connector.setHostname(hostname);
+        conn.setHostname(hostname);
     }
 
     public final void setRemoteHost(String hostname)
     {
-        remoteConnCfg.setHostname(hostname);
+        remoteConn.setHostname(hostname);
     }
 
     public final void setRemotePort(int port)
     {
-        remoteConnCfg.setPort(port);
+        remoteConn.setPort(port);
     }
 
     public final void setCalledAET(String called)
     {
-        remoteAECfg.setAETitle(called);
+        remoteAE.setAETitle(called);
     }
 
     public final void setCalling(String calling)
@@ -154,7 +153,7 @@ public class DcmSnd {
 
     public final void setConnectTimeout(int connectTimeout)
     {
-        connector.setConnectTimeout(connectTimeout);
+        conn.setConnectTimeout(connectTimeout);
     }
     
     public final void setMaxPDULengthReceive(int maxPDULength)
@@ -189,22 +188,22 @@ public class DcmSnd {
 
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        connector.setTcpNoDelay(tcpNoDelay);
+        conn.setTcpNoDelay(tcpNoDelay);
     }
 
     public final void setAcceptTimeout(int timeout)
     {
-        connector.setAcceptTimeout(timeout);
+        conn.setAcceptTimeout(timeout);
     }
 
     public final void setReleaseTimeout(int timeout)
     {
-        connector.setReleaseTimeout(timeout);
+        conn.setReleaseTimeout(timeout);
     }
 
     public final void setSocketCloseDelay(int timeout)
     {
-        connector.setSocketCloseDelay(timeout);
+        conn.setSocketCloseDelay(timeout);
     }
 
     public final void setMaxPDULengthSend(int maxPDULength)
@@ -214,12 +213,12 @@ public class DcmSnd {
 
     public final void setReceiveBufferSize(int bufferSize)
     {
-        connector.setReceiveBufferSize(bufferSize);
+        conn.setReceiveBufferSize(bufferSize);
     }
 
     public final void setSendBufferSize(int bufferSize)
     {
-        connector.setSendBufferSize(bufferSize);
+        conn.setSendBufferSize(bufferSize);
     }
 
     public final void setTranscoderBufferSize(int transcoderBufferSize)
@@ -611,7 +610,7 @@ public class DcmSnd {
     public void open()
     throws IOException, ConfigurationException, InterruptedException
     {
-        assoc = ae.connect(remoteAECfg);
+        assoc = ae.connect(remoteAE);
     }
 
     public void send()

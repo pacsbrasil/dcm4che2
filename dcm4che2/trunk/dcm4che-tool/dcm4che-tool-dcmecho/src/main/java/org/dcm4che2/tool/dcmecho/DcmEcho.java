@@ -47,15 +47,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.dcm4che2.config.NetworkApplicationEntity;
-import org.dcm4che2.config.NetworkConnection;
-import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.UID;
-import org.dcm4che2.net.ApplicationEntity;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.ConfigurationException;
-import org.dcm4che2.net.Connector;
 import org.dcm4che2.net.Device;
+import org.dcm4che2.net.NetworkApplicationEntity;
+import org.dcm4che2.net.NetworkConnection;
+import org.dcm4che2.net.TransferCapability;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -80,22 +78,23 @@ public class DcmEcho
     private static final TransferCapability VERIFICATION_SCU = 
             new TransferCapability(UID.VerificationSOPClass, DEF_TS, false);
 
-    private NetworkApplicationEntity remoteAECfg = new NetworkApplicationEntity();
-    private NetworkConnection remoteConnCfg = new NetworkConnection();
+    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private NetworkConnection remoteConn = new NetworkConnection();
     private Device device = new Device("DCMECHO");
-    private ApplicationEntity ae = new ApplicationEntity();
-    private Connector connector = new Connector();
+    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private NetworkConnection conn = new NetworkConnection();
     private Association assoc;
 
     public DcmEcho()
     {
-        remoteAECfg.setInstalled(true);
-        remoteAECfg.setAssociationAcceptor(true);
-        remoteAECfg.setNetworkConnection(
-                new NetworkConnection[] { remoteConnCfg });
+        remoteAE.setInstalled(true);
+        remoteAE.setAssociationAcceptor(true);
+        remoteAE.setNetworkConnection(
+                new NetworkConnection[] { remoteConn });
 
-        device.addApplicationEntity(ae);
-        ae.addConnector(connector);
+        device.setNetworkApplicationEntity(ae);
+        device.setNetworkConnection(conn);
+        ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
         ae.setAETitle("DCMECHO");
         ae.setTransferCapability(new TransferCapability[] { VERIFICATION_SCU });
@@ -103,22 +102,22 @@ public class DcmEcho
 
     public final void setLocalHost(String hostname)
     {
-        connector.setHostname(hostname);
+        conn.setHostname(hostname);
     }
 
     public final void setRemoteHost(String hostname)
     {
-        remoteConnCfg.setHostname(hostname);
+        remoteConn.setHostname(hostname);
     }
 
     public final void setRemotePort(int port)
     {
-        remoteConnCfg.setPort(port);
+        remoteConn.setPort(port);
     }
 
     public final void setCalledAET(String called)
     {
-        remoteAECfg.setAETitle(called);
+        remoteAE.setAETitle(called);
     }
 
     public final void setCalling(String calling)
@@ -277,7 +276,7 @@ public class DcmEcho
     public void open()
             throws IOException, ConfigurationException, InterruptedException
     {
-        assoc = ae.connect(remoteAECfg);
+        assoc = ae.connect(remoteAE);
     }
 
     public void echo() throws IOException, InterruptedException

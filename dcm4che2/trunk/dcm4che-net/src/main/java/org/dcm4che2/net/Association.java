@@ -71,9 +71,9 @@ public class Association implements Runnable
     static Logger log = LoggerFactory.getLogger(Association.class);
     static int nextSerialNo = 0;
     private final int serialNo = ++nextSerialNo;
-    private final Connector connector;
+    private final NetworkConnection connector;
     private final AssociationReaper reaper;
-    private ApplicationEntity ae;
+    private NetworkApplicationEntity ae;
     private Socket socket;
     private boolean requestor = false;
     private InputStream in;
@@ -99,7 +99,7 @@ public class Association implements Runnable
     private long idleTimeout = Long.MAX_VALUE;
 
     
-    private Association(Socket socket, Connector connector, boolean requestor)
+    private Association(Socket socket, NetworkConnection connector, boolean requestor)
     throws IOException
     {
         if (socket == null)
@@ -122,7 +122,7 @@ public class Association implements Runnable
         return name;
     }
     
-    static Association request(Socket socket, Connector connector, ApplicationEntity ae) 
+    static Association request(Socket socket, NetworkConnection connector, NetworkApplicationEntity ae) 
     throws IOException
     {
         Association a = new Association(socket, connector, true);
@@ -131,7 +131,7 @@ public class Association implements Runnable
         return a;
     }
 
-    static Association accept(Socket socket, Connector connector) 
+    static Association accept(Socket socket, NetworkConnection connector) 
     throws IOException
     {
         Association a = new Association(socket, connector, false);
@@ -140,7 +140,7 @@ public class Association implements Runnable
         return a;
     }
     
-    final void setApplicationEntity(ApplicationEntity ae)
+    final void setApplicationEntity(NetworkApplicationEntity ae)
     {
         this.ae = ae;
     }
@@ -223,6 +223,26 @@ public class Association implements Runnable
             }
             ts2pc.put(pc.getTransferSyntax(), pc);
         }
+    }
+    
+    public String getCallingAET()
+    {
+        return associateRQ != null ? associateRQ.getCallingAET() : null;
+    }
+
+    public String getCalledAET()
+    {
+        return associateRQ != null ? associateRQ.getCalledAET() : null;
+    }
+
+    public String getRemoteAET()
+    {
+        return requestor ? getCalledAET() : getCallingAET();
+    }
+
+    public String getLocalAET()
+    {
+        return requestor ? getCallingAET() : getCalledAET();
     }
 
     public AAssociateAC negotiate(AAssociateRQ rq)

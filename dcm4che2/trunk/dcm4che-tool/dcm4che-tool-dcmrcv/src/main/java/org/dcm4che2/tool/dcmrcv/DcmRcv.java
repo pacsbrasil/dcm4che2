@@ -50,19 +50,18 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.dcm4che2.config.TransferCapability;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
-import org.dcm4che2.net.ApplicationEntity;
+import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.CommandUtils;
-import org.dcm4che2.net.Connector;
+import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.PDVInputStream;
+import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.StorageService;
 import org.dcm4che2.net.service.VerificationService;
 
@@ -211,8 +210,8 @@ public class DcmRcv extends StorageService {
 
     
     private Device device = new Device("DCMRCV");
-    private ApplicationEntity ae = new ApplicationEntity();
-    private Connector connector = new Connector();
+    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private NetworkConnection connector = new NetworkConnection();
     private String[] tsuids = NON_RETIRED_TS;
     private File destination;
     private boolean devnull;
@@ -222,8 +221,9 @@ public class DcmRcv extends StorageService {
     public DcmRcv()
     {
         super(CUIDS);
-        device.addApplicationEntity(ae);
-        ae.addConnector(connector);
+        device.setNetworkApplicationEntity(ae);
+        device.setNetworkConnection(connector);
+        ae.setNetworkConnection(connector);
         ae.setAssociationAcceptor(true);
         ae.register(new VerificationService());
         ae.register(this);

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.config;
+package org.dcm4che2.net;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
