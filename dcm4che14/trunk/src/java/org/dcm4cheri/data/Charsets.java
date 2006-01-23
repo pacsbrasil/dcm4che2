@@ -84,8 +84,10 @@ class Charsets {
         put("ISO_IR 126","ISO-8859-7");
         put("ISO_IR 138","ISO-8859-8");
         put("ISO_IR 148","ISO-8859-9");
-        put("ISO_IR 13","EUC-JP");
+        put("ISO_IR 13","JIS_X0201");
         put("ISO_IR 166","TIS-620");
+		put("ISO_IR 192", "UTF-8");
+		put("GB18030", "GB18030");
         CHARSETS.put("ISO 2022 IR 6",ASCII);
         CHARSETS.put("ISO 2022 IR 100",ISO_8859_1);
         put("ISO 2022 IR 101","ISO-8859-2");
@@ -96,7 +98,7 @@ class Charsets {
         put("ISO 2022 IR 126","ISO-8859-7");
         put("ISO 2022 IR 138","ISO-8859-8");
         put("ISO 2022 IR 148","ISO-8859-9");
-        put("ISO 2022 IR 13","EUC-JP");
+        put("ISO 2022 IR 13","JIS_X0201");
         put("ISO 2022 IR 166","TIS-620");
     }    
 
