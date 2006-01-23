@@ -331,7 +331,7 @@ abstract class AbstractDicomObject implements DicomObject {
 
 	public DicomObject getNestedDicomObject(int tag) {
 		DicomElement a = get(tag);
-		return a == null && !a.isEmpty() ? null : a.getDicomObject();
+		return a == null || !a.isEmpty() ? null : a.getDicomObject();
 	}
 
 	public int getInt(int tag) {
