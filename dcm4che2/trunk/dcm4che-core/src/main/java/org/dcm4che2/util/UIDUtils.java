@@ -61,7 +61,7 @@ public class UIDUtils
     private static final String hostAddress = getHostAddress();
     private static final String hostUnique = getHostUnique();
     private static String lastTime = getTime();
-    private static short lastCount = Short.MIN_VALUE;
+    private static short lastCount = 1;
     private static String root;
     private static boolean useHostAddress;
     private static boolean useHostUnique;
@@ -246,12 +246,12 @@ public class UIDUtils
             sb.append(hostUnique).append('.');
         synchronized (lock)
         {
-            if (lastCount == Short.MAX_VALUE)
+            if (lastCount == 0)
             {
                 lastTime = getTime();
-                lastCount = Short.MIN_VALUE;
+                lastCount = 1;
             }
-            sb.append(lastTime).append('.').append(lastCount++);
+            sb.append(lastTime).append('.').append(lastCount++ & 0xFFFF);
         }
         return sb.toString();
     }

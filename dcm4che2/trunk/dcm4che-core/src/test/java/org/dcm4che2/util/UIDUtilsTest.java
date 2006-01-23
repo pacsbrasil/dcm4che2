@@ -10,6 +10,11 @@ public class UIDUtilsTest extends TestCase
         junit.textui.TestRunner.run(UIDUtilsTest.class);
     }
 
+    public void testCreateUID()
+    {
+        UIDUtils.verifyUID(UIDUtils.createUID());
+    }
+
     /*
      * Test method for 'org.dcm4che2.util.UIDUtils.verifyUID(String)'
      */
