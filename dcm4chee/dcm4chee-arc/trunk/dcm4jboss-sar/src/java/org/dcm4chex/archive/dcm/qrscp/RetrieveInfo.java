@@ -94,7 +94,6 @@ final class RetrieveInfo {
         FileInfo fileInfo;
         String iuid, cuid;
         IuidsAndTsuids iuidsAndTsuids;
-        List localFiles;
         this.size = instInfos.length;
         for (int i = 0; i < size; ++i) {
             fileInfos = instInfos[i];
@@ -168,7 +167,7 @@ final class RetrieveInfo {
         return  isAnyLocal() && (isAllLocal() || !isAetWithAllIuids());  
     }
    
-    public void addPresContext(AAssociateRQ rq) {
+    public void addPresContext(AAssociateRQ rq, boolean sendDecompressed) {
         String cuid;
         String tsuid;
         IuidsAndTsuids iuidsAndTsuids;
@@ -179,7 +178,9 @@ final class RetrieveInfo {
             cuid = (String) entry.getKey();
             iuidsAndTsuids = (IuidsAndTsuids) entry.getValue();
             rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
-                    NATIVE_LE_TS)); 
+                    NATIVE_LE_TS));
+            if (sendDecompressed)
+                continue;
             Iterator it2 = iuidsAndTsuids.tsuids.iterator();
             while (it2.hasNext()) {
                 tsuid = (String) it2.next();

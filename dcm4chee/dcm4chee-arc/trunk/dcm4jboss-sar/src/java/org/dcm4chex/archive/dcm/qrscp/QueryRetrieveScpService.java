@@ -118,6 +118,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private String[] sendNoPixelDataToAETs = null;
     
+    private String[] sendDecompressedToAETs = null;
+
     private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
     
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
@@ -424,11 +426,21 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
 	public final String getSendNoPixelDataToAETs() {
         return sendNoPixelDataToAETs == null ? NONE
-                : StringUtils.toString(callingAETs, '\\');
+                : StringUtils.toString(sendNoPixelDataToAETs, '\\');
     }
 
     public final void setSendNoPixelDataToAETs(String aets) {
         this.sendNoPixelDataToAETs = NONE.equalsIgnoreCase(aets) ? null 
+                : StringUtils.split(aets, '\\');
+    }
+    
+    public final String getSendDecompressedToAETs() {
+        return sendDecompressedToAETs == null ? NONE
+                : StringUtils.toString(sendDecompressedToAETs, '\\');
+    }
+
+    public final void setSendDecompressedToAETs(String aets) {
+        this.sendDecompressedToAETs = NONE.equalsIgnoreCase(aets) ? null 
                 : StringUtils.split(aets, '\\');
     }
     
@@ -627,6 +639,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
     boolean isWithoutPixelData(String moveDest) {
         return sendNoPixelDataToAETs != null
             && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);
+    }
+    
+    boolean isDecompressed(String moveDest) {
+        return sendDecompressedToAETs != null
+            && Arrays.asList(sendDecompressedToAETs).contains(moveDest);
     }
     
     boolean isIgnoreUnsupportedSOPClassFailures(String moveDest) {

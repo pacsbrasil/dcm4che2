@@ -216,7 +216,7 @@ class MoveTask implements Runnable {
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(moveDest);
             rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
-            retrieveInfo.addPresContext(rq);
+            retrieveInfo.addPresContext(rq, service.isDecompressed(moveDest));
             ac = a.connect(rq);
         } catch (IOException e) {
             final String prompt = "Failed to connect " + moveDest;
