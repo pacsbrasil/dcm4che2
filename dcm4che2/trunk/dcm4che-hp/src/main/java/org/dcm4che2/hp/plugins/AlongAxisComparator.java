@@ -120,12 +120,50 @@ extends AbstractHPComparator
 
     private float dot(DicomObject o, int frame)
     {
-        float[] ipp = o.getFloats(Tag.ImagePositionPatient);
-        float[] iop = o.getFloats(Tag.ImageOrientationPatient);
+        float[] ipp = getImagePositionPatient(o, frame);
+        float[] iop = getImageOrientationPatient(o, frame);
         float nx = iop[RY] * iop[CZ] - iop[RZ] * iop[CY];
         float ny = iop[RZ] * iop[CX] - iop[RX] * iop[CZ];
         float nz = iop[RX] * iop[CY] - iop[RY] * iop[CX];
         return ipp[X] * nx + ipp[Y] * ny + ipp[Z] * nz;
+    }
+
+    private float[] getImageOrientationPatient(DicomObject o, int frame)
+    {
+        float[] iop;
+        if ((iop = o.getFloats(Tag.ImageOrientationPatient)) != null)
+            return iop;
+        
+        // Check the shared first in the case of image orientation
+        int[] tagPath = { 
+                Tag.SharedFunctionalGroupsSequence, 0,
+                Tag.PlaneOrientationSequence, 0,
+                Tag.ImageOrientationPatient };
+        if ((iop = o.getFloats(tagPath)) != null)
+            return iop;
+        
+        tagPath[0] = Tag.PerframeFunctionalGroupsSequence;
+        tagPath[1] = frame;
+        return o.getFloats(tagPath);
+    }
+
+    private float[] getImagePositionPatient(DicomObject o, int frame)
+    {
+        float[] ipp;
+        if ((ipp = o.getFloats(Tag.ImagePositionPatient)) != null)
+            return ipp;
+        
+        // Check the per frame first in the case of image position
+        int[] tagPath = { 
+                Tag.PerframeFunctionalGroupsSequence, frame,
+                Tag.PlanePositionSequence, 0,
+                Tag.ImagePositionPatient };
+        if ((ipp = o.getFloats(tagPath)) != null)
+            return ipp;
+        
+        tagPath[0] = Tag.SharedFunctionalGroupsSequence;
+        tagPath[1] = 0;
+        return o.getFloats(tagPath);
     }
 
 }
