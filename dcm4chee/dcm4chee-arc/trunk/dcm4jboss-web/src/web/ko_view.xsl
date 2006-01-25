@@ -56,7 +56,7 @@
 			        &lt;PARAM NAME = "DB_FIRST_NAME" VALUE="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME ="DB_LAST_NAME" VALUE ="</xsl:text><xsl:call-template name="lastName" /><xsl:text>"/&gt; \
 			        &lt;PARAM NAME ="DB_SEX" VALUE ="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" /&gt; \
-			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" /&gt; \
+			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:call-template name="birthDate" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME = "KEYNOTE" VALUE="</xsl:text><xsl:value-of select="sopIUID" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?Q=ORIG&amp;IMGUID=" /&gt;  \
    			        &lt;PARAM NAME="type" VALUE="application/x-java-applet;version=1.4" /&gt; \
@@ -74,7 +74,7 @@
     		                        DB_FIRST_NAME="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" \
     		                        DB_LAST_NAME="</xsl:text><xsl:call-template name="lastName" /><xsl:text>" \
     		                        DB_SEX="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" \
-    		                        DB_BIRTH_DATE="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" \
+    		                        DB_BIRTH_DATE="</xsl:text><xsl:call-template name="birthDate" /><xsl:text>" \
     		                        KEYNOTE="</xsl:text><xsl:value-of select="sopIUID" /><xsl:text>" \
     		                        IMAGE_SERVLET="/WebViewer/servlet/GetImageServlet?Q=ORIG&amp;IMGUID="  \
 	    			scriptable=false \
@@ -86,7 +86,7 @@
 			        &lt;PARAM NAME = "DB_FIRST_NAME" VALUE="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME ="DB_LAST_NAME" VALUE ="</xsl:text><xsl:call-template name="lastName" /><xsl:text>"/&gt; \
 			        &lt;PARAM NAME ="DB_SEX" VALUE ="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" /&gt; \
-			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" /&gt; \
+			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:call-template name="birthDate" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME = "KEYNOTE="</xsl:text><xsl:value-of select="sopIUID" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?Q=ORIG&amp;IMGUID=" /&gt;  \
     			        &lt;PARAM NAME="type" VALUE="application/x-java-applet;version=1.4" /&gt; \
@@ -121,6 +121,21 @@
         </xsl:when>
         <xsl:otherwise>
             <xsl:value-of select="$pat"/>    
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template name="birthDate">
+    <xsl:variable name="bd"><xsl:value-of select="patient/patientBirthDate"/></xsl:variable>
+    <xsl:choose>
+        <xsl:when test="contains($bd,'/')">
+             <xsl:value-of select="substring-before($bd,'/')"/>
+             <xsl:variable name="bd1"><xsl:value-of select="substring-after($bd,'/')"/></xsl:variable>
+             <xsl:value-of select="substring-before($bd1,'/')"/>
+             <xsl:value-of select="substring-after($bd1,'/')"/>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="$bd"/>    
         </xsl:otherwise>
     </xsl:choose>
 </xsl:template>

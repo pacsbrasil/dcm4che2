@@ -56,7 +56,7 @@
 			        &lt;PARAM NAME = "DB_FIRST_NAME" VALUE="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME ="DB_LAST_NAME" VALUE ="</xsl:text><xsl:call-template name="lastName" /><xsl:text>"/&gt; \
 			        &lt;PARAM NAME ="DB_SEX" VALUE ="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" /&gt; \
-			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" /&gt; \
+			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:call-template name="birthDate" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME = "SELECT_SEQUENCE" VALUE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" /&gt; \
 			        </xsl:text>    <xsl:apply-templates select="studyContainer/series/item"/>
     		                        <xsl:text>&lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?IMGUID=" /&gt;  \
@@ -75,7 +75,7 @@
     		                        DB_FIRST_NAME="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" \
     		                        DB_LAST_NAME="</xsl:text><xsl:call-template name="lastName" /><xsl:text>" \
     		                        DB_SEX="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" \
-    		                        DB_BIRTH_DATE="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" SELECT_SEQUENCE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" \
+    		                        DB_BIRTH_DATE="</xsl:text><xsl:call-template name="birthDate" /><xsl:text>" SELECT_SEQUENCE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" \
     		                        </xsl:text>    
 	                                            <xsl:for-each select="studyContainer/series/item[@type='org.dcm4chex.archive.web.maverick.StudyViewCtrl$SeriesContainer']">
     		                                <xsl:call-template name="ieSeries"/>
@@ -90,7 +90,7 @@
 			        &lt;PARAM NAME = "DB_FIRST_NAME" VALUE="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME ="DB_LAST_NAME" VALUE ="</xsl:text><xsl:call-template name="lastName" /><xsl:text>"/&gt; \
 			        &lt;PARAM NAME ="DB_SEX" VALUE ="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" /&gt; \
-			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" /&gt; \
+			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:call-template name="birthDate" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME = "SELECT_SEQUENCE" VALUE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" /&gt; \
 			        </xsl:text>    <xsl:apply-templates select="studyContainer/series/item"/>
     		                        <xsl:text>&lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?IMGUID=" /&gt;  \
@@ -154,6 +154,21 @@
     
 <xsl:template match="item[@type='java.lang.String']">
 	<xsl:text>;</xsl:text><xsl:value-of select="." />
+</xsl:template>
+
+<xsl:template name="birthDate">
+    <xsl:variable name="bd"><xsl:value-of select="patient/patientBirthDate"/></xsl:variable>
+    <xsl:choose>
+        <xsl:when test="contains($bd,'/')">
+             <xsl:value-of select="substring-before($bd,'/')"/>
+             <xsl:variable name="bd1"><xsl:value-of select="substring-after($bd,'/')"/></xsl:variable>
+             <xsl:value-of select="substring-before($bd1,'/')"/>
+             <xsl:value-of select="substring-after($bd1,'/')"/>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="$bd"/>    
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>
