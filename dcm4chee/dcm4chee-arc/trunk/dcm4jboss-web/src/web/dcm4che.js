@@ -163,4 +163,26 @@ function openWin( winName, url ) {
 	newwindow.focus();
 	return false;
 }  
+
+/*
+* Select/Deselect all checkboxes of given Form.
+* form... HTML Form.
+* name... Name of checkbox element to select 
+*         (all checkboxes which name starts with this value will match)
+*         e.g. sticky -> all stickyPat, stickyStudy, stickySeries and stickyInst will selected/deselected.
+* chk... true select; false deselect.
+*/
+function selectAll(form, name, chk) {
+	var elems = form.elements;
+	var pos;
+	if ( name != null )
+		pos = name.length;
+	for ( var i = 0 ; i < elems.length ; i++ ) {
+		var e = elems[i];
+		if ( ((name == null) || (e.name.substring(0,pos) == name)) && (e.type == 'checkbox')) {
+			e.checked = chk;
+    	}
+	}
+}
+  
   
