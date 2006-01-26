@@ -202,6 +202,8 @@
         <attr tag="300A0002"/> <!-- RT Plan Label -->
         <attr tag="300A0006"/> <!-- RT Plan Date -->
         <attr tag="300A0007"/> <!-- RT Plan Time -->
+        <attr tag="52009229"/> <!-- Shared functional group sequence -->
+        <attr tag="52009230"/> <!-- Per-frame functional group sequence -->
         <attr tag="60000010"/> <!-- Overlay rows, Overlay 1 -->
         <attr tag="60000011"/> <!-- Overlay columns, Overlay 1 -->
         <attr tag="60000022"/> <!-- Overlay description, Overlay 1 -->
