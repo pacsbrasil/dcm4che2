@@ -321,7 +321,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<td>&#160;</td>
 				<td>&#160;</td>
 			</xsl:if>
-			<td>&#160;</td>
+			<td>&#160;
+			</td>
 		</tr>
 	</table>
 	
@@ -333,6 +334,28 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="10%"/><!-- Modality -->
 			<col width="35%"/><!-- Series Desc. -->
 			<col width="10%"/><!-- Vendor/Model -->
+			<xsl:choose>
+				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+		    		<col width="6%"/><!-- PPS Status -->
+				</xsl:when>
+	            <xsl:when test="/model/admin='true'">    
+				    <col width="8%"/>
+				</xsl:when>
+	            <xsl:when test="/model/webViewer='true'">    
+				    <col width="8%"/>
+				</xsl:when>
+				<xsl:otherwise>
+				    <col width="10%"/>
+				</xsl:otherwise>
+			</xsl:choose>
+			<col width="2%"/><!-- spacer -->
+            <xsl:if test="/model/webViewer='true'">
+				<col width="2%"/><!-- web viewer -->
+			</xsl:if>
+            <xsl:if test="/model/admin='true'">
+				<col width="2%"/><!-- edit -->
+			</xsl:if>
+			<col width="2%"/><!-- sticky -->
 			
 			<xsl:choose>
 				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
@@ -407,7 +430,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:if test="/model/admin='true'">
 				<td>&#160;</td>
 			</xsl:if>
-			<td>&#160;</td>
+			<td align="right" valign="bottom">&#160;
+				<img src="images/plus.gif" alt="Select all Studies" onclick="selectAll( document.myForm,'stickyStudy', true)" />
+				<img src="images/minus.gif" alt="Deselect all" onclick="selectAll( document.myForm,'sticky', false)" />
+			</td>
 		</tr>
 	</table>
 </table>
