@@ -381,6 +381,10 @@ private URL getRedirectURL( String hostname, WADORequestObject req ) {
  * @return The File object or null if not found.
  */
 private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject req ) {
+	if ( "localhost".equals(hostname) ) {
+		log.warn("WADO request redirected to localhost! Return 'NOT FOUND' to avoid circular redirect!\n(Maybe a filesystem was removed from filesystem management but already exists in database!)");
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Object not found (Circular redirect found)!");
+	}
 	if ( log.isInfoEnabled() ) log.info("WADO request redirected to hostname:"+hostname);
 	URL url = null;
 	try {
