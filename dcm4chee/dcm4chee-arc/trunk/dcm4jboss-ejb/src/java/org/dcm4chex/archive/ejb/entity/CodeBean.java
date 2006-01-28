@@ -194,8 +194,11 @@ public abstract class CodeBean implements EntityBean {
     
     public static void addCodesTo(CodeLocalHome codeHome, DcmElement sq, Collection c) 
     throws CreateException, FinderException {
-    	if (sq == null) return;
-    	for (int i = 0, n = sq.vm(); i < n; i++) {
+    	if (sq == null || sq.isEmpty()) return;
+        Dataset item = sq.getItem(0);
+        if (item.isEmpty()) return;
+        c.add(CodeBean.valueOf(codeHome, item));
+    	for (int i = 1, n = sq.vm(); i < n; i++) {
     		c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
     	}
     }
