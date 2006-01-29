@@ -97,8 +97,6 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1"
- * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
@@ -440,9 +438,9 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1"
+     * @ejb.select query="SELECT DISTINCT s.retrieveAETs FROM Series s WHERE s.study.pk = ?1"
      */
-    public abstract Set ejbSelectInternalRetrieveAETs(Integer pk)
+    public abstract Set ejbSelectSeriesRetrieveAETs(Integer pk)
             throws FinderException;
 
     /**
@@ -468,12 +466,6 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(
             Integer pk, int status) throws FinderException;
-
-    /**
-     * @ejb.select query=""
-     */
-    public abstract int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(
-            Integer pk, String retrieveAET) throws FinderException;
 
     /**
      * @ejb.select query=""
@@ -563,19 +555,13 @@ public abstract class StudyBean implements EntityBean {
     	boolean updated = false;
         String aets = null;
         if (numI > 0) {
-	        StringBuffer sb = new StringBuffer();
-	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
-	        if (iAetSet.remove(null))
-	            log.warn("Study[iuid=" + getStudyIuid()
-	                    + "] contains File(s) with unspecified Retrieve AET");
-	        for (Iterator it = iAetSet.iterator(); it.hasNext();) {
-	            final String aet = (String) it.next();
-	            if (ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(pk, aet) == numI)
-	                sb.append(aet).append('\\');
-	        }
-            if (sb.length() > 0) {
-                sb.setLength(sb.length() - 1);
-                aets = sb.toString();
+	        Set seriesAets = ejbSelectSeriesRetrieveAETs(pk);
+            if (!seriesAets.contains(null))
+            {
+                Iterator it = seriesAets.iterator();
+                aets = (String) it.next();
+                while (it.hasNext())
+                    aets = commonRetrieveAETs(aets, (String) it.next());
             }
     	}
         if (updated = aets == null 
@@ -586,6 +572,24 @@ public abstract class StudyBean implements EntityBean {
         return updated;
     }
     
+    private String commonRetrieveAETs(String aets1, String aets2)
+    {
+        if (aets1.equals(aets2))
+            return aets1;
+        String[] a1 = StringUtils.split(aets1, '\\');
+        String[] a2 = StringUtils.split(aets2, '\\');
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < a1.length; i++)
+            for (int j = 0; j < a2.length; j++)
+                if (a1[i].equals(a2[j]))
+                    sb.append(a1[i]).append('\\');
+        int l = sb.length();
+        if (l == 0)
+            return null;
+        sb.setLength(l-1);
+        return sb.toString();
+    }
+
     private boolean updateExternalRetrieveAET(Integer pk, int numI)
     	throws FinderException {
     	boolean updated = false;
