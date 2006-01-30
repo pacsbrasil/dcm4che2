@@ -38,7 +38,7 @@
       <name>StylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/oribis_oru2sr.xsl" />
+         <value value="resource:xsl/hl7/orbis_oru2sr.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write" 

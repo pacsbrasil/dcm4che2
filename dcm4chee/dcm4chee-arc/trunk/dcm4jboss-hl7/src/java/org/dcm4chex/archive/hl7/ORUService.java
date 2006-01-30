@@ -133,7 +133,7 @@ public class ORUService extends AbstractHL7Service
     {
         server.invoke(exportManagerName, "storeExportSelection",
                 new Object[]{sr, new Integer(storePriority)},
-                new String[]{Dataset.class.getName(), Integer.class.getName()});        
+                new String[]{Dataset.class.getName(), int.class.getName()});        
     }
     
 }

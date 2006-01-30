@@ -392,7 +392,12 @@ public class HL7ServerService extends ServiceMBeanSupport
         try {
 	        Transformer tr = TransformerFactory.newInstance().newTransformer();
 	        tr.setOutputProperty(OutputKeys.INDENT, "yes");
-	        tr.transform(new DocumentSource(msg), new StreamResult(f));
+	        FileOutputStream out = new FileOutputStream(f);
+			try {
+				tr.transform(new DocumentSource(msg), new StreamResult(out));
+			} finally {
+				out.close();
+			}
         } catch (Exception e) {
             log.warn("Failed to log HL7 to " + f, e);
         }
