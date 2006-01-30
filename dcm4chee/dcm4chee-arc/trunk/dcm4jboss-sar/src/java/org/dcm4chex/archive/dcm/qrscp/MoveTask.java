@@ -495,7 +495,8 @@ class MoveTask implements Runnable {
             failed += remainingIUIDs.size();
             failedIUIDs.addAll(remainingIUIDs);
         }
-        service.logInstancesSent(remoteNode, instancesAction);
+        if (instancesAction != null)
+        	service.logInstancesSent(remoteNode, instancesAction);
         service.updateStudyAccessTime(studyInfos);
         String stgCmtAET = service.getStgCmtAET(moveDest);
         if (stgCmtAET != null && refSOPSeq.vm() > 0)
