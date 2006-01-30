@@ -67,14 +67,14 @@
         </xsl:if>
     </xsl:template>
     <xsl:template match="OBR[1]">
+        <xsl:variable name="acc_no" select="field[3]/text()"/>
         <!-- Placer Order Number -->
         <xsl:call-template name="dcmAttr">
             <xsl:with-param name="tag" select="'00402016'"/>
             <xsl:with-param name="vr" select="'LO'"/>
-            <xsl:with-param name="val" select="field[2]/text()"/>
+            <xsl:with-param name="val" select="$acc_no"/>
         </xsl:call-template>
         <!-- Filler Order Number -->
-        <xsl:variable name="acc_no" select="field[3]/text()"/>
         <xsl:call-template name="dcmAttr">
             <xsl:with-param name="tag" select="'00402017'"/>
             <xsl:with-param name="vr" select="'LO'"/>
@@ -147,7 +147,7 @@
         <xsl:call-template name="codeItem">
             <xsl:with-param name="sqtag" select="'00321064'"/>
             <xsl:with-param name="code" select="field[4]/text()"/>
-            <xsl:with-param name="scheme" select="'orbis'"/>
+            <xsl:with-param name="scheme" select="'99ORBIS'"/>
             <xsl:with-param name="meaning" select="field[4]/component[1]"/>
         </xsl:call-template>
         <!-- Scheduled Performing Physican Name -->
@@ -166,7 +166,7 @@
         <xsl:call-template name="codeItem">
             <xsl:with-param name="sqtag" select="'00400008'"/>
             <xsl:with-param name="code" select="field[4]/text()"/>
-            <xsl:with-param name="scheme" select="'orbis'"/>
+            <xsl:with-param name="scheme" select="'99ORBIS'"/>
             <xsl:with-param name="meaning" select="field[4]/component[1]"/>
         </xsl:call-template>
         <!-- Scheduled Procedure Step ID -->
