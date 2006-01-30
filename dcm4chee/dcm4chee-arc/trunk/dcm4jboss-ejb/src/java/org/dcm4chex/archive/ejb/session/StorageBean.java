@@ -468,7 +468,6 @@ public abstract class StorageBean implements SessionBean {
     	try { 
 	   		final StudyLocal study = studyHome.findByStudyIuid(iuid);
 	   		study.updateDerivedFields(true, true, false, true, true, true);
-	   		study.updateDerivedFields(false, false, false, false, false, false);
     	} catch ( FinderException ignore ) {}
     }
     
