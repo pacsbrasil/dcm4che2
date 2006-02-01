@@ -319,11 +319,6 @@ public abstract class StorageBean implements SessionBean {
 		return pat;
 	}
 
-	private boolean equals(PatientLocal patient, Dataset ds) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         Dataset patAttrs = patient.getAttributes(false);
@@ -336,26 +331,80 @@ public abstract class StorageBean implements SessionBean {
                     "match current configured patient attribute filter -> " +
                     "removed attributes from patient record");
             patient.setAttributes(filtered);
+            patAttrs = patient.getAttributes(false);
         }
-        coerceIdentity(filtered, ds, coercedElements);
+        coerceIdentity(patAttrs, ds, coercedElements);
+        if (updateEntity(patAttrs, ds.subSet(attrFilter.getPatientFilter())))
+            patient.setAttributes(patAttrs);            
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         coercePatientIdentity(study.getPatient(), ds, coercedElements);
-        coerceIdentity(study.getAttributes(false), ds, coercedElements);
+        final Dataset studyAttrs = study.getAttributes(false);
+        coerceIdentity(studyAttrs, ds, coercedElements);
+        if (updateEntity(studyAttrs, ds.subSet(attrFilter.getStudyFilter())))
+            study.setAttributes(studyAttrs);            
     }
 
     private void coerceSeriesIdentity(SeriesLocal series, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         coerceStudyIdentity(series.getStudy(), ds, coercedElements);
-        coerceIdentity(series.getAttributes(false), ds, coercedElements);
+        final Dataset seriesAttrs = series.getAttributes(false);
+        coerceIdentity(seriesAttrs, ds, coercedElements);
+        if (updateEntity(seriesAttrs, ds.subSet(attrFilter.getSeriesFilter())))
+            series.setAttributes(seriesAttrs);            
     }
 
     private void coerceInstanceIdentity(InstanceLocal instance, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
-        coerceIdentity(instance.getAttributes(false), ds, coercedElements);
+        final Dataset instAttrs = instance.getAttributes(false);
+        coerceIdentity(instAttrs, ds, coercedElements);
+        if (updateEntity(instAttrs, ds.subSet(attrFilter.getInstanceFilter())))
+            instance.setAttributes(instAttrs);            
+    }
+
+    private boolean updateEntity(Dataset ref, Dataset ds)
+    {
+        boolean updateEntity = false;
+        for (Iterator it = ds.iterator(); it.hasNext();) {
+            DcmElement dsEl = (DcmElement) it.next();
+            final int tag = dsEl.tag();
+            final int vr = dsEl.vr();
+            final int vm = dsEl.vm();
+            if (Tags.isPrivate(tag) || dsEl.isEmpty())
+                continue;            
+            DcmElement refEl = ref.get(tag);
+            if (dsEl.hasItems()) {
+                // only update empty sequences or with equal number of items
+                if (refEl == null || refEl.isEmpty())
+                {
+                   log.info("Update stored objects with additional element/value from new received object- " + dsEl);
+                   refEl = ref.putSQ(tag);
+                   for (int i = 0; i < vm; i++)
+                         refEl.addItem(dsEl.getItem());
+                    updateEntity = true;
+                } else if (refEl.vm() == vm) {
+                    for (int i = 0; i < vm; i++)
+                        if (updateEntity(refEl.getItem(), dsEl.getItem()))
+                            updateEntity = true;
+                }
+            } else if (refEl == null || refEl.isEmpty())
+            {
+                log.info("Update stored objects with additional element/value from new received object - " + dsEl);
+                if (dsEl.hasDataFragments()) {
+                      
+                    refEl = ref.putXXsq(tag, vr);
+                      for (int i = 0; i < vm; i++)
+                          refEl.addDataFragment(dsEl.getDataFragment(i));
+                } else {
+                    ref.putXX(tag, vr, dsEl.getByteBuffer());
+                }
+                updateEntity = true;
+            }
+        }
+        return updateEntity;
     }
 
     private boolean coerceIdentity(Dataset ref, Dataset ds,
@@ -363,6 +412,8 @@ public abstract class StorageBean implements SessionBean {
         boolean coercedIdentity = false;
         for (Iterator it = ref.iterator(); it.hasNext();) {
             DcmElement refEl = (DcmElement) it.next();
+            if (refEl.isEmpty())
+                continue;
             final int tag = refEl.tag();
 			DcmElement el = ds.get(tag);
             if (!equals(el,
