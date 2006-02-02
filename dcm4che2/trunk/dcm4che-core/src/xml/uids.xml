@@ -105,6 +105,9 @@
 <uid value="1.2.840.10008.3.1.2.2.1" alias="DetachedVisitManagementSOPClass" type="SOP Class">Detached Visit Management SOP Class</uid>
 <uid value="1.2.840.10008.3.1.2.3.1" alias="DetachedStudyManagementSOPClass" type="SOP Class">Detached Study Management SOP Class</uid>
 <uid value="1.2.840.10008.3.1.2.3.2" alias="StudyComponentManagementSOPClass" type="SOP Class">Study Component Management SOP Class</uid>
+<uid value="1.2.840.10008.3.1.2.3.3" alias="ModalityPerformedProcedureStepSOPClass" type="SOP Class">Modality Performed Procedure Step SOP Class</uid>
+<uid value="1.2.840.10008.3.1.2.3.4" alias="ModalityPerformedProcedureStepRetrieveSOPClass" type="SOP Class">Modality Performed Procedure Step Retrieve SOP Class</uid>
+<uid value="1.2.840.10008.3.1.2.3.5" alias="ModalityPerformedProcedureStepNotificationSOPClass" type="SOP Class">Modality Performed Procedure Step Notification SOP Class</uid>
 <uid value="1.2.840.10008.3.1.2.5.1" alias="DetachedResultsManagementSOPClass" type="SOP Class">Detached Results Management SOP Class</uid>
 <uid value="1.2.840.10008.3.1.2.5.4" alias="DetachedResultsManagementMetaSOPClass" type="Meta SOP Class">Detached Results Management Meta SOP Class</uid>
 <uid value="1.2.840.10008.3.1.2.5.5" alias="DetachedStudyManagementMetaSOPClass" type="Meta SOP Class">Detached Study Management Meta SOP Class</uid>
