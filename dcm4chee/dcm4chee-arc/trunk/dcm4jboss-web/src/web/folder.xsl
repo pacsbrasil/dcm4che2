@@ -959,8 +959,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="15%"/>
 			<col width="15%"/>
 			<col width="5%"/>
-			<col width="18%"/>
+			<col width="16%"/>
 			<col width="18"/>
+			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
@@ -1001,9 +1002,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  	<td title="SopIUID" >
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
-		<td class="instance_mark" align="right" >
-			<xsl:choose>
-				<xsl:when test="availability='ONLINE'" >			
+		<xsl:choose>
+			<xsl:when test="availability='ONLINE'" >			
+				<td class="instance_mark" align="right" >
 					<xsl:choose>
 						<xsl:when test="/model/webViewer='true' and sopCUID='1.2.840.10008.5.1.4.1.1.88.59'" >
 							<a href="koView.m?studyPk={../../../../pk}&amp;sopIUID={sopIUID}" >
@@ -1012,17 +1013,26 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 							</a>
 						</xsl:when>
 						<xsl:otherwise>
-							<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="SRview" >
-								<img src="images/sr.gif" alt="View Report" border="0" title="View Report"/>		
-							</a>
+							&#160;
 						</xsl:otherwise>
 					</xsl:choose>				
-				</xsl:when>
-				<xsl:otherwise>
+				</td>
+				<td class="instance_mark" align="right" >
+					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="SRview" >
+						<img src="images/sr_pdf.gif" alt="View Report" border="0" title="View Report as PDF"/>		
+					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID=0&amp;seriesUID=0&amp;objectUID={sopIUID}&amp;contentType=text/html" target="SRview" >
+						<img src="images/sr.gif" alt="View Report" border="0" title="View Report as html"/>		
+					</a>
+				</td>
+			</xsl:when>
+			<xsl:otherwise>
+				<td class="instance_mark" align="right" >&#160;</td>
+				<td class="instance_mark" align="right" >
 					<img src="images/invalid.gif" alt="Report not online" border="0" title="Report not online"/>		
-				</xsl:otherwise>
-			</xsl:choose>				
-		</td>
+				</td>
+			</xsl:otherwise>
+		</xsl:choose>				
 		<td class="instance_mark" align="right">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
