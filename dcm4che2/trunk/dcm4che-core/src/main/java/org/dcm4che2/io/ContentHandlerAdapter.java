@@ -134,7 +134,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             if (sq.vr() == VR.SQ) {
                 DicomObject parent = attrs;
                 attrs = new BasicDicomObject();
-                attrs.setParent(parent);
+                ((BasicDicomObject) attrs).setParent(parent);
                 if (offStr != null) {
                     attrs.setItemOffset(Long.parseLong(offStr));
                 }

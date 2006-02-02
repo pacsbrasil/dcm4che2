@@ -46,16 +46,59 @@ import java.util.Iterator;
 
 public interface DicomObject extends Serializable
 {
+    /** 
+     * Visitor object passed to @link{#accept}.
+     */
     public interface Visitor
     {
-        boolean visit(DicomElement attr);
+        /**
+         * @param e Dicom Element to visit
+         * @return <code>true</code> to continue, <code>false</code> to 
+         * terminate traversal by @link{org.dcm4che2.data#accept}. 
+         */
+        boolean visit(DicomElement e);
     }
 
+    /**
+     * Returns number of elements in this Dicom Object.
+     * 
+     * @return number of elements in this Dicom Object.
+     */
+    int size();
+
+    /**
+     * Returns <code>true</code> if this Dicom Object contains no elements.
+     * 
+     * @return <code>true</code> if this Dicom Object contains no elements.
+     */
+    boolean isEmpty();
+
+    /**
+     * Removes all elements from this Dicom Object.
+     */
+    void clear();
+
+    /**
+     * @return the root Data Set, if this Data Set is contained within a
+     *  Sequence Element of another Data Set, otherwise <code>this</code>. 
+     */
     DicomObject getRoot();
 
-    DicomObject getParent();
+    /** 
+     * Returns <code>true</code> if this is not a nested Data Set.
+     * 
+     * @return <code>true</code> if this is not a nested Data Set.
+     */
+    boolean isRoot();
 
-    void setParent(DicomObject parent);
+    /**
+     * Returns the Data Set containing this Data Set in a Sequence Element,
+     *  or <code>null</code> if this is not a nested Data Set.
+     *  
+     * @return the Data Set containing this Data Set in a Sequence Element,
+     *  or <code>null</code> if this is not a nested Data Set.
+     */
+    DicomObject getParent();
 
     TransferSyntax getTransferSyntax();
 
@@ -119,14 +162,6 @@ public interface DicomObject extends Serializable
     int resolveTag(int tag, String privateCreator, boolean reserve);
 
     String getPrivateCreator(int privateTag);
-
-    boolean isRoot();
-
-    boolean isEmpty();
-
-    int size();
-
-    void clear();
 
     int vm(int tag);
 
