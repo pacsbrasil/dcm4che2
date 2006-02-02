@@ -36,17 +36,44 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net;
+package org.dcm4che2.net.service;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Dec 5, 2005
+ * @since Jan 22, 2006
  *
  */
-public interface CancelRQHandler
+public class NSetService
+extends DicomService 
+implements NSetSCP
 {
+    public NSetService(String sopClass)
+    {
+        super(sopClass);
+    }
+    
+    public void nset(Association as, int pcid, DicomObject rq, DicomObject data)
+    {
+        try
+        {
+            DicomObject rsp = CommandUtils.newNSetRSP(rq, CommandUtils.SUCCESS);
+            as.writeDimseRSP(pcid, rsp, doNSet(as, pcid, rq, data, rsp));
+        }
+        catch (Throwable e)
+        {
+            as.abort();
+        }            
+    }
 
-    void cancel(Association association);
-
+    protected DicomObject doNSet(Association as, int pcid, DicomObject rq, 
+            DicomObject data, DicomObject rsp)
+    {
+         return null;
+    }
+    
 }

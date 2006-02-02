@@ -51,6 +51,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.net.pdu.AAbortException;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJException;
@@ -331,8 +332,8 @@ public class Association implements Runnable
             DataWriter data, String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        cstore(cuid, iuid, priority, data, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        cstore(cuid, iuid, priority, data, tsuids, rsp);
         return rsp;
     }
 
@@ -350,9 +351,9 @@ public class Association implements Runnable
             DicomObject data, String[] tsuids, int autoCancel)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
+        FutureDimseRSP rsp = new FutureDimseRSP();
         rsp.setAutoCancel(autoCancel);
-        cfind(cuid, priority, data, tsuids, rsp.getHandler());
+        cfind(cuid, priority, data, tsuids, rsp);
         return rsp;
     }
     
@@ -370,8 +371,8 @@ public class Association implements Runnable
             DicomObject data, String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        cget(cuid, priority, data, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        cget(cuid, priority, data, tsuids, rsp);
         return rsp;
     }
     
@@ -389,8 +390,8 @@ public class Association implements Runnable
             String[] tsuids, String destination)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        cmove(cuid, priority, data, tsuids, destination, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        cmove(cuid, priority, data, tsuids, destination, rsp);
         return rsp;
     }
     
@@ -403,10 +404,10 @@ public class Association implements Runnable
     public DimseRSP cecho(String cuid)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
+        FutureDimseRSP rsp = new FutureDimseRSP();
         PresentationContext pc = pcFor(cuid, null);
         DicomObject cechorq = CommandUtils.newCEchoRQ(++msgID, cuid);
-        invoke(pc.getPCID(), cechorq, null, rsp.getHandler());
+        invoke(pc.getPCID(), cechorq, null, rsp);
         return rsp;
     }
 
@@ -424,8 +425,8 @@ public class Association implements Runnable
             DicomObject attrs, String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        nevent(cuid, iuid, eventTypeId, attrs, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        nevent(cuid, iuid, eventTypeId, attrs, tsuids, rsp);
         return rsp;
     }    
 
@@ -442,8 +443,8 @@ public class Association implements Runnable
             String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        nget(cuid, iuid, attrs, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        nget(cuid, iuid, attrs, tsuids, rsp);
         return rsp;
     }    
     
@@ -460,8 +461,8 @@ public class Association implements Runnable
             String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        nset(cuid, iuid, attrs, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        nset(cuid, iuid, attrs, tsuids, rsp);
         return rsp;
     }    
 
@@ -479,8 +480,8 @@ public class Association implements Runnable
             DicomObject attrs, String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        naction(cuid, iuid, actionTypeId, attrs, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        naction(cuid, iuid, actionTypeId, attrs, tsuids, rsp);
         return rsp;
     }    
     
@@ -497,8 +498,8 @@ public class Association implements Runnable
             String[] tsuids)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        ncreate(cuid, iuid, attrs, tsuids, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        ncreate(cuid, iuid, attrs, tsuids, rsp);
         return rsp;
     }
     
@@ -513,8 +514,8 @@ public class Association implements Runnable
     public DimseRSP ndelete(String cuid, String iuid)
     throws IOException, InterruptedException
     {
-        DimseRSP rsp = new DimseRSP();
-        ndelete(cuid, iuid, rsp.getHandler());
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        ndelete(cuid, iuid, rsp);
         return rsp;
     }   
     
@@ -565,7 +566,14 @@ public class Association implements Runnable
         if (!pc.isAccepted())
             throw new IllegalStateException("Presentation State not accepted - " + pc);
         
-        DataWriter writer = data != null ? new DataWriterAdapter(data) : null;
+        DataWriter writer = null;
+        int datasetType = CommandUtils.NO_DATASET;
+        if (data != null)
+        {
+            writer = new DataWriterAdapter(data);
+            datasetType = CommandUtils.getWithDatasetType();
+        }
+        cmd.putInt(Tag.DataSetType, VR.US, datasetType);
         encoder.writeDIMSE(pcid, cmd, writer, pc.getTransferSyntax());
         if (!CommandUtils.isPending(cmd))
         {
@@ -574,18 +582,17 @@ public class Association implements Runnable
         }
     }
 
-    void onCancelRQ(DicomObject cmd)
+    void onCancelRQ(DicomObject cmd) throws IOException
     {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
-        CancelRQHandler handler = removeCancelRQHandler(msgId);
+        DimseRSP handler = removeCancelRQHandler(msgId);
         if (handler != null)
         {
             handler.cancel(this);
-        }
-        
+        }        
     }
     
-    public void registerCancelRQHandler(DicomObject cmd, CancelRQHandler handler)
+    public void registerCancelRQHandler(DicomObject cmd, DimseRSP handler)
     {
         synchronized (cancelHandlerForMsgId)
         {
@@ -593,11 +600,11 @@ public class Association implements Runnable
         }
     }
     
-    private CancelRQHandler removeCancelRQHandler(int msgId)
+    private DimseRSP removeCancelRQHandler(int msgId)
     {
         synchronized (cancelHandlerForMsgId)
         {
-            return (CancelRQHandler) cancelHandlerForMsgId.remove(msgId);
+            return (DimseRSP) cancelHandlerForMsgId.remove(msgId);
         }
     }
 

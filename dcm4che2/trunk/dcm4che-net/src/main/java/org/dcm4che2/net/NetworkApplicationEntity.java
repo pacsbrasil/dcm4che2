@@ -340,14 +340,14 @@ public class NetworkApplicationEntity
         this.moveRspTimeout = moveRspTimeout;
     }
 
-    public Association connect(NetworkApplicationEntity remoteAE)
+    public Association connect(NetworkApplicationEntity remoteAE, Executor executor)
     throws ConfigurationException, IOException, InterruptedException
     {
-        return connect(remoteAE, getTransferCapability());
+        return connect(remoteAE, getTransferCapability(), executor);
     }
 
     public Association connect(NetworkApplicationEntity remoteAE,
-            TransferCapability[] tc)
+            TransferCapability[] tc, Executor executor)
     throws ConfigurationException, IOException, InterruptedException
     {
         if (!isAssociationInitiator())
@@ -374,7 +374,7 @@ public class NetworkApplicationEntity
                     AAssociateRQ rq = makeAAssociateRQ(remoteAE, tc);
                     Socket s = c.connect(nc);
                     Association a = Association.request(s, c, this);
-                    device.getExecutor().execute(a);
+                    executor.execute(a);
                     a.negotiate(rq);
                     return a;                    
                 }
@@ -482,6 +482,11 @@ public class NetworkApplicationEntity
     public void register(DicomService service)
     {
         serviceRegistry.register(service);        
+    }
+
+    public void unregister(DicomService service)
+    {
+        serviceRegistry.unregister(service);        
     }
 
     public void perform(Association as, int pcid, DicomObject cmd, 

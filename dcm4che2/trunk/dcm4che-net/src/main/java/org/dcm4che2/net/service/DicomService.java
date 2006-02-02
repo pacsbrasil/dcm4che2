@@ -55,11 +55,29 @@ public abstract class DicomService
         this.serviceClass = serviceClass;
     }
 
+    protected DicomService(String[] sopClasses)
+    {
+        this(sopClasses, null);
+    }
+    
+    protected DicomService(String sopClass)
+    {
+        if (sopClass == null)
+            throw new NullPointerException("sopClass");
+        this.sopClasses = new String[]{ sopClass };
+        this.serviceClass = null;
+    }
+    
     public final String[] getSopClasses()
     {
         return (String[]) sopClasses.clone();
     }
 
+    public final String getSopClass()
+    {
+        return sopClasses[0];
+    }
+    
     public final String getServiceClass()
     {
         return serviceClass;

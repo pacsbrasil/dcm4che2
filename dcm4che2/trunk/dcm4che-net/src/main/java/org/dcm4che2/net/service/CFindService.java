@@ -36,11 +36,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net;
-
-import java.io.IOException;
+package org.dcm4che2.net.service;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.DimseRSP;
+import org.dcm4che2.net.Executor;
+import org.dcm4che2.net.SingleDimseRSP;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -48,14 +51,51 @@ import org.dcm4che2.data.DicomObject;
  * @since Jan 22, 2006
  *
  */
-public interface DimseRSP
+public class CFindService 
+extends DicomService 
+implements CFindSCP
 {
-    boolean next() throws IOException, InterruptedException;
+    private final Executor executor;
 
-    DicomObject getCommand();
+    public CFindService(String[] sopClasses, Executor executor)
+    {
+        super(sopClasses);
+        this.executor = executor;
+    }
 
-    DicomObject getDataset();
+    public CFindService(String sopClass, Executor executor)
+    {
+        super(sopClass);
+        this.executor = executor;
+    }
+        
+    public void cfind(Association as, int pcid, DicomObject rq, DicomObject data)
+    {
+        try {
+            DicomObject cmdrsp = CommandUtils.newCFindRSP(rq, CommandUtils.SUCCESS);
+            DimseRSP rsp = doCFind(as, pcid, rq, data, cmdrsp);
+            rsp.next();
+            cmdrsp = rsp.getCommand();
+            if (CommandUtils.isPending(cmdrsp))
+            {
+                as.registerCancelRQHandler(rq, rsp);
+                executor.execute(new WriteMultiDimseRsp(as, pcid, rsp));
+            }
+            else
+            {
+                as.writeDimseRSP(pcid, cmdrsp, rsp.getDataset());
+            }
+        }
+        catch (Throwable e)
+        {
+            as.abort();
+        }            
+    }
 
-    void cancel(Association a) throws IOException;
-
+    protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd,
+            DicomObject data, DicomObject rsp)
+    {
+        return new SingleDimseRSP(rsp);
+    }
+    
 }

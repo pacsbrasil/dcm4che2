@@ -43,6 +43,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -123,7 +124,7 @@ public class CommandUtils
 
     public static DicomObject newCStoreRSP(DicomObject rq, int status)
     {
-       DicomObject rsp = newRSP(rq, C_STORE_RSP, NO_DATASET, status);
+       DicomObject rsp = newRSP(rq, C_STORE_RSP, status);
        if (includeUIDinRSP)
        {
            rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
@@ -140,6 +141,17 @@ public class CommandUtils
        rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
        rq.putInt(Tag.Priority, VR.US, priority);
        return rq;
+    }
+
+    public static DicomObject newCFindRSP(DicomObject rq, int status)
+    {
+        DicomObject rsp = newRSP(rq, C_FIND_RSP, status);
+        if (includeUIDinRSP)
+        {
+            rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
+                    rq.getString(Tag.AffectedSOPClassUID));
+        }
+        return rsp;
     }
     
     public static DicomObject newCGetRQ(int msgId, String cuid, int priority)
@@ -178,10 +190,12 @@ public class CommandUtils
     
     public static DicomObject newCEchoRSP(DicomObject dcmobj)
     {
-       DicomObject rsp = newRSP(dcmobj, C_ECHO_RSP, NO_DATASET, SUCCESS);
+       DicomObject rsp = newRSP(dcmobj, C_ECHO_RSP, SUCCESS);
        if (includeUIDinRSP)
+       {
            rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
                    dcmobj.getString(Tag.AffectedSOPClassUID));
+       }
        return rsp;
     }
 
@@ -213,6 +227,19 @@ public class CommandUtils
         rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
         return rq;
     }
+
+    public static DicomObject newNSetRSP(DicomObject rq, int status)
+    {
+        DicomObject rsp = newRSP(rq, N_SET_RSP, status);
+        if (includeUIDinRSP)
+        {
+            rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
+                    rq.getString(Tag.RequestedSOPClassUID));
+            rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI,
+                    rq.getString(Tag.RequestedSOPInstanceUID));
+        }
+        return rsp;
+    }
     
     public static DicomObject newNActionRQ(int msgId, String cuid,
             String iuid, int actionTypeID, DicomObject data)
@@ -234,6 +261,23 @@ public class CommandUtils
         return rq;
     }
 
+
+    public static DicomObject newNCreateRSP(DicomObject rq, int status)
+    {
+        DicomObject rsp = newRSP(rq, N_CREATE_RSP, status);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+        if (includeUIDinRSP || iuid == null)
+        {
+            if (iuid == null)
+                iuid = UIDUtils.createUID();
+            if (includeUIDinRSP)
+                rsp.putString(Tag.AffectedSOPClassUID, VR.UI,
+                        rq.getString(Tag.AffectedSOPClassUID));
+            rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+        }
+        return rsp;
+    }
+    
     public static DicomObject newNDeleteRQ(int msgId, String cuid, String iuid)
     {
         DicomObject rq = newRQ(msgId, N_DELETE_RQ, NO_DATASET);
@@ -251,12 +295,10 @@ public class CommandUtils
         return rsp;
     }
 
-    private static DicomObject newRSP(DicomObject rq, int cmdfield,
-            int datasetType, int status)
+    private static DicomObject newRSP(DicomObject rq, int cmdfield, int status)
     {
         DicomObject rsp = new BasicDicomObject();
         rsp.putInt(Tag.CommandField, VR.US, cmdfield);
-        rsp.putInt(Tag.DataSetType, VR.US, datasetType);
         rsp.putInt(Tag.Status, VR.US, status);
         rsp.putInt(Tag.MessageIDBeingRespondedTo, VR.US, rq.getInt(Tag.MessageID));
         return rsp;

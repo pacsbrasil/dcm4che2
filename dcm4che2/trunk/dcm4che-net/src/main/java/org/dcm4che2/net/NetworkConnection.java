@@ -87,7 +87,6 @@ public class NetworkConnection
 //            "SSLv2Hello"
     };
     
-//    private final NetworkConnection config;
     private Device device;
     private ServerSocket server;
 
@@ -327,7 +326,7 @@ public class NetworkConnection
         return s;
     }
     
-    public synchronized void bind()
+    public synchronized void bind(final Executor executor)
     throws IOException
     {
         if (device == null)
@@ -341,7 +340,7 @@ public class NetworkConnection
         if (receiveBufferSize != DEFAULT)
             server.setReceiveBufferSize(receiveBufferSize);
         server.bind(getSocketAddress(), getBacklog());
-        device.getExecutor().execute(new Runnable(){
+        executor.execute(new Runnable(){
 
             public void run()
             {
@@ -357,7 +356,7 @@ public class NetworkConnection
                             s.setSendBufferSize(sendBufferSize);
                         s.setTcpNoDelay(tcpNoDelay);
                         Association a = Association.accept(s, NetworkConnection.this);
-                        device.getExecutor().execute(a);
+                        executor.execute(a);
                    }
                 }
                 catch (Throwable e)

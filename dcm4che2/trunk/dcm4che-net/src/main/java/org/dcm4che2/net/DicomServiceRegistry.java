@@ -41,6 +41,8 @@ package org.dcm4che2.net;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -95,6 +97,16 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
             sopCUIDs.add(serviceClass);
         }
     }
+
+    private void unregisterFrom(HashMap registry, DicomService service)
+    {
+        for (Iterator iter = registry.entrySet().iterator(); iter.hasNext();)
+        {
+            Map.Entry element = (Map.Entry) iter.next();
+            if (element.getValue() == service)
+                iter.remove();
+        }
+    }
     
     public void register(DicomService service) {
         if (service instanceof CStoreSCP)
@@ -121,6 +133,31 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
             registerInto(ndeleteSCP, service);
     }
 
+    public void unregister(DicomService service) {
+        if (service instanceof CStoreSCP)
+            unregisterFrom(cstoreSCP, service);
+        if (service instanceof CGetSCP)
+            unregisterFrom(cgetSCP, service);
+        if (service instanceof CMoveSCP)
+            unregisterFrom(cmoveSCP, service);
+        if (service instanceof CFindSCP)
+            unregisterFrom(cfindSCP, service);
+        if (service instanceof CEchoSCP)
+            unregisterFrom(cechoSCP, service);
+        if (service instanceof NEventReportSCU)
+            unregisterFrom(neventReportSCU, service);
+        if (service instanceof NGetSCP)
+            unregisterFrom(ngetSCP, service);
+        if (service instanceof NSetSCP)
+            unregisterFrom(nsetSCP, service);
+        if (service instanceof NActionSCP)
+            unregisterFrom(nactionSCP, service);
+        if (service instanceof NCreateSCP)
+            unregisterFrom(ncreateSCP, service);
+        if (service instanceof NDeleteSCP)
+            unregisterFrom(ndeleteSCP, service);
+    }
+    
     private CStoreSCP getCStoreSCP(Association as, DicomObject cmd)
     {
         CStoreSCP scp = (CStoreSCP) cstoreSCP.get(cmd.getString(Tag.AffectedSOPClassUID));

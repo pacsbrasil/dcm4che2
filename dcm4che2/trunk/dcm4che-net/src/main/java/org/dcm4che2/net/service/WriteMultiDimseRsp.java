@@ -36,11 +36,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net;
+package org.dcm4che2.net.service;
 
-import java.io.IOException;
-
-import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DimseRSP;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -48,14 +47,32 @@ import org.dcm4che2.data.DicomObject;
  * @since Jan 22, 2006
  *
  */
-public interface DimseRSP
+class WriteMultiDimseRsp implements Runnable
 {
-    boolean next() throws IOException, InterruptedException;
+    
+    private final Association as;
+    private final int pcid;
+    private final DimseRSP rsp;
 
-    DicomObject getCommand();
+    public WriteMultiDimseRsp(Association as, int pcid, DimseRSP rsp)
+    {
+        this.as = as;
+        this.pcid = pcid;
+        this.rsp = rsp;
+    }
 
-    DicomObject getDataset();
-
-    void cancel(Association a) throws IOException;
+    public void run()
+    {
+        try
+        {
+            do
+                as.writeDimseRSP(pcid, rsp.getCommand(), rsp.getDataset());
+            while (rsp.next());
+        }
+        catch (Throwable e)
+        {
+            as.abort();
+        }
+    }
 
 }

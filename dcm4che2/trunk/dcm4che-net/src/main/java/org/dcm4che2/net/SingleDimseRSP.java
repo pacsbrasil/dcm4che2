@@ -38,8 +38,6 @@
 
 package org.dcm4che2.net;
 
-import java.io.IOException;
-
 import org.dcm4che2.data.DicomObject;
 
 /**
@@ -48,14 +46,41 @@ import org.dcm4che2.data.DicomObject;
  * @since Jan 22, 2006
  *
  */
-public interface DimseRSP
+public class SingleDimseRSP implements DimseRSP
 {
-    boolean next() throws IOException, InterruptedException;
+    private int count = 0;
+    private final DicomObject cmd;
+    private final DicomObject data;
 
-    DicomObject getCommand();
+    public SingleDimseRSP(DicomObject cmd)
+    {
+        this(cmd, null);
+    }
+    
+    public SingleDimseRSP(DicomObject cmd, DicomObject data)
+    {
+        this.cmd = cmd;
+        this.data = data;
+    }
+    
+    public synchronized boolean next()
+    {
+        return count++ == 0;
+    }
 
-    DicomObject getDataset();
+    public final DicomObject getCommand()
+    {
+        return cmd;
+    }
 
-    void cancel(Association a) throws IOException;
+    public final DicomObject getDataset()
+    {
+        return data;
+    }
 
+    public void cancel(Association a)
+    {
+        // NOOP
+        
+    }
 }

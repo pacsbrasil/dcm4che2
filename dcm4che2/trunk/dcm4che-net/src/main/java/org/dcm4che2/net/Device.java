@@ -62,7 +62,7 @@ import org.dcm4che2.net.pdu.AAssociateRQ;
  */
 public class Device
 {
-    private String deviceName;
+    private String deviceName = "";
     private String description;
     private String manufactorer;
     private String manufactorerModelName;
@@ -84,7 +84,6 @@ public class Device
     private NetworkConnection[] networkConnection = {};
     private NetworkApplicationEntity[] networkAE = {};
     
-    private Executor executor;
     private SSLContext sslContext;
     private SecureRandom random;
     private AssociationReaper reaper;
@@ -98,25 +97,6 @@ public class Device
         this.deviceName = deviceName;
     }
     
-    public Device(Executor executor)
-    {
-        this.executor = executor;        
-    }
-    
-    public Device(String deviceName, Executor executor)
-    {
-        this.deviceName = deviceName;
-        this.executor = executor;        
-    }
-
-    synchronized final Executor getExecutor()
-    {
-        if (executor == null)
-            executor = new NewThreadExecutor(deviceName);
-        return executor;
-    }
- 
-
     synchronized final AssociationReaper getAssociationReaper()
     {
         if (reaper == null)
@@ -375,13 +355,13 @@ public class Device
     }
     
     
-    public void startListening() throws IOException
+    public void startListening(Executor executor) throws IOException
     {
         for (int i = 0; i < networkConnection.length; i++)
         {
             NetworkConnection c = networkConnection[i];
             if (c.isInstalled() && c.isListening())
-                c.bind();
+                c.bind(executor);
         }
    }
 
@@ -430,5 +410,4 @@ public class Device
                 AAssociateRJException.SOURCE_SERVICE_USER,
                 AAssociateRJException.REASON_CALLED_AET_NOT_RECOGNIZED);
     }
-
-}
+ }

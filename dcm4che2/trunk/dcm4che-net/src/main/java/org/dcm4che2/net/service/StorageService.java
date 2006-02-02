@@ -57,6 +57,11 @@ extends DicomService
 implements CStoreSCP
 {
 
+    protected StorageService(String sopClass)
+    {
+        super(sopClass);
+    }
+    
     protected StorageService(String[] sopClasses)
     {
         super(sopClasses, UID.StorageServiceClass);

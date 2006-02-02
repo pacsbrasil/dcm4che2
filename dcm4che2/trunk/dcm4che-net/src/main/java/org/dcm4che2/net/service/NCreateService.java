@@ -36,11 +36,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net;
-
-import java.io.IOException;
+package org.dcm4che2.net.service;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -48,14 +48,33 @@ import org.dcm4che2.data.DicomObject;
  * @since Jan 22, 2006
  *
  */
-public interface DimseRSP
+public class NCreateService
+extends DicomService 
+implements NCreateSCP
 {
-    boolean next() throws IOException, InterruptedException;
 
-    DicomObject getCommand();
+    public NCreateService(String sopClass)
+    {
+        super(sopClass);
+    }
+    
+    public void ncreate(Association as, int pcid, DicomObject rq, DicomObject data)
+    {
+        try
+        {
+            DicomObject rsp = CommandUtils.newNCreateRSP(rq, CommandUtils.SUCCESS);
+            as.writeDimseRSP(pcid, rsp, doNCreate(as, pcid, rq, data, rsp));
+        }
+        catch (Throwable e)
+        {
+            as.abort();
+        }            
+    }
 
-    DicomObject getDataset();
-
-    void cancel(Association a) throws IOException;
-
+    protected DicomObject doNCreate(Association as, int pcid, DicomObject rq, 
+            DicomObject data, DicomObject rsp)
+    {
+         return null;
+    }
+    
 }
