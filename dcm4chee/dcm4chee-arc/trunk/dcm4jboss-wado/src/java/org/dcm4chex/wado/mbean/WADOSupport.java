@@ -42,6 +42,8 @@ package org.dcm4chex.wado.mbean;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -50,9 +52,13 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -61,14 +67,31 @@ import javax.imageio.stream.ImageInputStream;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileFormat;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DataSource;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
+import org.dcm4chex.wado.mbean.xml.DatasetXMLResponseObject;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -81,6 +104,10 @@ public class WADOSupport {
 	
 public static final String CONTENT_TYPE_JPEG = "image/jpeg";
 public static final String CONTENT_TYPE_DICOM = "application/dicom";
+public static final String CONTENT_TYPE_HTML = "text/html";
+private static final String CONTENT_TYPE_XHTML = "application/xhtml+xml";
+public static final String CONTENT_TYPE_XML = "text/xml";
+public static final String CONTENT_TYPE_PLAIN = "text/plain";
 
 private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
@@ -92,9 +119,14 @@ private boolean useTransferSyntaxOfFileAsDefault = true;
 private boolean extendedWADOAllowed = false;
 private String extendedWADORequestType;
 
+private Map textSopCuids = null;
+
 private static MBeanServer server;
 
 private static final int BUF_LEN = 65536;
+private String htmlXslURL = "resource:xsl/sr_html.xsl";
+private String xmlXslURL = "resource:xsl/sr_xml_style.xsl";
+private Map mapTemplates = new HashMap();
 
 public WADOSupport( MBeanServer mbServer ) {
 	if ( server != null ) {
@@ -124,14 +156,36 @@ public WADOSupport( MBeanServer mbServer ) {
  * @return The WADO response object.
  */
 public WADOResponseObject getWADOObject( WADORequestObject req ) {
-	String contentType = getPrefContentType( req );
+	log.debug("Get WADO object for "+req.getObjectUID());
+	FileDTO fileDTO = null;
+	try {
+		List l = new QueryFilesCmd(req.getObjectUID()).getFileDTOs();
+		if ( !l.isEmpty()) {
+			fileDTO = (FileDTO) l.iterator().next();
+		}
+	} catch (SQLException x) {
+		log.error("Cant get DICOM Object file reference for "+req.getObjectUID(), x);
+	}
+	log.debug("Found fileDTO:"+fileDTO);
+	if ( fileDTO == null ) {
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found! (Cant get file reference)");
+	}
+	log.debug("SOP Class UID or requested WADO object:"+fileDTO.getSopClassUID());
+	String contentType = getPrefContentType( req, fileDTO );
+	log.debug("preferred ContentType:"+contentType);
 	if ( CONTENT_TYPE_JPEG.equals( contentType ) ) {
 		return this.handleJpg( req );
 	} else if ( CONTENT_TYPE_DICOM.equals( contentType ) ) {
 		return handleDicom( req );
+	} else if ( CONTENT_TYPE_HTML.equals( contentType ) ) {
+		return handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+	} else if ( CONTENT_TYPE_XHTML.equals( contentType ) ) {
+		return handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+	} else if ( CONTENT_TYPE_XML.equals( contentType ) ) {
+		return handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, getXmlXslURL() );
 	} else {
-		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested content type(s)!");
-		
+		log.debug("Content type not supported! :"+contentType+"\nrequested contentType(s):"+req.getContentTypes()+" SOP Class UID:"+fileDTO.getSopClassUID());
+		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested (preferred) content type!"+contentType);
 	}
 }
 
@@ -139,24 +193,42 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
  * @param contentTypes
  * @return
  */
-private String getPrefContentType(WADORequestObject req) {
+private String getPrefContentType(WADORequestObject req, FileDTO fileDTO ) {
 	List contentTypes = req.getContentTypes();
-	if ( contentTypes == null ) return CONTENT_TYPE_JPEG;
-
-	int idxJpeg = contentTypes.indexOf( CONTENT_TYPE_JPEG );
-	int idxDicom = contentTypes.indexOf( CONTENT_TYPE_DICOM );
-	if ( log.isDebugEnabled() ) log.debug("getPrefContentType idxJpeg:"+idxJpeg+"  idxDicom:"+idxDicom);
-	if ( idxJpeg != -1 ) {
-		if ( idxDicom != -1 && idxDicom < idxJpeg ) {
-			return CONTENT_TYPE_DICOM;
-		} else {
-			return CONTENT_TYPE_JPEG;
-		}
-	} else if ( contentTypes.contains( CONTENT_TYPE_DICOM ) ) {
-		return CONTENT_TYPE_DICOM;
+	List supportedContentTypes = getSupportedContentTypes( fileDTO );
+	if ( log.isDebugEnabled()) {
+		log.debug("Requested content Types:"+contentTypes);
+		log.debug("supported content Types:"+supportedContentTypes);
+	}
+	if ( contentTypes == null ) {
+		return supportedContentTypes.get(0).toString();
+	}
+	contentTypes.retainAll(supportedContentTypes);//remove all unsupported content types
+	if ( !contentTypes.isEmpty() ) {
+		return contentTypes.get(0).toString(); //return the first item (the most accurate)
 	} else {
 		return null;
 	}
+}
+
+/**
+ * @param objectUID
+ * @return
+ */
+private List getSupportedContentTypes(FileDTO fileDTO) {
+	List types = new ArrayList();
+	String sopCuid = fileDTO.getSopClassUID();
+	if ( getTextSopCuids().containsValue(sopCuid)) {
+		types.add(CONTENT_TYPE_HTML);
+		types.add(CONTENT_TYPE_XHTML);
+		types.add(CONTENT_TYPE_XML);
+		types.add(CONTENT_TYPE_PLAIN);
+		types.add(CONTENT_TYPE_DICOM);
+	} else {
+		types.add(CONTENT_TYPE_JPEG);
+		types.add(CONTENT_TYPE_DICOM);
+	}
+	return types;
 }
 
 public WADOResponseObject handleDicom( WADORequestObject req ) {
@@ -306,6 +378,82 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 }
 /*_*/
 
+
+private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO fileDTO, String contentType, String xslURL ) {
+	try {
+		Dataset keys = DcmObjectFactory.getInstance().newDataset();
+		keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
+		QueryCmd query = QueryCmd.createInstanceQuery(keys, false);
+		query.execute();
+		if (!query.next()) {
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
+		}
+		Dataset dsCoerce = query.getDataset();
+		File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
+        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        parser.setDcmHandler(ds.getDcmHandler());
+        parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
+        ds.putAll(dsCoerce);
+        if ( log.isDebugEnabled()) {
+        	log.debug("SR Dataset for XSLT Transformation:");log.debug(ds);
+        	log.debug("Use XSLT stylesheet:"+xslURL);
+        }
+		TransformerHandler th = getTransformerHandler(xslURL);
+		DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th);
+        return new WADOTransformResponseObjectImpl(res, contentType, HttpServletResponse.SC_OK, null);
+    } catch (Exception e) {
+        log.error("Failed to get DICOM file", e);
+		return new WADOStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+    }
+}
+
+/**
+ * @return
+ */
+public String getHtmlXslURL() {
+	return htmlXslURL;
+}
+
+/**
+ * @param htmlXslURL The htmlXslURL to set.
+ */
+public void setHtmlXslURL(String htmlXslURL) {
+	this.htmlXslURL = htmlXslURL;
+}
+/**
+ * @return Returns the xmlXslURL.
+ */
+public String getXmlXslURL() {
+	return xmlXslURL;
+}
+/**
+ * @param xmlXslURL The xmlXslURL to set.
+ */
+public void setXmlXslURL(String xmlXslURL) {
+	this.xmlXslURL = xmlXslURL;
+}
+private TransformerHandler getTransformerHandler(String xslt) throws TransformerConfigurationException {
+	SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+	TransformerHandler th;
+	if ( xslt != null && !xslt.equalsIgnoreCase("NONE")) {
+		Templates stylesheet = (Templates) mapTemplates .get(xslt);
+		if ( stylesheet == null ) {
+			stylesheet = tf.newTemplates(new StreamSource(xslt));
+			mapTemplates.put(xslt,stylesheet);
+		}
+		th = tf.newTransformerHandler(stylesheet);
+	} else {
+		th = tf.newTransformerHandler();
+	}
+	return th;
+}
+
+public void clearTemplateCache() {
+	mapTemplates.clear();
+}
+    
 /**
  * Returns the DICOM file for given arguments.
  * <p>
@@ -564,6 +712,42 @@ public String getExtendedWADORequestType() {
 public void setExtendedWADORequestType(String extendedWADORequestType) {
 	this.extendedWADORequestType = extendedWADORequestType;
 }
+
+/**
+ * @return Returns the sopCuids.
+ */
+public Map getTextSopCuids() {
+	if ( textSopCuids == null ) setDefaultTextSopCuids();
+	return textSopCuids;
+}
+/**
+ * @param sopCuids The sopCuids to set.
+ */
+public void setTextSopCuids(Map sopCuids) {
+	if ( sopCuids != null && ! sopCuids.isEmpty() )
+		textSopCuids = sopCuids;
+	else {
+		setDefaultTextSopCuids();
+	}
+}
+
+/**
+ * 
+ */
+private void setDefaultTextSopCuids() {
+	if ( textSopCuids == null ) {
+		textSopCuids = new TreeMap();
+	} else {
+		textSopCuids.clear();
+	}
+	textSopCuids.put( "BasicTextSR", UIDs.BasicTextSR );
+	textSopCuids.put( "ChestCADSR", UIDs.ChestCADSR );
+	textSopCuids.put( "ComprehensiveSR", UIDs.ComprehensiveSR );
+	textSopCuids.put( "EnhancedSR", UIDs.EnhancedSR );
+	textSopCuids.put( "KeyObjectSelectionDocument", UIDs.KeyObjectSelectionDocument );
+	textSopCuids.put( "MammographyCADSR", UIDs.MammographyCADSR );
+}
+
 /**
  * Inner exception class to handle WADO redirection.
  *  

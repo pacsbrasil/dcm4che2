@@ -118,6 +118,23 @@ public class WADOService extends AbstractCacheService {
 	}
 	
 	/**
+	 * Set URL to XSLT stylesheet that should be used to transform DICOM SR to HTML document.
+	 * 
+	 * @return
+	 */
+	public String getHtmlXslURL() {
+		return support.getHtmlXslURL();
+	}
+	
+	public void setHtmlXslURL(String htmlXslURL) {
+		support.setHtmlXslURL(htmlXslURL);
+	}
+	
+	public void clearTemplateCache() {
+		support.clearTemplateCache();
+	}
+	
+	/**
 	 * Getter for the name of the FileSystemMgt MBean.
 	 * <p>
 	 * This bean is used to locate the DICOM file.

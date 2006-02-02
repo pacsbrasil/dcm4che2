@@ -133,6 +133,18 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="getHtmlXslURL"
+      setMethod="setHtmlXslURL">
+      <description>URL to XSLT stylesheet to render DICOM SR to HTML (Use NONE to disable this transformation) .          
+      </description>
+      <name>HtmlXslURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/sr_html.xsl" />
+      </descriptors>
+   </attribute>
+
     <attribute access="read-write"
       getMethod="isExtendedWADOAllowed"
       setMethod="setExtendedWADOAllowed">
@@ -200,6 +212,12 @@
         <type>org.dcm4chex.wado.common.WADORequestObject</type>
       </parameter>
       <return-type>org.dcm4chex.wado.common.WADOResponseObject</return-type>
+   </operation>
+  
+   <operation impact="ACTION">
+      <description>Clear Template Cache</description>
+      <name>clearTemplateCache</name>
+      <return-type>void</return-type>
    </operation>
    
 </mbean>
