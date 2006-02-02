@@ -110,7 +110,7 @@
       <name>MaximumDICOMClients</name>
       <type>int</type>
       <descriptors>
-         <value value="10" />
+         <value value="50" />
       </descriptors>
    </attribute>
    <attribute access="read-only"
