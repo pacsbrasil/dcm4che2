@@ -8,7 +8,7 @@
             select="office:document-content/office:body/table:table/table:table-row"/>
     </xsl:template>
     <xsl:template match="table:table-row">
-        <xsl:variable name="uid" select="normalize-space(table:table-cell[1])"/>
+        <xsl:variable name="uid" select="translate(normalize-space(table:table-cell[1]),'­','')"/>
         <xsl:if test="starts-with($uid,'1.2.840') and count(table:table-cell)=4">
             <uid>
                 <xsl:attribute name="value">
