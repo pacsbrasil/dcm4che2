@@ -67,8 +67,10 @@ import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSPHandler;
+import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
+import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.net.TransferCapability;
@@ -98,9 +100,10 @@ public class DcmSnd {
         "=> Send DICOM object image.dcm to Application Entity STORESCP, " +
         "listening on local port 11112.";
 
+    private Executor executor = new NewThreadExecutor("DCMSND");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
     private NetworkConnection remoteConn = new NetworkConnection();
-    private Device device = new Device("DCMECHO");
+    private Device device = new Device("DCMSND");
     private NetworkApplicationEntity ae = new NetworkApplicationEntity();
     private NetworkConnection conn = new NetworkConnection();
     
@@ -610,7 +613,7 @@ public class DcmSnd {
     public void open()
     throws IOException, ConfigurationException, InterruptedException
     {
-        assoc = ae.connect(remoteAE);
+        assoc = ae.connect(remoteAE, executor);
     }
 
     public void send()

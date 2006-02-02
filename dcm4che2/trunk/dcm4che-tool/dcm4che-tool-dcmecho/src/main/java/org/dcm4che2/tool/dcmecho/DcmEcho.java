@@ -51,8 +51,10 @@ import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.Device;
+import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
+import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 
 /**
@@ -78,6 +80,7 @@ public class DcmEcho
     private static final TransferCapability VERIFICATION_SCU = 
             new TransferCapability(UID.VerificationSOPClass, DEF_TS, false);
 
+    private Executor executor = new NewThreadExecutor("DCMECHO");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
     private NetworkConnection remoteConn = new NetworkConnection();
     private Device device = new Device("DCMECHO");
@@ -276,7 +279,7 @@ public class DcmEcho
     public void open()
             throws IOException, ConfigurationException, InterruptedException
     {
-        assoc = ae.connect(remoteAE);
+        assoc = ae.connect(remoteAE, executor);
     }
 
     public void echo() throws IOException, InterruptedException

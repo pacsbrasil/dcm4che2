@@ -56,10 +56,12 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.Device;
+import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.PDVInputStream;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.StorageService;
@@ -209,9 +211,10 @@ public class DcmRcv extends StorageService {
     };
 
     
+    private Executor executor = new NewThreadExecutor("DCMRCV");
     private Device device = new Device("DCMRCV");
     private NetworkApplicationEntity ae = new NetworkApplicationEntity();
-    private NetworkConnection connector = new NetworkConnection();
+    private NetworkConnection nc = new NetworkConnection();
     private String[] tsuids = NON_RETIRED_TS;
     private File destination;
     private boolean devnull;
@@ -222,8 +225,8 @@ public class DcmRcv extends StorageService {
     {
         super(CUIDS);
         device.setNetworkApplicationEntity(ae);
-        device.setNetworkConnection(connector);
-        ae.setNetworkConnection(connector);
+        device.setNetworkConnection(nc);
+        ae.setNetworkConnection(nc);
         ae.setAssociationAcceptor(true);
         ae.register(new VerificationService());
         ae.register(this);
@@ -236,12 +239,12 @@ public class DcmRcv extends StorageService {
 
     public final void setHostname(String hostname)
     {
-        connector.setHostname(hostname);
+        nc.setHostname(hostname);
     }
     
     public final void setPort(int port)
     {
-        connector.setPort(port);
+        nc.setPort(port);
     }
     
     public final void setPackPDV(boolean packPDV)
@@ -256,22 +259,22 @@ public class DcmRcv extends StorageService {
     
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        connector.setTcpNoDelay(tcpNoDelay);
+        nc.setTcpNoDelay(tcpNoDelay);
     }
 
     public final void setRequestTimeout(int timeout)
     {
-        connector.setRequestTimeout(timeout);
+        nc.setRequestTimeout(timeout);
     }
 
     public final void setReleaseTimeout(int timeout)
     {
-        connector.setReleaseTimeout(timeout);
+        nc.setReleaseTimeout(timeout);
     }
 
     public final void setSocketCloseDelay(int delay)
     {
-        connector.setSocketCloseDelay(delay);
+        nc.setSocketCloseDelay(delay);
     }
 
     public final void setIdleTimeout(int timeout)
@@ -296,12 +299,12 @@ public class DcmRcv extends StorageService {
     
     public final void setReceiveBufferSize(int bufferSize)
     {
-        connector.setReceiveBufferSize(bufferSize);
+        nc.setReceiveBufferSize(bufferSize);
     }
 
     public final void setSendBufferSize(int bufferSize)
     {
-        connector.setSendBufferSize(bufferSize);
+        nc.setSendBufferSize(bufferSize);
     }
 
     private void setDimseRspDelay(int delay)
@@ -509,8 +512,8 @@ public class DcmRcv extends StorageService {
 
     public void start() throws IOException
     {        
-        device.startListening();
-        System.out.println("Start Server listening on port " + connector.getPort());
+        device.startListening(executor );
+        System.out.println("Start Server listening on port " + nc.getPort());
     }
 
     private static String[] split(String s, char delim, int defPos)
