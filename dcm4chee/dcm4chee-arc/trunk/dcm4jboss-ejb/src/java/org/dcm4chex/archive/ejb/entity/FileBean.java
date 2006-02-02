@@ -236,6 +236,7 @@ public abstract class FileBean implements EntityBean {
         retval.setFileSize(getFileSize());
         retval.setFileMd5(getFileMd5());
         retval.setFileStatus(getFileStatus());
+        retval.setSopClassUID(getInstance().getSopCuid());
         return retval;
     }
 

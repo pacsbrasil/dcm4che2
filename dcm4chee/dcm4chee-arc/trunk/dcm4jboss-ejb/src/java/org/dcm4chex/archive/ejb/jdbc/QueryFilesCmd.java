@@ -68,7 +68,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
 
     private static final String[] SELECT_ATTRIBUTE = { "File.pk", "File.filePath",
             "File.fileMd5Field", "File.fileStatus", "FileSystem.directoryPath",
-            "FileSystem.retrieveAET", "FileSystem.availability", "FileSystem.userInfo"};
+            "FileSystem.retrieveAET", "FileSystem.availability", "FileSystem.userInfo", "Instance.sopCuid"};
 
     private static final String[] ENTITY = { "Instance", "File", "FileSystem" };
 
@@ -97,6 +97,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
         dto.setRetrieveAET(rs.getString(6));
 		dto.setAvailability(rs.getInt(7));
 		dto.setUserInfo(rs.getString(8));
+		dto.setSopClassUID(rs.getString(9));
 		return dto;
     }
     

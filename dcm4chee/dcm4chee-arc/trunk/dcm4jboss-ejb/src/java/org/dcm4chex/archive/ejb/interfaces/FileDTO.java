@@ -62,6 +62,8 @@ public final class FileDTO implements Serializable {
 
     private String tsuid;
 
+    private String sopCuid;
+
     private int size;
 
     private byte[] md5;
@@ -202,5 +204,17 @@ public final class FileDTO implements Serializable {
 
 	public final void setAvailability(int availability) {
 		this.availability = availability;
+	}
+	/**
+	 * @return Returns the sopClassUID.
+	 */
+	public String getSopClassUID() {
+		return sopCuid;
+	}
+	/**
+	 * @param sopClassUID The sopClassUID to set.
+	 */
+	public void setSopClassUID(String sopClassUID) {
+		this.sopCuid = sopClassUID;
 	}
 }
