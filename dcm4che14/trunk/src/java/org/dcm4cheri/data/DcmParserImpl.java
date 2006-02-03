@@ -67,7 +67,7 @@ import org.xml.sax.ContentHandler;
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version 1.3.22
  */
 final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private static final Logger log = Logger.getLogger(DcmParserImpl.class);
@@ -210,8 +210,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     
     public FileFormat detectFileFormat() throws IOException { 
         FileFormat retval = null;
-        if (in instanceof InputStream)
-            retval = detectFileFormat((InputStream)in);        
+        if (in instanceof DataInputStream)
+            retval = detectFileFormat((DataInputStream)in);        
         else if (in instanceof ImageInputStream)
             retval = detectFileFormat((ImageInputStream)in);
         else
@@ -221,128 +221,87 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         return retval;
     }
     
-    private int testEVRFormat(DcmDecodeParam decodeParam) throws IOException {
-        setDcmDecodeParam(decodeParam);
-        parseHeader();
-        if (rVR == vrMap.lookup(rTag)) {
-            if ((rTag >>> 16) == 2)
-                return 0;
-            if (rTag >= 0x00080000)
-                return 1;
-        }
-        return -1;
-    }
-    
-    private int testIVRFormat(DcmDecodeParam decodeParam) throws IOException {
-        setDcmDecodeParam(decodeParam);
-        parseHeader();
-        if (rVR != VRs.UN && rLen <= 64) {
-            if ((rTag >>> 16) == 2)
-                return 0;
-            if (rTag >= 0x00080000)
-                return 1;
-        }
-        return -1;
-    }
-    
-    private FileFormat detectFileFormat(InputStream in) throws IOException {
-        in.mark(144);
-        try {
-            switch (testIVRFormat(DcmDecodeParam.IVR_LE)) {
-                case 0: return FileFormat.IVR_LE_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.ACRNEMA_STREAM;
-            }
-            in.reset();
-            switch (testEVRFormat(DcmDecodeParam.EVR_LE)) {
-                case 0: return FileFormat.DICOM_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.EVR_LE_STREAM;
-            }
-            in.reset();
-            switch (testEVRFormat(DcmDecodeParam.EVR_BE)) {
-                case 0: return FileFormat.EVR_BE_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.EVR_BE_STREAM;
-            }
-            in.reset();
-            switch (testIVRFormat(DcmDecodeParam.IVR_BE)) {
-                case 0: return FileFormat.IVR_BE_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.IVR_BE_STREAM;
-            }
-            in.reset();
-            if (in.skip(128) != 128 || in.read() != 'D' || in.read() != 'I'
-                                    || in.read() != 'C' || in.read() != 'M')
-                return null;
-            if (testEVRFormat(DcmDecodeParam.EVR_LE) == 0)
+
+    private FileFormat detectFileFormat(DataInputStream in) throws IOException {
+        in.mark(132);
+        byte[] b = new byte[132];
+        try
+        {
+            in.readFully(b, 0, 132);
+            if (b[128] == 'D' 
+                && b[129] == 'I' 
+                && b[130] == 'C'
+                && b[131] == 'M')
+            {
                 return FileFormat.DICOM_FILE;
-            in.reset();
-            if (in.skip(132) != 132)
-                return null;
-            if (testIVRFormat(DcmDecodeParam.IVR_LE) == 0)
-                return FileFormat.IVR_LE_FILE;
-            in.reset();
-            if (in.skip(132) != 132)
-                return null;
-            if (testEVRFormat(DcmDecodeParam.EVR_BE) == 0)
-                return FileFormat.EVR_BE_FILE;
-            in.reset();
-            if (in.skip(132) != 132)
-                return null;
-            if (testEVRFormat(DcmDecodeParam.IVR_BE) == 0)
-                return FileFormat.IVR_BE_FILE;
+            }
+        } catch (IOException ignore) {
         } finally {
             in.reset();
         }
-        return null;
+        return detectFileFormat(b);
     }
 
-    private FileFormat detectFileFormat(ImageInputStream in)
-            throws IOException {
+    private FileFormat detectFileFormat(ImageInputStream in) throws IOException {
         in.mark();
-        try {
-            switch (testIVRFormat(DcmDecodeParam.IVR_LE)) {
-                case 0: return FileFormat.IVR_LE_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.ACRNEMA_STREAM;
+        byte[] b = new byte[132];
+        try
+        {
+            in.readFully(b, 0, 132);
+            if (b[128] == 'D' 
+                && b[129] == 'I' 
+                && b[130] == 'C'
+                && b[131] == 'M')
+            {
+                return FileFormat.DICOM_FILE;
             }
-            in.reset();in.mark();
-            switch (testEVRFormat(DcmDecodeParam.EVR_LE)) {
-                case 0: return FileFormat.DICOM_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.EVR_LE_STREAM;
-            }
-            in.reset();in.mark();
-            switch (testEVRFormat(DcmDecodeParam.EVR_BE)) {
-                case 0: return FileFormat.EVR_BE_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.EVR_BE_STREAM;
-            }
-            in.reset();in.mark();
-            switch (testIVRFormat(DcmDecodeParam.IVR_BE)) {
-                case 0: return FileFormat.IVR_BE_FILE_WO_PREAMBLE;
-                case 1: return FileFormat.IVR_BE_STREAM;
-            }
-            in.reset();in.mark();
-            if (in.skipBytes(128) != 128 || in.read() != 'D' || in.read() != 'I'
-                                      || in.read() != 'C' || in.read() != 'M') 
-                return null;
-            in.mark();
-            try {
-                if (testEVRFormat(DcmDecodeParam.EVR_LE) == 0)
-                    return FileFormat.DICOM_FILE;
-                in.reset();in.mark();
-                if (testIVRFormat(DcmDecodeParam.IVR_LE) == 0)
-                    return FileFormat.IVR_LE_FILE;
-                in.reset();in.mark();
-                if (testEVRFormat(DcmDecodeParam.EVR_BE) == 0)
-                    return FileFormat.EVR_BE_FILE;
-                in.reset();in.mark();
-                if (testEVRFormat(DcmDecodeParam.IVR_BE) == 0)
-                    return FileFormat.IVR_BE_FILE;
-            } finally {
-                in.reset();
-            }
+        } catch (IOException ignore) {
         } finally {
             in.reset();
         }
-       throw new DcmParseException("Unknown Format");
+        return detectFileFormat(b);
     }
 
+    private FileFormat detectFileFormat(byte[] b) throws DcmParseException
+    {
+        boolean bigEndian = b[1] != 0;
+        int tag = bigEndian
+            ? (b[0] & 0xff) << 24 | (b[1] & 0xff) << 16 | (b[2] & 0xff) << 8 | (b[3] & 0xff)
+            : (b[1] & 0xff) << 24 | (b[0] & 0xff) << 16 | (b[3] & 0xff) << 8 | (b[2] & 0xff);
+
+        boolean fmi = (tag & 0xffff0000) == 0x00020000;
+        int vr = ((b[4] & 0xff) << 8) | (b[5] & 0xff);
+        if (VRMap.DEFAULT.lookup(tag) == vr) {
+            return fmi
+                    ? (bigEndian 
+                            ? FileFormat.EVR_BE_FILE_WO_PREAMBLE
+                            : FileFormat.DICOM_FILE_WO_PREAMBLE) 
+                    : (bigEndian 
+                            ? FileFormat.EVR_BE_STREAM 
+                            : FileFormat.EVR_LE_STREAM);
+        }
+        int len = bigEndian
+            ? (b[4] & 0xff) << 24 | (b[5] & 0xff) << 16 | (b[6] & 0xff) << 8 | (b[7] & 0xff)
+            : (b[7] & 0xff) << 24 | (b[6] & 0xff) << 16 | (b[5] & 0xff) << 8 | (b[4] & 0xff);
+        if (len < 116) {
+            int nexttag = bigEndian
+                ? (b[len + 8] & 0xff) << 24 | (b[len + 9] & 0xff) << 16 
+                        | (b[len + 10] & 0xff) << 8 | (b[len + 11] & 0xff)
+                : (b[len + 9] & 0xff) << 24 | (b[len + 8] & 0xff) << 16 
+                        | (b[len + 11] & 0xff) << 8 | (b[len + 10] & 0xff);
+            if ((nexttag & 0xffff0000) == (tag & 0xffff0000) && (nexttag & 0xffff) > (tag & 0xffff)) {
+                return fmi
+                ? (bigEndian 
+                        ? FileFormat.IVR_BE_FILE_WO_PREAMBLE
+                        : FileFormat.IVR_LE_FILE_WO_PREAMBLE)
+                : (bigEndian 
+                        ? FileFormat.IVR_BE_STREAM 
+                        : FileFormat.ACRNEMA_STREAM);
+            }
+        }
+        throw new DcmParseException("Unknown Format");
+    }
+    
     public int parseHeader() throws IOException {
         eof = false;
         try {
