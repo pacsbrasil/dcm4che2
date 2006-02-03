@@ -495,7 +495,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
    protected abstract String typeAsString();
    
    public String toString() {
-      return toString(false);
+      return toString(true);
    }
    
    public String toString(boolean verbose) {
