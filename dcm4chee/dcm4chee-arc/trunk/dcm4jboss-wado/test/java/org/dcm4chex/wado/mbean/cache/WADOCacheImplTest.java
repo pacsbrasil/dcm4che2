@@ -154,20 +154,20 @@ public class WADOCacheImplTest extends TestCase {
 		}
 	}
 
-	public void testCleanCacheFG() {
+	public void testFreeDiskSpaceFG() {
 		_prepareCleanTest();
-		cache.cleanCache(false);
-		System.out.println("******************\nAfter clean:\nfree space:"+cache.getFreeSpace());
-		System.out.println("minFreeSpace:"+cache.getMinFreeSpace()+ "  diff:"+(cache.getFreeSpace() - cache.getMinFreeSpace() ) );
-		System.out.println("preferred:"+cache.getPreferredFreeSpace()+ "  diff:"+(cache.getPreferredFreeSpace() - cache.getFreeSpace() ) );
+		cache.freeDiskSpace(false);
+		System.out.println("******************\nAfter clean:\nfree space:"+cache.showFreeSpace());
+		System.out.println("minFreeSpace:"+cache.getMinFreeSpace()+ "  diff:"+(cache.showFreeSpace() - cache.getMinFreeSpace() ) );
+		System.out.println("preferred:"+cache.getPreferredFreeSpace()+ "  diff:"+(cache.getPreferredFreeSpace() - cache.showFreeSpace() ) );
 	}
 
-	public void testCleanCacheBG() {
+	public void testFreeDiskSpaceBG() {
 		_prepareCleanTest();
-		cache.cleanCache(true);
-		System.out.println("******************\nAfter clean:\nfree space:"+cache.getFreeSpace());
-		System.out.println("minFreeSpace:"+cache.getMinFreeSpace()+ "  diff:"+(cache.getFreeSpace() - cache.getMinFreeSpace() ) );
-		System.out.println("preferred:"+cache.getPreferredFreeSpace()+ "  diff:"+(cache.getPreferredFreeSpace() - cache.getFreeSpace() ) );
+		cache.freeDiskSpace(true);
+		System.out.println("******************\nAfter clean:\nfree space:"+cache.showFreeSpace());
+		System.out.println("minFreeSpace:"+cache.getMinFreeSpace()+ "  diff:"+(cache.showFreeSpace() - cache.getMinFreeSpace() ) );
+		System.out.println("preferred:"+cache.getPreferredFreeSpace()+ "  diff:"+(cache.getPreferredFreeSpace() - cache.showFreeSpace() ) );
 	}
 	
 	/**
@@ -195,7 +195,7 @@ public class WADOCacheImplTest extends TestCase {
 		} catch ( Exception x ) {
 			x.printStackTrace();
 		}
-		long currFree = cache.getFreeSpace();
+		long currFree = cache.showFreeSpace();
 		( (WADOCacheImpl) cache).setMinFreeSpace( currFree + l / 10 );
 		( (WADOCacheImpl) cache).setPreferredFreeSpace( currFree + l / 2 );
 		
