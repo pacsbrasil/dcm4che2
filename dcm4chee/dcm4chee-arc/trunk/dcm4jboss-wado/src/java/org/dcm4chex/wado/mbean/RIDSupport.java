@@ -89,6 +89,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.mbean.WADOSupport.ImageCachingException;
 import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
 import org.dcm4chex.wado.mbean.WADOSupport.NoImageException;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -731,6 +732,8 @@ public class RIDSupport {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
 		} catch (NoImageException e) {
 			return null;
+		} catch ( ImageCachingException x1 ) {
+			return new WADOImageResponseObjectImpl( x1.getImage(), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, "Warning: Caching failed!");		
 		} catch (Exception e) {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
 		}

@@ -393,7 +393,7 @@ public class WADOCacheImpl implements WADOCache {
 	 */
 	public void freeDiskSpace( boolean background ) {
 		long currFree = showFreeSpace();
-		if ( log.isDebugEnabled() ) log.debug("WADOCache.cleancache: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
+		if ( log.isDebugEnabled() ) log.debug("WADOCache.freeDiskSpace: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
 		if ( currFree < getMinFreeSpace() ) {
 			final long sizeToDel = getPreferredFreeSpace() - currFree;
 			if ( background ) {
@@ -407,7 +407,7 @@ public class WADOCacheImpl implements WADOCache {
             	_clean( sizeToDel );
 			}
 		} else {
-			if ( log.isDebugEnabled() ) log.debug("WADOCache.cleancache: nothing todo" );
+			if ( log.isDebugEnabled() ) log.debug("WADOCache.freeDiskSpace: nothing todo" );
 		}
 	}
 

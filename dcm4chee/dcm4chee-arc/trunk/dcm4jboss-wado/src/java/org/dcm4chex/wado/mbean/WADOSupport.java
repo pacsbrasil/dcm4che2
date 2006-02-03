@@ -94,6 +94,8 @@ import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.dcm4chex.wado.mbean.xml.DatasetXMLResponseObject;
 import org.jboss.mx.util.MBeanServerLocator;
 
+import com.sun.image.codec.jpeg.JPEGEncodeParam;
+
 /**
  * @author franz.willer
  *
@@ -337,13 +339,16 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 		}
 	} catch ( NoImageException x1 ) {
 		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get jpeg from requested object");		
+	} catch ( ImageCachingException x1 ) {
+		return new WADOImageResponseObjectImpl( x1.getImage(), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, "Warning: Caching failed!");		
 	} catch ( Exception x ) {
 		log.error("Exception in handleJpg: "+x.getMessage(), x);
 		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get jpeg");
 	}
 }
-public File getJpg( String studyUID, String seriesUID, String instanceUID,
-								String rows, String columns, String frameNumber	) throws IOException, NeedRedirectionException, NoImageException {
+public File getJpg( String studyUID, String seriesUID, String instanceUID, 
+				String rows, String columns, String frameNumber	) 
+				throws IOException, NeedRedirectionException, NoImageException, ImageCachingException {
 	int frame = 0;
 	if ( frameNumber != null ) {
 		frame = Integer.parseInt( frameNumber );
@@ -364,10 +369,15 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 			return null;
 		}
 		if ( bi != null ) {
-			if ( rows == null ) {
-				file = cache.putImage( bi, studyUID, seriesUID, instanceUID );
-			} else {
-				file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
+			try {
+				if ( rows == null ) {
+					file = cache.putImage( bi, studyUID, seriesUID, instanceUID );
+				} else {
+					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
+				}
+			} catch ( Exception x ) {
+				log.error("Error caching image file! Return image without caching!",x);
+				throw new ImageCachingException(bi);
 			}
 		} else {
 			throw new NoImageException();
@@ -796,6 +806,35 @@ class NoImageException extends Exception {
 	 */
 	private static final long serialVersionUID = 1L;
 
+}
+
+/**
+ * Inner exception class to handle error in caching image files.
+ * <p>
+ * The image can be sent directly to the WEB client.
+ *  
+ * @author franz.willer
+ *
+ */
+class ImageCachingException extends Exception {
+
+	/**
+	 * Comment for <code>serialVersionUID</code>
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private BufferedImage bi;
+
+	public ImageCachingException( BufferedImage bi ) {
+		this.bi = bi;
+	}
+
+	/**
+	 * @return Returns the bi.
+	 */
+	public BufferedImage getImage() {
+		return bi;
+	}
 }
 
 }
