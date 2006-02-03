@@ -561,7 +561,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                     break loop;
                 }
                 lread += hlen;
-                if (stopTag == rTag)
+                if ((stopTag & 0xffffffffL) <= (rTag & 0xffffffffL)) 
                     break loop;
                 if (handler != null && unBuf == null
                         && rTag != ITEM_DELIMITATION_ITEM_TAG)
