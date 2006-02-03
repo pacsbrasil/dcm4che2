@@ -6,6 +6,7 @@
   <xsl:variable name="StudyInstanceUID" select="dataset/attr[@tag='0020000D']"/>
 
 	<xsl:output method="html" indent="yes" media-type="text/html"/>
+    <xsl:param name="wadoURL" select="'wado'"/>
 
 		<!-- the stylesheet processing entry point -->
 	<xsl:template match="/">
@@ -88,7 +89,10 @@
 	</xsl:template>
 	
 	<xsl:template match="item" mode="imageref">
-		Image <a href="StudyInstanceUID={$StudyInstanceUID}&amp;SOPInstanceUID={attr[@tag='00081155']}">SOPInstUID=<xsl:value-of select="attr[@tag='00081155']"/></a>
+		Image 
+		<img>
+			<xsl:attribute name="src"><xsl:value-of select="$wadoURL"/>?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="attr[@tag='00081155']"/></xsl:attribute>
+		</img>
 <br/>
 	</xsl:template>
 	

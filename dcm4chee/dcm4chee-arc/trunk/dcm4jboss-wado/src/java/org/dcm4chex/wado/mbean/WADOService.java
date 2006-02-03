@@ -39,9 +39,15 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -129,11 +135,86 @@ public class WADOService extends AbstractCacheService {
 	public void setHtmlXslURL(String htmlXslURL) {
 		support.setHtmlXslURL(htmlXslURL);
 	}
+
+	/**
+	 * Set URL to XSLT stylesheet that should be used to transform DICOM SR to XHTML document.
+	 * 
+	 * @return
+	 */
+	public String getXHtmlXslURL() {
+		return support.getXHtmlXslURL();
+	}
+	
+	public void setXHtmlXslURL(String htmlXslURL) {
+		support.setXHtmlXslURL(htmlXslURL);
+	}
+	
+	/**
+	 * Set URL to XSLT stylesheet that should be used to transform DICOM SR to xml document.
+	 * 
+	 * @return
+	 */
+	public String getXmlXslURL() {
+		return support.getXmlXslURL();
+	}
+	
+	public void setXmlXslURL(String xslURL) {
+		support.setXmlXslURL(xslURL);
+	}
 	
 	public void clearTemplateCache() {
 		support.clearTemplateCache();
 	}
 	
+	/**
+	 * Returns a String with all defined SOP Class UIDs that are used to find text (SR) documents.
+	 * <p>
+	 * The uids are separated with line separator.
+	 * 
+	 * @return SOP Class UIDs to find ECG related files.
+	 */
+	public String getTextSopCuids() {
+		Map uids = support.getTextSopCuids();
+		if ( uids == null || uids.isEmpty() ) return "";
+		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
+		Iterator iter = uids.keySet().iterator();
+		while ( iter.hasNext() ) {
+			sb.append(iter.next()).append(System.getProperty("line.separator", "\n"));
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Set a list of SOP Class UIDs that are used to find text (SR) documents.
+	 * <p>
+	 * The UIDs are separated with line separator.
+	 * 
+	 * @param sopCuids String with SOP class UIDs seperated with '|'
+	 */
+	public void setTextSopCuids( String sopCuids ) {
+		
+        StringTokenizer st = new StringTokenizer(sopCuids, "\r\n;");
+        String uid,name;
+        Map map = new TreeMap();
+        int i = 0;
+        while ( st.hasMoreTokens() ) {
+        	uid = st.nextToken().trim();
+    		name = uid;
+        	if ( isDigit(uid.charAt(0) ) ) {
+        		if ( ! UIDs.isValid(uid) ) 
+        			throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+        	} else {
+        		uid = UIDs.forName( name );
+        	}
+        	map.put(name,uid);
+        }
+		support.setTextSopCuids( map );
+	}
+
+    private static boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
+
 	/**
 	 * Getter for the name of the FileSystemMgt MBean.
 	 * <p>

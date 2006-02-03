@@ -68,6 +68,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -127,6 +128,7 @@ private static MBeanServer server;
 
 private static final int BUF_LEN = 65536;
 private String htmlXslURL = "resource:xsl/sr_html.xsl";
+private String xhtmlXslURL = "resource:xsl/sr_html.xsl";
 private String xmlXslURL = "resource:xsl/sr_xml_style.xsl";
 private Map mapTemplates = new HashMap();
 
@@ -431,6 +433,19 @@ public String getHtmlXslURL() {
  */
 public void setHtmlXslURL(String htmlXslURL) {
 	this.htmlXslURL = htmlXslURL;
+}
+/**
+ * @return
+ */
+public String getXHtmlXslURL() {
+	return xhtmlXslURL;
+}
+
+/**
+ * @param htmlXslURL The htmlXslURL to set.
+ */
+public void setXHtmlXslURL(String xslURL) {
+	this.xhtmlXslURL = xslURL;
 }
 /**
  * @return Returns the xmlXslURL.

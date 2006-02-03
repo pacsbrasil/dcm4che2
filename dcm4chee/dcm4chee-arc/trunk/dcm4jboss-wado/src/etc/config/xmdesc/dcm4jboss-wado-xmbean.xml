@@ -144,6 +144,41 @@
          <value value="resource:xsl/sr_html.xsl" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getXHtmlXslURL"
+      setMethod="setXHtmlXslURL">
+      <description>URL to XSLT stylesheet to render DICOM SR to XHTML (Use NONE to disable this transformation) .          
+      </description>
+      <name>XHtmlXslURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/sr_html.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getXmlXslURL"
+      setMethod="setXmlXslURL">
+      <description>URL to XSLT stylesheet to render DICOM SR to XML (Use NONE to disable this transformation) .          
+      </description>
+      <name>XmlXslURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/sr_xml_style.xsl" />
+      </descriptors>
+   </attribute>
+
+    <attribute access="read-write"
+      getMethod="getTextSopCuids"
+      setMethod="setTextSopCuids">
+      <description>List of SOP Class UIDs that are used to find Text (SR) documents (seperated with semicolon or newline).
+      Use either the SOP Class UID or the symbolic name! Use an empty value to reset this list.
+      </description>
+      <name>TextSopCuids</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+    </attribute>
 
     <attribute access="read-write"
       getMethod="isExtendedWADOAllowed"
