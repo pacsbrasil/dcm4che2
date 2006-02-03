@@ -816,7 +816,7 @@ class NoImageException extends Exception {
  * @author franz.willer
  *
  */
-class ImageCachingException extends Exception {
+class ImageCachingException extends IOException {
 
 	/**
 	 * Comment for <code>serialVersionUID</code>

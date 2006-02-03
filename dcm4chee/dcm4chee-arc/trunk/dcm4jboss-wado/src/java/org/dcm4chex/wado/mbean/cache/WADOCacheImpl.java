@@ -651,7 +651,9 @@ public class WADOCacheImpl implements WADOCache {
 	 */
 	private void _writeImageFile(BufferedImage bi, File file) throws IOException {
 		if ( ! file.getParentFile().exists() ) {
-			file.getParentFile().mkdirs();
+			if (!file.getParentFile().mkdirs() ) {
+				throw new IOException("Can not create directory:"+file.getParentFile());
+			}
 		}
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 		try {
