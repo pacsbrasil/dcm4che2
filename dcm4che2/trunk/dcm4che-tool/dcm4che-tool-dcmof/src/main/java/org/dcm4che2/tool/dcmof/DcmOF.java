@@ -46,6 +46,7 @@ import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -66,7 +67,7 @@ import org.dcm4che2.net.service.VerificationService;
  */
 public class DcmOF
 {
-    private static final int MEGABYTE = 1048576;
+    private static final int KB = 1024;
     private static final String USAGE = 
         "dcmof [Options] [<aet>[@<ip>]:]<port>";
     private static final String DESCRIPTION = 
@@ -108,11 +109,9 @@ public class DcmOF
         UID.ExplicitVRLittleEndian,
         UID.ImplicitVRLittleEndian
     };
-    
-
-    
-    private static Executor executor = new NewThreadExecutor("DCM4CHE_OF");
-    private Device device = new Device("DCM4CHE_OF");
+        
+    private static Executor executor = new NewThreadExecutor("DCMOF");
+    private Device device = new Device("DCMOF");
     private NetworkApplicationEntity ae = new NetworkApplicationEntity();
     private NetworkConnection nc = new NetworkConnection();
     private String[] tsuids = NATIVE_LE_TS;
@@ -220,43 +219,49 @@ public class DcmOF
                 "Activate SCN SCP, storing received SCN in specified directory.");
         scn.setArgName("dir");
         opts.addOption(scn);
-        opts.addOption("k", "pack-pdv", false, 
+        OptionGroup ts = new OptionGroup();
+        ts.addOption(new Option(" ", "def-ts", false,
+                "accept only default Transfer Syntax."));
+        ts.addOption(new Option(" ", "be-ts", false,
+                "accept Explict VR Big Endian Transfer Syntax."));
+        opts.addOptionGroup(ts);
+        opts.addOption(" ", "pack-pdv", false, 
                 "pack command and data PDV in one P-DATA-TF PDU, " +
                 "send only one PDV in one P-Data-TF PDU by default.");
-        opts.addOption("y", "tcp-no-delay", false, 
+        opts.addOption(" ", "tcp-no-delay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
         Option closeDelay = new Option("c", "close-delay", true,
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
-        Option acTimeout = new Option("T", "request-timeout", true,
+        Option acTimeout = new Option(" ", "request-timeout", true,
                 "timeout in ms for receiving A-ASSOCIATE-RQ, 5s by default");
         acTimeout.setArgName("timeout");
         opts.addOption(acTimeout);
-        Option rpTimeout = new Option("t", "release-timeout", true,
+        Option rpTimeout = new Option(" ", "release-timeout", true,
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
-        Option checkPeriod = new Option("R", "reaper-period", true,
+        Option checkPeriod = new Option(" ", "reaper-period", true,
                 "period in ms to check idleness, 10s by default");
         checkPeriod.setArgName("period");
-        Option idleTimeout = new Option("I", "idle-timeout", true,
+        Option idleTimeout = new Option(" ", "idle-timeout", true,
                 "timeout in ms for receiving DIMSE-RQ, 60s by default");
         acTimeout.setArgName("timeout");
         opts.addOption(idleTimeout);
-        Option soRcvBufSize = new Option("s", "so-rcv-buf-size", true,
+        Option soRcvBufSize = new Option(" ", "so-rcv-buf-size", true,
                 "set SO_RCVBUF socket option to specified value");
         soRcvBufSize.setArgName("size");
         opts.addOption(soRcvBufSize);
-        Option soSndBufSize = new Option("S", "so-snd-buf-size", true,
+        Option soSndBufSize = new Option(" ", "so-snd-buf-size", true,
                 "set SO_SNDBUF socket option to specified value");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
-        Option rcvPduLen = new Option("u", "rcv-pdu-len", true,
+        Option rcvPduLen = new Option(" ", "rcv-pdu-len", true,
                 "maximal length of received P-DATA-TF PDUs, 16384 by default");
         rcvPduLen.setArgName("max-len");
         opts.addOption(rcvPduLen);
-        Option sndPduLen = new Option("U", "snd-pdu-len", true,
+        Option sndPduLen = new Option(" ", "snd-pdu-len", true,
                 "maximal length of sent P-DATA-TF PDUs, 16384 by default");
         sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
@@ -306,50 +311,55 @@ public class DcmOF
             dcmof.setHostname(aetHost[1]);
         }
 
-        if (cl.hasOption("T"))
-            dcmof.setRequestTimeout(
-                    parseInt(cl.getOptionValue("T"),
-                    "illegal argument of option -T", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("t"))
-            dcmof.setReleaseTimeout(
-                    parseInt(cl.getOptionValue("t"),
-                    "illegal argument of option -t", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("c"))
-            dcmof.setSocketCloseDelay(
-                    parseInt(cl.getOptionValue("c"),
-                    "illegal argument of option -c", 1, 10000));
-        if (cl.hasOption("R"))
+        if (cl.hasOption("def-ts"))
+            dcmof.setTransferSyntax(ONLY_DEF_TS);
+        else if (cl.hasOption("be-ts"))
+            dcmof.setTransferSyntax(NATIVE_TS);
+        if (cl.hasOption("reaper-period"))
             dcmof.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("R"),
-                    "illegal argument of option -R", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("I"))
-            dcmof.setIdleTimeout(
-                    parseInt(cl.getOptionValue("I"),
-                    "illegal argument of option -I", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("u"))
+                    parseInt(cl.getOptionValue("reaper-period"),
+                    "illegal argument of option --reaper-period", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("accept-timeout"))
+            dcmof.setRequestTimeout(
+                    parseInt(cl.getOptionValue("request-timeout"),
+                    "illegal argument of option --request-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("release-timeout"))
+            dcmof.setReleaseTimeout(
+                    parseInt(cl.getOptionValue("release-timeout"),
+                    "illegal argument of option --release-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("close-delay"))
+            dcmof.setSocketCloseDelay(
+                    parseInt(cl.getOptionValue("close-delay"),
+                    "illegal argument of option --close-delay", 1, 10000));
+        if (cl.hasOption("rsp-timeout"))
+            dcmof.setDimseRspTimeout(
+                    parseInt(cl.getOptionValue("rsp-timeout"),
+                    "illegal argument of option --rsp-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("rcv-pdu-len"))
             dcmof.setMaxPDULengthReceive(
-                    parseInt(cl.getOptionValue("u"),
-                    "illegal argument of option -u", 256, MEGABYTE));
-        if (cl.hasOption("U"))
+                    parseInt(cl.getOptionValue("rcv-pdu-len"),
+                    "illegal argument of option --rcv-pdu-len", 1, 10000) * KB);
+        if (cl.hasOption("snd-pdu-len"))
             dcmof.setMaxPDULengthSend(
-                    parseInt(cl.getOptionValue("U"),
-                    "illegal argument of option -U", 256, MEGABYTE));
-        if (cl.hasOption("S"))
+                    parseInt(cl.getOptionValue("snd-pdu-len"),
+                    "illegal argument of option --snd-pdu-len", 1, 10000) * KB);
+        if (cl.hasOption("so-snd-buf"))
             dcmof.setSendBufferSize(
-                    parseInt(cl.getOptionValue("S"),
-                    "illegal argument of option -S", 256, MEGABYTE));
-        if (cl.hasOption("s"))
+                    parseInt(cl.getOptionValue("so-snd-buf"),
+                    "illegal argument of option --so-snd-buf", 1, 10000) * KB);
+        if (cl.hasOption("so-rcv-buf"))
             dcmof.setReceiveBufferSize(
-                    parseInt(cl.getOptionValue("s"),
-                    "illegal argument of option -s", 256, MEGABYTE));
-        dcmof.setPackPDV(cl.hasOption("k"));
-        dcmof.setTcpNoDelay(cl.hasOption("y"));
+                    parseInt(cl.getOptionValue("so-rcv-buf"),
+                    "illegal argument of option --so-rcv-buf", 1, 10000) * KB);
+        dcmof.setPackPDV(cl.hasOption("pack-pdv"));
+        dcmof.setTcpNoDelay(cl.hasOption("tcp-no-delay"));
         if (cl.hasOption("a"))
             dcmof.setMaxOpsPerformed(zeroAsMaxInt(parseInt(
                     cl.getOptionValue("a"), "illegal max-opts", 0, 0xffff)));
 
         ArrayList tc = new ArrayList();
-        tc.add(new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS, true));
+        tc.add(new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS, 
+                TransferCapability.SCP));
         if (cl.hasOption("mwl"))
             dcmof.registerMWLSCP(new File(cl.getOptionValue("mwl")), tc);
         if (cl.hasOption("mwl"))
@@ -371,12 +381,18 @@ public class DcmOF
         }
     }
 
+    private void setTransferSyntax(String[] tsuids)
+    {
+        this.tsuids = tsuids;        
+    }
+
     private void registerMWLSCP(File dir, ArrayList tc)
     {
         MWLSCP mwlscp = new MWLSCP(executor);
         mwlscp.setSource(dir);
         ae.register(mwlscp);
-        tc.add(new TransferCapability(mwlscp.getSopClass(), tsuids, true));
+        tc.add(new TransferCapability(mwlscp.getSopClass(), tsuids,
+                TransferCapability.SCP));
     }
 
     private void registerMPPSSCP(File dir, ArrayList tc)
@@ -385,7 +401,8 @@ public class DcmOF
         mppsscp.setDestination(dir);
         ae.register(mppsscp.getNCreateSCP());
         ae.register(mppsscp.getNSetSCP());
-        tc.add(new TransferCapability(mppsscp.getNCreateSCP().getSopClass(), tsuids, true));
+        tc.add(new TransferCapability(mppsscp.getNCreateSCP().getSopClass(),
+                tsuids, TransferCapability.SCP));
     }
 
     private void registerIANSCP(File dir, ArrayList tc)
@@ -393,7 +410,8 @@ public class DcmOF
         IANSCP ianscp = new IANSCP();
         ianscp.setDestination(dir);
         ae.register(ianscp);
-        tc.add(new TransferCapability(ianscp.getSopClass(), tsuids, true));
+        tc.add(new TransferCapability(ianscp.getSopClass(), tsuids,
+                TransferCapability.SCP));
     }
 
     private void registerSCNSCP(File dir, ArrayList tc)
@@ -401,7 +419,8 @@ public class DcmOF
         SCNSCP scnscp = new SCNSCP();
         scnscp.setDestination(dir);
         ae.register(scnscp);
-        tc.add(new TransferCapability(scnscp.getSopClass(), tsuids, true));
+        tc.add(new TransferCapability(scnscp.getSopClass(), tsuids,
+                TransferCapability.SCP));
     }
 
     private static int zeroAsMaxInt(int val)

@@ -381,33 +381,15 @@ public class Device
         return sslContext;
     }
 
-    AAssociateAC negotiate(Association a, AAssociateRQ rq)
-    throws AAssociateRJException
+    public NetworkApplicationEntity getNetworkApplicationEntity(String aet)
     {
-        if ((rq.getProtocolVersion() & 1) == 0)
-            throw new AAssociateRJException(
-                    AAssociateRJException.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJException.SOURCE_SERVICE_PROVIDER_ACSE,
-                    AAssociateRJException.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
-        if (!rq.getApplicationContext().equals(UID.DICOMApplicationContextName))
-            throw new AAssociateRJException(
-                    AAssociateRJException.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJException.SOURCE_SERVICE_USER,
-                    AAssociateRJException.REASON_APP_CTX_NAME_NOT_SUPPORTED);
-        String aet = rq.getCalledAET();
         for (int i = 0; i < networkAE.length; i++)
         {
             NetworkApplicationEntity ae = networkAE[i];
             String aeti = ae.getAETitle();
             if (aeti == null || aeti.equals(aet))
-            {
-                a.setApplicationEntity(ae);
-                return ae.negotiate(a, rq);
-            }
+                return ae;
         }
-        throw new AAssociateRJException(
-                AAssociateRJException.RESULT_REJECTED_PERMANENT,
-                AAssociateRJException.SOURCE_SERVICE_USER,
-                AAssociateRJException.REASON_CALLED_AET_NOT_RECOGNIZED);
+        return null;
     }
  }

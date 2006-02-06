@@ -51,18 +51,18 @@ public class TransferCapability
     
     private String commonName;
     private String sopClass;
-    private boolean scp = true;
+    private String role;
     private String[] transferSyntax = {};
     
     public TransferCapability()
     {
     }
     
-    public TransferCapability(String sopClass, String[] transferSyntax, boolean scp)
+    public TransferCapability(String sopClass, String[] transferSyntax, String role)
     {
         this.sopClass = sopClass;
         this.transferSyntax = transferSyntax;
-        this.scp = scp;
+        this.role = role.intern();
     }
     
     public final String getCommonName()
@@ -77,7 +77,7 @@ public class TransferCapability
     
     public final String getRole()
     {
-        return scp ? SCP : SCU;
+        return role; 
     }
     
     public final void setRole(String role)
@@ -85,22 +85,20 @@ public class TransferCapability
         if (role == null)
             throw new NullPointerException("Role");
         
-        if (role.equals(SCP))
-            scp = true;
-        else if (role.equals(SCU))
-            scp = false;
+        if (role.equals(SCU) || role.equals(SCP))
+                role = role.intern();
         else
             throw new IllegalArgumentException("Role:" +  role);
     }
 
     public final boolean isSCP()
     {
-         return scp;
+         return SCP.equals(role);
     }
     
     public final boolean isSCU()
     {
-         return !scp;
+         return SCU.equals(role);
     }
     
     public final String getSopClass()
@@ -122,5 +120,4 @@ public class TransferCapability
     {
         this.transferSyntax = transferSyntax;
     }
-
 }

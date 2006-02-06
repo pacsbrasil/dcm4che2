@@ -78,7 +78,7 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
         last.next = new Entry(cmd, data);
         if (CommandUtils.isPending(cmd))
         {
-            if (--autoCancel == 0)
+            if (autoCancel > 0 && --autoCancel == 0)
                 try
                 {
                     super.cancel(as);

@@ -58,6 +58,7 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
@@ -99,6 +100,21 @@ public class DcmSnd {
         "\nExample: dcmsnd STORESCP@localhost:11112 image.dcm \n" +
         "=> Send DICOM object image.dcm to Application Entity STORESCP, " +
         "listening on local port 11112.";
+    private static final String[] IVLE_TS = {
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian,
+    };
+    private static final String[] EVLE_TS = {
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian,
+    };
+    private static final String[] EVBE_TS = {
+        UID.ExplicitVRBigEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian,
+    };
 
     private Executor executor = new NewThreadExecutor("DCMSND");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -249,66 +265,66 @@ public class DcmSnd {
         Options opts = new Options();
         Option localAddr = new Option("L", "local", true,
                 "set AET, local address and port of local Application Entity, " +
-                "use ANONYMOUS as calling AET and pick up an ephemeral port " +
-                "and a valid local address to bind the socket by default");
-        localAddr.setArgName("calling[@host[:port]]");
+                "use ANONYMOUS as calling AET and pick up a valid local address " +
+                "to bind the socket by default");
+        localAddr.setArgName("calling[@host]");
         opts.addOption(localAddr);
         Option maxOpsInvoked = new Option("a", "async", true,
                 "maximum number of outstanding operations it may invoke " +
                 "asynchronously, unlimited by default.");
         maxOpsInvoked.setArgName("max-ops");
         opts.addOption(maxOpsInvoked);
-        opts.addOption("k", "pack-pdv", false, 
+        opts.addOption(" ", "pack-pdv", false, 
                 "pack command and data PDV in one P-DATA-TF PDU, " +
-        "send only one PDV in one P-Data-TF PDU by default.");
-        opts.addOption("y", "tcp-no-delay", false, 
+                "send only one PDV in one P-Data-TF PDU by default.");
+        opts.addOption(" ", "tcp-no-delay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
-        Option conTimeout = new Option("C", "connect-timeout", true,
+        Option conTimeout = new Option(" ", "connect-timeout", true,
                 "timeout in ms for TCP connect, no timeout by default");
         conTimeout.setArgName("timeout");
         opts.addOption(conTimeout);
-        Option closeDelay = new Option("c", "close-delay", true,
+        Option closeDelay = new Option(" ", "close-delay", true,
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
-        Option checkPeriod = new Option("R", "reaper-period", true,
+        Option checkPeriod = new Option(" ", "reaper-period", true,
                 "period in ms to check for outstanding DIMSE-RSP, 10s by default");
         checkPeriod.setArgName("period");
-        Option rspTimeout = new Option("r", "rsp-timeout", true,
+        Option rspTimeout = new Option(" ", "rsp-timeout", true,
                 "timeout in ms for receiving DIMSE-RSP, 60s by default");
         rspTimeout.setArgName("timeout");
         opts.addOption(rspTimeout);
-        Option acTimeout = new Option("T", "accept-timeout", true,
+        Option acTimeout = new Option(" ", "accept-timeout", true,
                 "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
         acTimeout.setArgName("timeout");
         opts.addOption(acTimeout);
-        Option rpTimeout = new Option("t", "release-timeout", true,
+        Option rpTimeout = new Option(" ", "release-timeout", true,
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
-        Option rcvPduLen = new Option("u", "rcv-pdu-len", true,
+        Option rcvPduLen = new Option(" ", "rcv-pdu-len", true,
                 "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         rcvPduLen.setArgName("max-len");
         opts.addOption(rcvPduLen);
-        Option sndPduLen = new Option("U", "snd-pdu-len", true,
+        Option sndPduLen = new Option(" ", "snd-pdu-len", true,
                 "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
         sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
-        Option soRcvBufSize = new Option("s", "so-rcv-buf-size", true,
+        Option soRcvBufSize = new Option(" ", "so-rcv-buf", true,
                 "set SO_RCVBUF socket option to specified value in KB");
         soRcvBufSize.setArgName("size");
         opts.addOption(soRcvBufSize);
-        Option soSndBufSize = new Option("S", "so-snd-buf-size", true,
+        Option soSndBufSize = new Option(" ", "so-snd-buf", true,
                 "set SO_SNDBUF socket option to specified value in KB");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
-        Option transcoderBufSize = new Option("b", "transcoder-buf-size", true,
+        Option transcoderBufSize = new Option(" ", "buf-size", true,
                 "transcoder buffer size in KB, 1KB by default");
         transcoderBufSize.setArgName("size");
         opts.addOption(transcoderBufSize);
-        opts.addOption("p", "low-priority", false, 
+        opts.addOption(" ", "low-prior", false, 
                 "LOW priority of the C-STORE operation, MEDIUM by default");
-        opts.addOption("P", "high-priority", false,
+        opts.addOption(" ", "high-prior", false,
                 "HIGH priority of the C-STORE operation, MEDIUM by default");
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
@@ -363,58 +379,58 @@ public class DcmSnd {
             dcmsnd.setCalling(callingAETHost[0]);
             dcmsnd.setLocalHost(toHostname(callingAETHost[1]));
         }
-        if (cl.hasOption("C"))
+        if (cl.hasOption("connect-timeout"))
             dcmsnd.setConnectTimeout(
-                    parseInt(cl.getOptionValue("C"),
-                    "illegal argument of option -C", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("R"))
+                    parseInt(cl.getOptionValue("connect-timeout"),
+                    "illegal argument of option --connect-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("reaper-period"))
             dcmsnd.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("R"),
-                    "illegal argument of option -R", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("r"))
+                    parseInt(cl.getOptionValue("reaper-period"),
+                    "illegal argument of option --reaper-period", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("rsp-timeout"))
             dcmsnd.setDimseRspTimeout(
-                    parseInt(cl.getOptionValue("r"),
-                    "illegal argument of option -r", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("T"))
+                    parseInt(cl.getOptionValue("rsp-timeout"),
+                    "illegal argument of option --rsp-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("accept-timeout"))
             dcmsnd.setAcceptTimeout(
-                    parseInt(cl.getOptionValue("T"),
-                    "illegal argument of option -T", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("t"))
+                    parseInt(cl.getOptionValue("accept-timeout"),
+                    "illegal argument of option --accept-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("release-timeout"))
             dcmsnd.setReleaseTimeout(
-                    parseInt(cl.getOptionValue("t"),
-                    "illegal argument of option -t", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("c"))
+                    parseInt(cl.getOptionValue("release-timeout"),
+                    "illegal argument of option --release-timeout", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("close-delay"))
             dcmsnd.setSocketCloseDelay(
-                    parseInt(cl.getOptionValue("c"),
-                    "illegal argument of option -c", 1, 10000));
-        if (cl.hasOption("u"))
+                    parseInt(cl.getOptionValue("close-delay"),
+                    "illegal argument of option --close-delay", 1, 10000));
+        if (cl.hasOption("rcv-pdu-len"))
             dcmsnd.setMaxPDULengthReceive(
-                    parseInt(cl.getOptionValue("u"),
-                    "illegal argument of option -u", 1, 10000) * KB);
-        if (cl.hasOption("U"))
+                    parseInt(cl.getOptionValue("rcv-pdu-len"),
+                    "illegal argument of option --rcv-pdu-len", 1, 10000) * KB);
+        if (cl.hasOption("snd-pdu-len"))
             dcmsnd.setMaxPDULengthSend(
-                    parseInt(cl.getOptionValue("U"),
-                    "illegal argument of option -U", 1, 10000) * KB);
-        if (cl.hasOption("S"))
+                    parseInt(cl.getOptionValue("snd-pdu-len"),
+                    "illegal argument of option --snd-pdu-len", 1, 10000) * KB);
+        if (cl.hasOption("so-snd-buf"))
             dcmsnd.setSendBufferSize(
-                    parseInt(cl.getOptionValue("S"),
-                    "illegal argument of option -S", 1, 10000) * KB);
-        if (cl.hasOption("s"))
+                    parseInt(cl.getOptionValue("so-snd-buf"),
+                    "illegal argument of option --so-snd-buf", 1, 10000) * KB);
+        if (cl.hasOption("so-rcv-buf"))
             dcmsnd.setReceiveBufferSize(
-                    parseInt(cl.getOptionValue("s"),
-                    "illegal argument of option -s", 1, 10000) * KB);
-        if (cl.hasOption("b"))
+                    parseInt(cl.getOptionValue("so-rcv-buf"),
+                    "illegal argument of option --so-rcv-buf", 1, 10000) * KB);
+        if (cl.hasOption("buf-size"))
             dcmsnd.setTranscoderBufferSize(
-                    parseInt(cl.getOptionValue("b"),
-                    "illegal argument of option -b", 1, 10000) * KB);
-        dcmsnd.setPackPDV(cl.hasOption("k"));
-        dcmsnd.setTcpNoDelay(cl.hasOption("y"));
+                    parseInt(cl.getOptionValue("buf-size"),
+                    "illegal argument of option --buf-size", 1, 10000) * KB);
+        dcmsnd.setPackPDV(cl.hasOption("pack-pdv"));
+        dcmsnd.setTcpNoDelay(cl.hasOption("tcp-no-delay"));
         if (cl.hasOption("a"))
             dcmsnd.setMaxOpsInvoked(zeroAsMaxInt(parseInt(
-                    cl.getOptionValue("a"), "illegal max-opts", 0, 0xffff)));
-        if (cl.hasOption("p"))
+                    cl.getOptionValue("a"), "illegal argument of option -a", 0, 0xffff)));
+        if (cl.hasOption("low-prior"))
             dcmsnd.setPriority(CommandUtils.LOW);
-        if (cl.hasOption("P"))
+        if (cl.hasOption("high-prior"))
             dcmsnd.setPriority(CommandUtils.HIGH);
         System.out.println("Scanning files to send");
         long t1 = System.currentTimeMillis();
@@ -604,7 +620,8 @@ public class DcmSnd {
             String cuid = (String) e.getKey();
             HashSet ts = (HashSet) e.getValue();
             tc[i] = new TransferCapability(cuid, 
-                    (String[]) ts.toArray(new String[ts.size()]), false);
+                    (String[]) ts.toArray(new String[ts.size()]), 
+                    TransferCapability.SCU);
         }
         ae.setTransferCapability(tc);
     }
@@ -618,11 +635,28 @@ public class DcmSnd {
 
     public void send()
     {
-        String[] s1 = new String[1];
-        String[] s3 = new String[3];
         for (int i = 0, n = files.size(); i < n; ++i)
         {
             FileInfo info = (FileInfo) files.get(i);
+            TransferCapability tc = assoc.getTransferCapabilityAsSCU(info.cuid);
+            if (tc == null)
+            {
+                System.out.println();
+                System.out.println(UIDDictionary.getDictionary().prompt(info.cuid)
+                        + " not supported by" + remoteAE.getAETitle());
+                System.out.println("skip file " + info.f);
+                continue;
+            }
+            String tsuid = selectTransferSyntax(tc.getTransferSyntax(), info.tsuid);
+            if (tsuid == null)
+            {
+                System.out.println();
+                System.out.println(UIDDictionary.getDictionary().prompt(info.cuid)
+                        + " with " + UIDDictionary.getDictionary().prompt(info.tsuid)
+                        + " not supported by" + remoteAE.getAETitle());
+                System.out.println("skip file " + info.f);
+                continue;
+            }
             try
             {
                 DimseRSPHandler rspHandler = new DimseRSPHandler(){
@@ -632,8 +666,9 @@ public class DcmSnd {
                         DcmSnd.this.onDimseRSP(as, cmd, data);
                     }
                 };
+                
                 assoc.cstore(info.cuid, info.iuid, priority, new DataWriter(info), 
-                        compatibleTS(info.tsuid, s1, s3), rspHandler);
+                        tsuid, rspHandler);
             }
             catch (NoPresentationContextException e)
             {
@@ -665,31 +700,24 @@ public class DcmSnd {
         }
     }        
     
-    private String[] compatibleTS(String tsuid, String[] s1, String[] s3)
+    private String selectTransferSyntax(String[] available, String tsuid)
     {
-        if (tsuid.equals(UID.ExplicitVRLittleEndian))
-        {
-            s3[0] = UID.ExplicitVRLittleEndian;
-            s3[1] = UID.ImplicitVRLittleEndian;
-            s3[2] = UID.ExplicitVRBigEndian;
-            return s3;
-        }
         if (tsuid.equals(UID.ImplicitVRLittleEndian))
-        {
-            s3[0] = UID.ImplicitVRLittleEndian;
-            s3[1] = UID.ExplicitVRLittleEndian;
-            s3[2] = UID.ExplicitVRBigEndian;
-            return s3;
-        }
+            return selectTransferSyntax(available, IVLE_TS);
+        if (tsuid.equals(UID.ExplicitVRLittleEndian))
+            return selectTransferSyntax(available, EVLE_TS);
         if (tsuid.equals(UID.ExplicitVRBigEndian))
-        {
-            s3[0] = UID.ExplicitVRBigEndian;
-            s3[1] = UID.ExplicitVRLittleEndian;
-            s3[2] = UID.ImplicitVRLittleEndian;
-            return s3;
-        }
-        s1[0] = tsuid;
-        return s1;
+            return selectTransferSyntax(available, EVBE_TS);
+        return tsuid;
+    }
+
+    private String selectTransferSyntax(String[] available, String[] tsuids)
+    {
+        for (int i = 0; i < tsuids.length; i++)
+            for (int j = 0; j < available.length; j++)
+                if (available[j].equals(tsuids[i]))
+                    return available[j];
+        return null;
     }
 
     public void close()

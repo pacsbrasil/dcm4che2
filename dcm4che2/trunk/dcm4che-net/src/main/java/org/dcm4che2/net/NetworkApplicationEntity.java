@@ -40,6 +40,7 @@ package org.dcm4che2.net;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -82,11 +83,14 @@ public class NetworkApplicationEntity
     private int dimseRspTimeout = 60000;
     private int moveRspTimeout = 600000;
     private int idleTimeout = 60000;
+    private String[] reuseAssocationToAETitle = {};
+    private String[] reuseAssocationFromAETitle = {};
     
     private NetworkConnection[] networkConnection = {};
     private TransferCapability[] transferCapability = {};
 
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();;
+    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+    private final ArrayList pool = new ArrayList();
     private Device device;
 
     public final Device getDevice()
@@ -340,25 +344,60 @@ public class NetworkApplicationEntity
         this.moveRspTimeout = moveRspTimeout;
     }
 
-    public Association connect(NetworkApplicationEntity remoteAE, Executor executor)
-    throws ConfigurationException, IOException, InterruptedException
+    public final String[] getReuseAssocationFromAETitle()
     {
-        return connect(remoteAE, getTransferCapability(), executor);
+        return reuseAssocationFromAETitle;
     }
 
-    public Association connect(NetworkApplicationEntity remoteAE,
-            TransferCapability[] tc, Executor executor)
+    public final void setReuseAssocationFromAETitle(
+            String[] reuseAssocationFromAETitle)
+    {
+        this.reuseAssocationFromAETitle = reuseAssocationFromAETitle;
+    }
+
+    public final String[] getReuseAssocationToAETitle()
+    {
+        return reuseAssocationToAETitle;
+    }
+
+    public final void setReuseAssocationToAETitle(String[] reuseAssocationToAETitle)
+    {
+        this.reuseAssocationToAETitle = reuseAssocationToAETitle;
+    }
+
+    public Association connect(NetworkApplicationEntity remoteAE, 
+            Executor executor)
     throws ConfigurationException, IOException, InterruptedException
     {
-        if (!isAssociationInitiator())
-            throw new ConfigurationException(
-                    "Local AE " + getAETitle() + " does not initiate Associations");
-        if (!remoteAE.isInstalled())
-            throw new ConfigurationException(
-                    "Remote AE " + remoteAE.getAETitle() + " not installed");
-        if (!remoteAE.isAssociationAcceptor())
-            throw new ConfigurationException(
-                    "Remote AE " + remoteAE.getAETitle() + " does not accept Associations");
+        return connect(remoteAE, executor, false);
+    }
+    
+    public Association connect(NetworkApplicationEntity remoteAE, 
+            Executor executor, boolean forceNew)
+    throws ConfigurationException, IOException, InterruptedException
+    {
+        final String remoteAET = remoteAE.getAETitle();
+        if (!forceNew && !pool.isEmpty() &&
+                (reuseAssocationToAETitle.length > 0 || 
+                 reuseAssocationFromAETitle.length > 0))
+        {
+            final boolean reuseAssocationTo = 
+                Arrays.asList(reuseAssocationToAETitle).indexOf(remoteAET) != -1;
+            final boolean reuseAssocationFrom = 
+                Arrays.asList(reuseAssocationFromAETitle).indexOf(remoteAET) != -1;
+            synchronized (pool)
+            {
+                for (Iterator iter = pool.iterator(); iter.hasNext();)
+                {
+                    Association as = (Association) iter.next();
+                    if (!remoteAET.equals(as.getRemoteAET()))
+                        continue;
+                    if (as.isReadyForDataTransfer() && (as.isRequestor() 
+                            ? reuseAssocationTo : reuseAssocationFrom))
+                        return as;
+                }
+            }
+        }
         NetworkConnection[] remoteConns = remoteAE.getNetworkConnection();
         for (int i = 0; i < networkConnection.length; i++)
         {
@@ -371,23 +410,23 @@ public class NetworkApplicationEntity
                 if (nc.isInstalled() && nc.isListening() 
                         && c.isTLS() == nc.isTLS())
                 {
-                    AAssociateRQ rq = makeAAssociateRQ(remoteAE, tc);
+                    AAssociateRQ rq = makeAAssociateRQ(remoteAE);
                     Socket s = c.connect(nc);
                     Association a = Association.request(s, c, this);
                     executor.execute(a);
                     a.negotiate(rq);
+                    addToPool(a);
                     return a;                    
                 }
             }
         }
         throw new ConfigurationException(
                 "No compatible Network Connection between local AE "
-                    + getAETitle() + " and remote AE "
-                    + remoteAE.getAETitle());
+                    + aeTitle + " and remote AE " + remoteAET);
     }
     
-    private AAssociateRQ makeAAssociateRQ(NetworkApplicationEntity remoteAE,
-            TransferCapability[] tc) throws ConfigurationException
+    private AAssociateRQ makeAAssociateRQ(NetworkApplicationEntity remoteAE)
+    throws ConfigurationException
     {
         AAssociateRQ aarq = new AAssociateRQ();
         aarq.setCallingAET(aeTitle);
@@ -398,21 +437,22 @@ public class NetworkApplicationEntity
         
         LinkedHashMap as2ts = new LinkedHashMap();
         LinkedHashSet asscp = new LinkedHashSet();
-        TransferCapability[] rtcs = remoteAE.getTransferCapability();
-        for (int i = 0; i < tc.length; i++)
+        TransferCapability[] remoteTC = remoteAE.getTransferCapability();
+        for (int i = 0; i < transferCapability.length; i++)
         {
-            TransferCapability ltc = tc[i]; 
-            String cuid = ltc.getSopClass();
-            if (rtcs.length != 0)
+            TransferCapability localTC = transferCapability[i]; 
+            String cuid = localTC.getSopClass();
+            // consider Transfer Capabilities of Remote AE if available
+            if (remoteTC.length != 0)
             {
-                for (int j = 0; j < rtcs.length; j++)
+                for (int j = 0; j < remoteTC.length; j++)
                 {
-                    TransferCapability rtc = rtcs[i];
-                    if (ltc.isSCU() == rtc.isSCP()
+                    TransferCapability rtc = remoteTC[i];
+                    if (localTC.isSCU() == rtc.isSCP()
                             && cuid.equals(rtc.getSopClass()))
                     {
                         LinkedHashSet ts0 = new LinkedHashSet(
-                                Arrays.asList(ltc.getTransferSyntax()));
+                                Arrays.asList(localTC.getTransferSyntax()));
                         ts0.retainAll(Arrays.asList(rtc.getTransferSyntax()));
                         if (ts0.isEmpty())
                             continue;
@@ -421,7 +461,7 @@ public class NetworkApplicationEntity
                             as2ts.put(cuid, ts0);
                         else
                             ts.addAll(ts0);
-                        if (ltc.isSCP())
+                        if (localTC.isSCP())
                             asscp.add(cuid);
                     }
                 }
@@ -429,13 +469,13 @@ public class NetworkApplicationEntity
             else
             {
                 LinkedHashSet ts0 = new LinkedHashSet(
-                        Arrays.asList(ltc.getTransferSyntax()));
+                        Arrays.asList(localTC.getTransferSyntax()));
                 LinkedHashSet ts = (LinkedHashSet) as2ts.get(cuid);
                 if (ts == null)
                     as2ts.put(cuid, ts0);
                 else
                     ts.addAll(ts0);
-                if (ltc.isSCP())
+                if (localTC.isSCP())
                     asscp.add(cuid);
             }
         }
@@ -488,8 +528,24 @@ public class NetworkApplicationEntity
     {
         serviceRegistry.unregister(service);        
     }
+    
+    void addToPool(Association a)
+    {
+        synchronized (pool)
+        {
+            pool.add(a);
+        }        
+    }    
 
-    public void perform(Association as, int pcid, DicomObject cmd, 
+    void removeFromPool(Association a)
+    {
+        synchronized (pool)
+        {
+            pool.remove(a);
+        }        
+    }
+        
+    void perform(Association as, int pcid, DicomObject cmd, 
             PDVInputStream dataStream, String tsuid)
     {
         serviceRegistry.process(as, pcid, cmd, dataStream, tsuid);        

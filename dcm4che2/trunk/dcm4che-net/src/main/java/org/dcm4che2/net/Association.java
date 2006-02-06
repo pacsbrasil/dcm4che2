@@ -57,6 +57,7 @@ import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJException;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.PresentationContext;
+import org.dcm4che2.net.pdu.RoleSelection;
 import org.dcm4che2.util.IntHashtable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +98,8 @@ public class Association implements Runnable
     private IntHashtable rspHandlerForMsgId = new IntHashtable();
     private IntHashtable cancelHandlerForMsgId = new IntHashtable();
     private HashMap acceptedPCs = new HashMap();
+    private HashMap scuTCs = new HashMap();
+    private HashMap scpTCs = new HashMap();
     private long idleTimeout = Long.MAX_VALUE;
 
     
@@ -167,6 +170,11 @@ public class Association implements Runnable
             throw exception;
     }
     
+    public final boolean isRequestor()
+    {
+        return requestor;
+    }    
+    
     public final boolean isReadyForDataTransfer()
     {
         return state.isReadyForDataTransfer();
@@ -195,12 +203,7 @@ public class Association implements Runnable
         }
     }
     
-    private Map acceptedPC(String asuid)
-    {
-        return (Map) acceptedPCs.get(asuid);
-    }
-    
-    private void checkAAAC()
+    private void processAC()
     {
         Collection c = associateAC.getPresentationContexts();
         for (Iterator iter = c.iterator(); iter.hasNext();)
@@ -224,8 +227,36 @@ public class Association implements Runnable
             }
             ts2pc.put(pc.getTransferSyntax(), pc);
         }
+        for (Iterator iter = acceptedPCs.entrySet().iterator(); iter.hasNext();)
+        {
+            Map.Entry e = (Map.Entry) iter.next();
+            String asuid = (String) e.getKey();
+            Map ts2pc = (Map) e.getValue();
+            String[] tsuids = (String[]) ts2pc.keySet().toArray(new String[ts2pc.size()]);
+            String cuid = asuid; // TODO support of Meta SOP Classes
+            if (isSCUFor(cuid))
+                scuTCs.put(cuid, new TransferCapability(cuid, tsuids, TransferCapability.SCU));
+            if (isSCPFor(cuid))
+                scpTCs.put(cuid, new TransferCapability(cuid, tsuids, TransferCapability.SCP));            
+        }
     }
-    
+
+    private boolean isSCPFor(String cuid)
+    {
+        RoleSelection rolsel = associateAC.getRoleSelectionFor(cuid);
+        if (rolsel == null)
+            return !requestor;
+        return requestor ? rolsel.isSCP() : rolsel.isSCU();
+    }
+
+    private boolean isSCUFor(String cuid)
+    {
+        RoleSelection rolsel = associateAC.getRoleSelectionFor(cuid);
+        if (rolsel == null)
+            return requestor;
+        return requestor ? rolsel.isSCU() : rolsel.isSCP();
+    }
+
     public String getCallingAET()
     {
         return associateRQ != null ? associateRQ.getCallingAET() : null;
@@ -245,7 +276,17 @@ public class Association implements Runnable
     {
         return requestor ? getCallingAET() : getCalledAET();
     }
-
+    
+    public TransferCapability getTransferCapabilityAsSCP(String cuid)
+    {
+        return (TransferCapability) scpTCs.get(cuid);
+    }
+    
+    public TransferCapability getTransferCapabilityAsSCU(String cuid)
+    {
+        return (TransferCapability) scuTCs.get(cuid);
+    }
+    
     public AAssociateAC negotiate(AAssociateRQ rq)
     throws IOException, InterruptedException
     {
@@ -270,6 +311,8 @@ public class Association implements Runnable
 
     public void release(boolean waitForRSP) throws InterruptedException
     {
+        if (ae != null)
+            ae.removeFromPool(this);
         if (waitForRSP)
             waitForDimseRSP();
         
@@ -289,109 +332,106 @@ public class Association implements Runnable
                 rspHandlerForMsgId.wait();
         }
     }
-
+    
     public void abort()
     {
         abort(new AAbortException());       
     }
     
-    private PresentationContext pcFor(String cuid, String[] tsuids) 
+    private PresentationContext pcFor(String cuid, String tsuid) 
     throws NoPresentationContextException
     {
-        Map ts2pc = acceptedPC(cuid);
+        Map ts2pc = (Map) acceptedPCs.get(cuid);
         if (ts2pc == null)
             throw new NoPresentationContextException("Abstract Syntax "
                     + UIDDictionary.getDictionary().prompt(cuid)
                     + " not supported");
-        if (tsuids == null)
+        if (tsuid == null)
             return (PresentationContext) ts2pc.values().iterator().next();
-        for (int i = 0; i < tsuids.length; i++)
-        {
-            PresentationContext pc = (PresentationContext) ts2pc.get(tsuids[i]);
-            if (pc != null)
-                return pc;
-        }
-        throw new NoPresentationContextException("Abstract Syntax "
-                + UIDDictionary.getDictionary().prompt(cuid)
-                + " with Transfer Syntax "
-                + UIDDictionary.getDictionary().prompt(tsuids[0])
-                + " not supported");
+        PresentationContext pc = (PresentationContext) ts2pc.get(tsuid);
+        if (pc == null)
+            throw new NoPresentationContextException("Abstract Syntax "
+                    + UIDDictionary.getDictionary().prompt(cuid)
+                    + " with Transfer Syntax "
+                    + UIDDictionary.getDictionary().prompt(tsuid)
+                    + " not supported");
+        return pc;
     }
     
     public void cstore(String cuid, String iuid, int priority,
-            DataWriter data, String[] tsuids, DimseRSPHandler rspHandler)
+            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject cstorerq = CommandUtils.newCStoreRQ(
                 ++msgID, cuid, iuid, priority);
         invoke(pc.getPCID(), cstorerq, data, rspHandler);
     }
     
     public DimseRSP cstore(String cuid, String iuid, int priority,
-            DataWriter data, String[] tsuids)
+            DataWriter data, String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        cstore(cuid, iuid, priority, data, tsuids, rsp);
+        cstore(cuid, iuid, priority, data, tsuid, rsp);
         return rsp;
     }
 
     public void cfind(String cuid, int priority,
-            DicomObject data, String[] tsuids, DimseRSPHandler rspHandler)
+            DicomObject data, String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject cfindrq = CommandUtils.newCFindRQ(
                 ++msgID, cuid, priority);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
     
     public DimseRSP cfind(String cuid, int priority,
-            DicomObject data, String[] tsuids, int autoCancel)
+            DicomObject data, String tsuid, int autoCancel)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
         rsp.setAutoCancel(autoCancel);
-        cfind(cuid, priority, data, tsuids, rsp);
+        cfind(cuid, priority, data, tsuid, rsp);
         return rsp;
     }
     
     public void cget(String cuid, int priority,
-            DicomObject data, String[] tsuids, DimseRSPHandler rspHandler)
+            DicomObject data, String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject cfindrq = CommandUtils.newCGetRQ(
                 ++msgID, cuid, priority);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
     
     public DimseRSP cget(String cuid, int priority,
-            DicomObject data, String[] tsuids)
+            DicomObject data, String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        cget(cuid, priority, data, tsuids, rsp);
+        cget(cuid, priority, data, tsuid, rsp);
         return rsp;
     }
     
     public void cmove(String cuid, int priority, DicomObject data,
-            String[] tsuids, String destination, DimseRSPHandler rspHandler)
+            String tsuid, String destination, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject cfindrq = CommandUtils.newCMoveRQ(
                 ++msgID, cuid, priority, destination);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
     
     public DimseRSP cmove(String cuid, int priority, DicomObject data,
-            String[] tsuids, String destination)
+            String tsuid, String destination)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        cmove(cuid, priority, data, tsuids, destination, rsp);
+        cmove(cuid, priority, data, tsuid, destination, rsp);
         return rsp;
     }
     
@@ -412,94 +452,94 @@ public class Association implements Runnable
     }
 
     public void nevent(String cuid, String iuid, int eventTypeId,
-            DicomObject attrs, String[] tsuids, DimseRSPHandler rspHandler)
+            DicomObject attrs, String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject neventrq = CommandUtils.newNEventReportRQ(
                 ++msgID, cuid, iuid, eventTypeId, attrs);
         invoke(pc.getPCID(), neventrq, new DataWriterAdapter(attrs), rspHandler);
     }
 
     public DimseRSP nevent(String cuid, String iuid, int eventTypeId,
-            DicomObject attrs, String[] tsuids)
+            DicomObject attrs, String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        nevent(cuid, iuid, eventTypeId, attrs, tsuids, rsp);
+        nevent(cuid, iuid, eventTypeId, attrs, tsuid, rsp);
         return rsp;
     }    
 
     public void nget(String cuid, String iuid, DicomObject attrs,
-            String[] tsuids, DimseRSPHandler rspHandler)
+            String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject ngetrq = CommandUtils.newNGetRQ(++msgID, cuid, iuid, attrs);
         invoke(pc.getPCID(), ngetrq, new DataWriterAdapter(attrs), rspHandler);
     }
 
     public DimseRSP nget(String cuid, String iuid, DicomObject attrs,
-            String[] tsuids)
+            String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        nget(cuid, iuid, attrs, tsuids, rsp);
+        nget(cuid, iuid, attrs, tsuid, rsp);
         return rsp;
     }    
     
     public void nset(String cuid, String iuid, DicomObject attrs,
-            String[] tsuids, DimseRSPHandler rspHandler)
+            String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject nsetrq = CommandUtils.newNSetRQ(++msgID, cuid, iuid);
         invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler);
     }
 
     public DimseRSP nset(String cuid, String iuid, DicomObject attrs,
-            String[] tsuids)
+            String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        nset(cuid, iuid, attrs, tsuids, rsp);
+        nset(cuid, iuid, attrs, tsuid, rsp);
         return rsp;
     }    
 
     public void naction(String cuid, String iuid, int actionTypeId,
-            DicomObject attrs, String[] tsuids, DimseRSPHandler rspHandler)
+            DicomObject attrs, String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject nactionrq = CommandUtils.newNActionRQ(
                 ++msgID, cuid, iuid, actionTypeId, attrs);
         invoke(pc.getPCID(), nactionrq, new DataWriterAdapter(attrs), rspHandler);
     }
 
     public DimseRSP naction(String cuid, String iuid, int actionTypeId,
-            DicomObject attrs, String[] tsuids)
+            DicomObject attrs, String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        naction(cuid, iuid, actionTypeId, attrs, tsuids, rsp);
+        naction(cuid, iuid, actionTypeId, attrs, tsuid, rsp);
         return rsp;
     }    
     
     public void ncreate(String cuid, String iuid, DicomObject attrs,
-            String[] tsuids, DimseRSPHandler rspHandler)
+            String tsuid, DimseRSPHandler rspHandler)
     throws IOException, InterruptedException
     {
-        PresentationContext pc = pcFor(cuid, tsuids);
+        PresentationContext pc = pcFor(cuid, tsuid);
         DicomObject ncreaterq = CommandUtils.newNCreateRQ(++msgID, cuid, iuid);
         invoke(pc.getPCID(), ncreaterq, new DataWriterAdapter(attrs), rspHandler);
     }
     
     public DimseRSP ncreate(String cuid, String iuid, DicomObject attrs,
-            String[] tsuids)
+            String tsuid)
     throws IOException, InterruptedException
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        ncreate(cuid, iuid, attrs, tsuids, rsp);
+        ncreate(cuid, iuid, attrs, tsuid, rsp);
         return rsp;
     }
     
@@ -740,6 +780,8 @@ public class Association implements Runnable
 
     private void onClosed()
     {
+        if (ae != null)
+            ae.removeFromPool(this);
         reaper.unregister(this);
         synchronized (rspHandlerForMsgId)
         {
@@ -823,9 +865,10 @@ public class Association implements Runnable
 
     void receivedAbort(AAbortException aa)
     {
-        log.info("{}: receive {}", name, aa);
+        log.info("{}: >> {}", name, aa);
         exception = aa;
         setState(State.STA1);
+        ae.removeFromPool(this);
     }
 
     void onDimseRQ(int pcid, DicomObject cmd, PDVInputStream data, String tsuid)
@@ -892,6 +935,8 @@ public class Association implements Runnable
     
     void abort(AAbortException aa)
     {
+        if (ae != null)
+            ae.removeFromPool(this);
         state.abort(this, aa);       
     }
 
@@ -940,14 +985,33 @@ public class Association implements Runnable
         setState(State.STA3);
         try
         {
-            associateAC = connector.getDevice().negotiate(this, rq);
-            checkAAAC();
+            if ((rq.getProtocolVersion() & 1) == 0)
+                throw new AAssociateRJException(
+                        AAssociateRJException.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJException.SOURCE_SERVICE_PROVIDER_ACSE,
+                        AAssociateRJException.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
+            if (!rq.getApplicationContext().equals(UID.DICOMApplicationContextName))
+                throw new AAssociateRJException(
+                        AAssociateRJException.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJException.SOURCE_SERVICE_USER,
+                        AAssociateRJException.REASON_APP_CTX_NAME_NOT_SUPPORTED);
+            NetworkApplicationEntity ae = connector.getDevice().getNetworkApplicationEntity(rq.getCalledAET());
+            if (ae == null)
+                throw new AAssociateRJException(
+                        AAssociateRJException.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJException.SOURCE_SERVICE_USER,
+                        AAssociateRJException.REASON_CALLED_AET_NOT_RECOGNIZED);
+            setApplicationEntity(ae);
+            ae.negotiate(this, rq);
+            associateAC = ae.negotiate(this, rq);
+            processAC();
             maxOpsInvoked = associateAC.getMaxOpsPerformed();
             maxPDULength = Math.min(rq.getMaxPDULength(), ae.getMaxPDULengthSend());
             setState(State.STA6);
             encoder.write(associateAC);
             updateIdleTimeout();
             reaper.register(this);
+            ae.addToPool(this);
         }
         catch (AAssociateRJException e)
         {
@@ -959,9 +1023,8 @@ public class Association implements Runnable
     void onAssociateAC(AAssociateAC ac) throws IOException
     {
         associateAC = ac;
-        log.info("{}: receive {}", name, ac);
         stopARTIM();
-        checkAAAC();
+        processAC();
         maxOpsInvoked = associateAC.getMaxOpsInvoked();
         maxPDULength = Math.min(associateAC.getMaxPDULength(), ae.getMaxPDULengthSend());
         setState(State.STA6);
@@ -1005,6 +1068,8 @@ public class Association implements Runnable
     void onReleaseRQ() throws IOException
     {
         setState(State.STA8);
+        if (ae != null)
+            ae.removeFromPool(this);
         waitForPerformingOps();
         setState(State.STA13);                
         encoder.writeAReleaseRP();
