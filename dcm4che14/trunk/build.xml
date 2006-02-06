@@ -405,6 +405,9 @@
       <mkdir dir="${build.javadocs.dir}"/>
       <javadoc destdir="${build.javadocs.dir}" sourcepath="${src.java.dir};${build.generate.dir}">
          <package name="org.dcm4che.*"/>
+         <classpath>
+           <pathelement path="${basedir}/lib/log4j.jar"/>
+         </classpath>
       </javadoc>     
    </target>
    
