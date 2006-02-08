@@ -447,7 +447,7 @@ public class NetworkApplicationEntity
             {
                 for (int j = 0; j < remoteTC.length; j++)
                 {
-                    TransferCapability rtc = remoteTC[i];
+                    TransferCapability rtc = remoteTC[j];
                     if (localTC.isSCU() == rtc.isSCP()
                             && cuid.equals(rtc.getSopClass()))
                     {
