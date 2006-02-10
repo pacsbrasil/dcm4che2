@@ -289,26 +289,21 @@ public abstract class StorageBean implements SessionBean {
             throws CreateException, FinderException, DcmServiceException {
 		String pid = ds.getString(Tags.PatientID);
 		String issuer = ds.getString(Tags.IssuerOfPatientID);
-		try {
-			Collection c = issuer != null 
-					? patHome.findByPatientIdWithIssuer(pid, issuer)
-					: patHome.findByPatientId(pid);
-			final int n = c.size();
-			switch (n) {
-			case 0:
-				return patHome.create(ds.subSet(attrFilter.getPatientFilter()));
-			case 1:
-				return checkIfMerged((PatientLocal) c.iterator().next());
-				
-			default:
-				throw new DcmServiceException(Status.ProcessingFailure,
-						"Found " + n + " Patients with id=" + pid
-						+ ", issuer=" + issuer);					
-			}
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		} catch (CreateException e) {
-			throw new EJBException(e);
+		Collection c = issuer != null 
+				? patHome.findByPatientIdWithIssuer(pid, issuer)
+				: patHome.findByPatientId(pid);
+		final int n = c.size();
+		switch (n) {
+		case 0:
+			return patHome.create(ds.subSet(attrFilter.getPatientFilter()));
+		case 1:
+			PatientLocal pat = checkIfMerged((PatientLocal) c.iterator().next());
+            coercePatientIdentity(pat, ds, coercedElements);
+			return pat;
+		default:
+			throw new DcmServiceException(Status.ProcessingFailure,
+					"Found " + n + " Patients with id=" + pid
+					+ ", issuer=" + issuer);					
 		}
     }
     
