@@ -329,11 +329,6 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         return attrs.getSpecificCharacterSet();
     }
 
-    public TransferSyntax getTransferSyntax()
-    {
-        return attrs.getTransferSyntax();
-    }
-
     public boolean cacheGet()
     {
         return attrs.cacheGet();
@@ -342,6 +337,11 @@ abstract class FilteredDicomObject extends AbstractDicomObject
     public boolean cachePut()
     {
         return attrs.cachePut();
+    }
+
+    public boolean bigEndian()
+    {
+        return attrs.bigEndian();
     }
 
     public void add(DicomElement attr)
@@ -447,6 +447,11 @@ abstract class FilteredDicomObject extends AbstractDicomObject
     public void cachePut(boolean cached)
     {
         attrs.cachePut(cached);
+    }
+
+    public void bigEndian(boolean bigEndian)
+    {
+        attrs.bigEndian(bigEndian);
     }
 
     public void shareElements()

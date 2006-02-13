@@ -293,10 +293,17 @@ public class DicomInputStream extends FilterInputStream
                 .bytesLE2tag(header, 0);
         if (expectFmiEnd && !TagUtils.isFileMetaInfoElement(tag))
         {
-            ts = attrs.getTransferSyntax();
+            log.warn("Missing or wrong (0002,0000) Group Length of File Meta Information");  
+            String tsuid = attrs.getString(Tag.TransferSyntaxUID);
+            if (tsuid != null)
+            {
+                ts = TransferSyntax.valueOf(tsuid);
+                tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) 
+                                     : ByteUtils.bytesLE2tag(header, 0);
+            } else {
+                log.warn("Missing (0002,0010) Transfer Synatx in File Meta Information");                
+            }
             expectFmiEnd = false;
-            tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
-                    .bytesLE2tag(header, 0);
         }
         if (tag == Tag.Item || tag == Tag.ItemDelimitationItem
                 || tag == Tag.SequenceDelimitationItem)
@@ -382,7 +389,11 @@ public class DicomInputStream extends FilterInputStream
             quit = !handler.readValue(this);
             if (expectFmiEnd && pos == fmiEndPos)
             {
-                switchTransferSyntax(attrs.getTransferSyntax());
+                String tsuid = attrs.getString(Tag.TransferSyntaxUID);
+                if (tsuid != null)
+                    switchTransferSyntax(TransferSyntax.valueOf(tsuid));
+                else
+                    log.warn("Missing (0002,0010) Transfer Synatx in File Meta Information");                
                 this.expectFmiEnd = false;
             }
         }

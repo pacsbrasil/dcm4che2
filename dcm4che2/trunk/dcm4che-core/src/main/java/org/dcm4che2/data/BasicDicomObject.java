@@ -60,8 +60,6 @@ public class BasicDicomObject extends AbstractDicomObject
 
     private transient DicomObject parent;
 
-    private transient TransferSyntax ts = TransferSyntax.ImplicitVRLittleEndian;
-
     private transient SpecificCharacterSet charset = null;
 
     private transient long itemOffset = -1L;
@@ -71,6 +69,8 @@ public class BasicDicomObject extends AbstractDicomObject
     private transient boolean cacheGet = true;
 
     private transient boolean cachePut = false;
+    
+    private transient boolean bigEndian = false;
 
     public BasicDicomObject()
     {
@@ -144,6 +144,16 @@ public class BasicDicomObject extends AbstractDicomObject
                 return true;
             }
         });
+    }
+
+    public final boolean bigEndian()
+    {
+        return parent != null ? parent.bigEndian() : bigEndian;
+    }
+
+    public final void bigEndian(boolean bigEndian)
+    {
+        this.bigEndian = bigEndian;
     }
 
     public int resolveTag(int privateTag, String privateCreator)
@@ -221,13 +231,6 @@ public class BasicDicomObject extends AbstractDicomObject
         if (parent != null)
             return parent.getSpecificCharacterSet();
         return null;
-    }
-
-    public TransferSyntax getTransferSyntax()
-    {
-        if (parent != null)
-            return parent.getTransferSyntax();
-        return ts;
     }
 
     public VR vrOf(int tag)
@@ -368,11 +371,7 @@ public class BasicDicomObject extends AbstractDicomObject
             return a;
         }
         table.put(tag, a);
-        if (tag == Tag.TransferSyntaxUID)
-        {
-            ts = TransferSyntax.valueOf(a.getString(null, false));
-        }
-        else if (tag == Tag.SpecificCharacterSet)
+        if (tag == Tag.SpecificCharacterSet)
         {
             charset = SpecificCharacterSet.valueOf(a.getStrings(null, false));
         }
@@ -469,7 +468,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putInt(int tag, VR vr, int val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -478,7 +477,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putInts(int tag, VR vr, int[] val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -487,7 +486,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putFloat(int tag, VR vr, float val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -496,7 +495,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putFloats(int tag, VR vr, float[] val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -505,7 +504,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putDouble(int tag, VR vr, double val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -514,7 +513,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putDoubles(int tag, VR vr, double[] val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -523,7 +522,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putString(int tag, VR vr, String val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
@@ -532,7 +531,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public DicomElement putStrings(int tag, VR vr, String[] val)
     {
-        final boolean be = getTransferSyntax().bigEndian();
+        final boolean be = bigEndian();
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,

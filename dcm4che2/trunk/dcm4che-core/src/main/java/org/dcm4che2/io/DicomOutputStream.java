@@ -185,8 +185,11 @@ public class DicomOutputStream extends FilterOutputStream
 
     public void writeDicomFile(DicomObject attrs) throws IOException
     {
+        String tsuid = attrs.getString(Tag.TransferSyntaxUID);
+        if (tsuid == null)
+            throw new IllegalArgumentException("Missing (0002,0010) Transfer Syntax UID");
         writeFileMetaInformation(attrs);
-        writeDataset(attrs);
+        writeDataset(attrs, tsuid);
     }
 
     public void writeFileMetaInformation(DicomObject attrs) throws IOException
@@ -199,11 +202,6 @@ public class DicomOutputStream extends FilterOutputStream
         this.ts = TransferSyntax.ExplicitVRLittleEndian;
         writeElements(attrs.fileMetaInfoIterator(), true, new ItemInfo(attrs
                 .fileMetaInfoIterator(), true));
-    }
-
-    public void writeDataset(DicomObject attrs) throws IOException
-    {
-        writeDataset(attrs, attrs.getTransferSyntax());
     }
 
     public void writeDataset(DicomObject attrs, String tsuid)

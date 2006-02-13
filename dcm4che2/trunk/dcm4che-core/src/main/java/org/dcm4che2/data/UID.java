@@ -26,6 +26,15 @@ public class UID {
        }
     }
 
+    /** Private Study Root Query/Retrieve Information Model - FIND - SOP Class */
+    public static final String PrivateStudyRootQueryRetrieveInformationModelFIND = "1.2.40.0.13.1.5.1.4.1.2.2.1";
+
+    /** Private Blocked Study Root Query/Retrieve Information Model - FIND - SOP Class */
+    public static final String PrivateBlockedStudyRootQueryRetrieveInformationModelFIND = "1.2.40.0.13.1.5.1.4.1.2.2.1.1";
+
+    /** Private Virtual Multiframe Study Root Query/Retrieve Information Model - FIND - SOP Class */
+    public static final String PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND = "1.2.40.0.13.1.5.1.4.1.2.2.1.2";
+
     /** Verification SOP Class - SOP Class */
     public static final String VerificationSOPClass = "1.2.840.10008.1.1";
 
