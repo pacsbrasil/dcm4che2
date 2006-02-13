@@ -40,15 +40,16 @@ package org.dcm4che2.tool.dcmqr;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -71,7 +72,7 @@ import org.dcm4che2.net.TransferCapability;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Oct 13, 2005
+ * @since Jan, 2006
  */
 public class DcmQR
 {
@@ -84,7 +85,7 @@ public class DcmQR
             "If also no <host> is specified localhost is assumed.\n" +
             "Options:";
     private static final String EXAMPLE = 
-            "\nExample: dcmqr QRSCP@localhost:11112 -fStudyDate=20060204 -m STORESCP\n" +
+            "\nExample: dcmqr QRSCP@localhost:11112 -MStudyDate=20060204 -dest STORESCP\n" +
             "=> Query Application Entity QRSCP listening on local port 11112 for " +
             "studies from Feb 4, 2006 and retrieve instances of matching studies to " +
             "Application Entity STORESCP.";
@@ -179,7 +180,11 @@ public class DcmQR
         Tag.SeriesInstanceUID,
         Tag.SOPInstanceUID,
     };
-    private static final String[] DEF_TS = { UID.ImplicitVRLittleEndian };
+    private static final String[] DEFAULT_TS = { UID.ImplicitVRLittleEndian };
+    private static final String[] DEFLATED_TS = { 
+        UID.DeflatedExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian
+    };
     private static final String[] EMPTY_STRING = {};
 
     private Executor executor = new NewThreadExecutor("DCMQR");
@@ -191,10 +196,13 @@ public class DcmQR
     private Association assoc;
     private int priority = 0;
     private String moveDest;
-    private String[] tsuids = DEF_TS;
     private int qrlevel = STUDY;
+    private ArrayList privateFind = new ArrayList();
     private DicomObject filter = new BasicDicomObject();
-    private int limit = Integer.MAX_VALUE;
+    private int cancelAfter = Integer.MAX_VALUE;
+    private int completed;
+    private int warning;
+    private int failed;
 
     public DcmQR()
     {
@@ -308,90 +316,106 @@ public class DcmQR
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option localAddr = new Option("L", "local", true,
+        Option localAddr = new Option("L", true,
                 "set AET and local address of local Application Entity, use " +
                 "ANONYMOUS and pick up any valid local address to bind the " +
                 "socket by default");
-        localAddr.setArgName("calling[@host]");
+        localAddr.setArgName("aet[@host]");
         opts.addOption(localAddr);
-        Option maxOpsInvoked = new Option("a", "async", true,
+        Option maxOpsInvoked = new Option("asy", true,
                 "maximum number of outstanding C-MOVE-RQ it may invoke " +
                 "asynchronously, 1 by default.");
         maxOpsInvoked.setArgName("max-ops");
         opts.addOption(maxOpsInvoked);
-        opts.addOption(" ", "pack-pdv", false, 
+        
+        opts.addOption("retall", false, 
+                "negotiate private FIND SOP Classes to fetch all available " +
+                "attributes of matching entities.");
+        opts.addOption("blocked", false, 
+                "negotiate private FIND SOP Classes to return attributes " +
+                "of several matching entities per FIND response.");
+        opts.addOption("vmf", false, 
+                "negotiate private FIND SOP Classes to return attributes of " +
+                "legacy CT/MR images of one series as virtual multiframe object.");
+        opts.addOption("packpdv", false, 
                 "pack command and data PDV in one P-DATA-TF PDU, " +
                 "send only one PDV in one P-Data-TF PDU by default.");
-        opts.addOption(" ", "tcp-no-delay", false, 
+        opts.addOption("tcpnodelay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
-        Option conTimeout = new Option(" ", "connect-timeout", true,
+        Option conTimeout = new Option("connectTO", true,
                 "timeout in ms for TCP connect, no timeout by default");
         conTimeout.setArgName("timeout");
         opts.addOption(conTimeout);
-        Option closeDelay = new Option(" ", "close-delay", true,
+        Option closeDelay = new Option("soclosedelay", true,
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         closeDelay.setArgName("delay");
         opts.addOption(closeDelay);
-        Option checkPeriod = new Option(" ", "reaper-period", true,
+        Option checkPeriod = new Option("reaper", true,
                 "period in ms to check for outstanding DIMSE-RSP, 10s by default");
         checkPeriod.setArgName("period");
-        Option rspTimeout = new Option(" ", "rsp-timeout", true,
+        Option rspTimeout = new Option("rspTO", true,
                 "timeout in ms for receiving DIMSE-RSP, 60s by default");
         rspTimeout.setArgName("timeout");
         opts.addOption(rspTimeout);
-        Option acTimeout = new Option(" ", "accept-timeout", true,
+        Option acTimeout = new Option("acceptTO", true,
                 "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
         acTimeout.setArgName("timeout");
         opts.addOption(acTimeout);
-        Option rpTimeout = new Option(" ", "release-timeout", true,
+        Option rpTimeout = new Option("releaseTO", true,
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         rpTimeout.setArgName("timeout");
         opts.addOption(rpTimeout);
-        Option rcvPduLen = new Option(" ", "rcv-pdu-len", true,
+        Option rcvPduLen = new Option("rcvpdulen", true,
                 "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         rcvPduLen.setArgName("max-len");
         opts.addOption(rcvPduLen);
-        Option sndPduLen = new Option(" ", "snd-pdu-len", true,
+        Option sndPduLen = new Option("sndpdulen", true,
                 "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
         sndPduLen.setArgName("max-len");
         opts.addOption(sndPduLen);
-        Option soRcvBufSize = new Option(" ", "so-rcv-buf", true,
+        Option soRcvBufSize = new Option("sorcvbuf", true,
                 "set SO_RCVBUF socket option to specified value in KB");
         soRcvBufSize.setArgName("size");
         opts.addOption(soRcvBufSize);
-        Option soSndBufSize = new Option(" ", "so-snd-buf", true,
+        Option soSndBufSize = new Option("sosndbuf", true,
                 "set SO_SNDBUF socket option to specified value in KB");
         soSndBufSize.setArgName("size");
         opts.addOption(soSndBufSize);
         OptionGroup qrlevel = new OptionGroup();
-        qrlevel.addOption(new Option("p", "patient", false,
+        qrlevel.addOption(new Option("P", "patient", false,
                 "perform patient level query, multiple exclusive with -s and -i, " +
                 "perform study level query by default."));
-        qrlevel.addOption(new Option("s", "series", false,
+        qrlevel.addOption(new Option("S", "series", false,
                 "perform series level query, multiple exclusive with -p and -i, " +
                 "perform study level query by default."));
-        qrlevel.addOption(new Option("i", "image", false,
+        qrlevel.addOption(new Option("I", "image", false,
                 "perform instance level query, multiple exclusive with -p and -s, " +
                 "perform study level query by default."));
         opts.addOptionGroup(qrlevel);
-        Option filter = new Option("f", "filter", true,
-                "specify query filter element. attr can be specified by " +
+        Option filter = new Option("M", true,
+                "specify matching key. attr can be specified by " +
                 "name or tag value (in hex), e.g. PatientsName or 00100010.");
         filter.setArgName("attr=value");
+        filter.setArgs(2);
         filter.setValueSeparator('=');
         opts.addOption(filter);
-        Option limit = new Option("l", "limit", true,
+        Option ret = new Option("R", true,
+                "specify additional return key. attr can be specified by " +
+                "name or tag value (in hex).");
+        ret.setArgName("attr");
+        opts.addOption(ret);
+        Option cancelAfter = new Option("C", true,
                 "cancel query after receive of specified number of responses," +
                 " no cancel by default");
-        limit.setArgName("max");
-        opts.addOption(limit);
-        Option move = new Option("d", "dest", true,
+        cancelAfter.setArgName("num");
+        opts.addOption(cancelAfter);
+        Option move = new Option("dest", true,
                 "retrieve matching objects to specified destination.");
         move.setArgName("aet");
         opts.addOption(move);
-        opts.addOption(" ", "low-prior", false, 
+        opts.addOption("lowprior", false, 
             "LOW priority of the C-FIND/C-MOVE operation, MEDIUM by default");
-        opts.addOption(" ", "high-prior", false,
+        opts.addOption("highprior", false,
             "HIGH priority of the C-FIND/C-MOVE operation, MEDIUM by default");
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
@@ -399,7 +423,7 @@ public class DcmQR
         CommandLine cl = null;
         try
         {
-            cl = new PosixParser().parse(opts, args);
+            cl = new GnuParser().parse(opts, args);
         }
         catch (ParseException e)
         {
@@ -447,75 +471,92 @@ public class DcmQR
             dcmqr.setCalling(callingAETHost[0]);
             dcmqr.setLocalHost(toHostname(callingAETHost[1]));
         }
-        if (cl.hasOption("connect-timeout"))
+        if (cl.hasOption("connectTO"))
             dcmqr.setConnectTimeout(
-                    parseInt(cl.getOptionValue("connect-timeout"),
-                    "illegal argument of option --connect-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("reaper-period"))
+                    parseInt(cl.getOptionValue("connectTO"),
+                    "illegal argument of option -connectTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("reaper"))
             dcmqr.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("reaper-period"),
-                    "illegal argument of option --reaper-period", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("rsp-timeout"))
+                    parseInt(cl.getOptionValue("reaper"),
+                    "illegal argument of option -reaper", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("rspTO"))
             dcmqr.setDimseRspTimeout(
-                    parseInt(cl.getOptionValue("rsp-timeout"),
-                    "illegal argument of option --rsp-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("accept-timeout"))
+                    parseInt(cl.getOptionValue("rspTO"),
+                    "illegal argument of option -rspTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("acceptTO"))
             dcmqr.setAcceptTimeout(
-                    parseInt(cl.getOptionValue("accept-timeout"),
-                    "illegal argument of option --accept-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("release-timeout"))
+                    parseInt(cl.getOptionValue("acceptTO"),
+                    "illegal argument of option -acceptTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("releaseTO"))
             dcmqr.setReleaseTimeout(
-                    parseInt(cl.getOptionValue("release-timeout"),
-                    "illegal argument of option --release-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("close-delay"))
+                    parseInt(cl.getOptionValue("releaseTO"),
+                    "illegal argument of option -releaseTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("soclosedelay"))
             dcmqr.setSocketCloseDelay(
-                    parseInt(cl.getOptionValue("close-delay"),
-                    "illegal argument of option --close-delay", 1, 10000));
-        if (cl.hasOption("rcv-pdu-len"))
+                    parseInt(cl.getOptionValue("soclosedelay"),
+                    "illegal argument of option -soclosedelay", 1, 10000));
+        if (cl.hasOption("rcvpdulen"))
             dcmqr.setMaxPDULengthReceive(
-                    parseInt(cl.getOptionValue("rcv-pdu-len"),
-                    "illegal argument of option --rcv-pdu-len", 1, 10000) * KB);
-        if (cl.hasOption("snd-pdu-len"))
+                    parseInt(cl.getOptionValue("rcvpdulen"),
+                    "illegal argument of option -rcvpdulen", 1, 10000) * KB);
+        if (cl.hasOption("sndpdulen"))
             dcmqr.setMaxPDULengthSend(
-                    parseInt(cl.getOptionValue("snd-pdu-len"),
-                    "illegal argument of option --snd-pdu-len", 1, 10000) * KB);
-        if (cl.hasOption("so-snd-buf"))
+                    parseInt(cl.getOptionValue("sndpdulen"),
+                    "illegal argument of option -sndpdulen", 1, 10000) * KB);
+        if (cl.hasOption("sosndbuf"))
             dcmqr.setSendBufferSize(
-                    parseInt(cl.getOptionValue("so-snd-buf"),
-                    "illegal argument of option --so-snd-buf", 1, 10000) * KB);
-        if (cl.hasOption("so-rcv-buf"))
+                    parseInt(cl.getOptionValue("sosndbuf"),
+                    "illegal argument of option -sosndbuf", 1, 10000) * KB);
+        if (cl.hasOption("sorcvbuf"))
             dcmqr.setReceiveBufferSize(
-                    parseInt(cl.getOptionValue("so-rcv-buf"),
-                    "illegal argument of option --so-rcv-buf", 1, 10000) * KB);
-        dcmqr.setPackPDV(cl.hasOption("pack-pdv"));
-        dcmqr.setTcpNoDelay(cl.hasOption("tcp-no-delay"));
-        dcmqr.setMaxOpsInvoked(cl.hasOption("a")
+                    parseInt(cl.getOptionValue("sorcvbuf"),
+                    "illegal argument of option -sorcvbuf", 1, 10000) * KB);
+        dcmqr.setPackPDV(cl.hasOption("packpdv"));
+        dcmqr.setTcpNoDelay(cl.hasOption("tcpnodelay"));
+        dcmqr.setMaxOpsInvoked(cl.hasOption("asy")
                 ? zeroAsMaxInt(parseInt(
-                    cl.getOptionValue("a"), "illegal argument of option -a", 0, 0xffff))
+                    cl.getOptionValue("asy"), "illegal argument of option -asy", 0, 0xffff))
                 : 1);        
-        if (cl.hasOption("l"))
-            dcmqr.setLimit(parseInt(cl.getOptionValue("l"),
-                    "illegal argument of option -l", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("low-prior"))
+        if (cl.hasOption("C"))
+            dcmqr.setCancelAfter(parseInt(cl.getOptionValue("C"),
+                    "illegal argument of option -C", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("lowprior"))
             dcmqr.setPriority(CommandUtils.LOW);
-        if (cl.hasOption("high-prior"))
+        if (cl.hasOption("highprior"))
             dcmqr.setPriority(CommandUtils.HIGH);
-        if (cl.hasOption("d"))
-            dcmqr.setMoveDest((String) cl.getOptionValue("d"));
-        if (cl.hasOption("p"))
+        if (cl.hasOption("dest"))
+            dcmqr.setMoveDest((String) cl.getOptionValue("dest"));
+        if (cl.hasOption("P"))
             dcmqr.setQueryLevel(PATIENT);
-        else if (cl.hasOption("s"))
+        else if (cl.hasOption("S"))
             dcmqr.setQueryLevel(SERIES);
-        else if (cl.hasOption("i"))
+        else if (cl.hasOption("I"))
             dcmqr.setQueryLevel(IMAGE);
         else
             dcmqr.setQueryLevel(STUDY);
-
-        if (cl.hasOption("f"))
+        if (cl.hasOption("retall"))
+            dcmqr.addPrivateTC(new TransferCapability(
+                    UID.PrivateStudyRootQueryRetrieveInformationModelFIND,
+                    DEFAULT_TS, TransferCapability.SCU));
+        if (cl.hasOption("blocked"))
+            dcmqr.addPrivateTC(new TransferCapability(
+                    UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND,
+                    DEFLATED_TS, TransferCapability.SCU));
+        if (cl.hasOption("vmf"))
+            dcmqr.addPrivateTC(new TransferCapability(
+                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND,
+                    DEFLATED_TS, TransferCapability.SCU));
+        if (cl.hasOption("M"))
         {
-            String[] filters = cl.getOptionValues("f");
-            for (int i = 1; i < filters.length; i++,i++)
-                dcmqr.addFilter(toTag(filters[i-1]), filters[i]);
+            String[] matchingKeys = cl.getOptionValues("M");
+            for (int i = 1; i < matchingKeys.length; i++,i++)
+                dcmqr.addKey(toTag(matchingKeys[i-1]), matchingKeys[i]);
+        }
+        if (cl.hasOption("R"))
+        {
+            String[] returnKeys = cl.getOptionValues("R");
+            for (int i = 0; i < returnKeys.length; i++)
+                dcmqr.addKey(toTag(returnKeys[i]), null);
         }
          
         dcmqr.configureTransferCapability();
@@ -537,8 +578,17 @@ public class DcmQR
         try
         {
             List result = dcmqr.query();
-            if (dcmqr.isMove())
+            long t3 = System.currentTimeMillis();
+            System.out.println("Received " +  result.size() + 
+                    " matching entries in " + ((t3 - t2) / 1000F) + "s");
+            if (dcmqr.isMove()) {
                 dcmqr.move(result);
+                long t4 = System.currentTimeMillis();
+                System.out.println("Retrieved " +  dcmqr.getTotalRetrieved() +
+                        " objects (warning: " + dcmqr.getWarning() + 
+                        ", failed: " + dcmqr.getFailed() +
+                        ") in " + ((t4 - t3) / 1000F) + "s");
+             }
         }
         catch (IOException e)
         {
@@ -562,9 +612,24 @@ public class DcmQR
         System.out.println("Released connection to " + remoteAE);
     }
     
-    private void setLimit(int limit)
+    public final int getFailed()
     {
-        this.limit = limit;        
+        return failed;
+    }
+
+    public final int getWarning()
+    {
+        return warning;
+    }
+
+    private final int getTotalRetrieved()
+    {
+        return completed + warning;
+    }
+
+    private void setCancelAfter(int limit)
+    {
+        this.cancelAfter = limit;        
     }
 
     private static int zeroAsMaxInt(int val)
@@ -572,7 +637,7 @@ public class DcmQR
         return val > 0 ? val : Integer.MAX_VALUE;
     }
 
-    private void addFilter(int tag, String value)
+    private void addKey(int tag, String value)
     {
         filter.putString(tag, null, value);        
     }
@@ -591,15 +656,17 @@ public class DcmQR
     private void configureTransferCapability()
     {        
         String[] findcuids = FIND_CUID[qrlevel];
-        String[] movecuids = moveDest != null 
-                ? MOVE_CUID[qrlevel] : EMPTY_STRING;
-        TransferCapability[] tc = 
-                new TransferCapability[findcuids.length + movecuids.length];
-        for (int i = 0; i < findcuids.length; i++)
-            tc[i] = new TransferCapability(findcuids[i], tsuids, TransferCapability.SCU);
-        for (int i = 0; i < movecuids.length; i++)
-            tc[findcuids.length + i] = 
-                new TransferCapability(movecuids[i], tsuids, TransferCapability.SCU);
+        String[] movecuids = moveDest != null ? MOVE_CUID[qrlevel] : EMPTY_STRING;
+        final int numPrivateFind = qrlevel != PATIENT ? privateFind.size() : 0;
+        TransferCapability[] tc = new TransferCapability[findcuids.length 
+              + movecuids.length + numPrivateFind];
+        int i = 0;
+        for (int j = 0; j < findcuids.length; j++)
+            tc[i++] = new TransferCapability(findcuids[j], DEFAULT_TS, TransferCapability.SCU);
+        for (int j = 0; j < movecuids.length; j++)
+            tc[i++] = new TransferCapability(movecuids[j], DEFAULT_TS, TransferCapability.SCU);
+        for (int j = 0; j < numPrivateFind; j++)
+            tc[i++] = (TransferCapability) privateFind.get(j);            
         ae.setTransferCapability(tc);       
     }
 
@@ -610,6 +677,11 @@ public class DcmQR
         int[] tags = RETURN_KEYS[qrlevel];
         for (int i = 0; i < tags.length; i++)
             filter.putNull(tags[i], null);
+    }
+
+    public final void addPrivateTC(TransferCapability tc)
+    {
+        this.privateFind.add(tc);
     }
 
     private void setMoveDest(String aet)
@@ -671,14 +743,14 @@ public class DcmQR
 
     public List query() throws IOException, InterruptedException
     {
-        TransferCapability tc = selectTransferCapability(FIND_CUID[qrlevel]);
+        TransferCapability tc = selectFindTransferCapability();
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
         System.out.println("Send Query Request using " 
                 + UIDDictionary.getDictionary().prompt(cuid) + ":");
         System.out.println(filter.toString());
         System.out.println("using " + UIDDictionary.getDictionary().prompt(cuid));
-        DimseRSP rsp = assoc.cfind(cuid, priority, filter, tsuid, limit);
+        DimseRSP rsp = assoc.cfind(cuid, priority, filter, tsuid, cancelAfter);
         List result = new ArrayList();
         while (rsp.next())
         {
@@ -694,9 +766,26 @@ public class DcmQR
         return result;
     }
 
+    private TransferCapability selectFindTransferCapability()
+    throws NoPresentationContextException
+    {
+        TransferCapability tc;
+        if (qrlevel != PATIENT 
+                && (tc = selectTransferCapability(privateFind)) != null)
+            return tc;
+        if ((tc = selectTransferCapability(FIND_CUID[qrlevel])) != null)
+            return tc;
+        throw new NoPresentationContextException(
+                UIDDictionary.getDictionary().prompt(FIND_CUID[qrlevel][0])
+                + " not supported by" + remoteAE.getAETitle() );
+    }
+
     private String selectTransferSyntax(TransferCapability tc)
     {
-        return tc.getTransferSyntax()[0];
+        String[] tcuids = tc.getTransferSyntax();
+        if (Arrays.asList(tcuids).indexOf(UID.DeflatedExplicitVRLittleEndian) != -1)
+            return UID.DeflatedExplicitVRLittleEndian;
+        return tcuids[0];
     }
 
     public void move(List findResults) throws IOException, InterruptedException
@@ -704,9 +793,13 @@ public class DcmQR
         if (moveDest == null)
             throw new IllegalStateException("moveDest == null");
         TransferCapability tc = selectTransferCapability(MOVE_CUID[qrlevel]);
+        if (tc == null)
+            throw new NoPresentationContextException(
+                    UIDDictionary.getDictionary().prompt(MOVE_CUID[qrlevel][0])
+                    + " not supported by" + remoteAE.getAETitle() );
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
-        for (int i = 0, n = Math.min(findResults.size(), limit); i < n; ++i)
+        for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i)
         {
             DicomObject keys = ((DicomObject) findResults.get(i)).subSet(MOVE_KEYS);
             System.out.println("Send Retrieve Request using "
@@ -720,18 +813,22 @@ public class DcmQR
                 }
             };
             assoc.cmove(cuid, priority, keys, tsuid, moveDest, rspHandler);
-        }        
+        }
+        assoc.waitForDimseRSP();
     }
 
     
     protected void onMoveRSP(Association as, DicomObject cmd, DicomObject data)
     {
-        // TODO Auto-generated method stub
+        if (!CommandUtils.isPending(cmd)) {
+            completed += cmd.getInt(Tag.NumberofCompletedSuboperations);
+            warning += cmd.getInt(Tag.NumberofWarningSuboperations);
+            failed += cmd.getInt(Tag.NumberofFailedSuboperations);
+        }
         
     }
 
     private TransferCapability selectTransferCapability(String[] cuid)
-    throws NoPresentationContextException
     {
         TransferCapability tc;
         for (int i = 0; i < cuid.length; i++)
@@ -740,11 +837,20 @@ public class DcmQR
             if (tc != null)
                 return tc;
         }
-        throw new NoPresentationContextException(
-                UIDDictionary.getDictionary().prompt(cuid[0])
-                + " not supported by" + remoteAE.getAETitle() );
+        return null;
     }
 
+    private TransferCapability selectTransferCapability(List cuid)
+    {
+        TransferCapability tc;
+        for (int i = 0, n = cuid.size(); i < n; i++)
+        {
+            tc = assoc.getTransferCapabilityAsSCU((String) cuid.get(i));
+            if (tc != null)
+                return tc;
+        }
+        return null;
+    }    
     public void close() throws InterruptedException
     {
         assoc.release(true);
