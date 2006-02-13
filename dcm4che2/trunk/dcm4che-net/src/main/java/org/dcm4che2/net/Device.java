@@ -49,11 +49,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.dcm4che2.data.UID;
-import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJException;
-import org.dcm4che2.net.pdu.AAssociateRQ;
-
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
