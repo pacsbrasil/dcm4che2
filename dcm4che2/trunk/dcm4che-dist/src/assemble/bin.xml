@@ -154,6 +154,23 @@
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmwado/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmwado/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src/bin</directory>
       <includes>
         <include>*.bat</include>
