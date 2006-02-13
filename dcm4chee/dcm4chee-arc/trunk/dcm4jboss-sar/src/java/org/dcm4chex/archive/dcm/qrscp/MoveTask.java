@@ -216,6 +216,10 @@ class MoveTask implements Runnable {
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(moveDest);
             rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
+            int maxOpsInvoked = service.getMaxStoreOpsInvoked();
+            if (maxOpsInvoked != 1) {
+                rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
+            }
             retrieveInfo.addPresContext(rq, service.isDecompressed(moveDest));
             ac = a.connect(rq);
         } catch (IOException e) {

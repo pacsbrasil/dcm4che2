@@ -368,6 +368,18 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMaxStoreOpsInvoked"
+      setMethod="setMaxStoreOpsInvoked">
+      <description>The maximum number of asynchronously invoked storage
+      operations. A value of zero indicates an unlimited number.
+      </description>
+      <name>MaximumStorageOperationsInvoked</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.

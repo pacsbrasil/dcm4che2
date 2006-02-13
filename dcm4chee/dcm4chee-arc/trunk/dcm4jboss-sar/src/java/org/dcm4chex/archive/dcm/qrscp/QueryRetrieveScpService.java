@@ -143,6 +143,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
+    
+    private int maxStoreOpsInvoked = 0;
 
     private boolean patientRootFind;
 
@@ -398,6 +400,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setSoCloseDelay(int soCloseDelay) {
         this.soCloseDelay = soCloseDelay;
+    }
+
+    public final int getMaxStoreOpsInvoked()
+    {
+        return maxStoreOpsInvoked;
+    }
+
+    public final void setMaxStoreOpsInvoked(int maxStoreOpsInvoked)
+    {
+        this.maxStoreOpsInvoked = maxStoreOpsInvoked;
     }
 
     public final boolean isSendPendingMoveRSP() {
