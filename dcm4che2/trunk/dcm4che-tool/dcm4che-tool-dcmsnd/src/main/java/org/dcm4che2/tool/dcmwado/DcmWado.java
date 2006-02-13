@@ -398,8 +398,8 @@ public class DcmWado {
             if (cl.hasOption("nostore")) {
                 dcmwado.setDirectory(null);
             }
-            dcmwado.setNoKeepAlive(cl.hasOption("nka"));
-            dcmwado.setFollowsRedirect(!cl.hasOption("nfr"));
+            dcmwado.setNoKeepAlive(cl.hasOption("nokeepalive"));
+            dcmwado.setFollowsRedirect(!cl.hasOption("noredirect"));
             if (cl.hasOption("buffersize")) {
                 dcmwado.setBufferSize(parseInt(cl.getOptionValue("bs"), 
                         "Invalid value of -bs", 1, 1000) * KB);
@@ -639,6 +639,7 @@ public class DcmWado {
         {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setInstanceFollowRedirects(followsRedirect);
+            con.setRequestProperty("Connection","Keep-Alive");
             con.connect();
             InputStream in = con.getInputStream();
             try
