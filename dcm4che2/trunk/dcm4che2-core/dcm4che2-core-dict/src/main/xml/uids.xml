@@ -8,6 +8,7 @@
 <!ENTITY sup103 SYSTEM "../../../target/xml/p6_uid/sup103_ft.xml">
 <!ENTITY sup104 SYSTEM "../../../target/xml/p6_uid/sup104_ft.xml">
 <!ENTITY sup105 SYSTEM "../../../target/xml/p6_uid/sup105_ft.xml">
+<!ENTITY private SYSTEM "private-uids.xml">
 ]>
 <uids>
 &p04_06;
@@ -18,4 +19,5 @@
 &sup103;
 &sup104;
 &sup105;
+&private;
 </uids>
