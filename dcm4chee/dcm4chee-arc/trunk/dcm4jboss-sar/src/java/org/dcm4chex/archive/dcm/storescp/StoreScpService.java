@@ -494,10 +494,11 @@ public class StoreScpService extends AbstractScpService {
 	 */
 	private String toString(Map uids) {
 		if ( uids == null || uids.isEmpty() ) return "";
+		String nl = System.getProperty("line.separator", "\n");
 		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
 		Iterator iter = uids.keySet().iterator();
 		while ( iter.hasNext() ) {
-			sb.append(iter.next()).append(System.getProperty("line.separator", "\n"));
+			sb.append(iter.next()).append(nl);
 		}
 		return sb.toString();
 	}
