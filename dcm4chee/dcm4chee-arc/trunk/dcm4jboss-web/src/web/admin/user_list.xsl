@@ -27,8 +27,10 @@
 		<DD>A user in this role is allowed to use this web interface.</DD>
 		<DT>McmUser:</DT>
 		<DD>This role is used to allow access to the Media Creation Console (Offline Storage).</DD>
+		<DT>DatacareUser:</DT>
+		<DD>A user in this role has Datacare rights (edit/merge/delete) in the web interface.</DD>
 		<DT>WebAdmin:</DT>
-		<DD>A user in this role has admin rights in the web interface.</DD>
+		<DD>This role is used to allow access to AET and User management.</DD>
 		<DD>The user must be also in role WebUser!</DD>
 		<DT>Admin:</DT>
 		<DD>This role is used to allow configuration access via JMX console.</DD>
@@ -56,6 +58,14 @@
 	        <td title="McmUser">
 				McMUser<input type="checkbox" name="mcmUser" value="true" disabled="true">
 					<xsl:if test="mcmUser = 'true'">
+						<xsl:attribute name="checked"/>
+					</xsl:if>
+				</input>
+	        </td>
+																	
+	        <td title="Datacare">
+				Datacare<input type="checkbox" name="datacareUser" value="true" disabled="true">
+					<xsl:if test="datacareUser = 'true'">
 						<xsl:attribute name="checked"/>
 					</xsl:if>
 				</input>

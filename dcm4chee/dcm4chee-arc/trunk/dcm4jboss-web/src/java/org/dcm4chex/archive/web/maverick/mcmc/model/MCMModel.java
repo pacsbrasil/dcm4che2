@@ -49,6 +49,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaComposer;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
 import org.dcm4chex.archive.web.maverick.mcmc.MCMConsoleCtrl;
 
 /**
@@ -56,7 +57,7 @@ import org.dcm4chex.archive.web.maverick.mcmc.MCMConsoleCtrl;
  *
  * The Model for Media Creation Managment WEB interface.
  */
-public class MCMModel {
+public class MCMModel extends BasicFormPagingModel {
 
 	/** The session attribute name to store the model in http session. */
 	public static final String MCMMODEL_ATTR_NAME = "mcmModel";
@@ -67,23 +68,10 @@ public class MCMModel {
 	 */
 	public static final String STATI_FOR_QUEUE = String.valueOf( MediaDTO.OPEN );
 	
-	/** Errorcode: no error */
-    public static final String NO_ERROR ="OK";
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
 	public static String ERROR_MEDIA_DELETE = "MEDIA_DELETE_FAILED";
 
-	/** holds current error code. */
-	private String errorCode = NO_ERROR;
-    /** Popup message */
-    private String popupMsg = null;
-
-	/** Holds the current offset for paging */
-	private int offset = 0;
-	/** Holds the limit for paging */
-	private int limit = 10;
-	/** Holds the total number of results of last search. */
-	private int total = 0;
 	/** Holds the current list of media for the view. */
 	private MediaList mediaList;
 	/** Holds the filter for media search. */
@@ -101,8 +89,6 @@ public class MCMModel {
 	 * if checkMCM request parameter is true.
 	 */
 	private boolean checkAvail = false;
-	private final boolean admin;
-	private boolean mcmUser = false;
 	
 	/**
 	 * Creates the model.
@@ -112,8 +98,8 @@ public class MCMModel {
 	 * <p>
 	 * performs an initial availability check for MCM_SCP service.
 	 */
-	private MCMModel(boolean admin) {
-		this.admin  = admin;
+	private MCMModel(HttpServletRequest request) {
+		super(request);
 		getFilter();
 		filterMediaList( true );
 		mcmNotAvail = ! MCMConsoleCtrl.getMcmScuDelegate().checkMcmScpAvail();
@@ -132,8 +118,7 @@ public class MCMModel {
 	public static final MCMModel getModel( HttpServletRequest request ) {
 		MCMModel model = (MCMModel) request.getSession().getAttribute(MCMMODEL_ATTR_NAME);
 		if (model == null) {
-				model = new MCMModel(request.isUserInRole("WebAdmin"));
-				model.mcmUser = request.isUserInRole("McmUser");
+				model = new MCMModel(request);
 				request.getSession().setAttribute(MCMMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
@@ -142,50 +127,6 @@ public class MCMModel {
 
 	public String getModelName() { return "MCM"; }
 	
-	/**
-	 * @return Returns true if the user have WebAdmin role.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return mcmUser;
-	}
-	/**
-	 * Set the error code of this model.
-	 * 
-	 * @param errorCode The error code
-	 */
-	public void setErrorCode(String errorCode) {
-		this.errorCode  = errorCode;
-		
-	}
-	
-	/**
-	 * Get current error code of this model.
-	 * 
-	 * @return error code.
-	 */
-	public String getErrorCode() {
-		return errorCode;
-	}
-	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
 	/**
 	 * Returns the status for 'queue' action.
 	 * <p>
@@ -228,7 +169,7 @@ public class MCMModel {
 	 * @param newSearch
 	 */
 	public void filterMediaList( boolean newSearch ) {
-		if ( newSearch ) offset = 0;
+		if ( newSearch ) setOffset(0);
 		try {
 			Collection col = new ArrayList();
 			Long start = null;
@@ -242,19 +183,21 @@ public class MCMModel {
 				//perform get media creation status if filter contains PROCESSING media status.
 				MCMConsoleCtrl.getMcmScuDelegate().updateMediaStatus();
 			}
+			Integer offset = new Integer( getOffset() );
+			Integer limit = new Integer( getLimit() );
 			if ( MCMFilter.DATE_FILTER_ALL.equals( filter.getCreateOrUpdateDate() ) ) {
-				total = lookupMediaComposer().findByCreatedTime( col, start, end, stati, 
- 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
+				setTotal(lookupMediaComposer().findByCreatedTime( col, start, end, stati, 
+ 						offset, limit, filter.isDescent() ));
 			} else {
 				start = filter.startDateAsLong();
 				end = filter.endDateAsLong();
 				if ( MCMFilter.CREATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
-					total = lookupMediaComposer().findByCreatedTime( col, start, end, stati, 
-				 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
+					setTotal(lookupMediaComposer().findByCreatedTime( col, start, end, stati, 
+				 						offset, limit, filter.isDescent() ) );
 				
 				} else if ( MCMFilter.UPDATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
-					total = lookupMediaComposer().findByUpdatedTime( col, start, end, stati, 
-	 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
+					setTotal(lookupMediaComposer().findByUpdatedTime( col, start, end, stati, 
+	 						offset, limit, filter.isDescent() ) );
 				}
 			}
 			mediaList = new MediaList( col );
@@ -281,45 +224,6 @@ public class MCMModel {
 		return home.create();
 	}			
 	
-	/**
-	 * Returns current page limit.
-	 * 
-	 * @return Returns the limit.
-	 */
-	public int getLimit() {
-		return limit;
-	}
-	/**
-	 * Set current page limit.
-	 * 
-	 * @param limit The limit to set.
-	 */
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-	/**
-	 * Return current offset (page number; starts with 0).
-	 * 
-	 * @return Returns the offset.
-	 */
-	public int getOffset() {
-		return offset;
-	}
-	/**
-	 * Set current page offset
-	 * @param offset The offset to set.
-	 */
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-	/**
-	 * Return the total number of results of the last search.
-	 * 
-	 * @return Returns the total.
-	 */
-	public int getTotal() {
-		return total;
-	}
 
 	/**
 	 * @return Returns the mcmNotAvail.
@@ -344,26 +248,6 @@ public class MCMModel {
 	 */
 	public void setCheckAvail(boolean checkAvail) {
 		this.checkAvail = checkAvail;
-	}
-	/**
-	 * Goto previous page.
-	 */
-	public void performPrevious() {
-		if ( offset - limit >= 0 ) {
-			offset -= limit;
-			filterMediaList( false );
-		}
-	}
-
-	/**
-	 * Goto next page.
-	 *
-	 */
-	public void performNext() {
-		if ( offset + limit < total ) {
-			offset += limit;
-			filterMediaList( false );
-		}
 	}
 
 	/**
@@ -403,6 +287,14 @@ public class MCMModel {
 			return (MediaData) this.mediaList.get( pos );
 		}
 		return null;
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+	 */
+	public void gotoCurrentPage() {
+		filterMediaList(false);
 		
 	}
 	

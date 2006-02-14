@@ -44,27 +44,21 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4chex.archive.web.maverick.BasicFormModel;
+import org.dcm4chex.archive.web.maverick.admin.DCMUser;
+
 /**
  * @author franz.willer
  *
  * The Model for Teaching File Selector WEB interface.
  */
-public class TFModel {
+public class TFModel extends BasicFormModel {
 
 	/** The session attribute name to store the model in http session. */
 	public static final String TF_ATTR_NAME = "tfModel";
 	
-	/** Errorcode: no error */
-    public static final String NO_ERROR ="OK";
-    
     private SRManifestModel manifestModel;
 
-	/** holds current error code. */
-	private String errorCode = NO_ERROR;
-    /** Popup message */
-    private String popupMsg = null;
-
-	private boolean admin;
 	private String user;
 	
 	private Set instances;
@@ -99,9 +93,9 @@ public class TFModel {
 	 * Creates the model.
 	 * <p>
 	 */
-	private TFModel(String user, boolean admin) {
+	private TFModel(String user, HttpServletRequest request) {
+		super(request);
 		this.user = user;
-		this.admin  = admin;
 		manifestModel = new SRManifestModel();
 	}
 	
@@ -152,7 +146,7 @@ public class TFModel {
 	public static final TFModel getModel( HttpServletRequest request ) {
 		TFModel model = (TFModel) request.getSession().getAttribute(TF_ATTR_NAME);
 		if (model == null) {
-				model = new TFModel(request.getUserPrincipal().getName(), request.isUserInRole("WebAdmin"));
+				model = new TFModel(request.getUserPrincipal().getName(), request);
 				request.getSession().setAttribute(TF_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
@@ -160,45 +154,6 @@ public class TFModel {
 	}
 
 	public String getModelName() { return "TF"; }
-	
-	/**
-	 * @return Returns true if the user have WebAdmin role.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	/**
-	 * Set the error code of this model.
-	 * 
-	 * @param errorCode The error code
-	 */
-	public void setErrorCode(String errorCode) {
-		this.errorCode  = errorCode;
-		
-	}
-	
-	/**
-	 * Get current error code of this model.
-	 * 
-	 * @return error code.
-	 */
-	public String getErrorCode() {
-		return errorCode;
-	}
-	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
 	
 	public String[] getDocTitles() {
 		return DOC_TITLES;

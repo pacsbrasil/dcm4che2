@@ -52,6 +52,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
+import org.dcm4chex.archive.web.maverick.BasicFormModel;
+import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
+import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 import org.dcm4chex.archive.web.maverick.mpps.MPPSConsoleCtrl;
 
 /**
@@ -59,27 +62,14 @@ import org.dcm4chex.archive.web.maverick.mpps.MPPSConsoleCtrl;
  *
  * The Model for Modality Performed Procedure Steps WEB interface.
  */
-public class MPPSModel {
+public class MPPSModel extends BasicFormPagingModel {
 
 	/** The session attribute name to store the model in http session. */
 	public static final String MPPS_MODEL_ATTR_NAME = "mppsModel";
 	
-	/** Errorcode: no error */
-    public static final String NO_ERROR ="OK";
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
 
-	/** holds current error code. */
-	private String errorCode = NO_ERROR;
-    /** Popup message */
-    private String popupMsg = null;
-
-    /** Holds the current offset for paging */
-	private int offset = 0;
-	/** Holds the limit for paging */
-	private int limit = 20;
-	/** Holds the total number of results of last search. */
-	private int total = 0;
 
 	private String[] mppsIDs = null;
 	//Holds MPPSEntries with sticky
@@ -94,16 +84,13 @@ public class MPPSModel {
 	/** Comparator to sort list of MPPS datasets. */
 	private Comparator comparator = new MppsDSComparator();
 
-	private boolean admin = false;
-	private boolean mcmUser = false;
-	
 	/**
 	 * Creates the model.
 	 * <p>
 	 * Creates the filter instance for this model.
 	 */
-	private MPPSModel( boolean admin ) {
-		this.admin  = admin;
+	private MPPSModel(HttpServletRequest request) {
+		super(request);
 		getFilter();
 	}
 	
@@ -120,8 +107,7 @@ public class MPPSModel {
 	public static final MPPSModel getModel( HttpServletRequest request ) {
 		MPPSModel model = (MPPSModel) request.getSession().getAttribute(MPPS_MODEL_ATTR_NAME);
 		if (model == null) {
-				model = new MPPSModel(request.isUserInRole("WebAdmin"));
-				model.mcmUser = request.isUserInRole("McmUser");
+				model = new MPPSModel(request);
 				request.getSession().setAttribute(MPPS_MODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
@@ -130,92 +116,6 @@ public class MPPSModel {
 	}
 
 	public String getModelName() { return "MPPS"; }
-	
-	/**
-	 * @return Returns true if the user have WebAdmin role.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return mcmUser;
-	}
-
-	/**
-	 * Set the error code of this model.
-	 * 
-	 * @param errorCode The error code
-	 */
-	public void setErrorCode(String errorCode) {
-		this.errorCode  = errorCode;
-		
-	}
-	
-	/**
-	 * Get current error code of this model.
-	 * 
-	 * @return error code.
-	 */
-	public String getErrorCode() {
-		return errorCode;
-	}
-	
-	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
-	/**
-	 * Returns current page limit.
-	 * 
-	 * @return Returns the limit.
-	 */
-	public int getLimit() {
-		return limit;
-	}
-	/**
-	 * Set current page limit.
-	 * 
-	 * @param limit The limit to set.
-	 */
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-	/**
-	 * Return current offset (page number; starts with 0).
-	 * 
-	 * @return Returns the offset.
-	 */
-	public int getOffset() {
-		return offset;
-	}
-	/**
-	 * Set current page offset
-	 * @param offset The offset to set.
-	 */
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-	/**
-	 * Return the total number of results of the last search.
-	 * 
-	 * @return Returns the total.
-	 */
-	public int getTotal() {
-		return total;
-	}
 	
 	/**
 	 * Returns the Filter of this model.
@@ -267,13 +167,16 @@ public class MPPSModel {
 	 */
 	public void filterWorkList(boolean newSearch) {
 		
-		if ( newSearch ) offset = 0;
+		if ( newSearch ) setOffset(0);
 		List l = MPPSConsoleCtrl.getMppsDelegate().findMppsEntries( this.mppsFilter );
 		Collections.sort( l, comparator );
-		total = l.size();
+		int total = l.size();
+		int offset = getOffset();
+		int limit = getLimit();
 		int end;
 		if ( offset >= total ) {
 			offset = 0;
+			setOffset(0);
 			end = limit < total ? limit : total;
 		} else {
 			end = offset + limit;
@@ -290,32 +193,9 @@ public class MPPSModel {
 				countNull++;
 			}
 		}
-		total -= countNull; // the real total (without null entries!)
+		setTotal(total - countNull); // the real total (without null entries!)
 	}
 
-
-
-	/**
-	 * Goto previous page.
-	 */
-	public void performPrevious() {
-		if ( offset - limit >= 0 ) {
-			offset -= limit;
-			filterWorkList( false );
-		}
-	}
-
-	/**
-	 * Goto next page.
-	 *
-	 */
-	public void performNext() {
-		if ( offset + limit < total ) {
-			offset += limit;
-			filterWorkList( false );
-		}
-	}
-	
 	/**
 	 * Inner class that compares two datasets for sorting Performed Procedure Steps 
 	 * according Performed Procedure step start date/time.
@@ -367,6 +247,13 @@ public class MPPSModel {
 			if ( d == null ) d = new Date(0l);
 			return d;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+	 */
+	public void gotoCurrentPage() {
+		filterWorkList(false);
 	}
 	
 }

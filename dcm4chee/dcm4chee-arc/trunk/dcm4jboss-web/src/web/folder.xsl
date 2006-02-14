@@ -63,7 +63,7 @@
 							</xsl:if>
 						</input>
 					</td>
-					<xsl:if test="/model/admin='true'">
+					<xsl:if test="/model/datacareUser='true'">
 						<td class="folder_header" width="40">
 							<a href="patientEdit.m?pk=-1">
 								<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
@@ -237,10 +237,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="26%"/><!-- Study Desc -->
 			<col width="9%"/><!-- Acc No --><!-- 73 -->
 			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+				<xsl:when test="/model/datacareUser='true' and /model/webViewer='true'">
 		    		<col width="11%"/><!-- Ref. Physician -->
 				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
+	            <xsl:when test="/model/datacareUser='true'">    
 				    <col width="13%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
@@ -257,7 +257,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- Webviewer -->
 			</xsl:if>
-			<xsl:if test="/model/admin='true'">
+			<xsl:if test="/model/datacareUser='true'">
 				<col width="2%"/><!-- add -->
 				<col width="2%"/><!-- edit -->
 			</xsl:if>
@@ -317,7 +317,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<xsl:if test="/model/webViewer='true'">
 				<td>&#160;</td>
 			</xsl:if>
-			<xsl:if test="/model/admin='true'">
+			<xsl:if test="/model/datacareUser='true'">
 				<td>&#160;</td>
 				<td>&#160;</td>
 			</xsl:if>
@@ -335,10 +335,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="35%"/><!-- Series Desc. -->
 			<col width="10%"/><!-- Vendor/Model -->
 			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+				<xsl:when test="/model/datacareUser='true' and /model/webViewer='true'">
 		    		<col width="6%"/><!-- PPS Status -->
 				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
+	            <xsl:when test="/model/datacareUser='true'">    
 				    <col width="8%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
@@ -352,16 +352,16 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- web viewer -->
 			</xsl:if>
-            <xsl:if test="/model/admin='true'">
+            <xsl:if test="/model/datacareUser='true'">
 				<col width="2%"/><!-- edit -->
 			</xsl:if>
 			<col width="2%"/><!-- sticky -->
 			
 			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+				<xsl:when test="/model/datacareUser='true' and /model/webViewer='true'">
 		    		<col width="6%"/><!-- PPS Status -->
 				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
+	            <xsl:when test="/model/datacareUser='true'">    
 				    <col width="8%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
@@ -375,7 +375,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- web viewer -->
 			</xsl:if>
-            <xsl:if test="/model/admin='true'">
+            <xsl:if test="/model/datacareUser='true'">
 				<col width="2%"/><!-- edit -->
 			</xsl:if>
 			<col width="2%"/><!-- sticky -->
@@ -427,7 +427,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:if test="/model/webViewer='true'">
 				<td>&#160;</td>
 			</xsl:if>
-            <xsl:if test="/model/admin='true'">
+            <xsl:if test="/model/datacareUser='true'">
 				<td>&#160;</td>
 			</xsl:if>
 			<td align="right" valign="bottom">&#160;
@@ -448,12 +448,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="26%"/>
 			<col width="10%"/>
 			<col width="12%"/>
-		               <xsl:if test="/model/admin='true'">
+		               <xsl:if test="/model/datacareUser='true'">
 			    <col width="45%"/>
 			    <col width="2%"/>
 			    <col width="2%"/>
 		               </xsl:if>
-		               <xsl:if test="/model/admin!='true'">
+		               <xsl:if test="/model/datacareUser!='true'">
                     		    <col width="49%"/>
 		               </xsl:if>
 			<col width="2%"/>
@@ -493,7 +493,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:value-of select="patientSex"/>&#160;
 				</strong>
       </td>
-		    <xsl:if test="/model/admin='true'">
+		    <xsl:if test="/model/datacareUser='true'">
 			    <td class="study_mark" align="right">
 					<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
 						<img src="images/add.gif" alt="Add Study" border="0" title="Add new Study"/>		
@@ -531,10 +531,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="26%"/><!-- Study Desc -->
 			<col width="9%"/><!-- Acc No -->
 			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+				<xsl:when test="/model/datacareUser='true' and /model/webViewer='true'">
 		    		<col width="11%"/><!-- Ref. Physician -->
 				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
+	            <xsl:when test="/model/datacareUser='true'">    
 				    <col width="13%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
@@ -551,7 +551,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- Webviewer -->
 			</xsl:if>
-			<xsl:if test="/model/admin='true'">
+			<xsl:if test="/model/datacareUser='true'">
 				<col width="2%"/><!-- add -->
 				<col width="2%"/><!-- edit -->
 			</xsl:if>
@@ -631,7 +631,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
     			          </xsl:choose>
     			    </td>
 			</xsl:if>
-	        <xsl:if test="/model/admin='true'">    
+	        <xsl:if test="/model/datacareUser='true'">    
 			    <td class="series_mark" align="right">
 	      			<xsl:choose>
 						<xsl:when test="/model/addWorklist='false'">
@@ -678,10 +678,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="10%"/><!-- Vendor/Model -->
 			
 			<xsl:choose>
-				<xsl:when test="/model/admin='true' and /model/webViewer='true'">
+				<xsl:when test="/model/datacareUser='true' and /model/webViewer='true'">
 		    		<col width="6%"/><!-- PPS Status -->
 				</xsl:when>
-	            <xsl:when test="/model/admin='true'">    
+	            <xsl:when test="/model/datacareUser='true'">    
 				    <col width="8%"/>
 				</xsl:when>
 	            <xsl:when test="/model/webViewer='true'">    
@@ -695,7 +695,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:if test="/model/webViewer='true'">
 				<col width="2%"/><!-- web viewer -->
 			</xsl:if>
-            <xsl:if test="/model/admin='true'">
+            <xsl:if test="/model/datacareUser='true'">
 				<col width="2%"/><!-- edit -->
 			</xsl:if>
 			<col width="2%"/><!-- sticky -->
@@ -778,7 +778,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	    	</td>
      	</xsl:if>
 
-           <xsl:if test="/model/admin='true'">
+           <xsl:if test="/model/datacareUser='true'">
                 <td class="series_mark" align="right">
 					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
 						<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		

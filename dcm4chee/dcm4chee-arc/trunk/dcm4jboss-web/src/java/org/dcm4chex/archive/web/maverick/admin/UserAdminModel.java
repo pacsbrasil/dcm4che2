@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.UserManager;
 import org.dcm4chex.archive.ejb.interfaces.UserManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
 
 /**
@@ -57,16 +58,8 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  *
  * The Model for Media Creation Managment WEB interface.
  */
-public class UserAdminModel {
+public class UserAdminModel extends BasicFormModel {
 
-	
-	/** Errorcode: no error */
-    public static final String NO_ERROR ="OK";
-
-    private String errorCode = null;
-	private boolean admin = false;
-	private boolean mcmUser = false;
-	
 	private List userList = null;
 	private DCMUser editUser = null;
 
@@ -74,7 +67,6 @@ public class UserAdminModel {
 
 	private static Logger log = Logger.getLogger(UserAdminModel.class.getName());
 
-	private String popupMsg;
 	
 	/**
 	 * Creates the model.
@@ -84,8 +76,8 @@ public class UserAdminModel {
 	 * <p>
 	 * performs an initial availability check for MCM_SCP service.
 	 */
-	private UserAdminModel(boolean admin) {
-		this.admin = admin;
+	private UserAdminModel(HttpServletRequest request) {
+		super(request);
 	}
 	
 	/**
@@ -101,8 +93,7 @@ public class UserAdminModel {
 	public static final UserAdminModel getModel( HttpServletRequest request ) {
 		UserAdminModel model = (UserAdminModel) request.getSession().getAttribute(USERMODEL_ATTR_NAME);
 		if (model == null) {
-				model = new UserAdminModel(request.isUserInRole("WebAdmin"));
-				model.mcmUser = request.isUserInRole("McmUser");
+				model = new UserAdminModel(request);
 				request.getSession().setAttribute(USERMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
@@ -110,53 +101,6 @@ public class UserAdminModel {
 	}
 
 	public String getModelName() { return "UserAdmin"; }
-	
-	/**
-	 * @return Returns true if the user have WebAdmin role.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return mcmUser;
-	}
-	
-	/**
-	 * Set the error code of this model.
-	 * 
-	 * @param errorCode The error code
-	 */
-	public void setErrorCode(String errorCode) {
-		this.errorCode  = errorCode;
-		
-	}
-	
-	/**
-	 * Get current error code of this model.
-	 * 
-	 * @return error code.
-	 */
-	public String getErrorCode() {
-		return errorCode;
-	}
-	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
-	
 	
 	/**
 	 * Get list of users.
@@ -188,7 +132,7 @@ public class UserAdminModel {
 	public DCMUser createUser( DCMUser user, String passwd ) {
 		if ( getUserList().contains( user ) ) {
 			log.warn("Cant create user! UserID "+user.getUserID()+" already exists!");
-			this.popupMsg = "Cant create user! UserID "+user.getUserID()+" already exists!";
+			this.setPopupMsg("Cant create user! UserID "+user.getUserID()+" already exists!");
 			editUser = user;
 			return null;
 		} else {
@@ -198,7 +142,7 @@ public class UserAdminModel {
 				manager.addUser(user.getUserID(),passwd, user.roles());
 			} catch (Exception e) {
 				log.error("Cant create new user "+userID+" with roles "+user.roles(), e);
-				popupMsg = "Cant create user "+userID+"! Exception:"+e.getMessage();
+				this.setPopupMsg("Cant create user "+userID+"! Exception:"+e.getMessage());
 				return null;
 			}
 			log.info("User "+user+" created! roles:"+user.roles());
@@ -230,7 +174,7 @@ public class UserAdminModel {
 				manager.updateUser(userID, roles);
 			} catch (Exception e) {
 				log.error("Cant update user "+userID+" with roles "+roles, e);
-				popupMsg = "Cant update user "+userID+"! Exception:"+e.getMessage();
+				this.setPopupMsg( "Cant update user "+userID+"! Exception:"+e.getMessage());
 				return null;
 			}
 			log.info("User "+userID+" updated:"+user);
@@ -247,7 +191,7 @@ public class UserAdminModel {
 		} catch (Exception e) {
 			log.error("Cant change password for user "+user);
 		}
-		popupMsg = "Cant change password for user "+user;
+		this.setPopupMsg( "Cant change password for user "+user);
 		return false;
 	}
 	
@@ -294,7 +238,7 @@ public class UserAdminModel {
 			this.lookupUserManager().removeUser( userID );
 		} catch (Exception e) {
 			log.error("Cant delete user "+userID, e );
-			this.popupMsg = "Cant delete user "+userID+"! Reason:"+e.getMessage();
+			this.setPopupMsg( "Cant delete user "+userID+"! Reason:"+e.getMessage());
 			return false;
 		}
 		return true;
@@ -317,7 +261,7 @@ public class UserAdminModel {
 			}
 		} catch ( Exception x ) {
 			log.error("Cant query user list!", x);
-			popupMsg = "Cant query user list! Exception:"+x.getMessage();
+			this.setPopupMsg( "Cant query user list! Exception:"+x.getMessage());
 		}
 	}
 	

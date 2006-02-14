@@ -43,19 +43,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.web.maverick.model.InstanceModel;
-import org.dcm4chex.archive.web.maverick.model.PatientModel;
-import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
 import org.infohazard.maverick.flow.ControllerContext;
 
 /**
@@ -116,8 +109,6 @@ public class FolderForm extends BasicFolderForm {
 
     private String destination;
 
-    private boolean mcmUser;
-    
     private boolean webViewer;
     
     /** Base URL for WADO service. Used for image view */
@@ -136,8 +127,7 @@ public class FolderForm extends BasicFolderForm {
         FolderForm form = (FolderForm) request.getSession()
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
-            form = new FolderForm(request.isUserInRole("WebAdmin"));
-            form.mcmUser = request.isUserInRole("McmUser");
+            form = new FolderForm(request);
             try {
 				URL wadoURL = new URL( "http", request.getServerName(), 
 						request.getServerPort(), "/dcm4jboss-wado/");
@@ -182,18 +172,12 @@ public class FolderForm extends BasicFolderForm {
 		
 	}
 
-	private FolderForm( boolean adm ) {
-    	super(adm);
+	private FolderForm( HttpServletRequest request ) {
+    	super(request);
     }
 	
 	public String getModelName() { return "FOLDER"; }
 
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return mcmUser;
-	}
 	/**
 	 * @return Returns the webViewer.
 	 */
@@ -348,6 +332,13 @@ public class FolderForm extends BasicFolderForm {
 	 */
 	public void setAddWorklist(boolean addWorklist) {
 		this.addWorklist = addWorklist;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+	 */
+	public void gotoCurrentPage() {
+		//We doesnt need this method here. FolderSubmitCtrl does not use performPrevious/performNext!
 	}
 
 }

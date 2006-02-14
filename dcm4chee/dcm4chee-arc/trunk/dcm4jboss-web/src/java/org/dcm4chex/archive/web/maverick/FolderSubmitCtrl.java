@@ -54,6 +54,7 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.JMSDelegate;
+import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
@@ -121,7 +122,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
             
             if ( log.isDebugEnabled() ) {
 		        log.debug( "UserPrincipal:"+rq.getUserPrincipal().getName() );
-		        log.debug( "UserPrincipal is in role admin:"+rq.isUserInRole("WebAdmin") );
+		        log.debug( "UserPrincipal is in role "+DCMUser.WEBADMIN+":"+rq.isUserInRole(DCMUser.WEBADMIN) );
+		        log.debug( "UserPrincipal is in role "+DCMUser.MCMUSER+":"+rq.isUserInRole(DCMUser.MCMUSER) );
+		        log.debug( "UserPrincipal is in role "+DCMUser.DATACARE_USER+":"+rq.isUserInRole(DCMUser.DATACARE_USER) );
+		        log.debug( "UserPrincipal is in role "+DCMUser.JBOSSADMIN+":"+rq.isUserInRole(DCMUser.JBOSSADMIN) );
+		        log.debug( "UserPrincipal is in role "+DCMUser.ARRUSER+":"+rq.isUserInRole(DCMUser.ARRUSER) );
             }
             if (rq.getParameter("sessionChanged") != null ) {
             	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
@@ -137,7 +142,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("next.x") != null) { return query(false); }
             if (rq.getParameter("send") != null
                     || rq.getParameter("send.x") != null) { return send(); }
-            if ( folderForm.isAdmin() ) {
+            if ( folderForm.isDatacareUser() ) {
 	            if (rq.getParameter("del") != null
 	                    || rq.getParameter("del.x") != null) { return delete(); }
 	            if (rq.getParameter("merge") != null

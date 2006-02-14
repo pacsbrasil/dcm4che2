@@ -55,13 +55,13 @@ public class TrashFolderForm extends BasicFolderForm {
     static final String FOLDER_ATTRNAME = "trashFolderFrom";
 
 	protected static Logger log = Logger.getLogger(TrashFolderForm.class);
-    
+	
     static TrashFolderForm getTrashFolderForm(ControllerContext ctx) {
     	HttpServletRequest request = ctx.getRequest();
         TrashFolderForm form = (TrashFolderForm) request.getSession()
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
-            form = new TrashFolderForm(request.isUserInRole("WebAdmin"));
+            form = new TrashFolderForm(request);
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             try {
                 int limit = Integer.parseInt( ctx.getServletConfig().getInitParameter("limitNrOfStudies") );
@@ -80,10 +80,17 @@ public class TrashFolderForm extends BasicFolderForm {
         return form;
     }
     
-	private TrashFolderForm( boolean adm ) {
-    	super(adm);
+	private TrashFolderForm( HttpServletRequest request ) {
+    	super(request);
     }
 	
 	public String getModelName() { return "TRASH"; }
 
+	/* (non-Javadoc)
+	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+	 */
+	public void gotoCurrentPage() {
+		//We doesnt need this method here. TrashFolderCtrl does not use performPrevious/performNext!
+	}
+	
 }

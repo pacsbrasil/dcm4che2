@@ -44,6 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
@@ -55,12 +57,10 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class BasicFolderForm {
+public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     private int limit = 20;
     
-    public static final String NO_ERROR ="OK";
-
     private List patients;
 
     private final Set stickyPatients = new HashSet();
@@ -75,30 +75,16 @@ public class BasicFolderForm {
 
     private int total;
     
-    private final boolean admin;
-    
-    /** Error code for rendering message. */
-    private String errorCode = NO_ERROR;
-    
-    /** Popup message */
-    private String popupMsg = null;
-    
 	private boolean showWithoutStudies;
 
 	protected static Logger log = Logger.getLogger(BasicFolderForm.class);
     
-	protected BasicFolderForm( boolean adm ) {
-    	admin = adm;
+	protected BasicFolderForm( HttpServletRequest request ) {
+    	super(request);
     }
 	
 	public String getModelName() { return "FOLDER"; }
 
-	/**
-	 * @return Returns the admin.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
 	
     public final int getLimit() {
         return limit;
@@ -153,28 +139,6 @@ public class BasicFolderForm {
         return total;
     }
     
-    public final String getErrorCode() {
-    	return errorCode;
-    }
-    
-    
-    public final void setErrorCode( String err ) {
-    	errorCode = err;
-    }
-
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
-
 	/**
 	 * @return Returns the hideStudyLess.
 	 */
@@ -400,5 +364,6 @@ public class BasicFolderForm {
                 }
         }
     }
+
 
 }

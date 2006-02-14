@@ -37,39 +37,79 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick.ae;
+package org.dcm4chex.archive.web.maverick;
 
+import javax.servlet.http.HttpServletRequest;
 
-import java.util.List;
-
-import org.dcm4chex.archive.web.maverick.Errable;
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 
 /**
- * @author umberto.cappellini@tiani.com
+ * @author franz.willer@gwi-ag.com
+ * @version $Revision$ $Date$
+ * @since 13.02.2006
  */
-public class AEListCtrl extends Errable
-{
-	public List getAEs() {
-		return this.lookupAEDelegate().getAEs();
-	}
-	public String getModelName() { return "AEMgr"; }
+public abstract class BasicFormModel {
+
+    public static final String NO_ERROR ="OK";
+
+    private final boolean admin;
+    private boolean mcmUser;
+    private boolean datacareUser;
+    
+    /** Error code for rendering message. */
+    private String errorCode = NO_ERROR;
+    
+    /** Popup message */
+    private String popupMsg = null;
+    
+	protected BasicFormModel( HttpServletRequest request ) {
+    	admin = request.isUserInRole(DCMUser.WEBADMIN);
+        datacareUser = request.isUserInRole(DCMUser.DATACARE_USER) || admin;
+        mcmUser = request.isUserInRole(DCMUser.MCMUSER);
+    }
 	
+	public String getModelName() { return "BASIC"; }
+
 	/**
 	 * @return Returns the admin.
 	 */
 	public boolean isAdmin() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.WEBADMIN);
+		return admin;
+	}
+	
+    
+	/**
+	 * @return Returns the datacareUser.
+	 */
+	public boolean isDatacareUser() {
+		return datacareUser;
 	}
 	/**
 	 * @return Returns the mcmUser.
 	 */
 	public boolean isMcmUser() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.MCMUSER);
+		return mcmUser;
 	}
+    public final String getErrorCode() {
+    	return errorCode;
+    }
+    
+    
+    public final void setErrorCode( String err ) {
+    	errorCode = err;
+    }
 
-	public boolean isDatacareUser() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.DATACARE_USER)||isAdmin();
+	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
 	}
 
 }

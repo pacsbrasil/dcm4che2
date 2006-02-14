@@ -63,7 +63,7 @@
 							</xsl:if>
 						</input>
 					</td>
-					<xsl:if test="/model/admin='true'">
+					<xsl:if test="/model/datacareUser='true'">
 						<td class="folder_header" width="40">
 							&#160;
 <!-- not implemented yet.						

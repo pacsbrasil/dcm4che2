@@ -21,7 +21,7 @@
 	    			</xsl:choose>
 	    			<a class="tab" href="foldersubmit.m?filter=true">Folder</a>
 	    		</td>
-	    		<xsl:if test="model/admin='true'">
+	    		<xsl:if test="model/datacareUser='true'">
 	    			<td width="100" align="center">
 		    			<xsl:choose>
 			    			<xsl:when test="model/modelName = 'TRASH'">
@@ -33,6 +33,8 @@
 		    			</xsl:choose>
 	    				<a class="tab" href="trashfolder.m?filter=true">Trash</a>
 	    			</td>
+		      	</xsl:if>
+	    		<xsl:if test="model/admin='true'">
 		    		<td width="120" align="center">
 		    			<xsl:choose>
 			    			<xsl:when test="model/modelName = 'AEMgr'">
@@ -58,7 +60,7 @@
 		      			<a class="tab" href="mcm_console.m">Offline Storage</a>
 		      		</td>
 		      	</xsl:if>
-	    		<xsl:if test="model/admin='true'">
+	    		<xsl:if test="/model/datacareUser='true'">
 		      		<td width="120" align="center">
 		      			<xsl:choose>
 		    				<xsl:when test="model/modelName = 'MWL'">

@@ -51,6 +51,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
 import org.dcm4chex.archive.web.maverick.mwl.MWLConsoleCtrl;
 
 /**
@@ -58,27 +59,13 @@ import org.dcm4chex.archive.web.maverick.mwl.MWLConsoleCtrl;
  *
  * The Model for Media Creation Managment WEB interface.
  */
-public class MWLModel {
+public class MWLModel extends BasicFormPagingModel {
 
 	/** The session attribute name to store the model in http session. */
 	public static final String MWLMODEL_ATTR_NAME = "mwlModel";
 	
-	/** Errorcode: no error */
-    public static final String NO_ERROR ="OK";
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
-
-	/** holds current error code. */
-	private String errorCode = NO_ERROR;
-    /** Popup message */
-    private String popupMsg = null;
-
-	/** Holds the current offset for paging */
-	private int offset = 0;
-	/** Holds the limit for paging */
-	private int limit = 20;
-	/** Holds the total number of results of last search. */
-	private int total = 0;
 
 	private boolean linkMode = false;
 	private String[] mppsIDs = null;
@@ -94,16 +81,13 @@ public class MWLModel {
 	/** Comparator to sort list of SPS datasets. */
 	private Comparator comparator = new SpsDSComparator();
 
-	private boolean admin = false;
-	private boolean mcmUser = false;
-	
 	/**
 	 * Creates the model.
 	 * <p>
 	 * Creates the filter instance for this model.
 	 */
-	private MWLModel( boolean admin ) {
-		this.admin  = admin;
+	private MWLModel(  HttpServletRequest request ) {
+		super(request);
 		getFilter();
 	}
 	
@@ -120,8 +104,7 @@ public class MWLModel {
 	public static final MWLModel getModel( HttpServletRequest request ) {
 		MWLModel model = (MWLModel) request.getSession().getAttribute(MWLMODEL_ATTR_NAME);
 		if (model == null) {
-				model = new MWLModel(request.isUserInRole("WebAdmin"));
-				model.mcmUser = request.isUserInRole("McmUser");
+				model = new MWLModel(request);
 				request.getSession().setAttribute(MWLMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
@@ -130,92 +113,6 @@ public class MWLModel {
 	}
 
 	public String getModelName() { return "MWL"; }
-	
-	/**
-	 * @return Returns true if the user have WebAdmin role.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return mcmUser;
-	}
-	
-	/**
-	 * Set the error code of this model.
-	 * 
-	 * @param errorCode The error code
-	 */
-	public void setErrorCode(String errorCode) {
-		this.errorCode  = errorCode;
-		
-	}
-	
-	/**
-	 * Get current error code of this model.
-	 * 
-	 * @return error code.
-	 */
-	public String getErrorCode() {
-		return errorCode;
-	}
-	
-	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
-	/**
-	 * Returns current page limit.
-	 * 
-	 * @return Returns the limit.
-	 */
-	public int getLimit() {
-		return limit;
-	}
-	/**
-	 * Set current page limit.
-	 * 
-	 * @param limit The limit to set.
-	 */
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-	/**
-	 * Return current offset (page number; starts with 0).
-	 * 
-	 * @return Returns the offset.
-	 */
-	public int getOffset() {
-		return offset;
-	}
-	/**
-	 * Set current page offset
-	 * @param offset The offset to set.
-	 */
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-	/**
-	 * Return the total number of results of the last search.
-	 * 
-	 * @return Returns the total.
-	 */
-	public int getTotal() {
-		return total;
-	}
 	
 	/**
 	 * Returns the Filter of this model.
@@ -289,13 +186,15 @@ public class MWLModel {
 	 */
 	public void filterWorkList(boolean newSearch) {
 		
-		if ( newSearch ) offset = 0;
+		if ( newSearch ) setOffset(0);
 		//_filterTest();
 		Dataset searchDS = getSearchDS( mwlFilter );
 		isLocal = MWLConsoleCtrl.getMwlScuDelegate().isLocal();
 		List l = MWLConsoleCtrl.getMwlScuDelegate().findMWLEntries( searchDS );
 		Collections.sort( l, comparator );
-		total = l.size();
+		int total = l.size();
+		int offset = getOffset();
+		int limit = getLimit();
 		int end;
 		if ( offset >= total ) {
 			offset = 0;
@@ -311,7 +210,7 @@ public class MWLModel {
 			if ( ds != null )
 				mwlEntries.add( new MWLEntry( ds ) );
 		}
-		total = mwlEntries.size(); // the real total (without null entries!)
+		setTotal(mwlEntries.size()); // the real total (without null entries!)
 	}
 
 	/**
@@ -391,28 +290,6 @@ public class MWLModel {
 		return ds;
 	}
 
-
-	/**
-	 * Goto previous page.
-	 */
-	public void performPrevious() {
-		if ( offset - limit >= 0 ) {
-			offset -= limit;
-			filterWorkList( false );
-		}
-	}
-
-	/**
-	 * Goto next page.
-	 *
-	 */
-	public void performNext() {
-		if ( offset + limit < total ) {
-			offset += limit;
-			filterWorkList( false );
-		}
-	}
-	
 	/**
 	 * Inner class that compares two datasets for sorting Scheduled Procedure Steps 
 	 * according scheduled Procedure step start date.
@@ -470,6 +347,13 @@ public class MWLModel {
 			if ( d == null ) d = DATE_0;
 			return d;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+	 */
+	public void gotoCurrentPage() {
+		filterWorkList( false );
 	}
 	
 }
