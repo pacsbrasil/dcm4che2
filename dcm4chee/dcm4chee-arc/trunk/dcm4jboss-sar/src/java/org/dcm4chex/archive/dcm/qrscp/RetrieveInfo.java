@@ -263,8 +263,14 @@ final class RetrieveInfo {
         return localFilesByIuid.values();
     }
 
-    public final Collection getLocalIUIDs() {
-        return localFilesByIuid.keySet();
+    public final Collection removeLocalIUIDs() {
+        Set iuids = localFilesByIuid.keySet();
+        for (Iterator iter = iuids.iterator(); iter.hasNext();) {
+			String iuid = (String) iter.next();
+            removeIuid(iuidsByRemoteAET, iuid);
+            removeIuid(iuidsByExternalAET, iuid);            
+		}
+        return iuids;
     }
 
     public final String getMoveForwardAET() {

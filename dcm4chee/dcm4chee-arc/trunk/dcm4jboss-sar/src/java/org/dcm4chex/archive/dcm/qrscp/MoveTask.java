@@ -436,7 +436,7 @@ class MoveTask implements Runnable {
         Set studyInfos = new HashSet();
         Association a = storeAssoc.getAssociation();
         Collection localFiles = retrieveInfo.getLocalFiles();
-        final Set remainingIUIDs = new HashSet(retrieveInfo.getLocalIUIDs());
+        final Set remainingIUIDs = new HashSet(retrieveInfo.removeLocalIUIDs());
         Iterator it = localFiles.iterator();
         while (a.getState() == Association.ASSOCIATION_ESTABLISHED && !canceled
                 && it.hasNext()) {
