@@ -87,7 +87,7 @@ public class RetrieveCmd extends BaseReadCmd {
         public int compare(Object o1, Object o2) {
             FileInfo fi1 = (FileInfo) o1;
             FileInfo fi2 = (FileInfo) o2;
-            int diffAvail = fi2.availability - fi1.availability;
+            int diffAvail = fi1.availability - fi2.availability;
             return diffAvail != 0 ? diffAvail : fi2.pk - fi1.pk;
         }
     };
