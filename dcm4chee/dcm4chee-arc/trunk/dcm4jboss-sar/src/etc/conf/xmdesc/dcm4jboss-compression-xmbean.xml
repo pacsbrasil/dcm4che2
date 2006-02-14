@@ -154,12 +154,12 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Check for files to compress.</description>
+      <description>Check for temporary image files to delete.</description>
       <name>checkForTempFilesToDelete</name>
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Check for temporary image files to delete.</description>
+      <description>Check for files to compress.</description>
       <name>checkForFilesToCompress</name>
       <return-type>void</return-type>
    </operation>
