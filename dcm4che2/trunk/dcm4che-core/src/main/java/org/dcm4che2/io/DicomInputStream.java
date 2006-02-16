@@ -132,6 +132,16 @@ public class DicomInputStream extends FilterInputStream
         this.pos = pos;
     }
 
+    public final long getValueLengthLimit()
+    {
+        return vallenLimit;
+    }
+
+    public final void setValueLengthLimit(long vallenLimit)
+    {
+        this.vallenLimit = vallenLimit;
+    }
+
     public final long tagPosition()
     {
         return tagpos;
@@ -504,9 +514,14 @@ public class DicomInputStream extends FilterInputStream
             return EMPTY_BYTES;
         if (vallen > vallenLimit)
         {
-            if (skip(vallen) != vallen)
+            long remaining = vallen;
+            long nr;
+            while (remaining > 0)
             {
-                throw new EOFException();
+                nr = skip(remaining);
+                if (nr == 0)
+                    throw new EOFException();
+                remaining -= nr;
             }
             return EMPTY_BYTES;
         }
