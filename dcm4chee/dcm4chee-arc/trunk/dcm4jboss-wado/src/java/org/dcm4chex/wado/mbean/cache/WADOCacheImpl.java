@@ -657,11 +657,21 @@ public class WADOCacheImpl implements WADOCache {
 		}
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 		try {
+			log.debug("Create JPEG for WADO request. file:"+file);
 			JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
 			enc.encode(bi);
-		} catch ( IOException x ) {
-			if ( file.exists() ) file.delete();
-			throw x;
+		} catch ( Throwable x ) {
+			log.error("Can not create JPEG for WADO request. file:"+file);
+			if ( file.exists() ) {
+				file.delete();
+				log.error("Cache File removed:"+file);
+			}
+			if ( x instanceof IOException) {
+				throw (IOException) x;
+			}
+			IOException ioe = new IOException("Failed to write image file ("+file+")! Reason:"+x.getMessage());
+			ioe.initCause(x);
+			throw ioe;
 		} finally {
 			out.close();
 		}

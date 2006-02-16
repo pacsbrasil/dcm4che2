@@ -162,6 +162,7 @@ public class WADOServlet extends HttpServlet {
 		log.debug("sendResponse:"+respObject);
 		try {
 			if ( respObject != null ) {
+				log.info("send WADO response: "+respObject.getContentType());
 				response.setContentType( respObject.getContentType() );
 				try {
 					log.debug("respObject execute");

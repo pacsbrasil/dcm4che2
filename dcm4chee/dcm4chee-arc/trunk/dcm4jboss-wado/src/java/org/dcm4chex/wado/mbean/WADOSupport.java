@@ -68,7 +68,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -94,8 +93,6 @@ import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.dcm4chex.wado.mbean.xml.DatasetXMLResponseObject;
 import org.jboss.mx.util.MBeanServerLocator;
-
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
 
 /**
  * @author franz.willer
@@ -160,7 +157,7 @@ public WADOSupport( MBeanServer mbServer ) {
  * @return The WADO response object.
  */
 public WADOResponseObject getWADOObject( WADORequestObject req ) {
-	log.debug("Get WADO object for "+req.getObjectUID());
+	log.info("Get WADO object for "+req.getObjectUID());
 	FileDTO fileDTO = null;
 	try {
 		List l = new QueryFilesCmd(req.getObjectUID()).getFileDTOs();
