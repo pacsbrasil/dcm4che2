@@ -2362,6 +2362,8 @@
   <uid value="1.2.40.0.13.1.5.1.4.1.2.1.1.1" name="Tiani Blocked Patient Root Query/Retrieve Information Model - FIND" key="TianiBlockedPatientRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1.1" name="Tiani Blocked Study Root Query/Retrieve Information Model - FIND" key="TianiBlockedStudyRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.3.1.1" name="Tiani Blocked Patient/Study Only Query/Retrieve Information Model - FIND" key="TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.2.1.1.2" name="Tiani Virtual Multi-frame Patient Root Query/Retrieve Information Model - FIND" key="TianiVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1.2" name="Tiani Virtual Multi-frame Study Root Query/Retrieve Information Model - FIND" key="TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.3.1.2.3.1" name="Tiani Study Management SOP Class" key="TianiStudyManagement" />
   <uid value="1.2.40.0.13.1.1.3.10" name="Tiani Study Info SOP Class" key="TianiStudyInfo" />
   <uid value="1.2.40.0.13.1.5.1.4.1.1.104.1" name="Tiani Encapsulated Document Storage" key="TianiEncapsulatedDocumentStorage" />
