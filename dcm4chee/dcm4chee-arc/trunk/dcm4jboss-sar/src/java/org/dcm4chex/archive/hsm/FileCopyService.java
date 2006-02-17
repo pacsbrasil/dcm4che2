@@ -92,8 +92,7 @@ public class FileCopyService extends AbstractFileCopyService {
 				    }
 				}
 				storage.storeFile(finfo.getSOPInstanceUID(),
-						finfo.getTransferSyntaxUID(), retrieveAET, availability,
-						userInfo, destPath, finfo.getFilePath(),
+						finfo.getTransferSyntaxUID(), destPath, finfo.getFilePath(),
 						(int) finfo.getFileSize(), finfo.getMd5sum(), fileStatus);
 				iter.remove();
 			} catch (Exception e) {

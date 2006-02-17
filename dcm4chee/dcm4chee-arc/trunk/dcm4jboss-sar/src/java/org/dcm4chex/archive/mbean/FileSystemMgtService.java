@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -63,10 +64,13 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -628,6 +632,7 @@ public class FileSystemMgtService extends TimerSupport {
         isPurging = false;
         return total;
     }
+    
     public int purgeFiles( String purgeDirPath ) {
     	int total;
     	if ( purgeDirPath == null ) {
@@ -869,4 +874,55 @@ public class FileSystemMgtService extends TimerSupport {
         FileSystemMgt fsMgt = newFileSystemMgt();
     	return fsMgt.getStudySize(pk);
     }
+    
+    public String showFileSystemsWithAvailability(int availability)
+    throws RemoteException, FinderException {
+        return toString(newFileSystemMgt().getFileSystemsWithAvailability(availability));    	
+    }
+    
+	private static String toString(FileSystemDTO[] dtos) {
+		StringBuffer sb = new StringBuffer();
+		String nl = System.getProperty("line.separator", "\n");
+		for (int i = 0; i < dtos.length; i++) {
+			sb.append(dtos[i]).append(nl);
+		}
+		return sb.toString();
+	}
+
+	public FileSystemDTO[] getFileSystemsWithAvailability(int availability)
+    throws RemoteException, FinderException {
+        return newFileSystemMgt().getFileSystemsWithAvailability(availability);    	
+    }
+    
+    public String showFileSystemsWithStatus(int status)
+    throws RemoteException, FinderException {
+        return toString(getFileSystemsWithStatus(status));    	
+    }
+    
+    public FileSystemDTO[] getFileSystemsWithStatus(int status)
+    throws RemoteException, FinderException {
+        return newFileSystemMgt().getFileSystemsWithStatus(status);    	
+    }
+    
+    public String showAllFileSystems()
+    throws RemoteException, FinderException {
+        return toString(getAllFileSystems());    	
+    }
+
+    public FileSystemDTO[] getAllFileSystems() throws RemoteException, FinderException {
+        return newFileSystemMgt().getAllFileSystems();    	
+    }
+
+    public void addFileSystems(String dirPath, String retrieveAET,
+    		int availability, int status, String userInfo)
+    throws RemoteException, CreateException {
+        FileSystemDTO dto = new FileSystemDTO();
+        dto.setDirectoryPath(dirPath);
+        dto.setRetrieveAET(retrieveAET);
+        dto.setAvailability(availability);
+        dto.setStatus(status);
+        dto.setUserInfo(userInfo);
+		newFileSystemMgt().addFileSystem(dto);    	
+    }
+
 }

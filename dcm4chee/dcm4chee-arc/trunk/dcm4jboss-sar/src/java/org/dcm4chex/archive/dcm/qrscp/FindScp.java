@@ -45,8 +45,6 @@ import java.sql.SQLException;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
@@ -67,45 +65,49 @@ public class FindScp extends DcmServiceBase {
 
     private final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
 
-    private final QueryRetrieveScpService service;
+    protected final QueryRetrieveScpService service;
     
     private final boolean filterResult;
 
-    private final boolean blockResults;
-	
-	private Logger log;
+	protected final Logger log;
 
-    public FindScp(QueryRetrieveScpService service, boolean filterResult,
-			boolean blockResults) {
+    public FindScp(QueryRetrieveScpService service, boolean filterResult) {
         this.service = service;
 		this.log = service.getLog();
         this.filterResult = filterResult;
-		this.blockResults = blockResults;
     }
 
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
-        final QueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
 			log.debug("Identifier:\n");
 			log.debug(rqData);
             logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
-            queryCmd = QueryCmd.create(rqData, filterResult);
-            queryCmd.execute();
+            return newMultiCFindRsp(rqData);
         } catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-        return new MultiCFindRsp(queryCmd);
     }
 
-    void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
+	protected MultiDimseRsp newMultiCFindRsp(Dataset rqData) throws SQLException {
+        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult);
+        queryCmd.execute();
+		return new MultiCFindRsp(queryCmd);
+	}
+
+	void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
         service.logDicomQuery(keys, alf.newRemoteNode(assoc.getSocket(), assoc
                 .getCallingAET()), cmd.getAffectedSOPClassUID());
     }
 
-    private class MultiCFindRsp implements MultiDimseRsp {
+    protected Dataset getDataset(QueryCmd queryCmd) throws SQLException, 
+    		DcmServiceException {
+		return queryCmd.getDataset();
+	}
+
+	protected class MultiCFindRsp implements MultiDimseRsp {
 
         private final QueryCmd queryCmd;
 
@@ -136,20 +138,12 @@ public class FindScp extends DcmServiceBase {
                     return null;
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
-                Dataset data = queryCmd.getDataset();
-				if (blockResults) {
-					Dataset parent = DcmObjectFactory.getInstance().newDataset();
-					DcmElement sq = parent.putSQ(Tags.DirectoryRecordSeq);
-					sq.addItem(data);
-					for (int i = 1, n = service.getMaxBlockedFindRSP();
-							i <= n && queryCmd.next(); ++i) {
-						sq.addItem(queryCmd.getDataset());
-					}
-					data = parent;
-				}				
+                Dataset data = getDataset(queryCmd);				
 				log.debug("Identifier:\n");
 				log.debug(data);
                 return data;
+            } catch (DcmServiceException e) {
+            	throw e;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);

@@ -406,6 +406,120 @@ accessed studies.</description>
         <type>java.lang.Integer</type>
       </parameter>
       <return-type>long</return-type>
-   </operation>   
+   </operation>
+   <operation impact="INFO">
+      <description>get all configured File System entries from DataBase.
+      </description>
+      <name>getAllFileSystems</name>
+      <parameter>
+        <description>Study pk</description>
+        <name>studyPk</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>get file size of study.
+      </description>
+      <name>showStudySize</name>
+      <parameter>
+        <description>Study pk</description>
+        <name>studyPk</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>get file systems with specified availability.
+      </description>
+      <name>getFileSystemsWithAvailability</name>
+      <parameter>
+        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
+        </description>
+        <name>availability</name>
+        <type>int</type>
+      </parameter>
+      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>show file systems with specified availability.
+      </description>
+      <name>showFileSystemsWithAvailability</name>
+      <parameter>
+        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
+        </description>
+        <name>availability</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>get file systems with specified status.
+      </description>
+      <name>getFileSystemsWithStatus</name>
+      <parameter>
+        <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
+        </description>
+        <name>status</name>
+        <type>int</type>
+      </parameter>
+      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>show file systems with specified status.
+      </description>
+      <name>showFileSystemsWithStatus</name>
+      <parameter>
+        <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
+        </description>
+        <name>status</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>get all configured file systems.
+      </description>
+      <name>getAllFileSystems</name>
+      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>show all configured file systems.
+      </description>
+      <name>showAllFileSystems</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>add file system to configuration.
+      </description>
+      <name>addFileSystems</name>
+      <parameter>
+        <description>Base Directory or URL</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Associated Retrieve AET</description>
+        <name>aet</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
+        </description>
+        <name>availability</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
+        </description>
+        <name>status</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Associated User Info</description>
+        <name>user info</name>
+        <type>java.lang.String</type>
+      </parameter>
+   </operation>
    
 </mbean>

@@ -79,12 +79,6 @@ implements MessageListener, NotificationListener {
 
 	protected String queueName;
 
-	protected String retrieveAET;
-
-	protected String userInfo;
-
-	protected int availability = Availability.NEARLINE;
-
 	protected int concurrency = 1;
 
 	protected int fileStatus = FileStatus.TO_ARCHIVE;
@@ -129,30 +123,6 @@ implements MessageListener, NotificationListener {
 
 	public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
 		this.storeScpServiceName = storeScpServiceName;
-	}
-
-	public final String getRetrieveAET() {
-		return retrieveAET;
-	}
-
-	public final void setRetrieveAET(String aet) {
-		this.retrieveAET = aet;
-	}
-
-	public final String getUserInfo() {
-		return userInfo;
-	}
-
-	public final void setUserInfo(String userInfo) {
-		this.userInfo = userInfo;
-	}
-
-	public final String getAvailability() {
-		return Availability.toString(availability);
-	}
-
-	public final void setAvailability(String availability) {
-		this.availability = Availability.toInt(availability);
 	}
 
 	public final int getConcurrency() {

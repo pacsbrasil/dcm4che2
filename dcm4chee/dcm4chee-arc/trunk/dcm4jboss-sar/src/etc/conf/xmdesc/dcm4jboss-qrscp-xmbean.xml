@@ -171,71 +171,54 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptTianiPatientRootFind"
-      setMethod="setAcceptTianiPatientRootFind">
-      <description>Support Private Tiani Patient Root Query/Retrieve Information Model - FIND SOP Class
+      getMethod="isAcceptPrivateStudyRootFind"
+      setMethod="setAcceptPrivateStudyRootFind">
+      <description>Support Private FIND SOP Class, which returns all available
+        attributs of matching entities - without having to be explicit selected
+        in the FIND request.
       </description>
-      <name>AcceptTianiPatientRootFind</name>
+      <name>AcceptPrivateStudyRootFind</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptTianiStudyRootFind"
-      setMethod="setAcceptTianiStudyRootFind">
-      <description>Support Private Tiani Study Root Query/Retrieve Information Model - FIND SOP Class
+      getMethod="isAcceptBlockedStudyRootFind"
+      setMethod="setAcceptBlockedStudyRootFind">
+      <description><![CDATA[Support Private FIND SOP Class, which sends multiple matching
+        entities blocked in one pending FIND response.]]>
       </description>
-      <name>AcceptTianiStudyRootFind</name>
+      <name>AcceptBlockedStudyRootFind</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptTianiPatientStudyOnlyFind"
-      setMethod="setAcceptTianiPatientStudyOnlyFind">
-      <description>Support Private Tiani Patient Study Only Query/Retrieve Information Model - FIND SOP Class
+      getMethod="isAcceptDeflatedBlockedFind"
+      setMethod="setAcceptDeflatedBlockedFind">
+      <description>Accept Deflated Explicit Value Representation Little Endian
+         Transfer Syntax for Private Blocked FIND Service.
       </description>
-      <name>AcceptTianiPatientStudyOnlyFind</name>
+      <name>AcceptDeflatedBlockedFind</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptTianiBlockedPatientRootFind"
-      setMethod="setAcceptTianiBlockedPatientRootFind">
-      <description>Support Private Tiani Blocked Patient Root Query/Retrieve Information Model - FIND SOP Class
+      getMethod="getMaxBlockedFindRSP"
+      setMethod="setMaxBlockedFindRSP">
+      <description>Maximum number of result records blocked in one 
+      Find Response by Private Blocked FIND services.
       </description>
-      <name>AcceptTianiBlockedPatientRootFind</name>
-      <type>boolean</type>
+      <name>MaximumBlockedFindResponse</name>
+      <type>int</type>
       <descriptors>
-         <value value="true"/>
+         <value value="1000"/>
       </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptTianiBlockedStudyRootFind"
-      setMethod="setAcceptTianiBlockedStudyRootFind">
-      <description>Support Private Tiani Blocked Study Root Query/Retrieve Information Model - FIND SOP Class
-      </description>
-      <name>AcceptTianiBlockedStudyRootFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptTianiBlockedPatientStudyOnlyFind"
-      setMethod="setAcceptTianiBlockedPatientStudyOnlyFind">
-      <description>Support Private Tiani Blocked Patient Study Only Query/Retrieve Information Model - FIND SOP Class
-      </description>
-      <name>AcceptTianiBlockedPatientStudyOnlyFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
+   </attribute>   
    <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
@@ -249,15 +232,58 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptDeflatedBlockedFind"
-      setMethod="setAcceptDeflatedBlockedFind">
-      <description>Accept Deflated Explicit Value Representation Little Endian
-         Transfer Syntax for Tiani Blocked FIND Services.
+      getMethod="isAcceptVirtualMultiframeFind"
+      setMethod="setAcceptVirtualMultiframeFind">
+      <description><![CDATA[Support Private FIND SOP Class, which returns 
+      instance attributes of all (single-frame) CT/MR images of one series as
+      one enhanced CT/MR multi-frame image.]]>
       </description>
-      <name>AcceptDeflatedBlockedFind</name>
+      <name>AcceptVirtualMultiframeFind</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptDeflatedVirtualMultiframeFind"
+      setMethod="setAcceptDeflatedVirtualMultiframeFind">
+      <description>Accept Deflated Explicit Value Representation Little Endian
+         Transfer Syntax for Private Virtual Multiframe FIND Service.
+      </description>
+      <name>AcceptDeflatedVirtualMultiframeFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getVirtualEnhancedCTConfigFile"
+      setMethod="setVirtualEnhancedCTConfigFile">
+      <description><![CDATA[Configuration file which defines included
+      attributes in Enhanced CT Instance enities return by
+      Private Virtual Multiframe FIND Service.      
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>VirtualEnhancedCTConfigFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-vmf/enhanced-ct.xml"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getVirtualEnhancedMRConfigFile"
+      setMethod="setVirtualEnhancedMRConfigFile">
+      <description><![CDATA[Configuration file which defines included
+      attributes in Enhanced MR Instance entities return by
+      Private Virtual Multiframe FIND Service.      
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>VirtualEnhancedMRConfigFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-vmf/enhanced-mr.xml"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -297,18 +323,6 @@ QueryRetrieveScp service.</description>
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getMaxBlockedFindRSP"
-      setMethod="setMaxBlockedFindRSP">
-      <description>Maximum number of result records blocked in one 
-      Find Response from Tiani Blocked Find services.
-      </description>
-      <name>MaximumBlockedFindResponse</name>
-      <type>int</type>
-      <descriptors>
-         <value value="1000"/>
-      </descriptors>
-   </attribute>   
    <attribute access="read-write"
       getMethod="getMaxUIDsPerMoveRQ"
       setMethod="setMaxUIDsPerMoveRQ">

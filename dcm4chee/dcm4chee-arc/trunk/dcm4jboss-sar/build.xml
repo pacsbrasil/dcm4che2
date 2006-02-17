@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.7.4"/>
+	<property name="version" value="2.8.0"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="bin.dir" value="${basedir}/bin"/>
@@ -61,6 +61,8 @@
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/deploy/dcm4jboss-ejb-hsql.jar"/>
 		<pathelement location="${lib.dir}/mogio.jar"/>
+		<pathelement location="${lib.dir}/commons-compress-20050911.jar"/>
+		<pathelement location="${lib.dir}/commons-net-1.4.1.jar"/>
 		<pathelement location="${jboss.home}/bin/
 "/>
 		<pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar"/>

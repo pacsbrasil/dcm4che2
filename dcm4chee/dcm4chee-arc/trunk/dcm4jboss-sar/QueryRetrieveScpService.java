@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -53,13 +52,10 @@ import java.util.Map.Entry;
 
 import javax.management.JMException;
 import javax.management.ObjectName;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -73,11 +69,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
@@ -189,14 +183,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int maxBlockedFindRSP = 10000;
 
 	private int bufferSize = 8192;
-
-	private File virtualEnhancedCTConfigFile;
-	
-	private Dataset virtualEnhancedCTConfig;
-
-	private File virtualEnhancedMRConfigFile;
-
-	private Dataset virtualEnhancedMRConfig;
 	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -206,25 +192,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
     
-    public final String getVirtualEnhancedCTConfigFile() {
-		return virtualEnhancedCTConfigFile.getPath();
-	}
-
-	public final void setVirtualEnhancedCTConfigFile(String path) {
-		this.virtualEnhancedCTConfigFile = 
-			new File(path.replace('/', File.separatorChar));
-	}
-
-	public final String getVirtualEnhancedMRConfigFile() {
-		return virtualEnhancedMRConfigFile.getPath();
-	}
-
-	public final void setVirtualEnhancedMRConfigFile(String path) {
-		this.virtualEnhancedMRConfigFile =
-			new File(path.replace('/', File.separatorChar));
-	}
-
-	public final ObjectName getTLSConfigName() {
+    public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
 
@@ -754,30 +722,4 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	        }
 	    }
 	}
-
-	Dataset getVirtualEnhancedMRConfig() {
-		if (virtualEnhancedMRConfig == null)
-			virtualEnhancedMRConfig = loadVMFConfig(virtualEnhancedMRConfigFile);
-		return virtualEnhancedMRConfig;
-	}
-
-	Dataset getVirtualEnhancedCTConfig() {
-		if (virtualEnhancedCTConfig == null)
-			virtualEnhancedCTConfig = loadVMFConfig(virtualEnhancedCTConfigFile);
-		return virtualEnhancedCTConfig;
-	}
-
-	private Dataset loadVMFConfig(File file) throws ConfigurationException{
-		Dataset ds = DcmObjectFactory.getInstance().newDataset();
-		try {
-	        SAXParserFactory f = SAXParserFactory.newInstance();
-	        SAXParser p = f.newSAXParser();
-			p.parse(FileUtils.resolve(file), ds.getSAXHandler2(null));
-		} catch (Exception e) {
-			throw new ConfigurationException(
-					"Failed to load VMF COnfiguration from " + file);
-		}
-		return ds;
-	}
-
 }
