@@ -1,0 +1,12 @@
+-- Update DB from dcm4jboss-2.7.x to dcm4jboss-2.8.x
+
+CONNECT TO tiani;
+SET CURRENT SCHEMA TIANI;
+
+ALTER TABLE filesystem ADD fs_status INTEGER;
+UPDATE filesystem SET fs_status=0;
+
+CREATE INDEX fs_availability ON filesystem(availability);
+CREATE INDEX fs_status ON filesystem(fs_status);
+
+TERMINATE;

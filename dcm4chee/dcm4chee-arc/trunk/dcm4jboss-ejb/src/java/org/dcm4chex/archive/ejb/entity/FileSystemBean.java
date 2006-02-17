@@ -72,6 +72,14 @@ import org.apache.log4j.Logger;
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
  *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
  *             transaction-type="Supports"
+ *
+ * @ejb.finder signature="java.util.Collection findByAvailability(int availability)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.availability = ?1"
+ *             transaction-type="Supports"
+ *
+ * @ejb.finder signature="java.util.Collection findByStatus(int status)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.status = ?1"
+ *             transaction-type="Supports"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -94,12 +102,13 @@ public abstract class FileSystemBean implements EntityBean {
 	 * @ejb.create-method
 	 */
     public Integer ejbCreate(String dirpath, String aet, int availability,
-    		String userInfo)
+    		int status, String userInfo)
         throws CreateException
     {
 		setDirectoryPath(dirpath);      
 		setRetrieveAET(aet);
 		setAvailability(availability);
+		setStatus(status);
 		setUserInfo(userInfo);
         return null;
     }
@@ -129,6 +138,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getRetrieveAET()
             + ", availability="
             + getAvailability()
+            + ", status="
+            + getStatus()
             + ", userInfo="
             + getUserInfo()
             + "]";
@@ -177,6 +188,17 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setAvailability(int availability);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fs_status"
+     */
+    public abstract int getStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setStatus(int status);
     
     /**
      * @ejb.interface-method

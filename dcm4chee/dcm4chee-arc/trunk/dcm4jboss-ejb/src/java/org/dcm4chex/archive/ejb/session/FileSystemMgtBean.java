@@ -284,7 +284,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	public FileSystemDTO addFileSystem(FileSystemDTO dto)
 			throws CreateException {
 		return toDTO(fileSystemHome.create(dto.getDirectoryPath(),
-				dto.getRetrieveAET(), dto.getAvailability(), dto.getUserInfo()));
+				dto.getRetrieveAET(), dto.getAvailability(), dto.getStatus(),
+				dto.getUserInfo()));
 	}
 
 	/**
@@ -326,6 +327,34 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
+	public FileSystemDTO[] getFileSystemsWithAvailability(int availability) 
+	throws FinderException {
+		Collection c = fileSystemHome.findByAvailability(availability);
+		FileSystemDTO[] dto = new FileSystemDTO[c.size()];
+		Iterator it = c.iterator();
+		for (int i = 0; i < dto.length; i++) {
+			dto[i] = toDTO((FileSystemLocal) it.next());
+		}
+		return dto;
+	}
+	
+	/**
+	 * @ejb.interface-method
+	 */
+	public FileSystemDTO[] getFileSystemsWithStatus(int status) 
+	throws FinderException {
+		Collection c = fileSystemHome.findByStatus(status);
+		FileSystemDTO[] dto = new FileSystemDTO[c.size()];
+		Iterator it = c.iterator();
+		for (int i = 0; i < dto.length; i++) {
+			dto[i] = toDTO((FileSystemLocal) it.next());
+		}
+		return dto;
+	}
+	
+	/**
+	 * @ejb.interface-method
+	 */
 	public void touchStudyOnFileSystem(String siud, String dirPath)
 			throws FinderException, CreateException {
 		try {
@@ -345,6 +374,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		dto.setPk(fs.getPk().intValue());
 		dto.setDirectoryPath(fs.getDirectoryPath());
 		dto.setRetrieveAET(fs.getRetrieveAET());
+		dto.setAvailability(fs.getAvailability());
+		dto.setStatus(fs.getStatus());
+		dto.setUserInfo(fs.getUserInfo());
 		return dto;
 	}
 

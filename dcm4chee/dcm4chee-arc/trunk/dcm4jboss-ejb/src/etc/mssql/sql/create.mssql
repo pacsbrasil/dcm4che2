@@ -203,10 +203,13 @@ CREATE TABLE filesystem (
 	dirpath			VARCHAR(255) NOT NULL,
 	retrieve_aet	VARCHAR(255) NOT NULL,
 	availability	INTEGER NOT NULL,
+	fs_status		INTEGER NOT NULL,
 	user_info		VARCHAR(255)
 );
-CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
-CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);
+CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath);
+CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
+CREATE INDEX fs_availability ON filesystem(availability);
+CREATE INDEX fs_status ON filesystem(fs_status);
 
 CREATE TABLE files (
 	pk              INTEGER IDENTITY(1,1) PRIMARY KEY,
@@ -531,4 +534,7 @@ INSERT INTO users VALUES('user','user');
 INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 
-INSERT INTO ae (aet,hostname,port) VALUES('DCM4JBOSS','localhost',11112);
+INSERT INTO ae (aet,hostname,port)
+	VALUES('DCM4JBOSS','localhost',11112);
+INSERT INTO filesystem (dirpath,retrieve_aet,availability,fs_status)
+	VALUES('archive','DCM4JBOSS',0,0);

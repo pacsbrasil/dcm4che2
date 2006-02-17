@@ -35,7 +35,7 @@ CREATE TABLE patient (
 	pat_sex		  	VARCHAR(254),
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	pat_attrs		BLOB(64000),
+	pat_attrs		BLOB(640000),
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
@@ -68,7 +68,7 @@ CREATE TABLE study (
 	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	study_attrs		BLOB(64000),
+	study_attrs		BLOB(640000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
@@ -105,7 +105,7 @@ CREATE TABLE mpps (
 	mpps_status		INTEGER NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	mpps_attrs		BLOB(64000),
+	mpps_attrs		BLOB(640000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
@@ -139,7 +139,7 @@ CREATE TABLE series (
 	availability	INTEGER NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	series_attrs	BLOB(64000),
+	series_attrs	BLOB(640000),
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
 );
@@ -201,7 +201,7 @@ CREATE TABLE instance (
 	commitment			SMALLINT NOT NULL,
 	created_time		TIMESTAMP,
 	updated_time		TIMESTAMP,
-	inst_attrs			BLOB(64000),
+	inst_attrs			BLOB(640000),
 FOREIGN KEY (series_fk)	REFERENCES series(pk),
 FOREIGN KEY (srcode_fk)	REFERENCES code(pk),
 FOREIGN KEY (media_fk)	REFERENCES media(pk)
@@ -225,10 +225,13 @@ CREATE TABLE filesystem (
 	dirpath			VARCHAR(254) NOT NULL,
 	retrieve_aet	VARCHAR(254) NOT NULL,
 	availability	INTEGER NOT NULL,
+	fs_status		INTEGER NOT NULL,
 	user_info		VARCHAR(254)
 );
-CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
-CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);
+CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath);
+CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
+CREATE INDEX fs_availability ON filesystem(availability);
+CREATE INDEX fs_status ON filesystem(fs_status);
 
 CREATE SEQUENCE study_on_fs_pk_seq;
 CREATE TABLE study_on_fs (
@@ -282,7 +285,7 @@ CREATE TABLE mwl_item (
 	study_iuid      VARCHAR(254) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	item_attrs		BLOB(64000),
+	item_attrs		BLOB(640000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
@@ -309,7 +312,7 @@ CREATE TABLE gpsps (
 	gpsps_status    INTEGER,
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
-	item_attrs      BLOB(64000),
+	item_attrs      BLOB(640000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
@@ -396,7 +399,7 @@ CREATE TABLE hp (
 	hp_level        INTEGER,
 	num_priors      INTEGER,
 	num_screens     INTEGER,
-	hp_attrs        BLOB(64000),
+	hp_attrs        BLOB(640000),
 FOREIGN KEY (user_fk) REFERENCES code(pk)
 );
 CREATE INDEX hp_user_fk ON hp(user_fk);
@@ -452,7 +455,7 @@ CREATE TABLE priv_patient (
 	priv_type		INTEGER NOT NULL,
 	pat_id         	VARCHAR(254),
 	pat_id_issuer  	VARCHAR(254),
-	pat_attrs		BLOB(64000)
+	pat_attrs		BLOB(640000)
 );
 CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
 CREATE INDEX priv_pat_type ON priv_patient(priv_type);
@@ -463,7 +466,7 @@ CREATE TABLE priv_study (
 	patient_fk      INTEGER,
 	priv_type		INTEGER NOT NULL,
 	study_iuid      VARCHAR(254) NOT NULL,
-	study_attrs		BLOB(64000),
+	study_attrs		BLOB(640000),
 FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
 );
 CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
@@ -476,7 +479,7 @@ CREATE TABLE priv_series (
 	study_fk		INTEGER,
 	priv_type		INTEGER NOT NULL,
 	series_iuid     VARCHAR(254) NOT NULL,
-	series_attrs	BLOB(64000),
+	series_attrs	BLOB(640000),
 FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
 );
 CREATE INDEX priv_study_fk ON priv_series(study_fk);
@@ -490,7 +493,7 @@ CREATE TABLE priv_instance (
 	series_fk		INTEGER,
 	priv_type		INTEGER NOT NULL,
 	sop_iuid		VARCHAR(254) NOT NULL,
-	inst_attrs		BLOB(64000),
+	inst_attrs		BLOB(640000),
 FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
 );
 CREATE INDEX priv_series_fk ON priv_instance(series_fk);
@@ -545,7 +548,7 @@ CREATE TABLE audit_record(
 	patient_name	VARCHAR(254),
 	patient_name_up GENERATED ALWAYS AS (UPPER(patient_name)),	
 	patient_id 		VARCHAR(254),
-	xml_data 		CLOB(64000)
+	xml_data 		CLOB(640000)
 );
 CREATE INDEX arr_msg_type ON audit_record(msg_type);
 CREATE INDEX arr_host_name ON audit_record(host_name_up);
@@ -579,6 +582,8 @@ INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(NEXTVAL FOR ae_pk_seq,'DCM4JBOSS','localhost',11112);
+INSERT INTO filesystem (pk,dirpath,retrieve_aet,availability,fs_status)
+	VALUES(NEXTVAL FOR filesystem_pk_seq.nextval,'archive','DCM4JBOSS',0,0);
 
 GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE code TO USER tiani;

@@ -37,93 +37,40 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.ejb.interfaces;
 
-import java.io.Serializable;
+package org.dcm4chex.archive.common;
+
+import java.util.Arrays;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since 13.09.2004
- *
+ * @since Jan 25, 2006
  */
-public class FileSystemDTO implements Serializable {
+public class FileSystemStatus {
 
-    private static final long serialVersionUID = 3257844398468315445L;
+    private static final String[] ENUM = { 
+    	"RW+",
+    	"RW",
+    	"RO",
+    	"ACTIVE_LUN",
+    	"NEXT_LUN"
+    };
 
-    private int pk;
+    public static final int DEF_RW = 0;
+    public static final int RW = 1;
+    public static final int RO = 2;
+    public static final int ACTIVE_LUN = 3;
+    public static final int NEXT_LUN = 4;
 
-    private String directoryPath;
-
-    private String retrieveAET;
-
-    private int availability;
-    
-    private int status;
-    
-    private String userInfo;
-    
-    public StringBuffer toString(StringBuffer sb) {
-        sb.append("FileSystem[pk=").append(pk);
-        sb.append(", dir=").append(directoryPath);
-        sb.append(", aet=").append(retrieveAET);
-        sb.append(", availability=").append(availability);
-        sb.append(", status=").append(status);
-        sb.append(", userinfo=").append(userInfo);
-        sb.append("]");
-        return sb;
+    public static final String toString(int value) {
+        return ENUM[value];
     }
 
-    public String toString() {
-        return toString(new StringBuffer()).toString();
+    public static final int toInt(String s) {        
+        final int index = Arrays.asList(ENUM).indexOf(s);
+        if (index == -1)
+            throw new IllegalArgumentException(s);
+        return index;
     }
-
-    public final int getPk() {
-        return pk;
-    }
-
-    public final void setPk(int pk) {
-        this.pk = pk;
-    }
-
-    public final String getDirectoryPath() {
-        return directoryPath;
-    }
-
-    public final void setDirectoryPath(String directoryPath) {
-        this.directoryPath = directoryPath;
-    }
-
-    public final String getRetrieveAET() {
-        return retrieveAET;
-    }
-
-    public final void setRetrieveAET(String retrieveAET) {
-        this.retrieveAET = retrieveAET;
-    }
-
-	public final int getAvailability() {
-		return availability;
-	}
-
-	public final void setAvailability(int availability) {
-		this.availability = availability;
-	}
-
-	public final int getStatus() {
-		return status;
-	}
-
-	public final void setStatus(int status) {
-		this.status = status;
-	}
-
-	public final String getUserInfo() {
-		return userInfo;
-	}
-
-	public final void setUserInfo(String userInfo) {
-		this.userInfo = userInfo;
-	}
-
 }
