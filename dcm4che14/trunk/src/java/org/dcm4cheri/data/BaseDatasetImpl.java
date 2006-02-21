@@ -570,6 +570,27 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
         return true;
     }
 
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (!(o instanceof Dataset))
+        {
+            return false;
+        }
+        Dataset other = (Dataset) o;
+        Iterator it = iterator();
+        Iterator otherIt = other.iterator();
+        while (it.hasNext() && otherIt.hasNext())
+        {
+            if (!it.next().equals(otherIt.next()))
+                return false;
+        }
+        return !it.hasNext() && !otherIt.hasNext();
+    }
+    
     private boolean match(DcmElementImpl key, boolean ignorePNCase,
             boolean ignoreEmpty, Charset keyCS) {
         final int tag = key.tag();
