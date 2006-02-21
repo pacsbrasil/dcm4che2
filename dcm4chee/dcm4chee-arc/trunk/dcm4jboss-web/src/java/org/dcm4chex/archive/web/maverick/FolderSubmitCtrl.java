@@ -63,6 +63,8 @@ import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 import org.dcm4chex.archive.web.maverick.tf.TFModel;
 import org.dcm4chex.archive.web.maverick.tf.TeachingFileDelegate;
+import org.dcm4chex.archive.web.maverick.xdsi.XDSIExportDelegate;
+import org.dcm4chex.archive.web.maverick.xdsi.XDSIModel;
 
 /**
  * 
@@ -74,6 +76,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     
 	public static final String LOGOUT = "logout";
 	private static final String EXPORT_SELECTOR = "exportSelector";
+	private static final String XDSI_EXPORT = "xdsi_export";
 	
     private static final int MOVE_PRIOR = 0;
     
@@ -82,6 +85,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     
     private FolderMoveDelegate moveDelegate = null;
 	private TeachingFileDelegate tfDelegate;
+	private XDSIExportDelegate xdsiDelegate;
 
 
 
@@ -151,6 +155,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	                    || rq.getParameter("move.x") != null) { return move(); }
 	            if (rq.getParameter("exportTF") != null
 	                    || rq.getParameter("exportTF.x") != null) { return exportTF(); }
+	            if (rq.getParameter("exportXDSI") != null
+	                    || rq.getParameter("exportXDSI.x") != null) { return exportXDSI(); }
             }
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
@@ -463,7 +469,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     			tfDelegate.init(getCtx());
     			getCtx().getRequest().getSession().setAttribute(TeachingFileDelegate.TF_ATTRNAME, tfDelegate);
     		}
-        	Set instances = tfDelegate.getSelectedInstances(folderForm.getStickyPatients(),
+        	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
 					 folderForm.getStickyStudies(),
 					 folderForm.getStickySeries(),
 					 folderForm.getStickyInstances());
@@ -476,6 +482,35 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		return FOLDER;
     	}
 		return EXPORT_SELECTOR;
+    }
+   
+    /**
+     * Export selected instance to a Teaching Filesystem.
+     * <p>
+     * 
+     * @return the name of the next view.
+     */
+    private String exportXDSI() {
+		FolderForm folderForm = (FolderForm) getForm();
+    	try {
+    		if ( xdsiDelegate == null ) {
+    			xdsiDelegate = new XDSIExportDelegate();
+    			xdsiDelegate.init(getCtx());
+    			getCtx().getRequest().getSession().setAttribute(TeachingFileDelegate.TF_ATTRNAME, xdsiDelegate);
+    		}
+        	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
+					 folderForm.getStickyStudies(),
+					 folderForm.getStickySeries(),
+					 folderForm.getStickyInstances());
+        	if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
+
+    		XDSIModel.getModel( getCtx().getRequest() ).setInstances(instances); 
+    	} catch ( Exception x ) {
+    		log.error("Error in XDSI export! :", x);
+    		folderForm.setPopupMsg("Error:"+x.getMessage());
+    		return FOLDER;
+    	}
+		return XDSI_EXPORT;
     }
     
     /**

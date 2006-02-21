@@ -46,6 +46,7 @@ default-transform-type="xslt">
 	    </view>
       <view ref="logout" />
 	  <view name="exportSelector" type="redirect" path="tfSelector.m"/>
+	  <view name="xdsi_export" type="redirect" path="xdsiExport.m"/>
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
@@ -353,6 +354,20 @@ default-transform-type="xslt">
 	    <view name="cancel" type="redirect" path="folder.m" />        
      </command>
     
+	<!-- ****** XDSI related commands ******-->
+
+    <command name="xdsiExport">
+        <controller class="org.dcm4chex.archive.web.maverick.xdsi.XDSIExportCtrl" />    
+	    <view name="xdsi_export">
+    	  <transform path="xdsi/xdsi_export.xsl" />
+	    </view>
+	    <view name="error">
+    	  <transform path="xdsi/xdsi_export.xsl" />
+	    </view>
+	    <view name="success" type="redirect" path="foldersubmit.m?popupMsg=XDS-I Export done!&amp;filter.x=1" />        
+	    <view name="cancel" type="redirect" path="folder.m" />        
+     </command>
+     
   </commands>
 </maverick>
 

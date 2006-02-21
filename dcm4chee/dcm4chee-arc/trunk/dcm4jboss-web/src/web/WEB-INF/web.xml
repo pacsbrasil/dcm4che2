@@ -173,6 +173,11 @@
 			<param-value>tiani.archive:service=ExportManager</param-value>
 		</init-param>
 
+		<init-param>
+			<param-name>xdsiServiceName</param-name>
+			<param-value>tiani.archive:service=XDS-I</param-value>
+		</init-param>
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	

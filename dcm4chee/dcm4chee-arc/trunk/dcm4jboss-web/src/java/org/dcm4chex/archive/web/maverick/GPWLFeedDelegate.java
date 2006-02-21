@@ -47,6 +47,7 @@ import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.web.maverick.util.CodeItem;
 import org.infohazard.maverick.flow.ControllerContext;
 import org.jboss.mx.util.MBeanServerLocator;
 
@@ -87,7 +88,7 @@ public class GPWLFeedDelegate {
         	String[] sa = StringUtils.split( (String) o, ',');
         	for ( int i = 0 ; i < sa.length ; i++ ) {
         		if ( sa[i].length() > 3)
-        			l.add( new CodeItem( sa[i] ) );
+        			l.add( CodeItem.valueofCDM( sa[i] ) );//codeString format: <codeValue>[^<designator>]^<meaning>
         	}
         }
         return l;
@@ -108,7 +109,7 @@ public class GPWLFeedDelegate {
         	String[] sa = StringUtils.split( (String) o, ',');
         	for ( int i = 0 ; i < sa.length ; i++ ) {
         		if ( sa[i].length() > 3)
-        			l.add( new CodeItem( sa[i] ) );
+        			l.add( CodeItem.valueofCDM( sa[i] ) );
         	}
         }
         return l;
@@ -133,57 +134,4 @@ public class GPWLFeedDelegate {
         }
     }
     
-    public class CodeItem {
-    	private String codeValue;
-    	private String codeDesignator;
-    	private String codeMeaning;
-    	
-    	public CodeItem( String codeString ) {
-    		String[] sa = StringUtils.split( codeString, '^' );
-    		codeValue = sa[0];
-    		if ( sa.length > 2 ) {
-    			codeDesignator = sa[1];
-    			codeMeaning = sa[2];
-    		} else {
-    			codeMeaning = sa[1];
-    		}
-    		
-    	}
-		/**
-		 * @return Returns the codeDesignator.
-		 */
-		public String getCodeDesignator() {
-			return codeDesignator;
-		}
-		/**
-		 * @param codeDesignator The codeDesignator to set.
-		 */
-		public void setCodeDesignator(String codeDesignator) {
-			this.codeDesignator = codeDesignator;
-		}
-		/**
-		 * @return Returns the codeMeaning.
-		 */
-		public String getCodeMeaning() {
-			return codeMeaning;
-		}
-		/**
-		 * @param codeMeaning The codeMeaning to set.
-		 */
-		public void setCodeMeaning(String codeMeaning) {
-			this.codeMeaning = codeMeaning;
-		}
-		/**
-		 * @return Returns the codeValue.
-		 */
-		public String getCodeValue() {
-			return codeValue;
-		}
-		/**
-		 * @param codeValue The codeValue to set.
-		 */
-		public void setCodeValue(String codeValue) {
-			this.codeValue = codeValue;
-		}
-    }
 }

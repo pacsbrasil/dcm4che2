@@ -132,6 +132,12 @@ img.logo {
 	background : green;
 }
 
+.listSelection {
+	background-color : #ccddcc;
+	width : 300px; 
+	border : 6px solid #ccddcc;
+}
+
 BODY {
 	color : #666666;
 }
