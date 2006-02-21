@@ -209,7 +209,7 @@ public class KeyObjectService extends ServiceMBeanSupport {
     /**
      * Creates a new Key Object Selection Dataset.
      * <p>
-     * The content sequence will contain all items from <code>conetntItems</code> and references 
+     * The content sequence will contain all items from <code>contentItems</code> and references 
      * to all instances given in iuids.
      * <p>
      * If instances from differet studies (but same patient) are given, the dataset will contain the Identical Document sequence with
