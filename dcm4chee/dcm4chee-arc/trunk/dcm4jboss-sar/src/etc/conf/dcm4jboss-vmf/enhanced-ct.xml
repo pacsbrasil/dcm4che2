@@ -62,6 +62,12 @@
   <attr tag="00101020" vr="DS"/>
   <!--Patient's Weight-->
   <attr tag="00101030" vr="DS"/>
+  <!--Patient Comments-->
+  <attr tag="00104000" vr="LT"/>
+  <!--Contrast/Bolus Agent-->
+  <attr tag="00180010" vr="LO"/>
+  <!--Contrast/Bolus Agent Sequence-->
+  <attr tag="00180012" vr="SQ"/>
   <!--Device Serial Number-->
   <attr tag="00181000" vr="LO"/>
   <!--Software Version(s)-->
@@ -86,6 +92,8 @@
   <attr tag="00200013" vr="IS"/>
   <!--Frame of Reference UID-->
   <attr tag="00200052" vr="UI"/>
+  <!--Position Reference Indicator-->
+  <attr tag="00201040" vr="LO"/>
   <!--Samples per Pixel-->
   <attr tag="00280002" vr="US"/>
   <!--Photometric Interpretation-->
@@ -109,18 +117,7 @@
   <!--Shared Functional Groups Sequence-->
   <attr tag="52009229" vr="SQ">
     <item>
-      <!--CT Acquisition Type Sequence- ->
-      <attr tag="00189301" vr="SQ">
-        <item>
-          <!- -Acquisition Type- ->
-          <attr tag="00189302" vr="CS">SEQUENCED</attr>
-          <!- -Constant Volume Flag- ->
-          <attr tag="00189333" vr="CS" len="2">NO</attr>
-          <!- -Fluoroscopy Flag- ->
-          <attr tag="00189334" vr="CS" len="2">NO</attr>
-        </item>
-      </attr>
-      <!- -CT Acquisition Details Sequence-->
+      <!--CT Acquisition Details Sequence-->
       <attr tag="00189304" vr="SQ">
         <item>
           <!--Data Collection Diameter-->
@@ -139,11 +136,7 @@
           <attr tag="00189307" vr="FD"/>
         </item>
       </attr>
-      <!--CT Table Dynamics Sequence- ->
-      <attr tag="00189308" vr="SQ">
-        <item/>
-      </attr>
-      <!- -CT Geometry Sequence-->
+      <!--CT Geometry Sequence-->
       <attr tag="00189312" vr="SQ">
         <item>
           <!--Distance Source to Detector-->
@@ -199,38 +192,7 @@
           <attr tag="00187050" vr="CS"/>
         </item>
       </attr>
-      <!--CT Image Frame Type Sequence- ->
-      <attr tag="00189329" vr="SQ" len="-1">
-        <item off="2508" len="-1">
-          <!- -Frame Type- ->
-          <attr tag="00089007" vr="CS" len="36">ORIGINAL\PRIMARY\CARDIAC_GATED\NONE</attr>
-          <!- -Pixel Presentation- ->
-          <attr tag="00089205" vr="CS" len="10">MONOCHROME</attr>
-          <!- -Volumetric Properties- ->
-          <attr tag="00089206" vr="CS" len="6">VOLUME</attr>
-          <!- -Volume Based Calculation Technique- ->
-          <attr tag="00089207" vr="CS" len="4">NONE</attr>
-        </item>
-      </attr>
-      <!- -Frame Anatomy Sequence- ->
-      <attr tag="00209071" vr="SQ" len="-1">
-        <item off="2632" len="-1">
-          <!- -Anatomic Region Sequence- ->
-          <attr tag="00082218" vr="SQ" len="-1">
-            <item off="2652" len="-1">
-              <!- -Code Value- ->
-              <attr tag="00080100" vr="SH" len="8">T-32000</attr>
-              <!- -Coding Scheme Designator- ->
-              <attr tag="00080102" vr="SH" len="4">SNM3</attr>
-              <!- -Code Meaning- ->
-              <attr tag="00080104" vr="LO" len="6">Heart</attr>
-            </item>
-          </attr>
-          <!- -Frame Laterality- ->
-          <attr tag="00209072" vr="CS" len="2">U</attr>
-        </item>
-      </attr>
-      <!- -Plane Orientation Sequence-->
+      <!--Plane Orientation Sequence-->
       <attr tag="00209116" vr="SQ">
         <item>
           <!--Image Orientation (Patient)-->
@@ -268,33 +230,10 @@
           <attr tag="00281054" vr="LO"/>
         </item>
       </attr>
-      <!--CT Position Sequence- ->
-      <attr tag="00189326" vr="SQ">
-        <item>
-          <!- -Data Collection Center (Patient)- ->
-          <attr tag="00189313" vr="FD"/>
-          <!- -Reconstruction Target Center (Patient)- ->
-          <attr tag="00189318" vr="FD"/>
-          <!- -Table Position- ->
-          <attr tag="00189327" vr="FD"/>
-        </item>
-      </attr>
-      <!- -Frame Content Sequence-->
+      <!--Frame Content Sequence-->
       <attr tag="00209111" vr="SQ">
         <item>
-          <!--Frame Acquisition Datetime- ->
-          <attr tag="00189074" vr="DT" len="18">20050610101606.512</attr>
-          <!- -Frame Reference Datetime- ->
-          <attr tag="00189151" vr="DT" len="18">20050610101607.512</attr>
-          <!- -Frame Acquisition Duration- ->
-          <attr tag="00189220" vr="FD" len="8"/>
-          <!- -Stack ID- ->
-          <attr tag="00209056" vr="SH" len="2">1</attr>
-          <!- -In-Stack Position Number- ->
-          <attr tag="00209057" vr="UL" len="4">54</attr>
-          <!- -Frame Acquisition Number- ->
-          <attr tag="00209156" vr="US" len="2">1</attr>
-          <!- -Acquisition Date-->
+          <!--Acquisition Date-->
           <attr tag="00080022" vr="DA"/>
           <!--Content Date-->
           <attr tag="00080023" vr="DA"/>
@@ -317,6 +256,4 @@
       </attr>      
     </item>    
   </attr>
-  <!--Per-frame Functional Groups Sequence-->
-  <attr tag="52009230" vr="SQ"/>
 </dataset>

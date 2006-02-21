@@ -64,10 +64,8 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
-import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -889,27 +887,27 @@ public class FileSystemMgtService extends TimerSupport {
 		return sb.toString();
 	}
 
-	public FileSystemDTO[] getFileSystemsWithAvailability(int availability)
+	public FileSystemDTO[] listFileSystemsWithAvailability(int availability)
     throws RemoteException, FinderException {
         return newFileSystemMgt().getFileSystemsWithAvailability(availability);    	
     }
     
     public String showFileSystemsWithStatus(int status)
     throws RemoteException, FinderException {
-        return toString(getFileSystemsWithStatus(status));    	
+        return toString(listFileSystemsWithStatus(status));    	
     }
     
-    public FileSystemDTO[] getFileSystemsWithStatus(int status)
+    public FileSystemDTO[] listFileSystemsWithStatus(int status)
     throws RemoteException, FinderException {
         return newFileSystemMgt().getFileSystemsWithStatus(status);    	
     }
     
     public String showAllFileSystems()
     throws RemoteException, FinderException {
-        return toString(getAllFileSystems());    	
+        return toString(listAllFileSystems());    	
     }
 
-    public FileSystemDTO[] getAllFileSystems() throws RemoteException, FinderException {
+    public FileSystemDTO[] listAllFileSystems() throws RemoteException, FinderException {
         return newFileSystemMgt().getAllFileSystems();    	
     }
 

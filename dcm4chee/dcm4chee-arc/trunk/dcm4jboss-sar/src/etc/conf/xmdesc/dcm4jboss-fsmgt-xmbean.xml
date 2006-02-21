@@ -408,31 +408,9 @@ accessed studies.</description>
       <return-type>long</return-type>
    </operation>
    <operation impact="INFO">
-      <description>get all configured File System entries from DataBase.
+      <description>return file systems with specified availability.
       </description>
-      <name>getAllFileSystems</name>
-      <parameter>
-        <description>Study pk</description>
-        <name>studyPk</name>
-        <type>java.lang.Integer</type>
-      </parameter>
-      <return-type>long</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>get file size of study.
-      </description>
-      <name>showStudySize</name>
-      <parameter>
-        <description>Study pk</description>
-        <name>studyPk</name>
-        <type>java.lang.Integer</type>
-      </parameter>
-      <return-type>long</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>get file systems with specified availability.
-      </description>
-      <name>getFileSystemsWithAvailability</name>
+      <name>listFileSystemsWithAvailability</name>
       <parameter>
         <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
         </description>
@@ -454,9 +432,9 @@ accessed studies.</description>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="INFO">
-      <description>get file systems with specified status.
+      <description>return file systems with specified status.
       </description>
-      <name>getFileSystemsWithStatus</name>
+      <name>listFileSystemsWithStatus</name>
       <parameter>
         <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
         </description>
@@ -478,9 +456,9 @@ accessed studies.</description>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="INFO">
-      <description>get all configured file systems.
+      <description>return all configured file systems.
       </description>
-      <name>getAllFileSystems</name>
+      <name>listAllFileSystems</name>
       <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
    </operation>
    <operation impact="INFO">

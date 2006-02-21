@@ -40,11 +40,15 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
+import java.util.Iterator;
+
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4che.util.UIDGenerator;
+import org.jboss.logging.Logger;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -52,6 +56,9 @@ import org.dcm4che.net.DcmServiceException;
  * @since Feb 1, 2006
  */
 class VMFBuilder {
+    private static final int[] SHARED_FG = {
+        Tags.SharedFunctionalGroupsSeq,
+    };
 	private static final int[] COMMON = {
 		Tags.SOPClassUID,
 		Tags.Rows,
@@ -60,57 +67,86 @@ class VMFBuilder {
 		Tags.BitsStored,
 		Tags.HighBit
 	};
-	private final QueryRetrieveScpService service;
+    
 	private final Dataset result;
+    private final Dataset sharedFGs;
+    private final DcmElement perFrameFG;
+    private final Dataset fgCfg;
 	private final Dataset common;
 	private int frames = 0;
+    private final Logger log;
 	
-	private VMFBuilder(QueryRetrieveScpService service, Dataset firstFrame,
-			Dataset cfg) {
-		this.service = service;
+	public VMFBuilder(QueryRetrieveScpService service, Dataset firstFrame,
+            Dataset cfg) {
+        this.log = service.getLog();
 		this.result = DcmObjectFactory.getInstance().newDataset();
-		this.result.putAll(cfg);
+		this.result.putAll(cfg.exclude(SHARED_FG));
 		this.result.putAll(firstFrame.subSet(cfg));
+        this.result.putUI(Tags.SOPInstanceUID, 
+                UIDGenerator.getInstance().createUID());
+        this.sharedFGs = result.putSQ(Tags.SharedFunctionalGroupsSeq).addNewItem();
+        this.perFrameFG = result.putSQ(Tags.PerFrameFunctionalGroupsSeq);
+        this.fgCfg = cfg.get(Tags.SharedFunctionalGroupsSeq).getItem();
 		this.common = result.subSet(COMMON);
+        addFrameInternal(firstFrame);
 	}
 
-	public static VMFBuilder newVMFBuilder(QueryRetrieveScpService service, Dataset dataset) 
-	throws DcmServiceException {
-		String cuid = dataset.getString(Tags.SOPClassUID);		
-		if (UIDs.MRImageStorage.equals(cuid))
-			return new MR(service, dataset);
-		if (UIDs.CTImageStorage.equals(cuid))
-			return new CT(service, dataset);
-		throw new DcmServiceException(0xC001, 
-				"Series contains instance(s) of different SOP Classes than MR or CT - " + cuid);
-	}
-
-	private static class MR extends VMFBuilder {
-
-		public MR(QueryRetrieveScpService service, Dataset dataset) {
-			super(service, dataset, service.getVirtualEnhancedMRConfig());			
-		}
-
-	}
-
-	private static class CT extends VMFBuilder {
-
-		public CT(QueryRetrieveScpService service, Dataset dataset) {
-			super(service, dataset, service.getVirtualEnhancedCTConfig());
-		}
-
-	}
-
-	
 	public void addFrame(Dataset frame) throws DcmServiceException {
 		if (!frame.subSet(COMMON).equals(common))
 			throw new DcmServiceException(0xC002, 
 					"Series contains instance(s) which cannot be put into one MF image");
-		
-		frames++;		
+		addFrameInternal(frame);
 	}
 
-	public Dataset getResult() {
+	private void addFrameInternal(Dataset frame)
+    {
+        if (log.isDebugEnabled())
+            log.debug("Adding " + (frames + 1) + " frame.");
+        boolean firstFrame = perFrameFG.isEmpty();
+        Dataset frameFG = perFrameFG.addNewItem();
+        Dataset refImg = frameFG.putSQ(Tags.RefImageSeq).addNewItem();
+        refImg.putUI(Tags.RefSOPClassUID, frame.getString(Tags.SOPClassUID));
+        refImg.putUI(Tags.RefSOPInstanceUID, frame.getString(Tags.SOPInstanceUID));
+        for (Iterator iter = fgCfg.iterator(); iter.hasNext();)
+        {
+            DcmElement fgSq = (DcmElement) iter.next();
+            Dataset fgFilter = fgSq.getItem();
+            Dataset fg = frame.subSet(fgFilter);
+            int fgSqTag = fgSq.tag();
+            DcmElement frameFgSq = frameFG.putSQ(fgSqTag);
+            DcmElement sharedFgSq = sharedFGs.get(fgSqTag);
+            if (sharedFgSq != null) {
+                Dataset sharedFg = sharedFgSq.getItem();
+                if (sharedFg.equals(fg)) {
+                    if (log.isDebugEnabled())
+                        log.debug("Share Function group " + fgSq);
+                    frameFgSq.addItem(sharedFg);
+                    continue;
+                }
+                sharedFGs.remove(fgSqTag);
+                if (log.isDebugEnabled())
+                    log.debug("Stop shareing Function group " + fgSq);
+            }
+            Dataset newFg = frameFgSq.addNewItem();
+            newFg.putAll(fg);
+            if (firstFrame) {
+                sharedFGs.putSQ(fgSqTag).addItem(newFg);
+            }
+        }
+        frames++;
+    }
+
+    public Dataset getResult() {
+        for (Iterator iter = sharedFGs.iterator(); iter.hasNext();)
+        {
+            DcmElement fgSq = (DcmElement) iter.next();
+            int fgSqTag = fgSq.tag();
+            for (int i = 0; i < frames; i++)
+            {
+                Dataset frameFG = perFrameFG.getItem(i);
+                frameFG.remove(fgSqTag);
+            }
+        }
 		result.putIS(Tags.NumberOfFrames, frames);
 		return result;
 	}

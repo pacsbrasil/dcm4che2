@@ -755,6 +755,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	    }
 	}
 
+    Dataset getVMFConfig(String cuid) throws DcmServiceException
+    {
+        if (UIDs.MRImageStorage.equals(cuid))
+            return getVirtualEnhancedMRConfig();
+        if (UIDs.CTImageStorage.equals(cuid))
+            return getVirtualEnhancedCTConfig();
+        throw new DcmServiceException(0xC001, 
+                "Series contains instance(s) of different SOP Classes than MR or CT - " + cuid);
+    }
+
 	Dataset getVirtualEnhancedMRConfig() {
 		if (virtualEnhancedMRConfig == null)
 			virtualEnhancedMRConfig = loadVMFConfig(virtualEnhancedMRConfigFile);

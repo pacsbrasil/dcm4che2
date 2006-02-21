@@ -111,10 +111,10 @@ class VMFFindScp extends FindScp {
 						queryCmd.execute();
 						if (!queryCmd.next())
 							continue;
-						final Dataset dataset = queryCmd.getDataset();
-						VMFBuilder builder = VMFBuilder.newVMFBuilder(service,
-								dataset);
-						builder.addFrame(dataset);
+						final Dataset dataset = queryCmd.getDataset();                        
+						VMFBuilder builder = new VMFBuilder(service, dataset,
+                                service.getVMFConfig(dataset.getString(Tags.SOPClassUID)));
+//						builder.addFrame(dataset);
 						while (queryCmd.next()) {
 							if (canceled)
 								return null;
@@ -135,7 +135,7 @@ class VMFFindScp extends FindScp {
     		return null;
         }
 
-		public void release() {
+        public void release() {
 			// TODO Auto-generated method stub
 			
 		}

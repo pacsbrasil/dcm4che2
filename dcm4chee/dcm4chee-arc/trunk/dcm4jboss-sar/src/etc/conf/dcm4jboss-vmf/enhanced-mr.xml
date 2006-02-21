@@ -1,2146 +1,245 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dicom>
-<!--Group Length-->
-<attr tag="00020000" vr="UL" len="4">192</attr>
-<!--File Meta Information Version-->
-<attr tag="00020001" vr="OB" len="2">00\01</attr>
-<!--Media Storage SOP Class UID-->
-<attr tag="00020002" vr="UI" len="28">1.2.840.10008.5.1.4.1.1.4.1</attr>
-<!--Media Storage SOP Instance UID-->
-<attr tag="00020003" vr="UI" len="46">1.3.6.1.4.1.5962.1.1.5002.2.1.1118413147.3424</attr>
-<!--Transfer Syntax UID-->
-<attr tag="00020010" vr="UI" len="20">1.2.840.10008.1.2.1</attr>
-<!--Implementation Class UID-->
-<attr tag="00020012" vr="UI" len="18">1.3.6.1.4.1.5962.2</attr>
-<!--Implementation Version Name-->
-<attr tag="00020013" vr="SH" len="10">DCTOOL100</attr>
-<!--Source Application Entity Title-->
-<attr tag="00020016" vr="AE" len="8">CLUNIE1</attr>
-<!--Specific Character Set-->
-<attr tag="00080005" vr="CS" len="10">ISO_IR 100</attr>
-<!--Image Type-->
-<attr tag="00080008" vr="CS" len="32">ORIGINAL\PRIMARY\PERFUSION\NONE</attr>
-<!--Instance Creation Date-->
-<attr tag="00080012" vr="DA" len="8">20050610</attr>
-<!--Instance Creation Time-->
-<attr tag="00080013" vr="TM" len="6">102449</attr>
-<!--Instance Creator UID-->
-<attr tag="00080014" vr="UI" len="20">1.3.46.670589.5.2.2</attr>
-<!--SOP Class UID-->
-<attr tag="00080016" vr="UI" len="28">1.2.840.10008.5.1.4.1.1.4.1</attr>
-<!--SOP Instance UID-->
-<attr tag="00080018" vr="UI" len="46">1.3.6.1.4.1.5962.1.1.5002.2.1.1118413147.3424</attr>
-<!--Study Date-->
-<attr tag="00080020" vr="DA" len="8">20050610</attr>
-<!--Series Date-->
-<attr tag="00080021" vr="DA" len="8">20050610</attr>
-<!--Content Date-->
-<attr tag="00080023" vr="DA" len="8">20050610</attr>
-<!--Acquisition Datetime-->
-<attr tag="0008002A" vr="DT" len="18">20050610105914.850</attr>
-<!--Study Time-->
-<attr tag="00080030" vr="TM" len="6">105125</attr>
-<!--Series Time-->
-<attr tag="00080031" vr="TM" len="10">105914.850</attr>
-<!--Content Time-->
-<attr tag="00080033" vr="TM" len="10">105914.850</attr>
-<!--Accession Number-->
-<attr tag="00080050" vr="SH" len="8">9995002</attr>
-<!--Modality-->
-<attr tag="00080060" vr="CS" len="2">MR</attr>
-<!--Manufacturer-->
-<attr tag="00080070" vr="LO" len="20">Acme Medical Devices</attr>
-<!--Institution Name-->
-<attr tag="00080080" vr="LO" len="20">St. Nowhere Hospital</attr>
-<!--Referring Physician's Name-->
-<attr tag="00080090" vr="PN" len="14">Thomas^Albert</attr>
-<!--Timezone Offset From UTC-->
-<attr tag="00080201" vr="SH" len="6">-0400</attr>
-<!--Station Name-->
-<attr tag="00081010" vr="SH" len="10">CONSOLE01</attr>
-<!--Study Description-->
-<attr tag="00081030" vr="LO" len="64">Dynamic breast,1 stack,3 dimensions,temporal position,no concat</attr>
-<!--Series Description-->
-<attr tag="0008103E" vr="LO" len="38">Coronal Dynamic Contrast - abbreviated</attr>
-<!--Performing Physician's Name-->
-<attr tag="00081050" vr="PN" len="10">Smith^John</attr>
-<!--Name of Physician(s) Reading Study-->
-<attr tag="00081060" vr="PN" len="10">Smith^John</attr>
-<!--Operators' Name-->
-<attr tag="00081070" vr="PN" len="12">Jones^Molly</attr>
-<!--Manufacturer's Model Name-->
-<attr tag="00081090" vr="LO" len="20">Super Dooper Scanner</attr>
-<!--Referenced Raw Data Sequence-->
-<attr tag="00089121" vr="SQ" len="-1">
-<item off="1016" len="-1">
-<!--Referenced Series Sequence-->
-<attr tag="00081115" vr="SQ" len="-1">
-<item off="1036" len="-1">
-<!--Referenced SOP Sequence-->
-<attr tag="00081199" vr="SQ" len="-1">
-<item off="1056" len="-1">
-<!--Referenced SOP Class UID-->
-<attr tag="00081150" vr="UI" len="26">1.2.840.10008.5.1.4.1.1.66</attr>
-<!--Referenced SOP Instance UID-->
-<attr tag="00081155" vr="UI" len="44">1.3.6.1.4.1.5962.1.9.5002.1.1118413147.3424</attr>
-</item>
-</attr>
-<!--Series Instance UID-->
-<attr tag="0020000E" vr="UI" len="44">1.3.6.1.4.1.5962.1.3.5002.2.1118413147.3424</attr>
-</item>
-</attr>
-<!--Study Instance UID-->
-<attr tag="0020000D" vr="UI" len="42">1.3.6.1.4.1.5962.1.2.5002.1118413147.3424</attr>
-</item>
-</attr>
-<!--Pixel Presentation-->
-<attr tag="00089205" vr="CS" len="10">MONOCHROME</attr>
-<!--Volumetric Properties-->
-<attr tag="00089206" vr="CS" len="6">VOLUME</attr>
-<!--Volume Based Calculation Technique-->
-<attr tag="00089207" vr="CS" len="4">NONE</attr>
-<!--Complex Image Component-->
-<attr tag="00089208" vr="CS" len="10">MAGNITUDE</attr>
-<!--Acquisition Contrast-->
-<attr tag="00089209" vr="CS" len="2">T1</attr>
-<!--Patient's Name-->
-<attr tag="00100010" vr="PN" len="14">Breast^Dynamic</attr>
-<!--Patient ID-->
-<attr tag="00100020" vr="LO" len="10">MF-0000002</attr>
-<!--Patient's Birth Date-->
-<attr tag="00100030" vr="DA" len="8">19500704</attr>
-<!--Patient's Sex-->
-<attr tag="00100040" vr="CS" len="2">F</attr>
-<!--Patient's Age-->
-<attr tag="00101010" vr="AS" len="4">052Y</attr>
-<!--Patient's Size-->
-<attr tag="00101020" vr="DS" len="4">1.6</attr>
-<!--Patient's Weight-->
-<attr tag="00101030" vr="DS" len="2">75</attr>
-<!--Patient Comments-->
-<attr tag="00104000" vr="LT" len="22">Tumor in right breast</attr>
-<!--Contrast/Bolus Agent Sequence-->
-<attr tag="00180012" vr="SQ" len="-1">
-<item off="1514" len="-1">
-<!--Code Value-->
-<attr tag="00080100" vr="SH" len="8">C-B03AA</attr>
-<!--Coding Scheme Designator-->
-<attr tag="00080102" vr="SH" len="4">SRT</attr>
-<!--Code Meaning-->
-<attr tag="00080104" vr="LO" len="26">Dimeglumine gadopentetate</attr>
-<!--Contrast/Bolus Administration Route Sequence-->
-<attr tag="00180014" vr="SQ" len="-1">
-<item off="1596" len="-1">
-<!--Code Value-->
-<attr tag="00080100" vr="SH" len="6">G-D101</attr>
-<!--Coding Scheme Designator-->
-<attr tag="00080102" vr="SH" len="4">SNM3</attr>
-<!--Code Meaning-->
-<attr tag="00080104" vr="LO" len="18">Intravenous route</attr>
-</item>
-</attr>
-<!--Contrast/Bolus Volume-->
-<attr tag="00181041" vr="DS" len="2">10</attr>
-<!--Contrast/Bolus Ingredient Concentration-->
-<attr tag="00181049" vr="DS" len="6">469.01</attr>
-<!--Contrast/Bolus Agent Number-->
-<attr tag="00189337" vr="US" len="2">1</attr>
-<!--Contrast/Bolus Ingredient Code Sequence-->
-<attr tag="00189338" vr="SQ" len="-1">
-<item off="1718" len="-1">
-<!--Code Value-->
-<attr tag="00080100" vr="SH" len="8">C-17800</attr>
-<!--Coding Scheme Designator-->
-<attr tag="00080102" vr="SH" len="4">SRT</attr>
-<!--Code Meaning-->
-<attr tag="00080104" vr="LO" len="10">Gadolinium</attr>
-</item>
-</attr>
-</item>
-</attr>
-<!--MR Acquisition Type-->
-<attr tag="00180023" vr="CS" len="2">3D</attr>
-<!--Magnetic Field Strength-->
-<attr tag="00180087" vr="DS" len="8">1.500000</attr>
-<!--Device Serial Number-->
-<attr tag="00181000" vr="LO" len="6">123456</attr>
-<!--Software Version(s)-->
-<attr tag="00181020" vr="LO" len="4">1.00</attr>
-<!--Protocol Name-->
-<attr tag="00181030" vr="LO" len="16">3DT1DYN+GDCORFFE</attr>
-<!--Patient Position-->
-<attr tag="00185100" vr="CS" len="4">HFP</attr>
-<!--Content Qualification-->
-<attr tag="00189004" vr="CS" len="8">PRODUCT</attr>
-<!--Pulse Sequence Name-->
-<attr tag="00189005" vr="SH" len="16">3DT1DYN+GDCORFFE</attr>
-<!--Echo Pulse Sequence-->
-<attr tag="00189008" vr="CS" len="8">GRADIENT</attr>
-<!--Multi-planar Excitation-->
-<attr tag="00189012" vr="CS" len="2">NO</attr>
-<!--Phase Contrast-->
-<attr tag="00189014" vr="CS" len="2">NO</attr>
-<!--Time of Flight Contrast-->
-<attr tag="00189015" vr="CS" len="2">NO</attr>
-<!--Steady State Pulse Sequence-->
-<attr tag="00189017" vr="CS" len="4">NONE</attr>
-<!--Echo Planar Pulse Sequence-->
-<attr tag="00189018" vr="CS" len="2">NO</attr>
-<!--Saturation Recovery-->
-<attr tag="00189024" vr="CS" len="2">NO</attr>
-<!--Spectrally Selected Suppression-->
-<attr tag="00189025" vr="CS" len="4">NONE</attr>
-<!--Oversampling Phase-->
-<attr tag="00189029" vr="CS" len="4">NONE</attr>
-<!--Geometry of k-Space Traversal-->
-<attr tag="00189032" vr="CS" len="12">RECTILINEAR</attr>
-<!--Segmented k-Space Traversal-->
-<attr tag="00189033" vr="CS" len="6">SINGLE</attr>
-<!--Rectilinear Phase Encode Reordering-->
-<attr tag="00189034" vr="CS" len="6">LINEAR</attr>
-<!--k-space Filtering-->
-<attr tag="00189064" vr="CS" len="4">NONE</attr>
-<!--Acquisition Duration-->
-<attr tag="00189073" vr="FD" len="8"/>
-<!--Number of k-Space Trajectories-->
-<attr tag="00189093" vr="US" len="2">1</attr>
-<!--Coverage of k-Space-->
-<attr tag="00189094" vr="CS" len="4">FULL</attr>
-<!--Resonant Nucleus-->
-<attr tag="00189100" vr="CS" len="2">1H</attr>
-<!--Applicable Safety Standard Agency-->
-<attr tag="00189174" vr="CS" len="4">FDA</attr>
-<!--Study Instance UID-->
-<attr tag="0020000D" vr="UI" len="42">1.3.6.1.4.1.5962.1.2.5002.1118413147.3424</attr>
-<!--Series Instance UID-->
-<attr tag="0020000E" vr="UI" len="44">1.3.6.1.4.1.5962.1.3.5002.2.1118413147.3424</attr>
-<!--Study ID-->
-<attr tag="00200010" vr="SH" len="6">05002</attr>
-<!--Series Number-->
-<attr tag="00200011" vr="IS" len="2">2</attr>
-<!--Acquisition Number-->
-<attr tag="00200012" vr="IS" len="2">1</attr>
-<!--Instance Number-->
-<attr tag="00200013" vr="IS" len="2">1</attr>
-<!--Frame of Reference UID-->
-<attr tag="00200052" vr="UI" len="44">1.3.6.1.4.1.5962.1.4.5002.2.1118413147.3424</attr>
-<!--Position Reference Indicator-->
-<attr tag="00201040" vr="LO" len="0"/>
-<!--Dimension Organization Sequence-->
-<attr tag="00209221" vr="SQ" len="-1">
-<item off="2372" len="-1">
-<!--Dimension Organization UID-->
-<attr tag="00209164" vr="UI" len="46">1.3.6.1.4.1.5962.1.6.5002.2.0.1118413147.3424</attr>
-</item>
-</attr>
-<!--Dimension Index Sequence-->
-<attr tag="00209222" vr="SQ" len="-1">
-<item off="2462" len="-1">
-<!--Dimension Organization UID-->
-<attr tag="00209164" vr="UI" len="46">1.3.6.1.4.1.5962.1.6.5002.2.0.1118413147.3424</attr>
-<!--Dimension Index Pointer-->
-<attr tag="00209165" vr="AT" len="4">00209056</attr>
-<!--Functional Group Pointer-->
-<attr tag="00209167" vr="AT" len="4">00209111</attr>
-</item>
-<item off="2556" len="-1">
-<!--Dimension Organization UID-->
-<attr tag="00209164" vr="UI" len="46">1.3.6.1.4.1.5962.1.6.5002.2.0.1118413147.3424</attr>
-<!--Dimension Index Pointer-->
-<attr tag="00209165" vr="AT" len="4">00209057</attr>
-<!--Functional Group Pointer-->
-<attr tag="00209167" vr="AT" len="4">00209111</attr>
-</item>
-<item off="2650" len="-1">
-<!--Dimension Organization UID-->
-<attr tag="00209164" vr="UI" len="46">1.3.6.1.4.1.5962.1.6.5002.2.0.1118413147.3424</attr>
-<!--Dimension Index Pointer-->
-<attr tag="00209165" vr="AT" len="4">00209128</attr>
-<!--Functional Group Pointer-->
-<attr tag="00209167" vr="AT" len="4">00209111</attr>
-</item>
-</attr>
-<!--Samples per Pixel-->
-<attr tag="00280002" vr="US" len="2">1</attr>
-<!--Photometric Interpretation-->
-<attr tag="00280004" vr="CS" len="12">MONOCHROME2</attr>
-<!--Number of Frames-->
-<attr tag="00280008" vr="IS" len="2">42</attr>
-<!--Rows-->
-<attr tag="00280010" vr="US" len="2">512</attr>
-<!--Columns-->
-<attr tag="00280011" vr="US" len="2">512</attr>
-<!--Bits Allocated-->
-<attr tag="00280100" vr="US" len="2">16</attr>
-<!--Bits Stored-->
-<attr tag="00280101" vr="US" len="2">12</attr>
-<!--High Bit-->
-<attr tag="00280102" vr="US" len="2">11</attr>
-<!--Pixel Representation-->
-<attr tag="00280103" vr="US" len="2">0</attr>
-<!--Lossy Image Compression-->
-<attr tag="00282110" vr="CS" len="2">00</attr>
-<!--Acquisition Context Sequence-->
-<attr tag="00400555" vr="SQ" len="-1"/>
-<!--Presentation LUT Shape-->
-<attr tag="20500020" vr="CS" len="8">IDENTITY</attr>
-<!--Shared Functional Groups Sequence-->
-<attr tag="52009229" vr="SQ" len="-1">
-<item off="2910" len="-1">
-<!--MR Imaging Modifier Sequence-->
-<attr tag="00189006" vr="SQ" len="-1">
-<item off="2930" len="-1">
-<!--Pixel Bandwidth-->
-<attr tag="00180095" vr="DS" len="8">32000.0</attr>
-<!--Magnetization Transfer-->
-<attr tag="00189020" vr="CS" len="4">NONE</attr>
-<!--Blood Signal Nulling-->
-<attr tag="00189022" vr="CS" len="2">NO</attr>
-<!--Tagging-->
-<attr tag="00189028" vr="CS" len="4">NONE</attr>
-<!--Transmitter Frequency-->
-<attr tag="00189098" vr="FD" len="8"/>
-</item>
-</attr>
-<!--MR Receive Coil Sequence-->
-<attr tag="00189042" vr="SQ" len="-1">
-<item off="3032" len="-1">
-<!--Receive Coil Name-->
-<attr tag="00181250" vr="SH" len="6">BREAST</attr>
-<!--Receive Coil Manufacturer Name-->
-<attr tag="00189041" vr="LO" len="20">Acme Medical Devices</attr>
-<!--Receive Coil Type-->
-<attr tag="00189043" vr="CS" len="4">BODY</attr>
-<!--Quadrature Receive Coil-->
-<attr tag="00189044" vr="CS" len="2">NO</attr>
-</item>
-</attr>
-<!--MR Transmit Coil Sequence-->
-<attr tag="00189049" vr="SQ" len="-1">
-<item off="3132" len="-1">
-<!--Transmit Coil Name-->
-<attr tag="00181251" vr="SH" len="4">BODY</attr>
-<!--Transmit Coil Manufacturer Name-->
-<attr tag="00189050" vr="LO" len="20">Acme Medical Devices</attr>
-<!--Transmit Coil Type-->
-<attr tag="00189051" vr="CS" len="4">BODY</attr>
-</item>
-</attr>
-<!--MR Timing and Related Parameters Sequence-->
-<attr tag="00189112" vr="SQ" len="-1">
-<item off="3220" len="-1">
-<!--Repetition Time-->
-<attr tag="00180080" vr="DS" len="8">27.0000</attr>
-<!--Echo Train Length-->
-<attr tag="00180091" vr="IS" len="2">1</attr>
-<!--Flip Angle-->
-<attr tag="00181314" vr="DS" len="8">30.0000</attr>
-<!--Operating Mode Sequence-->
-<attr tag="00189176" vr="SQ" len="-1">
-<item off="3282" len="-1">
-<!--Operating Mode Type-->
-<attr tag="00189177" vr="CS" len="12">STATIC FIELD</attr>
-<!--Operating Mode-->
-<attr tag="00189178" vr="CS" len="10">IEC_NORMAL</attr>
-</item>
-<item off="3336" len="-1">
-<!--Operating Mode Type-->
-<attr tag="00189177" vr="CS" len="2">RF</attr>
-<!--Operating Mode-->
-<attr tag="00189178" vr="CS" len="10">IEC_NORMAL</attr>
-</item>
-<item off="3380" len="-1">
-<!--Operating Mode Type-->
-<attr tag="00189177" vr="CS" len="8">GRADIENT</attr>
-<!--Operating Mode-->
-<attr tag="00189178" vr="CS" len="10">IEC_NORMAL</attr>
-</item>
-</attr>
-<!--Specific Absorption Rate Sequence-->
-<attr tag="00189239" vr="SQ" len="-1">
-<item off="3450" len="-1">
-<!--Specific Absorption Rate Definition-->
-<attr tag="00189179" vr="CS" len="14">IEC_WHOLE_BODY</attr>
-<!--Specific Absorption Rate Value-->
-<attr tag="00189181" vr="FD" len="8"/>
-</item>
-</attr>
-<!--RF Echo Train Length-->
-<attr tag="00189240" vr="US" len="2">0</attr>
-<!--Gradient Echo Train Length-->
-<attr tag="00189241" vr="US" len="2">1</attr>
-</item>
-</attr>
-<!--MR Echo Sequence-->
-<attr tag="00189114" vr="SQ" len="-1">
-<item off="3560" len="-1">
-<!--Effective Echo Time-->
-<attr tag="00189082" vr="FD" len="8"/>
-</item>
-</attr>
-<!--MR Modifier Sequence-->
-<attr tag="00189115" vr="SQ" len="-1">
-<item off="3612" len="-1">
-<!--Inversion Recovery-->
-<attr tag="00189009" vr="CS" len="2">NO</attr>
-<!--Flow Compensation-->
-<attr tag="00189010" vr="CS" len="4">NONE</attr>
-<!--Spoiling-->
-<attr tag="00189016" vr="CS" len="4">NONE</attr>
-<!--T2 Preparation-->
-<attr tag="00189021" vr="CS" len="2">NO</attr>
-<!--Spectrally Selected Excitation-->
-<attr tag="00189026" vr="CS" len="4">NONE</attr>
-<!--Spatial Pre-saturation-->
-<attr tag="00189027" vr="CS" len="4">NONE</attr>
-<!--Parallel Acquisition-->
-<attr tag="00189077" vr="CS" len="2">NO</attr>
-<!--Partial Fourier-->
-<attr tag="00189081" vr="CS" len="2">NO</attr>
-</item>
-</attr>
-<!--MR Averages Sequence-->
-<attr tag="00189119" vr="SQ" len="-1">
-<item off="3736" len="-1">
-<!--Number of Averages-->
-<attr tag="00180083" vr="DS" len="8">1.00000</attr>
-</item>
-</attr>
-<!--MR FOV/Geometry Sequence-->
-<attr tag="00189125" vr="SQ" len="-1">
-<item off="3788" len="-1">
-<!--Percent Sampling-->
-<attr tag="00180093" vr="DS" len="8">65.0000</attr>
-<!--Percent Phase Field of View-->
-<attr tag="00180094" vr="DS" len="8">39.8438</attr>
-<!--In-plane Phase Encoding Direction-->
-<attr tag="00181312" vr="CS" len="4">ROW</attr>
-<!--MR Acquisition Frequency Encoding Steps-->
-<attr tag="00189058" vr="US" len="2">512</attr>
-<!--MR Acquisition Phase Encoding Steps in-plane-->
-<attr tag="00189231" vr="US" len="2">332</attr>
-<!--MR Acquisition Phase Encoding Steps out-of-plane-->
-<attr tag="00189232" vr="US" len="2">28</attr>
-</item>
-</attr>
-<!--MR Image Frame Type Sequence-->
-<attr tag="00189226" vr="SQ" len="-1">
-<item off="3898" len="-1">
-<!--Frame Type-->
-<attr tag="00089007" vr="CS" len="32">ORIGINAL\PRIMARY\PERFUSION\NONE</attr>
-<!--Pixel Presentation-->
-<attr tag="00089205" vr="CS" len="10">MONOCHROME</attr>
-<!--Volumetric Properties-->
-<attr tag="00089206" vr="CS" len="6">VOLUME</attr>
-<!--Volume Based Calculation Technique-->
-<attr tag="00089207" vr="CS" len="4">NONE</attr>
-<!--Complex Image Component-->
-<attr tag="00089208" vr="CS" len="10">MAGNITUDE</attr>
-<!--Acquisition Contrast-->
-<attr tag="00089209" vr="CS" len="2">T1</attr>
-</item>
-</attr>
-<!--Contrast/Bolus Usage Sequence-->
-<attr tag="00189341" vr="SQ" len="-1">
-<item off="4046" len="-1">
-<!--Contrast/Bolus Agent Number-->
-<attr tag="00189337" vr="US" len="2">1</attr>
-<!--Contrast/Bolus Agent Administered-->
-<attr tag="00189342" vr="CS" len="4">YES</attr>
-<!--Contrast/Bolus Agent Detected-->
-<attr tag="00189343" vr="CS" len="0"/>
-<!--Contrast/Bolus Agent Phase-->
-<attr tag="00189344" vr="CS" len="8">DYNAMIC</attr>
-</item>
-</attr>
-<!--Frame Anatomy Sequence-->
-<attr tag="00209071" vr="SQ" len="-1">
-<item off="4128" len="-1">
-<!--Anatomic Region Sequence-->
-<attr tag="00082218" vr="SQ" len="-1">
-<item off="4148" len="-1">
-<!--Code Value-->
-<attr tag="00080100" vr="SH" len="8">T-04000</attr>
-<!--Coding Scheme Designator-->
-<attr tag="00080102" vr="SH" len="4">SNM3</attr>
-<!--Code Meaning-->
-<attr tag="00080104" vr="LO" len="6">Breast</attr>
-</item>
-</attr>
-<!--Frame Laterality-->
-<attr tag="00209072" vr="CS" len="2">B</attr>
-</item>
-</attr>
-<!--Plane Orientation Sequence-->
-<attr tag="00209116" vr="SQ" len="-1">
-<item off="4252" len="-1">
-<!--Image Orientation (Patient)-->
-<attr tag="00200037" vr="DS" len="48">1.00000\0.00000\0.00000\0.00000\0.00000\-1.00000</attr>
-</item>
-</attr>
-<!--Pixel Measures Sequence-->
-<attr tag="00289110" vr="SQ" len="-1">
-<item off="4344" len="-1">
-<!--Slice Thickness-->
-<attr tag="00180050" vr="DS" len="8">2.50000</attr>
-<!--Pixel Spacing-->
-<attr tag="00280030" vr="DS" len="18">0.703125\0.703125</attr>
-</item>
-</attr>
-<!--Pixel Value Transformation Sequence-->
-<attr tag="00289145" vr="SQ" len="-1">
-<item off="4422" len="-1">
-<!--Rescale Intercept-->
-<attr tag="00281052" vr="DS" len="8">0.00000</attr>
-<!--Rescale Slope-->
-<attr tag="00281053" vr="DS" len="8">6.28791</attr>
-<!--Rescale Type-->
-<attr tag="00281054" vr="LO" len="2">US</attr>
-</item>
-</attr>
-</item>
-</attr>
-<!--Per-frame Functional Groups Sequence-->
-<attr tag="52009230" vr="SQ" len="-1">
-<item off="4516" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="4536" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">6</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\6\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="4704" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-16.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="4774" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">995.243</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1990.49</attr>
-</item>
-</attr>
-</item>
-<item off="4838" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="4858" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">7</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\7\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="5026" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-13.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="5096" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">968.237</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1936.47</attr>
-</item>
-</attr>
-</item>
-<item off="5160" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="5180" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">8</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\8\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="5348" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-11.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="5418" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">945.231</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1890.46</attr>
-</item>
-</attr>
-</item>
-<item off="5482" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="5502" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">9</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\9\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="5670" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-8.53136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="5740" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">931.227</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1862.45</attr>
-</item>
-</attr>
-</item>
-<item off="5804" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="5824" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">10</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\10\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="5992" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-6.03136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="6062" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">907.222</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1814.44</attr>
-</item>
-</attr>
-</item>
-<item off="6126" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="6146" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">11</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\11\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="6314" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-3.53136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="6384" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">867.212</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1734.42</attr>
-</item>
-</attr>
-</item>
-<item off="6448" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="6468" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610105914.850</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610105921.762</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">12</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">1</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\12\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="6636" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-1.03136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="6706" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">825.201</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1650.40</attr>
-</item>
-</attr>
-</item>
-<item off="6770" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="6790" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">5</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\5\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="6958" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-18.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="7028" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1042.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2082.51</attr>
-</item>
-</attr>
-</item>
-<item off="7092" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="7112" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">6</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\6\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="7280" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-16.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="7350" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1018.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2036.50</attr>
-</item>
-</attr>
-</item>
-<item off="7414" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="7434" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">7</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\7\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="7602" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-13.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="7672" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">997.244</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1994.49</attr>
-</item>
-</attr>
-</item>
-<item off="7736" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="7756" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">8</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\8\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="7924" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-11.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="7994" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">980.240</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1960.48</attr>
-</item>
-</attr>
-</item>
-<item off="8058" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="8078" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">9</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\9\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="8246" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-8.53136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="8316" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">956.234</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1912.47</attr>
-</item>
-</attr>
-</item>
-<item off="8380" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="8400" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">10</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\10\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="8568" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-6.03136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="8638" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">930.227</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1858.45</attr>
-</item>
-</attr>
-</item>
-<item off="8702" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="8722" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110155.852</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110202.764</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">11</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">2</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\11\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="8890" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-3.53136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="8960" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">892.218</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1782.44</attr>
-</item>
-</attr>
-</item>
-<item off="9024" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="9044" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">4</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\4\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="9212" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-21.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="9282" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1068.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2134.52</attr>
-</item>
-</attr>
-</item>
-<item off="9346" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="9366" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">5</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\5\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="9534" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-18.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="9604" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1055.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2108.51</attr>
-</item>
-</attr>
-</item>
-<item off="9668" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="9688" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">6</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\6\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="9856" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-16.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="9926" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1026.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2052.50</attr>
-</item>
-</attr>
-</item>
-<item off="9990" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="10010" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">7</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\7\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="10178" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-13.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="10248" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1008.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2016.49</attr>
-</item>
-</attr>
-</item>
-<item off="10312" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="10332" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">8</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\8\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="10500" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-11.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="10570" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">984.240</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1968.48</attr>
-</item>
-</attr>
-</item>
-<item off="10634" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="10654" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">9</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\9\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="10822" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-8.53136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="10892" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">969.237</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1938.47</attr>
-</item>
-</attr>
-</item>
-<item off="10956" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="10976" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110316.500</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110323.412</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">10</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">3</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\10\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="11144" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-6.03136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="11214" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">937.229</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1872.46</attr>
-</item>
-</attr>
-</item>
-<item off="11278" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="11298" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">3</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\3\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="11466" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-23.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="11536" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1083.27</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2166.53</attr>
-</item>
-</attr>
-</item>
-<item off="11600" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="11620" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">4</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\4\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="11788" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-21.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="11858" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1063.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2126.52</attr>
-</item>
-</attr>
-</item>
-<item off="11922" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="11942" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">5</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\5\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="12110" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-18.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="12180" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1049.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2098.51</attr>
-</item>
-</attr>
-</item>
-<item off="12244" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="12264" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">6</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\6\4</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="12432" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-16.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="12502" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1024.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2046.50</attr>
-</item>
-</attr>
-</item>
-<item off="12566" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="12586" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">7</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\7\4</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="12754" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-13.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="12824" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1004.24</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2006.49</attr>
-</item>
-</attr>
-</item>
-<item off="12888" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="12908" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">8</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\8\4</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="13076" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-11.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="13146" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">982.240</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1964.48</attr>
-</item>
-</attr>
-</item>
-<item off="13210" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="13230" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110436.814</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110443.726</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">9</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">4</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\9\4</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="13398" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-8.53136\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="13468" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">969.237</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1938.47</attr>
-</item>
-</attr>
-</item>
-<item off="13532" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="13552" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">2</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\2\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="13720" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-26.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="13790" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1105.27</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2210.54</attr>
-</item>
-</attr>
-</item>
-<item off="13854" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="13874" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">3</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\3\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="14042" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-23.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="14112" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1086.27</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2172.53</attr>
-</item>
-</attr>
-</item>
-<item off="14176" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="14196" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">4</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\4\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="14364" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-21.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="14434" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1067.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2134.52</attr>
-</item>
-</attr>
-</item>
-<item off="14498" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="14518" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">5</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\5\4</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="14686" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-18.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="14756" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1062.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2124.52</attr>
-</item>
-</attr>
-</item>
-<item off="14820" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="14840" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">6</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\6\5</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="15008" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-16.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="15078" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1033.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2066.50</attr>
-</item>
-</attr>
-</item>
-<item off="15142" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="15162" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">7</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\7\5</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="15330" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-13.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="15400" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1011.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2022.49</attr>
-</item>
-</attr>
-</item>
-<item off="15464" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="15484" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110557.128</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110604.040</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">8</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">5</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\8\5</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="15652" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-11.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="15722" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">991.242</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">1980.48</attr>
-</item>
-</attr>
-</item>
-<item off="15786" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="15806" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">1</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\1\1</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="15974" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-28.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="16044" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1126.28</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2252.55</attr>
-</item>
-</attr>
-</item>
-<item off="16108" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="16128" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">2</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\2\2</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="16296" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-26.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="16366" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1107.27</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2214.54</attr>
-</item>
-</attr>
-</item>
-<item off="16430" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="16450" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">3</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\3\3</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="16618" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-23.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="16688" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1090.27</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2180.53</attr>
-</item>
-</attr>
-</item>
-<item off="16752" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="16772" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">4</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\4\4</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="16940" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-21.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="17010" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1070.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2138.52</attr>
-</item>
-</attr>
-</item>
-<item off="17074" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="17094" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">5</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\5\5</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="17262" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-18.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="17332" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1054.26</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2106.51</attr>
-</item>
-</attr>
-</item>
-<item off="17396" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="17416" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">6</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\6\6</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="17584" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-16.0314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="17654" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1027.25</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2054.50</attr>
-</item>
-</attr>
-</item>
-<item off="17718" len="-1">
-<!--Frame Content Sequence-->
-<attr tag="00209111" vr="SQ" len="-1">
-<item off="17738" len="-1">
-<!--Frame Acquisition Datetime-->
-<attr tag="00189074" vr="DT" len="18">20050610110717.443</attr>
-<!--Frame Reference Datetime-->
-<attr tag="00189151" vr="DT" len="18">20050610110724.355</attr>
-<!--Frame Acquisition Duration-->
-<attr tag="00189220" vr="FD" len="8"/>
-<!--Stack ID-->
-<attr tag="00209056" vr="SH" len="2">1</attr>
-<!--In-Stack Position Number-->
-<attr tag="00209057" vr="UL" len="4">7</attr>
-<!--Temporal Position Index-->
-<attr tag="00209128" vr="UL" len="4">6</attr>
-<!--Frame Acquisition Number-->
-<attr tag="00209156" vr="US" len="2">1</attr>
-<!--Dimension Index Values-->
-<attr tag="00209157" vr="UL" len="12">1\7\6</attr>
-</item>
-</attr>
-<!--Plane Position Sequence-->
-<attr tag="00209113" vr="SQ" len="-1">
-<item off="17906" len="-1">
-<!--Image Position (Patient)-->
-<attr tag="00200032" vr="DS" len="26">-164.257\-13.5314\140.641</attr>
-</item>
-</attr>
-<!--Frame VOI LUT Sequence-->
-<attr tag="00289132" vr="SQ" len="-1">
-<item off="17976" len="-1">
-<!--Window Center-->
-<attr tag="00281050" vr="DS" len="8">1000.24</attr>
-<!--Window Width-->
-<attr tag="00281051" vr="DS" len="8">2000.49</attr>
-</item>
-</attr>
-</item>
-</attr>
-<!--Pixel Data-->
-<attr tag="7FE00010" vr="OW" len="22020096" src="7FE00010"/>
+  <!--Specific Character Set-->
+  <attr tag="00080005" vr="CS"/>
+  <!--Image Type-->
+  <attr tag="00080008" vr="CS"/>
+  <!--SOP Class UID-->
+  <attr tag="00080016" vr="UI">1.2.840.10008.5.1.4.1.1.2.1</attr>
+  <!--Study Date-->
+  <attr tag="00080020" vr="DA"/>
+  <!--Series Date-->
+  <attr tag="00080021" vr="DA"/>
+  <!--Acquisition Date-->
+  <attr tag="00080022" vr="DA"/>
+  <!--Content Date-->
+  <attr tag="00080023" vr="DA"/>
+  <!--Series Time-->
+  <attr tag="00080031" vr="TM"/>
+  <!--Acquisition Time-->
+  <attr tag="00080032" vr="TM"/>
+  <!--Content Time-->
+  <attr tag="00080033" vr="TM"/>
+  <!--Accession Number-->
+  <attr tag="00080050" vr="SH"/>
+  <!--Modality-->
+  <attr tag="00080060" vr="CS"/>
+  <!--Manufacturer-->
+  <attr tag="00080070" vr="LO"/>
+  <!--Institution Name-->
+  <attr tag="00080080" vr="LO"/>
+  <!--Referring Physician's Name-->
+  <attr tag="00080090" vr="PN"/>
+  <!--Timezone Offset From UTC-->
+  <attr tag="00080201" vr="SH"/>
+  <!--Station Name-->
+  <attr tag="00081010" vr="SH"/>
+  <!--Study Description-->
+  <attr tag="00081030" vr="LO"/>
+  <!--Series Description-->
+  <attr tag="0008103E" vr="LO"/>
+  <!--Performing Physician's Name-->
+  <attr tag="00081050" vr="PN"/>
+  <!--Name of Physician(s) Reading Study-->
+  <attr tag="00081060" vr="PN"/>
+  <!--Operators' Name-->
+  <attr tag="00081070" vr="PN"/>
+  <!--Manufacturer's Model Name-->
+  <attr tag="00081090" vr="LO"/>
+  <!--Pixel Presentation-->
+  <attr tag="00089205" vr="CS">MONOCHROME</attr>
+  <!--Patient's Name-->
+  <attr tag="00100010" vr="PN"/>
+  <!--Patient ID-->
+  <attr tag="00100020" vr="LO"/>
+  <!--Patient's Birth Date-->
+  <attr tag="00100030" vr="DA"/>
+  <!--Patient's Sex-->
+  <attr tag="00100040" vr="CS"/>
+  <!--Patient's Age-->
+  <attr tag="00101010" vr="AS"/>
+  <!--Patient's Size-->
+  <attr tag="00101020" vr="DS"/>
+  <!--Patient's Weight-->
+  <attr tag="00101030" vr="DS"/>
+  <!--Patient Comments-->
+  <attr tag="00104000" vr="LT"/>
+  <!--Contrast/Bolus Agent-->
+  <attr tag="00180010" vr="LO"/>
+  <!--Contrast/Bolus Agent Sequence-->
+  <attr tag="00180012" vr="SQ"/>
+  <!--MR Acquisition Type-->
+  <attr tag="00180023" vr="CS"/>
+  <!--Magnetic Field Strength-->
+  <attr tag="00180087" vr="DS"/>
+  <!--Device Serial Number-->
+  <attr tag="00181000" vr="LO"/>
+  <!--Software Version(s)-->
+  <attr tag="00181020" vr="LO"/>
+  <!--Protocol Name-->
+  <attr tag="00181030" vr="LO"/>
+  <!--Patient Position-->
+  <attr tag="00185100" vr="CS"/>
+  <!--Date of Last Calibration-->
+  <attr tag="00181200" vr="DA"/>
+  <!--Time of Last Calibration-->
+  <attr tag="00181201" vr="TM"/>
+  <!--Study Instance UID-->
+  <attr tag="0020000D" vr="UI"/>
+  <!--Series Instance UID-->
+  <attr tag="0020000E" vr="UI"/>
+  <!--Study ID-->
+  <attr tag="00200010" vr="SH"/>
+  <!--Series Number-->
+  <attr tag="00200011" vr="IS"/>
+  <!--Acquisition Number-->
+  <attr tag="00200012" vr="IS"/>
+  <!--Instance Number-->
+  <attr tag="00200013" vr="IS"/>
+  <!--Frame of Reference UID-->
+  <attr tag="00200052" vr="UI"/>
+  <!--Position Reference Indicator-->
+  <attr tag="00201040" vr="LO"/>
+  <!--Samples per Pixel-->
+  <attr tag="00280002" vr="US"/>
+  <!--Photometric Interpretation-->
+  <attr tag="00280004" vr="CS"/>
+  <!--Rows-->
+  <attr tag="00280010" vr="US"/>
+  <!--Columns-->
+  <attr tag="00280011" vr="US"/>
+  <!--Bits Allocated-->
+  <attr tag="00280100" vr="US"/>
+  <!--Bits Stored-->
+  <attr tag="00280101" vr="US"/>
+  <!--High Bit-->
+  <attr tag="00280102" vr="US"/>
+  <!--Pixel Representation-->
+  <attr tag="00280103" vr="US"/>
+  <!--Lossy Image Compression-->
+  <attr tag="00282110" vr="CS"/>
+  <!--Presentation LUT Shape-->
+  <attr tag="20500020" vr="CS">IDENTITY</attr>
+  <!--Shared Functional Groups Sequence-->
+  <attr tag="52009229">
+    <item>
+      <!--MR Imaging Modifier Sequence-->
+      <attr tag="00189006" vr="SQ">
+        <item>
+          <!--Pixel Bandwidth-->
+          <attr tag="00180095" vr="DS"/>
+        </item>
+      </attr>
+      <!--MR Receive Coil Sequence-->
+      <attr tag="00189042" vr="SQ">
+        <item off="3032">
+          <!--Receive Coil Name-->
+          <attr tag="00181250" vr="SH"/>
+        </item>
+      </attr>
+      <!--MR Transmit Coil Sequence-->
+      <attr tag="00189049" vr="SQ">
+        <item>
+          <!--Transmit Coil Name-->
+          <attr tag="00181251" vr="SH"/>
+        </item>
+      </attr>
+      <!--MR Timing and Related Parameters Sequence-->
+      <attr tag="00189112" vr="SQ">
+        <item>
+          <!--Repetition Time-->
+          <attr tag="00180080" vr="DS"/>
+          <!--Echo Train Length-->
+          <attr tag="00180091" vr="IS"/>
+          <!--Flip Angle-->
+          <attr tag="00181314" vr="DS"/>
+        </item>
+      </attr>
+      <!--MR Echo Sequence-->
+      <attr tag="00189114" vr="SQ">
+        <item>
+          <!--Echo Time-->
+          <attr tag="00180081" vr="DS"/>
+        </item>
+      </attr>
+      <!--MR Averages Sequence-->
+      <attr tag="00189119" vr="SQ">
+        <item>
+          <!--Number of Averages-->
+          <attr tag="00180083" vr="DS"/>
+        </item>
+      </attr>
+      <!--MR FOV/Geometry Sequence-->
+      <attr tag="00189125" vr="SQ">
+        <item>
+          <!--Percent Sampling-->
+          <attr tag="00180093" vr="DS"/>
+          <!--Percent Phase Field of View-->
+          <attr tag="00180094" vr="DS"/>
+          <!--In-plane Phase Encoding Direction-->
+          <attr tag="00181312" vr="CS"/>
+        </item>
+      </attr>
+      <!--Plane Orientation Sequence-->
+      <attr tag="00209116" vr="SQ">
+        <item>
+          <!--Image Orientation (Patient)-->
+          <attr tag="00200037" vr="DS"/>
+        </item>
+      </attr>
+      <!--Pixel Measures Sequence-->
+      <attr tag="00289110" vr="SQ">
+        <item off="4344">
+          <!--Slice Thickness-->
+          <attr tag="00180050" vr="DS"/>
+          <!--Pixel Spacing-->
+          <attr tag="00280030" vr="DS"/>
+        </item>
+      </attr>
+      <!--Pixel Value Transformation Sequence-->
+      <attr tag="00289145" vr="SQ">
+        <item>
+          <!--Rescale Intercept-->
+          <attr tag="00281052" vr="DS"/>
+          <!--Rescale Slope-->
+          <attr tag="00281053" vr="DS"/>
+          <!--Rescale Type-->
+          <attr tag="00281054" vr="LO"/>
+        </item>
+      </attr>
+      <!--Frame Content Sequence-->
+      <attr tag="00209111" vr="SQ">
+        <item>
+          <!--Acquisition Date-->
+          <attr tag="00080022" vr="DA"/>
+          <!--Content Date-->
+          <attr tag="00080023" vr="DA"/>
+          <!--Acquisition Time-->
+          <attr tag="00080032" vr="TM"/>
+          <!--Content Time-->
+          <attr tag="00080033" vr="DA"/>
+          <!--Acquisition Number-->
+          <attr tag="00200012" vr="IS"/>
+          <!--Instance Number-->
+          <attr tag="00200013" vr="IS"/>
+        </item>
+      </attr>
+      <!--Plane Position Sequence-->
+      <attr tag="00209113" vr="SQ">
+        <item>
+          <!--Image Position (Patient)-->
+          <attr tag="00200032" vr="DS"/>
+        </item>
+      </attr>
+      <!--Frame VOI LUT Sequence-->
+      <attr tag="00289132" vr="SQ">
+        <item>
+          <!--Window Center-->
+          <attr tag="00281050" vr="DS"/>
+          <!--Window Width-->
+          <attr tag="00281051" vr="DS"/>
+        </item>
+      </attr>
+    </item>
+  </attr>
 </dicom>
