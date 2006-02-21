@@ -114,7 +114,7 @@ public class DicomInputStream extends FilterInputStream
         super(in);
         if (ts == null)
             throw new NullPointerException("ts");
-        this.ts = ts;
+        switchTransferSyntax(ts);
     }
 
     public byte[] getPreamble()
@@ -411,7 +411,7 @@ public class DicomInputStream extends FilterInputStream
 
     private void switchTransferSyntax(TransferSyntax ts)
     {
-        if (this.ts.deflated())
+        if (this.ts != null && this.ts.deflated())
             throw new IllegalStateException(
                     "Cannot switch back from Deflated TS");
         if (ts.deflated())
