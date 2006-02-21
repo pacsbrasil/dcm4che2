@@ -166,9 +166,9 @@ public class Dcm2Xml {
     public static void main(String args[]) throws Exception {
         LongOpt[] longopts = new LongOpt[2];
         longopts[0] = new LongOpt("TXT", LongOpt.NO_ARGUMENT, null, 'T');
-        longopts[1] = new LongOpt("XSL", LongOpt.REQUIRED_ARGUMENT, null, 'X');
+        longopts[1] = new LongOpt("XSL", LongOpt.REQUIRED_ARGUMENT, null, 'S');
 
-        Getopt g = new Getopt("dcm2xml.jar", args, "bo:ID:Xx:L:d:", longopts,
+        Getopt g = new Getopt("dcm2xml.jar", args, "S:bo:ID:Xx:L:d:", longopts,
                 true);
 
         Dcm2Xml dcm2xml = new Dcm2Xml();
@@ -184,6 +184,9 @@ public class Dcm2Xml {
                 break;
             case 'T':
                 dcm2xml.setXslt(Dcm2Xml.class.getResource("/Dcm2Xml2.xsl"));
+                break;
+            case 'S':
+                dcm2xml.setXslt(new File(g.getOptarg()).toURL());
                 break;
             case 'I':
                 dcm2xml.setXsltInc(true);
@@ -261,7 +264,7 @@ public class Dcm2Xml {
             + "                     -Dvallen=<displayed value length> [64]\n"
             + "                     -Dvaltail=<truncation position from value tail>. [8]\n"
             + "                     -Dellipsis=<truncation mark>. ['...']\n"
-            + " --XSL <xsl_file>   Apply XSLT with specified XSL stylesheet <xsl_file>.\n"
+            + " -S, --XSL <file>   Apply XSLT with specified XSL stylesheet <file>.\n"
             + " -I                 Enable incremental XSLT (only usable with XALAN)\n"
             + " -D<param>=<value>  Set XSL parameter to specified value.\n";
 }
