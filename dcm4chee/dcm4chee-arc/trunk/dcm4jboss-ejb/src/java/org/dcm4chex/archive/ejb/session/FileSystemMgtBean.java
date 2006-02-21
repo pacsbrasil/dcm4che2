@@ -283,9 +283,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 */
 	public FileSystemDTO addFileSystem(FileSystemDTO dto)
 			throws CreateException {
-		return toDTO(fileSystemHome.create(dto.getDirectoryPath(),
+		return fileSystemHome.create(dto.getDirectoryPath(),
 				dto.getRetrieveAET(), dto.getAvailability(), dto.getStatus(),
-				dto.getUserInfo()));
+				dto.getUserInfo()).toFileSystemDTO();
 	}
 
 	/**
@@ -293,7 +293,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 * @ejb.interface-method
 	 */
 	public FileSystemDTO getFileSystem(String dirPath) throws FinderException {
-		return toDTO(fileSystemHome.findByDirectoryPath(dirPath));
+		return fileSystemHome.findByDirectoryPath(dirPath).toFileSystemDTO();
 	}
 
 	/**
@@ -307,6 +307,16 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
+	public void linkFileSystems(String prev, String next) throws FinderException,
+			RemoveException {
+		FileSystemLocal prevfs = fileSystemHome.findByDirectoryPath(prev);
+		FileSystemLocal nextfs = fileSystemHome.findByDirectoryPath(next);
+		prevfs.setNextFileSystem(nextfs);
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
 	public void removeFileSystem(int pk) throws RemoveException {
 		fileSystemHome.remove(new Integer(pk));
 	}
@@ -315,11 +325,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 * @ejb.interface-method
 	 */
 	public FileSystemDTO[] getAllFileSystems() throws FinderException {
-		Collection c = fileSystemHome.findAll();
+		return toFileSystemDTO(fileSystemHome.findAll());
+	}
+
+	private FileSystemDTO[] toFileSystemDTO(Collection c) {
 		FileSystemDTO[] dto = new FileSystemDTO[c.size()];
 		Iterator it = c.iterator();
 		for (int i = 0; i < dto.length; i++) {
-			dto[i] = toDTO((FileSystemLocal) it.next());
+			dto[i] = ((FileSystemLocal) it.next()).toFileSystemDTO();
 		}
 		return dto;
 	}
@@ -329,13 +342,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 */
 	public FileSystemDTO[] getFileSystemsWithAvailability(int availability) 
 	throws FinderException {
-		Collection c = fileSystemHome.findByAvailability(availability);
-		FileSystemDTO[] dto = new FileSystemDTO[c.size()];
-		Iterator it = c.iterator();
-		for (int i = 0; i < dto.length; i++) {
-			dto[i] = toDTO((FileSystemLocal) it.next());
-		}
-		return dto;
+		return toFileSystemDTO(fileSystemHome.findByAvailability(availability));
 	}
 	
 	/**
@@ -343,13 +350,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 */
 	public FileSystemDTO[] getFileSystemsWithStatus(int status) 
 	throws FinderException {
-		Collection c = fileSystemHome.findByStatus(status);
-		FileSystemDTO[] dto = new FileSystemDTO[c.size()];
-		Iterator it = c.iterator();
-		for (int i = 0; i < dto.length; i++) {
-			dto[i] = toDTO((FileSystemLocal) it.next());
-		}
-		return dto;
+		return toFileSystemDTO(fileSystemHome.findByStatus(status));
 	}
 	
 	/**
@@ -369,17 +370,6 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		}
 	}
 	
-	private FileSystemDTO toDTO(FileSystemLocal fs) {
-		FileSystemDTO dto = new FileSystemDTO();
-		dto.setPk(fs.getPk().intValue());
-		dto.setDirectoryPath(fs.getDirectoryPath());
-		dto.setRetrieveAET(fs.getRetrieveAET());
-		dto.setAvailability(fs.getAvailability());
-		dto.setStatus(fs.getStatus());
-		dto.setUserInfo(fs.getUserInfo());
-		return dto;
-	}
-
 	/**
 	 * @param tsBefore
 	 * @ejb.interface-method

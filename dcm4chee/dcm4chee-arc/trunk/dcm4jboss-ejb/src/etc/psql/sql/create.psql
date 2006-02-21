@@ -200,13 +200,16 @@ CREATE INDEX commitment ON instance(commitment);
 
 CREATE TABLE filesystem (
 	pk          	SERIAL PRIMARY KEY,
+	next_fk         INTEGER,
 	dirpath			TEXT NOT NULL,
 	retrieve_aet	TEXT NOT NULL,
 	availability	INTEGER NOT NULL,
 	fs_status		INTEGER NOT NULL,
-	user_info		TEXT 
+	user_info		TEXT ,
+FOREIGN KEY (next_fk) REFERENCES filesystem(pk)
 );
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath);
+CREATE INDEX fs_next_fk ON filesystem(next_fk);
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);

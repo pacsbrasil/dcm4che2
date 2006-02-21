@@ -63,6 +63,8 @@ public class FileSystemDTO implements Serializable {
     
     private String userInfo;
     
+    private String next;
+    
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", dir=").append(directoryPath);
@@ -70,6 +72,8 @@ public class FileSystemDTO implements Serializable {
         sb.append(", availability=").append(availability);
         sb.append(", status=").append(status);
         sb.append(", userinfo=").append(userInfo);
+        if (next != null)
+        	sb.append(", next=").append(next);
         sb.append("]");
         return sb;
     }
@@ -124,6 +128,14 @@ public class FileSystemDTO implements Serializable {
 
 	public final void setUserInfo(String userInfo) {
 		this.userInfo = userInfo;
+	}
+
+	public final String getNext() {
+		return next;
+	}
+
+	public final void setNext(String next) {
+		this.next = next;
 	}
 
 }

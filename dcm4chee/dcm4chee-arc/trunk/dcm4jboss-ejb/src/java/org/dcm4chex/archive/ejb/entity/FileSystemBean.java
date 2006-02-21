@@ -48,7 +48,8 @@ import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
-
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -142,6 +143,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getStatus()
             + ", userInfo="
             + getUserInfo()
+            + ", next="
+            + getNextFileSystem()
             + "]";
     }
     
@@ -212,4 +215,38 @@ public abstract class FileSystemBean implements EntityBean {
     public abstract void setUserInfo(String info);
 
 
+    /**
+     * @ejb.relation name="next-filesystem"
+     *    role-name="prev-filesystem"
+     *    target-role-name="next-filesystem"
+     *    target-ejb="FileSystem"
+     *    target-multiple="yes"
+     *    cascade-delete="no"
+     *
+     * @jboss.relation fk-column="next_fk" related-pk-field="pk"
+     */
+    public abstract FileSystemLocal getNextFileSystem();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setNextFileSystem(FileSystemLocal filesystem);
+    
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO toFileSystemDTO() {
+		FileSystemDTO dto = new FileSystemDTO();
+		dto.setPk(getPk().intValue());
+		dto.setDirectoryPath(getDirectoryPath());
+		dto.setRetrieveAET(getRetrieveAET());
+		dto.setAvailability(getAvailability());
+		dto.setStatus(getStatus());
+		dto.setUserInfo(getUserInfo());
+    	FileSystemLocal next = getNextFileSystem();
+    	if (next != null) {
+    		dto.setNext(next.getDirectoryPath());
+    	}
+    	return dto;
+    }
 }
