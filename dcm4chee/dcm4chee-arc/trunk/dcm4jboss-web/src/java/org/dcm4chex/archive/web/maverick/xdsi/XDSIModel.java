@@ -69,7 +69,7 @@ public class XDSIModel extends BasicFormModel {
 	private Set instances;
 	
 	private int selectedTitle, selectedEventCode, removeEventCode, selectedClassCode, selectedAuthorRole,
-				selectedContentTypeCode;
+				selectedContentTypeCode, selectedHealthCareTypeCode;
 
 	private CodeItem[] docTitleCodes;
 	private CodeItem[] classCodes;
@@ -77,6 +77,7 @@ public class XDSIModel extends BasicFormModel {
 	private CodeItem[] authorRoles;
 	private CodeItem[] confidentialityCodes;
 	private CodeItem[] contentTypeCodes;
+	private CodeItem[] healthCareFacilityTypeCodes;
 	
 	private List selectedEventCodes = new ArrayList();
 	
@@ -213,6 +214,17 @@ public class XDSIModel extends BasicFormModel {
 	public int getSelectedContentTypeCode() {
 		return selectedContentTypeCode;
 	}
+
+	public void setSelectedHealthCareTypeCode(int selected) {
+		if ( healthCareFacilityTypeCodes == null || healthCareFacilityTypeCodes.length <= selected) return;
+		this.selectedHealthCareTypeCode = selected;
+		CodeItem ci = healthCareFacilityTypeCodes[selectedHealthCareTypeCode];
+		props.setProperty("healthCareFacilityTypeCode", ci.getCodeValue());
+		props.setProperty("healthCareFacilityTypeCodeDN", ci.getCodeMeaning());
+	}
+	public int getSelectedHealthCareTypeCode() {
+		return selectedHealthCareTypeCode;
+	}
 	
 	public void setSelectedEventCode(int selected) {
 		if ( eventCodes == null || eventCodes.length <= selected) return;
@@ -311,6 +323,18 @@ public class XDSIModel extends BasicFormModel {
 		this.contentTypeCodes = codes;
 	}
 	/**
+	 * @return Returns the healthCareFacilityTypeCodes.
+	 */
+	public CodeItem[] getHealthCareFacilityTypeCodes() {
+		return healthCareFacilityTypeCodes;
+	}
+	/**
+	 * @param codes The healthCareFacilityTypeCodes to set.
+	 */
+	public void setHealthCareFacilityTypeCodes(CodeItem[] codes) {
+		this.healthCareFacilityTypeCodes = codes;
+	}
+	/**
 	 * @return Returns the eventCodes.
 	 */
 	public CodeItem[] getEventCodes() {
@@ -346,6 +370,8 @@ public class XDSIModel extends BasicFormModel {
 		setSelectedEventCode(0);
 		setSelectedClassCode(0);
 		setSelectedAuthorRole(0);
+		setSelectedContentTypeCode(0);
+		setSelectedHealthCareTypeCode(0);
 		this.deselectAllEventCodes();
 	}
 

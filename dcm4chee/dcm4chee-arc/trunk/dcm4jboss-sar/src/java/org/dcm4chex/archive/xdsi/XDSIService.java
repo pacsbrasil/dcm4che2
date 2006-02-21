@@ -130,6 +130,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	private File classCodeListFile;
 	private File contentTypeCodeListFile;
 	private File eventCodeListFile;
+	private File healthCareFacilityCodeListFile;
 
 	private List authorRoles = new ArrayList();
 	private List confidentialityCodes;
@@ -183,6 +184,17 @@ public class XDSIService extends ServiceMBeanSupport {
 			contentTypeCodeListFile = null;
 		} else {
 			contentTypeCodeListFile = new File(file.replace('/', File.separatorChar));
+		}
+	}
+	
+	public String getHealthCareFacilityCodeListFile() {
+		return healthCareFacilityCodeListFile == null ? null : healthCareFacilityCodeListFile.getPath();
+	}
+	public void setHealthCareFacilityCodeListFile(String file) throws IOException {
+		if ( file == null || file.trim().length() < 1) {
+			healthCareFacilityCodeListFile = null;
+		} else {
+			healthCareFacilityCodeListFile = new File(file.replace('/', File.separatorChar));
 		}
 	}
 	
@@ -432,6 +444,9 @@ public class XDSIService extends ServiceMBeanSupport {
 	public List listContentTypeCodes() throws IOException {
 		return readCodeFile(contentTypeCodeListFile);
 	}
+	public List listHealthCareFacilityTypeCodes() throws IOException {
+		return readCodeFile(healthCareFacilityCodeListFile);
+	}
 	public List listConfidentialityCodes() throws IOException {
 		return confidentialityCodes;
 	}
@@ -454,6 +469,8 @@ public class XDSIService extends ServiceMBeanSupport {
 						l.add( line );
 					}
 				}
+				log.debug("Codes read from code file "+codeFile);
+				log.debug("Codes:"+l);
 				mapCodeLists.put(codeFile,l);
 			} else {
 				log.warn("Code File "+file+" does not exist! return empty code list!");
@@ -542,6 +559,9 @@ public class XDSIService extends ServiceMBeanSupport {
 		   			AttachmentPart part = message.createAttachmentPart(dhAttachment);
 		   			part.setMimeHeader("Content-Type", docs[i].getMimeType());
 		   			part.setContentId(docs[i].getDocumentID());
+		   			if ( log.isDebugEnabled()){
+		   				log.debug("Add Attachment Part ("+(i+1)+"/"+docs.length+")! Document ID:"+part.getContentId()+" mime:"+docs[i].getMimeType());
+		   			}
 		   			message.addAttachmentPart(part);
 		   		}
    			}
@@ -550,6 +570,7 @@ public class XDSIService extends ServiceMBeanSupport {
             conn = connFactory.createConnection();
     		if ( log.isDebugEnabled()){
 	            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	            log.debug("send request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
 	            log.debug("-------------------------------- request  ----------------------------------");
 	            dumpSOAPMessage(message);
     		}           
@@ -611,6 +632,9 @@ public class XDSIService extends ServiceMBeanSupport {
 		return sendSOAP(kos,null);
 	}
 	public boolean sendSOAP(Dataset kos, Properties mdProps) throws SQLException {
+		if ( log.isDebugEnabled()) {
+			log.debug("Key Selection Object:");log.debug(kos);
+		}
 		if ( kos == null ) return false;
 		if ( mdProps == null ) mdProps = this.metadataProps;
 		XDSMetadata md = new XDSMetadata(kos, mdProps);

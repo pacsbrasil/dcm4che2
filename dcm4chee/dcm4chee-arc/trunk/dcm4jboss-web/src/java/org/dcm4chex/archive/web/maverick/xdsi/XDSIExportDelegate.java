@@ -41,9 +41,7 @@ package org.dcm4chex.archive.web.maverick.xdsi;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.management.MBeanServer;
@@ -225,6 +223,9 @@ public class XDSIExportDelegate {
 	public CodeItem[] getConfiguredContentTypeCodes() {
 		return getCodeItems("listContentTypeCodes");
 	}
+	public CodeItem[] getConfiguredHealthCareFacilityTypeCodes() {
+		return getCodeItems("listHealthCareFacilityTypeCodes");
+	}
 
 	public CodeItem[] getConfiguredEventCodes() {
 		return getCodeItems("listEventCodes");
@@ -249,7 +250,7 @@ public class XDSIExportDelegate {
             }
             return items;
         } catch (Exception e) {
-            log.error("Failed to get list of configured Event Codes:", e);
+            log.error("Failed to get list of configured Codes! method:"+methodName, e);
             return null;
         }
 	}

@@ -101,6 +101,17 @@
          <value value="conf/dcm4jboss-xdsi/contentTypeCodes.txt"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getHealthCareFacilityCodeListFile" setMethod="setHealthCareFacilityCodeListFile">
+      <description>File containing codes for Healthcare Facility Type Codes.
+      		Format: [designator^]codevalue^meaning 
+      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      </description>
+      <name>HealthCareFacilityTypeCode</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-xdsi/healthCareFacilityTypeCodes.txt"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getConfidentialityCodes" setMethod="setConfidentialityCodes">
       <description>Code list for confidentialityCode.
       		Format: [designator^]codevalue^meaning 
@@ -250,22 +261,27 @@
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of eventCodes.</description>
+     <description>get list of Event Type Codes.</description>
      <name>listEventCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of classCodes.</description>
+     <description>get list of Class Codes.</description>
      <name>listClassCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of contentTypeCodes.</description>
+     <description>get list of Content Type Codes.</description>
      <name>listContentTypeCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of confidentialityCodes.</description>
+     <description>get list of Healthcare Facility Type Codes.</description>
+     <name>listHealthCareFacilityTypeCodes</name>
+     <return-type>java.util.List</return-type>
+	</operation>
+   <operation impact="INFO">
+     <description>get list of Confidentiality Codes.</description>
      <name>listConfidentialityCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>

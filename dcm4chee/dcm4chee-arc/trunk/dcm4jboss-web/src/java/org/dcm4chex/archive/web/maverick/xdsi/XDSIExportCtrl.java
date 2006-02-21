@@ -121,6 +121,7 @@ public class XDSIExportCtrl extends Dcm4JbossFormController {
 			model.setEventCodes(delegate.getConfiguredEventCodes());
 			model.setClassCodes(delegate.getConfiguredClassCodes());
 			model.setContentTypeCodes( delegate.getConfiguredContentTypeCodes());
+			model.setHealthCareFacilityTypeCodes( delegate.getConfiguredHealthCareFacilityTypeCodes());
 		}    	
     }
 

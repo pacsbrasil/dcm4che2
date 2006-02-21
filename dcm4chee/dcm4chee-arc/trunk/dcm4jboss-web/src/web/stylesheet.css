@@ -132,7 +132,11 @@ img.logo {
 	background : green;
 }
 
-.listSelection {
+.xdsiField {
+	width : 300px; 
+}
+
+.xdsiListSelection {
 	background-color : #ccddcc;
 	width : 300px; 
 	border : 6px solid #ccddcc;
