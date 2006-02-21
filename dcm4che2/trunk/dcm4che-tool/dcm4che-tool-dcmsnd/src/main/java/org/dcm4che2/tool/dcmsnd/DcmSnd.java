@@ -50,7 +50,7 @@ import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -263,68 +263,96 @@ public class DcmSnd {
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option localAddr = new Option("L", "local", true,
-                "set AET, local address and port of local Application Entity, " +
-                "use ANONYMOUS as calling AET and pick up a valid local address " +
-                "to bind the socket by default");
-        localAddr.setArgName("calling[@host]");
-        opts.addOption(localAddr);
-        Option maxOpsInvoked = new Option("a", "async", true,
+        OptionBuilder.withArgName("aet[@host]");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set AET and local address of local Application Entity, use " +
+                "ANONYMOUS and pick up any valid local address to bind the " +
+                "socket by default");
+        opts.addOption(OptionBuilder.create("L"));
+        
+        OptionBuilder.withArgName("maxops");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "maximum number of outstanding operations it may invoke " +
                 "asynchronously, unlimited by default.");
-        maxOpsInvoked.setArgName("max-ops");
-        opts.addOption(maxOpsInvoked);
-        opts.addOption(" ", "pack-pdv", false, 
+        opts.addOption(OptionBuilder.create("async"));
+        
+        opts.addOption("packpdv", false, 
                 "pack command and data PDV in one P-DATA-TF PDU, " +
                 "send only one PDV in one P-Data-TF PDU by default.");
-        opts.addOption(" ", "tcp-no-delay", false, 
+        opts.addOption("tcpnodelay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
-        Option conTimeout = new Option(" ", "connect-timeout", true,
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for TCP connect, no timeout by default");
-        conTimeout.setArgName("timeout");
-        opts.addOption(conTimeout);
-        Option closeDelay = new Option(" ", "close-delay", true,
+        opts.addOption(OptionBuilder.create("connectTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
-        closeDelay.setArgName("delay");
-        opts.addOption(closeDelay);
-        Option checkPeriod = new Option(" ", "reaper-period", true,
+        opts.addOption(OptionBuilder.create("soclosedelay"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "period in ms to check for outstanding DIMSE-RSP, 10s by default");
-        checkPeriod.setArgName("period");
-        Option rspTimeout = new Option(" ", "rsp-timeout", true,
+        opts.addOption(OptionBuilder.create("reaper"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving DIMSE-RSP, 60s by default");
-        rspTimeout.setArgName("timeout");
-        opts.addOption(rspTimeout);
-        Option acTimeout = new Option(" ", "accept-timeout", true,
+        opts.addOption(OptionBuilder.create("rspTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
-        acTimeout.setArgName("timeout");
-        opts.addOption(acTimeout);
-        Option rpTimeout = new Option(" ", "release-timeout", true,
+        opts.addOption(OptionBuilder.create("acceptTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
-        rpTimeout.setArgName("timeout");
-        opts.addOption(rpTimeout);
-        Option rcvPduLen = new Option(" ", "rcv-pdu-len", true,
+        opts.addOption(OptionBuilder.create("releaseTO"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
-        rcvPduLen.setArgName("max-len");
-        opts.addOption(rcvPduLen);
-        Option sndPduLen = new Option(" ", "snd-pdu-len", true,
+        opts.addOption(OptionBuilder.create("rcvpdulen"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
-        sndPduLen.setArgName("max-len");
-        opts.addOption(sndPduLen);
-        Option soRcvBufSize = new Option(" ", "so-rcv-buf", true,
+        opts.addOption(OptionBuilder.create("sndpdulen"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "set SO_RCVBUF socket option to specified value in KB");
-        soRcvBufSize.setArgName("size");
-        opts.addOption(soRcvBufSize);
-        Option soSndBufSize = new Option(" ", "so-snd-buf", true,
+        opts.addOption(OptionBuilder.create("sorcvbuf"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "set SO_SNDBUF socket option to specified value in KB");
-        soSndBufSize.setArgName("size");
-        opts.addOption(soSndBufSize);
-        Option transcoderBufSize = new Option(" ", "buf-size", true,
+        opts.addOption(OptionBuilder.create("sosndbuf"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "transcoder buffer size in KB, 1KB by default");
-        transcoderBufSize.setArgName("size");
-        opts.addOption(transcoderBufSize);
-        opts.addOption(" ", "low-prior", false, 
+        opts.addOption(OptionBuilder.create("bufsize"));
+        
+        opts.addOption("lowprior", false, 
                 "LOW priority of the C-STORE operation, MEDIUM by default");
-        opts.addOption(" ", "high-prior", false,
+        opts.addOption("highprior", false,
                 "HIGH priority of the C-STORE operation, MEDIUM by default");
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
@@ -379,58 +407,59 @@ public class DcmSnd {
             dcmsnd.setCalling(callingAETHost[0]);
             dcmsnd.setLocalHost(toHostname(callingAETHost[1]));
         }
-        if (cl.hasOption("connect-timeout"))
+        if (cl.hasOption("connectTO"))
             dcmsnd.setConnectTimeout(
-                    parseInt(cl.getOptionValue("connect-timeout"),
-                    "illegal argument of option --connect-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("reaper-period"))
+                    parseInt(cl.getOptionValue("connectTO"),
+                    "illegal argument of option -connectTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("reaper"))
             dcmsnd.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("reaper-period"),
-                    "illegal argument of option --reaper-period", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("rsp-timeout"))
+                    parseInt(cl.getOptionValue("reaper"),
+                    "illegal argument of option -reaper", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("rspTO"))
             dcmsnd.setDimseRspTimeout(
-                    parseInt(cl.getOptionValue("rsp-timeout"),
-                    "illegal argument of option --rsp-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("accept-timeout"))
+                    parseInt(cl.getOptionValue("rspTO"),
+                    "illegal argument of option -rspTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("acceptTO"))
             dcmsnd.setAcceptTimeout(
-                    parseInt(cl.getOptionValue("accept-timeout"),
-                    "illegal argument of option --accept-timeout", 1, Integer.MAX_VALUE));
+                    parseInt(cl.getOptionValue("acceptTO"),
+                    "illegal argument of option -acceptTO", 1, Integer.MAX_VALUE));
         if (cl.hasOption("release-timeout"))
             dcmsnd.setReleaseTimeout(
-                    parseInt(cl.getOptionValue("release-timeout"),
-                    "illegal argument of option --release-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("close-delay"))
+                    parseInt(cl.getOptionValue("releaseTO"),
+                    "illegal argument of option -releaseTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("soclosedelay"))
             dcmsnd.setSocketCloseDelay(
-                    parseInt(cl.getOptionValue("close-delay"),
-                    "illegal argument of option --close-delay", 1, 10000));
-        if (cl.hasOption("rcv-pdu-len"))
+                    parseInt(cl.getOptionValue("soclosedelay"),
+                    "illegal argument of option -soclosedelay", 1, 10000));
+        if (cl.hasOption("rcvpdulen"))
             dcmsnd.setMaxPDULengthReceive(
-                    parseInt(cl.getOptionValue("rcv-pdu-len"),
-                    "illegal argument of option --rcv-pdu-len", 1, 10000) * KB);
-        if (cl.hasOption("snd-pdu-len"))
+                    parseInt(cl.getOptionValue("rcvpdulen"),
+                    "illegal argument of option -rcvpdulen", 1, 10000) * KB);
+        if (cl.hasOption("sndpdulen"))
             dcmsnd.setMaxPDULengthSend(
-                    parseInt(cl.getOptionValue("snd-pdu-len"),
-                    "illegal argument of option --snd-pdu-len", 1, 10000) * KB);
-        if (cl.hasOption("so-snd-buf"))
+                    parseInt(cl.getOptionValue("sndpdulen"),
+                    "illegal argument of option --sndpdulen", 1, 10000) * KB);
+        if (cl.hasOption("sosndbuf"))
             dcmsnd.setSendBufferSize(
-                    parseInt(cl.getOptionValue("so-snd-buf"),
-                    "illegal argument of option --so-snd-buf", 1, 10000) * KB);
-        if (cl.hasOption("so-rcv-buf"))
+                    parseInt(cl.getOptionValue("sosndbuf"),
+                    "illegal argument of option -sosndbuf", 1, 10000) * KB);
+        if (cl.hasOption("sorcvbuf"))
             dcmsnd.setReceiveBufferSize(
-                    parseInt(cl.getOptionValue("so-rcv-buf"),
-                    "illegal argument of option --so-rcv-buf", 1, 10000) * KB);
-        if (cl.hasOption("buf-size"))
+                    parseInt(cl.getOptionValue("sorcvbuf"),
+                    "illegal argument of option -sorcvbuf", 1, 10000) * KB);
+        if (cl.hasOption("bufsize"))
             dcmsnd.setTranscoderBufferSize(
-                    parseInt(cl.getOptionValue("buf-size"),
-                    "illegal argument of option --buf-size", 1, 10000) * KB);
-        dcmsnd.setPackPDV(cl.hasOption("pack-pdv"));
-        dcmsnd.setTcpNoDelay(cl.hasOption("tcp-no-delay"));
-        if (cl.hasOption("a"))
+                    parseInt(cl.getOptionValue("bufsize"),
+                    "illegal argument of option -bufsize", 1, 10000) * KB);
+        dcmsnd.setPackPDV(cl.hasOption("packpdv"));
+        dcmsnd.setTcpNoDelay(cl.hasOption("tcpnodelay"));
+        if (cl.hasOption("async"))
             dcmsnd.setMaxOpsInvoked(zeroAsMaxInt(parseInt(
-                    cl.getOptionValue("a"), "illegal argument of option -a", 0, 0xffff)));
-        if (cl.hasOption("low-prior"))
+                    cl.getOptionValue("async"),
+                    "illegal argument of option -async", 0, 0xffff)));
+        if (cl.hasOption("lowprior"))
             dcmsnd.setPriority(CommandUtils.LOW);
-        if (cl.hasOption("high-prior"))
+        if (cl.hasOption("highprior"))
             dcmsnd.setPriority(CommandUtils.HIGH);
         System.out.println("Scanning files to send");
         long t1 = System.currentTimeMillis();

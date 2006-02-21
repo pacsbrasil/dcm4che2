@@ -16,6 +16,7 @@
     <module>dcm4che-tool-dcmof</module>
     <module>dcm4che-tool-dcmrcv</module>
     <module>dcm4che-tool-dcmsnd</module>
+    <module>dcm4che-tool-dcmwado</module>
     <module>dcm4che-tool-xml2dcm</module>
   </modules>
 </model>

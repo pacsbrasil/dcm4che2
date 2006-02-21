@@ -46,7 +46,7 @@ import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -316,17 +316,20 @@ public class DcmQR
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option localAddr = new Option("L", true,
+        OptionBuilder.withArgName("aet[@host]");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "set AET and local address of local Application Entity, use " +
                 "ANONYMOUS and pick up any valid local address to bind the " +
                 "socket by default");
-        localAddr.setArgName("aet[@host]");
-        opts.addOption(localAddr);
-        Option maxOpsInvoked = new Option("asy", true,
+        opts.addOption(OptionBuilder.create("L"));
+        
+        OptionBuilder.withArgName("maxops");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "maximum number of outstanding C-MOVE-RQ it may invoke " +
                 "asynchronously, 1 by default.");
-        maxOpsInvoked.setArgName("max-ops");
-        opts.addOption(maxOpsInvoked);
+        opts.addOption(OptionBuilder.create("async"));
         
         opts.addOption("retall", false, 
                 "negotiate private FIND SOP Classes to fetch all available " +
@@ -342,77 +345,117 @@ public class DcmQR
                 "send only one PDV in one P-Data-TF PDU by default.");
         opts.addOption("tcpnodelay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
-        Option conTimeout = new Option("connectTO", true,
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for TCP connect, no timeout by default");
-        conTimeout.setArgName("timeout");
-        opts.addOption(conTimeout);
-        Option closeDelay = new Option("soclosedelay", true,
+        opts.addOption(OptionBuilder.create("connectTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
-        closeDelay.setArgName("delay");
-        opts.addOption(closeDelay);
-        Option checkPeriod = new Option("reaper", true,
+        opts.addOption(OptionBuilder.create("soclosedelay"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "period in ms to check for outstanding DIMSE-RSP, 10s by default");
-        checkPeriod.setArgName("period");
-        Option rspTimeout = new Option("rspTO", true,
+        opts.addOption(OptionBuilder.create("reaper"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving DIMSE-RSP, 60s by default");
-        rspTimeout.setArgName("timeout");
-        opts.addOption(rspTimeout);
-        Option acTimeout = new Option("acceptTO", true,
+        opts.addOption(OptionBuilder.create("rspTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
-        acTimeout.setArgName("timeout");
-        opts.addOption(acTimeout);
-        Option rpTimeout = new Option("releaseTO", true,
+        opts.addOption(OptionBuilder.create("acceptTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
-        rpTimeout.setArgName("timeout");
-        opts.addOption(rpTimeout);
-        Option rcvPduLen = new Option("rcvpdulen", true,
+        opts.addOption(OptionBuilder.create("releaseTO"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
-        rcvPduLen.setArgName("max-len");
-        opts.addOption(rcvPduLen);
-        Option sndPduLen = new Option("sndpdulen", true,
+        opts.addOption(OptionBuilder.create("rcvpdulen"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
-        sndPduLen.setArgName("max-len");
-        opts.addOption(sndPduLen);
-        Option soRcvBufSize = new Option("sorcvbuf", true,
+        opts.addOption(OptionBuilder.create("sndpdulen"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "set SO_RCVBUF socket option to specified value in KB");
-        soRcvBufSize.setArgName("size");
-        opts.addOption(soRcvBufSize);
-        Option soSndBufSize = new Option("sosndbuf", true,
+        opts.addOption(OptionBuilder.create("sorcvbuf"));
+        
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "set SO_SNDBUF socket option to specified value in KB");
-        soSndBufSize.setArgName("size");
-        opts.addOption(soSndBufSize);
+        opts.addOption(OptionBuilder.create("sosndbuf"));
+        
         OptionGroup qrlevel = new OptionGroup();
-        qrlevel.addOption(new Option("P", "patient", false,
-                "perform patient level query, multiple exclusive with -s and -i, " +
-                "perform study level query by default."));
-        qrlevel.addOption(new Option("S", "series", false,
-                "perform series level query, multiple exclusive with -p and -i, " +
-                "perform study level query by default."));
-        qrlevel.addOption(new Option("I", "image", false,
-                "perform instance level query, multiple exclusive with -p and -s, " +
-                "perform study level query by default."));
+        
+        OptionBuilder.withDescription(
+                "perform patient level query, multiple exclusive with -S and -I, " +
+                "perform study level query by default.");
+        OptionBuilder.withLongOpt("patient");
+        opts.addOption(OptionBuilder.create("P"));
+        
+        OptionBuilder.withDescription(
+                "perform series level query, multiple exclusive with -P and -I, " +
+                "perform study level query by default.");
+        OptionBuilder.withLongOpt("series");
+        opts.addOption(OptionBuilder.create("S"));
+        
+        OptionBuilder.withDescription(
+                "perform instance level query, multiple exclusive with -P and -S, " +
+                "perform study level query by default.");
+        OptionBuilder.withLongOpt("image");
+        opts.addOption(OptionBuilder.create("P"));
+        
         opts.addOptionGroup(qrlevel);
-        Option filter = new Option("M", true,
+        
+        OptionBuilder.withArgName("attr=value");
+        OptionBuilder.hasArgs(2);
+        OptionBuilder.withValueSeparator('=');
+        OptionBuilder.withDescription(
                 "specify matching key. attr can be specified by " +
                 "name or tag value (in hex), e.g. PatientsName or 00100010.");
-        filter.setArgName("attr=value");
-        filter.setArgs(2);
-        filter.setValueSeparator('=');
-        opts.addOption(filter);
-        Option ret = new Option("R", true,
+        opts.addOption(OptionBuilder.create("M"));
+
+        OptionBuilder.withArgName("attr");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "specify additional return key. attr can be specified by " +
                 "name or tag value (in hex).");
-        ret.setArgName("attr");
-        opts.addOption(ret);
-        Option cancelAfter = new Option("C", true,
+        opts.addOption(OptionBuilder.create("R"));
+
+        OptionBuilder.withArgName("num");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "cancel query after receive of specified number of responses," +
                 " no cancel by default");
-        cancelAfter.setArgName("num");
-        opts.addOption(cancelAfter);
-        Option move = new Option("dest", true,
+        opts.addOption(OptionBuilder.create("C"));
+
+        OptionBuilder.withArgName("aet");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "retrieve matching objects to specified destination.");
-        move.setArgName("aet");
-        opts.addOption(move);
+        opts.addOption(OptionBuilder.create("dest"));
+
         opts.addOption("lowprior", false, 
             "LOW priority of the C-FIND/C-MOVE operation, MEDIUM by default");
         opts.addOption("highprior", false,
@@ -513,9 +556,10 @@ public class DcmQR
                     "illegal argument of option -sorcvbuf", 1, 10000) * KB);
         dcmqr.setPackPDV(cl.hasOption("packpdv"));
         dcmqr.setTcpNoDelay(cl.hasOption("tcpnodelay"));
-        dcmqr.setMaxOpsInvoked(cl.hasOption("asy")
+        dcmqr.setMaxOpsInvoked(cl.hasOption("async")
                 ? zeroAsMaxInt(parseInt(
-                    cl.getOptionValue("asy"), "illegal argument of option -asy", 0, 0xffff))
+                    cl.getOptionValue("async"), 
+                    "illegal argument of option -async", 0, 0xffff))
                 : 1);        
         if (cl.hasOption("C"))
             dcmqr.setCancelAfter(parseInt(cl.getOptionValue("C"),
@@ -845,7 +889,8 @@ public class DcmQR
         TransferCapability tc;
         for (int i = 0, n = cuid.size(); i < n; i++)
         {
-            tc = assoc.getTransferCapabilityAsSCU((String) cuid.get(i));
+            tc = (TransferCapability) cuid.get(i);
+            tc = assoc.getTransferCapabilityAsSCU(tc.getSopClass());
             if (tc != null)
                 return tc;
         }

@@ -43,7 +43,7 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -168,52 +168,76 @@ public class DcmEcho
     private static CommandLine parse(String[] args)
     {
         Options opts = new Options();
-        Option localAddr = new Option(
-                "L",
-                "local",
-                true,
-                "set AET, local address and port of local Application Entity," + 
-                "use ANONYMOUS and pick up a valid local address to bind the " +
+        OptionBuilder.withArgName("aet[@host]");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set AET and local address of local Application Entity, use " +
+                "ANONYMOUS and pick up any valid local address to bind the " +
                 "socket by default");
-        localAddr.setArgName("calling[@host]");
-        opts.addOption(localAddr);
-        Option conTimeout = new Option(" ", "connect-timeout", true,
+        opts.addOption(OptionBuilder.create("L"));
+        
+        opts.addOption("packpdv", false, 
+                "pack command and data PDV in one P-DATA-TF PDU, " +
+                "send only one PDV in one P-Data-TF PDU by default.");
+        opts.addOption("tcpnodelay", false, 
+                "set TCP_NODELAY socket option to true, false by default");
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for TCP connect, no timeout by default");
-        conTimeout.setArgName("timeout");
-        opts.addOption(conTimeout);
-        Option closeDelay = new Option(" ", "close-delay", true,
+        opts.addOption(OptionBuilder.create("connectTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "delay in ms for Socket close after sending A-ABORT, 50ms by default");
-        closeDelay.setArgName("delay");
-        opts.addOption(closeDelay);
-        Option checkPeriod = new Option(" ", "reaper-period", true,
+        opts.addOption(OptionBuilder.create("soclosedelay"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "period in ms to check for outstanding DIMSE-RSP, 10s by default");
-        checkPeriod.setArgName("period");
-        opts.addOption(checkPeriod);
-        Option idleTimeout = new Option(" ", "idle-timeout", true,
-                "timeout in ms for receiving DIMSE-RQ, 10s by default");
-                idleTimeout.setArgName("timeout");
-        opts.addOption(idleTimeout);
-        Option rspTimeout = new Option(" ", "rsp-timeout", true,
+        opts.addOption(OptionBuilder.create("reaper"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving DIMSE-RSP, 60s by default");
-        rspTimeout.setArgName("timeout");
-        opts.addOption(rspTimeout);
-        Option acTimeout = new Option(" ", "accept-timeout", true,
+        opts.addOption(OptionBuilder.create("rspTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
-        acTimeout.setArgName("timeout");
-        opts.addOption(acTimeout);
-        Option rpTimeout = new Option(" ", "release-timeout", true,
+        opts.addOption(OptionBuilder.create("acceptTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
-        rpTimeout.setArgName("timeout");
-        opts.addOption(rpTimeout);
-        Option retry = new Option(" ", "repeat", true, "repeat C-ECHO RQ several times.");
-        retry.setArgName("num");
-        opts.addOption(retry);
-        Option repeatInterval = new Option(" ", "repeat-interval", true,
-                "interval in ms between repeated C-FIND RQ, immediately after C-FIND RSP by default");
-        rpTimeout.setArgName("interval");
-        opts.addOption(repeatInterval);
-        opts.addOption(" ", "reuse-assoc", false, "Reuse association for repeated C-ECHO");
-        opts.addOption(" ", "close-assoc", false, "Close association after each C-ECHO");
+        opts.addOption(OptionBuilder.create("releaseTO"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving DIMSE-RQ, 10s by default");
+        opts.addOption(OptionBuilder.create("idleTO"));
+        
+        OptionBuilder.withArgName("num");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "repeat C-ECHO RQ several times");
+        opts.addOption(OptionBuilder.create("repeat"));
+        
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "delay in ms between repeated C-FIND RQ, immediately after C-FIND RSP by default");
+        opts.addOption(OptionBuilder.create("repeatdelay"));
+        
+        opts.addOption("reuseassoc", false, "Reuse association for repeated C-ECHO");
+        opts.addOption("closeassoc", false, "Close association after each C-ECHO");
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
                 "print the version information and exit");
@@ -267,44 +291,44 @@ public class DcmEcho
             dcmecho.setCalling(callingAETHost[0]);
             dcmecho.setLocalHost(toHostname(callingAETHost[1]));
         }
-        if (cl.hasOption("connect-timeout"))
+        if (cl.hasOption("connectTO"))
             dcmecho.setConnectTimeout(
-                    parseInt(cl.getOptionValue("connect-timeout"),
-                    "illegal argument of option --connect-timeout", 1, Integer.MAX_VALUE));
-        dcmecho.setIdleTimeout(cl.hasOption("idle-timeout")
-                ? parseInt(cl.getOptionValue("idle-timeout"),
-                    "illegal argument of option --idle-timeout", 1, Integer.MAX_VALUE)
+                    parseInt(cl.getOptionValue("connectTO"),
+                    "illegal argument of option -connectTO", 1, Integer.MAX_VALUE));
+        dcmecho.setIdleTimeout(cl.hasOption("idleTO")
+                ? parseInt(cl.getOptionValue("idleTO"),
+                    "illegal argument of option -idleTO", 1, Integer.MAX_VALUE)
                 : 10000);
-        if (cl.hasOption("reaper-period"))
+        if (cl.hasOption("reaper"))
             dcmecho.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("reaper-period"),
-                    "illegal argument of option --reaper-period", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("rsp-timeout"))
+                    parseInt(cl.getOptionValue("reaper"),
+                    "illegal argument of option -reaper", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("rspTO"))
             dcmecho.setDimseRspTimeout(
-                    parseInt(cl.getOptionValue("rsp-timeout"),
-                    "illegal argument of option --rsp-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("accept-timeout"))
+                    parseInt(cl.getOptionValue("rspTO"),
+                    "illegal argument of option -rspTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("acceptTO"))
             dcmecho.setAcceptTimeout(
-                    parseInt(cl.getOptionValue("accept-timeout"),
-                    "illegal argument of option --accept-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("release-timeout"))
+                    parseInt(cl.getOptionValue("acceptTO"),
+                    "illegal argument of option -acceptTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("releaseTO"))
             dcmecho.setReleaseTimeout(
-                    parseInt(cl.getOptionValue("release-timeout"),
-                    "illegal argument of option --release-timeout", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("close-delay"))
+                    parseInt(cl.getOptionValue("releaseTO"),
+                    "illegal argument of option -releaseTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("soclosedelay"))
             dcmecho.setSocketCloseDelay(
-                    parseInt(cl.getOptionValue("close-delay"),
-                    "illegal argument of option --close-delay", 1, 10000));
+                    parseInt(cl.getOptionValue("soclosedelay"),
+                    "illegal argument of option -soclosedelay", 1, 10000));
         
         int repeat = cl.hasOption("repeat")
                 ? parseInt(cl.getOptionValue("repeat"),
-                    "illegal argument of option --repeat", 1, Integer.MAX_VALUE)
+                    "illegal argument of option -repeat", 1, Integer.MAX_VALUE)
                 : 0;
-        int interval = cl.hasOption("repeat-interval")
-                ? parseInt(cl.getOptionValue("repeat-interval"),
-                    "illegal argument of option --repeat-interval", 1, Integer.MAX_VALUE)
+        int interval = cl.hasOption("repeatdelay")
+                ? parseInt(cl.getOptionValue("repeatdelay"),
+                    "illegal argument of option -repeatdelay", 1, Integer.MAX_VALUE)
                 : 0;
-        boolean closeAssoc = cl.hasOption("close-assoc");
+        boolean closeAssoc = cl.hasOption("closeassoc");
 
         long t1 = System.currentTimeMillis();
         try
