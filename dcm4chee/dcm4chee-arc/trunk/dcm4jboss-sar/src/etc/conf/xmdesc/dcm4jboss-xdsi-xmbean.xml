@@ -129,7 +129,8 @@
    </attribute>
    <attribute access="read-write" getMethod="getAuthorRoles" setMethod="setAuthorRoles">
       <description><![CDATA[List of author roles (with display name).<br/>
-      				Format: &lt;role&gt;^&lt;displayName&gt;
+      				Format: &lt;role&gt;^&lt;displayName&gt;<br/>
+      				Use either newline or semicolon to seperate codes.
       				]]>
       </description>
       <name>AuthorRoles</name>
