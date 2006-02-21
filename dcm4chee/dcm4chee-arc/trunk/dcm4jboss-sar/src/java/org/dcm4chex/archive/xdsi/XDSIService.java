@@ -382,7 +382,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 
 	private List setListString(String s) {
-		StringTokenizer st = new StringTokenizer( s, ",;\n\r\t ");
+		StringTokenizer st = new StringTokenizer( s, ";\n\r");
 		String t;
 		int pos;
 		List l = new ArrayList();
