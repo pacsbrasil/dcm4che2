@@ -63,8 +63,9 @@
 		<pathelement location="${lib.dir}/mogio.jar"/>
 		<pathelement location="${lib.dir}/commons-compress-20050911.jar"/>
 		<pathelement location="${lib.dir}/commons-net-1.4.1.jar"/>
-		<pathelement location="${jboss.home}/bin/
-"/>
+		<pathelement location="${lib.dir}/saaj-impl.jar"/>
+		<pathelement location="${lib.dir}/saaj-api.jar"/>
+		<pathelement location="${jboss.home}/bin/"/>
 		<pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
