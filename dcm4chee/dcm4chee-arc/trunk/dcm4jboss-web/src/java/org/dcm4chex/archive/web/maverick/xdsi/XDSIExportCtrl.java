@@ -44,6 +44,7 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -75,7 +76,8 @@ public class XDSIExportCtrl extends Dcm4JbossFormController {
     	XDSIModel model = (XDSIModel) getForm();
         try {
         	if ( model.getNumberOfInstances() < 1) {
-        		model.setPopupMsg("Nothing selected for export! Please select at least one patient, study, series or instance");
+        		FolderForm.setExternalPopupMsg(this.getCtx(),"Nothing selected for export! Please select at least one patient, study, series or instance");
+        		return CANCEL;
         	}
         	model.setErrorCode("OK");
         	model.setPopupMsg(null);

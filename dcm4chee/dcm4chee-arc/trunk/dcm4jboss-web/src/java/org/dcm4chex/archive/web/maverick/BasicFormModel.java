@@ -61,6 +61,8 @@ public abstract class BasicFormModel {
     
     /** Popup message */
     private String popupMsg = null;
+    /** externalPopup message (from a foreign controller */
+    private String externalPopupMsg = null;
     
 	protected BasicFormModel( HttpServletRequest request ) {
     	admin = request.isUserInRole(DCMUser.WEBADMIN);
@@ -100,9 +102,16 @@ public abstract class BasicFormModel {
     }
 
 	/**
+	 * Returns the popup message.
+	 * <p>
+	 * if popupMsg is null this Method returns the externalPopupMsg.
 	 * @return Returns the popupMsg.
 	 */
 	public String getPopupMsg() {
+		if ( popupMsg == null ) {
+			popupMsg = externalPopupMsg;
+			externalPopupMsg = null;
+		}
 		return popupMsg;
 	}
 	/**
@@ -112,4 +121,16 @@ public abstract class BasicFormModel {
 		this.popupMsg = popupMsg;
 	}
 
+	/**
+	 * @return Returns the externalPopupMsg.
+	 */
+	public String getExternalPopupMsg() {
+		return externalPopupMsg;
+	}
+	/**
+	 * @param externalPopupMsg The externalPopupMsg to set.
+	 */
+	public void setExternalPopupMsg(String externalPopupMsg) {
+		this.externalPopupMsg = externalPopupMsg;
+	}
 }

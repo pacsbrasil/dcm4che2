@@ -341,4 +341,13 @@ public class FolderForm extends BasicFolderForm {
 		//We doesnt need this method here. FolderSubmitCtrl does not use performPrevious/performNext!
 	}
 
+	/**
+	 * @param ctx
+	 * @param string
+	 */
+	public static void setExternalPopupMsg(ControllerContext ctx, String msg) {
+		getFolderForm(ctx).setExternalPopupMsg(msg);
+		
+	}
+
 }

@@ -42,6 +42,7 @@ package org.dcm4chex.archive.web.maverick.tf;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -72,7 +73,8 @@ public class TFSelectorCtrl extends Dcm4JbossFormController {
     	TFModel model = (TFModel) getForm();
         try {
         	if ( model.getNumberOfInstances() < 1) {
-        		model.setPopupMsg("Nothing selected for export! Please select at least one patient, study, series or instance");
+        		FolderForm.setExternalPopupMsg(getCtx(),"Nothing selected for export! Please select at least one patient, study, series or instance");
+        		return CANCEL;
         	}
         	model.setErrorCode("OK");
         	model.setPopupMsg(null);
