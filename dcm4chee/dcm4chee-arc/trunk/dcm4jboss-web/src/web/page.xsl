@@ -6,10 +6,10 @@
 			<script language = "JavaScript" src= "dcm4che.js"/>
 			<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 		</head>
-		<body onLoad="checkError('{model/errorCode}');checkPopup('{model/popupMsg}')" background="images/bg.jpg" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+		<body onLoad="checkError('{model/errorCode}');checkPopup('{model/popupMsg}')" bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
 		<table class="dcm4jboss_header" width="100%" cellspacing="0">
 	  		<tr valign="middle" style="center">
-	    		<td class="logo" width="50" align="left"><img class="logo" src="images/logo.jpg" border="0"/></td>
+	    		<td class="logo" width="50" align="left"><img class="logo" src="images/logo.gif" border="0"/></td>
 	    		<td width="100" align="center">
 	    			<xsl:choose>
 		    			<xsl:when test="model/modelName = 'FOLDER'">

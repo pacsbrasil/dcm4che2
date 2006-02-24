@@ -8,7 +8,7 @@
    <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model/AE">
-	 <html><body background="images/bg.jpg" cellpadding="0" cellspacing="0" border="0">
+	 <html><body bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" border="0">
 			<center><form name="ae_edit" action="aeeditsubmit.m" method="post">
 			<input type="hidden" name="pk" value="{pk}"/>
 			<table border="0" cellspacing="0" cellpadding="0" width="35%"><tr><td>

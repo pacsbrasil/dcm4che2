@@ -8,7 +8,7 @@
    <xsl:include href  = "../page.xsl" />
 
    <xsl:template match="model">
-	 <html><body background="images/bg.jpg" cellpadding="0" cellspacing="0" border="0">
+	 <html><body bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" border="0">
 	 	<center><form name="user_new" action="user_editsubmit.m" method="post">
 			<table border="0" cellspacing="0" cellpadding="0" width="35%"><tr><td>
 				<center><table border="0">
