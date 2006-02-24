@@ -121,7 +121,7 @@ implements NotificationListener, MessageListener {
 	        		log.debug("MPPS received. mpps:");log.debug(mppsDS);
 	        	}
 	        	Dataset item = mppsDS.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-	        	if ( "110514".equals(item.getString(Tags.CodeValue)) && 
+	        	if ( item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
 	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
 	        			String mppsIUID = mppsDS.getString( Tags.SOPInstanceUID );
 		    			log.debug("Scheduled: Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
