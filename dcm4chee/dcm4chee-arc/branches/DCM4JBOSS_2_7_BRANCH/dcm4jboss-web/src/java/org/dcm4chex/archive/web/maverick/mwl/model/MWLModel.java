@@ -207,10 +207,12 @@ public class MWLModel extends BasicFormPagingModel {
 		mwlEntries.clear();
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
-			if ( ds != null )
+			if ( ds != null ) {
 				mwlEntries.add( new MWLEntry( ds ) );
+			} else {
+				total--;
+			}
 		}
-		setTotal(mwlEntries.size()); // the real total (without null entries!)
 	}
 
 	/**
