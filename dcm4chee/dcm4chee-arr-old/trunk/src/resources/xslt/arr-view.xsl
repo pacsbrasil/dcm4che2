@@ -13,7 +13,7 @@
 				<title>Audit Record Detail View</title>
 				<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 			</head>
-			<body background="images/bg.jpg" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+			<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
 				<table width="100%" cellpadding="0" cellspacing="0" border="0">
 					<tr bgcolor="#eeeeee">
 					<td colspan="5">
