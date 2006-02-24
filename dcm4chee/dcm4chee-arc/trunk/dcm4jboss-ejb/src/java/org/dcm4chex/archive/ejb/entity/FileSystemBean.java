@@ -39,12 +39,8 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
-import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -67,36 +63,33 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
+ *             query=""transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findAll()"
  *             query="SELECT OBJECT(a) FROM FileSystem AS a"
- *             transaction-type="Supports"
+ *             strategy="on-find" eager-load-group="*"
  *
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
  *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
- *             transaction-type="Supports"
+ *             strategy="on-find" eager-load-group="*"
  *
- * @ejb.finder signature="java.util.Collection findByAvailability(int availability)"
- *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.availability = ?1"
- *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2 AND a.status = ?3"
+ *             strategy="on-find" eager-load-group="*"
  *
- * @ejb.finder signature="java.util.Collection findByStatus(int status)"
- *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.status = ?1"
- *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2 AND (a.status = ?3 OR a.status = ?4)"
+ *             strategy="on-find" eager-load-group="*"
  */
 public abstract class FileSystemBean implements EntityBean {
 
-    private EntityContext ctx;
-    
     private static final Logger log = Logger.getLogger(FileSystemBean.class);
 
-    public void setEntityContext(EntityContext ctx) throws EJBException,
-            RemoteException {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() throws EJBException, RemoteException {
-        this.ctx = null;    
-    }
-    
     /**
 	 * Create File System.
 	 * 
@@ -235,7 +228,17 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public FileSystemDTO toFileSystemDTO() {
+    public void fromDTO(FileSystemDTO dto) {
+        setDirectoryPath(dto.getDirectoryPath());
+        setRetrieveAET(dto.getRetrieveAET());
+        setAvailability(dto.getAvailability());
+        setStatus(dto.getStatus());
+        setUserInfo(dto.getUserInfo());
+    }
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO toDTO() {
 		FileSystemDTO dto = new FileSystemDTO();
 		dto.setPk(getPk().intValue());
 		dto.setDirectoryPath(getDirectoryPath());

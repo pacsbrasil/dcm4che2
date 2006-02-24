@@ -83,7 +83,7 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
      * @ejb.interface-method
      */
     public long releaseStudy(StudyOnFileSystemLocal studyOnFs, Map ians, boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal, Collection listOfROFs, int validFileStatus) throws EJBException, RemoveException,
+            boolean flushExternal, boolean flushOnROFs, int validFileStatus) throws EJBException, RemoveException,
             FinderException {
         long size = 0L;
         Dataset ian = null;
@@ -92,13 +92,10 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         	log.warn("Interrupted state cleared for current thread!");
         }
         StudyLocal study = studyOnFs.getStudy();
-        boolean release = flushExternal && study.isStudyExternalRetrievable() || flushOnMedia
-        && study.isStudyAvailableOnMedia();
-        if ( !release && listOfROFs != null ) {
-        	release = study.isStudyAvailableOnROFs(listOfROFs,validFileStatus);
-        }
-        boolean delete = deleteUncommited && study.getNumberOfCommitedInstances() == 0;
-        if ( release || delete ) {
+        boolean release = flushExternal && study.isStudyExternalRetrievable()
+                || flushOnMedia && study.isStudyAvailableOnMedia()
+                || flushOnROFs && study.isStudyAvailableOnROFs(validFileStatus);
+        if ( release || deleteUncommited && study.getNumberOfCommitedInstances() == 0 ) {
         	ian = DcmObjectFactory.getInstance().newDataset();
         	ians.put( study.getStudyIuid(), ian);
 			ian.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");

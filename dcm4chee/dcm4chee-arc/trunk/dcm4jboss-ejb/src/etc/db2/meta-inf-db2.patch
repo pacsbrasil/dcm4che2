@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-01-31 11:29:01.863115267 +0100
-+++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2006-01-31 11:29:23.907453102 +0100
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-02-24 20:12:23.203474283 +0100
++++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2006-02-24 21:31:48.914971486 +0100
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -42,7 +42,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
 @@ -412,7 +415,8 @@
- 			<dynamic-ql/>
+             <jboss-ql><![CDATA[SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1]]></jboss-ql>
           </query>
  
 -	<entity-command name="hsqldb-fetch-key">
@@ -113,19 +113,17 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -949,8 +959,9 @@
- 
-         </cmp-field>
+@@ -1006,7 +1016,8 @@
+ 			</read-ahead>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
--	</entity-command>
-+ 	<entity-command name="pk-sql">
++	<entity-command name="pk-sql">
 +         <attribute name="pk-sql">values nextval for filesystem_pk_seq</attribute>
-+  	</entity-command>
+ 	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-       </entity>
-@@ -1071,7 +1082,8 @@
+@@ -1128,7 +1139,8 @@
  			</read-ahead>
           </query>
  
@@ -135,17 +133,19 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1111,7 +1123,8 @@
+@@ -1168,8 +1180,9 @@
  
          </cmp-field>
  
 -	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="pk-sql">
+-	</entity-command>
++ 	<entity-command name="pk-sql">
 +         <attribute name="pk-sql">values nextval for priv_series_pk_seq</attribute>
- 	</entity-command>
++  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1138,7 +1151,8 @@
+       </entity>
+@@ -1195,7 +1208,8 @@
  
          </cmp-field>
  
@@ -155,7 +155,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1228,7 +1242,8 @@
+@@ -1285,7 +1299,8 @@
              <jboss-ql><![CDATA[SELECT OBJECT(a) FROM Patient AS a WHERE a.patientName = ?1 AND a.patientBirthDate = ?2]]></jboss-ql>
           </query>
  
@@ -165,95 +165,95 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1293,8 +1308,9 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
--	</entity-command>
-+ 	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for hp_pk_seq</attribute>
-+  	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-       </entity>
-@@ -1330,7 +1346,8 @@
+@@ -1350,7 +1365,8 @@
  
          </cmp-field>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for priv_patient_pk_seq</attribute>
++          <attribute name="pk-sql">values nextval for hp_pk_seq</attribute>
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1363,7 +1380,8 @@
- 			<dynamic-ql/>
-          </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for study_on_fs_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -1479,7 +1497,8 @@
-             <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1]]></jboss-ql>
-          </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for media_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -1519,7 +1538,8 @@
+@@ -1387,7 +1403,8 @@
  
          </cmp-field>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for priv_instance_pk_seq</attribute>
++          <attribute name="pk-sql">values nextval for priv_patient_pk_seq</attribute>
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1551,7 +1571,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for priv_study_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -1573,7 +1594,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for gpsps_perf_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -1610,7 +1632,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for code_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -1667,7 +1690,8 @@
+@@ -1438,7 +1455,8 @@
  			</read-ahead>
           </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for priv_file_pk_seq</attribute>
++          <attribute name="pk-sql">values nextval for study_on_fs_pk_seq</attribute>
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
+@@ -1554,7 +1572,8 @@
+             <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1]]></jboss-ql>
+          </query>
+ 
+-	<entity-command name="hsqldb-fetch-key">
++	<entity-command name="pk-sql">
++          <attribute name="pk-sql">values nextval for media_pk_seq</attribute>
+ 	</entity-command>
+ <!-- jboss 3.2 features -->
+ <!-- optimistic locking does not express the exclusions needed -->
+@@ -1594,7 +1613,8 @@
+ 
+         </cmp-field>
+ 
+-	<entity-command name="hsqldb-fetch-key">
++	<entity-command name="pk-sql">
++          <attribute name="pk-sql">values nextval for priv_instance_pk_seq</attribute>
+ 	</entity-command>
+ <!-- jboss 3.2 features -->
+ <!-- optimistic locking does not express the exclusions needed -->
+@@ -1626,7 +1646,8 @@
+ 
+         </cmp-field>
+ 
+-	<entity-command name="hsqldb-fetch-key">
++	<entity-command name="pk-sql">
++          <attribute name="pk-sql">values nextval for priv_study_pk_seq</attribute>
+ 	</entity-command>
+ <!-- jboss 3.2 features -->
+ <!-- optimistic locking does not express the exclusions needed -->
+@@ -1648,7 +1669,8 @@
+ 
+         </cmp-field>
+ 
+-	<entity-command name="hsqldb-fetch-key">
++	<entity-command name="pk-sql">
++          <attribute name="pk-sql">values nextval for gpsps_perf_pk_seq</attribute>
+ 	</entity-command>
+ <!-- jboss 3.2 features -->
+ <!-- optimistic locking does not express the exclusions needed -->
+@@ -1685,7 +1707,8 @@
+ 
+         </cmp-field>
+ 
+-	<entity-command name="hsqldb-fetch-key">
++	<entity-command name="pk-sql">
++          <attribute name="pk-sql">values nextval for code_pk_seq</attribute>
+ 	</entity-command>
+ <!-- jboss 3.2 features -->
+ <!-- optimistic locking does not express the exclusions needed -->
+@@ -1742,8 +1765,9 @@
+ 			</read-ahead>
+          </query>
+ 
+-	<entity-command name="hsqldb-fetch-key">
+-	</entity-command>
++	<entity-command name="pk-sql">
++          <attribute name="pk-sql">values nextval for priv_file_pk_seq</attribute>
++  	</entity-command>
+ <!-- jboss 3.2 features -->
+ <!-- optimistic locking does not express the exclusions needed -->
+       </entity>

@@ -41,9 +41,6 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
@@ -67,10 +64,15 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.persistence table-name="study_on_fs"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
- * 	           query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"
- *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
- *              dynamic="true"
+ * 	           query="" transaction-type="Supports"
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
+ *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"
+ *             strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByReleaseAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByReleaseAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
+ *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.retrieveAET = ?1 AND sof.accessTime < ?2 ORDER BY sof.accessTime ASC"
+ *             strategy="on-find" eager-load-group="*"
  */
 public abstract class StudyOnFileSystemBean implements EntityBean {
 
@@ -159,45 +161,6 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
         	+ "]"; 
     }
 
-    /**    
-     * @ejb.home-method
-     */
-    public java.util.Collection ejbHomeListOnFileSystems(Set dirPaths, Timestamp tsBefore )
-            throws FinderException {
-        if (dirPaths.isEmpty())
-            return Collections.EMPTY_LIST;
-        StringBuffer jbossQl = new StringBuffer(
-                "SELECT OBJECT(s) FROM StudyOnFileSystem s WHERE s.fileSystem.directoryPath");
-        Iterator iter = dirPaths.iterator();
-        String dirPath1 = (String) iter.next();
-        Object[] args = null;
-        if (!iter.hasNext()) {
-            jbossQl.append(" = '").append(dirPath1).append("'");
-        } else {
-            jbossQl.append(" IN ('").append(dirPath1);
-            while (iter.hasNext()) {
-                jbossQl.append("', '").append( iter.next() );
-            }
-            jbossQl.append("')");
-        }
-        if ( tsBefore != null ) {
-        	jbossQl.append(" AND s.accessTime < ?1");
-            args = new Object[]{ tsBefore };
-        }
-        jbossQl.append(" ORDER BY s.accessTime ASC");
-        if (log.isDebugEnabled())
-            log.debug("Execute JBossQL: " + jbossQl);
-        // call dynamic-ql query
-        return ejbSelectGeneric(jbossQl.toString(), args);
-    }
-
-    /**
-     * @ejb.select query=""
-     *             transaction-type="Supports"
-     */
-    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
-            throws FinderException;
-    
     /**
      * @ejb.select query="SELECT OBJECT(f) FROM StudyOnFileSystem sof, File f WHERE sof.pk = ?1 AND f.fileSystem = sof.fileSystem AND f.instance.series.study = sof.study"
      *             transaction-type="Supports"

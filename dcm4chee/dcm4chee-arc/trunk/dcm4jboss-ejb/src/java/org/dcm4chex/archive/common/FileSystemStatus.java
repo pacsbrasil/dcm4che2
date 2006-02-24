@@ -53,15 +53,11 @@ public class FileSystemStatus {
     	"RW+",
     	"RW",
     	"RO",
-    	"ACTIVE_LUN",
-    	"NEXT_LUN"
     };
 
     public static final int DEF_RW = 0;
     public static final int RW = 1;
     public static final int RO = 2;
-    public static final int ACTIVE_LUN = 3;
-    public static final int NEXT_LUN = 4;
 
     public static final String toString(int value) {
         return ENUM[value];

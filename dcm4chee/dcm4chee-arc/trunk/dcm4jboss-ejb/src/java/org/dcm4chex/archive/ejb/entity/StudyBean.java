@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -103,12 +102,12 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.commitment = TRUE"
  * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Integer pk)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Integer pk, int status)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2 AND f.fileSystem.availability <> 3 AND f.fileSystem.status = 2"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.study.pk = ?1"
  * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1"
- * @jboss.query signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
- *              dynamic="true"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
@@ -519,29 +518,10 @@ public abstract class StudyBean implements EntityBean {
  
     /**
      * @ejb.select query=""
-     *  transaction-type="Supports"
-     */ 
-    public abstract int ejbSelectGenericInt(String jbossQl, Object[] args)
-    		throws FinderException;
-    
-    /**
-     * @ejb.select query=""
      */
-    private int countStudyRelatedInstancesWithCopyOnROFS( Integer pk, Collection fsPks, Integer fileStatus )
-    		throws FinderException {
-    	Object[] args = new Object[]{pk,fileStatus};
-        StringBuffer jbossQl = new StringBuffer();
-        jbossQl.append("SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f");
-		jbossQl.append(" WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2");
-		jbossQl.append(" AND f.fileSystem.directoryPath IN (");
-		for ( Iterator iter = fsPks.iterator() ; iter.hasNext();){
-			jbossQl.append("'").append(iter.next()).append("'");
-			if ( iter.hasNext() ) jbossQl.append(',');
-		}
-        jbossQl.append(")");
-        // call dynamic-ql query
-        return ejbSelectGenericInt(jbossQl.toString(), args);
-    }
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Integer pk, int status)
+            throws FinderException;
+
     /**    
      * @throws FinderException
      * @ejb.home-method
@@ -723,9 +703,8 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean isStudyAvailableOnROFs(Collection listOfROFsPks, int validFileStatus) throws FinderException {
-        return ( countStudyRelatedInstancesWithCopyOnROFS(
-                        getPk(), listOfROFsPks, new Integer(validFileStatus)) == getNumberOfStudyRelatedInstances() );
+    public boolean isStudyAvailableOnROFs(int validFileStatus) throws FinderException {
+        return ( ejbSelectNumberOfStudyRelatedInstancesOnROFS(getPk(), validFileStatus) == getNumberOfStudyRelatedInstances() );
     }
     
     /**

@@ -51,7 +51,7 @@ public class FileSystemDTO implements Serializable {
 
     private static final long serialVersionUID = 3257844398468315445L;
 
-    private int pk;
+    private int pk = -1; // unkown mark
 
     private String directoryPath;
 
