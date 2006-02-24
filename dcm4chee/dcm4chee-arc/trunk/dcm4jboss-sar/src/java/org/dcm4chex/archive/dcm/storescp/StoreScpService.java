@@ -69,6 +69,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -78,7 +79,7 @@ import org.dcm4che.util.DTFormat;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.mbean.FileSystemInfo;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
@@ -94,7 +95,6 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class StoreScpService extends AbstractScpService {
 
-    private static final long MIN_OUT_OF_RESOURCES_THRESHOLD = 20 * FileUtils.MEGA;    
 	private static final String STORE_XSL = "cstorerq.xsl";
 	private static final String STORE_XML = "-cstorerq.xml";
 
@@ -144,7 +144,7 @@ public class StoreScpService extends AbstractScpService {
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-    
+        
     public final boolean isStudyDateInFilePath() {
 		return scp.isStudyDateInFilePath();
 	}
@@ -311,15 +311,6 @@ public class StoreScpService extends AbstractScpService {
     
     public final void setUpdateDatabaseRetryInterval(long interval) {
         scp.setUpdateDatabaseRetryInterval(interval);
-    }
-    
-    public final String getOutOfResourcesThreshold() {
-        return FileUtils.formatSize(scp.getOutOfResourcesThreshold());
-    }
-    
-    public final void setOutOfResourcesThreshold(String str) {
-        scp.setOutOfResourcesThreshold(FileUtils.parseSize(str,
-        		MIN_OUT_OF_RESOURCES_THRESHOLD));
     }
     
     public final boolean isAcceptJPEG2000Lossless() {
@@ -656,26 +647,27 @@ public class StoreScpService extends AbstractScpService {
         }
      }
 
-    FileSystemInfo selectStorageFileSystem() {
+    public FileSystemDTO selectStorageFileSystem() throws DcmServiceException {
         try {
-            return (FileSystemInfo) server.invoke(fileSystemMgtName,
-                    "selectStorageFileSystem",
-                    null,
-                    null);
-        } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke selectStorageFileSystem", e);
+            FileSystemDTO fsDTO = (FileSystemDTO) server.invoke(fileSystemMgtName,
+                    "selectStorageFileSystem", null, null);
+            if (fsDTO == null)
+                throw new DcmServiceException(Status.OutOfResources);                            
+            return fsDTO;
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
-
-    boolean isLocalFileSystem(String dirpath) {
+    
+    boolean isLocalRetrieveAET(String aet) {
         try {
             Boolean b = (Boolean) server.invoke(fileSystemMgtName,
-                    "isLocalFileSystem",
-                    new Object[] { dirpath},
+                    "isLocalRetrieveAET",
+                    new Object[] { aet},
                     new String[] { String.class.getName()});
             return b.booleanValue();
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+            throw new RuntimeException("Failed to invoke isLocalRetrieveAET", e);
         }
     }
     

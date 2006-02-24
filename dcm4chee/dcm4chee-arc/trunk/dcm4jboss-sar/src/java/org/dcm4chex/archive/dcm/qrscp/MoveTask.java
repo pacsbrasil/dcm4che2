@@ -73,6 +73,7 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -476,7 +477,8 @@ class MoveTask implements Runnable {
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
-            studyInfos.add(fileInfo.studyIUID + '@' + fileInfo.basedir);
+            if (fileInfo.availability == Availability.ONLINE) // only track access on ONLINE FS 
+                studyInfos.add(fileInfo.studyIUID + '@' + fileInfo.basedir);
         }
         if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
             try {

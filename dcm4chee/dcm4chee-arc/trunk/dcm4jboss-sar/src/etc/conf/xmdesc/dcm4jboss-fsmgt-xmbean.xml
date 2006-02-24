@@ -20,63 +20,19 @@ accessed studies.</description>
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getDirectoryPathList"
-      setMethod="setDirectoryPathList">
-      <description>List directories (mount points) on this DICOM node.
-      To separate multiple directories, use ; (semi-colon) on Windows and 
-      : (colon) on UNIX-like platforms. Relative path names are
-      resolved relative to the archive-install-directory/server/default/. 
-      To mark the directory used for storage of newly received DICOM Instances 
-      by the Storage SCP on this DICOM node, 
-      add * (asterisk) to the end of the directory path name.
-      </description>
-      <name>DirectoryPaths</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="archive*"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getReadOnlyDirectoryPathList"
-      setMethod="setReadOnlyDirectoryPathList">
-      <description>List read-only directories (mount points) on this 
-      DICOM node. To separate multiple directories, use ; (semi-colon) on Windows and 
-      : (colon) on UNIX-like platforms. Relative path names are
-      resolved relative to the archive-install-directory/server/default/.
-      NONE = no read-only directory or mount point.
-      </description>
-      <name>ReadOnlyDirectoryPaths</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" 
       getMethod="getRetrieveAET"
       setMethod="setRetrieveAET">
-      <description>Retrieve the AE title associated with this DICOM Node. 
-      Note that only one retrieve AE title can be associated with one file system.</description>
+      <description>Retrieve AE title associated with this DICOM Node. 
+      There must be at least one configured file system suitable for storage 
+      (ONLINE, RW) associated with this AE title.
+      </description>
       <name>RetrieveAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write" 
-      getMethod="getMinFreeDiskSpace"
-      setMethod="setMinFreeDiskSpace">
-      <description><![CDATA[Minimum free disk space.
-      The storage directory, or cache, switches to the next entry in  
-      <b>Directory Paths</b>, if the amount of free disk space falls below this value.
-      1MB = 1000000 bytes, 1GB = 1000MB.]]>   
-      </description>
-      <name>MinimumFreeDiskSpace</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="50MB"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getMountFailedCheckFile"
       setMethod="setMountFailedCheckFile">
@@ -91,12 +47,26 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="isMakeStorageDirectory"
       setMethod="setMakeStorageDirectory">
-      <description>Make a storage directory, or cache, if one does not already exist.
+      <description>Create storage directory, if no one exists.
       </description>
       <name>MakeStorageDirectory</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getMinFreeDiskSpace"
+      setMethod="setMinFreeDiskSpace">
+      <description><![CDATA[Minimum free disk space.
+      The storage directory, or cache, switches to the next entry in  
+      <b>Directory Paths</b>, if the amount of free disk space falls below this value.
+      1MB = 1000000 bytes, 1GB = 1000MB.]]>   
+      </description>
+      <name>MinimumFreeDiskSpace</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="50MB"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -316,31 +286,15 @@ accessed studies.</description>
    <!-- Operations -->
    &defaultOperations;
    <operation impact="INFO">
-      <description>Determines if the specified directory or mount point is
-      accessible on this DICOM node</description>
-      <name>isLocalFileSystem</name>
+      <description>Show free disk space on specified directory/mount point.</description>
+      <name>availableDiskSpace</name>
       <parameter>
-        <description>Directory Path</description>
-        <name>DirPath</name>
+        <description>Directory path of filesystem.
+        </description>
+        <name>dirPath</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>boolean</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Used internally</description>
-      <name>fileSystemDirPaths</name>
-      <return-type>[Ljava.lang.String;</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Show free disk space on the local directories or mount points.</description>
-      <name>showAvailableDiskSpace</name>
       <return-type>java.lang.String</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Select the storage directory or mount point
-      where the free disk space is less than the Minimum Free Disk Space</description>
-      <name>selectStorageFileSystem</name>
-      <return-type>org.dcm4chex.archive.mbean.FileSystemInfo</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Purge unreferenced Files</description>
@@ -382,19 +336,13 @@ accessed studies.</description>
       </parameter>
       <return-type>org.dcm4che.net.DataSource</return-type>
    </operation>
-   <operation impact="INFO">
-      <description>Check if it is necessary to free disk space.
-      </description>
-      <name>checkFreeDiskSpaceNecessary</name>
-      <return-type>boolean</return-type>
-   </operation>   
    <operation impact="ACTION">
       <description>Free disk space by deleting old studies.
       Deletes all older files on study level that fullfill the freeDiskSpacePolicy.
       Returns the number of released studies.
       </description>
       <name>freeDiskSpace</name>
-      <return-type>long</return-type>
+      <return-type>int</return-type>
    </operation>   
    <operation impact="INFO">
       <description>get file size of study.
@@ -408,71 +356,25 @@ accessed studies.</description>
       <return-type>long</return-type>
    </operation>
    <operation impact="INFO">
-      <description>return file systems with specified availability.
+      <description>Show total free available disk space on file systems
+        associated with this node (Retrieve AET), and configured for
+        storage (ONLINE, RW).
       </description>
-      <name>listFileSystemsWithAvailability</name>
-      <parameter>
-        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
-        </description>
-        <name>availability</name>
-        <type>int</type>
-      </parameter>
-      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>show file systems with specified availability.
-      </description>
-      <name>showFileSystemsWithAvailability</name>
-      <parameter>
-        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
-        </description>
-        <name>availability</name>
-        <type>int</type>
-      </parameter>
+      <name>showAvailableDiskSpace</name>
       <return-type>java.lang.String</return-type>
-   </operation>
+   </operation>   
    <operation impact="INFO">
-      <description>return file systems with specified status.
-      </description>
-      <name>listFileSystemsWithStatus</name>
-      <parameter>
-        <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
-        </description>
-        <name>status</name>
-        <type>int</type>
-      </parameter>
-      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>show file systems with specified status.
-      </description>
-      <name>showFileSystemsWithStatus</name>
-      <parameter>
-        <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
-        </description>
-        <name>status</name>
-        <type>int</type>
-      </parameter>
-      <return-type>java.lang.String</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>return all configured file systems.
-      </description>
-      <name>listAllFileSystems</name>
-      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>show all configured file systems.
+      <description>Show all configured file systems.
       </description>
       <name>showAllFileSystems</name>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>add file system to configuration.
+      <description>Add file system to configuration.
       </description>
-      <name>addFileSystems</name>
+      <name>addFileSystem</name>
       <parameter>
-        <description>Base Directory or URL</description>
+        <description>Directory/Mount Point</description>
         <name>dirPath</name>
         <type>java.lang.String</type>
       </parameter>
@@ -488,7 +390,7 @@ accessed studies.</description>
         <type>int</type>
       </parameter>
       <parameter>
-        <description>Status (RW+ = 0, RW = 1, RO = 2, ACTIVE_LUN = 3, NEXT_LUN = 4)
+        <description>Status (RW+ = 0, RW = 1, RO = 2)
         </description>
         <name>status</name>
         <type>int</type>
@@ -499,5 +401,59 @@ accessed studies.</description>
         <type>java.lang.String</type>
       </parameter>
    </operation>
+   <operation impact="ACTION">
+      <description>Update file system configuration.
+      </description>
+      <name>updateFileSystem</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Associated Retrieve AET</description>
+        <name>aet</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
+        </description>
+        <name>availability</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Status (RW+ = 0, RW = 1, RO = 2)
+        </description>
+        <name>status</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Associated User Info</description>
+        <name>user info</name>
+        <type>java.lang.String</type>
+      </parameter>
+   </operation>
+   <operation impact="ACTION">
+      <description> Link 2 File Systems. One file system can be linked
+        to several previous, but only to one next file system.
+      </description>
+      <name>linkFileSystems</name>
+      <parameter>
+        <description>Directory/Mount Point of previous File System</description>
+        <name>prevDirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Directory/Mount Point of next File System</description>
+        <name>nextDirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+   </operation>
+   <operation impact="ACTION">
+      <description>Select Storage File System</description>
+      <name>selectStorageFileSystem</name>
+      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+   </operation>
+
    
 </mbean>

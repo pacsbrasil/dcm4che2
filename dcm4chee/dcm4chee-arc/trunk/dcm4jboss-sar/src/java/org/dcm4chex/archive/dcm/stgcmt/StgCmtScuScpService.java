@@ -275,18 +275,16 @@ public class StgCmtScuScpService extends AbstractScpService implements
     Socket createSocket(AEData aeData) throws IOException {
         return tlsConfig.createSocket(aeData);
     }
-
-    boolean isLocalFileSystem(String dirpath) {
+    
+    boolean isLocalRetrieveAET(String aet) {
         try {
-            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
-                    "isLocalFileSystem", new Object[] { dirpath },
-                    new String[] { String.class.getName() });
-            return b.booleanValue();
+            return aet.equals(server.getAttribute(fileSystemMgtName,
+                    "RetrieveAET"));
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+            throw new RuntimeException("Failed to invoke getAttribute 'RetrieveAET'", e);
         }
     }
-
+    
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo, boolean scpRole) throws JMSException {
         StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
@@ -513,7 +511,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private void checkFile(FileInfo info) throws IOException {
         if (info.md5 == null
-                || info.basedir == null || !isLocalFileSystem(info.basedir))
+                || info.basedir == null || !isLocalRetrieveAET(info.fileRetrieveAET))
             return;
         File file = FileUtils.toFile(info.basedir, info.fileID);
         log.info("M-READ file:" + file);

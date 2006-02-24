@@ -85,6 +85,7 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -92,7 +93,6 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
-import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -143,8 +143,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	private LinkedHashSet ignorePatientIDCallingAETs = new LinkedHashSet();
 	private LinkedHashSet logCallingAETs = new LinkedHashSet();
 
-    private long outOfResourcesThreshold = 30000000L;
-    
     private boolean checkIncorrectWorklistEntry = true;
     
 	public StoreScp(StoreScpService service) {
@@ -365,20 +363,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.updateDatabaseRetryInterval = interval;
     }
 
-    public final long getOutOfResourcesThreshold() {
-        return outOfResourcesThreshold;
-    }
-
-    public final void setOutOfResourcesThreshold(long threshold) {
-        this.outOfResourcesThreshold = threshold;
-    }
-
 	/**
 	 * @return Returns the checkIncorrectWorklistEntry.
 	 */
 	public boolean isCheckIncorrectWorklistEntry() {
 		return checkIncorrectWorklistEntry;
 	}
+    
 	/**
 	 * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
 	 */
@@ -400,8 +391,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         try {
 			
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
-            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
-                    && !containsLocal(duplicates))) {
+            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 
+                    || storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 return;
@@ -428,10 +419,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         + "] ignored! Reason: Incorrect Worklist entry selected!");
                 return;
             }            	
-            FileSystemInfo fsInfo = service.selectStorageFileSystem();
-            if (fsInfo.getAvailable() < outOfResourcesThreshold)
-                throw new DcmServiceException(Status.OutOfResources);
-            File baseDir = fsInfo.getDirectory();
+            FileSystemDTO fsDTO = service.selectStorageFileSystem();
+            File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
             file = makeFile(baseDir, ds);
             String compressTSUID = parser.getReadTag() == Tags.PixelData
                     && parser.getReadLength() != -1 ? compressionRules
@@ -457,7 +446,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
-            ds.putAE(Tags.RetrieveAET, fsInfo.getRetrieveAET());
+            ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
             Dataset coerced = null;
     		try {
     			Templates stylesheet = service.getCoercionTemplatesFor(callingAET);
@@ -469,8 +458,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     		} catch (Exception e) {
     			log.warn("Coercion of attributes failed:", e);
     		}
-            Dataset coercedElements = updateDB(ds, fsInfo.getPath(), filePath, file, 
-            		md5sum);
+            Dataset coercedElements = updateDB(ds, fsDTO.getDirectoryPath(),
+                    filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             if (coerced == null)
             	coerced = coercedElements;
@@ -489,8 +478,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
 			FileInfo fileInfo = new FileInfo(iuid, cuid, tsuid,
-					fsInfo.getPath(), filePath, file.length(), md5sum);
-			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsInfo, fileInfo);
+					fsDTO.getDirectoryPath(), filePath, file.length(), md5sum);
+			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsDTO, fileInfo);
 			if (seriesStored != null) {
 				log.debug("Send SeriesStoredNotification - series changed");
 				doAfterSeriesIsStored( assoc.getSocket(), seriesStored, true );
@@ -559,7 +548,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	private boolean containsLocal(List duplicates) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
-            if (service.isLocalFileSystem(dto.getDirectoryPath()))
+            if (service.isLocalRetrieveAET(dto.getRetrieveAET()))
                 return true;
         }
         return false;
@@ -572,7 +561,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && !Arrays.equals(md5sum, dto.getFileMd5()))
                 continue;
             if (storeDuplicateIfDiffHost
-                    && !service.isLocalFileSystem(dto.getDirectoryPath()))
+                    && !service.isLocalRetrieveAET(dto.getRetrieveAET()))
                 continue;
             return true;
         }
@@ -993,7 +982,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
 	private SeriesStored updateSeriesStored(Association assoc, Dataset ds,
-			FileSystemInfo fsInfo, FileInfo fileInfo) {
+			FileSystemDTO fsInfo, FileInfo fileInfo) {
 		SeriesStored prev = null;
 		SeriesStored cur = 
 			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
@@ -1005,14 +994,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		}
 		if (cur == null) {
 			cur = newSeriesStored(ds, assoc.getCallingAET(), assoc.getCalledAET(), 
-					fsInfo.getRetrieveAET(), fsInfo.getPath());
+					fsInfo.getRetrieveAET(), fsInfo.getDirectoryPath());
 			assoc.putProperty(SeriesStored.class.getName(), cur);
 		}
 		cur.addFileInfo(fileInfo); 
 		return prev;
 	}
 	
-	protected SeriesStored newSeriesStored( Dataset ds, String callingAET, String calledAET, String retrieveAET, String fsPath ){
+	protected SeriesStored newSeriesStored( Dataset ds, String callingAET, 
+            String calledAET, String retrieveAET, String fsPath ){
 		SeriesStored seriesStored = new SeriesStored();
 		seriesStored.setCalledAET(calledAET);
 		seriesStored.setCallingAET(callingAET);

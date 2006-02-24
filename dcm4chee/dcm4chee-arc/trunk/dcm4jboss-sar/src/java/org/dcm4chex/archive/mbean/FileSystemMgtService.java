@@ -43,19 +43,13 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import javax.management.Attribute;
+import javax.ejb.RemoveException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
@@ -63,9 +57,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
-import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -76,11 +71,11 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.NumericCharacterReference;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -94,21 +89,7 @@ public class FileSystemMgtService extends TimerSupport {
     
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
-    private List dirPathList = Arrays.asList(new File[] { new File("archive")});
-
-    private Set fsPathSet = Collections.singleton("archive");
-
-    private List rodirPathList = Collections.EMPTY_LIST;
-
-    private Set rofsPathSet = Collections.EMPTY_SET;
-
-    private String retrieveAET = "QR_SCP";
-
-    private int curDirIndex = 0;
-    
-    private String mountFailedCheckFile = "NO_MOUNT";
-
-    private boolean makeStorageDirectory = true;
+    private String retrieveAET = "DCM4JBOSS";
 
 	private float freeDiskSpaceLowerThreshold = 1.5f;
 	
@@ -119,6 +100,7 @@ public class FileSystemMgtService extends TimerSupport {
 	private boolean flushOnMedia = false;
 	
 	private boolean flushOnROFsAvailable = false;
+    
 	private int validFileStatus = 0;
 	
 	private boolean deleteUncommited = false;
@@ -142,10 +124,13 @@ public class FileSystemMgtService extends TimerSupport {
 	private boolean isPurging = false;
 	
 	private int bufferSize = 8192;
-	        
-	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
-	private long availableDiskSpace = 0L;
     
+    private String mountFailedCheckFile = "NO_MOUNT";
+    
+    private boolean makeStorageDirectory = true;
+
+    private FileSystemDTO storageFileSystem;
+	        
     private final NotificationListener purgeFilesListener = 
         new NotificationListener(){
             public void handleNotification(Notification notif, Object handback) {
@@ -166,6 +151,22 @@ public class FileSystemMgtService extends TimerSupport {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+    public final boolean isMakeStorageDirectory() {
+        return makeStorageDirectory;
+    }
+
+    public final void setMakeStorageDirectory(boolean makeStorageDirectory) {
+        this.makeStorageDirectory = makeStorageDirectory;
+    }
+
+    public final String getMountFailedCheckFile() {
+        return mountFailedCheckFile;
+    }
+
+    public final void setMountFailedCheckFile(String mountFailedCheckFile) {
+        this.mountFailedCheckFile = mountFailedCheckFile;
+    }
+    
     public final int getBufferSize() {
         return bufferSize;
     }
@@ -173,109 +174,22 @@ public class FileSystemMgtService extends TimerSupport {
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-    
-    public final String getDirectoryPathList() {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0, n = dirPathList.size(); i < n; i++) {
-            sb.append(dirPathList.get(i));
-            if (i == curDirIndex)
-                sb.append('*');
-            sb.append(File.pathSeparatorChar);
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
-
-    public final void setDirectoryPathList(String str) {
-    	str = NumericCharacterReference.decode(str,(char)250);
-        StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
-        ArrayList list = new ArrayList();
-        HashSet set = new HashSet();
-        int dirIndex = 0;
-        for (int i = 0; st.hasMoreTokens(); ++i) {
-            String tk = st.nextToken();
-            if ( ! checkASCII( tk ) ) 
-            	throw new IllegalArgumentException("Path contains non-ASCII character! '"+tk+"'"); 
-            int len = tk.length();
-            if (tk.charAt(len-1) == '*') {
-                dirIndex = i;
-                tk = tk.substring(0, len-1);
-            }                
-            set.add(tk.replace(File.separatorChar, '/'));
-            list.add(new File(tk));
-        }
-        if (list.isEmpty())
-                throw new IllegalArgumentException(
-                        "DirectoryPathList must NOT be emtpy");
-        dirPathList = list;
-        fsPathSet = set;
-        curDirIndex = dirIndex;
-    }
-    
-    private boolean checkASCII(String s) {
-    	char[] ch = s.toCharArray();
-    	for (int i = 0; i < ch.length; ++i) {
-    		if (ch[i] < '\u0020' || ch[i] >= '\u007f')
-    			return false;
-    	}
-		return true;
-    }
-
-    private void storeDirectoryPathList() {
-		Attribute a = new Attribute("DirectoryPaths", getDirectoryPathList());
-		try {
-			server.setAttribute(super.getServiceName(), a);
-		} catch (Exception e) {
-			log.warn("Failed to store DirectoryPaths", e);
-		}
-    }
-
-    public final String getReadOnlyDirectoryPathList() {
-        if (rodirPathList.isEmpty())
-            return "NONE";
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0, n = rodirPathList.size(); i < n; i++) {
-            sb.append(rodirPathList.get(i)).append(File.pathSeparatorChar);
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
-
-    public final void setReadOnlyDirectoryPathList(String str) {
-        if ("NONE".equals(str)) {
-            rodirPathList = Collections.EMPTY_LIST;
-            rofsPathSet = Collections.EMPTY_SET;
-            return;
-        }
-    	str = NumericCharacterReference.decode(str,(char)250);
-        StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
-        ArrayList list = new ArrayList();
-        HashSet set = new HashSet();
-        for (int i = 0; st.hasMoreTokens(); ++i) {
-            String tk = st.nextToken();
-            if ( ! checkASCII( tk ) ) 
-            	throw new IllegalArgumentException("Path contains non-ASCII character! '"+tk+"'"); 
-            set.add(tk.replace(File.separatorChar, '/'));
-            list.add(new File(tk));
-        }
-        rodirPathList = list;
-        rofsPathSet = set;
-    }
-    
+        
     public final String getRetrieveAET() {
         return retrieveAET;
     }
 
     /**
-     * Set the AE Title which is associated with this DICOM Node.
-     * <p>
-     * Checks the String (len must be 0<x<=16, only ASCII (without ctrl chars) )
+     * Set Retrieve AE title associated with this DICOM Node. 
+     * There must be at least one configured file system suitable for storage 
+     * (ONLINE, RW) associated with this AE title.
      * 
      * @param aet The AE Title to set.
      */
-    public final void setRetrieveAET(String aet) {
-    	aet = NumericCharacterReference.decode(aet,(char)250);
-        aet = StringUtils.checkAET(aet); 
+    public final void setRetrieveAET(String aet) 
+    throws FinderException, IOException {
+        if (getState() == FileSystemMgtService.STARTED)
+            initStorageFileSystem(aet);
         this.retrieveAET = aet;
     }
 
@@ -476,6 +390,7 @@ public class FileSystemMgtService extends TimerSupport {
 	public void setPurgeFilesAfterFreeDiskSpace(boolean autoPurge) {
 		this.autoPurge = autoPurge;
 	}
+    
     public final String getPurgeFilesInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(purgeFilesInterval);
     }
@@ -498,37 +413,102 @@ public class FileSystemMgtService extends TimerSupport {
     	limitNumberOfFilesPerTask = limit;
     }
     
-	public final boolean isMakeStorageDirectory() {
-        return makeStorageDirectory;
-    }
-
-    public final void setMakeStorageDirectory(boolean makeStorageDirectory) {
-        this.makeStorageDirectory = makeStorageDirectory;
-    }
-
-    public final String getMountFailedCheckFile() {
-        return mountFailedCheckFile;
-    }
-
-    public final void setMountFailedCheckFile(String mountFailedCheckFile) {
-        this.mountFailedCheckFile = mountFailedCheckFile;
-    }
-    
-    public final boolean isLocalFileSystem(String fsdir) {
-        return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
-    }
-    
-    public final String[] fileSystemDirPaths() {
-        return (String[]) fsPathSet.toArray(new String[fsPathSet.size()]);
-    }    
-
     protected void startService() throws Exception {
          super.startService();
+         initStorageFileSystem(retrieveAET);
          freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
          		freeDiskSpaceInterval, freeDiskSpaceListener);
          purgeFilesListenerID = startScheduler("CheckFilesToPurge",
          		purgeFilesInterval, purgeFilesListener);
          
+    }
+    
+    private void initStorageFileSystem(String aet) throws FinderException, IOException {
+        FileSystemMgt fsmgt = newFileSystemMgt();
+        FileSystemDTO[] c = fsmgt.findFileSystems(aet, 
+                Availability.ONLINE, FileSystemStatus.DEF_RW);
+        if (c.length == 0) {
+            c = fsmgt.findFileSystems(aet, 
+                    Availability.ONLINE, FileSystemStatus.RW);
+            if (c.length == 0)
+                throw new ConfigurationException("No writable file system associated " +
+                        " with Retrieve AET " + aet);
+            
+            c[0].setStatus(FileSystemStatus.DEF_RW);
+            fsmgt.updateFileSystem(c[0]);
+        }
+        storageFileSystem = c[0];
+        if (!checkStorageFileSystem(storageFileSystem) 
+                && !switchStorageFileSystem(storageFileSystem)) {
+            throw new ConfigurationException("No space left on configured file systems");            
+        }
+    }
+
+    public FileSystemDTO selectStorageFileSystem() throws FinderException, IOException {
+       if (!checkStorageFileSystem(storageFileSystem))
+           if (!switchStorageFileSystem(storageFileSystem))
+               return null;
+       return storageFileSystem;
+    }
+
+    private synchronized boolean switchStorageFileSystem(FileSystemDTO fsDTO)
+            throws RemoteException, FinderException, IOException {
+        if (storageFileSystem != fsDTO)
+            return true; // already switched by another thread
+        String dirPath0 = fsDTO.getDirectoryPath();
+        FileSystemMgt fsmgt = newFileSystemMgt();
+        do {
+            String dirPath = fsDTO.getNext();
+            if (dirPath == null || dirPath.equals(dirPath0)) {
+                log.error("High Water Mark reached on storage directory " 
+                        + FileUtils.toFile(dirPath0)
+                        + " - no alternative storage directory available");
+                return false;
+            }
+            fsDTO = fsmgt.getFileSystem(dirPath);
+        } while (!checkStorageFileSystem(fsDTO));
+        storageFileSystem.setStatus(FileSystemStatus.RW);
+        fsDTO.setStatus(FileSystemStatus.DEF_RW);
+        FileSystemDTO[] a = { storageFileSystem, fsDTO };
+        fsmgt.updateFileSystems(a);
+        storageFileSystem = fsDTO;
+        return true;
+    }
+
+    private boolean checkStorageFileSystem(FileSystemDTO fsDTO) throws IOException {
+        int availability = fsDTO.getAvailability();
+        int status = fsDTO.getStatus();
+        if (availability != Availability.ONLINE 
+                || status != FileSystemStatus.RW 
+                && status != FileSystemStatus.DEF_RW) {
+            return false;
+        }
+        File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
+        if (!dir.exists()) {
+            if (!makeStorageDirectory) {
+                log.warn("No such directory " + dir
+                        + " - try to switch to next configured storage directory");
+                return false;
+            }
+            log.info("M-WRITE " + dir);
+            if (!dir.mkdirs()) {
+                log.warn("Failed to create directory " + dir
+                        + " - try to switch to next configured storage directory");
+                return false;
+            }
+        }
+        File nomount = new File(dir, mountFailedCheckFile);
+        if (nomount.exists()) {
+            log.warn("Mount on " + dir
+                 + " seems broken - try to switch to next configured storage directory");
+            return false;
+        }
+        if (diskSpaceAvailableAt(dir) < minFreeDiskSpace) {
+            log.info("High Water Mark reached on current storage directory "
+                    + dir + " - try to switch to next configured storage directory");
+            return false;
+        }
+        return true;
     }
     
     protected void stopService() throws Exception {
@@ -538,6 +518,7 @@ public class FileSystemMgtService extends TimerSupport {
         		purgeFilesListener);
         super.stopService();
     }
+
     
     private FileSystemMgt newFileSystemMgt() {
         try {
@@ -551,82 +532,43 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
 
-    public String showAvailableDiskSpace() throws IOException {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0, n = dirPathList.size(); i < n; i++) {
-            FileSystemInfo info = initFileSystemInfo((File) dirPathList.get(i));
-            sb.append(info).append("\r\n");
-        }
-        return sb.toString();
+    public String showAvailableDiskSpace() throws IOException, FinderException {
+        return FileUtils.formatSize(getAvailableDiskSpace(false));
     }
     
-    private FileSystemInfo initFileSystemInfo(File dir) throws IOException {
-        File d = FileUtils.resolve(dir);
-        if (!d.isDirectory()) {
-            if (!makeStorageDirectory) {
-                throw new IOException("Storage Directory " + d
-	                    + " does not exists.");
-            } else {
-                if (d.mkdirs()) {
-                    log.warn("M-CREATE Storage Directory: " + d);
-                } else {
-                    throw new IOException("Failed to create Storage Directory " + d);
-                }
-            }
-        } else {
-            if (new File(d, mountFailedCheckFile).exists()) {
-	            throw new IOException("Mount check of Storage Directory " + d
-	                    + " failed: Found " + mountFailedCheckFile);
-            }
-        }
-        long available = new se.mog.io.File(d).getDiskSpaceAvailable();
-        return new FileSystemInfo(FileUtils.slashify(dir), d, available, retrieveAET);
-    }
-
-    public FileSystemInfo selectStorageFileSystem() throws IOException {
-        File curDir = (File) dirPathList.get(curDirIndex);
-        FileSystemInfo info = initFileSystemInfo(curDir);
-        if (info.getAvailable() > minFreeDiskSpace)
-            return info;
-        for (int i = 1, n = dirPathList.size(); i < n; ++i) {
-            int dirIndex = (curDirIndex + i) % n;
-            File dir = (File) dirPathList.get(dirIndex);
-            info = initFileSystemInfo(dir);
-            if (info.getAvailable() > minFreeDiskSpace) {
-                log.info("High Water Mark reached on current Storage Directory "
-                        + curDir + " - switch Storage Directory to " + dir);
-                curDirIndex = dirIndex;
-				storeDirectoryPathList();
-				return info;
-            }
-        }
-        log.error("High Water Mark reached on Storage Directory " + curDir
-                + " - no alternative Storage Directory available");
-        return info;
-    }
-
     public int purgeFiles() {
         log.info("Check for unreferenced files to delete");
-        synchronized (this) {  
-	        if ( isPurging ) {
-	        	log.info("A purge task is already in progress! Ignore this purge order!");
-	        	return 0;
-	        }
-	        isPurging = true;
+        synchronized (this) {
+            if (isPurging) {
+                log.info("A purge task is already in progress! Ignore this purge order!");
+                return 0;
+            }
+            isPurging = true;
         }
         FileSystemMgt fsMgt = newFileSystemMgt();
         int deleted, total = 0;
-        for (int i = 0, n = dirPathList.size(); i < n; ++i) {
-            File dirPath = (File) dirPathList.get(i);
-            deleted = purgeFiles(dirPath,fsMgt);
-            if ( deleted < 0 ) break;
-            total += deleted;
-            if ( total >= this.getLimitNumberOfFilesPerTask() ) break; 
+        FileSystemDTO[] list;
+        try {
+            list = fsMgt.findFileSystems2(retrieveAET,
+                    Availability.ONLINE, FileSystemStatus.DEF_RW,
+                    FileSystemStatus.RW);
+        } catch (Exception e) {
+            log.error("Failed to query DB for file system configuration:", e);
+            return 0;
         }
-        
+        for (int i = 0; i < list.length; ++i) {
+            deleted = purgeFiles(list[i].getDirectoryPath(), fsMgt);
+            if (deleted < 0)
+                break;
+            total += deleted;
+            if (total >= this.getLimitNumberOfFilesPerTask())
+                break;
+        }
+
         try {
             fsMgt.remove();
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         isPurging = false;
         return total;
     }
@@ -645,7 +587,7 @@ public class FileSystemMgtService extends TimerSupport {
             }
             log.info("Check for unreferenced files to delete in filesystem:"+purgeDirPath);
 		    FileSystemMgt fsMgt = newFileSystemMgt();
-			total = purgeFiles(new File(purgeDirPath),fsMgt);
+			total = purgeFiles(purgeDirPath,fsMgt);
 			isPurging = false;
 		    try {
 		        fsMgt.remove();
@@ -655,8 +597,7 @@ public class FileSystemMgtService extends TimerSupport {
     	return total;
     }
     
-    private int purgeFiles( File purgeDirPath, FileSystemMgt fsMgt ) {
-    	String path = FileUtils.slashify(purgeDirPath);
+    private int purgeFiles( String path, FileSystemMgt fsMgt ) {
     	int limit = getLimitNumberOfFilesPerTask();
     	int deleted = purgeFiles( path, fsMgt, false, limit );
     	if ( deleted < 0 ) return -1;//mark error
@@ -669,6 +610,7 @@ public class FileSystemMgtService extends TimerSupport {
     	}
     	return total;
     }
+    
     private int purgeFiles( String purgeDirPath, FileSystemMgt fsMgt, boolean fromPrivate, int limit ) {
         FileDTO[] toDelete;
     	try {
@@ -725,9 +667,8 @@ public class FileSystemMgtService extends TimerSupport {
             return null;
         for (int i = 0, n = list.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) list.get(i);
-            String dirPath = dto.getDirectoryPath();
-            if (isLocalFileSystem(dirPath))
-                return FileUtils.toFile(dirPath, dto.getFilePath());
+            if (retrieveAET.equals(dto.getRetrieveAET()))
+                return FileUtils.toFile(dto.getDirectoryPath(), dto.getFilePath());
         }
         FileDTO dto = (FileDTO) list.get(0);
         AEData aeData = new AECmd(dto.getRetrieveAET()).getAEData();
@@ -745,7 +686,7 @@ public class FileSystemMgtService extends TimerSupport {
     	FileInfo[] fileInfos = infoList[0];
         for (int i = 0; i < fileInfos.length; ++i) {
             final FileInfo info = fileInfos[i];
-            if (isLocalFileSystem(info.basedir))
+            if (retrieveAET.equals(info.fileRetrieveAET))
             {
                 File f = FileUtils.toFile(info.basedir, info.fileID);
                 Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
@@ -775,20 +716,19 @@ public class FileSystemMgtService extends TimerSupport {
      * <p>
      * The real deletion is done in the purge process! This method removes only the reference to the file system.  
      * <p>
-     * If PurgeFilesAfterFreeDiskSpace is enabled, the purge process will be called immediately.(if checkFreeDiskSpaceNecessary() is true)
+     * If PurgeFilesAfterFreeDiskSpace is enabled, the purge process will be called immediately.
      * 
      * @return The number of released studies.
      */
-    public long freeDiskSpace() {
+    public int freeDiskSpace() {
         log.info("Check available Disk Space");
         try {
-            if (checkFreeDiskSpaceNecessary()) {
-                long maxSizeToDel = (long) ((float) this.minFreeDiskSpace * freeDiskSpaceUpperThreshold)
-                    * dirPathList.size() - availableDiskSpace;
+            long maxSizeToDel = -getAvailableDiskSpace(true);
+            if (maxSizeToDel > 0) {
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
-                	Map ians = fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, validFileStatus,
+                	Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
+                            flushExternalRetrievable, flushOnROFsAvailable, validFileStatus,
                             maxSizeToDel);
                     sendIANs(ians);
                     if ( autoPurge ) {
@@ -803,19 +743,19 @@ public class FileSystemMgtService extends TimerSupport {
                 long accessedBefore = System.currentTimeMillis() - studyCacheTimeout;
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
-                	Map ians = fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, flushOnROFsAvailable ? rofsPathSet : null, validFileStatus, accessedBefore);
+                	Map ians = fsMgt.releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
+                            flushExternalRetrievable, flushOnROFsAvailable, validFileStatus, accessedBefore);
                     sendIANs(ians);
                     return ians.size();
                 } finally {
                     fsMgt.remove();
                 }
             } else {
-                return 0L;
+                return 0;
             }
         } catch (Exception e) {
             log.error("Free Disk Space failed:", e);
-            return -1L;
+            return -1;
         }
     }
     
@@ -833,49 +773,29 @@ public class FileSystemMgtService extends TimerSupport {
         notif.setUserData(o);
         super.sendNotification(notif);
 	}
-
-
-	/**
-     * Check if a cleaning process is ncessary.
-     * <p>
-     * <OL>
-     * <LI>Calculate the total space that should be available on all file systems. (<code>minAvail = minFreeDiskSpace * cleanWaterMarkFactor * dirPathList.size() </code>)</LI>
-     * <LI>Cumulate available space from all file systems to get current available space on all file systems (=currAvail).</LI>
-     * </OL>
-     * <p>
-     * Creates a directory if a defined file system path doesnt exist and makeStorageDirectory is true.
-     * <p>
-     * This method doesnt check if the defined file systems are on different disk/partitions!
-     * 
-     * @return True if clean is necessary ( currAvail < minAvail )
-     * @throws IOException
-     */
-    public boolean checkFreeDiskSpaceNecessary() throws IOException {
-    	long minAvail = (long) ( (float) this.minFreeDiskSpace * freeDiskSpaceLowerThreshold ) * dirPathList.size();
-    	long currAvail = getAvailableDiskSpace();
-    	if ( log.isDebugEnabled() ) log.debug( "currAvail:"+currAvail+" < minAvail:"+minAvail);
-    	return currAvail < minAvail; 
-    }
     
-    public long getAvailableDiskSpace() throws IOException {
-    	Iterator iter = dirPathList.iterator();
-    	FileSystemInfo info;
-    	availableDiskSpace = 0L;
-    	while ( iter.hasNext() ) {
-    		info = initFileSystemInfo( (File) iter.next() );
-    		availableDiskSpace += info.getAvailable();
-    	}
-    	return availableDiskSpace;
+    private long getAvailableDiskSpace(boolean diffMinAvailable)
+    throws IOException, FinderException {
+        FileSystemMgt mgt = newFileSystemMgt();
+        FileSystemDTO[] fs = mgt.findFileSystems2(retrieveAET, 
+                Availability.ONLINE, FileSystemStatus.DEF_RW, FileSystemStatus.RW);
+        long result = diffMinAvailable
+                ? -(long) (minFreeDiskSpace * freeDiskSpaceLowerThreshold * fs.length)
+                : 0L;
+        for (int i = 0; i < fs.length; i++) {
+            final File dir = FileUtils.toFile(fs[i].getDirectoryPath());
+            result += diskSpaceAvailableAt(dir);
+        }
+    	return result;
+    }
+
+    private long diskSpaceAvailableAt(final File dir) {
+        return new se.mog.io.File(dir).getDiskSpaceAvailable();
     }
     
     public long showStudySize( Integer pk ) throws RemoteException, FinderException {
         FileSystemMgt fsMgt = newFileSystemMgt();
     	return fsMgt.getStudySize(pk);
-    }
-    
-    public String showFileSystemsWithAvailability(int availability)
-    throws RemoteException, FinderException {
-        return toString(newFileSystemMgt().getFileSystemsWithAvailability(availability));    	
     }
     
 	private static String toString(FileSystemDTO[] dtos) {
@@ -886,24 +806,8 @@ public class FileSystemMgtService extends TimerSupport {
 		}
 		return sb.toString();
 	}
-
-	public FileSystemDTO[] listFileSystemsWithAvailability(int availability)
-    throws RemoteException, FinderException {
-        return newFileSystemMgt().getFileSystemsWithAvailability(availability);    	
-    }
     
-    public String showFileSystemsWithStatus(int status)
-    throws RemoteException, FinderException {
-        return toString(listFileSystemsWithStatus(status));    	
-    }
-    
-    public FileSystemDTO[] listFileSystemsWithStatus(int status)
-    throws RemoteException, FinderException {
-        return newFileSystemMgt().getFileSystemsWithStatus(status);    	
-    }
-    
-    public String showAllFileSystems()
-    throws RemoteException, FinderException {
+    public String showAllFileSystems() throws RemoteException, FinderException {
         return toString(listAllFileSystems());    	
     }
 
@@ -911,7 +815,7 @@ public class FileSystemMgtService extends TimerSupport {
         return newFileSystemMgt().getAllFileSystems();    	
     }
 
-    public void addFileSystems(String dirPath, String retrieveAET,
+    public void addFileSystem(String dirPath, String retrieveAET,
     		int availability, int status, String userInfo)
     throws RemoteException, CreateException {
         FileSystemDTO dto = new FileSystemDTO();
@@ -923,4 +827,20 @@ public class FileSystemMgtService extends TimerSupport {
 		newFileSystemMgt().addFileSystem(dto);    	
     }
 
+    public void updateFileSystem(String dirPath, String retrieveAET,
+            int availability, int status, String userInfo)
+    throws RemoteException, FinderException {
+        FileSystemDTO dto = new FileSystemDTO();
+        dto.setDirectoryPath(dirPath);
+        dto.setRetrieveAET(retrieveAET);
+        dto.setAvailability(availability);
+        dto.setStatus(status);
+        dto.setUserInfo(userInfo);
+        newFileSystemMgt().updateFileSystem(dto);      
+    }
+    
+    public void linkFileSystems(String prev, String next)
+            throws RemoteException, FinderException, RemoveException {
+        newFileSystemMgt().linkFileSystems(prev, next);
+    }
 }

@@ -636,19 +636,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
-
-    boolean isLocalFileSystem(String dirpath) throws DcmServiceException {
-        try {
-            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
-                    "isLocalFileSystem",
-                    new Object[] { dirpath},
-                    new String[] { String.class.getName()});
-            return b.booleanValue();
-        } catch (Exception e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
+    
+    boolean isLocalRetrieveAET(String aet) {
+        for (int i = 0; i < calledAETs.length; i++) {
+            if (aet.equals(calledAETs[i]))
+                return true;
         }
+        return false;
     }
-
+    
     public final int getBufferSize() {
         return bufferSize ;
     }
@@ -788,6 +784,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 					"Failed to load VMF COnfiguration from " + file);
 		}
 		return ds;
-	}
+	}    
 
 }

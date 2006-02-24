@@ -267,19 +267,6 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getOutOfResourcesThreshold"
-      setMethod="setOutOfResourcesThreshold">
-      <description>Minimum available disk space in the storage directory to accept
-      received objects. If the available disk space falls below this value,
-      storage of received objects is rejected with the error "Out Of Resource".
-      </description>
-      <name>OutOfResourcesThreshold</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="30MB"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isSerializeDBUpdate"
       setMethod="setSerializeDBUpdate">
       <description><![CDATA[Serialize updates of DB records for received objects. Decreases Storage Performance!]]>
