@@ -62,7 +62,7 @@ public class RetrieveCmd extends BaseReadCmd {
     public static int transactionIsolationLevel = 0;
 
     private static final String[] SELECT_ATTRIBUTE = { "Instance.pk", "File.pk",
-            "Patient.patientId", "Patient.patientName",
+            "Patient.patientId", "Patient.patientFamilyName",
             "Patient.encodedAttributes", "Study.studyIuid", "Series.seriesIuid",
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",

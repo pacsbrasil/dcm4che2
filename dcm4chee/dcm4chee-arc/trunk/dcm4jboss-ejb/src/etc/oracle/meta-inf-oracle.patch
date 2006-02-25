@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-02-24 21:36:19.372150930 +0100
-+++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2006-02-24 21:38:42.463723785 +0100
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-02-25 09:51:21.347442274 +0100
++++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2006-02-25 09:51:27.994597408 +0100
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -11,7 +11,7 @@
       <create-table>false</create-table>
     </defaults>
  
-@@ -87,7 +87,8 @@
+@@ -112,7 +112,8 @@
  
          </cmp-field>
  
@@ -21,7 +21,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -152,7 +153,8 @@
+@@ -177,7 +178,8 @@
  			</read-ahead>
           </query>
  
@@ -31,7 +31,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -201,7 +203,8 @@
+@@ -226,7 +228,8 @@
  			</read-ahead>
           </query>
  
@@ -41,7 +41,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -412,7 +415,8 @@
+@@ -462,7 +465,8 @@
              <jboss-ql><![CDATA[SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1]]></jboss-ql>
           </query>
  
@@ -51,7 +51,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -586,7 +590,8 @@
+@@ -636,7 +640,8 @@
              <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1]]></jboss-ql>
           </query>
  
@@ -61,7 +61,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -621,8 +626,9 @@
+@@ -671,8 +676,9 @@
  
          </cmp-field>
  
@@ -73,7 +73,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -696,7 +702,8 @@
+@@ -746,7 +752,8 @@
  			</read-ahead>
           </query>
  
@@ -83,7 +83,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -818,7 +825,8 @@
+@@ -868,7 +875,8 @@
  			</read-ahead>
           </query>
  
@@ -93,7 +93,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -850,7 +858,8 @@
+@@ -900,7 +908,8 @@
  
          </cmp-field>
  
@@ -103,7 +103,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -907,7 +916,8 @@
+@@ -957,7 +966,8 @@
  
          </cmp-field>
  
@@ -113,7 +113,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1006,7 +1016,8 @@
+@@ -1056,7 +1066,8 @@
  			</read-ahead>
           </query>
  
@@ -123,7 +123,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1128,7 +1139,8 @@
+@@ -1178,7 +1189,8 @@
  			</read-ahead>
           </query>
  
@@ -133,7 +133,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1168,8 +1180,9 @@
+@@ -1218,8 +1230,9 @@
  
          </cmp-field>
  
@@ -145,7 +145,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1195,7 +1208,8 @@
+@@ -1245,7 +1258,8 @@
  
          </cmp-field>
  
@@ -155,8 +155,8 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1285,7 +1299,8 @@
-             <jboss-ql><![CDATA[SELECT OBJECT(a) FROM Patient AS a WHERE a.patientName = ?1 AND a.patientBirthDate = ?2]]></jboss-ql>
+@@ -1350,7 +1364,8 @@
+ 			</read-ahead>
           </query>
  
 -	<entity-command name="hsqldb-fetch-key">
@@ -165,7 +165,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1350,8 +1365,9 @@
+@@ -1415,8 +1430,9 @@
  
          </cmp-field>
  
@@ -177,7 +177,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1387,7 +1403,8 @@
+@@ -1452,7 +1468,8 @@
  
          </cmp-field>
  
@@ -187,7 +187,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1438,7 +1455,8 @@
+@@ -1503,7 +1520,8 @@
  			</read-ahead>
           </query>
  
@@ -197,7 +197,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1554,7 +1572,8 @@
+@@ -1619,7 +1637,8 @@
              <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1]]></jboss-ql>
           </query>
  
@@ -207,7 +207,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1594,7 +1613,8 @@
+@@ -1659,7 +1678,8 @@
  
          </cmp-field>
  
@@ -217,7 +217,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1626,7 +1646,8 @@
+@@ -1691,7 +1711,8 @@
  
          </cmp-field>
  
@@ -227,7 +227,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1648,7 +1669,8 @@
+@@ -1738,7 +1759,8 @@
  
          </cmp-field>
  
@@ -237,7 +237,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1685,7 +1707,8 @@
+@@ -1775,7 +1797,8 @@
  
          </cmp-field>
  
@@ -247,7 +247,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1742,7 +1765,8 @@
+@@ -1832,7 +1855,8 @@
  			</read-ahead>
           </query>
  

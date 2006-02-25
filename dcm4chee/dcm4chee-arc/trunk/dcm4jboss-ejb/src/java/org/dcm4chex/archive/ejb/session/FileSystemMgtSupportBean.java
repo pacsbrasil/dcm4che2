@@ -58,6 +58,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
@@ -99,10 +100,12 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         	ian = DcmObjectFactory.getInstance().newDataset();
         	ians.put( study.getStudyIuid(), ian);
 			ian.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
-	        ian.putLO(Tags.PatientID,study.getPatient().getPatientId());
-	        ian.putLO(Tags.PatientName,study.getPatient().getPatientName());
-	        ian.putLO(Tags.StudyID,study.getStudyId());
-	        ian.putLO(Tags.StudyInstanceUID,study.getStudyIuid());
+	        final PatientLocal patient = study.getPatient();
+            ian.putLO(Tags.PatientID, patient.getPatientId());
+	        ian.putPN(Tags.PatientName, patient.getPatientFamilyName() + '^'
+                    + patient.getPatientGivenName());
+	        ian.putSH(Tags.StudyID,study.getStudyId());
+	        ian.putUI(Tags.StudyInstanceUID,study.getStudyIuid());
 	        DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);//We dont need this information (if available) at this point.
 	        DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
         

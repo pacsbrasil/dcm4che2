@@ -51,6 +51,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
@@ -101,7 +102,21 @@ public abstract class GPSPSPerformerBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, GPSPSLocal gpsps)
             throws CreateException {
-        setHumanPerformerName(ds.getString(Tags.HumanPerformerName));
+        PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
+        if (pn != null) {
+            setHumanPerformerFamilyName(pn.get(PersonName.FAMILY));
+            setHumanPerformerGivenName(pn.get(PersonName.GIVEN));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                setHumanPerformerIdeographicFamilyName(ipn.get(PersonName.FAMILY));
+                setHumanPerformerIdeographicGivenName(ipn.get(PersonName.GIVEN));                
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                setHumanPerformerPhoneticFamilyName(ppn.get(PersonName.FAMILY));
+                setHumanPerformerPhoneticGivenName(ppn.get(PersonName.GIVEN));                
+            }
+        }        
         return null;
     }
     
@@ -138,11 +153,46 @@ public abstract class GPSPSPerformerBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="human_perf_name"
+     * @ejb.persistence column-name="hum_perf_fname"
      */
-    public abstract String getHumanPerformerName();
-    public abstract void setHumanPerformerName(String id);
+    public abstract String getHumanPerformerFamilyName();
+    public abstract void setHumanPerformerFamilyName(String name);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_gname"
+     */
+    public abstract String getHumanPerformerGivenName();
+    public abstract void setHumanPerformerGivenName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_ifname"
+     */
+    public abstract String getHumanPerformerIdeographicFamilyName();
+    public abstract void setHumanPerformerIdeographicFamilyName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_igname"
+     */
+    public abstract String getHumanPerformerIdeographicGivenName();
+    public abstract void setHumanPerformerIdeographicGivenName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_pfname"
+     */
+    public abstract String getHumanPerformerPhoneticFamilyName();
+    public abstract void setHumanPerformerPhoneticFamilyName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_pgname"
+     */
+    public abstract String getHumanPerformerPhoneticGivenName();
+    public abstract void setHumanPerformerPhoneticGivenName(String name);
+    
     /**
      * @ejb.relation name="human-performer-code"
      *               role-name="human-performer-with-code"
@@ -165,7 +215,8 @@ public abstract class GPSPSPerformerBean implements EntityBean {
 
     private String prompt() {
         return "GPSPSHumanPerformer[pk=" + getPk() 
-                + ", name=" + getHumanPerformerName()
+                + ", name=" + getHumanPerformerFamilyName() 
+                + '^' + getHumanPerformerGivenName()
                 + ", code->" + getHumanPerformerCode()
                 + ", gpsps->" + getGpsps() + "]";
     }

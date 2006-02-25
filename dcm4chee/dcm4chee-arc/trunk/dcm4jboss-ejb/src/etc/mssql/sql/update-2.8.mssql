@@ -6,3 +6,64 @@ UPDATE filesystem SET fs_status=0;
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_next_fk ON filesystem(next_fk);
 CREATE INDEX fs_status ON filesystem(fs_status);
+
+sp_rename 'patient.pat_name', 'pat_fname', 'COLUMN'
+ALTER TABLE patient CHANGE pat_name TO pat_fname;
+ALTER TABLE patient ADD pat_gname VARCHAR(255);
+ALTER TABLE patient ADD pat_ifname VARCHAR(255);
+ALTER TABLE patient ADD pat_igname VARCHAR(255);
+ALTER TABLE patient ADD pat_pfname VARCHAR(255);
+ALTER TABLE patient ADD pat_pgname VARCHAR(255);
+
+DROP INDEX pat_name ON patient;
+CREATE INDEX pat_fname ON patient(pat_fname);
+CREATE INDEX pat_gname ON patient(pat_gname);
+CREATE INDEX pat_ifname ON patient(pat_ifname);
+CREATE INDEX pat_igname ON patient(pat_igname);
+CREATE INDEX pat_pfname ON patient(pat_pfname);
+CREATE INDEX pat_pgname ON patient(pat_pgname);
+
+sp_rename 'study.ref_physician', 'ref_phys_fname', 'COLUMN'
+ALTER TABLE study ADD ref_phys_gname VARCHAR(255);
+ALTER TABLE study ADD ref_phys_ifname VARCHAR(255);
+ALTER TABLE study ADD ref_phys_igname VARCHAR(255);
+ALTER TABLE study ADD ref_phys_pfname VARCHAR(255);
+ALTER TABLE study ADD ref_phys_pgname VARCHAR(255);
+
+DROP INDEX ref_physician ON study;
+CREATE INDEX ref_phys_fname ON study(ref_phys_fname);
+CREATE INDEX ref_phys_gname ON study(ref_phys_gname);
+CREATE INDEX ref_phys_ifname ON study(ref_phys_ifname);
+CREATE INDEX ref_phys_igname ON study(ref_phys_igname);
+CREATE INDEX ref_phys_pfname ON study(ref_phys_pfname);
+CREATE INDEX ref_phys_pgname ON study(ref_phys_pgname);
+
+sp_rename 'mwl_item.perf_physician', 'perf_phys_fname', 'COLUMN'
+ALTER TABLE mwl_item ADD perf_phys_gname VARCHAR(255);
+ALTER TABLE mwl_item ADD perf_phys_ifname VARCHAR(255);
+ALTER TABLE mwl_item ADD perf_phys_igname VARCHAR(255);
+ALTER TABLE mwl_item ADD perf_phys_pfname VARCHAR(255);
+ALTER TABLE mwl_item ADD perf_phys_pgname VARCHAR(255);
+
+DROP INDEX mwl_perf_physician ON mwl_item;
+CREATE INDEX mwl_perf_phys_fname ON mwl_item(perf_phys_fname);
+CREATE INDEX mwl_perf_phys_gname ON mwl_item(perf_phys_gname);
+CREATE INDEX mwl_perf_phys_ifname ON mwl_item(perf_phys_ifname);
+CREATE INDEX mwl_perf_phys_igname ON mwl_item(perf_phys_igname);
+CREATE INDEX mwl_perf_phys_pfname ON mwl_item(perf_phys_pfname);
+CREATE INDEX mwl_perf_phys_pgname ON mwl_item(perf_phys_pgname);
+
+sp_rename 'gpsps_perf.human_perf_name', 'hum_perf_fname', 'COLUMN'
+ALTER TABLE gpsps_perf ADD hum_perf_gname VARCHAR(255);
+ALTER TABLE gpsps_perf ADD hum_perf_ifname VARCHAR(255);
+ALTER TABLE gpsps_perf ADD hum_perf_igname VARCHAR(255);
+ALTER TABLE gpsps_perf ADD hum_perf_pfname VARCHAR(255);
+ALTER TABLE gpsps_perf ADD hum_perf_pgname VARCHAR(255);
+
+DROP INDEX gpsps_perf_name ON gpsps_perf;
+CREATE INDEX gpsps_perf_fname ON gpsps_perf(hum_perf_fname);
+CREATE INDEX gpsps_perf_gname ON gpsps_perf(hum_perf_gname);
+CREATE INDEX gpsps_perf_ifname ON gpsps_perf(hum_perf_ifname);
+CREATE INDEX gpsps_perf_igname ON gpsps_perf(hum_perf_igname);
+CREATE INDEX gpsps_perf_pfname ON gpsps_perf(hum_perf_pfname);
+CREATE INDEX gpsps_perf_pgname ON gpsps_perf(hum_perf_pgname);

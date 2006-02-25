@@ -47,6 +47,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -81,11 +82,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND (a.issuerOfPatientId IS NULL OR a.issuerOfPatientId = ?2)"
  *             transaction-type="Supports"
  *
- * @ejb.finder signature="java.util.Collection findByNameAndBirthdate(java.lang.String name, java.sql.Timestamp birthdate)"
- *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByNameAndBirthdate(java.lang.String name, java.sql.Timestamp birthdate)"
- *              query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientName = ?1 AND a.patientBirthDate = ?2"
- * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
@@ -145,17 +141,70 @@ public abstract class PatientBean implements EntityBean {
     public abstract void setIssuerOfPatientId(String issuer);
 
     /**
-     * Patient Name
-     *
      * @ejb.interface-method
-     * @ejb.persistence column-name="pat_name"
+     * @ejb.persistence column-name="pat_fname"
      */
-    public abstract String getPatientName();
+    public abstract String getPatientFamilyName();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setPatientName(String name);
+    public abstract void setPatientFamilyName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_gname"
+     */
+    public abstract String getPatientGivenName();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPatientGivenName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_ifname"
+     */
+    public abstract String getPatientIdeographicFamilyName();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPatientIdeographicFamilyName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_igname"
+     */
+    public abstract String getPatientIdeographicGivenName();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPatientIdeographicGivenName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_pfname"
+     */
+    public abstract String getPatientPhoneticFamilyName();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPatientPhoneticFamilyName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_pgname"
+     */
+    public abstract String getPatientPhoneticGivenName();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPatientPhoneticGivenName(String name);
 
     /**
      * Patient Birth Date
@@ -308,7 +357,21 @@ public abstract class PatientBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
-        setPatientName(ds.getString(Tags.PatientName));
+        PersonName pn = ds.getPersonName(Tags.PatientName);
+        if (pn != null) {
+            setPatientFamilyName(pn.get(PersonName.FAMILY));
+            setPatientGivenName(pn.get(PersonName.GIVEN));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                setPatientIdeographicFamilyName(ipn.get(PersonName.FAMILY));
+                setPatientIdeographicGivenName(ipn.get(PersonName.GIVEN));                
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                setPatientPhoneticFamilyName(ppn.get(PersonName.FAMILY));
+                setPatientPhoneticGivenName(ppn.get(PersonName.GIVEN));                
+            }
+        }
         try {
 	        setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
 	    } catch (IllegalArgumentException e) {
@@ -337,6 +400,6 @@ public abstract class PatientBean implements EntityBean {
 
     private String prompt() {
         return "Patient[pk=" + getPk() + ", pid=" + getPatientId() + ", name="
-                + getPatientName() + "]";
+                + getPatientFamilyName() + '^' + getPatientGivenName() + "]";
     }
 }

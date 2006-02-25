@@ -45,6 +45,7 @@ import java.util.List;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
@@ -89,10 +90,45 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientID),
                 false);
-        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
-                SqlBuilder.TYPE2,
-                filter.getString(Tags.PatientName),
-                true);
+        PersonName pn = filter.getPersonName(Tags.PatientName);
+        if (pn != null) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientFamilyName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.FAMILY),
+                    true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientGivenName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.GIVEN),
+                    true);
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicFamilyName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicGivenName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.GIVEN),
+                        false);
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticFamilyName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticGivenName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.GIVEN),
+                        false);
+            }
+        }        
         sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
                 filter.getString(Tags.StudyID), false);
         sqlBuilder.addSingleValueMatch(null, "Study.studyIuid",
@@ -139,7 +175,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
 	
     public List list(int offset, int limit) throws SQLException {
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
-        sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
+        sqlBuilder.addOrderBy("Patient.patientFamilyName", SqlBuilder.ASC);
+        sqlBuilder.addOrderBy("Patient.patientGivenName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Study.studyDateTime", SqlBuilder.ASC);
         sqlBuilder.setOffset(offset);

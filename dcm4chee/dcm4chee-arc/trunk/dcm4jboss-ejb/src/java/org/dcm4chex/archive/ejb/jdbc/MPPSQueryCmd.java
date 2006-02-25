@@ -93,7 +93,7 @@ public class MPPSQueryCmd extends BaseReadCmd {
        		 patientName.length() > 0 && 
    			 patientName.indexOf('*') == -1 &&
    			 patientName.indexOf('?') == -1) patientName+="*";
-         sqlBuilder.addWildCardMatch(null, "Patient.patientName",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientFamilyName",
                 SqlBuilder.TYPE1,
                 patientName,
                 true);

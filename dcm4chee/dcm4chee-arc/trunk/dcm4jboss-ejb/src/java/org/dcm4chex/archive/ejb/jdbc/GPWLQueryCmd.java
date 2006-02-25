@@ -44,6 +44,7 @@ import java.util.ArrayList;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.GPSPSPriority;
@@ -124,11 +125,45 @@ public class GPWLQueryCmd extends BaseReadCmd {
         addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq, DEVLOC_CODE);
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
         if (item != null) {
-            sqlBuilder.addWildCardMatch(null,
-                    "GPSPSPerformer.humanPerformerName",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.HumanPerformerName),
-                    true);
+            PersonName pn = item.getPersonName(Tags.HumanPerformerName);
+            if (pn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "GPSPSPerformer.humanPerformerFamilyName",
+                        SqlBuilder.TYPE2,
+                        pn.get(PersonName.FAMILY),
+                        true);
+                sqlBuilder.addWildCardMatch(null,
+                        "GPSPSPerformer.humanPerformerGivenName",
+                        SqlBuilder.TYPE2,
+                        pn.get(PersonName.GIVEN),
+                        true);
+                PersonName ipn = pn.getIdeographic();
+                if (ipn != null) {
+                    sqlBuilder.addWildCardMatch(null,
+                            "GPSPSPerformer.humanPerformerIdeographicFamilyName",
+                            SqlBuilder.TYPE2,
+                            ipn.get(PersonName.FAMILY),
+                            false);
+                    sqlBuilder.addWildCardMatch(null,
+                            "GPSPSPerformer.humanPerformerIdeographicGivenName",
+                            SqlBuilder.TYPE2,
+                            ipn.get(PersonName.GIVEN),
+                            false);
+                }
+                PersonName ppn = pn.getPhonetic();
+                if (ppn != null) {
+                    sqlBuilder.addWildCardMatch(null,
+                            "GPSPSPerformer.humanPerformerPhoneticFamilyName",
+                            SqlBuilder.TYPE2,
+                            ppn.get(PersonName.FAMILY),
+                            false);
+                    sqlBuilder.addWildCardMatch(null,
+                            "GPSPSPerformer.humanPerformerPhoneticGivenName",
+                            SqlBuilder.TYPE2,
+                            ppn.get(PersonName.GIVEN),
+                            false);
+                }
+            }        
             addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
         }
         item = keys.getItem(Tags.RefRequestSeq);
@@ -145,10 +180,45 @@ public class GPWLQueryCmd extends BaseReadCmd {
         sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.PatientID));
-        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
-                SqlBuilder.TYPE1,
-                keys.getString(Tags.PatientName),
-                true);
+        PersonName pn = keys.getPersonName(Tags.PatientName);
+        if (pn != null) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientFamilyName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.FAMILY),
+                    true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientGivenName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.GIVEN),
+                    true);
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicFamilyName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicGivenName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.GIVEN),
+                        false);
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticFamilyName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticGivenName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.GIVEN),
+                        false);
+            }
+        }        
     }
 
     private void addCodeMatch(int tag, String alias) {

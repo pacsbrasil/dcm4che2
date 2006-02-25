@@ -48,6 +48,7 @@ import java.util.Iterator;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
@@ -141,10 +142,45 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     protected void addPatientMatch() {
         sqlBuilder.addWildCardMatch(null, "Patient.patientId", SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientID), false);
-        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.PatientName),
-                true);
+        PersonName pn = keys.getPersonName(Tags.PatientName);
+        if (pn != null) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientFamilyName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.FAMILY),
+                    true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientGivenName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.GIVEN),
+                    true);
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicFamilyName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicGivenName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.GIVEN),
+                        false);
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticFamilyName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticGivenName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.GIVEN),
+                        false);
+            }
+        }        
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate",
                 SqlBuilder.TYPE2,
                 keys.getDateTimeRange(Tags.PatientBirthDate,
