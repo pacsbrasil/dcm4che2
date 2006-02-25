@@ -334,7 +334,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
     public void linkFileSystems(String prev, String next)
             throws FinderException, RemoveException {
         FileSystemLocal prevfs = fileSystemHome.findByDirectoryPath(prev);
-        FileSystemLocal nextfs = fileSystemHome.findByDirectoryPath(next);
+        FileSystemLocal nextfs = (next != null && next.length() != 0) 
+                ? fileSystemHome.findByDirectoryPath(next) : null;
         prevfs.setNextFileSystem(nextfs);
     }
 
