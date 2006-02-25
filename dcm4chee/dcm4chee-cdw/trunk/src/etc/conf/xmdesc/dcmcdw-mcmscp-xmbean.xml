@@ -30,7 +30,7 @@
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="tiani.dcmcdw:service=DcmServer" />
+         <value value="dcm4jboss.dcmcdw:service=DcmServer" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -41,7 +41,7 @@
       <name>SpoolDirName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="tiani.dcmcdw:service=SpoolDir" />
+         <value value="dcm4jboss.dcmcdw:service=SpoolDir" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

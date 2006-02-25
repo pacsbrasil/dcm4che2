@@ -66,7 +66,7 @@ Installation:
     the start up is completed.
     
  5. Open the JBoss Administration Console http://localhost:8080/jmx-console with
-    any Web Browser. Scroll down to section "tiani.dcmcdw" and follow the link
+    any Web Browser. Scroll down to section "dcm4jboss.dcmcdw" and follow the link
     of the section title to only show entires for dcmcdw specific services:
  
     * name=CDRecord,service=MediaWriter

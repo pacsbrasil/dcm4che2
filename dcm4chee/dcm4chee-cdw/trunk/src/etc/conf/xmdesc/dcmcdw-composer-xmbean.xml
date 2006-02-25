@@ -235,7 +235,7 @@
       <name>MakeIsoImageServiceName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="tiani.dcmcdw:service=MakeIsoImage" />
+         <value value="dcm4jboss.dcmcdw:service=MakeIsoImage" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -246,7 +246,7 @@
       <name>SpoolDirName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="tiani.dcmcdw:service=SpoolDir" />
+         <value value="dcm4jboss.dcmcdw:service=SpoolDir" />
       </descriptors>
    </attribute>
 	&defaultAttributes;
