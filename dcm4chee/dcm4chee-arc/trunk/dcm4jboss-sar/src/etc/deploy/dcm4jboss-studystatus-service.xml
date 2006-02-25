@@ -4,10 +4,10 @@
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
 
   <mbean code="org.dcm4chex.archive.mbean.StudyStatusService" 
-	     name="tiani.archive:service=StudyStatus"
+	     name="dcm4jboss.archive:service=StudyStatus"
 	     xmbean-dd="xmdesc/dcm4jboss-studystatus-xmbean.xml">
     <depends>
-      tiani.archive:service=PPSScp
+      dcm4jboss.archive:service=PPSScp
     </depends>
   </mbean>
 </server>

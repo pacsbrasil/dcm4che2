@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.ConsistenceCheckService" 
-	name="tiani.archive:service=ConsistencyService"
+	name="dcm4jboss.archive:service=ConsistencyService"
 	xmbean-dd="xmdesc/dcm4jboss-consistency-xmbean.xml">
 
   </mbean>

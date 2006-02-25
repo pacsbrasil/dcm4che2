@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.hsm.SyncFileStatusService" 
-	name="tiani.archive:service=SyncFileStatus"
+	name="dcm4jboss.archive:service=SyncFileStatus"
 	xmbean-dd="xmdesc/dcm4jboss-syncfilestatus-xmbean.xml">
   </mbean>
 

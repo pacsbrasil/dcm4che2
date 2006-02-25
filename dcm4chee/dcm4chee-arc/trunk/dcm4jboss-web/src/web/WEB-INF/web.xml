@@ -71,7 +71,7 @@
 		-->
 		<init-param>
 			<param-name>auditLoggerName</param-name>
-			<param-value>tiani.archive:service=AuditLogger</param-value>
+			<param-value>dcm4jboss.archive:service=AuditLogger</param-value>
 		</init-param>
 
 		<!-- 
@@ -81,7 +81,7 @@
 		-->
 		<init-param>
 			<param-name>mcmScuServiceName</param-name>
-			<param-value>tiani.archive:service=MCMScu</param-value>
+			<param-value>dcm4jboss.archive:service=MCMScu</param-value>
 		</init-param>
 
 		<!-- 
@@ -91,7 +91,7 @@
 		-->
 		<init-param>
 			<param-name>mwlScuServiceName</param-name>
-			<param-value>tiani.archive:service=MWLScu</param-value>
+			<param-value>dcm4jboss.archive:service=MWLScu</param-value>
 		</init-param>
 
 		<!-- 
@@ -101,7 +101,7 @@
 		-->
 		<init-param>
 			<param-name>mppsScpServiceName</param-name>
-			<param-value>tiani.archive:service=MPPSScp</param-value>
+			<param-value>dcm4jboss.archive:service=MPPSScp</param-value>
 		</init-param>
 
 		<!-- 
@@ -111,7 +111,7 @@
 		-->
 		<init-param>
 			<param-name>contentEditName</param-name>
-			<param-value>tiani.archive:service=ContentEditService</param-value>
+			<param-value>dcm4jboss.archive:service=ContentEditService</param-value>
 		</init-param>
 		
 		<!-- 
@@ -121,7 +121,7 @@
 		-->
 		<init-param>
 			<param-name>gpwlFeedServiceName</param-name>
-			<param-value>tiani.archive:service=GPWLFeed</param-value>
+			<param-value>dcm4jboss.archive:service=GPWLFeed</param-value>
 		</init-param>
 		
 		<!-- 
@@ -131,7 +131,7 @@
 		-->
 		<init-param>
 			<param-name>echoServiceName</param-name>
-			<param-value>tiani.archive:service=ECHOService</param-value>
+			<param-value>dcm4jboss.archive:service=ECHOService</param-value>
 		</init-param>
 
 		<!-- 
@@ -141,7 +141,7 @@
 		-->
 		<init-param>
 			<param-name>aeServiceName</param-name>
-			<param-value>tiani.archive:service=AE</param-value>
+			<param-value>dcm4jboss.archive:service=AE</param-value>
 		</init-param>
 
 		<!-- 
@@ -151,7 +151,7 @@
 		-->
 		<init-param>
 			<param-name>mppsScpServiceName</param-name>
-			<param-value>tiani.archive:service=MPPSScp</param-value>
+			<param-value>dcm4jboss.archive:service=MPPSScp</param-value>
 		</init-param>
 
 		<!-- 
@@ -161,7 +161,7 @@
 		-->
 		<init-param>
 			<param-name>keyObjectServiceName</param-name>
-			<param-value>tiani.archive:service=KeyObjectService</param-value>
+			<param-value>dcm4jboss.archive:service=KeyObjectService</param-value>
 		</init-param>
 		<!-- 
 			Used by dcm4jboss-web application to find ExportManagerService MBean.
@@ -170,12 +170,12 @@
 		-->
 		<init-param>
 			<param-name>exportManagerServiceName</param-name>
-			<param-value>tiani.archive:service=ExportManager</param-value>
+			<param-value>dcm4jboss.archive:service=ExportManager</param-value>
 		</init-param>
 
 		<init-param>
 			<param-name>xdsiServiceName</param-name>
-			<param-value>tiani.archive:service=XDS-I</param-value>
+			<param-value>dcm4jboss.archive:service=XDS-I</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>

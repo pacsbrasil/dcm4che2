@@ -481,7 +481,7 @@ QueryRetrieveScp service.</description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt"/>
+         <value value="dcm4jboss.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -492,7 +492,7 @@ QueryRetrieveScp service.</description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=DcmServer"/>
+         <value value="dcm4jboss.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -503,7 +503,7 @@ QueryRetrieveScp service.</description>
       <name>StgCmtScuScpName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StgCmtScuScp"/>
+         <value value="dcm4jboss.archive:service=StgCmtScuScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -514,7 +514,7 @@ QueryRetrieveScp service.</description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig"/>
+         <value value="dcm4jboss.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -525,7 +525,7 @@ QueryRetrieveScp service.</description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AuditLogger"/>
+         <value value="dcm4jboss.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -536,7 +536,7 @@ QueryRetrieveScp service.</description>
       <name>AEServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AE"/>
+         <value value="dcm4jboss.archive:service=AE"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

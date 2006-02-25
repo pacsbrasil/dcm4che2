@@ -156,7 +156,7 @@
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StoreScp"/>
+         <value value="dcm4jboss.archive:service=StoreScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getFileSystemMgtServiceName" setMethod="setFileSystemMgtServiceName">
@@ -165,7 +165,7 @@
       <name>FileSystemMgtServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt"/>
+         <value value="dcm4jboss.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
@@ -174,7 +174,7 @@
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig"/>
+         <value value="dcm4jboss.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

@@ -212,7 +212,7 @@
       <name>FileSystemMgtName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt" />
+         <value value="dcm4jboss.archive:service=FileSystemMgt" />
       </descriptors>
    </attribute>
 

@@ -120,7 +120,7 @@
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=DcmServer"/>
+         <value value="dcm4jboss.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -131,7 +131,7 @@
       <name>Hl7SendServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=HL7Send"/>
+         <value value="dcm4jboss.archive:service=HL7Send"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -142,7 +142,7 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AuditLogger"/>
+         <value value="dcm4jboss.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

@@ -115,7 +115,7 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StoreScp"/>
+         <value value="dcm4jboss.archive:service=StoreScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" 
@@ -126,7 +126,7 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
       <name>MoveScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MoveScu"/>
+         <value value="dcm4jboss.archive:service=MoveScu"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -137,7 +137,7 @@ AE Title in the Association Request is NOT SCP0, to Storage SCPs, SCP3 and SCP4.
       <name>EditContentServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=ContentEditService"/>
+         <value value="dcm4jboss.archive:service=ContentEditService"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

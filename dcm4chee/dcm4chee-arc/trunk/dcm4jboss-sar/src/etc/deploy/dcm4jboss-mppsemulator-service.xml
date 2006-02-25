@@ -3,10 +3,10 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.mppsscu.MPPSEmulatorService" 
-         name="tiani.archive:service=MPPSEmulator"
+         name="dcm4jboss.archive:service=MPPSEmulator"
          xmbean-dd="xmdesc/dcm4jboss-mppsemulator-xmbean.xml">
-    <depends>tiani.archive:service=MWLScu</depends>
-    <depends>tiani.archive:service=MPPSScu</depends>
+    <depends>dcm4jboss.archive:service=MWLScu</depends>
+    <depends>dcm4jboss.archive:service=MPPSScu</depends>
     <!-- To avoid NameNotBoundExceptions during server startup. MUST be
 	removed, if the service is NOT deployed in the same jboss instance
 	as the MPPSEmulator EJB!

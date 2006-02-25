@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.FixPatientAttributesService" 
-	name="tiani.archive:service=FixPatientAttributesService"
+	name="dcm4jboss.archive:service=FixPatientAttributesService"
 	xmbean-dd="xmdesc/dcm4jboss-fixpatattr-xmbean.xml">
   </mbean>
 </server>

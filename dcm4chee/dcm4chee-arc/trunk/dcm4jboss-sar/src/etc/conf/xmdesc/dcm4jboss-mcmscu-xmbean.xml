@@ -259,7 +259,7 @@
       <name>SendmailServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=Sendmail"/>
+         <value value="dcm4jboss.archive:service=Sendmail"/>
       </descriptors>
    </attribute>
    

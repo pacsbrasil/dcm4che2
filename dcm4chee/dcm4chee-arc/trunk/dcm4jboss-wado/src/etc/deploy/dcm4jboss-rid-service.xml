@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.wado.mbean.RIDService" 
-         name="tiani.archive:service=RIDService"
+         name="dcm4jboss.archive:service=RIDService"
          xmbean-dd="xmdesc/dcm4jboss-rid-xmbean.xml">
   </mbean>
 </server>

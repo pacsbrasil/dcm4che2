@@ -119,7 +119,7 @@
       <name>FileSystemMgtName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt" />
+         <value value="dcm4jboss.archive:service=FileSystemMgt" />
       </descriptors>
    </attribute>
     <attribute access="read-write"
@@ -130,7 +130,7 @@
       <name>StudyInfoServiceName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="tiani.archive:service=StudyInfoService" />
+         <value value="dcm4jboss.archive:service=StudyInfoService" />
       </descriptors>
    </attribute>
 

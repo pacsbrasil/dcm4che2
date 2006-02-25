@@ -4,10 +4,10 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.EchoService" 
-	name="tiani.archive:service=ECHOService"
+	name="dcm4jboss.archive:service=ECHOService"
 	xmbean-dd="xmdesc/dcm4jboss-echo-xmbean.xml">	
     <depends>
-      tiani.archive:service=TLSConfig
+      dcm4jboss.archive:service=TLSConfig
     </depends> 
   </mbean>
 </server>

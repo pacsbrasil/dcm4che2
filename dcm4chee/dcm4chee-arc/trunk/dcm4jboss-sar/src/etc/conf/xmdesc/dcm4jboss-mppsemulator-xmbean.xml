@@ -53,7 +53,7 @@
       <name>MppsScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MPPSScu"/>
+         <value value="dcm4jboss.archive:service=MPPSScu"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getMwlScuServiceName" setMethod="setMwlScuServiceName">
@@ -62,7 +62,7 @@
       <name>MwlScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MWLScu"/>
+         <value value="dcm4jboss.archive:service=MWLScu"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -73,7 +73,7 @@
       <name>Hl7SendServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=HL7Send"/>
+         <value value="dcm4jboss.archive:service=HL7Send"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

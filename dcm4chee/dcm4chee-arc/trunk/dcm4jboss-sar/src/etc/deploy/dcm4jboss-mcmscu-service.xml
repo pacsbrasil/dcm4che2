@@ -4,17 +4,17 @@
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="tiani.archive:service=Queue,name=MCMScu">
+	 name="dcm4jboss.archive:service=Queue,name=MCMScu">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
   <mbean code="org.dcm4chex.archive.dcm.mcmscu.MCMScuService" 
-         name="tiani.archive:service=MCMScu"
+         name="dcm4jboss.archive:service=MCMScu"
          xmbean-dd="xmdesc/dcm4jboss-mcmscu-xmbean.xml">
     <depends>
-      tiani.archive:service=Queue,name=MCMScu
+      dcm4jboss.archive:service=Queue,name=MCMScu
     </depends>
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM
@@ -25,7 +25,7 @@
 	-->
     <depends>jboss.j2ee:jndiName=ejb/MediaComposer,service=EJB</depends>
     <depends>
-      tiani.archive:service=Sendmail
+      dcm4jboss.archive:service=Sendmail
     </depends>
   </mbean>
 

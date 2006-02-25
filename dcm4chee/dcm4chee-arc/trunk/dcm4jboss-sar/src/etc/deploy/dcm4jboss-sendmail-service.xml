@@ -4,17 +4,17 @@
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="tiani.archive:service=Queue,name=Sendmail">
+	 name="dcm4jboss.archive:service=Queue,name=Sendmail">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>
 
   <mbean code="org.dcm4chex.archive.mbean.SendMailService" 
-	     name="tiani.archive:service=Sendmail"
+	     name="dcm4jboss.archive:service=Sendmail"
 	     xmbean-dd="xmdesc/dcm4jboss-sendmail-xmbean.xml">
     <depends>
-      tiani.archive:service=Queue,name=Sendmail
+      dcm4jboss.archive:service=Queue,name=Sendmail
     </depends>
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM

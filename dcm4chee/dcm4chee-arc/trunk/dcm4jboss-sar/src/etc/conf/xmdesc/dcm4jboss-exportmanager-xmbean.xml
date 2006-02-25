@@ -160,7 +160,7 @@
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StoreScp"/>
+         <value value="dcm4jboss.archive:service=StoreScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

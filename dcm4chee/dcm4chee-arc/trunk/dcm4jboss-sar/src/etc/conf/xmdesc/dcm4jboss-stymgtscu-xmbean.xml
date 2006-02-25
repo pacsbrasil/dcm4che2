@@ -127,7 +127,7 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
       <name>StudyMgtScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StudyMgtScp"/>
+         <value value="dcm4jboss.archive:service=StudyMgtScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
@@ -135,7 +135,7 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig"/>
+         <value value="dcm4jboss.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

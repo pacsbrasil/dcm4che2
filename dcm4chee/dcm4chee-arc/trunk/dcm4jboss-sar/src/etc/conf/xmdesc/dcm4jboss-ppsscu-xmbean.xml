@@ -105,7 +105,7 @@
       <name>PpsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=PPSScp"/>
+         <value value="dcm4jboss.archive:service=PPSScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
@@ -114,7 +114,7 @@
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig"/>
+         <value value="dcm4jboss.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

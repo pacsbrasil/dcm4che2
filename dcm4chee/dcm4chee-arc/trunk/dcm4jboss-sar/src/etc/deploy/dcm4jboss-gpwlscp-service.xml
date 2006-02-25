@@ -3,10 +3,10 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.gpwlscp.GPWLScpService" 
-	     name="tiani.archive:service=GPWLScp"
+	     name="dcm4jboss.archive:service=GPWLScp"
 	     xmbean-dd="xmdesc/dcm4jboss-gpwlscp-xmbean.xml">
     <depends>
-      tiani.archive:service=DcmServer
+      dcm4jboss.archive:service=DcmServer
     </depends>
   </mbean>
 </server>

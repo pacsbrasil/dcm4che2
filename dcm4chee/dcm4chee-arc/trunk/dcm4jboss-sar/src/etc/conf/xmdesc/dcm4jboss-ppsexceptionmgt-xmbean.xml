@@ -40,7 +40,7 @@
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MPPSScp"/>
+         <value value="dcm4jboss.archive:service=MPPSScp"/>
       </descriptors>
    </attribute>
    

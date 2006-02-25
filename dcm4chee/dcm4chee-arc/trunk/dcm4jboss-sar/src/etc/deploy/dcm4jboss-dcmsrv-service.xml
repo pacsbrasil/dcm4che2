@@ -3,11 +3,11 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.DcmServerService" 
-         name="tiani.archive:service=DcmServer"
+         name="dcm4jboss.archive:service=DcmServer"
          xmbean-dd="xmdesc/dcm4jboss-dcmsrv-xmbean.xml">
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/Storage</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/FileSystemMgt</depends>
-    <depends>tiani.archive:service=TLSConfig</depends>
-    <depends>tiani.archive:service=AuditLogger</depends>
+    <depends>dcm4jboss.archive:service=TLSConfig</depends>
+    <depends>dcm4jboss.archive:service=AuditLogger</depends>
   </mbean>
 </server>

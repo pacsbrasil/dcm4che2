@@ -12,7 +12,7 @@
 # Here is a little (and extremely primitive) 
 # startup/shutdown script for RedHat systems. It assumes 
 # that dcm4jboss lives in /usr/local/dcm4jboss, it's run by user 
-# 'tiani' and JDK binaries are in /usr/local/jdk/bin. All 
+# 'pacs' and JDK binaries are in /usr/local/jdk/bin. All 
 # this can be changed in the script itself. 
 # Bojan 
 #
@@ -51,7 +51,7 @@ fi
 JBOSS_CONSOLE=${JBOSS_CONSOLE:-"/dev/null"}
 
 #define the user under which jboss will run, or use RUNASIS to run as the current user
-JBOSSUS=${JBOSSUS:-"tiani"}
+JBOSSUS=${JBOSSUS:-"pacs"}
 
 CMD_START="cd $JBOSS_HOME/bin; $JBOSSSH" 
 CMD_STOP="java -classpath $JBOSSCP org.jboss.Shutdown --shutdown"

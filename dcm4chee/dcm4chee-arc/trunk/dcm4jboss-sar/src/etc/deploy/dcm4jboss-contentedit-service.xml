@@ -3,14 +3,14 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.ContentEditService" 
-         name="tiani.archive:service=ContentEditService"
+         name="dcm4jboss.archive:service=ContentEditService"
          xmbean-dd="xmdesc/dcm4jboss-contentedit-xmbean.xml">
   </mbean>
     <depends>
-      tiani.archive:service=HL7Send
+      dcm4jboss.archive:service=HL7Send
     </depends> 
     <depends>
-      tiani.archive:service=StudyMgtScu
+      dcm4jboss.archive:service=StudyMgtScu
     </depends> 
 
 </server>

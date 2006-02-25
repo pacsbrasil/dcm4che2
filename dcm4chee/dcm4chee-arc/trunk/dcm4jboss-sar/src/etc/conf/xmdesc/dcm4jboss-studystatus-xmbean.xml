@@ -44,7 +44,7 @@
       <name>PpsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=PPSScp"/>
+         <value value="dcm4jboss.archive:service=PPSScp"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

@@ -35,7 +35,7 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AuditLogger"/>
+         <value value="dcm4jboss.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
@@ -44,7 +44,7 @@
       <name>EchoServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=ECHOService"/>
+         <value value="dcm4jboss.archive:service=ECHOService"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getPortNumbers" setMethod="setPortNumbers">

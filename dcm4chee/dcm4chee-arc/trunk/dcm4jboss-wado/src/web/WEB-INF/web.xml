@@ -20,7 +20,7 @@
 		
 		<init-param>
 			<param-name>wadoServiceName</param-name>
-			<param-value>tiani.archive:service=WADOService</param-value>
+			<param-value>dcm4jboss.archive:service=WADOService</param-value>
 		</init-param>
 		
 		<!--
@@ -28,7 +28,7 @@
 		-->
 		<init-param>
 			<param-name>wadoExtServiceName</param-name>
-			<param-value>tiani.archive:service=WADOExtService</param-value>
+			<param-value>dcm4jboss.archive:service=WADOExtService</param-value>
 		</init-param>
 		
 		<!-- 
@@ -38,7 +38,7 @@
 		-->
 		<init-param>
 			<param-name>fileSystemMgtName</param-name>
-			<param-value>tiani.archive:service=FileSystemMgt</param-value>
+			<param-value>dcm4jboss.archive:service=FileSystemMgt</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>
@@ -50,7 +50,7 @@
 		<servlet-class>org.dcm4chex.wado.web.RIDServlet</servlet-class>
 		<init-param>
 			<param-name>ridServiceName</param-name>
-			<param-value>tiani.archive:service=RIDService</param-value>
+			<param-value>dcm4jboss.archive:service=RIDService</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
@@ -61,7 +61,7 @@
 		<servlet-class>org.dcm4chex.wado.web.RIDServlet</servlet-class>
 		<init-param>
 			<param-name>ridServiceName</param-name>
-			<param-value>tiani.archive:service=RIDService</param-value>
+			<param-value>dcm4jboss.archive:service=RIDService</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>

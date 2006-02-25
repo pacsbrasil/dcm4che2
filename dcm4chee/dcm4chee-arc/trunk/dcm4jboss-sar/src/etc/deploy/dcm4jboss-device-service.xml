@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.DeviceService" 
-         name="tiani.archive:service=DeviceService"
+         name="dcm4jboss.archive:service=DeviceService"
          xmbean-dd="xmdesc/dcm4jboss-device-xmbean.xml">
   </mbean>
 </server>

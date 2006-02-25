@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.MD5CheckService" 
-	name="tiani.archive:service=MD5CheckService"
+	name="dcm4jboss.archive:service=MD5CheckService"
 	xmbean-dd="xmdesc/dcm4jboss-md5check-xmbean.xml">
 
   </mbean>

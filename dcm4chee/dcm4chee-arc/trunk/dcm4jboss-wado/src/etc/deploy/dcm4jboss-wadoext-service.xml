@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.wado.mbean.ExtendedWADOService" 
-         name="tiani.archive:service=WADOExtService"
+         name="dcm4jboss.archive:service=WADOExtService"
          xmbean-dd="xmdesc/dcm4jboss-wadoext-xmbean.xml">
   </mbean>
 </server>

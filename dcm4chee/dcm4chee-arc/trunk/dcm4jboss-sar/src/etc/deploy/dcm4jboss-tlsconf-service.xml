@@ -3,10 +3,10 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.TLSConfigService" 
-         name="tiani.archive:service=TLSConfig"
+         name="dcm4jboss.archive:service=TLSConfig"
          xmbean-dd="xmdesc/dcm4jboss-tlsconf-xmbean.xml">
     <depends>
-      tiani.archive:service=AuditLogger
+      dcm4jboss.archive:service=AuditLogger
     </depends>
   </mbean>
 </server>

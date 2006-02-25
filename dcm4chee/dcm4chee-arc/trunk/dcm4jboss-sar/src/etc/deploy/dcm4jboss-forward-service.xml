@@ -3,10 +3,10 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.movescu.ForwardService" 
-	     name="tiani.archive:service=Forward"
+	     name="dcm4jboss.archive:service=Forward"
 	     xmbean-dd="xmdesc/dcm4jboss-forward-xmbean.xml">
-    <depends>tiani.archive:service=StoreScp</depends>
-	<depends>tiani.archive:service=Queue,name=MoveScu</depends>
+    <depends>dcm4jboss.archive:service=StoreScp</depends>
+	<depends>dcm4jboss.archive:service=Queue,name=MoveScu</depends>
 	<depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
   </mbean>
 </server>

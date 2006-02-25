@@ -3,11 +3,11 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.CompressionService" 
-	name="tiani.archive:service=CompressionService"
+	name="dcm4jboss.archive:service=CompressionService"
 	xmbean-dd="xmdesc/dcm4jboss-compression-xmbean.xml">
 
     <depends>
-    	tiani.archive:service=FileSystemMgt
+    	dcm4jboss.archive:service=FileSystemMgt
     </depends>    
   </mbean>
 

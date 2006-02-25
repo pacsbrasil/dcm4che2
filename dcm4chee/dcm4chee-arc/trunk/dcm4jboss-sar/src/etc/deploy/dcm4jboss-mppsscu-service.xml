@@ -4,20 +4,20 @@
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="tiani.archive:service=Queue,name=MPPSScu">
+	 name="dcm4jboss.archive:service=Queue,name=MPPSScu">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
   <mbean code="org.dcm4chex.archive.dcm.mppsscu.MPPSScuService" 
-	     name="tiani.archive:service=MPPSScu"
+	     name="dcm4jboss.archive:service=MPPSScu"
 	     xmbean-dd="xmdesc/dcm4jboss-mppsscu-xmbean.xml">
     <depends>
-      tiani.archive:service=MPPSScp
+      dcm4jboss.archive:service=MPPSScp
     </depends>
     <depends>
-      tiani.archive:service=Queue,name=MPPSScu
+      dcm4jboss.archive:service=Queue,name=MPPSScu
     </depends>
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM

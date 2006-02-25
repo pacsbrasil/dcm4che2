@@ -126,7 +126,7 @@
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt"/>
+         <value value="dcm4jboss.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getHL7SendServiceName" setMethod="setHL7SendServiceName">
@@ -135,7 +135,7 @@
       <name>HL7SendServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=HL7Send"/>
+         <value value="dcm4jboss.archive:service=HL7Send"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getStudyMgtScuServiceName" setMethod="setStudyMgtScuServiceName">
@@ -144,7 +144,7 @@
       <name>StudyMgtScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StudyMgtScu"/>
+         <value value="dcm4jboss.archive:service=StudyMgtScu"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getStoreScpServiceName" setMethod="setStoreScpServiceName">
@@ -153,7 +153,7 @@
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=StoreScp"/>
+         <value value="dcm4jboss.archive:service=StoreScp"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

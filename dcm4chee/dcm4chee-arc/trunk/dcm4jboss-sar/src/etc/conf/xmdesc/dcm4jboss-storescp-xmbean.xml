@@ -5,7 +5,7 @@
    <description><![CDATA[DICOM Storage SCP. Provides a DICOM storage service to receive DICOM objects from remote
    DICOM applications. Typically these objects are images received from modalities. You can also configure
 	what DICOM SOP classes are accepted by the StoreScp service using the <b>AcceptedImageSOPClasses</b> and 
-	<b>AcceptedOtherSOPClasses</b> atributes. The tiani.archive=DCMServer
+	<b>AcceptedOtherSOPClasses</b> atributes. The dcm4jboss.archive=DCMServer
     must be deployed first because the StoreScp registers itself against this server.]]>
  </description>
 
@@ -670,7 +670,7 @@ Use either the SOP Class UID or the symbolic name:
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt"/>
+         <value value="dcm4jboss.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -681,7 +681,7 @@ Use either the SOP Class UID or the symbolic name:
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=DcmServer"/>
+         <value value="dcm4jboss.archive:service=DcmServer"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -692,7 +692,7 @@ Use either the SOP Class UID or the symbolic name:
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=TLSConfig"/>
+         <value value="dcm4jboss.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -703,7 +703,7 @@ Use either the SOP Class UID or the symbolic name:
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=AuditLogger"/>
+         <value value="dcm4jboss.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

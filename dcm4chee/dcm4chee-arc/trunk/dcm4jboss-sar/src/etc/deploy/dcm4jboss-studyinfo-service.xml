@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.StudyInfoService" 
-         name="tiani.archive:service=StudyInfoService"
+         name="dcm4jboss.archive:service=StudyInfoService"
          xmbean-dd="xmdesc/dcm4jboss-studyinfo-xmbean.xml">
   </mbean>
 </server>
