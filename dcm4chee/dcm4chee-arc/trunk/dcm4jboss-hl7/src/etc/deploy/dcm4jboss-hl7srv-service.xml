@@ -3,13 +3,13 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss-hl7.jar"/>
   <mbean code="org.dcm4chex.archive.hl7.HL7ServerService" 
-         name="tiani.archive:service=HL7Server"
+         name="dcm4jboss.archive:service=HL7Server"
          xmbean-dd="xmdesc/dcm4jboss-hl7srv-xmbean.xml">
     <!-- Delay start of HL7 server after deployment of EJBs
          needed by ADTService and ORMService --> 
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/PatientUpdate</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/MWLManager</depends>
-    <depends>tiani.archive:service=TLSConfig</depends>
-    <depends>tiani.archive:service=AuditLogger</depends>
+    <depends>dcm4jboss.archive:service=TLSConfig</depends>
+    <depends>dcm4jboss.archive:service=AuditLogger</depends>
   </mbean>
 </server>

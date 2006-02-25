@@ -71,7 +71,7 @@
       <name>HL7ServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=HL7Server" />
+         <value value="dcm4jboss.archive:service=HL7Server" />
       </descriptors>
    </attribute>
    &defaultAttributes;

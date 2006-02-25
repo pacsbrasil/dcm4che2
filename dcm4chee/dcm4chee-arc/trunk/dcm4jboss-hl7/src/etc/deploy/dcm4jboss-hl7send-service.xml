@@ -4,23 +4,23 @@
   <classpath codebase="lib" archives="dcm4jboss-hl7.jar"/>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="tiani.archive:service=Queue,name=HL7Send">
+	 name="dcm4jboss.archive:service=Queue,name=HL7Send">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>
    
   <mbean code="org.dcm4chex.archive.hl7.HL7SendService" 
-	     name="tiani.archive:service=HL7Send"
+	     name="dcm4jboss.archive:service=HL7Send"
 	     xmbean-dd="xmdesc/dcm4jboss-hl7send-xmbean.xml">
     <depends>
-      tiani.archive:service=HL7Server
+      dcm4jboss.archive:service=HL7Server
     </depends>
     <depends>
-      tiani.archive:service=TLSConfig
+      dcm4jboss.archive:service=TLSConfig
     </depends>
     <depends>
-      tiani.archive:service=Queue,name=HL7Send
+      dcm4jboss.archive:service=Queue,name=HL7Send
     </depends>
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM
