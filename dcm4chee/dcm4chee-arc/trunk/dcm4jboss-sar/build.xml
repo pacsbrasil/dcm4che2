@@ -60,7 +60,6 @@
 		<pathelement location="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/deploy/dcm4jboss-ejb-hsql.jar"/>
-		<pathelement location="${lib.dir}/mogio.jar"/>
 		<pathelement location="${lib.dir}/commons-compress-20050911.jar"/>
 		<pathelement location="${lib.dir}/commons-net-1.4.1.jar"/>
 		<pathelement location="${lib.dir}/saaj-impl.jar"/>

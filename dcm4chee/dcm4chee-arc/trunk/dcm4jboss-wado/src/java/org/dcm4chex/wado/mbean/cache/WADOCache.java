@@ -183,8 +183,10 @@ public interface WADOCache {
 	 * Removes old entries to shrink this cache.
 	 * 
 	 * @param background If true clean process runs in a seperate thread.
+	 * @throws IOException 
+	 * @throws IOException 
 	 */
-	void freeDiskSpace( boolean background );
+	void freeDiskSpace( boolean background ) throws IOException;
 	
 	/**
 	 * Setter for root directory of this cache.
@@ -248,8 +250,9 @@ public interface WADOCache {
 	 * Returns the current free space on drive where this cache is stored.
 	 * 
 	 * @return Current free diskspace in bytes
+	 * @throws IOException 
 	 */
-	long showFreeSpace();
+	long showFreeSpace() throws IOException;
 	
 	/**
 	 * Returns true if a client redirect should be used if requewsted DICOM object is not local.

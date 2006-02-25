@@ -41,7 +41,7 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.rmi.RemoteException;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +67,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -259,8 +260,7 @@ public class CompressionService extends TimerSupport {
         }        
     }
     
-    public void checkForFilesToCompress() throws RemoteException,
-            FinderException {
+    public void checkForFilesToCompress() throws FinderException, IOException {
         log.info("Check For Files To Compress on attached filesystems!");
 		long minDiskFree = getMinDiskFreeFromFsmgt();
         String cuid;
@@ -294,10 +294,12 @@ public class CompressionService extends TimerSupport {
 
     /**
 	 * @param fileDTO
+     * @throws IOException 
 	 */
-	private void autoPurge(FileDTO fileDTO, long minDiskFree) {
+	private void autoPurge(FileDTO fileDTO, long minDiskFree) throws IOException {
 		if ( log.isDebugEnabled() ) log.debug("autoPurge called for "+fileDTO.getDirectoryPath());
-        if ( new se.mog.io.File(FileUtils.resolve(new File(fileDTO.getDirectoryPath()))).getDiskSpaceAvailable() < minDiskFree) {
+        File dir = FileUtils.resolve(new File(fileDTO.getDirectoryPath()));
+        if ( FileSystemUtils.freeSpace(dir.getPath()) < minDiskFree) {
     		if ( log.isDebugEnabled() ) log.debug("autoPurge start processing purgeFiles! Available disk space is < "+minDiskFree);
             try {
                 server.invoke(fileSystemMgtName,

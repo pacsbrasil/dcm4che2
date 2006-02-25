@@ -39,6 +39,8 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.io.IOException;
+
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
@@ -66,7 +68,11 @@ public abstract class AbstractCacheService extends TimerSupport {
     private final NotificationListener freeDiskSpaceListener = 
         new NotificationListener(){
             public void handleNotification(Notification notif, Object handback) {
-                cache.freeDiskSpace( true );
+                try {
+                    cache.freeDiskSpace( true );
+                } catch (IOException e) {
+                    log.error("Failed to free disk space: ", e);
+                }
             }};
 	private long freeDiskSpaceInterval;
 	private Integer freeDiskSpaceListenerID;
@@ -103,15 +109,16 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 * Clears the cache.
 	 * <p>
 	 * Remove all files in the cache.
+	 * @throws IOException 
 	 *
 	 */
-	public String clearCache() {
+	public String clearCache() throws IOException {
 		long before = cache.showFreeSpace();
 		cache.clearCache();
 		return getDeleteResult( before );
 	}
 	
-	private String getDeleteResult( long before ) {
+	private String getDeleteResult( long before ) throws IOException {
 		long after = cache.showFreeSpace();
 		long delta = after - before;
 		StringBuffer sb = new StringBuffer();
@@ -159,9 +166,10 @@ public abstract class AbstractCacheService extends TimerSupport {
 	
 	/**
 	 * Cleans the cache if necessary.
+	 * @throws IOException 
 	 *
 	 */
-	public String freeDiskSpace() {
+	public String freeDiskSpace() throws IOException {
 		long before = cache.showFreeSpace();
 		cache.freeDiskSpace( false ); //cleans the cache and wait until clean process is done. (not in background)
 		return getDeleteResult( before );
@@ -172,8 +180,9 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 * <p>
 	 * 
 	 * @return
+	 * @throws IOException 
 	 */
-	public String showFreeSpace() {
+	public String showFreeSpace() throws IOException {
 		return FileUtils.formatSize( cache.showFreeSpace() );
 	}
 	

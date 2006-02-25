@@ -33,40 +33,50 @@ accessed studies.</description>
          <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write"
-      getMethod="getMountFailedCheckFile"
-      setMethod="setMountFailedCheckFile">
-      <description>If the specified file exists, this signals a failed mount.
-      </description>
-      <name>MountFailedCheckFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NO_MOUNT"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isMakeStorageDirectory"
-      setMethod="setMakeStorageDirectory">
-      <description>Create storage directory, if no one exists.
-      </description>
-      <name>MakeStorageDirectory</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" 
       getMethod="getMinFreeDiskSpace"
       setMethod="setMinFreeDiskSpace">
-      <description><![CDATA[Minimum free disk space.
-      The storage directory, or cache, switches to the next entry in  
-      <b>Directory Paths</b>, if the amount of free disk space falls below this value.
+      <description><![CDATA[Minimum free disk space. If the free available disk space
+      on the current storage file system falls below this value, the next
+      configured file system becomes the current storage system.
       1MB = 1000000 bytes, 1GB = 1000MB.]]>   
       </description>
       <name>MinimumFreeDiskSpace</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="50MB"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCheckFreeDiskSpaceInterval"
+      setMethod="setCheckFreeDiskSpaceInterval">
+      <description><![CDATA[Interval for checking free available disk
+      space on current storage file system against minimum value specified by
+      <i>MinimumFreeDiskSpace<i>. Format: ##m (in minutes) | ##s (in seconds).
+      If the free available disk space falls below <i>MinimumFreeDiskSpace<i> x
+      <i>CheckFreeDiskSpaceThreshold<i>, the check is performed for each
+      received object - and is no longer controlled by the configured interval.
+      ]]>
+      </description>
+      <name>CheckFreeDiskSpaceInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="60s"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCheckFreeDiskSpaceThreshold"
+      setMethod="setCheckFreeDiskSpaceThreshold">
+      <description><![CDATA[Defines lower threshold of free disk space for 
+          checking free available disk space. If the free available disk space
+          falls below <i>MinimumFreeDiskSpace<i> x <i>CheckFreeDiskSpaceThreshold<i>,
+          the check is performed for each received object - and is no longer
+          controlled by <i>CheckFreeDiskSpaceInterval<i>.]]>
+      </description>
+      <name>CheckFreeDiskSpaceThreshold</name>
+      <type>float</type>
+      <descriptors>
+         <value value="5."/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -257,6 +267,28 @@ accessed studies.</description>
          <value value="true"/>
       </descriptors>
    </attribute>   
+   <attribute access="read-write"
+      getMethod="getMountFailedCheckFile"
+      setMethod="setMountFailedCheckFile">
+      <description>If the specified file exists, this signals a failed mount.
+      </description>
+      <name>MountFailedCheckFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NO_MOUNT"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMakeStorageDirectory"
+      setMethod="setMakeStorageDirectory">
+      <description>Create storage directory, if no one exists.
+      </description>
+      <name>MakeStorageDirectory</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">

@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.util.FileSystemUtils;
 import org.jboss.system.server.ServerConfigLocator;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -390,8 +391,9 @@ public class WADOCacheImpl implements WADOCache {
 	 * </DL>
 	 * 
 	 * @param	background	If true, clean runs in a seperate thread.
+	 * @throws IOException 
 	 */
-	public void freeDiskSpace( boolean background ) {
+	public void freeDiskSpace( boolean background ) throws IOException {
 		long currFree = showFreeSpace();
 		if ( log.isDebugEnabled() ) log.debug("WADOCache.freeDiskSpace: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
 		if ( currFree < getMinFreeSpace() ) {
@@ -497,11 +499,13 @@ public class WADOCacheImpl implements WADOCache {
 	 * Returns current free disk space in bytes.
 	 * 
 	 * @return disk space available on the drive where this cache is stored.
+	 * @throws IOException 
 	 */
-	public long showFreeSpace() {
-		se.mog.io.File file = new se.mog.io.File( getAbsCacheRoot() );
-		log.info("getFreeDiskSpace from :"+getAbsCacheRoot()+" free:"+file.getDiskSpaceAvailable() );
-		return file.getDiskSpaceAvailable();
+	public long showFreeSpace() throws IOException {
+        File dir = getAbsCacheRoot();
+        long free = FileSystemUtils.freeSpace(dir.getPath());
+		log.info("getFreeDiskSpace from :"+dir+" free:"+free );
+		return free;
 	}
 
 	/**

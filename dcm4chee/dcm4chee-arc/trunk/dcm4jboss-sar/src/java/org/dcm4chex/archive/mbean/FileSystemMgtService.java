@@ -75,6 +75,7 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
+import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -88,7 +89,11 @@ public class FileSystemMgtService extends TimerSupport {
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
+    
+    private long checkFreeDiskSpaceInterval = 60000L;
 
+    private float checkFreeDiskSpaceThreshold = 5f;
+    
     private String retrieveAET = "DCM4JBOSS";
 
 	private float freeDiskSpaceLowerThreshold = 1.5f;
@@ -130,6 +135,8 @@ public class FileSystemMgtService extends TimerSupport {
     private boolean makeStorageDirectory = true;
 
     private FileSystemDTO storageFileSystem;
+    
+    private long checkStorageFileSystem = 0L;
 	        
     private final NotificationListener purgeFilesListener = 
         new NotificationListener(){
@@ -201,7 +208,24 @@ public class FileSystemMgtService extends TimerSupport {
         this.minFreeDiskSpace = FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
     }
 
-	/**
+	public final String getCheckFreeDiskSpaceInterval() {
+        return RetryIntervalls.formatInterval(checkFreeDiskSpaceInterval);
+    }
+
+    public final void setCheckFreeDiskSpaceInterval(String s) {
+        this.checkFreeDiskSpaceInterval = RetryIntervalls.parseInterval(s);
+    }
+
+    public final float getCheckFreeDiskSpaceThreshold() {
+        return checkFreeDiskSpaceThreshold;
+    }
+
+    public final void setCheckFreeDiskSpaceThreshold(float threshold) {
+        if ( threshold < 1.0f ) throw new IllegalArgumentException("CheckFreeDiskSpaceThreshold must NOT be smaller than 1!");
+        this.checkFreeDiskSpaceThreshold = threshold;
+    }
+
+    /**
 	 * Return the factor to calculate watermark for free disk space process.
 	 * <p>
 	 * The threshold for freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceLowerThreshold * numberOfFilesystems</code>
@@ -444,11 +468,14 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
 
-    public FileSystemDTO selectStorageFileSystem() throws FinderException, IOException {
-       if (!checkStorageFileSystem(storageFileSystem))
-           if (!switchStorageFileSystem(storageFileSystem))
-               return null;
-       return storageFileSystem;
+    public FileSystemDTO selectStorageFileSystem() throws FinderException,
+            IOException {
+        if (checkStorageFileSystem == 0L
+                || checkStorageFileSystem < System.currentTimeMillis())
+            if (!checkStorageFileSystem(storageFileSystem))
+                if (!switchStorageFileSystem(storageFileSystem))
+                    return null;
+        return storageFileSystem;
     }
 
     private synchronized boolean switchStorageFileSystem(FileSystemDTO fsDTO)
@@ -481,6 +508,8 @@ public class FileSystemMgtService extends TimerSupport {
         if (availability != Availability.ONLINE 
                 || status != FileSystemStatus.RW 
                 && status != FileSystemStatus.DEF_RW) {
+            log.info("" + fsDTO + " no longer available for storage" +
+                    " - try to switch to next configured storage directory");
             return false;
         }
         File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
@@ -503,11 +532,17 @@ public class FileSystemMgtService extends TimerSupport {
                  + " seems broken - try to switch to next configured storage directory");
             return false;
         }
-        if (diskSpaceAvailableAt(dir) < minFreeDiskSpace) {
+        final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
+        log.info("Free disk space on " + dir + ": " + FileUtils.formatSize(freeSpace));
+        if (freeSpace < minFreeDiskSpace) {
             log.info("High Water Mark reached on current storage directory "
                     + dir + " - try to switch to next configured storage directory");
             return false;
         }
+        checkStorageFileSystem = 
+            (freeSpace > minFreeDiskSpace * checkFreeDiskSpaceThreshold)
+                ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
+                : 0L;
         return true;
     }
     
@@ -784,15 +819,12 @@ public class FileSystemMgtService extends TimerSupport {
                 : 0L;
         for (int i = 0; i < fs.length; i++) {
             final File dir = FileUtils.toFile(fs[i].getDirectoryPath());
-            result += diskSpaceAvailableAt(dir);
+            if (dir.isDirectory())
+                result += FileSystemUtils.freeSpace(dir.getPath());
         }
     	return result;
     }
 
-    private long diskSpaceAvailableAt(final File dir) {
-        return new se.mog.io.File(dir).getDiskSpaceAvailable();
-    }
-    
     public long showStudySize( Integer pk ) throws RemoteException, FinderException {
         FileSystemMgt fsMgt = newFileSystemMgt();
     	return fsMgt.getStudySize(pk);
