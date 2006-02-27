@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.web.maverick.mpps.model;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -70,6 +72,7 @@ public class MPPSModel extends BasicFormPagingModel {
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
 
+	private static final SimpleDateFormat dFormatter = new SimpleDateFormat("yyyy/MM/dd");
 
 	private String[] mppsIDs = null;
 	//Holds MPPSEntries with sticky
@@ -125,6 +128,13 @@ public class MPPSModel extends BasicFormPagingModel {
 	public MPPSFilter getFilter() {
 		if ( mppsFilter == null ) {
 			mppsFilter = new MPPSFilter();
+			try {
+				String d = dFormatter.format(new Date());
+				mppsFilter.setStartDate( d );
+				mppsFilter.setEndDate(d+" 23:59");
+			} catch ( ParseException ignore ) {
+				
+			}
 		}
 		return mppsFilter;
 	}
