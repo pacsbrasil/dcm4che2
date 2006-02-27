@@ -41,6 +41,9 @@ package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
 
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.FileSystemStatus;
+
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
@@ -67,10 +70,10 @@ public class FileSystemDTO implements Serializable {
     
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
-        sb.append(", dir=").append(directoryPath);
+        sb.append(", ").append(directoryPath);
         sb.append(", aet=").append(retrieveAET);
-        sb.append(", availability=").append(availability);
-        sb.append(", status=").append(status);
+        sb.append(", ").append(Availability.toString(availability));
+        sb.append(", ").append(FileSystemStatus.toString(status));
         sb.append(", userinfo=").append(userInfo);
         if (next != null)
         	sb.append(", next=").append(next);
