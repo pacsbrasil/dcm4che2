@@ -105,18 +105,6 @@ Archiving of received objects between 8am and 4pm is delayed after 4pm]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFileStatus"
-      setMethod="setFileStatus">
-      <description>Status of copied file. Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED
-      </description>
-      <name>FileStatus</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="DEFAULT"/>
-      </descriptors>
-   </attribute>
-
-   <attribute access="read-write"
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
       <description><![CDATA[Number and interval of retries made for

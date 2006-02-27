@@ -44,8 +44,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
@@ -65,6 +64,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 
@@ -143,9 +143,12 @@ public class FTPArchiverService extends AbstractFileCopyService {
                     + order.getDestinationFileSystemPath());
         }
 		try {
-			init(ftp, fsPath = fsDTOs[0].getDirectoryPath());
+			fsPath = fsDTOs[0].getDirectoryPath();
+			URL ftpURL = new URL(fsPath);
+			String ftpdir = ftpURL.getPath().substring(1);
+			connect(ftp, ftpURL);
             final int tarSize = estimateTarSize(fileInfos);
-            if (minFreeDiskSpace > 0 && !checkAvailableDiskSpace(ftp, tarSize)) {
+            if (!checkAvailableDiskSpace(ftp, ftpURL, tarSize)) {
                 ftp.logout();
                 ftp.disconnect();
                 fsPath = fsDTOs[0].getNext();
@@ -160,8 +163,10 @@ public class FTPArchiverService extends AbstractFileCopyService {
                             "Unexpected Availability or Status of "
                             + nextFsDTO);
                 }
-                init(ftp, nextFsDTO.getDirectoryPath());
-                if (!checkAvailableDiskSpace(ftp, tarSize)) {
+    			ftpURL = new URL(fsPath);
+    			ftpdir = ftpURL.getPath().substring(1);
+                connect(ftp, ftpURL);
+                if (!checkAvailableDiskSpace(ftp, ftpURL, tarSize)) {
                     throw new ConfigurationException(
                             "Unexpected Short of available Disk Space on "
                             + nextFsDTO);                    
@@ -170,11 +175,15 @@ public class FTPArchiverService extends AbstractFileCopyService {
                 nextFsDTO.setStatus(FileSystemStatus.DEF_RW);
                 fsmgt.updateFileSystem2(fsDTOs[0], nextFsDTO);
             }
+			if (!ftp.changeWorkingDirectory(ftpdir)) {
+		    	throw new IOException("FTP Server " + ftpURL.getAuthority()
+		    			+ " failed to change WOrking Directory to " +  ftpdir);			
+			}
 			FileInfo file1Info = (FileInfo) fileInfos.get(0);
 			String[] file1Path = StringUtils.split(file1Info.getFilePath(), '/');
 			String tarName = mkTarName(file1Path);
 			tarPath = mkdir(ftp, file1Path) + tarName;
-            log.info("FTP-PUT " + fsPath + '/' + tarPath);
+            log.info("FTP: PUT " + fsPath + '/' + tarPath);
             TarOutputStream tar = new TarOutputStream(ftp.storeFileStream(tarName));
 			try {
                 writeMD5SUM(tar, fileInfos);
@@ -198,18 +207,45 @@ public class FTPArchiverService extends AbstractFileCopyService {
         }
 	}
 
-    private boolean checkAvailableDiskSpace(FTPClient ftp, int tarSize) {
-        // TODO Auto-generated method stub
-        return true;
+    private boolean checkAvailableDiskSpace(FTPClient ftp, URL ftpurl, 
+    		int tarSize) throws IOException {
+    	if (minFreeDiskSpace < 0) // check disabled
+    		return true;
+        String ftpdir = ftpurl.getPath().substring(1);
+		final String cmd = "EXEC df -k " + ftpdir;
+	    log.info("FTP Server " + ftpurl.getHost() + ": SITE " + cmd);
+		ftp.sendSiteCommand(cmd );
+		int reply = ftp.getReplyCode();
+	    if (!FTPReply.isPositiveCompletion(reply)) {
+	    	throw new IOException("FTP Server " + ftpurl.getHost()
+	    			+ ": refused SITE " + cmd  + " - " + ftp.getReplyString());
+	    }
+	    String[] lines = ftp.getReplyStrings();
+	    long free = FileSystemUtils.parseDF_k(ftpdir, 
+	    		trimLine(lines, 1),
+	    		trimLine(lines, 2),
+	    		trimLine(lines, 3));
+	    log.info("FTP Server: " + ftpurl.getHost() + ": "
+	    		+ FileUtils.formatSize(free) + " free on " + ftpdir);
+        return free - tarSize > minFreeDiskSpace;
     }
 
-    private void writeFile(TarOutputStream tar, FileInfo fileInfo) 
+	private String trimLine(String[] lines, int i) {
+		try {
+			final String line = lines[i];
+			return line.startsWith("200-") ? line.substring(4) : line;
+		} catch (IndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+
+	private void writeFile(TarOutputStream tar, FileInfo fileInfo) 
     throws IOException, FileNotFoundException {
         File file = FileUtils.toFile(
         		fileInfo.getFileSystemPath(),
         		fileInfo.getFilePath());
-        TarEntry entry = new TarEntry(file);
-        entry.setName(mkTarEntryName(fileInfo.getFilePath()));
+        TarEntry entry = new TarEntry(fileInfo.getFilePath());
+        entry.setSize(fileInfo.getFileSize());
         tar.putNextEntry(entry);
         FileInputStream fis = new FileInputStream(file);
         try {
@@ -269,10 +305,9 @@ public class FTPArchiverService extends AbstractFileCopyService {
 		return size;
 	}
 
-	private void init(FTPClient f, String ftpurl) throws IOException, URISyntaxException {
-        URI uri = new URI(ftpurl);
-        String host = uri.getHost();
-		int port = uri.getPort();
+	private void connect(FTPClient f, URL ftpURL) throws IOException {
+        String host = ftpURL.getHost();
+		int port = ftpURL.getPort();
 		if (port == -1)
 			port = FTPClient.DEFAULT_PORT;
 		f.connect(host, port);
@@ -281,7 +316,7 @@ public class FTPArchiverService extends AbstractFileCopyService {
 	    	throw new IOException("FTP Server " + host + ":" +  port
 	    			+ " refused connection: " + f.getReplyString());
 	    }
-		String user = uri.getUserInfo();
+		String user = ftpURL.getUserInfo();
         String pass = defaultPassword;
 		if (user == null)
 			user = defaultUser;
@@ -297,11 +332,6 @@ public class FTPArchiverService extends AbstractFileCopyService {
 		if (!f.login(user, pass)) {
 	    	throw new IOException("FTP Server " + host + ":" +  port
 	    			+ " refused login of user " +  user);			
-		}
-		String path = uri.getPath().substring(1);
-		if (!f.changeWorkingDirectory(path)) {
-	    	throw new IOException("FTP Server " + host + ":" +  port
-	    			+ " failed to change WOrking Directory to " +  path);			
 		}
 		if (passiveMode)
 			f.enterLocalPassiveMode();

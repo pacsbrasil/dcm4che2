@@ -847,25 +847,25 @@ public class FileSystemMgtService extends TimerSupport {
     }
 
     public void addFileSystem(String dirPath, String retrieveAET,
-    		int availability, int status, String userInfo)
+    		String availability, String status, String userInfo)
     throws RemoteException, CreateException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
         dto.setRetrieveAET(retrieveAET);
-        dto.setAvailability(availability);
-        dto.setStatus(status);
+        dto.setAvailability(Availability.toInt(availability));
+        dto.setStatus(FileSystemStatus.toInt(status));
         dto.setUserInfo(userInfo);
 		newFileSystemMgt().addFileSystem(dto);    	
     }
 
     public void updateFileSystem(String dirPath, String retrieveAET,
-            int availability, int status, String userInfo)
+            String availability, String status, String userInfo)
     throws RemoteException, FinderException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
         dto.setRetrieveAET(retrieveAET);
-        dto.setAvailability(availability);
-        dto.setStatus(status);
+        dto.setAvailability(Availability.toInt(availability));
+        dto.setStatus(FileSystemStatus.toInt(status));
         dto.setUserInfo(userInfo);
         newFileSystemMgt().updateFileSystem(dto);      
     }

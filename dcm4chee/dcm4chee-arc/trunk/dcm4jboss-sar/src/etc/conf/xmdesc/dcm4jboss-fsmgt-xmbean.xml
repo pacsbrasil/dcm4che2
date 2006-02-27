@@ -416,16 +416,16 @@ accessed studies.</description>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
+        <description>Availability (ONLINE | NEARLINE | OFFLINE | UNAVAILABLE)
         </description>
         <name>availability</name>
-        <type>int</type>
+        <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Status (RW+ = 0, RW = 1, RO = 2)
+        <description>Status (RW+ | RW | RO)
         </description>
         <name>status</name>
-        <type>int</type>
+        <type>java.lang.String</type>
       </parameter>
       <parameter>
         <description>Associated User Info</description>
@@ -448,16 +448,16 @@ accessed studies.</description>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Availability (ONLINE = 0, NEARLINE = 1, OFFLINE = 2, UNAVAILABLE = 3)
+        <description>Availability ONLINE | NEARLINE | OFFLINE | UNAVAILABLE)
         </description>
         <name>availability</name>
-        <type>int</type>
+        <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Status (RW+ = 0, RW = 1, RO = 2)
+        <description>Status (RW+ | RW | RO)
         </description>
         <name>status</name>
-        <type>int</type>
+        <type>java.lang.String</type>
       </parameter>
       <parameter>
         <description>Associated User Info</description>
