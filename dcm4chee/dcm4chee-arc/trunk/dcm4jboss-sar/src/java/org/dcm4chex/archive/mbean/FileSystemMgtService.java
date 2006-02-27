@@ -496,8 +496,7 @@ public class FileSystemMgtService extends TimerSupport {
         } while (!checkStorageFileSystem(fsDTO));
         storageFileSystem.setStatus(FileSystemStatus.RW);
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
-        FileSystemDTO[] a = { storageFileSystem, fsDTO };
-        fsmgt.updateFileSystems(a);
+        fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
         storageFileSystem = fsDTO;
         return true;
     }

@@ -26,25 +26,71 @@ The comma separated list of ftp URLs after the (optional) condition
 defines the destination FTP server and path. Each ftp URL can be suffixed by !<from>-<to> to defer FTP transfer to
 that destination outside a particular time interval.
       <br>Format:
-      <br>[calling|called[!]=<i>aeTitle</i>]<i>ftpURL</i>!<i>from</i>-<i>to</i> | NONE 
+      <br>[calling|called[!]=<i>aeTitle</i>]<i>ftpURLFilter</i>!<i>from</i>-<i>to</i> | NONE 
       <br>where
       <br><i>calling</i> = create a archiving condition for objects sent from this calling AE title
       <br><i>called</i> = create a archiving condition for objects are forwarded from the Called AE title in the Association request. Use != to mean NOT.
       <br><i>aeTitle</i> = the calling AE titles, or the called AE titles, separated by commas (optional)
-      <br><i>ftpURL</i> = the destination FTP server and path
+      <br><i>ftpURLFilter</i> = e.g.: ftp://%
       <br><i>!from</i>-<i>to</i> = start and end hour (0-23) when no Copying to this file system should be performed (optional)
       <br>NONE = do not use any Archiving rules.
 <br>Example:      
-<br>[calling=SCU1|SCU2,called!=SCP0]ftp://user:passwd@ftpX/lun123,ftp://user:passwd@ftpY/lun456!8-16
-<br>Forwards objects received from AE Title SCU1 or SCU2, when the Called
-AE Title in the Association Request is NOT SCP0, and to directory lun123 on
-ftp server ftpY. Archiving of received objects between 8am and 4pm to
-ftp://user:passwd@ftpY/lun456]]>
+<br>[calling=SCU1|SCU2,called!=SCP0]ftp://%!8-16
+<br>Archive objects received from AE Title SCU1 or SCU2, when the Called
+AE Title in the Association Request is NOT SCP0 to active ftp directory.
+Archiving of received objects between 8am and 4pm is delayed after 4pm]]>
       </description>
       <name>ArchivingRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultUser"
+      setMethod="setDefaultUser">
+      <description>Default User, used if not specified in File System configuration.
+      </description>
+      <name>DefaultUser</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="pacs"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultPassword"
+      setMethod="setDefaultPassword">
+      <description>Default Password, used if not specified in File System configuration.
+      </description>
+      <name>DefaultPassword</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="secret"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getMinFreeDiskSpace"
+      setMethod="setMinFreeDiskSpace">
+      <description><![CDATA[Minimum free disk space or NONE. If the free
+      available disk space on the current storage file system falls below this
+      value, the next configured file system becomes the current storage system.
+      1MB = 1000000 bytes, 1GB = 1000MB.]]>   
+      </description>
+      <name>MinimumFreeDiskSpace</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPassiveMode"
+      setMethod="setPassiveMode">
+      <description>Use Passive mode.
+      </description>
+      <name>PassiveMode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -58,13 +104,15 @@ ftp://user:passwd@ftpY/lun456]]>
          <value value="DEFAULT"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isVerifyCopy" setMethod="setVerifyCopy">
-      <description>Verify MD5 sum of copied file.
+   <attribute access="read-write"
+      getMethod="getFileStatus"
+      setMethod="setFileStatus">
+      <description>Status of copied file. Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED
       </description>
-      <name>VerifyCopy</name>
-      <type>boolean</type>
+      <name>FileStatus</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="DEFAULT"/>
       </descriptors>
    </attribute>
 

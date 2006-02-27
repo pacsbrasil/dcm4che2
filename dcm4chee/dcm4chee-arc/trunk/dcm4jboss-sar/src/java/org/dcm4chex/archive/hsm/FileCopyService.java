@@ -51,11 +51,8 @@ import java.util.List;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
-import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.notif.FileInfo;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -127,11 +124,6 @@ public class FileCopyService extends AbstractFileCopyService {
 		if (dir.mkdirs()) {
 			log.info("M-WRITE dir:" + dir);
 		}
-	}
-
-	private StorageHome getStorageHome() throws HomeFactoryException {
-		return (StorageHome) EJBHomeFactory.getFactory().lookup(
-				StorageHome.class, StorageHome.JNDI_NAME);
 	}
 
 }

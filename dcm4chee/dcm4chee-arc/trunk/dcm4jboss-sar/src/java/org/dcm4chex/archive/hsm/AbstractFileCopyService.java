@@ -57,8 +57,10 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -251,5 +253,10 @@ implements MessageListener, NotificationListener {
 
 	protected abstract void process(FileCopyOrder order) throws Exception;
 
+
+    static StorageHome getStorageHome() throws HomeFactoryException {
+        return (StorageHome) EJBHomeFactory.getFactory().lookup(
+                StorageHome.class, StorageHome.JNDI_NAME);
+    }
 
 }

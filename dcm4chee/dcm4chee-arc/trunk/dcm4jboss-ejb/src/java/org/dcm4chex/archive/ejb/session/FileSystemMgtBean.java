@@ -252,7 +252,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                     + " in " + dirPath);
         return toFileDTOs(c);
     }
-
+    
     /**
      * @throws FinderException
      * @ejb.interface-method
@@ -306,10 +306,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updateFileSystems(FileSystemDTO[] dtos) throws FinderException {
-        for (int i = 0; i < dtos.length; i++) {
-            updateFileSystem(dtos[i]);
-        }
+    public void updateFileSystem2(FileSystemDTO fs1, FileSystemDTO fs2)
+    throws FinderException {
+        updateFileSystem(fs1);
+        updateFileSystem(fs2);
     }
 
     /**
@@ -371,6 +371,16 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 retrieveAET, availability, status, alt));
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO[] findFileSystemsLikeDirectoryPath(String dirpath,
+            int availability, int status) throws FinderException {
+        return toDTO(fileSystemHome.findByLikeDirectoryPath(dirpath, 
+                availability, status));
+    }
+    
+        
     private FileSystemDTO[] toDTO(Collection c) {
         FileSystemDTO[] dto = new FileSystemDTO[c.size()];
         Iterator it = c.iterator();

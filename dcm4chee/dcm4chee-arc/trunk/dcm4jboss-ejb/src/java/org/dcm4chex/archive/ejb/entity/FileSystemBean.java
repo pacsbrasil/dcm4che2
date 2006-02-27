@@ -74,6 +74,12 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
  *             strategy="on-find" eager-load-group="*"
  *
+ * @ejb.finder signature="java.util.Collection findByLikeDirectoryPath(java.lang.String path, int availability, int status)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByLikeDirectoryPath(java.lang.String path, int availability, int status)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath LIKE ?1 AND a.availability = ?2 AND a.status = ?3"
+ *             strategy="on-find" eager-load-group="*"
+ *
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
