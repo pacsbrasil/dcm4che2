@@ -92,6 +92,13 @@ public class MD5Utils {
         }
     }
 
+    public static void toHexChars(byte[] bs, byte[] cbuf, int off) {
+        for (int i = 0, j = off; i < bs.length; i++, j++, j++) {
+            cbuf[j] = (byte) HEX_DIGIT[(bs[i] >>> 4) & 0xf];
+            cbuf[j + 1] = (byte) HEX_DIGIT[bs[i] & 0xf];
+        }
+    }
+
     public static void md5sum(File f, char[] cbuf,
             MessageDigest digest, byte[] bbuf) throws IOException {
         toHexChars(md5sum(f, digest, bbuf), cbuf);
