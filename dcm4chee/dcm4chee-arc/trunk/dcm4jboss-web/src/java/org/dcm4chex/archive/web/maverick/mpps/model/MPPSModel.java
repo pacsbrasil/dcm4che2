@@ -190,9 +190,10 @@ public class MPPSModel extends BasicFormPagingModel {
 			if ( ds != null ) {
 				mppsEntries.add( new MPPSEntry( ds ) );
 			} else {
-				total--;
+				countNull++;
 			}
 		}
+		setTotal(total - countNull); // the real total (without null entries!)
 	}
 
 	/**

@@ -204,14 +204,16 @@ public class MWLModel extends BasicFormPagingModel {
 		}
 		Dataset ds;
 		mwlEntries.clear();
+		int countNull = 0;
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
 			if ( ds != null ) {
 				mwlEntries.add( new MWLEntry( ds ) );
 			} else {
-				total--;
+				countNull++;
 			}
 		}
+		setTotal(total - countNull); // the real total (without null entries!)	
 	}
 
 	/**

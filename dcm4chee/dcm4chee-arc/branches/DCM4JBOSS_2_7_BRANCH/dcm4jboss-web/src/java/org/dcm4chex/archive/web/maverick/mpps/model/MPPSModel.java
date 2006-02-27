@@ -184,14 +184,16 @@ public class MPPSModel extends BasicFormPagingModel {
 		}
 		Dataset ds;
 		mppsEntries.retainAll(stickyList);
+		int countNull = 0;
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
 			if ( ds != null ) {
 				mppsEntries.add( new MPPSEntry( ds ) );
 			} else {
-				total--;
+				countNull++;
 			}
 		}
+		setTotal(total - countNull); // the real total (without null entries!)
 	}
 
 	/**
