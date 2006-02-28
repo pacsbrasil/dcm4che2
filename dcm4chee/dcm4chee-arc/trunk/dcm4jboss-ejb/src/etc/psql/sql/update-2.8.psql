@@ -9,61 +9,85 @@ CREATE INDEX fs_status ON filesystem(fs_status);
 
 ALTER TABLE patient RENAME pat_name TO pat_fname;
 ALTER TABLE patient ADD pat_gname TEXT;
+ALTER TABLE patient ADD pat_mname TEXT;
 ALTER TABLE patient ADD pat_ifname TEXT;
 ALTER TABLE patient ADD pat_igname TEXT;
+ALTER TABLE patient ADD pat_imname TEXT;
 ALTER TABLE patient ADD pat_pfname TEXT;
 ALTER TABLE patient ADD pat_pgname TEXT;
+ALTER TABLE patient ADD pat_pmname TEXT;
 
 DROP INDEX pat_name;
 CREATE INDEX pat_fname ON patient(UPPER(pat_fname));
 CREATE INDEX pat_gname ON patient(UPPER(pat_gname));
+CREATE INDEX pat_mname ON patient(UPPER(pat_mname));
 CREATE INDEX pat_ifname ON patient(pat_ifname);
 CREATE INDEX pat_igname ON patient(pat_igname);
+CREATE INDEX pat_imname ON patient(pat_imname);
 CREATE INDEX pat_pfname ON patient(pat_pfname);
 CREATE INDEX pat_pgname ON patient(pat_pgname);
+CREATE INDEX pat_pmname ON patient(pat_pmname);
 
 ALTER TABLE study RENAME ref_physician TO ref_phys_fname;
 ALTER TABLE study ADD ref_phys_gname TEXT;
+ALTER TABLE study ADD ref_phys_mname TEXT;
 ALTER TABLE study ADD ref_phys_ifname TEXT;
 ALTER TABLE study ADD ref_phys_igname TEXT;
+ALTER TABLE study ADD ref_phys_imname TEXT;
 ALTER TABLE study ADD ref_phys_pfname TEXT;
 ALTER TABLE study ADD ref_phys_pgname TEXT;
+ALTER TABLE study ADD ref_phys_pmname TEXT;
 
 DROP INDEX ref_physician;
 CREATE INDEX ref_phys_fname ON study(UPPER(ref_phys_fname));
 CREATE INDEX ref_phys_gname ON study(UPPER(ref_phys_gname));
+CREATE INDEX ref_phys_mname ON study(UPPER(ref_phys_mname));
 CREATE INDEX ref_phys_ifname ON study(ref_phys_ifname);
 CREATE INDEX ref_phys_igname ON study(ref_phys_igname);
+CREATE INDEX ref_phys_imname ON study(ref_phys_imname);
 CREATE INDEX ref_phys_pfname ON study(ref_phys_pfname);
 CREATE INDEX ref_phys_pgname ON study(ref_phys_pgname);
+CREATE INDEX ref_phys_pmname ON study(ref_phys_pmname);
 
 ALTER TABLE mwl_item RENAME perf_physician TO perf_phys_fname;
 ALTER TABLE mwl_item ADD perf_phys_gname TEXT;
+ALTER TABLE mwl_item ADD perf_phys_mname TEXT;
 ALTER TABLE mwl_item ADD perf_phys_ifname TEXT;
 ALTER TABLE mwl_item ADD perf_phys_igname TEXT;
+ALTER TABLE mwl_item ADD perf_phys_imname TEXT;
 ALTER TABLE mwl_item ADD perf_phys_pfname TEXT;
 ALTER TABLE mwl_item ADD perf_phys_pgname TEXT;
+ALTER TABLE mwl_item ADD perf_phys_pmname TEXT;
 
 DROP INDEX mwl_perf_physician;
 CREATE INDEX mwl_perf_phys_fname ON mwl_item(UPPER(perf_phys_fname));
 CREATE INDEX mwl_perf_phys_gname ON mwl_item(UPPER(perf_phys_gname));
+CREATE INDEX mwl_perf_phys_mname ON mwl_item(UPPER(perf_phys_mname));
 CREATE INDEX mwl_perf_phys_ifname ON mwl_item(perf_phys_ifname);
 CREATE INDEX mwl_perf_phys_igname ON mwl_item(perf_phys_igname);
+CREATE INDEX mwl_perf_phys_imname ON mwl_item(perf_phys_imname);
 CREATE INDEX mwl_perf_phys_pfname ON mwl_item(perf_phys_pfname);
 CREATE INDEX mwl_perf_phys_pgname ON mwl_item(perf_phys_pgname);
+CREATE INDEX mwl_perf_phys_pmname ON mwl_item(perf_phys_pmname);
 
 ALTER TABLE gpsps_perf RENAME human_perf_name TO hum_perf_fname;
 ALTER TABLE gpsps_perf ADD hum_perf_gname TEXT;
+ALTER TABLE gpsps_perf ADD hum_perf_mname TEXT;
 ALTER TABLE gpsps_perf ADD hum_perf_ifname TEXT;
 ALTER TABLE gpsps_perf ADD hum_perf_igname TEXT;
+ALTER TABLE gpsps_perf ADD hum_perf_imname TEXT;
 ALTER TABLE gpsps_perf ADD hum_perf_pfname TEXT;
 ALTER TABLE gpsps_perf ADD hum_perf_pgname TEXT;
+ALTER TABLE gpsps_perf ADD hum_perf_pmname TEXT;
 
 DROP INDEX gpsps_perf_name;
 CREATE INDEX gpsps_perf_fname ON gpsps_perf(UPPER(hum_perf_fname));
 CREATE INDEX gpsps_perf_gname ON gpsps_perf(UPPER(hum_perf_gname));
+CREATE INDEX gpsps_perf_mname ON gpsps_perf(UPPER(hum_perf_mname));
 CREATE INDEX gpsps_perf_ifname ON gpsps_perf(hum_perf_ifname);
 CREATE INDEX gpsps_perf_igname ON gpsps_perf(hum_perf_igname);
+CREATE INDEX gpsps_perf_imname ON gpsps_perf(hum_perf_imname);
 CREATE INDEX gpsps_perf_pfname ON gpsps_perf(hum_perf_pfname);
 CREATE INDEX gpsps_perf_pgname ON gpsps_perf(hum_perf_pgname);
+CREATE INDEX gpsps_perf_pmname ON gpsps_perf(hum_perf_pmname);
 

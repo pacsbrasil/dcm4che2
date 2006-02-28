@@ -145,10 +145,6 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pat_fname"
      */
     public abstract String getPatientFamilyName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setPatientFamilyName(String name);
 
     /**
@@ -156,21 +152,20 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pat_gname"
      */
     public abstract String getPatientGivenName();
+    public abstract void setPatientGivenName(String name);
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="pat_mname"
      */
-    public abstract void setPatientGivenName(String name);
-
+    public abstract String getPatientMiddleName();
+    public abstract void setPatientMiddleName(String name);
+        
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_ifname"
      */
     public abstract String getPatientIdeographicFamilyName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setPatientIdeographicFamilyName(String name);
 
     /**
@@ -178,21 +173,20 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pat_igname"
      */
     public abstract String getPatientIdeographicGivenName();
+    public abstract void setPatientIdeographicGivenName(String name);
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="pat_imname"
      */
-    public abstract void setPatientIdeographicGivenName(String name);
-
+    public abstract String getPatientIdeographicMiddleName();
+    public abstract void setPatientIdeographicMiddleName(String name);
+        
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_pfname"
      */
     public abstract String getPatientPhoneticFamilyName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setPatientPhoneticFamilyName(String name);
 
     /**
@@ -200,12 +194,15 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pat_pgname"
      */
     public abstract String getPatientPhoneticGivenName();
+    public abstract void setPatientPhoneticGivenName(String name);
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="pat_pmname"
      */
-    public abstract void setPatientPhoneticGivenName(String name);
-
+    public abstract String getPatientPhoneticMiddleName();
+    public abstract void setPatientPhoneticMiddleName(String name);
+        
     /**
      * Patient Birth Date
      *

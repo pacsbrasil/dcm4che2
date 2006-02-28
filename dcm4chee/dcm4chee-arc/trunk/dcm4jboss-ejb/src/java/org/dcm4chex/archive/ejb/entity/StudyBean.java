@@ -220,10 +220,6 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="ref_phys_fname"
      */
     public abstract String getReferringPhysicianFamilyName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setReferringPhysicianFamilyName(String name);
 
     /**
@@ -231,21 +227,20 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="ref_phys_gname"
      */
     public abstract String getReferringPhysicianGivenName();
+    public abstract void setReferringPhysicianGivenName(String name);
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="ref_phys_mname"
      */
-    public abstract void setReferringPhysicianGivenName(String name);
-
+    public abstract String getReferringPhysicianMiddleName();
+    public abstract void setReferringPhysicianMiddleName(String name);
+        
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ref_phys_ifname"
      */
     public abstract String getReferringPhysicianIdeographicFamilyName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setReferringPhysicianIdeographicFamilyName(String name);
 
     /**
@@ -253,21 +248,20 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="ref_phys_igname"
      */
     public abstract String getReferringPhysicianIdeographicGivenName();
+    public abstract void setReferringPhysicianIdeographicGivenName(String name);
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="ref_phys_iname"
      */
-    public abstract void setReferringPhysicianIdeographicGivenName(String name);
-
+    public abstract String getReferringPhysicianIdeographicMiddleName();
+    public abstract void setReferringPhysicianIdeographicMiddleName(String name);
+        
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ref_phys_pfname"
      */
     public abstract String getReferringPhysicianPhoneticFamilyName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setReferringPhysicianPhoneticFamilyName(String name);
 
     /**
@@ -275,13 +269,16 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="ref_phys_pgname"
      */
     public abstract String getReferringPhysicianPhoneticGivenName();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setReferringPhysicianPhoneticGivenName(String name);
 
     
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ref_phys_pmname"
+     */
+    public abstract String getReferringPhysicianPhoneticMiddleName();
+    public abstract void setReferringPhysicianPhoneticMiddleName(String name);
+        
     /**
      * Study Description
      *

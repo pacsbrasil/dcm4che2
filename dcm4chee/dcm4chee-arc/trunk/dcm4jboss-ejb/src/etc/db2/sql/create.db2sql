@@ -33,10 +33,14 @@ CREATE TABLE patient (
 	pat_fname_up    GENERATED ALWAYS AS (UPPER(pat_fname)),
 	pat_gname    	VARCHAR(254),
 	pat_gname_up    GENERATED ALWAYS AS (UPPER(pat_gname)),
+	pat_mname    	VARCHAR(254),
+	pat_mname_up    GENERATED ALWAYS AS (UPPER(pat_mname)),
 	pat_ifname    	VARCHAR(254),
 	pat_igname    	VARCHAR(254),
+	pat_imname    	VARCHAR(254),
 	pat_pfname    	VARCHAR(254),
 	pat_pgname    	VARCHAR(254),
+	pat_pmname    	VARCHAR(254),
 	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR(254),
 	created_time	TIMESTAMP,
@@ -48,10 +52,13 @@ CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_fname ON patient(pat_fname_up);
 CREATE INDEX pat_gname ON patient(pat_gname_up);
+CREATE INDEX pat_mname ON patient(pat_mname_up);
 CREATE INDEX pat_ifname ON patient(pat_ifname);
 CREATE INDEX pat_igname ON patient(pat_igname);
+CREATE INDEX pat_imname ON patient(pat_imname);
 CREATE INDEX pat_pfname ON patient(pat_pfname);
 CREATE INDEX pat_pgname ON patient(pat_pgname);
+CREATE INDEX pat_pmname ON patient(pat_pmname);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 CREATE INDEX pat_sex ON patient(pat_sex);
 
@@ -63,14 +70,18 @@ CREATE TABLE study (
 	study_id        VARCHAR(254),
 	study_datetime	TIMESTAMP,
 	accession_no	VARCHAR(254),
-	ref_phys_fname  VARCHAR(255),
+	ref_phys_fname  VARCHAR(254),
 	ref_phys_fname_up GENERATED ALWAYS AS (UPPER(ref_phys_fname)),
-	ref_phys_gname  VARCHAR(255),
+	ref_phys_gname  VARCHAR(254),
 	ref_phys_gname_up GENERATED ALWAYS AS (UPPER(ref_phys_gname)),
-	ref_phys_ifname VARCHAR(255),
-	ref_phys_igname VARCHAR(255),
-	ref_phys_pfname VARCHAR(255),
-	ref_phys_pgname VARCHAR(255),
+	ref_phys_mname  VARCHAR(254),
+	ref_phys_mname_up GENERATED ALWAYS AS (UPPER(ref_phys_mname)),
+	ref_phys_ifname VARCHAR(254),
+	ref_phys_igname VARCHAR(254),
+	ref_phys_imname VARCHAR(254),
+	ref_phys_pfname VARCHAR(254),
+	ref_phys_pgname VARCHAR(254),
+	ref_phys_pmname VARCHAR(254),
 	study_desc      VARCHAR(254),
 	study_desc_up   GENERATED ALWAYS AS (UPPER(study_desc)),
 	study_status_id VARCHAR(254),
@@ -95,10 +106,13 @@ CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_phys_fname ON study(ref_phys_fname_up);
 CREATE INDEX ref_phys_gname ON study(ref_phys_gname_up);
+CREATE INDEX ref_phys_mname ON study(ref_phys_mname_up);
 CREATE INDEX ref_phys_ifname ON study(ref_phys_ifname);
 CREATE INDEX ref_phys_igname ON study(ref_phys_igname);
+CREATE INDEX ref_phys_imname ON study(ref_phys_imname);
 CREATE INDEX ref_phys_pfname ON study(ref_phys_pfname);
 CREATE INDEX ref_phys_pgname ON study(ref_phys_pgname);
+CREATE INDEX ref_phys_pmname ON study(ref_phys_pmname);
 CREATE INDEX study_desc ON study(study_desc_up);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
@@ -303,15 +317,18 @@ CREATE TABLE mwl_item (
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     VARCHAR(254) NOT NULL,
 	modality	    VARCHAR(254) NOT NULL,
-	perf_physician  VARCHAR(254),
-	perf_physician_up GENERATED ALWAYS AS (UPPER(perf_physician)),
 	perf_phys_fname VARCHAR(254),
 	perf_phys_fname_up GENERATED ALWAYS AS (UPPER(perf_phys_fname)),
 	perf_phys_gname VARCHAR(254),
+	perf_phys_gname_up GENERATED ALWAYS AS (UPPER(perf_phys_gname)),
+	perf_phys_mname VARCHAR(254),
+	perf_phys_mname_up GENERATED ALWAYS AS (UPPER(perf_phys_mname)),
 	perf_phys_ifname  VARCHAR(254),
 	perf_phys_igname  VARCHAR(254),
+	perf_phys_imname  VARCHAR(254),
 	perf_phys_pfname  VARCHAR(254),
 	perf_phys_pgname  VARCHAR(254),
+	perf_phys_pmname  VARCHAR(254),
 	req_proc_id    	VARCHAR(254) NOT NULL,
 	accession_no	VARCHAR(254),
 	study_iuid      VARCHAR(254) NOT NULL,
@@ -328,10 +345,13 @@ CREATE INDEX mwl_station_aet ON mwl_item(station_aet);
 CREATE INDEX mwl_modality ON mwl_item(modality);
 CREATE INDEX mwl_perf_phys_fname ON mwl_item(perf_phys_fname_up);
 CREATE INDEX mwl_perf_phys_gname ON mwl_item(perf_phys_gname_up);
+CREATE INDEX mwl_perf_phys_mname ON mwl_item(perf_phys_mname_up);
 CREATE INDEX mwl_perf_phys_ifname ON mwl_item(perf_phys_ifname);
 CREATE INDEX mwl_perf_phys_igname ON mwl_item(perf_phys_igname);
+CREATE INDEX mwl_perf_phys_imname ON mwl_item(perf_phys_imname);
 CREATE INDEX mwl_perf_phys_pfname ON mwl_item(perf_phys_pfname);
 CREATE INDEX mwl_perf_phys_pgname ON mwl_item(perf_phys_pgname);
+CREATE INDEX mwl_perf_phys_pmname ON mwl_item(perf_phys_pmname);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
@@ -408,10 +428,14 @@ CREATE TABLE gpsps_perf (
 	hum_perf_fname_up GENERATED ALWAYS AS (UPPER(hum_perf_fname)),	
 	hum_perf_gname     VARCHAR(254),
 	hum_perf_gname_up GENERATED ALWAYS AS (UPPER(hum_perf_gname)),	
+	hum_perf_mname     VARCHAR(254),
+	hum_perf_mname_up GENERATED ALWAYS AS (UPPER(hum_perf_mname)),	
 	hum_perf_ifname    VARCHAR(254),
 	hum_perf_igname    VARCHAR(254),
+	hum_perf_imname    VARCHAR(254),
 	hum_perf_pfname    VARCHAR(254),
 	hum_perf_pgname    VARCHAR(254),
+	hum_perf_pmname    VARCHAR(254),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
@@ -419,10 +443,13 @@ CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
 CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
 CREATE INDEX gpsps_perf_fname ON gpsps_perf(hum_perf_fname_up);
 CREATE INDEX gpsps_perf_gname ON gpsps_perf(hum_perf_gname_up);
+CREATE INDEX gpsps_perf_mname ON gpsps_perf(hum_perf_mname_up);
 CREATE INDEX gpsps_perf_ifname ON gpsps_perf(hum_perf_ifname);
 CREATE INDEX gpsps_perf_igname ON gpsps_perf(hum_perf_igname);
+CREATE INDEX gpsps_perf_imname ON gpsps_perf(hum_perf_imname);
 CREATE INDEX gpsps_perf_pfname ON gpsps_perf(hum_perf_pfname);
 CREATE INDEX gpsps_perf_pgname ON gpsps_perf(hum_perf_pgname);
+CREATE INDEX gpsps_perf_pmname ON gpsps_perf(hum_perf_pmname);
 
 CREATE SEQUENCE gpsps_req_pk_seq;
 CREATE TABLE gpsps_req (

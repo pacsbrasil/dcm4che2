@@ -167,6 +167,13 @@ public abstract class GPSPSPerformerBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_mname"
+     */
+    public abstract String getHumanPerformerMiddleName();
+    public abstract void setHumanPerformerMiddleName(String name);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="hum_perf_ifname"
      */
     public abstract String getHumanPerformerIdeographicFamilyName();
@@ -178,6 +185,13 @@ public abstract class GPSPSPerformerBean implements EntityBean {
      */
     public abstract String getHumanPerformerIdeographicGivenName();
     public abstract void setHumanPerformerIdeographicGivenName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_imname"
+     */
+    public abstract String getHumanPerformerIdeographicMiddleName();
+    public abstract void setHumanPerformerIdeographicMiddleName(String name);
 
     /**
      * @ejb.interface-method
@@ -193,6 +207,13 @@ public abstract class GPSPSPerformerBean implements EntityBean {
     public abstract String getHumanPerformerPhoneticGivenName();
     public abstract void setHumanPerformerPhoneticGivenName(String name);
     
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_pmname"
+     */
+    public abstract String getHumanPerformerPhoneticMiddleName();
+    public abstract void setHumanPerformerPhoneticMiddleName(String name);
+
     /**
      * @ejb.relation name="human-performer-code"
      *               role-name="human-performer-with-code"

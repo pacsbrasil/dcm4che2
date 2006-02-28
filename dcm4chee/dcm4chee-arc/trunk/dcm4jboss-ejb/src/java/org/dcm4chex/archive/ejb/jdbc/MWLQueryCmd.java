@@ -116,6 +116,11 @@ public class MWLQueryCmd extends BaseReadCmd {
                         SqlBuilder.TYPE2,
                         pn.get(PersonName.GIVEN),
                         true);
+                sqlBuilder.addWildCardMatch(null,
+                        "MWLItem.performingPhysicianMiddleName",
+                        SqlBuilder.TYPE2,
+                        pn.get(PersonName.MIDDLE),
+                        true);
                 PersonName ipn = pn.getIdeographic();
                 if (ipn != null) {
                     sqlBuilder.addWildCardMatch(null,
@@ -127,6 +132,11 @@ public class MWLQueryCmd extends BaseReadCmd {
                             "MWLItem.performingPhysicianIdeographicGivenName",
                             SqlBuilder.TYPE2,
                             ipn.get(PersonName.GIVEN),
+                            false);
+                    sqlBuilder.addWildCardMatch(null,
+                            "MWLItem.performingPhysicianIdeographicMiddleName",
+                            SqlBuilder.TYPE2,
+                            ipn.get(PersonName.MIDDLE),
                             false);
                 }
                 PersonName ppn = pn.getPhonetic();
@@ -140,6 +150,11 @@ public class MWLQueryCmd extends BaseReadCmd {
                             "MWLItem.performingPhysicianPhoneticGivenName",
                             SqlBuilder.TYPE2,
                             ppn.get(PersonName.GIVEN),
+                            false);
+                    sqlBuilder.addWildCardMatch(null,
+                            "MWLItem.performingPhysicianPhoneticMiddleName",
+                            SqlBuilder.TYPE2,
+                            ppn.get(PersonName.MIDDLE),
                             false);
                 }
             }        
@@ -177,6 +192,11 @@ public class MWLQueryCmd extends BaseReadCmd {
                     SqlBuilder.TYPE2,
                     pn.get(PersonName.GIVEN),
                     true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientMiddleName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.MIDDLE),
+                    true);
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 sqlBuilder.addWildCardMatch(null,
@@ -188,6 +208,11 @@ public class MWLQueryCmd extends BaseReadCmd {
                         "Patient.patientIdeographicGivenName",
                         SqlBuilder.TYPE2,
                         ipn.get(PersonName.GIVEN),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicMiddleName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.MIDDLE),
                         false);
             }
             PersonName ppn = pn.getPhonetic();
@@ -201,6 +226,11 @@ public class MWLQueryCmd extends BaseReadCmd {
                         "Patient.patientPhoneticGivenName",
                         SqlBuilder.TYPE2,
                         ppn.get(PersonName.GIVEN),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticMiddleName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.MIDDLE),
                         false);
             }
         }        

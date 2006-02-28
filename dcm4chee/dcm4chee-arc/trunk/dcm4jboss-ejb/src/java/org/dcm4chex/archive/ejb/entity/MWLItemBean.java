@@ -194,6 +194,13 @@ public abstract class MWLItemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="perf_phys_mname"
+     */
+    public abstract String getPerformingPhysicianMiddleName();
+    public abstract void setPerformingPhysicianMiddleName(String name);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="perf_phys_ifname"
      */
     public abstract String getPerformingPhysicianIdeographicFamilyName();
@@ -208,6 +215,13 @@ public abstract class MWLItemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="perf_phys_imname"
+     */
+    public abstract String getPerformingPhysicianIdeographicMiddleName();
+    public abstract void setPerformingPhysicianIdeographicMiddleName(String name);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="perf_phys_pfname"
      */
     public abstract String getPerformingPhysicianPhoneticFamilyName();
@@ -219,6 +233,13 @@ public abstract class MWLItemBean implements EntityBean {
      */
     public abstract String getPerformingPhysicianPhoneticGivenName();
     public abstract void setPerformingPhysicianPhoneticGivenName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="perf_phys_pmname"
+     */
+    public abstract String getPerformingPhysicianPhoneticMiddleName();
+    public abstract void setPerformingPhysicianPhoneticMiddleName(String name);
 
     /**
      * Requested Procedure ID

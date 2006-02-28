@@ -137,6 +137,11 @@ public class GPWLQueryCmd extends BaseReadCmd {
                         SqlBuilder.TYPE2,
                         pn.get(PersonName.GIVEN),
                         true);
+                sqlBuilder.addWildCardMatch(null,
+                        "GPSPSPerformer.humanPerformerMiddleName",
+                        SqlBuilder.TYPE2,
+                        pn.get(PersonName.MIDDLE),
+                        true);
                 PersonName ipn = pn.getIdeographic();
                 if (ipn != null) {
                     sqlBuilder.addWildCardMatch(null,
@@ -148,6 +153,11 @@ public class GPWLQueryCmd extends BaseReadCmd {
                             "GPSPSPerformer.humanPerformerIdeographicGivenName",
                             SqlBuilder.TYPE2,
                             ipn.get(PersonName.GIVEN),
+                            false);
+                    sqlBuilder.addWildCardMatch(null,
+                            "GPSPSPerformer.humanPerformerIdeographicMiddle",
+                            SqlBuilder.TYPE2,
+                            ipn.get(PersonName.MIDDLE),
                             false);
                 }
                 PersonName ppn = pn.getPhonetic();
@@ -161,6 +171,11 @@ public class GPWLQueryCmd extends BaseReadCmd {
                             "GPSPSPerformer.humanPerformerPhoneticGivenName",
                             SqlBuilder.TYPE2,
                             ppn.get(PersonName.GIVEN),
+                            false);
+                    sqlBuilder.addWildCardMatch(null,
+                            "GPSPSPerformer.humanPerformerPhoneticMiddle",
+                            SqlBuilder.TYPE2,
+                            ppn.get(PersonName.MIDDLE),
                             false);
                 }
             }        
@@ -192,6 +207,11 @@ public class GPWLQueryCmd extends BaseReadCmd {
                     SqlBuilder.TYPE2,
                     pn.get(PersonName.GIVEN),
                     true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient.patientMiddleName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.MIDDLE),
+                    true);
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 sqlBuilder.addWildCardMatch(null,
@@ -203,6 +223,11 @@ public class GPWLQueryCmd extends BaseReadCmd {
                         "Patient.patientIdeographicGivenName",
                         SqlBuilder.TYPE2,
                         ipn.get(PersonName.GIVEN),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientIdeographicMiddleName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.MIDDLE),
                         false);
             }
             PersonName ppn = pn.getPhonetic();
@@ -216,6 +241,11 @@ public class GPWLQueryCmd extends BaseReadCmd {
                         "Patient.patientPhoneticGivenName",
                         SqlBuilder.TYPE2,
                         ppn.get(PersonName.GIVEN),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Patient.patientPhoneticMiddleName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.MIDDLE),
                         false);
             }
         }        

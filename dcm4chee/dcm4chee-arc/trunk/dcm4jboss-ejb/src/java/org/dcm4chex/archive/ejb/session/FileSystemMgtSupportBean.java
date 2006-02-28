@@ -78,7 +78,10 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 
 public abstract class FileSystemMgtSupportBean implements SessionBean {
 
-    private static Logger log = Logger.getLogger(FileSystemMgtSupportBean.class);
+	private static final int[] IAN_PAT_TAGS = {
+		Tags.SpecificCharacterSet, Tags.PatientName, Tags.PatientID
+	};
+	private static Logger log = Logger.getLogger(FileSystemMgtSupportBean.class);
     
     /**    
      * @ejb.interface-method
@@ -99,11 +102,9 @@ public abstract class FileSystemMgtSupportBean implements SessionBean {
         if ( release || deleteUncommited && study.getNumberOfCommitedInstances() == 0 ) {
         	ian = DcmObjectFactory.getInstance().newDataset();
         	ians.put( study.getStudyIuid(), ian);
-			ian.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
 	        final PatientLocal patient = study.getPatient();
-            ian.putLO(Tags.PatientID, patient.getPatientId());
-	        ian.putPN(Tags.PatientName, patient.getPatientFamilyName() + '^'
-                    + patient.getPatientGivenName());
+	        Dataset patAttrs = patient.getAttributes(false);
+	        ian.putAll(patAttrs.subSet(IAN_PAT_TAGS));
 	        ian.putSH(Tags.StudyID,study.getStudyId());
 	        ian.putUI(Tags.StudyInstanceUID,study.getStudyIuid());
 	        DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);//We dont need this information (if available) at this point.
