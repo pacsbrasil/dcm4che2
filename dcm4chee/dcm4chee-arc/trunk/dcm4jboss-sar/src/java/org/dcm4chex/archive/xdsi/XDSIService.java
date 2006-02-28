@@ -254,7 +254,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	 * @return
 	 */
 	public String getAuthorPerson( String user ) {
-		String person = usr2author.get(user).toString();
+		String person = (String)usr2author.get(user);
 		if ( person == null ) {
 			person = metadataProps.getProperty(AUTHOR_PERSON);
 		}
