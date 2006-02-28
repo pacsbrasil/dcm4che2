@@ -252,7 +252,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="ref_phys_iname"
+     * @ejb.persistence column-name="ref_phys_imname"
      */
     public abstract String getReferringPhysicianIdeographicMiddleName();
     public abstract void setReferringPhysicianIdeographicMiddleName(String name);
