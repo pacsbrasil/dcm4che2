@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.util.FileSystemUtils;
@@ -68,6 +69,17 @@ public class WADOCacheImpl implements WADOCache {
 	public static final String DEFAULT_RID_SUBDIR = "rid";
 	public static final String DEFAULT_WADO_EXT_SUBDIR = "wfind";
 
+	public static final String NEWLINE = System.getProperty("line.separator","\n");
+	
+	private static final int[] PRIMES = new int[] {
+			3, 5, 7, 13, 23, 37, 47, 59, 71, 83, 97, 107, 127, 137, 149, 163,
+			173, 191, 211, 223, 233, 251, 263, 277, 293, 307, 317, 331,
+			347, 359, 373, 383, 397, 409, 419, 431, 443, 457, 467, 479,
+			491, 503, 521, 541, 557, 569, 587, 599, 613, 631, 641, 653,
+			673, 683, 701, 719, 733, 743, 757, 769, 787, 797, 809, 821,
+			839, 853, 863, 877, 887, 907, 919, 929, 941, 953, 967, 977,
+			991, 1009, 1019, 1031, 1049, 1061, 1087, 1097, 1109, 1123 };
+	
 	private static WADOCacheImpl singletonWADO = null;
 	private static WADOCacheImpl singletonRID = null;
 	private static WADOCacheImpl singletonWADOExt = null;
@@ -91,6 +103,8 @@ public class WADOCacheImpl implements WADOCache {
 
 	/** holds the max cache size. */
 	private long minFreeSpace = 200000000;
+	
+	private int[] directoryTree; 
 	
 	/** Flag to indicate if client side redirection should be used if DICOM object is not locally available. */
 	private boolean clientRedirect = false;
@@ -606,11 +620,15 @@ public class WADOCacheImpl implements WADOCache {
 		String ext = getFileExtension( contentType );
 		if ( ext.length() < 1 )
 			file = new File( file, contentType.replace('/', '_') );
-		if ( studyUID != null ) 
-			file = new File( file, _getSubDirName( studyUID ) );
-		if ( seriesUID != null )
-			file = new File( file, _getSubDirName( seriesUID ) );
-		file = new File( file, _getSubDirName( instanceUID )+ext ); 
+		if ( directoryTree == null ) {
+			if ( studyUID != null ) 
+				file = new File( file, _getSubDirName( studyUID ) );
+			if ( seriesUID != null )
+				file = new File( file, _getSubDirName( seriesUID ) );
+		} else {
+			file = new File( file, _getSubDirName( instanceUID ) );
+		}
+		file = new File( file, instanceUID + ext ); 
 		return file;
 	}
 
@@ -633,18 +651,86 @@ public class WADOCacheImpl implements WADOCache {
 
 	/**
 	 * Returns the directory name for given UID.
-	 * <p>
-	 * This current implementation use the UID as subdirectory name.
+	 * <p/>
+	 * This implementation use directoryTree and the uid hashvalue to build a subdirectory(ies).
+	 * <p/>
+	 * If directoryTree is null, following file path is used: &lt;StudyIUID&gt;/&lt;SeriesIUID&gt;/&lt;instanceIUID&gt.</dd>
+	 * The size of directoryTree specify the depth of the tree.<br/>
+	 * The values in directoryTree specify the max. number of subdirectories in the corresponding directory.<br/> 
+	 * Therefore prime values should be used to achieve an evenly distributed cache.
 	 * 
 	 * @param uid	A unique DICOM identifier
 	 * 
 	 * @return directory name.
 	 */
 	private String _getSubDirName(String uid) {
-		// TODO calculate a shorter name (hash?)
-		return uid;
+		if ( directoryTree == null ) return uid;
+		int hash = uid.hashCode();
+		StringBuffer sb = new StringBuffer();
+		int modulo;
+		for ( int i = 0 ; i < directoryTree.length ; i++ ) {
+			if ( directoryTree[i] == 0 ) {
+				sb.append(Integer.toHexString(hash)).append(File.separatorChar);
+			} else {
+				modulo = hash % directoryTree[i];
+				if ( modulo < 0 ) {
+					modulo *= -1;
+				}
+				sb.append(modulo).append(File.separatorChar);
+			}
+		}
+		return sb.toString();
 	}
 
+	
+	/**
+	 * @return Returns the directoryTree.
+	 */
+	public String getDirectoryTree() {
+		if ( directoryTree == null ) return "NONE";
+		StringBuffer sb = new StringBuffer();
+		sb.append(directoryTree[0]);
+		for ( int i = 1 ; i < directoryTree.length ; i++ ) {
+			sb.append('/').append(directoryTree[i]);
+		}
+		return sb.toString();
+	}
+	/**
+	 * @param directoryTree The directoryTree to set.
+	 */
+	public void setDirectoryTree(String primes) {
+		if ( "NONE".equals(primes) ) {
+			this.directoryTree = null;
+		} else {
+			StringTokenizer st = new StringTokenizer(primes,"/");
+			directoryTree = new int[ st.countTokens() ];
+			for ( int i = 0 ; st.hasMoreTokens() ; i++ ) {
+				directoryTree[i] = Integer.parseInt(st.nextToken());
+			}
+		}
+	}
+	public void computeDirectoryStructure(long cacheSize, long fileSize, int maxSubDirPerDir ) {
+		if ( maxSubDirPerDir < 0 ) {
+			directoryTree = null;
+			return;
+		}
+		long nrOfFiles = cacheSize / fileSize;
+		int dirDepth = 0;
+		for ( long l = maxSubDirPerDir ; l < nrOfFiles ; l *= maxSubDirPerDir,dirDepth++ );
+		this.directoryTree = new int[dirDepth];
+		int idx = 0, subIdx = -1, fileIdx = -1;
+        for ( ; idx < PRIMES.length; ++idx) {
+            if (maxSubDirPerDir < PRIMES[idx]) {
+                break;
+            }
+        }
+        if ( idx != 0 ) idx--;
+		for ( int i=0,len=dirDepth; i < len ; i++) {
+			directoryTree[i] = PRIMES[idx--];
+		}
+	}
+
+	
 	/**
 	 * Writes an image to the given file.
 	 * 
