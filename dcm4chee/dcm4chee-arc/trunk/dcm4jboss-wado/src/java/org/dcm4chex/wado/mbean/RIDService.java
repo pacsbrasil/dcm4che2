@@ -71,6 +71,15 @@ public class RIDService extends AbstractCacheService  {
 	public RIDService() {
 		cache = WADOCacheImpl.getRIDCache();
 	}
+
+	public String getDirectoryTree() {
+		return ((WADOCacheImpl) cache).getDirectoryTree();
+	}
+
+	public void setDirectoryTree(String primes) {
+		((WADOCacheImpl) cache).setDirectoryTree(primes);
+	}
+
 	public float getWaveformCorrection() {
 		return waveformCorrection;
 	}
