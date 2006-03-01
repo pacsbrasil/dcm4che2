@@ -52,7 +52,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -108,6 +107,8 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
+    private static final String STORE_XSL = "cstorerq.xsl";
+    private static final String STORE_XML = "-cstorerq.xml";
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
 
 	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
@@ -139,9 +140,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private CompressionRules compressionRules = new CompressionRules("");
 
-    private LinkedHashSet coerceWarnCallingAETs = new LinkedHashSet();
-	private LinkedHashSet ignorePatientIDCallingAETs = new LinkedHashSet();
-	private LinkedHashSet logCallingAETs = new LinkedHashSet();
+    private String[] coerceWarnCallingAETs = {};
+	private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
     
@@ -232,48 +232,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		this.issuerOfPatientIDRules = new IssuerOfPatientIDRules(rules);
 	}
 
-	private String set2str(LinkedHashSet set, char delim) {
-		if (set.isEmpty())
-            return "NONE";
-        StringBuffer sb = new StringBuffer();
-        Iterator it = set.iterator();
-        sb.append(it.next());
-        while (it.hasNext())
-            sb.append(delim).append(it.next());
-        return sb.toString();
-	}
-
-	private void str2set(String aets, LinkedHashSet set, char delim) {
-		set.clear();
-        if ("NONE".equals(aets))
-            return;
-        set.addAll(Arrays.asList(StringUtils
-                .split(aets, delim)));
-	}
-
     public final String getIgnorePatientIDCallingAETs() {
-        return set2str(ignorePatientIDCallingAETs, '\\');
+        return StringUtils.toString(ignorePatientIDCallingAETs, '\\');
 	}
 
 	public final void setIgnorePatientIDCallingAETs(String aets) {
-        str2set(aets, ignorePatientIDCallingAETs, '\\');
+        ignorePatientIDCallingAETs = StringUtils.split(aets, '\\');
 	}
 
 	public final String getCoerceWarnCallingAETs() {
-        return set2str(coerceWarnCallingAETs, '\\');
+        return StringUtils.toString(coerceWarnCallingAETs, '\\');
     }
 
     public final void setCoerceWarnCallingAETs(String aets) {
-        str2set(aets, coerceWarnCallingAETs, '\\');
+        coerceWarnCallingAETs = StringUtils.split(aets, '\\');
     }
-
-    public final String getLogCallingAETs() {
-		return set2str(logCallingAETs, '\\');
-	}
-
-	public final void setLogCallingAETs(String aets) {
-		str2set(aets, logCallingAETs, '\\');
-	}
 
 	public final boolean isStudyDateInFilePath() {
 		return studyDateInFilePath;
@@ -406,13 +379,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             parser.parseDataset(decParam, Tags.PixelData);
 			log.debug("Dataset:\n");
 			log.debug(ds);
-			Date now = new Date();
-			if (logCallingAETs.contains(callingAET))
-				try {
-					XSLTUtils.writeTo(ds, service.getLogFile(now, callingAET));
-				} catch (Exception e) {
-					log.warn("Logging of attributes failed:", e);
-				}
+            service.logDIMSE(assoc, STORE_XML, ds);
             checkDataset(assoc, rqCmd, ds);
             if ( isCheckIncorrectWorklistEntry() && checkIncorrectWorklistEntry(ds) ) {
                 log.info("Received Instance[uid=" + iuid
@@ -449,11 +416,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
             Dataset coerced = null;
     		try {
-    			Templates stylesheet = service.getCoercionTemplatesFor(callingAET);
+    			Templates stylesheet = service.getCoercionTemplatesFor(callingAET, STORE_XSL);
     			if (stylesheet != null)
     			{
     				coerced = XSLTUtils.coerce(ds, stylesheet,
-    						toXsltParam(assoc, now));
+    						toXsltParam(assoc, new Date()));
     			}
     		} catch (Exception e) {
     			log.warn("Coercion of attributes failed:", e);
@@ -466,7 +433,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             else
             	coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
             if (coerced.isEmpty()
-                    || !coerceWarnCallingAETs.contains(assoc.getCallingAET())) {
+                    || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
             } else {
                 int[] coercedTags = new int[coerced.size()];
@@ -766,7 +733,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Acceptance of objects without Patient Name is disabled");			
 		}
-		if (ignorePatientIDCallingAETs.contains(assoc.getCallingAET())) {
+		if (contains(ignorePatientIDCallingAETs, assoc.getCallingAET())) {
 			log.info("Ignore Patient ID " + pid 
 					+ " for Patient Name " + pname
 					+ " in object received from " + assoc.getCallingAET());
@@ -795,6 +762,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		}		
     }
 
+    private boolean contains(Object[] a, Object e) {
+        for (int i = 0; i < a.length; i++) {
+            if (a[i].equals(e)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
     private String generatePatientID(Dataset ds) {
     	if (generatePatientID.length == 1)
     		return generatePatientID[0];

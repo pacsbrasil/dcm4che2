@@ -62,6 +62,10 @@ import org.jboss.logging.Logger;
  * @since 31.08.2003
  */
 public class FindScp extends DcmServiceBase {
+    private static final String QUERY_XSL = "cfindrq.xsl";
+    private static final String RESULT_XSL = "cfindrsp.xsl";
+    private static final String QUERY_XML = "-cfindrq.xml";
+    private static final String RESULT_XML = "-cfindrsp.xml";
 
     private final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
 
@@ -83,6 +87,9 @@ public class FindScp extends DcmServiceBase {
             Dataset rqData = rq.getDataset();
 			log.debug("Identifier:\n");
 			log.debug(rqData);
+            Association a = assoc.getAssociation();
+            service.logDIMSE(a , QUERY_XML, rqData);
+            service.coerceDIMSE(a, QUERY_XSL, rqData);
             logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
             return newMultiCFindRsp(rqData);
         } catch (Exception e) {
@@ -141,6 +148,9 @@ public class FindScp extends DcmServiceBase {
                 Dataset data = getDataset(queryCmd);				
 				log.debug("Identifier:\n");
 				log.debug(data);
+                Association a = assoc.getAssociation();
+                service.logDIMSE(a , RESULT_XML, data);
+                service.coerceDIMSE(a, RESULT_XSL, data);
                 return data;
             } catch (DcmServiceException e) {
             	throw e;

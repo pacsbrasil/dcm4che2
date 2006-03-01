@@ -39,19 +39,12 @@
 
 package org.dcm4chex.archive.dcm.mwlscp;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Hashtable;
 
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -59,7 +52,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.util.DTFormat;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
@@ -67,9 +59,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -93,20 +83,11 @@ public class MWLFindScpService extends AbstractScpService
 		mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
 		mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
 	}
-	private static final String QUERY_XSL = "mwl-cfindrq.xsl";
-	private static final String RESULT_XSL = "mwl-cfindrsp.xsl";
-	private static final String QUERY_XML = "-mwl-cfindrq.xml";
-	private static final String RESULT_XML = "-mwl-cfindrsp.xml";
-    
 	private ObjectName mppsScpServiceName;
 	
     private int onMPPSReceived = NO_OP;
-    private File coerceConfigDir;
-    private File logDir;
     
-
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
-    private Hashtable templates = new Hashtable();
 
 	public final String getOnMPPSReceived() {
 		return ON_MPPS_RECEIVED[onMPPSReceived];
@@ -136,67 +117,7 @@ public class MWLFindScpService extends AbstractScpService
         this.mppsScpServiceName = mppsScpServiceName;
     }
 
-	public final String getCoerceConfigDir() {
-		return coerceConfigDir.getPath();
-	}
-
-	public final void setCoerceConfigDir(String path) {
-		this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
-	}
-
-    public final String getLogCallingAETs() {
-		return mwlFindScp.getLogCallingAETs();
-	}
-
-	public final void setLogCallingAETs(String aets) {
-		mwlFindScp.setLogCallingAETs(aets);
-	}
-	
-	Templates getQueryCoercionTemplatesFor(String aet)
-	throws TransformerConfigurationException {
-		return getCoercionTemplatesFor(aet, QUERY_XSL);
-	}
-	
-	Templates getResultCoercionTemplatesFor(String aet)
-	throws TransformerConfigurationException {
-		return getCoercionTemplatesFor(aet, RESULT_XSL);
-	}
-	
-	private Templates getCoercionTemplatesFor(String aet, String fname)
-	throws TransformerConfigurationException {
-		File f = FileUtils.resolve(new File(new File(coerceConfigDir, aet), fname));
-		if (!f.exists())
-			return null;
-		Templates tpl = (Templates) templates.get(f);
-		if (tpl == null) {
-			tpl = TransformerFactory.newInstance().newTemplates(
-					new StreamSource(f));
-			templates.put(f, tpl);
-		}
-		return tpl;
-	}
-
-
-	File getQueryLogFile(Date now, String callingAET) {
-		return getLogFile(now, callingAET, QUERY_XML);
-	}
-	
-	File getResultLogFile(Date now, String callingAET) {
-		return getLogFile(now, callingAET, RESULT_XML);
-	}
-	
-	private File getLogFile(Date now, String callingAET, String suffix) {
-		File dir = new File(logDir, callingAET);
-		dir.mkdir();
-		return new File(dir, new DTFormat().format(now) + suffix);
-	}
-
-	public void reloadStylesheets() {
-		templates.clear();
-	}	
-    
     protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
         server.addNotificationListener(mppsScpServiceName,
                 this,
                 mppsFilter,
@@ -210,7 +131,6 @@ public class MWLFindScpService extends AbstractScpService
                 this,
                 mppsFilter,
                 null);
-		templates.clear();
     }
     
     protected void bindDcmServices(DcmServiceRegistry services) {

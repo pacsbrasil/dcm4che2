@@ -136,10 +136,10 @@
       setMethod="setCoerceConfigDir">
       <description><![CDATA[Directory where configuration files for query/result
       attribute coercion are located: if XSL stylesheet "mwl-cfindrq.xsl" or 
-      "mwl-cfindrsp.xsl" exists in a sub-directory equal to the AE Title of 
-      a MWL SCU, query/result attributes from/to this SCU will be coerced 
-      according these stylesheets. A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>  
+      "mwl-cfindrsp.xsl" exists in this directory or in a sub-directory equal
+      to the AE Title of a MWL SCU, query/result attributes from/to this SCU
+      will be coerced according these stylesheets. A relative path name is 
+      resolved relative to <i>archive-install-directory</i>/server/default/.]]>  
       </description>
       <name>CoerceConfigDirectory</name>
       <type>java.lang.String</type>

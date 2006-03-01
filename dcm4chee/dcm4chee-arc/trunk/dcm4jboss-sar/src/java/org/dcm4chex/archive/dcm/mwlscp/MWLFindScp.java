@@ -41,14 +41,6 @@ package org.dcm4chex.archive.dcm.mwlscp;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-
-import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -60,11 +52,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
-import org.dcm4che.util.DAFormat;
-import org.dcm4che.util.TMFormat;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
-import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -72,70 +60,27 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  */
 public class MWLFindScp extends DcmServiceBase {
+    private static final String QUERY_XSL = "mwl-cfindrq.xsl";
+    private static final String RESULT_XSL = "mwl-cfindrsp.xsl";
+    private static final String QUERY_XML = "-mwl-cfindrq.xml";
+    private static final String RESULT_XML = "-mwl-cfindrsp.xml";
+    
     private final MWLFindScpService service;
 	private final Logger log;
-    private LinkedHashSet logCallingAETs = new LinkedHashSet();
 
 	public MWLFindScp(MWLFindScpService service) {
         this.service = service;
 		this.log = service.getLog();
     }
-
-    public final String getLogCallingAETs() {
-		return set2str(logCallingAETs, '\\');
-	}
-
-	public final void setLogCallingAETs(String aets) {
-		str2set(aets, logCallingAETs, '\\');
-	}
-
-	private static String set2str(LinkedHashSet set, char delim) {
-		if (set.isEmpty())
-            return "NONE";
-        StringBuffer sb = new StringBuffer();
-        Iterator it = set.iterator();
-        sb.append(it.next());
-        while (it.hasNext())
-            sb.append(delim).append(it.next());
-        return sb.toString();
-	}
-
-	private static void str2set(String aets, LinkedHashSet set, char delim) {
-		set.clear();
-        if ("NONE".equals(aets))
-            return;
-        set.addAll(Arrays.asList(StringUtils
-                .split(aets, delim)));
-	}
 	
 	protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq, Command rspCmd)
 	throws IOException, DcmServiceException {
 		Association a = assoc.getAssociation();
-		String callingAET = a.getCallingAET();
-		Date now = new Date();
 		Dataset rqData = rq.getDataset();
 		log.debug("Identifier:\n");
 		log.debug(rqData);
-		if (logCallingAETs.contains(callingAET))
-			try {
-				XSLTUtils.writeTo(rqData, service.getQueryLogFile(now, callingAET));
-			} catch (Exception e) {
-				log.warn("Logging of query attributes failed:", e);
-			}
-		try {
-			Templates stylesheet = service.getQueryCoercionTemplatesFor(callingAET);
-			if (stylesheet != null)
-			{
-				Dataset coerced = XSLTUtils.coerce(rqData, stylesheet,
-						toXsltParam(a, now));
-				log.debug("Coerce attributes:\n");
-				log.debug(coerced);
-				log.debug("Coerced Identifier:\n");
-				log.debug(rqData);
-			}
-		} catch (Exception e) {
-			log.warn("Coercion of query attributes failed:", e);
-		}
+        service.logDIMSE(a, QUERY_XML, rqData);
+        service.coerceDIMSE(a, QUERY_XSL, rqData);
 		
 		MWLQueryCmd queryCmd;
 		try {
@@ -146,15 +91,6 @@ public class MWLFindScp extends DcmServiceBase {
 			throw new DcmServiceException(Status.ProcessingFailure, e);
 		}
 		return new MultiCFindRsp(queryCmd);
-	}
-
-	private Map toXsltParam(Association a, Date now) {
-		HashMap param = new HashMap();
-		param.put("calling", a.getCallingAET());
-		param.put("called", a.getCalledAET());
-		param.put("date", new DAFormat().format(now));
-		param.put("time", new TMFormat().format(now));
-		return null;
 	}
 
 	private class MultiCFindRsp implements MultiDimseRsp {
@@ -186,34 +122,12 @@ public class MWLFindScp extends DcmServiceBase {
                     return null;
                 }
         		Association a = assoc.getAssociation();
-        		String callingAET = a.getCallingAET();
-        		Date now = new Date();
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset rspData = queryCmd.getDataset();
 				log.debug("Identifier:\n");
-				log.debug(rspData);				
-				if (logCallingAETs.contains(callingAET))
-					try {
-						XSLTUtils.writeTo(rspData,
-								service.getResultLogFile(now, callingAET));
-					} catch (Exception e) {
-						log.warn("Logging of result attributes failed:", e);
-					}
-				try {
-					Templates stylesheet = 
-						service.getResultCoercionTemplatesFor(callingAET);
-					if (stylesheet != null)
-					{
-						Dataset coerced = XSLTUtils.coerce(rspData, stylesheet,
-								toXsltParam(a, now));
-						log.debug("Coerce attributes:\n");
-						log.debug(coerced);
-						log.debug("Coerced Identifier:\n");
-						log.debug(rspData);
-					}
-				} catch (Exception e) {
-					log.warn("Coercion of result attributes failed:", e);
-				}
+				log.debug(rspData);
+                service.logDIMSE(a, RESULT_XML, rspData);
+                service.coerceDIMSE(a, RESULT_XSL, rspData);
                 return rspData;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);

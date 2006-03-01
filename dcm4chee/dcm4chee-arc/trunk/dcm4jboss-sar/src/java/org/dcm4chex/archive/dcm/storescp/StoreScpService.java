@@ -46,8 +46,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -57,10 +55,6 @@ import javax.ejb.CreateException;
 import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.ObjectName;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
@@ -75,7 +69,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.util.DTFormat;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -86,7 +79,6 @@ import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -94,9 +86,6 @@ import org.jboss.system.server.ServerConfigLocator;
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
-
-	private static final String STORE_XSL = "cstorerq.xsl";
-	private static final String STORE_XML = "-cstorerq.xml";
 
     /** Map containing all image SOP Class UID. (key is name (as in config string), value is real uid) */
     private Map imageCUIDS = new TreeMap();
@@ -106,9 +95,6 @@ public class StoreScpService extends AbstractScpService {
 
     private ObjectName fileSystemMgtName;
 
-    private File coerceConfigDir;
-    private File logDir;
-    
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean acceptJPEGBaseline = true;
@@ -125,7 +111,6 @@ public class StoreScpService extends AbstractScpService {
     private boolean md5sum = true;
     
     private StoreScp scp = new StoreScp(this);
-    private Hashtable templates = new Hashtable();
     
     public final boolean isMd5sum()
     {
@@ -530,50 +515,8 @@ public class StoreScpService extends AbstractScpService {
         return c >= '0' && c <= '9';
     }
 
-	public final String getCoerceConfigDir() {
-		return coerceConfigDir.getPath();
-	}
-
-	public final void setCoerceConfigDir(String path) {
-		this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
-	}
-
-    public final String getLogCallingAETs() {
-		return scp.getLogCallingAETs();
-	}
-
-	public final void setLogCallingAETs(String aets) {
-		scp.setLogCallingAETs(aets);
-	}
-	
-	Templates getCoercionTemplatesFor(String aet)
-	throws TransformerConfigurationException {
-		File f = FileUtils.resolve(
-				new File(new File(coerceConfigDir, aet), STORE_XSL));
-		if (!f.exists())
-			return null;
-		Templates tpl = (Templates) templates.get(f);
-		if (tpl == null) {
-			tpl = TransformerFactory.newInstance().newTemplates(
-					new StreamSource(f));
-			templates.put(f, tpl);
-		}
-		return tpl;
-	}
-
-
-	File getLogFile(Date now, String callingAET) {
-		File dir = new File(logDir, callingAET);
-		dir.mkdir();
-		return new File(dir, new DTFormat().format(now) + STORE_XML);
-	}
-
-	public void reloadStylesheets() {
-		templates.clear();
-	}	
 
 	protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
         super.startService();
     }
 
@@ -793,4 +736,5 @@ public class StoreScpService extends AbstractScpService {
 		}
 		return seriesStored;
 	}
+
 }

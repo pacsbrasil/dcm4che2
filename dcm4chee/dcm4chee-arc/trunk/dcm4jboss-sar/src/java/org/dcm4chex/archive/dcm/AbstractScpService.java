@@ -39,16 +39,34 @@
 
 package org.dcm4chex.archive.dcm;
 
-import javax.management.ObjectName;
+import java.io.File;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
+import javax.management.ObjectName;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
+
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4che.util.DAFormat;
+import org.dcm4che.util.DTFormat;
+import org.dcm4che.util.TMFormat;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -80,6 +98,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
     protected int maxOpsInvoked = 1;
     protected int maxOpsPerformed = 1;
+    protected String[] logCallingAETs = {};
+    protected File logDir;
+    protected File coerceConfigDir;
+    protected Hashtable templates = new Hashtable();
         
     public final ObjectName getDcmServerName() {
         return dcmServerName;
@@ -106,6 +128,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         disableService();
         this.calledAETs = StringUtils.split(calledAETs, '\\');
         enableService();
+    }
+
+    public final String getLogCallingAETs() {
+        return StringUtils.toString(logCallingAETs, '\\');
+    }
+
+    public final void setLogCallingAETs(String aets) {
+        logCallingAETs = StringUtils.split(aets, '\\');
     }
 
 	public final int getMaxPDULength() {
@@ -138,6 +168,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 		enableService();
 	}
 
+    public final String getCoerceConfigDir() {
+        return coerceConfigDir.getPath();
+    }
+
+    public final void setCoerceConfigDir(String path) {
+        this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
+    }
+    
 	protected void enableService() {
         if (dcmHandler == null) return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
@@ -200,6 +238,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
     
     protected void startService() throws Exception {
+        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
@@ -210,6 +249,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         disableService();
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
+        templates.clear();
     }
 
     protected abstract void bindDcmServices(DcmServiceRegistry services);
@@ -222,4 +262,84 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] getTransferSyntaxUIDs() {
         return acceptExplicitVRLE ? NATIVE_LE_TS : ONLY_DEFAULT_TS;
     }
+
+    public File getLogFile(Date now, String callingAET, String suffix) {
+        File dir = new File(logDir, callingAET);
+        dir.mkdir();
+        return new File(dir, new DTFormat().format(now) + suffix);
+    }
+    
+    public Templates getCoercionTemplatesFor(String aet, String fname)
+    throws TransformerConfigurationException {
+        // check AET specific attribute coercion configuration
+        File f = FileUtils.resolve(
+                new File(new File(coerceConfigDir, aet), fname));
+        if (!f.exists()) {
+            // check general attribute coercion configuration
+            f = FileUtils.resolve(new File(coerceConfigDir, fname));
+            if (!f.exists()) {
+                return null;
+            }
+        }
+        Templates tpl = (Templates) templates.get(f);
+        if (tpl == null) {
+            tpl = TransformerFactory.newInstance().newTemplates(
+                    new StreamSource(f));
+            templates.put(f, tpl);
+        }
+        return tpl;
+    }
+
+    public void reloadStylesheets() {
+        templates.clear();
+    }
+    
+    private boolean contains(Object[] a, Object e) {
+        for (int i = 0; i < a.length; i++) {
+            if (a[i].equals(e)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void logDIMSE(Association a, String suffix, Dataset ds) {
+        String callingAET = a.getCallingAET();
+        if (contains(logCallingAETs, callingAET )) {
+            try {
+                XSLTUtils.writeTo(ds, getLogFile(new Date(), callingAET, suffix));
+            } catch (Exception e) {
+                log.warn("Logging of attributes failed:", e);
+            }
+        }
+    }
+
+    public void coerceDIMSE(Association a, String xsl, Dataset rqData) {
+        String callingAET = a.getCallingAET();
+        try {
+            Templates stylesheet = getCoercionTemplatesFor(callingAET, xsl);
+            if (stylesheet != null)
+            {
+                Dataset coerced = XSLTUtils.coerce(rqData, stylesheet,
+                        toXsltParam(a));
+                log.debug("Coerce attributes:\n");
+                log.debug(coerced);
+                log.debug("Coerced Identifier:\n");
+                log.debug(rqData);
+            }
+        } catch (Exception e) {
+            log.warn("Coercion of query attributes failed:", e);
+        }
+    }
+
+    private Map toXsltParam(Association a) {
+        Date now = new Date();
+        HashMap param = new HashMap();
+        param.put("calling", a.getCallingAET());
+        param.put("called", a.getCalledAET());
+        param.put("date", new DAFormat().format(now ));
+        param.put("time", new TMFormat().format(now));
+        return param;
+    }
+
 }

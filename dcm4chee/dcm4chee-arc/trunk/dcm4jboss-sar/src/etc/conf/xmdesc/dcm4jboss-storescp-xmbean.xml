@@ -639,9 +639,9 @@ Use either the SOP Class UID or the symbolic name:
       setMethod="setCoerceConfigDir">
       <description><![CDATA[Directory where configuration files for
       attribute coercion are located: if XSL stylesheet "cstorerq.xsl" 
-      exists in a sub-directory equal to the AE Title of a Storage SCU, 
-      attributes from this SCU will be coerced  according these stylesheets.
-      A relative path name is resolved relative to
+      exists in this directory or in a sub-directory equal to the AE Title of 
+      a Storage SCU, attributes from this SCU will be coerced according these
+      stylesheets. A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>  
       </description>
       <name>CoerceConfigDirectory</name>

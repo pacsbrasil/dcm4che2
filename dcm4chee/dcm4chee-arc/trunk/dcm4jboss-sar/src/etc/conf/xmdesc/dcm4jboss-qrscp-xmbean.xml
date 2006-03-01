@@ -287,6 +287,39 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLogCallingAETs"
+      setMethod="setLogCallingAETs">
+      <description><![CDATA[List of the AE titles for the Q/R SCUs for which XMLized
+      query and result attributes are logged into files 
+      <i>AET</i>/<i>timestamp</i>-cfindrq.xml and 
+      <i>AET</i>/<i>timestamp</i>-cfindrsp.xml in the log directory.
+      Useful for creation of XSL stylesheets for query/result attribute coercion.
+      Separate multiple values by \(backslash).
+      NONE = no calling AE titles.]]>  
+      </description>
+      <name>LogAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCoerceConfigDir"
+      setMethod="setCoerceConfigDir">
+      <description><![CDATA[Directory where configuration files for query/result
+      attribute coercion are located: if XSL stylesheet "cfindrq.xsl" or 
+      "cfindrsp.xsl" exists in this directory or a sub-directory equal to the
+      AE Title of a QR SCU, query/result attributes from/to this SCU will be coerced 
+      according these stylesheets. A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>CoerceConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-ae"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSendPendingMoveRSP"
       setMethod="setSendPendingMoveRSP">
       <description>Return optional C-Move Response DICOM message with pending status.
