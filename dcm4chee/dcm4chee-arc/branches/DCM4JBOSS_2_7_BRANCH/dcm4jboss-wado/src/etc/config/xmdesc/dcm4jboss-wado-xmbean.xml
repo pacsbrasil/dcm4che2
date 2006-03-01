@@ -43,6 +43,26 @@
          <value value="wadocache" />
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="getDirectoryTree"
+      setMethod="setDirectoryTree">
+      <description><![CDATA[This list specify the directory structure (depth and limit of subdirs per dir) of this cache.<br>
+      					NONE : no limitation (File: &lt;StudyIUID&gt;/&lt;SeriesIUID&gt;/&lt;instanceIUID&gt).<br>
+      					The number of primes specify the directory depth, the prime value specify the max. number 
+      					of subdirectories of the corresponding directory.<br/>
+      					e.g.: 337/331/317: use three subdirectories with max 337, 331 and 317 subdirectories.
+      					(max. 35,360,399 (337*331*317) directories)<br>
+      					You can use ComputeDirectoryStructure to compute this list with cacheSize, fileSize and subdir limit!
+      				]]>
+      </description>
+      <name>DirectoryTree</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="337/331/317" />
+      </descriptors>
+   </attribute>
+
  
     <attribute access="read-write"
       getMethod="getMinFreeSpace"
@@ -252,6 +272,32 @@
    <operation impact="ACTION">
       <description>Clear Template Cache</description>
       <name>clearTemplateCache</name>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Configure the directory structure of this cache.<br/>
+      			The directory depth: log(cacheSize/fileSize)/log(maxSubDirPerDir)<br/>
+      			The limitation(s) are specified with primes. 
+      			(Starting with the greatest prime smaller than maxSubDirPerDir).<br>
+      			e.g.: maxSubDirPerDir = 300 ; depth = 3: 293, 277, 263 
+      		]]> </description>
+      <name>computeDirectoryStructure</name>
+      <parameter>
+        <description>Cache size in Bytes.</description>
+        <name>cacheSize</name>
+        <type>long</type>
+      </parameter>
+      <parameter>
+        <description>File size in Bytes.</description>
+        <name>fileSize</name>
+        <type>long</type>
+      </parameter>
+      <parameter>
+        <description>Max. number of Subdirectories per Dir.</description>
+        <name>maxSubDirPerDir</name>
+        <type>int</type>
+      </parameter>
       <return-type>void</return-type>
    </operation>
    

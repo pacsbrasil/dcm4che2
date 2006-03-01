@@ -43,6 +43,22 @@
    </attribute>
  
    <attribute access="read-write"
+      getMethod="getDirectoryTree"
+      setMethod="setDirectoryTree">
+      <description><![CDATA[This list specify the directory structure (depth and limit of subdirs per dir) of this cache.<br>
+      					NONE : no limitation (File: &lt;instanceIUID&gt).<br>
+      					The number of primes specify the directory depth, the prime value specify the max. number 
+      					of subdirectories of the corresponding directory.<br/>
+      					e.g.: 337/331: use two subdirectories with max 337 and 331 subdirectories.
+      				]]>
+      </description>
+      <name>DirectoryTree</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getWaveformCorrection"
       setMethod="setWaveformCorrection">
       <description>Waveform Correction factor.

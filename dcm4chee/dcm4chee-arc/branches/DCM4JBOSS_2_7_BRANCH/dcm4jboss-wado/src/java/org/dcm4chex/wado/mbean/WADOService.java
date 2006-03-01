@@ -67,6 +67,19 @@ public class WADOService extends AbstractCacheService {
 	public WADOService() {
 		cache = WADOCacheImpl.getWADOCache();
 	}
+	
+	public String getDirectoryTree() {
+		return ((WADOCacheImpl) cache).getDirectoryTree();
+	}
+
+	public void setDirectoryTree(String primes) {
+		((WADOCacheImpl) cache).setDirectoryTree(primes);
+	}
+
+	public void computeDirectoryStructure(long cacheSize, long fileSize, int maxSubDirPerDir ) {
+		((WADOCacheImpl) cache).computeDirectoryStructure(cacheSize, fileSize, maxSubDirPerDir);
+	}
+	
 	/**
 	 * @return Returns the clientRedirect.
 	 */
