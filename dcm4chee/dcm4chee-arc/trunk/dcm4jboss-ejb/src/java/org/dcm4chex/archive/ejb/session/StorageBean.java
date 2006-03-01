@@ -291,7 +291,7 @@ public abstract class StorageBean implements SessionBean {
     
  	private PatientLocal checkIfMerged(PatientLocal pat) {
 		PatientLocal merged;
-		if ((merged = pat.getMergedWith()) != null)
+		while ((merged = pat.getMergedWith()) != null)
 			pat = merged;
 		return pat;
 	}
