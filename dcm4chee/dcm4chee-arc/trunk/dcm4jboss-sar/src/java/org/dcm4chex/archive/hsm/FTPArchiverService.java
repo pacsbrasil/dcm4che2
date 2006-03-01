@@ -193,6 +193,9 @@ public class FTPArchiverService extends AbstractFileCopyService {
 			} finally {
                 tar.close();
 			}
+			if (verifyCopy) {
+//				verify(ftp, tarName);
+			}
 		} finally {
 			try { ftp.logout(); } catch (IOException ignore) {}
 			try { ftp.disconnect(); } catch (IOException ignore) {}
@@ -207,7 +210,7 @@ public class FTPArchiverService extends AbstractFileCopyService {
         }
 	}
 
-    private boolean checkAvailableDiskSpace(FTPClient ftp, URL ftpurl, 
+	private boolean checkAvailableDiskSpace(FTPClient ftp, URL ftpurl, 
     		int tarSize) throws IOException {
     	if (minFreeDiskSpace < 0) // check disabled
     		return true;
@@ -241,10 +244,11 @@ public class FTPArchiverService extends AbstractFileCopyService {
 
 	private void writeFile(TarOutputStream tar, FileInfo fileInfo) 
     throws IOException, FileNotFoundException {
-        File file = FileUtils.toFile(
+        final String filePath = fileInfo.getFilePath();
+		File file = FileUtils.toFile(
         		fileInfo.getFileSystemPath(),
-        		fileInfo.getFilePath());
-        TarEntry entry = new TarEntry(fileInfo.getFilePath());
+        		filePath);
+        TarEntry entry = new TarEntry(mkTarEntryName(filePath));
         entry.setSize(fileInfo.getFileSize());
         tar.putNextEntry(entry);
         FileInputStream fis = new FileInputStream(file);
