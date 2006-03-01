@@ -192,9 +192,14 @@ public class FTPArchiverService extends AbstractFileCopyService {
 				}
 			} finally {
                 tar.close();
+                ftp.completePendingCommand();
 			}
 			if (verifyCopy) {
-//				verify(ftp, tarName);
+				VerifyTar verifyTar = new VerifyTar();
+				log.info("Start verifying " + tarName);
+				verifyTar.verify(ftp.retrieveFileStream(tarName), tarName);
+                ftp.completePendingCommand();
+				log.info("Finished verifying " + tarName);
 			}
 		} finally {
 			try { ftp.logout(); } catch (IOException ignore) {}

@@ -104,6 +104,15 @@ Archiving of received objects between 8am and 4pm is delayed after 4pm]]>
          <value value="DEFAULT"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isVerifyCopy" setMethod="setVerifyCopy">
+      <description>Verify MD5 sums in retrieved TAR.
+      </description>
+      <name>VerifyCopy</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
