@@ -54,7 +54,7 @@
 						 		title="Next Search Results"/>
 						</xsl:if>
 					</td>
-					<xsl:if test="/model/filter/emptyAccNo = 'true'">
+					<xsl:if test="/model/filter/emptyAccNo='true'">
 						<td width="40" bgcolor="eeeeee">	
 							<input type="image" name="link" value="link" src="images/link.gif" 
 									border="0" title="Link one ore more MPPS to a MWL entry">

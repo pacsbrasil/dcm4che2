@@ -64,6 +64,12 @@
 							</a>
 						</xsl:if>
 					</td>
+					<xsl:if test="/model/linkMode = 'true'">
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="doLink" name="doLink" src="images/link.gif" border="0"
+							 	title="link selected MWL to mpps"/>
+						</td>
+					</xsl:if>
 				</table>
 				<table border="0" cellpadding="0" cellspacing="0" bgcolor="eeeeee">
 					<tr>
@@ -238,6 +244,9 @@
 							<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
 						</a>
 					</td>	
+					<td title="Function">
+						<input type="checkbox" name="sticky" value="{spsID}" />
+					</td>
 				</xsl:when>
 				<xsl:when test="/model/local = 'true'">
 					<td title="Function" align="center" valign="bottom">
