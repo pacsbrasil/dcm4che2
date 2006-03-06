@@ -101,6 +101,16 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
             	return performAction( "link", request );
             } else if ( request.getParameter("doLink.x") != null ) {
             	return performAction( "doLink", request );
+            } else if ( request.getParameter("del.x") != null ) {//action from delete button.
+        		String[] spsIDs = getSPSIds(request);
+        		if ( spsIDs == null || spsIDs.length < 1) {
+        			model.setPopupMsg("No Worklist Entry selected!");
+        		} else {
+        			for ( int i = 0 ; i < spsIDs.length ; i++ ) {
+        				delegate.deleteMWLEntry( spsIDs[i] );
+        			}
+        			model.filterWorkList( false );
+        		}
             } else {
             	String action = request.getParameter("action");
             	if ( action != null ) {
@@ -128,7 +138,6 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 			}
 		} else if ("link".equals(action)) {
 			MWLFilter filter = model.getFilter();
-			model.setLinkMode(true);
 			if ( request.getParameter("mppsIUID") != null ) {
 				model.setMppsIDs( request.getParameterValues("mppsIUID")); // direct url call
 				filter.setPatientName(request.getParameter("patientName"));
@@ -144,32 +153,50 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 			filter.setStationAET(request.getParameter("stationAET"));
 			model.filterWorkList( true );
 		} else if ("doLink".equals(action)) {
-			System.out.println("link mpps "+model.getMppsIDs());
-			String[] mppsIUIDs = model.getMppsIDs();
-			String[] spsIDs = getSPSIds(request);
-			if ( spsIDs == null ) {
-				model.setPopupMsg("No Worklist Entry selected!");
-				return "success";
-			}
-			if ( mppsIUIDs != null ) {
-				for ( int j = spsIDs.length-1 ; j >= 0 ; j--) {
-					for ( int i = mppsIUIDs.length-1 ; i >= 0 ; i-- ) {
-						Map map = delegate.linkMppsToMwl( spsIDs[j], mppsIUIDs[i], i==0 ); //send notification on last link (i==0)
-						if ( map == null ) {
-							model.setPopupMsg("Link mpps "+mppsIUIDs[i]+" to mwl "+spsIDs[j]+" failed!");
-						} else if ( map.get("userAction") != null ) {
-							model.setPopupMsg("Patient cant be merged automatically! (MPPS patient has more than one study)! mpps:"+mppsIUIDs[i]);
-						}
-					}
-				}
-			}
-			model.setLinkMode(false);
-			return "linkDone";
+			return doLink(request);
 		} else if ("cancelLink".equals(action)) {
-			model.setLinkMode(false);
+			model.setMppsIDs(null);
 			return "cancelLink";
 		}
 		return "success";
+	}
+
+
+
+	/**
+	 * @param request
+	 * @return
+	 */
+	private String doLink(HttpServletRequest request) {
+		System.out.println("link mpps "+model.getMppsIDs());
+		String[] mppsIUIDs = model.getMppsIDs();
+		String[] spsIDs = getSPSIds(request);
+		if ( spsIDs == null || spsIDs.length < 1) {
+			model.setPopupMsg("No Worklist Entry selected!");
+			return "success";
+		} else if ( spsIDs.length > 1 ) {
+			String patID = (String) model.getMWLEntry(spsIDs[0]).getPatientID();
+			for ( int i = 1 ; i < spsIDs.length ; i++ ) {
+				if ( ! patID.equals(model.getMWLEntry(spsIDs[i]).getPatientID())) {
+					model.setPopupMsg("All selected Worklist Entries must be from the same patient!");
+					return "success";
+				}
+			}
+		}
+		if ( mppsIUIDs != null ) {
+			for ( int j = spsIDs.length-1 ; j >= 0 ; j--) {
+				for ( int i = mppsIUIDs.length-1 ; i >= 0 ; i-- ) {
+					Map map = delegate.linkMppsToMwl( spsIDs[j], mppsIUIDs[i], i==0 ); //send notification on last link (i==0)
+					if ( map == null ) {
+						model.setPopupMsg("Link mpps "+mppsIUIDs[i]+" to mwl "+spsIDs[j]+" failed!");
+					} else if ( map.get("userAction") != null ) {
+						model.setPopupMsg("Patient cant be merged automatically! (MPPS patient has more than one study)! mpps:"+mppsIUIDs[i]);
+					}
+				}
+			}
+		}
+		model.setMppsIDs(null);
+		return "linkDone";
 	}
 
 

@@ -278,6 +278,9 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="mppsc/mpps_console.xsl" />
 	    </view>
+	    <view name="error">
+    	  <transform path="mppsc/mpps_console.xsl" />
+	    </view>
 	    <view name="link" type="redirect" path="mwl_console.m?action=link"/>
      </command>
      

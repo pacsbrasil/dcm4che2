@@ -39,11 +39,13 @@
 
 package org.dcm4chex.archive.web.maverick.mwl.model;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -71,7 +73,7 @@ public class MWLModel extends BasicFormPagingModel {
 	private String[] mppsIDs = null;
 	
 	/** Holds list of MWLEntries */
-	private List mwlEntries = new ArrayList();
+	private Map mwlEntries = new HashMap();
 
 	private MWLFilter mwlFilter;
 	
@@ -131,8 +133,12 @@ public class MWLModel extends BasicFormPagingModel {
 	 * 
 	 * @return Returns the mwlEntries.
 	 */
-	public List getMwlEntries() {
-		return mwlEntries;
+	public Collection getMwlEntries() {
+		return mwlEntries.values();
+	}
+	
+	public MWLEntry getMWLEntry(String spsID) {
+		return (MWLEntry) mwlEntries.get(spsID);
 	}
 	/**
 	 * Returns true if the MwlScpAET is 'local'.
@@ -149,20 +155,16 @@ public class MWLModel extends BasicFormPagingModel {
 	}
 
 	/**
-	 * Returns true if MWL console is in 'link' mode.
+	 * Returns > 0 if MWL console is in 'link' mode.
 	 * <p>
 	 * This mode is set if mwl_console.m is called with action=link.
+	 * <p>
+	 * The value is euivalent to the number of selected MPPS (size of mppsIDs).
 	 * 
 	 * @return Returns the linkMode.
 	 */
-	public boolean isLinkMode() {
-		return linkMode;
-	}
-	/**
-	 * @param linkMode The linkMode to set.
-	 */
-	public void setLinkMode(boolean linkMode) {
-		this.linkMode = linkMode;
+	public int getLinkMode() {
+		return mppsIDs == null ? 0 : mppsIDs.length;
 	}
 	/**
 	 * @return Returns the mppsIDs.
@@ -205,10 +207,12 @@ public class MWLModel extends BasicFormPagingModel {
 		Dataset ds;
 		mwlEntries.clear();
 		int countNull = 0;
+		MWLEntry entry;
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
 			if ( ds != null ) {
-				mwlEntries.add( new MWLEntry( ds ) );
+				entry = new MWLEntry( ds );
+				mwlEntries.put( entry.getSpsID(), entry );
 			} else {
 				countNull++;
 			}

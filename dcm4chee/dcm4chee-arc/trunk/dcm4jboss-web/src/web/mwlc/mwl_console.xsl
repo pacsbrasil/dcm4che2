@@ -35,7 +35,7 @@
 							<b>Modality Worklist:</b> No matching procedure steps found!
 						</xsl:if>
  					</td>
-					<xsl:if test="/model/linkMode = 'true'">
+					<xsl:if test="/model/linkMode > 0">
 						<td title="MPPS Link mode" class="mppsLinkMode">
 							LINK MPPS (id:<xsl:value-of select="mppsIUID"/>) to a MWL entry!&#160;&#160;
 							<a href="mwl_console.m?action=cancelLink&amp;mppsIUID={mppsIUID}">
@@ -64,10 +64,19 @@
 							</a>
 						</xsl:if>
 					</td>
-					<xsl:if test="/model/linkMode = 'true'">
+					<xsl:if test="/model/linkMode = 1">
 						<td width="40" bgcolor="eeeeee">
 							<input type="image" value="doLink" name="doLink" src="images/link.gif" border="0"
-							 	title="link selected MWL to mpps"/>
+							 	title="link selected MWL to mpps"
+							 	onclick="return validateChecks(this.form.stickyPat, 'Modality Worklist', 1)"/>
+						</td>
+					</xsl:if>
+					<td bgcolor="eeeeee">&#160;</td>
+					<xsl:if test="/model/local = 'true'">
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="del" name="del" src="images/loeschen.gif" border="0"
+							 	title="Delete selected Modality Worklist Entries"
+							 	onclick="return confirm('Delete selected Modality Worklist Entries?')"/>
 						</td>
 					</xsl:if>
 				</table>
@@ -236,30 +245,19 @@
 					<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
 				</a>
 			</td>
-			<xsl:choose>
-				<xsl:when test="/model/linkMode = 'true'">
-					<td title="Function" align="center" valign="bottom">
-						<a href="mwl_console.m?action=doLink&amp;spsID={spsID}&amp;mppsIUID={/model/mppsIUID}">
-							<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsIUID"/> ?')</xsl:attribute>
-							<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
-						</a>
-					</td>	
-					<td title="Function">
-						<input type="checkbox" name="sticky" value="{spsID}" />
-					</td>
-				</xsl:when>
-				<xsl:when test="/model/local = 'true'">
-					<td title="Function" align="center" valign="bottom">
-						<a href="mwl_console.m?action=delete&amp;spsid={spsID}">
-							<xsl:attribute name="onclick">return confirm('Delete worklist entry <xsl:value-of select="spsID"/> ?')</xsl:attribute>
-							<img src="images/delete.gif" alt="delete" border="0" title="Delete this worklist entry!"/>		
-						</a>
-					</td>	
-				</xsl:when>
-				<xsl:otherwise>
-					<td>&#160;&#160;</td>
-				</xsl:otherwise>
-			</xsl:choose>
+			<xsl:if test="/model/linkMode > 0">
+				<td title="Function" align="center" valign="bottom">
+					<a href="mwl_console.m?action=doLink&amp;spsID={spsID}&amp;mppsIUID={/model/mppsIUID}">
+						<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsIUID"/> ?')</xsl:attribute>
+						<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
+					</a>
+				</td>	
+			</xsl:if>
+			<xsl:if test="/model/linkMode > 0 or /model/local = 'true'">
+				<td title="Function" align="center" valign="bottom">
+					<input type="checkbox" name="sticky" value="{spsID}" />
+				</td>
+			</xsl:if>
 		</tr>
 	</table>
 

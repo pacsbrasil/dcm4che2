@@ -41,13 +41,13 @@ package org.dcm4chex.archive.web.maverick.mpps.model;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -74,10 +74,10 @@ public class MPPSModel extends BasicFormPagingModel {
 
 	private String[] mppsIDs = null;
 	//Holds MPPSEntries with sticky
-	Set stickyList;
+	Map stickyList;
 	
 	/** Holds list of MPPSEntries */
-	private Set mppsEntries = new LinkedHashSet();
+	private Map mppsEntries = new HashMap();
 
 	private MPPSFilter mppsFilter;
 	
@@ -145,15 +145,21 @@ public class MPPSModel extends BasicFormPagingModel {
 	}
 	/**
 	 * @param stickies The stickies to set.
+	 * @param check
 	 */
-	public void setMppsIUIDs(String[] stickies) {
+	public void setMppsIUIDs(String[] stickies, boolean check) {
 		this.mppsIDs = stickies;
-		stickyList = new HashSet();
-		if ( mppsEntries.isEmpty() || mppsIDs == null) return;
-		MPPSEntry base = (MPPSEntry) mppsEntries.iterator().next(); 
-		MPPSEntry stickyEntry;
-		for ( int i = 0; i < mppsIDs.length ; i++ ) {
-			stickyList.add( base.new DummyMPPSEntry(mppsIDs[i]) );
+		stickyList = new HashMap();
+		if ( mppsEntries.isEmpty() || mppsIDs == null || mppsIDs.length < 1) return;
+		MPPSEntry stickyEntry = (MPPSEntry) mppsEntries.get(mppsIDs[0]);
+		String patID = stickyEntry.getPatientID(); 
+		stickyList.put( mppsIDs[0], stickyEntry );
+		for ( int i = 1; i < mppsIDs.length ; i++ ) {
+			stickyEntry = (MPPSEntry) mppsEntries.get(mppsIDs[i]);
+			if ( check && ! patID.equals( stickyEntry.getPatientID() )) {
+				throw new IllegalArgumentException("All selected MPPS must have the same patient!");
+			}
+			stickyList.put( mppsIDs[i], stickyEntry );
 		}
 	}
 	/**
@@ -161,8 +167,8 @@ public class MPPSModel extends BasicFormPagingModel {
 	 * 
 	 * @return Returns the mppsEntries.
 	 */
-	public Set getMppsEntries() {
-		return mppsEntries;
+	public Collection getMppsEntries() {
+		return mppsEntries.values();
 	}
 
 	/**
@@ -191,12 +197,17 @@ public class MPPSModel extends BasicFormPagingModel {
 			if ( end > total ) end = total;
 		}
 		Dataset ds;
-		mppsEntries.retainAll(stickyList);
+		mppsEntries.clear();
+		if ( stickyList != null ) {
+			mppsEntries.putAll(stickyList);
+		}
 		int countNull = 0;
+		MPPSEntry entry;
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
 			if ( ds != null ) {
-				mppsEntries.add( new MPPSEntry( ds ) );
+				entry = new MPPSEntry( ds );
+				mppsEntries.put( entry.getMppsIUID(), entry );
 			} else {
 				countNull++;
 			}

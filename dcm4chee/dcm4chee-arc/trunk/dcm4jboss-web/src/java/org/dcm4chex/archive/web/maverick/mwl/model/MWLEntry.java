@@ -44,7 +44,6 @@ import java.util.Date;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 
 /**

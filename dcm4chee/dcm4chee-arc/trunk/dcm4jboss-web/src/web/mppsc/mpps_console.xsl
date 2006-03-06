@@ -57,14 +57,15 @@
 					<xsl:if test="/model/filter/emptyAccNo='true'">
 						<td width="40" bgcolor="eeeeee">	
 							<input type="image" name="link" value="link" src="images/link.gif" 
-									border="0" title="Link one ore more MPPS to a MWL entry">
+									border="0" title="Link one ore more MPPS to a MWL entry"
+									onclick="return validateChecks(this.form.mppsIUID, 'MPPS', 1)">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 							</input>
 						</td>
 					</xsl:if>
-					<td bgcolor="eeeeee">&#160;&#160;</td>
+					<td bgcolor="eeeeee">&#160;</td>
 					<td width="40" bgcolor="eeeeee">	
 						<input type="image" name="del" value="del" src="images/loeschen.gif" 
 								border="0" title="Delete selected MPPS entries"

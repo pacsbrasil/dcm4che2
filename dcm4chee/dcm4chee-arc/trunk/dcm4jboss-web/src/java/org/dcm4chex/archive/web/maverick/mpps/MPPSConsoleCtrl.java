@@ -81,7 +81,7 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
     		model = MPPSModel.getModel(request);
     		model.setErrorCode( MPPSModel.NO_ERROR );
     		model.setPopupMsg(null);
-    		model.setMppsIUIDs( request.getParameterValues("mppsIUID"));
+    		model.setMppsIUIDs( request.getParameterValues("mppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
 	        		checkFilter( request );
@@ -94,13 +94,13 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
             } else if ( request.getParameter("next.x") != null ) { 
         		model.performNext();
             } else if ( request.getParameter("link.x") != null ) {//action from link button. (sticky support;redirect to mwl ctrl.)
-            	model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ) );
+            	model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ), true );
             	model.getFilter().setPatientName( request.getParameter("patientName"));
             	return "link";
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
             	if ( model.getMppsIUIDs() != null ) {
 	            	delegate.deleteMPPSEntries(model.getMppsIUIDs());
-	            	model.setMppsIUIDs(null);
+	            	model.setMppsIUIDs(null, false);
 	            	model.filterWorkList( true );
             	} else {
             		model.setPopupMsg("Please select at least one MPPS entry!");
@@ -113,8 +113,8 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
             }
             return "success";
         } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            model.setPopupMsg(e.getMessage());
+            return "error";
         }
     }
 
