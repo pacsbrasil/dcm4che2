@@ -481,7 +481,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         			if ( cmd.next() ) {
         				Dataset mppsDS = cmd.getDataset();
         	        	Dataset item = mppsDS.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-        	        	if ( "110514".equals(item.getString(Tags.CodeValue)) && 
+        	        	if ( item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
         	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
         	        		isIncorrectWL = true;
         	        	}
