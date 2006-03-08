@@ -39,8 +39,12 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -95,7 +99,18 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 public abstract class FileSystemBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(FileSystemBean.class);
+	private EntityContext ctx;
 
+
+	public void setEntityContext(EntityContext ctx) 
+	throws EJBException, RemoteException {
+		this.ctx = ctx;		
+	}
+
+	public void unsetEntityContext() throws EJBException, RemoteException {
+		this.ctx = null;		
+	}
+	
     /**
 	 * Create File System.
 	 * 
@@ -215,12 +230,9 @@ public abstract class FileSystemBean implements EntityBean {
 
 
     /**
+     * @ejb.interface-method
      * @ejb.relation name="next-filesystem"
      *    role-name="prev-filesystem"
-     *    target-role-name="next-filesystem"
-     *    target-ejb="FileSystem"
-     *    target-multiple="yes"
-     *    cascade-delete="no"
      *
      * @jboss.relation fk-column="next_fk" related-pk-field="pk"
      */
@@ -230,6 +242,18 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setNextFileSystem(FileSystemLocal filesystem);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.relation name="next-filesystem"
+     *    role-name="next-filesystem"
+     */
+    public abstract java.util.Collection getPreviousFileSystems();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPreviousFileSystems(java.util.Collection previous);
     
     /**
      * @ejb.interface-method
@@ -254,7 +278,10 @@ public abstract class FileSystemBean implements EntityBean {
 		dto.setUserInfo(getUserInfo());
     	FileSystemLocal next = getNextFileSystem();
     	if (next != null) {
-    		dto.setNext(next.getDirectoryPath());
+    		// prevent reentry in case of next == this
+    		String nextPath = next.isIdentical(ctx.getEJBLocalObject()) 
+    				? getDirectoryPath() : next.getDirectoryPath();
+    		dto.setNext(nextPath);
     	}
     	return dto;
     }

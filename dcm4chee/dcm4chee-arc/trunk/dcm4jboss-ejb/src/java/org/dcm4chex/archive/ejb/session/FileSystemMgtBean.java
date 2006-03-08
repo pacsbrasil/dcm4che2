@@ -42,9 +42,12 @@ package org.dcm4chex.archive.ejb.session;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -59,6 +62,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -324,26 +329,93 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public void removeFileSystem(String dirPath) throws FinderException,
-            RemoveException {
-        fileSystemHome.findByDirectoryPath(dirPath).remove();
+            RemoveException {    	
+        removeFileSystem(fileSystemHome.findByDirectoryPath(dirPath));
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void addAndLinkFileSystem(FileSystemDTO dto)
+    throws FinderException, CreateException {    	
+        FileSystemLocal prev0 = getRWFileSystem(dto);
+        FileSystemLocal fs;
+        if (prev0 == null) {
+        	fs = fileSystemHome.create(dto.getDirectoryPath(),
+                    dto.getRetrieveAET(), dto.getAvailability(),
+                    FileSystemStatus.DEF_RW, dto.getUserInfo());
+        	if (dto.getAvailability() == Availability.ONLINE) {
+    	        fs.setNextFileSystem(fs);
+        	}
+        } else {
+	        FileSystemLocal prev;
+	        FileSystemLocal next = prev0;
+	        do {
+	        	prev = next;
+	        	next = prev.getNextFileSystem();
+	        } while (next != null && !next.isIdentical(prev0));
+	        fs = fileSystemHome.create(dto.getDirectoryPath(),
+	        		dto.getRetrieveAET(), dto.getAvailability(),
+	        		dto.getStatus(), dto.getUserInfo());
+	        prev.setNextFileSystem(fs);
+	        fs.setNextFileSystem(next);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public List listLinkedFileSystems(FileSystemDTO dto)
+    throws FinderException {
+        FileSystemLocal prev0 = getRWFileSystem(dto);
+        if (prev0 == null) {
+        	return Collections.EMPTY_LIST;
+        }
+        ArrayList list = new ArrayList();
+        FileSystemLocal prev;
+        FileSystemLocal next = prev0;
+        do {
+            list.add(next.toDTO());
+        	prev = next;
+        	next = prev.getNextFileSystem();
+        } while (next != null && !next.isIdentical(prev0));
+        return list;
+    }
+
+	private FileSystemLocal getRWFileSystem(FileSystemDTO dto)
+	throws FinderException {
+		Collection c = fileSystemHome.findByRetrieveAETAndAvailabilityAndStatus(
+        		dto.getRetrieveAET(), dto.getAvailability(), FileSystemStatus.DEF_RW);
+        if (c.isEmpty())
+        	return null;
+        if (c.size() > 1)
+        	throw new FinderException("More than one RW+ Filesystem found for "
+        			+ dto);
+		return (FileSystemLocal) c.iterator().next();
+	}
+    
+    private void removeFileSystem(FileSystemLocal fs) throws RemoveException {
+		FileSystemLocal next = fs.getNextFileSystem();
+		if (next != null && fs.isIdentical(next)) {
+			next = null;
+		}
+        Collection prevs = fs.getPreviousFileSystems();
+        for (Iterator iter = new ArrayList(prevs).iterator(); iter.hasNext();) {
+			FileSystemLocal prev = (FileSystemLocal) iter.next();			
+			prev.setNextFileSystem(next);
+		}
+        fs.remove();
+	}
 
     /**
      * @ejb.interface-method
      */
     public void linkFileSystems(String prev, String next)
-            throws FinderException, RemoveException {
+            throws FinderException {
         FileSystemLocal prevfs = fileSystemHome.findByDirectoryPath(prev);
         FileSystemLocal nextfs = (next != null && next.length() != 0) 
                 ? fileSystemHome.findByDirectoryPath(next) : null;
         prevfs.setNextFileSystem(nextfs);
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void removeFileSystem(int pk) throws RemoveException {
-        fileSystemHome.remove(new Integer(pk));
     }
 
     /**
