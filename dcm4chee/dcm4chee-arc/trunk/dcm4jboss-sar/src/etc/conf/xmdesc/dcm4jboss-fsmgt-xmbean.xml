@@ -318,88 +318,54 @@ accessed studies.</description>
    <!-- Operations -->
    &defaultOperations;
    <operation impact="INFO">
-      <description>Show free disk space on specified directory/mount point.</description>
-      <name>availableDiskSpace</name>
-      <parameter>
-        <description>Directory path of filesystem.
-        </description>
-        <name>dirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>java.lang.String</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Purge unreferenced Files</description>
-      <name>purgeFiles</name>
-      <return-type>int</return-type>
-   </operation>   
-   <operation impact="ACTION">
-      <description>Delete unreferenced files on specific directories or mount points.</description>
-      <name>purgeFiles</name>
-      <parameter>
-        <description>Directory path of filesystem.
-        			Delete all directories or mount points if the parameter is null.
-        </description>
-        <name>purgeDirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>int</return-type>
-   </operation>   
-   <operation impact="INFO">
-      <description>Locate SOP Instance. Return a File object, if the instance
-      is locally available, or the hostname as String object if a file
-      of the instance is located on another host.</description>
-      <name>locateInstance</name>
-      <parameter>
-        <description>SOP Instance UID</description>
-        <name>iuid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>java.lang.Object</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Locate SOP Instance. Return a Dataset object, if the instance
-      is locally available. The attributes of the dataset are updated with the attributes from database.</description>
-      <name>getDatasourceOfInstance</name>
-      <parameter>
-        <description>SOP Instance UID</description>
-        <name>iuid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4che.net.DataSource</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Free disk space by deleting old studies.
-      Deletes all older files on study level that fullfill the freeDiskSpacePolicy.
-      Returns the number of released studies.
-      </description>
-      <name>freeDiskSpace</name>
-      <return-type>int</return-type>
-   </operation>   
-   <operation impact="INFO">
-      <description>get file size of study.
-      </description>
-      <name>showStudySize</name>
-      <parameter>
-        <description>Study pk</description>
-        <name>studyPk</name>
-        <type>java.lang.Integer</type>
-      </parameter>
-      <return-type>long</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Show total free available disk space on file systems
-        associated with this node (Retrieve AET), and configured for
-        storage (ONLINE, RW).
-      </description>
-      <name>showAvailableDiskSpace</name>
-      <return-type>java.lang.String</return-type>
-   </operation>   
-   <operation impact="INFO">
       <description>Show all configured file systems.
       </description>
       <name>showAllFileSystems</name>
       <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Show configured ONLINE,RW file systems.
+      </description>
+      <name>showOnlineFileSystems</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Show configured NEARLINE,RW file systems.
+      </description>
+      <name>showNearlineFileSystems</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description> Add ONLINE,RW file system to configuration and link it with
+      already configured ONLINE,RW file systems.
+      </description>
+      <name>addOnlineFileSystem</name>
+      <parameter>
+        <description>Directory/Mount Point of new File System</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Associated User Info</description>
+        <name>user info</name>
+        <type>java.lang.String</type>
+      </parameter>
+   </operation>
+   <operation impact="ACTION">
+      <description> Add NEARLINE,RW file system to configuration and link it with
+      already configured NEARLINE,RW file systems.
+      </description>
+      <name>addNearlineFileSystem</name>
+      <parameter>
+        <description>Directory/Mount Point of new File System</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Associated User Info</description>
+        <name>user info</name>
+        <type>java.lang.String</type>
+      </parameter>
    </operation>
    <operation impact="ACTION">
       <description>Add file system to configuration.
@@ -482,10 +448,98 @@ accessed studies.</description>
       </parameter>
    </operation>
    <operation impact="ACTION">
+      <description> Remove file system configuration. Will fail if there
+        are already files stored on this file system.
+      </description>
+      <name>removeFileSystem</name>
+      <parameter>
+        <description>Directory/Mount Point of the File System</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+   </operation>
+   <operation impact="ACTION">
       <description>Select Storage File System</description>
       <name>selectStorageFileSystem</name>
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
-
+   <operation impact="INFO">
+      <description>Show free disk space on specified directory/mount point.</description>
+      <name>availableDiskSpace</name>
+      <parameter>
+        <description>Directory path of filesystem.
+        </description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Purge unreferenced Files</description>
+      <name>purgeFiles</name>
+      <return-type>int</return-type>
+   </operation>   
+   <operation impact="ACTION">
+      <description>Delete unreferenced files on specific directories or mount points.</description>
+      <name>purgeFiles</name>
+      <parameter>
+        <description>Directory path of filesystem.
+        			Delete all directories or mount points if the parameter is null.
+        </description>
+        <name>purgeDirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>   
+   <operation impact="INFO">
+      <description>Locate SOP Instance. Return a File object, if the instance
+      is locally available, or the hostname as String object if a file
+      of the instance is located on another host.</description>
+      <name>locateInstance</name>
+      <parameter>
+        <description>SOP Instance UID</description>
+        <name>iuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.Object</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Locate SOP Instance. Return a Dataset object, if the instance
+      is locally available. The attributes of the dataset are updated with the attributes from database.</description>
+      <name>getDatasourceOfInstance</name>
+      <parameter>
+        <description>SOP Instance UID</description>
+        <name>iuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>org.dcm4che.net.DataSource</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Free disk space by deleting old studies.
+      Deletes all older files on study level that fullfill the freeDiskSpacePolicy.
+      Returns the number of released studies.
+      </description>
+      <name>freeDiskSpace</name>
+      <return-type>int</return-type>
+   </operation>   
+   <operation impact="INFO">
+      <description>get file size of study.
+      </description>
+      <name>showStudySize</name>
+      <parameter>
+        <description>Study pk</description>
+        <name>studyPk</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Show total free available disk space on file systems
+        associated with this node (Retrieve AET), and configured for
+        storage (ONLINE, RW).
+      </description>
+      <name>showAvailableDiskSpace</name>
+      <return-type>java.lang.String</return-type>
+   </operation>   
    
 </mbean>

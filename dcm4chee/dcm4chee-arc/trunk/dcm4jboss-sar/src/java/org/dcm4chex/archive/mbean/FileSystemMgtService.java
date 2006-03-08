@@ -871,7 +871,59 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     public void linkFileSystems(String prev, String next)
-            throws RemoteException, FinderException, RemoveException {
+            throws RemoteException, FinderException {
         newFileSystemMgt().linkFileSystems(prev, next);
     }
+
+    public void addOnlineFileSystem(String dirPath, String userInfo)
+    throws RemoteException, FinderException, CreateException {
+    	addAndLinkFileSystem(dirPath, Availability.ONLINE,
+    			FileSystemStatus.RW, userInfo);
+    }
+
+    public String showOnlineFileSystems()
+    throws RemoteException, FinderException {
+    	return showFileSystems(Availability.ONLINE);
+    }
+
+    public void addNearlineFileSystem(String dirPath, String userInfo)
+    throws RemoteException, FinderException, CreateException {
+    	addAndLinkFileSystem(dirPath, Availability.NEARLINE,
+    			FileSystemStatus.RW, userInfo);
+    }
+
+    public String showNearlineFileSystems()
+    throws RemoteException, FinderException {
+    	return showFileSystems(Availability.NEARLINE);
+    }
+
+    public void removeFileSystem(String dirPath)
+    throws RemoteException, FinderException, RemoveException {
+    	newFileSystemMgt().removeFileSystem(dirPath);
+    }
+    
+    private String showFileSystems(int availability)
+    throws RemoteException, FinderException {
+    	FileSystemDTO dto = new FileSystemDTO();
+    	dto.setRetrieveAET(retrieveAET);
+		dto.setAvailability(availability);
+    	List l = newFileSystemMgt().listLinkedFileSystems(dto);
+    	StringBuffer sb = new StringBuffer();
+		for (Iterator iter = l.iterator(); iter.hasNext();) {
+			sb.append(iter.next()).append('\n');			
+		}
+		return sb.toString();
+    }
+
+	private void addAndLinkFileSystem(String dirPath, int availability,
+			int status, String userInfo) throws FinderException, 
+			CreateException, RemoteException {
+    	FileSystemDTO dto = new FileSystemDTO();
+    	dto.setDirectoryPath(dirPath);
+    	dto.setRetrieveAET(retrieveAET);
+		dto.setAvailability(availability);
+    	dto.setStatus(status);
+    	dto.setUserInfo(userInfo);
+    	newFileSystemMgt().addAndLinkFileSystem(dto);
+	}
 }
