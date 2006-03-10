@@ -875,9 +875,9 @@ public class FileSystemMgtService extends TimerSupport {
         newFileSystemMgt().linkFileSystems(prev, next);
     }
 
-    public void addOnlineFileSystem(String dirPath, String userInfo)
+    public String addOnlineFileSystem(String dirPath, String userInfo)
     throws RemoteException, FinderException, CreateException {
-    	addAndLinkFileSystem(dirPath, Availability.ONLINE,
+        return addAndLinkFileSystem(dirPath, Availability.ONLINE,
     			FileSystemStatus.RW, userInfo);
     }
 
@@ -886,9 +886,9 @@ public class FileSystemMgtService extends TimerSupport {
     	return showFileSystems(Availability.ONLINE);
     }
 
-    public void addNearlineFileSystem(String dirPath, String userInfo)
+    public String addNearlineFileSystem(String dirPath, String userInfo)
     throws RemoteException, FinderException, CreateException {
-    	addAndLinkFileSystem(dirPath, Availability.NEARLINE,
+    	return addAndLinkFileSystem(dirPath, Availability.NEARLINE,
     			FileSystemStatus.RW, userInfo);
     }
 
@@ -897,9 +897,9 @@ public class FileSystemMgtService extends TimerSupport {
     	return showFileSystems(Availability.NEARLINE);
     }
 
-    public void removeFileSystem(String dirPath)
+    public String removeFileSystem(String dirPath)
     throws RemoteException, FinderException, RemoveException {
-    	newFileSystemMgt().removeFileSystem(dirPath);
+    	return newFileSystemMgt().removeFileSystem(dirPath).toString();
     }
     
     private String showFileSystems(int availability)
@@ -915,7 +915,7 @@ public class FileSystemMgtService extends TimerSupport {
 		return sb.toString();
     }
 
-	private void addAndLinkFileSystem(String dirPath, int availability,
+	private String addAndLinkFileSystem(String dirPath, int availability,
 			int status, String userInfo) throws FinderException, 
 			CreateException, RemoteException {
     	FileSystemDTO dto = new FileSystemDTO();
@@ -924,6 +924,6 @@ public class FileSystemMgtService extends TimerSupport {
 		dto.setAvailability(availability);
     	dto.setStatus(status);
     	dto.setUserInfo(userInfo);
-    	newFileSystemMgt().addAndLinkFileSystem(dto);
+    	return newFileSystemMgt().addAndLinkFileSystem(dto).toString();
 	}
 }

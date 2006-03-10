@@ -328,15 +328,18 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void removeFileSystem(String dirPath) throws FinderException,
+    public FileSystemDTO removeFileSystem(String dirPath) throws FinderException,
             RemoveException {    	
-        removeFileSystem(fileSystemHome.findByDirectoryPath(dirPath));
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
+        FileSystemDTO dto = fs.toDTO();
+        removeFileSystem(fs);
+        return dto;
     }
 
     /**
      * @ejb.interface-method
      */
-    public void addAndLinkFileSystem(FileSystemDTO dto)
+    public FileSystemDTO addAndLinkFileSystem(FileSystemDTO dto)
     throws FinderException, CreateException {    	
         FileSystemLocal prev0 = getRWFileSystem(dto);
         FileSystemLocal fs;
@@ -360,6 +363,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	        prev.setNextFileSystem(fs);
 	        fs.setNextFileSystem(next);
         }
+        return fs.toDTO();
     }
 
     /**
@@ -404,6 +408,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
 			FileSystemLocal prev = (FileSystemLocal) iter.next();			
 			prev.setNextFileSystem(next);
 		}
+        if (fs.getStatus() == FileSystemStatus.DEF_RW && next != null
+                && next.getStatus() == FileSystemStatus.RW) {
+            next.setStatus(FileSystemStatus.DEF_RW);
+        }
         fs.remove();
 	}
 

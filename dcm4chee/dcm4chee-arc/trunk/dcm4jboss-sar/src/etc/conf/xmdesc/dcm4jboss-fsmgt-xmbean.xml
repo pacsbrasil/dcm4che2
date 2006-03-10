@@ -350,6 +350,7 @@ accessed studies.</description>
         <name>user info</name>
         <type>java.lang.String</type>
       </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="ACTION">
       <description> Add NEARLINE,RW file system to configuration and link it with
@@ -366,6 +367,7 @@ accessed studies.</description>
         <name>user info</name>
         <type>java.lang.String</type>
       </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Add file system to configuration.
@@ -457,6 +459,7 @@ accessed studies.</description>
         <name>dirPath</name>
         <type>java.lang.String</type>
       </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Select Storage File System</description>
