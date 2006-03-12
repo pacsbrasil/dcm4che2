@@ -6,6 +6,6 @@
 	<classpathentry kind="var" path="MAVEN_REPOSITORY/junit/junit/3.8.1/junit-3.8.1.jar"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry output="target/test-classes" kind="src" path="src/test/resources"/>
-	<classpathentry kind="var" path="SLF4J_JAR"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/nlog4j/1.2.19/nlog4j-1.2.19.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
