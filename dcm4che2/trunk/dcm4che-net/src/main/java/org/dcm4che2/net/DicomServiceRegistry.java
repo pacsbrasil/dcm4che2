@@ -58,6 +58,8 @@ import org.dcm4che2.net.service.NDeleteSCP;
 import org.dcm4che2.net.service.NEventReportSCU;
 import org.dcm4che2.net.service.NGetSCP;
 import org.dcm4che2.net.service.NSetSCP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -67,6 +69,7 @@ import org.dcm4che2.net.service.NSetSCP;
  */
 class DicomServiceRegistry 
 {
+    static Logger log = LoggerFactory.getLogger(DicomServiceRegistry.class);
     private final HashSet sopCUIDs = new HashSet();
     private final HashMap cstoreSCP = new HashMap();
     private final HashMap cgetSCP = new HashMap();
@@ -234,13 +237,11 @@ class DicomServiceRegistry
                 getCStoreSCP(cmd).cstore(as, pcid, cmd,
                         dataStream, tsuid);
             } else {
-                final DicomObject dataset;
-                try {
-                    dataset = dataStream != null ? dataStream.readDataset()
-                            : null;
-                } catch (IOException e) {
-                    as.abort();
-                    return;
+                DicomObject dataset = null;
+                if (dataStream != null) {
+                    dataset = dataStream.readDataset();
+                    if (log.isDebugEnabled())
+                        log.debug("Dataset:\n" + dataset);
                 }
                 switch (cmdfield) {
                 case CommandUtils.C_GET_RQ:

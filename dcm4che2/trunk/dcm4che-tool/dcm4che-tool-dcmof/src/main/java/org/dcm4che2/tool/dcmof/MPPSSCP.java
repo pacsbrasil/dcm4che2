@@ -99,7 +99,9 @@ class MPPSSCP {
 
     private DicomObject doNCreate(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
-        final String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+        if (iuid == null)
+            iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
         File f = mkFile(iuid);
         if (f.exists()) {
             throw new DicomServiceException(rq, Status.DuplicateSOPinstance);
@@ -121,7 +123,7 @@ class MPPSSCP {
     
     private DicomObject doNSet(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
-        final String iuid = rsp.getString(Tag.RequestedSOPInstanceUID);
+        final String iuid = rq.getString(Tag.RequestedSOPInstanceUID);
         File f = mkFile(iuid);
         if (!f.exists()) {
             throw new DicomServiceException(rq, Status.NoSuchObjectInstance,

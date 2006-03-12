@@ -278,9 +278,9 @@ public class DcmSnd {
                 "asynchronously, unlimited by default.");
         opts.addOption(OptionBuilder.create("async"));
         
-        opts.addOption("packpdv", false, 
-                "pack command and data PDV in one P-DATA-TF PDU, " +
-                "send only one PDV in one P-Data-TF PDU by default.");
+        opts.addOption("pdv1", false, 
+                "send only one PDV in one P-Data-TF PDU, " +
+                "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpnodelay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
         
@@ -451,7 +451,7 @@ public class DcmSnd {
             dcmsnd.setTranscoderBufferSize(
                     parseInt(cl.getOptionValue("bufsize"),
                     "illegal argument of option -bufsize", 1, 10000) * KB);
-        dcmsnd.setPackPDV(cl.hasOption("packpdv"));
+        dcmsnd.setPackPDV(!cl.hasOption("pdv1"));
         dcmsnd.setTcpNoDelay(cl.hasOption("tcpnodelay"));
         if (cl.hasOption("async"))
             dcmsnd.setMaxOpsInvoked(parseInt(

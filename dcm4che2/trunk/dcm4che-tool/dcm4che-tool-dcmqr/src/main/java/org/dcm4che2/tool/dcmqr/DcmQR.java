@@ -358,9 +358,9 @@ public class DcmQR
         opts.addOption("vmf", false, 
                 "negotiate private FIND SOP Classes to return attributes of " +
                 "legacy CT/MR images of one series as virtual multiframe object.");
-        opts.addOption("packpdv", false, 
-                "pack command and data PDV in one P-DATA-TF PDU, " +
-                "send only one PDV in one P-Data-TF PDU by default.");
+        opts.addOption("pdv1", false, 
+                "send only one PDV in one P-Data-TF PDU, " +
+                "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpnodelay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
         
@@ -572,7 +572,7 @@ public class DcmQR
             dcmqr.setReceiveBufferSize(
                     parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000) * KB);
-        dcmqr.setPackPDV(cl.hasOption("packpdv"));
+        dcmqr.setPackPDV(!cl.hasOption("pdv1"));
         dcmqr.setTcpNoDelay(cl.hasOption("tcpnodelay"));
         dcmqr.setMaxOpsInvoked(cl.hasOption("async")
                 ? zeroAsMaxInt(parseInt(

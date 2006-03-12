@@ -58,7 +58,7 @@ public class NSetService extends DicomService implements NSetSCP {
 
     public void nset(Association as, int pcid, DicomObject rq, DicomObject data)
             throws DicomServiceException, IOException {
-        DicomObject rsp = CommandUtils.newNSetRSP(rq, CommandUtils.SUCCESS);
+        DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
         as.writeDimseRSP(pcid, rsp, doNSet(as, pcid, rq, data, rsp));
     }
 

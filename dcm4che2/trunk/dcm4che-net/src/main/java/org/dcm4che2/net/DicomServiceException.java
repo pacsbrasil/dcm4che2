@@ -59,12 +59,12 @@ public class DicomServiceException extends IOException {
     
     public DicomServiceException(DicomObject rq, int status) {
         super();
-        rsp = CommandUtils.toRSP(rq, status);
+        rsp = CommandUtils.mkRSP(rq, status);
     }
 
     public DicomServiceException(DicomObject rq, int status, String message) {
         super(message);
-        rsp = CommandUtils.toRSP(rq, status);
+        rsp = CommandUtils.mkRSP(rq, status);
         if (message.length() > 64)
             message = message.substring(0, 64);
         setErrorComment(message);

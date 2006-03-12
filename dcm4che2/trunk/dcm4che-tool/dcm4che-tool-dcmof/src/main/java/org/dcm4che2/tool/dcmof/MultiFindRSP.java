@@ -66,10 +66,10 @@ class MultiFindRSP implements DimseRSP {
     public MultiFindRSP(DcmOF dcmOF, DicomObject keys, DicomObject rsp, File source) {
         this.dcmOF = dcmOF;
         this.keys = keys;
-        // Include Specific Character Set in result
-        keys.putNull(Tag.SpecificCharacterSet, VR.CS);
+        // always return Specific Character Set
+        if (!keys.contains(Tag.SpecificCharacterSet))
+            keys.putNull(Tag.SpecificCharacterSet, VR.CS);
         this.rsp = rsp;
-        rsp.putInt(Tag.Status, VR.US, Status.Pending);
         this.files = source.listFiles();
     }
 
@@ -80,8 +80,14 @@ class MultiFindRSP implements DimseRSP {
             if (files != null) {
                 while (cur < files.length) {
                     mwl = dcmOF.load(files[cur++]);
-                    if (mwl.matches(keys, true))
+                    if (mwl.matches(keys, true)) {
+                        // always return Specific Character Set
+                        if (!mwl.contains(Tag.SpecificCharacterSet))
+                            mwl.putNull(Tag.SpecificCharacterSet, VR.CS);
+                        rsp.putInt(Tag.Status, VR.US, mwl.containsAll(keys) 
+                                ? Status.Pending : Status.PendingWarning);
                         return true;
+                    }
                 }
                 rsp.putInt(Tag.Status, VR.US, Status.Success);
             }

@@ -66,7 +66,7 @@ public class StorageService extends DicomService implements CStoreSCP {
     public void cstore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid)
             throws DicomServiceException, IOException {
-        DicomObject rsp = CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
+        DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
         doCStore(as, pcid, rq, dataStream, tsuid, rsp);
         as.writeDimseRSP(pcid, rsp);
     }

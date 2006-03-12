@@ -103,12 +103,13 @@
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-dcmof/src/bin</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmof/src</directory>
       <includes>
-        <include>*.bat</include>
+        <include>bin/*.bat</include>
+        <include>etc/dcmof/*</include>
       </includes>
       <lineEnding>dos</lineEnding>
-      <outputDirectory>bin</outputDirectory>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcmof/src/bin</directory>

@@ -46,14 +46,18 @@ package org.dcm4che2.net;
  */
 public class Status {
 
+    public static final int Success               = 0x0000;
+
     public static final int ProcessingFailure     = 0x0110;
     public static final int DuplicateSOPinstance  = 0x0111;
     public static final int NoSuchObjectInstance  = 0x0112;
     public static final int NoSuchSOPclass        = 0x0118;
     public static final int SOPclassNotSupported  = 0x0122;
     public static final int UnrecognizedOperation = 0x0211;
+    
     public static final int Cancel                = 0xFE00;
+    
     public static final int Pending               = 0xFF00;
-    public static final int Success               = 0x0000;
+    public static final int PendingWarning        = 0xFF01;
 
 }

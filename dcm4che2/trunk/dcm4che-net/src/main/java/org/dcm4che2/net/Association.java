@@ -368,7 +368,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject cstorerq = CommandUtils.newCStoreRQ(
+        DicomObject cstorerq = CommandUtils.mkCStoreRQ(
                 ++msgID, cuid, iuid, priority);
         invoke(pc.getPCID(), cstorerq, data, rspHandler);
     }
@@ -387,7 +387,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject cfindrq = CommandUtils.newCFindRQ(
+        DicomObject cfindrq = CommandUtils.mkCFindRQ(
                 ++msgID, cuid, priority);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
@@ -407,7 +407,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject cfindrq = CommandUtils.newCGetRQ(
+        DicomObject cfindrq = CommandUtils.mkCGetRQ(
                 ++msgID, cuid, priority);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
@@ -426,7 +426,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject cfindrq = CommandUtils.newCMoveRQ(
+        DicomObject cfindrq = CommandUtils.mkCMoveRQ(
                 ++msgID, cuid, priority, destination);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
     }
@@ -451,7 +451,7 @@ public class Association implements Runnable
     {
         FutureDimseRSP rsp = new FutureDimseRSP();
         PresentationContext pc = pcFor(cuid, null);
-        DicomObject cechorq = CommandUtils.newCEchoRQ(++msgID, cuid);
+        DicomObject cechorq = CommandUtils.mkCEchoRQ(++msgID, cuid);
         invoke(pc.getPCID(), cechorq, null, rsp);
         return rsp;
     }
@@ -461,7 +461,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject neventrq = CommandUtils.newNEventReportRQ(
+        DicomObject neventrq = CommandUtils.mkNEventReportRQ(
                 ++msgID, cuid, iuid, eventTypeId, attrs);
         invoke(pc.getPCID(), neventrq, new DataWriterAdapter(attrs), rspHandler);
     }
@@ -480,7 +480,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject ngetrq = CommandUtils.newNGetRQ(++msgID, cuid, iuid, attrs);
+        DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid, attrs);
         invoke(pc.getPCID(), ngetrq, new DataWriterAdapter(attrs), rspHandler);
     }
 
@@ -498,7 +498,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject nsetrq = CommandUtils.newNSetRQ(++msgID, cuid, iuid);
+        DicomObject nsetrq = CommandUtils.mkNSetRQ(++msgID, cuid, iuid);
         invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler);
     }
 
@@ -516,7 +516,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject nactionrq = CommandUtils.newNActionRQ(
+        DicomObject nactionrq = CommandUtils.mkNActionRQ(
                 ++msgID, cuid, iuid, actionTypeId, attrs);
         invoke(pc.getPCID(), nactionrq, new DataWriterAdapter(attrs), rspHandler);
     }
@@ -535,7 +535,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, tsuid);
-        DicomObject ncreaterq = CommandUtils.newNCreateRQ(++msgID, cuid, iuid);
+        DicomObject ncreaterq = CommandUtils.mkNCreateRQ(++msgID, cuid, iuid);
         invoke(pc.getPCID(), ncreaterq, new DataWriterAdapter(attrs), rspHandler);
     }
     
@@ -552,7 +552,7 @@ public class Association implements Runnable
     throws IOException, InterruptedException
     {
         PresentationContext pc = pcFor(cuid, null);
-        DicomObject nsetrq = CommandUtils.newNDeleteRQ(++msgID, cuid, iuid);
+        DicomObject nsetrq = CommandUtils.mkNDeleteRQ(++msgID, cuid, iuid);
         invoke(pc.getPCID(), nsetrq, null, rspHandler);
     }
 
@@ -590,7 +590,7 @@ public class Association implements Runnable
     void cancel(int pcid, int msgid)
     throws IOException
     {
-        DicomObject cmd = CommandUtils.newCCancelRQ(msgid);
+        DicomObject cmd = CommandUtils.mkCCancelRQ(msgid);
         encoder.writeDIMSE(pcid, cmd, null, null);      
     }
 

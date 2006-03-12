@@ -67,5 +67,9 @@ public class DataWriterAdapter implements DataWriter
         DicomOutputStream dos = new DicomOutputStream(out);
         dos.writeDataset(data, TransferSyntax.valueOf(tsuid));
     }
+    
+    public final DicomObject getDataset() {
+        return data;
+    }
 
 }

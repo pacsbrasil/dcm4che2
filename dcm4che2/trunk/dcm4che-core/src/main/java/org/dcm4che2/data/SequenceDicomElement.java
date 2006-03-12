@@ -365,7 +365,7 @@ class SequenceDicomElement extends AbstractDicomElement
         {
             tmp.add(getDicomObject(i).subSet(filter));
         }
-        return new SequenceDicomElement(tag, vr, bigEndian, items);
+        return new SequenceDicomElement(tag, vr, bigEndian, tmp);
     }
 
 }

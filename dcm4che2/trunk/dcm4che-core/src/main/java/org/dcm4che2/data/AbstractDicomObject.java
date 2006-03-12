@@ -65,6 +65,27 @@ abstract class AbstractDicomObject implements DicomObject {
 				return true;
 			}});		
 	}
+
+    public boolean containsAll(final DicomObject keys) {
+        return keys.accept(new Visitor(){
+            public boolean visit(DicomElement key) {
+                DicomElement el = get(key.tag());
+                if (el == null)
+                    return false;
+                if (key.hasDicomObjects()) {
+                    DicomObject itemKeys = key.getDicomObject();
+                    if (itemKeys != null && !itemKeys.isEmpty()) {
+                        if (!el.hasDicomObjects() || el.isEmpty())
+                            return false;
+                        for (int i = 0, n = el.countItems(); i < n; i++) {
+                            if (!el.getDicomObject(i).containsAll(itemKeys))
+                                return false;
+                        }
+                    }
+                }
+                return true;
+            }});        
+    }
     
     public String toString() {
         StringBuffer sb = new StringBuffer();
@@ -331,7 +352,7 @@ abstract class AbstractDicomObject implements DicomObject {
 
 	public DicomObject getNestedDicomObject(int tag) {
 		DicomElement a = get(tag);
-		return a == null || !a.isEmpty() ? null : a.getDicomObject();
+		return a == null || a.isEmpty() ? null : a.getDicomObject();
 	}
 
     public int getInt(int tag) {

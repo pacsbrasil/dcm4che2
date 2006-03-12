@@ -41,9 +41,12 @@ package org.dcm4che2.net.service;
 import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DicomServiceException;
+import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -59,7 +62,13 @@ public class NCreateService extends DicomService implements NCreateSCP {
 
     public void ncreate(Association as, int pcid, DicomObject rq,
             DicomObject data) throws DicomServiceException, IOException {
-        DicomObject rsp = CommandUtils.newNCreateRSP(rq, CommandUtils.SUCCESS);
+        DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+        if (iuid == null) {
+            iuid = UIDUtils.createUID();
+            rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+            rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+        }
         as.writeDimseRSP(pcid, rsp, doNCreate(as, pcid, rq, data, rsp));
     }
 

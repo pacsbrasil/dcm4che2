@@ -227,7 +227,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
 
     public void setItemOffset(long offset)
     {
-        throw new UnsupportedOperationException();
+        //NO OP
     }
 
     public boolean accept(final Visitor visitor)

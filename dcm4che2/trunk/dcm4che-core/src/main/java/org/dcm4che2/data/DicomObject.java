@@ -224,6 +224,12 @@ public interface DicomObject extends Serializable
     boolean containsValue(int tag);
 
     /**
+     * @param elements
+     * @return
+     */
+    boolean containsAll(DicomObject elements);
+    
+    /**
      * Calls @link{DicomObject.Visitor#vist} for each element in this
      * Dataset. Returns <code>false</code>, if @link{DicomObject.Visitor#visit}
      * returns <code>false</code> for any element.

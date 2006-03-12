@@ -61,7 +61,7 @@ public class VerificationService extends DicomService implements CEchoSCP {
 
     public void cecho(Association as, int pcid, DicomObject cmd)
             throws IOException {
-        as.writeDimseRSP(pcid, CommandUtils.newCEchoRSP(cmd));
+        as.writeDimseRSP(pcid, CommandUtils.mkRSP(cmd, CommandUtils.SUCCESS));
     }
 
 }

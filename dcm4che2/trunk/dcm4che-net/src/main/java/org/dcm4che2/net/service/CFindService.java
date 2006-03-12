@@ -76,7 +76,7 @@ implements CFindSCP
     public void cfind(Association as, int pcid, DicomObject rq, DicomObject data)
             throws DicomServiceException, IOException
     {
-        DicomObject cmdrsp = CommandUtils.newCFindRSP(rq, CommandUtils.SUCCESS);
+        DicomObject cmdrsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
         DimseRSP rsp = doCFind(as, pcid, rq, data, cmdrsp);
         try {
             rsp.next();

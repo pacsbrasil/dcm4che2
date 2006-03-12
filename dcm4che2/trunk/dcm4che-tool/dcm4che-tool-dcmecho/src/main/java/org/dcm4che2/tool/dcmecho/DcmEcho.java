@@ -176,9 +176,6 @@ public class DcmEcho
                 "socket by default");
         opts.addOption(OptionBuilder.create("L"));
         
-        opts.addOption("packpdv", false, 
-                "pack command and data PDV in one P-DATA-TF PDU, " +
-                "send only one PDV in one P-Data-TF PDU by default.");
         opts.addOption("tcpnodelay", false, 
                 "set TCP_NODELAY socket option to true, false by default");
         

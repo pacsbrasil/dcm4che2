@@ -201,6 +201,9 @@ class PDUDecoder extends PDVInputStream
                 log.warn(as.toString() + ": Length of PDU[type=" + pdutype + "[len="
                         + (pdulen & 0xFFFFFFFFL) + "] exceeds "
                         + MAX_PDU_LEN + " limit");
+                log.warn(as.toString() + ": Length of PDU[type=" + pdutype + "[len="
+                        + (pdulen & 0xFFFFFFFFL) + "] exceeds "
+                        + MAX_PDU_LEN + " limit");
                 throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
                         AAbort.INVALID_PDU_PARAMETER_VALUE);
             }
@@ -472,12 +475,17 @@ class PDUDecoder extends PDVInputStream
         DicomObject cmd = readDicomObject(TransferSyntax.ImplicitVRLittleEndian);
         if (log.isInfoEnabled())
             log.info(as.toString() + " >> " + CommandUtils.toString(cmd, pcid, tsuid));
+        if (log.isDebugEnabled())
+            log.debug("Command:\n" + cmd);
         if (CommandUtils.hasDataset(cmd))
         {
             nextPDV(PDVType.DATA, pcid);
             if (CommandUtils.isResponse(cmd))
             {
-                as.onDimseRSP(cmd, readDicomObject(TransferSyntax.valueOf(tsuid)));
+                DicomObject data = readDicomObject(TransferSyntax.valueOf(tsuid));
+                if (log.isDebugEnabled())
+                    log.debug("Dataset:\n" + data);
+                as.onDimseRSP(cmd, data);
             }
             else
             {

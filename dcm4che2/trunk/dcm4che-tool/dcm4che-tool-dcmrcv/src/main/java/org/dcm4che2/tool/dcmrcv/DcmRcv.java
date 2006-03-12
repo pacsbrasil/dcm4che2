@@ -80,7 +80,7 @@ public class DcmRcv extends StorageService {
     private static final String NATIVE = "native";
     private static final String BIG_ENDIAN = "bigendian";
     private static final String BUFSIZE = "bufsize";
-    private static final String PACK_PDV = "packpdv";
+    private static final String PDV1 = "pdv1";
     private static final String ASYNC = "async";
     private static final String REQUEST_TO = "requestTO";
     private static final String RELEASE_TO = "releaseTO";
@@ -376,9 +376,9 @@ public class DcmRcv extends StorageService {
                 "asynchronously, unlimited by default.");
         opts.addOption(OptionBuilder.create(ASYNC));
                 
-        opts.addOption(PACK_PDV, false, 
-                "pack command and data PDV in one P-DATA-TF PDU, " +
-                "send only one PDV in one P-Data-TF PDU by default.");
+        opts.addOption(PDV1, false, 
+                "send only one PDV in one P-Data-TF PDU, " +
+                "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption(TCP_NODELAY, false, 
                 "set TCP_NODELAY socket option to true, false by default");
         
@@ -542,7 +542,7 @@ public class DcmRcv extends StorageService {
                     parseInt(cl.getOptionValue(BUFSIZE),
                     "illegal argument of option -bufsize", 1, 10000) * KB);
         
-        dcmrcv.setPackPDV(cl.hasOption(PACK_PDV));
+        dcmrcv.setPackPDV(!cl.hasOption(PDV1));
         dcmrcv.setTcpNoDelay(cl.hasOption(TCP_NODELAY));
         if (cl.hasOption(ASYNC))
             dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue(ASYNC), 

@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
@@ -137,7 +136,7 @@ class PDUEncoder extends PDVOutputStream
         put(0);
         putInt(pdulen);
         if (log.isDebugEnabled())
-            log.debug(as.toString() + " send P-DATA-TF[len=" + pdulen + "]");
+            log.debug(as.toString() + " << P-DATA-TF[len=" + pdulen + "]");
         writePDU(pdulen);
     }
 
@@ -357,6 +356,11 @@ class PDUEncoder extends PDVOutputStream
     {
         if (log.isInfoEnabled())
             log.info(as.toString() + " << " + CommandUtils.toString(cmd, pcid, tsuid));
+        if (log.isDebugEnabled()) {
+            log.debug("Command:\n" + cmd);
+            if (dataWriter instanceof DataWriterAdapter)
+                log.debug("Dataset:\n" + ((DataWriterAdapter) dataWriter).getDataset());
+        }
         synchronized (dimseLock)
         {
             this.th = Thread.currentThread();

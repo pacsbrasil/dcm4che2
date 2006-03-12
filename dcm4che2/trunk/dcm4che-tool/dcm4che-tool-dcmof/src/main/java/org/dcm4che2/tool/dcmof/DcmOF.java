@@ -73,6 +73,8 @@ import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.VerificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -91,7 +93,7 @@ public class DcmOF {
     private static final String MPPS = "mpps";
     private static final String MPPSXML = "mppsxml";
     private static final String MWL = "mwl";
-    private static final String PACK_PDV = "packpdv";
+    private static final String PDV1 = "pdv1";
     private static final String ASYNC = "async";
     private static final String REQUEST_TO = "requestTO";
     private static final String RELEASE_TO = "releaseTO";
@@ -132,6 +134,7 @@ public class DcmOF {
     private static final String[] NATIVE_LE_TS = { UID.ExplicitVRLittleEndian,
             UID.ImplicitVRLittleEndian };
 
+    private static Logger log = LoggerFactory.getLogger(DcmOF.class);
     private static Executor executor = new NewThreadExecutor("DCMOF");
 
     private Device device = new Device("DCMOF");
@@ -281,9 +284,9 @@ public class DcmOF {
                         + "asynchronously, unlimited by default.");
         opts.addOption(OptionBuilder.create(ASYNC));
 
-        opts.addOption(PACK_PDV, false,
-                "pack command and data PDV in one P-DATA-TF PDU, "
-                        + "send only one PDV in one P-Data-TF PDU by default.");
+        opts.addOption(PDV1, false,
+                "send only one PDV in one P-Data-TF PDU, " +
+                "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption(TCP_NODELAY, false,
                 "set TCP_NODELAY socket option to true, false by default");
 
@@ -422,7 +425,7 @@ public class DcmOF {
                     "illegal argument of option -sorcvbuf", 1, 10000)
                     * KB);
 
-        dcmof.setPackPDV(cl.hasOption(PACK_PDV));
+        dcmof.setPackPDV(!cl.hasOption(PDV1));
         dcmof.setTcpNoDelay(cl.hasOption(TCP_NODELAY));
         if (cl.hasOption(ASYNC))
             dcmof.setMaxOpsPerformed(parseInt(cl.getOptionValue(ASYNC),
@@ -568,6 +571,7 @@ public class DcmOF {
     }
 
     void storeAsXML(File f, DicomObject data) throws Exception {
+        log.info("M-WRITE " + f);
         SAXTransformerFactory tf = 
                 (SAXTransformerFactory) TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler();
@@ -578,6 +582,7 @@ public class DcmOF {
     }
 
     void storeAsDICOM(File f, DicomObject data) throws Exception {
+        log.info("M-WRITE " + f);
         DicomOutputStream out = new DicomOutputStream(new FileOutputStream(f));
         try {
             out.writeDicomFile(data);
@@ -587,6 +592,7 @@ public class DcmOF {
     }
 
     DicomObject load(File f) throws Exception {
+        log.info("M-READ " + f);
         return f.getName().endsWith(".xml") ? loadXML(f) : loadDICOM(f);
     }
 
