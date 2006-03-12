@@ -45,7 +45,7 @@ import java.io.IOException;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public class AAbortException extends IOException
+public class AAbort extends IOException
 {
 
     private static final long serialVersionUID = 9040737698591016148L;
@@ -63,12 +63,12 @@ public class AAbortException extends IOException
     private final int source;
     private final int reason;
 
-    public AAbortException()
+    public AAbort()
     {
         this(UL_SERIVE_USER, REASON_NOT_SPECIFIED);
     }
     
-    public AAbortException(int source, int reason)
+    public AAbort(int source, int reason)
     {
         super("A-ABORT[source=" + source + ", reason=" + reason + "]");
         this.source = source;
