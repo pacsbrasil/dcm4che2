@@ -334,65 +334,109 @@ abstract class AbstractDicomObject implements DicomObject {
 		return a == null || !a.isEmpty() ? null : a.getDicomObject();
 	}
 
-	public int getInt(int tag) {
-		return toInt(get(tag));
-	}
-
-    private int toInt(DicomElement a) {
-        return a == null ? 0 : a.getInt(cacheGet());
+    public int getInt(int tag) {
+        return toInt(get(tag), 0);
     }
 
-	public int[] getInts(int tag) {
-		return toInts(get(tag));
+	public int getInt(int tag, int defVal) {
+		return toInt(get(tag), defVal);
+	}
+
+    private int toInt(DicomElement a, int defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getInt(cacheGet());
+    }
+
+    public int[] getInts(int tag) {
+        return toInts(get(tag));
+    }
+
+	public int[] getInts(int tag, int[] defVal) {
+		return toInts(get(tag), defVal);
 	}
 
     private int[] toInts(DicomElement a) {
         return a == null ? null : a.getInts(cacheGet());
     }
-
-	public float getFloat(int tag) {
-		return toFloat(get(tag));
-	}
-
-    private float toFloat(DicomElement a) {
-        return a == null ? 0f : a.getFloat(cacheGet());
+    
+    private int[] toInts(DicomElement a, int[] defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getInts(cacheGet());
     }
 
-	public float[] getFloats(int tag) {
-		return toFloats(get(tag));
+    public float getFloat(int tag) {
+        return toFloat(get(tag), 0.f);
+    }
+
+	public float getFloat(int tag, float defVal) {
+		return toFloat(get(tag), defVal);
+	}
+
+    private float toFloat(DicomElement a, float defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getFloat(cacheGet());
+    }
+
+    public float[] getFloats(int tag) {
+        return toFloats(get(tag));
+    }
+
+	public float[] getFloats(int tag, float[] defVal) {
+		return toFloats(get(tag), defVal);
 	}
 
     private float[] toFloats(DicomElement a) {
         return a == null ? null : a.getFloats(cacheGet());
     }
-
-	public double getDouble(int tag) {
-		return toDouble(get(tag));
-	}
-
-    private double toDouble(DicomElement a) {
-        return a == null ? 0. : a.getDouble(cacheGet());
+    
+    private float[] toFloats(DicomElement a, float[] defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getFloats(cacheGet());
     }
 
-	public double[] getDoubles(int tag) {
-		return toDoubles(get(tag));
+    public double getDouble(int tag) {
+        return toDouble(get(tag), 0.);
+    }
+
+	public double getDouble(int tag, double defVal) {
+		return toDouble(get(tag), defVal);
+	}
+
+    private double toDouble(DicomElement a, double defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getDouble(cacheGet());
+    }
+
+    public double[] getDoubles(int tag) {
+        return toDoubles(get(tag));
+    }
+
+	public double[] getDoubles(int tag, double[] defVal) {
+		return toDoubles(get(tag), defVal);
 	}
 
     private double[] toDoubles(DicomElement a) {
         return a == null ? null : a.getDoubles(cacheGet());
     }
 
-	public String getString(int tag) {
-		return toString(get(tag));
+    private double[] toDoubles(DicomElement a, double[] defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getDoubles(cacheGet());
+    }
+
+    public String getString(int tag) {
+        return toString(get(tag), null);
+    }
+
+	public String getString(int tag, String defVal) {
+		return toString(get(tag), defVal);
 	}
 
-    private String toString(DicomElement a) {
-        return a == null ? null 
+    private String toString(DicomElement a, String defVal) {
+        return a == null || a.isEmpty() ? defVal 
                 : a.getString(getSpecificCharacterSet(), cacheGet());
     }
 
-	public String[] getStrings(int tag) {
-		return toStrings(get(tag));
+    public String[] getStrings(int tag) {
+        return toStrings(get(tag));
+    }
+
+	public String[] getStrings(int tag, String[] defVal) {
+		return toStrings(get(tag), defVal);
 	}
 
     private String[] toStrings(DicomElement a) {
@@ -400,40 +444,69 @@ abstract class AbstractDicomObject implements DicomObject {
                 : a.getStrings(getSpecificCharacterSet(), cacheGet());
     }
 
-	public Date getDate(int tag) {
-		return toDate(get(tag));
-	}
-
-    private Date toDate(DicomElement a) {
-        return a == null ? null : a.getDate(cacheGet());
+    private String[] toStrings(DicomElement a, String[] defVal) {
+        return a == null || a.isEmpty() ? defVal
+                : a.getStrings(getSpecificCharacterSet(), cacheGet());
     }
 
-	public Date[] getDates(int tag) {
-		return toDates(get(tag));
+    public Date getDate(int tag) {
+        return toDate(get(tag), null);
+    }
+
+	public Date getDate(int tag, Date defVal) {
+		return toDate(get(tag), defVal);
+	}
+
+    private Date toDate(DicomElement a, Date defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getDate(cacheGet());
+    }
+
+    public Date[] getDates(int tag) {
+        return toDates(get(tag));
+    }
+
+	public Date[] getDates(int tag, Date[] defVal) {
+		return toDates(get(tag), defVal);
 	}
 
     private Date[] toDates(DicomElement a) {
         return a == null ? null : a.getDates(cacheGet());
     }
 
-	public DateRange getDateRange(int tag) {
-		DicomElement a = get(tag);
-		return toDateRange(a);
-	}
-
-    private DateRange toDateRange(DicomElement a) {
-        return a == null ? null : a.getDateRange(cacheGet());
+    private Date[] toDates(DicomElement a, Date[] defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getDates(cacheGet());
     }
 
-	public Date getDate(int daTag, int tmTag) {
-		return DateUtils.toDateTime(getDate(daTag), getDate(tmTag));
+    public DateRange getDateRange(int tag) {
+        return toDateRange(get(tag), null);
+    }
+
+	public DateRange getDateRange(int tag, DateRange defVal) {
+		return toDateRange(get(tag), defVal);
 	}
 
-	public Date[] getDates(int daTag, int tmTag) {
+    private DateRange toDateRange(DicomElement a, DateRange defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getDateRange(cacheGet());
+    }
+
+    public Date getDate(int daTag, int tmTag) {
+        return getDate(daTag, tmTag, null);
+    }
+    
+	public Date getDate(int daTag, int tmTag, Date defVal) {
+        Date da = getDate(daTag);
+		return da == null ? defVal : DateUtils.toDateTime(da, getDate(tmTag));
+	}
+
+    public Date[] getDates(int daTag, int tmTag) {
+        return getDates(daTag, tmTag, null);
+    }
+    
+	public Date[] getDates(int daTag, int tmTag, Date[] defVal) {
 		Date[] da = getDates(daTag);
 		Date[] tm = getDates(tmTag);
 		if (da == null)
-			return null;
+			return defVal;
 		if (tm != null) {
 			for (int i = 0, n = Math.min(da.length, tm.length); i < n; ++i) {
 				da[i] = DateUtils.toDateTime(da[i], tm[i]);
@@ -442,9 +515,13 @@ abstract class AbstractDicomObject implements DicomObject {
 		return da;
 	}
 	
-	public DateRange getDateRange(int daTag, int tmTag) {
+    public DateRange getDateRange(int daTag, int tmTag) {
+        return getDateRange(daTag, tmTag, null);
+    }
+    
+	public DateRange getDateRange(int daTag, int tmTag, DateRange defVal) {
 		DateRange da = getDateRange(daTag);
-		if (da == null) return null;
+		if (da == null) return defVal;
 		DateRange tm = getDateRange(tmTag);
 		if (tm == null) return da;
 		return new DateRange(
@@ -526,120 +603,232 @@ abstract class AbstractDicomObject implements DicomObject {
     }
     
 	public int getInt(int[] tagPath) {
-        return toInt(get(tagPath));
+        return toInt(get(tagPath), 0);
 	}
 	
-    public int getInt(String tagPath) {
-        return toInt(get(tagPath));
+    public int getInt(int[] tagPath, int defVal) {
+        return toInt(get(tagPath), defVal);
     }
     
-	public int[] getInts(int[] tagPath) {
+    public int getInt(String tagPath) {
+        return toInt(get(tagPath), 0);
+    }
+    
+    public int getInt(String tagPath, int defVal) {
+        return toInt(get(tagPath), defVal);
+    }
+    
+    public int[] getInts(int[] tagPath) {
         return toInts(get(tagPath));
+    }
+    
+	public int[] getInts(int[] tagPath, int[] defVal) {
+        return toInts(get(tagPath), defVal);
 	}
 	
     public int[] getInts(String tagPath) {
         return toInts(get(tagPath));
     }
     
-	public float getFloat(int[] tagPath) {
-        return toFloat(get(tagPath));
+    public int[] getInts(String tagPath, int[] defVal) {
+        return toInts(get(tagPath), defVal);
+    }
+    
+    public float getFloat(int[] tagPath) {
+        return toFloat(get(tagPath), 0.f);
+    }
+    
+	public float getFloat(int[] tagPath, float defVal) {
+        return toFloat(get(tagPath), defVal);
 	}
 	
     public float getFloat(String tagPath) {
-        return toFloat(get(tagPath));
+        return toFloat(get(tagPath), 0.f);
     }
     
-	public float[] getFloats(int[] tagPath) {
+    public float getFloat(String tagPath, float defVal) {
+        return toFloat(get(tagPath), defVal);
+    }
+    
+    public float[] getFloats(int[] tagPath) {
         return toFloats(get(tagPath));
+    }
+    
+	public float[] getFloats(int[] tagPath, float[] defVal) {
+        return toFloats(get(tagPath), defVal);
 	}
 	
     public float[] getFloats(String tagPath) {
         return toFloats(get(tagPath));
     }
     
-	public double getDouble(int[] tagPath) {
-        return toDouble(get(tagPath));
+    public float[] getFloats(String tagPath, float[] defVal) {
+        return toFloats(get(tagPath), defVal);
+    }
+    
+    public double getDouble(int[] tagPath) {
+        return toDouble(get(tagPath), 0.);
+    }
+    
+	public double getDouble(int[] tagPath, double defVal) {
+        return toDouble(get(tagPath), defVal);
 	}
 	
     public double getDouble(String tagPath) {
-        return toDouble(get(tagPath));
+        return toDouble(get(tagPath), 0.);
     }
     
-	public double[] getDoubles(int[] tagPath) {
+    public double getDouble(String tagPath, double defVal) {
+        return toDouble(get(tagPath), defVal);
+    }
+    
+    public double[] getDoubles(int[] tagPath) {
         return toDoubles(get(tagPath));
+    }
+    
+	public double[] getDoubles(int[] tagPath, double[] defVal) {
+        return toDoubles(get(tagPath), defVal);
 	}
 	
     public double[] getDoubles(String tagPath) {
         return toDoubles(get(tagPath));
     }
     
-	public String getString(int[] tagPath) {
-        return toString(get(tagPath));
+    public double[] getDoubles(String tagPath, double[] defVal) {
+        return toDoubles(get(tagPath), defVal);
+    }
+    
+    public String getString(int[] tagPath) {
+        return toString(get(tagPath), null);
+    }
+    
+ 	public String getString(int[] tagPath, String defVal) {
+        return toString(get(tagPath), defVal);
 	}
 	
     public String getString(String tagPath) {
-        return toString(get(tagPath));
+        return toString(get(tagPath), null);
     }
     
-	public String[] getStrings(int[] tagPath) {
+    public String getString(String tagPath, String defVal) {
+        return toString(get(tagPath), defVal);
+    }
+    
+    public String[] getStrings(int[] tagPath) {
         return toStrings(get(tagPath));
+    }
+    
+	public String[] getStrings(int[] tagPath, String[] defVal) {
+        return toStrings(get(tagPath), defVal);
 	}
 	
     public String[] getStrings(String tagPath) {
         return toStrings(get(tagPath));
     }
     
-	public Date getDate(int[] tagPath) {
-        return toDate(get(tagPath));
+    public String[] getStrings(String tagPath, String[] defVal) {
+        return toStrings(get(tagPath), defVal);
+    }
+    
+    public Date getDate(int[] tagPath) {
+        return toDate(get(tagPath), null);
+    }
+    
+	public Date getDate(int[] tagPath, Date defVal) {
+        return toDate(get(tagPath), defVal);
 	}
 	
     public Date getDate(String tagPath) {
-        return toDate(get(tagPath));
+        return toDate(get(tagPath), null);
     }
     
-	public Date[] getDates(int[] tagPath) {
+    public Date getDate(String tagPath, Date defVal) {
+        return toDate(get(tagPath), defVal);
+    }
+    
+    public Date[] getDates(int[] tagPath) {
         return toDates(get(tagPath));
+    }
+    
+	public Date[] getDates(int[] tagPath, Date[] defVal) {
+        return toDates(get(tagPath), defVal);
 	}
 	
     public Date[] getDates(String tagPath) {
         return toDates(get(tagPath));
     }
     
-	public DateRange getDateRange(int[] tagPath) {
-        return toDateRange(get(tagPath));
+    public Date[] getDates(String tagPath, Date[] defVal) {
+        return toDates(get(tagPath), defVal);
+    }
+    
+    public DateRange getDateRange(int[] tagPath) {
+        return toDateRange(get(tagPath), null);
+    }
+    
+	public DateRange getDateRange(int[] tagPath, DateRange defVal) {
+        return toDateRange(get(tagPath), defVal);
 	}
 	
     public DateRange getDateRange(String tagPath) {
-        return toDateRange(get(tagPath));
+        return toDateRange(get(tagPath), null);
     }
     
-	public Date getDate(int[] itemPath, int daTag, int tmTag) {
+   public DateRange getDateRange(String tagPath, DateRange defVal) {
+        return toDateRange(get(tagPath), defVal);
+    }
+    
+    public Date getDate(int[] itemPath, int daTag, int tmTag) {
+        return getDate(itemPath, daTag, tmTag, null);
+    }
+    
+	public Date getDate(int[] itemPath, int daTag, int tmTag, Date defVal) {
         final DicomObject item = getNestedDicomObject(itemPath);
-		return item != null ? item.getDate(daTag, tmTag) : null;		
+		return item != null ? item.getDate(daTag, tmTag, defVal) : null;		
 	}
 	
     public Date getDate(String itemPath, int daTag, int tmTag) {
-        final DicomObject item = getNestedDicomObject(itemPath);
-        return item != null ? item.getDate(daTag, tmTag) : null;        
+        return getDate(itemPath, daTag, tmTag, null);
     }
     
-	public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
+    public Date getDate(String itemPath, int daTag, int tmTag, Date defVal) {
         final DicomObject item = getNestedDicomObject(itemPath);
-		return item != null ? item.getDates(daTag, tmTag) : null;				
+        return item != null ? item.getDate(daTag, tmTag, defVal) : null;        
+    }
+    
+    public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
+        return getDates(itemPath, daTag, tmTag);
+    }
+    
+    public Date[] getDates(int[] itemPath, int daTag, int tmTag, Date[] defVal) {
+        final DicomObject item = getNestedDicomObject(itemPath);
+		return item != null ? item.getDates(daTag, tmTag, defVal) : null;				
 	}
 	
     public Date[] getDates(String itemPath, int daTag, int tmTag) {
-        final DicomObject item = getNestedDicomObject(itemPath);
-        return item != null ? item.getDates(daTag, tmTag) : null;               
+        return getDates(itemPath, daTag, tmTag);
     }
     
-	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
+    public Date[] getDates(String itemPath, int daTag, int tmTag, Date[] defVal) {
         final DicomObject item = getNestedDicomObject(itemPath);
-		return item != null ? item.getDateRange(daTag, tmTag) : null;				
+        return item != null ? item.getDates(daTag, tmTag, defVal) : null;               
+    }
+    
+    public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
+        return getDateRange(itemPath, daTag, tmTag, null);
+    }
+    
+	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag, DateRange defVal) {
+        final DicomObject item = getNestedDicomObject(itemPath);
+		return item != null ? item.getDateRange(daTag, tmTag, defVal) : null;				
 	}
 
     public DateRange getDateRange(String itemPath, int daTag, int tmTag) {
+        return getDateRange(itemPath, daTag, tmTag, null);
+    }
+    
+    public DateRange getDateRange(String itemPath, int daTag, int tmTag, DateRange defVal) {
         final DicomObject item = getNestedDicomObject(itemPath);
-        return item != null ? item.getDateRange(daTag, tmTag) : null;               
+        return item != null ? item.getDateRange(daTag, tmTag, defVal) : null;               
     }
 }
