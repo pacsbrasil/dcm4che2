@@ -49,11 +49,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -360,7 +360,7 @@ public class DcmSnd {
         CommandLine cl = null;
         try
         {
-            cl = new PosixParser().parse(opts, args);
+            cl = new GnuParser().parse(opts, args);
         } catch (ParseException e)
         {
             exit("dcmsnd: " + e.getMessage());
@@ -423,7 +423,7 @@ public class DcmSnd {
             dcmsnd.setAcceptTimeout(
                     parseInt(cl.getOptionValue("acceptTO"),
                     "illegal argument of option -acceptTO", 1, Integer.MAX_VALUE));
-        if (cl.hasOption("release-timeout"))
+        if (cl.hasOption("releaseTO"))
             dcmsnd.setReleaseTimeout(
                     parseInt(cl.getOptionValue("releaseTO"),
                     "illegal argument of option -releaseTO", 1, Integer.MAX_VALUE));
@@ -438,7 +438,7 @@ public class DcmSnd {
         if (cl.hasOption("sndpdulen"))
             dcmsnd.setMaxPDULengthSend(
                     parseInt(cl.getOptionValue("sndpdulen"),
-                    "illegal argument of option --sndpdulen", 1, 10000) * KB);
+                    "illegal argument of option -sndpdulen", 1, 10000) * KB);
         if (cl.hasOption("sosndbuf"))
             dcmsnd.setSendBufferSize(
                     parseInt(cl.getOptionValue("sosndbuf"),
@@ -454,9 +454,9 @@ public class DcmSnd {
         dcmsnd.setPackPDV(cl.hasOption("packpdv"));
         dcmsnd.setTcpNoDelay(cl.hasOption("tcpnodelay"));
         if (cl.hasOption("async"))
-            dcmsnd.setMaxOpsInvoked(zeroAsMaxInt(parseInt(
+            dcmsnd.setMaxOpsInvoked(parseInt(
                     cl.getOptionValue("async"),
-                    "illegal argument of option -async", 0, 0xffff)));
+                    "illegal argument of option -async", 0, 0xffff));
         if (cl.hasOption("lowprior"))
             dcmsnd.setPriority(CommandUtils.LOW);
         if (cl.hasOption("highprior"))
@@ -496,11 +496,6 @@ public class DcmSnd {
         prompt(dcmsnd, (t2 - t1) / 1000F);
         dcmsnd.close();
         System.out.println("Released connection to " + remoteAE);     
-    }
-
-    private static int zeroAsMaxInt(int val)
-    {
-        return val > 0 ? val : Integer.MAX_VALUE;
     }
 
     private static void prompt(DcmSnd dcmsnd, float seconds)
