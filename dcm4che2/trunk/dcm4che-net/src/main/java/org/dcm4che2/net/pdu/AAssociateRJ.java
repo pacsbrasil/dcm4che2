@@ -45,7 +45,7 @@ import java.io.IOException;
  * @version $Reversion$ $Date$
  * @since Sep 15, 2005
  */
-public class AAssociateRJException extends IOException
+public class AAssociateRJ extends IOException
 {
 
     private static final long serialVersionUID = 7878137718648065429L;
@@ -71,7 +71,7 @@ public class AAssociateRJException extends IOException
     private final int source;
     private final int reason;
 
-    public AAssociateRJException(int result, int source, int reason)
+    public AAssociateRJ(int result, int source, int reason)
     {
         super("A-ASSOCIATE-RJ[result=" + result + ", source=" + source
                 + ", reason=" + reason + "]");
