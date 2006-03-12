@@ -36,25 +36,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.service;
-
-import java.io.IOException;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.net.Association;
-import org.dcm4che2.net.DicomServiceException;
-import org.dcm4che2.net.PDVInputStream;
+package org.dcm4che2.net;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 3, 2005
- * 
+ * @version $Revision$ $Date$
+ * @since Mar 2, 2006
+ *
  */
-public interface CStoreSCP {
+public class ExtRetrieveTransferCapability extends TransferCapability {
 
-    void cstore(Association as, int pcid, DicomObject cmd,
-            PDVInputStream dataStream, String tsuid)
-            throws DicomServiceException, IOException;
-
+    public static final int RELATIONAL_RETRIEVAL = 0;
+    
+    public ExtRetrieveTransferCapability(String sopClass,
+            String[] transferSyntax, String role) {
+        super(sopClass, transferSyntax, role);
+        super.setExtInfo(new byte[1]);
+    }
+    
 }

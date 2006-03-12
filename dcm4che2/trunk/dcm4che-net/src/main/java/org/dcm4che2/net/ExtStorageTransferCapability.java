@@ -36,25 +36,30 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.service;
+package org.dcm4che2.net;
 
-import java.io.IOException;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.net.Association;
-import org.dcm4che2.net.DicomServiceException;
-import org.dcm4che2.net.PDVInputStream;
+import org.dcm4che2.net.pdu.ExtendedNegotiation;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 3, 2005
- * 
+ * @version $Revision$ $Date$
+ * @since Mar 2, 2006
+ *
  */
-public interface CStoreSCP {
+public class ExtStorageTransferCapability extends TransferCapability {
 
-    void cstore(Association as, int pcid, DicomObject cmd,
-            PDVInputStream dataStream, String tsuid)
-            throws DicomServiceException, IOException;
-
+    public static final int LEVEL_OF_SUPPORT = 0;
+    public static final int LEVEL_OF_DIGITAL_SIGNATURE_SUPPORT = 2;
+    public static final int ELEMENT_COERCION = 4;
+    
+    public ExtStorageTransferCapability(String sopClass,
+            String[] transferSyntax, String role) {
+        super(sopClass, transferSyntax, role);
+        super.setExtInfo(new byte[6]);
+    }
+    
+    protected ExtendedNegotiation negotiate(ExtendedNegotiation offered) {
+        return extInfo != null ? new ExtendedNegotiation(sopClass, extInfo)
+                : null;
+    }
 }

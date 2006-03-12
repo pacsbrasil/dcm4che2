@@ -39,38 +39,39 @@
 package org.dcm4che2.net.service;
 
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSP;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Jan 22, 2006
- *
+ * 
  */
-class WriteMultiDimseRsp implements Runnable
-{
-    
+class WriteMultiDimseRsp implements Runnable {
+
     private final Association as;
+
     private final int pcid;
+
     private final DimseRSP rsp;
 
-    public WriteMultiDimseRsp(Association as, int pcid, DimseRSP rsp)
-    {
+    public WriteMultiDimseRsp(Association as, int pcid, DimseRSP rsp) {
         this.as = as;
         this.pcid = pcid;
         this.rsp = rsp;
     }
 
-    public void run()
-    {
-        try
-        {
-            do
-                as.writeDimseRSP(pcid, rsp.getCommand(), rsp.getDataset());
-            while (rsp.next());
-        }
-        catch (Throwable e)
-        {
+    public void run() {
+        try {
+            try {
+                do
+                    as.writeDimseRSP(pcid, rsp.getCommand(), rsp.getDataset());
+                while (rsp.next());
+            } catch (DicomServiceException e) {
+                as.writeDimseRSP(pcid, e.getCommand(), e.getDataset());
+            }
+        } catch (Throwable e) {
             as.abort();
         }
     }

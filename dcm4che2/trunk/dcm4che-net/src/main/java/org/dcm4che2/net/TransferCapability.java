@@ -38,6 +38,8 @@
 
 package org.dcm4che2.net;
 
+import org.dcm4che2.net.pdu.ExtendedNegotiation;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
@@ -49,10 +51,11 @@ public class TransferCapability
     public static final String SCU = "SCU";
     public static final String SCP = "SCP";
     
-    private String commonName;
-    private String sopClass;
-    private String role;
-    private String[] transferSyntax = {};
+    protected String commonName;
+    protected String sopClass;
+    protected boolean scp;
+    protected String[] transferSyntax = {};
+    protected byte[] extInfo;
     
     public TransferCapability()
     {
@@ -62,7 +65,7 @@ public class TransferCapability
     {
         this.sopClass = sopClass;
         this.transferSyntax = transferSyntax;
-        this.role = role.intern();
+        setRole(role);
     }
     
     public final String getCommonName()
@@ -77,28 +80,29 @@ public class TransferCapability
     
     public final String getRole()
     {
-        return role; 
+        return scp ? SCP : SCU; 
     }
     
-    public final void setRole(String role)
-    {
+    public final void setRole(String role) {
         if (role == null)
             throw new NullPointerException("Role");
-        
-        if (role.equals(SCU) || role.equals(SCP))
-                role = role.intern();
+
+        if (role.equals(SCP))
+            scp = true;
+        else if (role.equals(SCU))
+            scp = false;
         else
-            throw new IllegalArgumentException("Role:" +  role);
+            throw new IllegalArgumentException("Role:" + role);
     }
 
     public final boolean isSCP()
     {
-         return SCP.equals(role);
+         return scp;
     }
     
     public final boolean isSCU()
     {
-         return SCU.equals(role);
+         return !scp;
     }
     
     public final String getSopClass()
@@ -119,5 +123,41 @@ public class TransferCapability
     public void setTransferSyntax(String[] transferSyntax)
     {
         this.transferSyntax = transferSyntax;
+    }
+    
+    public byte[] getExtInfo()
+    {
+        return extInfo;
+    }
+    
+    public void setExtInfo(byte[] info)
+    {
+        extInfo = info;
+    }
+
+    public boolean getExtInfoBoolean(int field) {
+        return extInfo != null && extInfo.length > field && extInfo[field] != 0;
+    }
+
+    public int getExtInfoInt(int field) {
+        return extInfo != null && extInfo.length > field ? extInfo[field] & 0xff : 0;
+    }
+    
+    public void setExtInfoBoolean(int field, boolean b) {
+        setExtInfoInt(field, b ? 1 : 0);
+    }
+    
+    public void setExtInfoInt(int field, int value) {
+        extInfo[field] = (byte)value;
+    }
+    
+    protected ExtendedNegotiation negotiate(ExtendedNegotiation offered) {
+        if (offered == null || extInfo == null)
+            return null;
+        byte[] info = offered.getInformation();
+        for (int i = 0; i < info.length; i++) {
+            info[i] &= getExtInfoInt(i); 
+        }
+        return new ExtendedNegotiation(sopClass, info);
     }
 }

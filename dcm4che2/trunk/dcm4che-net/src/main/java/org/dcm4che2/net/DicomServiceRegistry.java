@@ -66,8 +66,6 @@ import org.dcm4che2.net.service.NSetSCP;
  *
  */
 class DicomServiceRegistry 
-implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
-    NEventReportSCU, NGetSCP, NCreateSCP, NSetSCP, NDeleteSCP, NActionSCP
 {
     private final HashSet sopCUIDs = new HashSet();
     private final HashMap cstoreSCP = new HashMap();
@@ -158,94 +156,93 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
             unregisterFrom(ndeleteSCP, service);
     }
     
-    private CStoreSCP getCStoreSCP(Association as, DicomObject cmd)
-    {
-        CStoreSCP scp = (CStoreSCP) cstoreSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp : this;
+
+    private Object getFrom(HashMap registry, DicomObject cmd, int tag)
+    throws DicomServiceException {
+        String cuid = cmd.getString(tag);
+        Object scp = registry.get(cuid);
+        if (scp == null) {
+            throw new DicomServiceException(cmd, sopCUIDs.contains(cuid) 
+                    ? Status.UnrecognizedOperation : Status.NoSuchSOPclass);
+        }
+        return scp;
+    }
+    
+    private CStoreSCP getCStoreSCP(DicomObject cmd)
+            throws DicomServiceException {
+        return (CStoreSCP) getFrom(cstoreSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
     private CGetSCP getCGetSCP(Association as, DicomObject cmd)
-    {
-        CGetSCP scp = (CGetSCP) cgetSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (CGetSCP) getFrom(cgetSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
     private CFindSCP getCFindSCP(Association as, DicomObject cmd)
-    {
-        CFindSCP scp = (CFindSCP) cfindSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (CFindSCP) getFrom(cfindSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
     private CMoveSCP getCMoveSCP(Association as, DicomObject cmd)
-    {
-        CMoveSCP scp = (CMoveSCP) cmoveSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (CMoveSCP) getFrom(cmoveSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
     private CEchoSCP getCEchoSCP(Association as, DicomObject cmd)
-    {
-        CEchoSCP scp = (CEchoSCP) cechoSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (CEchoSCP) getFrom(cechoSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
     private NEventReportSCU getNEventReportSCU(Association as, DicomObject cmd)
-    {
-        NEventReportSCU scu = (NEventReportSCU) neventReportSCU.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scu != null ? scu : this;
+            throws DicomServiceException {
+        return (NEventReportSCU) getFrom(neventReportSCU, cmd, Tag.AffectedSOPClassUID);
+
     }
 
     private NGetSCP getNGetSCP(Association as, DicomObject cmd)
-    {
-        NGetSCP scp = (NGetSCP) ngetSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (NGetSCP) getFrom(ngetSCP, cmd, Tag.RequestedSOPClassUID);
     }
 
     private NSetSCP getNSetSCP(Association as, DicomObject cmd)
-    {
-        NSetSCP scp = (NSetSCP) nsetSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (NSetSCP) getFrom(nsetSCP, cmd, Tag.RequestedSOPClassUID);
     }
 
     private NActionSCP getNActionSCP(Association as, DicomObject cmd)
-    {
-        NActionSCP scp = (NActionSCP) nactionSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (NActionSCP) getFrom(nactionSCP, cmd, Tag.RequestedSOPClassUID);
     }
 
     private NCreateSCP getNCreateSCP(Association as, DicomObject cmd)
-    {
-        NCreateSCP scp = (NCreateSCP) ncreateSCP.get(cmd.getString(Tag.AffectedSOPClassUID));
-        return scp != null ? scp : this;
+            throws DicomServiceException {
+        return (NCreateSCP) getFrom(ncreateSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
-    private NDeleteSCP getNDeleteSCP(Association as, DicomObject cmd)
-    {
-        NDeleteSCP scp = (NDeleteSCP) ndeleteSCP.get(cmd.getString(Tag.RequestedSOPClassUID));
-        return scp != null ? scp : this;
-    }
 
+    private NDeleteSCP getNDeleteSCP(DicomObject cmd)
+            throws DicomServiceException {
+        return (NDeleteSCP) getFrom(ndeleteSCP, cmd, Tag.RequestedSOPClassUID);
+    }
+    
     public void process(Association as, int pcid, DicomObject cmd,
-            PDVInputStream dataStream, String tsuid)
+            PDVInputStream dataStream, String tsuid) throws IOException
     {
-        final int cmdfield = cmd.getInt(Tag.CommandField);
-        if (cmdfield == CommandUtils.C_STORE_RQ)
-        {
-            getCStoreSCP(as, cmd).cstore(as, pcid, cmd, dataStream, tsuid);
-        }
-        else
-        {
-            final DicomObject dataset;
-            try
-            {
-                dataset = dataStream != null ? dataStream.readDataset() : null;
-            }
-            catch (IOException e)
-            {
-                as.abort();
-                return;
-            }
-            switch (cmdfield)
-            {
+        try {
+            final int cmdfield = cmd.getInt(Tag.CommandField);
+            if (cmdfield == CommandUtils.C_STORE_RQ) {
+                getCStoreSCP(cmd).cstore(as, pcid, cmd,
+                        dataStream, tsuid);
+            } else {
+                final DicomObject dataset;
+                try {
+                    dataset = dataStream != null ? dataStream.readDataset()
+                            : null;
+                } catch (IOException e) {
+                    as.abort();
+                    return;
+                }
+                switch (cmdfield) {
                 case CommandUtils.C_GET_RQ:
                     getCGetSCP(as, cmd).cget(as, pcid, cmd, dataset);
                     break;
@@ -259,7 +256,8 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
                     getCEchoSCP(as, cmd).cecho(as, pcid, cmd);
                     break;
                 case CommandUtils.N_EVENT_REPORT_RQ:
-                    getNEventReportSCU(as, cmd).neventReport(as, pcid, cmd, dataset);
+                    getNEventReportSCU(as, cmd).neventReport(as, pcid, cmd,
+                            dataset);
                     break;
                 case CommandUtils.N_GET_RQ:
                     getNGetSCP(as, cmd).nget(as, pcid, cmd, dataset);
@@ -275,78 +273,16 @@ implements CStoreSCP, CGetSCP, CFindSCP, CMoveSCP, CEchoSCP,
                             dataStream != null ? dataset : null);
                     break;
                 case CommandUtils.N_DELETE_RQ:
-                    getNDeleteSCP(as, cmd).ndelete(as, pcid, cmd, dataset);
+                    getNDeleteSCP(cmd).ndelete(as, pcid, cmd, dataset);
                     break;
                 default:
-                    // TODO Auto-generated method stub        
-
+                    throw new DicomServiceException(cmd,
+                            Status.UnrecognizedOperation);
+                }
             }
+        } catch (DicomServiceException e) {
+            as.writeDimseRSP(pcid, e.getCommand(), e.getDataset());
         }
     }
 
-    public void cstore(Association as, int pcid, DicomObject cmd, PDVInputStream dataStream, String tsuid)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void cget(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void cfind(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void cmove(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void cecho(Association as, int pcid, DicomObject cmd)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void neventReport(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void nget(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void ncreate(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void nset(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void ndelete(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void naction(Association as, int pcid, DicomObject cmd, DicomObject data)
-    {
-        // TODO Auto-generated method stub
-        
-    }
 }

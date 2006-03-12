@@ -38,43 +38,34 @@
 
 package org.dcm4che2.net.service;
 
+import java.io.IOException;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.DicomServiceException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Jan 22, 2006
- *
+ * 
  */
-public class NCreateService
-extends DicomService 
-implements NCreateSCP
-{
+public class NCreateService extends DicomService implements NCreateSCP {
 
-    public NCreateService(String sopClass)
-    {
+    public NCreateService(String sopClass) {
         super(sopClass);
     }
-    
-    public void ncreate(Association as, int pcid, DicomObject rq, DicomObject data)
-    {
-        try
-        {
-            DicomObject rsp = CommandUtils.newNCreateRSP(rq, CommandUtils.SUCCESS);
-            as.writeDimseRSP(pcid, rsp, doNCreate(as, pcid, rq, data, rsp));
-        }
-        catch (Throwable e)
-        {
-            as.abort();
-        }            
+
+    public void ncreate(Association as, int pcid, DicomObject rq,
+            DicomObject data) throws DicomServiceException, IOException {
+        DicomObject rsp = CommandUtils.newNCreateRSP(rq, CommandUtils.SUCCESS);
+        as.writeDimseRSP(pcid, rsp, doNCreate(as, pcid, rq, data, rsp));
     }
 
-    protected DicomObject doNCreate(Association as, int pcid, DicomObject rq, 
-            DicomObject data, DicomObject rsp)
-    {
-         return null;
+    protected DicomObject doNCreate(Association as, int pcid, DicomObject rq,
+            DicomObject data, DicomObject rsp) throws DicomServiceException {
+        return null;
     }
-    
+
 }

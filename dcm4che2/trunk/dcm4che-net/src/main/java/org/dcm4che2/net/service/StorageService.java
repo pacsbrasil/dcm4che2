@@ -44,54 +44,36 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.PDVInputStream;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Nov 14, 2005
- *
+ * 
  */
-public class StorageService
-extends DicomService
-implements CStoreSCP
-{
+public class StorageService extends DicomService implements CStoreSCP {
 
-    protected StorageService(String sopClass)
-    {
+    protected StorageService(String sopClass) {
         super(sopClass);
     }
-    
-    protected StorageService(String[] sopClasses)
-    {
+
+    protected StorageService(String[] sopClasses) {
         super(sopClasses, UID.StorageServiceClass);
     }
 
     public void cstore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid)
-    {
-        try
-        {
-            DicomObject rsp = CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
-            doCStore(as, pcid, rq, dataStream, tsuid, rsp);
-            as.writeDimseRSP(pcid, rsp);
-        }
-        catch (Throwable e)
-        {
-            as.abort();
-        }
+            throws DicomServiceException, IOException {
+        DicomObject rsp = CommandUtils.newCStoreRSP(rq, CommandUtils.SUCCESS);
+        doCStore(as, pcid, rq, dataStream, tsuid, rsp);
+        as.writeDimseRSP(pcid, rsp);
     }
 
     protected void doCStore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
-    {
-        try
-        {
-            dataStream.skipAll();
-        }
-        catch (IOException e)
-        {
-            as.abort();
-        }
+            throws DicomServiceException, IOException {
+        dataStream.skipAll();
     }
 }

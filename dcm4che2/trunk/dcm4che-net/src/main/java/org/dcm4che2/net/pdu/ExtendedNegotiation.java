@@ -48,6 +48,14 @@ public class ExtendedNegotiation
 
     private String cuid;
     private byte[] info;
+    
+    public ExtendedNegotiation() {
+    }
+
+    public ExtendedNegotiation(String cuid, byte[] info) {
+        this.cuid = cuid;
+        this.info = (byte[]) info.clone();
+    }
 
     public final String getSOPClassUID()
     {
@@ -77,7 +85,7 @@ public class ExtendedNegotiation
         if (cuid == null)
             throw new IllegalStateException();
 
-        return cuid.length() + info.length;
+        return cuid.length() + info.length + 2;
     }
 
 }

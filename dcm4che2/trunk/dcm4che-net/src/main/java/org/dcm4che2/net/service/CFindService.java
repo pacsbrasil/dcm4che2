@@ -38,12 +38,16 @@
 
 package org.dcm4che2.net.service;
 
+import java.io.IOException;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.SingleDimseRSP;
+import org.dcm4che2.net.Status;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -70,30 +74,29 @@ implements CFindSCP
     }
         
     public void cfind(Association as, int pcid, DicomObject rq, DicomObject data)
+            throws DicomServiceException, IOException
     {
+        DicomObject cmdrsp = CommandUtils.newCFindRSP(rq, CommandUtils.SUCCESS);
+        DimseRSP rsp = doCFind(as, pcid, rq, data, cmdrsp);
         try {
-            DicomObject cmdrsp = CommandUtils.newCFindRSP(rq, CommandUtils.SUCCESS);
-            DimseRSP rsp = doCFind(as, pcid, rq, data, cmdrsp);
             rsp.next();
-            cmdrsp = rsp.getCommand();
-            if (CommandUtils.isPending(cmdrsp))
-            {
-                as.registerCancelRQHandler(rq, rsp);
-                executor.execute(new WriteMultiDimseRsp(as, pcid, rsp));
-            }
-            else
-            {
-                as.writeDimseRSP(pcid, cmdrsp, rsp.getDataset());
-            }
+        } catch (InterruptedException e) {
+            throw new DicomServiceException(rq, Status.ProcessingFailure);
         }
-        catch (Throwable e)
+        cmdrsp = rsp.getCommand();
+        if (CommandUtils.isPending(cmdrsp))
         {
-            as.abort();
-        }            
+            as.registerCancelRQHandler(rq, rsp);
+            executor.execute(new WriteMultiDimseRsp(as, pcid, rsp));
+        }
+        else
+        {
+            as.writeDimseRSP(pcid, cmdrsp, rsp.getDataset());
+        }
     }
 
     protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd,
-            DicomObject data, DicomObject rsp)
+            DicomObject data, DicomObject rsp) throws DicomServiceException
     {
         return new SingleDimseRSP(rsp);
     }

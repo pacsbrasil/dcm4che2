@@ -48,9 +48,9 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.io.DicomCodingException;
 import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.net.pdu.AAbortException;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJException;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.CommonExtendedNegotiation;
@@ -157,8 +157,8 @@ class PDUDecoder extends PDVInputStream
         {
             log.warn(as.toString() + " >> unrecognized PDU[type=" + pdutype + ", len="
                     + (pdulen & 0xFFFFFFFFL) + "]");
-            throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                    AAbortException.UNRECOGNIZED_PDU);
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.UNRECOGNIZED_PDU);
         }
         if (log.isDebugEnabled())
             log.debug(as.toString() + " >> PDU[type=" + pdutype + ", len="
@@ -172,14 +172,14 @@ class PDUDecoder extends PDVInputStream
             {
                 log.warn(as.toString() + ": Invalid length of PDU[type=" + pdutype + "len="
                         + (pdulen & 0xFFFFFFFFL) + "]");
-                throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                        AAbortException.INVALID_PDU_PARAMETER_VALUE);
+                throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                        AAbort.INVALID_PDU_PARAMETER_VALUE);
             }
             switch (pdutype)
             {
                 case PDUType.A_ASSOCIATE_RJ:
                     get();            
-                    as.receivedAssociateRJ(new AAssociateRJException(get(), get(), get()));
+                    as.receivedAssociateRJ(new AAssociateRJ(get(), get(), get()));
                     break;
                 case PDUType.A_RELEASE_RQ:
                     as.receivedReleaseRQ();
@@ -190,7 +190,7 @@ class PDUDecoder extends PDVInputStream
                 case PDUType.A_ABORT:
                     get();
                     get();
-                    as.receivedAbort(new AAbortException(get(), get()));
+                    as.receivedAbort(new AAbort(get(), get()));
                     break;
                 default:
                     throw new RuntimeException("Unexpected pdutype:" + pdutype);
@@ -201,8 +201,8 @@ class PDUDecoder extends PDVInputStream
                 log.warn(as.toString() + ": Length of PDU[type=" + pdutype + "[len="
                         + (pdulen & 0xFFFFFFFFL) + "] exceeds "
                         + MAX_PDU_LEN + " limit");
-                throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                        AAbortException.INVALID_PDU_PARAMETER_VALUE);
+                throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                        AAbort.INVALID_PDU_PARAMETER_VALUE);
             }
             if (6 + pdulen > buf.length)
             {
@@ -256,18 +256,18 @@ class PDUDecoder extends PDVInputStream
                 decodeItem(rqac);
             if (pos != pdulen + 6)
             {
-                log.warn(as.toString() + ": Invalid length of PDU[type=" + pdutype + "[len="
+                log.warn(as.toString() + ": Invalid length of PDU[type=" + pdutype + ", len="
                         + (pdulen & 0xFFFFFFFFL) + "]");
-                throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                        AAbortException.INVALID_PDU_PARAMETER_VALUE);
+                throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                        AAbort.INVALID_PDU_PARAMETER_VALUE);
             }
         }
         catch (IndexOutOfBoundsException e)
         {
-            log.warn(as.toString() + ": Invalid length of PDU[type=" + pdutype + "len="
+            log.warn(as.toString() + ": Invalid length of PDU[type=" + pdutype + ", len="
                     + (pdulen & 0xFFFFFFFFL) + "]");
-            throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                    AAbortException.INVALID_PDU_PARAMETER_VALUE);
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.INVALID_PDU_PARAMETER_VALUE);
         }
         return rqac;
     }
@@ -286,7 +286,7 @@ class PDUDecoder extends PDVInputStream
         return s;
     }
     
-    private void decodeItem(AAssociateRQAC rqac) throws AAbortException
+    private void decodeItem(AAssociateRQAC rqac) throws AAbort
     {
         int itemType = get();
         get(); // skip reserved byte
@@ -339,19 +339,14 @@ class PDUDecoder extends PDVInputStream
         }
     }
 
-    private void decodeUserInfo(int itemLength, AAssociateRQAC rqac) throws AAbortException
+    private void decodeUserInfo(int itemLength, AAssociateRQAC rqac) throws AAbort
     {
         int endpos = pos + itemLength;
         while (pos < endpos)
             decodeUserInfoSubItem(rqac);
     }
 
-    private static int zeroAsMaxInt(int val)
-    {
-        return val > 0 ? val : Integer.MAX_VALUE;
-    }
-
-    private void decodeUserInfoSubItem(AAssociateRQAC rqac) throws AAbortException
+    private void decodeUserInfoSubItem(AAssociateRQAC rqac) throws AAbort
     {
         int itemType = get();
         get(); // skip reserved byte
@@ -359,14 +354,14 @@ class PDUDecoder extends PDVInputStream
         switch (itemType)
         {
         case ItemType.MAX_PDU_LENGTH:
-            rqac.setMaxPDULength(zeroAsMaxInt(getInt()));
+            rqac.setMaxPDULength(getInt());
             break;
         case ItemType.IMPL_CLASS_UID:
             rqac.setImplClassUID(decodeASCIIString(itemLength));
             break;
         case ItemType.ASYNC_OPS_WINDOW:
-            rqac.setMaxOpsInvoked(zeroAsMaxInt(getUnsignedShort()));
-            rqac.setMaxOpsPerformed(zeroAsMaxInt(getUnsignedShort()));
+            rqac.setMaxOpsInvoked(getUnsignedShort());
+            rqac.setMaxOpsPerformed(getUnsignedShort());
             break;
         case ItemType.ROLE_SELECTION:
             rqac.addRoleSelection(decodeRoleSelection(itemLength));
@@ -407,7 +402,7 @@ class PDUDecoder extends PDVInputStream
     }
 
     private CommonExtendedNegotiation decodeCommonExtendedNegotiation(int itemLength)
-    throws AAbortException
+    throws AAbort
     {
         int endPos = pos + itemLength;
         CommonExtendedNegotiation extNeg = new CommonExtendedNegotiation();
@@ -419,8 +414,8 @@ class PDUDecoder extends PDVInputStream
             log.warn(as.toString() + ": Mismatch of encoded (" + itemLength 
                     + ") with actual (" + (itemLength + pos - itemLength)
                     + ") Common Extended Negotiation item length");
-            throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                    AAbortException.INVALID_PDU_PARAMETER_VALUE);
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.INVALID_PDU_PARAMETER_VALUE);
         }
         return extNeg;
     }
@@ -434,7 +429,7 @@ class PDUDecoder extends PDVInputStream
     }
 
     private UserIdentity decodeUserIdentity(int itemLength)
-    throws AAbortException
+    throws AAbort
     {
         int endPos = pos + itemLength;
         UserIdentity user = new UserIdentity();
@@ -447,8 +442,8 @@ class PDUDecoder extends PDVInputStream
             log.warn(as.toString() + ": Mismatch of encoded (" + itemLength 
                     + ") with actual (" + (itemLength + pos - itemLength)
                     + ") User Identity item length");
-            throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER,
-                    AAbortException.INVALID_PDU_PARAMETER_VALUE);
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.INVALID_PDU_PARAMETER_VALUE);
         }
         return user;
     }
@@ -466,12 +461,12 @@ class PDUDecoder extends PDVInputStream
         if (pc == null)
         {
             log.warn(as.toString() + ": No Presentation Context with given ID - " + pcid);
-            throw new AAbortException();
+            throw new AAbort();
         }
         if (!pc.isAccepted())
         {
             log.warn(as.toString() + ": No accepted Presentation Context with given ID - " + pcid);
-            throw new AAbortException();
+            throw new AAbort();
         }
         String tsuid = pc.getTransferSyntax();
         DicomObject cmd = readDicomObject(TransferSyntax.ImplicitVRLittleEndian);
@@ -526,7 +521,7 @@ class PDUDecoder extends PDVInputStream
         catch (DicomCodingException e)
         {
             log.warn(as.toString() + ": Failed to decode dicom object: " + e.getMessage());
-            throw new AAbortException();
+            throw new AAbort();
         }
         finally
         {
@@ -545,21 +540,21 @@ class PDUDecoder extends PDVInputStream
             {
                 log.warn(as.toString() + ": Expected P-DATA-TF put received PDU[type="
                         + pdutype + ", len=" + pdulen + "]");
-                throw new AAbortException();
+                throw new AAbort();
             }
         }
         if (remaining() < 6)
         {
             log.warn(as.toString() + ": PDV does not fit in remaining "
                     + remaining() + " bytes of P-DATA_TF[len=" + pdulen + "]");
-            throw new AAbortException();
+            throw new AAbort();
         }
         int pdvlen = getInt();
         this.pdvend = pos + pdvlen;
         if (pdvlen < 2 || pdvlen > remaining())
         {
             log.warn(as.toString() + ": Invalid PDV item length: " + pdvlen);
-            throw new AAbortException();
+            throw new AAbort();
         }
         this.pcid = get();
         this.pdvmch = get();
@@ -571,13 +566,13 @@ class PDUDecoder extends PDVInputStream
             log.warn(as.toString() + (command == 0 
                     ? ": Expected Data but received Command PDV"
                     : ": Expected Command but received Data PDV"));
-            throw new AAbortException();
+            throw new AAbort();
         }
         if (pcid1 != -1 && pcid != pcid1)
         {
             log.warn(as.toString() + ": Expected PDV with pcid: " + pcid1 
                     + " but received with pcid: " + pcid);
-            throw new AAbortException();
+            throw new AAbort();
         }
     }
 
@@ -590,7 +585,7 @@ class PDUDecoder extends PDVInputStream
             {
                 nextPDV(pdvmch & PDVType.COMMAND, pcid);
             }
-            catch (AAbortException e)
+            catch (AAbort e)
             {
                 as.abort(e); // send abort before exit of read, skip, close 
                 throw e;

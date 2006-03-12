@@ -67,6 +67,8 @@ import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
+import org.dcm4che2.net.ExtQueryTransferCapability;
+import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.TransferCapability;
 
 /**
@@ -203,6 +205,11 @@ public class DcmQR
     private int completed;
     private int warning;
     private int failed;
+    private boolean relationQR;
+    private boolean dateTimeMatching;
+    private boolean semanticPersonNameMatching;
+    private boolean caseSensitivePersonNameMatching;
+    private boolean noExtNegotiation;
 
     public DcmQR()
     {
@@ -330,6 +337,17 @@ public class DcmQR
                 "maximum number of outstanding C-MOVE-RQ it may invoke " +
                 "asynchronously, 1 by default.");
         opts.addOption(OptionBuilder.create("async"));
+
+        opts.addOption("noextneg", false, 
+                "disable extended negotiation.");
+        opts.addOption("relational", false, 
+                "negotiate support of relational queries and retrieval.");
+        opts.addOption("datetime", false, 
+                "negotiate support of combined date and time attribute range matching.");
+        opts.addOption("case", false, 
+                "negotiate support of case-sensitive person name attribute matching.");
+        opts.addOption("semantic", false, 
+                "negotiate support of semantic person name attribute matching.");
         
         opts.addOption("retall", false, 
                 "negotiate private FIND SOP Classes to fetch all available " +
@@ -578,18 +596,26 @@ public class DcmQR
             dcmqr.setQueryLevel(IMAGE);
         else
             dcmqr.setQueryLevel(STUDY);
+        if (cl.hasOption("noextneg"))
+            dcmqr.setNoExtNegotiation(true);
+        if (cl.hasOption("relational"))
+            dcmqr.setRelationQR(true);
+        if (cl.hasOption("datetime"))
+            dcmqr.setDateTimeMatching(true);
+        if (cl.hasOption("case"))
+            dcmqr.setCaseSensitivePersonNameMatching(true);
+        if (cl.hasOption("semantic"))
+            dcmqr.setSemanticPersonNameMatching(true);
+        
         if (cl.hasOption("retall"))
-            dcmqr.addPrivateTC(new TransferCapability(
-                    UID.PrivateStudyRootQueryRetrieveInformationModelFIND,
-                    DEFAULT_TS, TransferCapability.SCU));
+            dcmqr.addPrivate(
+                    UID.PrivateStudyRootQueryRetrieveInformationModelFIND);
         if (cl.hasOption("blocked"))
-            dcmqr.addPrivateTC(new TransferCapability(
-                    UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND,
-                    DEFLATED_TS, TransferCapability.SCU));
+            dcmqr.addPrivate(
+                    UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND);
         if (cl.hasOption("vmf"))
-            dcmqr.addPrivateTC(new TransferCapability(
-                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND,
-                    DEFLATED_TS, TransferCapability.SCU));
+            dcmqr.addPrivate(
+                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);        
         if (cl.hasOption("M"))
         {
             String[] matchingKeys = cl.getOptionValues("M");
@@ -611,8 +637,8 @@ public class DcmQR
         }
         catch (Exception e)
         {
-            System.err.println("ERROR: Failed to establish association:"
-                    + e.getMessage());
+            System.err.println("ERROR: Failed to establish association:");
+            e.printStackTrace(System.err);
             System.exit(2);
         }
         long t2 = System.currentTimeMillis();
@@ -656,6 +682,26 @@ public class DcmQR
         System.out.println("Released connection to " + remoteAE);
     }
     
+    private void setNoExtNegotiation(boolean b) {
+        this.noExtNegotiation = b;        
+    }
+
+    private void setSemanticPersonNameMatching(boolean b) {
+        this.semanticPersonNameMatching = b;
+    }
+
+    private void setCaseSensitivePersonNameMatching(boolean b) {
+        this.caseSensitivePersonNameMatching = b;
+    }
+
+    private void setDateTimeMatching(boolean b) {
+        this.dateTimeMatching = b;        
+    }
+    
+    private void setRelationQR(boolean b) {
+        this.relationQR = b;        
+    }
+
     public final int getFailed()
     {
         return failed;
@@ -706,12 +752,31 @@ public class DcmQR
               + movecuids.length + numPrivateFind];
         int i = 0;
         for (int j = 0; j < findcuids.length; j++)
-            tc[i++] = new TransferCapability(findcuids[j], DEFAULT_TS, TransferCapability.SCU);
+            tc[i++] = mkFindTC(findcuids[j], DEFAULT_TS);
         for (int j = 0; j < movecuids.length; j++)
-            tc[i++] = new TransferCapability(movecuids[j], DEFAULT_TS, TransferCapability.SCU);
+            tc[i++] = mkMoveTC(movecuids[j], DEFAULT_TS);
         for (int j = 0; j < numPrivateFind; j++)
-            tc[i++] = (TransferCapability) privateFind.get(j);            
-        ae.setTransferCapability(tc);       
+            tc[i++] = mkFindTC((String) privateFind.get(j), DEFLATED_TS);            
+        ae.setTransferCapability(tc);
+    }
+
+    private TransferCapability mkMoveTC(String cuid, String[] ts) {
+        ExtRetrieveTransferCapability tc = new ExtRetrieveTransferCapability(cuid, ts, TransferCapability.SCU);
+        tc.setExtInfoBoolean(ExtRetrieveTransferCapability.RELATIONAL_RETRIEVAL, relationQR);
+        if (noExtNegotiation)
+            tc.setExtInfo(null);
+        return tc;
+    }
+
+    private TransferCapability mkFindTC(String cuid, String[] ts) {
+        ExtQueryTransferCapability tc = new ExtQueryTransferCapability(cuid, ts, TransferCapability.SCU);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES, relationQR);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING, dateTimeMatching);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.CASE_SENSITIVE_PN_MATCHING, caseSensitivePersonNameMatching);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.SEMANTIC_PN_MATCHING, semanticPersonNameMatching);
+        if (noExtNegotiation)
+            tc.setExtInfo(null);
+        return tc;
     }
 
     private void setQueryLevel(int qrlevel)
@@ -723,9 +788,9 @@ public class DcmQR
             filter.putNull(tags[i], null);
     }
 
-    public final void addPrivateTC(TransferCapability tc)
+    public final void addPrivate(String cuid)
     {
-        this.privateFind.add(tc);
+        this.privateFind.add(cuid);
     }
 
     private void setMoveDest(String aet)

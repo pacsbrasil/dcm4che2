@@ -304,6 +304,24 @@ public class CommandUtils
         return rsp;
     }
 
+    public static DicomObject toRSP(DicomObject rq, int status)
+    {
+        int cmdfield = rq.getInt(Tag.CommandField);
+        DicomObject rsp = newRSP(rq, cmdfield | RSP, status);
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        if (cuid == null)
+            cuid = rq.getString(Tag.RequestedSOPClassUID);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            iuid = rq.getString(Tag.RequestedSOPInstanceUID);
+        if (includeUIDinRSP) {
+            rsp.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+            if (iuid != null) {
+                rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+            }
+        }
+        return rsp;
+    }
+    
     public static boolean isIncludeUIDinRSP()
     {
         return includeUIDinRSP;

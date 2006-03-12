@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,10 +53,11 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.net.pdu.AAbortException;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJException;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
+import org.dcm4che2.net.pdu.ExtendedNegotiation;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
 import org.dcm4che2.util.IntHashtable;
@@ -234,10 +236,18 @@ public class Association implements Runnable
             Map ts2pc = (Map) e.getValue();
             String[] tsuids = (String[]) ts2pc.keySet().toArray(new String[ts2pc.size()]);
             String cuid = asuid; // TODO support of Meta SOP Classes
-            if (isSCUFor(cuid))
-                scuTCs.put(cuid, new TransferCapability(cuid, tsuids, TransferCapability.SCU));
-            if (isSCPFor(cuid))
-                scpTCs.put(cuid, new TransferCapability(cuid, tsuids, TransferCapability.SCP));            
+            ExtendedNegotiation extneg =  associateAC.getExtendedNegotiationFor(cuid);
+            byte[] extinfo = extneg != null ? extneg.getInformation() : null;
+            if (isSCUFor(cuid)) {
+                TransferCapability tc = new TransferCapability(cuid, tsuids, TransferCapability.SCU);
+                tc.setExtInfo(extinfo); 
+                scuTCs.put(cuid, tc);
+            }
+            if (isSCPFor(cuid)) {
+                TransferCapability tc = new TransferCapability(cuid, tsuids, TransferCapability.SCP);
+                tc.setExtInfo(extinfo); 
+                scpTCs.put(cuid, tc);
+            }
         }
     }
 
@@ -304,12 +314,7 @@ public class Association implements Runnable
         return associateAC;        
     }
     
-    void pabort(int reason)
-    {
-        abort(new AAbortException(AAbortException.UL_SERIVE_PROVIDER, reason));        
-    }
-
-    public void release(boolean waitForRSP) throws InterruptedException
+   public void release(boolean waitForRSP) throws InterruptedException
     {
         if (ae != null)
             ae.removeFromPool(this);
@@ -335,7 +340,7 @@ public class Association implements Runnable
     
     public void abort()
     {
-        abort(new AAbortException());       
+        abort(new AAbort());       
     }
     
     private PresentationContext pcFor(String cuid, String tsuid) 
@@ -656,7 +661,7 @@ public class Association implements Runnable
         if (rspHandler == null)
         {
             log.warn("unexpected message ID in DIMSE RSP:\n{}", cmd);
-            throw new AAbortException();
+            throw new AAbort();
         }
         try
         {
@@ -684,7 +689,7 @@ public class Association implements Runnable
     {
         synchronized (rspHandlerForMsgId)
         {
-            while (rspHandlerForMsgId.size() >= maxOpsInvoked)
+            while (maxOpsInvoked > 0 && rspHandlerForMsgId.size() >= maxOpsInvoked)
                 rspHandlerForMsgId.wait();
             if (isReadyForDataReceive())
                 rspHandlerForMsgId.put(msgId, rspHandler);
@@ -710,31 +715,27 @@ public class Association implements Runnable
         }
     }
 
-    public void run()
-    {
-        try
-        {
+    public void run() {
+        try {
             this.decoder = new PDUDecoder(this, in);
             while (!(state == State.STA1 || state == State.STA13))
                 decoder.nextPDU();
-        }
-        catch (AAbortException aa)
-        {
+        } catch (AAbort aa) {
             abort(aa);
-        }
-        catch (Throwable e)
-        {
-            setState(State.STA1);
-        }
-        finally
-        {
+        } catch (SocketTimeoutException e) {
+            exception = e;
+            log.warn("ARTIM timer expired in State: " + state);
+        } catch (IOException e) {
+            exception = e;
+            log.warn("i/o exception in State " + state, e);
+        } finally {
             closeSocket();
-        }        
+        }
     }
     
     private void closeSocket()
     {
-        if (state != State.STA1)
+        if (state == State.STA13)
         {
             try
             {
@@ -744,8 +745,8 @@ public class Association implements Runnable
             {
                 log.warn("Interrupted Socket Close Delay", e);
             }
-            setState(State.STA1);
         }
+        setState(State.STA1);
         try
         {
             out.close();
@@ -835,7 +836,7 @@ public class Association implements Runnable
         state.receivedAssociateAC(this, ac);
     }
 
-    void receivedAssociateRJ(AAssociateRJException rj) throws IOException
+    void receivedAssociateRJ(AAssociateRJ rj) throws IOException
     {
         log.info("{} >> {}", name, rj);
         state.receivedAssociateRJ(this, rj);        
@@ -863,7 +864,7 @@ public class Association implements Runnable
         state.receivedReleaseRP(this);        
     }
 
-    void receivedAbort(AAbortException aa)
+    void receivedAbort(AAbort aa)
     {
         log.info("{}: >> {}", name, aa);
         exception = aa;
@@ -933,40 +934,37 @@ public class Association implements Runnable
         }
     }
     
-    void abort(AAbortException aa)
+    void abort(AAbort aa)
     {
         if (ae != null)
             ae.removeFromPool(this);
         state.abort(this, aa);       
     }
 
-    void writeAbort(AAbortException aa)
+    void writeAbort(AAbort aa)
     {
         exception = aa;
-        try
-        {
-            setState(State.STA13);
+        setState(State.STA13);
+        try {
             encoder.write(aa);
-        }
-        catch (Throwable e)
-        {
-            setState(State.STA1);
+        } catch (IOException e) {
+            log.debug("Failed to write " + aa, e);
         }
         closeSocket();
     }
     
-    void unexpectedPDU(String name) throws AAbortException
+    void unexpectedPDU(String name) throws AAbort
     {
         log.warn("received unexpected " + name + " in state: " + state);
-        throw new AAbortException(AAbortException.UL_SERIVE_PROVIDER, 
-                AAbortException.UNEXPECTED_PDU);
+        throw new AAbort(AAbort.UL_SERIVE_PROVIDER, 
+                AAbort.UNEXPECTED_PDU);
     }
 
     void illegalStateForSending(String name) throws IOException
     {
         log.warn("unable to send " + name + " in state: " + state);
         checkException();
-        throw new AAbortException();
+        throw new AAbort();
     }
     
     void writeAssociationRQ(AAssociateRQ rq) throws IOException
@@ -986,34 +984,34 @@ public class Association implements Runnable
         try
         {
             if ((rq.getProtocolVersion() & 1) == 0)
-                throw new AAssociateRJException(
-                        AAssociateRJException.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJException.SOURCE_SERVICE_PROVIDER_ACSE,
-                        AAssociateRJException.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
+                throw new AAssociateRJ(
+                        AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                        AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
             if (!rq.getApplicationContext().equals(UID.DICOMApplicationContextName))
-                throw new AAssociateRJException(
-                        AAssociateRJException.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJException.SOURCE_SERVICE_USER,
-                        AAssociateRJException.REASON_APP_CTX_NAME_NOT_SUPPORTED);
+                throw new AAssociateRJ(
+                        AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJ.SOURCE_SERVICE_USER,
+                        AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
             NetworkApplicationEntity ae = connector.getDevice().getNetworkApplicationEntity(rq.getCalledAET());
             if (ae == null)
-                throw new AAssociateRJException(
-                        AAssociateRJException.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJException.SOURCE_SERVICE_USER,
-                        AAssociateRJException.REASON_CALLED_AET_NOT_RECOGNIZED);
+                throw new AAssociateRJ(
+                        AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJ.SOURCE_SERVICE_USER,
+                        AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
             setApplicationEntity(ae);
             ae.negotiate(this, rq);
             associateAC = ae.negotiate(this, rq);
             processAC();
             maxOpsInvoked = associateAC.getMaxOpsPerformed();
-            maxPDULength = Math.min(rq.getMaxPDULength(), ae.getMaxPDULengthSend());
+            maxPDULength = minZeroAsMax(rq.getMaxPDULength(), ae.getMaxPDULengthSend());
             setState(State.STA6);
             encoder.write(associateAC);
             updateIdleTimeout();
             reaper.register(this);
             ae.addToPool(this);
         }
-        catch (AAssociateRJException e)
+        catch (AAssociateRJ e)
         {
             setState(State.STA13);
             encoder.write(e);
@@ -1026,18 +1024,22 @@ public class Association implements Runnable
         stopARTIM();
         processAC();
         maxOpsInvoked = associateAC.getMaxOpsInvoked();
-        maxPDULength = Math.min(associateAC.getMaxPDULength(), ae.getMaxPDULengthSend());
+        maxPDULength = minZeroAsMax(associateAC.getMaxPDULength(), ae.getMaxPDULengthSend());
         setState(State.STA6);
         updateIdleTimeout();
         reaper.register(this);
     }
 
+    private int minZeroAsMax(int i1, int i2) {
+        return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
+    }
+    
     private void updateIdleTimeout()
     {
         idleTimeout = System.currentTimeMillis() + ae.getIdleTimeout();        
     }
 
-    void onAssociateRJ(AAssociateRJException rj) throws IOException
+    void onAssociateRJ(AAssociateRJ rj) throws IOException
     {
         stopARTIM();
         exception = rj;

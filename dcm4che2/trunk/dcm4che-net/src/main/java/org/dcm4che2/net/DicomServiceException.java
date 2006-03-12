@@ -36,25 +36,58 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.service;
+package org.dcm4che2.net;
 
 import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.net.Association;
-import org.dcm4che2.net.DicomServiceException;
-import org.dcm4che2.net.PDVInputStream;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 3, 2005
- * 
+ * @version $Revision$ $Date$
+ * @since Mar 5, 2006
+ *
  */
-public interface CStoreSCP {
+public class DicomServiceException extends IOException {
+    
+    private static final long serialVersionUID = -5858536886871974350L;
 
-    void cstore(Association as, int pcid, DicomObject cmd,
-            PDVInputStream dataStream, String tsuid)
-            throws DicomServiceException, IOException;
+    final DicomObject rsp;
+    private DicomObject data;
+    
+    public DicomServiceException(DicomObject rq, int status) {
+        super();
+        rsp = CommandUtils.toRSP(rq, status);
+    }
+
+    public DicomServiceException(DicomObject rq, int status, String message) {
+        super(message);
+        rsp = CommandUtils.toRSP(rq, status);
+        if (message.length() > 64)
+            message = message.substring(0, 64);
+        setErrorComment(message);
+    }
+
+    public void setErrorComment(String val) {
+        rsp.putString(Tag.ErrorComment, VR.LO, val);        
+    }
+    
+    public void setErrorID(int val) {
+        rsp.putInt(Tag.ErrorID, VR.US, val);        
+    }
+    
+    public final DicomObject getCommand() {
+        return rsp;
+    }
+
+    public final DicomObject getDataset() {
+        return data;
+    }
+
+    public final void setData(DicomObject data) {
+        this.data = data;
+    }
 
 }

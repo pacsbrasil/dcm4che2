@@ -40,9 +40,9 @@ package org.dcm4che2.net;
 
 import java.io.IOException;
 
-import org.dcm4che2.net.pdu.AAbortException;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJException;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 
 /**
@@ -88,7 +88,7 @@ public class State
             super("Sta1");
         }
 
-        void abort(Association as, AAbortException aa)
+        void abort(Association as, AAbort aa)
         {
             // NOOP
         }
@@ -149,7 +149,7 @@ public class State
             as.onAssociateAC(ac);
         }
         
-        void receivedAssociateRJ(Association as, AAssociateRJException rj) throws IOException
+        void receivedAssociateRJ(Association as, AAssociateRJ rj) throws IOException
         {
             as.onAssociateRJ(rj);
         }
@@ -319,7 +319,7 @@ public class State
             super("Sta13 ");
         }
 
-        void abort(Association as, AAbortException aa)
+        void abort(Association as, AAbort aa)
         {
             // NOOP
         }
@@ -336,7 +336,7 @@ public class State
         as.unexpectedPDU("A-ASSOCIATE-AC");
     }
     
-    void receivedAssociateRJ(Association as, AAssociateRJException rj) throws IOException
+    void receivedAssociateRJ(Association as, AAssociateRJ rj) throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-RJ");
     }
@@ -372,7 +372,7 @@ public class State
         as.illegalStateForSending("A-RELEASE-RQ");
     }
     
-    void abort(Association as, AAbortException aa)
+    void abort(Association as, AAbort aa)
     {
         as.writeAbort(aa);        
     }

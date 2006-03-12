@@ -38,42 +38,33 @@
 
 package org.dcm4che2.net.service;
 
+import java.io.IOException;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
+import org.dcm4che2.net.DicomServiceException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Jan 22, 2006
- *
+ * 
  */
-public class NSetService
-extends DicomService 
-implements NSetSCP
-{
-    public NSetService(String sopClass)
-    {
+public class NSetService extends DicomService implements NSetSCP {
+    public NSetService(String sopClass) {
         super(sopClass);
     }
-    
+
     public void nset(Association as, int pcid, DicomObject rq, DicomObject data)
-    {
-        try
-        {
-            DicomObject rsp = CommandUtils.newNSetRSP(rq, CommandUtils.SUCCESS);
-            as.writeDimseRSP(pcid, rsp, doNSet(as, pcid, rq, data, rsp));
-        }
-        catch (Throwable e)
-        {
-            as.abort();
-        }            
+            throws DicomServiceException, IOException {
+        DicomObject rsp = CommandUtils.newNSetRSP(rq, CommandUtils.SUCCESS);
+        as.writeDimseRSP(pcid, rsp, doNSet(as, pcid, rq, data, rsp));
     }
 
-    protected DicomObject doNSet(Association as, int pcid, DicomObject rq, 
-            DicomObject data, DicomObject rsp)
-    {
-         return null;
+    protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
+            DicomObject data, DicomObject rsp) throws DicomServiceException {
+        return null;
     }
-    
+
 }

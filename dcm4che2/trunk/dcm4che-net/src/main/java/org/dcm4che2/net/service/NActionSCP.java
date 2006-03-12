@@ -38,18 +38,21 @@
 
 package org.dcm4che2.net.service;
 
+import java.io.IOException;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DicomServiceException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 3, 2005
- *
+ * 
  */
-public interface NActionSCP
-{
+public interface NActionSCP {
 
-    void naction(Association as, int pcid, DicomObject cmd, DicomObject data);
+    void naction(Association as, int pcid, DicomObject cmd, DicomObject data)
+            throws DicomServiceException, IOException;
 
 }

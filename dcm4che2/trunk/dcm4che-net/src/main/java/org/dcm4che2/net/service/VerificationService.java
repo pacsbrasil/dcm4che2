@@ -49,33 +49,19 @@ import org.dcm4che2.net.CommandUtils;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 7, 2005
- *
+ * 
  */
-public class VerificationService
-extends DicomService
-implements CEchoSCP
-{
+public class VerificationService extends DicomService implements CEchoSCP {
 
-    private static final String[] sopClasses =
-    {
-        UID.VerificationSOPClass
-    };
+    private static final String[] sopClasses = { UID.VerificationSOPClass };
 
-    public VerificationService()
-    {
+    public VerificationService() {
         super(sopClasses, null);
     }
 
     public void cecho(Association as, int pcid, DicomObject cmd)
-    {
-        try
-        {
-            as.writeDimseRSP(pcid, CommandUtils.newCEchoRSP(cmd));
-        }
-        catch (IOException e)
-        {
-            as.abort();
-        }
+            throws IOException {
+        as.writeDimseRSP(pcid, CommandUtils.newCEchoRSP(cmd));
     }
 
 }

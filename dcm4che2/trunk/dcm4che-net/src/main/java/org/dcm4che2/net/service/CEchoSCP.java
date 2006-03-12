@@ -38,6 +38,8 @@
 
 package org.dcm4che2.net.service;
 
+import java.io.IOException;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.Association;
 
@@ -47,9 +49,9 @@ import org.dcm4che2.net.Association;
  * @since Oct 3, 2005
  *
  */
-public interface CEchoSCP
-{
+public interface CEchoSCP {
 
-    void cecho(Association as, int pcid, DicomObject cmd);
+    void cecho(Association as, int pcid, DicomObject cmd)
+            throws IOException;
 
 }

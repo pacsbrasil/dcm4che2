@@ -48,9 +48,9 @@ import java.util.Iterator;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.io.DicomOutputStream;
-import org.dcm4che2.net.pdu.AAbortException;
+import org.dcm4che2.net.pdu.AAbort;
 import org.dcm4che2.net.pdu.AAssociateAC;
-import org.dcm4che2.net.pdu.AAssociateRJException;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.AAssociateRQAC;
 import org.dcm4che2.net.pdu.CommonExtendedNegotiation;
@@ -100,7 +100,7 @@ class PDUEncoder extends PDVOutputStream
         out.flush();
     }
     
-    public synchronized void write(AAssociateRJException rj)
+    public synchronized void write(AAssociateRJ rj)
     throws IOException
     {
         log.info("{} << {}", as.toString(), rj.getMessage());
@@ -121,7 +121,7 @@ class PDUEncoder extends PDVOutputStream
         write(PDUType.A_RELEASE_RP, 0, 0, 0);        
     }
 
-    public synchronized void write(AAbortException aa)
+    public synchronized void write(AAbort aa)
     throws IOException
     {
        log.info("{} << {}", as, aa.getMessage());
@@ -318,27 +318,16 @@ class PDUEncoder extends PDVOutputStream
     private void encodeAsyncOpsWindow(AAssociateRQAC rqac)
     {
         encodeItemHeader(ItemType.ASYNC_OPS_WINDOW, 4);
-        putShort(greaterMaxUnsignedShortAsZero(rqac.getMaxOpsInvoked()));
-        putShort(greaterMaxUnsignedShortAsZero(rqac.getMaxOpsPerformed()));
+        putShort(rqac.getMaxOpsInvoked());
+        putShort(rqac.getMaxOpsPerformed());
     }
 
     private void encodeMaxPDULength(int maxPDULength)
     {
         encodeItemHeader(ItemType.MAX_PDU_LENGTH, 4);
-        putInt(maxIntAsZero(maxPDULength));
+        putInt(maxPDULength);
     }
 
-    private static int greaterMaxUnsignedShortAsZero(int val)
-    {
-        return (val & 0xFFFF0000) != 0 ? 0 : val;
-    }    
-    
-    private static int maxIntAsZero(int val)
-    {
-        return val == Integer.MAX_VALUE ? 0 : val;
-    }    
-    
-    
     private void encodeUserIdentity(UserIdentity userIdentity)
     {
         if (userIdentity == null)

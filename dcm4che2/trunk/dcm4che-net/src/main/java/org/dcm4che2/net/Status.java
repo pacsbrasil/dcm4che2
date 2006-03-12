@@ -36,25 +36,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.net.service;
-
-import java.io.IOException;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.net.Association;
-import org.dcm4che2.net.DicomServiceException;
-import org.dcm4che2.net.PDVInputStream;
+package org.dcm4che2.net;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Oct 3, 2005
- * 
+ * @version $Revision$ $Date$
+ * @since Mar 9, 2006
+ *
  */
-public interface CStoreSCP {
+public class Status {
 
-    void cstore(Association as, int pcid, DicomObject cmd,
-            PDVInputStream dataStream, String tsuid)
-            throws DicomServiceException, IOException;
+    public static final int ProcessingFailure     = 0x0110;
+    public static final int DuplicateSOPinstance  = 0x0111;
+    public static final int NoSuchObjectInstance  = 0x0112;
+    public static final int NoSuchSOPclass        = 0x0118;
+    public static final int SOPclassNotSupported  = 0x0122;
+    public static final int UnrecognizedOperation = 0x0211;
+    public static final int Cancel                = 0xFE00;
+    public static final int Pending               = 0xFF00;
+    public static final int Success               = 0x0000;
 
 }
