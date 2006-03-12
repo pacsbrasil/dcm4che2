@@ -39,11 +39,15 @@
 package org.dcm4che2.tool.dcmof;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.PDVInputStream;
+import org.dcm4che2.net.Status;
 import org.dcm4che2.net.service.StorageService;
 
 /**
@@ -54,11 +58,13 @@ import org.dcm4che2.net.service.StorageService;
  */
 class SCNSCP extends StorageService
 {
-    private File destination;
+    protected final DcmOF dcmOF;
+    protected File destination;
 
-    public SCNSCP()
+    public SCNSCP(DcmOF dcmOF)
     {
         super(UID.BasicStudyContentNotificationSOPClass);
+        this.dcmOF = dcmOF;
     }
 
     public final void setDestination(File destination)
@@ -67,10 +73,34 @@ class SCNSCP extends StorageService
         this.destination = destination;
     }
     
-    protected void doCStore(Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp)
+    protected void doCStore(Association as, int pcid, DicomObject rq,
+            PDVInputStream dataStream, String tsuid, DicomObject rsp)
+            throws DicomServiceException, IOException
     {
-        // TODO Auto-generated method stub
-        super.doCStore(as, pcid, rq, dataStream, tsuid, rsp);
+        DicomObject data = dataStream.readDataset();
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+        data.initFileMetaInformation(UID.BasicStudyContentNotificationSOPClass,
+                iuid, UID.ExplicitVRLittleEndian);
+        try {
+            store(iuid, data);
+        } catch (Exception e) {
+            throw new DicomServiceException(rq, Status.ProcessingFailure,
+                    e.getMessage());
+        }
     }
+ 
+    protected void store(String iuid, DicomObject data) throws Exception {
+        dcmOF.storeAsDICOM(new File(destination, iuid), data);
+    }
+    
+    static class XML extends SCNSCP {
 
+        public XML(DcmOF dcmOF) {
+            super(dcmOF);
+        }
+        
+        protected void store(String iuid, DicomObject data) throws Exception {
+            dcmOF.storeAsXML(new File(destination, iuid + ".xml"), data);
+        }
+    }
 }

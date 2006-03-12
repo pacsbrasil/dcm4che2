@@ -41,8 +41,11 @@ package org.dcm4che2.tool.dcmof;
 import java.io.File;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DicomServiceException;
+import org.dcm4che2.net.Status;
 import org.dcm4che2.net.service.DicomService;
 import org.dcm4che2.net.service.NCreateService;
 import org.dcm4che2.net.service.NSetService;
@@ -51,57 +54,117 @@ import org.dcm4che2.net.service.NSetService;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Feb 2, 2006
- *
+ * 
  */
-class MPPSSCP
-{
+class MPPSSCP {
 
-    private final DicomService ncreatescp = 
-        new NCreateService(UID.ModalityPerformedProcedureStepSOPClass){
+    private final DicomService ncreatescp = new NCreateService(
+            UID.ModalityPerformedProcedureStepSOPClass) {
 
-            protected DicomObject doNCreate(Association as, int pcid, DicomObject rq, DicomObject data, DicomObject rsp)
-            {
-                return MPPSSCP.this.doNCreate(as, pcid, rq, data, rsp);
-            }};
-            
-    private final DicomService nsetscp = 
-        new NSetService(UID.ModalityPerformedProcedureStepSOPClass){
+        protected DicomObject doNCreate(Association as, int pcid,
+                DicomObject rq, DicomObject data, DicomObject rsp)
+                throws DicomServiceException {
+            return MPPSSCP.this.doNCreate(as, pcid, rq, data, rsp);
+        }
+    };
 
-            protected DicomObject doNSet(Association as, int pcid, DicomObject rq, DicomObject data, DicomObject rsp)
-            {
-                 return MPPSSCP.this.doNSet(as, pcid, rq, data, rsp);
-            }};
+    private final DicomService nsetscp = new NSetService(
+            UID.ModalityPerformedProcedureStepSOPClass) {
 
-    private File destination;
+        protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
+                DicomObject data, DicomObject rsp) throws DicomServiceException {
+            return MPPSSCP.this.doNSet(as, pcid, rq, data, rsp);
+        }
+    };
 
-    public final void setDestination(File destination)
-    {
+    protected final DcmOF dcmOF;
+    protected File destination;
+
+    public MPPSSCP(DcmOF dcmOF) {
+        this.dcmOF = dcmOF;
+    }
+
+    public final void setDestination(File destination) {
         destination.mkdirs();
         this.destination = destination;
     }
 
-    public final DicomService getNCreateSCP()
-    {
+    public final DicomService getNCreateSCP() {
         return ncreatescp;
     }
 
-    public final DicomService getNSetSCP()
-    {
+    public final DicomService getNSetSCP() {
         return nsetscp;
     }
 
-    private DicomObject doNSet(Association as, int pcid, DicomObject rq, 
-            DicomObject data, DicomObject rsp)
-    {
-        // TODO Auto-generated method stub
+    private DicomObject doNCreate(Association as, int pcid, DicomObject rq,
+            DicomObject data, DicomObject rsp) throws DicomServiceException {
+        final String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
+        File f = mkFile(iuid);
+        if (f.exists()) {
+            throw new DicomServiceException(rq, Status.DuplicateSOPinstance);
+        }      
+        data.initFileMetaInformation(
+                UID.InstanceAvailabilityNotificationSOPClass, iuid,
+                UID.ExplicitVRLittleEndian);
+        try {
+            store(f, data);
+        } catch (Exception e) {
+            throw new DicomServiceException(rq, Status.ProcessingFailure);
+        }
         return null;
     }
 
-    private DicomObject doNCreate(Association as, int pcid, DicomObject rq, 
-            DicomObject data, DicomObject rsp)
-    {
-        // TODO Auto-generated method stub
+    protected void store(File f, DicomObject data) throws Exception {
+        dcmOF.storeAsDICOM(f, data);
+    }
+    
+    private DicomObject doNSet(Association as, int pcid, DicomObject rq,
+            DicomObject data, DicomObject rsp) throws DicomServiceException {
+        final String iuid = rsp.getString(Tag.RequestedSOPInstanceUID);
+        File f = mkFile(iuid);
+        if (!f.exists()) {
+            throw new DicomServiceException(rq, Status.NoSuchObjectInstance,
+                    iuid);
+        } 
+        try {
+            DicomObject mpps = dcmOF.load(f);
+            String status = mpps.getString(Tag.PerformedProcedureStepStatus);
+            if (!"IN PROGRESS".equals(status)) {
+                DicomServiceException ex = new DicomServiceException(rq, 
+                        Status.ProcessingFailure,
+                        "Performed Procedure Step Object may no longer be updated");
+                ex.setErrorID(0xA710);
+                throw ex;
+            }
+            data.copyTo(mpps);
+            store(f, data);
+        } catch (DicomServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DicomServiceException(rq, Status.ProcessingFailure,
+                    e.getMessage());
+        }
         return null;
+    }
+    
+    protected File mkFile(String iuid) {
+        return new File(destination, iuid);
+    }
+
+    static class XML extends MPPSSCP {
+
+        public XML(DcmOF dcmOF) {
+            super(dcmOF);
+         }
+        
+        protected File mkFile(String iuid) {
+            return new File(destination, iuid + ".xml");
+        }
+
+        protected void store(File f, DicomObject data) throws Exception {
+            dcmOF.storeAsXML(f, data);
+        }
     }
 
 }

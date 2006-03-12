@@ -43,9 +43,9 @@ import java.io.File;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.Executor;
-import org.dcm4che2.net.SingleDimseRSP;
 import org.dcm4che2.net.service.CFindService;
 
 /**
@@ -56,11 +56,13 @@ import org.dcm4che2.net.service.CFindService;
  */
 class MWLSCP extends CFindService
 {
-    private File source;
+    protected final DcmOF dcmOF;
+    protected File source;
 
-    public MWLSCP(Executor executor)
+    public MWLSCP(Executor executor, DcmOF dcmOF)
     {
         super(UID.ModalityWorklistInformationModelFIND, executor);
+        this.dcmOF = dcmOF;
     }
 
     public final void setSource(File source)
@@ -70,10 +72,9 @@ class MWLSCP extends CFindService
     }    
     
     protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd, 
-            DicomObject data, DicomObject rsp)
+            DicomObject keys, DicomObject rsp) throws DicomServiceException
     {
-        // TODO Auto-generated method stub
-        return new SingleDimseRSP(rsp);
+        return new MultiFindRSP(dcmOF, keys, rsp, source);
     }
 
 }

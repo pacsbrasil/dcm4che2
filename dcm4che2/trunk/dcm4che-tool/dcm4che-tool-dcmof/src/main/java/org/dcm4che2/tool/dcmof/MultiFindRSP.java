@@ -39,64 +39,72 @@
 package org.dcm4che2.tool.dcmof;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.DicomServiceException;
+import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.Status;
-import org.dcm4che2.net.service.NCreateService;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Feb 2, 2006
- * 
+ * @since Mar 11, 2006
+ *
  */
-class IANSCP extends NCreateService {
-    protected final DcmOF dcmOF;
+class MultiFindRSP implements DimseRSP {
 
-    protected File destination;
+    private final DcmOF dcmOF;
+    private File[] files;
+    private int cur = 0;
+    private DicomObject rsp;
+    private DicomObject keys;
+    private DicomObject mwl;
 
-    public IANSCP(DcmOF dcmOF) {
-        super(UID.InstanceAvailabilityNotificationSOPClass);
+    public MultiFindRSP(DcmOF dcmOF, DicomObject keys, DicomObject rsp, File source) {
         this.dcmOF = dcmOF;
+        this.keys = keys;
+        // Include Specific Character Set in result
+        keys.putNull(Tag.SpecificCharacterSet, VR.CS);
+        this.rsp = rsp;
+        rsp.putInt(Tag.Status, VR.US, Status.Pending);
+        this.files = source.listFiles();
     }
 
-    public final void setDestination(File destination) {
-        destination.mkdirs();
-        this.destination = destination;
-    }
-
-    protected DicomObject doNCreate(Association as, int pcid, DicomObject rq,
-            DicomObject data, DicomObject rsp) throws DicomServiceException {
-        final String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
-        data.initFileMetaInformation(
-                UID.InstanceAvailabilityNotificationSOPClass, iuid,
-                UID.ExplicitVRLittleEndian);
+    public synchronized boolean next() throws IOException, InterruptedException {
+        if (cur < 0)
+            return false;
         try {
-            store(iuid, data);
+            if (files != null) {
+                while (cur < files.length) {
+                    mwl = dcmOF.load(files[cur++]);
+                    if (mwl.matches(keys, true))
+                        return true;
+                }
+                rsp.putInt(Tag.Status, VR.US, Status.Success);
+            }
         } catch (Exception e) {
-            throw new DicomServiceException(rq, Status.ProcessingFailure,
-                    e.getMessage());
+            rsp.putInt(Tag.Status, VR.US, Status.ProcessingFailure);
+            rsp.putString(Tag.ErrorComment, VR.LO, e.getMessage());
         }
-        return null;
+        mwl = null;
+        cur = -1;
+        return true;
     }
 
-    protected void store(String iuid, DicomObject data) throws Exception {
-        dcmOF.storeAsDICOM(new File(destination, iuid), data);
+    public DicomObject getCommand() {
+        return rsp;
     }
 
-    static class XML extends IANSCP {
+    public DicomObject getDataset() {
+        return mwl != null ? mwl.subSet(keys) : null;
+    }
 
-        public XML(DcmOF dcmOF) {
-            super(dcmOF);
-        }
-
-        protected void store(String iuid, DicomObject data) throws Exception {
-            dcmOF.storeAsXML(new File(destination, iuid + ".xml"), data);
-        }
+    public synchronized void cancel(Association a) throws IOException {
+        rsp.putInt(Tag.Status, VR.US, Status.Cancel);
+        files = null;
     }
 
 }
