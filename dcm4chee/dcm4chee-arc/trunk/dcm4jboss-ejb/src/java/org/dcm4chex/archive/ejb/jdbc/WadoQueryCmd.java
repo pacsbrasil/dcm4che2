@@ -205,11 +205,6 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.AccessionNumber),
                 false);
-/*        sqlBuilder.addWildCardMatch(null, "Study.referringPhysicianName",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.ReferringPhysicianName),
-                true);
-/*_*/
         PersonName pn = keys.getPersonName(Tags.ReferringPhysicianName);
         if (pn != null) {
             sqlBuilder.addWildCardMatch(null,
