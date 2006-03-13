@@ -270,7 +270,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
             final String privateCreatorID = getPrivateCreator(tag);
             if (privateCreatorID == null)
-                return ElementDictionary.UNKOWN;
+                return ElementDictionary.getUnkown();
 
             dict = ElementDictionary.getPrivateDictionary(privateCreatorID);
         }

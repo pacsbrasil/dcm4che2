@@ -67,7 +67,7 @@ public class ElementDictionary implements Serializable {
         "         (Create <zip-file> with serialized dictionary under <resource-name>\n" +
         "          and appendant META-INF/dcm4che/org.dcm4che2.data.ElementDictionary.)\n";
 
-	public static final String UNKOWN = "?";
+	private static String unkown = "?";
 
 	public static final String PRIVATE_CREATOR = "Private Creator Data Element";
 
@@ -130,6 +130,13 @@ public class ElementDictionary implements Serializable {
 		}
 	}
 	
+    public static final String getUnkown() {
+        return unkown;
+    }
+
+    public static final void setUnkown(String unkown) {
+        ElementDictionary.unkown = unkown;
+    }
 	public final String getPrivateCreator() {
 		return privateCreator;
 	}
@@ -208,9 +215,9 @@ public class ElementDictionary implements Serializable {
 				tag &= 0xff00ffff; // (50xx,eeee), (60xx,eeee)
 		}
 		if (table == null)
-			return UNKOWN;
+			return unkown;
 		String name = (String) table.get(tag);
-		return name != null ? name : UNKOWN;
+		return name != null ? name : unkown;
 	}
 
 	public void loadXML(File f) throws IOException, SAXException {

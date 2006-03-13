@@ -48,10 +48,9 @@ import java.util.Iterator;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Aug, 2005
- *
+ * 
  */
-public interface DicomObject extends Serializable
-{
+public interface DicomObject extends Serializable {
     /**
      * Returns number of elements in this Dicom Object.
      * 
@@ -60,9 +59,9 @@ public interface DicomObject extends Serializable
     int size();
 
     /**
-     * Returns <code>true</code> if this Dicom Object contains no elements.
+     * Returns <tt>true</tt> if this Dicom Object contains no elements.
      * 
-     * @return <code>true</code> if this Dicom Object contains no elements.
+     * @return <tt>true</tt> if this Dicom Object contains no elements.
      */
     boolean isEmpty();
 
@@ -73,190 +72,268 @@ public interface DicomObject extends Serializable
 
     /**
      * @return the root Data Set, if this Data Set is contained within a
-     *  Sequence Element of another Data Set, otherwise <code>this</code>. 
+     *         Sequence Element of another Data Set, otherwise <tt>this</tt>.
      */
     DicomObject getRoot();
 
-    /** 
-     * Returns <code>true</code> if this is not a nested Data Set.
+    /**
+     * Returns <tt>true</tt> if this is not a nested Data Set.
      * 
-     * @return <code>true</code> if this is not a nested Data Set.
+     * @return <tt>true</tt> if this is not a nested Data Set.
      */
     boolean isRoot();
 
     /**
-     * Returns the Data Set containing this Data Set in a Sequence Element,
-     *  or <code>null</code> if this is not a nested Data Set.
-     *  
-     * @return the Data Set containing this Data Set in a Sequence Element,
-     *  or <code>null</code> if this is not a nested Data Set.
+     * Returns the Data Set containing this Data Set in a Sequence Element, or
+     * <tt>null</tt> if this is not a nested Data Set.
+     * 
+     * @return the Data Set containing this Data Set in a Sequence Element, or
+     *         <tt>null</tt> if this is not a nested Data Set.
      */
     DicomObject getParent();
 
     /**
-     * @return
+     * Returns the Specific Character Set defined by Attribute <i>Specific
+     * Character Set (0008,0005)</i> of this or the root Data Set, if this is a
+     * Nested Data Set containing in a Sequence Element. Returns <tt>null</tt>
+     * if Attribute Specific Character Set (0008,0005) is not present.
+     * 
+     * @return the Specific Character Set defined by Attribute <i>Specific
+     *         Character Set (0008,0005)</i> or <tt>null</tt> if the
+     *         Attribute is not present.
      */
     SpecificCharacterSet getSpecificCharacterSet();
 
     /**
-     * @return
+     * Returns an iterator over all elements in this Dicom Object.
+     * 
+     * @return an <tt>Iterator</tt> over all elements in this Dicom Object.
      */
     Iterator iterator();
 
     /**
+     * Returns an iterator over elements in the given range in this Dicom
+     * Object.
+     * 
      * @param fromTag
+     *            minimal (group, element) as 8 byte integer: ggggeeee, of first
+     *            element included.
      * @param toTag
-     * @return
+     *            maximal (group, element) as 8 byte integer: ggggeeee, of last
+     *            element included.
+     * @return an <tt>Iterator</tt> over elements in this Dicom Object.
      */
     Iterator iterator(int fromTag, int toTag);
 
     /**
-     * @return
+     * Returns an iterator over Command elements (0000, eeee) in this Dicom
+     * Object.
+     * 
+     * @return an <tt>Iterator</tt> over Command elements (0000, eeee) in this
+     *         Dicom Object.
      */
     Iterator commandIterator();
 
     /**
-     * @return
+     * Returns an iterator over File Meta Information elements (0002, eeee) in
+     * this Dicom Object.
+     * 
+     * @return an <tt>Iterator</tt> over File Meta Information elements (0002,
+     *         eeee) in this Dicom Object.
      */
     Iterator fileMetaInfoIterator();
 
     /**
-     * @return
+     * Returns an iterator over Data elements (group tag > 2) in this Dicom
+     * Object.
+     * 
+     * @return an <tt>Iterator</tt> over Data elements in this Dicom Object.
      */
     Iterator datasetIterator();
 
     /**
-     * @return
+     * Returns zero-based position of this Nested Data in the Sequence Element,
+     * or <tt>-1</tt> if this is not a Nested Data Set.
+     * 
+     * @return zero-based position of this Nested Data in the Sequence Element
+     *         Set, or <tt>-1</tt> if this is not a Nested Data Set.
      */
     int getItemPosition();
 
     /**
-     * @param pos
+     * Sets zero-based position of this Nested Data in the Sequence Element.
+     * Typically only internally used.
+     * 
+     * @pos zero-based position of this Nested Data in the Sequence Element.
      */
     void setItemPosition(int pos);
 
     /**
-     * @return
+     * Returns the offset of the Sequence Item containing this Nested Data Set
+     * in the Dicom Stream from/to which the Data Set was read/written, or
+     * <tt>-1</tt> if this is not a Nested Data Set or it was not (yet) read
+     * from/written to a Dicom Stream.
+     * 
+     * @return the offset of the Sequence Item containing this Nested Data Set
+     *         in the Dicom Stream, or <tt>-1</tt>.
      */
     long getItemOffset();
 
     /**
+     * Sets the offset of the Sequence Item encoding this Nested Data Set in a
+     * Dicom Stream. Typically only internally used.
+     * 
      * @param offset
+     *            of the Sequence Item containing this Nested Data Set in a
+     *            Dicom Stream.
      */
     void setItemOffset(long offset);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
-     * @return
+     * Returns Value Representation of Attribute with specified (private) tag
+     * or @link{VR#UN} if no entry was found in configured @link{VRMap}s.
+     * 
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return Value Representation of Attribute with specified (private) tag.
      */
     VR vrOf(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
-     * @return
+     * Returns name of Attribute with specified (private) tag or 
+     * @link{ElementDictionary#getUnkown()} if no entry was found in configured 
+     * @link{ElementDictionary}s.
+     * 
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return name of Attribute with specified (private) tag.
      */
     String nameOf(int tag);
 
     /**
-     * Resolve existing private tag. Invokes 
-     * @link{resolveTag(int, String, boolean) resolveTag}(tag, privateCreator,
-     * <code>false</code>).
+     * Resolve existing private tag. Invokes
      * 
-     * @param tag (group, element) as 8 byte integer: ggggeeee. 
-     * @param privateCreator private creator identifier
-     * @return resolved tag or <code>-1</code>, if no tags are reserved for
+     * @link{#resolveTag(int, String, boolean) resolveTag}(tag, privateCreator,
+     *                       <tt>false</tt>).
+     * 
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @param privateCreator
+     *            private creator identifier
+     * @return resolved tag or <tt>-1</tt>, if no tags are reserved for
      *         privateCreator.
      */
     int resolveTag(int tag, String privateCreator);
 
     /**
-     * Resolves private tag. If the group number of the specified tag is odd
-     * (= private tag) and privateCreator != null, searches for the first private
+     * Resolves private tag. If the group number of the specified tag is odd (=
+     * private tag) and privateCreator != null, searches for the first private
      * creator data element in (gggg,0010-00FF) which matches privateCreator,
-     * and returns <i>ggggEEee</i> with <i>EE</i> the element number
-     * of the matching private creator data element and <i>ee</i> the two
-     * lower bytes of the element number of the specified tag.>
-     * If no matching private creator data element in (gggg,0010-00FF) is found,
-     * and reserve=<code>true</code>, the specified privateCreator is inserted
-     * in the first unused private creator data element, and <i>ggggEEee</i>
-     * with <i>EE</i> the element number the new inserted private creator
-     * data element is returned. If reserve=<code>false</code>, <code>-1</code>
-     * is returned.<br>
+     * and returns <i>ggggEEee</i> with <i>EE</i> the element number of the
+     * matching private creator data element and <i>ee</i> the two lower bytes
+     * of the element number of the specified tag.> If no matching private
+     * creator data element in (gggg,0010-00FF) is found, and reserve=<tt>true</tt>,
+     * the specified privateCreator is inserted in the first unused private
+     * creator data element, and <i>ggggEEee</i> with <i>EE</i> the element
+     * number the new inserted private creator data element is returned. If
+     * reserve=<tt>false</tt>, <tt>-1</tt> is returned.<br>
      * If the group number of the specified tag is even (= standard tag) or
      * privateCreator == null, tag is returned unmodified.
      * 
-     * @param tag (group, element) as 8 byte integer: ggggeeee. 
-     * @param privateCreator private creator identifier
-     * @return resolved tag or <code>-1</code>, if no tags are reserved for
-     *         privateCreator and reserve=<code>false</code>.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @param privateCreator
+     *            private creator identifier
+     * @return resolved tag or <tt>-1</tt>, if no tags are reserved for
+     *         privateCreator and reserve=<tt>false</tt>.
      */
     int resolveTag(int tag, String privateCreator, boolean reserve);
 
     /**
-     * Returns private creator identifier, for given private tag. 
+     * Returns private creator identifier, for given private tag.
      * 
-     * @param tag (group, element) of private tag as 8 byte integer: ggggeeee
+     * @param tag
+     *            (group, element) of private tag as 8 byte integer: ggggeeee
      * @return Returns private creator identifier, for given private tag.
-     * @throws IllegalArgumentExcepion if tag is not a private tag or if itself
-     * a Private Creator Data Element (gggg,00EE).
+     * @throws IllegalArgumentExcepion
+     *             if tag is not a private tag or if itself a Private Creator
+     *             Data Element (gggg,00EE).
      */
     String getPrivateCreator(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
-     * @return
+     * Returns Number of Values of the specified Element or <tt>-1</tt> if
+     * there is no such Element in this Dicom Object.
+     * 
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return Number of Values of the specified Element or <tt>-1</tt> if
+     *         there is no such Element in this Dicom Object.
      */
     int vm(int tag);
 
     /**
-     * Returns true, if this DicomObject contains a DicomElement with the
-     * specified tag.
+     * Returns <tt>true</tt>, if this Dicom Object contains the specified
+     * Element.
      * 
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
-     * @return
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return <tt>true</tt>, if this DicomObject contains the specified
+     *         Element.
      */
     boolean contains(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
-     * @return
+     * Returns <tt>true</tt>, if this Dicom Object contains the specified
+     * Element with a value length > 0.
+     * 
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return <tt>true</tt>, if this DicomObject contains the specified
+     *         Element with a value length > 0.
      */
     boolean containsValue(int tag);
 
     /**
-     * @param elements
-     * @return
+     * Returns <tt>true</tt> if this Dicom Object contains all of the elements
+     * in the specified Dicom Object.
+     *
+     * @param  keys Dicom Object to be checked for containment in this Dicom Object.
+     * @return <tt>true</tt> if this Dicom Object contains all of the elements
+     *         in the specified collection
      */
-    boolean containsAll(DicomObject elements);
-    
+    boolean containsAll(DicomObject keys);
+
     /**
-     * Calls @link{DicomObject.Visitor#vist} for each element in this
-     * Dataset. Returns <code>false</code>, if @link{DicomObject.Visitor#visit}
-     * returns <code>false</code> for any element.
+     * Calls @link{Visitor#visit} for each element in this Dataset. Returns
+     * <tt>false</tt>, if @link{Visitor#visit} returns <tt>false</tt> for any
+     * element.
      * 
-     * @param visitor <i>DicomObject.Visitor</i> object, which method
-     * @link{DicomObject.Visitor#vist} is called for each element in this
-     * Dataset.
-     * @return <code>true</code> if @link{DicomObject.Visitor#visit} returns
-     * <code>true</code> for all elements of this dataset, <code>false</code>
-     * if @link{DicomObject.Visitor#visit} returns <code>false</code> for any element.
+     * @param visitor
+     *            <i>Visitor</i> object, which method @link{Visitor#visit} is
+     *            called for each element in this Dataset.
+     * @return <tt>true</tt> if @link{Visitor#visit} returns <tt>true</tt> for 
+     * all elements of this dataset, <tt>false</tt> if @link{Visitor#visit}
+     * returns <tt>false</tt> for any element.
      */
     boolean accept(Visitor visitor);
 
-    /** 
+    /**
      * Visitor object passed to @link{#accept}.
      */
-    public interface Visitor
-    {
-        /** 
+    public interface Visitor {
+        /**
          * Called for each element in the visited DicomObject. If it returns
-         * <code>false</code>, no further element is visited and
-         * @link{DicomObject#accept} returns also <code>false</code>.
+         * <tt>false</tt>, no further element is visited and
          * 
-         *  
-         * @param e Dicom Element to visit
-         * @return <code>true</code> to continue, <code>false</code> to 
-         * terminate traversal by @link{DicomObject#accept}. 
+         * @link{DicomObject#accept} returns also <tt>false</tt>.
+         * 
+         * 
+         * @param e
+         *            Dicom Element to visit
+         * @return <tt>true</tt> to continue, <tt>false</tt> to terminate
+         *         traversal by
+         * @link{DicomObject#accept}.
          */
         boolean visit(DicomElement e);
     }
@@ -267,13 +344,15 @@ public interface DicomObject extends Serializable
     void add(DicomElement attr);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DicomElement remove(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DicomElement get(int tag);
@@ -291,7 +370,8 @@ public interface DicomObject extends Serializable
     DicomElement get(String tagPath);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param bigEndian
      * @return
      */
@@ -312,7 +392,8 @@ public interface DicomObject extends Serializable
     byte[] getBytes(String tagPath, boolean bigEndian);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DicomObject getNestedDicomObject(int tag);
@@ -330,18 +411,21 @@ public interface DicomObject extends Serializable
     DicomObject getNestedDicomObject(String itemPath);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     int getInt(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
-     * @param defVal TODO
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @param defVal
+     *            TODO
      * @return
      */
     int getInt(int tag, int defVal);
-    
+
     /**
      * @param tagPath
      * @return
@@ -353,7 +437,7 @@ public interface DicomObject extends Serializable
      * @return
      */
     int getInt(int[] tagPath, int defVal);
-    
+
     /**
      * @param tagPath
      * @return
@@ -367,14 +451,15 @@ public interface DicomObject extends Serializable
     int getInt(String tagPath, int defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     int[] getInts(int tag);
 
-
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     int[] getInts(int tag, int[] defVal);
@@ -404,13 +489,15 @@ public interface DicomObject extends Serializable
     int[] getInts(String tagPath, int[] defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     float getFloat(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     float getFloat(int tag, float defVal);
@@ -440,13 +527,15 @@ public interface DicomObject extends Serializable
     float getFloat(String tagPath, float defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     float[] getFloats(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     float[] getFloats(int tag, float[] defVal);
@@ -476,13 +565,15 @@ public interface DicomObject extends Serializable
     float[] getFloats(String tagPath, float[] defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     double getDouble(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     double getDouble(int tag, double defVal);
@@ -512,13 +603,15 @@ public interface DicomObject extends Serializable
     double getDouble(String tagPath, double defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     double[] getDoubles(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     double[] getDoubles(int tag, double[] defVal);
@@ -548,13 +641,15 @@ public interface DicomObject extends Serializable
     double[] getDoubles(String tagPath, double[] defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     String getString(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     String getString(int tag, String defVal);
@@ -584,13 +679,15 @@ public interface DicomObject extends Serializable
     String getString(String tagPath, String defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     String[] getStrings(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     String[] getStrings(int tag, String[] defVal);
@@ -620,13 +717,15 @@ public interface DicomObject extends Serializable
     String[] getStrings(String tagPath, String[] defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     Date getDate(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     Date getDate(int tag, Date defVal);
@@ -702,13 +801,15 @@ public interface DicomObject extends Serializable
     Date getDate(String itemPath, int daTag, int tmTag, Date defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     Date[] getDates(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     Date[] getDates(int tag, Date[] defVal);
@@ -784,13 +885,15 @@ public interface DicomObject extends Serializable
     Date[] getDates(String itemPath, int daTag, int tmTag, Date[] defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DateRange getDateRange(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DateRange getDateRange(int tag, DateRange defVal);
@@ -835,7 +938,8 @@ public interface DicomObject extends Serializable
      * @param tmTag
      * @return
      */
-    DateRange getDateRange(int[] itemPath, int daTag, int tmTag, DateRange defVal);
+    DateRange getDateRange(int[] itemPath, int daTag, int tmTag,
+            DateRange defVal);
 
     /**
      * @param tagPath
@@ -863,17 +967,20 @@ public interface DicomObject extends Serializable
      * @param tmTag
      * @return
      */
-    DateRange getDateRange(String itemPath, int daTag, int tmTag, DateRange defVal);
+    DateRange getDateRange(String itemPath, int daTag, int tmTag,
+            DateRange defVal);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @return
      */
     DicomElement putNull(int tag, VR vr);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param bigEndian
      * @param val
@@ -882,14 +989,16 @@ public interface DicomObject extends Serializable
     DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param item
      * @return
      */
     DicomElement putNestedDicomObject(int tag, DicomObject item);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -897,7 +1006,8 @@ public interface DicomObject extends Serializable
     DicomElement putInt(int tag, VR vr, int val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -905,7 +1015,8 @@ public interface DicomObject extends Serializable
     DicomElement putInts(int tag, VR vr, int[] val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -913,7 +1024,8 @@ public interface DicomObject extends Serializable
     DicomElement putFloat(int tag, VR vr, float val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -921,7 +1033,8 @@ public interface DicomObject extends Serializable
     DicomElement putFloats(int tag, VR vr, float[] val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -929,7 +1042,8 @@ public interface DicomObject extends Serializable
     DicomElement putDouble(int tag, VR vr, double val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -937,7 +1051,8 @@ public interface DicomObject extends Serializable
     DicomElement putDoubles(int tag, VR vr, double[] val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -945,7 +1060,8 @@ public interface DicomObject extends Serializable
     DicomElement putString(int tag, VR vr, String val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -953,7 +1069,8 @@ public interface DicomObject extends Serializable
     DicomElement putStrings(int tag, VR vr, String[] val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -961,7 +1078,8 @@ public interface DicomObject extends Serializable
     DicomElement putDate(int tag, VR vr, Date val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -969,7 +1087,8 @@ public interface DicomObject extends Serializable
     DicomElement putDates(int tag, VR vr, Date[] val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param val
      * @return
@@ -977,20 +1096,23 @@ public interface DicomObject extends Serializable
     DicomElement putDateRange(int tag, VR vr, DateRange val);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DicomElement putSequence(int tag);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param capacity
      * @return
      */
     DicomElement putSequence(int tag, int capacity);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param bigEndian
      * @return
@@ -998,7 +1120,8 @@ public interface DicomObject extends Serializable
     DicomElement putFragments(int tag, VR vr, boolean bigEndian);
 
     /**
-     * @param tag (group, element) as 8 byte integer: ggggeeee.
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
      * @param bigEndian
      * @param capacity
@@ -1058,7 +1181,7 @@ public interface DicomObject extends Serializable
      * @param bigEndian
      */
     void bigEndian(boolean bigEndian);
-    
+
     /**
      * @return
      */
@@ -1115,8 +1238,8 @@ public interface DicomObject extends Serializable
      * @param tsuid
      */
     void initFileMetaInformation(String cuid, String iuid, String tsuid);
-    
-    /** 
+
+    /**
      * @param sb
      * @param param
      * @return
