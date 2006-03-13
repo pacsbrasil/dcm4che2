@@ -59,7 +59,7 @@ public class ElementDictionaryTest extends TestCase {
 		assertEquals("File Meta Information Version", dict.nameOf(0x00020001));
 		assertEquals("Specific Character Set", dict.nameOf(0x00080005));
 		assertEquals(ElementDictionary.PRIVATE_CREATOR, dict.nameOf(0x00090010));
-		assertEquals(ElementDictionary.UNKOWN, dict.nameOf(0x00091010));
+		assertEquals(ElementDictionary.getUnkown(), dict.nameOf(0x00091010));
 		assertEquals("Overlay Rows", dict.nameOf(0x60000010));
 		assertEquals("Overlay Rows", dict.nameOf(0x60020010));
 		assertEquals(ElementDictionary.GROUP_LENGTH, dict.nameOf(0x7FE00000));
@@ -76,7 +76,7 @@ public class ElementDictionaryTest extends TestCase {
 		assertEquals("Private UL", dict.nameOf(0x00991110));
 		assertEquals("Private OB", dict.nameOf(0x009910E0));
 		assertEquals("Private OB", dict.nameOf(0x009911E0));
-		assertEquals(ElementDictionary.UNKOWN, dict.nameOf(0x00991111));
+		assertEquals(ElementDictionary.getUnkown(), dict.nameOf(0x00991111));
 	}
 
 }
