@@ -37,7 +37,6 @@
         <attr tag="00081090"/> <!-- Manufacturer Model Name -->
         <attr tag="00081111"/> <!-- Referenced Performed Procedure Step Sequence -->
         <attr tag="00180015"/> <!-- Body Part Examined -->
-        <attr tag="00180024"/> <!-- Sequence Name -->
         <attr tag="00181000"/> <!-- Device Serial Number -->
         <attr tag="00181010"/> <!-- Secondary Capture Device ID -->
         <attr tag="00181016"/> <!-- Secondary Capture Device Manufacturer -->
@@ -83,6 +82,7 @@
         <attr tag="00180021"/> <!-- Sequence Variant -->
         <attr tag="00180022"/> <!-- Scan Options -->
         <attr tag="00180023"/> <!-- MR Acquisition Type -->
+        <attr tag="00180024"/> <!-- Sequence Name -->
         <attr tag="00180050"/> <!-- SliceThickness -->
         <attr tag="00180060"/> <!-- KVP -->
         <attr tag="00180080"/> <!-- Repetition Time -->
