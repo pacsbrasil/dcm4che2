@@ -577,6 +577,11 @@ QueryRetrieveScp service.</description>
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
+      <description>Reload Stylesheets</description>
+      <name>reloadStylesheets</name>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description>Used internally</description>
       <name>queueStgCmtOrder</name>
       <parameter>
