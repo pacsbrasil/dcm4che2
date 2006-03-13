@@ -394,6 +394,9 @@ Use either the SOP Class UID or the symbolic name:
              <br>EnhancedSR<br>ComprehensiveSR
 				 <br>MammographyCADSR
              <br>GrayscaleSoftcopyPresentationStateStorage
+             <br>ColorSoftcopyPresentationStateStorage
+             <br>PseudoColorSoftcopyPresentationStateStorage
+             <br>BlendingSoftcopyPresentationStateStorage
              <br>KeyObjectSelectionDocument
 				 <br>RTDoseStorage
              <br>RTStructureSetStorage
@@ -421,6 +424,9 @@ Use either the SOP Class UID or the symbolic name:
              ComprehensiveSR;
              MammographyCADSR;
              GrayscaleSoftcopyPresentationStateStorage;
+             ColorSoftcopyPresentationStateStorage;
+             PseudoColorSoftcopyPresentationStateStorage;
+             BlendingSoftcopyPresentationStateStorage;
              KeyObjectSelectionDocument;
              RTDoseStorage;
              RTStructureSetStorage;
