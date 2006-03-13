@@ -41,6 +41,9 @@
 package org.dcm4chex.archive.hsm;
 
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -113,6 +116,44 @@ public class VerifyTar {
 		return c - 
 			((c <= '9') ? '0' :
 				(((c <= 'F') ? 'A' : 'a') - 10));
+	}
+
+	public static void main(String[] args) {
+		int errors = 0;
+		VerifyTar inst = new VerifyTar();
+		for (int i = 0; i < args.length; i++) {
+			try {
+				errors += inst.verify(new File(args[i]));
+			} catch (FileNotFoundException e) {
+				System.err.println(e.getMessage());
+				System.exit(2);
+			}
+		}
+		System.exit(-errors);
+	}
+
+	private int verify(File file) throws FileNotFoundException {
+		int errors = 0;
+		if (file.isDirectory()) {
+			String[] ss = file.list();
+			for (int i = 0; i < ss.length; i++) {
+				errors += verify(new File(file, ss[i]));				
+			}
+		} else {
+			FileInputStream in = new FileInputStream(file);
+			String tarname = file.getPath();
+			
+			try {
+				System.out.print(tarname);
+				System.out.print(' ');
+				verify(in, tarname);
+				System.out.println("ok");
+			} catch (Exception e) {
+				errors = 1;
+				System.out.println(e.getMessage());
+			}
+		}
+		return errors;
 	}
 
 }

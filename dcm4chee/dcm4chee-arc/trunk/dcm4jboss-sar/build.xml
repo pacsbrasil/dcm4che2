@@ -124,6 +124,18 @@
         	</manifest>
         	<fileset dir="${target.classes}" excludes="org/jboss/**"/>
         </jar>
+        <jar jarfile="${target.bin}/verifytar.jar">
+         	<manifest>
+				    <attribute name="Main-Class" value="org.dcm4chex.archive.hsm.VerifyTar"/>
+				    <attribute name="Class-Path" value="commons-compress-20050911.jar  ../server/default/lib/commons-compress-20050911.jar"/>
+				    <attribute name="Implementation-Title" value="verifytar"/>
+				    <attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				    <attribute name="Implementation-Vendor" value="Agfa Healthcare"/>
+          </manifest>	
+        	<fileset dir="${target.classes}">
+            <include name="org/dcm4chex/archive/hsm/VerifyTar*"/>
+          </fileset>
+        </jar>
     </target>
 
  
