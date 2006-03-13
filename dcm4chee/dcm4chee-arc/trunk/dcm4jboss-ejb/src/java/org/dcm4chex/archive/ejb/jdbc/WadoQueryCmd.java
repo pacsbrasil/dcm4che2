@@ -205,10 +205,67 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.AccessionNumber),
                 false);
-        sqlBuilder.addWildCardMatch(null, "Study.referringPhysicianName",
+/*        sqlBuilder.addWildCardMatch(null, "Study.referringPhysicianName",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.ReferringPhysicianName),
                 true);
+/*_*/
+        PersonName pn = keys.getPersonName(Tags.ReferringPhysicianName);
+        if (pn != null) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Study.referringPhysicianFamilyName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.FAMILY),
+                    true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Study.referringPhysicianGivenName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.GIVEN),
+                    true);
+            sqlBuilder.addWildCardMatch(null,
+                    "Study.referringPhysicianMiddleName",
+                    SqlBuilder.TYPE2,
+                    pn.get(PersonName.MIDDLE),
+                    true);
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Study.referringPhysicianIdeographicFamilyName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Study.referringPhysicianIdeographicGivenName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.GIVEN),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Study.referringPhysicianIdeographicMiddleName",
+                        SqlBuilder.TYPE2,
+                        ipn.get(PersonName.MIDDLE),
+                        false);
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                sqlBuilder.addWildCardMatch(null,
+                        "Study.referringPhysicianPhoneticFamilyName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.FAMILY),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Study.referringPhysicianPhoneticGivenName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.GIVEN),
+                        false);
+                sqlBuilder.addWildCardMatch(null,
+                        "Study.referringPhysicianPhoneticMiddleName",
+                        SqlBuilder.TYPE2,
+                        ppn.get(PersonName.MIDDLE),
+                        false);
+            }
+        }        
+        
+        
         sqlBuilder.addModalitiesInStudyMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));
     }
