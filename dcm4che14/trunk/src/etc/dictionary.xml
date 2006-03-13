@@ -496,6 +496,7 @@
   <element tag="(0018,1620)" name="Vertices of the Polygonal Shutter" vr="IS" vm="2-2n" key="VerticesOfPolygonalShutter" />
   <element tag="(0018,1622)" name="Shutter Presentation Value" vr="US" vm="1" key="ShutterPresentationValue" />
   <element tag="(0018,1623)" name="Shutter Overlay Group" vr="US" vm="1" key="ShutterOverlayGroup" />
+  <element tag="(0018,1624)" name="Shutter Presentation Color CIELab Value" vr="US" vm="3" key="ShutterPresentationColorCIELabValue" />
   <element tag="(0018,1700)" name="Collimator Shape" vr="CS" vm="1-3" key="CollimatorShape" />
   <element tag="(0018,1702)" name="Collimator Left Vertical Edge" vr="IS" vm="1" key="CollimatorLeftVerticalEdge" />
   <element tag="(0018,1704)" name="Collimator Right Vertical Edge" vr="IS" vm="1" key="CollimatorRightVerticalEdge" />
@@ -963,6 +964,7 @@
   <element tag="(0028,1300)" name="Implant Present" vr="CS" vm="1" key="ImplantPresent" />
   <element tag="(0028,1350)" name="Partial View" vr="CS" vm="1" key="PartialView" />
   <element tag="(0028,1351)" name="Partial View Description" vr="ST" vm="1" key="PartialViewDescription" />
+  <element tag="(0028,2000)" name="ICC Profile" vr="OB" vm="1" key="ICCProfile" />  
   <element tag="(0028,2110)" name="Lossy Image Compression" vr="CS" vm="1" key="LossyImageCompression" />
   <element tag="(0028,2112)" name="Lossy Image Compression Ratio" vr="DS" vm="1-n" key="LossyImageCompressionRatio" />
   <element tag="(0028,2114)" name="Lossy Image Compression Method" vr="CS" vm="1-n" key="LossyImageCompressionMethod" />
@@ -1415,6 +1417,11 @@
   <element tag="(0070,031A)" name="Fiducial UID" vr="UI" vm="1" key="FiducialUID" /> 
   <element tag="(0070,031C)" name="Fiducial Set Sequence" vr="SQ" vm="1" key="FiducialSetSeq" /> 
   <element tag="(0070,031E)" name="Fiducial Sequence" vr="SQ" vm="1" key="FiducialSeq" />
+  <element tag="(0070,0401)" name="Graphic Layer Recommended Display CIELab Value" vr="US" vm="3" key="GraphicLayerRecommendedDisplayCIELabValue" />
+  <element tag="(0070,0402)" name="Blending Sequence" vr="SQ" vm="1" key="BlendingSeq" />
+  <element tag="(0070,0403)" name="Relative Opacity" vr="FL" vm="1" key="RelativeOpacity" />
+  <element tag="(0070,0404)" name="Referenced Spatial Registration Sequence" vr="SQ" vm="1" key="ReferencedSpatialRegistrationSeq" />
+  <element tag="(0070,0405)" name="Blending Position" vr="CS" vm="1" key="BlendingPosition" />  
     
   <element tag="(0072,0002)" name="Hanging Protocol Name" vr="SH" vm="1" key="HangingProtocolName" />
   <element tag="(0072,0004)" name="Hanging Protocol Description" vr="LO" vm="1" key="HangingProtocolDescription" />
@@ -2298,6 +2305,9 @@
   <uid value="1.2.840.10008.5.1.4.1.1.10" name="Standalone Modality LUT Storage" key="StandaloneModalityLUTStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.11" name="Standalone VOI LUT Storage" key="StandaloneVOILUTStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.11.1" name="Grayscale Softcopy Presentation State Storage SOP Class" key="GrayscaleSoftcopyPresentationStateStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11.2" name="Color Softcopy Presentation State Storage SOP Class" key="ColorSoftcopyPresentationStateStorage"/>
+  <uid value="1.2.840.10008.5.1.4.1.1.11.3" name="Pseudo-Color Softcopy Presentation State Storage SOP Class" key="PseudoColorSoftcopyPresentationStateStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11.4" name="Blending Softcopy Presentation State Storage SOP Class" key="BlendingSoftcopyPresentationStateStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.1" name="X-Ray Angiographic Image Storage" key="XRayAngiographicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" />
