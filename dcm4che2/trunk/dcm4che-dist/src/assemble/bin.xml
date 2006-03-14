@@ -204,6 +204,7 @@
         <exclude>javax.mail:mail</exclude>
         <exclude>junit:junit</exclude>
         <exclude>xerces:xerces</exclude>
+        <exclude>xerces:xercesImpl</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>
