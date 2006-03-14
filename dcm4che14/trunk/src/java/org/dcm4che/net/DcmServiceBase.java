@@ -394,7 +394,7 @@ public class DcmServiceBase implements DcmService {
     }
     
     // Private -------------------------------------------------------
-    private void doMultiRsp(ActiveAssociation assoc, Dimse rq, Command rspCmd,
+    protected void doMultiRsp(ActiveAssociation assoc, Dimse rq, Command rspCmd,
         MultiDimseRsp mdr)
     throws IOException, DcmServiceException {
         try {
