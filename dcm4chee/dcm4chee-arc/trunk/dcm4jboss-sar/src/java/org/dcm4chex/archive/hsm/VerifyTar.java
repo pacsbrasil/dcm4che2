@@ -62,55 +62,63 @@ import org.apache.commons.compress.tar.TarInputStream;
  */
 public class VerifyTar {
 
-	private byte[] buf = new byte[8192];
+	private static final String USAGE = 
+        "Usage: java -jar verifytar.jar [-p<num>] <file or directory path>[..]\n\n" +
+        " -p<num>  Strip the smallest prefix containing <num> leading slashes from each\n" +
+        "          file name prompted to stdout.";
+    private byte[] buf = new byte[8192];
 	
-	public void verify(InputStream in, String tarname) throws IOException, VerifyTarException {
-		TarInputStream tar = new TarInputStream(in);
-		try {
-			TarEntry entry = tar.getNextEntry();
-			if (entry == null)
-				throw new VerifyTarException("No entries in " + tarname);
-			String entryName = entry.getName();
-			if (!"MD5SUM".equals(entryName))
-				throw new VerifyTarException("Missing MD5SUM entry in " + tarname);
-			DataInputStream dis = new DataInputStream(tar);
-			HashMap md5sums = new HashMap();
-			String line;
-			while ((line = dis.readLine()) != null) {
-				char[] c = line.toCharArray();
-				byte[] md5sum = new byte[16];
-				for (int i = 0, j = 0; i < md5sum.length; i++,j++,j++) {
-					md5sum[i] = (byte) ((fromHexDigit(c[j])<<4) | fromHexDigit(c[j+1]));
-				}
-				md5sums.put(line.substring(34), md5sum);
-			}
-			MessageDigest digest;
-			try {
-				digest = MessageDigest.getInstance("MD5");
-			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException(e);
-			}
-			while ((entry = tar.getNextEntry()) != null) {
-				entryName = entry.getName();
-				byte[] md5sum = (byte[]) md5sums.remove(entryName);
-				if (md5sum == null)
-					throw new VerifyTarException("Unexpected TAR entry: " +
-							entryName + " in " + tarname);
-				digest.reset();
-				in = new DigestInputStream(tar, digest);
-				while (in.read(buf) > 0);
-				if (!Arrays.equals(digest.digest(),md5sum)) {
-					throw new VerifyTarException("Failed MD5 check of TAR entry: " +
-							entryName + " in " + tarname);
-				}				
-			}
-			if (!md5sums.isEmpty())
-				throw new VerifyTarException("Missing TAR entries: " +
-						md5sums.keySet() + " in " + tarname);
-		} finally {
-			tar.close();
-		}
-	}
+	public void verify(InputStream in, String tarname) throws IOException,
+            VerifyTarException {
+        TarInputStream tar = new TarInputStream(in);
+        try {
+            TarEntry entry = tar.getNextEntry();
+            if (entry == null)
+                throw new VerifyTarException("No entries in " + tarname);
+            String entryName = entry.getName();
+            if (!"MD5SUM".equals(entryName))
+                throw new VerifyTarException("Missing MD5SUM entry in "
+                        + tarname);
+            DataInputStream dis = new DataInputStream(tar);
+            HashMap md5sums = new HashMap();
+            String line;
+            while ((line = dis.readLine()) != null) {
+                char[] c = line.toCharArray();
+                byte[] md5sum = new byte[16];
+                for (int i = 0, j = 0; i < md5sum.length; i++, j++, j++) {
+                    md5sum[i] = (byte) ((fromHexDigit(c[j]) << 4) | fromHexDigit(c[j + 1]));
+                }
+                md5sums.put(line.substring(34), md5sum);
+            }
+            MessageDigest digest;
+            try {
+                digest = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+            while ((entry = tar.getNextEntry()) != null) {
+                entryName = entry.getName();
+                byte[] md5sum = (byte[]) md5sums.remove(entryName);
+                if (md5sum == null)
+                    throw new VerifyTarException("Unexpected TAR entry: "
+                            + entryName + " in " + tarname);
+                digest.reset();
+                in = new DigestInputStream(tar, digest);
+                while (in.read(buf) > 0)
+                    ;
+                if (!Arrays.equals(digest.digest(), md5sum)) {
+                    throw new VerifyTarException(
+                            "Failed MD5 check of TAR entry: " + entryName
+                                    + " in " + tarname);
+                }
+            }
+            if (!md5sums.isEmpty())
+                throw new VerifyTarException("Missing TAR entries: "
+                        + md5sums.keySet() + " in " + tarname);
+        } finally {
+            tar.close();
+        }
+    }
 
 	private static int fromHexDigit(char c) {
 		return c - 
@@ -119,33 +127,56 @@ public class VerifyTar {
 	}
 
 	public static void main(String[] args) {
+        if (args.length == 0) {
+            System.out.println(USAGE);
+            System.exit(-1);
+        }
+        int off = 0;
+        int strip = 0;
+        if (args[0].startsWith("-p")) {
+            try {
+                strip = Integer.parseInt(args[0].substring(2)); 
+                off = 1;
+            } catch (NumberFormatException e) {
+                System.out.println(USAGE);
+                System.exit(-1);              
+            }
+        }
 		int errors = 0;
 		VerifyTar inst = new VerifyTar();
-		for (int i = 0; i < args.length; i++) {
+		for (int i = off; i < args.length; i++) {
 			try {
-				errors += inst.verify(new File(args[i]));
+				errors += inst.verify(new File(args[i]), strip);
 			} catch (FileNotFoundException e) {
 				System.err.println(e.getMessage());
-				System.exit(2);
+				System.exit(-2);
 			}
 		}
-		System.exit(-errors);
+		System.exit(errors);
 	}
 
-	private int verify(File file) throws FileNotFoundException {
+	private int verify(File file, int strip) throws FileNotFoundException {
 		int errors = 0;
 		if (file.isDirectory()) {
 			String[] ss = file.list();
 			for (int i = 0; i < ss.length; i++) {
-				errors += verify(new File(file, ss[i]));				
+				errors += verify(new File(file, ss[i]), strip);				
 			}
 		} else {
 			FileInputStream in = new FileInputStream(file);
 			String tarname = file.getPath();
 			
 			try {
-				System.out.print(tarname);
-				System.out.print(' ');
+                int pos = 0;
+                while (strip-- > 0) {
+                    pos = tarname.indexOf(File.separatorChar, pos);
+                    if (pos == -1) break;
+                    pos++;
+                }
+                if (pos != -1) {
+    				System.out.print(tarname.substring(pos));
+    				System.out.print(' ');
+                }
 				verify(in, tarname);
 				System.out.println("ok");
 			} catch (Exception e) {
