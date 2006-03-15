@@ -51,6 +51,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -288,8 +289,10 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addSingleValueMatch(null, "Study.studyStatusId",
         		SqlBuilder.TYPE2,
         		keys.getString(Tags.StudyStatusID));
-        sqlBuilder.addModalitiesInStudyMatch(null,
+        sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));
+        sqlBuilder.addCallingAETsNestedMatch(null,
+                keys.getStrings(PrivateTags.CallingAET));
     }
 
     protected void addSeriesMatch() {
@@ -313,6 +316,9 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
                 SqlBuilder.TYPE2,
                 keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));
+        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET",
+                SqlBuilder.TYPE2,
+                keys.getStrings(PrivateTags.CallingAET));
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         if (rqAttrs != null) {
             sqlBuilder.addWildCardMatch(null,

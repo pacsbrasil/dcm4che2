@@ -244,29 +244,29 @@ abstract class Match
         }
     }
     
-    static class ListOfUID extends Match
+    static class ListOfString extends Match
     {
-        private final String[] uids;
-        public ListOfUID(String alias, String field, boolean type2, String[] uids)
+        private final String[] strings;
+        public ListOfString(String alias, String field, boolean type2, String[] strings)
         {
             super(alias, field, type2);
-            this.uids = uids != null ? (String[]) uids.clone() : new String[0];
+            this.strings = strings != null ? (String[]) strings.clone() : new String[0];
         }
 
         public boolean isUniveralMatch()
         {
-            return uids.length == 0;
+            return strings.length == 0;
         }
 
         protected void appendBodyTo(StringBuffer sb)
         {
             sb.append(column);
-            if (uids.length == 1) {
-                sb.append(" = \'").append(uids[0]).append('\'');
+            if (strings.length == 1) {
+                sb.append(" = \'").append(strings[0]).append('\'');
             } else {
-                sb.append(" IN ('").append(uids[0]);
-                for (int i = 1; i < uids.length; i++) {
-                    sb.append("\', \'").append(uids[i]);
+                sb.append(" IN ('").append(strings[0]);
+                for (int i = 1; i < strings.length; i++) {
+                    sb.append("\', \'").append(strings[i]);
                 }
                 sb.append("\')");
             }
@@ -386,10 +386,10 @@ abstract class Match
 
     }
 
-    static class ModalitiesInStudy extends Match
+    static class ModalitiesInStudyNestedMatch extends Match
     {
         private final char[] wc;
-        public ModalitiesInStudy(String alias, String md)
+        public ModalitiesInStudyNestedMatch(String alias, String md)
         {
             super(alias, "Series.modality", false);
             this.wc = md != null ? md.toCharArray() : new char[0];
@@ -414,7 +414,7 @@ abstract class Match
         protected void appendBodyTo(StringBuffer sb)
         {
             JdbcProperties jp = JdbcProperties.getInstance();
-            sb.append("(SELECT count(*) FROM ");
+            sb.append("exists (SELECT 1 FROM ");
             sb.append(jp.getProperty("Series"));
             sb.append(" WHERE ");
             sb.append(jp.getProperty("Series.study_fk"));
@@ -447,7 +447,45 @@ abstract class Match
                 }
                 sb.append(c);
             }
-            sb.append("') > 0");
+            sb.append("')");
+        }
+    }
+
+    static class CallingAETsNestedMatch extends Match
+    {
+    	private final String[] callingAETs;
+        public CallingAETsNestedMatch(String alias, String[] callingAETs)
+        {
+            super(alias, "Series.sourceAET", false);
+            this.callingAETs = callingAETs != null ? (String[]) callingAETs.clone() : new String[0];
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return callingAETs.length == 0;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            JdbcProperties jp = JdbcProperties.getInstance();
+            sb.append("exists (SELECT 1 FROM ");
+            sb.append(jp.getProperty("Series"));
+            sb.append(" WHERE ");
+            sb.append(jp.getProperty("Series.study_fk"));
+            sb.append(" = ");
+            sb.append(jp.getProperty("Study.pk"));
+            sb.append(" AND ");
+            sb.append(column);
+            if (callingAETs.length == 1) {
+                sb.append(" = \'").append(callingAETs[0]).append('\'');
+            } else {
+                sb.append(" IN ('").append(callingAETs[0]);
+                for (int i = 1; i < callingAETs.length; i++) {
+                    sb.append("\', \'").append(callingAETs[i]);
+                }
+                sb.append("\')");
+            }
+            sb.append(" )");
         }
     }
 

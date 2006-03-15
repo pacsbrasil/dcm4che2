@@ -155,7 +155,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 SqlBuilder.TYPE2,
                 filter.getString(Tags.AccessionNumber),
                 false);
-        sqlBuilder.addModalitiesInStudyMatch(null, filter
+        sqlBuilder.addModalitiesInStudyNestedMatch(null, filter
                 .getString(Tags.ModalitiesInStudy));
     	this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {

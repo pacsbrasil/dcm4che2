@@ -237,7 +237,12 @@ class SqlBuilder {
 
     public void addListOfUidMatch(String alias, String field, boolean type2,
             String[] uids) {
-        addMatch(new Match.ListOfUID(alias, field, type2, uids));
+        addMatch(new Match.ListOfString(alias, field, type2, uids));
+    }
+
+    public void addListOfStringMatch(String alias, String field, boolean type2,
+            String[] strings) {
+        addMatch(new Match.ListOfString(alias, field, type2, strings));
     }
 
     public void addWildCardMatch(String alias, String field, boolean type2,
@@ -257,9 +262,12 @@ class SqlBuilder {
         				ORA_DATE_FORMAT : DATE_FORMAT);
     }
     
-
-    public void addModalitiesInStudyMatch(String alias, String md) {
-        addMatch(new Match.ModalitiesInStudy(alias, md));
+    public void addModalitiesInStudyNestedMatch(String alias, String md) {
+        addMatch(new Match.ModalitiesInStudyNestedMatch(alias, md));
+    }
+    
+    public void addCallingAETsNestedMatch(String alias, String[] callingAETs) {
+        addMatch(new Match.CallingAETsNestedMatch(alias, callingAETs));
     }
     
     public Match.Node addNodeMatch(String orORand, boolean invert) {
