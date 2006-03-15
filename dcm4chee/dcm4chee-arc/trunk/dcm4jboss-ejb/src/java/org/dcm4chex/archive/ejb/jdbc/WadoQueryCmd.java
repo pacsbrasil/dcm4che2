@@ -261,7 +261,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         }        
         
         
-        sqlBuilder.addModalitiesInStudyMatch(null,
+        sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));
     }
 

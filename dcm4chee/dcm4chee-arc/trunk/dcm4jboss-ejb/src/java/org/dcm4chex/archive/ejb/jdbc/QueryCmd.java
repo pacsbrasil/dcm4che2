@@ -289,8 +289,12 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addSingleValueMatch(null, "Study.studyStatusId",
         		SqlBuilder.TYPE2,
         		keys.getString(Tags.StudyStatusID));
+    }
+
+    protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));
+        keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(null,
                 keys.getStrings(PrivateTags.CallingAET));
     }
@@ -303,8 +307,11 @@ public abstract class QueryCmd extends BaseReadCmd {
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.SeriesNumber),
                 false);
+        String modality = keys.getString(Tags.Modality);
+        if (modality == null)
+            modality = keys.getString(Tags.ModalitiesInStudy);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
-                keys.getString(Tags.Modality), false);
+                modality, false);
         sqlBuilder.addWildCardMatch(null, "Series.institutionName",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.InstitutionName),
@@ -316,6 +323,7 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
                 SqlBuilder.TYPE2,
                 keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));
+        keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET",
                 SqlBuilder.TYPE2,
                 keys.getStrings(PrivateTags.CallingAET));
@@ -428,7 +436,7 @@ public abstract class QueryCmd extends BaseReadCmd {
         protected String[] getTables() {
             return new String[] { "Patient"};
         }
-
+        
     }
 
     static class StudyQueryCmd extends QueryCmd {
@@ -441,6 +449,7 @@ public abstract class QueryCmd extends BaseReadCmd {
             super.init();
             addPatientMatch();
             addStudyMatch();
+            addNestedSeriesMatch();
         }
 
         protected String[] getSelectAttributes() {
