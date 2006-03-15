@@ -279,9 +279,9 @@ public class StgCmtScuScpService extends AbstractScpService implements
     boolean isLocalRetrieveAET(String aet) {
         try {
             return aet.equals(server.getAttribute(fileSystemMgtName,
-                    "RetrieveAET"));
+                    "RetrieveAETitle"));
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke getAttribute 'RetrieveAET'", e);
+            throw new RuntimeException("Failed to invoke getAttribute 'RetrieveAETitle'", e);
         }
     }
     
@@ -510,8 +510,9 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     private void checkFile(FileInfo info) throws IOException {
-        if (info.md5 == null
-                || info.basedir == null || !isLocalRetrieveAET(info.fileRetrieveAET))
+        if (info.md5 == null || info.basedir == null
+                || info.basedir.startsWith("ftp://")
+                || !isLocalRetrieveAET(info.fileRetrieveAET))
             return;
         File file = FileUtils.toFile(info.basedir, info.fileID);
         log.info("M-READ file:" + file);
