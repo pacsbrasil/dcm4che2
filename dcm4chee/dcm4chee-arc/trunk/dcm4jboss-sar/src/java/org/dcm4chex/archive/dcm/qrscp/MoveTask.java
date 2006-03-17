@@ -541,8 +541,7 @@ class MoveTask implements Runnable {
         item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
-    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer)
-    throws NoPresContextException {
+    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer) throws Exception {
         Association assoc = storeAssoc.getAssociation();
         PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
                 info.tsUID);
@@ -564,7 +563,9 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        File f = FileUtils.toFile(info.basedir, info.fileID);
+        File f = info.basedir.startsWith("ftp://") 
+                ? service.retrieveFileFromLTA(info.basedir + '/' + info.fileID)
+                : FileUtils.toFile(info.basedir, info.fileID);
         Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
                 DatasetUtils.fromByteArray(info.studyAttrs,
                         DatasetUtils.fromByteArray(info.seriesAttrs,

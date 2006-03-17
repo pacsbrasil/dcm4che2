@@ -540,6 +540,17 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getFTPRetrieverName"
+      setMethod="setFTPRetrieverName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>FTPRetrieverName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4jboss.archive:service=FTPRetriever"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.

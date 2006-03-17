@@ -133,7 +133,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private ObjectName fileSystemMgtName;
 
     private ObjectName stgCmtScuScpName;
-    
+
+    private ObjectName ftpRetrieverName;
+        
     private ObjectName aeServiceName; 
     
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
@@ -197,7 +199,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	private File virtualEnhancedMRConfigFile;
 
 	private Dataset virtualEnhancedMRConfig;
-	
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -240,6 +242,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.stgCmtScuScpName = stgCmtScuScpName;
     }
     
+    public final ObjectName getFTPRetrieverName() {
+        return ftpRetrieverName;
+    }
+
+    public final void setFTPRetrieverName(ObjectName ftpRetrieverName) {
+        this.ftpRetrieverName = ftpRetrieverName;
+    }
+
 	/**
 	 * @return Returns the aeService.
 	 */
@@ -710,11 +720,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
                     String.class.getName(), String.class.getName(),
                     Dataset.class.getName(), boolean.class.getName() });
         } catch (JMException e) {
-            log.error("Failed to queue Storage C0mmitment Request", e);
+            log.error("Failed to queue Storage Commitment Request", e);
         }
     }
 
-	FileSystemMgtHome getFileSystemMgtHome()
+    File retrieveFileFromLTA(String ftpURL) throws Exception {
+        return (File) server.invoke(ftpRetrieverName, "retrieveFileFromLTA",
+                new Object[] { ftpURL }, new String[] { String.class.getName() });
+    }
+
+    FileSystemMgtHome getFileSystemMgtHome()
 	        throws HomeFactoryException {
 	    return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
 	            FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
