@@ -45,6 +45,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -95,6 +96,11 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
  *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2 AND (a.status = ?3 OR a.status = ?4)"
  *             strategy="on-find" eager-load-group="*"
+ *             
+ * @jboss.query signature="int ejbSelectNumberOfFiles(java.lang.Integer pk)"
+ *              query="SELECT COUNT(f) FROM File f WHERE f.instance.pk = ?1"
+ * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Integer pk)"
+ *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.instance.pk = ?1"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -138,6 +144,33 @@ public abstract class FileSystemBean implements EntityBean {
     public void ejbRemove() throws RemoveException
     {
         log.info("Deleting " + asString());
+    }
+    
+    
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfFiles(Integer pk)
+    throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    public int countFiles() throws FinderException {
+        return ejbSelectNumberOfFiles(getPk());
+    }
+    
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfPrivateFiles(Integer pk)
+    throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    public int countPrivateFiles() throws FinderException {
+        return ejbSelectNumberOfPrivateFiles(getPk());
     }
     
     /**

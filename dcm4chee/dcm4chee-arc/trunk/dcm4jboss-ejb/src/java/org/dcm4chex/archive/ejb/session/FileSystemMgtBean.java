@@ -398,7 +398,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		return (FileSystemLocal) c.iterator().next();
 	}
     
-    private void removeFileSystem(FileSystemLocal fs) throws RemoveException {
+    private void removeFileSystem(FileSystemLocal fs)
+    throws RemoveException, FinderException {
+        if (fs.countFiles() > 0 || fs.countPrivateFiles() > 0)
+            throw new RemoveException(fs.asString() + " not empty");
 		FileSystemLocal next = fs.getNextFileSystem();
 		if (next != null && fs.isIdentical(next)) {
 			next = null;
