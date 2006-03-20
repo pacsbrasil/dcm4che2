@@ -125,7 +125,8 @@ public class DateUtils {
 
 	private static void setToDec31(Calendar c) {
 		c.set(Calendar.MONTH, 11);
-		c.set(Calendar.DAY_OF_MONTH, 31);		
+		c.set(Calendar.DAY_OF_MONTH, 31);
+        setTo2359(c);
 	}
 
 	private static void setTo2359(Calendar c) {
