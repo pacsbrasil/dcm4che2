@@ -194,7 +194,7 @@
   <element tag="(0008,1145)" name="Referenced Curve Sequence" vr="SQ" vm="1" key="RefCurveSeq" />
   <element tag="(0008,114A)" name="Referenced Instance Sequence" vr="SQ" vm="1" key="RefInstanceSeq" />
   <element tag="(0008,114B)" name="Referenced Real World Value Mapping Instance Sequence" vr="SQ" vm="1" key="RefRealWorldValueMappingInstanceSeq" />
-SQ<element tag="(0008,1150)" name="Referenced SOP Class UID" vr="UI" vm="1" key="RefSOPClassUID" />
+  <element tag="(0008,1150)" name="Referenced SOP Class UID" vr="UI" vm="1" key="RefSOPClassUID" />
   <element tag="(0008,1155)" name="Referenced SOP Instance UID" vr="UI" vm="1" key="RefSOPInstanceUID" />
   <element tag="(0008,115A)" name="SOP Classes Supported" vr="UI" vm="1-n" key="SOPClassesSupported" />
   <element tag="(0008,1160)" name="Referenced Frame Number" vr="IS" vm="1-n" key="RefFrameNumber" />
