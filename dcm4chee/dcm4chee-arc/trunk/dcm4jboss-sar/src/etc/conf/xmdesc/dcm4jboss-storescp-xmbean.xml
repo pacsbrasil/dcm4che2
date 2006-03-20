@@ -313,136 +313,120 @@ StoreSCP service.
    <attribute access="read-write"
       getMethod="getImageCUIDs"
       setMethod="setImageCUIDs">
-      <description><![CDATA[List of image SOP Classes that the Store SCP service accepts, separated by semi-colons. The difference between AcceptedImageSOPClasses and 
-AcceptedOtherSOPClasses is the set of transfer syntax offered in the presentation context. AcceptedOtherSOPClasses always uses implicit 
-(explicit) VR little endian, while AcceptedImageSOPClasses can use all selected image transfer syntax options, such as AcceptJPEGLossless.<br>
-Use either the SOP Class UID or the symbolic name:
-<br>HardcopyGrayscaleImageStorage
-<br>HardcopyColorImageStorage
-<br>ComputedRadiographyImageStorage
-<br>DigitalXRayImageStorageForPresentation
-            <br>DigitalXRayImageStorageForProcessing
-<br>DigitalMammographyXRayImageStorageForPresentation
-            <br>DigitalMammographyXRayImageStorageForProcessing
-				<br>DigitalIntraoralXRayImageStorageForPresentation
-            <br>DigitalIntraoralXRayImageStorageForProcessing
-            <br>CTImageStorage
-				<br>UltrasoundMultiframeImageStorageRetired
-            <br>UltrasoundMultiframeImageStorage
-				<br>MRImageStorage
-            <br>EnhancedMRImageStorage
-            <br>NuclearMedicineImageStorageRetired
-            <br>UltrasoundImageStorageRetired
-				<br>UltrasoundImageStorage
-            <br>SecondaryCaptureImageStorage
-            <br>MultiframeSingleBitSecondaryCaptureImageStorage
-            <br>MultiframeGrayscaleByteSecondaryCaptureImageStorage
-            <br>MultiframeGrayscaleWordSecondaryCaptureImageStorage
-            <br>MultiframeColorSecondaryCaptureImageStorage
-            <br>XRayAngiographicImageStorage
-            <br>XRayRadiofluoroscopicImageStorage
-            <br>XRayAngiographicBiPlaneImageStorageRetired
-            <br>NuclearMedicineImageStorage
-				<br>VLImageStorageRetired
-            <br>VLMultiframeImageStorageRetired
-            <br>VLEndoscopicImageStorage
-				<br>VLMicroscopicImageStorage
-            <br>VLSlideCoordinatesMicroscopicImageStorage
-            <br>VLPhotographicImageStorage
-            <br>PositronEmissionTomographyImageStorage
-				<br>RTImageStorage
-<br>To map your own symbolic names to SOP classes or add more SOP Classes as possible values, use the dictionary.xml file.
-    ]]>
+      <description><![CDATA[
+        List of image SOP Classes that the Store SCP service accepts with
+        native and compressed transfer syntax configured by attributes
+        AcceptExplicitVRLE, AcceptJPEG2000Lossless, AcceptJPEG2000Lossy,
+        AcceptJPEGLSLossless, AcceptJPEGLSLossy, AcceptJPEGLossless,
+        AcceptJPEGLossless14, AcceptJPEGBaseline, AcceptJPEGExtended,
+        AcceptRLELossless.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
       <name>AcceptedImageSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="HardcopyGrayscaleImageStorage;HardcopyColorImageStorage;
-         	ComputedRadiographyImageStorage;DigitalXRayImageStorageForPresentation;
-            DigitalXRayImageStorageForProcessing;DigitalMammographyXRayImageStorageForPresentation;
-            DigitalMammographyXRayImageStorageForProcessing;DigitalIntraoralXRayImageStorageForPresentation;
-            DigitalIntraoralXRayImageStorageForProcessing;
-            CTImageStorage;UltrasoundMultiframeImageStorageRetired;
-            UltrasoundMultiframeImageStorage;MRImageStorage;
-            EnhancedMRImageStorage;
-            NuclearMedicineImageStorageRetired;
-            UltrasoundImageStorageRetired;UltrasoundImageStorage;
-            SecondaryCaptureImageStorage;
-            MultiframeSingleBitSecondaryCaptureImageStorage;
-            MultiframeGrayscaleByteSecondaryCaptureImageStorage;
-            MultiframeGrayscaleWordSecondaryCaptureImageStorage;
-            MultiframeColorSecondaryCaptureImageStorage;
-            XRayAngiographicImageStorage;
-            XRayRadiofluoroscopicImageStorage;
-            XRayAngiographicBiPlaneImageStorageRetired;
-            NuclearMedicineImageStorage;VLImageStorageRetired;
-            VLMultiframeImageStorageRetired;
-            VLEndoscopicImageStorage;VLMicroscopicImageStorage;
-            VLSlideCoordinatesMicroscopicImageStorage;
-            VLPhotographicImageStorage;
-            PositronEmissionTomographyImageStorage;RTImageStorage"/>
+         <value value="
+           HardcopyGrayscaleImageStorage
+           HardcopyColorImageStorage
+           ComputedRadiographyImageStorage
+           DigitalXRayImageStorageForPresentation
+           DigitalXRayImageStorageForProcessing
+           DigitalMammographyXRayImageStorageForPresentation
+           DigitalMammographyXRayImageStorageForProcessing
+           DigitalIntraoralXRayImageStorageForPresentation
+           DigitalIntraoralXRayImageStorageForProcessing
+           CTImageStorage
+           EnhancedCTImageStorage
+           UltrasoundMultiframeImageStorage
+           MRImageStorage
+           EnhancedMRImageStorage
+           UltrasoundImageStorage
+           SecondaryCaptureImageStorage
+           MultiframeSingleBitSecondaryCaptureImageStorage
+           MultiframeGrayscaleByteSecondaryCaptureImageStorage
+           MultiframeGrayscaleWordSecondaryCaptureImageStorage
+           MultiframeTrueColorSecondaryCaptureImageStorage
+           XRayAngiographicImageStorage
+           EnhancedXRayAngiographicImageStorage
+           XRayRadiofluoroscopicImageStorage
+           EnhancedXRayRadiofluoroscopicImageStorage
+           NuclearMedicineImageStorage
+           VLEndoscopicImageStorage
+           VLMicroscopicImageStorage
+           VLSlideCoordinatesMicroscopicImageStorage
+           VLPhotographicImageStorage
+           OphthalmicPhotography8BitImageStorage
+           OphthalmicPhotography16BitImageStorage
+           PositronEmissionTomographyImageStorage
+           RTImageStorage
+           NuclearMedicineImageStorageRetired
+           UltrasoundMultiframeImageStorageRetired
+           UltrasoundImageStorageRetired
+           XRayAngiographicBiPlaneImageStorageRetired"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getVideoCUIDs"
+      setMethod="setVideoCUIDs">
+      <description><![CDATA[
+        List of Video SOP Classes that the Store SCP service accepts with 
+        <i>MPEG2 Main Profile @ Main Level</i> transfer syntax.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>AcceptedVideoSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           VideoEndoscopicImageStorage
+           VideoMicroscopicImageStorage
+           VideoPhotographicImageStorage"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getOtherCUIDs"
       setMethod="setOtherCUIDs">
-      <description><![CDATA[List of other non-image SOP Classes that the Store SCP service accepts. The difference between AcceptedImageSOPClasses and 
-AcceptedOtherSOPClasses is the set of transfer syntax offered in the presentation context. AcceptedOtherSOPClasses always uses implicit 
-(explicit) VR little endian, while AcceptedImageSOPClasses can use all selected image transfer syntax options, such as AcceptJPEGLossless.<br>
-Use either the SOP Class UID or the symbolic name:
-<br>BasicTextSR
-             <br>EnhancedSR<br>ComprehensiveSR
-				 <br>MammographyCADSR
-             <br>GrayscaleSoftcopyPresentationStateStorage
-             <br>ColorSoftcopyPresentationStateStorage
-             <br>PseudoColorSoftcopyPresentationStateStorage
-             <br>BlendingSoftcopyPresentationStateStorage
-             <br>KeyObjectSelectionDocument
-				 <br>RTDoseStorage
-             <br>RTStructureSetStorage
-				 <br>RTBeamsTreatmentRecordStorage
-             <br>RTPlanStorage
-				 <br>RTBrachyTreatmentRecordStorage
-             <br>RTTreatmentSummaryRecordStorage
-				 <br>RawDataStorage
-             <br>AmbulatoryECGWaveformStorage
-             <br>BasicVoiceAudioWaveformStorage
-             <br>CardiacElectrophysiologyWaveformStorage
-             <br>GeneralECGWaveformStorage
-				 <br>HemodynamicWaveformStorage
-             <br>TwelveLeadECGWaveformStorage
-			 <br>EncapsulatedPDFStorage
-		     <br>TianiEncapsulatedDocumentStorage
-<br>To map your own symbolic names to SOP classes or add more SOP Classes as possible values, use the dictionary.xml file.
-    ]]>
+      <description><![CDATA[
+        List of other non-image and non-video SOP Classes that the Store SCP
+        service accepts with implicit and - if AcceptExplicitVRLE=true 
+        - explicit VR little endian transfer syntax.<br>
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
       <name>AcceptedOtherSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="BasicTextSR;
-             EnhancedSR;
-             ComprehensiveSR;
-             MammographyCADSR;
-             GrayscaleSoftcopyPresentationStateStorage;
-             ColorSoftcopyPresentationStateStorage;
-             PseudoColorSoftcopyPresentationStateStorage;
-             BlendingSoftcopyPresentationStateStorage;
-             KeyObjectSelectionDocument;
-             RTDoseStorage;
-             RTStructureSetStorage;
-             RTBeamsTreatmentRecordStorage;
-             RTPlanStorage;
-             RTBrachyTreatmentRecordStorage;
-             RTTreatmentSummaryRecordStorage;
-             RawDataStorage;
-             AmbulatoryECGWaveformStorage;
-             BasicVoiceAudioWaveformStorage;
-             CardiacElectrophysiologyWaveformStorage;
-             GeneralECGWaveformStorage;
-             HemodynamicWaveformStorage;
-             TwelveLeadECGWaveformStorage;
-             EncapsulatedPDFStorage;
-             TianiEncapsulatedDocumentStorage"/>
+         <value value="
+           MRSpectroscopyStorage
+           TwelveLeadECGWaveformStorage
+           GeneralECGWaveformStorage
+           AmbulatoryECGWaveformStorage
+           HemodynamicWaveformStorage
+           CardiacElectrophysiologyWaveformStorage
+           BasicVoiceAudioWaveformStorage
+           GrayscaleSoftcopyPresentationStateStorage
+           RawDataStorage
+           SpatialRegistrationStorage
+           SpatialFiducialsStorage
+           RealWorldValueMappingStorage
+           StereometricRelationshipStorage
+           BasicTextSR
+           EnhancedSR
+           ComprehensiveSR
+           ProcedureLogStorage
+           MammographyCADSR
+           KeyObjectSelectionDocument
+           ChestCADSR
+           RTDoseStorage
+           RTStructureSetStorage
+           RTBeamsTreatmentRecordStorage
+           RTPlanStorage
+           RTBrachyTreatmentRecordStorage
+           RTTreatmentSummaryRecordStorage"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

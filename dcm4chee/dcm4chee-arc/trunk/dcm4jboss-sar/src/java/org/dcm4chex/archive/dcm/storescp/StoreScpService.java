@@ -47,9 +47,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 import javax.ejb.CreateException;
 import javax.management.JMException;
@@ -87,11 +87,16 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  */
 public class StoreScpService extends AbstractScpService {
 
+    private static final String[] MPEG2_TS = { UIDs.MPEG2 };
+
     /** Map containing all image SOP Class UID. (key is name (as in config string), value is real uid) */
-    private Map imageCUIDS = new TreeMap();
+    private Map imageCUIDS = new LinkedHashMap();
+
+    /** Map containing all video SOP Class UID. (key is name (as in config string), value is real uid) */
+    private Map videoCUIDS = new LinkedHashMap();
 
     /** Map containing all NOT image SOP Class UID. (key is name (as in config string), value is real uid) */
-    private Map otherCUIDS = new TreeMap();
+    private Map otherCUIDS = new LinkedHashMap();
 
     private ObjectName fileSystemMgtName;
 
@@ -402,6 +407,20 @@ public class StoreScpService extends AbstractScpService {
     	imageCUIDS = map;
     }
 
+    public String getVideoCUIDs() {
+        return toString(videoCUIDS);
+    }
+ 
+    public void setVideoCUIDs( String uids ) {
+        if ( getVideoCUIDs().equals(uids)) return;
+        Map map =parseUIDs(uids);
+        updateBindings(videoCUIDS.values(), map.values());
+        putPresContexts(null,videoCUIDS,null);
+        putPresContexts(null,map,MPEG2_TS);
+        videoCUIDS.clear();
+        videoCUIDS = map;
+    }
+
     public String getOtherCUIDs() {
     	return toString(otherCUIDS);
     }
@@ -484,9 +503,9 @@ public class StoreScpService extends AbstractScpService {
 	 * @return
 	 */
 	private Map parseUIDs(String uids) {
-        StringTokenizer st = new StringTokenizer(uids, "\r\n;");
+        StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
         String uid,name;
-        Map map = new TreeMap();
+        Map map = new LinkedHashMap();
         while ( st.hasMoreTokens() ) {
         	uid = st.nextToken().trim();
     		name = uid;
@@ -522,12 +541,14 @@ public class StoreScpService extends AbstractScpService {
 
     protected void bindDcmServices(DcmServiceRegistry services) {
         updateBindings(null,imageCUIDS.values());
+        updateBindings(null,videoCUIDS.values());
         updateBindings(null,otherCUIDS.values());
         dcmHandler.addAssociationListener(scp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
         updateBindings(imageCUIDS.values(),null);
+        updateBindings(videoCUIDS.values(),null);
         updateBindings(otherCUIDS.values(),null);
         dcmHandler.removeAssociationListener(scp);
     }
@@ -570,6 +591,7 @@ public class StoreScpService extends AbstractScpService {
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         putPresContexts(policy, imageCUIDS, enable ? getImageTS() : null);
+        putPresContexts(policy, videoCUIDS, enable ? MPEG2_TS : null);
         putPresContexts(policy, otherCUIDS, enable ? getTransferSyntaxUIDs() : null);
     }
 
