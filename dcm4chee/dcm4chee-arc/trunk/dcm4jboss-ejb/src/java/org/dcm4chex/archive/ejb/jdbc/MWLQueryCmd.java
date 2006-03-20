@@ -43,7 +43,6 @@ import java.sql.SQLException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
@@ -104,60 +103,11 @@ public class MWLQueryCmd extends BaseReadCmd {
             sqlBuilder.addSingleValueMatch(null, "MWLItem.scheduledStationAET",
                     SqlBuilder.TYPE1,
                     spsItem.getString(Tags.ScheduledStationAET));
-            PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
-            if (pn != null) {
-                sqlBuilder.addWildCardMatch(null,
-                        "MWLItem.performingPhysicianFamilyName",
-                        SqlBuilder.TYPE2,
-                        pn.get(PersonName.FAMILY),
-                        true);
-                sqlBuilder.addWildCardMatch(null,
-                        "MWLItem.performingPhysicianGivenName",
-                        SqlBuilder.TYPE2,
-                        pn.get(PersonName.GIVEN),
-                        true);
-                sqlBuilder.addWildCardMatch(null,
-                        "MWLItem.performingPhysicianMiddleName",
-                        SqlBuilder.TYPE2,
-                        pn.get(PersonName.MIDDLE),
-                        true);
-                PersonName ipn = pn.getIdeographic();
-                if (ipn != null) {
-                    sqlBuilder.addWildCardMatch(null,
-                            "MWLItem.performingPhysicianIdeographicFamilyName",
-                            SqlBuilder.TYPE2,
-                            ipn.get(PersonName.FAMILY),
-                            false);
-                    sqlBuilder.addWildCardMatch(null,
-                            "MWLItem.performingPhysicianIdeographicGivenName",
-                            SqlBuilder.TYPE2,
-                            ipn.get(PersonName.GIVEN),
-                            false);
-                    sqlBuilder.addWildCardMatch(null,
-                            "MWLItem.performingPhysicianIdeographicMiddleName",
-                            SqlBuilder.TYPE2,
-                            ipn.get(PersonName.MIDDLE),
-                            false);
-                }
-                PersonName ppn = pn.getPhonetic();
-                if (ppn != null) {
-                    sqlBuilder.addWildCardMatch(null,
-                            "MWLItem.performingPhysicianPhoneticFamilyName",
-                            SqlBuilder.TYPE2,
-                            ppn.get(PersonName.FAMILY),
-                            false);
-                    sqlBuilder.addWildCardMatch(null,
-                            "MWLItem.performingPhysicianPhoneticGivenName",
-                            SqlBuilder.TYPE2,
-                            ppn.get(PersonName.GIVEN),
-                            false);
-                    sqlBuilder.addWildCardMatch(null,
-                            "MWLItem.performingPhysicianPhoneticMiddleName",
-                            SqlBuilder.TYPE2,
-                            ppn.get(PersonName.MIDDLE),
-                            false);
-                }
-            }        
+            sqlBuilder.addPNMatch(new String[] {
+                    "MWLItem.performingPhysicianName",
+                    "MWLItem.performingPhysicianIdeographicName",
+                    "MWLItem.performingPhysicianPhoneticName"},
+                    spsItem.getString(Tags.PerformingPhysicianName));
         }
     	if (status != null) {
             sqlBuilder.addIntValueMatch(null, "MWLItem.spsStatusAsInt",
@@ -180,60 +130,11 @@ public class MWLQueryCmd extends BaseReadCmd {
         sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.PatientID));
-        PersonName pn = keys.getPersonName(Tags.PatientName);
-        if (pn != null) {
-            sqlBuilder.addWildCardMatch(null,
-                    "Patient.patientFamilyName",
-                    SqlBuilder.TYPE2,
-                    pn.get(PersonName.FAMILY),
-                    true);
-            sqlBuilder.addWildCardMatch(null,
-                    "Patient.patientGivenName",
-                    SqlBuilder.TYPE2,
-                    pn.get(PersonName.GIVEN),
-                    true);
-            sqlBuilder.addWildCardMatch(null,
-                    "Patient.patientMiddleName",
-                    SqlBuilder.TYPE2,
-                    pn.get(PersonName.MIDDLE),
-                    true);
-            PersonName ipn = pn.getIdeographic();
-            if (ipn != null) {
-                sqlBuilder.addWildCardMatch(null,
-                        "Patient.patientIdeographicFamilyName",
-                        SqlBuilder.TYPE2,
-                        ipn.get(PersonName.FAMILY),
-                        false);
-                sqlBuilder.addWildCardMatch(null,
-                        "Patient.patientIdeographicGivenName",
-                        SqlBuilder.TYPE2,
-                        ipn.get(PersonName.GIVEN),
-                        false);
-                sqlBuilder.addWildCardMatch(null,
-                        "Patient.patientIdeographicMiddleName",
-                        SqlBuilder.TYPE2,
-                        ipn.get(PersonName.MIDDLE),
-                        false);
-            }
-            PersonName ppn = pn.getPhonetic();
-            if (ppn != null) {
-                sqlBuilder.addWildCardMatch(null,
-                        "Patient.patientPhoneticFamilyName",
-                        SqlBuilder.TYPE2,
-                        ppn.get(PersonName.FAMILY),
-                        false);
-                sqlBuilder.addWildCardMatch(null,
-                        "Patient.patientPhoneticGivenName",
-                        SqlBuilder.TYPE2,
-                        ppn.get(PersonName.GIVEN),
-                        false);
-                sqlBuilder.addWildCardMatch(null,
-                        "Patient.patientPhoneticMiddleName",
-                        SqlBuilder.TYPE2,
-                        ppn.get(PersonName.MIDDLE),
-                        false);
-            }
-        }        
+        sqlBuilder.addPNMatch(new String[] {
+                "Patient.patientName",
+                "Patient.patientIdeographicName",
+                "Patient.patientPhoneticName"},
+                keys.getString(Tags.PatientName));
     }
 
     public void execute() throws SQLException {

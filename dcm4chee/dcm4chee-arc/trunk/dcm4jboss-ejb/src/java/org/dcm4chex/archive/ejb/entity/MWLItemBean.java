@@ -182,64 +182,22 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="perf_phys_fname"
      */
-    public abstract String getPerformingPhysicianFamilyName();
-    public abstract void setPerformingPhysicianFamilyName(String name);
+    public abstract String getPerformingPhysicianName();
+    public abstract void setPerformingPhysicianName(String name);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_gname"
+     * @ejb.persistence column-name="perf_phys_i_name"
      */
-    public abstract String getPerformingPhysicianGivenName();
-    public abstract void setPerformingPhysicianGivenName(String name);
+    public abstract String getPerformingPhysicianIdeographicName();
+    public abstract void setPerformingPhysicianIdeographicName(String name);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_mname"
+     * @ejb.persistence column-name="perf_phys_p_name"
      */
-    public abstract String getPerformingPhysicianMiddleName();
-    public abstract void setPerformingPhysicianMiddleName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_ifname"
-     */
-    public abstract String getPerformingPhysicianIdeographicFamilyName();
-    public abstract void setPerformingPhysicianIdeographicFamilyName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_igname"
-     */
-    public abstract String getPerformingPhysicianIdeographicGivenName();
-    public abstract void setPerformingPhysicianIdeographicGivenName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_imname"
-     */
-    public abstract String getPerformingPhysicianIdeographicMiddleName();
-    public abstract void setPerformingPhysicianIdeographicMiddleName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_pfname"
-     */
-    public abstract String getPerformingPhysicianPhoneticFamilyName();
-    public abstract void setPerformingPhysicianPhoneticFamilyName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_pgname"
-     */
-    public abstract String getPerformingPhysicianPhoneticGivenName();
-    public abstract void setPerformingPhysicianPhoneticGivenName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_pmname"
-     */
-    public abstract String getPerformingPhysicianPhoneticMiddleName();
-    public abstract void setPerformingPhysicianPhoneticMiddleName(String name);
+    public abstract String getPerformingPhysicianPhoneticName();
+    public abstract void setPerformingPhysicianPhoneticName(String name);
 
     /**
      * Requested Procedure ID
@@ -354,18 +312,15 @@ public abstract class MWLItemBean implements EntityBean {
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
         PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
-            setPerformingPhysicianFamilyName(pn.get(PersonName.FAMILY));
-            setPerformingPhysicianGivenName(pn.get(PersonName.GIVEN));
+            setPerformingPhysicianName(onlyFamilyAndGivenName(pn));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setPerformingPhysicianIdeographicFamilyName(ipn.get(PersonName.FAMILY));
-                setPerformingPhysicianIdeographicGivenName(ipn.get(PersonName.GIVEN));                
+                setPerformingPhysicianIdeographicName(onlyFamilyAndGivenName(ipn));
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setPerformingPhysicianPhoneticFamilyName(ppn.get(PersonName.FAMILY));
-                setPerformingPhysicianPhoneticGivenName(ppn.get(PersonName.GIVEN));                
-            }
+                setPerformingPhysicianPhoneticName(onlyFamilyAndGivenName(ppn));
+             }
         }
         setModality(spsItem.getString(Tags.Modality));
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
@@ -374,6 +329,12 @@ public abstract class MWLItemBean implements EntityBean {
         setEncodedAttributes(DatasetUtils.toByteArray(ds));
     }
 
+    private String onlyFamilyAndGivenName(PersonName pn) {
+        String fn = pn.get(PersonName.FAMILY);
+        String gn = pn.get(PersonName.GIVEN);
+        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
+    }
+    
     /**
      * @ejb.interface-method
      */

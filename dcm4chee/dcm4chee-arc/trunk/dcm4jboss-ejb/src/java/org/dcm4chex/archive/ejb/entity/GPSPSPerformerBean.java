@@ -104,20 +104,23 @@ public abstract class GPSPSPerformerBean implements EntityBean {
             throws CreateException {
         PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
         if (pn != null) {
-            setHumanPerformerFamilyName(pn.get(PersonName.FAMILY));
-            setHumanPerformerGivenName(pn.get(PersonName.GIVEN));
+            setHumanPerformerName(onlyFamilyAndGivenName(pn));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setHumanPerformerIdeographicFamilyName(ipn.get(PersonName.FAMILY));
-                setHumanPerformerIdeographicGivenName(ipn.get(PersonName.GIVEN));                
+                setHumanPerformerIdeographicName(onlyFamilyAndGivenName(ipn));
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setHumanPerformerPhoneticFamilyName(ppn.get(PersonName.FAMILY));
-                setHumanPerformerPhoneticGivenName(ppn.get(PersonName.GIVEN));                
+                setHumanPerformerPhoneticName(onlyFamilyAndGivenName(ppn));
             }
         }        
         return null;
+    }
+
+    private String onlyFamilyAndGivenName(PersonName pn) {
+        String fn = pn.get(PersonName.FAMILY);
+        String gn = pn.get(PersonName.GIVEN);
+        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
     }
     
     public void ejbPostCreate(Dataset ds, GPSPSLocal gpsps)
@@ -153,66 +156,24 @@ public abstract class GPSPSPerformerBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_fname"
+     * @ejb.persistence column-name="human_perf_name"
      */
-    public abstract String getHumanPerformerFamilyName();
-    public abstract void setHumanPerformerFamilyName(String name);
+    public abstract String getHumanPerformerName();
+    public abstract void setHumanPerformerName(String name);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_gname"
+     * @ejb.persistence column-name="hum_perf_i_name"
      */
-    public abstract String getHumanPerformerGivenName();
-    public abstract void setHumanPerformerGivenName(String name);
+    public abstract String getHumanPerformerIdeographicName();
+    public abstract void setHumanPerformerIdeographicName(String name);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_mname"
+     * @ejb.persistence column-name="hum_perf_p_name"
      */
-    public abstract String getHumanPerformerMiddleName();
-    public abstract void setHumanPerformerMiddleName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_ifname"
-     */
-    public abstract String getHumanPerformerIdeographicFamilyName();
-    public abstract void setHumanPerformerIdeographicFamilyName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_igname"
-     */
-    public abstract String getHumanPerformerIdeographicGivenName();
-    public abstract void setHumanPerformerIdeographicGivenName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_imname"
-     */
-    public abstract String getHumanPerformerIdeographicMiddleName();
-    public abstract void setHumanPerformerIdeographicMiddleName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_pfname"
-     */
-    public abstract String getHumanPerformerPhoneticFamilyName();
-    public abstract void setHumanPerformerPhoneticFamilyName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_pgname"
-     */
-    public abstract String getHumanPerformerPhoneticGivenName();
-    public abstract void setHumanPerformerPhoneticGivenName(String name);
-    
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="hum_perf_pmname"
-     */
-    public abstract String getHumanPerformerPhoneticMiddleName();
-    public abstract void setHumanPerformerPhoneticMiddleName(String name);
+    public abstract String getHumanPerformerPhoneticName();
+    public abstract void setHumanPerformerPhoneticName(String name);
 
     /**
      * @ejb.relation name="human-performer-code"
@@ -236,8 +197,7 @@ public abstract class GPSPSPerformerBean implements EntityBean {
 
     private String prompt() {
         return "GPSPSHumanPerformer[pk=" + getPk() 
-                + ", name=" + getHumanPerformerFamilyName() 
-                + '^' + getHumanPerformerGivenName()
+                + ", name=" + getHumanPerformerName() 
                 + ", code->" + getHumanPerformerCode()
                 + ", gpsps->" + getGpsps() + "]";
     }

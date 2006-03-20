@@ -115,7 +115,7 @@ public class PatientBeanTest extends ServletTestCase {
             Collection c = patHome.findByPatientId(PID_ + i);
             assertEquals(1, c.size());
             PatientLocal pat = (PatientLocal) c.iterator().next();
-            String pn = pat.getPatientFamilyName() + '^' + pat.getPatientGivenName();
+            String pn = pat.getPatientName();
             if (!PAT_NAME[i].equals(pn)) {
                 fail("expected:" + PAT_NAME[i] + ", value:" + pn);
             }

@@ -60,6 +60,7 @@ class SqlBuilder {
     private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
     private static final String ORA_DATE_FORMAT = 
     	"'TO_TIMESTAMP('''yyyy-MM-dd HH:mm:ss.SSS'','''YYYY-MM-DD HH24:MI:SS.FF''')";
+    private static final boolean[] PN_IGNORE_CASE = { true, false, false };
     private String[] select;
     private String[] from;
     private String[] leftJoin;
@@ -249,6 +250,28 @@ class SqlBuilder {
         String wc, boolean ignoreCase) {
         addMatch(new Match.WildCard(alias, field, type2, wc, ignoreCase));
     }
+    
+
+    public void addPNMatch(String[] nameFields, String pn) {
+        if (pn == null || pn.length() == 0 || pn.equals("*"))
+            return;
+        int start = 0;
+        int end;
+        for (int i = 0; i < nameFields.length; i++) {
+            end = pn.indexOf('=', start);
+            int fnend = pn.indexOf('^', start);
+            int gnend = (fnend != -1) ? pn.indexOf('^', fnend + 1) : -1;
+            if (gnend == -1 || end != -1 && gnend > end)
+                gnend = end;            
+            addWildCardMatch(null, nameFields[i], true, 
+                    (gnend != -1) ? pn.substring(start, gnend) : pn.substring(start),
+                    PN_IGNORE_CASE[i]);
+            if (end == -1)
+                break;
+            start = end + 1;
+        }
+    }
+    
 
     public void addRangeMatch(String alias, String field, boolean type2,
             Date[] range) {
@@ -512,4 +535,5 @@ class SqlBuilder {
             ((Match) matches.get(i)).appendTo(sb);
         }
     }
+
 }

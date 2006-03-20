@@ -142,67 +142,25 @@ public abstract class PatientBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="pat_fname"
+     * @ejb.persistence column-name="pat_name"
      */
-    public abstract String getPatientFamilyName();
-    public abstract void setPatientFamilyName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pat_gname"
-     */
-    public abstract String getPatientGivenName();
-    public abstract void setPatientGivenName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pat_mname"
-     */
-    public abstract String getPatientMiddleName();
-    public abstract void setPatientMiddleName(String name);
+    public abstract String getPatientName();
+    public abstract void setPatientName(String name);
         
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="pat_ifname"
+     * @ejb.persistence column-name="pat_i_name"
      */
-    public abstract String getPatientIdeographicFamilyName();
-    public abstract void setPatientIdeographicFamilyName(String name);
+    public abstract String getPatientIdeographicName();
+    public abstract void setPatientIdeographicName(String name);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="pat_igname"
+     * @ejb.persistence column-name="pat_p_name"
      */
-    public abstract String getPatientIdeographicGivenName();
-    public abstract void setPatientIdeographicGivenName(String name);
+    public abstract String getPatientPhoneticName();
+    public abstract void setPatientPhoneticName(String name);
 
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pat_imname"
-     */
-    public abstract String getPatientIdeographicMiddleName();
-    public abstract void setPatientIdeographicMiddleName(String name);
-        
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pat_pfname"
-     */
-    public abstract String getPatientPhoneticFamilyName();
-    public abstract void setPatientPhoneticFamilyName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pat_pgname"
-     */
-    public abstract String getPatientPhoneticGivenName();
-    public abstract void setPatientPhoneticGivenName(String name);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pat_pmname"
-     */
-    public abstract String getPatientPhoneticMiddleName();
-    public abstract void setPatientPhoneticMiddleName(String name);
-        
     /**
      * Patient Birth Date
      *
@@ -356,17 +314,14 @@ public abstract class PatientBean implements EntityBean {
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
         if (pn != null) {
-            setPatientFamilyName(pn.get(PersonName.FAMILY));
-            setPatientGivenName(pn.get(PersonName.GIVEN));
+            setPatientName(onlyFamilyAndGivenName(pn));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setPatientIdeographicFamilyName(ipn.get(PersonName.FAMILY));
-                setPatientIdeographicGivenName(ipn.get(PersonName.GIVEN));                
+                setPatientIdeographicName(onlyFamilyAndGivenName(ipn));
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setPatientPhoneticFamilyName(ppn.get(PersonName.FAMILY));
-                setPatientPhoneticGivenName(ppn.get(PersonName.GIVEN));                
+                setPatientPhoneticName(onlyFamilyAndGivenName(ppn));
             }
         }
         try {
@@ -377,6 +332,12 @@ public abstract class PatientBean implements EntityBean {
         setPatientSex(ds.getString(Tags.PatientSex));
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+    }
+
+    private String onlyFamilyAndGivenName(PersonName pn) {
+        String fn = pn.get(PersonName.FAMILY);
+        String gn = pn.get(PersonName.GIVEN);
+        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
     }
 
     /**
@@ -397,6 +358,6 @@ public abstract class PatientBean implements EntityBean {
 
     private String prompt() {
         return "Patient[pk=" + getPk() + ", pid=" + getPatientId() + ", name="
-                + getPatientFamilyName() + '^' + getPatientGivenName() + "]";
+                + getPatientName() + "]";
     }
 }

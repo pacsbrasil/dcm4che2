@@ -21,15 +21,9 @@ CREATE TABLE patient (
 	merge_fk		INTEGER,
 	pat_id         	VARCHAR(256),
 	pat_id_issuer  	VARCHAR(256),
-	pat_fname    	VARCHAR_IGNORECASE(256),
-	pat_gname    	VARCHAR_IGNORECASE(256),
-	pat_mname    	VARCHAR_IGNORECASE(256),
-	pat_ifname    	VARCHAR(256),
-	pat_igname    	VARCHAR(256),
-	pat_imname    	VARCHAR(256),
-	pat_pfname    	VARCHAR(256),
-	pat_pgname    	VARCHAR(256),
-	pat_pmname    	VARCHAR(256),
+	pat_name    	VARCHAR_IGNORECASE(256),
+	pat_i_name    	VARCHAR(256),
+	pat_p_name    	VARCHAR(256),
 	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR(256),
 	created_time	TIMESTAMP,
@@ -39,15 +33,9 @@ FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
-CREATE INDEX pat_fname ON patient(pat_fname);
-CREATE INDEX pat_gname ON patient(pat_gname);
-CREATE INDEX pat_mname ON patient(pat_mname);
-CREATE INDEX pat_ifname ON patient(pat_ifname);
-CREATE INDEX pat_igname ON patient(pat_igname);
-CREATE INDEX pat_imname ON patient(pat_imname);
-CREATE INDEX pat_pfname ON patient(pat_pfname);
-CREATE INDEX pat_pgname ON patient(pat_pgname);
-CREATE INDEX pat_pmname ON patient(pat_pmname);
+CREATE INDEX pat_name ON patient(pat_name);
+CREATE INDEX pat_i_name ON patient(pat_i_name);
+CREATE INDEX pat_p_name ON patient(pat_p_name);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 CREATE INDEX pat_sex ON patient(pat_sex);
 
@@ -58,15 +46,9 @@ CREATE TABLE study (
 	study_id        VARCHAR(256),
 	study_datetime	TIMESTAMP,
 	accession_no	VARCHAR(256),
-	ref_phys_fname  VARCHAR_IGNORECASE(256),
-	ref_phys_gname  VARCHAR_IGNORECASE(256),
-	ref_phys_mname  VARCHAR_IGNORECASE(256),
-	ref_phys_ifname VARCHAR(256),
-	ref_phys_igname VARCHAR(256),
-	ref_phys_imname VARCHAR(256),
-	ref_phys_pfname VARCHAR(256),
-	ref_phys_pgname VARCHAR(256),
-	ref_phys_pmname VARCHAR(256),
+	ref_physician  VARCHAR_IGNORECASE(256),
+	ref_physician_i VARCHAR(256),
+	ref_phys_p_name VARCHAR(256),
 	study_desc      VARCHAR_IGNORECASE(256),
 	study_status_id VARCHAR(256),
 	mods_in_study	VARCHAR(256),
@@ -88,15 +70,9 @@ CREATE UNIQUE INDEX study_iuid ON study(study_iuid);
 CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
-CREATE INDEX ref_phys_fname ON study(ref_phys_fname);
-CREATE INDEX ref_phys_gname ON study(ref_phys_gname);
-CREATE INDEX ref_phys_mname ON study(ref_phys_mname);
-CREATE INDEX ref_phys_ifname ON study(ref_phys_ifname);
-CREATE INDEX ref_phys_igname ON study(ref_phys_igname);
-CREATE INDEX ref_phys_imname ON study(ref_phys_imname);
-CREATE INDEX ref_phys_pfname ON study(ref_phys_pfname);
-CREATE INDEX ref_phys_pgname ON study(ref_phys_pgname);
-CREATE INDEX ref_phys_pmname ON study(ref_phys_pmname);
+CREATE INDEX ref_physician ON study(ref_physician);
+CREATE INDEX ref_physician_i ON study(ref_physician_i);
+CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name);
 CREATE INDEX study_desc ON study(study_desc);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
@@ -287,15 +263,9 @@ CREATE TABLE mwl_item (
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     VARCHAR(256) NOT NULL,
 	modality	    VARCHAR(256) NOT NULL,
-	perf_phys_fname VARCHAR_IGNORECASE(256),
-	perf_phys_gname VARCHAR_IGNORECASE(256),
-	perf_phys_mname VARCHAR_IGNORECASE(256),
-	perf_phys_ifname  VARCHAR(256),
-	perf_phys_igname  VARCHAR(256),
-	perf_phys_imname  VARCHAR(256),
-	perf_phys_pfname  VARCHAR(256),
-	perf_phys_pgname  VARCHAR(256),
-	perf_phys_pmname  VARCHAR(256),
+	perf_physician VARCHAR_IGNORECASE(256),
+	perf_phys_i_name  VARCHAR(256),
+	perf_phys_p_name  VARCHAR(256),
 	req_proc_id    	VARCHAR(256) NOT NULL,
 	accession_no	VARCHAR(256),
 	study_iuid      VARCHAR(256) NOT NULL,
@@ -310,15 +280,9 @@ CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);
 CREATE INDEX mwl_modality ON mwl_item(modality);
-CREATE INDEX mwl_perf_phys_fname ON mwl_item(perf_phys_fname);
-CREATE INDEX mwl_perf_phys_gname ON mwl_item(perf_phys_gname);
-CREATE INDEX mwl_perf_phys_mname ON mwl_item(perf_phys_mname);
-CREATE INDEX mwl_perf_phys_ifname ON mwl_item(perf_phys_ifname);
-CREATE INDEX mwl_perf_phys_igname ON mwl_item(perf_phys_igname);
-CREATE INDEX mwl_perf_phys_imname ON mwl_item(perf_phys_imname);
-CREATE INDEX mwl_perf_phys_pfname ON mwl_item(perf_phys_pfname);
-CREATE INDEX mwl_perf_phys_pgname ON mwl_item(perf_phys_pgname);
-CREATE INDEX mwl_perf_phys_pmname ON mwl_item(perf_phys_pmname);
+CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
+CREATE INDEX mwl_perf_phys_i_name ON mwl_item(perf_phys_i_name);
+CREATE INDEX mwl_perf_phys_p_name ON mwl_item(perf_phys_p_name);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
@@ -388,29 +352,17 @@ CREATE TABLE gpsps_perf (
 	pk          	IDENTITY PRIMARY KEY,
 	gpsps_fk        INTEGER,
 	code_fk         INTEGER,
-	hum_perf_fname  VARCHAR_IGNORECASE(256),
-	hum_perf_gname  VARCHAR_IGNORECASE(256),
-	hum_perf_mname  VARCHAR_IGNORECASE(256),
-	hum_perf_ifname VARCHAR(256),
-	hum_perf_igname VARCHAR(256),
-	hum_perf_imname VARCHAR(256),
-	hum_perf_pfname VARCHAR(256),
-	hum_perf_pgname VARCHAR(256),
-	hum_perf_pmname VARCHAR(256),
+	human_perf_name  VARCHAR_IGNORECASE(256),
+	hum_perf_i_name VARCHAR(256),
+	hum_perf_p_name VARCHAR(256),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
 CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
 CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
-CREATE INDEX gpsps_perf_fname ON gpsps_perf(hum_perf_fname);
-CREATE INDEX gpsps_perf_gname ON gpsps_perf(hum_perf_gname);
-CREATE INDEX gpsps_perf_mname ON gpsps_perf(hum_perf_mname);
-CREATE INDEX gpsps_perf_ifname ON gpsps_perf(hum_perf_ifname);
-CREATE INDEX gpsps_perf_igname ON gpsps_perf(hum_perf_igname);
-CREATE INDEX gpsps_perf_imname ON gpsps_perf(hum_perf_imname);
-CREATE INDEX gpsps_perf_pfname ON gpsps_perf(hum_perf_pfname);
-CREATE INDEX gpsps_perf_pgname ON gpsps_perf(hum_perf_pgname);
-CREATE INDEX gpsps_perf_pmname ON gpsps_perf(hum_perf_pmname);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name);
+CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name);
+CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
 
 CREATE TABLE gpsps_req (
 	pk          	IDENTITY PRIMARY KEY,
