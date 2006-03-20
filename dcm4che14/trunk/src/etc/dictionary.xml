@@ -2366,7 +2366,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.7.1" name="Multi-frame Single Bit Secondary Capture Image Storage" key="MultiframeSingleBitSecondaryCaptureImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.7.2" name="Multi-frame Grayscale Byte Secondary Capture Image Storage" key="MultiframeGrayscaleByteSecondaryCaptureImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.7.3" name="Multi-frame Grayscale Word Secondary Capture Image Storage" key="MultiframeGrayscaleWordSecondaryCaptureImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.7.4" name="Multi-frame Color Secondary Capture Image Storage" key="MultiframeColorSecondaryCaptureImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.7.4" name="Multi-frame True Color Secondary Capture Image Storage" key="MultiframeTrueColorSecondaryCaptureImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.8" name="Standalone Overlay Storage" key="StandaloneOverlayStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.9" name="Standalone Curve Storage" key="StandaloneCurveStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.9.1.1" name="12-lead ECG Waveform Storage" key="TwelveLeadECGWaveformStorage" />
