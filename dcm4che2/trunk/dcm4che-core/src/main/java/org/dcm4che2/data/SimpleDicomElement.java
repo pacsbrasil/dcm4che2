@@ -241,7 +241,7 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
     
     public DateRange getDateRange(boolean cache) {
-        if (cache && cachedValue instanceof Date)
+        if (cache && cachedValue instanceof DateRange)
             return (DateRange) cachedValue;
         DateRange val = vr.toDateRange(value);
         if (cache)
