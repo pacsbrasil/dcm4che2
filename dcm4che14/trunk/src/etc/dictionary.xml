@@ -193,7 +193,8 @@
   <element tag="(0008,1140)" name="Referenced Image Sequence" vr="SQ" vm="1" key="RefImageSeq" />
   <element tag="(0008,1145)" name="Referenced Curve Sequence" vr="SQ" vm="1" key="RefCurveSeq" />
   <element tag="(0008,114A)" name="Referenced Instance Sequence" vr="SQ" vm="1" key="RefInstanceSeq" />
-  <element tag="(0008,1150)" name="Referenced SOP Class UID" vr="UI" vm="1" key="RefSOPClassUID" />
+  <element tag="(0008,114B)" name="Referenced Real World Value Mapping Instance Sequence" vr="SQ" vm="1" key="RefRealWorldValueMappingInstanceSeq" />
+SQ<element tag="(0008,1150)" name="Referenced SOP Class UID" vr="UI" vm="1" key="RefSOPClassUID" />
   <element tag="(0008,1155)" name="Referenced SOP Instance UID" vr="UI" vm="1" key="RefSOPInstanceUID" />
   <element tag="(0008,115A)" name="SOP Classes Supported" vr="UI" vm="1-n" key="SOPClassesSupported" />
   <element tag="(0008,1160)" name="Referenced Frame Number" vr="IS" vm="1-n" key="RefFrameNumber" />
@@ -229,6 +230,7 @@
   <element tag="(0008,2244)" name="Transducer Orientation Sequence" vr="SQ" vm="1" key="TransducerOrientationSeq" />
   <element tag="(0008,2246)" name="Transducer Orientation Modifier Sequence" vr="SQ" vm="1" key="TransducerOrientationModifierSeq" />
   <element tag="(0008,3001)" name="Alternate Representation Sequence" vr="SQ" vm="1" key="AlternateRepresentationSeq" />
+  <element tag="(0008,3010)" name="Irradiation Event UID" vr="UI" vm="1" key="IrradiationEventUID" />
   <element tag="(0008,4000)" name="(Study) Comments (Retired)" vr="LT" vm="1" key="StudyCommentsRetired" retired="true"/>  
   <element tag="(0008,9007)" name="Frame Type" vr="CS" vm="4" key="FrameType" />
   <element tag="(0008,9121)" name="Referenced Raw Data Sequence" vr="SQ" vm="1" key="RefRawDataSeq" />
@@ -243,7 +245,11 @@
   <element tag="(0008,9209)" name="Acquisition Contrast" vr="CS" vm="1" key="AcquisitionContrast" />
   <element tag="(0008,9215)" name="Derivation Code Sequence" vr="SQ" vm="1" key="DerivationCodeSeq" />
   <element tag="(0008,9237)" name="Referenced Grayscale Presentation State Sequence" vr="SQ" vm="1" key="RefGrayscalePresentationStateSeq" />
-  
+  <element tag="(0008,9410)" name="Referenced Other Plane Sequence" vr="SQ" vm="1" key="ReferencedOtherPlaneSeq" />
+  <element tag="(0008,9458)" name="Frame Display Sequence" vr="SQ" vm="1" key="Frame DisplaySeq" />
+  <element tag="(0008,9459)" name="Recommended Display Frame Rate in Float" vr="FL" vm="1" key="RecommendedDisplayFrameRateInFloat" />
+  <element tag="(0008,9460)" name="Skip Frame Range Flag" vr="CS" vm="1" key="SkipFrameRangeFlag" />
+
   <element tag="(0010,0010)" name="Patient's Name" vr="PN" vm="1" key="PatientName" />
   <element tag="(0010,0020)" name="Patient ID" vr="LO" vm="1" key="PatientID" />
   <element tag="(0010,0021)" name="Issuer of Patient ID" vr="LO" vm="1" key="IssuerOfPatientID" />
@@ -276,6 +282,7 @@
   <element tag="(0010,21D0)" name="Last Menstrual Date" vr="DA" vm="1" key="LastMenstrualDate" />
   <element tag="(0010,21F0)" name="Patient's Religious Preference" vr="LO" vm="1" key="PatientReligiousPreference" />
   <element tag="(0010,4000)" name="Patient Comments" vr="LT" vm="1" key="PatientComments" />
+  <element tag="(0010,9431)" name="Examined Body Thickness" vr="FL" vm="1" key="ExaminedBodyThickness" />
   
   <element tag="(0012,0010)" name="Clinical Trial Sponsor Name" vr="LO" vm="1" key="ClinicalTrialSponsorName" />
   <element tag="(0012,0020)" name="Clinical Trial Protocol ID" vr="LO" vm="1" key="ClinicalTrialProtocolID" />
@@ -429,7 +436,7 @@
   <element tag="(0018,1155)" name="Radiation Setting" vr="CS" vm="1" key="RadiationSetting" />
   <element tag="(0018,1156)" name="Rectification Type" vr="CS" vm="1" key="RectificationType" />
   <element tag="(0018,115A)" name="Radiation Mode" vr="CS" vm="1" key="RadiationMode" />
-  <element tag="(0018,115E)" name="Image Area Dose Product" vr="DS" vm="1" key="ImageAreaDoseProduct" />
+  <element tag="(0018,115E)" name="Image and Fluoroscopy Area DoseProduct" vr="DS" vm="1" key="ImageAndFluoroscopyAreaDoseProduct" />
   <element tag="(0018,1160)" name="Filter Type" vr="SH" vm="1" key="FilterType" />
   <element tag="(0018,1161)" name="Type of Filters" vr="LO" vm="1-n" key="TypeOfFilters" />
   <element tag="(0018,1162)" name="Intensifier Size" vr="DS" vm="1" key="IntensifierSize" />
@@ -791,6 +798,57 @@
   <element tag="(0018,9343)" name="Contrast/Bolus Agent Detected" vr="CS" vm="1" key="ContrastBolusAgentDetected" />
   <element tag="(0018,9344)" name="Contrast/Bolus Agent Phase" vr="CS" vm="1" key="ContrastBolusAgentPhase" />
   <element tag="(0018,9345)" name="CTDIvol" vr="FD" vm="1" key="CTDIvol" />
+  <element tag="(0018,9401)" name="Projection Pixel Calibration Sequence" vr="SQ" vm="1" key="ProjectionPixelCalibrationSeq" />
+  <element tag="(0018,9402)" name="Distance Source to Isocenter" vr="FL" vm="1" key="DistanceSourceToIsocenter" />
+  <element tag="(0018,9403)" name="Distance Object to Table Top" vr="FL" vm="1" key="DistanceObjectToTableTop" />
+  <element tag="(0018,9404)" name="Object Pixel Spacing in Center of Beam" vr="FL" vm="2" key="ObjectPixelSpacingInCenterOfBeam" />
+  <element tag="(0018,9405)" name="Positioner Position Sequence" vr="SQ" vm="1" key="PositionerPositionSeq" />
+  <element tag="(0018,9406)" name="Table Position Sequence" vr="SQ" vm="1" key="TablePositionSeq" />
+  <element tag="(0018,9407)" name="Collimator Shape Sequence" vr="SQ" vm="1" key="CollimatorShapeSeq" />
+  <element tag="(0018,9412)" name="XA/XRF Frame Characteristics Sequence" vr="SQ" vm="1" key="XAXRFFrameCharacteristicsSeq" />
+  <element tag="(0018,9420)" name="X-Ray Receptor Type" vr="CS" vm="1" key="XRayReceptorType" />
+  <element tag="(0018,9423)" name="Acquisition Protocol Name" vr="LO" vm="1" key="AcquisitionProtocolName" />
+  <element tag="(0018,9424)" name="Acquisition Protocol Description" vr="LT" vm="1" key="AcquisitionProtocolDescription" />
+  <element tag="(0018,9425)" name="Contrast/Bolus Ingredient Opaque" vr="CS" vm="1" key="ContrastBolusIngredientOpaque" />
+  <element tag="(0018,9426)" name="Distance Receptor Plane to Detector Housing" vr="FL" vm="1" key="DistanceReceptorPlaneToDetectorHousing" />
+  <element tag="(0018,9427)" name="Intensifier Active Shape" vr="CS" vm="1" key="IntensifierActiveShape" />
+  <element tag="(0018,9428)" name="Intensifier Active Dimension(s)" vr="FL" vm="1-2" key="IntensifierActiveDimension" />
+  <element tag="(0018,9429)" name="Physical Detector Size" vr="FL" vm="2" key="PhysicalDetectorSize" />
+  <element tag="(0018,9430)" name="Position of Isocenter Projection" vr="US" vm="2" key="PositionOfIsocenterProjection" />
+  <element tag="(0018,9432)" name="Field of View Sequence" vr="SQ" vm="1" key="FieldOfViewSeq" />
+  <element tag="(0018,9433)" name="Field of View Description" vr="LO" vm="1" key="FieldOfViewDescription" />
+  <element tag="(0018,9434)" name="Exposure Control Sensing Regions Sequence" vr="SQ" vm="1" key="ExposureControlSensingRegionsSeq" />
+  <element tag="(0018,9435)" name="Exposure Control Sensing Region Shape" vr="CS" vm="1" key="ExposureControlSensingRegionShape" />
+  <element tag="(0018,9436)" name="Exposure Control Sensing Region Left Vertical Edge" vr="SS" vm="1" key="ExposureControlSensingRegionLeftVerticalEdge" />
+  <element tag="(0018,9437)" name="Exposure Control Sensing Region Right Vertical Edge" vr="SS" vm="1" key="ExposureControlSensingRegionRightVerticalEdge" />
+  <element tag="(0018,9438)" name="Exposure Control Sensing Region Upper Horizontal Edge" vr="SS" vm="1" key="ExposureControlSensingRegionUpperHorizontalEdge" />
+  <element tag="(0018,9439)" name="Exposure Control Sensing Region Lower Horizontal Edge" vr="SS" vm="1" key="ExposureControlSensingRegionLowerHorizontalEdge" />
+  <element tag="(0018,9440)" name="Center of Circular Exposure Control Sensing Region" vr="SS" vm="2" key="CenterOfCircularExposureControlSensingRegion" />
+  <element tag="(0018,9441)" name="Radius of Circular Exposure Control Sensing Region" vr="US" vm="1" key="RadiusOfCircularExposureControlSensingRegion" />
+  <element tag="(0018,9442)" name="Vertices of the Polygonal Exposure Control Sensing Region" vr="SS" vm="2-n" key="VerticesOfThePolygonalExposureControlSensingRegion" />
+  <element tag="(0018,9447)" name="Column Angulation (Patient)" vr="FL" vm="1" key="ColumnAngulationPatient" />
+  <element tag="(0018,9449)" name="Beam Angle" vr="FL" vm="1" key="BeamAngle" />
+  <element tag="(0018,9451)" name="Frame Detector Parameters Sequence" vr="SQ" vm="1" key="FrameDetectorParametersSeq" />
+  <element tag="(0018,9452)" name="Calculated Anatomy Thickness" vr="FL" vm="1" key="CalculatedAnatomyThickness" />
+  <element tag="(0018,9455)" name="Calibration Sequence" vr="SQ" vm="1" key="CalibrationSeq" />
+  <element tag="(0018,9456)" name="Object Thickness Sequence" vr="SQ" vm="1" key="ObjectThicknessSeq" />
+  <element tag="(0018,9457)" name="Plane Identification" vr="CS" vm="1" key="PlaneIdentification" />
+  <element tag="(0018,9461)" name="Field of View Dimension(s) in Float" vr="FL" vm="1-2" key="FieldOfViewDimensionInFloat" />
+  <element tag="(0018,9462)" name="Isocenter Reference System Sequence" vr="SQ" vm="1" key="IsocenterReferenceSystemSeq" />
+  <element tag="(0018,9463)" name="Positioner Isocenter Primary Angle" vr="FL" vm="1" key="PositionerIsocenterPrimaryAngle" />
+  <element tag="(0018,9464)" name="Positioner Isocenter Secondary Angle" vr="FL" vm="1" key="PositionerIsocenterSecondaryAngle" />
+  <element tag="(0018,9465)" name="Positioner Isocenter Detector Rotation Angle" vr="FL" vm="1" key="PositionerIsocenterDetectorRotationAngle" />
+  <element tag="(0018,9466)" name="Table X Position to Isocenter" vr="FL" vm="1" key="TableXPositionToIsocenter" />
+  <element tag="(0018,9467)" name="Table Y Position to Isocenter" vr="FL" vm="1" key="TableYPositionToIsocenter" />
+  <element tag="(0018,9468)" name="Table Z Position to Isocenter" vr="FL" vm="1" key="TableZPositionToIsocenter" />
+  <element tag="(0018,9469)" name="Table Horizontal Rotation Angle" vr="FL" vm="1" key="TableHorizontalRotationAngle" />
+  <element tag="(0018,9470)" name="Table Head Tilt Angle" vr="FL" vm="1" key="TableHeadTiltAngle" />
+  <element tag="(0018,9471)" name="Table Cradle Tilt Angle" vr="FL" vm="1" key="TableCradleTiltAngle" />
+  <element tag="(0018,9472)" name="Frame Display Shutter Sequence" vr="SQ" vm="1" key="FrameDisplayShutterSeq" />
+  <element tag="(0018,9473)" name="Acquired Image Area Dose Product" vr="FL" vm="1" key="AcquiredImageAreaDoseProduct" />
+  <element tag="(0018,9474)" name="C-arm Positioner Tabletop Relationship" vr="CS" vm="1" key="CArmPositionerTabletopRelationship" />
+  <element tag="(0018,9476)" name="X-Ray Geometry Sequence" vr="SQ" vm="1" key="XRayGeometrySeq" />
+  <element tag="(0018,9477)" name="Irradiation Event Identification Sequence" vr="SQ" vm="1" key="IrradiationEventIdentificationSeq" />
   <element tag="(0018,A001)" name="Contributing Equipment Sequence" vr="SQ" vm="1" key="ContributingEquipmentSeq" />
   <element tag="(0018,A002)" name="Contribution DateTime" vr="DT" vm="1" key="ContributionDateTime" />
   <element tag="(0018,A003)" name="Contribution Description" vr="ST" vm="1" key="ContributionDescription" />
@@ -872,6 +930,9 @@
   <element tag="(0020,9222)" name="Dimension Index Sequence" vr="SQ" vm="1" key="DimensionIndexSeq" />
   <element tag="(0020,9228)" name="Concatenation Frame Offset Number" vr="UL" vm="1" key="ConcatenationFrameOffsetNumber" />
   <element tag="(0020,9238)" name="Functional Group Private Creator" vr="LO" vm="1" key="FunctionalGroupPrivateCreator" />
+  <element tag="(0020,9421)" name="Dimension Description Label" vr="LO" vm="1" key="DimensionDescriptionLabel" /> 
+  <element tag="(0020,9450)" name="Patient Orientation in Frame Sequence" vr="SQ" vm="1" key="PatientOrientationInFrameSeq"  />
+  <element tag="(0020,9453)" name="Frame Label" vr="LO" vm="1" key="FrameLabel" />
 
   <element tag="(0022,0001)" name="Light Path Filter Pass-Through Wavelength" vr="US" vm="1" key="LightPathFilterPassThroughWavelength" />
   <element tag="(0022,0002)" name="Light Path Filter Pass Band" vr="US" vm="2" key="LightPathFilterPassBand" />
@@ -999,6 +1060,16 @@
   <element tag="(0028,9132)" name="Frame VOI LUT Sequence" vr="SQ" vm="1" key="FrameVOILUTSeq" />
   <element tag="(0028,9145)" name="Pixel Value Transformation Sequence" vr="SQ" vm="1" key="PixelValueTransformationSeq" />
   <element tag="(0028,9235)" name="Signal Domain Rows" vr="CS" vm="1" key="SignalDomainRows" />
+  <element tag="(0028,9411)" name="Display Filter Percentage" vr="FL" vm="1" key="DisplayFilterPercentage" />
+  <element tag="(0028,9415)" name="Frame Pixel Shift Sequence" vr="SQ" vm="1" key="FramePixelShiftSeq" />
+  <element tag="(0028,9416)" name="Subtraction Item ID" vr="US" vm="1" key="SubtractionItemID" />
+  <element tag="(0028,9422)" name="Pixel Intensity Relationship LUT Sequence" vr="SQ" vm="1" key="PixelIntensityRelationshipLUTSeq" />
+  <element tag="(0028,9443)" name="Frame Pixel Data Properties Sequence" vr="SQ" vm="1" key="FramePixelDataPropertiesSeq" />
+  <element tag="(0028,9444)" name="Geometrical Properties" vr="CS" vm="1" key="GeometricalProperties" />
+  <element tag="(0028,9445)" name="Geometric Maximum Distortion" vr="FL" vm="1" key="GeometricMaximumDistortion" />
+  <element tag="(0028,9446)" name="Image Processing Applied" vr="CS" vm="1-n" key="ImageProcessingApplied" />
+  <element tag="(0028,9454)" name="Mask Selection Mode" vr="CS" vm="1" key="MaskSelectionMode" />
+  <element tag="(0028,9475)" name="LUT Function" vr="CS" vm="1" key="LUTFunction" />
 
   <element tag="(0032,000A)" name="Study Status ID" vr="CS" vm="1" key="StudyStatusID" />
   <element tag="(0032,000C)" name="Study Priority ID" vr="CS" vm="1" key="StudyPriorityID" />
@@ -1255,6 +1326,7 @@
   <element tag="(0040,DB0C)" name="Template Extension Organization UID" vr="UI" vm="1" key="TemplateExtensionOrganizationUID" />
   <element tag="(0040,DB0D)" name="Template Extension Creator UID" vr="UI" vm="1" key="TemplateExtensionCreatorUID" />
   <element tag="(0040,DB73)" name="Referenced Content Item Identifier" vr="UL" vm="1-n" key="RefContentItemIdentifier" />
+  <element tag="(0040,9094)" name="Referenced Image Real World Value Mapping Sequence" vr="SQ" vm="1" key="RefImageRealWorldValueMappingSeq" />
   <element tag="(0040,9096)" name="Real World Value Mapping Sequence" vr="SQ" vm="1" key="RealWorldValueMappingSeq" />
   <element tag="(0040,9210)" name="LUT Label" vr="SH" vm="1" key="LUTLabel" />
   <element tag="(0040,9211)" name="Real World Value Last Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLastValueMappedUS" />
@@ -1467,6 +1539,7 @@
   <element tag="(0072,007C)" name="Selector SL Value" vr="SL" vm="1-n" key="SelectorSLValue" />
   <element tag="(0072,007E)" name="Selector SS Value" vr="SS" vm="1-n" key="SelectorSSValue" />
   <element tag="(0072,0080)" name="Selector Code Sequence Value" vr="SQ" vm="1" key="SelectorCodeSequenceValue" />
+  <element tag="(0070,0086)" name="Content Creator’s Identification Sequence" vr="SQ" vm="1" key="ContentCreatorIdentificationSeq" />
   <element tag="(0072,0100)" name="Number of Screens" vr="US" vm="1" key="NumberOfScreens" />
   <element tag="(0072,0102)" name="Nominal Screen Definition Sequence" vr="SQ" vm="1" key="NominalScreenDefinitionSeq" />
   <element tag="(0072,0104)" name="Number of Vertical Pixels" vr="US" vm="1" key="NumberOfVerticalPixels" />
@@ -2309,12 +2382,15 @@
   <uid value="1.2.840.10008.5.1.4.1.1.11.3" name="Pseudo-Color Softcopy Presentation State Storage SOP Class" key="PseudoColorSoftcopyPresentationStateStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.11.4" name="Blending Softcopy Presentation State Storage SOP Class" key="BlendingSoftcopyPresentationStateStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.1" name="X-Ray Angiographic Image Storage" key="XRayAngiographicImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.1.1" name="Enhanced X-Ray Angiographic Image Storage" key="EnhancedXRayAngiographicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.2.1" name="Enhanced X-Ray Radiofluoroscopic Image Storage" key="EnhancedXRayRadiofluoroscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.66.1" name="Spatial Registration Storage" key="SpatialRegistrationStorage" /> 
   <uid value="1.2.840.10008.5.1.4.1.1.66.2" name="Spatial Fiducials Storage" key="SpatialFiducialsStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.67" name="Real World Value Mapping Storage" key="RealWorldValueMappingStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1" name="VL Image Storage (Retired)" key="VLImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.2" name="VL Multi-frame Image Storage (Retired)" key="VLMultiframeImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.1" name="VL Endoscopic Image Storage" key="VLEndoscopicImageStorage" />
