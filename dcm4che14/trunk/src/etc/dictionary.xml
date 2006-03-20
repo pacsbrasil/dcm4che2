@@ -246,7 +246,7 @@ SQ<element tag="(0008,1150)" name="Referenced SOP Class UID" vr="UI" vm="1" key=
   <element tag="(0008,9215)" name="Derivation Code Sequence" vr="SQ" vm="1" key="DerivationCodeSeq" />
   <element tag="(0008,9237)" name="Referenced Grayscale Presentation State Sequence" vr="SQ" vm="1" key="RefGrayscalePresentationStateSeq" />
   <element tag="(0008,9410)" name="Referenced Other Plane Sequence" vr="SQ" vm="1" key="ReferencedOtherPlaneSeq" />
-  <element tag="(0008,9458)" name="Frame Display Sequence" vr="SQ" vm="1" key="Frame DisplaySeq" />
+  <element tag="(0008,9458)" name="Frame Display Sequence" vr="SQ" vm="1" key="FrameDisplaySeq" />
   <element tag="(0008,9459)" name="Recommended Display Frame Rate in Float" vr="FL" vm="1" key="RecommendedDisplayFrameRateInFloat" />
   <element tag="(0008,9460)" name="Skip Frame Range Flag" vr="CS" vm="1" key="SkipFrameRangeFlag" />
 
