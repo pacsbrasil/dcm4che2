@@ -667,7 +667,7 @@ public class DcmSnd {
             {
                 System.out.println();
                 System.out.println(UIDDictionary.getDictionary().prompt(info.cuid)
-                        + " not supported by" + remoteAE.getAETitle());
+                        + " not supported by " + remoteAE.getAETitle());
                 System.out.println("skip file " + info.f);
                 continue;
             }

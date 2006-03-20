@@ -12,8 +12,10 @@
     <module>dcm4che-tool-dcm2txt</module>
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmecho</module>
-    <module>dcm4che-tool-dcmqr</module>
+    <module>dcm4che-tool-dcmgpwl</module>
+    <module>dcm4che-tool-dcmmwl</module>
     <module>dcm4che-tool-dcmof</module>
+    <module>dcm4che-tool-dcmqr</module>
     <module>dcm4che-tool-dcmrcv</module>
     <module>dcm4che-tool-dcmsnd</module>
     <module>dcm4che-tool-dcmwado</module>

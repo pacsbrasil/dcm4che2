@@ -75,7 +75,7 @@ import org.dcm4che2.net.service.VerificationService;
  */
 public class DcmRcv extends StorageService {
 
-    private static final String DEST = "d";
+    private static final String DEST = "dest";
     private static final String DEF_TS = "defts";
     private static final String NATIVE = "native";
     private static final String BIG_ENDIAN = "bigendian";

@@ -76,79 +76,78 @@ import org.dcm4che2.net.TransferCapability;
  * @version $Revision$ $Date$
  * @since Jan, 2006
  */
-public class DcmQR
-{
+public class DcmQR {
     private static final int KB = 1024;
+
     private static final String USAGE = "dcmqr [Options] <aet>[@<host>[:<port>]]";
+
     private static final String DESCRIPTION = 
-            "Query specified remote Application Entity (=Query/Retrieve SCP) " +
-            "and optional (s. option -m) retrieve instances of matching entities. " + 
-            "If <port> is not specified, DICOM default port 104 is assumed. " +
-            "If also no <host> is specified localhost is assumed.\n" +
-            "Options:";
+        "Query specified remote Application Entity (=Query/Retrieve SCP) "
+        + "and optional (s. option -dest) retrieve instances of matching entities. "
+        + "If <port> is not specified, DICOM default port 104 is assumed. "
+        + "If also no <host> is specified localhost is assumed.\n"
+        + "Options:";
+    
     private static final String EXAMPLE = 
-            "\nExample: dcmqr QRSCP@localhost:11112 -MStudyDate=20060204 -dest STORESCP\n" +
-            "=> Query Application Entity QRSCP listening on local port 11112 for " +
-            "studies from Feb 4, 2006 and retrieve instances of matching studies to " +
-            "Application Entity STORESCP.";
+        "\nExample: dcmqr QRSCP@localhost:11112 -qStudyDate=20060204 -dest STORESCP\n"
+        + "=> Query Application Entity QRSCP listening on local port 11112 for "
+        + "studies from Feb 4, 2006 and retrieve instances of matching studies to "
+        + "Application Entity STORESCP.";
 
     private static final int PATIENT = 0;
     private static final int STUDY = 1;
     private static final int SERIES = 2;
     private static final int IMAGE = 3;
+
     private static final String[] QRLEVEL = {
-        "PATIENT", 
-        "STUDY", 
-        "SERIES", 
-        "IMAGE"
-    };
+        "PATIENT",
+        "STUDY",
+        "SERIES",
+        "IMAGE" };
+    
     private static final String[] PATIENT_LEVEL_FIND_CUID = {
         UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFIND
-    };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelFIND };
+    
     private static final String[] STUDY_LEVEL_FIND_CUID = {
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFIND
-    };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelFIND };
+    
     private static final String[] SERIES_LEVEL_FIND_CUID = {
         UID.StudyRootQueryRetrieveInformationModelFIND,
-        UID.PatientRootQueryRetrieveInformationModelFIND,
-    };
-    private static final String[][] FIND_CUID = {
-        PATIENT_LEVEL_FIND_CUID,
+        UID.PatientRootQueryRetrieveInformationModelFIND, };
+    
+    private static final String[][] FIND_CUID = { PATIENT_LEVEL_FIND_CUID,
         STUDY_LEVEL_FIND_CUID,
         SERIES_LEVEL_FIND_CUID,
-        SERIES_LEVEL_FIND_CUID
-    };
+        SERIES_LEVEL_FIND_CUID };
+    
     private static final String[] PATIENT_LEVEL_MOVE_CUID = {
         UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVE
-    };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVE };
+    
     private static final String[] STUDY_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
         UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVE
-    };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVE };
+    
     private static final String[] SERIES_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
-        UID.PatientRootQueryRetrieveInformationModelMOVE
-    };
+        UID.PatientRootQueryRetrieveInformationModelMOVE };
+    
     private static final String[][] MOVE_CUID = {
         PATIENT_LEVEL_MOVE_CUID,
         STUDY_LEVEL_MOVE_CUID,
         SERIES_LEVEL_MOVE_CUID,
-        SERIES_LEVEL_MOVE_CUID
-    };
-    private static final int[] PATIENT_RETURN_KEYS = {
-        Tag.PatientsName,
-        Tag.PatientID,
-        Tag.PatientsBirthDate,
-        Tag.PatientsSex,
+        SERIES_LEVEL_MOVE_CUID };
+    
+    private static final int[] PATIENT_RETURN_KEYS = { Tag.PatientsName,
+        Tag.PatientID, Tag.PatientsBirthDate, Tag.PatientsSex,
         Tag.NumberofPatientRelatedStudies,
         Tag.NumberofPatientRelatedSeries,
-        Tag.NumberofPatientRelatedInstances
-    };
+        Tag.NumberofPatientRelatedInstances };
+    
     private static final int[] STUDY_RETURN_KEYS = {
         Tag.StudyDate,
         Tag.StudyTime,
@@ -156,67 +155,92 @@ public class DcmQR
         Tag.StudyID,
         Tag.StudyInstanceUID,
         Tag.NumberofStudyRelatedSeries,
-        Tag.NumberofStudyRelatedInstances
-    };
+        Tag.NumberofStudyRelatedInstances };
+    
     private static final int[] SERIES_RETURN_KEYS = {
         Tag.Modality,
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
-        Tag.NumberofSeriesRelatedInstances
-    };
+        Tag.NumberofSeriesRelatedInstances };
+    
     private static final int[] INSTANCE_RETURN_KEYS = {
         Tag.InstanceNumber,
         Tag.SOPClassUID,
-        Tag.SOPInstanceUID,
-    };
+        Tag.SOPInstanceUID, };
+    
     private static final int[][] RETURN_KEYS = {
         PATIENT_RETURN_KEYS,
         STUDY_RETURN_KEYS,
         SERIES_RETURN_KEYS,
-        INSTANCE_RETURN_KEYS
-    };
+        INSTANCE_RETURN_KEYS };
+    
     private static final int[] MOVE_KEYS = {
         Tag.QueryRetrieveLevel,
         Tag.PatientID,
         Tag.StudyInstanceUID,
         Tag.SeriesInstanceUID,
-        Tag.SOPInstanceUID,
-    };
-    private static final String[] DEFAULT_TS = { UID.ImplicitVRLittleEndian };
-    private static final String[] DEFLATED_TS = { 
+        Tag.SOPInstanceUID, };
+    
+    private static final String[] IVRLE_TS = {
+        UID.ImplicitVRLittleEndian };
+    
+    private static final String[] NATIVE_LE_TS = {
+        UID.ExplicitVRLittleEndian, 
+        UID.ImplicitVRLittleEndian };
+    
+    private static final String[] DEFLATED_TS = {
         UID.DeflatedExplicitVRLittleEndian,
-        UID.ImplicitVRLittleEndian
-    };
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian };
+
     private static final String[] EMPTY_STRING = {};
 
     private Executor executor = new NewThreadExecutor("DCMQR");
+
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+
     private NetworkConnection remoteConn = new NetworkConnection();
+
     private Device device = new Device("DCMQR");
+
     private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+
     private NetworkConnection conn = new NetworkConnection();
+
     private Association assoc;
+
     private int priority = 0;
+
     private String moveDest;
+
     private int qrlevel = STUDY;
+
     private ArrayList privateFind = new ArrayList();
-    private DicomObject filter = new BasicDicomObject();
+
+    private DicomObject keys = new BasicDicomObject();
+
     private int cancelAfter = Integer.MAX_VALUE;
+
     private int completed;
+
     private int warning;
+
     private int failed;
+
     private boolean relationQR;
+
     private boolean dateTimeMatching;
+
     private boolean semanticPersonNameMatching;
+
     private boolean caseSensitivePersonNameMatching;
+
     private boolean noExtNegotiation;
 
-    public DcmQR()
-    {
+    public DcmQR() {
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
-        remoteAE.setNetworkConnection(
-                new NetworkConnection[] { remoteConn });
+        remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
 
         device.setNetworkApplicationEntity(ae);
         device.setNetworkConnection(conn);
@@ -225,103 +249,83 @@ public class DcmQR
         ae.setAETitle("DCMQR");
     }
 
-    public final void setLocalHost(String hostname)
-    {
+    public final void setLocalHost(String hostname) {
         conn.setHostname(hostname);
     }
 
-    public final void setRemoteHost(String hostname)
-    {
+    public final void setRemoteHost(String hostname) {
         remoteConn.setHostname(hostname);
     }
 
-    public final void setRemotePort(int port)
-    {
+    public final void setRemotePort(int port) {
         remoteConn.setPort(port);
     }
 
-    public final void setCalledAET(String called)
-    {
+    public final void setCalledAET(String called) {
         remoteAE.setAETitle(called);
     }
 
-    public final void setCalling(String calling)
-    {
+    public final void setCalling(String calling) {
         ae.setAETitle(calling);
     }
 
-    public final void setPriority(int priority)
-    {
+    public final void setPriority(int priority) {
         this.priority = priority;
     }
 
-    public final void setConnectTimeout(int connectTimeout)
-    {
+    public final void setConnectTimeout(int connectTimeout) {
         conn.setConnectTimeout(connectTimeout);
     }
-    
-    public final void setMaxPDULengthReceive(int maxPDULength)
-    {
+
+    public final void setMaxPDULengthReceive(int maxPDULength) {
         ae.setMaxPDULengthReceive(maxPDULength);
     }
 
-    public final void setMaxOpsInvoked(int maxOpsInvoked)
-    {
+    public final void setMaxOpsInvoked(int maxOpsInvoked) {
         ae.setMaxOpsInvoked(maxOpsInvoked);
     }
 
-    public final void setPackPDV(boolean packPDV)
-    {
+    public final void setPackPDV(boolean packPDV) {
         ae.setPackPDV(packPDV);
     }
 
-    public final void setAssociationReaperPeriod(int period)
-    {
+    public final void setAssociationReaperPeriod(int period) {
         device.setAssociationReaperPeriod(period);
     }
 
-    public final void setDimseRspTimeout(int timeout)
-    {
+    public final void setDimseRspTimeout(int timeout) {
         ae.setDimseRspTimeout(timeout);
     }
-    
-    public final void setTcpNoDelay(boolean tcpNoDelay)
-    {
+
+    public final void setTcpNoDelay(boolean tcpNoDelay) {
         conn.setTcpNoDelay(tcpNoDelay);
     }
 
-    public final void setAcceptTimeout(int timeout)
-    {
+    public final void setAcceptTimeout(int timeout) {
         conn.setAcceptTimeout(timeout);
     }
 
-    public final void setReleaseTimeout(int timeout)
-    {
+    public final void setReleaseTimeout(int timeout) {
         conn.setReleaseTimeout(timeout);
     }
 
-    public final void setSocketCloseDelay(int timeout)
-    {
+    public final void setSocketCloseDelay(int timeout) {
         conn.setSocketCloseDelay(timeout);
     }
 
-    public final void setMaxPDULengthSend(int maxPDULength)
-    {
+    public final void setMaxPDULengthSend(int maxPDULength) {
         ae.setMaxPDULengthSend(maxPDULength);
     }
 
-    public final void setReceiveBufferSize(int bufferSize)
-    {
+    public final void setReceiveBufferSize(int bufferSize) {
         conn.setReceiveBufferSize(bufferSize);
     }
 
-    public final void setSendBufferSize(int bufferSize)
-    {
+    public final void setSendBufferSize(int bufferSize) {
         conn.setSendBufferSize(bufferSize);
     }
-    
-    private static CommandLine parse(String[] args)
-    {
+
+    private static CommandLine parse(String[] args) {
         Options opts = new Options();
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
@@ -330,174 +334,160 @@ public class DcmQR
                 "ANONYMOUS and pick up any valid local address to bind the " +
                 "socket by default");
         opts.addOption(OptionBuilder.create("L"));
-        
-        OptionBuilder.withArgName("maxops");
+
+        OptionBuilder.withArgName("aet");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "maximum number of outstanding C-MOVE-RQ it may invoke " +
-                "asynchronously, 1 by default.");
+                "retrieve instances of matching entities to specified destination.");
+        opts.addOption(OptionBuilder.create("dest"));
+
+        opts.addOption("ivrle", false, "offer only Implicit VR Little Endian Transfer Syntax.");
+
+        OptionBuilder.withArgName("maxops");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("maximum number of outstanding C-MOVE-RQ " +
+                "it may invoke asynchronously, 1 by default.");
         opts.addOption(OptionBuilder.create("async"));
 
-        opts.addOption("noextneg", false, 
-                "disable extended negotiation.");
-        opts.addOption("relational", false, 
+        opts.addOption("noextneg", false, "disable extended negotiation.");
+        opts.addOption("relational", false,
                 "negotiate support of relational queries and retrieval.");
-        opts.addOption("datetime", false, 
+        opts.addOption("datetime", false,
                 "negotiate support of combined date and time attribute range matching.");
         opts.addOption("case", false, 
                 "negotiate support of case-sensitive person name attribute matching.");
         opts.addOption("semantic", false, 
                 "negotiate support of semantic person name attribute matching.");
-        
+
         opts.addOption("retall", false, 
                 "negotiate private FIND SOP Classes to fetch all available " +
                 "attributes of matching entities.");
-        opts.addOption("blocked", false, 
-                "negotiate private FIND SOP Classes to return attributes " +
-                "of several matching entities per FIND response.");
-        opts.addOption("vmf", false, 
+        opts.addOption("blocked", false,
+                "negotiate private FIND SOP Classes to return attributes of " +
+                "several matching entities per FIND response.");
+        opts.addOption("vmf", false,
                 "negotiate private FIND SOP Classes to return attributes of " +
                 "legacy CT/MR images of one series as virtual multiframe object.");
-        opts.addOption("pdv1", false, 
-                "send only one PDV in one P-Data-TF PDU, " +
-                "pack command and data PDV in one P-DATA-TF PDU by default.");
-        opts.addOption("tcpnodelay", false, 
+        opts.addOption("pdv1", false,
+                "send only one PDV in one P-Data-TF PDU, pack command and data " +
+                "PDV in one P-DATA-TF PDU by default.");
+        opts.addOption("tcpnodelay", false,
                 "set TCP_NODELAY socket option to true, false by default");
-        
+
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "timeout in ms for TCP connect, no timeout by default");
+        OptionBuilder.withDescription("timeout in ms for TCP connect, no timeout by default");
         opts.addOption(OptionBuilder.create("connectTO"));
-        
+
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "delay in ms for Socket close after sending A-ABORT, 50ms by default");
+        OptionBuilder.withDescription("delay in ms for Socket close after sending A-ABORT, 50ms by default");
         opts.addOption(OptionBuilder.create("soclosedelay"));
-        
+
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "period in ms to check for outstanding DIMSE-RSP, 10s by default");
+        OptionBuilder.withDescription("period in ms to check for outstanding DIMSE-RSP, 10s by default");
         opts.addOption(OptionBuilder.create("reaper"));
-        
+
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "timeout in ms for receiving DIMSE-RSP, 60s by default");
+        OptionBuilder.withDescription("timeout in ms for receiving DIMSE-RSP, 60s by default");
         opts.addOption(OptionBuilder.create("rspTO"));
-        
+
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
+        OptionBuilder.withDescription("timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
         opts.addOption(OptionBuilder.create("acceptTO"));
-        
+
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "timeout in ms for receiving A-RELEASE-RP, 5s by default");
+        OptionBuilder.withDescription("timeout in ms for receiving A-RELEASE-RP, 5s by default");
         opts.addOption(OptionBuilder.create("releaseTO"));
-        
+
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
+        OptionBuilder.withDescription("maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         opts.addOption(OptionBuilder.create("rcvpdulen"));
-        
+
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
+        OptionBuilder.withDescription("maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
         opts.addOption(OptionBuilder.create("sndpdulen"));
-        
+
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "set SO_RCVBUF socket option to specified value in KB");
+        OptionBuilder.withDescription("set SO_RCVBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sorcvbuf"));
-        
+
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "set SO_SNDBUF socket option to specified value in KB");
+        OptionBuilder.withDescription("set SO_SNDBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sosndbuf"));
-        
+
         OptionGroup qrlevel = new OptionGroup();
-        
-        OptionBuilder.withDescription(
-                "perform patient level query, multiple exclusive with -S and -I, " +
-                "perform study level query by default.");
+
+        OptionBuilder.withDescription("perform patient level query, multiple " +
+                "exclusive with -S and -I, perform study level query by default.");
         OptionBuilder.withLongOpt("patient");
         opts.addOption(OptionBuilder.create("P"));
-        
-        OptionBuilder.withDescription(
-                "perform series level query, multiple exclusive with -P and -I, " +
-                "perform study level query by default.");
+
+        OptionBuilder.withDescription("perform series level query, multiple " +
+                "exclusive with -P and -I, perform study level query by default.");
         OptionBuilder.withLongOpt("series");
         opts.addOption(OptionBuilder.create("S"));
-        
-        OptionBuilder.withDescription(
-                "perform instance level query, multiple exclusive with -P and -S, " +
-                "perform study level query by default.");
+
+        OptionBuilder.withDescription("perform instance level query, multiple " +
+                "exclusive with -P and -S, perform study level query by default.");
         OptionBuilder.withLongOpt("image");
-        opts.addOption(OptionBuilder.create("P"));
-        
+        opts.addOption(OptionBuilder.create("I"));
+
         opts.addOptionGroup(qrlevel);
-        
+
         OptionBuilder.withArgName("attr=value");
         OptionBuilder.hasArgs(2);
         OptionBuilder.withValueSeparator('=');
-        OptionBuilder.withDescription(
-                "specify matching key. attr can be specified by " +
-                "name or tag value (in hex), e.g. PatientsName or 00100010.");
-        opts.addOption(OptionBuilder.create("M"));
+        OptionBuilder.withDescription("specify matching key. attr can be " +
+                "specified by name or tag value (in hex), e.g. PatientsName " +
+                "or 00100010.");
+        opts.addOption(OptionBuilder.create("q"));
 
         OptionBuilder.withArgName("attr");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "specify additional return key. attr can be specified by " +
-                "name or tag value (in hex).");
-        opts.addOption(OptionBuilder.create("R"));
+        OptionBuilder.withDescription("specify additional return key. attr can " +
+                "be specified by name or tag value (in hex).");
+        opts.addOption(OptionBuilder.create("r"));
 
         OptionBuilder.withArgName("num");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "cancel query after receive of specified number of responses," +
-                " no cancel by default");
+        OptionBuilder.withDescription("cancel query after receive of specified " +
+                "number of responses, no cancel by default");
         opts.addOption(OptionBuilder.create("C"));
 
         OptionBuilder.withArgName("aet");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "retrieve matching objects to specified destination.");
+        OptionBuilder.withDescription("retrieve matching objects to specified " +
+                "destination.");
         opts.addOption(OptionBuilder.create("dest"));
 
-        opts.addOption("lowprior", false, 
-            "LOW priority of the C-FIND/C-MOVE operation, MEDIUM by default");
+        opts.addOption("lowprior", false,
+                "LOW priority of the C-FIND/C-MOVE operation, MEDIUM by default");
         opts.addOption("highprior", false,
-            "HIGH priority of the C-FIND/C-MOVE operation, MEDIUM by default");
+                "HIGH priority of the C-FIND/C-MOVE operation, MEDIUM by default");
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
                 "print the version information and exit");
         CommandLine cl = null;
-        try
-        {
+        try {
             cl = new GnuParser().parse(opts, args);
-        }
-        catch (ParseException e)
-        {
+        } catch (ParseException e) {
             exit("dcmqr: " + e.getMessage());
         }
-        if (cl.hasOption('V'))
-        {
+        if (cl.hasOption('V')) {
             Package p = DcmQR.class.getPackage();
             System.out.println("dcmqr v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || cl.getArgList().size() != 1)
-        {
+        if (cl.hasOption('h') || cl.getArgList().size() != 1) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
@@ -506,79 +496,72 @@ public class DcmQR
         return cl;
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         CommandLine cl = parse(args);
         DcmQR dcmqr = new DcmQR();
         final List argList = cl.getArgList();
         String remoteAE = (String) argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmqr.setCalledAET(calledAETAddress[0]);
-        if (calledAETAddress[1] == null)
-        {
+        if (calledAETAddress[1] == null) {
             dcmqr.setRemoteHost("127.0.0.1");
             dcmqr.setRemotePort(104);
-        }
-        else
-        {
+        } else {
             String[] hostPort = split(calledAETAddress[1], ':');
             dcmqr.setRemoteHost(hostPort[0]);
             dcmqr.setRemotePort(toPort(hostPort[1]));
         }
-        if (cl.hasOption("L"))
-        {
+        if (cl.hasOption("L")) {
             String localAE = (String) cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmqr.setCalling(callingAETHost[0]);
             dcmqr.setLocalHost(toHostname(callingAETHost[1]));
         }
         if (cl.hasOption("connectTO"))
-            dcmqr.setConnectTimeout(
-                    parseInt(cl.getOptionValue("connectTO"),
-                    "illegal argument of option -connectTO", 1, Integer.MAX_VALUE));
+            dcmqr.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
+                    "illegal argument of option -connectTO", 1,
+                    Integer.MAX_VALUE));
         if (cl.hasOption("reaper"))
-            dcmqr.setAssociationReaperPeriod(
-                    parseInt(cl.getOptionValue("reaper"),
-                    "illegal argument of option -reaper", 1, Integer.MAX_VALUE));
+            dcmqr.setAssociationReaperPeriod(parseInt(cl.getOptionValue("reaper"),
+                            "illegal argument of option -reaper", 1,
+                            Integer.MAX_VALUE));
         if (cl.hasOption("rspTO"))
-            dcmqr.setDimseRspTimeout(
-                    parseInt(cl.getOptionValue("rspTO"),
+            dcmqr.setDimseRspTimeout(parseInt(cl.getOptionValue("rspTO"),
                     "illegal argument of option -rspTO", 1, Integer.MAX_VALUE));
         if (cl.hasOption("acceptTO"))
-            dcmqr.setAcceptTimeout(
-                    parseInt(cl.getOptionValue("acceptTO"),
-                    "illegal argument of option -acceptTO", 1, Integer.MAX_VALUE));
+            dcmqr.setAcceptTimeout(parseInt(cl.getOptionValue("acceptTO"),
+                    "illegal argument of option -acceptTO", 1,
+                    Integer.MAX_VALUE));
         if (cl.hasOption("releaseTO"))
-            dcmqr.setReleaseTimeout(
-                    parseInt(cl.getOptionValue("releaseTO"),
-                    "illegal argument of option -releaseTO", 1, Integer.MAX_VALUE));
+            dcmqr.setReleaseTimeout(parseInt(cl.getOptionValue("releaseTO"),
+                    "illegal argument of option -releaseTO", 1,
+                    Integer.MAX_VALUE));
         if (cl.hasOption("soclosedelay"))
-            dcmqr.setSocketCloseDelay(
-                    parseInt(cl.getOptionValue("soclosedelay"),
+            dcmqr.setSocketCloseDelay(parseInt(cl
+                    .getOptionValue("soclosedelay"),
                     "illegal argument of option -soclosedelay", 1, 10000));
         if (cl.hasOption("rcvpdulen"))
-            dcmqr.setMaxPDULengthReceive(
-                    parseInt(cl.getOptionValue("rcvpdulen"),
-                    "illegal argument of option -rcvpdulen", 1, 10000) * KB);
+            dcmqr.setMaxPDULengthReceive(parseInt(cl
+                    .getOptionValue("rcvpdulen"),
+                    "illegal argument of option -rcvpdulen", 1, 10000)
+                    * KB);
         if (cl.hasOption("sndpdulen"))
-            dcmqr.setMaxPDULengthSend(
-                    parseInt(cl.getOptionValue("sndpdulen"),
-                    "illegal argument of option -sndpdulen", 1, 10000) * KB);
+            dcmqr.setMaxPDULengthSend(parseInt(cl.getOptionValue("sndpdulen"),
+                    "illegal argument of option -sndpdulen", 1, 10000)
+                    * KB);
         if (cl.hasOption("sosndbuf"))
-            dcmqr.setSendBufferSize(
-                    parseInt(cl.getOptionValue("sosndbuf"),
-                    "illegal argument of option -sosndbuf", 1, 10000) * KB);
+            dcmqr.setSendBufferSize(parseInt(cl.getOptionValue("sosndbuf"),
+                    "illegal argument of option -sosndbuf", 1, 10000)
+                    * KB);
         if (cl.hasOption("sorcvbuf"))
-            dcmqr.setReceiveBufferSize(
-                    parseInt(cl.getOptionValue("sorcvbuf"),
-                    "illegal argument of option -sorcvbuf", 1, 10000) * KB);
+            dcmqr.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
+                    "illegal argument of option -sorcvbuf", 1, 10000)
+                    * KB);
         dcmqr.setPackPDV(!cl.hasOption("pdv1"));
         dcmqr.setTcpNoDelay(cl.hasOption("tcpnodelay"));
-        dcmqr.setMaxOpsInvoked(cl.hasOption("async")
-                ? zeroAsMaxInt(parseInt(
-                    cl.getOptionValue("async"), 
-                    "illegal argument of option -async", 0, 0xffff))
-                : 1);        
+        dcmqr.setMaxOpsInvoked(cl.hasOption("async") ? parseInt(cl
+                .getOptionValue("async"), "illegal argument of option -async",
+                0, 0xffff) : 1);
         if (cl.hasOption("C"))
             dcmqr.setCancelAfter(parseInt(cl.getOptionValue("C"),
                     "illegal argument of option -C", 1, Integer.MAX_VALUE));
@@ -606,7 +589,7 @@ public class DcmQR
             dcmqr.setCaseSensitivePersonNameMatching(true);
         if (cl.hasOption("semantic"))
             dcmqr.setSemanticPersonNameMatching(true);
-        
+
         if (cl.hasOption("retall"))
             dcmqr.addPrivate(
                     UID.PrivateStudyRootQueryRetrieveInformationModelFIND);
@@ -615,28 +598,23 @@ public class DcmQR
                     UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND);
         if (cl.hasOption("vmf"))
             dcmqr.addPrivate(
-                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);        
-        if (cl.hasOption("M"))
-        {
-            String[] matchingKeys = cl.getOptionValues("M");
-            for (int i = 1; i < matchingKeys.length; i++,i++)
-                dcmqr.addKey(toTag(matchingKeys[i-1]), matchingKeys[i]);
+                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);
+        if (cl.hasOption("q")) {
+            String[] matchingKeys = cl.getOptionValues("q");
+            for (int i = 1; i < matchingKeys.length; i++, i++)
+                dcmqr.addKey(toTag(matchingKeys[i - 1]), matchingKeys[i]);
         }
-        if (cl.hasOption("R"))
-        {
-            String[] returnKeys = cl.getOptionValues("R");
+        if (cl.hasOption("r")) {
+            String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
                 dcmqr.addKey(toTag(returnKeys[i]), null);
         }
-         
-        dcmqr.configureTransferCapability();
+
+        dcmqr.configureTransferCapability(cl.hasOption("ivrle"));
         long t1 = System.currentTimeMillis();
-        try
-        {
+        try {
             dcmqr.open();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.err.println("ERROR: Failed to establish association:");
             e.printStackTrace(System.err);
             System.exit(2);
@@ -645,45 +623,37 @@ public class DcmQR
         System.out.println("Connected to " + remoteAE + " in "
                 + ((t2 - t1) / 1000F) + "s");
 
-        try
-        {
+        try {
             List result = dcmqr.query();
             long t3 = System.currentTimeMillis();
-            System.out.println("Received " +  result.size() + 
-                    " matching entries in " + ((t3 - t2) / 1000F) + "s");
+            System.out.println("Received " + result.size()
+                    + " matching entries in " + ((t3 - t2) / 1000F) + "s");
             if (dcmqr.isMove()) {
                 dcmqr.move(result);
                 long t4 = System.currentTimeMillis();
-                System.out.println("Retrieved " +  dcmqr.getTotalRetrieved() +
-                        " objects (warning: " + dcmqr.getWarning() + 
-                        ", failed: " + dcmqr.getFailed() +
-                        ") in " + ((t4 - t3) / 1000F) + "s");
-             }
-        }
-        catch (IOException e)
-        {
+                System.out.println("Retrieved " + dcmqr.getTotalRetrieved()
+                        + " objects (warning: " + dcmqr.getWarning()
+                        + ", failed: " + dcmqr.getFailed() + ") in "
+                        + ((t4 - t3) / 1000F) + "s");
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        catch (InterruptedException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try
-        {
+        try {
             dcmqr.close();
-        }
-        catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         System.out.println("Released connection to " + remoteAE);
     }
-    
+
     private void setNoExtNegotiation(boolean b) {
-        this.noExtNegotiation = b;        
+        this.noExtNegotiation = b;
     }
 
     private void setSemanticPersonNameMatching(boolean b) {
@@ -695,121 +665,113 @@ public class DcmQR
     }
 
     private void setDateTimeMatching(boolean b) {
-        this.dateTimeMatching = b;        
-    }
-    
-    private void setRelationQR(boolean b) {
-        this.relationQR = b;        
+        this.dateTimeMatching = b;
     }
 
-    public final int getFailed()
-    {
+    private void setRelationQR(boolean b) {
+        this.relationQR = b;
+    }
+
+    public final int getFailed() {
         return failed;
     }
 
-    public final int getWarning()
-    {
+    public final int getWarning() {
         return warning;
     }
 
-    private final int getTotalRetrieved()
-    {
+    private final int getTotalRetrieved() {
         return completed + warning;
     }
 
-    private void setCancelAfter(int limit)
-    {
-        this.cancelAfter = limit;        
+    private void setCancelAfter(int limit) {
+        this.cancelAfter = limit;
     }
 
-    private static int zeroAsMaxInt(int val)
-    {
-        return val > 0 ? val : Integer.MAX_VALUE;
+    private void addKey(int tag, String value) {
+        keys.putString(tag, null, value);
     }
 
-    private void addKey(int tag, String value)
-    {
-        filter.putString(tag, null, value);        
-    }
-
-    private static int toTag(String nameOrHex)
-    {
-        try
-        {
+    private static int toTag(String nameOrHex) {
+        try {
             return (int) Long.parseLong(nameOrHex, 16);
-        } catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             return Tag.forName(nameOrHex);
         }
     }
 
-    private void configureTransferCapability()
-    {        
+    private void configureTransferCapability(boolean ivrle) {
         String[] findcuids = FIND_CUID[qrlevel];
-        String[] movecuids = moveDest != null ? MOVE_CUID[qrlevel] : EMPTY_STRING;
+        String[] movecuids = moveDest != null ? MOVE_CUID[qrlevel]
+                : EMPTY_STRING;
         final int numPrivateFind = qrlevel != PATIENT ? privateFind.size() : 0;
-        TransferCapability[] tc = new TransferCapability[findcuids.length 
-              + movecuids.length + numPrivateFind];
+        TransferCapability[] tc = new TransferCapability[findcuids.length
+                + movecuids.length + numPrivateFind];
         int i = 0;
         for (int j = 0; j < findcuids.length; j++)
-            tc[i++] = mkFindTC(findcuids[j], DEFAULT_TS);
+            tc[i++] = mkFindTC(findcuids[j],
+                    ivrle ? IVRLE_TS : NATIVE_LE_TS);
         for (int j = 0; j < movecuids.length; j++)
-            tc[i++] = mkMoveTC(movecuids[j], DEFAULT_TS);
+            tc[i++] = mkMoveTC(movecuids[j],
+                    ivrle ? IVRLE_TS : NATIVE_LE_TS);
         for (int j = 0; j < numPrivateFind; j++)
-            tc[i++] = mkFindTC((String) privateFind.get(j), DEFLATED_TS);            
+            tc[i++] = mkFindTC((String) privateFind.get(j),
+                    ivrle ? IVRLE_TS : DEFLATED_TS);
         ae.setTransferCapability(tc);
     }
 
     private TransferCapability mkMoveTC(String cuid, String[] ts) {
-        ExtRetrieveTransferCapability tc = new ExtRetrieveTransferCapability(cuid, ts, TransferCapability.SCU);
-        tc.setExtInfoBoolean(ExtRetrieveTransferCapability.RELATIONAL_RETRIEVAL, relationQR);
+        ExtRetrieveTransferCapability tc = new ExtRetrieveTransferCapability(
+                cuid, ts, TransferCapability.SCU);
+        tc.setExtInfoBoolean(
+                ExtRetrieveTransferCapability.RELATIONAL_RETRIEVAL, relationQR);
         if (noExtNegotiation)
             tc.setExtInfo(null);
         return tc;
     }
 
     private TransferCapability mkFindTC(String cuid, String[] ts) {
-        ExtQueryTransferCapability tc = new ExtQueryTransferCapability(cuid, ts, TransferCapability.SCU);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES, relationQR);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING, dateTimeMatching);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.CASE_SENSITIVE_PN_MATCHING, caseSensitivePersonNameMatching);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.SEMANTIC_PN_MATCHING, semanticPersonNameMatching);
+        ExtQueryTransferCapability tc = new ExtQueryTransferCapability(cuid,
+                ts, TransferCapability.SCU);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES,
+                relationQR);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING,
+                dateTimeMatching);
+        tc.setExtInfoBoolean(
+                ExtQueryTransferCapability.CASE_SENSITIVE_PN_MATCHING,
+                caseSensitivePersonNameMatching);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.SEMANTIC_PN_MATCHING,
+                semanticPersonNameMatching);
         if (noExtNegotiation)
             tc.setExtInfo(null);
         return tc;
     }
 
-    private void setQueryLevel(int qrlevel)
-    {
+    private void setQueryLevel(int qrlevel) {
         this.qrlevel = qrlevel;
-        filter.putString(Tag.QueryRetrieveLevel, VR.CS, QRLEVEL[qrlevel]);
+        keys.putString(Tag.QueryRetrieveLevel, VR.CS, QRLEVEL[qrlevel]);
         int[] tags = RETURN_KEYS[qrlevel];
         for (int i = 0; i < tags.length; i++)
-            filter.putNull(tags[i], null);
+            keys.putNull(tags[i], null);
     }
 
-    public final void addPrivate(String cuid)
-    {
+    public final void addPrivate(String cuid) {
         this.privateFind.add(cuid);
     }
 
-    private void setMoveDest(String aet)
-    {
-        moveDest = aet;        
+    private void setMoveDest(String aet) {
+        moveDest = aet;
     }
-    
-    private boolean isMove()
-    {
+
+    private boolean isMove() {
         return moveDest != null;
     }
 
-    private static String toHostname(String host)
-    {
+    private static String toHostname(String host) {
         return host != null ? host : "127.0.0.1";
     }
 
-    private static int toPort(String port)
-    {
+    private static int toPort(String port) {
         return port != null ? parseInt(port, "illegal port number", 1, 0xffff)
                 : 104;
     }
@@ -819,105 +781,94 @@ public class DcmQR
             int i = Integer.parseInt(s);
             if (i >= min && i <= max)
                 return i;
-        } catch (NumberFormatException e) {}
+        } catch (NumberFormatException e) {
+        }
         exit(errPrompt);
         throw new RuntimeException();
     }
-    
-    private static String[] split(String s, char delim)
-    {
-        String[] s2 =
-        { s, null };
+
+    private static String[] split(String s, char delim) {
+        String[] s2 = { s, null };
         int pos = s.indexOf(delim);
-        if (pos != -1)
-        {
+        if (pos != -1) {
             s2[0] = s.substring(0, pos);
             s2[1] = s.substring(pos + 1);
         }
         return s2;
     }
 
-    private static void exit(String msg)
-    {
+    private static void exit(String msg) {
         System.err.println(msg);
         System.err.println("Try 'dcmqr -h' for more information.");
         System.exit(1);
     }
 
-    public void open()
-            throws IOException, ConfigurationException, InterruptedException
-    {
+    public void open() throws IOException, ConfigurationException,
+            InterruptedException {
         assoc = ae.connect(remoteAE, executor);
     }
 
-    public List query() throws IOException, InterruptedException
-    {
+    public List query() throws IOException, InterruptedException {
         TransferCapability tc = selectFindTransferCapability();
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
-        System.out.println("Send Query Request using " 
+        System.out.println("Send Query Request using "
                 + UIDDictionary.getDictionary().prompt(cuid) + ":");
-        System.out.println(filter.toString());
-        System.out.println("using " + UIDDictionary.getDictionary().prompt(cuid));
-        DimseRSP rsp = assoc.cfind(cuid, priority, filter, tsuid, cancelAfter);
+        System.out.println(keys.toString());
+        DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
         List result = new ArrayList();
-        while (rsp.next())
-        {
+        while (rsp.next()) {
             DicomObject cmd = rsp.getCommand();
-            if (CommandUtils.isPending(cmd))
-            {
+            if (CommandUtils.isPending(cmd)) {
                 DicomObject data = rsp.getDataset();
-                System.out.println("Received Query Response:");
-                System.out.println(data.toString());
                 result.add(data);
+                System.out.println("\nReceived Query Response #" 
+                        + result.size() + ":");
+                System.out.println(data.toString());
             }
         }
         return result;
     }
 
     private TransferCapability selectFindTransferCapability()
-    throws NoPresentationContextException
-    {
+            throws NoPresentationContextException {
         TransferCapability tc;
-        if (qrlevel != PATIENT 
+        if (qrlevel != PATIENT
                 && (tc = selectTransferCapability(privateFind)) != null)
             return tc;
         if ((tc = selectTransferCapability(FIND_CUID[qrlevel])) != null)
             return tc;
-        throw new NoPresentationContextException(
-                UIDDictionary.getDictionary().prompt(FIND_CUID[qrlevel][0])
-                + " not supported by" + remoteAE.getAETitle() );
+        throw new NoPresentationContextException(UIDDictionary.getDictionary()
+                .prompt(FIND_CUID[qrlevel][0])
+                + " not supported by" + remoteAE.getAETitle());
     }
 
-    private String selectTransferSyntax(TransferCapability tc)
-    {
+    private String selectTransferSyntax(TransferCapability tc) {
         String[] tcuids = tc.getTransferSyntax();
         if (Arrays.asList(tcuids).indexOf(UID.DeflatedExplicitVRLittleEndian) != -1)
             return UID.DeflatedExplicitVRLittleEndian;
         return tcuids[0];
     }
 
-    public void move(List findResults) throws IOException, InterruptedException
-    {
+    public void move(List findResults) throws IOException, InterruptedException {
         if (moveDest == null)
             throw new IllegalStateException("moveDest == null");
         TransferCapability tc = selectTransferCapability(MOVE_CUID[qrlevel]);
         if (tc == null)
-            throw new NoPresentationContextException(
-                    UIDDictionary.getDictionary().prompt(MOVE_CUID[qrlevel][0])
-                    + " not supported by" + remoteAE.getAETitle() );
+            throw new NoPresentationContextException(UIDDictionary
+                    .getDictionary().prompt(MOVE_CUID[qrlevel][0])
+                    + " not supported by" + remoteAE.getAETitle());
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
-        for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i)
-        {
-            DicomObject keys = ((DicomObject) findResults.get(i)).subSet(MOVE_KEYS);
+        for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
+            DicomObject keys = ((DicomObject) findResults.get(i))
+                    .subSet(MOVE_KEYS);
             System.out.println("Send Retrieve Request using "
                     + UIDDictionary.getDictionary().prompt(cuid) + ":");
             System.out.println(keys.toString());
-            DimseRSPHandler rspHandler = new DimseRSPHandler(){
-                public void onDimseRSP(Association as, DicomObject cmd, 
-                        DicomObject data)
-                {
+            DimseRSPHandler rspHandler = new DimseRSPHandler() {
+                public void onDimseRSP(Association as, DicomObject cmd,
+                        DicomObject data) {
                     DcmQR.this.onMoveRSP(as, cmd, data);
                 }
             };
@@ -926,22 +877,18 @@ public class DcmQR
         assoc.waitForDimseRSP();
     }
 
-    
-    protected void onMoveRSP(Association as, DicomObject cmd, DicomObject data)
-    {
+    protected void onMoveRSP(Association as, DicomObject cmd, DicomObject data) {
         if (!CommandUtils.isPending(cmd)) {
             completed += cmd.getInt(Tag.NumberofCompletedSuboperations);
             warning += cmd.getInt(Tag.NumberofWarningSuboperations);
             failed += cmd.getInt(Tag.NumberofFailedSuboperations);
         }
-        
+
     }
 
-    private TransferCapability selectTransferCapability(String[] cuid)
-    {
+    private TransferCapability selectTransferCapability(String[] cuid) {
         TransferCapability tc;
-        for (int i = 0; i < cuid.length; i++)
-        {
+        for (int i = 0; i < cuid.length; i++) {
             tc = assoc.getTransferCapabilityAsSCU(cuid[i]);
             if (tc != null)
                 return tc;
@@ -949,20 +896,18 @@ public class DcmQR
         return null;
     }
 
-    private TransferCapability selectTransferCapability(List cuid)
-    {
+    private TransferCapability selectTransferCapability(List cuid) {
         TransferCapability tc;
-        for (int i = 0, n = cuid.size(); i < n; i++)
-        {
+        for (int i = 0, n = cuid.size(); i < n; i++) {
             tc = (TransferCapability) cuid.get(i);
             tc = assoc.getTransferCapabilityAsSCU(tc.getSopClass());
             if (tc != null)
                 return tc;
         }
         return null;
-    }    
-    public void close() throws InterruptedException
-    {
+    }
+
+    public void close() throws InterruptedException {
         assoc.release(true);
     }
 }
