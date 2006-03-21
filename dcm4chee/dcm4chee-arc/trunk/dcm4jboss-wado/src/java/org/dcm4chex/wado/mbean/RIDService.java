@@ -39,6 +39,7 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -278,5 +279,10 @@ public class RIDService extends AbstractCacheService  {
 		if ( log.isDebugEnabled() ) log.debug("getRIDDocument:"+reqVO );
 		return support.getRIDDocument( reqVO );
 	}
+	
+	public File getDocumentFile(String objectUID, String contentType) {
+		return support.getDocumentFile(objectUID,contentType);
+	}
+	
 	
 }

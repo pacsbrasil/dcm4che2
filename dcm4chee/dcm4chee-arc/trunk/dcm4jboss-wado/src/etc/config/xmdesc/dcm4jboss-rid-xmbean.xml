@@ -298,5 +298,21 @@
       </parameter>
       <return-type>org.dcm4chex.wado.common.WADOResponseObject</return-type>
    </operation>
+
+   <operation impact="ACTION">
+      <description>Get File Object for Document</description>
+      <name>getDocumentFile</name>
+      <parameter>
+        <description>ObjectUID of Document.</description>
+        <name>objectUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Content Type (MIME Type).</description>
+        <name>contentType</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
   
 </mbean>

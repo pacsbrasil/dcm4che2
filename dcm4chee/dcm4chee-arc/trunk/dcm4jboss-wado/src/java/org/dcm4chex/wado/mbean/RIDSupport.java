@@ -44,6 +44,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -617,6 +618,13 @@ public class RIDSupport {
 					return getDocument( reqObj );
 				}
 			} else {
+				File f = getDocumentFile(uid,reqObj.getParam("preferredContentType"));
+				if ( f.exists() ) {
+					try {
+						return new WADOStreamResponseObjectImpl( new FileInputStream(f), reqObj.getParam("preferredContentType"), HttpServletResponse.SC_OK, null);
+					} catch (FileNotFoundException ignore) {
+					}
+				}
 				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
 			}
 		} catch (SQLException x) {
@@ -627,6 +635,10 @@ public class RIDSupport {
 		}
 	}
 	
+	public File getDocumentFile(String objectUID, String contentType) {
+		return WADOCacheImpl.getRIDCache().getFileObject(null,null,objectUID,contentType);
+	}
+
 	private WADOResponseObject getDocument( RIDRequestObject reqObj ) {
 		String docUID = reqObj.getParam("documentUID");
 		if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
@@ -670,6 +682,9 @@ public class RIDSupport {
 						return new WADOStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
 				    }
 				    inFile = new File( outFile.toString() + ".dcm" );
+				    if ( !inFile.getParentFile().exists() ) {
+				    	inFile.getParentFile().mkdirs();
+				    }
 				    inFile.deleteOnExit();
 				    OutputStream os = new BufferedOutputStream( new FileOutputStream( inFile ));
 				    ds.writeTo( os, null);
@@ -687,7 +702,7 @@ public class RIDSupport {
 		}
 		return null;
 	}
-
+	
 	/**
 	 * @param outFile
 	 * @return

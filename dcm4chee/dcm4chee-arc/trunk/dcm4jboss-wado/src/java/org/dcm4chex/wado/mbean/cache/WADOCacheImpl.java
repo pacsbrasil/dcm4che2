@@ -646,7 +646,7 @@ public class WADOCacheImpl implements WADOCache {
 			//do some other mapping here;
 			ext = "." + ext;
 		}
-		return ext;
+		return ext.toLowerCase();
 	}
 
 	/**
