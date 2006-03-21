@@ -58,6 +58,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4cheri.util.UIDGeneratorImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -182,7 +183,7 @@ public class XDSMetadata {
 
 	private void addSubmitObjectRequest() throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		attr.addAttribute("", XMLNS_XSI, XMLNS_XSI, "", "http://www.w3.org/2001/XMLSchema-instance");		
+		//attr.addAttribute("", XMLNS_XSI, XMLNS_XSI, "", "http://www.w3.org/2001/XMLSchema-instance");		
 		th.startPrefixMapping(XMLNS_RS,URN_RS);
 		th.startPrefixMapping(XMLNS_DEFAULT,URN_RIM);
     	th.startElement(URN_RS, TAG_SUBMITOBJECTSREQUEST, TAG_SUBMITOBJECTSREQUEST, attr );
@@ -285,7 +286,11 @@ public class XDSMetadata {
 	 * 
 	 */
 	private void addExtrinsicEntries() throws SAXException {
+		addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
 		addSlot( "authorInstitution", mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
+		addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
+		addSlot( XDSIService.AUTHOR_ROLE, mdValues.getProperty(XDSIService.AUTHOR_ROLE, null));
+		addSlot( XDSIService.AUTHOR_ROLE_DISPLAYNAME, mdValues.getProperty(XDSIService.AUTHOR_ROLE_DISPLAYNAME, null));
 		addSlot( "creationTime", getTime(Tags.InstanceCreationDate,Tags.InstanceCreationTime, Tags.ContentDate, Tags.ContentTime));
 		addSlot( "languageCode", mdValues.getProperty("languageCode", "en-us"));
 		addSlot( "serviceStartTime", getTime(Tags.StudyDate,Tags.StudyTime, -1,-1));
@@ -324,7 +329,7 @@ public class XDSMetadata {
 		
 		addExternalIdentifier(UUID.XDSDocumentEntry_uniqueId,"XDSDocumentEntry.uniqueId", dsKO.getString(Tags.SOPInstanceUID));
 		addExternalIdentifier(UUID.XDSDocumentEntry_patientId,"XDSDocumentEntry.patientId", 
-				getAffinityDomainPatID());
+				mdValues.getProperty("xadPatientID"));
 	}
 	
 	/**
@@ -369,13 +374,6 @@ public class XDSMetadata {
 			time = DEFAULT_TIME_STRING;
 		}
 		return date+time.substring(0,6);//cut fraction part of time
-	}
-	/**
-	 * @return
-	 */
-	private String getAffinityDomainPatID() {
-		if ( true) return "60b782c5f0fb402^^^&1.3.6.1.4.1.21367.2005.3.7&ISO";
-		return "440f2589bfda44a18480c87d18"+"^^^"+mdValues.getProperty("affinityDomainAuthority","&1.3.6.1.4.1.21367.2005.3.7&ISO");
 	}
 	/**
 	 * @return
@@ -460,9 +458,7 @@ public class XDSMetadata {
 		addSlot( "authorDepartment", mdValues.getProperty("authorDepartment", null));
 		addSlot( XDSIService.AUTHOR_INSTITUTION, mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
 		addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
-		addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
-		addSlot( XDSIService.AUTHOR_ROLE, mdValues.getProperty(XDSIService.AUTHOR_ROLE, null));
-		addSlot( XDSIService.AUTHOR_ROLE_DIPLAYNAME, mdValues.getProperty(XDSIService.AUTHOR_ROLE_DIPLAYNAME, null));
+		
 		String time = mdValues.getProperty("submissionTime");
 		if ( time == null ) time = formatter.format(new Date());
 		addSlot( "submissionTime", time);
@@ -474,12 +470,12 @@ public class XDSMetadata {
 
 		String uniqueId = mdValues.getProperty("uniqueId");
 		if ( uniqueId == null ) {
-			uniqueId = dsKO.getString(Tags.SOPInstanceUID);
+			uniqueId = UIDGeneratorImpl.getInstance().createUID();
 		}
 		addExternalIdentifier(UUID.XDSSubmissionSet_uniqueId,"XDSSubmissionSet.uniqueId", uniqueId);
 		addExternalIdentifier(UUID.XDSSubmissionSet_sourceId,"XDSSubmissionSet.sourceId", mdValues.getProperty("sourceId", uniqueId));
 		addExternalIdentifier(UUID.XDSSubmissionSet_patientId,"XDSSubmissionSet.patientId", 
-				getAffinityDomainPatID());
+				mdValues.getProperty("xadPatientID"));
 	}
 	/**
 	 * @param property
