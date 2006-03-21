@@ -401,6 +401,7 @@ StoreSCP service.
       <type>java.lang.String</type>
       <descriptors>
          <value value="
+           StoredPrintStorage
            MRSpectroscopyStorage
            TwelveLeadECGWaveformStorage
            GeneralECGWaveformStorage
