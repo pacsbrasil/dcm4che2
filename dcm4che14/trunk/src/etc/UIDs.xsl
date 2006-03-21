@@ -105,6 +105,11 @@ public class UIDs {
     private static boolean isDigit(char c) {
         return c &gt;= '0' &amp;&amp; c &lt;= '9';
     }
+    
+    /** SOPClass: Multi-frame True Color Secondary Capture Image Storage
+     * @deprecated use @link{#MultiframeTrueColorSecondaryCaptureImageStorage}
+     */
+    public static final String MultiframeColorSecondaryCaptureImageStorage = "1.2.840.10008.5.1.4.1.1.7.4";
   
 </xsl:text>
 <xsl:apply-templates select="dictionary/uids/uid"/>
@@ -114,7 +119,7 @@ public class UIDs {
 <xsl:template match="uid">
 <xsl:text>    /** </xsl:text><xsl:value-of select="../@type"/>
 <xsl:text>: </xsl:text><xsl:value-of select="@name"/><xsl:text> */
-	public static final String </xsl:text><xsl:value-of select="@key"/>
+    public static final String </xsl:text><xsl:value-of select="@key"/>
 <xsl:text> = "</xsl:text><xsl:value-of select="@value"/>
 <xsl:text>";
 
