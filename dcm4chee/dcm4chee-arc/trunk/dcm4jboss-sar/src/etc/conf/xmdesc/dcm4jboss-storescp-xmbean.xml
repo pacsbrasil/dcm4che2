@@ -409,6 +409,9 @@ StoreSCP service.
            CardiacElectrophysiologyWaveformStorage
            BasicVoiceAudioWaveformStorage
            GrayscaleSoftcopyPresentationStateStorage
+           ColorSoftcopyPresentationStateStorage
+           PseudoColorSoftcopyPresentationStateStorage
+           BlendingSoftcopyPresentationStateStorage
            RawDataStorage
            SpatialRegistrationStorage
            SpatialFiducialsStorage
@@ -421,12 +424,17 @@ StoreSCP service.
            MammographyCADSR
            KeyObjectSelectionDocument
            ChestCADSR
+           XRayRadiationDoseSR
+           EncapsulatedPDFStorage
            RTDoseStorage
            RTStructureSetStorage
            RTBeamsTreatmentRecordStorage
            RTPlanStorage
            RTBrachyTreatmentRecordStorage
-           RTTreatmentSummaryRecordStorage"/>
+           RTTreatmentSummaryRecordStorage
+           RTIonPlanStorage
+           RTIonBeamsTreatmentRecordStorage
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
