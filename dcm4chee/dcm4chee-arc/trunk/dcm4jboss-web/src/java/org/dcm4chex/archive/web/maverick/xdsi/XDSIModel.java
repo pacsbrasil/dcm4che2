@@ -168,7 +168,7 @@ public class XDSIModel extends BasicFormModel {
 		this.selectedAuthorRole = selected;
 		CodeItem ci = authorRoles[selectedAuthorRole];
 		props.setProperty(XDSIService.AUTHOR_ROLE, ci.getCodeValue());
-		props.setProperty(XDSIService.AUTHOR_ROLE_DIPLAYNAME, ci.getCodeMeaning());
+		props.setProperty(XDSIService.AUTHOR_ROLE_DISPLAYNAME, ci.getCodeMeaning());
 	}
 	public int getSelectedAuthorRole() {
 		return selectedAuthorRole;
