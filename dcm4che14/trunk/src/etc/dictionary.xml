@@ -2410,6 +2410,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.88.50" name="Mammography CAD SR" key="MammographyCADSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.59" name="Key Object Selection Document" key="KeyObjectSelectionDocument" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.65" name="Chest CAD SR" key="ChestCADSR" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.67" name="X-Ray Radiation Dose SR" key="XRayRadiationDoseSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.104.1" name="Encapsulated PDF Storage" key="EncapsulatedPDFStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.128" name="Positron Emission Tomography Image Storage" key="PositronEmissionTomographyImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.129" name="Standalone PET Curve Storage" key="StandalonePETCurveStorage" />
