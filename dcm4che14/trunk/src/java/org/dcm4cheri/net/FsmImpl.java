@@ -706,7 +706,7 @@ final class FsmImpl
             }
         } else {
             if (log.isInfoEnabled()) {
-                log.info("sending " + pdu.toString(log.isDebugEnabled()));
+                log.info("sending " + pdu);
             }
         }
         if (assocListener != null) {
@@ -729,7 +729,7 @@ final class FsmImpl
             }
         } else {
             if (log.isInfoEnabled()) {
-                log.info("received " + pdu.toString(log.isDebugEnabled()));
+                log.info("received " + pdu);
             }
         }
         if (assocListener != null) {
