@@ -57,6 +57,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
@@ -258,13 +259,37 @@ public abstract class MPPSManagerBean implements SessionBean {
             PatientLocal mppsPat = mpps.getPatient();
             Dataset mwlAttrs = mwlItem.getAttributes();
             Dataset mppsAttrs = mpps.getAttributes();
-    		Dataset ssa = mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq);
-            ssa.putSH(Tags.SPSID, spsID);
-    		ssa.putSH(Tags.AccessionNumber,accNo);
-    		if ( !ssa.getString(Tags.StudyInstanceUID).equals( 
-    				mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
-    			mwlAttrs.putUI(Tags.StudyInstanceUID, ssa.getString(Tags.StudyInstanceUID) );
-    			mwlItem.setAttributes( mwlAttrs );
+    		Dataset ssa;
+    		DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
+    		String ssaSpsID, studyIUID = null;
+    		boolean spsNotInList = true;
+    		for ( int i = 0, len = ssaSQ.vm() ; i < len ; i++ ) {
+    			ssa = ssaSQ.getItem(i);
+    			if ( ssa != null ) {
+    				if ( studyIUID == null ) { 
+    					studyIUID = ssa.getString(Tags.StudyInstanceUID);
+			    		if ( !studyIUID.equals( 
+			    				mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
+			    			log.info("StudyInstanceUID corrected for spsID "+spsID);
+			    			mwlAttrs.putUI(Tags.StudyInstanceUID, ssa.getString(Tags.StudyInstanceUID) );
+			    			mwlItem.setAttributes( mwlAttrs );
+			    		}
+    				}
+    				ssaSpsID = ssa.getString(Tags.SPSID);
+	    			if ( ssaSpsID == null || spsID.equals(ssaSpsID) ) {
+	    				ssa.putSH(Tags.AccessionNumber,accNo);
+	    				ssa.putSH(Tags.SPSID, spsID);
+	    				ssa.putUI(Tags.StudyInstanceUID, studyIUID);
+	    				spsNotInList = false;
+	    			}
+    			}
+    		}
+    		if ( spsNotInList ) {
+    			ssa = mwlAttrs.getItem(Tags.SPSSeq);
+    			ssa.putUI(Tags.StudyInstanceUID, studyIUID);
+    			log.debug("add new scheduledStepAttribute item:");log.debug(ssa);
+    			ssaSQ.addItem(ssa);
+    			log.debug("new mppsAttrs:");log.debug(mppsAttrs);
     		}
             mpps.setAttributes(mppsAttrs);
             mppsAttrs.putAll(mppsPat.getAttributes(false));
