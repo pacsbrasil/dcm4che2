@@ -57,6 +57,10 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.activation.DataHandler;
+import javax.management.ObjectName;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.soap.AttachmentPart;
@@ -98,8 +102,9 @@ public class XDSIService extends ServiceMBeanSupport {
 	public static final String AUTHOR_SPECIALITY = "authorSpeciality";
 	public static final String AUTHOR_PERSON = "authorPerson";
 	public static final String AUTHOR_ROLE = "authorRole";
-	public static final String AUTHOR_ROLE_DIPLAYNAME = "authorRoleDisplayName";
+	public static final String AUTHOR_ROLE_DISPLAYNAME = "authorRoleDisplayName";
 	public  static final String AUTHOR_INSTITUTION = "authorInstitution";
+	public  static final String SOURCE_ID = "sourceId";
 	private static final String HEADER_VALUE = " ";
 	
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
@@ -138,7 +143,15 @@ public class XDSIService extends ServiceMBeanSupport {
 	private Properties metadataProps = new Properties();
 
 	private Map mapCodeLists = new HashMap();
-	/**
+
+    private ObjectName pixQueryServiceName;
+    private String affinityDomain;
+    private String trustStoreURL = "resource:cacerts.jks";
+	private String trustStorePassword;
+	private HostnameVerifier origHostnameVerifier = null;
+	private String allowedUrlHost = null;
+	
+    /**
 	 * @return Returns the property file path.
 	 */
 	public String getPropertyFile() {
@@ -260,7 +273,16 @@ public class XDSIService extends ServiceMBeanSupport {
 		}
 		return person;
 	}
+	
+	
+	public String getSourceID() {
+		return metadataProps.getProperty(SOURCE_ID);
+	}
 
+	public void setSourceID(String id ) {
+		metadataProps.setProperty(SOURCE_ID, id == null ? "" : id);
+	}
+	
 	/**
 	 * @return Returns a list of authorRoles (with displayName) as String.
 	 */
@@ -331,6 +353,40 @@ public class XDSIService extends ServiceMBeanSupport {
 		this.proxyPort = proxyPort;
 	}
 	/**
+	 * @return Returns the trustStore.
+	 */
+	public String getTrustStoreURL() {
+		return trustStoreURL == null ? "NONE" : trustStoreURL;
+	}
+	/**
+	 * @param trustStore The trustStore to set.
+	 */
+	public void setTrustStoreURL(String trustStoreURL) {
+		if ( "NONE".equals(trustStoreURL ) ) {
+			this.trustStoreURL = null;
+		} else {
+			this.trustStoreURL = trustStoreURL;
+		}
+	}
+	/**
+	 * @param trustStorePassword The trustStorePassword to set.
+	 */
+	public void setTrustStorePassword(String trustStorePassword) {
+		this.trustStorePassword = trustStorePassword;
+	}
+	/**
+	 * @return Returns the allowedUrlHost.
+	 */
+	public String getAllowedUrlHost() {
+		return allowedUrlHost == null ? "CERT" : allowedUrlHost;
+	}
+	/**
+	 * @param allowedUrlHost The allowedUrlHost to set.
+	 */
+	public void setAllowedUrlHost(String allowedUrlHost) {
+		this.allowedUrlHost = "CERT".equals(allowedUrlHost) ? null : allowedUrlHost;
+	}
+	/**
 	 * @return Returns the useHttp.
 	 */
 	public boolean isUseHttp() {
@@ -359,6 +415,21 @@ public class XDSIService extends ServiceMBeanSupport {
 			this.testPath = testPath;
 	}
 
+	   public final ObjectName getPixQueryServiceName() {
+        return pixQueryServiceName;
+    }
+
+    public final void setPixQueryServiceName(ObjectName name) {
+        this.pixQueryServiceName = name;
+    }
+    
+    public String getAffinityDomain() {
+    	return affinityDomain;
+    }
+    public void setAffinityDomain(String domain) {
+    	affinityDomain = domain;
+    }
+	
 	/**
 	 * Adds a 'mappingString' (format:&lt;key&gt;=&lt;value&gt;...) to a map.
 	 * 
@@ -541,13 +612,47 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	
 	public boolean sendSOAP( Document metaData, XDSIDocument[] docs, String url ) {
+		if ( url == null ) url = this.docRepositoryURI;
 		SOAPConnection conn = null;
 		try {
+			String protocol = url.startsWith("https") ? "https" : "http";
 			if ( proxyHost != null && proxyHost.trim().length() > 1 ) {
-				System.setProperty("http.proxyHost", proxyHost);
-				System.setProperty("http.proxyPort", String.valueOf(proxyPort));
+				System.setProperty( protocol+".proxyHost", proxyHost);
+				System.setProperty(protocol+".proxyPort", String.valueOf(proxyPort));
+			} else {
+				System.setProperty(protocol+".proxyHost", "");
+				System.setProperty(protocol+".proxyPort", "");
 			}
-			if ( url == null ) url = this.docRepositoryURI;
+			if ( "https".equals(protocol) && trustStoreURL != null ) {
+				System.setProperty("javax.net.ssl.trustStore", trustStoreURL);
+				System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+				if ( origHostnameVerifier == null) {
+					origHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+					HostnameVerifier hv = new HostnameVerifier() {
+					    public boolean verify(String urlHostName, SSLSession session) {
+					    	if ( !origHostnameVerifier.verify ( urlHostName, session)) {
+					    		if ( isAllowedUrlHost(urlHostName)) {
+					    			System.out.println("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
+					    		} else {
+					    			return false;
+					    		}
+					    	}
+				    		return true;
+					    }
+
+						private boolean isAllowedUrlHost(String urlHostName) {
+							if (allowedUrlHost == null) return false;
+							if ( allowedUrlHost.equals("*")) return true;
+							return allowedUrlHost.equals(urlHostName);
+						}
+	
+					};
+					 
+					HttpsURLConnection.setDefaultHostnameVerifier(hv);
+				}
+
+				
+			}			
 		    MessageFactory messageFactory = MessageFactory.newInstance();
 		    SOAPMessage message = messageFactory.createMessage();
 		    SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
@@ -637,6 +742,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		}
 		if ( kos == null ) return false;
 		if ( mdProps == null ) mdProps = this.metadataProps;
+		mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(kos));
 		XDSMetadata md = new XDSMetadata(kos, mdProps);
 		Document metadata = md.getMetadata();
 		XDSIDocument doc = new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID);
@@ -644,6 +750,40 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	
     /**
+	 * @param kos
+	 * @return
+	 */
+	private String getAffinityDomainPatientID(Dataset kos) {
+		String patID = kos.getString(Tags.PatientID);
+		String issuer = kos.getString(Tags.IssuerOfPatientID);
+		if ( affinityDomain.charAt(0) == '=') {
+			if ( affinityDomain.length() == 1 ) {
+				patID+="^^^";
+				if ( issuer == null ) return patID;
+				return patID+issuer;
+			} else if (affinityDomain.charAt(1)=='?') {
+				return patID+"^^^"+affinityDomain.substring(2);
+			} else {
+				return affinityDomain.substring(1);
+			}
+		}
+		if ( this.pixQueryServiceName == null ) {
+			patID+="^^^";
+			if ( issuer == null ) return patID;
+			return patID+issuer;
+		} else {
+	        try {
+	            return (String) server.invoke(this.pixQueryServiceName,
+	                    "query",
+	                    new Object[] { patID, issuer, affinityDomain },
+	                    new String[] { String.class.getName(), String.class.getName(), String.class.getName() });
+	        } catch (Exception e) {
+	            log.error("Failed to get patientID for Affinity Domain:", e);
+	            return null;
+	        }
+		}
+	}
+	/**
 	 * @param response
 	 * @return
      * @throws SOAPException
