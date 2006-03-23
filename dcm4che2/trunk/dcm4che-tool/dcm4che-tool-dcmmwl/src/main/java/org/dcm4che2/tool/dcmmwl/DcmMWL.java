@@ -369,6 +369,14 @@ public class DcmMWL {
             for (int i = 1; i < matchingKeys.length; i++, i++)
                 dcmmwl.addSpsKey(toTag(matchingKeys[i - 1]), matchingKeys[i]);
         }
+        if (cl.hasOption("d")) {
+            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartDate,
+                    cl.getOptionValue("d"));
+        }
+        if (cl.hasOption("t")) {
+            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartTime,
+                    cl.getOptionValue("t"));
+        }
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
@@ -498,6 +506,16 @@ public class DcmMWL {
         OptionBuilder.withDescription("specify matching SPS key. attr can be " +
                 "specified by name or tag value (in hex)");
         opts.addOption(OptionBuilder.create("q"));
+
+        OptionBuilder.withArgName("date");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify matching SPS start date (range)");
+        opts.addOption(OptionBuilder.create("d"));
+
+        OptionBuilder.withArgName("time");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify matching SPS start time (range)");
+        opts.addOption(OptionBuilder.create("t"));
 
         OptionBuilder.withArgName("attr");
         OptionBuilder.hasArg();

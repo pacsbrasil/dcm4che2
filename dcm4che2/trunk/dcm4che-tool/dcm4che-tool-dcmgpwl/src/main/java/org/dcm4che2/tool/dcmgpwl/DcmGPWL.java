@@ -451,11 +451,11 @@ public class DcmGPWL {
             dcmgpwl.setStatus("DISCONTINUED");
         }
         
-        if (cl.hasOption("a")) {
-            action = cl.getOptionValues("a");
+        if (cl.hasOption("action")) {
+            action = cl.getOptionValues("action");
             dcmgpwl.setTransactionUID(action[1]);
-            if (cl.hasOption("perfcode")) {
-                dcmgpwl.setActualHumanPerformer(cl.getOptionValues("perfcode"),
+            if (cl.hasOption("performer")) {
+                dcmgpwl.setActualHumanPerformer(cl.getOptionValues("performer"),
                         cl.getOptionValue("perfname"), cl.getOptionValue("perforg"));
             }
         } else {
@@ -470,6 +470,10 @@ public class DcmGPWL {
                 String[] matchingKeys = cl.getOptionValues("q");
                 for (int i = 1; i < matchingKeys.length; i++, i++)
                     dcmgpwl.addKey(toTag(matchingKeys[i - 1]), matchingKeys[i]);
+            }
+            if (cl.hasOption("d")) {
+                dcmgpwl.addKey(Tag.ScheduledProcedureStepStartDateandTime,
+                        cl.getOptionValue("d"));
             }
             if (cl.hasOption("r")) {
                 String[] returnKeys = cl.getOptionValues("r");
@@ -508,9 +512,9 @@ public class DcmGPWL {
                         Tag.ScheduledStationGeographicLocationCodeSequence,
                         cl.getOptionValues("location"));
             }
-            if (cl.hasOption("sperfcode")) {
+            if (cl.hasOption("sperformer")) {
                 dcmgpwl.setScheduledHumanPerformerCodeValueAndScheme(
-                        cl.getOptionValues("sperfcode"));
+                        cl.getOptionValues("sperformer"));
             }
         }
   
@@ -662,7 +666,7 @@ public class DcmGPWL {
         OptionBuilder.withDescription(
                 "modify status of GP-SPS with SOP Instance UID <iuid> " +
                 "using Transaction UID <tuid>.");
-        opts.addOption(OptionBuilder.create("a"));
+        opts.addOption(OptionBuilder.create("action"));
         
         OptionBuilder.withArgName("attr=value");
         OptionBuilder.hasArgs(2);
@@ -671,6 +675,11 @@ public class DcmGPWL {
                 "specify matching key. attr can be specified by name or tag " +
                 "value (in hex), e.g. PatientsName or 00100010.");
         opts.addOption(OptionBuilder.create("q"));
+        
+        OptionBuilder.withArgName("datetime");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify matching SPS start datetime (range)");
+        opts.addOption(OptionBuilder.create("d"));        
 
         OptionBuilder.withArgName("attr");
         OptionBuilder.hasArg();
@@ -734,14 +743,14 @@ public class DcmGPWL {
         OptionBuilder.withValueSeparator(':');
         OptionBuilder.withDescription(
                 "specify matching Scheduled Human Performer Code");
-        opts.addOption(OptionBuilder.create("sperfcode"));
+        opts.addOption(OptionBuilder.create("sperformer"));
 
         OptionBuilder.withArgName("code:scheme:name");
         OptionBuilder.hasArgs(3);
         OptionBuilder.withValueSeparator(':');
         OptionBuilder.withDescription(
-                "specify Actual Human Performer Code");
-        opts.addOption(OptionBuilder.create("perfcode"));
+                "specify Scheduled Actual Human Performer Code");
+        opts.addOption(OptionBuilder.create("performer"));
 
         OptionBuilder.withArgName("name");
         OptionBuilder.hasArg();
