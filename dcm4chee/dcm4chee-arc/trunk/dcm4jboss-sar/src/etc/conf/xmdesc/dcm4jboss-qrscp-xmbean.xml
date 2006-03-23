@@ -105,106 +105,96 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>   
    <attribute access="read-write"
-      getMethod="isAcceptPatientRootFind"
-      setMethod="setAcceptPatientRootFind">
-      <description>Support Patient Root Query/Retrieve Information Model - FIND SOP Class
+      getMethod="getAcceptedStandardSOPClasses"
+      setMethod="setAcceptedStandardSOPClasses">
+      <description><![CDATA[
+        List of accepted Query/Retrieve SOP Classes. Use either the SOP Class 
+        UID value, or following defined symbolic names:
+        PatientRootQueryRetrieveInformationModelFIND,
+        PatientRootQueryRetrieveInformationModelMOVE,
+        StudyRootQueryRetrieveInformationModelFIND,
+        StudyRootQueryRetrieveInformationModelMOVE,
+        PatientStudyOnlyQueryRetrieveInformationModelFIND,
+        PatientStudyOnlyQueryRetrieveInformationModelMOVE,
+        ]]>
       </description>
-      <name>AcceptPatientRootFind</name>
-      <type>boolean</type>
+      <name>AcceptedStandardSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="
+           PatientRootQueryRetrieveInformationModelFIND
+           PatientRootQueryRetrieveInformationModelMOVE
+           StudyRootQueryRetrieveInformationModelFIND
+           StudyRootQueryRetrieveInformationModelMOVE
+           PatientStudyOnlyQueryRetrieveInformationModelFIND
+           PatientStudyOnlyQueryRetrieveInformationModelMOVE
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptStudyRootFind"
-      setMethod="setAcceptStudyRootFind">
-      <description>Support Study Root Query/Retrieve Information Model - FIND SOP Class
+      getMethod="getAcceptedTransferSyntax"
+      setMethod="setAcceptedTransferSyntax">
+      <description><![CDATA[
+        List of accepted Transfer Syntaxes. Order defines selection preference.
+        Use either the Transfer Syntaxes UID value or following defined
+        symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian
+        ]]>
       </description>
-      <name>AcceptStudyRootFind</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForStandardSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="
+           ExplicitVRLittleEndian
+           ImplicitVRLittleEndian
+         "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptPatientStudyOnlyFind"
-      setMethod="setAcceptPatientStudyOnlyFind">
-      <description>Support Patient Study Only Query/Retrieve Information Model - FIND SOP Class
+      getMethod="getAcceptedPrivateSOPClasses"
+      setMethod="setAcceptedPrivateSOPClasses">
+      <description><![CDATA[
+        List of accepted Query/Retrieve SOP Classes. Use either the SOP Class 
+        UID value, or following defined symbolic names:
+        TianiStudyRootQueryRetrieveInformationModelFIND,
+        TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
+        TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
+        ]]>
       </description>
-      <name>AcceptPatientStudyOnlyFind</name>
-      <type>boolean</type>
+      <name>AcceptedPrivateSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="
+           TianiStudyRootQueryRetrieveInformationModelFIND
+           TianiBlockedStudyRootQueryRetrieveInformationModelFIND
+           TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptPatientRootMove"
-      setMethod="setAcceptPatientRootMove">
-      <description>Support Patient Root Query/Retrieve Information Model - MOVE SOP Class
+      getMethod="getAcceptedTransferSyntaxForPrivateSOPClasses"
+      setMethod="setAcceptedTransferSyntaxForPrivateSOPClasses">
+      <description><![CDATA[
+        List of accepted Transfer Syntaxes. Order defines selection preference.
+        Use either the Transfer Syntaxes UID value or following defined
+        symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian
+        ]]>
       </description>
-      <name>AcceptPatientRootMove</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForPrivateSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptStudyRootMove"
-      setMethod="setAcceptStudyRootMove">
-      <description>Support Study Root Query/Retrieve Information Model - MOVE SOP Class
-      </description>
-      <name>AcceptStudyRootMove</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptPatientStudyOnlyMove"
-      setMethod="setAcceptPatientStudyOnlyMove">
-      <description>Support Patient Study Only Query/Retrieve Information Model - MOVE SOP Class
-      </description>
-      <name>AcceptPatientStudyOnlyMove</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptPrivateStudyRootFind"
-      setMethod="setAcceptPrivateStudyRootFind">
-      <description>Support Private FIND SOP Class, which returns all available
-        attributs of matching entities - without having to be explicit selected
-        in the FIND request.
-      </description>
-      <name>AcceptPrivateStudyRootFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptBlockedStudyRootFind"
-      setMethod="setAcceptBlockedStudyRootFind">
-      <description><![CDATA[Support Private FIND SOP Class, which sends multiple matching
-        entities blocked in one pending FIND response.]]>
-      </description>
-      <name>AcceptBlockedStudyRootFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptDeflatedBlockedFind"
-      setMethod="setAcceptDeflatedBlockedFind">
-      <description>Accept Deflated Explicit Value Representation Little Endian
-         Transfer Syntax for Private Blocked FIND Service.
-      </description>
-      <name>AcceptDeflatedBlockedFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
+         <value value="
+           DeflatedExplicitVRLittleEndian
+           ExplicitVRLittleEndian
+           ImplicitVRLittleEndian
+         "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -219,43 +209,6 @@ QueryRetrieveScp service.</description>
          <value value="1000"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write"
-      getMethod="isAcceptExplicitVRLE"
-      setMethod="setAcceptExplicitVRLE">
-      <description>Accept Explicit Value Representation Little Endian Transfer Syntax
-          for all provided Query/Response services.
-      </description>
-      <name>AcceptExplicitVRLE</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptVirtualMultiframeFind"
-      setMethod="setAcceptVirtualMultiframeFind">
-      <description><![CDATA[Support Private FIND SOP Class, which returns 
-      instance attributes of all (single-frame) CT/MR images of one series as
-      one enhanced CT/MR multi-frame image.]]>
-      </description>
-      <name>AcceptVirtualMultiframeFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptDeflatedVirtualMultiframeFind"
-      setMethod="setAcceptDeflatedVirtualMultiframeFind">
-      <description>Accept Deflated Explicit Value Representation Little Endian
-         Transfer Syntax for Private Virtual Multiframe FIND Service.
-      </description>
-      <name>AcceptDeflatedVirtualMultiframeFind</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getVirtualEnhancedCTConfigFile"
       setMethod="setVirtualEnhancedCTConfigFile">

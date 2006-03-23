@@ -76,7 +76,7 @@ public class MWLFindScpService extends AbstractScpService
     private static final String[] ON_MPPS_RECEIVED = {
     		"NO_OP", "UPDATE_STATUS", "REMOVE_ITEM"
     };
-
+    
 	private static final NotificationFilterSupport mppsFilter = 
 		new NotificationFilterSupport();
 	static {
@@ -89,7 +89,7 @@ public class MWLFindScpService extends AbstractScpService
     
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
 
-	public final String getOnMPPSReceived() {
+    public final String getOnMPPSReceived() {
 		return ON_MPPS_RECEIVED[onMPPSReceived];
 	}
 	
@@ -143,9 +143,9 @@ public class MWLFindScpService extends AbstractScpService
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND,
-                enable ? getTransferSyntaxUIDs() : null);
+                enable ? valuesToStringArray(tsuidMap) : null);
     }
-
+    
     private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
         return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
                 MWLManagerHome.class, MWLManagerHome.JNDI_NAME);

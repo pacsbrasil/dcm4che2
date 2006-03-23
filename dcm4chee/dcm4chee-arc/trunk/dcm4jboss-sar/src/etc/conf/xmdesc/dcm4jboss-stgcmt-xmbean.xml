@@ -101,15 +101,25 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptExplicitVRLE"
-      setMethod="setAcceptExplicitVRLE">
-      <description>Accept DICOM objects encoded in Explicit Value Representation
-      Little Endian Transfer Syntax.
+      getMethod="getAcceptedTransferSyntax"
+      setMethod="setAcceptedTransferSyntax">
+      <description><![CDATA[
+        List of accepted Transfer Syntaxes. Order defines selection preference.
+        Use either the  Transfer Syntaxes UID value or following defined
+        symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian
+        ]]>
       </description>
-      <name>AcceptExplicitVRLE</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntax</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="
+           ExplicitVRLittleEndian
+           ImplicitVRLittleEndian
+         "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

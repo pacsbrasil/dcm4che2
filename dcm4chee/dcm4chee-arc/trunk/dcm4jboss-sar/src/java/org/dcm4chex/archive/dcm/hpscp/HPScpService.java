@@ -62,7 +62,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @since Aug 17, 2005
  */
 public class HPScpService extends AbstractScpService {
-
+    
     private final HPStoreScp hpStoreScp = new HPStoreScp(this);
     private final HPFindScp hpFindScp = new HPFindScp(this);
     private final HPMoveScp hpMoveScp = new HPMoveScp(this);
@@ -149,8 +149,7 @@ public class HPScpService extends AbstractScpService {
 			log.error("Failed to query AEData", e);
 			throw new DcmServiceException(Status.ProcessingFailure, e);
 		}
-}
-
+	}
 
 	Socket createSocket(AEData aeData) throws IOException {
         return tlsConfig.createSocket(aeData);
@@ -169,10 +168,10 @@ public class HPScpService extends AbstractScpService {
     }
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-		String[] tsuids = enable ? getTransferSyntaxUIDs() : null;
-        policy.putPresContext(UIDs.HangingProtocolStorage, tsuids);
-        policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, tsuids);
-        policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, tsuids);
-     }
+        String[] tsuids = enable ? valuesToStringArray(tsuidMap) : null;
+        policy.putPresContext(UIDs.HangingProtocolStorage, tsuids );
+        policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, tsuids );
+        policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, tsuids );
+    }
 
 }

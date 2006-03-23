@@ -44,12 +44,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.management.JMException;
@@ -65,7 +61,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -87,36 +82,52 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  */
 public class StoreScpService extends AbstractScpService {
 
-    private static final String[] MPEG2_TS = { UIDs.MPEG2 };
-
-    /** Map containing all image SOP Class UID. (key is name (as in config string), value is real uid) */
+    /** Map containing accepted Image SOP Class UID.
+     * key is name (as in config string), value is real uid) */
     private Map imageCUIDS = new LinkedHashMap();
 
-    /** Map containing all video SOP Class UID. (key is name (as in config string), value is real uid) */
+    /** Map containing accepted Image Transfer Syntax UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map imageTSUIDS = new LinkedHashMap();
+    
+    /** Map containing accepted Waveform SOP Class UID.
+     * key is name (as in config string), value is real uid) */
+    private Map waveformCUIDS = new LinkedHashMap();
+
+    /** Map containing accepted Waveform Transfer Syntax UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map waveformTSUIDS = new LinkedHashMap();
+
+    /** Map containing accepted Video SOP Class UID.
+     * key is name (as in config string), value is real uid) */
     private Map videoCUIDS = new LinkedHashMap();
 
-    /** Map containing all NOT image SOP Class UID. (key is name (as in config string), value is real uid) */
+    /** Map containing accepted Video Transfer Syntax UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map videoTSUIDS = new LinkedHashMap();
+
+    /** Map containing accepted SR SOP Class UID.
+     * key is name (as in config string), value is real uid) */
+    private Map srCUIDS = new LinkedHashMap();
+
+    /** Map containing accepted SR Transfer Syntax UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map srTSUIDS = new LinkedHashMap();
+
+    /** Map containing accepted other SOP Class UIDs.
+     * key is name (as in config string), value is real uid) */
     private Map otherCUIDS = new LinkedHashMap();
 
+    
     private ObjectName fileSystemMgtName;
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
-    private boolean acceptJPEGBaseline = true;
-    private boolean acceptJPEGExtended = true;
-    private boolean acceptJPEGLossless = true;
-    private boolean acceptJPEGLossless14 = true;
-    private boolean acceptJPEGLSLossless = true;
-    private boolean acceptJPEGLSLossy = true;
-    private boolean acceptJPEG2000Lossless = true;
-    private boolean acceptJPEG2000Lossy = true;
-    private boolean acceptRLELossless = false;
-
     private int bufferSize = 8192;
     private boolean md5sum = true;
     
     private StoreScp scp = new StoreScp(this);
-    
+
     public final boolean isMd5sum()
     {
         return md5sum;
@@ -303,135 +314,81 @@ public class StoreScpService extends AbstractScpService {
         scp.setUpdateDatabaseRetryInterval(interval);
     }
     
-    public final boolean isAcceptJPEG2000Lossless() {
-        return acceptJPEG2000Lossless;
-    }
-
-    public final void setAcceptJPEG2000Lossless(boolean accept) {
-        if ( this.acceptJPEG2000Lossless == accept ) return;
-        this.acceptJPEG2000Lossless = accept;
-        enableService();
-    }
-
-    public final boolean isAcceptJPEG2000Lossy() {
-        return acceptJPEG2000Lossy;
-    }
-
-    public final void setAcceptJPEG2000Lossy(boolean accept) {
-       if ( this.acceptJPEG2000Lossy == accept ) return;
-       this.acceptJPEG2000Lossy = accept;
-       enableService();
-    }
-
-    public final boolean isAcceptJPEGBaseline() {
-        return acceptJPEGBaseline;
-    }
-
-    public final void setAcceptJPEGBaseline(boolean accept) {
-        if ( this.acceptJPEGBaseline == accept ) return;
-        this.acceptJPEGBaseline = accept;
-        enableService();
-    }
-
-    public final boolean isAcceptJPEGExtended() {
-        return acceptJPEGExtended;
-    }
-
-    public final void setAcceptJPEGExtended(boolean accept) {
-        if ( this.acceptJPEGExtended == accept ) return;
-        this.acceptJPEGExtended = accept;
-        enableService();
-    }
-
-    public final boolean isAcceptJPEGLossless14() {
-        return acceptJPEGLossless14;
-    }
-
-    public final void setAcceptJPEGLossless14(boolean accept) {
-        if ( this.acceptJPEGLossless14 == accept ) return;
-        this.acceptJPEGLossless14 = accept;
-        enableService();
-    }
-
-    public final boolean isAcceptJPEGLossless() {
-        return acceptJPEGLossless;
-    }
-
-    public final void setAcceptJPEGLossless(boolean accept) {
-        if ( this.acceptJPEGLossless == accept ) return;
-        this.acceptJPEGLossless = accept;
-        enableService();
-    }
-
-    public final boolean isAcceptJPEGLSLossless() {
-        return acceptJPEGLSLossless;
-    }
-
-    public final void setAcceptJPEGLSLossless(boolean accept) {
-       if ( this.acceptJPEGLSLossless == accept ) return;
-       this.acceptJPEGLSLossless = accept;
-       enableService();
-    }
-
-    public final boolean isAcceptJPEGLSLossy() {
-        return acceptJPEGLSLossy;
-    }
-
-    public final void setAcceptJPEGLSLossy(boolean accept) {
-        if ( this.acceptJPEGLSLossy == accept ) return;
-        this.acceptJPEGLSLossy = accept;
-        enableService();
-    }
-
-    public final boolean isAcceptRLELossless() {
-        return acceptRLELossless;
-    }
-
-    public final void setAcceptRLELossless(boolean accept) {
-        if ( this.acceptRLELossless == accept ) return;
-        this.acceptRLELossless = accept;
-        enableService();
-    }
-
-    public String getImageCUIDs() {
+    public String getAcceptedImageSOPClasses() {
     	return toString(imageCUIDS);
     }
  
-	public void setImageCUIDs( String uids ) {
-		if ( getImageCUIDs().equals(uids)) return;
-    	Map map =parseUIDs(uids);
-    	updateBindings(imageCUIDS.values(), map.values());
-    	putPresContexts(null,imageCUIDS,null);
-    	putPresContexts(null,map,getImageTS());
-    	imageCUIDS.clear();
-    	imageCUIDS = map;
+	public void setAcceptedImageSOPClasses( String s ) {
+        updateAcceptedSOPClass(imageCUIDS, s, scp);
     }
 
-    public String getVideoCUIDs() {
+    public String getAcceptedTransferSyntaxForImageSOPClasses() {
+        return toString(imageTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForImageSOPClasses(String s) {
+        updateAcceptedTransferSyntax(imageTSUIDS, s);
+    }
+
+    public String getAcceptedVideoSOPClasses() {
         return toString(videoCUIDS);
     }
  
-    public void setVideoCUIDs( String uids ) {
-        if ( getVideoCUIDs().equals(uids)) return;
-        Map map =parseUIDs(uids);
-        updateBindings(videoCUIDS.values(), map.values());
-        putPresContexts(null,videoCUIDS,null);
-        putPresContexts(null,map,MPEG2_TS);
-        videoCUIDS.clear();
-        videoCUIDS = map;
+    public void setAcceptedVideoSOPClasses( String s ) {
+        updateAcceptedSOPClass(videoCUIDS, s, scp);
     }
 
-    public String getOtherCUIDs() {
-    	return toString(otherCUIDS);
+    public String getAcceptedTransferSyntaxForVideoSOPClasses() {
+        return toString(videoTSUIDS);
     }
-    public void setOtherCUIDs( String uids ) {
-		if ( getOtherCUIDs().equals(uids)) return;
-    	Map map = parseUIDs(uids);
-    	updateBindings(otherCUIDS.values(), map.values());
-    	putPresContexts(null,otherCUIDS,null);
-    	putPresContexts(null,map,getTransferSyntaxUIDs());
-    	otherCUIDS.clear();
-    	otherCUIDS = map;
+ 
+    public void setAcceptedTransferSyntaxForVideoSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(videoTSUIDS, s);
+    }
+
+    public String getAcceptedSRSOPClasses() {
+        return toString(srCUIDS);
+    }
+ 
+    public void setAcceptedSRSOPClasses( String s ) {
+        updateAcceptedSOPClass(srCUIDS, s, scp);
+    }
+
+    public String getAcceptedTransferSyntaxForSRSOPClasses() {
+        return toString(srTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForSRSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(srTSUIDS, s);
+    }
+
+    public String getAcceptedWaveformSOPClasses() {
+        return toString(waveformCUIDS);
+    }
+ 
+    public void setAcceptedWaveformSOPClasses(String s) {
+        updateAcceptedSOPClass(waveformCUIDS, s, scp);
+    }
+
+    public String getAcceptedTransferSyntaxForWaveformSOPClasses() {
+        return toString(waveformTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForWaveformSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(waveformTSUIDS, s);
+    }
+
+    public String getAcceptedOtherSOPClasses() {
+        return toString(otherCUIDS);
+    }
+
+    public void setAcceptedOtherSOPClasses(String s) {
+        updateAcceptedSOPClass(otherCUIDS, s, scp);
+    }
+
+
+    protected String[] getCUIDs() {
+        return valuesToStringArray(otherCUIDS);
     }
     
 	/**
@@ -449,168 +406,42 @@ public class StoreScpService extends AbstractScpService {
 		scp.setCheckIncorrectWorklistEntry(check);
 	}
 
-    /**
-     * Updates the service bindigs.
-     * <p>
-     * Add this storeSCP service for all SOP Class UIDs contained in newCUIDS.
-     * <p>
-     * Removes all bindings for CUIDs in oldCUIDS that are not in newCUIDS.
-     * <p>
-     * A <code>null</code> value means an empty list. (see <code>bindDcmServices, unbindDcmServices</code>)
-     * <p>
-     * Caution: oldCUIDS will be changed in this method if an item is also in newCUIDS! (item will be removed)
-     * 
-	 * @param oldCUIDS List of cuids already bind to this service.
-	 * @param newCUIDS List of cuids that should be bind to this service.
-	 * 
-	 */
-	private void updateBindings( Collection oldCUIDS, Collection newCUIDS) {
-		if ( dcmHandler == null ) return; //nothing to do!
-		DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
-		if ( oldCUIDS == null ) oldCUIDS = new ArrayList();
-		if ( newCUIDS == null ) newCUIDS = new ArrayList();
-		Iterator iter = newCUIDS.iterator();
-		String cuid;
-		while ( iter.hasNext() ) {
-			cuid = iter.next().toString();
-			if ( ! oldCUIDS.remove(cuid) ) {
-	            services.bind(cuid, scp);
-			}
-		}
-		iter = oldCUIDS.iterator();
-		while ( iter.hasNext() ) {
-	            services.unbind(iter.next().toString());
-		}
-	}
 
-	/**
-	 * @param imageCUIDS2
-	 * @return
-	 */
-	private String toString(Map uids) {
-		if ( uids == null || uids.isEmpty() ) return "";
-		String nl = System.getProperty("line.separator", "\n");
-		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
-		Iterator iter = uids.keySet().iterator();
-		while ( iter.hasNext() ) {
-			sb.append(iter.next()).append(nl);
-		}
-		return sb.toString();
-	}
-    
-    /**
-	 * @param uids
-	 * @return
-	 */
-	private Map parseUIDs(String uids) {
-        StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
-        String uid,name;
-        Map map = new LinkedHashMap();
-        while ( st.hasMoreTokens() ) {
-        	uid = st.nextToken().trim();
-    		name = uid;
-        	if ( isDigit(uid.charAt(0) ) ) {
-        		if ( ! UIDs.isValid(uid) ) 
-        			throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
-        	} else {
-        		uid = UIDs.forName( name );
-        	}
-        	map.put(name,uid);
-        }
-		return map;
-	}
 	
-	
-	/**
-	 * Simple digit check.
-	 * <p>
-	 * Checks only if char is between 0x30 and 0x39. (Not if type is DECIMAL_DIGIT_NUMBER)
-	 * 
-	 * @param c Char to test.
-	 * 
-	 * @return true if char is '0'-'9'
-	 */
-    private static boolean isDigit(char c) {
-        return c >= '0' && c <= '9';
-    }
-
-
 	protected void startService() throws Exception {
         super.startService();
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {
-        updateBindings(null,imageCUIDS.values());
-        updateBindings(null,videoCUIDS.values());
-        updateBindings(null,otherCUIDS.values());
+        bindAll(valuesToStringArray(imageCUIDS), scp);
+        bindAll(valuesToStringArray(videoCUIDS), scp);
+        bindAll(valuesToStringArray(srCUIDS), scp);
+        bindAll(valuesToStringArray(waveformCUIDS), scp);
+        bindAll(valuesToStringArray(otherCUIDS), scp);
         dcmHandler.addAssociationListener(scp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
-        updateBindings(imageCUIDS.values(),null);
-        updateBindings(videoCUIDS.values(),null);
-        updateBindings(otherCUIDS.values(),null);
+        unbindAll(valuesToStringArray(imageCUIDS));
+        unbindAll(valuesToStringArray(videoCUIDS));
+        unbindAll(valuesToStringArray(srCUIDS));
+        unbindAll(valuesToStringArray(waveformCUIDS));
+        unbindAll(valuesToStringArray(otherCUIDS));
         dcmHandler.removeAssociationListener(scp);
     }
 
-    private String[] getImageTS() {
-        ArrayList list = new ArrayList();
-        if (acceptJPEGLossless14) {
-            list.add(UIDs.JPEGLossless14);
-        }
-        if (acceptJPEGLossless) {
-            list.add(UIDs.JPEGLossless);
-        }
-        if (acceptJPEGLSLossless) {
-            list.add(UIDs.JPEGLSLossless);
-        }
-        if (acceptRLELossless) {
-            list.add(UIDs.RLELossless);
-        }
-        if (acceptJPEG2000Lossless) {
-            list.add(UIDs.JPEG2000Lossless);
-        }
-        if (acceptExplicitVRLE) {
-            list.add(UIDs.ExplicitVRLittleEndian);
-        }
-        list.add(UIDs.ImplicitVRLittleEndian);
-        if (acceptJPEGBaseline) {
-            list.add(UIDs.JPEGBaseline);
-        }
-        if (acceptJPEGExtended) {
-            list.add(UIDs.JPEGExtended);
-        }
-        if (acceptJPEGLSLossy) {
-            list.add(UIDs.JPEGLSLossy);
-        }
-        if (acceptJPEG2000Lossy) {
-            list.add(UIDs.JPEG2000Lossy);
-        }
-        return (String[]) list.toArray(new String[list.size()]);
-    }
-
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        putPresContexts(policy, imageCUIDS, enable ? getImageTS() : null);
-        putPresContexts(policy, videoCUIDS, enable ? MPEG2_TS : null);
-        putPresContexts(policy, otherCUIDS, enable ? getTransferSyntaxUIDs() : null);
+        putPresContexts(policy, valuesToStringArray(imageCUIDS),
+                enable ? valuesToStringArray(imageTSUIDS) : null);
+        putPresContexts(policy, valuesToStringArray(videoCUIDS),
+                enable ? valuesToStringArray(videoTSUIDS) : null);
+        putPresContexts(policy, valuesToStringArray(srCUIDS),
+                enable ? valuesToStringArray(srTSUIDS) : null);
+        putPresContexts(policy, valuesToStringArray(waveformCUIDS),
+                enable ? valuesToStringArray(waveformTSUIDS) : null);
+        putPresContexts(policy, valuesToStringArray(otherCUIDS),
+                enable ? valuesToStringArray(tsuidMap) : null);
     }
-
-    private void putPresContexts(AcceptorPolicy policy, Map cuids, String[] tsuids) {
-    	Iterator iter = cuids.values().iterator();
-        while (iter.hasNext()) {
-        	if ( policy == null ) {
-        		if ( dcmHandler == null ) return;
-        		AcceptorPolicy policies = dcmHandler.getAcceptorPolicy();
-        		String cuid = iter.next().toString();
-    	        for (int i = 0; i < calledAETs.length; ++i) {
-    	            policy = policies.getPolicyForCalledAET(calledAETs[i]);
-            		policy.putPresContext(cuid, tsuids);
-    	        }
-        	} else {
-        		policy.putPresContext(iter.next().toString(), tsuids);
-        	}
-        }
-     }
 
     public FileSystemDTO selectStorageFileSystem() throws DcmServiceException {
         try {

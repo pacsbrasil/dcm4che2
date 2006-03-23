@@ -43,7 +43,10 @@ import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
@@ -56,6 +59,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.server.DcmHandler;
@@ -78,11 +82,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected static final String ANY = "ANY";
     protected static final String NONE = "NONE";
 
-    protected static final String[] ONLY_DEFAULT_TS = { UIDs.ImplicitVRLittleEndian,};
-
-    protected static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian,};
-
     protected ObjectName dcmServerName;
 
     protected ObjectName auditLogName;
@@ -92,9 +91,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] calledAETs;
 
     protected String[] callingAETs;
-    
-    protected boolean acceptExplicitVRLE = true;
-    
+        
+    /** Map containing accepted Transfer Syntax UIDs.
+     * key is name (as in config string), value is real uid) */
+    protected Map tsuidMap = new LinkedHashMap();
+
     protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
     protected int maxOpsInvoked = 1;
     protected int maxOpsPerformed = 1;
@@ -227,14 +228,91 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         enableService();
     }
     
-    public final boolean isAcceptExplicitVRLE() {
-        return acceptExplicitVRLE;
+    protected void updateAcceptedSOPClass(Map cuidMap, String newval, DcmService scp) {
+        Map tmp = parseUIDs(newval);
+        if (cuidMap.keySet().equals(tmp.keySet())) return;
+        disableService();
+        if (scp != null)
+            unbindAll(valuesToStringArray(cuidMap));
+        cuidMap.clear();
+        cuidMap.putAll(tmp);
+        if (scp != null)
+            bindAll(valuesToStringArray(cuidMap), scp);
+        enableService();
+    }
+    
+//    protected String[] getTransferSyntaxUIDs() {
+//        return valuesToStringArray(tsuids);
+//    }
+
+    protected static String[] valuesToStringArray(Map tsuid) {
+         return (String[]) tsuid.values().toArray(new String[tsuid.size()]);
     }
 
-    public final void setAcceptExplicitVRLE(boolean acceptExplicitVRLE) {
-        if ( this.acceptExplicitVRLE == acceptExplicitVRLE ) return;
-        this.acceptExplicitVRLE = acceptExplicitVRLE;
+    protected void bindAll(String[] cuids, DcmService scp) {
+        if ( dcmHandler == null ) return; //nothing to do!
+        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
+        for (int i = 0; i < cuids.length; i++) {
+            services.bind(cuids[i], scp);
+        }
+    }
+
+    protected void unbindAll(String[]  cuids) {
+        if ( dcmHandler == null ) return; //nothing to do!
+        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
+        for (int i = 0; i < cuids.length; i++) {
+            services.unbind(cuids[i]);
+        }
+    }
+
+    public String getAcceptedTransferSyntax() {
+        return toString(tsuidMap);
+    }
+
+    public void setAcceptedTransferSyntax(String s) {
+        updateAcceptedTransferSyntax(tsuidMap, s);
+    }
+       
+    protected void updateAcceptedTransferSyntax(Map tsuidMap, String newval) {
+        Map tmp = parseUIDs(newval);
+        if (tsuidMap.keySet().equals(tmp.keySet())) return;
+        tsuidMap.clear();
+        tsuidMap.putAll(tmp);
         enableService();
+    }
+    
+    protected String toString(Map uids) {
+        if ( uids == null || uids.isEmpty() ) return "";
+        String nl = System.getProperty("line.separator", "\n");
+        StringBuffer sb = new StringBuffer();
+        Iterator iter = uids.keySet().iterator();
+        while ( iter.hasNext() ) {
+            sb.append(iter.next()).append(nl);
+        }
+        return sb.toString();
+    }
+    
+    protected static Map parseUIDs(String uids) {
+        StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
+        String uid,name;
+        Map map = new LinkedHashMap();
+        while ( st.hasMoreTokens() ) {
+            uid = st.nextToken().trim();
+            name = uid;
+            
+            if (isDigit(uid.charAt(0))) {
+                if ( ! UIDs.isValid(uid) ) 
+                    throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+            } else {
+                uid = UIDs.forName( name );
+            }
+            map.put(name,uid);
+        }
+        return map;
+    }
+    
+    private static boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
     }
     
     protected void startService() throws Exception {
@@ -255,12 +333,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected abstract void bindDcmServices(DcmServiceRegistry services);
 
     protected abstract void unbindDcmServices(DcmServiceRegistry services);
-
-    protected abstract void updatePresContexts(AcceptorPolicy policy, 
-            boolean enable);
     
-    protected String[] getTransferSyntaxUIDs() {
-        return acceptExplicitVRLE ? NATIVE_LE_TS : ONLY_DEFAULT_TS;
+    protected abstract void updatePresContexts(AcceptorPolicy policy, boolean enable);
+
+    protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
+            String[] tsuids) {
+        for (int i = 0; i < cuids.length; i++) {
+            policy.putPresContext(cuids[i], tsuids);
+        }
     }
 
     public File getLogFile(Date now, String callingAET, String suffix) {

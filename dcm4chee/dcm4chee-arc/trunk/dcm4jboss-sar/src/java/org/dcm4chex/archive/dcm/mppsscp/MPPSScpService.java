@@ -68,7 +68,7 @@ public class MPPSScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE_MPPS_RECEIVED = "org.dcm4chex.archive.dcm.mppsscp";
     public static final String EVENT_TYPE_MPPS_LINKED = "org.dcm4chex.archive.dcm.mppsscp#linked";
-
+    
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
 
 		private static final long serialVersionUID = 3688507684001493298L;
@@ -81,7 +81,7 @@ public class MPPSScpService extends AbstractScpService {
     private ObjectName hl7SendServiceName;
     
     private MPPSScp mppsScp = new MPPSScp(this);
-    
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }        
@@ -112,9 +112,9 @@ public class MPPSScpService extends AbstractScpService {
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         policy.putPresContext(UIDs.ModalityPerformedProcedureStep,
-                enable ? getTransferSyntaxUIDs() : null);
+                enable ? valuesToStringArray(tsuidMap) : null);
     }
-
+    
     void sendMPPSNotification(Dataset ds, String eventType) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(eventType, this, eventID);

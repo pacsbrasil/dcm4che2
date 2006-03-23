@@ -83,9 +83,9 @@ public class GPWLScpService extends AbstractScpService {
     }
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        policy.putPresContext(UIDs.GeneralPurposeWorklistInformationModelFIND,
-                enable ? getTransferSyntaxUIDs() : null);
-        policy.putPresContext(UIDs.GeneralPurposeScheduledProcedureStepSOPClass,
-                enable ? getTransferSyntaxUIDs() : null);
+        String[] tsuids = enable ? valuesToStringArray(tsuidMap) : null;
+        policy.putPresContext(UIDs.GeneralPurposeWorklistInformationModelFIND, tsuids);
+        policy.putPresContext(UIDs.GeneralPurposeScheduledProcedureStepSOPClass, tsuids);
     }
+
 }

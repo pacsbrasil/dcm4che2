@@ -45,6 +45,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -89,10 +90,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private static final String NONE = "NONE";
 
-    protected static final String[] DEFLATED_OR_NATIVE_LE_TS = {
-			UIDs.DeflatedExplicitVRLittleEndian, UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian,};
-	
     private static String transactionIsolationLevelAsString(int level) {
         switch (level) {
         	case 0:
@@ -154,28 +151,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private int maxStoreOpsInvoked = 0;
 
-    private boolean patientRootFind;
-
-    private boolean studyRootFind;
-
-    private boolean patientStudyOnlyFind;
-
-    private boolean tianiStudyRootFind;
-
-    private boolean tianiBlockedStudyRootFind;
-
-    private boolean tianiVMFStudyRootFind;
-	
-    private boolean acceptDeflatedBlockedFind;
-
-    private boolean acceptDeflatedVMFFind;
-
-    private boolean patientRootMove;
-
-    private boolean studyRootMove;
-
-    private boolean patientStudyOnlyMove;
-
     private FindScp dicomFindScp = new FindScp(this, true);
 
     private FindScp tianiFindScp = new FindScp(this, false);
@@ -200,6 +175,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
 	private Dataset virtualEnhancedMRConfig;
 
+    /** Map containing accepted SOP Class UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map standardCuidMap = new LinkedHashMap();
+
+
+    /** Map containing accepted private SOP Class UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map privateCuidMap = new LinkedHashMap();
+
+
+    /** Map containing accepted Transfer Syntax UIDs for private SOP Classes.
+     * key is name (as in config string), value is real uid) */
+    private Map privateTSuidMap = new LinkedHashMap();
+    
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -288,115 +277,29 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.fileSystemMgtName = fileSystemMgtName;
     }
 
-    public final boolean isAcceptPatientRootFind() {
-        return patientRootFind;
+    public String getAcceptedPrivateSOPClasses() {
+        return toString(privateCuidMap);
+    }
+ 
+    public void setAcceptedPrivateSOPClasses( String s ) {
+        updateAcceptedSOPClass(privateCuidMap, s, null);
     }
 
-    public final void setAcceptPatientRootFind(boolean enable) {
-	    if ( this.patientRootFind == enable ) return;
-        this.patientRootFind = enable;
-        enableService();
+    public String getAcceptedTransferSyntaxForPrivateSOPClasses() {
+        return toString(privateTSuidMap);
+    }
+ 
+    public void setAcceptedTransferSyntaxForPrivateSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(privateTSuidMap, s);
+    }
+    
+    public String getAcceptedStandardSOPClasses() {
+        return toString(standardCuidMap);
     }
 
- 	public final boolean isAcceptPatientRootMove() {
-        return patientRootMove;
+    public void setAcceptedStandardSOPClasses(String s) {
+        updateAcceptedSOPClass(standardCuidMap, s, null);
     }
-
-    public final void setAcceptPatientRootMove(boolean enable) {
-	    if ( this.patientRootMove == enable ) return;
-        this.patientRootMove = enable;
-        enableService();
-    }
-
-    public final boolean isAcceptPatientStudyOnlyFind() {
-        return patientStudyOnlyFind;
-    }
-
-    public final void setAcceptPatientStudyOnlyFind(boolean enable) {
-	    if ( this.patientStudyOnlyFind == enable ) return;
-        this.patientStudyOnlyFind = enable;
-        enableService();
-    }
-
-	public final boolean isAcceptVirtualMultiframeFind() {
-		return tianiVMFStudyRootFind;
-	}
-
-	public final void setAcceptVirtualMultiframeFind(boolean enable) {
-	    if ( this.tianiVMFStudyRootFind == enable ) return;
-		this.tianiVMFStudyRootFind = enable;
-        enableService();
-	}
-
-	public final boolean isAcceptPatientStudyOnlyMove() {
-        return patientStudyOnlyMove;
-    }
-
-    public final void setAcceptPatientStudyOnlyMove(boolean patientStudyOnlyMove) {
-	    if ( this.patientStudyOnlyMove == patientStudyOnlyMove ) return;
-        this.patientStudyOnlyMove = patientStudyOnlyMove;
-        enableService();
-    }
-
-    public final boolean isAcceptStudyRootFind() {
-        return studyRootFind;
-    }
-
-    public final void setAcceptStudyRootFind(boolean enable) {
-        if ( this.studyRootFind == enable ) return;
-        this.studyRootFind = enable;
-        enableService();
-    }
-
-    public final boolean isAcceptPrivateStudyRootFind() {
-        return tianiStudyRootFind;
-    }
-
-    public final void setAcceptPrivateStudyRootFind(boolean enable) {
-       if ( this.tianiStudyRootFind == enable ) return;
-       this.tianiStudyRootFind = enable;
-        enableService();
-    }
-
-	public final boolean isAcceptBlockedStudyRootFind() {
-		return tianiBlockedStudyRootFind;
-	}
-
-	public final void setAcceptBlockedStudyRootFind(boolean enable) {
-	    if ( this.tianiBlockedStudyRootFind == enable ) return;
-		this.tianiBlockedStudyRootFind = enable;
-        enableService();
-	}
-
-    public final boolean isAcceptStudyRootMove() {
-        return studyRootMove;
-    }
-
-    public final void setAcceptStudyRootMove(boolean studyRootMove) {
-	    if ( this.studyRootMove == studyRootMove ) return;
-        this.studyRootMove = studyRootMove;
-        enableService();
-    }
-
-    public final boolean isAcceptDeflatedBlockedFind() {
-		return acceptDeflatedBlockedFind;
-	}
-
-	public final void setAcceptDeflatedBlockedFind(boolean enable) {
-	    if ( this.acceptDeflatedBlockedFind == enable ) return;
-		this.acceptDeflatedBlockedFind = enable;
-        enableService();
-	}
-
-    public final boolean isAcceptDeflatedVirtualMultiframeFind() {
-		return acceptDeflatedVMFFind;
-	}
-
-	public final void setAcceptDeflatedVirtualMultiframeFind(boolean enable) {
-	    if ( this.acceptDeflatedVMFFind == enable ) return;
-		this.acceptDeflatedVMFFind = enable;
-        enableService();
-	}
 
 	public final int getAcTimeout() {
         return acTimeout;
@@ -537,16 +440,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 		return maxBlockedFindRSP;
 	}
 
-	protected String[] getBlockedFindTransferSyntaxUIDs() {
-        return acceptDeflatedBlockedFind ? DEFLATED_OR_NATIVE_LE_TS
-				: getTransferSyntaxUIDs();
-    }
-	
-	protected String[] getVMFFindTransferSyntaxUIDs() {
-        return acceptDeflatedVMFFind ? DEFLATED_OR_NATIVE_LE_TS
-				: getTransferSyntaxUIDs();
-    }
-	
 	protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
@@ -596,39 +489,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     };
 
-	private void updatePC(AcceptorPolicy policy, String cuid, boolean enable) {
-        policy.putPresContext(cuid, enable ? getTransferSyntaxUIDs() : null);
-        policy.putExtNegPolicy(cuid, enable ? ECHO_EXT_NEG : null);
-    }
-    
-    private void updateBlockedFindPC(AcceptorPolicy policy, String cuid, boolean enable) {
-        policy.putPresContext(cuid, enable ? getBlockedFindTransferSyntaxUIDs() : null);
-        policy.putExtNegPolicy(cuid, enable ? ECHO_EXT_NEG : null);
-    }
-    
-    private void updateVMFFindPC(AcceptorPolicy policy, String cuid, boolean enable) {
-        policy.putPresContext(cuid, enable ? getVMFFindTransferSyntaxUIDs() : null);
-    }
-    
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        updatePC(policy, UIDs.PatientRootQueryRetrieveInformationModelFIND,
-                enable && patientRootFind);
-        updatePC(policy, UIDs.StudyRootQueryRetrieveInformationModelFIND,
-                enable && studyRootFind);
-        updatePC(policy, UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND,
-                enable && patientStudyOnlyFind);
-        updatePC(policy, UIDs.TianiStudyRootQueryRetrieveInformationModelFIND,
-                enable && tianiStudyRootFind);
-		updateBlockedFindPC(policy, UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
-                enable && tianiBlockedStudyRootFind);
-		updateVMFFindPC(policy, UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
-                enable && tianiVMFStudyRootFind);
-        updatePC(policy, UIDs.PatientRootQueryRetrieveInformationModelMOVE,
-                enable && patientRootMove);
-        updatePC(policy, UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-                enable && studyRootMove);
-        updatePC(policy, UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
-                enable && patientStudyOnlyMove);
+        putPresContexts(policy, valuesToStringArray(privateCuidMap),
+                enable ? valuesToStringArray(privateTSuidMap) : null);
+        putPresContexts(policy, valuesToStringArray(standardCuidMap),
+                enable ? valuesToStringArray(tsuidMap) : null);
+    }
+    
+    protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
+            String[] tsuids) {
+        super.putPresContexts(policy, cuids, tsuids);        
+        ExtNegotiator neg = tsuids != null ? ECHO_EXT_NEG : null;
+        for (int i = 0; i < cuids.length; i++) {
+            policy.putExtNegPolicy(cuids[i], neg);            
+        }
     }
 
     public AEData queryAEData(String aet, InetAddress address) throws DcmServiceException,
@@ -799,6 +673,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 					"Failed to load VMF COnfiguration from " + file);
 		}
 		return ds;
-	}    
+	}
 
 }

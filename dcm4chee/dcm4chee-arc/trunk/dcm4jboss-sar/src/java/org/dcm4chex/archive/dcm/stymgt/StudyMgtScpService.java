@@ -65,7 +65,7 @@ public class StudyMgtScpService extends AbstractScpService {
     };
 
     private StudyMgtScp stymgtScp = new StudyMgtScp(this);
-
+    
 	/**
 	 * @return Returns the ignoreDeleteFailed.
 	 */
@@ -95,11 +95,11 @@ public class StudyMgtScpService extends AbstractScpService {
 		services.unbind(UIDs.TianiStudyManagement);		
 	}
 
-	protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         policy.putPresContext(UIDs.TianiStudyManagement,
-                enable ? getTransferSyntaxUIDs() : null);
+                enable ? valuesToStringArray(tsuidMap) : null);
     }
-
+    
     void sendStudyMgtNotification(ActiveAssociation assoc, int cmdField,
 			int actionTypeID, String iuid, Dataset ds) {
 		Association a = assoc.getAssociation();

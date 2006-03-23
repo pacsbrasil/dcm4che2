@@ -115,7 +115,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 	private static final int ERR_ASSOC_RJ = -1;
 
 	private static final int PCID_STGCMT = 1;
-	
+
     private ObjectName fileSystemMgtName;
     
     private String queueName = "StgCmtScuScp";
@@ -264,7 +264,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         if (enable) {
             policy.putPresContext(UIDs.StorageCommitmentPushModel,
-                    getTransferSyntaxUIDs());
+                    valuesToStringArray(tsuidMap));
             policy.putRoleSelection(UIDs.StorageCommitmentPushModel, true, true);
         } else {
             policy.putPresContext(UIDs.StorageCommitmentPushModel, null);
@@ -411,7 +411,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 		rq.setCalledAET(aet);
 		rq.setCallingAET(order.getCallingAET());
 		rq.addPresContext(af.newPresContext(PCID_STGCMT,
-				UIDs.StorageCommitmentPushModel, NATIVE_LE_TS));
+				UIDs.StorageCommitmentPushModel, valuesToStringArray(tsuidMap)));
 		if (order.isScpRole()) {
 			rq.addRoleSelection(af.newRoleSelection(
 					UIDs.StorageCommitmentPushModel, false, true));

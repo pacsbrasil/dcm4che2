@@ -39,6 +39,9 @@
 
 package org.dcm4chex.archive.dcm.ppsscp;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 
@@ -67,7 +70,7 @@ public class PPSScpService extends AbstractScpService {
     };
     
     private PPSScp mppsScp = new PPSScp(this);
-    
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.GeneralPurposePerformedProcedureStepSOPClass, mppsScp);
     }
@@ -78,10 +81,9 @@ public class PPSScpService extends AbstractScpService {
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         policy.putPresContext(UIDs.GeneralPurposePerformedProcedureStepSOPClass,
-                enable ? getTransferSyntaxUIDs() : null);
+                enable ? valuesToStringArray(tsuidMap) : null);
     }
-
-
+        
     void sendPPSNotification(Dataset ds) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE, this, eventID);
