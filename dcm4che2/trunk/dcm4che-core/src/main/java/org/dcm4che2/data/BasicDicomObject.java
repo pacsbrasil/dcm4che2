@@ -89,6 +89,7 @@ public class BasicDicomObject extends AbstractDicomObject
 
     public BasicDicomObject(DicomObject defaults, int capacity)
     {
+        this.defaults = defaults;
         this.table = new IntHashtable(capacity);
     }
 
