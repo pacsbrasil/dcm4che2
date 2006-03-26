@@ -96,7 +96,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
 	private static final String[] EMPTY = {};
 
-    private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID, Tags.SOPInstanceUID};
+    private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID, Tags.SOPInstanceUID, Tags.RefGPSPSSeq };
 
 	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
