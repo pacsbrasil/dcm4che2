@@ -4,7 +4,7 @@
     <property file="build.properties" />
 
     <property name="version" value="2.8.0"/>
-    <property name="dist.jboss.conf" value="dcmcdw"/>
+    <property name="dist.jboss.conf" value="default"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
     <property name="dist.src" value="dcmcdw-src-${version}"/>
     <property name="dist.standalone" value="dcmcdw-standalone-${version}"/>
@@ -16,7 +16,7 @@
     <property name="fop.home" value="${user.home}/fop-0.20.5"/>
 
     <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="../dcm4che14/build/dcm4che-1.3.23"/>
+	<property name="dcm4che.home" value="../dcm4che14/build/dcm4che-1.3.25"/>
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>	
 
     <property name="src.dir" value="${basedir}/src/java"/>
@@ -30,7 +30,7 @@
     <path id="build.path">
         <pathelement location="${dcm4che.home}/lib/dcm4che.jar"/>
         <pathelement location="${fop.home}/build/fop.jar"/>
-    	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
+    	  <pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-system.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
@@ -168,6 +168,7 @@
    			</zipfileset>	
 			<zipfileset dir="${basedir}" prefix="${dist.standalone}">
 				<include name="bin/*"/>
+				<include name="lib/endorsed/*"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
 				<include name="bin/run.bat"/>
@@ -179,6 +180,7 @@
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
 				<include name="lib/**"/>
+				<exclude name="lib/endorsed/xalan.jar"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
 				<include name="bin/run.sh"/>
@@ -198,7 +200,7 @@
 				<include name="deploy/jbossweb-tomcat55.sar/**"/>
 				<include name="deploy/jms/hsqldb-jdbc2-service.xml"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
-        		<include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
+        <include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
 				<include name="deploy/jmx-console.war/**"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
 				<include name="deploy/jbossjca-service.xml"/>

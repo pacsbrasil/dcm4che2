@@ -2,11 +2,11 @@ Institution:
 
     This disk was created by:
 
-    Tiani Medgraph AG
+    Agfa HealthCare
     Diefenbachgasse 35
     A - 1150 Vienna
     Austria/Europe
-    http://www.tiani.com 
+    http://www.agfa.com 
 
 
 Media Creator Application:
@@ -22,7 +22,7 @@ Contact Information:
     it were generated, please contact:
  
     Gunter Zeilinger
-    Tiani Medgraph AG
+    Agfa HealthCare
     Diefenbachgasse 35
     A - 1150 Vienna
     Austria/Europe 

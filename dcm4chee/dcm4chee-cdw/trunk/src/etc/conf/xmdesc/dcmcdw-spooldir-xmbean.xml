@@ -27,7 +27,7 @@
       setMethod="setArchiveDirPath">
       <description>Path of Archive Spool Directory, where the DICOM
       Storage SCP files received DICOM instances. Relative path names will be
-      resolved against directory $DCMCDW_HOME/server/dcmcdw/data/."
+      resolved against directory $DCMCDW_HOME/server/default/data/."
       </description>
       <name>ArchiveDirPath</name>
       <type>java.lang.String</type>      
@@ -43,7 +43,7 @@
       <name>NumberOfArchiveBuckets</name>
       <type>int</type>      
       <descriptors>
-         <value value="37" />
+         <value value="337" />
       </descriptors>
    </attribute>
    <attribute access="read-only"

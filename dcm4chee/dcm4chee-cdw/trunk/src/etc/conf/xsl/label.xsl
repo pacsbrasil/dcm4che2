@@ -61,9 +61,9 @@
                 </fo:block>
             </xsl:when>
             <xsl:otherwise>
-                <!-- Include TIANI Logo -->
+                <!-- Include Agfa Logo -->
                 <fo:block text-align="center">
-                    <fo:external-graphic src="tiani_logo.jpg"/>
+                    <fo:external-graphic src="agfa_logo.jpg"/>
                 </fo:block>
             </xsl:otherwise>
         </xsl:choose>
@@ -75,7 +75,7 @@
                 <fo:external-graphic src="ihe_logo.jpg"/>
             </fo:block>
             <fo:block>PDI - Demo</fo:block>
-            <fo:block>RSNA 2004</fo:block>
+            <fo:block>IHE-E 2006</fo:block>
         </fo:wrapper>
     </xsl:template>
     <xsl:template match="dicomdir" mode="right">
@@ -85,12 +85,12 @@
                     <xsl:with-param name="date" select="$today"/>
                 </xsl:call-template>
             </fo:block>
-            <fo:block>by <fo:inline font-weight="bold">Tiani Medgraph AG</fo:inline>
+            <fo:block>by <fo:inline font-weight="bold">Agfa HealthCare</fo:inline>
             </fo:block>
             <fo:block>Diefenbachgasse 35</fo:block>
             <fo:block>A -1150 Vienna</fo:block>
             <fo:block>Austria/Europe</fo:block>
-            <fo:block>http://www.tiani.com</fo:block>
+            <fo:block>http://www.agfa.com</fo:block>
         </fo:wrapper>
     </xsl:template>
     <xsl:template match="dicomdir" mode="upper">

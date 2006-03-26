@@ -98,7 +98,7 @@ public class StoreScpService extends AbstractScpService {
             UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
             UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
             UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-            UIDs.MultiframeColorSecondaryCaptureImageStorage,
+            UIDs.MultiframeTrueColorSecondaryCaptureImageStorage,
             UIDs.XRayAngiographicImageStorage,
             UIDs.XRayRadiofluoroscopicImageStorage,
             UIDs.XRayAngiographicBiPlaneImageStorageRetired,

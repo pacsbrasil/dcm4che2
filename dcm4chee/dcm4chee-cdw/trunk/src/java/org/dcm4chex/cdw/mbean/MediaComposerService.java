@@ -114,6 +114,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     //    private boolean createIcon = true;
 
+    private String hyperlinkCase = "UPPER";
+
     private int iconWidth = 64;
 
     private int iconHeight = 64;
@@ -127,7 +129,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private boolean makeIsoImage = true;
 
     private boolean logXml = false;
-
+    
     private Set valuesForIncludeWeb = new HashSet();
 
     private Set valuesForIncludeMd5Sums = new HashSet();
@@ -296,6 +298,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
             if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == ' ' || c == '_')) { throw new IllegalArgumentException(
                     "Illegal CS:" + s); }
         }
+    }
+
+    public final String getHyperlinkCase() {
+        return hyperlinkCase;
+    }
+
+    public final void setHyperlinkCase(String s) {
+        this.hyperlinkCase = s.equalsIgnoreCase("lower") ? "lower" : "UPPER";
     }
 
     public final int getIconHeight() {

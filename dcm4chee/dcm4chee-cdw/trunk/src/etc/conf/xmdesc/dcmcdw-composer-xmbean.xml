@@ -41,7 +41,7 @@
       <description>Defines Format of created Label file. 
       NO(=no Label File), PDF or PS(=Postscript).
       </description>
-      <name>LableFileFormat</name>
+      <name>LabelFileFormat</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="NO" />
@@ -143,6 +143,17 @@
       <type>[Ljava.lang.String;</type>      
       <descriptors>
          <value value="FOR_PHYSICIAN,FOR_PATIENT,FOR_TEACHING,FOR_RESEARCH" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getHyperlinkCase"
+      setMethod="setHyperlinkCase">
+      <description>Defines case of letters in hyperlinks (UPPER, lower).
+      </description>
+      <name>HyperlinkCase</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="lower" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

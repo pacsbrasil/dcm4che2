@@ -377,6 +377,7 @@ class DicomDirDOM {
             t.setParameter("size", String.valueOf(rq.getVolsetSize()));
             t.setParameter("today", new SimpleDateFormat("yyyyMMdd")
                     .format(rq.getTimestamp()));
+            t.setParameter("linkcase", service.getHyperlinkCase());
             t.transform(new DOMSource(doc), result);
         } catch (TransformerConfigurationException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
