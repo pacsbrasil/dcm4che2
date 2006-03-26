@@ -148,7 +148,11 @@
    <attribute access="read-write"
       getMethod="getHyperlinkCase"
       setMethod="setHyperlinkCase">
-      <description>Defines case of letters in hyperlinks (UPPER, lower).
+      <description>Defines case of letters in hyperlinks ('UPPER' or 'lower') in
+        generated XHTML files. Should be set to 'lower' for pure ISO9660 
+        filesystem without Rock Ridge or Joliet extensions (configurable by
+        attributes of MakeIsoImage service), to promote interoperability across
+        O/S Platforms.
       </description>
       <name>HyperlinkCase</name>
       <type>java.lang.String</type>      

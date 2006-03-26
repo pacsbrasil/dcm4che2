@@ -57,7 +57,8 @@
               </td>
             </tr>
           </table>
-          <table border="0" cellspacing="1" cellpadding="1">
+          <p> </p>
+          <table border="1" cellspacing="0" cellpadding="2">
             <tr align="left">
               <th>Patient Name</th>
               <th>ID</th>
@@ -98,7 +99,8 @@
               </td>
             </tr>
           </table>
-          <table border="0" cellspacing="1" cellpadding="1">
+          <p> </p>
+          <table border="1" cellspacing="0" cellpadding="2">
             <tr align="left">
               <th>Study Date/Time</th>
               <th>ID</th>
@@ -134,7 +136,8 @@
               </td>
             </tr>
           </table>
-          <table border="0" cellspacing="1" cellpadding="1">
+          <p> </p>
+          <table border="1" cellspacing="0" cellpadding="2">
             <tr align="left">
               <th>Series</th>
               <th>Time</th>
