@@ -180,7 +180,7 @@ public abstract class MWLItemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="perf_phys_fname"
+     * @ejb.persistence column-name="perf_physician"
      */
     public abstract String getPerformingPhysicianName();
     public abstract void setPerformingPhysicianName(String name);
