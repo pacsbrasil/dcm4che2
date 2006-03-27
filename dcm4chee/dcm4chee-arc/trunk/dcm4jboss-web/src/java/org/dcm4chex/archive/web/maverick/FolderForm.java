@@ -129,7 +129,7 @@ public class FolderForm extends BasicFolderForm {
         if (form == null) {
             form = new FolderForm(request);
             try {
-				URL wadoURL = new URL( "http", request.getServerName(), 
+				URL wadoURL = new URL( request.isSecure() ? "https" : "http", request.getServerName(),
 						request.getServerPort(), "/dcm4jboss-wado/");
 				form.setWadoBaseURL( wadoURL.toString() );
 				URL url = new URL( "http", request.getServerName(), 
