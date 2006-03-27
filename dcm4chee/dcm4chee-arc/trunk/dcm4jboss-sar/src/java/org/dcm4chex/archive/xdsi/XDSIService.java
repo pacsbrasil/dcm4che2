@@ -146,6 +146,8 @@ public class XDSIService extends ServiceMBeanSupport {
 
     private ObjectName pixQueryServiceName;
     private String affinityDomain;
+    private String keystoreURL = "resource:identity.p12";
+	private String keystorePassword;
     private String trustStoreURL = "resource:cacerts.jks";
 	private String trustStorePassword;
 	private HostnameVerifier origHostnameVerifier = null;
@@ -353,6 +355,24 @@ public class XDSIService extends ServiceMBeanSupport {
 		this.proxyPort = proxyPort;
 	}
 	/**
+	 * @param keyStorePassword The keyStorePassword to set.
+	 */
+	public void setKeystorePassword(String keyStorePassword) {
+		this.keystorePassword = keyStorePassword;
+	}
+	/**
+	 * @return Returns the keyStoreURL.
+	 */
+	public String getKeystoreURL() {
+		return keystoreURL;
+	}
+	/**
+	 * @param keyStoreURL The keyStoreURL to set.
+	 */
+	public void setKeystoreURL(String keyStoreURL) {
+		this.keystoreURL = keyStoreURL;
+	}
+	/**
 	 * @return Returns the trustStore.
 	 */
 	public String getTrustStoreURL() {
@@ -494,6 +514,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		File propFile = FileUtils.resolve(this.propertyFile);
 		BufferedInputStream bis= new BufferedInputStream( new FileInputStream( propFile ));
 		try {
+			metadataProps.clear();
 			metadataProps.load(bis);
 		} finally {
 			bis.close();
@@ -624,6 +645,9 @@ public class XDSIService extends ServiceMBeanSupport {
 				System.setProperty(protocol+".proxyPort", "");
 			}
 			if ( "https".equals(protocol) && trustStoreURL != null ) {
+				System.setProperty("javax.net.ssl.keyStore", keystoreURL);
+				System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
+				System.setProperty("javax.net.ssl.keyStoreType","PKCS12");
 				System.setProperty("javax.net.ssl.trustStore", trustStoreURL);
 				System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
 				if ( origHostnameVerifier == null) {
