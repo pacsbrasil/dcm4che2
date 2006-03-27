@@ -100,15 +100,15 @@ public class XDSIExportDelegate {
     	contentItems.addAll(items);
     	Dataset keyObjectDS = getKeyObject( xdsiModel.getInstances(), rootInfo, contentItems);
         try {
-            server.invoke(xdsiServiceName,
+            Boolean b = (Boolean) server.invoke(xdsiServiceName,
                     "sendSOAP",
                     new Object[] { keyObjectDS, xdsiModel.listMetadataProperties() },
                     new String[] { Dataset.class.getName(), Properties.class.getName() });
+            return b.booleanValue();
         } catch (Exception e) {
             log.warn("Failed to export Selection:", e);
             throw e;
         }
-    	return true;
     }
     
 	private Collection getObserverContextItems(String personName) {

@@ -103,8 +103,12 @@ public class XDSIExportCtrl extends Dcm4JbossFormController {
         	}
 
             if ( rq.getParameter("export") != null || rq.getParameter("export.x") != null ) {
-	        	delegate.exportXDSI(model);
+	        	if ( ! delegate.exportXDSI(model) ) {
+	        		model.setPopupMsg("XDS-I Export failed!");
+	        		return XDSI_EXPORT;
+	        	}
 	    		clear(model, false);
+	    		FolderForm.setExternalPopupMsg(getCtx(), "XDS-I Export done!");
 	        	return SUCCESS;//export done
         	}
             return XDSI_EXPORT;//Show selection page for authorRole, ... selection
