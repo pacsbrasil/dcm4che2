@@ -24,7 +24,7 @@
       <name>DocRepositoryURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/test?testid=11746"/>
+         <value value="http://localhost:8080/dcm4jboss-xds/XDSRepository"/>
       </descriptors>
    </attribute>
 
@@ -34,7 +34,7 @@
       <name>ProxyHost</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="proxy-wn"/>
+         <value value="NONE"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getProxyPort" setMethod="setProxyPort">
@@ -47,6 +47,29 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getKeystoreURL"
+      setMethod="setKeystoreURL">
+      <description>URL of keystore containing certificate to identify this Document Source,
+         when running in TLS mode.
+      </description>
+      <name>KeystoreURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:web.client.keystore" />
+      </descriptors>
+   </attribute>
+   <attribute access="write-only"
+      setMethod="setKeystorePassword">
+      <description>The password for access to keystore,
+      specified by attribute TrustStoreURL.
+      </description>
+      <name>KeystorePassword</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="secret" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTrustStoreURL"
       setMethod="setTrustStoreURL">
       <description>URL of trust store containing accepted certificates,
@@ -55,7 +78,7 @@
       <name>TrustStoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:cacerts.jks" />
+         <value value="resource:web.client.truststore" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
@@ -89,7 +112,7 @@
       <name>MetadataPropertyFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-xdsi/metadata.conf"/>
+         <value value="conf/dcm4jboss-xdsi/nist/metadata.conf"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getDocTitleCodeListFile" setMethod="setDocTitleCodeListFile">
@@ -100,7 +123,7 @@
       <name>DocTitleCodeListFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-xdsi/docTitleCodes.txt"/>
+         <value value="conf/dcm4jboss-xdsi/nist/docTitleCodes.txt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getEventCodeListFile" setMethod="setEventCodeListFile">
@@ -111,7 +134,7 @@
       <name>EventCodeListFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-xdsi/eventCodes.txt"/>
+         <value value="conf/dcm4jboss-xdsi/nist/eventCodes.txt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getClassCodeListFile" setMethod="setClassCodeListFile">
@@ -122,7 +145,7 @@
       <name>ClassCodeListFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-xdsi/classCodes.txt"/>
+         <value value="conf/dcm4jboss-xdsi/nist/classCodes.txt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getContentTypeCodeListFile" setMethod="setContentTypeCodeListFile">
@@ -133,7 +156,7 @@
       <name>ContentTypeCodes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-xdsi/contentTypeCodes.txt"/>
+         <value value="conf/dcm4jboss-xdsi/nist/contentTypeCodes.txt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getHealthCareFacilityCodeListFile" setMethod="setHealthCareFacilityCodeListFile">
@@ -144,7 +167,7 @@
       <name>HealthCareFacilityTypeCode</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4jboss-xdsi/healthCareFacilityTypeCodes.txt"/>
+         <value value="conf/dcm4jboss-xdsi/nist/healthCareFacilityTypeCodes.txt"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getConfidentialityCodes" setMethod="setConfidentialityCodes">
@@ -170,7 +193,7 @@
       <name>AuthorPersonMapping</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="DCM4JBOSS"/>
+         <value value="DCM4JBOSS^^^XDSITEST"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getAuthorRoles" setMethod="setAuthorRoles">
