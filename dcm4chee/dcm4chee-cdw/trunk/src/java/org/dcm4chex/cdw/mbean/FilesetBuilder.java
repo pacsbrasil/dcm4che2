@@ -110,7 +110,7 @@ class FilesetBuilder {
 
     private static final char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5',
             '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
+    
     private static final UIDGenerator uidgen = UIDGenerator.getInstance();
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -294,13 +294,33 @@ class FilesetBuilder {
             FileMetaInfo fmi = ds.getFileMetaInfo();
             String tsuid = fmi.getTransferSyntaxUID();
 
-            String pid = ds.getString(Tags.PatientID);
-            if (pid == null)
-                    throw new MediaCreationException(
-                            ExecutionStatusInfo.DIR_PROC_ERR,
-                            "Missing Patient ID in instance[uid=" + iuid + "]");
             String suid = ds.getString(Tags.StudyInstanceUID);
             String seruid = ds.getString(Tags.SeriesInstanceUID);
+            String pid = ds.getString(Tags.PatientID);
+            if (pid == null) {
+                pid = suid;
+                ds.putLO(Tags.PatientID, suid);
+                log.info("Missing Patient ID in instance[uid=" + iuid + 
+                        "] - use Study Instance UID " + pid + " as Patient ID");
+            }
+            String sid = ds.getString(Tags.StudyID);
+            if (sid == null) {
+                sid = Integer.toString(suid.hashCode());
+                ds.putSH(Tags.StudyID, sid);
+                log.info("Missing Study ID in instance[uid=" + iuid + 
+                        "] - use hash of Study Instance UID " + sid + " as Study ID");
+            }
+            // ensure TYPE 2 Attributes in DICOMDIR record
+            if (ds.vm(Tags.AccessionNumber) == -1) {
+                ds.putLO(Tags.AccessionNumber); 
+            }
+            if (ds.vm(Tags.StudyDescription) == -1) {
+                ds.putLO(Tags.StudyDescription); 
+            }
+            if (ds.vm(Tags.PatientName) == -1) {
+                ds.putLO(Tags.PatientName); 
+            }            
+
             fileIDs = makeFileIDs(pid, suid, seruid, iuid);
             Pair serRec = (Pair) serRecs.get(seruid);
             if (serRec == null) {

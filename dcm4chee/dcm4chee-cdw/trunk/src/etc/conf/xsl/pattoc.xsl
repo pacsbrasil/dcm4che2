@@ -8,11 +8,6 @@
       <html>
         <head>
           <title>Patients</title>
-          <link rel="stylesheet" type="text/css">
-            <xsl:call-template name="href">
-              <xsl:with-param name="value" select="'STYLE.CSS'"/>
-            </xsl:call-template>
-          </link>
         </head>
         <body>
           <table>

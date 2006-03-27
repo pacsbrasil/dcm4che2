@@ -7,7 +7,6 @@
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
   <xsl:include href="common.xsl"/>
   <xsl:include href="pattoc.xsl"/>
-  <xsl:include href="select.xsl"/>
   <xsl:include href="home.xsl"/>
   <xsl:template match="/">
     <xsl:variable name="pagetitle">
@@ -46,7 +45,6 @@
       </frameset>
     </html>
     <xsl:apply-templates select="dicomdir" mode="toc"/>
-    <xsl:apply-templates select="dicomdir" mode="select"/>
     <xsl:apply-templates select="dicomdir" mode="home">
       <xsl:with-param name="pagetitle" select="$pagetitle"/>
     </xsl:apply-templates>
