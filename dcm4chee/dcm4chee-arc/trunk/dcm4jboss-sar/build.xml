@@ -35,6 +35,7 @@
     <!-- Override with your dcm4jboss-web dist location -->
 	<property name="dcm4jboss-web.home" value="../dcm4jboss-web"/>		
 	<property name="dcm4jboss-web.target" value="${dcm4jboss-web.home}/target"/>		
+	<property name="dcm4jboss-web.etc" value="${dcm4jboss-web.home}/src/etc"/>		
 
     <!-- Override with your dcm4jboss-arr dist location -->
 	<property name="dcm4jboss-arr.home" value="../dcm4jboss-arr"/>		
@@ -45,6 +46,9 @@
     <!-- Override with your dcm4jboss-wado dist location -->
 	<property name="dcm4jboss-wado.home" value="../dcm4jboss-wado"/>		
 	<property name="dcm4jboss-wado.target" value="${dcm4jboss-wado.home}/target"/>		
+	
+    <!-- Override with your dcm4jboss-xds dist location -->
+	<property name="dcm4jboss-xds.home" value="../dcm4jboss-xds"/>		
 	
     <!-- Override with your FOP dist location -->
     <property name="fop.home" value="${user.home}/fop-0.20.5"/>
@@ -218,6 +222,9 @@
    		<!-- WADO -->
    		<available file="${dcm4jboss-wado.home}" property="dcm4jboss-wado.home.present"/>
    		<antcall target="wado-dist"/>
+   		<!-- XDS -->
+   		<available file="${dcm4jboss-xds.home}" property="dcm4jboss-xds.home.present"/>
+   		<antcall target="xds-dist"/>
    			
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
@@ -330,6 +337,9 @@
 				<include name="lib/avalon-framework-cvs-20020806.jar"/>				
 				<include name="lib/batik.jar"/>				
 			</zipfileset>
+			<zipfileset dir="${dist.dir}" prefix="${dist.standalone}">
+				<include name="dcm4jboss-web.cfg/**"/>
+			</zipfileset>
 		</zip>
    	</target>
 
@@ -341,6 +351,12 @@
    				<include name="deploy/*.war"/>
    			</fileset>
    		</copy>
+   		<copy todir="${dist.dir}">
+   			<fileset dir="${dcm4jboss-web.etc}">
+   				<include name="dcm4jboss-web.cfg/*"/>
+  			</fileset>
+   		</copy>
+    	
     </target>
 	
     <!-- HL7 distribution -->
@@ -365,6 +381,15 @@
 			<property name="deploy.root" value="${dist.dir}/common"/>
 		</ant>
     </target>
+
+	<!-- XDS distribution -->
+    <target name="xds-dist" if="dcm4jboss-xds.home.present">
+    	<echo>Deploy XDS</echo>
+		<ant antfile="${dcm4jboss-xds.home}/build.xml" target="deploy" inheritAll="false" >
+			<property name="deploy.root" value="${dist.dir}/common"/>
+		</ant>
+    </target>
+	
    	<!-- =================================================================== -->
    	<!-- Cleans up the current build                                         -->
    	<!-- =================================================================== -->
