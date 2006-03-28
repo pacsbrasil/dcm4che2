@@ -27,7 +27,7 @@ CREATE SEQUENCE patient_pk_seq;
 CREATE TABLE patient (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
 	merge_fk        INTEGER,
-	pat_id         	VARCHAR(254),
+	pat_id         	VARCHAR(254) NOT NULL,
 	pat_id_issuer  	VARCHAR(254),
 	pat_name    	VARCHAR(254),
 	pat_name_up    GENERATED ALWAYS AS (UPPER(pat_name)),

@@ -19,7 +19,7 @@ CREATE INDEX code_value ON code(code_value,code_designator);
 CREATE TABLE patient (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
 	merge_fk		INTEGER,
-	pat_id         	VARCHAR(250) BINARY,
+	pat_id         	VARCHAR(250) BINARY NOT NULL,
 	pat_id_issuer  	VARCHAR(250) BINARY,
 	pat_name    	VARCHAR(250),
 	pat_i_name    	VARCHAR(250) BINARY,

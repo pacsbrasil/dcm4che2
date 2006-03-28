@@ -1,5 +1,7 @@
 -- Update DB from dcm4jboss-2.7.x to dcm4jboss-2.8.x
 
+ALTER TABLE patient MODIFY pat_id NOT NULL;
+
 DROP INDEX pat_id;
 CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 
