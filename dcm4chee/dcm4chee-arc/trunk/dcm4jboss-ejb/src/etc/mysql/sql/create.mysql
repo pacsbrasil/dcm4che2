@@ -32,7 +32,7 @@ CREATE TABLE patient (
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
-CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
+CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(pat_name);
 CREATE INDEX pat_i_name ON patient(pat_i_name);
 CREATE INDEX pat_p_name ON patient(pat_p_name);
