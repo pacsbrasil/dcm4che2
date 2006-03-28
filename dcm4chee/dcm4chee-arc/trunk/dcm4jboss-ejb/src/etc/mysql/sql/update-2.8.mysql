@@ -1,4 +1,11 @@
 -- Update DB from dcm4jboss-2.7.x to dcm4jboss-2.8.x
+
+DROP INDEX pat_id;
+CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
+
+DROP INDEX i_study_on_fs;
+CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(study_fk, filesystem_fk);
+
 ALTER TABLE filesystem ADD next_fk INTEGER;
 ALTER TABLE filesystem ADD fs_status INTEGER;
 UPDATE filesystem SET fs_status=0;

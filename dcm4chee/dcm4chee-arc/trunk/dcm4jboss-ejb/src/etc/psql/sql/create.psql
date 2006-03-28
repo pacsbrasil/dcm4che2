@@ -32,7 +32,7 @@ CREATE TABLE patient (
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
-CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
+CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(UPPER(pat_name));
 CREATE INDEX pat_i_name ON patient(pat_i_name);
 CREATE INDEX pat_p_name ON patient(pat_p_name);
@@ -251,7 +251,7 @@ CREATE TABLE study_on_fs (
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
-CREATE INDEX i_study_on_fs ON study_on_fs(study_fk);
+CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(study_fk, filesystem_fk);
 CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
 CREATE INDEX access_time ON study_on_fs(access_time);
 
