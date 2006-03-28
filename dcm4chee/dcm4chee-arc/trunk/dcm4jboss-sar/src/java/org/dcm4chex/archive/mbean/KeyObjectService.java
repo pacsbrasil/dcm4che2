@@ -266,7 +266,7 @@ public class KeyObjectService extends ServiceMBeanSupport {
         ds.putCS(Tags.ValueType, "CONTAINER");
     	Dataset tmplDS = ds.putSQ(Tags.ContentTemplateSeq).addNewItem();
     	tmplDS.putCS(Tags.TemplateIdentifier, "2010");
-    	tmplDS.putCS(Tags.MappingResource, "DCM");
+    	tmplDS.putCS(Tags.MappingResource, "DCMR");
 	    return ds;
     }
     
