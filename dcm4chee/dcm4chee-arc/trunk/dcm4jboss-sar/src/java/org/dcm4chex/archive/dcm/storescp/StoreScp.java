@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -56,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.ejb.ObjectNotFoundException;
 import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
@@ -87,10 +87,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
-import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.notif.SeriesStored;
@@ -461,38 +460,31 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
- 
-	/**
-	 * @param ds
-	 * @return
-	 * @throws SQLException
-	 */
-	private boolean checkIncorrectWorklistEntry(Dataset ds) throws SQLException {
-		boolean isIncorrectWL = false;
+
+    private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
+        return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
+    }
+    
+    private boolean checkIncorrectWorklistEntry(Dataset ds) throws Exception {
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
-        if (refPPS != null) {
-            final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
-            if ( ppsUID != null ) {
-        		MPPSFilter filter = new MPPSFilter();
-        		filter.setSopIuid(ppsUID);
-        		MPPSQueryCmd cmd = new MPPSQueryCmd( filter );
-        		try {
-        			cmd.execute();
-        			if ( cmd.next() ) {
-        				Dataset mppsDS = cmd.getDataset();
-        	        	Dataset item = mppsDS.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-        	        	if ( item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
-        	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
-        	        		isIncorrectWL = true;
-        	        	}
-        			}
-        		} finally {
-        			cmd.close();
-        		}
-            }
-    	}
-        return isIncorrectWL;
-	}
+        if (refPPS == null) {
+            return false;
+        }
+        String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
+        if ( ppsUID == null ) {
+            return false;
+        }
+        Dataset mpps;
+        try {
+            mpps = getMPPSManagerHome().create().getMPPS(ppsUID);
+        } catch (ObjectNotFoundException e) {
+            return false;
+        }
+        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        return item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
+                "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
+    }
 
 	private Map toXsltParam(Association a, Date now) {
 		HashMap param = new HashMap();

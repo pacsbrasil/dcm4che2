@@ -28,6 +28,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSendOneIANforEachMPPS"
+      setMethod="setSendOneIANforEachMPPS">
+      <description>Send IAN not before having received the last instance of the
+          instance set referenced in the MPPS. Otherwise send IAN already when
+          receiving the last instance of a Series or when the association over
+          which instances were received is closed by the sender.
+      </description>
+      <name>SendOneIANforEachMPPS</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isOnStudyDeleted"
       setMethod="setOnStudyDeleted">
       <description>Enables sending Instance Availability Notifications after Study deletion by FileSystemMgt.
@@ -157,6 +171,16 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4jboss.archive:service=StoreScp"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
+      <description>Used internally. Do not modify.
+      
+      </description>
+      <name>MppsScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4jboss.archive:service=MPPSScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getFileSystemMgtServiceName" setMethod="setFileSystemMgtServiceName">

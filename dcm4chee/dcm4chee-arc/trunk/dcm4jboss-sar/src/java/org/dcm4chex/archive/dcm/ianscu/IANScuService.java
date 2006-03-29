@@ -1,4 +1,4 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/* ***** BEGIN LICENSE BLOCK *****#ß
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -68,14 +69,21 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.notif.StudyDeleted;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -120,20 +128,26 @@ public class IANScuService extends ServiceMBeanSupport
 	private final NotificationListener seriesStoredListener = 
 			new NotificationListener(){
 				public void handleNotification(Notification notif, Object handback) {
-					schedule(((SeriesStored) notif.getUserData()).getInstanceAvailabilityNotification());					
+					 onSeriesStored((SeriesStored) notif.getUserData());					
 				}};
 
+	private final NotificationListener mppsReceivedListener = 
+	        new NotificationListener(){
+	            public void handleNotification(Notification notif, Object handback) {
+	                onMPPSReceived((Dataset) notif.getUserData());                  
+	            }};
+        
 	private final NotificationListener studyDeletedListener =
 			new NotificationListener(){
 				public void handleNotification(Notification notif, Object handback) {
-					if (onStudyDeleted)
-						schedule(((StudyDeleted) notif.getUserData()).getInstanceAvailabilityNotification());					
+				    onStudyDeleted((StudyDeleted) notif.getUserData());					
 				}};
 	
 	
 	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
 	private ObjectName storeScpServiceName;
+    private ObjectName mppsScpServiceName;
 	private ObjectName fileSystemMgtServiceName;
 
 	private String queueName;
@@ -157,14 +171,18 @@ public class IANScuService extends ServiceMBeanSupport
 	private String[] notifiedAETs = EMPTY;
 
 	private boolean onStudyDeleted;
-	
+
+    private RetryIntervalls retryIntervalls = new RetryIntervalls();
+
+    private boolean sendOneIANforEachMPPS;
+    
 	private int concurrency = 1;
 
 	public final int getConcurrency() {
 		return concurrency;
 	}
 
-	public final void setConcurrency(int concurrency) throws Exception {
+    public final void setConcurrency(int concurrency) throws Exception {
 		if (concurrency <= 0)
 			throw new IllegalArgumentException("Concurrency: " + concurrency);
 		if (this.concurrency != concurrency) {
@@ -199,7 +217,15 @@ public class IANScuService extends ServiceMBeanSupport
 		return callingAET;
 	}
 
-	public final void setCallingAET(String callingAET) {
+	public final boolean isSendOneIANforEachMPPS() {
+        return sendOneIANforEachMPPS;
+    }
+
+    public final void setSendOneIANforEachMPPS(boolean sendOneIANforEachMPPS) {
+        this.sendOneIANforEachMPPS = sendOneIANforEachMPPS;
+    }
+
+    public final void setCallingAET(String callingAET) {
 		this.callingAET = callingAET;
 	}
 
@@ -267,8 +293,6 @@ public class IANScuService extends ServiceMBeanSupport
 		this.scnPriority = DicomPriority.toCode(scnPriority);
 	}
 
-	private RetryIntervalls retryIntervalls = new RetryIntervalls();
-
 	public final ObjectName getStoreScpServiceName() {
 		return storeScpServiceName;
 	}
@@ -276,6 +300,14 @@ public class IANScuService extends ServiceMBeanSupport
 	public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
 		this.storeScpServiceName = storeScpServiceName;
 	}
+
+    public final ObjectName getMppsScpServiceName() {
+        return mppsScpServiceName;
+    }
+
+    public final void setMppsScpServiceName(ObjectName name) {
+        this.mppsScpServiceName = name;
+    }
 
 	public ObjectName getFileSystemMgtServiceName() {
 		return fileSystemMgtServiceName;
@@ -306,6 +338,9 @@ public class IANScuService extends ServiceMBeanSupport
 				seriesStoredListener, seriesStoredFilter, null);
 		server.addNotificationListener(fileSystemMgtServiceName,
 				studyDeletedListener, studyDeletedFilter, null);
+        server.addNotificationListener(mppsScpServiceName,
+                mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
+
 	}
 
 	protected void stopService() throws Exception {
@@ -316,6 +351,140 @@ public class IANScuService extends ServiceMBeanSupport
 		JMSDelegate.stopListening(queueName);
 	}
 
+	private void onSeriesStored(SeriesStored stored) {
+        if (notifiedAETs.length == 0)
+            return;
+	    String mppsiuid = stored.getPPSInstanceUID();
+        if (mppsiuid == null || !sendOneIANforEachMPPS) {
+            schedule(stored.getInstanceAvailabilityNotification());
+        } else {
+            try {
+                onMPPSReceived(getMPPSManagerHome().create().getMPPS(mppsiuid));
+            } catch (ObjectNotFoundException e) {
+                log.debug("No such MPPS - " + mppsiuid);
+            } catch (Exception e) {
+                log.error("Failed to access MPPS - " + mppsiuid, e);
+            }
+        }
+	    
+	}
+
+    private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
+        return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
+    }
+    
+    private void onMPPSReceived(Dataset mpps) {
+        if (notifiedAETs.length == 0 || isIgnoreMPPS(mpps)) {
+            return;
+        }
+        Dataset ian = makeIAN(mpps);
+        if (ian != null) {
+            schedule(ian);
+        }
+    }
+    
+    private boolean isIgnoreMPPS(Dataset mpps) {
+        String status = mpps.getString(Tags.PPSStatus);
+        if ("COMPLETED".equals(status)) {
+            return false;
+        }
+        if (!"DISCONTINUE".equals(status)) {
+            if (log.isInfoEnabled()) {
+                log.info("Ignore MPPS with status " + status);
+            }            
+            return true;
+        }
+        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        if (item != null && "110514".equals(item.getString(Tags.CodeValue))
+                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+            log.info("Ignore MPPS with Discontinuation Reason Code: Wrong Worklist Entry Selected");
+            return true;
+        }
+        return false;
+    }
+
+    private Dataset makeIAN(Dataset mpps) {
+        DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
+        if (perfSeriesSq == null) {
+            return null;            
+        }
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        String cuid = mpps.getString(Tags.SOPClassUID);
+        String iuid = mpps.getString(Tags.SOPInstanceUID);
+        DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
+        String suid = null;
+        for (int i = 0, n = perfSeriesSq.vm(); i < n; i++) {
+            Dataset perfSeries = perfSeriesSq.getItem(i);
+            DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
+            if (refImageSeq == null) {
+                refImageSeq = perfSeries.get(Tags.RefNonImageCompositeSOPInstanceSeq);
+            }
+            if (refImageSeq != null && !refImageSeq.isEmpty()) {
+                FileInfo[][] aa;
+                try {
+                    aa = RetrieveCmd.create(refImageSeq).getFileInfos();
+                } catch (SQLException e) {
+                    log.error("Failed to check availability of Instances referenced in MPPS", e);
+                    return null;
+                }
+                String seruid = perfSeries.getString(Tags.SeriesInstanceUID);
+                if (log.isInfoEnabled()) {
+                    log.info("Series[" + seruid + "]: " + aa.length + " from "
+                            + refImageSeq.vm() + " Instances available");
+                }
+                if (aa.length != refImageSeq.vm()) {
+                    return null;
+                }
+                Dataset refSeries = refSeriesSq.addNewItem();
+                refSeries.putUI(Tags.SeriesInstanceUID, seruid);
+                DcmElement refSOPSeq = refSeries.putSQ(Tags.RefSOPSeq);
+                for (int j = 0; j < aa.length; j++) {
+                    FileInfo info = aa[j][0];
+                    if (!info.seriesIUID.equals(seruid)) {
+                        log.error("Series Instance UID of " + info 
+                                + " differs from value [" +
+                                seruid + "] in MPPS[iuid=" + iuid + "]");
+                        return null;
+                    }
+                    if (suid != null && !suid.equals(info.studyIUID)) {
+                        log.error("Different Study Instance UIDs of " +
+                                "instances referenced in MPPS[iuid=" + 
+                                iuid + "] detected");
+                        return null;
+                    }
+                    suid = info.studyIUID;
+                    Dataset refSOP = refSOPSeq.addNewItem();
+                    refSOP.putUI(Tags.RefSOPClassUID, info.sopCUID);
+                    refSOP.putUI(Tags.RefSOPInstanceUID, info.sopIUID);
+                    refSOP.putCS(Tags.InstanceAvailability,
+                            Availability.toString(info.availability));
+                    refSOP.putAE(Tags.RetrieveAET, info.fileRetrieveAET);
+                }
+           }
+        }
+        if (suid == null) {            
+            if (log.isInfoEnabled()) {
+                log.info("MPPS[" + iuid + "] does not reference any Instances");
+            }
+            return null;
+        }
+        Dataset refPPS = ian.putSQ(Tags.RefPPSSeq).addNewItem();
+        refPPS.putUI(Tags.RefSOPClassUID, cuid);
+        refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
+        refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
+        ian.putUI(Tags.StudyInstanceUID, suid);
+        return ian;
+    }
+
+    private void onStudyDeleted(StudyDeleted deleted) {
+        if (notifiedAETs.length == 0)
+            return;
+        if (onStudyDeleted)
+            schedule(deleted.getInstanceAvailabilityNotification());        
+    }
+    
+    
 	private void schedule(Dataset ian) {
 		if (log.isDebugEnabled()) { log.debug("IAN Dataset:");log.debug(ian); }
 		for (int i = 0; i < notifiedAETs.length; ++i) {
