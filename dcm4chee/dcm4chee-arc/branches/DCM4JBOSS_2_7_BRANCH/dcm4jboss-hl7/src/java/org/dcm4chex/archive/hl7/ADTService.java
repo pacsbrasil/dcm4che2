@@ -104,12 +104,13 @@ public class ADTService extends AbstractHL7Service {
             Transformer t = getTemplates(pidStylesheetURL).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
                     .getSAXHandler2(null)));
-			final String pid = pat.getString(Tags.PatientID);
-			if (pid == null)
+			String pid = pat.getString(Tags.PatientID);
+			if (pid == null || pid.trim().length() == 0)
 				throw new HL7Exception("AR", 
 						"Missing required PID-3: Patient ID (Internal ID)");
+            
 			final String pname = pat.getString(Tags.PatientName);
-			if (pname == null)
+			if (pname == null || pname.trim().length() == 0)
 				throw new HL7Exception("AR", 
 						"Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
@@ -121,7 +122,7 @@ public class ADTService extends AbstractHL7Service {
                     t2.transform(new DocumentSource(msg), new SAXResult(mrg
                             .getSAXHandler2(null)));
 					final String opid = mrg.getString(Tags.PatientID);
-					if (opid == null)
+					if (opid == null || opid.trim().length() == 0)
 						throw new HL7Exception("AR",
 								"Missing required MRG-1: Prior Patient ID - Internal");
 					final String opname = mrg.getString(Tags.PatientName);
