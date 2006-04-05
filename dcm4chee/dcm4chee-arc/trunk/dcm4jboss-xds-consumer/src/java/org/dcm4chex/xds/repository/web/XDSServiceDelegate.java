@@ -62,9 +62,9 @@ public class XDSServiceDelegate {
     private static Logger log = Logger.getLogger( XDSServiceDelegate.class.getName() );
 
     /** 
-     * Iinitialize the WADO service delegator.
+     * Iinitialize the XDS service delegator.
      * <p>
-     * Set the name of the WADOService MBean with the servlet config param 'wadoServiceName'.
+     * Set the name of the XDSService MBean with the servlet config param 'xdsServiceName'.
      * 
      * @param config The ServletConfig object.
      */
@@ -84,11 +84,11 @@ public class XDSServiceDelegate {
 	
 	
 	/**
-	 * Makes the MBean call to get the WADO response object for given WADO request.
+	 * Makes the MBean call to export the document packed in a SOAP message.
 	 * 
-	 * @param reqVO	The WADO request.
+	 * @param msg	The document packed in a SOAP message.
 	 * 
-	 * @return The WADO response object.
+	 * @return The XDS response object.
 	 */
 	public XDSResponseObject exportDocument( SOAPMessage msg ) {
 		XDSResponseObject resp = null;
