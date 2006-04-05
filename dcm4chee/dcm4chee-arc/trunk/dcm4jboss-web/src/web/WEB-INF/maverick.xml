@@ -94,6 +94,7 @@ default-transform-type="xslt">
     <command name="patientUpdate">
         <controller class="org.dcm4chex.archive.web.maverick.PatientUpdateCtrl" />    
 	    <view type="redirect" path="folder.m" name="success"/>        
+	  <view name="error" type="redirect" path="patientEdit.m?pk=-1"/>
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
