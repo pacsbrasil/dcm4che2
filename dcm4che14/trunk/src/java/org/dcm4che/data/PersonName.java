@@ -113,5 +113,10 @@ public interface PersonName {
      */
     public void setPhonetic(PersonName phonetic);
     
+    public String toString();
+
+    public String toComponentGroupString(boolean trim);
+    
+    public String toComponentGroupMatch();
 }
 

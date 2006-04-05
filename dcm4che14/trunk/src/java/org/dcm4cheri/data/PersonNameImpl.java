@@ -120,29 +120,74 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
 	this.phonetic = (PersonNameImpl)phonetic;
     }
     
-    private StringBuffer appendComponents(StringBuffer sb) {
-        int lastField = FAMILY;
-        for (int field = FAMILY; field <= SUFFIX; ++field) {
-            if (components[field] != null) {
-                sb.append(components[field]);
-                lastField = field;
+    private StringBuffer appendComponents(StringBuffer sb, String nullmask, 
+            boolean trim) {
+        sb.append(maskNull(components[FAMILY], nullmask));
+        sb.append('^');
+        sb.append(maskNull(components[GIVEN], nullmask));
+        sb.append('^');
+        sb.append(maskNull(components[MIDDLE], nullmask));
+        sb.append('^');
+        sb.append(maskNull(components[PREFIX], nullmask));
+        sb.append('^');
+        sb.append(maskNull(components[SUFFIX], nullmask));
+        if (trim) {
+            int last = sb.length() - 1;
+            while (last >= 0 && sb.charAt(last) == '^') {
+                --last;
             }
-            sb.append('^');
+            sb.setLength(last+1);
         }
-        final int l = sb.length();
-        sb.delete(l + lastField - SUFFIX - 1, l);
         return sb;
+    }
+    
+    private String maskNull(String val, String mask) {
+        return val != null ? val : mask;
+    }
+    
+    public String toComponentGroupString(boolean trim) {
+        return toComponentGroupString("", trim);
+    }
+
+    public String toComponentGroupMatch() {
+        return trimMatch(toComponentGroupString("*", false));
+    }
+    
+    private String trimMatch(String val) {
+        int wcpos = val.indexOf("*");
+        if (wcpos == -1) {
+            return val;
+        }        
+        int end = wcpos + 1;
+        int len = val.length();
+        char ch;
+        for (int i = end; i < len; i++) {
+            ch = val.charAt(i);
+            if (ch != '^' && ch != '*' && ch != '?') {
+                return val;
+            }
+        }
+        return val.substring(0, end);
+    }
+
+    private String toComponentGroupString(String nullMask, boolean trim) {
+        StringBuffer sb = new StringBuffer();
+        appendComponents(sb, nullMask, trim);
+        return sb.toString();
     }
     
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        appendComponents(sb);
+        appendComponents(sb, "", true);
         if (ideographic != null || phonetic != null) {
             sb.append('=');
-            if (ideographic != null)
-                ideographic.appendComponents(sb);
-            if (phonetic != null)
-                phonetic.appendComponents(sb.append('='));
+            if (ideographic != null) {
+                ideographic.appendComponents(sb, "", true);
+            }
+            if (phonetic != null) {
+                sb.append('=');
+                phonetic.appendComponents(sb, "", true);
+            }
         }
         return sb.toString();
     }
