@@ -56,7 +56,7 @@
       <name>KeystoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:web.server.truststore" />
+         <value value="conf/web.server.keystore" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
@@ -79,7 +79,7 @@
       <name>TrustStoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:web.client.truststore" />
+         <value value="conf/web.server.truststore" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
