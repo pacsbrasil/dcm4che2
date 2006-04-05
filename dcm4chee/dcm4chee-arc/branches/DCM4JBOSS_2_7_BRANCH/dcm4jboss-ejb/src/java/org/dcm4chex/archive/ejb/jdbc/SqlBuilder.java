@@ -434,7 +434,7 @@ class SqlBuilder {
 	            sb.append(", ");
 	            sb.append(leftJoin[i4]);
                 if (leftJoin[i4+1] != null) {
-                    sb.append(" AS ");
+                    sb.append(" ");
                     sb.append(leftJoin[i4+1]);
                 }
 	        } else {
