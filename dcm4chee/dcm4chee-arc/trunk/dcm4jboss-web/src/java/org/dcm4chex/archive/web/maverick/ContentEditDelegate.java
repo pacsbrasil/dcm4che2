@@ -76,8 +76,14 @@ public class ContentEditDelegate {
                     "createPatient",
                     new Object[] { ds },
                     new String[] { Dataset.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to create Patient:", e);
+        } catch (Throwable t) {
+            log.warn("Failed to create Patient:", t);
+            while ( t.getCause() != null) {
+            	t = t.getCause();
+            }
+            // char ' in message cause trouble with javascript (popupMsg)!
+            String msg = t.getMessage()!=null ? t.getMessage().replace('\'','\"') : t.getClass().getName();
+            throw new IllegalArgumentException("Failed to create patient! Reason:"+msg);
         }
         return (Dataset) o;
     }

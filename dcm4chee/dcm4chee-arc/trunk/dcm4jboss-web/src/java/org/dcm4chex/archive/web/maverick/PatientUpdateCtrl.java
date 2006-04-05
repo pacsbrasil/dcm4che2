@@ -63,15 +63,20 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
     private String cancel = null;
 
     protected String perform() throws Exception {
-        if (submit != null)
+    	getCtx().getRequest().getSession().setAttribute("errorMsg", null);
+        if (submit != null) {
             if (pk == -1)
-                executeCreate();
+                return executeCreate();
             else
-                executeUpdate();
+                return executeUpdate();
+        } else {
+        	FolderForm.getFolderForm( getCtx() ).setEditPatient(null);
+        }
         return SUCCESS;
     }
 
-    private void executeCreate() {
+    private String executeCreate() {
+        FolderForm form = FolderForm.getFolderForm( getCtx() );
         try {
 	        PatientModel pat = new PatientModel();
 	        pat.setPk(-1);
@@ -81,24 +86,25 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        pat.setPatientSex(patientSex);
 	        pat.setPatientName(patientName);
 	        pat.setPatientBirthDate(patientBirthDate);
+	        form.setEditPatient(pat);
 	        Dataset ds = FolderSubmitCtrl.getDelegate().createPatient(pat.toDataset());
 	        
 	        //add new patient to model (as first element) and set sticky flag!
 	        pat = new PatientModel( ds );
-	        FolderForm form = FolderForm.getFolderForm( getCtx() );
 	        form.getStickyPatients().add( String.valueOf( pat.getPk() ) );
 	        form.getPatients().add(0, pat);
-	        
+	        form.setEditPatient(null);
             AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
                     .getPatientID(), pat.getPatientName(), null);
+            return SUCCESS;
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	getCtx().getRequest().getSession().setAttribute("errorMsg", e.getMessage());
+            return ERROR;
         }
     }
 
     
-    private void executeUpdate() {
+    private String executeUpdate() {
         try {
             PatientModel pat = FolderForm.getFolderForm(
                     getCtx()).getPatientByPk(pk);
@@ -126,9 +132,10 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	                    AuditLoggerDelegate.MODIFY, pat.getPatientID(),
 	                    pat.getPatientName(), AuditLoggerDelegate.trim(sb));
             }
+            return SUCCESS;
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	getCtx().getRequest().getSession().setAttribute("errorMsg", e.getMessage());
+            return ERROR;
         }
     }
 

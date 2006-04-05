@@ -78,6 +78,8 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 	private boolean showWithoutStudies;
 
 	protected static Logger log = Logger.getLogger(BasicFolderForm.class);
+	
+	private PatientModel editPat = null;
     
 	protected BasicFolderForm( HttpServletRequest request ) {
     	super(request);
@@ -150,6 +152,10 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 	 */
 	public void setShowWithoutStudies(boolean showWithoutStudies) {
 		this.showWithoutStudies = showWithoutStudies;
+	}
+	
+	public void setEditPatient(PatientModel pat) {
+		this.editPat = pat;
 	}
 	
 	public void updatePatients(List newPatients) {
@@ -271,6 +277,9 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     }
 
     public PatientModel getPatientByPk(int patPk) {
+    	if ( patPk == -1 ) {
+    		return editPat;
+    	}
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (pat.getPk() == patPk) { return pat; }

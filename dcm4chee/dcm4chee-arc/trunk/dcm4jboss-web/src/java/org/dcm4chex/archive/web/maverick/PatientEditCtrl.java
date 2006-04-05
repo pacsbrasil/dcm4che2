@@ -49,7 +49,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  */
 public class PatientEditCtrl extends Dcm4JbossController
 {
-	private int pk;
+	private int pk = -1;
 	
 	public final void setPk(int pk)
 	{
@@ -57,13 +57,18 @@ public class PatientEditCtrl extends Dcm4JbossController
 	}
 	
 	public PatientModel getPatient() {
-		return pk == -1 ? newPatient() : FolderForm.getFolderForm(getCtx()).getPatientByPk(pk);
+		PatientModel pat = FolderForm.getFolderForm(getCtx()).getPatientByPk(pk);
+		return pat != null ? pat : newPatient();
 	}
 
     private PatientModel newPatient() {
         PatientModel pat = new PatientModel();
         pat.setSpecificCharacterSet("ISO_IR 100");
         return pat;
+    }
+    
+    public String getPopupMsg() {
+    	return (String) getCtx().getRequest().getSession().getAttribute("errorMsg");
     }
 
 }

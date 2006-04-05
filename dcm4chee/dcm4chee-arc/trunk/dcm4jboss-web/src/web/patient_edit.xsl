@@ -6,9 +6,12 @@
    <xsl:output method="html" indent="yes" encoding="ISO-8859-1" />
 
    <xsl:variable name="page_title">Patient Edit</xsl:variable>
-   <xsl:include href  = "page.xsl" />
+   <xsl:include href="page.xsl" />
 
-   <xsl:template match="model/patient">
+   <xsl:template match="model">
+   		<xsl:apply-templates select="patient"/>
+   </xsl:template>
+   <xsl:template match="patient">
       <form NAME="PatientForm" action="patientUpdate.m" method="post"  >
          <input name="pk" type="hidden" value="{pk}" />
 
