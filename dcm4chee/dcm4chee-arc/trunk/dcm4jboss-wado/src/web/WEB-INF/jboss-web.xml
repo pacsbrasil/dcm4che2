@@ -4,4 +4,6 @@
       login modules used to authentication users.
    -->
    <!--   <security-domain>java:/jaas/dcm4jboss-web</security-domain> -->
+   
+  <context-root>/</context-root>
 </jboss-web>
