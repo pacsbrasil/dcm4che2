@@ -116,7 +116,7 @@ public class XDSRepositoryServlet extends HttpServlet {
 		w.close();
 	}
 	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
-		log.info("XDSRepositoryServlet.doPost called from "+request.getRemoteHost()+" !");
+		log.info("XDSRepositoryServlet.doPost called from "+request.getRemoteHost()+" with URL "+request.getRequestURL()+" ! (secure :"+request.isSecure()+")");
 		StringBuffer sb = new StringBuffer();
         BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
         SOAPMessage message = null;
