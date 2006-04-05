@@ -42,6 +42,29 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getPIXQueryName"
+      setMethod="setPIXQueryName">
+      <description>Message Query Name (QPD-1) used in PIX Query for 
+        Corresponding Patient IDs.
+      </description>
+      <name>PIXQueryName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="QRY_PDQ^Query By Name^IHEDEMO" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPIXManager"
+      setMethod="setPIXManager">
+      <description>PIX Manager Application^Facility.
+      </description>
+      <name>PIXManager</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MESA_XREF^XYZ_HOSPITAL" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getForwardingRules"
       setMethod="setForwardingRules">
       <description>List of forwarding rules.
@@ -224,6 +247,41 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Query PIX Manger for corresponding Patient IDs.</description>
+      <name>queryCorrespondingPIDs</name>
+      <parameter>
+        <description>Patient ID</description>
+        <name>pid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[Assigning Authority:
+          <namespace ID>&<universal ID>&<universal ID type>]]>
+        </description>
+        <name>authority</name>
+        <type>java.lang.String</type>
+      </parameter>
+       <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Query PIX Manger for corresponding Patient IDs.</description>
+      <name>showCorrespondingPIDs</name>
+      <parameter>
+        <description>Patient ID</description>
+        <name>pid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[Assigning Authority:
+          <namespace ID>&<universal ID>&<universal ID type>]]>
+        </description>
+        <name>authority</name>
+        <type>java.lang.String</type>
+      </parameter>
+       <return-type>java.lang.String</return-type>
+   </operation>
+   
    
 </mbean>
     

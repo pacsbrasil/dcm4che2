@@ -58,10 +58,10 @@ public class ACK {
         List fields = msa.elements(HL7XMLLiterate.TAG_FIELD);
         this.acknowledgmentCode = toString(fields.get(0));
         this.messageControlID = toString(fields.get(1));
-        this.textMessage = toString(fields.get(1));
+        this.textMessage = toString(fields.get(2));
      }
 
-    private static String toString(Object el) {
+    static String toString(Object el) {
         return el != null ? ((Element) el).getText() : "";
     }
     

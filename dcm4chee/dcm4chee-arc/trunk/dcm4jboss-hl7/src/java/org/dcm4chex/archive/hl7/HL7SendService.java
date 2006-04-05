@@ -50,6 +50,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -88,13 +89,18 @@ public class HL7SendService
 	private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 	private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
 	private static long msgCtrlid = System.currentTimeMillis();
+    private static long queryTag = System.currentTimeMillis();
 	
 	private String queueName;
 	
 	private String sendingApplication;
 
 	private String sendingFacility;
-	
+    
+    private String pixQueryName;
+
+    private String pixManager;
+    
     private int acTimeout;
 
     private int soCloseDelay;
@@ -144,7 +150,23 @@ public class HL7SendService
 		this.sendingFacility = sendingFacility;
 	}
 
-	public String getRetryIntervalls() {
+	public final String getPIXQueryName() {
+        return pixQueryName;
+    }
+
+    public final void setPIXQueryName(String pixQueryName) {
+        this.pixQueryName = pixQueryName;
+    }
+
+    public final String getPIXManager() {
+        return pixManager;
+    }
+
+    public final void setPIXManager(String pixManager) {
+        this.pixManager = pixManager;
+    }
+
+    public String getRetryIntervalls() {
         return retryIntervalls.toString();
     }
 
@@ -290,30 +312,44 @@ public class HL7SendService
         }
 	}
 
-	public void sendTo(byte[] message, String receiving) 
-			throws SQLException, IOException, UnkownAETException, 
-					TransformerException, SAXException, HL7Exception {
+	public Document invoke(byte[] message, String receiver)
+    throws UnkownAETException, IOException, SQLException, SAXException {
 		AEData aeData;
-		if (LOCAL_HL7_AET.equals(receiving)) {
-			aeData = new AEData(-1, receiving, "localhost", getLocalHL7Port(), null);
+		if (LOCAL_HL7_AET.equals(receiver)) {
+			aeData = new AEData(-1, receiver, "localhost", getLocalHL7Port(), null);
 			
 		} else {
-			aeData = new AECmd(receiving).getAEData();
+			aeData = new AECmd(receiver).getAEData();
 			if (aeData == null) {
 				throw new UnkownAETException("Unkown HL7 receiver application "
-						+ receiving);
+						+ receiver);
 			}
 		}
 		Socket s = tlsConfig.createSocket(aeData);
-		MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
-				.getOutputStream(), true);
-		writeMessage(message, receiving, mllpDriver.getOutputStream());
-		mllpDriver.turn();
-		if (acTimeout > 0) {
-			s.setSoTimeout(acTimeout);
-		}
-		Document rsp = readMessage(mllpDriver.getInputStream());
-		MSH msh = new MSH(rsp);
+        try {
+    		MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
+    				.getOutputStream(), true);
+    		writeMessage(message, receiver, mllpDriver.getOutputStream());
+    		mllpDriver.turn();
+    		if (acTimeout > 0) {
+    			s.setSoTimeout(acTimeout);
+    		}
+    		return readMessage(mllpDriver.getInputStream());
+        } finally {
+            if (soCloseDelay > 0)
+                try {
+                    Thread.sleep(soCloseDelay);
+                } catch (InterruptedException ignore) {
+                }
+            s.close();
+        }
+    }
+    
+    public void sendTo(byte[] message, String receiver) 
+        throws SQLException, IOException, UnkownAETException, 
+                TransformerException, SAXException, HL7Exception {
+		Document rsp = invoke(message, receiver);
+        MSH msh = new MSH(rsp );
 		if ("ACK".equals(msh.messageType)) {
 			ACK ack = new ACK(rsp);
 			if (!"AA".equals(ack.acknowledgmentCode))
@@ -323,12 +359,6 @@ public class HL7SendService
 					+ '^' + msh.triggerEvent
 					+ ". Assume successful message forward.");
 		}
-		if (soCloseDelay > 0)
-			try {
-				Thread.sleep(soCloseDelay);
-			} catch (InterruptedException ignore) {
-			}
-		s.close();
 	}
 
 	/**
@@ -397,9 +427,9 @@ public class HL7SendService
 	 */
 	public void sendHL7PatientXXX(Dataset ds,String msgType, String sending, String receiving, boolean useForward) 
 				throws SQLException, IOException, UnkownAETException, TransformerException, SAXException, HL7Exception {
-		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
-		StringBuffer sb = getMSH(msgType, sending, receiving);//get MSH for patient information update (ADT^A08)
-		addEVN(sb);
+        String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
+		StringBuffer sb = makeMSH(timestamp, msgType, sending, receiving, "2.3.1");//get MSH for patient information update (ADT^A08)
+		addEVN(sb, timestamp);
 		addPID( sb, ds );
 		sb.append("\r");
 		sb.append("PV1||||||||||||||||||||||||||||||||||||||||||||||||||||");//PatientClass(2),VisitNr(19) and VisitIndicator(51) ???
@@ -412,8 +442,9 @@ public class HL7SendService
 
 	public void sendHL7PatientMerge(Dataset dsDominant, Dataset[] priorPats, String sending, String receiving, boolean useForward) 
 				throws SQLException, IOException, UnkownAETException, TransformerException, SAXException, HL7Exception {
-		StringBuffer sb = getMSH("ADT^A40", sending, receiving);//get MSH for patient merge (ADT^A40)
-		addEVN(sb);
+        String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
+		StringBuffer sb = makeMSH(timestamp, "ADT^A40", sending, receiving, "2.3.1");//get MSH for patient merge (ADT^A40)
+		addEVN(sb, timestamp);
 		addPID( sb, dsDominant );
 		int SBlen = sb.length();
 		for ( int i = 0, len = priorPats.length ; i < len ; i++ ) {
@@ -428,20 +459,52 @@ public class HL7SendService
 		
 	}
 
-	private StringBuffer getMSH(String msgType, String sending, String receiving) {
+    public String showCorrespondingPIDs(String patientID, String issuer) {
+        try {
+            return queryCorrespondingPIDs(patientID, issuer).toString();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+    
+	public List queryCorrespondingPIDs(String patientID, String issuer)
+    throws Exception { 
+        String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
+	    StringBuffer sb = makeMSH(timestamp, "QBP^Q23",
+                sendingApplication + '^' + sendingFacility, pixManager, "2.5");
+        addQPD(sb, patientID, issuer);
+	    sb.append("\rRCP|I||||||");
+        Document msg = invoke(sb.toString().getBytes(ISO_8859_1), pixManager);
+        MSH msh = new MSH(msg);
+        if (!"RSP".equals(msh.messageType) || !"K23".equals(msh.triggerEvent)) {
+            String prompt = "Unsupport response message type: "
+                + msh.messageType + '^' + msh.triggerEvent;
+            log.error(prompt );
+            throw new IOException(prompt);
+        }
+        RSP rsp = new RSP(msg);
+        if (!"AA".equals(rsp.acknowledgmentCode))
+            throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
+        return rsp.getPatientIDs();
+	}
+    
+    private StringBuffer makeMSH(String timestamp, String msgType,
+            String sending, String receiving, String version) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("MSH|^~\\&|");
-		sb.append( getSendingApplication() ).append("|").append( getSendingFacility() ).append("|");
-		final int delim = receiving.indexOf('^');
-		sb.append( receiving.substring(0,delim)).append("|").append( receiving.substring(delim+1) );
-		sb.append("|");
-		sb.append( new SimpleDateFormat(DATETIME_FORMAT).format( new Date() ) ).append("||").append(msgType).append("|");
-		sb.append( getMsgCtrlId() ).append("|P|2.3.1||||||||");
+		sb.append( getSendingApplication() ).append("|");
+        sb.append( getSendingFacility() ).append("|");
+		int delim = receiving.indexOf('^');
+		sb.append( receiving.substring(0,delim)).append("|");
+        sb.append( receiving.substring(delim+1)).append("|");
+        sb.append( timestamp ).append("||");
+        sb.append(msgType).append("|");
+		sb.append( getMsgCtrlId() ).append("|P|");
+        sb.append(version).append("||||||||");
 		return sb;
 	}
 
-	private void addEVN( StringBuffer sb) {
-		String timeStamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
+	private void addEVN( StringBuffer sb, String timeStamp) {
 		sb.append("\rEVN||").append(timeStamp).append("||||").append(timeStamp);
 	}
 	/**
@@ -501,12 +564,22 @@ public class HL7SendService
 		if ( name != null ) sb.append("patName");
 	}
 	
+    private void addQPD(StringBuffer sb, String patientID, String issuer) {
+        sb.append("\rQPD|").append(getPIXQueryName()).append('|');
+        sb.append(getQueryTag()).append('|');
+        sb.append(patientID).append("^^^").append(issuer);
+    }
+
 	/**
 	 * should this method on a central hl7 sending place? 
 	 * @return
 	 */
-	public long getMsgCtrlId() {
+	public synchronized long getMsgCtrlId() {
 		return msgCtrlid++;
 	}
-	
+
+    public synchronized long getQueryTag() {
+        return queryTag++;
+    }
+    
 }
