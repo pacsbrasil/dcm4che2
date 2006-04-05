@@ -67,6 +67,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
@@ -127,6 +128,7 @@ public class DcmRcv extends DcmServiceBase
             return new byte[bufferSize];
         }
     };
+    private boolean abort;
     
     // Static --------------------------------------------------------
     private final static LongOpt[] LONG_OPTS = new LongOpt[]{
@@ -155,6 +157,7 @@ public class DcmRcv extends DcmServiceBase
             new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("abort", LongOpt.NO_ARGUMENT, null, 3),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
             };
@@ -236,6 +239,7 @@ public class DcmRcv extends DcmServiceBase
         	: Integer.parseInt(decOrHex);
         bufferSize = Integer.parseInt(
                 cfg.getProperty("buf-len", "2048")) & 0xfffffffe;
+        abort = "true".equalsIgnoreCase(cfg.getProperty("abort"));
         initServer(cfg);
         initDest(cfg);
         initTLS(cfg);
@@ -303,6 +307,11 @@ public class DcmRcv extends DcmServiceBase
             }
         }
         rspCmd.putUS(Tags.Status, rspStatus);
+        if (abort) {
+            AssociationFactory f = AssociationFactory.getInstance();
+            assoc.getAssociation().abort(f.newAAbort(AAbort.SERVICE_USER, AAbort.REASON_NOT_SPECIFIED));
+            throw new IOException("Abort Association");
+        }
     }
 
 
