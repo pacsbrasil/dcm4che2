@@ -46,7 +46,7 @@
 						<td width="50">Datacare</td>														
 				        <td title="Datacare">
 							<input type="checkbox" name="datacareUser" value="true">
-								<xsl:if test="editUser/datacare = 'true'">
+								<xsl:if test="editUser/datacareUser = 'true'">
 									<xsl:attribute name="checked"/>
 								</xsl:if>
 							</input>
