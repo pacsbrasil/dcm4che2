@@ -505,6 +505,7 @@ public class XDSService extends ServiceMBeanSupport {
 		SOAPConnection conn = null;
 		try {
 			String url = this.getXDSRegistryURI();
+	        log.debug("Send registry request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
 			configProxyAndTLS(url);
 		    MessageFactory messageFactory = MessageFactory.newInstance();
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
@@ -517,11 +518,8 @@ public class XDSService extends ServiceMBeanSupport {
 	            dumpSOAPMessage(message);
     		}           
             SOAPMessage response = conn.call(message, url);
-       		if ( log.isDebugEnabled()){
-	            log.debug("-------------------------------- response ----------------------------------");
-	            dumpSOAPMessage(response);
-	            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-       		}
+            log.debug("-------------------------------- response ----------------------------------");
+            dumpSOAPMessage(response);
             return response;
 		} catch ( Throwable x ) {
 			log.error("Cant send SOAP message! Reason:", x);
@@ -651,10 +649,12 @@ public class XDSService extends ServiceMBeanSupport {
 			System.setProperty(protocol+".proxyPort", "");
 		}
 		if ( "https".equals(protocol) && trustStoreURL != null ) {
-			System.setProperty("javax.net.ssl.keyStore", keystoreURL);
+			String keyStorePath = resolvePath(keystoreURL);
+			String trustStorePath = resolvePath(trustStoreURL);
+			System.setProperty("javax.net.ssl.keyStore", keyStorePath);
 			System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
 			System.setProperty("javax.net.ssl.keyStoreType","PKCS12");
-			System.setProperty("javax.net.ssl.trustStore", trustStoreURL);
+			System.setProperty("javax.net.ssl.trustStore", trustStorePath);
 			System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
 			if ( origHostnameVerifier == null) {
 				origHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
@@ -685,4 +685,11 @@ public class XDSService extends ServiceMBeanSupport {
 		}			
 		
 	}
+    public static String resolvePath(String fn) {
+    	File f = new File(fn);
+        if (f.isAbsolute()) return f.getAbsolutePath();
+        File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+        return new File(serverHomeDir, f.getPath()).getAbsolutePath();
+    }
+	
 }
