@@ -312,14 +312,14 @@ public abstract class MWLItemBean implements EntityBean {
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
         PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
-            setPerformingPhysicianName(onlyFamilyAndGivenName(pn));
+            setPerformingPhysicianName(pn.toComponentGroupString(false));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setPerformingPhysicianIdeographicName(onlyFamilyAndGivenName(ipn));
+                setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setPerformingPhysicianPhoneticName(onlyFamilyAndGivenName(ppn));
+                setPerformingPhysicianPhoneticName(ppn.toComponentGroupString(false));
              }
         }
         setModality(spsItem.getString(Tags.Modality));
@@ -329,12 +329,6 @@ public abstract class MWLItemBean implements EntityBean {
         setEncodedAttributes(DatasetUtils.toByteArray(ds));
     }
 
-    private String onlyFamilyAndGivenName(PersonName pn) {
-        String fn = pn.get(PersonName.FAMILY);
-        String gn = pn.get(PersonName.GIVEN);
-        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
-    }
-    
     /**
      * @ejb.interface-method
      */

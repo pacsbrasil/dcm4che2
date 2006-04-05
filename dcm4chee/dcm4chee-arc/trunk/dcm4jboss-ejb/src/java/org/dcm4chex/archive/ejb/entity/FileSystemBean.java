@@ -98,9 +98,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *             strategy="on-find" eager-load-group="*"
  *             
  * @jboss.query signature="int ejbSelectNumberOfFiles(java.lang.Integer pk)"
- *              query="SELECT COUNT(f) FROM File f WHERE f.instance.pk = ?1"
+ *              query="SELECT COUNT(f) FROM File f WHERE f.fileSystem.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Integer pk)"
- *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.instance.pk = ?1"
+ *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk = ?1"
  */
 public abstract class FileSystemBean implements EntityBean {
 

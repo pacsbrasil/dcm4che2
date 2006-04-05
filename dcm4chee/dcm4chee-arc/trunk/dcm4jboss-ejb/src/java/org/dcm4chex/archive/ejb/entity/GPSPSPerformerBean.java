@@ -104,25 +104,19 @@ public abstract class GPSPSPerformerBean implements EntityBean {
             throws CreateException {
         PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
         if (pn != null) {
-            setHumanPerformerName(onlyFamilyAndGivenName(pn));
+            setHumanPerformerName(pn.toComponentGroupString(false));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setHumanPerformerIdeographicName(onlyFamilyAndGivenName(ipn));
+                setHumanPerformerIdeographicName(ipn.toComponentGroupString(false));
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setHumanPerformerPhoneticName(onlyFamilyAndGivenName(ppn));
+                setHumanPerformerPhoneticName(ppn.toComponentGroupString(false));
             }
         }        
         return null;
     }
 
-    private String onlyFamilyAndGivenName(PersonName pn) {
-        String fn = pn.get(PersonName.FAMILY);
-        String gn = pn.get(PersonName.GIVEN);
-        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
-    }
-    
     public void ejbPostCreate(Dataset ds, GPSPSLocal gpsps)
             throws CreateException {
         try {

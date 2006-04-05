@@ -314,14 +314,14 @@ public abstract class PatientBean implements EntityBean {
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
         if (pn != null) {
-            setPatientName(onlyFamilyAndGivenName(pn));
+            setPatientName(pn.toComponentGroupString(false));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setPatientIdeographicName(onlyFamilyAndGivenName(ipn));
+                setPatientIdeographicName(ipn.toComponentGroupString(false));
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setPatientPhoneticName(onlyFamilyAndGivenName(ppn));
+                setPatientPhoneticName(ppn.toComponentGroupString(false));
             }
         }
         try {
@@ -332,12 +332,6 @@ public abstract class PatientBean implements EntityBean {
         setPatientSex(ds.getString(Tags.PatientSex));
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
-    }
-
-    private String onlyFamilyAndGivenName(PersonName pn) {
-        String fn = pn.get(PersonName.FAMILY);
-        String gn = pn.get(PersonName.GIVEN);
-        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
     }
 
     /**

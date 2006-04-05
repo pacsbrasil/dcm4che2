@@ -758,14 +758,14 @@ public abstract class StudyBean implements EntityBean {
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         PersonName pn = ds.getPersonName(Tags.ReferringPhysicianName);
         if (pn != null) {
-            setReferringPhysicianName(onlyFamilyAndGivenName(pn));
+            setReferringPhysicianName(pn.toComponentGroupString(false));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
-                setReferringPhysicianIdeographicName(onlyFamilyAndGivenName(ipn));                
+                setReferringPhysicianIdeographicName(ipn.toComponentGroupString(false));                
             }
             PersonName ppn = pn.getPhonetic();
             if (ppn != null) {
-                setReferringPhysicianPhoneticName(onlyFamilyAndGivenName(ppn));                
+                setReferringPhysicianPhoneticName(ppn.toComponentGroupString(false));                
             }
         }
         setStudyDescription(ds.getString(Tags.StudyDescription));
@@ -773,13 +773,6 @@ public abstract class StudyBean implements EntityBean {
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
-    private String onlyFamilyAndGivenName(PersonName pn) {
-        String fn = pn.get(PersonName.FAMILY);
-        String gn = pn.get(PersonName.GIVEN);
-        return (fn == null ? "" : fn) + '^' + (gn == null ? "" : gn);
-    }
-    
-    
     /**
      * @ejb.interface-method
      */
