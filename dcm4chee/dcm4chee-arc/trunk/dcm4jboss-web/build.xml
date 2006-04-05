@@ -38,6 +38,8 @@
 	<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar" />
 	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.home}/target/lib/dcm4jboss.jar" />
 	
+	<property name="deploy.root" value="${jboss.home}/server/pacs"/>
+	<property name="war.deploy.dir" value="${deploy.root}/deploy"/>
 	
 	<property name="target.dir" value="target"/>
 	<property name="file" value="${ant.project.name}.war"/>
@@ -105,4 +107,10 @@
 		</war>
 	</target>
 
+	<target name="deploy" depends="war,deploy-only"/>
+	
+	<target name="deploy-only">
+		<copy file="${product}" todir="${war.deploy.dir}" />
+	</target>
+	
 </project>
