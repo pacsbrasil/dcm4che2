@@ -63,6 +63,10 @@
 			<param-name>ridServiceName</param-name>
 			<param-value>dcm4jboss.archive:service=RIDService</param-value>
 		</init-param>
+		<init-param>
+			<param-name>allowShortURL</param-name>
+			<param-value>true</param-value>
+		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	
