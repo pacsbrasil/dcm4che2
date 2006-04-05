@@ -129,8 +129,19 @@ public class FolderForm extends BasicFolderForm {
         if (form == null) {
             form = new FolderForm(request);
             try {
-				URL wadoURL = new URL( request.isSecure() ? "https" : "http", request.getServerName(),
-						request.getServerPort(), "/dcm4jboss-wado/");
+            	String wadoBase = ctx.getServletConfig().getInitParameter("wadoBaseURL");
+            	URL wadoURL = null;
+            	if ( wadoBase != null ) {
+            		try {
+            			wadoURL = new URL(wadoBase);
+            		} catch (MalformedURLException x){
+            			log.warn("Invalid Servlet Init Parameter wadoBaseURL:"+wadoBase+"! Ignored");
+            		}
+            	}
+            	if ( wadoURL == null ) {
+            		wadoURL = new URL( request.isSecure() ? "https" : "http", request.getServerName(),
+						request.getServerPort(), "/");
+            	}
 				form.setWadoBaseURL( wadoURL.toString() );
 				URL url = new URL( "http", request.getServerName(), 
 						request.getServerPort(), "/WebViewer/jvapplet.jar");
