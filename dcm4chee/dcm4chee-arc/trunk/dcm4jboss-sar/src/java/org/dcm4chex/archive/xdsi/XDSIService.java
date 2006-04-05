@@ -146,9 +146,9 @@ public class XDSIService extends ServiceMBeanSupport {
 
     private ObjectName pixQueryServiceName;
     private String affinityDomain;
-    private String keystoreURL = "resource:identity.p12";
+    private String keystoreURL = "conf/identity.p12";
 	private String keystorePassword;
-    private String trustStoreURL = "resource:cacerts.jks";
+    private String trustStoreURL = "conf/cacerts.jks";
 	private String trustStorePassword;
 	private HostnameVerifier origHostnameVerifier = null;
 	private String allowedUrlHost = null;
@@ -634,6 +634,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 	public boolean sendSOAP( Document metaData, XDSIDocument[] docs, String url ) {
 		if ( url == null ) url = this.docRepositoryURI;
+        log.info("Send 'Provide and Register Document Set' request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
 		SOAPConnection conn = null;
 		try {
 			String protocol = url.startsWith("https") ? "https" : "http";
@@ -645,10 +646,13 @@ public class XDSIService extends ServiceMBeanSupport {
 				System.setProperty(protocol+".proxyPort", "");
 			}
 			if ( "https".equals(protocol) && trustStoreURL != null ) {
-				System.setProperty("javax.net.ssl.keyStore", keystoreURL);
+				String keyURL = resolvePath(keystoreURL);
+				String trustURL = resolvePath(trustStoreURL);
+				log.debug("Use TLS with keystore:"+keyURL+" and truststore:"+trustURL);
+				System.setProperty("javax.net.ssl.keyStore", keyURL);
 				System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
 				System.setProperty("javax.net.ssl.keyStoreType","PKCS12");
-				System.setProperty("javax.net.ssl.trustStore", trustStoreURL);
+				System.setProperty("javax.net.ssl.trustStore", trustURL);
 				System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
 				if ( origHostnameVerifier == null) {
 					origHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
@@ -704,11 +708,9 @@ public class XDSIService extends ServiceMBeanSupport {
 	            dumpSOAPMessage(message);
     		}           
             SOAPMessage response = conn.call(message, url);
-       		if ( log.isDebugEnabled()){
-	            log.debug("-------------------------------- response ----------------------------------");
-	            dumpSOAPMessage(response);
-	            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-       		}
+            log.debug("-------------------------------- response ----------------------------------");
+            dumpSOAPMessage(response);//we always want to see the response msg in log!
+            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             return checkResponse( response );
 		} catch ( Throwable x ) {
 			log.error("Cant send SOAP message! Reason:", x);
@@ -720,6 +722,15 @@ public class XDSIService extends ServiceMBeanSupport {
 		}
 		
 	}
+	
+	
+    public static String resolvePath(String fn) {
+    	File f = new File(fn);
+        if (f.isAbsolute()) return f.getAbsolutePath();
+        File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+        return new File(serverHomeDir, f.getPath()).getAbsolutePath();
+    }
+	
 	public boolean sendSOAP(String kosIuid, Properties mdProps) throws SQLException {
 		Dataset kos = queryKOS( kosIuid );
 		if ( kos == null ) return false;
@@ -786,12 +797,16 @@ public class XDSIService extends ServiceMBeanSupport {
 				if ( issuer == null ) return patID;
 				return patID+issuer;
 			} else if (affinityDomain.charAt(1)=='?') {
+				log.info("PIX Query disabled: replace issuer with affinity domain! ");
+				log.debug("patID changed! ("+patID+"^^^"+issuer+" -> "+patID+"^^^"+affinityDomain.substring(2)+")");
 				return patID+"^^^"+affinityDomain.substring(2);
 			} else {
+				log.info("PIX Query disabled: replace configured patient ID! :"+affinityDomain.substring(1));
 				return affinityDomain.substring(1);
 			}
 		}
 		if ( this.pixQueryServiceName == null ) {
+			log.info("PIX Query disabled: use source patient ID!");
 			patID+="^^^";
 			if ( issuer == null ) return patID;
 			return patID+issuer;
