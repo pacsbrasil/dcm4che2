@@ -132,8 +132,6 @@ public abstract class AbstractModel {
 	        final Date d = ds.getDateTime(dateTag, timeTag);
 	        if (d == null) return null;
 	        String s = new SimpleDateFormat(DATETIME_FORMAT).format(d);
-	        while (s.endsWith("00"))
-	            s = s.substring(0, s.length() - 3);
 	        return s;
 	    } catch (IllegalArgumentException e) {
 	        return null;
