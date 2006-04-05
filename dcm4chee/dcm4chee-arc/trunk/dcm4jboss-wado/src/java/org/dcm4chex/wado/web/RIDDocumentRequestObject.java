@@ -62,7 +62,13 @@ public class RIDDocumentRequestObject extends BasicRequestObjectImpl implements
 	public RIDDocumentRequestObject( HttpServletRequest request ) {
 		super( request );
 		documentUID = request.getParameter( "documentUID" );
-		preferredContentType = request.getParameter( "preferredContentType" );
+		if ( documentUID == null && "DOCUMENT".equals(request.getParameter("RT"))) {
+			documentUID = request.getParameter( "UID" );
+			preferredContentType = request.getParameter( "PCT" );
+		} else {
+			preferredContentType = request.getParameter( "preferredContentType" );
+		}
+		
 		knownParams.put("requestType", getRequestType() );
 		knownParams.put("documentUID", documentUID);
 		knownParams.put("preferredContentType", preferredContentType);

@@ -67,7 +67,7 @@ public class RIDServlet extends HttpServlet {
 	private RIDServiceDelegate delegate;
 	
 	private static Logger log = Logger.getLogger( RIDServlet.class.getName() );
-	
+
 
 	/**
 	 * Initialize the RIDServiceDelegator.
@@ -85,8 +85,9 @@ public class RIDServlet extends HttpServlet {
 	 * 
 	 * @param request 	The http request.
 	 * @param response	The http response.
+	 * @throws IOException
 	 */
-	public void doPost( HttpServletRequest request, HttpServletResponse response ){
+	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
 		doGet( request, response);
 	}
 
@@ -95,9 +96,14 @@ public class RIDServlet extends HttpServlet {
 	 * 
 	 * @param request 	The http request.
 	 * @param response	The http response.
+	 * @throws IOException
 	 */
-	public void doGet( HttpServletRequest request, HttpServletResponse response ){
+	public void doGet( HttpServletRequest request, HttpServletResponse response ) throws IOException{
 		log.debug("RID URL:"+request.getRequestURI()+"?"+request.getQueryString());
+		if ( request.getParameter("requestType") == null ) {
+			handleMissingRequestType(request, response);
+			return;
+		}
 		BasicRequestObject reqObj = RequestObjectFactory.getRequestObject( request );
 		delegate.getLogger().info("doGet: reqObj:"+reqObj);
 		int reqTypeCode = RIDRequestObject.INVALID_RID_URL;
@@ -134,6 +140,33 @@ public class RIDServlet extends HttpServlet {
 		}
 	}
 	
+	/**
+	 * @param request
+	 * @throws IOException
+	 */
+	private void handleMissingRequestType(HttpServletRequest request, HttpServletResponse response ) throws IOException {
+		if ("true".equals(this.getServletConfig().getInitParameter("allowShortURL") )) {
+			StringBuffer sb = request.getRequestURL();
+			sb.append("?requestType=").append(request.getParameter("RT"));
+			sb.append("&documentUID=").append(request.getParameter("UID"));
+			sb.append("&preferredContentType=").append(getFullContentType(request.getParameter("PCT")));
+			log.info("redirect shortURL to "+sb);
+			response.sendRedirect(sb.toString());
+		}
+	}
+
+	/**
+	 * @param parameter
+	 * @return
+	 */
+	private String getFullContentType(String parameter) {
+		if ( parameter.indexOf('/') != -1 ) return parameter;
+		if ( "pdf".equals(parameter) ) return "application/pdf";
+		if ( "xml".equals(parameter) ) return "text/xml";
+		if ( "dcm".equals(parameter) ) return "application/dicom";
+		return parameter;
+	}
+
 	/**
 	 * Send an error response with given response code and message to the client.
 	 * <p>

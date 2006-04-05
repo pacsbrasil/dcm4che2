@@ -79,6 +79,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	 */
 	public BasicRequestObjectImpl( HttpServletRequest request ) {
 		reqType  = request.getParameter( "requestType" );
+		if ( reqType == null) reqType = request.getParameter("RT");
 		paramMap = request.getParameterMap();
 		try {
 		reqURL = request.getRequestURL().append("?").append(request.getQueryString()).toString();

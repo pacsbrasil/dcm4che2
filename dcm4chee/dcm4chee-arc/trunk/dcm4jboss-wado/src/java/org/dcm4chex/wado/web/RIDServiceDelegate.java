@@ -71,7 +71,7 @@ public class RIDServiceDelegate {
     /** 
      * Iinitialize the RID service delegator.
      * <p>
-     * Set the name of the WADOService MBean with the servlet config param 'wadoServiceName'.
+     * Set the name of the RIDService MBean with the servlet config param 'ridServiceName'.
      * 
      * @param config The ServletConfig object.
      */

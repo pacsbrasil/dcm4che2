@@ -65,6 +65,9 @@ public class RequestObjectFactory {
 	public static BasicRequestObject getRequestObject( HttpServletRequest request ) {
 		BasicRequestObject reqObj = null; 
 		String reqType = request.getParameter("requestType");
+		if ( reqType == null ) {
+			reqType = request.getParameter("RT");
+		}
 		if ( reqType == null ) return null; //wrong URL
 		if ( "WADO".equalsIgnoreCase( reqType ) ) {
 			return new WADORequestObjectImpl( request );
@@ -74,8 +77,8 @@ public class RequestObjectFactory {
 			return new RIDDocumentRequestObject( request );
 		} else if ( reqType.startsWith( "SUMMARY" ) ) {
 			return new RIDInfoRequestObject( request );
-		} else if ( reqType.startsWith( "LIST" ) ) { //not supported
-			return new RIDInfoRequestObject( request );// return an 'invalid (not supported)' request object.
+		} else if ( reqType.startsWith( "LIST" ) ) { 
+			return new RIDInfoRequestObject( request );
 		} else {
 			return null; //wrong URL
 		}
