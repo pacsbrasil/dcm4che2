@@ -38,6 +38,8 @@
 
 package org.dcm4che2.data;
 
+import java.util.StringTokenizer;
+
 /** Provides tag constants.*/
 public class Tag {
 
@@ -55,6 +57,46 @@ public class Tag {
        }
     }
 
+    public static int[] toTagPath(String expr) {
+        StringTokenizer stk = new StringTokenizer(expr, "/[]", true);
+        int[] tagPath = new int[stk.countTokens()];
+        int i= 0;
+        char delim = '/';
+        while (stk.hasMoreTokens()) {
+            String s = stk.nextToken();
+            char ch0 = s.charAt(0);
+            switch (ch0) {
+            case '/':
+                if (delim == '/') {
+                    tagPath[i] = 0;
+                    i++;
+                }
+            case '[':
+            case ']':
+                delim = ch0;              
+                break;
+            default:
+                if (delim == '[') {
+                    tagPath[i] = Integer.parseInt(s) - 1;
+                } else {
+                    try {
+                        tagPath[i] = (int) Long.parseLong(s, 16);
+                    } catch (NumberFormatException e) {
+                        tagPath[i] = Tag.forName(s);
+                    }
+                }
+                ++i;
+                break;
+            }
+        }
+        if (i < tagPath.length) {
+            int[] tmp = new int[i];
+            System.arraycopy(tagPath, 0, tmp, 0, i);
+            tagPath = tmp;
+        }
+        return tagPath;
+    }
+    
     /** (0000,0000) VR=UL, VM=1 Group Length  */
     public static final int GroupLength00000000 = 0x00000000;
 

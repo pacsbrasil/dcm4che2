@@ -1,4 +1,4 @@
-/* ***** BEGIN LICENSE BLOCK *****
+    /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -80,7 +80,7 @@ public class DcmMWL {
             "If also no <host> is specified localhost is assumed.\n" +
             "Options:";
     private static final String EXAMPLE = 
-            "\nExample: dcmmwl MWLSCP@localhost:11112 -qModality=CT -q00400002=20060502\n" +
+            "\nExample: dcmmwl MWLSCP@localhost:11112 -qModality=CT -d=20060502\n" +
             "=> Query Application Entity MWLSCP listening on local port 11112 for " +
             "CT procedure steps scheduled for May 2, 2006.";
 
