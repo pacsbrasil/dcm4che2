@@ -47,7 +47,7 @@ CREATE TABLE study (
 	study_datetime	TIMESTAMP,
 	accession_no	VARCHAR(256),
 	ref_physician  VARCHAR_IGNORECASE(256),
-	ref_physician_i VARCHAR(256),
+	ref_phys_i_name VARCHAR(256),
 	ref_phys_p_name VARCHAR(256),
 	study_desc      VARCHAR_IGNORECASE(256),
 	study_status_id VARCHAR(256),
@@ -65,13 +65,14 @@ CREATE TABLE study (
 	study_attrs		VARBINARY,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
+
 CREATE INDEX patient_fk ON study(patient_fk);
 CREATE UNIQUE INDEX study_iuid ON study(study_iuid);
 CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician);
-CREATE INDEX ref_physician_i ON study(ref_physician_i);
+CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name);
 CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name);
 CREATE INDEX study_desc ON study(study_desc);
 CREATE INDEX study_status_id ON study(study_status_id);
