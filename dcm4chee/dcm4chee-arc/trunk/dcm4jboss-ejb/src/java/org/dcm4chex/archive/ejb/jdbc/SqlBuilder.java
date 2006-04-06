@@ -260,10 +260,14 @@ class SqlBuilder {
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
         addWildCardMatch(null, nameFields[0], true,
                 pn.toComponentGroupMatch(), true);
-        addWildCardMatch(null, nameFields[1], true,
+        if ( pn.getIdeographic() != null ) {
+        	addWildCardMatch(null, nameFields[1], true,
                 pn.getIdeographic().toComponentGroupMatch(), false);
-        addWildCardMatch(null, nameFields[2], true,
+        }
+        if ( pn.getPhonetic() != null ) {
+        	addWildCardMatch(null, nameFields[2], true,
                 pn.getPhonetic().toComponentGroupMatch(), false);
+        }
     }   
 
     public void addRangeMatch(String alias, String field, boolean type2,
