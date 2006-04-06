@@ -138,10 +138,11 @@ public class Txt2DcmSR {
         ensureContenDateAndTime(attrs, now);
         attrs.putDate(Tag.InstanceCreationDate, VR.DA, now);
         attrs.putDate(Tag.InstanceCreationTime, VR.TM, now);
-        int[] tagpath = Tag.toTagPath(cfg.getProperty(""));
-        attrs.putBytes(tagpath, VR.UT, false, readBytes(txtFile));
+        DicomElement sq = attrs.get(Tag.toTagPath(cfg.getProperty("")));
+        sq.getDicomObject().putBytes(Tag.TextValue, VR.UT, false, 
+                readBytes(txtFile));
         if (paragraphs) {
-            splitParagraphs(attrs, tagpath);
+            splitParagraphs(attrs, sq);
         }
         
         attrs.initFileMetaInformation(transferSyntax);
@@ -155,10 +156,7 @@ public class Txt2DcmSR {
         }
     }    
 
-    private void splitParagraphs(DicomObject attrs, int[] tagpath) {
-        int[] sqpath = new int[tagpath.length-2];
-        System.arraycopy(tagpath, 0, sqpath, 0, sqpath.length);
-        DicomElement sq = attrs.get(sqpath);
+    private void splitParagraphs(DicomObject attrs, DicomElement sq) {
         DicomObject item = sq.getDicomObject();
         String txt = item.getString(Tag.TextValue);
         StringTokenizer stk = new StringTokenizer(txt, "\r\n");
