@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-net"/>
+	<classpathentry sourcepath="/COMMONS_CLI_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/commons-cli/commons-cli/1.0/commons-cli-1.0.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

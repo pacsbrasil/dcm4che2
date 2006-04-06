@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-core"/>
+	<classpathentry sourcepath="/COMMONS_CLI_HOME/src/java" kind="var" path="MAVEN_REPOSITORY/commons-cli/commons-cli/1.0/commons-cli-1.0.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPOSITORY/org/slf4j/nlog4j/1.2.19/nlog4j-1.2.19.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che-net"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
