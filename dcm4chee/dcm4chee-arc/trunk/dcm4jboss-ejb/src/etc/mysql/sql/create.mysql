@@ -1,23 +1,25 @@
 CREATE TABLE ae (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	aet          	VARCHAR(250) BINARY NOT NULL,
 	hostname     	VARCHAR(250) BINARY NOT NULL,
 	port			INTEGER NOT NULL,
-	cipher_suites  	VARCHAR(250) BINARY
+	cipher_suites  	VARCHAR(250) BINARY,
+CONSTRAINT ae_pk PRIMARY KEY(pk)
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE TABLE code (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	code_value     	VARCHAR(250) BINARY NOT NULL,
 	code_designator	VARCHAR(250) BINARY NOT NULL,
 	code_version   	VARCHAR(250) BINARY,
-	code_meaning   	VARCHAR(250) BINARY
+	code_meaning   	VARCHAR(250) BINARY,
+CONSTRAINT code_pk PRIMARY KEY(pk)
 );
 CREATE INDEX code_value ON code(code_value,code_designator);
 
 CREATE TABLE patient (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	merge_fk		INTEGER,
 	pat_id         	VARCHAR(250) BINARY NOT NULL,
 	pat_id_issuer  	VARCHAR(250) BINARY,
@@ -29,6 +31,7 @@ CREATE TABLE patient (
 	updated_time	DATETIME,
 	created_time	DATETIME,
 	pat_attrs		BLOB,
+CONSTRAINT patient_pk PRIMARY KEY(pk),
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
@@ -40,7 +43,7 @@ CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 CREATE INDEX pat_sex ON patient(pat_sex);
 
 CREATE TABLE study (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	patient_fk      INTEGER,
 	study_iuid      VARCHAR(250) BINARY NOT NULL,
 	study_id        VARCHAR(250) BINARY,
@@ -63,6 +66,7 @@ CREATE TABLE study (
 	updated_time	DATETIME,
 	created_time	DATETIME,
 	study_attrs		BLOB,
+CONSTRAINT study_pk PRIMARY KEY(pk),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
@@ -89,7 +93,7 @@ CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
 
 CREATE TABLE mpps (
-	pk          		INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          		INTEGER AUTO_INCREMENT NOT NULL,
 	patient_fk      	INTEGER,
 	drcode_fk			INTEGER,
 	mpps_iuid			VARCHAR(250) BINARY NOT NULL,
@@ -101,6 +105,7 @@ CREATE TABLE mpps (
 	updated_time	    DATETIME,
 	created_time	    DATETIME,
 	mpps_attrs			BLOB,
+CONSTRAINT mpps_pk PRIMARY KEY(pk),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
@@ -112,7 +117,7 @@ CREATE INDEX mpps_modality ON mpps (modality);
 CREATE INDEX mpps_accession_no ON mpps (accession_no);	
 
 CREATE TABLE series (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	study_fk		INTEGER,
 	mpps_fk			INTEGER,
 	series_iuid     VARCHAR(250) BINARY NOT NULL,
@@ -132,6 +137,7 @@ CREATE TABLE series (
 	created_time	DATETIME,
 	updated_time	DATETIME,
 	series_attrs	BLOB,
+CONSTRAINT series_pk PRIMARY KEY(pk),
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
 );
@@ -148,10 +154,11 @@ CREATE INDEX series_src_aet ON series (src_aet);
 CREATE INDEX series_created ON series(created_time);
 
 CREATE TABLE series_req (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	series_fk       INTEGER,
 	req_proc_id     VARCHAR(250) BINARY,
 	sps_id          VARCHAR(250) BINARY,
+CONSTRAINT series_req_pk PRIMARY KEY(pk),
 FOREIGN KEY (series_fk) REFERENCES series(pk)
 );
 CREATE INDEX ser_req_series_fk ON series_req(series_fk);
@@ -159,7 +166,7 @@ CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
 CREATE INDEX ser_req_sps_id ON series_req(sps_id);	
 
 CREATE TABLE media (
-	pk          		INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          		INTEGER AUTO_INCREMENT NOT NULL,
 	fileset_iuid		VARCHAR(250) BINARY NOT NULL,
 	fileset_id			VARCHAR(250) BINARY,
 	media_rq_iuid		VARCHAR(250) BINARY,
@@ -167,13 +174,14 @@ CREATE TABLE media (
 	media_status_info	VARCHAR(250) BINARY,
 	media_usage			BIGINT NOT NULL,
 	created_time		DATETIME,
-	updated_time		DATETIME
+	updated_time		DATETIME,
+CONSTRAINT media_pk PRIMARY KEY(pk)
 );
 CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
 CREATE INDEX media_status ON media(media_status);
 
 CREATE TABLE instance (
-	pk              	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              	INTEGER AUTO_INCREMENT NOT NULL,
 	series_fk			INTEGER,
 	srcode_fk			INTEGER,
 	media_fk			INTEGER,
@@ -190,6 +198,7 @@ CREATE TABLE instance (
 	updated_time	    DATETIME,
 	created_time	    DATETIME,
 	inst_attrs			BLOB,
+CONSTRAINT instance_pk PRIMARY KEY(pk),
 FOREIGN KEY (series_fk)	REFERENCES series(pk),
 FOREIGN KEY (srcode_fk)	REFERENCES code(pk),
 FOREIGN KEY (media_fk)	REFERENCES media(pk)
@@ -207,13 +216,14 @@ CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
 
 CREATE TABLE filesystem (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	next_fk         INTEGER,
 	dirpath			VARCHAR(250) BINARY NOT NULL,
 	retrieve_aet	VARCHAR(250) BINARY NOT NULL,
 	availability	INTEGER NOT NULL,
 	fs_status		INTEGER NOT NULL,
 	user_info		VARCHAR(250) BINARY,
+CONSTRAINT filesystem_pk PRIMARY KEY(pk),
 FOREIGN KEY (next_fk) REFERENCES filesystem(pk)
 );
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath);
@@ -223,7 +233,7 @@ CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);
 
 CREATE TABLE files (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	instance_fk     INTEGER,
 	filesystem_fk	INTEGER,
 	filepath		VARCHAR(250) BINARY NOT NULL,
@@ -233,6 +243,7 @@ CREATE TABLE files (
 	file_status     INTEGER,
 	md5_check_time	DATETIME,
 	created_time	DATETIME,
+CONSTRAINT files_pk PRIMARY KEY(pk),
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
@@ -244,10 +255,11 @@ CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
 
 CREATE TABLE study_on_fs (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	study_fk		INTEGER,
 	filesystem_fk	INTEGER,
 	access_time		DATETIME NOT NULL,
+CONSTRAINT study_on_fs_pk PRIMARY KEY(pk),
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
@@ -256,7 +268,7 @@ CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
 CREATE INDEX access_time ON study_on_fs(access_time);
 
 CREATE TABLE mwl_item (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	patient_fk      INTEGER,
 	sps_status      INTEGER,
 	sps_id			VARCHAR(250) BINARY,
@@ -272,6 +284,7 @@ CREATE TABLE mwl_item (
 	updated_time	DATETIME,
 	created_time	DATETIME,
 	item_attrs		BLOB,
+CONSTRAINT mwl_item_pk PRIMARY KEY(pk),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
@@ -288,7 +301,7 @@ CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
 
 CREATE TABLE gpsps (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	patient_fk      INTEGER,
 	code_fk         INTEGER,
 	gpsps_iuid      VARCHAR(250) BINARY NOT NULL,
@@ -299,6 +312,7 @@ CREATE TABLE gpsps (
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
 	item_attrs      BLOB,
+CONSTRAINT gpsps_pk PRIMARY KEY(pk),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
@@ -349,12 +363,13 @@ CREATE INDEX devloc_gpsps_fk ON rel_gpsps_devloc(gpsps_fk);
 CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
 
 CREATE TABLE gpsps_perf (
-	pk                 INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk                 INTEGER AUTO_INCREMENT NOT NULL,
 	gpsps_fk           INTEGER,
 	code_fk            INTEGER,
 	human_perf_name     VARCHAR(250),
 	hum_perf_i_name    VARCHAR(250) BINARY,
 	hum_perf_p_name    VARCHAR(250) BINARY,
+CONSTRAINT gpsps_perf_pk PRIMARY KEY(pk),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
@@ -365,10 +380,11 @@ CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name);
 CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
 
 CREATE TABLE gpsps_req (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	gpsps_fk        INTEGER,
 	req_proc_id		VARCHAR(250) BINARY,
 	accession_no	VARCHAR(250) BINARY,
+CONSTRAINT gpsps_req_pk PRIMARY KEY(pk),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
 );
 CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
@@ -376,7 +392,7 @@ CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
 CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
 CREATE TABLE hp (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	user_fk         INTEGER,
 	hp_iuid         VARCHAR(250) BINARY NOT NULL,
 	hp_cuid         VARCHAR(250) BINARY,
@@ -386,6 +402,7 @@ CREATE TABLE hp (
 	num_priors      INTEGER,
 	num_screens     INTEGER,
 	hp_attrs        BLOB,
+CONSTRAINT hp_pk PRIMARY KEY(pk),
 FOREIGN KEY (user_fk) REFERENCES code(pk)
 );
 CREATE INDEX hp_user_fk ON hp(user_fk);
@@ -397,10 +414,11 @@ CREATE INDEX num_priors ON hp(num_priors);
 CREATE INDEX num_screens ON hp(num_screens);
 
 CREATE TABLE hpdef (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	hp_fk           INTEGER,
 	modality        VARCHAR(250) BINARY,
 	laterality      VARCHAR(250) BINARY,
+CONSTRAINT hpdef_pk PRIMARY KEY(pk),
 FOREIGN KEY (hp_fk) REFERENCES hp(pk)
 );
 CREATE INDEX hp_fk ON hpdef(hp_fk);
@@ -435,21 +453,23 @@ CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
 CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
 
 CREATE TABLE priv_patient (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	priv_type		INTEGER NOT NULL,
 	pat_id         	VARCHAR(250) BINARY,
 	pat_id_issuer  	VARCHAR(250) BINARY,
-	pat_attrs		BLOB
+	pat_attrs		BLOB,
+CONSTRAINT priv_patient_pk PRIMARY KEY(pk)
 );
 CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
 CREATE INDEX priv_pat_type ON priv_patient(priv_type);
 
 CREATE TABLE priv_study (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	patient_fk      INTEGER,
 	priv_type		INTEGER NOT NULL,
 	study_iuid      VARCHAR(250) BINARY NOT NULL,
 	study_attrs		BLOB,
+CONSTRAINT priv_study_pk PRIMARY KEY(pk),
 FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
 );
 CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
@@ -457,11 +477,12 @@ CREATE INDEX priv_study_type ON priv_study(priv_type);
 CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
 
 CREATE TABLE priv_series (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	study_fk		INTEGER,
 	priv_type		INTEGER NOT NULL,
 	series_iuid     VARCHAR(250) BINARY NOT NULL,
 	series_attrs	BLOB,
+CONSTRAINT priv_series_pk PRIMARY KEY(pk),
 FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
 );
 CREATE INDEX priv_study_fk ON priv_series(study_fk);
@@ -470,11 +491,12 @@ CREATE INDEX priv_series_iuid ON priv_series(series_iuid);
 
 
 CREATE TABLE priv_instance (
-	pk             	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk             	INTEGER AUTO_INCREMENT NOT NULL,
 	series_fk		INTEGER,
 	priv_type		INTEGER NOT NULL,
 	sop_iuid		VARCHAR(250) BINARY NOT NULL,
 	inst_attrs		BLOB,
+CONSTRAINT priv_instance_pk PRIMARY KEY(pk),
 FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
 );
 CREATE INDEX priv_series_fk ON priv_instance(series_fk);
@@ -482,7 +504,7 @@ CREATE INDEX priv_inst_type ON priv_instance(priv_type);
 CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
 
 CREATE TABLE priv_file (
-	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk              INTEGER AUTO_INCREMENT NOT NULL,
 	instance_fk     INTEGER,
 	filesystem_fk   INTEGER,
 	filepath		VARCHAR(250) BINARY NOT NULL,
@@ -490,6 +512,7 @@ CREATE TABLE priv_file (
 	file_md5        VARCHAR(250) BINARY,
 	file_size       INTEGER,
 	file_status     INTEGER,
+CONSTRAINT priv_file_pk PRIMARY KEY(pk),
 FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
@@ -498,10 +521,11 @@ CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
 
 
 CREATE TABLE device (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk          	INTEGER AUTO_INCREMENT NOT NULL,
 	station_name    VARCHAR(250) BINARY NOT NULL,
 	station_aet     VARCHAR(250) BINARY NOT NULL,
-	modality		VARCHAR(250) BINARY NOT NULL
+	modality		VARCHAR(250) BINARY NOT NULL,
+CONSTRAINT device_pk PRIMARY KEY(pk)
 );
 CREATE UNIQUE INDEX station_name ON device(station_name);
 
@@ -515,7 +539,7 @@ CREATE INDEX device_fk ON rel_dev_proto(device_fk);
 CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
 CREATE TABLE audit_record(
-	pk 				INTEGER AUTO_INCREMENT PRIMARY KEY,
+	pk 				INTEGER AUTO_INCREMENT NOT NULL,
 	msg_type 		VARCHAR(250) BINARY,
 	host_name 		VARCHAR(250) BINARY,
 	time_stamp 		DATETIME,
@@ -523,7 +547,8 @@ CREATE TABLE audit_record(
 	user_name 		VARCHAR(250) BINARY,
 	patient_name	VARCHAR(250) BINARY,
 	patient_id 		VARCHAR(250) BINARY,
-	xml_data 		BLOB
+	xml_data 		BLOB,
+CONSTRAINT audit_record_pk PRIMARY KEY(pk)
 );
 CREATE INDEX arr_msg_type ON audit_record(msg_type);
 CREATE INDEX arr_host_name ON audit_record(host_name);
@@ -534,8 +559,9 @@ CREATE INDEX arr_patient_name ON audit_record(patient_name);
 CREATE INDEX arr_patient_id ON audit_record(patient_id);
 
 CREATE TABLE users(
-	user_id		VARCHAR(250) BINARY PRIMARY KEY,
-	passwd 		VARCHAR(250) BINARY
+	user_id		VARCHAR(250) BINARY NOT NULL,
+	passwd 		VARCHAR(250) BINARY,
+CONSTRAINT users_pk PRIMARY KEY(user_id)
 );
 CREATE TABLE roles(
 	user_id		VARCHAR(250) BINARY,
