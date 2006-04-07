@@ -467,12 +467,15 @@ public class HL7SendService
         }
     }
     
-	public List queryCorrespondingPIDs(String patientID, String issuer)
+	public List queryCorrespondingPIDs(String patientID, String issuer) throws Exception {
+		return queryCorrespondingPIDs(patientID, issuer, null);
+	}
+	public List queryCorrespondingPIDs(String patientID, String issuer, String[] domains)
     throws Exception { 
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format( new Date() );
 	    StringBuffer sb = makeMSH(timestamp, "QBP^Q23",
-                sendingApplication + '^' + sendingFacility, pixManager, "2.5");
-        addQPD(sb, patientID, issuer);
+                null, pixManager, "2.5");
+        addQPD(sb, patientID, issuer, domains);
 	    sb.append("\rRCP|I||||||");
         Document msg = invoke(sb.toString().getBytes(ISO_8859_1), pixManager);
         MSH msh = new MSH(msg);
@@ -492,9 +495,16 @@ public class HL7SendService
             String sending, String receiving, String version) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("MSH|^~\\&|");
-		sb.append( getSendingApplication() ).append("|");
-        sb.append( getSendingFacility() ).append("|");
-		int delim = receiving.indexOf('^');
+		int delim;
+		if ( sending == null || sending.trim().length() == 0 ) {
+			sb.append( getSendingApplication() ).append("|");
+			sb.append( getSendingFacility() ).append("|");
+		} else {
+			delim = sending.indexOf('^');
+			sb.append( sending.substring(0,delim)).append("|");
+	        sb.append( sending.substring(delim+1)).append("|");
+		}
+		delim = receiving.indexOf('^');
 		sb.append( receiving.substring(0,delim)).append("|");
         sb.append( receiving.substring(delim+1)).append("|");
         sb.append( timestamp ).append("||");
@@ -564,10 +574,16 @@ public class HL7SendService
 		if ( name != null ) sb.append("patName");
 	}
 	
-    private void addQPD(StringBuffer sb, String patientID, String issuer) {
+    private void addQPD(StringBuffer sb, String patientID, String issuer, String[] domains) {
         sb.append("\rQPD|").append(getPIXQueryName()).append('|');
         sb.append(getQueryTag()).append('|');
         sb.append(patientID).append("^^^").append(issuer);
+        if ( domains != null && domains.length > 0 ) {
+        	sb.append("|^^^").append(domains[0]);
+        	for ( int i = 1 ; i < domains.length ; i++) {
+        		sb.append("~^^^").append(domains[i]);//~ is repeat delimiter used in makeMSH
+        	}
+        }
     }
 
 	/**
