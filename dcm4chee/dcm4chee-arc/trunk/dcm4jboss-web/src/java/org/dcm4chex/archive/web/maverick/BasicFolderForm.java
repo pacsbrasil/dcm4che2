@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
@@ -156,6 +158,26 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 	
 	public void setEditPatient(PatientModel pat) {
 		this.editPat = pat;
+	}
+	
+    /**
+	 * @param studyList
+	 */
+	public void setStudies(List studyList) {
+		List patList = new ArrayList();
+        PatientModel curPat = null;
+		for (int i = 0, n = studyList.size(); i < n; i++) {
+		    Dataset ds = (Dataset) studyList.get(i);
+		    PatientModel pat = new PatientModel(ds);
+		    if (!pat.equals(curPat)) {
+		        patList.add(curPat = pat);
+		    }
+		    StudyModel study = new StudyModel(ds);
+		    if (study.getPk() != -1 && !curPat.getStudies().contains(study)) {
+		        curPat.getStudies().add(study);
+		    }
+		}
+		this.updatePatients(patList);
 	}
 	
 	public void updatePatients(List newPatients) {
