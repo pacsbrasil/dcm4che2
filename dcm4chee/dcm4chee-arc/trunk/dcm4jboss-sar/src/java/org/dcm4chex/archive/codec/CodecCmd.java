@@ -39,16 +39,9 @@
 
 package org.dcm4chex.archive.codec;
 
-import java.util.Iterator;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
-
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 
 import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
 import EDU.oswego.cs.dl.util.concurrent.Semaphore;
@@ -74,18 +67,6 @@ public abstract class CodecCmd {
 
     static final String JPEG_LS = "JPEG-LS";
 
-    static final String JPEG_IMAGE_READER = "com.sun.imageio.plugins.jpeg.JPEGImageReader";
-
-    static final String CLIB_JPEG_IMAGE_READER = "com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader";
-
-    static final String J2K_IMAGE_READER = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
-
-    static final String J2K_IMAGE_READER_CODEC_LIB = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib";
-
-    static final String CLIB_JPEG_IMAGE_WRITER = "com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter";
-
-    static final String J2K_IMAGE_WRITER_CODEC_LIB = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriterCodecLib";
-
     static int maxConcurrentCodec = 1;
     
     static Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
@@ -99,8 +80,6 @@ public abstract class CodecCmd {
         return maxConcurrentCodec;
     }
     
-	protected boolean useNative = true;
-
 	protected final int samples;
 
 	protected final int frames;
@@ -146,30 +125,6 @@ public abstract class CodecCmd {
         return false;
     }
 
-    static ImageReader getImageReader(String formatName, String className) {
-        for (Iterator it = ImageIO.getImageReadersByFormatName(formatName); it
-                .hasNext();) {
-            ImageReader r = (ImageReader) it.next();
-            if (className == null || className.equals(r.getClass().getName()))
-                    return r;
-        }
-
-        throw new ConfigurationException("No Image Reader for format:"
-                + formatName);
-    }
-
-    static ImageWriter getImageWriter(String formatName, String className) {
-        for (Iterator it = ImageIO.getImageWritersByFormatName(formatName); it
-                .hasNext();) {
-            ImageWriter r = (ImageWriter) it.next();
-            if (className == null || className.equals(r.getClass().getName()))
-                    return r;
-        }
-
-        throw new ConfigurationException("No Image Writer for format:"
-                + formatName);
-    }
-    
     public final int getPixelDataLength() {
     	return pixelDataLength;
     }

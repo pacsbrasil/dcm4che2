@@ -82,6 +82,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4cheri.image.ImageWriterFactory;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
@@ -103,8 +104,8 @@ public abstract class CompressCmd extends CodecCmd {
 
     private static class Jpeg2000 extends CompressCmd {
 
-        public Jpeg2000(Dataset ds) {
-            super(ds, true);
+        public Jpeg2000(Dataset ds, String tsuid) {
+            super(ds, tsuid, true);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -114,30 +115,24 @@ public abstract class CompressCmd extends CodecCmd {
             }
         }
 
-        protected ImageWriter getWriter() {
-            return CodecCmd.getImageWriter(JPEG2000, J2K_IMAGE_WRITER_CODEC_LIB);
-        }
-
         protected void initWriteParam(ImageWriteParam param) {
-            J2KImageWriteParam j2KwParam = (J2KImageWriteParam) param;
-            j2KwParam.setWriteCodeStreamOnly(true);
+            if (param instanceof J2KImageWriteParam) {
+                J2KImageWriteParam j2KwParam = (J2KImageWriteParam) param;               
+                j2KwParam.setWriteCodeStreamOnly(true);
+            }
         }
     };
 
     private static class JpegLossless extends CompressCmd {
 
-        public JpegLossless(Dataset ds) {
-            super(ds, false);
+        public JpegLossless(Dataset ds, String tsuid) {
+            super(ds, tsuid, false);
         }
 
         public void coerceDataset(Dataset ds) {
             if (samples == 3) {
                 ds.putUS(Tags.PlanarConfiguration, 0);
             }
-        }
-
-        protected ImageWriter getWriter() {
-            return CompressCmd.getImageWriter(JPEG, CLIB_JPEG_IMAGE_WRITER);
         }
 
         protected void initWriteParam(ImageWriteParam param) {
@@ -147,8 +142,8 @@ public abstract class CompressCmd extends CodecCmd {
 
     private static class JpegLS extends CompressCmd {
 
-        public JpegLS(Dataset ds) {
-            super(ds, false);
+        public JpegLS(Dataset ds, String tsuid) {
+            super(ds, tsuid, false);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -156,10 +151,6 @@ public abstract class CompressCmd extends CodecCmd {
                 ds.putUS(Tags.PlanarConfiguration, 0);
             }
 
-        }
-
-        protected ImageWriter getWriter() {
-            return CompressCmd.getImageWriter(JPEG, CLIB_JPEG_IMAGE_WRITER);
         }
 
         protected void initWriteParam(ImageWriteParam param) {
@@ -189,7 +180,7 @@ public abstract class CompressCmd extends CodecCmd {
             try {
                 DcmDecodeParam decParam = p.getDcmDecodeParam();
     			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
-                CompressCmd compressCmd = CompressCmd.createCompressCmd(ds);
+                CompressCmd compressCmd = CompressCmd.createCompressCmd(ds, tsuid);
                 compressCmd.coerceDataset(ds);
                 ds.writeFile(bos, encParam);
                 ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
@@ -208,21 +199,27 @@ public abstract class CompressCmd extends CodecCmd {
     	}
     }
 
-    public static CompressCmd createCompressCmd(Dataset ds) {
-    	String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
-    	if (UIDs.JPEG2000Lossless.equals(tsuid))
-                return new Jpeg2000(ds);
-        if (UIDs.JPEGLSLossless.equals(tsuid)) return new JpegLS(ds);
+    public static CompressCmd createCompressCmd(Dataset ds, String tsuid) {
+    	if (UIDs.JPEG2000Lossless.equals(tsuid)) {
+                return new Jpeg2000(ds, tsuid);
+        }
+        if (UIDs.JPEGLSLossless.equals(tsuid)) {
+            return new JpegLS(ds, tsuid);
+        }
         if (UIDs.JPEGLossless.equals(tsuid)
-                || UIDs.JPEGLossless14.equals(tsuid))
-                return new JpegLossless(ds);
+                || UIDs.JPEGLossless14.equals(tsuid)) {
+                return new JpegLossless(ds, tsuid);
+        }
         throw new IllegalArgumentException("tsuid:" + tsuid);
     }
 
     protected final int dataType;
 
-    protected CompressCmd(Dataset ds, boolean supportSigned) {
+    protected final String tsuid;
+
+    protected CompressCmd(Dataset ds, String tsuid, boolean supportSigned) {
     	super(ds);
+    	this.tsuid = tsuid;
         switch (bitsAllocated) {
         case 8:
             this.dataType = DataBuffer.TYPE_BYTE;
@@ -238,8 +235,6 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     public abstract void coerceDataset(Dataset ds);
-
-    protected abstract ImageWriter getWriter();
 
     protected abstract void initWriteParam(ImageWriteParam param);
 
@@ -258,7 +253,8 @@ public abstract class CompressCmd extends CodecCmd {
             t1 = System.currentTimeMillis();
             ImageOutputStream ios = new MemoryCacheImageOutputStream(out);
             ios.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-            w = getWriter();
+            ImageWriterFactory f = ImageWriterFactory.getInstance();
+            w = f.getWriterForTransferSyntax(tsuid);
             ImageWriteParam wParam = w.getDefaultWriteParam();
             initWriteParam(wParam);
             WritableRaster raster = Raster.createWritableRaster(

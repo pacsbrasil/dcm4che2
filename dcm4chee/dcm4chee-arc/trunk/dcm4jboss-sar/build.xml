@@ -59,8 +59,11 @@
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.server.home}/deploy"/>		
 
+  <property name="jai_imagio.jar" value="${java.home}/lib/ext/jai_imageio.jar"/>
+
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
+    <pathelement location="${jai_imagio.jar}" />
 		<pathelement location="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/deploy/dcm4jboss-ejb-hsql.jar"/>

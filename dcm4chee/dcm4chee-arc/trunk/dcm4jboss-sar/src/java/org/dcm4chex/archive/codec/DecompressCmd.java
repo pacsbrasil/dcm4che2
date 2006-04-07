@@ -69,6 +69,7 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ItemParser;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
@@ -81,13 +82,13 @@ import com.sun.media.imageio.stream.SegmentedImageInputStream;
  */
 public class DecompressCmd extends CodecCmd {
 
-    private final String tsuid;
-
     private final ItemParser itemParser;
     
     private final ImageInputStream iis;
 
-    public static byte[] decompressFile(File inFile, File outFile, String tsuid,
+    private String tsuid;
+
+    public static byte[] decompressFile(File inFile, File outFile, String outTS,
     		int pxdataVR, byte[] buffer)
 		throws Exception {
         log.info("M-READ file:" + inFile);
@@ -103,10 +104,10 @@ public class DecompressCmd extends CodecCmd {
             DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(outFile), md);
             BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
-    			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
-                DecompressCmd cmd = new DecompressCmd(ds, null, parser);
+    			DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
+                DecompressCmd cmd = new DecompressCmd(ds, getTransferSyntax(ds), parser);
                 int len = cmd.getPixelDataLength();
-        		FileMetaInfo fmi = dof.newFileMetaInfo(ds, tsuid);
+        		FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);
         		ds.setFileMetaInfo(fmi);
                 ds.writeFile(bos, encParam);
                 ds.writeHeader(bos, encParam, Tags.PixelData, pxdataVR, (len+1)&~1);
@@ -133,40 +134,20 @@ public class DecompressCmd extends CodecCmd {
         }
     }
     
+    public static String getTransferSyntax(Dataset ds) {
+        FileMetaInfo fmi = ds.getFileMetaInfo();
+        return fmi != null ? fmi.getTransferSyntaxUID()
+                : UIDs.ImplicitVRLittleEndian;
+    }
+
     public DecompressCmd(Dataset ds,String tsuid, DcmParser parser) throws IOException {
     	super(ds);
+        this.tsuid = tsuid;
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
-        if ( tsuid != null ) {
-        	this.tsuid = tsuid;
-        } else {
-        	if ( ds.getFileMetaInfo() != null ) {
-        		this.tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
-        	} else {
-        		this.tsuid = UIDs.ExplicitVRLittleEndian;
-        	}
-        }
         if (samples == 3) ds.putCS(Tags.PhotometricInterpretation, "RGB");
     }
 
-    protected ImageReader getReaderForTransferSyntax(String ts) {
-        if (ts.equals(UIDs.JPEG2000Lossless) || ts.equals(UIDs.JPEG2000Lossy))
-                return getImageReader(JPEG2000,
-                        useNative ? J2K_IMAGE_READER_CODEC_LIB
-                                : J2K_IMAGE_READER);
-        if (ts.equals(UIDs.JPEGBaseline))
-                return getImageReader(JPEG, useNative ? CLIB_JPEG_IMAGE_READER
-                        : JPEG_IMAGE_READER);
-        // only supported by native CLibJPEGImageReader
-        if (ts.equals(UIDs.JPEGExtended) || ts.equals(UIDs.JPEGLossless)
-                || ts.equals(UIDs.JPEGLossless14)
-                || ts.equals(UIDs.JPEGLSLossless)
-                || ts.equals(UIDs.JPEGLSLossy))
-                return getImageReader(JPEG, CLIB_JPEG_IMAGE_READER);
-        throw new UnsupportedOperationException(
-                "No Image Reader available for Transfer Syntax:" + ts);
-    }
-    
     public void decompress(ByteOrder byteOrder, OutputStream out)
             throws Exception {
         long t1;
@@ -181,7 +162,8 @@ public class DecompressCmd extends CodecCmd {
                     + "x" + frames);
             t1 = System.currentTimeMillis();
             SegmentedImageInputStream siis = new SegmentedImageInputStream(iis, itemParser);
-            reader = getReaderForTransferSyntax(tsuid);
+            ImageReaderFactory f = ImageReaderFactory.getInstance();
+            reader = f.getReaderForTransferSyntax(tsuid);
             for (int i = 0; i < frames; ++i) {
                 log.debug("start decompression of frame #" + (i + 1));
                 reader.setInput(siis);

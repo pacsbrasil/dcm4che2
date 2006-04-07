@@ -544,5 +544,11 @@ accessed studies.</description>
       <name>showAvailableDiskSpace</name>
       <return-type>java.lang.String</return-type>
    </operation>   
+   <operation impact="INFO">
+      <description>Used internally.
+      </description>
+      <name>listLocalOnlineRWFileSystems</name>
+      <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
+   </operation>
    
 </mbean>

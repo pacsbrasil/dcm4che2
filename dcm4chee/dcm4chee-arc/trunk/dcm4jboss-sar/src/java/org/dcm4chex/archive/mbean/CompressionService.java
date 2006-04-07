@@ -64,6 +64,7 @@ import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -268,20 +269,21 @@ public class CompressionService extends TimerSupport {
         CompressionRule info;
         FileDTO[] files;
         int limit = limitNumberOfFilesPerTask;
-        String[] fsdirs = fileSystemDirPaths();
+        FileSystemDTO[] fsDTOs = listLocalOnlineRWFileSystems();
         FileSystemMgt fsMgt = newFileSystemMgt();
         byte[] buffer = null;
         for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
             info = (CompressionRule) compressionRuleList.get(i);
             cuid = info.getCUID();
             before = new Timestamp(System.currentTimeMillis() - info.getDelay());
-            for (int j = 0; j < fsdirs.length; j++) {
-                files = fsMgt.findFilesToCompress(fsdirs[j], cuid, before, limit);
+            for (int j = 0; j < fsDTOs.length; j++) {
+                files = fsMgt.findFilesToCompress(fsDTOs[j].getDirectoryPath(),
+                        cuid, before, limit);
                 if (files.length > 0) {
                 	if (buffer == null)
                 		buffer = new byte[bufferSize];
                     log.debug("Compress " + files.length + " files on filesystem "
-                            + fsdirs[j] + " triggered by " + info);
+                            + fsDTOs[j] + " triggered by " + info);
                     for (int k = 0; k < files.length; k++) {
                         doCompress(fsMgt, files[k], info, buffer);
                         if ( autoPurge ) autoPurge( files[k], minDiskFree);
@@ -314,13 +316,13 @@ public class CompressionService extends TimerSupport {
         }
 	}
 
-	private String[] fileSystemDirPaths() {
+	private FileSystemDTO[] listLocalOnlineRWFileSystems() {
         try {
-            return (String[]) server.invoke(fileSystemMgtName,
-                    "fileSystemDirPaths", null, null);
+            return (FileSystemDTO[]) server.invoke(fileSystemMgtName,
+                    "listLocalOnlineRWFileSystems", null, null);
         } catch (JMException e) {
             throw new RuntimeException(
-                    "Failed to invoke fileSystemDirPaths", e);
+                    "Failed to invoke listLocalOnlineRWFileSystems", e);
         }
     }
     

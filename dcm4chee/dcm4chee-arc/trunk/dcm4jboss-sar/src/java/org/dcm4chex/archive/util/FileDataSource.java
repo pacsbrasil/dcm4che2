@@ -123,9 +123,8 @@ public class FileDataSource implements DataSource {
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
             ds.putAll(mergeAttrs);
-            String tsOrig = null;
-            if ( writeFile && ds.getFileMetaInfo() != null ) {
-            	tsOrig = ds.getFileMetaInfo().getTransferSyntaxUID();
+            String tsOrig = DecompressCmd.getTransferSyntax(ds);
+            if ( writeFile) {
             	if ( tsUID != null ) {
             		if ( tsUID.equals( UIDs.ExplicitVRLittleEndian) || ! tsUID.equals( tsOrig ) ) { //can only decompress here!
             			tsUID = UIDs.ExplicitVRLittleEndian;

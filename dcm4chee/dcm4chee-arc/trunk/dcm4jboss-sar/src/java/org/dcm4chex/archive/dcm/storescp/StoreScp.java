@@ -650,7 +650,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
             CompressCmd compressCmd = null;
             if (!decParam.encapsulated && encParam.encapsulated) {
-                compressCmd = CompressCmd.createCompressCmd(ds);
+                compressCmd = CompressCmd.createCompressCmd(ds, tsuid);
                 compressCmd.coerceDataset(ds);
             }
             ds.writeFile(bos, encParam);

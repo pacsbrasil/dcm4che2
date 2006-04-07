@@ -583,9 +583,7 @@ public class FileSystemMgtService extends TimerSupport {
         int deleted, total = 0;
         FileSystemDTO[] list;
         try {
-            list = fsMgt.findFileSystems2(retrieveAET,
-                    Availability.ONLINE, FileSystemStatus.DEF_RW,
-                    FileSystemStatus.RW);
+            list = listLocalOnlineRWFileSystems(fsMgt);
         } catch (Exception e) {
             log.error("Failed to query DB for file system configuration:", e);
             return 0;
@@ -597,11 +595,6 @@ public class FileSystemMgtService extends TimerSupport {
             total += deleted;
             if (total >= this.getLimitNumberOfFilesPerTask())
                 break;
-        }
-
-        try {
-            fsMgt.remove();
-        } catch (Exception ignore) {
         }
         isPurging = false;
         return total;
@@ -810,9 +803,7 @@ public class FileSystemMgtService extends TimerSupport {
     
     private long getAvailableDiskSpace(boolean diffMinAvailable)
     throws IOException, FinderException {
-        FileSystemMgt mgt = newFileSystemMgt();
-        FileSystemDTO[] fs = mgt.findFileSystems2(retrieveAET, 
-                Availability.ONLINE, FileSystemStatus.DEF_RW, FileSystemStatus.RW);
+        FileSystemDTO[] fs = listLocalOnlineRWFileSystems();
         long result = diffMinAvailable
                 ? -(long) (minFreeDiskSpace * freeDiskSpaceLowerThreshold * fs.length)
                 : 0L;
@@ -822,6 +813,17 @@ public class FileSystemMgtService extends TimerSupport {
                 result += FileSystemUtils.freeSpace(dir.getPath());
         }
     	return result;
+    }
+
+    public FileSystemDTO[] listLocalOnlineRWFileSystems()
+            throws FinderException, RemoteException {
+        return listLocalOnlineRWFileSystems(newFileSystemMgt());
+    }
+    
+    private FileSystemDTO[] listLocalOnlineRWFileSystems(FileSystemMgt fsmgt)
+            throws FinderException, RemoteException {
+        return fsmgt.findFileSystems2(retrieveAET, Availability.ONLINE,
+                FileSystemStatus.DEF_RW, FileSystemStatus.RW);
     }
 
     public long showStudySize( Integer pk ) throws RemoteException, FinderException {
