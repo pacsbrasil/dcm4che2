@@ -118,6 +118,7 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="study_view.xsl" />
 	    </view>
+	  <view name="select" type="redirect" path="folder.m?showWithoutStudies=false"/>
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
