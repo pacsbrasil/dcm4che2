@@ -226,14 +226,14 @@
       <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4jboss.archive:service=PIXQuery"/>
+         <value value="dcm4jboss.archive:service=HL7Send"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getAffinityDomain" setMethod="setAffinityDomain">
       <description><![CDATA[Affinity Domain (Authority)<br/>
       		This name is used in PIX Query Service to get patient id of affinity domain.<br/>
       		You can disable PIX Query by setting this value with '=' as first character.<br/>
-      		'=' : the source patient ID and issuer is used.<br/>
+      		'=' : use the source patient ID and issuer.<br/>
       		'=?&lt;Domain&gt;' : use patientID from source and &lt;Domain&gt; as issuer. <br/>
       		'=&lt;patient&gt;' : use &lt;patient&gt; for patientID and issuer (patid^^^issuer). 
       ]]></description>
