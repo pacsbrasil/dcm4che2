@@ -42,14 +42,18 @@ package org.dcm4chex.archive.web.maverick;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
+import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -58,21 +62,24 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  *
  */
 public class StudyViewCtrl extends Dcm4JbossController {
-    private int patPk = -1;
-
+	private static final String SELECT = "select";
+	
+	private int patPk = -1;
     private int studyPk = -1;
-    
     private int seriesPk = -1;
     
     private String patID = null;
     private String studyUID = null;
     private String seriesUID = null;
+	private String accNr = null;    
     
     private PatientModel patient;
     
     private StudyContainer study;
 
     private int selectedSeries = 1;
+    
+    protected static Logger log = Logger.getLogger(StudyViewCtrl.class);
 
     public PatientModel getPatient() {
     	return patient;
@@ -152,14 +159,53 @@ public class StudyViewCtrl extends Dcm4JbossController {
 	public void setStudyUID(String studyUID) {
 		this.studyUID = studyUID;
 	}
+	
+	public void setAccNr(String accNr) {
+		this.accNr = accNr;
+	}
     protected String perform() throws Exception { 
-    	if ( studyPk < 0 ) studyPk = lookupContentManager().getStudyByIUID(studyUID).getInt(PrivateTags.StudyPk,-1);
+    	if ( studyPk < 0 ) {
+    		if ( calcStudyPk() > 1 ) return SELECT;
+    	}
     	patient = new PatientModel( lookupContentManager().getPatientForStudy( studyPk ) );
     	ContentManager cm = lookupContentManager();
     	Dataset sopIUIDs = cm.getSOPInstanceRefMacro( studyPk, true );
     	String serIUID = seriesPk < 0 ? seriesUID:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
     	study = new StudyContainer( sopIUIDs, serIUID );
        return SUCCESS;
+    }
+    
+    private int calcStudyPk() throws Exception {
+    	if ( studyUID == null ) {
+    		if ( seriesPk >= 0 ) {
+    			log.debug("Try to get studyUID via seriesPk!");
+        		studyUID = lookupContentManager().getSeries(seriesPk).getString(Tags.StudyInstanceUID);
+    		} else if ( seriesUID != null ) {
+    			log.debug("Try to get studyUID via seriesUID!");
+        		studyUID = lookupContentManager().getSeriesByIUID(seriesUID).getString(Tags.StudyInstanceUID);
+    		} else if ( accNr != null ) {
+    			log.debug("Try to get studyUID via accession number!");
+	    		Dataset queryDS = DcmObjectFactory.getInstance().newDataset();
+	    		queryDS.putSH(Tags.AccessionNumber, accNr);
+	    		queryDS.putUI(Tags.StudyInstanceUID);
+	    		List l = new QueryStudiesCmd(queryDS, true, true).list(0, 10);
+	    		if ( l.size() < 1 ) {
+	    			log.warn("No study found for Accession Number:"+accNr);
+	    			return 0;
+	    		} 
+	    		if ( l.size() > 1 ) {
+	    			log.warn("More than one study found for Accession Number:"+accNr);
+	    			FolderForm.getFolderForm(getCtx()).setStudies(l);
+	    			return l.size();
+	    		} 
+	    		studyUID = ((Dataset) l.get(0)).getString( Tags.StudyInstanceUID );
+    		} else {
+    			log.warn("StudyView call need either studyPk, studyUID or accNr!");
+    			return 0;
+    		}
+    	}
+    	studyPk = lookupContentManager().getStudyByIUID(studyUID).getInt(PrivateTags.StudyPk,-1);
+    	return 1;
     }
     
     private ContentManager lookupContentManager() throws Exception {
