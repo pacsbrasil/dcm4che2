@@ -188,21 +188,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
             List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
 					folderForm.getOffset(), folderForm.getLimit());
-            List patList = new ArrayList();
-            PatientModel curPat = null;
-            for (int i = 0, n = studyList.size(); i < n; i++) {
-                Dataset ds = (Dataset) studyList.get(i);
-                PatientModel pat = new PatientModel(ds);
-                if (!pat.equals(curPat)) {
-                    patList.add(curPat = pat);
-                }
-                StudyModel study = new StudyModel(ds);
-                if (study.getPk() != -1 && !curPat.getStudies().contains(study)) {
-                    curPat.getStudies().add(study);
-                }
-            }
-
-            folderForm.updatePatients(patList);
+            folderForm.setStudies(studyList);
         } finally {
             try {
                 cm.remove();
@@ -212,7 +198,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return FOLDER;
     }
 
-    private String send() throws Exception {
+	private String send() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         List patients = folderForm.getPatients();
         for (int i = 0, n = patients.size(); i < n; i++) {
