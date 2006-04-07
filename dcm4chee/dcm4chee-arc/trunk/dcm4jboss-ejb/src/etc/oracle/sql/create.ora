@@ -1,16 +1,16 @@
 CREATE SEQUENCE ae_pk_seq;
 CREATE TABLE ae (
-	pk          	NUMBER NOT NULL CONSTRAINT ae_pk PRIMARY KEY,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT ae_pk PRIMARY KEY,
 	aet          	VARCHAR2(255) NOT NULL,
 	hostname     	VARCHAR2(255) NOT NULL,
-	port			NUMBER NOT NULL,
+	port			NUMBER(38,0) NOT NULL,
 	cipher_suites  	VARCHAR2(255)
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE SEQUENCE code_pk_seq;
 CREATE TABLE code (
-	pk          	NUMBER NOT NULL CONSTRAINT code_pk PRIMARY KEY,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT code_pk PRIMARY KEY,
 	code_value     	VARCHAR2(255) NOT NULL,
 	code_designator	VARCHAR2(255) NOT NULL,
 	code_version   	VARCHAR2(255),
@@ -20,8 +20,8 @@ CREATE INDEX code_value ON code(code_value,code_designator);
 
 CREATE SEQUENCE patient_pk_seq;
 CREATE TABLE patient (
-	pk          	NUMBER NOT NULL CONSTRAINT patient_pk PRIMARY KEY,
-	merge_fk        NUMBER,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT patient_pk PRIMARY KEY,
+	merge_fk        NUMBER(38,0),
 	pat_id         	VARCHAR2(255) NOT NULL,
 	pat_id_issuer  	VARCHAR2(255),
 	pat_name    	NVARCHAR2(255),
@@ -44,8 +44,8 @@ CREATE INDEX pat_sex ON patient(pat_sex);
 
 CREATE SEQUENCE study_pk_seq;
 CREATE TABLE study (
-	pk              NUMBER NOT NULL CONSTRAINT study_pk PRIMARY KEY,
-	patient_fk      NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT study_pk PRIMARY KEY,
+	patient_fk      NUMBER(38,0),
 	study_iuid      VARCHAR2(255) NOT NULL,
 	study_id        VARCHAR2(255),
 	study_datetime	TIMESTAMP,
@@ -56,13 +56,13 @@ CREATE TABLE study (
 	study_desc      NVARCHAR2(255),
 	study_status_id VARCHAR2(255),
 	mods_in_study	VARCHAR2(255),
-	num_series		NUMBER,
-	num_instances	NUMBER,
+	num_series		NUMBER(38,0),
+	num_instances	NUMBER(38,0),
 	ext_retr_aet	VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
 	fileset_iuid	VARCHAR2(255),
 	fileset_id		VARCHAR2(255),
-	availability	NUMBER NOT NULL,
+	availability	NUMBER(38,0) NOT NULL,
 	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -83,8 +83,8 @@ CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
 
 CREATE TABLE rel_study_pcode (
-	study_fk       NUMBER,
-	pcode_fk       NUMBER,
+	study_fk       NUMBER(38,0),
+	pcode_fk       NUMBER(38,0),
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (pcode_fk) REFERENCES code(pk)
 );
@@ -94,15 +94,15 @@ CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
 CREATE SEQUENCE mpps_pk_seq;
 CREATE TABLE mpps (
-	pk          		NUMBER NOT NULL CONSTRAINT mpps_pk PRIMARY KEY,
-	patient_fk			NUMBER,
-	drcode_fk			NUMBER,
+	pk          		NUMBER(38,0) NOT NULL CONSTRAINT mpps_pk PRIMARY KEY,
+	patient_fk			NUMBER(38,0),
+	drcode_fk			NUMBER(38,0),
 	mpps_iuid			VARCHAR2(255) NOT NULL,
 	pps_start			TIMESTAMP,
 	station_aet			VARCHAR2(255),
 	modality	    	VARCHAR2(255),
 	accession_no		VARCHAR2(255),
-	mpps_status			NUMBER NOT NULL,
+	mpps_status			NUMBER(38,0) NOT NULL,
 	created_time	    TIMESTAMP,
 	updated_time	    TIMESTAMP,
 	mpps_attrs			BLOB,
@@ -118,9 +118,9 @@ CREATE INDEX mpps_accession_no ON mpps (accession_no);
 
 CREATE SEQUENCE series_pk_seq;
 CREATE TABLE series (
-	pk              NUMBER NOT NULL CONSTRAINT series_pk PRIMARY KEY,
-	study_fk		NUMBER,
-	mpps_fk			NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT series_pk PRIMARY KEY,
+	study_fk		NUMBER(38,0),
+	mpps_fk			NUMBER(38,0),
 	series_iuid     VARCHAR2(255) NOT NULL,
 	series_no		VARCHAR2(255),
 	modality		VARCHAR2(255),
@@ -128,13 +128,13 @@ CREATE TABLE series (
 	department		NVARCHAR2(255),
 	pps_start		TIMESTAMP,
 	pps_iuid		VARCHAR2(255),
-	num_instances	NUMBER NOT NULL,
+	num_instances	NUMBER(38,0) NOT NULL,
 	src_aet			VARCHAR2(255),
 	ext_retr_aet	VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
 	fileset_iuid	VARCHAR2(255),
 	fileset_id		VARCHAR2(255),
-	availability	NUMBER NOT NULL,
+	availability	NUMBER(38,0) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	series_attrs	BLOB,
@@ -155,8 +155,8 @@ CREATE INDEX series_created ON series(created_time);
 
 CREATE SEQUENCE series_req_pk_seq;
 CREATE TABLE series_req (
-	pk              NUMBER NOT NULL CONSTRAINT series_req_pk PRIMARY KEY,
-	series_fk       NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT series_req_pk PRIMARY KEY,
+	series_fk       NUMBER(38,0),
 	req_proc_id     VARCHAR2(255),
 	sps_id          VARCHAR2(255),
 FOREIGN KEY (series_fk) REFERENCES series(pk)
@@ -167,13 +167,13 @@ CREATE INDEX ser_req_sps_id ON series_req(sps_id);
 
 CREATE SEQUENCE media_pk_seq;
 CREATE TABLE media (
-	pk          	NUMBER NOT NULL CONSTRAINT media_pk PRIMARY KEY,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT media_pk PRIMARY KEY,
 	fileset_iuid	VARCHAR2(255) NOT NULL,
 	fileset_id			VARCHAR2(255), 
 	media_rq_iuid		VARCHAR2(255),
-	media_status		NUMBER NOT NULL,
+	media_status		NUMBER(38,0) NOT NULL,
 	media_status_info	VARCHAR2(255),
-	media_usage		NUMBER NOT NULL,
+	media_usage		NUMBER(38,0) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP
 );
@@ -182,10 +182,10 @@ CREATE INDEX media_status ON media(media_status);
 
 CREATE SEQUENCE instance_pk_seq;
 CREATE TABLE instance (
-	pk              NUMBER NOT NULL CONSTRAINT instance_pk PRIMARY KEY,
-	series_fk		NUMBER,
-	srcode_fk		NUMBER,
-	media_fk		NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT instance_pk PRIMARY KEY,
+	series_fk		NUMBER(38,0),
+	srcode_fk		NUMBER(38,0),
+	media_fk		NUMBER(38,0),
 	sop_iuid		VARCHAR2(255) NOT NULL,
 	sop_cuid		VARCHAR2(255) NOT NULL,
 	inst_no			VARCHAR2(255),
@@ -194,7 +194,7 @@ CREATE TABLE instance (
 	sr_verified		VARCHAR2(255),
 	ext_retr_aet	VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
-	availability	NUMBER NOT NULL,
+	availability	NUMBER(38,0) NOT NULL,
 	commitment		NUMBER(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -217,12 +217,12 @@ CREATE INDEX commitment ON instance(commitment);
 
 CREATE SEQUENCE filesystem_pk_seq;
 CREATE TABLE filesystem (
-	pk          	NUMBER NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
-	next_fk         NUMBER,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
+	next_fk         NUMBER(38,0),
 	dirpath			VARCHAR2(255) NOT NULL,
 	retrieve_aet	VARCHAR2(255) NOT NULL,
-	availability	NUMBER NOT NULL,
-	fs_status		NUMBER NOT NULL,
+	availability	NUMBER(38,0) NOT NULL,
+	fs_status		NUMBER(38,0) NOT NULL,
 	user_info		VARCHAR2(255),
 FOREIGN KEY (next_fk) REFERENCES filesystem(pk) 
 );
@@ -234,14 +234,14 @@ CREATE INDEX fs_status ON filesystem(fs_status);
 
 CREATE SEQUENCE files_pk_seq;
 CREATE TABLE files (
-	pk              NUMBER NOT NULL CONSTRAINT files_pk PRIMARY KEY,
-	instance_fk     NUMBER,
-	filesystem_fk	NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT files_pk PRIMARY KEY,
+	instance_fk     NUMBER(38,0),
+	filesystem_fk	NUMBER(38,0),
 	filepath		VARCHAR2(255) NOT NULL,
 	file_tsuid      VARCHAR2(255) NOT NULL,
 	file_md5        VARCHAR2(255),
-	file_size       NUMBER,
-	file_status     NUMBER,
+	file_size       NUMBER(38,0),
+	file_status     NUMBER(38,0),
 	md5_check_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
@@ -256,9 +256,9 @@ CREATE INDEX file_status ON files(file_status);
 
 CREATE SEQUENCE study_on_fs_pk_seq;
 CREATE TABLE study_on_fs (
-	pk              NUMBER NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
-	study_fk		NUMBER,
-	filesystem_fk	NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
+	study_fk		NUMBER(38,0),
+	filesystem_fk	NUMBER(38,0),
 	access_time		TIMESTAMP NOT NULL,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
@@ -269,9 +269,9 @@ CREATE INDEX access_time ON study_on_fs(access_time);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
-	pk          	NUMBER NOT NULL CONSTRAINT mwl_item_pk PRIMARY KEY,
-	patient_fk      NUMBER,
-	sps_status      NUMBER,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT mwl_item_pk PRIMARY KEY,
+	patient_fk      NUMBER(38,0),
+	sps_status      NUMBER(38,0),
 	sps_id			VARCHAR2(255),
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     VARCHAR2(255) NOT NULL,
@@ -302,16 +302,16 @@ CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
 
 CREATE SEQUENCE gpsps_pk_seq;
 CREATE TABLE gpsps (
-	pk              NUMBER NOT NULL CONSTRAINT gpsps_pk PRIMARY KEY,
-	patient_fk      NUMBER,
-	code_fk         NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT gpsps_pk PRIMARY KEY,
+	patient_fk      NUMBER(38,0),
+	code_fk         NUMBER(38,0),
 	gpsps_iuid      VARCHAR2(255) NOT NULL,
 	gpsps_tuid      VARCHAR2(255),
 	start_datetime  TIMESTAMP NOT NULL,
 	end_datetime    TIMESTAMP,
-	gpsps_status    NUMBER,
-	gpsps_prior     NUMBER,
-	in_availability NUMBER,
+	gpsps_status    NUMBER(38,0),
+	gpsps_prior     NUMBER(38,0),
+	in_availability NUMBER(38,0),
 	item_attrs      BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
@@ -327,8 +327,8 @@ CREATE INDEX gpsps_prior ON gpsps(gpsps_prior);
 CREATE INDEX in_availability ON gpsps(in_availability);
 
 CREATE TABLE rel_gpsps_appcode (
-	gpsps_fk       NUMBER,
-	appcode_fk     NUMBER,
+	gpsps_fk       NUMBER(38,0),
+	appcode_fk     NUMBER(38,0),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (appcode_fk) REFERENCES code(pk)
 );
@@ -336,8 +336,8 @@ CREATE INDEX appcode_gpsps_fk ON rel_gpsps_appcode(gpsps_fk);
 CREATE INDEX gpsps_appcode_fk ON rel_gpsps_appcode(appcode_fk);
 
 CREATE TABLE rel_gpsps_devname (
-	gpsps_fk       NUMBER,
-	devname_fk     NUMBER,
+	gpsps_fk       NUMBER(38,0),
+	devname_fk     NUMBER(38,0),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (devname_fk) REFERENCES code(pk)
 );
@@ -345,8 +345,8 @@ CREATE INDEX devname_gpsps_fk ON rel_gpsps_devname(gpsps_fk);
 CREATE INDEX gpsps_devname_fk ON rel_gpsps_devname(devname_fk);
 
 CREATE TABLE rel_gpsps_devclass (
-	gpsps_fk       NUMBER,
-	devclass_fk     NUMBER,
+	gpsps_fk       NUMBER(38,0),
+	devclass_fk     NUMBER(38,0),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (devclass_fk) REFERENCES code(pk)
 );
@@ -354,8 +354,8 @@ CREATE INDEX devclass_gpsps_fk ON rel_gpsps_devclass(gpsps_fk);
 CREATE INDEX gpsps_devclass_fk ON rel_gpsps_devclass(devclass_fk);
 
 CREATE TABLE rel_gpsps_devloc (
-	gpsps_fk       NUMBER,
-	devloc_fk  NUMBER,
+	gpsps_fk       NUMBER(38,0),
+	devloc_fk  NUMBER(38,0),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (devloc_fk) REFERENCES code(pk)
 );
@@ -364,9 +364,9 @@ CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
 
 CREATE SEQUENCE gpsps_perf_pk_seq;
 CREATE TABLE gpsps_perf (
-	pk                 NUMBER NOT NULL CONSTRAINT gpsps_perf_pk PRIMARY KEY,
-	gpsps_fk           NUMBER,
-	code_fk            NUMBER,
+	pk                 NUMBER(38,0) NOT NULL CONSTRAINT gpsps_perf_pk PRIMARY KEY,
+	gpsps_fk           NUMBER(38,0),
+	code_fk            NUMBER(38,0),
 	human_perf_name      NVARCHAR2(255),
 	hum_perf_i_name    NVARCHAR2(255),
 	hum_perf_p_name    NVARCHAR2(255),
@@ -381,8 +381,8 @@ CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
 
 CREATE SEQUENCE gpsps_req_pk_seq;
 CREATE TABLE gpsps_req (
-	pk          	NUMBER NOT NULL CONSTRAINT gpsps_req_pk PRIMARY KEY,
-	gpsps_fk        NUMBER,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT gpsps_req_pk PRIMARY KEY,
+	gpsps_fk        NUMBER(38,0),
 	req_proc_id		VARCHAR2(255),
 	accession_no	VARCHAR2(255),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
@@ -393,15 +393,15 @@ CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);
 
 CREATE SEQUENCE hp_pk_seq;
 CREATE TABLE hp (
-	pk              NUMBER NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
-	user_fk         NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
+	user_fk         NUMBER(38,0),
 	hp_iuid         VARCHAR2(255) NOT NULL,
 	hp_cuid         VARCHAR2(255),
 	hp_name         NVARCHAR2(255),
 	hp_group        NVARCHAR2(255),
-	hp_level        NUMBER,
-	num_priors      NUMBER,
-	num_screens     NUMBER,
+	hp_level        NUMBER(38,0),
+	num_priors      NUMBER(38,0),
+	num_screens     NUMBER(38,0),
 	hp_attrs        BLOB,
 FOREIGN KEY (user_fk) REFERENCES code(pk)
 );
@@ -415,8 +415,8 @@ CREATE INDEX num_screens ON hp(num_screens);
 
 CREATE SEQUENCE hpdef_pk_seq;
 CREATE TABLE hpdef (
-	pk              NUMBER NOT NULL CONSTRAINT hpdef_pk PRIMARY KEY,
-	hp_fk           NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT hpdef_pk PRIMARY KEY,
+	hp_fk           NUMBER(38,0),
 	modality        VARCHAR2(255),
 	laterality      VARCHAR2(255),
 FOREIGN KEY (hp_fk) REFERENCES hp(pk)
@@ -426,8 +426,8 @@ CREATE INDEX hpdef_modality ON hpdef(modality);
 CREATE INDEX hpdef_laterality ON hpdef(laterality);
 
 CREATE TABLE rel_hpdef_region (
-	hpdef_fk        NUMBER,
-	region_fk       NUMBER,
+	hpdef_fk        NUMBER(38,0),
+	region_fk       NUMBER(38,0),
 FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
 FOREIGN KEY (region_fk) REFERENCES code(pk)
 );
@@ -435,8 +435,8 @@ CREATE INDEX region_hpdef_fk ON rel_hpdef_region(hpdef_fk);
 CREATE INDEX hpdef_region_fk ON rel_hpdef_region(region_fk);
 
 CREATE TABLE rel_hpdef_proc (
-	hpdef_fk        NUMBER,
-	proc_fk         NUMBER,
+	hpdef_fk        NUMBER(38,0),
+	proc_fk         NUMBER(38,0),
 FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
 FOREIGN KEY (proc_fk) REFERENCES code(pk)
 );
@@ -444,8 +444,8 @@ CREATE INDEX proc_hpdef_fk ON rel_hpdef_proc(hpdef_fk);
 CREATE INDEX hpdef_proc_fk ON rel_hpdef_proc(proc_fk);
 
 CREATE TABLE rel_hpdef_reason (
-	hpdef_fk        NUMBER,
-	reason_fk       NUMBER,
+	hpdef_fk        NUMBER(38,0),
+	reason_fk       NUMBER(38,0),
 FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
 FOREIGN KEY (reason_fk) REFERENCES code(pk)
 );
@@ -455,8 +455,8 @@ CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
 
 CREATE SEQUENCE priv_patient_pk_seq;
 CREATE TABLE priv_patient (
-	pk          	NUMBER NOT NULL CONSTRAINT priv_patient_pk PRIMARY KEY,
-	priv_type		NUMBER NOT NULL,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT priv_patient_pk PRIMARY KEY,
+	priv_type		NUMBER(38,0) NOT NULL,
 	pat_id         	VARCHAR2(255),
 	pat_id_issuer  	VARCHAR2(255),
 	pat_attrs		BLOB
@@ -466,9 +466,9 @@ CREATE INDEX priv_pat_type ON priv_patient(priv_type);
 
 CREATE SEQUENCE priv_study_pk_seq;
 CREATE TABLE priv_study (
-	pk              NUMBER NOT NULL CONSTRAINT priv_study_pk PRIMARY KEY,
-	patient_fk      NUMBER,
-	priv_type		NUMBER NOT NULL,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT priv_study_pk PRIMARY KEY,
+	patient_fk      NUMBER(38,0),
+	priv_type		NUMBER(38,0) NOT NULL,
 	study_iuid      VARCHAR2(255) NOT NULL,
 	study_attrs		BLOB,
 FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
@@ -479,9 +479,9 @@ CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
 
 CREATE SEQUENCE priv_series_pk_seq;
 CREATE TABLE priv_series (
-	pk              NUMBER NOT NULL CONSTRAINT priv_series_pk PRIMARY KEY,
-	study_fk		NUMBER,
-	priv_type		NUMBER NOT NULL,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT priv_series_pk PRIMARY KEY,
+	study_fk		NUMBER(38,0),
+	priv_type		NUMBER(38,0) NOT NULL,
 	series_iuid     VARCHAR2(255) NOT NULL,
 	series_attrs	BLOB,
 FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
@@ -493,9 +493,9 @@ CREATE INDEX priv_series_iuid ON priv_series(series_iuid);
 
 CREATE SEQUENCE priv_instance_pk_seq;
 CREATE TABLE priv_instance (
-	pk             	NUMBER NOT NULL CONSTRAINT priv_instance_pk PRIMARY KEY,
-	series_fk		NUMBER,
-	priv_type		NUMBER NOT NULL,
+	pk             	NUMBER(38,0) NOT NULL CONSTRAINT priv_instance_pk PRIMARY KEY,
+	series_fk		NUMBER(38,0),
+	priv_type		NUMBER(38,0) NOT NULL,
 	sop_iuid		VARCHAR2(255) NOT NULL,
 	inst_attrs		BLOB,
 FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
@@ -506,14 +506,14 @@ CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
 
 CREATE SEQUENCE priv_file_pk_seq;
 CREATE TABLE priv_file (
-	pk              NUMBER NOT NULL CONSTRAINT priv_file_pk PRIMARY KEY,
-	instance_fk     NUMBER,
-	filesystem_fk   NUMBER,
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT priv_file_pk PRIMARY KEY,
+	instance_fk     NUMBER(38,0),
+	filesystem_fk   NUMBER(38,0),
 	filepath		VARCHAR2(255) NOT NULL,
 	file_tsuid      VARCHAR2(255) NOT NULL,
 	file_md5        VARCHAR2(255),
-	file_size       NUMBER,
-	file_status     NUMBER,
+	file_size       NUMBER(38,0),
+	file_status     NUMBER(38,0),
 FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
@@ -523,7 +523,7 @@ CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
 
 CREATE SEQUENCE device_pk_seq;
 CREATE TABLE device (
-	pk          	NUMBER NOT NULL CONSTRAINT device_pk PRIMARY KEY,
+	pk          	NUMBER(38,0) NOT NULL CONSTRAINT device_pk PRIMARY KEY,
 	station_name    VARCHAR2(255) NOT NULL,
 	station_aet     VARCHAR2(255) NOT NULL,
 	modality		VARCHAR2(255) NOT NULL
@@ -531,8 +531,8 @@ CREATE TABLE device (
 CREATE UNIQUE INDEX station_name ON device(station_name);
 
 CREATE TABLE rel_dev_proto (
-	device_fk      NUMBER,
-	prcode_fk      NUMBER,
+	device_fk      NUMBER(38,0),
+	prcode_fk      NUMBER(38,0),
 FOREIGN KEY (device_fk) REFERENCES device(pk),
 FOREIGN KEY (prcode_fk) REFERENCES code(pk)
 );
@@ -541,7 +541,7 @@ CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
 CREATE SEQUENCE audit_record_pk_seq;
 CREATE TABLE audit_record(
-	pk 				NUMBER NOT NULL CONSTRAINT audit_record_pk PRIMARY KEY,
+	pk 				NUMBER(38,0) NOT NULL CONSTRAINT audit_record_pk PRIMARY KEY,
 	msg_type 		VARCHAR2(255),
 	host_name 		VARCHAR2(255),
 	time_stamp 		TIMESTAMP,
