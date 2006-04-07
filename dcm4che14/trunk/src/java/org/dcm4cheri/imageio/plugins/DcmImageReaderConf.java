@@ -53,7 +53,7 @@ import javax.xml.transform.stream.*;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class DcmImageReaderConf {
+public class DcmImageReaderConf {
     
     public static DcmImageReaderConf getInstance() {
         return instance;

@@ -183,7 +183,7 @@ final class PresContextImpl implements PresContext {
     }    
 
     public final String getTransferSyntaxUID() {
-        return (String)tsuids.get(0);
+        return tsuids.isEmpty() ? null : (String)tsuids.get(0);
     }
 
     public String toString() {

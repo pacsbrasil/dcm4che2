@@ -71,7 +71,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class DcmMetadataImpl extends DcmMetadata {
+public class DcmMetadataImpl extends DcmMetadata {
     
     static final DcmImageReaderConf conf = DcmImageReaderConf.getInstance();
     
