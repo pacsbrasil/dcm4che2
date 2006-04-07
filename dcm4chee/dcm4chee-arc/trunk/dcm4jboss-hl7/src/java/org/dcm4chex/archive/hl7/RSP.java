@@ -89,7 +89,7 @@ class RSP extends ACK {
         if (authority == null) {
             throw new IllegalArgumentException("Missing Authority in returned PID");
         }
-        sb.append('^').append(toString(authority));
+        sb.append("^^^").append(toString(authority));
         List authorityUID = authority.elements(HL7XMLLiterate.TAG_SUBCOMPONENT);
         for (Iterator iter = authorityUID.iterator(); iter.hasNext();) {
             sb.append('&').append(toString(iter.next()));
