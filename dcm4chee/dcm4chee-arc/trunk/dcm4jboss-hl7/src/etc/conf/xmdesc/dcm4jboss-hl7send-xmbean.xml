@@ -11,7 +11,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.archive.hl7.ADTService</class>
+   <class>org.dcm4chex.archive.hl7.HL7SendService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -202,7 +202,7 @@
       </parameter>
       <parameter>
         <description>Sending. Format: SendingApplication^SendingFacility</description>
-        <name>patient</name>
+        <name>sender</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
@@ -232,7 +232,7 @@
       </parameter>
       <parameter>
         <description>Sending. Format: SendingApplication^SendingFacility</description>
-        <name>patient</name>
+        <name>sender</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
@@ -257,7 +257,7 @@
       </parameter>
       <parameter>
         <description><![CDATA[Assigning Authority:
-          <namespace ID>&<universal ID>&<universal ID type>]]>
+          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
         </description>
         <name>authority</name>
         <type>java.lang.String</type>
@@ -274,12 +274,35 @@
       </parameter>
       <parameter>
         <description><![CDATA[Assigning Authority:
-          <namespace ID>&<universal ID>&<universal ID type>]]>
+          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
         </description>
         <name>authority</name>
         <type>java.lang.String</type>
       </parameter>
        <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Query PIX Manger for corresponding Patient IDs of specific domain(s).</description>
+      <name>queryCorrespondingPIDs</name>
+      <parameter>
+        <description>Patient ID</description>
+        <name>pid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[Assigning Authority:
+          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
+        </description>
+        <name>authority</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>List of returned domains (What domains returned).
+        </description>
+        <name>domains</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+       <return-type>java.util.List</return-type>
    </operation>
    
    
