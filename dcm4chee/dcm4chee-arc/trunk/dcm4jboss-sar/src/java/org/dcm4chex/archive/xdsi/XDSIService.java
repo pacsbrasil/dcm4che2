@@ -812,15 +812,40 @@ public class XDSIService extends ServiceMBeanSupport {
 			return patID+issuer;
 		} else {
 	        try {
-	            return (String) server.invoke(this.pixQueryServiceName,
-	                    "query",
-	                    new Object[] { patID, issuer, affinityDomain },
-	                    new String[] { String.class.getName(), String.class.getName(), String.class.getName() });
+	            List pids = (List) server.invoke(this.pixQueryServiceName,
+	                    "queryCorrespondingPIDs",
+	                    new Object[] { patID, issuer, new String[]{affinityDomain} },
+	                    new String[] { String.class.getName(), String.class.getName(), String[].class.getName() });
+	            String pid;
+	            for ( Iterator iter = pids.iterator() ; iter.hasNext() ; ) {
+	            	pid = (String) iter.next();
+	            	if ( isFromDomain(pid) ) {
+	            		return pid;
+	            	}
+	            }
+            	log.error("Patient ID is not known in Affinity domain:"+affinityDomain);
+	        	return null;
 	        } catch (Exception e) {
 	            log.error("Failed to get patientID for Affinity Domain:", e);
 	            return null;
 	        }
 		}
+	}
+	/**
+	 * @param pid
+	 * @return
+	 */
+	private boolean isFromDomain(String pid) {
+		int pos = 0;
+		for ( int i = 0 ; i < 3 ; i++) {
+			pos = pid.indexOf('^', pos);
+			if ( pos == -1 ) {
+				log.warn("patient id does not contain domain (issuer)! :"+pid);
+				return false;
+			}
+			pos++;
+		}
+		return pid.substring(pos).equals(this.affinityDomain);
 	}
 	/**
 	 * @param response
