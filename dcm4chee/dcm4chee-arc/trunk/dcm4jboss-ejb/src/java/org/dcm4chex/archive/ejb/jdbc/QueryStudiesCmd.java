@@ -79,14 +79,33 @@ public class QueryStudiesCmd extends BaseReadCmd {
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
+    	throws SQLException {
+    	this(filter, hideMissingStudies, false );
+    }
+    /**
+     * Creates a new QueryStudiesCmd object with given filter.
+     * <p>
+     * If parameter <code>forceType1=true</code> all Type2 Matches are forced to Type1 matches and therefore all
+     * 'empty field' matches will be hidden.
+     * <p>
+     * Dont use this feature for DICOM queries!
+     *   
+     * @param filter Filter Dataset.
+     * @param hideMissingStudies Hide patients without studies.
+     * @param forceType1 disable type2 matches.
+     * 
+     * @throws SQLException
+     */
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean forceType1)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+        boolean type2 = forceType1 ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE2,
+                type2,
                 filter.getString(Tags.PatientID),
                 false);
         sqlBuilder.addPNMatch(new String[] {
@@ -94,15 +113,15 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 filter.getString(Tags.PatientName));
-        sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
                 filter.getString(Tags.StudyID), false);
         sqlBuilder.addSingleValueMatch(null, "Study.studyIuid",
                 SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime",
-                SqlBuilder.TYPE2,
+                type2,
                 filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber",
-                SqlBuilder.TYPE2,
+                type2,
                 filter.getString(Tags.AccessionNumber),
                 false);
         sqlBuilder.addModalitiesInStudyNestedMatch(null, filter
