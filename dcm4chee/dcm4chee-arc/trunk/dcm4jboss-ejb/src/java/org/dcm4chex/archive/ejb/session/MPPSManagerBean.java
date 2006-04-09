@@ -162,8 +162,8 @@ public abstract class MPPSManagerBean implements SessionBean {
             for (Iterator it = c.iterator(); it.hasNext();) {
                 PatientLocal patient = (PatientLocal) it.next();
                 if (equals(patient, ds)) {
-                    PatientLocal mergedWith = patient.getMergedWith();
-                    if (mergedWith != null) {
+                    PatientLocal mergedWith;
+                    while ((mergedWith = patient.getMergedWith()) != null) {
                         patient = mergedWith;
                     }
                     return patient;

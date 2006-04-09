@@ -308,6 +308,19 @@ public abstract class GPSPSBean implements EntityBean {
     public abstract PatientLocal getPatient();
 
     /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setGppps(java.util.Collection gpsps);
+
+    /**
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation name="gpsps-gppps" role-name="gpsps-resulting-in-gppps"
+     * @jboss.relation-table table-name="rel_gpsps_gppps"
+     * @jboss.relation fk-column="gppps_fk" related-pk-field="pk"     
+     */
+    public abstract java.util.Collection getGppps();
+    
+    /**
      * @ejb.relation name="gpsps-workitemcode" role-name="gpsps-with-workitemcode"
      *               target-ejb="Code" target-role-name="workitemcode-of-gpsps"
      *               target-multiple="yes"

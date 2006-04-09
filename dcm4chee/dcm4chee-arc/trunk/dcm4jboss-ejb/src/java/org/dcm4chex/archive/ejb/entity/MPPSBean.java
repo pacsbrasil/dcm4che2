@@ -39,8 +39,6 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Arrays;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
@@ -55,6 +53,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -92,15 +91,6 @@ public abstract class MPPSBean implements EntityBean {
 	private SeriesLocalHome seriesHome;
 
 	private CodeLocalHome codeHome;
-
-	private static final String[] STATUS = { "IN PROGRESS", "COMPLETED",
-			"DISCONTINUED" };
-
-	private static final int IN_PROGRESS = 0;
-
-	private static final int COMPLETED = 1;
-
-	private static final int DISCONTINUED = 2;
 
 	public void setEntityContext(EntityContext ctx) {
 		Context jndiCtx = null;
@@ -240,7 +230,7 @@ public abstract class MPPSBean implements EntityBean {
 	/**
 	 * @ejb.interface-method view-type="local"
 	 * 
-	 * @return patient of this study
+	 * @return patient of this mpps
 	 */
 	public abstract PatientLocal getPatient();
 
@@ -300,36 +290,32 @@ public abstract class MPPSBean implements EntityBean {
 	 * @ejb.interface-method
 	 */
 	public boolean isInProgress() {
-		return getPpsStatusAsInt() == IN_PROGRESS;
+		return getPpsStatusAsInt() == PPSStatus.IN_PROGRESS;
 	}
 
 	/**
 	 * @ejb.interface-method
 	 */
 	public boolean isCompleted() {
-		return getPpsStatusAsInt() == COMPLETED;
+		return getPpsStatusAsInt() == PPSStatus.COMPLETED;
 	}
 
 	/**
 	 * @ejb.interface-method
 	 */
 	public boolean isDiscontinued() {
-		return getPpsStatusAsInt() == DISCONTINUED;
+		return getPpsStatusAsInt() == PPSStatus.DISCONTINUED;
 	}
 
 	/**
 	 * @ejb.interface-method
 	 */
 	public String getPpsStatus() {
-		return STATUS[getPpsStatusAsInt()];
+		return PPSStatus.toString(getPpsStatusAsInt());
 	}
 
 	public void setPpsStatus(String status) {
-		int index = Arrays.asList(STATUS).indexOf(status);
-		if (index == -1) {
-			throw new IllegalArgumentException("status:" + status);
-		}
-		setPpsStatusAsInt(index);
+		setPpsStatusAsInt(PPSStatus.toInt(status));
 	}
 
 	private String prompt() {

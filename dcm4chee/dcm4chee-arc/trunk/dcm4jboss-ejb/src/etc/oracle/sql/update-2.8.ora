@@ -39,3 +39,28 @@ ALTER TABLE gpsps_perf ADD hum_perf_p_name NVARCHAR2(255);
 
 CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name);
 CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
+
+CREATE SEQUENCE gppps_pk_seq;
+CREATE TABLE gppps (
+	pk          		NUMBER(38,0) NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
+	patient_fk			NUMBER(38,0),
+	pps_iuid			VARCHAR2(255) NOT NULL,
+	pps_start			TIMESTAMP,
+	pps_status			VARCHAR2(255) NOT NULL,
+	created_time	    TIMESTAMP,
+	updated_time	    TIMESTAMP,
+	pps_attrs			BLOB,
+FOREIGN KEY (patient_fk) REFERENCES patient(pk)
+);
+CREATE UNIQUE INDEX gppps_iuid ON gppps (pps_iuid);
+CREATE INDEX gppps_patient_fk ON gppps(patient_fk);
+CREATE INDEX gppps_pps_start ON gppps (pps_start);
+
+CREATE TABLE rel_gpsps_gppps (
+	gpsps_fk        NUMBER(38,0),
+	gppps_fk        NUMBER(38,0),
+FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
+FOREIGN KEY (gppps_fk) REFERENCES gppps(pk)
+);
+CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
+CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);

@@ -352,7 +352,7 @@ CREATE TABLE gpsps_perf (
 	pk                 INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT gpsps_perf_pk PRIMARY KEY,
 	gpsps_fk           INTEGER,
 	code_fk            INTEGER,
-	human_perf_name     VARCHAR(255),
+	human_perf_name    VARCHAR(255),
 	hum_perf_i_name    VARCHAR(255),
 	hum_perf_p_name    VARCHAR(255),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
@@ -374,6 +374,30 @@ FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
 CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
 CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
 CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
+
+CREATE TABLE gppps (
+	pk          		INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT gppps_pk PRIMARY KEY,
+	patient_fk			INTEGER,
+	pps_iuid			VARCHAR(255) NOT NULL,
+	pps_start			DATETIME,
+	pps_status			INTEGER NOT NULL,
+	created_time	    DATETIME,
+	updated_time	    DATETIME,
+	pps_attrs			IMAGE,
+FOREIGN KEY (patient_fk) REFERENCES patient(pk)
+);
+CREATE UNIQUE INDEX gppps_iuid ON gppps (pps_iuid);
+CREATE INDEX gppps_patient_fk ON gppps(patient_fk);
+CREATE INDEX gppps_pps_start ON gppps (pps_start);
+
+CREATE TABLE rel_gpsps_gppps (
+	gpsps_fk        INTEGER,
+	gppps_fk        INTEGER,
+FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
+FOREIGN KEY (gppps_fk) REFERENCES gppps(pk)
+);
+CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
+CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);
 
 CREATE TABLE hp (
 	pk              INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
