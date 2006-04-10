@@ -69,7 +69,6 @@ public class MWLModel extends BasicFormPagingModel {
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
 
-	private boolean linkMode = false;
 	private String[] mppsIDs = null;
 	
 	/** Holds list of MWLEntries */
