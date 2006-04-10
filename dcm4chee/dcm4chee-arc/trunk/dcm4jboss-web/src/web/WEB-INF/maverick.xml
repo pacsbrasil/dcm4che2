@@ -286,6 +286,15 @@ default-transform-type="xslt">
 	    <view name="link" type="redirect" path="mwl_console.m?action=link"/>
      </command>
      
+	<!-- ****** General Purpose Worklist Console (GPWLConsole) related commands ******-->
+
+    <command name="gpwl_console">
+        <controller class="org.dcm4chex.archive.web.maverick.gpwl.GPWLConsoleCtrl" />    
+	    <view name="success">
+    	  <transform path="gpwlc/gpwl_console.xsl" />
+	    </view>
+     </command>
+
 	<!-- ****** User admin related commands ******-->
 
     <command name="useradmin_console">

@@ -83,6 +83,17 @@
 		    			</xsl:choose>
 		      			<a class="tab" href="mpps_console.m?filter.x=1">MPPS Console</a>
 		      		</td>
+		      		<td width="120" align="center">
+		      			<xsl:choose>
+		    				<xsl:when test="model/modelName = 'GPWL'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+		      			<a class="tab" href="gpwl_console.m?filter.x=1">GP Worklist Console</a>
+		      		</td>
 		      	</xsl:if>
 	      		<td width="120" align="center">
 	      			<xsl:choose>

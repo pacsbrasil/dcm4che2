@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<server>
+  <classpath codebase="lib" archives="dcm4jboss.jar"/>
+  <mbean code="org.dcm4chex.archive.dcm.gpwlscu.GPWLScuService" 
+         name="dcm4jboss.archive:service=GPWLScu"
+         xmbean-dd="xmdesc/dcm4jboss-gpwlscu-xmbean.xml">
+    <depends>jboss.j2ee:jndiName=ejb/GPWLManager,service=EJB</depends>
+  </mbean>
+
+</server>
