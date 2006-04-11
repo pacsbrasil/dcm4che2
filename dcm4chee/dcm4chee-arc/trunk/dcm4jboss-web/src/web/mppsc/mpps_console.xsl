@@ -86,13 +86,13 @@
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd hh:mm">Date: </td>
 						<td bgcolor="eeeeee">
-							<input size="12" name="startDate" 
+							<input size="14" name="startDate" 
 									title="Query Start date. format:yyyy/mm/dd hh:mm" 
 									type="text" value="{filter/startDate}"/>
 						</td>
 						<td bgcolor="eeeeee" title="Query End date. format:yyyy/mm/dd hh:mm">to: </td>
 						<td bgcolor="eeeeee">
-							<input size="12" name="endDate" title="Query End date. format:yyyy/mm/dd hh:mm" 
+							<input size="14" name="endDate" title="Query End date. format:yyyy/mm/dd hh:mm" 
 									type="text" value="{filter/endDate}"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
