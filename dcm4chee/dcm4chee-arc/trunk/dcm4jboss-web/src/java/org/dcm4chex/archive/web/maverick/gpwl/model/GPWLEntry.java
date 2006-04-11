@@ -128,6 +128,9 @@ public class GPWLEntry {
 		return getCodeValues( ds.get( Tags.ScheduledStationNameCodeSeq ) );
 	}
 	public String getStationClass() {
+		return getCodeValues( ds.get( Tags.ScheduledStationClassCodeSeq ) );
+	}
+	public String getStationGeoLocation() {
 		return getCodeValues( ds.get( Tags.ScheduledStationGeographicLocationCodeSeq ) );
 	}
 	

@@ -260,6 +260,7 @@ public class GPWLModel extends BasicFormPagingModel {
 
 		ds.putPN( Tags.PatientName, patientName );
 		ds.putLO( Tags.PatientID);
+		ds.putLO( Tags.IssuerOfPatientID);
 		//Patient demographic
 		ds.putDA( Tags.PatientBirthDate );
 		ds.putCS( Tags.PatientSex );
