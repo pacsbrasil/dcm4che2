@@ -50,7 +50,7 @@ CREATE TABLE gppps (
 	pps_status			INTEGER NOT NULL,
 	created_time	    TIMESTAMP,
 	updated_time	    TIMESTAMP,
-	pps_attrs			BLOB(640000),
+	pps_attrs			BLOB(16384),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE UNIQUE INDEX gppps_iuid ON gppps (pps_iuid);
