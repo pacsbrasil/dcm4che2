@@ -187,6 +187,10 @@
 			<param-name>gpwlScuServiceName</param-name>
 			<param-value>dcm4jboss.archive:service=GPWLScu</param-value>
 		</init-param>
+		<init-param>
+			<param-name>gpppsScpServiceName</param-name>
+			<param-value>dcm4jboss.archive:service=GPPPSScp</param-value>
+		</init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>

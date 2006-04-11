@@ -293,6 +293,16 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="gpwlc/gpwl_console.xsl" />
 	    </view>
+	    <view name="linkDone" type="redirect" path="gppps_console.m?action=linkDone"/>
+     </command>
+	<!-- ****** General Purpose Performed Procedure Step Console (GPPPSConsole) related commands ******-->
+
+    <command name="gppps_console">
+        <controller class="org.dcm4chex.archive.web.maverick.gppps.GPPPSConsoleCtrl" />    
+	    <view name="success">
+    	  <transform path="gpppsc/gppps_console.xsl" />
+	    </view>
+	    <view name="link" type="redirect" path="gpwl_console.m?action=link"/>
      </command>
 
 	<!-- ****** User admin related commands ******-->
