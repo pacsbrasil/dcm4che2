@@ -69,6 +69,9 @@ QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=?
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'MPPS']" mode="fk">
 <xsl:with-param name="fk" select="'patient_fk'"/>
 </xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPPPS']" mode="fk">
+<xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'HP']" mode="fk">
 <xsl:with-param name="fk" select="'user_fk'"/>
 </xsl:apply-templates>
