@@ -53,9 +53,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
 import org.dcm4chex.archive.web.maverick.mpps.MPPSConsoleCtrl;
+import org.dcm4chex.archive.web.maverick.mpps.MPPSFilter;
 
 /**
  * @author franz.willer

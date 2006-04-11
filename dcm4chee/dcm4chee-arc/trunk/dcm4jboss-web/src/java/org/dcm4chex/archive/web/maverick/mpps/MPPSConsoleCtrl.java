@@ -43,7 +43,6 @@ import java.text.ParseException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;

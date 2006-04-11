@@ -47,7 +47,6 @@ import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.jdbc.MPPSFilter;
 import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
 import org.jboss.mx.util.MBeanServerLocator;
 
@@ -106,7 +105,7 @@ public class MPPSDelegate {
 			MPPSQueryCmd cmd = null;
 			try {
 				resp = new ArrayList();
-				cmd = new MPPSQueryCmd( filter );
+				cmd = new MPPSQueryCmd( filter.toSearchDS(), filter.isEmptyAccNo() );
 				cmd.execute();
 				while ( cmd.next() ) {
 					resp.add( cmd.getDataset() );
