@@ -40,7 +40,9 @@
 package org.dcm4chex.archive.dcm.mppsscp;
 
 import java.io.IOException;
-import java.util.Map;
+import java.rmi.RemoteException;
+
+import javax.ejb.CreateException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -51,6 +53,7 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
+import org.dcm4chex.archive.common.PPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -62,12 +65,6 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  */
 class MPPSScp extends DcmServiceBase {
-
-    private static final String IN_PROGRESS = "IN PROGRESS";
-
-    private static final String COMPLETED = "COMPLETED";
-
-    private static final String DISCONTINUED = "DISCONTINUED";
 
     private static final int[] TYPE1_NCREATE_ATTR = {
             Tags.ScheduledStepAttributesSeq, Tags.PPSID,
@@ -93,17 +90,15 @@ class MPPSScp extends DcmServiceBase {
 		this.log = service.getLog();
     }
 
-    private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
-        return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
-    }
-
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
-        final String cuid = rspCmd.getAffectedSOPClassUID();
-        final String iuid = rspCmd.getAffectedSOPInstanceUID();
+        final String cuid = cmd.getAffectedSOPClassUID();
+        String iuid = cmd.getAffectedSOPInstanceUID();
+        if (iuid == null) {
+            iuid = rspCmd.getAffectedSOPInstanceUID();
+        }
 		log.debug("Creating MPPS:\n");
 		log.debug(mpps);
         checkCreateAttributs(mpps);
@@ -114,18 +109,17 @@ class MPPSScp extends DcmServiceBase {
         return null;
     }
 
+    private MPPSManager getMPPSManager()
+            throws HomeFactoryException, RemoteException, CreateException {
+        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
+    }
+
+    
     private void createMPPS(Dataset mpps)
             throws DcmServiceException {
         try {
-            MPPSManager mgr = getMPPSManagerHome().create();
-            try {
-                mgr.createMPPS(mpps);
-            } finally {
-                try {
-                    mgr.remove();
-                } catch (Exception ignore) {
-                }
-            }
+            getMPPSManager().createMPPS(mpps);
         } catch (DcmServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -151,22 +145,13 @@ class MPPSScp extends DcmServiceBase {
     private void updateMPPS(Dataset mpps)
             throws DcmServiceException {
         try {
-            MPPSManager mgr = getMPPSManagerHome().create();
-            try {
-                 mgr.updateMPPS(mpps);
-            } finally {
-                try {
-                    mgr.remove();
-                } catch (Exception ignore) {
-                }
-            }
+            getMPPSManager().updateMPPS(mpps);
         } catch (DcmServiceException e) {
             throw e;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
-
 
 	private void checkCreateAttributs(Dataset mpps) throws DcmServiceException {
         for (int i = 0; i < TYPE1_NCREATE_ATTR.length; ++i) {
@@ -181,8 +166,13 @@ class MPPSScp extends DcmServiceBase {
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Study Instance UID in Scheduled Step Attributes Seq.");
         }
-        if (!IN_PROGRESS.equals(mpps.getString(Tags.PPSStatus)))
-                throw new DcmServiceException(Status.InvalidAttributeValue);
+        try {
+            if (PPSStatus.toInt(mpps.getString(Tags.PPSStatus)) ==
+                PPSStatus.IN_PROGRESS) {
+                return;
+            }
+        } catch (IllegalArgumentException e) {}
+        throw new DcmServiceException(Status.InvalidAttributeValue);
     }
 
     private void checkSetAttributs(Dataset mpps) throws DcmServiceException {
@@ -193,10 +183,14 @@ class MPPSScp extends DcmServiceBase {
                                     + Tags.toString(ONLY_NCREATE_ATTR[i]));
         }
         final String status = mpps.getString(Tags.PPSStatus);
-        if (status == null || status.equals(IN_PROGRESS)) return;
-        if (!status.equals(COMPLETED) && !status.equals(DISCONTINUED))
+        try {
+            if (status == null || PPSStatus.toInt(status) == PPSStatus.IN_PROGRESS) {
+                return;
+            }
+        } catch (IllegalArgumentException e) {
                 throw new DcmServiceException(Status.InvalidAttributeValue,
                         "Invalid MPPS Status: " + status);
+        }
         for (int i = 0; i < TYPE1_FINAL_ATTR.length; ++i) {
             if (mpps.vm(TYPE1_FINAL_ATTR[i]) <= 0)
                     throw new DcmServiceException(Status.MissingAttributeValue,

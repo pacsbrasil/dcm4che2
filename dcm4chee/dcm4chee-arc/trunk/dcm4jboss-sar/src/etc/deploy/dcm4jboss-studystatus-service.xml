@@ -7,7 +7,7 @@
 	     name="dcm4jboss.archive:service=StudyStatus"
 	     xmbean-dd="xmdesc/dcm4jboss-studystatus-xmbean.xml">
     <depends>
-      dcm4jboss.archive:service=PPSScp
+      dcm4jboss.archive:service=GPWLScp
     </depends>
   </mbean>
 </server>

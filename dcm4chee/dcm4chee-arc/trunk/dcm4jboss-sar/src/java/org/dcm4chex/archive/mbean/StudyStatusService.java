@@ -51,7 +51,7 @@ import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.dcm.ppsscp.PPSScpService;
+import org.dcm4chex.archive.dcm.gpwlscp.GPWLScpService;
 import org.dcm4chex.archive.ejb.interfaces.StudyMgt;
 import org.dcm4chex.archive.ejb.interfaces.StudyMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -67,7 +67,7 @@ implements NotificationListener {
 
 	private static final String DELIMS = ":=;,\n\r\t";
 	private static final String NONE = "NONE";
-	private ObjectName ppsScpServiceName;
+	private ObjectName gpwlScpServiceName;
 	private LinkedHashMap code2status = new LinkedHashMap();
 
 	public final String getStatusUpdateRules() {
@@ -100,22 +100,22 @@ implements NotificationListener {
 		}		
 	}
 
-	public final ObjectName getPpsScpServiceName() {
-		return ppsScpServiceName;
+	public final ObjectName getGpwlScpServiceName() {
+		return gpwlScpServiceName;
 	}
 
-	public final void setPpsScpServiceName(ObjectName ppsScpServiceName) {
-		this.ppsScpServiceName = ppsScpServiceName;
+	public final void setGpwlScpServiceName(ObjectName serviceName) {
+		this.gpwlScpServiceName = serviceName;
 	}
 
 	protected void startService() throws Exception {
-		server.addNotificationListener(ppsScpServiceName, this,
-				PPSScpService.NOTIF_FILTER, null);
+		server.addNotificationListener(gpwlScpServiceName, this,
+				GPWLScpService.NOTIF_FILTER, null);
 	}
 
 	protected void stopService() throws Exception {
-		server.removeNotificationListener(ppsScpServiceName, this,
-				PPSScpService.NOTIF_FILTER, null);
+		server.removeNotificationListener(gpwlScpServiceName, this,
+                GPWLScpService.NOTIF_FILTER, null);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {

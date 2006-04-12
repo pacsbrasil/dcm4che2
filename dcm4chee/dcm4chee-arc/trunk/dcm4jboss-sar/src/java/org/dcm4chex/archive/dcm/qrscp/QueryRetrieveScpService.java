@@ -45,7 +45,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -670,7 +669,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 			p.parse(FileUtils.resolve(file), ds.getSAXHandler2(null));
 		} catch (Exception e) {
 			throw new ConfigurationException(
-					"Failed to load VMF COnfiguration from " + file);
+					"Failed to load VMF Configuration from " + file);
 		}
 		return ds;
 	}

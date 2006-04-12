@@ -39,6 +39,13 @@
 
 package org.dcm4chex.archive.dcm.gpwlscp;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -53,9 +60,31 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 
 public class GPWLScpService extends AbstractScpService {
 
+    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.gpwlscp";
+
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+
+        private static final long serialVersionUID = 3256720663225120565L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE.equals(notif.getType());
+        }
+    };
+
+    /** Map containing accepted SOP Class UIDs.
+     * key is name (as in config string), value is real uid) */
+    private Map cuidMap = new LinkedHashMap();
     private GPWLFindScp gpwlFindScp = new GPWLFindScp(this);
     private GPSPSScp spspsScp = new GPSPSScp(this);
+    private PPSScp ppsScp = new PPSScp(this);
 
+    void sendPPSNotification(Dataset ds) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE, this, eventID);
+        notif.setUserData(ds);
+        super.sendNotification(notif);
+    }
+    
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }        
@@ -64,6 +93,14 @@ public class GPWLScpService extends AbstractScpService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+    public String getAcceptedSOPClasses() {
+        return toString(cuidMap);
+    }
+
+    public void setAcceptedSOPClasses(String s) {
+        updateAcceptedSOPClass(cuidMap, s, null);
+    }
+    
     protected void startService() throws Exception {
         super.startService();
     }
@@ -75,17 +112,18 @@ public class GPWLScpService extends AbstractScpService {
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.GeneralPurposeWorklistInformationModelFIND, gpwlFindScp);
         services.bind(UIDs.GeneralPurposeScheduledProcedureStepSOPClass, spspsScp);
+        services.bind(UIDs.GeneralPurposePerformedProcedureStepSOPClass, ppsScp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
         services.unbind(UIDs.GeneralPurposeWorklistInformationModelFIND);
         services.unbind(UIDs.GeneralPurposeScheduledProcedureStepSOPClass);
+        services.unbind(UIDs.GeneralPurposePerformedProcedureStepSOPClass);
     }
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        String[] tsuids = enable ? valuesToStringArray(tsuidMap) : null;
-        policy.putPresContext(UIDs.GeneralPurposeWorklistInformationModelFIND, tsuids);
-        policy.putPresContext(UIDs.GeneralPurposeScheduledProcedureStepSOPClass, tsuids);
+        putPresContexts(policy, valuesToStringArray(cuidMap),
+                enable ? valuesToStringArray(tsuidMap) : null);
     }
 
 }

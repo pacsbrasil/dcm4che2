@@ -10,11 +10,11 @@
      </depends>
   </mbean>  
 
-  <mbean code="org.dcm4chex.archive.dcm.ppsscp.PPSScuService" 
+  <mbean code="org.dcm4chex.archive.dcm.gpwlscp.PPSScuService" 
 	     name="dcm4jboss.archive:service=PPSScu"
 	     xmbean-dd="xmdesc/dcm4jboss-ppsscu-xmbean.xml">
     <depends>
-      dcm4jboss.archive:service=PPSScp
+      dcm4jboss.archive:service=GPWLScp
     </depends>
     <depends>
       dcm4jboss.archive:service=Queue,name=PPSScu

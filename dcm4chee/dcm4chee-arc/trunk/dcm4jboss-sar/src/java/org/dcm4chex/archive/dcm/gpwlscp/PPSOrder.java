@@ -37,57 +37,66 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.dcm.ppsscp;
+package org.dcm4chex.archive.dcm.gpwlscp;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.management.Notification;
-import javax.management.NotificationFilter;
+import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4che.dict.Tags;
 
 /**
- * @author Gunter.Zeilinger@tiani.com
+ * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since 10.03.2004
+ * @since 12.04.2005
+ *
  */
-public class PPSScpService extends AbstractScpService {
 
-    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.ppsscp";
+public class PPSOrder implements Serializable {
 
-    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+	private static final long serialVersionUID = 3689634692077140272L;
 
-		private static final long serialVersionUID = 3256720663225120565L;
+	private final boolean create;
 
-		public boolean isNotificationEnabled(Notification notif) {
-            return EVENT_TYPE.equals(notif.getType());
-        }
-    };
-    
-    private PPSScp mppsScp = new PPSScp(this);
+    private final Dataset ds;
 
-    protected void bindDcmServices(DcmServiceRegistry services) {
-        services.bind(UIDs.GeneralPurposePerformedProcedureStepSOPClass, mppsScp);
+    private final String dest;
+
+    private int failureCount;
+
+    public PPSOrder(Dataset ds, String dest) {
+        if (dest == null) throw new NullPointerException();
+        if (ds == null) throw new NullPointerException();
+        this.create = ds.contains(Tags.PPSID);
+        this.ds = ds;
+        this.dest = dest;
     }
 
-    protected void unbindDcmServices(DcmServiceRegistry services) {
-        services.unbind(UIDs.GeneralPurposePerformedProcedureStepSOPClass);
+	public final boolean isCreate() {
+		return create;
+	}
+
+	public final Dataset getDataset() {
+        return ds;
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        policy.putPresContext(UIDs.GeneralPurposePerformedProcedureStepSOPClass,
-                enable ? valuesToStringArray(tsuidMap) : null);
+    public final String getDestination() {
+        return dest;
     }
-        
-    void sendPPSNotification(Dataset ds) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(EVENT_TYPE, this, eventID);
-        notif.setUserData(ds);
-        super.sendNotification(notif);
+
+    public final int getFailureCount() {
+        return failureCount;
+    }
+
+    public final void setFailureCount(int failureCount) {
+        this.failureCount = failureCount;
+    }
+
+    public String toString() {
+        return (create
+                ? "PPSOrder[N-CREATE, iuid="
+                : "PPSOrder[N-SET, iuid=")
+                + ds.getString(Tags.SOPInstanceUID)
+                + ", dest=" + dest
+                + ", failureCount=" + failureCount + "]";
     }
 }

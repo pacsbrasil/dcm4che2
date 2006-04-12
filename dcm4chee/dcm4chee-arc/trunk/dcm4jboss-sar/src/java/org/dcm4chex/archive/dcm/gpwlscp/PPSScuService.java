@@ -37,7 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.dcm.ppsscp;
+package org.dcm4chex.archive.dcm.gpwlscp;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -106,7 +106,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
 	private String[] forwardAETs = EMPTY;
 
-	private ObjectName ppsScpServiceName;
+	private ObjectName gpwlScpServiceName;
 
 	private String queueName;
 
@@ -169,12 +169,12 @@ public class PPSScuService extends ServiceMBeanSupport implements
 				: StringUtils.split(forwardAETs, '\\');
 	}
 
-	public final ObjectName getPpsScpServiceName() {
-		return ppsScpServiceName;
+	public final ObjectName getGpwlScpServiceName() {
+		return gpwlScpServiceName;
 	}
 
-	public final void setPpsScpServiceName(ObjectName mppsScpServiceName) {
-		this.ppsScpServiceName = mppsScpServiceName;
+	public final void setGpwlScpServiceName(ObjectName serviceName) {
+		this.gpwlScpServiceName = serviceName;
 	}
 
 	public final ObjectName getTLSConfigName() {
@@ -211,13 +211,13 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
 	protected void startService() throws Exception {
 		JMSDelegate.startListening(queueName, this, concurrency);
-		server.addNotificationListener(ppsScpServiceName, this,
-				PPSScpService.NOTIF_FILTER, null);
+		server.addNotificationListener(gpwlScpServiceName, this,
+				GPWLScpService.NOTIF_FILTER, null);
 	}
 
 	protected void stopService() throws Exception {
-		server.removeNotificationListener(ppsScpServiceName, this,
-				PPSScpService.NOTIF_FILTER, null);
+		server.removeNotificationListener(gpwlScpServiceName, this,
+				GPWLScpService.NOTIF_FILTER, null);
 		JMSDelegate.stopListening(queueName);
 	}
 

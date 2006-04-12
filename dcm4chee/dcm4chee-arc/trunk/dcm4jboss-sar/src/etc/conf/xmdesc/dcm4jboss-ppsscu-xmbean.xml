@@ -11,7 +11,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4chex.archive.dcm.ppsscp.PPSScuService</class>
+   <class>org.dcm4chex.archive.dcm.gpwlscp.PPSScuService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -99,13 +99,13 @@
          <value value="PPSScu"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getPpsScpServiceName" setMethod="setPpsScpServiceName">
+   <attribute access="read-write" getMethod="getGpwlScpServiceName" setMethod="setGpwlScpServiceName">
       <description>Used internally. Do not modify.
       </description>
-      <name>PpsScpServiceName</name>
+      <name>GpwlScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4jboss.archive:service=PPSScp"/>
+         <value value="dcm4jboss.archive:service=GPWLScp"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
