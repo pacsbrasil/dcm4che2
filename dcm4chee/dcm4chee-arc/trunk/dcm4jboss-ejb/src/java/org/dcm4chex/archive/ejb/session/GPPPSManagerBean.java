@@ -38,6 +38,7 @@
 
 package org.dcm4chex.archive.ejb.session;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -53,11 +54,14 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.ejb.interfaces.GPPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPPPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 
@@ -71,14 +75,15 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  * @ejb.transaction-type  type="Container"
  * @ejb.transaction type="Required"
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
+ * @ejb.ejb-ref ejb-name="GPSPS" view-type="local" ref-name="ejb/GPSPS" 
  * @ejb.ejb-ref ejb-name="GPPPS" view-type="local" ref-name="ejb/GPPPS" 
  */
 public abstract class GPPPSManagerBean implements SessionBean {
 
     private static Logger log = Logger.getLogger(GPPPSManagerBean.class);
-    private static final String NO_LONGER_BE_UPDATED_ERR_MSG =
-        "Performed Procedure Step Object may no longer be updated";
-    private static final int NO_LONGER_BE_UPDATED_ERR_ID = 0xA710;
+    private static final int GPSPS_NOT_IN_PROGRESS = 0xA504;
+    private static final int GPSPS_DIFF_TRANS_UID = 0xA505;
+    private static final int GPPPS_NOT_IN_PROGRESS = 0xA506;
     private static final int[] PATIENT_ATTRS_EXC = {
             Tags.PatientName,
             Tags.PatientID,
@@ -93,16 +98,16 @@ public abstract class GPPPSManagerBean implements SessionBean {
             Tags.PatientSex,
     };
     private PatientLocalHome patHome;
+    private GPSPSLocalHome spsHome;
     private GPPPSLocalHome ppsHome;
-    private SessionContext sessionCtx;    
 
     public void setSessionContext(SessionContext ctx) {
-        sessionCtx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+            spsHome = (GPSPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/GPSPS");
             ppsHome = (GPPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/GPPPS");
         } catch (NamingException e) {
             throw new EJBException(e);
@@ -116,7 +121,7 @@ public abstract class GPPPSManagerBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
-        sessionCtx = null;
+        spsHome = null;
         ppsHome = null;
         patHome = null;
     }
@@ -125,20 +130,86 @@ public abstract class GPPPSManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public void createGPPPS(Dataset ds)
-        throws DcmServiceException {
+    throws DcmServiceException {
+        checkDuplicate(ds.getString(Tags.SOPInstanceUID));
+        PatientLocal pat = getPatient(ds);
+        Collection gpsps = findRefGpsps(ds.get(Tags.RefGPSPSSeq), pat);
+        GPPPSLocal pps = doCreate(ds, pat);
+        if (gpsps != null) {
+            pps.setGpsps(gpsps);
+        }
+    }
+    
+    private GPPPSLocal doCreate(Dataset ds, PatientLocal pat)
+    throws DcmServiceException {
         try {
-            PatientLocal pat = getPatient(ds);
-            ppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), pat);
-        } catch (CreateException ce) {
+            return ppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), 
+                    pat);
+        } catch (CreateException e) {
+            log.error("Creation of GP-PPS(iuid=" 
+                    + ds.getString(Tags.SOPInstanceUID) + ") failed: ", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }                
+    }
+
+    private void checkDuplicate(String ppsiuid) throws DcmServiceException {
+        try {
+            ppsHome.findBySopIuid(ppsiuid);
+            throw new DcmServiceException(Status.DuplicateSOPInstance);
+        } catch (ObjectNotFoundException e) { // Ok           
+        } catch (FinderException e) {
+            log.error("Query for GP-PPS(iuid=" + ppsiuid + ") failed: ", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
+    }
+
+    private Collection findRefGpsps(DcmElement spssq, PatientLocal pat)
+    throws DcmServiceException {
+        if (spssq == null) return null;
+        int n = spssq.vm();
+        ArrayList c = new ArrayList(n);
+        for (int i = 0; i < n; i++) {
+            Dataset refSOP = spssq.getItem(i);
+            String spsiuid = refSOP.getString(Tags.RefSOPInstanceUID);
+            String spstuid = refSOP.getString(Tags.RefGPSPSTransactionUID);
+            GPSPSLocal sps;
             try {
-                ppsHome.findBySopIuid(ds.getString(Tags.SOPInstanceUID));
-                throw new DcmServiceException(Status.DuplicateSOPInstance);
-            } catch (FinderException fe) {
-                throw new DcmServiceException(Status.ProcessingFailure, ce);
-            } finally {
-                sessionCtx.setRollbackOnly();
+                sps = spsHome.findBySopIuid(spsiuid);
+                PatientLocal spspat = sps.getPatient();
+                if (!pat.isIdentical(spspat)) {
+                    log.info("Patient of referenced GP-SPS(iuid=" + spsiuid
+                            + "): " + spspat.asString() 
+                            + " differes from Patient of GP-PPS: "
+                            + pat.asString());                   
+                    throw new DcmServiceException(Status.InvalidAttributeValue,
+                            "GP-SPS PID: " + spspat.getPatientId()
+                            + ", GP-PPS PID: " + pat.getPatientId());                
+                }
+                if (!sps.isInProgress()) {
+                    String spsstatus = sps.getGpspsStatus();
+                    log.info("Status of referenced GP-SPS(iuid=" + spsiuid
+                            + ") is not IN PROGRESS, but " + spsstatus);
+                    throw new DcmServiceException(GPSPS_NOT_IN_PROGRESS,
+                            "ref GP-SPS status: " + spsstatus);                
+                }
+                String tuid = sps.getTransactionUid();
+                if (!spstuid.equals(tuid)) {
+                    log.info("Referenced GP-SPS Transaction UID: " + spstuid 
+                            + " does not match the Transaction UID: " + tuid
+                            + " of the N-ACTION request");
+                    throw new DcmServiceException(GPSPS_DIFF_TRANS_UID);                
+                }
+                c.add(sps);
+            } catch (ObjectNotFoundException e) {
+                log.info("Referenced GP-SPS(iuid=" + spsiuid
+                        + ") not in provided GP-WL");
+            } catch (FinderException e) {
+                log.error("Query for GP-SPS(iuid=" + spsiuid
+                        + ") failed: ", e);
+                throw new DcmServiceException(Status.ProcessingFailure);
             }
         }
+        return c;
     }
 
     private PatientLocal getPatient(Dataset ds) throws DcmServiceException {
@@ -171,8 +242,8 @@ public abstract class GPPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getGPPPS(String iuid) throws FinderException {
-        GPPPSLocal pps = ppsHome.findBySopIuid(iuid);
+    public Dataset getGPPPS(String iuid) throws DcmServiceException {
+        GPPPSLocal pps = findBySopIuid(iuid);
         final PatientLocal pat = pps.getPatient();
         Dataset attrs = pps.getAttributes();            
         attrs.putAll(pat.getAttributes(false));
@@ -184,24 +255,27 @@ public abstract class GPPPSManagerBean implements SessionBean {
      */
     public void updateGPPPS(Dataset ds)
         throws DcmServiceException {
-        GPPPSLocal pps;
+        final String iuid = ds.getString(Tags.SOPInstanceUID);
+        GPPPSLocal pps = findBySopIuid(iuid);
+        if (!pps.isInProgress()) {
+            String ppsstatus = pps.getPpsStatus();
+            log.info("Status of GP-PPS(iuid=" + iuid
+                    + ") is not IN PROGRESS, but " + ppsstatus);
+            throw new DcmServiceException(GPPPS_NOT_IN_PROGRESS,
+                    "GP-PPS status: " + ppsstatus);                
+        }
+        Dataset attrs = pps.getAttributes();
+        attrs.putAll(ds);
+        pps.setAttributes(attrs);
+    }
+
+    private GPPPSLocal findBySopIuid(String iuid) throws DcmServiceException {
         try {
-            pps = ppsHome.findBySopIuid(ds.getString(Tags.SOPInstanceUID));
+            return ppsHome.findBySopIuid(iuid);
         } catch (ObjectNotFoundException e) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
         } catch (FinderException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-        if (!"IN PROGRESS".equals(pps.getPpsStatus())) {
-            DcmServiceException e =
-                new DcmServiceException(
-                    Status.ProcessingFailure,
-                    NO_LONGER_BE_UPDATED_ERR_MSG);
-            e.setErrorID(NO_LONGER_BE_UPDATED_ERR_ID);
-            throw e;
-        }
-        Dataset attrs = pps.getAttributes();
-        attrs.putAll(ds);
-        pps.setAttributes(attrs);
     }
 }

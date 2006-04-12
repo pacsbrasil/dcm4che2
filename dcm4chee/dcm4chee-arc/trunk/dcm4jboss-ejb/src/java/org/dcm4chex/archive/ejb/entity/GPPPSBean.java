@@ -37,25 +37,15 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Collection;
-
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
-import javax.ejb.EntityContext;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PPSStatus;
-import org.dcm4chex.archive.ejb.interfaces.GPSPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
@@ -80,34 +70,9 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * 
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.GPPPSLocal findBySopIuid(java.lang.String uid)"
  *              strategy="on-find" eager-load-group="*"
- * 
- * @ejb.ejb-ref ejb-name="GPSPS" view-type="local" ref-name="ejb/GPSPS"
  */
 public abstract class GPPPSBean implements EntityBean {
     private static final Logger log = Logger.getLogger(GPPPSBean.class);
-    private GPSPSLocalHome gpspsHome;
-
-    public void setEntityContext(EntityContext ctx) {
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            gpspsHome = (GPSPSLocalHome) 
-                    jndiCtx.lookup("java:comp/env/ejb/GPSPS");
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-    }
-
-    public void unsetEntityContext() {
-        gpspsHome = null;
-    }
 
     /**
      * Auto-generated Primary Key
@@ -167,8 +132,7 @@ public abstract class GPPPSBean implements EntityBean {
     
 
     /**
-     * PPS Status
-     * 
+     * @ejb.interface-method
      * @ejb.persistence column-name="pps_status"
      */
     public abstract int getPpsStatusAsInt();
@@ -176,8 +140,6 @@ public abstract class GPPPSBean implements EntityBean {
     public abstract void setPpsStatusAsInt(int status);
 
     /**
-     * PPS DICOM Attributes
-     * 
      * @ejb.persistence column-name="pps_attrs"
      */
     public abstract byte[] getEncodedAttributes();
@@ -229,19 +191,6 @@ public abstract class GPPPSBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, PatientLocal patient)
             throws CreateException {
         setPatient(patient);
-        DcmElement gpspssq = ds.get(Tags.RefGPSPSSeq);
-        if (gpspssq != null) {
-            Collection c = getGpsps();
-            for (int i = 0, n = gpspssq.vm(); i < n; i++) {
-                Dataset refSOP = gpspssq.getItem(i);
-                String gpspsiuid = refSOP.getString(Tags.RefSOPInstanceUID);
-                try {
-                    c.add(gpspsHome.findBySopIuid(gpspsiuid));
-                } catch (FinderException e) {
-                    log.warn("Failed to find GPSPS - " + gpspsiuid, e);
-                }
-            }
-        }
         log.info("Created " + prompt());
     }
 
@@ -298,7 +247,7 @@ public abstract class GPPPSBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
-        setPpsStatus(ds.getString(Tags.PPSStatus));
+        setPpsStatus(ds.getString(Tags.GPPPSStatus));
         setEncodedAttributes(DatasetUtils.toByteArray(ds));
     }
 }

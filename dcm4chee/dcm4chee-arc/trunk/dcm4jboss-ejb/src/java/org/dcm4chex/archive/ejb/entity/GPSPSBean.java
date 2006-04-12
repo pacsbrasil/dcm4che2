@@ -252,6 +252,41 @@ public abstract class GPSPSBean implements EntityBean {
     }
 
     /**
+     * @ejb.interface-method
+     */
+    public boolean isScheduled() {
+        return getGpspsStatusAsInt() == GPSPSStatus.SCHEDULED;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isInProgress() {
+        return getGpspsStatusAsInt() == GPSPSStatus.IN_PROGRESS;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isSuspended() {
+        return getGpspsStatusAsInt() == GPSPSStatus.SUSPENDED;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isCompleted() {
+        return getGpspsStatusAsInt() == GPSPSStatus.COMPLETED;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isDiscontinued() {
+        return getGpspsStatusAsInt() == GPSPSStatus.DISCONTINUED;
+    }
+    
+    /**
      * @ejb.persistence column-name="gpsps_prior"
      */
     public abstract int getGpspsPriorityAsInt();
