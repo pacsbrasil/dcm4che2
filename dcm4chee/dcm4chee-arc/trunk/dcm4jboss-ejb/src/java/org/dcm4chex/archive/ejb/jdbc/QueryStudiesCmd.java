@@ -124,8 +124,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 type2,
                 filter.getString(Tags.AccessionNumber),
                 false);
-        sqlBuilder.addModalitiesInStudyNestedMatch(null, filter
-                .getString(Tags.ModalitiesInStudy));
+        sqlBuilder.addModalitiesInStudyNestedMatch(null,
+                filter.getString(Tags.ModalitiesInStudy));
+        filter.setPrivateCreatorID(PrivateTags.CreatorID);
+        sqlBuilder.addCallingAETsNestedMatch(null,
+                filter.getStrings(PrivateTags.CallingAET));
     	this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {
         	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
