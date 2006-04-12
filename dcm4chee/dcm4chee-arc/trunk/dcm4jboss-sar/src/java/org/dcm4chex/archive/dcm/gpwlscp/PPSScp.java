@@ -160,14 +160,16 @@ class PPSScp extends DcmServiceBase {
                             "Missing Study Instance UID in Referenced Request Seq.");
         }
         DcmElement refGPSPSSQ = gppps.get(Tags.RefGPSPSSeq);
-        for (int i = 0, n = refGPSPSSQ.vm(); i < n; ++i) {
-            Dataset refGPSPS = refGPSPSSQ.getItem(i);
-            for (int j = 0; j < TYPE1_REF_GPSPS_ATTR.length; ++j) {
-                if (refGPSPS.vm(TYPE1_REF_GPSPS_ATTR[j]) <= 0)
-                        throw new DcmServiceException(Status.MissingAttributeValue,
-                                "Missing Type 1 Attribute "
-                                        + Tags.toString(TYPE1_REF_GPSPS_ATTR[j])
-                                        + " in Referenced General Purpose Scheduled Procedure Step Seq.");
+        if (refGPSPSSQ != null) {
+            for (int i = 0, n = refGPSPSSQ.vm(); i < n; ++i) {
+                Dataset refGPSPS = refGPSPSSQ.getItem(i);
+                for (int j = 0; j < TYPE1_REF_GPSPS_ATTR.length; ++j) {
+                    if (refGPSPS.vm(TYPE1_REF_GPSPS_ATTR[j]) <= 0)
+                            throw new DcmServiceException(Status.MissingAttributeValue,
+                                    "Missing Type 1 Attribute "
+                                            + Tags.toString(TYPE1_REF_GPSPS_ATTR[j])
+                                            + " in Referenced General Purpose Scheduled Procedure Step Seq.");
+                }
             }
         }
         DcmElement ahpSQ = gppps.get(Tags.ActualHumanPerformersSeq);
