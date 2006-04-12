@@ -348,7 +348,7 @@ QueryRetrieveScp service.</description>
       <name>MaximumOperationsInvoked</name>
       <type>int</type>
       <descriptors>
-         <value value="1"/>
+         <value value="0"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
