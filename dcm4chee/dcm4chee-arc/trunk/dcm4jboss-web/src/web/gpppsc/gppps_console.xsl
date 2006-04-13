@@ -128,34 +128,43 @@
 		<colgroup>
 			<col width="17%"/>
 			<col width="11%"/>
-			<col width="30%"/>
-			<col width="25%"/>
+			<col width="20%"/>
+			<col width="15%"/>
 			<col width="12%"/>
+			<col width="10%"/>
+			<col width="10%"/>
 			<col width="5%"/>
 		</colgroup>
 		<tr >
-			<td bgcolor="eeeeee" style="height:7px" colspan="7"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:7px" colspan="8"></td> <!-- spacer -->
 		</tr>
 		<tr bgcolor="eeeeee">
 			<th title="PatientName: " align="left">Patient</th>
 			<th title="Performed Step Start Date" align="left">Start Date</th>
-			<th title="Performed Procedure Description" align="left">Proc. Desc.</th>
-			<th title="Performed Station Name: (&lt;Name&gt;-&lt;AET&gt;[&lt;Mod.&gt;]" align="left">Station</th>
+			<th title="Performed Procedure Description" align="left">Description</th>
+			<th title="Performed Station Name" align="left">Station</th>
+			<th title="Performed Station Class" align="left">Station Class</th>
+			<th title="Performed Station Geographic Location" align="left">Station Location</th>
 			<th title="Procedure Step Status" align="left">Status</th>
 			<th nowrap="nowrap">Function</th>
 		</tr>
 	</table>
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<colgroup>
+			<col width="2%"/>
+			<col width="25%"/>
+			<col width="18%"/>
+			<col width="25%"/>
+			<col width="20%"/>
 			<col width="5%"/>
-			<col width="35%"/>
-			<col width="35%"/>
-			<col width="13%"/>
-			<col width="12%"/>
 		</colgroup>
 		<tr bgcolor="eeeeee">
 			<th >&#160;</th>
 			<th title="Performed Procedure Step ID" align="left">Performed Procedure Step ID</th>
+			<th title="Performed Workitem Code" align="left">Performed Workitem</th>
+			<th title="Referenced General Purpose Scheduled Procedure Steps" align="left">Ref. GPSPS</th>
+			<th title="Actual Human Performers" align="left">Human Performers</th>
+			<th >&#160;</th>
 		</tr>
 	</table>
 	
@@ -173,9 +182,11 @@
 		<colgroup>
 			<col width="17%"/>
 			<col width="11%"/>
-			<col width="30%"/>
-			<col width="25%"/>
+			<col width="20%"/>
+			<col width="15%"/>
 			<col width="12%"/>
+			<col width="10%"/>
+			<col width="10%"/>
 			<col width="5%"/>
 		</colgroup>
 		<tr >
@@ -190,30 +201,24 @@
 	        <td align="left" title="Start Date" >
 				<xsl:value-of select="ppsStartDateTime"/>
 	        </td>
-	        <td align="left" title="PPS Desc.">
+	        <td align="left" title="PPS Description">
 				<xsl:value-of select="PPSDescription"/>
 		 	</td>
-	        <td align="left" title="Station" >
+	        <td align="left" title="Station Nmae" >
 				<xsl:if test="string-length(stationName) > 0">
 					<xsl:value-of select="stationName"/> -
 				</xsl:if>
 				<xsl:value-of select="stationAET"/>[<xsl:value-of select="modality"/>]
 	        </td>
-	        <td align="left" title="PPSStatus" >
+	        <td align="left" title="Station Class" >
+				<xsl:value-of select="stationClass"/>
+	        </td>
+	        <td align="left" title="Station Geo Location" >
+				<xsl:value-of select="stationGeoLocation"/>
+	        </td>
+	        <td align="left" title="Performed Procedure Step Status" >
 				<xsl:value-of select="PPSStatus"/>
 		 	</td>
-			<xsl:choose> 
-				<xsl:when test="accNumbers=''">
-					<td title="Function">
-						<a href="mwl_console.m?action=link&amp;patientName={patientName}&amp;gpppsIUID={gpppsIUID}&amp;">
-							<img src="images/link.gif" alt="link" border="0" title="Link this GPPPS entry with a MWL entry"/>		
-						</a>
-					</td>	
-				</xsl:when>
-				<xsl:otherwise>
-					<td>&#160;&#160;</td>
-				</xsl:otherwise>
-			</xsl:choose>
 			<td title="Function">
 				<input type="checkbox" name="gpppsIUID" value="{gpppsIUID}">
 					<xsl:if test="/model/gpppsIUIDs/item = gpppsIUID">
@@ -223,9 +228,40 @@
 			</td>	
 		</tr>
 	</table>
-
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="2%"/>
+			<col width="25%"/>
+			<col width="18%"/>
+			<col width="25%"/>
+			<col width="20%"/>
+			<col width="5%"/>
+		</colgroup>
+		<tr>
+			<td >&#160;</td>
+	        <td align="left" title="Patient" >
+				<xsl:value-of select="gpppsIUID"/>
+			</td>
+	        <td align="left" title="Performed Workitem Code" >
+				<xsl:value-of select="performedWorkitemCode"/>
+	        </td>
+	        <td align="left" title="Referenced General Purpose Scheduled Procedure Steps" >
+				<xsl:apply-templates select="refGPSPS/item" />
+	        </td>
+	        <td align="left" title="Actual Human Performers" >
+				<xsl:value-of select="actualHumanPerformers"/>
+	        </td>
+			<td >&#160;</td>
+		</tr>
+	</table>
 </table>
 
+</xsl:template>
+	 
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.gppps.model.GPPPSEntry$GPSPS']">
+	<a href="gpwl_console.m?filter.x=1&amp;iuid={refSOPInstanceUID}">
+		<xsl:value-of select="refSOPInstanceUID"/>
+	</a>
 </xsl:template>
 	   
 </xsl:stylesheet>

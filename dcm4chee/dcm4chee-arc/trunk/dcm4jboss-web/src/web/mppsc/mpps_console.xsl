@@ -193,6 +193,7 @@
 			<th title="Scheduled Procedure Step ID" align="left">Scheduled Procedure Step ID</th>
 			<th title="Study Instance UID" align="left">Study Instance UID</th>
 			<th title="Accession Number" align="left">Accession No.</th>
+			<th >&#160;</th>
 		</tr>
 	</table>
 	

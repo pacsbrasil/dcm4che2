@@ -85,6 +85,18 @@
 								title="Query End date. format:yyyy/mm/dd hh:mm"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
+						<td bgcolor="eeeeee" nowrap="nowrap" >Workitem: </td>
+						<td bgcolor="eeeeee">
+							<input size="15" name="workitemCode" type="text" value="{filter/workitemCode}"
+								title="Workitem Code"/>
+						</td>
+						<td bgcolor="eeeeee">&#160;&#160;</td>
+						<td bgcolor="eeeeee" nowrap="nowrap" >Accession No.: </td>
+						<td bgcolor="eeeeee">
+							<input size="10" name="accessionNumber" type="text" value="{filter/accessionNumber}"
+								title="Accession number"/>
+						</td>
+						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Status: </td>
 						<td bgcolor="eeeeee">
 							<select name="status" >
@@ -136,30 +148,6 @@
 								</option>
 							</select>
 						</td>
-						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" nowrap="nowrap" >Input Availability: </td>
-						<td bgcolor="eeeeee">
-							<select name="inputAvail" >
-								<option value="">
-									<xsl:if test="filter/inputAvailability=''"><xsl:attribute name="selected" /></xsl:if>
-									[ANY]
-								</option>
-								<option value="PARTIAL">
-									<xsl:if test="filter/inputAvailability='PARTIAL'"><xsl:attribute name="selected" /></xsl:if>
-									PARTIAL
-								</option>
-								<option value="COMPLETE">
-									<xsl:if test="filter/inputAvailability='COMPLETE'"><xsl:attribute name="selected" /></xsl:if>
-									COMPLETE
-								</option>
-							</select>
-						</td>
-						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" nowrap="nowrap" >Accession No.: </td>
-						<td bgcolor="eeeeee">
-							<input size="10" name="accessionNumber" type="text" value="{filter/accessionNumber}"
-								title="Accession number"/>
-						</td>
 						<td width="100%" bgcolor="eeeeee">&#160;</td>
 						
 					</tr>
@@ -192,7 +180,7 @@
 			<col width="2%"/>
 		</colgroup>
 		<tr >
-			<td bgcolor="eeeeee" style="height:7px" colspan="8"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:7px" colspan="9"></td> <!-- spacer -->
 		</tr>
 		<tr>
 			<th title="General Purpose Scheduled Procedure Instance UID" align="left">GPSP IUID</th>
