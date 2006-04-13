@@ -46,6 +46,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -278,4 +279,14 @@ public abstract class GPPPSManagerBean implements SessionBean {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
+    
+	/**
+	 * @ejb.interface-method
+	 */
+	public void removeGPPPS(String iuid) 
+			throws EJBException, RemoveException, FinderException {
+		ppsHome.findBySopIuid(iuid).remove();
+		log.info("GPPPS removed:"+iuid);
+	}
+    
 }
