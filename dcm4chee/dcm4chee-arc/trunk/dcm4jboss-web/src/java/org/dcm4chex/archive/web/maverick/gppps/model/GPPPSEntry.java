@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
@@ -62,7 +63,7 @@ public class GPPPSEntry {
 	private List gpspsList;
 	private List results;
 	
-
+	private static Logger log = Logger.getLogger( GPPPSEntry.class.getName() );
 	
 	/** The Date/Time formatter to format date/time values. */
 	private static final SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -152,7 +153,7 @@ public class GPPPSEntry {
 	}
 	
 	public String getPPSStatus() {
-		return ds.getString( Tags.PPSStatus );
+		return ds.getString( Tags.GPPPSStatus );
 	}
 
 	public String getPPSComment() {
@@ -176,10 +177,6 @@ public class GPPPSEntry {
 			desc = ds.getString( Tags.PerformedProcedureTypeDescription );
 		}
 		return desc;
-	}
-	
-	public String getDRCode() {
-		return getCodeValue( ds.get( Tags.PPSDiscontinuationReasonCodeSeq ));
 	}
 	
 	/**
@@ -268,8 +265,7 @@ public class GPPPSEntry {
 
 	
 	private String getCodeValue( DcmElement elem ) {
-		if ( elem == null) return null;
-		int len = elem.vm();
+		if ( elem == null || elem.vm() < 1) return null;
 		StringBuffer sb = new StringBuffer();
 		Dataset dsCode = elem.getItem();
 		sb.append( dsCode.getString( Tags.CodeMeaning ) ).append("[");
@@ -278,7 +274,7 @@ public class GPPPSEntry {
 		
 	}
 	private String[] getCodeValues( DcmElement elem ) {
-		if ( elem == null) return null;
+		if ( elem == null || elem.vm() < 1 ) return null;
 		int len = elem.vm();
 		Dataset dsCode;
 		StringBuffer sb = new StringBuffer();

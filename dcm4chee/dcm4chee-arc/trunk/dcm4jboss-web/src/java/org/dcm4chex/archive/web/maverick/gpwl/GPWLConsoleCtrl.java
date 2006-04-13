@@ -155,9 +155,14 @@ public class GPWLConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	private void checkFilter(HttpServletRequest rq) throws ParseException {
 		GPWLFilter filter = model.getFilter();
+		if ( rq.getParameter("iuid") != null ) {
+			filter.clear();
+		}
+		filter.setIUID(rq.getParameter("iuid") );
 		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
 		if ( rq.getParameter("SPSStartDate") != null ) filter.setSPSStartDate(rq.getParameter("SPSStartDate") );
 		if ( rq.getParameter("SPSEndDate") != null ) filter.setSPSEndDate(rq.getParameter("SPSEndDate") );
+		if ( rq.getParameter("workitemCode") != null ) filter.setWorkitemCode(rq.getParameter("workitemCode") );
 		if ( rq.getParameter("inputAvail") != null ) filter.setInputAvailability(rq.getParameter("inputAvail") );
 		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
 		if ( rq.getParameter("priority") != null ) filter.setPriority(rq.getParameter("priority") );

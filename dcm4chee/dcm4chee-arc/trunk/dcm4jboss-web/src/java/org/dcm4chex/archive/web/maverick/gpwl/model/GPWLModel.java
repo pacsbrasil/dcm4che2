@@ -207,7 +207,7 @@ public class GPWLModel extends BasicFormPagingModel {
 	 */
 	private Dataset getSearchDS(GPWLFilter filter) {
 		Dataset ds = DcmObjectFactory.getInstance().newDataset();
-		ds.putUI(Tags.SOPInstanceUID);
+		ds.putUI(Tags.SOPInstanceUID, filter.getIUID());
 		//
 		ds.putCS(Tags.GPSPSStatus, filter.getStatus());
 		ds.putCS(Tags.InputAvailabilityFlag, filter.getInputAvailability());

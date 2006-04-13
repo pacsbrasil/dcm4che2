@@ -39,15 +39,21 @@
 
 package org.dcm4chex.archive.web.maverick.gppps;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.CreateException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.GPPPSManager;
+import org.dcm4chex.archive.ejb.interfaces.GPPPSManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.GPPPSQueryCmd;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -126,8 +132,27 @@ public class GPPPSDelegate {
 		 * @return
 		 */
 		public boolean deleteGPPPSEntries(String[] iuids) {
-			log.warn("deleteGPPPSEntries not implemented!!!");
-			return false;
+			GPPPSManager m;
+			try {
+				m = getGPPPSManager();
+			} catch (Exception x) {
+				log.error("Can't get GPPPSManager!", x );
+				return false;
+			}
+			for ( int i = 0 ; i < iuids.length ; i++ ) {
+				try {
+					m.removeGPPPS(iuids[i]);
+				} catch (Exception x) {
+					log.error("Can't delete GPPPSEntry with iuid:"+iuids[i], x );
+					return false;
+				}
+			}
+			return true;
 		}
+	    private GPPPSManager getGPPPSManager() 
+        	throws HomeFactoryException, RemoteException, CreateException {
+	    	return ((GPPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+	    			GPPPSManagerHome.class, GPPPSManagerHome.JNDI_NAME)).create();
+	    }
 
 }

@@ -50,7 +50,9 @@ import java.util.Date;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class GPWLFilter {
+
 	//Required
+	private String iuid;
 	/** General Purpose Scheduled Procedure Step Status */
 	private String status;
 	/** Input Availabilty Flag */
@@ -110,6 +112,18 @@ public class GPWLFilter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	/**
+	 * @return Returns the iuid.
+	 */
+	public String getIUID() {
+		return iuid;
+	}
+	/**
+	 * @param iuid The iuid to set.
+	 */
+	public void setIUID(String iuid) {
+		this.iuid = iuid;
 	}
 	/**
 	 * @return Returns the humanPerformerCode.
@@ -432,6 +446,31 @@ public void setSpsID(String spsID) {
 			this.accessionNumber = null;
 		else
 			this.accessionNumber = accessionNumber;
+	}
+	/**
+	 * 
+	 */
+	public void clear() {
+		status = null;
+		inputAvailability = null;
+		priority = null;
+		workitemCode = null;
+		stationNameCode = null;
+		stationClassCode = null;
+		stationGeoCode = null;
+		spsStartDate = null;
+		spsEndDate = null;
+		completionStartDate = null;
+		completionEndDate = null;
+		humanPerformerCode = null;
+		patientName = null;
+		patID = null;
+		studyIUID = null;
+		accessionNumber = null;
+		spsID = null;
+		spsMStartDate = "";
+		spsMEndDate = "";
+		humanPerformerName = null;
 	}
 	
 }
