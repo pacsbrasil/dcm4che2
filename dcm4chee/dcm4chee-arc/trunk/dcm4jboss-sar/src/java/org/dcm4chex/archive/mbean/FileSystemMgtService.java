@@ -567,7 +567,8 @@ public class FileSystemMgtService extends TimerSupport {
     }
 
     public String showAvailableDiskSpace() throws IOException, FinderException {
-        return FileUtils.formatSize(getAvailableDiskSpace(false));
+        return FileUtils.formatSize(
+                getAvailableDiskSpace(listLocalOnlineRWFileSystems()));
     }
     
     public int purgeFiles() {
@@ -750,11 +751,13 @@ public class FileSystemMgtService extends TimerSupport {
     public int freeDiskSpace() {
         log.info("Check available Disk Space");
         try {
-            long maxSizeToDel = -getAvailableDiskSpace(true);
-            if (maxSizeToDel > 0) {
+            FileSystemDTO[] fs = listLocalOnlineRWFileSystems();
+            long available = getAvailableDiskSpace(fs);
+            if (available < (minFreeDiskSpace * freeDiskSpaceLowerThreshold * fs.length)) {
+                long maxSizeToDel = (long)((minFreeDiskSpace * freeDiskSpaceUpperThreshold * fs.length)) - available;
                 FileSystemMgt fsMgt = newFileSystemMgt();
                 try {
-                	Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
+                    Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, flushOnROFsAvailable, validFileStatus,
                             maxSizeToDel);
                     sendIANs(ians);
@@ -801,12 +804,9 @@ public class FileSystemMgtService extends TimerSupport {
         super.sendNotification(notif);
 	}
     
-    private long getAvailableDiskSpace(boolean diffMinAvailable)
+    private long getAvailableDiskSpace(FileSystemDTO[] fs)
     throws IOException, FinderException {
-        FileSystemDTO[] fs = listLocalOnlineRWFileSystems();
-        long result = diffMinAvailable
-                ? -(long) (minFreeDiskSpace * freeDiskSpaceLowerThreshold * fs.length)
-                : 0L;
+        long result = 0L;
         for (int i = 0; i < fs.length; i++) {
             final File dir = FileUtils.toFile(fs[i].getDirectoryPath());
             if (dir.isDirectory())
