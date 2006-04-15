@@ -393,7 +393,7 @@ CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);
 
 CREATE SEQUENCE gppps_pk_seq;
 CREATE TABLE gppps (
-	pk          		NUMBER(38,0) NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
+	pk          		NUMBER(38,0) NOT NULL CONSTRAINT gppps_pk PRIMARY KEY,
 	patient_fk			NUMBER(38,0),
 	pps_iuid			VARCHAR2(255) NOT NULL,
 	pps_start			TIMESTAMP,
