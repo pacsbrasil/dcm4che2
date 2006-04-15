@@ -691,28 +691,75 @@ public class NetworkApplicationEntity
         this.moveRspTimeout = moveRspTimeout;
     }
 
+    /**
+     * Get an array of AE titles. If there is an open association from an AE
+     * title (the SCU) contained in this array, this network AE (the SCP) will
+     * reuse an existing association object as opposed to creating a new one.
+     * 
+     * @return A String array containing the AE titles that association reuse
+     *         will be enabled for.
+     */
     public final String[] getReuseAssocationFromAETitle()
     {
         return reuseAssocationFromAETitle;
     }
 
+    /**
+     * Set an array of AE titles. If there is an open association from an AE
+     * title (the SCU) contained in this array, this network AE (the SCP) will
+     * reuse an existing association object as opposed to creating a new one.
+     * 
+     * @param reuseAssocationFromAETitle String array containing the AE titles
+     *            that association reuse will be enabled for.
+     */
     public final void setReuseAssocationFromAETitle(
             String[] reuseAssocationFromAETitle)
     {
         this.reuseAssocationFromAETitle = reuseAssocationFromAETitle;
     }
 
+    /**
+     * Get an array of AE titles. If there is an open association to an AE title
+     * (the SCP) contained in this array, this network AE (the SCU) will reuse
+     * an existing association object as opposed to creating a new one.
+     * 
+     * @return String array containing the AE titles that association reuse will
+     *         be enabled for.
+     */
     public final String[] getReuseAssocationToAETitle()
     {
         return reuseAssocationToAETitle;
     }
 
+    /**
+     * Get an array of AE titles. If there is an open association to an AE title
+     * (the SCP) contained in this array, this network AE (the SCU) will reuse
+     * an existing association object as opposed to creating a new one.
+     * 
+     * @param reuseAssocationToAETitle String array containing the AE titles
+     *            that association reuse will be enabled for.
+     */
     public final void setReuseAssocationToAETitle(
             String[] reuseAssocationToAETitle)
     {
         this.reuseAssocationToAETitle = reuseAssocationToAETitle;
     }
 
+    /**
+     * Open a connection to the remote AE, using the passed in threading model.
+     * This method will result in an association being opened (or re-used if so
+     * configured). This association is then returned for use.
+     * 
+     * @param remoteAE A <code>NetworkApplicationEntity</code> to connect to.
+     * @param executor An <code>Executor</code> implementation containing the
+     *            threading model to use for this connection/association.
+     * @return An open <code>Association</code> object.
+     * @throws ConfigurationException If there is no compatible network
+     *             connection between this AE title and the one that it is
+     *             connecting to.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public Association connect(NetworkApplicationEntity remoteAE,
             Executor executor) throws ConfigurationException, IOException,
             InterruptedException
@@ -720,6 +767,25 @@ public class NetworkApplicationEntity
         return connect(remoteAE, executor, false);
     }
 
+    /**
+     * Open a connection to the remote AE, using the passed in threading model.
+     * This method will result in an association being opened (or reused if so
+     * configured, and the "forceNew" parameter is false). This association is
+     * then returned for use.
+     * 
+     * @param remoteAE A <code>NetworkApplicationEntity</code> to connect to.
+     * @param executor An <code>Executor</code> implementation containing the
+     *            threading model to use for this connection/association.
+     * @param forceNew A boolean value. If true, always create a new
+     *            association, ignoring any existing association re-use
+     *            configuration that has been set.
+     * @return An open <code>Association</code> object.
+     * @throws ConfigurationException If there is no compatible network
+     *             connection between this AE title and the one that it is
+     *             connecting to.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public Association connect(NetworkApplicationEntity remoteAE,
             Executor executor, boolean forceNew) throws ConfigurationException,
             IOException, InterruptedException
