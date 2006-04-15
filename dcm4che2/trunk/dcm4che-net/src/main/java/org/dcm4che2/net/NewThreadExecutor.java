@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien@theevansranch.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -39,39 +40,58 @@
 package org.dcm4che2.net;
 
 /**
+ * <code>Executor</code> implementation which executes a <code>Runnable</code>
+ * object in a new thread.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 2, 2005
- *
  */
 public class NewThreadExecutor implements Executor
 {
     private static int threadId = 0;
 
     private final String threadNamePrefix;
-    
+
+    /**
+     * Constructor.
+     * 
+     * @param threadNamePrefix A String containing the prefix that should be
+     *            given to the created thread.
+     */
     public NewThreadExecutor(String threadNamePrefix)
     {
-        if( threadNamePrefix == null )
+        if (threadNamePrefix == null)
         {
-            throw new NullPointerException( "threadNamePrefix" );
+            throw new NullPointerException("threadNamePrefix");
         }
         threadNamePrefix = threadNamePrefix.trim();
-        if( threadNamePrefix.length() == 0 )
+        if (threadNamePrefix.length() == 0)
         {
-            throw new IllegalArgumentException( "threadNamePrefix is empty." );
+            throw new IllegalArgumentException("threadNamePrefix is empty.");
         }
         this.threadNamePrefix = threadNamePrefix;
     }
 
+    /**
+     * Get the prefix that is prepended to threads created by this
+     * <code>Executor</code>
+     * 
+     * @return A String containing the prefix.
+     */
     public final String getThreadNamePrefix()
     {
         return threadNamePrefix;
     }
-    
+
+    /**
+     * This implementatin creates a new thread every time it is called.
+     * 
+     * @see org.dcm4che2.net.Executor#execute(java.lang.Runnable)
+     */
     public void execute(Runnable runnable)
     {
-        new Thread(runnable, threadNamePrefix + "-" + (++threadId)).start();        
+        new Thread(runnable, threadNamePrefix + "-" + (++threadId)).start();
     }
 
 }

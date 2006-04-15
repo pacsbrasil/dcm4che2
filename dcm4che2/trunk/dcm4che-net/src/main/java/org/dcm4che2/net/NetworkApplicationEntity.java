@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien@theevansranch.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -61,12 +62,22 @@ import org.dcm4che2.net.pdu.RoleSelection;
 import org.dcm4che2.net.service.DicomService;
 
 /**
+ * DICOM Supplement 67 compliant description of a DICOM network service.
+ * <p>
+ * A Network AE is an application entity that provides services on a network. A
+ * Network AE will have the 16 same functional capability regardless of the
+ * particular network connection used. If there are functional differences based
+ * on selected network connection, then these are separate Network AEs. If there
+ * are 18 functional differences based on other internal structures, then these
+ * are separate Network AEs.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Nov 25, 2005
  * 
  */
-public class NetworkApplicationEntity {
+public class NetworkApplicationEntity
+{
     private boolean associationAcceptor;
 
     private boolean associationInitiator;
@@ -87,9 +98,9 @@ public class NetworkApplicationEntity {
 
     private Boolean installed;
 
-    private int maxOpsInvoked = 0;
+    private int maxOpsInvoked;
 
-    private int maxOpsPerformed = 0;
+    private int maxOpsPerformed;
 
     private int maxPDULengthReceive = 0x4000; // =16384
 
@@ -117,246 +128,615 @@ public class NetworkApplicationEntity {
 
     private Device device;
 
-    public final Device getDevice() {
+    /**
+     * Get the device that is identified by this application entity.
+     * 
+     * @return The owning <code>Device</code>.
+     */
+    public final Device getDevice()
+    {
         return device;
     }
 
-    final void setDevice(Device device) {
+    /**
+     * Set the device that is identified by this application entity.
+     * 
+     * @param device The owning <code>Device</code>.
+     */
+    final void setDevice(Device device)
+    {
         this.device = device;
     }
 
-    public final String getAETitle() {
+    /**
+     * Get the AE title for this Network AE.
+     * 
+     * @return A String containing the AE title.
+     */
+    public final String getAETitle()
+    {
         return aeTitle;
     }
 
-    public final void setAETitle(String aetitle) {
+    /**
+     * Set the AE title for this Network AE.
+     * 
+     * @param aetitle A String containing the AE title.
+     */
+    public final void setAETitle(String aetitle)
+    {
         this.aeTitle = aetitle;
     }
 
-    public final String[] getApplicationCluster() {
+    /**
+     * Get the locally defined names for a subset of related applications. E.g.
+     * “neuroradiology”.
+     * 
+     * @return A String array containing the names.
+     */
+    public final String[] getApplicationCluster()
+    {
         return applicationCluster;
     }
 
-    public final void setApplicationCluster(String[] cluster) {
+    /**
+     * Set the locally defined names for a subset of related applications. E.g.
+     * “neuroradiology”.
+     * 
+     * @param cluster A String array containing the names.
+     */
+    public final void setApplicationCluster(String[] cluster)
+    {
         this.applicationCluster = cluster;
     }
 
-    public final boolean isAssociationAcceptor() {
+    /**
+     * Determine whether or not this network AE can accept associations.
+     * 
+     * @return A boolean value. True if the Network AE can accept associations,
+     *         false otherwise.
+     */
+    public final boolean isAssociationAcceptor()
+    {
         return associationAcceptor;
     }
 
-    public final void setAssociationAcceptor(boolean acceptor) {
+    /**
+     * Set whether or not this network AE can accept associations.
+     * 
+     * @param acceptor A boolean value. True if the Network AE can accept
+     *            associations, false otherwise.
+     */
+    public final void setAssociationAcceptor(boolean acceptor)
+    {
         this.associationAcceptor = acceptor;
     }
 
-    public final boolean isAssociationInitiator() {
+    /**
+     * Determine whether or not this network AE can initiate associations.
+     * 
+     * @return A boolean value. True if the Network AE can accept associations,
+     *         false otherwise.
+     */
+    public final boolean isAssociationInitiator()
+    {
         return associationInitiator;
     }
 
-    public final void setAssociationInitiator(boolean initiator) {
+    /**
+     * Set whether or not this network AE can initiate associations.
+     * 
+     * @param initiator A boolean value. True if the Network AE can accept
+     *            associations, false otherwise.
+     */
+    public final void setAssociationInitiator(boolean initiator)
+    {
         this.associationInitiator = initiator;
     }
 
-    public final String getDescription() {
+    /**
+     * Get the description of this network AE
+     * 
+     * @return A String containing the description.
+     */
+    public final String getDescription()
+    {
         return description;
     }
 
-    public final void setDescription(String description) {
+    /**
+     * Set a description of this network AE.
+     * 
+     * @param description A String containing the description.
+     */
+    public final void setDescription(String description)
+    {
         this.description = description;
     }
 
-    public final boolean isInstalled() {
+    /**
+     * Determine whether or not this network AE is installed on a network.
+     * 
+     * @return A Boolean value. True if the AE is installed on a network. If not
+     *         present, information about the installed status of the AE is
+     *         inherited from the device
+     */
+    public final boolean isInstalled()
+    {
         return installed != null ? installed.booleanValue() : device == null
                 || device.isInstalled();
     }
 
-    public final void setInstalled(boolean installed) {
+    /**
+     * Set whether or not this network AE is installed on a network.
+     * 
+     * @param installed A Boolean value. True if the AE is installed on a
+     *            network. If not present, information about the installed
+     *            status of the AE is inherited from the device
+     */
+    public final void setInstalled(boolean installed)
+    {
         this.installed = Boolean.valueOf(installed);
     }
 
-    public final NetworkConnection[] getNetworkConnection() {
+    /**
+     * Get the <code>NetworkConnection</code> objects associated with this
+     * network AE.
+     * 
+     * @return An array of <code>NetworkConnection</code> objects.
+     */
+    public final NetworkConnection[] getNetworkConnection()
+    {
         return networkConnection;
     }
 
-    public final void setNetworkConnection(NetworkConnection nc) {
+    /**
+     * Set the <code>NetworkConnection</code> object associated with this
+     * network AE.
+     * 
+     * @param nc A <code>NetworkConnection</code> object.
+     */
+    public final void setNetworkConnection(NetworkConnection nc)
+    {
         setNetworkConnection(new NetworkConnection[] { nc });
     }
 
-    public final void setNetworkConnection(NetworkConnection[] nc) {
+    /**
+     * Set the <code>NetworkConnection</code> objects associated with this
+     * network AE.
+     * 
+     * @param nc An array of <code>NetworkConnection</code> objects.
+     */
+    public final void setNetworkConnection(NetworkConnection[] nc)
+    {
         this.networkConnection = nc;
     }
 
-    public final String[] getPreferredCalledAETitle() {
+    /**
+     * Get the AE Title(s) (SCPs) that are preferred for initiating associations
+     * from this network AE (SCU).
+     * 
+     * @return A String array of the preferred called AE titles.
+     */
+    public final String[] getPreferredCalledAETitle()
+    {
         return preferredCalledAETitle;
     }
 
-    public final boolean hasPreferredCalledAETitle() {
+    /**
+     * Determine whether or not this network AE (SCU) has an AE Title (SCP) that
+     * is preferred for initiating associations to.
+     * 
+     * @return A boolean value. True if there is a preferred called AE title.
+     */
+    public final boolean hasPreferredCalledAETitle()
+    {
         return preferredCalledAETitle != null
                 && preferredCalledAETitle.length > 0;
     }
 
-    public boolean isPreferredCalledAETitle(String aet) {
+    /**
+     * Determine whether or not the parameter is a preferred called AE title
+     * (SCP) for this network AE (SCU). The called AE title defines authorized
+     * SCPs that this network AE title may interact with.
+     * 
+     * @param aet A String containing the AE title to test.
+     * @return A boolean value. True if the parameter is a preferred called AE
+     *         title.
+     */
+    public boolean isPreferredCalledAETitle(String aet)
+    {
         return contains(preferredCalledAETitle, aet);
     }
 
-    private static boolean contains(String[] a, String s) {
+    private static boolean contains(String[] a, String s)
+    {
         for (int i = 0; i < a.length; i++)
             if (s.equals(a[i]))
                 return true;
         return false;
     }
 
-    public final void setPreferredCalledAETitle(String[] aets) {
+    /**
+     * Set the AE title(s) (SCPs) that are preferred for initiating associations
+     * from this network AE (SCU). The called AE title(s) defines authorized
+     * SCPs that this network AE title may interact with.
+     * 
+     * @param aets A String array containing the preferred called AE titles.
+     */
+    public final void setPreferredCalledAETitle(String[] aets)
+    {
         this.preferredCalledAETitle = aets;
     }
 
-    public final String[] getPreferredCallingAETitle() {
+    /**
+     * Get the AE title(s) that are preferred for accepting associations from.
+     * The calling AE title(s) defines authorized SCUs that this network AE
+     * title may interact with, but does not prohibit other SCUs from making
+     * associations.
+     * 
+     * @return A String array containing the preferred calling AE titles.
+     */
+    public final String[] getPreferredCallingAETitle()
+    {
         return preferredCallingAETitle;
     }
 
-    public final boolean hasPreferredCallingAETitle() {
+    /**
+     * Determine whether or not this network AE has a preferred calling AE
+     * title. The calling AE title(s) defines authorized SCUs that this network
+     * AE title may interact with, but does not prohibit other SCUs from making
+     * associations.
+     * 
+     * @return A boolean value. True if there is a preferred AE title.
+     */
+    public final boolean hasPreferredCallingAETitle()
+    {
         return preferredCallingAETitle != null
                 && preferredCallingAETitle.length > 0;
     }
 
-    public boolean isPreferredCallingAETitle(String aet) {
+    /**
+     * Determine whether or not the parameter is a preferred calling AE title
+     * for accepting associations from. The calling AE title(s) defines
+     * authorized SCUs that this network AE title may interact with, but does
+     * not prohibit other SCUs from making associations.
+     * 
+     * @param aet A String containing the AE title to test.
+     * @return A boolean value. True if the parameter is a preferred calling AE
+     *         title.
+     */
+    public boolean isPreferredCallingAETitle(String aet)
+    {
         return contains(preferredCallingAETitle, aet);
     }
 
-    public final void setPreferredCallingAETitle(String[] aets) {
+    /**
+     * Set the AE title(s) that are preferred for accepting associations from.
+     * The calling AE title(s) defines authorized SCUs that this network AE
+     * title may interact with, but does not prohibit other SCUs from making
+     * associations.
+     * 
+     * @param aets A String array containing the preferred calling AE titles.
+     */
+    public final void setPreferredCallingAETitle(String[] aets)
+    {
         this.preferredCallingAETitle = aets;
     }
 
-    public final String[] getSupportedCharacterSet() {
+    /**
+     * Get the Character Set(s) supported by the Network AE for data sets it
+     * receives. The value shall be selected from the Defined Terms for Specific
+     * Character Set (0008,0005) in PS3.3. If no values are present, this
+     * implies that the Network AE supports only the default character
+     * repertoire (ISO IR 6).
+     * 
+     * @return A String array of the supported character sets.
+     */
+    public final String[] getSupportedCharacterSet()
+    {
         return supportedCharacterSet;
     }
 
-    public final void setSupportedCharacterSet(String[] characterSets) {
+    /**
+     * Set the Character Set(s) supported by the Network AE for data sets it
+     * receives. The value shall be selected from the Defined Terms for Specific
+     * Character Set (0008,0005) in PS3.3. If no values are present, this
+     * implies that the Network AE supports only the default character
+     * repertoire (ISO IR 6).
+     * 
+     * @param characterSets A String array of the supported character sets.
+     */
+    public final void setSupportedCharacterSet(String[] characterSets)
+    {
         this.supportedCharacterSet = characterSets;
     }
 
-    public final TransferCapability[] getTransferCapability() {
+    /**
+     * Get the transfer capabilities (presentation contexts, extended
+     * information, etc.) that this network AE may make use of.
+     * 
+     * @return An array of <code>TransferCapability</code> objects.
+     */
+    public final TransferCapability[] getTransferCapability()
+    {
         return transferCapability;
     }
 
+    /**
+     * Set the transfer capabilities (presentation contexts, extended
+     * information, etc.) that this network AE may make use of.
+     * 
+     * @param transferCapability An array of <code>TransferCapability</code>
+     *            objects.
+     */
     public final void setTransferCapability(
-            TransferCapability[] transferCapability) {
+            TransferCapability[] transferCapability)
+    {
         this.transferCapability = transferCapability;
     }
 
-    public final Object[] getVendorData() {
+    /**
+     * Get any vendor information or configuration specific to this network AE.
+     * 
+     * @return An Object array of the vendor data.
+     */
+    public final Object[] getVendorData()
+    {
         return vendorData;
     }
 
-    public final void setVendorData(Object[] vendorData) {
+    /**
+     * Set any vendor information or configuration specific to this network AE
+     * 
+     * @param vendorData An Object array of the vendor data.
+     */
+    public final void setVendorData(Object[] vendorData)
+    {
         this.vendorData = vendorData;
     }
 
-    public final int getMaxOpsInvoked() {
+    /**
+     * Get maximum number of outstanding operations this network AE may invoke
+     * asynchronously as an SCU. Default is 0 (unlimited).
+     * 
+     * @return An int value containing the max ops.
+     */
+    public final int getMaxOpsInvoked()
+    {
         return maxOpsInvoked;
     }
 
-    public final void setMaxOpsInvoked(int maxOpsInvoked) {
+    /**
+     * Set maximum number of outstanding operations this network AE may invoke
+     * asynchronously as an SCU. Default is 0 (unlimited).
+     * 
+     * @param maxOpsInvoked An int value containing the max ops.
+     */
+    public final void setMaxOpsInvoked(int maxOpsInvoked)
+    {
         this.maxOpsInvoked = maxOpsInvoked;
     }
 
-    public final int getMaxOpsPerformed() {
+    /**
+     * Get the maximum number of operation this network AE may perform
+     * asynchronously as an SCP. Default is 0 (unlimited).
+     * 
+     * @return An int value containing the max ops.
+     */
+    public final int getMaxOpsPerformed()
+    {
         return maxOpsPerformed;
     }
 
-    public final void setMaxOpsPerformed(int maxOpsPerformed) {
+    /**
+     * Set the maximum number of operation this network AE may perform
+     * asynchronously as an SCP. Default is 0 (unlimited).
+     * 
+     * @param maxOpsPerformed An int value containing the max ops.
+     */
+    public final void setMaxOpsPerformed(int maxOpsPerformed)
+    {
         this.maxOpsPerformed = maxOpsPerformed;
     }
 
-    public final boolean isAsyncOps() {
+    /**
+     * Determine whether or not this network AE is capable of asynchronous
+     * operations.
+     * 
+     * @return A boolean value. True if this network AE is capable of async
+     *         operations.
+     */
+    public final boolean isAsyncOps()
+    {
         return maxOpsInvoked != 1 || maxOpsPerformed != 1;
     }
 
-    public final int getMaxPDULengthReceive() {
+    /**
+     * Get the maximum length (in bytes) of P-DATA-TF PDUs that can be received.
+     * Defaults to 16364.
+     * 
+     * @return An int signifying the max PDU length.
+     */
+    public final int getMaxPDULengthReceive()
+    {
         return maxPDULengthReceive;
     }
 
-    public final void setMaxPDULengthReceive(int maxPDULengthReceive) {
+    /**
+     * Get the maximum length (in bytes) of P-DATA-TF PDUs that can be received.
+     * Defaults to 16364.
+     * 
+     * @param maxPDULengthReceive An int signifying the max PDU length.
+     */
+    public final void setMaxPDULengthReceive(int maxPDULengthReceive)
+    {
         this.maxPDULengthReceive = maxPDULengthReceive;
     }
 
-    public final int getMaxPDULengthSend() {
+    /**
+     * Set the maximum length (in bytes) of P-DATA-TF PDUs that will be sent.
+     * Defaults to 16364.
+     * 
+     * @return An int signifying the max PDU length.
+     */
+    public final int getMaxPDULengthSend()
+    {
         return maxPDULengthSend;
     }
 
-    public final void setMaxPDULengthSend(int maxPDULengthSend) {
+    /**
+     * Get the maximum length (in bytes) of P-DATA-TF PDUs that will be sent.
+     * Defaults to 16364.
+     * 
+     * @param maxPDULengthSend An int signifying the max PDU length.
+     */
+    public final void setMaxPDULengthSend(int maxPDULengthSend)
+    {
         this.maxPDULengthSend = maxPDULengthSend;
     }
 
-    public final boolean isPackPDV() {
+    /**
+     * Get whether or not this network AE will send only one PDV in one
+     * P-Data-TF PDU. Defaults to false.
+     * 
+     * @return A boolean value. If true, this network AE will pack command and
+     *         data PDV in one P-DATA-TF PDU when sending.
+     */
+    public final boolean isPackPDV()
+    {
         return packPDV;
     }
 
-    public final void setPackPDV(boolean packPDV) {
+    /**
+     * Set whether or not to send only one PDV in one P-Data-TF PDU. Defaults to
+     * false.
+     * 
+     * @param packPDV A boolean value. If true, this network AE will pack
+     *            command and data PDV in one P-DATA-TF PDU when sending.
+     */
+    public final void setPackPDV(boolean packPDV)
+    {
         this.packPDV = packPDV;
     }
 
-    public final int getDimseRspTimeout() {
+    /**
+     * Get the timeout in milliseconds for receiving DIMSE-RSP on an open
+     * association. Default 60 seconds (60000 milliseconds).
+     * 
+     * @return An int value signifying the timeout in milliseconds.
+     */
+    public final int getDimseRspTimeout()
+    {
         return dimseRspTimeout;
     }
 
-    public final void setDimseRspTimeout(int dimseRspTimeout) {
+    /**
+     * Set the timeout in milliseconds for receiving DIMSE-RSP on an open
+     * association. Default 60 seconds (60000 milliseconds).
+     * 
+     * @param dimseRspTimeout An int value signifying the timeout in
+     *            milliseconds.
+     */
+    public final void setDimseRspTimeout(int dimseRspTimeout)
+    {
         this.dimseRspTimeout = dimseRspTimeout;
     }
 
-    public final int getIdleTimeout() {
+    /**
+     * Get the maximum time in milliseconds that an association may remain idle.
+     * Default 60 seconds (60000 milliseconds).
+     * 
+     * @return An int value signifying the max idle period in milliseconds.
+     */
+    public final int getIdleTimeout()
+    {
         return idleTimeout;
     }
 
-    public final void setIdleTimeout(int idleTimeout) {
+    /**
+     * Set the maximum time in milliseconds that an association may remain idle.
+     * Default 60 seconds (60000 milliseconds).
+     * 
+     * @param dimseRspTimeout An int value signifying the max idle period in
+     *            milliseconds.
+     */
+    public final void setIdleTimeout(int idleTimeout)
+    {
         this.idleTimeout = idleTimeout;
     }
 
-    public final int getMoveRspTimeout() {
+    /**
+     * Get the timeout in milliseconds for receiving DIMSE-RSP on an open C-MOVE
+     * association. Other types of associations use the DimseRspTimeout. Default
+     * 60 seconds (60000 milliseconds).
+     * 
+     * @return An int value signifying the timeout in milliseconds.
+     */
+    public final int getMoveRspTimeout()
+    {
         return moveRspTimeout;
     }
 
-    public final void setMoveRspTimeout(int moveRspTimeout) {
+    /**
+     * Set the timeout in milliseconds for receiving DIMSE-RSP on an open C-MOVE
+     * association. Other types of associations use the DimseRspTimeout. Default
+     * 60 seconds (60000 milliseconds).
+     * 
+     * @param dimseRspTimeout An int value signifying the timeout in
+     *            milliseconds.
+     */
+    public final void setMoveRspTimeout(int moveRspTimeout)
+    {
         this.moveRspTimeout = moveRspTimeout;
     }
 
-    public final String[] getReuseAssocationFromAETitle() {
+    public final String[] getReuseAssocationFromAETitle()
+    {
         return reuseAssocationFromAETitle;
     }
 
     public final void setReuseAssocationFromAETitle(
-            String[] reuseAssocationFromAETitle) {
+            String[] reuseAssocationFromAETitle)
+    {
         this.reuseAssocationFromAETitle = reuseAssocationFromAETitle;
     }
 
-    public final String[] getReuseAssocationToAETitle() {
+    public final String[] getReuseAssocationToAETitle()
+    {
         return reuseAssocationToAETitle;
     }
 
     public final void setReuseAssocationToAETitle(
-            String[] reuseAssocationToAETitle) {
+            String[] reuseAssocationToAETitle)
+    {
         this.reuseAssocationToAETitle = reuseAssocationToAETitle;
     }
 
     public Association connect(NetworkApplicationEntity remoteAE,
             Executor executor) throws ConfigurationException, IOException,
-            InterruptedException {
+            InterruptedException
+    {
         return connect(remoteAE, executor, false);
     }
 
     public Association connect(NetworkApplicationEntity remoteAE,
             Executor executor, boolean forceNew) throws ConfigurationException,
-            IOException, InterruptedException {
+            IOException, InterruptedException
+    {
         final String remoteAET = remoteAE.getAETitle();
         if (!forceNew
                 && !pool.isEmpty()
-                && (reuseAssocationToAETitle.length > 0 || reuseAssocationFromAETitle.length > 0)) {
+                && (reuseAssocationToAETitle.length > 0 || reuseAssocationFromAETitle.length > 0))
+        {
             final boolean reuseAssocationTo = Arrays.asList(
                     reuseAssocationToAETitle).indexOf(remoteAET) != -1;
             final boolean reuseAssocationFrom = Arrays.asList(
                     reuseAssocationFromAETitle).indexOf(remoteAET) != -1;
-            synchronized (pool) {
-                for (Iterator iter = pool.iterator(); iter.hasNext();) {
+            synchronized (pool)
+            {
+                for (Iterator iter = pool.iterator(); iter.hasNext();)
+                {
                     Association as = (Association) iter.next();
                     if (!remoteAET.equals(as.getRemoteAET()))
                         continue;
@@ -368,14 +748,17 @@ public class NetworkApplicationEntity {
             }
         }
         NetworkConnection[] remoteConns = remoteAE.getNetworkConnection();
-        for (int i = 0; i < networkConnection.length; i++) {
+        for (int i = 0; i < networkConnection.length; i++)
+        {
             NetworkConnection c = networkConnection[i];
             if (!networkConnection[i].isInstalled())
                 continue;
-            for (int j = 0; j < remoteConns.length; j++) {
+            for (int j = 0; j < remoteConns.length; j++)
+            {
                 NetworkConnection nc = remoteConns[j];
                 if (nc.isInstalled() && nc.isListening()
-                        && c.isTLS() == nc.isTLS()) {
+                        && c.isTLS() == nc.isTLS())
+                {
                     AAssociateRQ rq = makeAAssociateRQ(remoteAE);
                     Socket s = c.connect(nc);
                     Association a = Association.request(s, c, this);
@@ -392,7 +775,8 @@ public class NetworkApplicationEntity {
     }
 
     private AAssociateRQ makeAAssociateRQ(NetworkApplicationEntity remoteAE)
-            throws ConfigurationException {
+            throws ConfigurationException
+    {
         AAssociateRQ aarq = new AAssociateRQ();
         aarq.setCallingAET(aeTitle);
         aarq.setCalledAET(remoteAE.getAETitle());
@@ -404,12 +788,14 @@ public class NetworkApplicationEntity {
         HashSet asscp = new LinkedHashSet();
         HashSet asscu = new HashSet();
         TransferCapability[] remoteTCs = remoteAE.getTransferCapability();
-        for (int i = 0; i < transferCapability.length; i++) {
+        for (int i = 0; i < transferCapability.length; i++)
+        {
             TransferCapability localTC = transferCapability[i];
             String cuid = localTC.getSopClass();
             List ts = Arrays.asList(localTC.getTransferSyntax());
             // consider Transfer Capabilities of Remote AE if available
-            if (remoteTCs.length != 0) {
+            if (remoteTCs.length != 0)
+            {
                 TransferCapability remoteTC = findTC(remoteTCs, cuid, localTC
                         .isSCU());
                 if (remoteTC == null)
@@ -417,10 +803,13 @@ public class NetworkApplicationEntity {
                 ts.retainAll(Arrays.asList(localTC.getTransferSyntax()));
             }
             List prevTS = (List) as2ts.get(cuid);
-            if (prevTS == null) {
+            if (prevTS == null)
+            {
                 as2ts.put(cuid, ts);
-            } else {
-                for (Iterator iter = ts.iterator(); iter.hasNext();) {
+            } else
+            {
+                for (Iterator iter = ts.iterator(); iter.hasNext();)
+                {
                     String tsuid = (String) iter.next();
                     if (!prevTS.contains(tsuid))
                         prevTS.add(ts);
@@ -428,7 +817,8 @@ public class NetworkApplicationEntity {
             }
             (localTC.isSCP() ? asscp : asscu).add(cuid);
             byte[] extInfo = localTC.getExtInfo();
-            if (extInfo != null) {
+            if (extInfo != null)
+            {
                 ExtendedNegotiation extneg = new ExtendedNegotiation(cuid,
                         extInfo);
                 aarq.addExtendedNegotiation(extneg);
@@ -441,15 +831,18 @@ public class NetworkApplicationEntity {
                             + remoteAE.getAETitle());
         int available = 128 - as2ts.size();
         int pcid = 1;
-        for (Iterator iter = as2ts.entrySet().iterator(); iter.hasNext();) {
+        for (Iterator iter = as2ts.entrySet().iterator(); iter.hasNext();)
+        {
             Map.Entry e = (Map.Entry) iter.next();
             String asuid = (String) e.getKey();
             List ts = (List) e.getValue();
             int expand = Math.min(available, ts.size() - 1);
             PresentationContext pc = new PresentationContext();
             pc.setAbstractSyntax(asuid);
-            for (Iterator it = ts.iterator(); it.hasNext(); --expand) {
-                if (expand > 0) {
+            for (Iterator it = ts.iterator(); it.hasNext(); --expand)
+            {
+                if (expand > 0)
+                {
                     PresentationContext pc1 = new PresentationContext();
                     pc1.setPCID(pcid);
                     pc1.setAbstractSyntax(asuid);
@@ -457,7 +850,8 @@ public class NetworkApplicationEntity {
                     aarq.addPresentationContext(pc1);
                     ++pcid;
                     ++pcid;
-                } else {
+                } else
+                {
                     pc.addTransferSyntax((String) it.next());
                 }
             }
@@ -466,7 +860,8 @@ public class NetworkApplicationEntity {
             ++pcid;
             ++pcid;
         }
-        for (Iterator iter = asscp.iterator(); iter.hasNext();) {
+        for (Iterator iter = asscp.iterator(); iter.hasNext();)
+        {
             String cuid = (String) iter.next();
             aarq.addRoleSelection(new RoleSelection(cuid, asscu.contains(cuid),
                     true));
@@ -475,9 +870,11 @@ public class NetworkApplicationEntity {
     }
 
     private TransferCapability findTC(TransferCapability[] tcs, String cuid,
-            boolean scp) {
+            boolean scp)
+    {
         TransferCapability tc;
-        for (int i = 0; i < tcs.length; i++) {
+        for (int i = 0; i < tcs.length; i++)
+        {
             tc = tcs[i];
             if (tc.equals(cuid) && tc.isSCP() == scp)
                 return tc;
@@ -485,88 +882,103 @@ public class NetworkApplicationEntity {
         return null;
     }
 
-    public void register(DicomService service) {
+    public void register(DicomService service)
+    {
         serviceRegistry.register(service);
     }
 
-    public void unregister(DicomService service) {
+    public void unregister(DicomService service)
+    {
         serviceRegistry.unregister(service);
     }
 
-    void addToPool(Association a) {
-        synchronized (pool) {
+    void addToPool(Association a)
+    {
+        synchronized (pool)
+        {
             pool.add(a);
         }
     }
 
-    void removeFromPool(Association a) {
-        synchronized (pool) {
+    void removeFromPool(Association a)
+    {
+        synchronized (pool)
+        {
             pool.remove(a);
         }
     }
 
     void perform(Association as, int pcid, DicomObject cmd,
-            PDVInputStream dataStream, String tsuid) throws IOException {
+            PDVInputStream dataStream, String tsuid) throws IOException
+    {
         serviceRegistry.process(as, pcid, cmd, dataStream, tsuid);
     }
 
-    AAssociateAC negotiate(Association a, AAssociateRQ rq)
-    throws AAssociateRJ
+    AAssociateAC negotiate(Association a, AAssociateRQ rq) throws AAssociateRJ
     {
         if (!isAssociationAcceptor())
-            throw new AAssociateRJ(
-                    AAssociateRJ.RESULT_REJECTED_PERMANENT,
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_NO_REASON_GIVEN);
         String[] calling = getPreferredCallingAETitle();
-        if (calling.length != 0 
+        if (calling.length != 0
                 && Arrays.asList(calling).indexOf(rq.getCallingAET()) == -1)
-            throw new AAssociateRJ(
-                    AAssociateRJ.RESULT_REJECTED_PERMANENT,
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
-                    AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);        
+                    AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
         if (!isInstalled())
-            throw new AAssociateRJ(
-                    AAssociateRJ.RESULT_REJECTED_TRANSIENT,
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_NO_REASON_GIVEN);
         AAssociateAC ac = new AAssociateAC();
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
         ac.setMaxPDULength(maxPDULengthReceive);
-        ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(), maxOpsPerformed));
-        ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(), maxOpsInvoked));
+        ac
+                .setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
+                        maxOpsPerformed));
+        ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
+                maxOpsInvoked));
         Collection pcs = rq.getPresentationContexts();
         for (Iterator iter = pcs.iterator(); iter.hasNext();)
         {
             PresentationContext rqpc = (PresentationContext) iter.next();
             String asuid = rqpc.getAbstractSyntax();
             RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
-            TransferCapability tc = rqrs == null || rqrs.isSCU() 
-                    ? findTransferCapability(asuid, true) 
-                    : rqrs.isSCP() ? findTransferCapability(asuid, false) : null;
-            
+            TransferCapability tc = rqrs == null || rqrs.isSCU() ? findTransferCapability(
+                    asuid, true)
+                    : rqrs.isSCP() ? findTransferCapability(asuid, false)
+                            : null;
+
             PresentationContext acpc = new PresentationContext();
-            acpc.setPCID(rqpc.getPCID());            
+            acpc.setPCID(rqpc.getPCID());
             acpc.setResult(PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED);
-            if (tc != null) {
-                acpc.setResult(PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED);
+            if (tc != null)
+            {
+                acpc
+                        .setResult(PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED);
                 Set rqts = rqpc.getTransferSyntaxes();
                 String[] acts = tc.getTransferSyntax();
-                for (int i = 0; i < acts.length; i++) {
-                    if (rqts.contains(acts[i])) {
+                for (int i = 0; i < acts.length; i++)
+                {
+                    if (rqts.contains(acts[i]))
+                    {
                         acpc.setResult(PresentationContext.ACCEPTANCE);
                         acpc.addTransferSyntax(acts[i]);
-                        if (rqrs != null && ac.getRoleSelectionFor(asuid) == null) {
+                        if (rqrs != null
+                                && ac.getRoleSelectionFor(asuid) == null)
+                        {
                             boolean scp = tc.isSCP();
-                            boolean scu = tc.isSCU() || 
-                                    findTransferCapability(asuid, false) != null;
-                            RoleSelection rs = new RoleSelection(asuid, scp, scu);
+                            boolean scu = tc.isSCU()
+                                    || findTransferCapability(asuid, false) != null;
+                            RoleSelection rs = new RoleSelection(asuid, scp,
+                                    scu);
                             ac.addRoleSelection(rs);
                         }
-                        if (ac.getExtendedNegotiationFor(asuid) == null) {
-                            ExtendedNegotiation extNeg = 
-                                tc.negotiate(rq.getExtendedNegotiationFor(asuid));
+                        if (ac.getExtendedNegotiationFor(asuid) == null)
+                        {
+                            ExtendedNegotiation extNeg = tc.negotiate(rq
+                                    .getExtendedNegotiationFor(asuid));
                             if (extNeg != null)
                                 ac.addExtendedNegotiation(extNeg);
                         }
@@ -577,15 +989,18 @@ public class NetworkApplicationEntity {
             ac.addPresentationContext(acpc);
         }
         return ac;
-    }    
+    }
 
-    private int minZeroAsMax(int i1, int i2) {
+    private int minZeroAsMax(int i1, int i2)
+    {
         return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
     }
 
-    private TransferCapability findTransferCapability(String asuid, boolean scp) {
+    private TransferCapability findTransferCapability(String asuid, boolean scp)
+    {
         TransferCapability tc;
-        for (int i = 0; i < transferCapability.length; i++) {
+        for (int i = 0; i < transferCapability.length; i++)
+        {
             tc = transferCapability[i];
             if (tc.getSopClass().equals(asuid) && tc.isSCP() == scp)
                 return tc;

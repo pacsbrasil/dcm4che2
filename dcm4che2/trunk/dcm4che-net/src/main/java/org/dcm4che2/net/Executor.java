@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien@theevansranch.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -39,14 +40,26 @@
 package org.dcm4che2.net;
 
 /**
+ * Interface which provides a method of executing <code>Runnable</code>
+ * objects. This separates the calling code from the underlying threading
+ * implementation.
+ * <p>
+ * In the future, this could potentially be replaced with usage of the Java
+ * <code>util.concurrent</code> package.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 2, 2005
- *
+ * 
  */
 public interface Executor
 {
 
+    /**
+     * Execute a runnable object.
+     * 
+     * @param runnable The <code>Runnable</code> object to execute.
+     */
     void execute(Runnable runnable);
 
 }

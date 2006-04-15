@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien@theevansranch.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -53,24 +54,32 @@ import javax.net.ssl.SSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
+ * A DICOM supplement 67 compliant class, <code>NetworkConnection</code>
+ * encapsulates the properties associated with a connection to a TCP/IP network.
+ * <p>
+ * The “network connection” describes one TCP port on one network device. This
+ * can be used for a TCP connection over which a DICOM association can be
+ * negotiated with one or more Network AEs. It specifies 8 the hostname and TCP
+ * port number. A network connection may support multiple Network AEs. The
+ * Network AE selection takes place during association negotiation based on the
+ * called and calling AE-titles.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Nov 24, 2005
- *
  */
 public class NetworkConnection
 {
     static Logger log = LoggerFactory.getLogger(NetworkConnection.class);
     public static final int DEFAULT = -1;
-    
+
     private String commonName;
     private String hostname;
     private int port;
     private String[] tlsCipherSuite = {};
     private Boolean installed;
-    
+
     private int backlog = 50;
     private int connectTimeout = 5000;
     private int requestTimeout = 5000;
@@ -79,17 +88,18 @@ public class NetworkConnection
     private int socketCloseDelay = 50;
     private int sendBufferSize = DEFAULT;
     private int receiveBufferSize = DEFAULT;
-    private boolean tcpNoDelay = false;
+    private boolean tcpNoDelay;
     private boolean tlsNeedClientAuth = true;
-    private String[] tlsProtocol = { 
-            "TLSv1",
-            "SSLv3",
-//            "SSLv2Hello"
+    private String[] tlsProtocol = { "TLSv1", "SSLv3",
+    // "SSLv2Hello"
     };
-    
+
     private Device device;
     private ServerSocket server;
 
+    /**
+     * @see java.lang.Object#toString()
+     */
     public String toString()
     {
         StringBuffer sb = new StringBuffer("NetworkConnection[");
@@ -103,7 +113,7 @@ public class NetworkConnection
         sb.append(']');
         return sb.toString();
     }
-    
+
     public final Device getDevice()
     {
         return device;
@@ -161,20 +171,20 @@ public class NetworkConnection
             throw new NullPointerException(name);
         for (int i = 0; i < a.length; i++)
             if (a[i] == null)
-                throw new NullPointerException(name + '[' + i + ']');        
+                throw new NullPointerException(name + '[' + i + ']');
     }
-    
+
     public final boolean isInstalled()
     {
-        return installed != null ? installed.booleanValue() 
-                                 : device == null || device.isInstalled();
+        return installed != null ? installed.booleanValue() : device == null
+                || device.isInstalled();
     }
 
     public final void setInstalled(boolean installed)
     {
         this.installed = Boolean.valueOf(installed);
     }
-    
+
     public boolean isListening()
     {
         return port > 0;
@@ -264,7 +274,7 @@ public class NetworkConnection
     {
         this.sendBufferSize = size;
     }
-    
+
     public final boolean isTcpNoDelay()
     {
         return tcpNoDelay;
@@ -272,7 +282,7 @@ public class NetworkConnection
 
     public final void setTcpNoDelay(boolean tcpNoDelay)
     {
-        this.tcpNoDelay = tcpNoDelay;        
+        this.tcpNoDelay = tcpNoDelay;
     }
 
     public final boolean isTlsNeedClientAuth()
@@ -299,20 +309,19 @@ public class NetworkConnection
     {
         return getSocketAddress(port);
     }
-    
-    private InetSocketAddress getSocketAddress(int port)
+
+    private InetSocketAddress getSocketAddress(int newPort)
     {
-        return hostname == null ? new InetSocketAddress(port)
-                                : new InetSocketAddress(hostname, port);
+        return hostname == null ? new InetSocketAddress(newPort)
+                : new InetSocketAddress(hostname, newPort);
     }
-    
-    public Socket connect(NetworkConnection peerConfig)
-    throws IOException
+
+    public Socket connect(NetworkConnection peerConfig) throws IOException
     {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
         if (!peerConfig.isListening())
-            throw new IllegalArgumentException("Only initiates associations - " 
+            throw new IllegalArgumentException("Only initiates associations - "
                     + peerConfig);
         Socket s = isTLS() ? createTLSSocket() : new Socket();
         if (receiveBufferSize != DEFAULT)
@@ -325,14 +334,13 @@ public class NetworkConnection
         s.connect(peerConfig.getSocketAddress(), connectTimeout);
         return s;
     }
-    
-    public synchronized void bind(final Executor executor)
-    throws IOException
+
+    public synchronized void bind(final Executor executor) throws IOException
     {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
         if (!isListening())
-            throw new IllegalStateException("Only initiates associations - " 
+            throw new IllegalStateException("Only initiates associations - "
                     + this);
         if (server != null)
             throw new IllegalStateException("Already listening - " + server);
@@ -340,7 +348,8 @@ public class NetworkConnection
         if (receiveBufferSize != DEFAULT)
             server.setReceiveBufferSize(receiveBufferSize);
         server.bind(getSocketAddress(), getBacklog());
-        executor.execute(new Runnable(){
+        executor.execute(new Runnable()
+        {
 
             public void run()
             {
@@ -348,34 +357,40 @@ public class NetworkConnection
                 log.info("Start listening on {}", addr);
                 try
                 {
-                   for (;;)
-                   {
+                    for (;;)
+                    {
                         log.debug("Wait for connection on {}", addr);
                         Socket s = server.accept();
                         if (sendBufferSize != DEFAULT)
                             s.setSendBufferSize(sendBufferSize);
                         s.setTcpNoDelay(tcpNoDelay);
-                        Association a = Association.accept(s, NetworkConnection.this);
+                        Association a = Association.accept(s,
+                                NetworkConnection.this);
                         executor.execute(a);
-                   }
-                }
-                catch (Throwable e)
+                    }
+                } catch (Throwable e)
                 {
                     // assume exception was raised by graceful stop of server
                 }
                 log.info("Stop listening on {}", addr);
-            }});
+            }
+        });
     }
 
     public synchronized void unbind()
     {
         if (server == null)
             return;
-        try { server.close(); }
-        catch (Throwable e) { }
+        try
+        {
+            server.close();
+        } catch (Throwable e)
+        {
+            // Ignore errors when closing the server socket.
+        }
         server = null;
     }
-    
+
     private Socket createTLSSocket() throws IOException
     {
         SSLSocketFactory sf = device.getSSLContext().getSocketFactory();
@@ -387,7 +402,8 @@ public class NetworkConnection
 
     private ServerSocket createTLSServerSocket() throws IOException
     {
-        SSLServerSocketFactory ssf = device.getSSLContext().getServerSocketFactory();
+        SSLServerSocketFactory ssf = device.getSSLContext()
+                .getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
         ss.setEnabledProtocols(tlsProtocol);
         ss.setEnabledCipherSuites(tlsCipherSuite);

@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien@theevansranch.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -48,42 +49,67 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * The <code>AssociationReaper</code> is responsible for monitoring DICOM
+ * associations by testing them periodically for idleness. The
+ * <code>Association</code> contains the maximum idle period, so when the
+ * reaper tests the association object for idleness, it may release the
+ * association if the idle period has been exceeded.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Dec 10, 2005
- *
+ * 
  */
 class AssociationReaper
 {
     static Logger log = LoggerFactory.getLogger(AssociationReaper.class);
     private final Timer timer = new Timer(true);
     private List list = Collections.synchronizedList(new ArrayList());
-    
-    public AssociationReaper(int period) 
+
+    /**
+     * Constructor which sets the max idle test period.
+     * 
+     * @param period An int signifying the time period in milliseconds in which
+     *            associations will be tested for idleness..
+     */
+    public AssociationReaper(int period)
     {
         if (log.isDebugEnabled())
-            log.debug("Check for idle Associations every " + (period / 1000f) + "s.");
-        timer.schedule(new TimerTask(){
+            log.debug("Check for idle Associations every " + (period / 1000f)
+                    + "s.");
+        timer.schedule(new TimerTask()
+        {
 
             public void run()
             {
                 long now = System.currentTimeMillis();
                 Object[] a = list.toArray();
                 for (int i = 0; i < a.length; i++)
-                    ((Association)a[i]).checkIdle(now);
-            }}, period, period);
+                    ((Association) a[i]).checkIdle(now);
+            }
+        }, period, period);
     }
 
+    /**
+     * Register an <code>Association</code> with this reaper.
+     * 
+     * @param a The Association to register.
+     */
     public void register(Association a)
     {
         log.debug("Start check for idle {}", a);
         list.add(a);
     }
 
+    /**
+     * Unregister an <code>Association</code> from this reaper.
+     * 
+     * @param a The <code>Association</code> to unregister.
+     */
     public void unregister(Association a)
     {
         log.debug("Stop check for idle {}", a);
         list.remove(a);
     }
-    
+
 }
