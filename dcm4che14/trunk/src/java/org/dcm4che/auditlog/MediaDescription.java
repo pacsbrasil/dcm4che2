@@ -82,14 +82,6 @@ public interface MediaDescription
 
 
     /**
-     *  Adds a feature to the StudyInstanceUID attribute of the InstancesAction object
-     *
-     * @param  suid  The feature to be added to the StudyInstanceUID attribute
-     */
-    public void addStudyInstanceUID(String suid);
-
-
-    /**
      *  Description of the Method
      *
      * @param  sb  Description of the Parameter

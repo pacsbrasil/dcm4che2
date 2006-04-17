@@ -56,8 +56,7 @@ package org.dcm4che.auditlog;
  */
 public interface Patient {
     
-    // Constants -----------------------------------------------------
-    
-    // Methods -------------------------------------------------------
+    public void addStudyInstanceUID(String suid);
+
     void writeTo(StringBuffer sb);
 }

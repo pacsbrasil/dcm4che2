@@ -56,7 +56,6 @@ class MediaDescriptionImpl implements MediaDescription
     // Variables -----------------------------------------------------
     private String mediaID;
     private String mediaType;
-    private LinkedHashSet suids = new LinkedHashSet(3);
     private LinkedHashSet pats = new LinkedHashSet(3);
     private Destination dest;
 
@@ -117,17 +116,6 @@ class MediaDescriptionImpl implements MediaDescription
 
 
     /**
-     *  Adds a feature to the StudyInstanceUID attribute of the MediaDescriptionImpl object
-     *
-     * @param  suid  The feature to be added to the StudyInstanceUID attribute
-     */
-    public final void addStudyInstanceUID(String suid)
-    {
-        suids.add(suid);
-    }
-
-
-    /**
      *  Description of the Method
      *
      * @param  sb  Description of the Parameter
@@ -143,11 +131,6 @@ class MediaDescriptionImpl implements MediaDescription
             sb.append("<MediaType><![CDATA[")
                     .append(mediaType)
                     .append("]]></MediaType>");
-        }
-        for (Iterator it = suids.iterator(); it.hasNext(); ) {
-            sb.append("<SUID>")
-                    .append(it.next())
-                    .append("</SUID>");
         }
         for (Iterator it = pats.iterator(); it.hasNext(); ) {
             Patient pat = (Patient) it.next();

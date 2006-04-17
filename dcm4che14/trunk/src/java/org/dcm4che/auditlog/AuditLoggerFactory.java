@@ -54,6 +54,10 @@ public abstract class AuditLoggerFactory
 {
     // Constants -----------------------------------------------------
 
+    private static AuditLoggerFactory instance = 
+        (AuditLoggerFactory) Implementation.findFactory(
+                "dcm4che.auditlog.AuditLoggerFactory");
+
     // Constructor ---------------------------------------------------
     /**
      *  Gets the instance attribute of the AuditLoggerFactory class
@@ -62,8 +66,7 @@ public abstract class AuditLoggerFactory
      */
     public static AuditLoggerFactory getInstance()
     {
-        return (AuditLoggerFactory) Implementation.findFactory(
-                "dcm4che.auditlog.AuditLoggerFactory");
+        return instance ;
     }
 
     // Public --------------------------------------------------------

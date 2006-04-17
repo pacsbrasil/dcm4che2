@@ -38,6 +38,9 @@
 
 package org.dcm4cheri.auditlog;
 
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+
 import org.dcm4che.auditlog.Patient;
 
 /**
@@ -63,19 +66,30 @@ class PatientImpl implements Patient {
     // Variables -----------------------------------------------------
     public String id;
     public String name;
+    private LinkedHashSet suids = new LinkedHashSet(3);
     
     // Constructors --------------------------------------------------
     public PatientImpl(String id, String name) {
         this.id = id;
         this.name = name;
     }
-    
+
+    public final void addStudyInstanceUID(String suid)
+    {
+        suids.add(suid);
+    }
+
+   
     // Methods -------------------------------------------------------
     public void writeTo(StringBuffer sb) {
-        sb.append("<Patient><PatientID><![CDATA[")
-          .append(id)
-          .append("]]></PatientID><PatientName><![CDATA[")
-          .append(name)
-          .append("]]></PatientName></Patient>");
+        sb.append("<Patient><PatientID><![CDATA[");
+        sb.append(id);
+        sb.append("]]></PatientID><PatientName><![CDATA[");
+        sb.append(name);
+        sb.append("]]></PatientName>");
+        for (Iterator it = suids.iterator(); it.hasNext(); ) {
+            sb.append("<SUID>").append(it.next()).append("</SUID>");
+        }
+        sb.append("</Patient>");
     }
 }
