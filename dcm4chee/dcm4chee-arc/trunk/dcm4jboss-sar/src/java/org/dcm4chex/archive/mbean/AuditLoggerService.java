@@ -47,7 +47,9 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.Destination;
 import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.MediaDescription;
 import org.dcm4che.auditlog.Patient;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
@@ -348,7 +350,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
             logger.logPatientRecord(action, patient, getCurrentUser(), desc);
         }
     }
-
+    
     public void logProcedureRecord(String action, String patid, String patname,
             String placerOrderNo, String fillerOrderNo, String suid,
             String accNo, String desc) {
@@ -364,7 +366,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
                     desc);
         }
     }
-    
+
     public void logInstancesStored(RemoteNode node, InstancesAction action) {
         if (getState() == STARTED 
                 && !supressLogForAETs.contains(node.getAET())) {
@@ -394,6 +396,21 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
         }
     }
     
+    public void logExport(String username, Patient[] patients, 
+            String mediaType, String mediaID, Destination dest) {
+        if (getState() == STARTED) {
+            MediaDescription mediaDesc = alf.newMediaDescription(patients[0]);
+            for (int i = 1; i < patients.length; i++) {
+                mediaDesc.addPatient(patients[i]);
+            }
+            mediaDesc.setMediaType(mediaType);
+            mediaDesc.setMediaID(mediaID);
+            mediaDesc.setDestination(dest);
+            User user = alf.newLocalUser(username);
+            logger.logExport(mediaDesc, user);
+        }
+    }
+
     private void logActorStartStop(String action) {
         logger.logActorStartStop(actorName, action, getCurrentUser());
     }

@@ -35,7 +35,7 @@
       (Manifest) considered by this service.
       Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
       Separate multiple values by new line. NONE = service disabled.
-      E.g: TCE001^IHERADTF,TCE002^IHERADTF,TCE007^IHERADTF]]>
+      E.g: TCE001^IHERADTF, TCE002^IHERADTF, TCE007^IHERADTF, 113007^DCM]]>
       </description>
       <name>ExportSelectorTitles</name>
       <type>java.lang.String</type>
@@ -50,12 +50,28 @@
       Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
       Separate multiple values by new line. NONE = ignore Delay Reason Codes in
       Export Selection Key Object.
-      Default: TCE011^IHERADTF,TCE012^IHERADTF,TCE013^IHERADTF,TCE014^IHERADTF,TCE015^IHERADTF,TCE016^IHERADTF,TCE017^IHERADTF,TCE018^IHERADTF]]>
+      Default:
+       TCE011^IHERADTF,
+       TCE012^IHERADTF,
+       TCE013^IHERADTF,
+       TCE014^IHERADTF,
+       TCE015^IHERADTF,
+       TCE016^IHERADTF,
+       TCE017^IHERADTF,
+       TCE018^IHERADTF]]>
       </description>
       <name>DelayReasons</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="TCE011^IHERADTF,TCE012^IHERADTF,TCE013^IHERADTF,TCE014^IHERADTF,TCE015^IHERADTF,TCE016^IHERADTF,TCE017^IHERADTF,TCE018^IHERADTF"/>
+         <value value="
+         TCE011^IHERADTF
+         TCE012^IHERADTF
+         TCE013^IHERADTF
+         TCE014^IHERADTF
+         TCE015^IHERADTF
+         TCE016^IHERADTF
+         TCE017^IHERADTF
+         TCE018^IHERADTF"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -184,6 +200,17 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4jboss.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    &defaultAttributes;

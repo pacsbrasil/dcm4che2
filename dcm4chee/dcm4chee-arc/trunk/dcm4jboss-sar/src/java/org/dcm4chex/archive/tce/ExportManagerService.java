@@ -37,7 +37,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package org.dcm4chex.archive.tce;
 
 import java.io.BufferedInputStream;
@@ -72,6 +71,9 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.Destination;
+import org.dcm4che.auditlog.Patient;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -162,6 +164,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     
     private boolean deleteKeyObjects;
 
+    private ObjectName auditLogName;
+
     public final int getBufferSize() {
         return bufferSize ;
     }
@@ -187,31 +191,31 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	}
 
 	public final String getPersonNameMapping() {
-	    String sep = System.getProperty("line.separator", "\n");
-		if ( personNames == null ) return "NONE"+sep;
+		if ( personNames == null ) return "NONE\r\n";
 		StringBuffer sb = new StringBuffer();
 		for ( int i = 0 ; i < personNames.length ; i++) {
-			sb.append(personNames[i][0]).append(":").append(personNames[i][1]).append(sep);
+			sb.append(personNames[i][0]).append(":").append(personNames[i][1]);
+            sb.append("\r\n");
 		}
         return sb.toString();
 	}
 
-    public final void setPersonNameMapping(String s) {
-    	if ( s == null || s.trim().length() < 1 || "NONE".equals(s)) {
-    		personNames = null;
-    	} else {
-	    	StringTokenizer st = new StringTokenizer( s, ";\t\r\n");
-	        this.personNames = new String[st.countTokens()][2];
-	        String pn;
-	        int pos;
-	    	for ( int i = 0 ; i < personNames.length ; i++ ) {
-	    		pn = st.nextToken();
-	    		pos = pn.indexOf(':');
-	    		personNames[i] = new String[2];
-	    		personNames[i][0] = pn.substring(0,pos++);
-	    		personNames[i][1] = pn.substring(pos);
-	    	}
-    	}
+	public final void setPersonNameMapping(String s) {
+	    StringTokenizer st = new StringTokenizer( s, ";\t\r\n");
+	    this.personNames = new String[st.countTokens()][2];
+	    String pn;
+	    int pos;
+	    for ( int i = 0 ; i < personNames.length ; i++ ) {
+	        pn = st.nextToken();
+	        pos = pn.indexOf(':');
+            if (pos == -1) { // assume NONE
+                personNames = null;
+                return;
+            }
+	        personNames[i] = new String[2];
+	        personNames[i][0] = pn.substring(0,pos++);
+	        personNames[i][1] = pn.substring(pos);
+	    }
 	}
     
     private String codes2str(String[] codes)
@@ -305,6 +309,14 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		this.storeScpServiceName = storeScpServiceName;
 	}
 
+    public final ObjectName getAuditLoggerName() {
+        return auditLogName;
+    }
+
+    public final void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogName = auditLogName;
+    }
+    
 	public final String getQueueName() {
 		return queueName;
 	}
@@ -542,12 +554,13 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         final int prior = DicomPriority.toCode(config.getProperty("export-priority", "MEDIUM"));
         final int exportManifest = export.indexOf("MANIFEST");
         final boolean exportInstances = export.indexOf("INSTANCES") != -1;
+        final boolean exportMedia = export.indexOf("MEDIA") != -1;
         
         HashMap attrs = new HashMap();
 		FileInfo[] fileInfos = queryAttrs(manifest, attrs);
         int[] pcids = new int[fileInfos.length + 1];
         ActiveAssociation a = openAssociation(fileInfos, pcids, dest, 
-                exportManifest != -1, exportInstances);
+                exportManifest != -1, exportInstances, exportMedia);
         HashMap iuidMap = new HashMap(); 
         coerceAttributes(manifest, config, iuidMap);
         if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
@@ -566,9 +579,133 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         }
         if (exportManifest > 0)
             sendManifests(a, pcids[fileInfos.length], manifest, prior);
+        if (exportMedia) {
+            sendMediaCreationRequest(a, manifest, config);
+        }
         a.release(true);
 	}
 
+    private void sendMediaCreationRequest(ActiveAssociation aa,
+            Dataset manifest, Properties config)
+    throws InterruptedException, IOException {
+        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+        Patient pat = alf.newPatient(
+                manifest.getString(Tags.PatientID),
+                manifest.getString(Tags.PatientName));
+        DcmObjectFactory df = DcmObjectFactory.getInstance();
+        Command cmd = df.newCommand();
+        Association a = aa.getAssociation();
+        PresContext pc = a.getAcceptedPresContext(
+                UIDs.MediaCreationManagementSOPClass, UIDs.ImplicitVRLittleEndian);
+        int pid = pc.pcid();
+        String iuid = uidgen.createUID();
+        cmd.initNCreateRQ(a.nextMsgID(),
+                UIDs.MediaCreationManagementSOPClass, iuid);
+        Dataset data = df.newDataset();
+        String s;
+        if ((s = config.getProperty("create-media-label-from-instances")) != null) {
+            data.putCS(Tags.LabelUsingInformationExtractedFromInstances, s);
+        }
+        if ((s = config.getProperty("create-media-label-text")) != null) {
+            data.putUT(Tags.LabelText, s);
+        }
+        if ((s = config.getProperty("create-media-label-style")) != null) {
+            data.putCS(Tags.LabelStyleSelection, s);
+        }
+        if ((s = config.getProperty("create-media-disposition")) != null) {
+            data.putLT(Tags.MediaDisposition, s);
+        }
+        if ((s = config.getProperty("create-media-allow-media-splitting")) != null) {
+            data.putCS(Tags.AllowMediaSplitting, s);
+        }
+        if ((s = config.getProperty("create-media-allow-lossy-compression")) != null) {
+            data.putCS(Tags.AllowLossyCompression, s);
+        }
+        if ((s = config.getProperty("create-media-include-non-dicom")) != null) {
+            data.putCS(Tags.IncludeNonDICOMObjects, s);
+        }
+        if ((s = config.getProperty("create-media-include-display-app")) != null) {
+            data.putCS(Tags.IncludeDisplayApplication, s);
+        }
+        data.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation, "NO");
+        String appProfile = config.getProperty("create-media-app-profile");
+        DcmElement refSOPSeq = data.putSQ(Tags.RefSOPSeq);
+        DcmElement sopInstRefSeq = manifest.get(Tags.CurrentRequestedProcedureEvidenceSeq);
+        for (int i = 0, n = sopInstRefSeq.vm(); i < n; i++) {
+            Dataset refStudyItem = sopInstRefSeq.getItem(i);
+            pat.addStudyInstanceUID(refStudyItem.getString(Tags.StudyInstanceUID));
+            DcmElement refSerSeq = refStudyItem.get(Tags.RefSeriesSeq);
+            for (int j = 0, m = refSerSeq.vm(); j < m; j++) {
+                Dataset refSer = refSerSeq.getItem(j);
+                DcmElement srcRefSOPSeq = refSer.get(Tags.RefSOPSeq);
+                for (int k = 0, l = srcRefSOPSeq.vm(); k < l; k++) {                    
+                    Dataset srcRefSOP = srcRefSOPSeq.getItem(k);
+                    Dataset refSOP = df.newDataset();
+                    refSOP.putUI(Tags.RefSOPClassUID,
+                            srcRefSOP.getString(Tags.RefSOPClassUID));
+                    refSOP.putUI(Tags.RefSOPInstanceUID,
+                            srcRefSOP.getString(Tags.RefSOPInstanceUID));
+                    if (appProfile != null) {
+                        refSOP.putCS(Tags.RequestedMediaApplicationProfile, appProfile);
+                    }
+                    refSOPSeq.addItem(refSOP);
+                }
+            }
+        }
+        AssociationFactory af = AssociationFactory.getInstance();
+        Dimse dimse = af.newDimse(pid, cmd, data);
+        Command rsp = aa.invoke(dimse).get().getCommand();
+        if (rsp.getStatus() != 0) {
+            log.warn("Request Media Creation failed: " + rsp);
+            return;
+        }
+        cmd.clear();
+        data.clear();
+        cmd.initNActionRQ(a.nextMsgID(), UIDs.MediaCreationManagementSOPClass,
+                iuid, 1);
+        if ((s = config.getProperty("create-media-copies")) != null) {
+            data.putIS(Tags.NumberOfCopies, s);
+        }
+        if ((s = config.getProperty("create-media-priority")) != null) {
+            data.putCS(Tags.RequestPriority, s);
+        }        
+        dimse = af.newDimse(pid, cmd, data);
+        rsp = aa.invoke(dimse).get().getCommand();
+        if (rsp.getStatus() != 0) {
+            log.warn("Initiate Media Creation failed: " + rsp);
+            return;
+        }
+        logExport(extractPersonObserverName(manifest), pat, 
+                config.getProperty("create-media-type"));
+    }
+
+    private String extractPersonObserverName(Dataset manifest) {
+        DcmElement contentSeq = manifest.get(Tags.ContentSeq);
+        for (int i = 0, n = contentSeq.vm(); i < n; i++) {
+            Dataset item = contentSeq.getItem(i);
+            Dataset conceptName = item.getItem(Tags.ConceptNameCodeSeq);
+            if ("121008".equals(conceptName.getString(Tags.CodeValue)) && 
+                    "DCM".equals(conceptName.getString(Tags.CodingSchemeDesignator))) {
+                return item.getString(Tags.PersonName);
+            }
+        }
+        return null;
+    }
+
+    private void logExport(String user, Patient pat, String mediaType) {
+        if (auditLogName == null) return;
+        try {
+            server.invoke(auditLogName,
+                    "logExport",
+                    new Object[] { user , new Patient[]{pat}, mediaType, null, null},
+                    new String[] { String.class.getName(),
+                        Patient[].class.getName(), String.class.getName(), 
+                        String.class.getName(), Destination.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }
+    }
+    
     public void dimseReceived(Association assoc, Dimse dimse)
     {
         // TODO Auto-generated method stub
@@ -684,7 +821,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     private ActiveAssociation openAssociation(FileInfo[] fileInfos, int[] pcids,
-            String dest, boolean exportManifest, boolean exportInstances)
+            String dest, boolean exportManifest, boolean exportInstances,
+            boolean exportMedia)
     throws SQLException, UnkownAETException, IOException, InterruptedException
     {
         AEData aeData = new AECmd(dest).getAEData();
@@ -721,6 +859,12 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 rq.addPresContext(pc);
             }
         }
+        if (exportMedia) {
+            PresContext pc = af.newPresContext(rq.nextPCID(),
+                    UIDs.MediaCreationManagementSOPClass,
+                    UIDs.ImplicitVRLittleEndian);
+            rq.addPresContext(pc);
+        }
         Association a = af.newRequestor(tlsConfig.createSocket(aeData));
         a.setAcTimeout(acTimeout);
         a.setDimseTimeout(dimseTimeout);
@@ -754,6 +898,12 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 }
                 pcids[i] = pc.pcid();
             }
+        if (exportMedia) {
+            PresContext pc = a.getAcceptedPresContext(
+                    UIDs.MediaCreationManagementSOPClass, UIDs.ImplicitVRLittleEndian);
+            if (pc == null)
+                throwStorageNotSupported(aa, UIDs.MediaCreationManagementSOPClass, dest);            
+        }
         return aa;
     }
 

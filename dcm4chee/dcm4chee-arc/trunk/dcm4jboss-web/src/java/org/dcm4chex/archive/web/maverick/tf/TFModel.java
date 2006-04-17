@@ -45,7 +45,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
-import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 
 /**
  * @author franz.willer
@@ -54,7 +53,27 @@ import org.dcm4chex.archive.web.maverick.admin.DCMUser;
  */
 public class TFModel extends BasicFormModel {
 
-	/** The session attribute name to store the model in http session. */
+    public static final String[] DOC_TITLES = new String[] {
+        "TCE001", "IHERADTF", "For Teaching File Export",
+        "TCE002", "IHERADTF", "For Clinical Trial Export",
+        "TCE007", "IHERADTF", "For Research Collection Export",
+        "113007", "DCM", "For Patient"};
+    
+    public static final String[] DELAY_REASONS = new String[] {
+        "TCE011" ,"IHERADTF", "Delay export until final report is available",
+        "TCE012", "IHERADTF", "Delay export until clinical information is available",
+        "TCE013", "IHERADTF", "Delay export until confirmation of diagnosis is available",
+        "TCE014", "IHERADTF", "Delay export until histopathology is available",
+        "TCE015", "IHERADTF", "Delay export until other laboratory results is available",
+        "TCE016", "IHERADTF", "Delay export until patient is discharged",
+        "TCE017", "IHERADTF", "Delay export until patient dies",
+        "TCE018", "IHERADTF", "Delay export until expert review is available"};
+    
+    private static final int CODE = 0;
+    private static final int DESIGNATOR = 1;
+	private static final int MEANING = 2;
+
+    /** The session attribute name to store the model in http session. */
 	public static final String TF_ATTR_NAME = "tfModel";
 	
     private SRManifestModel manifestModel;
@@ -67,27 +86,6 @@ public class TFModel extends BasicFormModel {
 	private int selectedDelayReason = -1;
 	private Collection dispositions;
 	private String disposition;
-
-	public static final String[] DOC_TITLES = new String[]{"For Teaching File Export",
-															"For Clinical Trial Export",
-															"For Research Collection Export"};
-	
-	public static final String[] DOC_TITLE_CODES = new String[]{"TCE001","TCE002","TCE007"};
-
-	public static final String[] DELAY_REASONS = new String[]
-		{"Delay export until final report is available",
-		"Delay export until clinical information is available",
-		"Delay export until confirmation of diagnosis is available",
-		"Delay export until histopathology is available",
-		"Delay export until other laboratory results is available",
-		"Delay export until patient is discharged",
-		"Delay export until patient dies",
-		"Delay export until expert review is available"};
-
-	public static final String[] DELAY_REASON_CODES = new String[]{"TCE011","TCE012","TCE013",
-	"TCE014","TCE015","TCE016","TCE017","TCE018"};
-	
-	public static final String CODE_DESIGNATOR = "IHERADTF";
 
 	/**
 	 * Creates the model.
@@ -154,13 +152,26 @@ public class TFModel extends BasicFormModel {
 	}
 
 	public String getModelName() { return "TF"; }
-	
+
+    private String selectFrom(int off, int index, String[] values) {
+        return index < 0 ? null : values[off + index * 3];
+    }
+
+    private String[] meaning(String[] values) {
+        String[] ss = new String[values.length / 3];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = selectFrom(MEANING, i, values);           
+        }
+        return ss;
+    }
+
+    
 	public String[] getDocTitles() {
-		return DOC_TITLES;
+		return meaning(DOC_TITLES);
 	}
 	
 	public String[] getDelayReasons() {
-		return DELAY_REASONS;
+		return meaning(DELAY_REASONS);
 	}
 
 	/**
@@ -183,35 +194,33 @@ public class TFModel extends BasicFormModel {
 	public int getSelectedDocTitle() {
 		return selectedTitle;
 	}
-	/**
-	 * @return
-	 */
-	public String selectedDocTitle() {
-		return selectedTitle < 0 ? null : DOC_TITLES[selectedTitle];
-	}
-	public String selectedDocTitleCode() {
-		return selectedTitle < 0 ? null : DOC_TITLE_CODES[selectedTitle];
+
+    public String selectedDocTitle() {
+        return selectFrom(MEANING, selectedTitle, DOC_TITLES);
+	}    
+
+    public String selectedDocTitleCode() {
+        return selectFrom(CODE, selectedTitle, DOC_TITLES);
 	}
 	
 	public String selectedDocTitleDesignator() {
-		return CODE_DESIGNATOR;
+        return selectFrom(DESIGNATOR, selectedTitle, DOC_TITLES);
 	}
 
 	public int getSelectedDelayReason() {
 		return selectedDelayReason;
 	}
-	/**
-	 * @return
-	 */
-	public String selectedDelayReason() {
-		return selectedDelayReason < 0 ? null : DELAY_REASONS[selectedDelayReason];
+
+    public String selectedDelayReason() {
+        return selectFrom(MEANING, selectedDelayReason, DELAY_REASONS);
 	}
+    
 	public String selectedDelayReasonCode() {
-		return selectedDelayReason < 0 ? null : DELAY_REASON_CODES[selectedDelayReason];
+        return selectFrom(CODE, selectedDelayReason, DELAY_REASONS);
 	}
 	
 	public String selectedDelayReasonDesignator() {
-		return CODE_DESIGNATOR;
+        return selectFrom(DESIGNATOR, selectedDelayReason, DELAY_REASONS);
 	}
 	
 	public String getDisposition() {
