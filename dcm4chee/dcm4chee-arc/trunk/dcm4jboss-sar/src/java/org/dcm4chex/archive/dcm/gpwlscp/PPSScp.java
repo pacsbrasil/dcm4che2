@@ -91,7 +91,7 @@ class PPSScp extends DcmServiceBase {
         Tags.PerformedWorkitemCodeSeq, Tags.PPSStartDate, Tags.PPSStartTime
     };
     private static final int[] TYPE1_FINAL_ATTR = {
-        Tags.PPSEndDate, Tags.PPSEndTime, Tags.OutputInformationSeq
+        Tags.PPSEndDate, Tags.PPSEndTime
     };
     
     private final GPWLScpService service;
@@ -111,13 +111,12 @@ class PPSScp extends DcmServiceBase {
         if (iuid == null) {
             iuid = rspCmd.getAffectedSOPInstanceUID();
         }
-		log.debug("Creating PPS:\n");
+		log.debug("GP-PPS Attributes:");
 		log.debug(gppps);
         checkCreateAttributs(gppps);
         gppps.putUI(Tags.SOPClassUID, cuid);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         createGPPPS(gppps);
-        service.sendPPSNotification(gppps);
         return null;
     }
 
@@ -126,12 +125,11 @@ class PPSScp extends DcmServiceBase {
         final Command cmd = rq.getCommand();
         final Dataset gppps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
-		log.debug("Set PPS:\n");
+		log.debug("GP-PPS Attributes:");
 		log.debug(gppps);
         checkSetAttributs(gppps);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         updateGPPPS(gppps);
-        service.sendPPSNotification(gppps);
         return null;
     }
 

@@ -40,6 +40,9 @@
 package org.dcm4chex.archive.dcm.gpwlscp;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
+
+import javax.ejb.CreateException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -65,8 +68,6 @@ import org.jboss.logging.Logger;
 
 class GPSPSScp extends DcmServiceBase {
 	
-    private static final int[] TYPE1_NACTION_ATTR = {
-        Tags.TransactionUID, Tags.GPSPSStatus};
 	private static final int REQUEST_GPSPS_STATUS_MODIFICATION = 1;
 	private final GPWLScpService service;
 	private final Logger log;
@@ -80,7 +81,7 @@ class GPSPSScp extends DcmServiceBase {
 			Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         Dataset actionInfo = rq.getDataset();
-        log.debug("N-Action Information:\n");
+        log.debug("N-Action Information:");
 		log.debug(actionInfo);
 
         final String iuid = rqCmd.getAffectedSOPInstanceUID();
@@ -109,21 +110,14 @@ class GPSPSScp extends DcmServiceBase {
 	      	}
         }
         modifyStatus(iuid, actionInfo);
+        service.sendActionNotification(iuid);
 		return null;
 	}
 
 	private void modifyStatus(String iuid, Dataset actionInfo)
 			throws DcmServiceException {
         try {
-            GPWLManager mgr = getGPWLManagerHome().create();
-            try {
-                mgr.modifyStatus(iuid, actionInfo);
-            } finally {
-                try {
-                    mgr.remove();
-                } catch (Exception ignore) {
-                }
-            }
+            getGPWLManager().modifyStatus(iuid, actionInfo);
         } catch (DcmServiceException e) {
         	log.error("Exception during status update:", e);
             throw e;
@@ -133,8 +127,9 @@ class GPSPSScp extends DcmServiceBase {
         }
 	}
 
-	private GPWLManagerHome getGPWLManagerHome() throws HomeFactoryException {
-        return (GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
-                GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME);
+	private GPWLManager getGPWLManager()
+    throws HomeFactoryException, RemoteException, CreateException {
+        return ((GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME)).create();
     }
 }

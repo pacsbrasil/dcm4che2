@@ -57,11 +57,13 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.GPSPSStatus;
+import org.dcm4chex.archive.ejb.interfaces.GPPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -87,6 +89,9 @@ public abstract class GPWLManagerBean implements SessionBean {
     private static final int ALREADY_IN_PROGRESS = 0xA503;
 	private static final int[] PATIENT_ATTRS = { Tags.PatientName,
             Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
+    private static final int[] OUTPUT_INFO_TAGS = {
+        Tags.RequestedSubsequentWorkitemCodeSeq,
+        Tags.NonDICOMOutputCodeSeq, Tags.OutputInformationSeq };
 
     private static Logger log = Logger.getLogger(GPWLManagerBean.class);
 
@@ -273,4 +278,18 @@ public abstract class GPWLManagerBean implements SessionBean {
     		}
     	}        
 	}
+    
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset getOutputInformation(String iuid) throws FinderException {
+        Dataset result = DcmObjectFactory.getInstance().newDataset();
+        GPSPSLocal gpsps = gpspsHome.findBySopIuid(iuid);
+        Collection c = gpsps.getGppps();
+        for (Iterator iter = c.iterator(); iter.hasNext();) {
+            Dataset gppps = ((GPPPSLocal) iter.next()).getAttributes();
+            result.putAll(gppps.subSet(OUTPUT_INFO_TAGS), Dataset.ADD_ITEMS);
+        }
+        return result;
+    }
 }

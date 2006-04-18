@@ -45,7 +45,6 @@ import java.util.Map;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 
-import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -78,10 +77,10 @@ public class GPWLScpService extends AbstractScpService {
     private GPSPSScp spspsScp = new GPSPSScp(this);
     private PPSScp ppsScp = new PPSScp(this);
 
-    void sendPPSNotification(Dataset ds) {
+    void sendActionNotification(String iuid) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE, this, eventID);
-        notif.setUserData(ds);
+        notif.setUserData(iuid);
         super.sendNotification(notif);
     }
     

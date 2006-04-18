@@ -41,8 +41,11 @@ package org.dcm4chex.archive.dcm.gpwlscp;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Date;
 
+import javax.ejb.CreateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -53,6 +56,7 @@ import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -66,10 +70,16 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.GPPPSManager;
+import org.dcm4chex.archive.ejb.interfaces.GPPPSManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
+import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -96,15 +106,25 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
 	private static final String[] EMPTY = {};
 
-    private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID, Tags.SOPInstanceUID, Tags.RefGPSPSSeq };
+    private static final int[] SOP_IUID = { Tags.SOPInstanceUID };
 
+    private static final int[] N_CREATE_SPS_ATTRS = { Tags.SpecificCharacterSet,
+        Tags.PatientName, Tags.PatientID, Tags.PatientBirthDate, 
+        Tags.PatientSex, Tags.ActualHumanPerformersSeq, Tags.RefRequestSeq};
+
+    private static final int[] N_CREATE_TYPE2_ATTRS = { 
+        Tags.RefRequestSeq, Tags.ActualHumanPerformersSeq,
+        Tags.ActualHumanPerformersSeq,
+        Tags.RequestedSubsequentWorkitemCodeSeq,
+        Tags.NonDICOMOutputCodeSeq, Tags.OutputInformationSeq };
+    
 	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
 	private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
 	private String callingAET;
 
-	private String[] forwardAETs = EMPTY;
+	private String[] destAETs = EMPTY;
 
 	private ObjectName gpwlScpServiceName;
 
@@ -118,10 +138,93 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
 	private int concurrency = 1;
 
-	public final int getConcurrency() {
+    private String ppsuidSuffix = ".1";
+
+    private boolean copyWorkitemCode = true;
+
+    private boolean copyProcessingApplicationsCode = true;
+
+    private boolean copyStationGeographicLocationCode = true;
+
+    private boolean copyStationClassCode = true;
+
+    private boolean copyStationNameCode = true;
+
+	public final boolean isCopyProcessingApplicationsCode() {
+        return copyProcessingApplicationsCode;
+    }
+
+    public final void setCopyProcessingApplicationsCode(
+            boolean copyProcessingApplicationsCode) {
+        this.copyProcessingApplicationsCode = copyProcessingApplicationsCode;
+    }
+
+    public final boolean isCopyStationClassCode() {
+        return copyStationClassCode;
+    }
+
+    public final void setCopyStationClassCode(boolean copyStationClassCode) {
+        this.copyStationClassCode = copyStationClassCode;
+    }
+
+    public final boolean isCopyStationGeographicLocationCode() {
+        return copyStationGeographicLocationCode;
+    }
+
+    public final void setCopyStationGeographicLocationCode(
+            boolean copyStationGeographicLocationCode) {
+        this.copyStationGeographicLocationCode = copyStationGeographicLocationCode;
+    }
+
+    public final boolean isCopyStationNameCode() {
+        return copyStationNameCode;
+    }
+
+    public final void setCopyStationNameCode(boolean copyStationNameCode) {
+        this.copyStationNameCode = copyStationNameCode;
+    }
+
+    public final boolean isCopyWorkitemCode() {
+        return copyWorkitemCode;
+    }
+
+    public final void setCopyWorkitemCode(boolean copyWorkitemCode) {
+        this.copyWorkitemCode = copyWorkitemCode;
+    }
+
+    public final String getPpsUidSuffix() {
+        return ppsuidSuffix;
+    }
+
+    public final void setPpsUidSuffix(String ppsuidSuffix) {
+        this.ppsuidSuffix = ppsuidSuffix;
+    }
+
+    public final int getConcurrency() {
 		return concurrency;
 	}
 
+    public String getEjbProviderURL() {
+        return EJBHomeFactory.getEjbProviderURL();
+    }        
+
+    public void setEjbProviderURL(String ejbProviderURL) {
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+    
+    private GPWLManager getGPWLManager()
+    throws HomeFactoryException, RemoteException, CreateException {
+        return ((GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME)).create();
+    }
+    
+    private GPPPSManager getGPPPSManager() 
+    throws HomeFactoryException, RemoteException, CreateException {
+        return ((GPPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                GPPPSManagerHome.class, GPPPSManagerHome.JNDI_NAME)).create();
+    }
+    
+    
 	public final void setConcurrency(int concurrency) throws Exception {
 		if (concurrency <= 0)
 			throw new IllegalArgumentException("Concurrency: " + concurrency);
@@ -159,13 +262,13 @@ public class PPSScuService extends ServiceMBeanSupport implements
 		this.soCloseDelay = soCloseDelay;
 	}
 
-	public final String getForwardAETs() {
-		return forwardAETs.length > 0 ? StringUtils.toString(forwardAETs, '\\')
+	public final String getDestAETs() {
+		return destAETs.length > 0 ? StringUtils.toString(destAETs, '\\')
 				: NONE;
 	}
 
-	public final void setForwardAETs(String forwardAETs) {
-		this.forwardAETs = NONE.equalsIgnoreCase(forwardAETs) ? EMPTY
+	public final void setDestAETs(String forwardAETs) {
+		this.destAETs = NONE.equalsIgnoreCase(forwardAETs) ? EMPTY
 				: StringUtils.split(forwardAETs, '\\');
 	}
 
@@ -222,9 +325,58 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	}
 
 	public void handleNotification(Notification notif, Object handback) {
-		Dataset mpps = (Dataset) notif.getUserData();
-		for (int i = 0; i < forwardAETs.length; i++) {
-			PPSOrder order = new PPSOrder(mpps, forwardAETs[i]);
+		String spsuid = (String) notif.getUserData();
+		Dataset pps = DcmObjectFactory.getInstance().newDataset();
+        try {
+            Dataset sps;
+            GPWLManager gpwlmgr = getGPWLManager();
+            sps = gpwlmgr.getWorklistItem(spsuid);
+            String ppsiuid = spsuid + ppsuidSuffix;
+            String status = sps.getString(Tags.GPSPSStatus);
+            pps.putCS(Tags.GPPPSStatus, status);
+            pps.putUI(Tags.SOPInstanceUID, ppsiuid);
+            Date now = new Date();
+            if ("IN PROGRESS".equals(status)) {
+                try {
+                    getGPPPSManager().getGPPPS(ppsiuid);
+                    return; // avoid duplicate N_CREATE
+                } catch (Exception e) {}
+                pps.putSH(Tags.PPSID, "PPS" + ppsiuid.hashCode());
+                pps.putDA(Tags.PPSStartDate, now);
+                pps.putTM(Tags.PPSStartTime, now);
+                for (int i = 0; i < N_CREATE_TYPE2_ATTRS.length; i++) {
+                    pps.putXX(N_CREATE_TYPE2_ATTRS[i]);                    
+                }
+                pps.putAll(sps.subSet(N_CREATE_SPS_ATTRS));
+                copyCode(copyWorkitemCode,
+                        sps.getItem(Tags.ScheduledWorkitemCodeSeq),
+                        pps.putSQ(Tags.PerformedWorkitemCodeSeq));
+                copyCode(copyStationNameCode,
+                        sps.getItem(Tags.ScheduledStationNameCodeSeq),
+                        pps.putSQ(Tags.PerformedStationNameCodeSeq));
+                copyCode(copyStationClassCode,
+                        sps.getItem(Tags.ScheduledStationClassCodeSeq),
+                        pps.putSQ(Tags.PerformedStationClassCodeSeq));
+                copyCode(copyStationGeographicLocationCode,
+                        sps.getItem(Tags.ScheduledStationGeographicLocationCodeSeq),
+                        pps.putSQ(Tags.PerformedStationGeographicLocationCodeSeq));
+                copyCode(copyProcessingApplicationsCode,
+                        sps.getItem(Tags.ScheduledProcessingApplicationsCodeSeq),
+                        pps.putSQ(Tags.PerformedProcessingApplicationsCodeSeq));
+            } else if ("COMPLETED".equals(status)
+                    || "DISCONTINUED".equals(status)) {
+                pps.putDA(Tags.PPSEndDate, now);
+                pps.putTM(Tags.PPSEndTime, now);
+                pps.putAll(gpwlmgr.getOutputInformation(spsuid));
+            } else {
+                return;
+            }
+        } catch (Exception e) {
+            log.error("Failed to access GP-SPS[" + spsuid + "]", e);
+            return;
+        }
+		for (int i = 0; i < destAETs.length; i++) {
+			PPSOrder order = new PPSOrder(pps, destAETs[i]);
 			try {
 				log.info("Scheduling " + order);
 				JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
@@ -236,7 +388,13 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
 	}
 
-	public void onMessage(Message message) {
+    private void copyCode(boolean copy, Dataset code, DcmElement sq) {
+        if (copy && code != null) {
+            sq.addItem(code);
+        }
+    }
+
+    public void onMessage(Message message) {
 		ObjectMessage om = (ObjectMessage) message;
 		try {
 			PPSOrder order = (PPSOrder) om.getObject();
@@ -266,7 +424,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-	void sendPPS(boolean create, Dataset mpps, String aet)
+	void sendPPS(boolean create, Dataset pps, String aet)
 			throws InterruptedException, IOException, UnkownAETException,
 			SQLException, DcmServiceException {
 		AEData aeData = new AECmd(aet).getAEData();
@@ -294,21 +452,23 @@ public class PPSScuService extends ServiceMBeanSupport implements
 			aa.start();
 			if (a.getAcceptedTransferSyntaxUID(PCID_GPPPS) == null) {
 				throw new DcmServiceException(ERR_GPPPS_RJ,
-						"GPPPS not supported by remote AE: " + aet);
+						"GP-PPS not supported by remote AE: " + aet);
 			}
 			DcmObjectFactory dof = DcmObjectFactory.getInstance();
 			Command cmdRq = dof.newCommand();
-			if (create) {
+			final String iuid = pps.getString(Tags.SOPInstanceUID);
+            if (create) {
 				cmdRq.initNCreateRQ(a.nextMsgID(),
-						UIDs.GeneralPurposePerformedProcedureStepSOPClass, mpps
-								.getString(Tags.SOPInstanceUID));
+						UIDs.GeneralPurposePerformedProcedureStepSOPClass, iuid);
 			} else {
 				cmdRq.initNSetRQ(a.nextMsgID(),
-						UIDs.GeneralPurposePerformedProcedureStepSOPClass, mpps
-								.getString(Tags.SOPInstanceUID));
+						UIDs.GeneralPurposePerformedProcedureStepSOPClass, iuid);
 			}
-			Dimse dimseRq = af.newDimse(PCID_GPPPS, cmdRq, mpps
-					.exclude(EXCLUDE_TAGS));
+			Dimse dimseRq = af.newDimse(PCID_GPPPS, cmdRq, pps.exclude(SOP_IUID));
+            if (log.isDebugEnabled()) {
+                log.debug("GP-PPS Attributes:");
+                log.debug(pps);
+            }
 			final Dimse dimseRsp = aa.invoke(dimseRq).get();
 			final Command cmdRsp = dimseRsp.getCommand();
 			final int status = cmdRsp.getStatus();
@@ -320,8 +480,8 @@ public class PPSScuService extends ServiceMBeanSupport implements
 								+ aet);
 				break;
 			default:
-				throw new DcmServiceException(status, cmdRsp
-						.getString(Tags.ErrorComment));
+				throw new DcmServiceException(status,
+                        cmdRsp.getString(Tags.ErrorComment));
 			}
 		} finally {
 			try {

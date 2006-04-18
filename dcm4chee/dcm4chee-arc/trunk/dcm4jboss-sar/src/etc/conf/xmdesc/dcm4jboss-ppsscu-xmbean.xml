@@ -19,14 +19,18 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getForwardAETs" setMethod="setForwardAETs">
-      <description>List of the AE titles of the application entities that GP-PPS messages can be  forwarded to, separated by \(backslash).
-      NONE = do not forward GP-PPS messages to any application entities.
+   <attribute access="read-write" getMethod="getDestAETs" setMethod="setDestAETs">
+      <description>List of the AE titles of application entities being notified
+      about Work item status changes by GP-PPS messages, separated by \(backslash).
+      NONE = do not send GP-PPS messages to any application entities. Duplicate
+      GP-PPS N-CREATE messages triggered by multiple GP-SPS N-ACTION with status
+      IN PROGRESS can be avoided by configuration of local GP-PPS SCP as 
+      additional destination.  
       </description>
-      <name>ForwardAETitles</name>
+      <name>DestinationAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE"/>
+         <value value="DCM4JBOSS"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
@@ -36,6 +40,76 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="DCM4JBOSS"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getPpsUidSuffix" setMethod="setPpsUidSuffix">
+      <description>Suffix used to derive SOP Instance UID of emitted GP-PPS from
+      SOP Instance UID of corresponding GP-SPS.
+      </description>
+      <name>PpsUidSuffix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value=".1"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+       getMethod="isCopyWorkitemCode"
+       setMethod="setCopyWorkitemCode">
+      <description>Specifies if Scheduled Workitem Code of GP-SPS
+        is set as Performed Workitem Code in emitted GP-PPS.
+      </description>
+      <name>CopyWorkitemCode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+       getMethod="isCopyStationNameCode"
+       setMethod="setCopyStationNameCode">
+      <description>Specifies if Scheduled Station Name Code of GP-SPS
+        is set as Performed Station Name Code in emitted GP-PPS.
+      </description>
+      <name>CopyStationNameCode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+       getMethod="isCopyStationClassCode"
+       setMethod="setCopyStationClassCode">
+      <description>Specifies if Scheduled Station Class Code of GP-SPS
+        is set as Performed Station Class Code in emitted GP-PPS.
+      </description>
+      <name>CopyStationClassCode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+       getMethod="isCopyStationGeographicLocationCode"
+       setMethod="setCopyStationGeographicLocationCode">
+      <description>Specifies if Scheduled Station Geographic Location Code of GP-SPS
+        is set as Performed Station Geographic Location Code in emitted GP-PPS.
+      </description>
+      <name>CopyStationGeographicLocationCode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+       getMethod="isCopyProcessingApplicationsCode"
+       setMethod="setCopyProcessingApplicationsCode">
+      <description>Specifies if Scheduled Processing Applications Code of GP-SPS
+        is set as Performed Processing Applications Code in emitted GP-PPS.
+      </description>
+      <name>CopyProcessingApplicationsCode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getConcurrency" setMethod="setConcurrency">
@@ -88,6 +162,16 @@
       <type>int</type>
       <descriptors>
          <value value="50"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
+      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+      "LOCAL", if EJBs are deployed in same JBoss instance.
+      </description>
+      <name>EjbProviderURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LOCAL"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
