@@ -72,7 +72,7 @@ class RemotePrinterImpl implements Destination
     {
         sb.append("<Destination><Node>");
         rnode.writeTo(sb);
-        sb.append("</Node><Destination>");
+        sb.append("</Node></Destination>");
     }
 
 }
