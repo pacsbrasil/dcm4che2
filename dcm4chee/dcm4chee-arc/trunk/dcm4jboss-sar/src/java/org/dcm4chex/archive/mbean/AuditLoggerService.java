@@ -43,6 +43,8 @@ import java.net.Socket;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLogger;
@@ -410,7 +412,20 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
             logger.logExport(mediaDesc, user);
         }
     }
-
+    
+    public void logExport(String patid, String patname, String mediaType, Set suids, String ip, String host, String aet) {
+        Patient patient = alf.newPatient(patid, patname);
+        if ( suids != null ) {
+        	for ( Iterator it=suids.iterator() ; it.hasNext() ; ) {
+        		patient.addStudyInstanceUID((String)it.next());
+        	}
+        }
+        MediaDescription descr = alf.newMediaDescription(patient);
+        descr.setMediaType(mediaType);
+        descr.setDestination(alf.newRemotePrinter(alf.newRemoteNode(ip, host, aet)));
+    	logger.logExport(descr,getCurrentUser());
+    }
+    
     private void logActorStartStop(String action) {
         logger.logActorStartStop(actorName, action, getCurrentUser());
     }

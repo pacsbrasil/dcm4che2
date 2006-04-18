@@ -27,6 +27,15 @@
          <value value="http://localhost:8080/dcm4jboss-xds/XDSRepository"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getDocRepositoryAET" setMethod="setDocRepositoryAET">
+      <description>AET of Document Repository (for Audit Log only).
+      </description>
+      <name>DocRepositoryAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
       <description>Proxy host if http access use http proxy.
@@ -241,6 +250,15 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="=?AffinityDomain"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4jboss.archive:service=AuditLogger"/>
       </descriptors>
    </attribute>
    

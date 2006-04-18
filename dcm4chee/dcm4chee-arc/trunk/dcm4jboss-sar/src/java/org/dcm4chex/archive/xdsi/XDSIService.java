@@ -46,13 +46,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -75,6 +79,7 @@ import javax.xml.soap.SOAPMessage;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -107,6 +112,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	public  static final String SOURCE_ID = "sourceId";
 	private static final String HEADER_VALUE = " ";
 	
+    protected ObjectName auditLogName;
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
 
     private static ServerConfig config = ServerConfigLocator.locate();
@@ -119,6 +125,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 // http attributes to document repository actor (synchron) 	
 	private String docRepositoryURI;
+	private String docRepositoryAET;
 	private String proxyHost;
 	private int proxyPort;
 	private boolean useHttp;
@@ -328,6 +335,21 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 
 	/**
+	 * @return Returns the docRepositoryAET.
+	 */
+	public String getDocRepositoryAET() {
+		return docRepositoryAET == null ? "NONE" : docRepositoryAET;
+	}
+	/**
+	 * @param docRepositoryAET The docRepositoryAET to set.
+	 */
+	public void setDocRepositoryAET(String docRepositoryAET) {
+		if ( "NONE".equals(docRepositoryAET))
+			this.docRepositoryAET = null;
+		else
+			this.docRepositoryAET = docRepositoryAET;
+	}
+	/**
 	 * @return Returns the proxyHost.
 	 */
 	public String getProxyHost() {
@@ -435,7 +457,15 @@ public class XDSIService extends ServiceMBeanSupport {
 			this.testPath = testPath;
 	}
 
-	   public final ObjectName getPixQueryServiceName() {
+    public final ObjectName getAuditLoggerName() {
+        return auditLogName;
+    }
+
+    public final void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogName = auditLogName;
+    }
+	
+	public final ObjectName getPixQueryServiceName() {
         return pixQueryServiceName;
     }
 
@@ -781,10 +811,54 @@ public class XDSIService extends ServiceMBeanSupport {
 		XDSMetadata md = new XDSMetadata(kos, mdProps);
 		Document metadata = md.getMetadata();
 		XDSIDocument doc = new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID);
-		return sendSOAP(metadata,new XDSIDocument[]{doc} , null);
+		boolean b = sendSOAP(metadata,new XDSIDocument[]{doc} , null);
+		if ( b ) logExport( kos.getString(Tags.PatientID), 
+							kos.getString(Tags.PatientName),
+							this.getDocRepositoryURI(), 
+							docRepositoryAET,
+							getSUIDs(kos));
+		return b;
 	}
 	
     /**
+	 * @param kos
+	 * @return
+	 */
+	private Set getSUIDs(Dataset kos) {
+		Set suids = null;
+		DcmElement sq = kos.get(Tags.CurrentRequestedProcedureEvidenceSeq);
+		if ( sq != null ) {
+			suids = new LinkedHashSet();
+			for ( int i = 0,len=sq.vm() ; i < len ; i++ ) {
+				suids.add(sq.getItem(i).getString(Tags.StudyInstanceUID));
+			}
+		}
+		return suids;
+	}
+	/**
+	 * @param patId
+	 * @param patName
+	 * @param node Network node
+	 * @param aet Application Entity Title
+	 */
+	private void logExport(String patId, String patName, String node, String aet, Set suids) {
+		if ( this.auditLogName == null ) return;
+        try {
+    		URL url = new URL(node);
+    		InetAddress inet = InetAddress.getByName(url.getHost());
+            server.invoke(auditLogName,
+                    "logExport",
+                    new Object[] { patId, patName, "XDSI Export", 
+            						suids,
+            						inet.getHostAddress(), inet.getHostName(), aet},
+                    new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
+            						Set.class.getName(),
+									String.class.getName(), String.class.getName(), String.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }		
+	}
+	/**
 	 * @param kos
 	 * @return
 	 */
