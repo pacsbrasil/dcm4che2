@@ -44,8 +44,6 @@
    <property name="dist" value="${name}-${version}"/>
    <property name="dist.dir" value="${build.dir}/${dist}"/>
 
-   <property name="jai_imagio.jar" value="${java.home}/lib/ext/jai_imageio.jar"/>
-
    <path id="base.path">
       <pathelement location="${lib.dir}/getopt.jar" />
       <pathelement location="${lib.dir}/log4j.jar" />
@@ -53,18 +51,9 @@
       <pathelement location="${build.classes.dir}" />
       <pathelement location="${build.res.dir}" />
       <pathelement location="${test.conf.dir}" />
-      <pathelement location="${jai_imagio.jar}" />
+      <pathelement location="${lib.dir}/jai_imageio.jar" />
    </path>
-    
-   <target name="jai_imageio_api.zip"
-     description="Extract needed classes from jai_imagio.jar to jai_imagio.zip">
-     <zip zipfile="${build.lib.dir}/jai_imagio_api.zip">
-       <zipfileset src="${jai_imagio.jar}" 
-         includes="com/sun/media/imageio/stream/*,com/sun/media/imageio/plugins/jpeg2000/*"/>
-     </zip>
-   </target>
-
-       
+           
    <target name="fetch"
            description="Get the latest source from the CVS tree">
      <cvs command="update -APd"/>
@@ -212,7 +201,7 @@
       <mkdir dir="${build.lib.dir}"/>
       <jar jarfile="${build.lib.dir}/dcm4che.jar">
         	<manifest>
-				<attribute name="Class-Path" value="log4j.jar"/>
+				<attribute name="Class-Path" value="log4j.jar jai_imageio.jar clibwrapper_jiio.jar jai_imageio_api.zip"/>
 				<attribute name="Implementation-Title" value="dcm4che"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="TIANI MEDGRAPH AG (gunter.zeilinger@tiani.com)"/>
@@ -422,13 +411,21 @@
          </classpath>
       </javadoc>     
    </target>
+ 
+   <target name="jai_imageio_api.zip"
+     description="Extract needed classes from jai_imagio.jar to jai_imageio.zip">
+     <zip zipfile="${build.lib.dir}/jai_imageio_api.zip">
+       <zipfileset src="${lib.dir}/jai_imageio.jar" 
+         includes="com/sun/media/imageio/stream/*,com/sun/media/imageio/plugins/jpeg2000/*"/>
+     </zip>
+   </target>
    
-   <target name="release" depends="jar,doc"
+   <target name="release" depends="jar,doc,jai_imageio_api.zip"
            description="Build destribution ZIP file">
       <mkdir dir="${dist.dir}"/>
       <copy todir="${dist.dir}">
          <fileset dir="${build.dir}" includes="lib/**,bin/**,doc/**"/>
-         <fileset dir="${basedir}" includes="lib/log4j.jar"/>
+         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,bin/*"/>
          <fileset dir="${doc.dir}" excludes="BUILD,**/.nbattrs"/>
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>

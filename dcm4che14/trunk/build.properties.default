@@ -1,2 +1,0 @@
-#Override with your jai_imagio installation location
-jai_imagio.jar=${java.home}/lib/ext/jai_imageio.jar
