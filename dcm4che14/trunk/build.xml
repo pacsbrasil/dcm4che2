@@ -64,7 +64,7 @@
       <delete dir="${build.dir}"/>
    </target>
 
-   <target name="main" depends="jar"
+   <target name="main" depends="jar,jai_imageio_api.zip"
            description="Compile and build JAR files (default target)"/>
 
    <target name="all" depends="clean,release"
