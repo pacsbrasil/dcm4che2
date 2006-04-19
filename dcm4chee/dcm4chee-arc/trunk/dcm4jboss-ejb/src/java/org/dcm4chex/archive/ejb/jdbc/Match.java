@@ -276,13 +276,10 @@ abstract class Match
     static class WildCard extends Match
     {
         private final char[] wc;
-        private final boolean ignoreCase;
-        public WildCard(String alias, String field, boolean type2, String wc,
-            boolean ignoreCase)
+        public WildCard(String alias, String field, boolean type2, String wc)
         {
             super(alias, field, type2);
             this.wc = wc != null ? wc.toCharArray() : new char[0];
-            this.ignoreCase = ignoreCase;
         }
 
         public boolean isUniveralMatch()
@@ -303,17 +300,9 @@ abstract class Match
 
         protected void appendBodyTo(StringBuffer sb)
         {
-            if (ignoreCase)
-                sb.append(" UPPER(");
             sb.append(column);
-            if (ignoreCase)
-                sb.append(')');
             final boolean like = isLike();
-            sb.append(like ? " LIKE " : " = ");
-            if (ignoreCase)
-                sb.append(" UPPER(");
-
-            sb.append('\'');
+            sb.append(like ? " LIKE \'" : " = \'");
             char c;
             for (int i = 0; i < wc.length; i++)
             {
@@ -338,9 +327,6 @@ abstract class Match
                 sb.append(c);
             }
             sb.append('\'');
-
-            if (ignoreCase)
-                sb.append(')');
         }
 
     }

@@ -30,7 +30,6 @@ CREATE TABLE patient (
 	pat_id         	VARCHAR(254) NOT NULL,
 	pat_id_issuer  	VARCHAR(254),
 	pat_name    	VARCHAR(254),
-	pat_name_up    GENERATED ALWAYS AS (UPPER(pat_name)),
 	pat_i_name    	VARCHAR(254),
 	pat_p_name    	VARCHAR(254),
 	pat_birthdate  	DATE,
@@ -42,7 +41,7 @@ FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
-CREATE INDEX pat_name ON patient(pat_name_up);
+CREATE INDEX pat_name ON patient(pat_name);
 CREATE INDEX pat_i_name ON patient(pat_i_name);
 CREATE INDEX pat_p_name ON patient(pat_p_name);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
@@ -57,11 +56,9 @@ CREATE TABLE study (
 	study_datetime	TIMESTAMP,
 	accession_no	VARCHAR(254),
 	ref_physician  VARCHAR(254),
-	ref_physician_up GENERATED ALWAYS AS (UPPER(ref_physician)),
 	ref_phys_i_name VARCHAR(254),
 	ref_phys_p_name VARCHAR(254),
 	study_desc      VARCHAR(254),
-	study_desc_up   GENERATED ALWAYS AS (UPPER(study_desc)),
 	study_status_id VARCHAR(254),
 	mods_in_study	VARCHAR(254),
 	num_series		INTEGER NOT NULL,
@@ -82,10 +79,10 @@ CREATE UNIQUE INDEX study_iuid ON study(study_iuid);
 CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
-CREATE INDEX ref_physician ON study(ref_physician_up);
+CREATE INDEX ref_physician ON study(ref_physician);
 CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name);
 CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name);
-CREATE INDEX study_desc ON study(study_desc_up);
+CREATE INDEX study_desc ON study(study_desc);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
@@ -133,9 +130,7 @@ CREATE TABLE series (
 	series_no		VARCHAR(254),
 	modality		VARCHAR(254),
 	institution		VARCHAR(254),
-	institution_up  GENERATED ALWAYS AS (UPPER(institution)),	
 	department		VARCHAR(254),
-	department_up   GENERATED ALWAYS AS (UPPER(department)),
 	pps_start		TIMESTAMP,
 	pps_iuid		VARCHAR(254),
 	num_instances	INTEGER,
@@ -156,7 +151,7 @@ CREATE INDEX series_mpps_fk ON series(mpps_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
-CREATE INDEX institution ON series(institution_up);
+CREATE INDEX institution ON series(institution);
 CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series(pps_iuid);
@@ -290,7 +285,6 @@ CREATE TABLE mwl_item (
 	station_aet     VARCHAR(254) NOT NULL,
 	modality	    VARCHAR(254) NOT NULL,
 	perf_physician VARCHAR(254),
-	perf_physician_up GENERATED ALWAYS AS (UPPER(perf_physician)),
 	perf_phys_i_name  VARCHAR(254),
 	perf_phys_p_name  VARCHAR(254),
 	req_proc_id    	VARCHAR(254) NOT NULL,
@@ -307,7 +301,7 @@ CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);
 CREATE INDEX mwl_modality ON mwl_item(modality);
-CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician_up);
+CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_perf_phys_i_name ON mwl_item(perf_phys_i_name);
 CREATE INDEX mwl_perf_phys_p_name ON mwl_item(perf_phys_p_name);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
@@ -383,7 +377,6 @@ CREATE TABLE gpsps_perf (
 	gpsps_fk           INTEGER,
 	code_fk            INTEGER,
 	human_perf_name     VARCHAR(254),
-	human_perf_name_up GENERATED ALWAYS AS (UPPER(human_perf_name)),	
 	hum_perf_i_name    VARCHAR(254),
 	hum_perf_p_name    VARCHAR(254),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
@@ -391,7 +384,7 @@ FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
 CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
 CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
-CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name_up);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name);
 CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name);
 CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
 

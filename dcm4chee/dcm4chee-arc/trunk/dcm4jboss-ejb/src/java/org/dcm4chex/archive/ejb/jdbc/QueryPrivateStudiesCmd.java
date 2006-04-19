@@ -85,8 +85,7 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
         if ( filter != null ) {
 	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
 	                SqlBuilder.TYPE2,
-	                filter.getString(Tags.PatientID),
-	                false);
+	                filter.getString(Tags.PatientID));
 	        sqlBuilder.addSingleValueMatch(null, "PrivateStudy.studyIuid",
 	                SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
         }

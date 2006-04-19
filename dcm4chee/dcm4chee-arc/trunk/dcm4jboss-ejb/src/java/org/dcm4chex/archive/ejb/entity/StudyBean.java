@@ -758,7 +758,7 @@ public abstract class StudyBean implements EntityBean {
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         PersonName pn = ds.getPersonName(Tags.ReferringPhysicianName);
         if (pn != null) {
-            setReferringPhysicianName(pn.toComponentGroupString(false));
+            setReferringPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setReferringPhysicianIdeographicName(ipn.toComponentGroupString(false));                
@@ -768,11 +768,15 @@ public abstract class StudyBean implements EntityBean {
                 setReferringPhysicianPhoneticName(ppn.toComponentGroupString(false));                
             }
         }
-        setStudyDescription(ds.getString(Tags.StudyDescription));
+        setStudyDescription(toUpperCase(ds.getString(Tags.StudyDescription)));
         Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
+    }
+    
     /**
      * @ejb.interface-method
      */

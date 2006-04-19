@@ -89,15 +89,11 @@ public class MPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 filter.getString(Tags.PatientID) );
-		String patientName = filter.getString(Tags.PatientName);
-    	if ( patientName != null && 
-       		 patientName.length() > 0 && 
-   			 patientName.indexOf('*') == -1 &&
-   			 patientName.indexOf('?') == -1) patientName+="*";
-        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
-                SqlBuilder.TYPE1,
-                patientName,
-                true);
+        sqlBuilder.addPNMatch(new String[] {
+                "Patient.patientName",
+                "Patient.patientIdeographicName",
+                "Patient.patientPhoneticName"},
+                filter.getString(Tags.PatientName));
         sqlBuilder.addSingleValueMatch(null, "MPPS.modality",
                 SqlBuilder.TYPE1,
                 filter.getString(Tags.Modality));

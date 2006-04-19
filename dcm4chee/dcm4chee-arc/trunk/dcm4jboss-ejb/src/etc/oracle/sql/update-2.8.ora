@@ -2,6 +2,43 @@
 
 ALTER TABLE patient MODIFY pat_id NOT NULL;
 
+UPDATE patient SET pat_name = UPPER(pat_name);
+UPDATE study SET ref_physician = UPPER(ref_physician);
+UPDATE series SET institution = UPPER(institution), department = UPPER(institution);
+UPDATE mwl_item SET perf_physician = UPPER(perf_physician);
+UPDATE gpsps_perf SET human_perf_name = UPPER(human_perf_name);
+UPDATE patient SET pat_name = CONCAT(pat_name,'^') WHERE pat_name IS NOT NULL AND pat_name NOT LIKE '%^%^%^%^%';
+UPDATE patient SET pat_name = CONCAT(pat_name,'^') WHERE pat_name IS NOT NULL AND pat_name NOT LIKE '%^%^%^%^%';
+UPDATE patient SET pat_name = CONCAT(pat_name,'^') WHERE pat_name IS NOT NULL AND pat_name NOT LIKE '%^%^%^%^%';
+UPDATE patient SET pat_name = CONCAT(pat_name,'^') WHERE pat_name IS NOT NULL AND pat_name NOT LIKE '%^%^%^%^%';
+UPDATE study SET ref_physician = CONCAT(ref_physician,'^') WHERE ref_physician IS NOT NULL AND ref_physician NOT LIKE '%^%^%^%^%';
+UPDATE study SET ref_physician = CONCAT(ref_physician,'^') WHERE ref_physician IS NOT NULL AND ref_physician NOT LIKE '%^%^%^%^%';
+UPDATE study SET ref_physician = CONCAT(ref_physician,'^') WHERE ref_physician IS NOT NULL AND ref_physician NOT LIKE '%^%^%^%^%';
+UPDATE study SET ref_physician = CONCAT(ref_physician,'^') WHERE ref_physician IS NOT NULL AND ref_physician NOT LIKE '%^%^%^%^%';
+UPDATE mwl_item SET perf_physician = CONCAT(perf_physician,'^') WHERE perf_physician IS NOT NULL AND perf_physician NOT LIKE '%^%^%^%^%';
+UPDATE mwl_item SET perf_physician = CONCAT(perf_physician,'^') WHERE perf_physician IS NOT NULL AND perf_physician NOT LIKE '%^%^%^%^%';
+UPDATE mwl_item SET perf_physician = CONCAT(perf_physician,'^') WHERE perf_physician IS NOT NULL AND perf_physician NOT LIKE '%^%^%^%^%';
+UPDATE mwl_item SET perf_physician = CONCAT(perf_physician,'^') WHERE perf_physician IS NOT NULL AND perf_physician NOT LIKE '%^%^%^%^%';
+UPDATE gpsps_perf SET human_perf_name = CONCAT(human_perf_name,'^') WHERE human_perf_name IS NOT NULL AND human_perf_name NOT LIKE '%^%^%^%^%';
+UPDATE gpsps_perf SET human_perf_name = CONCAT(human_perf_name,'^') WHERE human_perf_name IS NOT NULL AND human_perf_name NOT LIKE '%^%^%^%^%';
+UPDATE gpsps_perf SET human_perf_name = CONCAT(human_perf_name,'^') WHERE human_perf_name IS NOT NULL AND human_perf_name NOT LIKE '%^%^%^%^%';
+UPDATE gpsps_perf SET human_perf_name = CONCAT(human_perf_name,'^') WHERE human_perf_name IS NOT NULL AND human_perf_name NOT LIKE '%^%^%^%^%';
+
+DROP INDEX pat_name;
+DROP INDEX ref_physician;
+DROP INDEX study_desc;
+DROP INDEX institution;
+DROP INDEX department;
+DROP INDEX mwl_perf_physician;
+DROP INDEX gpsps_perf_name;
+CREATE INDEX pat_name ON patient(pat_name);
+CREATE INDEX ref_physician ON study(ref_physician);
+CREATE INDEX study_desc ON study(study_desc);
+CREATE INDEX institution ON series(institution);
+CREATE INDEX department ON series(department);
+CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name);
+
 DROP INDEX pat_id;
 CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 

@@ -33,7 +33,7 @@ FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE UNIQUE INDEX pat_id ON patient(pat_id, pat_id_issuer);
-CREATE INDEX pat_name ON patient(UPPER(pat_name));
+CREATE INDEX pat_name ON patient(pat_name);
 CREATE INDEX pat_i_name ON patient(pat_i_name);
 CREATE INDEX pat_p_name ON patient(pat_p_name);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
@@ -70,10 +70,10 @@ CREATE UNIQUE INDEX study_iuid ON study(study_iuid);
 CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
-CREATE INDEX ref_physician ON study(UPPER(ref_physician));
+CREATE INDEX ref_physician ON study(ref_physician);
 CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name);
 CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name);
-CREATE INDEX study_desc ON study(UPPER(study_desc));
+CREATE INDEX study_desc ON study(study_desc);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
@@ -140,8 +140,8 @@ CREATE INDEX series_mpps_fk ON series(mpps_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
-CREATE INDEX institution ON series(UPPER(institution));
-CREATE INDEX department ON series(UPPER(department));
+CREATE INDEX institution ON series(institution);
+CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
@@ -280,7 +280,7 @@ CREATE UNIQUE INDEX mwl_sps_id ON mwl_item (sps_id);
 CREATE INDEX mwl_start_time ON mwl_item (start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item (station_aet);
 CREATE INDEX mwl_modality ON mwl_item (modality);
-CREATE INDEX mwl_perf_physician ON mwl_item(UPPER(perf_physician));
+CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_perf_phys_i_name ON mwl_item(perf_phys_i_name);
 CREATE INDEX mwl_perf_phys_p_name ON mwl_item(perf_phys_p_name);
 CREATE INDEX mwl_req_proc_id ON mwl_item (req_proc_id);
@@ -352,7 +352,7 @@ CREATE TABLE gpsps_perf (
 	pk                 SERIAL NOT NULL CONSTRAINT gpsps_perf_pk PRIMARY KEY,
 	gpsps_fk           INTEGER,
 	code_fk            INTEGER,
-	human_perf_name     TEXT,
+	human_perf_name    TEXT,
 	hum_perf_i_name    TEXT,
 	hum_perf_p_name    TEXT,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
@@ -361,7 +361,6 @@ FOREIGN KEY (code_fk) REFERENCES code(pk)
 CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
 CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
 CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name);
-CREATE INDEX gpsps_perf_name ON gpsps_perf(UPPER(human_perf_name));
 CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name);
 CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
 

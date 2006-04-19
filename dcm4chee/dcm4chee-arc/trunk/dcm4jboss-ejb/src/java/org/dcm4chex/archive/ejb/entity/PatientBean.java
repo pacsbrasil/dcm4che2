@@ -325,7 +325,7 @@ public abstract class PatientBean implements EntityBean {
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
         if (pn != null) {
-            setPatientName(pn.toComponentGroupString(false));
+            setPatientName(toUpperCase(pn.toComponentGroupString(false)));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPatientIdeographicName(ipn.toComponentGroupString(false));
@@ -343,6 +343,10 @@ public abstract class PatientBean implements EntityBean {
         setPatientSex(ds.getString(Tags.PatientSex));
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+    }
+
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
     }
 
     /**

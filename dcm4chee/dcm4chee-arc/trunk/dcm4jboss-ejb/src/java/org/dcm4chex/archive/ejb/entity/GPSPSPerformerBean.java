@@ -104,7 +104,7 @@ public abstract class GPSPSPerformerBean implements EntityBean {
             throws CreateException {
         PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
         if (pn != null) {
-            setHumanPerformerName(pn.toComponentGroupString(false));
+            setHumanPerformerName(toUpperCase(pn.toComponentGroupString(false)));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setHumanPerformerIdeographicName(ipn.toComponentGroupString(false));
@@ -117,6 +117,10 @@ public abstract class GPSPSPerformerBean implements EntityBean {
         return null;
     }
 
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
+    }
+    
     public void ejbPostCreate(Dataset ds, GPSPSLocal gpsps)
             throws CreateException {
         try {

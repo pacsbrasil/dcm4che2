@@ -88,8 +88,7 @@ public class HPQueryCmd extends BaseReadCmd {
 		sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
 				.getStrings(Tags.SOPClassUID));
 		sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
-				SqlBuilder.TYPE2, keys.getString(Tags.HangingProtocolName),
-				false);
+				SqlBuilder.TYPE2, keys.getString(Tags.HangingProtocolName));
 		if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
 			sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
 					SqlBuilder.TYPE1, HPLevel.toInt(s));
@@ -103,17 +102,16 @@ public class HPQueryCmd extends BaseReadCmd {
 					SqlBuilder.TYPE2, i);
 		}
 		sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
-				SqlBuilder.TYPE2, keys
-						.getString(Tags.HangingProtocolUserGroupName), false);
+				SqlBuilder.TYPE2, keys.getString(Tags.HangingProtocolUserGroupName));
 		addCodeMatch(keys
 				.getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
 				USER_CODE);
 		Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
 		if (item != null) {
 			sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
-					SqlBuilder.TYPE2, item.getString(Tags.Modality), false);
+					SqlBuilder.TYPE2, item.getString(Tags.Modality));
 			sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
-					SqlBuilder.TYPE2, item.getString(Tags.Laterality), false);
+					SqlBuilder.TYPE2, item.getString(Tags.Laterality));
 			addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
 			addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
 			addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),

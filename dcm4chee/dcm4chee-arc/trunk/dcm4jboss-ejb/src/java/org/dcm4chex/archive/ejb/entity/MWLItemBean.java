@@ -312,7 +312,7 @@ public abstract class MWLItemBean implements EntityBean {
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
         PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
-            setPerformingPhysicianName(pn.toComponentGroupString(false));
+            setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));
@@ -329,6 +329,10 @@ public abstract class MWLItemBean implements EntityBean {
         setEncodedAttributes(DatasetUtils.toByteArray(ds));
     }
 
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
+    }
+    
     /**
      * @ejb.interface-method
      */

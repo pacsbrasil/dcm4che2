@@ -73,25 +73,25 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     private static final String[] SERIES_REQUEST_LEFT_JOIN = {
         "SeriesRequest", null, "Series.pk", "SeriesRequest.series_fk"};
     
-    public static WadoQueryCmd create(Dataset keys, boolean filterResult)
-            throws SQLException {
+    public static WadoQueryCmd create(Dataset keys, boolean filterResult,
+            boolean noMatchForNoValue) throws SQLException {
         WadoQueryCmd cmd;
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
         case 0:
-            cmd = new PatientQueryCmd(keys, filterResult);
+            cmd = new PatientQueryCmd(keys, filterResult, noMatchForNoValue);
             break;
         case 1:
-            cmd = new StudyQueryCmd(keys, filterResult);
+            cmd = new StudyQueryCmd(keys, filterResult, noMatchForNoValue);
             break;
         case 2:
-            cmd = new SeriesQueryCmd(keys, filterResult);
+            cmd = new SeriesQueryCmd(keys, filterResult, noMatchForNoValue);
             break;
         case 3:
-            cmd = new ImageQueryCmd(keys, filterResult);
+            cmd = new ImageQueryCmd(keys, filterResult, noMatchForNoValue);
             break;
         case 4:
-            cmd = new LocationQueryCmd(keys, filterResult);
+            cmd = new LocationQueryCmd(keys, filterResult, noMatchForNoValue);
             break;
             
         default:
@@ -105,14 +105,17 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-	private final boolean filterResult;
+    protected final boolean filterResult;
 
-    protected WadoQueryCmd(Dataset keys, boolean filterResult)
+    protected final boolean type2;
+    
+    protected WadoQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
     		throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
         this.keys = keys;
         this.filterResult = filterResult;
+        this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     }
 
     protected void init() {
@@ -139,21 +142,20 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     }
 
     protected void addPatientMatch() {
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId", SqlBuilder.TYPE2,
-                keys.getString(Tags.PatientID), false);
+        sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2,
+                keys.getString(Tags.PatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 keys.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate",
-                SqlBuilder.TYPE2,
+                type2,
                 keys.getDateTimeRange(Tags.PatientBirthDate,
                         Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.PatientSex),
-                false);
+                type2,
+                keys.getString(Tags.PatientSex));
     }
 
     protected void addStudyMatch() {
@@ -162,14 +164,13 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 " != 0");
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
-        sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
-                keys.getString(Tags.StudyID), false);
-        sqlBuilder.addRangeMatch(null, "Study.studyDateTime", SqlBuilder.TYPE2,
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
+                keys.getString(Tags.StudyID));
+        sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
                 keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.AccessionNumber),
-                false);
+                type2,
+                keys.getString(Tags.AccessionNumber));
         sqlBuilder.addPNMatch(new String[] {
                 "Study.referringPhysicianName",
                 "Study.referringPhysicianIdeographicName",
@@ -184,26 +185,23 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SeriesInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.SeriesNumber),
-                false);
+                type2,
+                keys.getString(Tags.SeriesNumber));
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
-                keys.getString(Tags.Modality), false);
+                keys.getString(Tags.Modality));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
-                SqlBuilder.TYPE2,
+                type2,
                 keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         if (rqAttrs != null) {
             sqlBuilder.addWildCardMatch(null,
                     "SeriesRequest.requestedProcedureId",
-                    SqlBuilder.TYPE2,
-                    rqAttrs.getString(Tags.RequestedProcedureID),
-                    false);
+                    type2,
+                    rqAttrs.getString(Tags.RequestedProcedureID));
             sqlBuilder.addWildCardMatch(null,
                     "SeriesRequest.spsId",
-                    SqlBuilder.TYPE2,
-                    rqAttrs.getString(Tags.SPSID),
-                    false);
+                    type2,
+                    rqAttrs.getString(Tags.SPSID));
         }
 
     }
@@ -214,26 +212,23 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SOPClassUID));
         sqlBuilder.addWildCardMatch(null, "Instance.instanceNumber",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.InstanceNumber),
-                false);
-        sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", SqlBuilder.TYPE2,
+                type2,
+                keys.getString(Tags.InstanceNumber));
+        sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", type2,
                 keys.getDateTimeRange(Tags.ContentDate, Tags.ContentTime));
         sqlBuilder.addWildCardMatch(null, "Instance.srCompletionFlag",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.CompletionFlag),
-                false);
+                type2,
+                keys.getString(Tags.CompletionFlag));
         sqlBuilder.addWildCardMatch(null, "Instance.srVerificationFlag",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.VerificationFlag),
-                false);
+                type2,
+                keys.getString(Tags.VerificationFlag));
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         if (code != null) {
             sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codeValue",
-                    SqlBuilder.TYPE2,
+                    type2,
                     code.getString(Tags.CodeValue));
             sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codingSchemeDesignator",
-                    SqlBuilder.TYPE2,
+                    type2,
                     code.getString(Tags.CodingSchemeDesignator));
         }
     }
@@ -355,8 +350,8 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     
     static class PatientQueryCmd extends WadoQueryCmd {
 
-        PatientQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
-            super(keys, filterResult);
+        PatientQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue) throws SQLException {
+            super(keys, filterResult, noMatchForNoValue);
         }
 
         protected void init() {
@@ -381,8 +376,9 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     static class StudyQueryCmd extends WadoQueryCmd {
 
-        StudyQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
-            super(keys, filterResult);
+        StudyQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
+        throws SQLException {
+            super(keys, filterResult, noMatchForNoValue);
         }
 
         protected void init() {
@@ -427,8 +423,9 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     static class SeriesQueryCmd extends WadoQueryCmd {
 
-        SeriesQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
-            super(keys, filterResult);
+        SeriesQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
+        throws SQLException {
+            super(keys, filterResult, noMatchForNoValue);
         }
 
         protected void init() {
@@ -480,8 +477,9 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     static class ImageQueryCmd extends WadoQueryCmd {
 
-        ImageQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
-            super(keys, filterResult);
+        ImageQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
+        throws SQLException {
+            super(keys, filterResult, noMatchForNoValue);
         }
 
         protected void init() {
@@ -551,21 +549,19 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     static class LocationQueryCmd extends ImageQueryCmd {
 
-    	LocationQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
-            super(keys, filterResult);
+    	LocationQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
+        throws SQLException {
+            super(keys, filterResult, noMatchForNoValue);
         }
 
         protected String[] getSelectAttributes() {
             return new String[] { "Patient.pk", "Patient.encodedAttributes",
-                    "Study.pk", "Study.encodedAttributes", 
-					
+                    "Study.pk", "Study.encodedAttributes", 				
 					"Series.pk", "Series.encodedAttributes",
                     "Instance.pk", "Instance.encodedAttributes", 
-					
 					"Instance.retrieveAETs",
                     "Instance.externalRetrieveAET", "Instance.availability",
                     "Media.filesetId", "Media.filesetIuid",
-					
 					"File.pk", "File.filePath", "File.fileTsuid", "File.fileStatus"
             		};
         }

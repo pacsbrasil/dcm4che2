@@ -272,7 +272,7 @@ public class RetrieveCmd extends BaseReadCmd {
             String pid = keys.getString(Tags.PatientID);
             if (pid != null)
 	            sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-	                    SqlBuilder.TYPE2, pid, false);
+	                    SqlBuilder.TYPE2, pid);
             else if (patientRetrieve)
                 throw new IllegalArgumentException("Missing PatientID");
 		}

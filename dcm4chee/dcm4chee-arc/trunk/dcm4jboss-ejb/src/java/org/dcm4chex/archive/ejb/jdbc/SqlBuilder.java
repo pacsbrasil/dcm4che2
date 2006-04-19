@@ -240,35 +240,42 @@ class SqlBuilder {
 
     public void addListOfUidMatch(String alias, String field, boolean type2,
             String[] uids) {
-        addMatch(new Match.ListOfString(alias, field, type2, uids));
+        addListOfStringMatch(alias, field, type2, uids);
     }
 
     public void addListOfStringMatch(String alias, String field, boolean type2,
-            String[] strings) {
-        addMatch(new Match.ListOfString(alias, field, type2, strings));
+            String[] vals) {
+         addMatch(new Match.ListOfString(alias, field, type2, vals));
     }
 
     public void addWildCardMatch(String alias, String field, boolean type2,
-        String wc, boolean ignoreCase) {
-        addMatch(new Match.WildCard(alias, field, type2, wc, ignoreCase));
+        String wc) {
+        if (wc == null || wc.length() == 0 || wc.equals("*"))
+            return;
+        addMatch(new Match.WildCard(alias, field, type2, wc));
     }
     
-
     public void addPNMatch(String[] nameFields, String val) {
         if (val == null || val.length() == 0 || val.equals("*"))
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
-        addWildCardMatch(null, nameFields[0], true,
-                pn.toComponentGroupMatch(), true);
-        if ( pn.getIdeographic() != null ) {
-        	addWildCardMatch(null, nameFields[1], true,
-                pn.getIdeographic().toComponentGroupMatch(), false);
+        if (pn != null) {
+            addWildCardMatch(null, nameFields[0], true, 
+                    toUpperCase(pn.toComponentGroupMatch()));
         }
-        if ( pn.getPhonetic() != null ) {
-        	addWildCardMatch(null, nameFields[2], true,
-                pn.getPhonetic().toComponentGroupMatch(), false);
+        PersonName ipn = pn.getIdeographic();
+        if (ipn != null) {
+        	addWildCardMatch(null, nameFields[1], true, ipn.toComponentGroupMatch());
+        }
+        PersonName ppn = pn.getPhonetic();
+        if (ppn != null) {
+        	addWildCardMatch(null, nameFields[2], true, ppn.toComponentGroupMatch());
         }
     }   
+
+    static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
+    }
 
     public void addRangeMatch(String alias, String field, boolean type2,
             Date[] range) {

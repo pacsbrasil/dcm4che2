@@ -581,8 +581,9 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
-        setInstitutionName(ds.getString(Tags.InstitutionName));
-        setInstitutionalDepartmentName(ds.getString(Tags.InstitutionalDepartmentName));
+        setInstitutionName(toUpperCase(ds.getString(Tags.InstitutionName)));
+        setInstitutionalDepartmentName(
+                toUpperCase(ds.getString(Tags.InstitutionalDepartmentName)));
         try {
 	        setPpsStartDateTime(ds
 	                .getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
@@ -596,6 +597,10 @@ public abstract class SeriesBean implements EntityBean {
         }
         Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+    }
+
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
     }
 
     /**

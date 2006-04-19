@@ -70,7 +70,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putPN(Tags.PatientName);
         keys.putDA(Tags.PatientBirthDate);
         keys.putCS(Tags.PatientSex, "F");
-        QueryCmd cmd = QueryCmd.create(keys, true);
+        QueryCmd cmd = QueryCmd.create(keys, true, false);
         cmd.execute();
         try {
             while (cmd.next())
@@ -93,7 +93,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putDA(Tags.StudyDate, "19970811");
         keys.putTM(Tags.StudyTime);
         keys.putCS(Tags.ModalitiesInStudy, "US");
-        QueryCmd cmd = QueryCmd.create(keys, true);
+        QueryCmd cmd = QueryCmd.create(keys, true, false);
         cmd.execute();
         try {
             while (cmd.next())
@@ -113,7 +113,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putDA(Tags.SeriesDate);
         keys.putTM(Tags.SeriesTime);
         keys.putCS(Tags.Modality, "US");
-        QueryCmd cmd = QueryCmd.create(keys, true);
+        QueryCmd cmd = QueryCmd.create(keys, true, false);
         cmd.execute();
         try {
             while (cmd.next())
@@ -132,7 +132,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putUI(Tags.SOPInstanceUID);
         keys.putUI(Tags.SOPClassUID);
         keys.putIS(Tags.InstanceNumber, "1");
-        QueryCmd cmd = QueryCmd.create(keys, true);
+        QueryCmd cmd = QueryCmd.create(keys, true, false);
         cmd.execute();
         try {
             while (cmd.next())
