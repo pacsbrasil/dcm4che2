@@ -71,15 +71,25 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class StudyInfoService extends ServiceMBeanSupport {
 
-	private static Logger log = Logger.getLogger(StudyInfoService.class
-			.getName());
+	private static Logger log = Logger.getLogger(
+            StudyInfoService.class.getName());
 
 	DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
+    private boolean noMatchForNoValue = true;
 
 	public StudyInfoService() {
 	}
 
-	protected void startService() throws Exception {
+	public final boolean isNoMatchForNoValue() {
+        return noMatchForNoValue;
+    }
+
+    public final void setNoMatchForNoValue(boolean noMatchForNoValue) {
+        this.noMatchForNoValue = noMatchForNoValue;
+    }
+
+    protected void startService() throws Exception {
 	}
 
 	protected void stopService() throws Exception {
@@ -138,7 +148,7 @@ public class StudyInfoService extends ServiceMBeanSupport {
 						.createUID());
 
 		try {
-			queryCmd = WadoQueryCmd.create(dsQ, false);
+			queryCmd = WadoQueryCmd.create(dsQ, false, noMatchForNoValue );
 			queryCmd.execute();
 			HashMap data = new HashMap();
 			while (queryCmd.next()) {

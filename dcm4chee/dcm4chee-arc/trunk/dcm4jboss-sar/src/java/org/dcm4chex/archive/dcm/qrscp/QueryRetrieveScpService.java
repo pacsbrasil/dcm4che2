@@ -142,6 +142,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	
 	private boolean recordStudyAccessTime = true;
 
+    private boolean noMatchForNoValue = true;
+    
     private int acTimeout = 5000;
 
     private int dimseTimeout = 0;
@@ -251,6 +253,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
 		this.aeServiceName = aeServiceName;
 	}
     
+    public final boolean isNoMatchForNoValue() {
+        return noMatchForNoValue;
+    }
+
+    public final void setNoMatchForNoValue(boolean noMatchForNoValue) {
+        this.noMatchForNoValue = noMatchForNoValue;
+    }    
     
     public final String getQueryTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);

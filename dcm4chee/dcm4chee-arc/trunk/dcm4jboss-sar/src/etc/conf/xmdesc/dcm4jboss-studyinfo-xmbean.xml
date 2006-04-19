@@ -17,6 +17,18 @@
    </constructor>
 
    <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="isNoMatchForNoValue"
+      setMethod="setNoMatchForNoValue">
+      <description>Do not match entities with zero-length value for specified
+      matching keys (= non DICOM conform matching behavior).
+      </description>
+      <name>NoMatchForNoValue</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

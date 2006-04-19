@@ -392,7 +392,7 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
 	try {
 		Dataset keys = DcmObjectFactory.getInstance().newDataset();
 		keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-		QueryCmd query = QueryCmd.createInstanceQuery(keys, false);
+		QueryCmd query = QueryCmd.createInstanceQuery(keys, false, true);
 		query.execute();
 		if (!query.next()) {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");

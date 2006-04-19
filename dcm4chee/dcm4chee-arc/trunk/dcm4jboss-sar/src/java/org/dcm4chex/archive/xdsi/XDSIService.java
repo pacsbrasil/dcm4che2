@@ -784,7 +784,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		keys.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
 		QueryCmd query = null;
 		try {
-			query = QueryCmd.createInstanceQuery(keys, false);
+			query = QueryCmd.createInstanceQuery(keys, false, true);
 			query.execute();
 			if (query.next())
 				return query.getDataset();			

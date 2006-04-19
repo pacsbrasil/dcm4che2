@@ -445,7 +445,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		item.putSH(Tags.CodingSchemeDesignator, designator);
 		QueryCmd query = null;
 		try {
-			query = QueryCmd.createInstanceQuery(keys, false);
+			query = QueryCmd.createInstanceQuery(keys, false, true);
 			query.execute();
 			while (query.next())
 				list.add(query.getDataset());			
@@ -469,7 +469,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 		keys.putUI(Tags.SOPInstanceUID, iuids);
 		QueryCmd query = null;
 		try {
-			query = QueryCmd.createInstanceQuery(keys, true);
+			query = QueryCmd.createInstanceQuery(keys, false, true);
 			query.execute();
 			for (int i = iuids.length; i > 0; i--) {
 				if (!query.next())

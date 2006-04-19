@@ -99,7 +99,8 @@ public class FindScp extends DcmServiceBase {
     }
 
 	protected MultiDimseRsp newMultiCFindRsp(Dataset rqData) throws SQLException {
-        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult);
+        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
+                service.isNoMatchForNoValue() );
         queryCmd.execute();
 		return new MultiCFindRsp(queryCmd);
 	}

@@ -106,7 +106,7 @@ class VMFFindScp extends FindScp {
         		keys.putUI(Tags.SeriesInstanceUID, seriesIUIDs[next++]);
         		try {
 					QueryCmd queryCmd = QueryCmd.createInstanceQuery(keys,
-							false);
+							false, service.isNoMatchForNoValue());
 					try {
 						queryCmd.execute();
 						if (!queryCmd.next())

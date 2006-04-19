@@ -456,7 +456,7 @@ public class RIDSupport {
 	}
 	
 	private void fillDocList( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
-		QueryCmd qCmd = QueryCmd.create( queryDS, false );
+		QueryCmd qCmd = QueryCmd.create( queryDS, false, true );
 		try {
 			qCmd.execute();
 		    Dataset ds = factory.newDataset();
@@ -535,7 +535,7 @@ public class RIDSupport {
 		String issuer = null;
 		boolean foundWithoutIssuer = false;
 		try {
-			qCmd = QueryCmd.create( ds, false );
+			qCmd = QueryCmd.create( ds, false, true );
 			qCmd.execute();
 			while ( qCmd.next() ) {
 				ds1 = qCmd.getDataset();
@@ -605,7 +605,7 @@ public class RIDSupport {
 		queryDS.putUI(Tags.SOPInstanceUID, uid );
 		QueryCmd cmd = null;
 		try {
-			cmd = QueryCmd.create( queryDS, false );
+			cmd = QueryCmd.create( queryDS, false, true );
 			cmd.execute();
 			if ( cmd.next() ) {
 				Dataset ds = cmd.getDataset();
