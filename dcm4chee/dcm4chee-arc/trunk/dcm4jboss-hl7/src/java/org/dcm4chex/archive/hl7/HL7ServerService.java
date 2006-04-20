@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.hl7;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -325,31 +326,34 @@ public class HL7ServerService extends ServiceMBeanSupport
         ContentHandler hl7out = xmlWriter.getContentHandler();
         SAXContentHandler hl7in = new SAXContentHandler();
         xmlReader.setContentHandler(hl7in);
-		ByteArrayOutputStream bout = sendNotification ? 
-				new ByteArrayOutputStream(256) : null;
+        byte[] bb = new byte[1024];
         while (mllpDriver.hasMoreInput()) {
+            int msglen = 0;
+            int read = 0;
+            do {
+                msglen += read;
+                if (msglen == bb.length) {
+                    bb = realloc(bb, bb.length, bb.length * 2);
+                }
+                read = mllpIn.read(bb, msglen, bb.length - msglen);
+            } while (read > 0);
+            int msgNo = ++numberOfReceivedMessages;
+            if (fileReceivedHL7) {
+                File logfile = makeLogfile("hl7-######.hl7", msgNo);
+                try {
+                    OutputStream loghl7 = new BufferedOutputStream(
+                            new FileOutputStream(logfile));
+                    loghl7.write(bb, 0, msglen);
+                    loghl7.close();
+                } catch (IOException e) {
+                    log.warn("Failed to log received HL7 message to " + logfile, e);
+                }
+            }
             try {
                 try {
-					int msgNo = ++numberOfReceivedMessages;
-					if (sendNotification) {
-						mllpIn = new CopyInputStream(mllpIn, bout);
-					}
-					OutputStream loghl7 = null;
-					try {
-						if (fileReceivedHL7) {
-							File logfile = makeLogfile("hl7-######.hl7", msgNo);
-							loghl7 = new BufferedOutputStream(
-									new FileOutputStream(logfile));
-							mllpIn = new CopyInputStream(mllpIn, loghl7);												
-						}
-	                    InputSource in = new InputSource(
-	                    		new InputStreamReader(mllpIn, ISO_8859_1));
-						xmlReader.parse(in);
-					} finally {
-						if (loghl7 != null) {
-							loghl7.close();
-						}
-					}
+                    ByteArrayInputStream bbin = new  ByteArrayInputStream(bb, 0, msglen);
+                    InputSource in = new InputSource(new InputStreamReader(bbin, ISO_8859_1));
+                    xmlReader.parse(in);                
                     Document msg = hl7in.getDocument();
                     logMessage(msg);
                     if (fileReceivedHL7AsXML) {
@@ -359,9 +363,8 @@ public class HL7ServerService extends ServiceMBeanSupport
                     HL7Service service = getService(msh);
                     if (service == null || service.process(msh, msg, hl7out)) 
 						ack(msg, hl7out, null);
-					if (sendNotification) {
-						sendNotification(makeNotification(bout.toByteArray()));
-						bout.reset();
+					if (sendNotification) {                       
+						sendNotification(makeNotification(realloc(bb, msglen, msglen)));
 					}
                 } catch (SAXException e) {
                     throw new HL7Exception("AE", "Failed to parse message ", e);
@@ -375,7 +378,13 @@ public class HL7ServerService extends ServiceMBeanSupport
         }
     }
 
-	private File makeLogfile(String pattern,  int msgNo) {
+    private byte[] realloc(byte[] bb, int len, int newlen) {
+        byte[] out = new byte[newlen];
+        System.arraycopy(bb, 0, out, 0, len);
+        return out;
+    }
+
+    private File makeLogfile(String pattern,  int msgNo) {
 		final int endPrefix = pattern.indexOf('#');
 		final int startSuffix = pattern.lastIndexOf('#') + 1;
 		final String noStr = String.valueOf(msgNo);
