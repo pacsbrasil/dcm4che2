@@ -241,7 +241,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                 try { s.close(); } catch (IOException ignore) {}
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error(e, e);
             if (s != null) {
                 try { s.close(); } catch (IOException ignore) {};
             }
