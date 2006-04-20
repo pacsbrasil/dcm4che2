@@ -106,6 +106,12 @@ public class FileDataSource implements DataSource {
 		this.withoutPixeldata = withoutPixelData;
 	}
 	
+	/**
+	 * @return Returns the mergeAttrs.
+	 */
+	public Dataset getMergeAttrs() {
+		return mergeAttrs;
+	}
     /**
      * 
      * @param out
