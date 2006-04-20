@@ -39,12 +39,13 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
@@ -235,8 +236,55 @@ public class WADOService extends AbstractCacheService {
 	 *  
 	 * @return Name of the MBean
 	 */
-	public String getFileSystemMgtName() {
-		return support.getFileSystemMgtName().toString();
+	public ObjectName getFileSystemMgtName() {
+		return support.getFileSystemMgtName();
+	}
+	
+	/**
+	 * Set the name of the AuditLogger MBean.
+	 * <p>
+	 * This bean is used to create Audit Logs.
+	 * 
+	 * @param name The Audit Logger Name to set.
+	 */
+	public void setAuditLoggerName( ObjectName name ) {
+		support.setAuditLoggerName( name );
+	}
+
+	/**
+	 * Get the name of the AuditLogger MBean.
+	 * <p>
+	 * This bean is used to create Audit Logs.
+	 * 
+	 * @return Returns the name of the Audit Logger MBean.
+	 */
+	public ObjectName getAuditLoggerName() {
+		return support.getAuditLoggerName();
+	}
+	
+	public String getDisabledAuditLogHosts() {
+		Set s = support.getDisabledAuditLogHosts();
+		if ( s == null ) return "ALL";
+		if ( s.isEmpty() ) return "NONE";
+		StringBuffer sb = new StringBuffer(s.size()<<4);
+		for ( Iterator it = s.iterator() ; it.hasNext() ;){
+			sb.append(it.next()).append(System.getProperty("line.separator", "\n"));
+		}
+		return sb.toString();
+	}
+	public void setDisabledAuditLogHosts(String disabledAuditLogHosts) {
+		if ( "ALL".equals(disabledAuditLogHosts) ) {
+			support.setDisabledAuditLogHosts(null);
+		} else {
+			Set disabledHosts = new HashSet();
+			if ( !"NONE".equals(disabledAuditLogHosts)) {
+				StringTokenizer st = new StringTokenizer(disabledAuditLogHosts, "\r\n;");
+				while ( st.hasMoreTokens() ) {
+					disabledHosts.add(st.nextElement());
+				}
+			}
+			support.setDisabledAuditLogHosts(disabledHosts);
+		}
 	}
 	
 	/**
@@ -246,12 +294,8 @@ public class WADOService extends AbstractCacheService {
 	 *  
 	 * @param Name of the MBean
 	 */
-	public void setFileSystemMgtName( String name ) {
-		try {
-			ObjectName on = new ObjectName( name );
-			support.setFileSystemMgtName( on );
-		} catch (MalformedObjectNameException e) {
-		}
+	public void setFileSystemMgtName( ObjectName name ) {
+		support.setFileSystemMgtName( name );
 	}
 	
 	/**

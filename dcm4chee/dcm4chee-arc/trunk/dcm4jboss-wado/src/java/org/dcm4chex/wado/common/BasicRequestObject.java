@@ -92,5 +92,9 @@ public interface BasicRequestObject {
 	String getRequestURL();
 	
 	String getErrorMsg();
+	
+	String getRemoteAddr();
+	String getRemoteHost();
+
 
 }

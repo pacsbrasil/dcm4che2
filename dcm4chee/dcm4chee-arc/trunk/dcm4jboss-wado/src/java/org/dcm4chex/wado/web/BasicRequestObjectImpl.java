@@ -39,6 +39,7 @@
 
 package org.dcm4chex.wado.web;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -69,6 +70,9 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 
 	private String reqURL;
 	private String errMsg;
+	
+	private String remoteAddr;
+	private String remoteHost;
 
 	/**
 	 * Initialize an RequestObject with http request.
@@ -95,7 +99,14 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 			headerMap.put( key, request.getHeader(key) );
 		}
 		setAllowedContentTypes( request.getHeader("accept") );
-		
+		this.remoteAddr = request.getRemoteAddr();
+		this.remoteHost = request.getRemoteHost();
+		if ( remoteAddr.equals( remoteHost ) ) {
+			try {
+				InetAddress ia = InetAddress.getByName(remoteAddr);
+				remoteHost = ia.getHostName();
+			} catch ( Exception ignore ) {}
+		}
 	}
 	
 	/**
@@ -169,5 +180,17 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	 */
 	protected void setErrorMsg(String errMsg) {
 		this.errMsg = errMsg;
+	}
+	/**
+	 * @return Returns the remoteAddr.
+	 */
+	public String getRemoteAddr() {
+		return remoteAddr;
+	}
+	/**
+	 * @return Returns the remoteHost.
+	 */
+	public String getRemoteHost() {
+		return remoteHost;
 	}
 }

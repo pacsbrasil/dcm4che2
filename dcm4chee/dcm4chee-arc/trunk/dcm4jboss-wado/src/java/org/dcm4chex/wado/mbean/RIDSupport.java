@@ -52,9 +52,11 @@ import java.io.OutputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.management.MBeanServer;
@@ -86,7 +88,10 @@ import org.dcm4che.net.DataSource;
 import org.dcm4che.srom.SRDocumentFactory;
 import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
@@ -138,6 +143,7 @@ public class RIDSupport {
 	private String wadoURL;
 	
 	private static ObjectName fileSystemMgtName;
+	private static ObjectName auditLogName;
 	
 	private ECGSupport ecgSupport = null;
 	
@@ -149,6 +155,8 @@ public class RIDSupport {
 	private boolean encapsulatedPDFSupport = true;
 	private boolean useOrigFile = false;
 
+	private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+	
 	public RIDSupport( RIDService service ) {
 		this.service = service;
 		RIDSupport.server = service.getServer();
@@ -293,6 +301,28 @@ public class RIDSupport {
 	protected MBeanServer getMBeanServer() {
 		return server;
 	}
+	
+	/**
+	 * Set the name of the AuditLogger MBean.
+	 * <p>
+	 * This bean is used to create Audit Logs.
+	 * 
+	 * @param name The Audit Logger Name to set.
+	 */
+	public void setAuditLoggerName(ObjectName name) {
+		auditLogName = name;
+	}
+	/**
+	 * Get the name of the AuditLogger MBean.
+	 * <p>
+	 * This bean is used to create Audit Logs.
+	 * 
+	 * @return Returns the name of the Audit Logger MBean.
+	 */
+	public ObjectName getAuditLoggerName() {
+		return auditLogName;
+	}
+	
 	
 	/**
 	 * @param reqObj
@@ -608,19 +638,23 @@ public class RIDSupport {
 			cmd = QueryCmd.create( queryDS, false, true );
 			cmd.execute();
 			if ( cmd.next() ) {
+				WADOResponseObject response;
 				Dataset ds = cmd.getDataset();
 				String cuid = ds.getString( Tags.SOPClassUID );
 				if ( getECGSopCuids().values().contains( cuid ) ) {
-					return getECGSupport().getECGDocument( reqObj, ds );
+					response = getECGSupport().getECGDocument( reqObj, ds );
 				} else if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) {
-					return getEncapsulatedPDF( reqObj );
+					response = getEncapsulatedPDF( reqObj );
 				} else {
-					return getDocument( reqObj );
+					response = getDocument( reqObj );
 				}
+				logExport(reqObj, getPatientInfo(reqObj), "RID Request");
+				return response;
 			} else {
-				File f = getDocumentFile(uid,reqObj.getParam("preferredContentType"));
+				File f = getDocumentFile(uid,reqObj.getParam("preferredContentType"));//Document is not stored in PACS (XDS)
 				if ( f.exists() ) {
 					try {
+						logExport(reqObj, getXDSPatientInfo(reqObj), "XDS Document Retrieve");
 						return new WADOStreamResponseObjectImpl( new FileInputStream(f), reqObj.getParam("preferredContentType"), HttpServletResponse.SC_OK, null);
 					} catch (FileNotFoundException ignore) {
 					}
@@ -633,6 +667,63 @@ public class RIDSupport {
 		} finally {
 			if ( cmd != null ) cmd.close();
 		}
+	}
+	
+	/**
+	 * @param reqObj
+	 * @param patientInfo
+	 */
+	private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
+        try {
+        	Set suids = new HashSet();
+        	suids.add(ds.getString(Tags.StudyInstanceUID));
+            server.invoke(auditLogName,
+                    "logExport",
+                    new Object[] { ds.getString(Tags.PatientID), ds.getString(Tags.PatientName),
+            						mediaType, 
+            						suids,
+            						reqObj.getRemoteAddr(), reqObj.getRemoteHost(), null},
+                    new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
+            						Set.class.getName(),
+									String.class.getName(), String.class.getName(), String.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }		
+	}
+
+	/**
+	 * @param reqObj
+	 * @return
+	 */
+	private Dataset getPatientInfo(RIDRequestObject req) {
+		Dataset ds = dof.newDataset();
+		Dataset result = dof.newDataset();
+		try {
+			ds.putCS(Tags.QueryRetrieveLevel,"IMAGE");
+			ds.putUI(Tags.SOPInstanceUID, req.getParam("documentUID"));
+			FileInfo[][] fis = RetrieveCmd.create(ds).getFileInfos();
+			if ( fis.length > 0 ) {
+				FileInfo fi = fis[0][0]; 
+				DatasetUtils.fromByteArray(fi.patAttrs, result);
+				DatasetUtils.fromByteArray(fi.studyAttrs, result);
+			} 
+		} catch (SQLException e) {
+			log.error("Cant get Patient/Study info for "+req.getParam("documentUID"),e);
+		}
+		return result;
+	}
+
+	/**
+	 * @param reqObj
+	 * @return
+	 */
+	private Dataset getXDSPatientInfo(RIDRequestObject reqObj) {
+		Dataset ds = dof.newDataset();
+		//TODO REAL stuff
+		ds.putUI(Tags.StudyInstanceUID);
+		ds.putLO(Tags.PatientID,"");
+		ds.putPN(Tags.PatientName,"");
+		return ds;
 	}
 	
 	public File getDocumentFile(String objectUID, String contentType) {

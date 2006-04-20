@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
@@ -75,6 +76,10 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.Patient;
+import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -83,9 +88,14 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DataSource;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
@@ -110,8 +120,15 @@ public static final String CONTENT_TYPE_XML = "text/xml";
 public static final String CONTENT_TYPE_PLAIN = "text/plain";
 
 private static Logger log = Logger.getLogger( WADOService.class.getName() );
+private static final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
 private static ObjectName fileSystemMgtName = null;
+
+private static ObjectName auditLogName = null;
+/** List of Hosts where audit log is disabled.<p><code>null</code> means ALL; an empty list means NONE */
+private Set disabledAuditLogHosts;
+
 private boolean useOrigFile = false;
 
 private boolean useTransferSyntaxOfFileAsDefault = true;
@@ -174,20 +191,29 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 	log.debug("SOP Class UID or requested WADO object:"+fileDTO.getSopClassUID());
 	String contentType = getPrefContentType( req, fileDTO );
 	log.debug("preferred ContentType:"+contentType);
+	WADOResponseObject resp = null;
 	if ( CONTENT_TYPE_JPEG.equals( contentType ) ) {
-		return this.handleJpg( req );
+		resp = this.handleJpg( req );
 	} else if ( CONTENT_TYPE_DICOM.equals( contentType ) ) {
-		return handleDicom( req );
+		return handleDicom( req ); //audit log is done in handleDicom to avoid extra query.
 	} else if ( CONTENT_TYPE_HTML.equals( contentType ) ) {
-		return handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+		resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
 	} else if ( CONTENT_TYPE_XHTML.equals( contentType ) ) {
-		return handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+		resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
 	} else if ( CONTENT_TYPE_XML.equals( contentType ) ) {
-		return handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, getXmlXslURL() );
+		resp = handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, getXmlXslURL() );
 	} else {
 		log.debug("Content type not supported! :"+contentType+"\nrequested contentType(s):"+req.getContentTypes()+" SOP Class UID:"+fileDTO.getSopClassUID());
-		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested (preferred) content type!"+contentType);
+		resp = new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested (preferred) content type!"+contentType);
 	}
+	if ( this.isAuditLogEnabled(req) && resp.getReturnCode() == HttpServletResponse.SC_OK ) {
+    	Dataset patDS = getPatientInfo(req);
+    	this.logInstancesSent( alf.newPatient(patDS.getString(Tags.PatientID), 
+    			patDS.getString(Tags.PatientName)),
+				alf.newRemoteNode( req.getRemoteAddr(), req.getRemoteHost(), null),
+				patDS.getString(Tags.StudyInstanceUID));
+	}
+	return resp;
 }
 
 /**
@@ -252,9 +278,17 @@ public WADOResponseObject handleDicom( WADORequestObject req ) {
 	}
 	try {
 		if ( useOrigFile  ) {
-			return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+			WADOResponseObject resp = new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+	        if ( this.isAuditLogEnabled(req) ) {
+	        	Dataset patDS = getPatientInfo(req);
+	        	this.logInstancesSent( alf.newPatient(patDS.getString(Tags.PatientID), 
+	        			patDS.getString(Tags.PatientName)),
+						alf.newRemoteNode( req.getRemoteAddr(), req.getRemoteHost(), null),
+						patDS.getString(Tags.StudyInstanceUID));
+	        }
+			return resp;
 		} else {
-			return getUpdatedInstance( req.getObjectUID(), checkTransferSyntax( req.getTransferSyntax() ) );
+			return getUpdatedInstance( req, checkTransferSyntax( req.getTransferSyntax() ) );
 		}
 	} catch (FileNotFoundException x) {
 		log.error("Exception in handleDicom: "+x.getMessage(), x);
@@ -285,13 +319,26 @@ private String checkTransferSyntax(String transferSyntax) {
 	return transferSyntax;
 }
 
-private WADOResponseObject getUpdatedInstance( String iuid, String transferSyntax ) {
+private WADOResponseObject getUpdatedInstance( WADORequestObject req, String transferSyntax ) {
+	String iuid = req.getObjectUID();
 	DataSource ds = null;
 	try {
         ds = (DataSource) server.invoke(fileSystemMgtName,
                 "getDatasourceOfInstance",
                 new Object[] { iuid },
                 new String[] { String.class.getName() } );
+        if ( this.isAuditLogEnabled(req) ) {
+        	Dataset d;
+        	if ( ds instanceof FileDataSource ) {
+            	d = ((FileDataSource) ds).getMergeAttrs();
+        	} else {
+        		d = getPatientInfo(req);
+        	}
+        	this.logInstancesSent( alf.newPatient(d.getString(Tags.PatientID), 
+        							d.getString(Tags.PatientName)),
+        							alf.newRemoteNode( req.getRemoteAddr(), req.getRemoteHost(), null),
+									d.getString(Tags.StudyInstanceUID));
+        }
         return new WADODatasourceResponseObjectImpl( ds, transferSyntax, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
         
     } catch (Exception e) {
@@ -301,6 +348,37 @@ private WADOResponseObject getUpdatedInstance( String iuid, String transferSynta
 	
 }
 
+
+/**
+ * @param req
+ * @return
+ */
+private Dataset getPatientInfo(WADORequestObject req) {
+	Dataset ds = dof.newDataset();
+	Dataset result = dof.newDataset();
+	try {
+		ds.putUI(Tags.StudyInstanceUID, req.getStudyUID());
+		ds.putLO(Tags.PatientID);
+		ds.putPN(Tags.PatientName);
+		List l = new QueryStudiesCmd(ds, false).list(0,1);
+		if ( ! l.isEmpty()) {
+			result = (Dataset)l.get(0);
+		} else {
+			ds.putCS(Tags.QueryRetrieveLevel,"IMAGE");
+			ds.putUI(Tags.StudyInstanceUID);
+			ds.putUI(Tags.SOPInstanceUID, req.getObjectUID());
+			FileInfo[][] fis = RetrieveCmd.create(ds).getFileInfos();
+			if ( fis.length > 0 ) {
+				FileInfo fi = fis[0][0]; 
+				DatasetUtils.fromByteArray(fi.patAttrs, result);
+				DatasetUtils.fromByteArray(fi.studyAttrs, result);
+			} 
+		}
+	} catch (SQLException e) {
+		log.error("Cant get Patient/Study info for "+req.getObjectUID(),e);
+	}
+	return result;
+}
 
 /**
  * Handles a request for content type image/jpeg.
@@ -390,7 +468,7 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 
 private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO fileDTO, String contentType, String xslURL ) {
 	try {
-		Dataset keys = DcmObjectFactory.getInstance().newDataset();
+		Dataset keys = dof.newDataset();
 		keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
 		QueryCmd query = QueryCmd.createInstanceQuery(keys, false, true);
 		query.execute();
@@ -401,7 +479,7 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
 		File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
         DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        Dataset ds = dof.newDataset();
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
         ds.putAll(dsCoerce);
@@ -684,6 +762,49 @@ public ObjectName getFileSystemMgtName() {
 }
 
 /**
+ * Set the name of the AuditLogger MBean.
+ * <p>
+ * This bean is used to create Audit Logs.
+ * 
+ * @param name The Audit Logger Name to set.
+ */
+public void setAuditLoggerName(ObjectName name) {
+	WADOSupport.auditLogName = name;
+}
+/**
+ * Get the name of the AuditLogger MBean.
+ * <p>
+ * This bean is used to create Audit Logs.
+ * 
+ * @return Returns the name of the Audit Logger MBean.
+ */
+public ObjectName getAuditLoggerName() {
+	return auditLogName;
+}
+
+/**
+ * @return Returns if audit log is enabled for the host of the given request.
+ */
+public boolean isAuditLogEnabled(WADORequestObject req) {
+	return disabledAuditLogHosts == null ? false : !disabledAuditLogHosts.contains(req.getRemoteHost());
+}
+/**
+ * Set the list of host where audit log is disabled.
+ * <p>
+ * An empty list means 'NONE'<br>
+ * <code>null</code> means 'ALL'
+ * 
+ * @param disabledLogHosts The disabledLogHosts to set.
+ */
+public void setDisabledAuditLogHosts(Set disabledLogHosts) {
+	this.disabledAuditLogHosts = disabledLogHosts;
+}
+
+public Set getDisabledAuditLogHosts() {
+	return disabledAuditLogHosts;
+}
+
+/**
  * @return Returns the useOrigFile.
  */
 public boolean isUseOrigFile() {
@@ -751,6 +872,22 @@ public void setTextSopCuids(Map sopCuids) {
 	else {
 		setDefaultTextSopCuids();
 	}
+}
+
+private void logInstancesSent(Patient patient, 
+								RemoteNode rnode, 
+								String suid) {
+    try {
+        server.invoke(auditLogName,
+                "logInstancesSent",
+                new Object[] {rnode, 
+        					alf.newInstancesAction("Access",suid, patient)},
+                new String[] { RemoteNode.class.getName(),
+                        InstancesAction.class.getName()});
+    } catch (Exception e) {
+        log.warn("Failed to log Instances Sent:", e);
+    }
+	
 }
 
 /**

@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -231,8 +230,8 @@ public class RIDService extends AbstractCacheService  {
 	 *  
 	 * @return Name of the MBean
 	 */
-	public String getFileSystemMgtName() {
-		return support.getFileSystemMgtName().toString();
+	public ObjectName getFileSystemMgtName() {
+		return support.getFileSystemMgtName();
 	}
 	
 	/**
@@ -242,12 +241,30 @@ public class RIDService extends AbstractCacheService  {
 	 *  
 	 * @param Name of the MBean
 	 */
-	public void setFileSystemMgtName( String name ) {
-		try {
-			ObjectName on = new ObjectName( name );
-			support.setFileSystemMgtName( on );
-		} catch (MalformedObjectNameException e) {
-		}
+	public void setFileSystemMgtName( ObjectName name ) {
+			support.setFileSystemMgtName( name );
+	}
+
+	/**
+	 * Set the name of the AuditLogger MBean.
+	 * <p>
+	 * This bean is used to create Audit Logs.
+	 * 
+	 * @param name The Audit Logger Name to set.
+	 */
+	public void setAuditLoggerName( ObjectName name ) {
+		support.setAuditLoggerName( name );
+	}
+
+	/**
+	 * Get the name of the AuditLogger MBean.
+	 * <p>
+	 * This bean is used to create Audit Logs.
+	 * 
+	 * @return Returns the name of the Audit Logger MBean.
+	 */
+	public ObjectName getAuditLoggerName() {
+		return support.getAuditLoggerName();
 	}
 	
 	/**
