@@ -229,9 +229,32 @@
       <description>For internal use. Don't change!
       </description>
       <name>FileSystemMgtName</name>
-      <type>java.lang.String</type>
+      <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4jboss.archive:service=FileSystemMgt" />
+      </descriptors>
+   </attribute>
+    <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>For internal use. Don't change!
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4jboss.archive:service=AuditLogger" />
+      </descriptors>
+   </attribute>
+    <attribute access="read-write"
+      getMethod="getDisabledAuditLogHosts"
+      setMethod="setDisabledAuditLogHosts">
+      <description>List of Host where audit log is disabled. 
+      				Use NONE or ALL to enable/disable audit log for all WADO requests.
+      </description>
+      <name>DisabledAuditLogHosts</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
       </descriptors>
    </attribute>
 
