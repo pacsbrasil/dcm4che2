@@ -8,7 +8,7 @@
     <xsl:variable name="SR_3" select="'1.2.840.10008.5.1.4.1.1.88.33'"/><!-- ComprehensiveSR -->
     <xsl:variable name="SR_4" select="'1.2.840.10008.5.1.4.1.1.88.59'"/><!-- KeyObjectSelectionDocument -->
     
-    <xsl:param name="wadoURL" select="'http://localhost:8080/dcm4jboss-wado/wado'"/>
+    <xsl:param name="wadoURL" select="'http://localhost:8080/wado'"/>
     <!-- the stylesheet processing entry point -->
 	<xsl:template match="/">
 	  <xsl:apply-templates select="dicomfile/dataset"/>
@@ -28,7 +28,7 @@
             <fo:page-sequence master-reference="page">
             	<fo:static-content flow-name="xsl-region-before">
           <fo:block text-align="center">
-            <fo:external-graphic src="../images/tiani_logo.jpg"/>
+            <fo:external-graphic src="http://localhost:8080/images/logo.gif"/>
          </fo:block>
             		<fo:block font-size="20pt"  text-align="center" font-weight="bold" >
             			<xsl:value-of select="attr[@tag='0040A043']/item/attr[@tag='00080104']"/>
@@ -106,12 +106,12 @@
 						<xsl:when test="$cuid='1.2.840.10008.5.1.4.1.1.11.1'"><!-- GrayscaleSoftcopyPresentationStateStorage -->
 						</xsl:when>
 						<xsl:otherwise> <!-- image -->
-                                            		            		<fo:block font-size="10pt" text-align="center">
-                                                                                        	        <fo:external-graphic >
-                                                                                        	            <xsl:attribute name="src">url(<xsl:value-of select="$wadoURL"/>?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="attr[@tag='00080018']"/>)</xsl:attribute>
-                                                                                        	        </fo:external-graphic >
-                                            		            		</fo:block>
-						
+    		            		<fo:block font-size="10pt" text-align="center">
+                        	        <fo:external-graphic >
+                        	            <xsl:attribute name="src">url(<xsl:value-of select="$wadoURL"/>?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="attr[@tag='00080018']"/>)</xsl:attribute>
+                        	        </fo:external-graphic >
+    		            		</fo:block>
+
 						</xsl:otherwise>
 		  			</xsl:choose>
 			   </fo:flow>
