@@ -170,7 +170,7 @@ public class NetworkApplicationEntity
 
     /**
      * Get the locally defined names for a subset of related applications. E.g.
-     * “neuroradiology”.
+     * ï¿½neuroradiologyï¿½.
      * 
      * @return A String array containing the names.
      */
@@ -181,7 +181,7 @@ public class NetworkApplicationEntity
 
     /**
      * Set the locally defined names for a subset of related applications. E.g.
-     * “neuroradiology”.
+     * ï¿½neuroradiologyï¿½.
      * 
      * @param cluster A String array containing the names.
      */
@@ -942,7 +942,7 @@ public class NetworkApplicationEntity
         for (int i = 0; i < tcs.length; i++)
         {
             tc = tcs[i];
-            if (tc.equals(cuid) && tc.isSCP() == scp)
+            if (tc.isSCP() == scp && tc.getSopClass().equals(cuid))
                 return tc;
         }
         return null;
@@ -1009,69 +1009,53 @@ public class NetworkApplicationEntity
         for (Iterator iter = pcs.iterator(); iter.hasNext();)
         {
             PresentationContext rqpc = (PresentationContext) iter.next();
-            String asuid = rqpc.getAbstractSyntax();
-            RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
-            TransferCapability tc = rqrs == null || rqrs.isSCU() ? findTransferCapability(
-                    asuid, true)
-                    : rqrs.isSCP() ? findTransferCapability(asuid, false)
-                            : null;
-
-            PresentationContext acpc = new PresentationContext();
-            acpc.setPCID(rqpc.getPCID());
-            acpc.setResult(PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED);
-            if (tc != null)
-            {
-                acpc
-                        .setResult(PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED);
-                Set rqts = rqpc.getTransferSyntaxes();
-                String[] acts = tc.getTransferSyntax();
-                for (int i = 0; i < acts.length; i++)
-                {
-                    if (rqts.contains(acts[i]))
-                    {
-                        acpc.setResult(PresentationContext.ACCEPTANCE);
-                        acpc.addTransferSyntax(acts[i]);
-                        if (rqrs != null
-                                && ac.getRoleSelectionFor(asuid) == null)
-                        {
-                            boolean scp = tc.isSCP();
-                            boolean scu = tc.isSCU()
-                                    || findTransferCapability(asuid, false) != null;
-                            RoleSelection rs = new RoleSelection(asuid, scp,
-                                    scu);
-                            ac.addRoleSelection(rs);
-                        }
-                        if (ac.getExtendedNegotiationFor(asuid) == null)
-                        {
-                            ExtendedNegotiation extNeg = tc.negotiate(rq
-                                    .getExtendedNegotiationFor(asuid));
-                            if (extNeg != null)
-                                ac.addExtendedNegotiation(extNeg);
-                        }
-                        break;
-                    }
-                }
-            }
+            PresentationContext acpc = negPresCtx(rq, ac, rqpc);
             ac.addPresentationContext(acpc);
         }
         return ac;
     }
 
+    private PresentationContext negPresCtx(AAssociateRQ rq, AAssociateAC ac, 
+            PresentationContext rqpc) {
+        String asuid = rqpc.getAbstractSyntax();
+        RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
+        TransferCapability tcscp = findTC(transferCapability, asuid, true);
+        TransferCapability tcscu = findTC(transferCapability, asuid, false);
+        if (rqrs != null && ac.getRoleSelectionFor(asuid) != null) {
+            boolean scp = rqrs.isSCP() && tcscu != null;
+            boolean scu = rqrs.isSCU() && tcscp != null;
+            RoleSelection rs = new RoleSelection(asuid, scu , scp);
+            ac.addRoleSelection(rs);            
+        }
+        TransferCapability tc = rqrs == null || rqrs.isSCU() ? tcscp : tcscu;
+        
+        PresentationContext acpc = new PresentationContext();
+        acpc.setPCID(rqpc.getPCID());            
+        if (tc != null) {
+            Set rqts = rqpc.getTransferSyntaxes();
+            String[] acts = tc.getTransferSyntax();
+            for (int i = 0; i < acts.length; i++) {
+                if (rqts.contains(acts[i])) {
+                    acpc.addTransferSyntax(acts[i]);
+                    if (ac.getExtendedNegotiationFor(asuid) == null) {
+                        ExtendedNegotiation extNeg = 
+                            tc.negotiate(rq.getExtendedNegotiationFor(asuid));
+                        if (extNeg != null)
+                            ac.addExtendedNegotiation(extNeg);
+                    }
+                    return acpc;
+                }
+            }
+            acpc.setResult(PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED);          
+        } else {
+            acpc.setResult(PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED);            
+        }
+        acpc.addTransferSyntax(rqpc.getTransferSyntax());
+        return acpc;
+    }    
+
     private int minZeroAsMax(int i1, int i2)
     {
         return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
     }
-
-    private TransferCapability findTransferCapability(String asuid, boolean scp)
-    {
-        TransferCapability tc;
-        for (int i = 0; i < transferCapability.length; i++)
-        {
-            tc = transferCapability[i];
-            if (tc.getSopClass().equals(asuid) && tc.isSCP() == scp)
-                return tc;
-        }
-        return null;
-    }
-
 }
