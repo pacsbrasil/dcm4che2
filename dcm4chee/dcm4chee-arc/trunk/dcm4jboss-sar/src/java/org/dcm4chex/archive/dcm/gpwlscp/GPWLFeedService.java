@@ -39,15 +39,20 @@
 
 package org.dcm4chex.archive.dcm.gpwlscp;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.ejb.CreateException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -69,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfig;
@@ -116,6 +122,10 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 	private Map templates = null;
 	
 	private URL templateURL  = null;
+    private File mppsConfigFile;
+    private File templateDir;
+    private Properties mppsConfig = new Properties();
+
     
     private static DcmObjectFactory dof = DcmObjectFactory.getInstance();
 	
@@ -189,7 +199,25 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 			this.templateURL = new URL( config.getServerConfigURL().toExternalForm() + configURL);
 		}
 	}
-	private String codes2String( Map codes ) {
+
+    public final String getMppsConfigFile() {
+        return mppsConfigFile.getPath();
+    }
+
+    public final void setMppsConfigFile(String path) throws IOException {
+        File f = new File(path.replace('/', File.separatorChar));
+        Properties p = new Properties();
+        FileInputStream in = new FileInputStream(FileUtils.resolve(f));
+        try {
+            p.load(in);
+        } finally {
+            in.close();
+        }
+        this.mppsConfig = p;
+        this.mppsConfigFile = f;
+    }
+
+    private String codes2String( Map codes ) {
 		if ( codes == null || codes.isEmpty() ) return "";
 		StringBuffer sb = new StringBuffer();
 		Dataset ds;
@@ -299,39 +327,33 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 	private void addWorklistItem(Dataset ds) {
 		if (ds == null) return;
 		try {
-			GPWLManager mgr = getGPWLManagerHome().create();
-			try {
-				mgr.addWorklistItem(ds);
-			} finally {
-				try {
-					mgr.remove();
-				} catch (Exception ignore) {
-				}
-			}
+			getGPWLManager().addWorklistItem(ds);
 		} catch (Exception e) {
 			log.error("Failed to add Worklist Item:", e);
 		}
 	}
 
+    private GPWLManager getGPWLManager() throws CreateException,
+            RemoteException, HomeFactoryException {
+        return ((GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME)).create();
+    }
+
 	private Dataset makeGPWLItem(Dataset mpps) {
         Dataset codeItem = mpps.getItem(Tags.ProcedureCodeSeq);
-        StringBuffer sb = new StringBuffer("resource:gpwl/");
-        final String codeValueDesignator = codeItem.getString(Tags.CodingSchemeDesignator);
-        final String codeValue = codeItem.getString(Tags.CodeValue);
-		sb.append(codeValue);
-        sb.append('.');
-		sb.append(codeValueDesignator);
-        sb.append(".xml");
-        for (int i = 14, n = sb.length(); i < n; ++i) {
-        	char ch = sb.charAt(i);
-        	if (!(ch >= '0' && ch <= '9'
-        			|| ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z'
-        			|| ch == ':' || ch == '-' || ch == '_' || ch == '.')) {
-        		sb.setCharAt(i, '_');
-        	}
+        String key = codeItem.getString(Tags.CodeValue) + '^'
+                + codeItem.getString(Tags.CodingSchemeDesignator);
+        String wkitmtpl = mppsConfig.getProperty(key);
+        if (wkitmtpl == null) {
+            log.info("no workitem configured for procedure");
+            log.info(codeItem);
+            return null;
         }
+        
+        String uri = FileUtils.resolve(mppsConfigFile).getParentFile().toURI()
+                + wkitmtpl;
         try {
-			Dataset gpsps = DatasetUtils.fromXML(new InputSource(sb.toString()));
+			Dataset gpsps = DatasetUtils.fromXML(new InputSource(uri));
 			gpsps.putAll(mpps.subSet(PAT_ATTR_TAGS));
 			gpsps.putUI(Tags.SOPClassUID, UIDs.GeneralPurposeScheduledProcedureStepSOPClass);
 			final String iuid = UIDGenerator.getInstance().createUID();
@@ -372,49 +394,47 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 			if (!gpsps.contains(Tags.RefRequestSeq)) {
 				initRefRequestSeq(gpsps, ssaSq);
 			}
-	       	log.info("create workitem using template " + sb);
+	       	log.info("create workitem using template " + wkitmtpl);
 	       	log.debug(gpsps);
 			return gpsps;
-		} catch (FileNotFoundException e) {
-			log.info("no workitem configured for procedure");
-			log.info(codeItem);
-		} catch (Exception e) {
-			log.error("Failed to load workitem configuration from " + sb, e);
+        } catch (Exception e) {
+			log.error("Failed to load workitem configuration from " + uri, e);
 		}
 		return null;        
 	}
 
 	private void initRefRequestSeq(Dataset gpsps, DcmElement ssaSq)
-			throws Exception {
-		MWLManager mwlManager = getMWLManagerHome().create();
-		try {
-			DcmObjectFactory dof = DcmObjectFactory.getInstance();
-			DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
-			for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
-				Dataset ssa = ssaSq.getItem(i);
-				String spsid = ssa.getString(Tags.SPSID);
-				if (spsid != null) {
-					Dataset refRq = dof.newDataset();
-					refRq.putAll(ssa.subSet(REF_RQ_TAGS_FROM_MPPS_SSA));
-					try {
-						Dataset mwlItem = mwlManager.getWorklistItem(spsid);
-						if (mwlItem == null) {
-							log.warn("No such MWL item[spsid=" + spsid
-									+ "] -> use request info available in MPPS");													
-						} else if (checkConsistency(mwlItem, ssa)) {
-							refRq.putAll(mwlItem.subSet(REF_RQ_TAGS_FROM_MWL_ITEM));							
-						}
-					} catch (Exception e) {
-						log.warn("Failed to access MWL item[spsid=" + spsid
-								+ "] -> use request info available in MPPS", e);						
-					}
-					refRqSq.addItem(refRq);
-				}
-			}
-		} finally {
-			mwlManager.remove();
-		}
-	}
+            throws Exception {
+        DcmObjectFactory dof = DcmObjectFactory.getInstance();
+        DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
+        for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
+            Dataset ssa = ssaSq.getItem(i);
+            String spsid = ssa.getString(Tags.SPSID);
+            if (spsid != null) {
+                Dataset refRq = dof.newDataset();
+                refRq.putAll(ssa.subSet(REF_RQ_TAGS_FROM_MPPS_SSA));
+                try {
+                    Dataset mwlItem = getMWLManager().getWorklistItem(spsid);
+                    if (mwlItem == null) {
+                        log.warn("No such MWL item[spsid=" + spsid
+                                + "] -> use request info available in MPPS");
+                    } else if (checkConsistency(mwlItem, ssa)) {
+                        refRq.putAll(mwlItem.subSet(REF_RQ_TAGS_FROM_MWL_ITEM));
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to access MWL item[spsid=" + spsid
+                            + "] -> use request info available in MPPS", e);
+                }
+                refRqSq.addItem(refRq);
+            }
+        }
+    }
+
+    private MWLManager getMWLManager() throws CreateException, RemoteException,
+            HomeFactoryException {
+        return ((MWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                MWLManagerHome.class, MWLManagerHome.JNDI_NAME)).create();
+    }
 
 	private boolean checkConsistency(Dataset mwlItem, Dataset ssa) {
 		boolean ok = true;
@@ -436,37 +456,20 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 
 	private Dataset getMPPS(String iuid) {
 		try {
-			MPPSManager mgr = getMPPSManagerHome().create();
-			try {
-				return mgr.getMPPS(iuid);
-			} finally {
-				try {
-					mgr.remove();
-				} catch (Exception ignore) {
-				}
-			}
+			return getMPPSManager().getMPPS(iuid);
 		} catch (Exception e) {
 			log.error("Failed to load MPPS - " + iuid, e);
 			return null;
 		}
 	}
 
-	private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
-        return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
+    private MPPSManager getMPPSManager() throws CreateException,
+            RemoteException, HomeFactoryException {
+        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
     }
 
-    private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
-        return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
-                MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
-    }
-
-	private GPWLManagerHome getGPWLManagerHome() throws HomeFactoryException {
-        return (GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
-                GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME);
-    }
-	
-    private ContentManager getContentManager() throws Exception {
+	private ContentManager getContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         return home.create();

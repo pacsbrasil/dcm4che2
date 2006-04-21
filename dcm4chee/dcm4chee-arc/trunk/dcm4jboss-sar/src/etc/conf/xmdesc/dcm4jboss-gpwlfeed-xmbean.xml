@@ -37,6 +37,20 @@
          <value value="dcm4jboss.archive:service=MPPSScp"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getMppsConfigFile"
+      setMethod="setMppsConfigFile">
+      <description><![CDATA[Configuration file, which maps
+      Procedure Codes of received MPPS messages to Work Item template files.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>MPPSConfigFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4jboss-gpwl.conf"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getTemplateURL" setMethod="setTemplateURL">
       <description>URL to the directory of worklist entry templates.
       </description>
