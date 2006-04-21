@@ -42,6 +42,8 @@ package org.dcm4chex.archive.dcm.gpwlscp;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
@@ -80,6 +82,7 @@ class GPWLFindScp extends DcmServiceBase {
             Dataset rqData = rq.getDataset();
 			log.debug("Identifier:\n");
 			log.debug(rqData);
+            logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
             queryCmd = new GPWLQueryCmd(rqData);
             queryCmd.execute();
         } catch (Exception e) {
@@ -89,6 +92,13 @@ class GPWLFindScp extends DcmServiceBase {
         return new MultiCFindRsp(queryCmd);
     }
 
+    void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
+        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+        RemoteNode node = alf.newRemoteNode(assoc.getSocket(),
+                        assoc.getCallingAET());
+        service.logDicomQuery(keys, node, cmd.getAffectedSOPClassUID());
+    }
+    
     private class MultiCFindRsp implements MultiDimseRsp {
         private final GPWLQueryCmd queryCmd;
         private boolean canceled = false;
