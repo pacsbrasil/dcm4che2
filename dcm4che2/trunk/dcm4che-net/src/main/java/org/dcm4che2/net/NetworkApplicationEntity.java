@@ -124,7 +124,7 @@ public class NetworkApplicationEntity
 
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
-    private final ArrayList pool = new ArrayList();
+    private final List pool = new ArrayList();
 
     private Device device;
 
@@ -170,7 +170,7 @@ public class NetworkApplicationEntity
 
     /**
      * Get the locally defined names for a subset of related applications. E.g.
-     * �neuroradiology�.
+     * neuroradiology.
      * 
      * @return A String array containing the names.
      */
@@ -181,7 +181,7 @@ public class NetworkApplicationEntity
 
     /**
      * Set the locally defined names for a subset of related applications. E.g.
-     * �neuroradiology�.
+     * neuroradiology.
      * 
      * @param cluster A String array containing the names.
      */
@@ -948,16 +948,33 @@ public class NetworkApplicationEntity
         return null;
     }
 
+    /**
+     * Register a <code>DicomService</code> with this network AE.
+     * 
+     * @param service The <code>DicomService</code> that will respond to DICOM
+     *            requests.
+     */
     public void register(DicomService service)
     {
         serviceRegistry.register(service);
     }
 
+    /**
+     * Unregister (remove) a <code>DicomService</code> from this network AE.
+     * 
+     * @param service The <code>DicomService</code> to unregister.
+     */
     public void unregister(DicomService service)
     {
         serviceRegistry.unregister(service);
     }
 
+    /**
+     * Add the given <code>Association</code> object to this network AE's pool
+     * of associations.
+     * 
+     * @param a The <code>Association</code> to add.
+     */
     void addToPool(Association a)
     {
         synchronized (pool)
@@ -966,6 +983,12 @@ public class NetworkApplicationEntity
         }
     }
 
+    /**
+     * Remove the given <code>Association</code> object from this network AE's
+     * pool of associations.
+     * 
+     * @param a The <code>Association</code> to remove.
+     */
     void removeFromPool(Association a)
     {
         synchronized (pool)
@@ -974,12 +997,36 @@ public class NetworkApplicationEntity
         }
     }
 
+    /**
+     * Perform the action associated with the given DICOM command object.
+     * 
+     * @param as The <code>Association</code> to perform the operation within.
+     * @param pcid The presentation context ID for this operation.
+     * @param cmd The <code>DicomObject</code> representing the command to
+     *            execute.
+     * @param dataStream The <code>PDVInputStream</code> used to interpret the
+     *            incoming/outgoing PDUs.
+     * @param tsuid A String containing the transfer syntax that will be used in
+     *            this operation.
+     * @throws IOException
+     */
     void perform(Association as, int pcid, DicomObject cmd,
             PDVInputStream dataStream, String tsuid) throws IOException
     {
         serviceRegistry.process(as, pcid, cmd, dataStream, tsuid);
     }
 
+    /**
+     * Negotiate a DICOM association as an SCP.
+     * 
+     * @param a The <code>Association</code> object containing the SCU and
+     *            network information.
+     * @param rq The <code>AAssociationRQ</code> object that was created when
+     *            the <code>PDVInputStream</code> sensed an association
+     *            request.
+     * @return An <code>AAssociateAC</code> response object.
+     * @throws AAssociateRJ Thrown if the association request is rejected.
+     */
     AAssociateAC negotiate(Association a, AAssociateRQ rq) throws AAssociateRJ
     {
         if (!isAssociationAcceptor())
