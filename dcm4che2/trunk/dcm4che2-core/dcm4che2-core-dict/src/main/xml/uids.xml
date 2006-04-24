@@ -5,6 +5,7 @@
 <!ENTITY sup83 SYSTEM "../../../target/xml/p6_uid/sup83_ft2.xml">
 <!ENTITY sup100 SYSTEM "../../../target/xml/p6_uid/sup100_ft.xml">
 <!ENTITY sup101 SYSTEM "../../../target/xml/p6_uid/sup101_ft.xml">
+<!ENTITY sup102 SYSTEM "../../../target/xml/p6_uid/sup102_14.xml">
 <!ENTITY sup103 SYSTEM "../../../target/xml/p6_uid/sup103_ft.xml">
 <!ENTITY sup104 SYSTEM "../../../target/xml/p6_uid/sup104_ft.xml">
 <!ENTITY sup105 SYSTEM "../../../target/xml/p6_uid/sup105_ft.xml">
@@ -16,6 +17,7 @@
 &sup83;
 &sup100;
 &sup101;
+&sup102;
 &sup103;
 &sup104;
 &sup105;

@@ -74,6 +74,9 @@
 			<param name="fname" value="sup101_ft"/>
 		</antcall>
 		<antcall target="unzip-sxw">
+			<param name="fname" value="sup102_14"/>
+		</antcall>
+		<antcall target="unzip-sxw">
 			<param name="fname" value="sup103_ft"/>
 		</antcall>
 		<antcall target="unzip-sxw">
@@ -128,6 +131,10 @@
 		</antcall>
 		<antcall target="grep">
 			<param name="fname" value="sup101_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup102_14"/>
 			<param name="style" value="p6_element"/>
 		</antcall>
 		<antcall target="grep">
@@ -186,6 +193,10 @@
 		</antcall>
 		<antcall target="grep">
 			<param name="fname" value="sup101_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup102_14"/>
 			<param name="style" value="p6_uid"/>
 		</antcall>
 		<antcall target="grep">
