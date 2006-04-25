@@ -186,6 +186,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 policy1 = AssociationFactory.getInstance().newAcceptorPolicy();
                 policy1.setCallingAETs(callingAETs);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);                
+                policy.addCalledAET(calledAETs[i]);
             } else {
                 if (policy1.getCallingAETs().length > 0) {
                     if (callingAETs == null) {
@@ -212,6 +213,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 updatePresContexts(policy1, false);
                 if (policy1.listPresContext().isEmpty()) {
                     policy.putPolicyForCalledAET(calledAETs[i], null);
+                    policy.removeCalledAET(calledAETs[i]);
                 }
             }
         }
