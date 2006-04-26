@@ -161,7 +161,7 @@
       <name>MaximumOperationsInvoked</name>
       <type>int</type>
       <descriptors>
-         <value value="0"/>
+         <value value="1"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
