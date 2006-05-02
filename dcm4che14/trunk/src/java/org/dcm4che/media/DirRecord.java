@@ -72,6 +72,11 @@ public interface DirRecord
     public static final String STORED_PRINT = "STORED PRINT";
     public static final String SERIES = "SERIES";
     public static final String STUDY = "STUDY";
+    public static final String SPECTROSCOPY = "SPECTROSCOPY";
+    public static final String RAW_DATA = "RAW DATA";
+    public static final String REGISTRATION = "REGISTRATION";
+    public static final String FIDUCIAL = "FIDUCIAL";
+    public static final String ENCAP_DOC = "ENCAP DOC";
 
     public void reload() throws IOException, DcmValueException;
     

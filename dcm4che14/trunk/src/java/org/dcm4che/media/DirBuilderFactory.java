@@ -86,7 +86,7 @@ public abstract class DirBuilderFactory {
         REC_TYPE_MAP.put(UIDs.MultiframeSingleBitSecondaryCaptureImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.MultiframeColorSecondaryCaptureImageStorage, DirRecord.IMAGE);
+        REC_TYPE_MAP.put(UIDs.MultiframeTrueColorSecondaryCaptureImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.StandaloneOverlayStorage, DirRecord.OVERLAY);
         REC_TYPE_MAP.put(UIDs.StandaloneCurveStorage, DirRecord.CURVE);
         REC_TYPE_MAP.put(UIDs.TwelveLeadECGWaveformStorage, DirRecord.WAVEFORM);
@@ -122,6 +122,10 @@ public abstract class DirBuilderFactory {
         REC_TYPE_MAP.put(UIDs.RTPlanStorage, DirRecord.RT_PLAN);
         REC_TYPE_MAP.put(UIDs.RTBrachyTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
         REC_TYPE_MAP.put(UIDs.RTTreatmentSummaryRecordStorage, DirRecord.RT_TREAT_RECORD);
+        REC_TYPE_MAP.put(UIDs.RawDataStorage, DirRecord.RAW_DATA);
+        REC_TYPE_MAP.put(UIDs.SpatialRegistrationStorage, DirRecord.REGISTRATION);
+        REC_TYPE_MAP.put(UIDs.SpatialFiducialsStorage, DirRecord.FIDUCIAL);
+        REC_TYPE_MAP.put(UIDs.EncapsulatedPDFStorage, DirRecord.ENCAP_DOC);
     }
 
     public static String getRecordType(String classUID) {

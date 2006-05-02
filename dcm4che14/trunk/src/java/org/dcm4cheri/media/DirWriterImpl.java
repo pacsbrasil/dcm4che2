@@ -88,6 +88,11 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         "WAVEFORM",
         "SR DOCUMENT",
         "KEY OBJECT DOC",
+        "SPECTROSCOPY",
+        "RAW DATA",
+        "REGISTRATION",
+        "FIDUCIAL",
+        "ENCAP DOC",
         "PRIVATE",
         "MRDR",
     };
