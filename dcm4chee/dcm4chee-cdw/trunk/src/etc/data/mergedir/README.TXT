@@ -2,18 +2,18 @@ Institution:
 
     This disk was created by:
 
-    Agfa HealthCare
-    Diefenbachgasse 35
-    A - 1150 Vienna
-    Austria/Europe
-    http://www.agfa.com 
+    YOUR COMPANY NAME
+    STREET
+    CITY
+    COUNTRY
+    http://your.company.url 
 
 
 Media Creator Application:
 
     This disk was created using:
  
-    dcm4che/cdw v@VERSION@ Media Creation Manager 
+    dcm4jboss-cdw v@VERSION@ Media Creation Manager 
 
 
 Contact Information:
@@ -21,12 +21,12 @@ Contact Information:
     If you have any questions about how this disk or the data on
     it were generated, please contact:
  
-    Gunter Zeilinger
-    Agfa HealthCare
-    Diefenbachgasse 35
-    A - 1150 Vienna
-    Austria/Europe 
-    email: gunter.zeilinger@tiani.com
+	YOUR CONTACT PERSON NAME
+    YOUR COMPANY NAME
+    STREET
+    CITY
+    COUNTRY
+    email: CONTACT.PERSON@YOUR.COMPANY
 
 
 Media Organization:
