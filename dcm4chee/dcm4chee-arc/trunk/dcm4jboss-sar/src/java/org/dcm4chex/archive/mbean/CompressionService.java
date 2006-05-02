@@ -336,7 +336,35 @@ public class CompressionService extends TimerSupport {
     	
     }
 
-     private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
+    public boolean compress(FileDTO fileDTO) {
+        if (!isUncompressed(fileDTO.getFileTsuid())) {
+            return false;
+        }
+        CompressionRule rule = getCompressionRule(fileDTO.getSopClassUID());
+        if (rule == null) {
+            return false;
+        }
+        doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]);
+        return true;
+    }
+    
+    private CompressionRule getCompressionRule(String cuid) {
+        for (Iterator iter = compressionRuleList.iterator(); iter.hasNext();) {
+            CompressionRule rule = (CompressionRule) iter.next();
+            if (cuid.equals(rule.getCUID())) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
+    private boolean isUncompressed(String tsuid) {
+        return tsuid.equals(UIDs.ExplicitVRLittleEndian)
+                || tsuid.equals(UIDs.ExplicitVRBigEndian)
+                || tsuid.equals(UIDs.ImplicitVRLittleEndian);
+    }
+
+    private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
             CompressionRule info, byte[] buffer) {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO

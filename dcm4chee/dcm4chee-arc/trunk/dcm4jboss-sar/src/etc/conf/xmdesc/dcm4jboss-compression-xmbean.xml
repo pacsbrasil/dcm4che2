@@ -163,6 +163,16 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
       <name>checkForFilesToCompress</name>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Compress specified object if it is uncompressed and if there
+        is a Compression Rule for its SOP Class UID configured</description>
+      <name>compress</name>
+      <parameter>
+        <name>fileDTO</name>
+        <type>org.dcm4chex.archive.ejb.interfaces.FileDTO</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
   
 </mbean>
     
