@@ -31,14 +31,25 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStylesheetURL"
-      setMethod="setStylesheetURL">
+      getMethod="getSRStylesheetURL"
+      setMethod="setSRStylesheetURL">
       <description>Stylesheet for HL7 ORU^R01 to DICOM SR mapping.
       </description>
-      <name>StylesheetURL</name>
+      <name>SRStylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="resource:xsl/hl7/orbis_oru2sr.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPDFStylesheetURL"
+      setMethod="setPDFStylesheetURL">
+      <description>Stylesheet for HL7 ORU^R01 to DICOM Encapsulated PDF mapping.
+      </description>
+      <name>PDFStylesheetURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/hl7/oru2pdf.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write" 

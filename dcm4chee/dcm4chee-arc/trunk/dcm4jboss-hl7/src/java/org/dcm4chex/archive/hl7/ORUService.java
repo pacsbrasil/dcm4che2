@@ -39,6 +39,10 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
@@ -46,9 +50,11 @@ import javax.xml.transform.sax.SAXResult;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.util.Base64;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
 import org.xml.sax.ContentHandler;
 
@@ -61,17 +67,26 @@ import org.xml.sax.ContentHandler;
 public class ORUService extends AbstractHL7Service
 {
 
-    private String stylesheetURL = "resource:xsl/hl7/oru2sr.xsl";
+    private String oru2srXSL = "resource:xsl/hl7/oru2sr.xsl";
+    private String oru2pdfXSL = "resource:xsl/hl7/oru2pdf.xsl";
     private ObjectName exportManagerName;
     private int storePriority = 0;
 
-    public String getStylesheetURL() {
-        return stylesheetURL;
+    public String getSRStylesheetURL() {
+        return oru2srXSL;
     }
 
-    public void setStylesheetURL(String stylesheetURL) {
-        this.stylesheetURL = stylesheetURL;
+    public void setSRStylesheetURL(String stylesheetURL) {
+        this.oru2srXSL = stylesheetURL;
         reloadStylesheets();
+    }
+
+    public final String getPDFStylesheetURL() {
+        return oru2pdfXSL;
+    }
+
+    public final void setPDFStylesheetURL(String oru2pdfXSL) {
+        this.oru2pdfXSL = oru2pdfXSL;
     }
 
     public final ObjectName getExportManagerName()
@@ -97,18 +112,49 @@ public class ORUService extends AbstractHL7Service
     {
         try
         {
-            Dataset sr = dof.newDataset();
-            Transformer t = getTemplates(stylesheetURL).newTransformer();
-            t.transform(new DocumentSource(msg), new SAXResult(
-                    sr.getSAXHandler2(null)));
-            addIUIDs(sr);
-            storeSR(sr);
+            Dataset doc = dof.newDataset();
+            byte[] pdf = getPDF(msg);
+            if (pdf != null) {
+                Transformer t = getTemplates(oru2pdfXSL).newTransformer();
+                t.transform(new DocumentSource(msg), new SAXResult(
+                        doc.getSAXHandler2(null)));
+                doc.putOB(Tags.EncapsulatedDocument, pdf);
+                storeSR(doc);
+            } else {
+                Transformer t = getTemplates(oru2srXSL).newTransformer();
+                t.transform(new DocumentSource(msg), new SAXResult(
+                        doc.getSAXHandler2(null)));
+                addIUIDs(doc);
+                storeSR(doc);
+            }
         }
         catch (Exception e)
         {
             throw new HL7Exception("AE", e.getMessage(), e);
         }      
         return true;
+    }
+
+    static String toString(Object el) {
+        return el != null ? ((Element) el).getText() : "";
+    }
+    
+    private byte[] getPDF(Document msg) {
+        List obxs = msg.getRootElement().elements("OBX");
+        for (Iterator iter = obxs.iterator(); iter.hasNext();) {
+            Element obx = (Element) iter.next();
+            List fds = obx.elements();
+            if ("ED".equals(toString(fds.get(1)))) {
+                List cmps = ((Element) fds.get(4)).elements();
+                if ("PDF".equals(toString(cmps.get(1)))) {
+                    String s = toString(cmps.remove(3));
+                    return Base64.base64ToByteArray(s);
+                }
+            }
+        }
+        // hl7/OBX[field[2]='ED']/field[5]/component[4]
+        // TODO Auto-generated method stub
+        return null;
     }
 
     private void addIUIDs(Dataset sr)
