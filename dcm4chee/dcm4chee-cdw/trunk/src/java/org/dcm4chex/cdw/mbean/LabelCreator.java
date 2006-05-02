@@ -74,7 +74,7 @@ class LabelCreator {
     private final Logger log = Logger.getLogger(LabelCreator.class);
 
     public LabelCreator() {
-        Configuration.put("baseDir", "resource:xsl/");
+        Configuration.put("baseDir", "resource:dcm4jboss-cdw/");
         Log4JLogger logger = new Log4JLogger(log);
         fop.setLogger(logger);
         MessageHandler.setScreenLogger(logger);

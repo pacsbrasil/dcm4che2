@@ -128,11 +128,11 @@ class DicomDirDOM {
 
     private static final DOMImplementation dom;
 
-    private static final String INDEX_XSL_URI = "resource:xsl/index.xsl";
+    private static final String INDEX_XSL_URI = "resource:dcm4jboss-cdw/index.xsl";
 
-    private static final String WEB_XSL_URI = "resource:xsl/web.xsl";
+    private static final String WEB_XSL_URI = "resource:dcm4jboss-cdw/web.xsl";
 
-    private static final String LABEL_XSL_URI = "resource:xsl/label.xsl";
+    private static final String LABEL_XSL_URI = "resource:dcm4jboss-cdw/label.xsl";
 
     private static final Templates indexTpl;
 
