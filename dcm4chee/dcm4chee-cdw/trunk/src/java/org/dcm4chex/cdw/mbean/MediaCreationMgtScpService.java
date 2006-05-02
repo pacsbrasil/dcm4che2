@@ -52,6 +52,7 @@ import javax.jms.JMSException;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
@@ -305,7 +306,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     }
 
     protected void updatePresContexts() {
-        putPresContexts(CUIDS, getTransferSyntaxes());
+        putPresContexts(CUIDS, valuesToStringArray(tsuidMap));
     }
 
     protected void removePresContexts() {
@@ -330,6 +331,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 throw new DcmServiceException(Status.DuplicateSOPInstance);
         String cuid = rqCmd.getAffectedSOPClassUID();
         String tsuid = rq.getTransferSyntaxUID();
+        DcmObjectFactory dof = DcmObjectFactory.getInstance();
         FileMetaInfo fmi = dof.newFileMetaInfo(cuid, iuid, tsuid);
         info.setFileMetaInfo(fmi);
         info.putUI(Tags.SOPInstanceUID, iuid);
@@ -431,6 +433,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             File f = spoolDir.getInstanceFile(iuid);
             if (!f.exists()) {
                 log.warn("No Instance: " + iuid);
+                DcmObjectFactory dof = DcmObjectFactory.getInstance();
                 Dataset sop = dof.newDataset();
                 sop.putUI(Tags.RefSOPClassUID, cuid);
                 sop.putUI(Tags.RefSOPInstanceUID, iuid);
@@ -592,7 +595,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         File f = spoolDir.getMediaCreationRequestFile(iuid);
         if (!f.exists())
                 throw new DcmServiceException(Status.NoSuchObjectInstance);
-
+        DcmObjectFactory dof = DcmObjectFactory.getInstance();
         Dataset mcrq = dof.newDataset();
         log.info("M-READ " + f);
         IOException error = null;

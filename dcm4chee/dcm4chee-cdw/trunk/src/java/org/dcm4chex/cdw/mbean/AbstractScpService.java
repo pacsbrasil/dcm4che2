@@ -38,17 +38,19 @@
 
 package org.dcm4chex.cdw.mbean;
 
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 import javax.management.ObjectName;
 
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
-import org.dcm4chex.cdw.common.*;
+import org.dcm4chex.cdw.common.SpoolDirDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -59,24 +61,12 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractScpService extends ServiceMBeanSupport {
         
-    protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    protected static final DcmParserFactory pf = DcmParserFactory.getInstance();
-    
     private static final String GET_DCM_HANDLER = "dcmHandler";
 
-    protected static final String[] ONLY_DEFAULT_TS = { UIDs.ImplicitVRLittleEndian,};
-
-    protected static final String[] NATIVE_LE_TS = {
-            UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian,};
-
-    protected static final AssociationFactory asf = AssociationFactory
-            .getInstance();
-
-    protected boolean acceptExplicitVRLE = true;
+    protected Map tsuidMap = new LinkedHashMap();
 
     protected ObjectName dcmServerName;
-
+    
     protected SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     protected DcmHandler dcmHandler;
@@ -101,19 +91,88 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return spoolDir;
     }
 
-    public final boolean isAcceptExplicitVRLE() {
-        return acceptExplicitVRLE;
+    public String getAcceptedTransferSyntax() {
+        return toString(tsuidMap);
     }
 
-    public final void setAcceptExplicitVRLE(boolean acceptExplicitVRLE) {
-        this.acceptExplicitVRLE = acceptExplicitVRLE;
+    public void setAcceptedTransferSyntax(String s) {
+        updateAcceptedTransferSyntax(tsuidMap, s);
+    }
+       
+    protected void updateAcceptedTransferSyntax(Map tsuidMap, String newval) {
+        Map tmp = parseUIDs(newval);
+        if (tsuidMap.keySet().equals(tmp.keySet())) return;
+        tsuidMap.clear();
+        tsuidMap.putAll(tmp);
         updatePresContextsIfRunning();
     }
-
-    protected String[] getTransferSyntaxes() {
-        return acceptExplicitVRLE ? NATIVE_LE_TS : ONLY_DEFAULT_TS;
+    
+    protected String toString(Map uids) {
+        if ( uids == null || uids.isEmpty() ) return "";
+        StringBuffer sb = new StringBuffer();
+        Iterator iter = uids.keySet().iterator();
+        while ( iter.hasNext() ) {
+            sb.append(iter.next()).append("\r\n");
+        }
+        return sb.toString();
+    }
+    
+    protected static Map parseUIDs(String uids) {
+        StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
+        String uid,name;
+        Map map = new LinkedHashMap();
+        while ( st.hasMoreTokens() ) {
+            uid = st.nextToken().trim();
+            name = uid;
+            
+            if (isDigit(uid.charAt(0))) {
+                if ( ! UIDs.isValid(uid) ) 
+                    throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+            } else {
+                uid = UIDs.forName( name );
+            }
+            map.put(name,uid);
+        }
+        return map;
+    }
+    
+    private static boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
     }
 
+    protected void updateAcceptedSOPClass(Map cuidMap, String newval, DcmService scp) {
+        Map tmp = parseUIDs(newval);
+        if (cuidMap.keySet().equals(tmp.keySet())) return;
+        removePresContextsIfRunning();
+        if (scp != null)
+            unbindAll(valuesToStringArray(cuidMap));
+        cuidMap.clear();
+        cuidMap.putAll(tmp);
+        if (scp != null)
+            bindAll(valuesToStringArray(cuidMap), scp);
+        updatePresContextsIfRunning();
+    }
+    
+    protected static String[] valuesToStringArray(Map tsuid) {
+         return (String[]) tsuid.values().toArray(new String[tsuid.size()]);
+    }
+
+    protected void bindAll(String[] cuids, DcmService scp) {
+        if ( dcmHandler == null ) return; //nothing to do!
+        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
+        for (int i = 0; i < cuids.length; i++) {
+            services.bind(cuids[i], scp);
+        }
+    }
+
+    protected void unbindAll(String[]  cuids) {
+        if ( dcmHandler == null ) return; //nothing to do!
+        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
+        for (int i = 0; i < cuids.length; i++) {
+            services.unbind(cuids[i]);
+        }
+    }
+   
     protected void startService() throws Exception {
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, GET_DCM_HANDLER,
                 null, null);
@@ -156,5 +215,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected void updatePresContextsIfRunning() {
         if (getState() == STARTED)
             updatePresContexts();
+    }
+
+    protected void removePresContextsIfRunning() {
+        if (getState() == STARTED)
+            removePresContexts();
     }
 }

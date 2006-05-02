@@ -49,13 +49,16 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -80,6 +83,7 @@ public class StoreScpService extends AbstractScpService {
 	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID,};
 
+    /*
     private static final String[] IMAGE_CUIDS = {
             UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
             UIDs.ComputedRadiographyImageStorage,
@@ -121,7 +125,7 @@ public class StoreScpService extends AbstractScpService {
             UIDs.CardiacElectrophysiologyWaveformStorage,
             UIDs.GeneralECGWaveformStorage, UIDs.HemodynamicWaveformStorage,
             UIDs.TwelveLeadECGWaveformStorage};
-
+   
     private boolean acceptJPEGBaseline = true;
 
     private boolean acceptJPEGExtended = true;
@@ -139,8 +143,23 @@ public class StoreScpService extends AbstractScpService {
     private boolean acceptJPEG2000Lossy = false;
 
     private boolean acceptRLELossless = false;
-	
-	private String generatePatientID = "DCMCDW-##########";
+	*/
+
+    private Map imageCUIDS = new LinkedHashMap();
+    private Map imageTSUIDS = new LinkedHashMap();
+    
+    private Map waveformCUIDS = new LinkedHashMap();
+    private Map waveformTSUIDS = new LinkedHashMap();
+
+    private Map videoCUIDS = new LinkedHashMap();
+    private Map videoTSUIDS = new LinkedHashMap();
+
+    private Map srCUIDS = new LinkedHashMap();
+    private Map srTSUIDS = new LinkedHashMap();
+
+    private Map otherCUIDS = new LinkedHashMap();
+    
+    private String generatePatientID = "DCMCDW-##########";
 	
 	private String issuerOfPatientID = "DCMCDW";
 
@@ -170,88 +189,79 @@ public class StoreScpService extends AbstractScpService {
 	public final void setIssuerOfPatientID(String issuerOfPatientID) {
 		this.issuerOfPatientID = issuerOfPatientID;
 	}
-
-	public final boolean isAcceptJPEG2000Lossless() {
-        return acceptJPEG2000Lossless;
+    
+    public String getAcceptedImageSOPClasses() {
+        return toString(imageCUIDS);
+    }
+ 
+    public void setAcceptedImageSOPClasses( String s ) {
+        updateAcceptedSOPClass(imageCUIDS, s, service);
     }
 
-    public final void setAcceptJPEG2000Lossless(boolean acceptJPEG2000Lossless) {
-        this.acceptJPEG2000Lossless = acceptJPEG2000Lossless;
-        updatePresContextsIfRunning();
+    public String getAcceptedTransferSyntaxForImageSOPClasses() {
+        return toString(imageTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForImageSOPClasses(String s) {
+        updateAcceptedTransferSyntax(imageTSUIDS, s);
     }
 
-    public final boolean isAcceptJPEG2000Lossy() {
-        return acceptJPEG2000Lossy;
+    public String getAcceptedVideoSOPClasses() {
+        return toString(videoCUIDS);
+    }
+ 
+    public void setAcceptedVideoSOPClasses( String s ) {
+        updateAcceptedSOPClass(videoCUIDS, s, service);
     }
 
-    public final void setAcceptJPEG2000Lossy(boolean acceptJPEG2000Lossy) {
-        this.acceptJPEG2000Lossy = acceptJPEG2000Lossy;
-        updatePresContextsIfRunning();
+    public String getAcceptedTransferSyntaxForVideoSOPClasses() {
+        return toString(videoTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForVideoSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(videoTSUIDS, s);
     }
 
-    public final boolean isAcceptJPEGBaseline() {
-        return acceptJPEGBaseline;
+    public String getAcceptedSRSOPClasses() {
+        return toString(srCUIDS);
+    }
+ 
+    public void setAcceptedSRSOPClasses( String s ) {
+        updateAcceptedSOPClass(srCUIDS, s, service);
     }
 
-    public final void setAcceptJPEGBaseline(boolean acceptJPEGBaseline) {
-        this.acceptJPEGBaseline = acceptJPEGBaseline;
-        updatePresContextsIfRunning();
+    public String getAcceptedTransferSyntaxForSRSOPClasses() {
+        return toString(srTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForSRSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(srTSUIDS, s);
     }
 
-    public final boolean isAcceptJPEGExtended() {
-        return acceptJPEGExtended;
+    public String getAcceptedWaveformSOPClasses() {
+        return toString(waveformCUIDS);
+    }
+ 
+    public void setAcceptedWaveformSOPClasses(String s) {
+        updateAcceptedSOPClass(waveformCUIDS, s, service);
     }
 
-    public final void setAcceptJPEGExtended(boolean acceptJPEGExtended) {
-        this.acceptJPEGExtended = acceptJPEGExtended;
-        updatePresContextsIfRunning();
+    public String getAcceptedTransferSyntaxForWaveformSOPClasses() {
+        return toString(waveformTSUIDS);
+    }
+ 
+    public void setAcceptedTransferSyntaxForWaveformSOPClasses( String s ) {
+        updateAcceptedTransferSyntax(waveformTSUIDS, s);
     }
 
-    public final boolean isAcceptJPEGLossless() {
-        return acceptJPEGLossless;
+    public String getAcceptedOtherSOPClasses() {
+        return toString(otherCUIDS);
     }
 
-    public final void setAcceptJPEGLossless(boolean acceptJPEGLossless) {
-        this.acceptJPEGLossless = acceptJPEGLossless;
-        updatePresContextsIfRunning();
+    public void setAcceptedOtherSOPClasses(String s) {
+        updateAcceptedSOPClass(otherCUIDS, s, service);
     }
-
-    public final boolean isAcceptJPEGLossless14() {
-        return acceptJPEGLossless14;
-    }
-
-    public final void setAcceptJPEGLossless14(boolean acceptJPEGLossless14) {
-        this.acceptJPEGLossless14 = acceptJPEGLossless14;
-        updatePresContextsIfRunning();
-    }
-
-    public final boolean isAcceptJPEGLSLossless() {
-        return acceptJPEGLSLossless;
-    }
-
-    public final void setAcceptJPEGLSLossless(boolean acceptJPEGLSLossless) {
-        this.acceptJPEGLSLossless = acceptJPEGLSLossless;
-        updatePresContextsIfRunning();
-    }
-
-    public final boolean isAcceptJPEGLSLossy() {
-        return acceptJPEGLSLossy;
-    }
-
-    public final void setAcceptJPEGLSLossy(boolean acceptJPEGLSLossy) {
-        this.acceptJPEGLSLossy = acceptJPEGLSLossy;
-        updatePresContextsIfRunning();
-    }
-
-    public final boolean isAcceptRLELossless() {
-        return acceptRLELossless;
-    }
-
-    public final void setAcceptRLELossless(boolean acceptRLELossless) {
-        this.acceptRLELossless = acceptRLELossless;
-        updatePresContextsIfRunning();
-    }
-
+    
     public final int getBufferSize() {
         return bufferSize;
     }
@@ -260,60 +270,41 @@ public class StoreScpService extends AbstractScpService {
         this.bufferSize = bufferSize;
     }
 
-    private String[] getImageTransferSyntaxes() {
-        ArrayList list = new ArrayList();
-        if (acceptJPEGBaseline) {
-            list.add(UIDs.JPEGBaseline);
-        }
-        if (acceptJPEGExtended) {
-            list.add(UIDs.JPEGExtended);
-        }
-        if (acceptJPEGLSLossy) {
-            list.add(UIDs.JPEGLSLossy);
-        }
-        if (acceptJPEG2000Lossy) {
-            list.add(UIDs.JPEG2000Lossy);
-        }
-        if (acceptJPEGLSLossless) {
-            list.add(UIDs.JPEGLSLossless);
-        }
-        if (acceptJPEG2000Lossless) {
-            list.add(UIDs.JPEG2000Lossless);
-        }
-        if (acceptJPEGLossless14) {
-            list.add(UIDs.JPEGLossless14);
-        }
-        if (acceptJPEGLossless) {
-            list.add(UIDs.JPEGLossless);
-        }
-        if (acceptRLELossless) {
-            list.add(UIDs.RLELossless);
-        }
-        if (acceptExplicitVRLE) {
-            list.add(UIDs.ExplicitVRLittleEndian);
-        }
-        list.add(UIDs.ImplicitVRLittleEndian);
-        return (String[]) list.toArray(new String[list.size()]);
-    }
-
     protected void bindDcmServices() {
-        bindDcmServices(IMAGE_CUIDS, service);
-        bindDcmServices(OTHER_CUIDS, service);
+        bindAll(valuesToStringArray(imageCUIDS), service);
+        bindAll(valuesToStringArray(videoCUIDS), service);
+        bindAll(valuesToStringArray(srCUIDS), service);
+        bindAll(valuesToStringArray(waveformCUIDS), service);
+        bindAll(valuesToStringArray(otherCUIDS), service);
     }
 
     protected void unbindDcmServices() {
-        unbindDcmServices(IMAGE_CUIDS);
-        unbindDcmServices(OTHER_CUIDS);
+        unbindAll(valuesToStringArray(imageCUIDS));
+        unbindAll(valuesToStringArray(videoCUIDS));
+        unbindAll(valuesToStringArray(srCUIDS));
+        unbindAll(valuesToStringArray(waveformCUIDS));
+        unbindAll(valuesToStringArray(otherCUIDS));
     }
 
     protected void updatePresContexts() {
-        putPresContexts(IMAGE_CUIDS, getImageTransferSyntaxes());
-        putPresContexts(OTHER_CUIDS, getTransferSyntaxes());
+        putPresContexts(valuesToStringArray(imageCUIDS),
+                valuesToStringArray(imageTSUIDS));
+        putPresContexts(valuesToStringArray(videoCUIDS),
+                valuesToStringArray(videoTSUIDS));
+        putPresContexts(valuesToStringArray(srCUIDS),
+                valuesToStringArray(srTSUIDS));
+        putPresContexts(valuesToStringArray(waveformCUIDS),
+                valuesToStringArray(waveformTSUIDS));
+        putPresContexts(valuesToStringArray(otherCUIDS),
+                valuesToStringArray(tsuidMap));
     }
 
     protected void removePresContexts() {
-        putPresContexts(IMAGE_CUIDS, null);
-        putPresContexts(OTHER_CUIDS, null);
+        putPresContexts(valuesToStringArray(imageCUIDS), null);
+        putPresContexts(valuesToStringArray(videoCUIDS), null);
+        putPresContexts(valuesToStringArray(srCUIDS), null);
+        putPresContexts(valuesToStringArray(waveformCUIDS), null);
+        putPresContexts(valuesToStringArray(otherCUIDS), null);
     }
 
     private void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
@@ -332,7 +323,9 @@ public class StoreScpService extends AbstractScpService {
         String fileTS = decParam.encapsulated ? tsuid
                 : UIDs.ExplicitVRLittleEndian;
         DcmEncodeParam encParam = DcmEncodeParam.valueOf(fileTS);
+        DcmObjectFactory dof = DcmObjectFactory.getInstance();
         Dataset ds = dof.newDataset();
+        DcmParserFactory pf = DcmParserFactory.getInstance();
         DcmParser parser = pf.newDcmParser(in);
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDataset(decParam, Tags.PixelData);

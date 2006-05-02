@@ -51,114 +51,282 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptExplicitVRLE"
-      setMethod="setAcceptExplicitVRLE">
-      <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
+      getMethod="getAcceptedImageSOPClasses"
+      setMethod="setAcceptedImageSOPClasses">
+      <description><![CDATA[
+        List of image SOP Classes that the Store SCP service accepts.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
-      <name>AcceptExplicitVRLE</name>
-      <type>boolean</type>
+      <name>AcceptedImageSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           ComputedRadiographyImageStorage
+           DigitalXRayImageStorageForPresentation
+           DigitalXRayImageStorageForProcessing
+           DigitalMammographyXRayImageStorageForPresentation
+           DigitalMammographyXRayImageStorageForProcessing
+           DigitalIntraoralXRayImageStorageForPresentation
+           DigitalIntraoralXRayImageStorageForProcessing
+           CTImageStorage
+           EnhancedCTImageStorage
+           UltrasoundMultiframeImageStorage
+           MRImageStorage
+           EnhancedMRImageStorage
+           UltrasoundImageStorage
+           SecondaryCaptureImageStorage
+           MultiframeSingleBitSecondaryCaptureImageStorage
+           MultiframeGrayscaleByteSecondaryCaptureImageStorage
+           MultiframeGrayscaleWordSecondaryCaptureImageStorage
+           MultiframeTrueColorSecondaryCaptureImageStorage
+           XRayAngiographicImageStorage
+           EnhancedXRayAngiographicImageStorage
+           XRayRadiofluoroscopicImageStorage
+           EnhancedXRayRadiofluoroscopicImageStorage
+           NuclearMedicineImageStorage
+           VLEndoscopicImageStorage
+           VLMicroscopicImageStorage
+           VLSlideCoordinatesMicroscopicImageStorage
+           VLPhotographicImageStorage
+           OphthalmicPhotography8BitImageStorage
+           OphthalmicPhotography16BitImageStorage
+           PositronEmissionTomographyImageStorage
+           RTImageStorage
+           HardcopyGrayscaleImageStorage
+           HardcopyColorImageStorage
+           NuclearMedicineImageStorageRetired
+           UltrasoundMultiframeImageStorageRetired
+           UltrasoundImageStorageRetired
+           XRayAngiographicBiPlaneImageStorageRetired
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEG2000Lossless"
-      setMethod="setAcceptJPEG2000Lossless">
-      <description>Accept DICOM images encoded in JPEG 2000 Lossless Transfer Syntax.
+      getMethod="getAcceptedTransferSyntaxForImageSOPClasses"
+      setMethod="setAcceptedTransferSyntaxForImageSOPClasses">
+      <description><![CDATA[
+        List of Transfer Syntaxes for Image SOP Classes that Store SCP
+        service accepts. Order defines selection preference. Use either the 
+        Transfer Syntaxes UID value or following defined symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian,
+        JPEGBaseline,
+        JPEGExtended,
+        JPEGLossless (=Process 14 [Selection Value 1]),
+        JPEGLossless14,
+        JPEGLSLossless,
+        JPEGLSLossy,
+        JPEG2000Lossless,
+        JPEG2000Lossy,
+        RLELossless        
+        ]]>
       </description>
-      <name>AcceptJPEG2000Lossless</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForImageSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+         JPEGLossless
+         JPEGLossless14
+         JPEGLSLossless
+         RLELossless
+         JPEG2000Lossless
+         JPEG2000Lossless
+         ExplicitVRLittleEndian
+         ImplicitVRLittleEndian
+         JPEGBaseline
+         JPEGExtended
+         JPEGLSLossy
+         JPEG2000Lossy"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEG2000Lossy"
-      setMethod="setAcceptJPEG2000Lossy">
-      <description>Accept DICOM images encoded in JPEG 2000 Lossy Transfer Syntax.
+      getMethod="getAcceptedVideoSOPClasses"
+      setMethod="setAcceptedVideoSOPClasses">
+      <description><![CDATA[
+        List of Video SOP Classes that the Store SCP service accepts.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
-      <name>AcceptJPEG2000Lossy</name>
-      <type>boolean</type>
+      <name>AcceptedVideoSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           VideoEndoscopicImageStorage
+           VideoMicroscopicImageStorage
+           VideoPhotographicImageStorage"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGLSLossless"
-      setMethod="setAcceptJPEGLSLossless">
-      <description>Accept DICOM images encoded in JPEG-LS Lossless Transfer Syntax.
+      getMethod="getAcceptedTransferSyntaxForVideoSOPClasses"
+      setMethod="setAcceptedTransferSyntaxForVideoSOPClasses">
+      <description><![CDATA[
+        List of Transfer Syntaxes for Video SOP Classes that Store SCP
+        service accepts. Order defines selection preference. Use either the 
+        Transfer Syntaxes UID value or following defined symbolic names: 
+        MPEG2        
+        ]]>
       </description>
-      <name>AcceptJPEGLSLossless</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForVideoSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="MPEG2"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGLSLossy"
-      setMethod="setAcceptJPEGLSLossy">
-      <description>Accept DICOM images encoded in JPEG-LS Lossy Transfer Syntax.
+      getMethod="getAcceptedWaveformSOPClasses"
+      setMethod="setAcceptedWaveformSOPClasses">
+      <description><![CDATA[
+        List of Waveform SOP Classes that the Store SCP service accepts.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
-      <name>AcceptJPEGLSLossy</name>
-      <type>boolean</type>
+      <name>AcceptedWaveformSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           TwelveLeadECGWaveformStorage
+           GeneralECGWaveformStorage
+           AmbulatoryECGWaveformStorage
+           HemodynamicWaveformStorage
+           CardiacElectrophysiologyWaveformStorage
+           BasicVoiceAudioWaveformStorage
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGLossless"
-      setMethod="setAcceptJPEGLossless">
-      <description>Accept DICOM images encoded in JPEG Lossless (Process 14) 
-      First-Order Prediction Transfer Syntax. (DICOM JPEG Lossless default TS)
+      getMethod="getAcceptedTransferSyntaxForWaveformSOPClasses"
+      setMethod="setAcceptedTransferSyntaxForWaveformSOPClasses">
+      <description><![CDATA[
+        List of Transfer Syntaxes for Waveform SOP Classes that Store SCP
+        service accepts. Order defines selection preference. Use either the 
+        Transfer Syntaxes UID value or following defined symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian
+        ]]>
       </description>
-      <name>AcceptJPEGLossless</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForWaveformSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           ExplicitVRLittleEndian
+           ImplicitVRLittleEndian
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGLossless14"
-      setMethod="setAcceptJPEGLossless14">
-      <description>Accept DICOM images encoded in JPEG Lossless (Process 14) Transfer Syntax.
+      getMethod="getAcceptedSRSOPClasses"
+      setMethod="setAcceptedSRSOPClasses">
+      <description><![CDATA[
+        List of Structured Report Document SOP Classes that the 
+        Store SCP service accepts.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
-      <name>AcceptJPEGLossless14</name>
-      <type>boolean</type>
+      <name>AcceptedSRSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           BasicTextSR
+           EnhancedSR
+           ComprehensiveSR
+           ProcedureLogStorage
+           MammographyCADSR
+           KeyObjectSelectionDocument
+           ChestCADSR
+           XRayRadiationDoseSR
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGBaseline"
-      setMethod="setAcceptJPEGBaseline">
-      <description>Accept DICOM images encoded in JPEG Baseline Transfer Syntax.
+      getMethod="getAcceptedTransferSyntaxForSRSOPClasses"
+      setMethod="setAcceptedTransferSyntaxForSRSOPClasses">
+      <description><![CDATA[
+        List of Transfer Syntaxes for Structured Report Document SOP Classes 
+        that Store SCP service accepts. Order defines selection preference.
+        Use either the Transfer Syntaxes UID value or following defined 
+        symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian
+        ]]>
       </description>
-      <name>AcceptJPEGBaseline</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForSRSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           DeflatedExplicitVRLittleEndian
+           ExplicitVRLittleEndian
+           ImplicitVRLittleEndian
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGExtended"
-      setMethod="setAcceptJPEGExtended">
-      <description>Accept DICOM images encoded in JPEG Extended Transfer Syntax.
+      getMethod="getAcceptedOtherSOPClasses"
+      setMethod="setAcceptedOtherSOPClasses">
+      <description><![CDATA[
+        List of other (than Image, Video, Waveform, Structured Report) SOP
+        Classes that the Store SCP service accepts.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
       </description>
-      <name>AcceptJPEGExtended</name>
-      <type>boolean</type>
+      <name>AcceptedOtherSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true" />
+         <value value="
+           MRSpectroscopyStorage
+           GrayscaleSoftcopyPresentationStateStorage
+           ColorSoftcopyPresentationStateStorage
+           PseudoColorSoftcopyPresentationStateStorage
+           BlendingSoftcopyPresentationStateStorage
+           RawDataStorage
+           SpatialRegistrationStorage
+           SpatialFiducialsStorage
+           RealWorldValueMappingStorage
+           StereometricRelationshipStorage
+           EncapsulatedPDFStorage
+           RTDoseStorage
+           RTStructureSetStorage
+           RTBeamsTreatmentRecordStorage
+           RTPlanStorage
+           RTBrachyTreatmentRecordStorage
+           RTTreatmentSummaryRecordStorage
+           RTIonPlanStorage
+           RTIonBeamsTreatmentRecordStorage
+           "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptRLELossless"
-      setMethod="setAcceptRLELossless">
-      <description>Accept DICOM images encoded in RLE Lossless Transfer Syntax.
+      getMethod="getAcceptedTransferSyntax"
+      setMethod="setAcceptedTransferSyntax">
+      <description><![CDATA[
+        List of Transfer Syntaxes for other (than Image, Video, Waveform,
+        Structured Report) SOP Classes that Store SCP service accepts. Order 
+        defines selection preference. Use either the 
+        Transfer Syntaxes UID value or following defined symbolic names: 
+        ImplicitVRLittleEndian,
+        ExplicitVRLittleEndian,
+        DeflatedExplicitVRLittleEndian,
+        ExplicitVRBigEndian
+        ]]>
       </description>
-      <name>AcceptRLELossless</name>
-      <type>boolean</type>
+      <name>AcceptedTransferSyntaxForOtherSOPClasses</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="false" />
+         <value value="
+           ExplicitVRLittleEndian
+           ImplicitVRLittleEndian
+         "/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
