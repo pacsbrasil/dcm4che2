@@ -223,7 +223,12 @@ public class FOPCreator implements XMLResponseObject{
 			util.addAttribute( attr, "text-align", "center" );
 			util.addAttribute( attr, "font-weight", "bold" );
 			util.startElement( "fo:block", attr);
-				util.addValue( info.getPatientName() );
+			util.addValue( info.getPatientName() );
+				util.endElement( "fo:block");
+				AttributesImpl attr1 = util.newAttribute( "font-size", "10pt");
+				util.addAttribute( attr1, "text-align", "center" );
+				util.startElement( "fo:block", attr1);
+				util.addValue( "("+info.getPatientID()+")" );
 			util.endElement( "fo:block");
 		}
 		util.endElement( "fo:static-content" );
@@ -238,11 +243,11 @@ public class FOPCreator implements XMLResponseObject{
 		util.startElement( "fo:block", attr);
 		addTable( "none",
 				  new String[]{"15mm","40mm","20mm","40mm","15mm","25mm","50mm","20mm","3mm","20mm"},
-				  new String[]{"left","left","left","left","left","left","left","right","left","left"},
-				  new String[][]{ {"2",null,info.getAcquisDate(),info.getAcquisTime(),null,null,null,"Department:",null,"" },
+				  new String[]{"left","right","left","left","left","left","left","right","left","left"},
+				  new String[][]{ {"","Acquis. Date:",info.getAcquisDate(),info.getAcquisTime(),null,"CONFIRMED",null,"Department:",null,"" },
 								  {null,null,null,null,null,null,null,"Room:",null,"" },
-				  				  {null,null,info.getBirthday(),info.getSex(),"0/0",info.getPatientSize(),info.getPatientWeight(),"Operator:",null,"" }
-								}
+				  				  {null,"Birth Date:",info.getBirthday(),info.getSex(),"0/0",info.getPatientSize(),info.getPatientWeight(),"Operator:",null,"" }
+								  				}
 				);
 		util.endElement( "fo:block");
 	}

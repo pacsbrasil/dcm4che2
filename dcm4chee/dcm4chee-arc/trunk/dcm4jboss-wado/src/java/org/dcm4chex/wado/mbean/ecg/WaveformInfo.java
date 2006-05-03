@@ -65,7 +65,11 @@ public class WaveformInfo {
 		String s = dataset.getString( Tags.PatientName );
 		return s == null ? "":s.replace('^', ' ');
 	}
-	
+	public String getPatientID() {
+		String s = dataset.getString( Tags.PatientID );
+		return s == null ? "":s;
+	}
+
 	public String getAcquisTime() {
 		Date d = dataset.getDate( Tags.AcquisitionDatetime );
 		if ( d == null ) {
