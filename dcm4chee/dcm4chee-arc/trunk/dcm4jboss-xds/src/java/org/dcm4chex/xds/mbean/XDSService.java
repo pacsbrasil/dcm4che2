@@ -341,7 +341,7 @@ public class XDSService extends ServiceMBeanSupport {
 			File file;
 			Map attachments = getAttachments(message);
 			Document d = getDocumentFromMessage(message);
-			NodeList nl = d.getElementsByTagName("ExtrinsicObject");
+			NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
 	        if(nl.getLength() < 1 ) {
 	        	log.error("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
 	            throw new Exception("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
@@ -373,7 +373,7 @@ public class XDSService extends ServiceMBeanSupport {
 		    SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
 		    SOAPBody soapBody = envelope.getBody();
 		    SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName("SubmitObjectsRequest","rs","urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1"));
-			Node leafRegistryObjectList = d.getElementsByTagName("LeafRegistryObjectList").item(0);
+			Node leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
 			bodyElement.appendChild(bodyElement.getOwnerDocument().importNode(leafRegistryObjectList,true));
 			SOAPMessage response = sendSOAP(msg);
             if ( ! checkResponse( response ) ) {
@@ -403,7 +403,7 @@ public class XDSService extends ServiceMBeanSupport {
 	}
 	
 	private void updateExternalIdentifier(Element element, String scheme, String value) { 
-		NodeList nl = element.getElementsByTagName("ExternalIdentifier");
+		NodeList nl = element.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExternalIdentifier");
 		NamedNodeMap attributes;
 		for ( int i=0,l=nl.getLength() ; i<l ; i++ ) {
 			attributes = nl.item(i).getAttributes();
@@ -601,8 +601,7 @@ public class XDSService extends ServiceMBeanSupport {
 		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
         DocumentBuilder builder = dbFactory.newDocumentBuilder();
         Document d = builder.parse( src.getInputStream() );
-        NodeList nl = d.getElementsByTagName("SubmitObjectsRequest");
-        nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1","SubmitObjectsRequest");
+        NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1","SubmitObjectsRequest");
         nl.item(0);
         return d;
 	}
@@ -613,7 +612,7 @@ public class XDSService extends ServiceMBeanSupport {
      * @throws SOAPException
 	 */
 	private void dumpSOAPMessage(SOAPMessage message) throws SOAPException, IOException {
-		message.writeTo(System.out);
+		if ( log.isDebugEnabled() ) message.writeTo(System.out);
 	}
 	
 	public String fetchNewPatientIDfromNIST() throws IOException {

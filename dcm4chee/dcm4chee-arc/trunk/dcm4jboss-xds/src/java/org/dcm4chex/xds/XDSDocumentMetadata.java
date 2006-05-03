@@ -73,8 +73,8 @@ public class XDSDocumentMetadata {
 	
 	private void init() {
 		attributes = metadata.getAttributes();
-		NodeList childs = metadata.getElementsByTagName("ExternalIdentifier");
-		firstSlot = metadata.getElementsByTagName("Slot").item(0);
+		NodeList childs = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExternalIdentifier");
+		firstSlot = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot").item(0);
 		String name, scheme;
 		NamedNodeMap attrs;
 		for ( int i = 0, len = childs.getLength() ; i < len ; i++ ){
@@ -142,9 +142,9 @@ public class XDSDocumentMetadata {
 	 * @param fileSize
 	 */
 	private void setSlot(String name, String value) {
-		Element slot = doc.createElement("Slot");
-		Element valueList = doc.createElement("ValueList");
-		Element valueElement = doc.createElement("Value");
+		Element slot = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot");
+		Element valueList = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ValueList");
+		Element valueElement = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Value");
 		Text valueElementText = doc.createTextNode(value);
 		valueList.appendChild(valueElement);
 		valueElement.appendChild(valueElementText);
@@ -186,7 +186,7 @@ public class XDSDocumentMetadata {
 	 * @param object
 	 */
 	public void removeSlot(String name) {
-		NodeList nl = metadata.getElementsByTagName("Slot");
+		NodeList nl = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot");
 		Element e;
 		Attr attr;
 		for ( int i=0,l=nl.getLength(); i<l ; i++) {
