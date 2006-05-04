@@ -243,6 +243,32 @@ CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
 
+CREATE TABLE assoc (
+	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	calling_aet    	VARCHAR(250) BINARY,
+	called_aet     	VARCHAR(250) BINARY,
+	retrieve_aet   	VARCHAR(250) BINARY,
+	pat_id         	VARCHAR(250) BINARY,
+	pat_name    	VARCHAR(250) BINARY,
+	accession_no	VARCHAR(250) BINARY,
+	study_iuid      VARCHAR(250) BINARY,
+	pps_iuid		VARCHAR(250) BINARY,
+	pps_cuid		VARCHAR(250) BINARY,
+	series_iuid		VARCHAR(250) BINARY,
+	created_time	DATETIME,
+	updated_time	DATETIME
+);
+CREATE INDEX assoc_created_time ON assoc(created_time);
+
+CREATE TABLE rel_assoc_files (
+	assoc_fk       INTEGER,
+	files_fk       INTEGER,
+FOREIGN KEY (assoc_fk) REFERENCES assoc(pk),
+FOREIGN KEY (files_fk) REFERENCES files(pk)
+);
+CREATE INDEX files_assoc_fk ON rel_assoc_files(assoc_fk);
+CREATE INDEX assoc_files_fk ON rel_assoc_files(files_fk);
+
 CREATE TABLE study_on_fs (
 	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
 	study_fk		INTEGER,
@@ -581,5 +607,7 @@ INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (aet,hostname,port)
 	VALUES('DCM4JBOSS','localhost',11112);
+INSERT INTO ae (aet,hostname,port)
+	VALUES('CDRECORD','localhost',10104);
 INSERT INTO filesystem (dirpath,retrieve_aet,availability,fs_status)
 	VALUES('archive','DCM4JBOSS',0,0);

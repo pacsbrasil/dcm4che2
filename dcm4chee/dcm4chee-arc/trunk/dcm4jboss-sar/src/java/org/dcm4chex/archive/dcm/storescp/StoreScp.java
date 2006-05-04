@@ -44,12 +44,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +82,9 @@ import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.TMFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
+import org.dcm4chex.archive.common.FileInfo;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -91,8 +95,6 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
-import org.dcm4chex.archive.notif.FileInfo;
-import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -109,6 +111,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final String STORE_XSL = "cstorerq.xsl";
     private static final String STORE_XML = "-cstorerq.xml";
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
+    private static final String ASSOC_PK = "ASSOC_PK";
 
 	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
@@ -360,8 +363,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Association assoc = activeAssoc.getAssociation();
         String callingAET = assoc.getCallingAET();
         File file = null;
-        try {
-			
+        try {		
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
             if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 
                     || storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
@@ -424,8 +426,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     		} catch (Exception e) {
     			log.warn("Coercion of attributes failed:", e);
     		}
-            Dataset coercedElements = updateDB(ds, fsDTO.getDirectoryPath(),
-                    filePath, file, md5sum);
+            Storage store = getStorage();
+            Integer assocpk = (Integer) assoc.getProperty(ASSOC_PK);
+            if (assocpk == null) {
+                assocpk = store.initAssociation(assoc.getCallingAET(),
+                        assoc.getCalledAET(), fsDTO.getRetrieveAET());
+                assoc.putProperty(ASSOC_PK, assocpk);
+            } else {
+                String seriuid = ds.getString(Tags.SeriesInstanceUID);
+                SeriesStored seriesStored = store.checkSeriesStored(assocpk,
+                        seriuid);
+                if (seriesStored != null) {
+                    log.debug("Send SeriesStoredNotification - series changed");
+                    doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
+                    store.resetAssociation(assocpk);
+                }
+            }
+            Dataset coercedElements = updateDB(store, assocpk , ds,
+                    fsDTO.getDirectoryPath(), filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             if (coerced == null)
             	coerced = coercedElements;
@@ -443,13 +461,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putAT(Tags.OffendingElement, coercedTags);
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
-			FileInfo fileInfo = new FileInfo(iuid, cuid, tsuid,
-					fsDTO.getDirectoryPath(), filePath, file.length(), md5sum);
-			SeriesStored seriesStored = updateSeriesStored(assoc, ds, fsDTO, fileInfo);
-			if (seriesStored != null) {
-				log.debug("Send SeriesStoredNotification - series changed");
-				doAfterSeriesIsStored( assoc.getSocket(), seriesStored, true );
-			}
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -538,52 +549,48 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             seriesDir.getParentFile().delete();
     }
 
-    protected Dataset updateDB(Dataset ds, String baseDir, String filePath,
-    		File file, byte[] md5)
+    protected Dataset updateDB(Storage storage, Integer assocpk, Dataset ds,
+            String baseDir, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             IOException {
-        Storage storage = getStorageHome().create();
-        try {
-            int retry = 0;
-            for (;;) {
-                try {
-					if (serializeDBUpdate) {
-	                    synchronized (this) {
-	                        return storage.store(ds, baseDir, filePath,
-	                                (int) file.length(), md5);
-	                    }
-					} else {
-                        return storage.store(ds, baseDir, filePath,
-                                (int) file.length(), md5);						
-					}
-                } catch (Exception e) {
-                    ++retry;
-                    if (retry > updateDatabaseMaxRetries) {
-                        service.getLog().error(
-                                "failed to update DB with entries for received "
-                                        + file, e);
-                        throw new DcmServiceException(Status.ProcessingFailure,
-                                e);
+        int retry = 0;
+        for (;;) {
+            try {
+                if (serializeDBUpdate) {
+                    synchronized (this) {
+                        return storage.store(assocpk, ds, baseDir, filePath,
+                                (int) file.length(), md5);
                     }
-                    maxCountUpdateDatabaseRetries = Math.max(retry,
-                            maxCountUpdateDatabaseRetries);
-                    service.getLog().warn(
+                } else {
+                    return storage.store(assocpk, ds, baseDir, filePath,
+                            (int) file.length(), md5);
+                }
+            } catch (Exception e) {
+                ++retry;
+                if (retry > updateDatabaseMaxRetries) {
+                    service.getLog().error(
                             "failed to update DB with entries for received "
-                                    + file + " - retry", e);
-                    try {
-                        Thread.sleep(updateDatabaseRetryInterval);
-                    } catch (InterruptedException e1) {
-                        log.warn("update Database Retry Interval interrupted:",
-                                e1);
-                    }
+                                    + file, e);
+                    throw new DcmServiceException(Status.ProcessingFailure, e);
+                }
+                maxCountUpdateDatabaseRetries = Math.max(retry,
+                        maxCountUpdateDatabaseRetries);
+                service.getLog().warn(
+                        "failed to update DB with entries for received " + file
+                                + " - retry", e);
+                try {
+                    Thread.sleep(updateDatabaseRetryInterval);
+                } catch (InterruptedException e1) {
+                    log.warn("update Database Retry Interval interrupted:", e1);
                 }
             }
-        } finally {
-            try {
-                storage.remove();
-            } catch (Exception ignore) {
-            }
         }
+    }
+
+    Storage getStorage() throws RemoteException, CreateException,
+            HomeFactoryException {
+        return ((StorageHome) EJBHomeFactory.getFactory().lookup(
+                StorageHome.class, StorageHome.JNDI_NAME)).create();
     }
 
     private File makeFile(File basedir, Dataset ds) throws IOException {
@@ -618,17 +625,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             dir.mkdirs();
         }
 		return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
-    }
-
-    private StorageHome getStorageHome() throws HomeFactoryException {
-        return (StorageHome) EJBHomeFactory.getFactory().lookup(
-                StorageHome.class, StorageHome.JNDI_NAME);
-    }
-
-    private FileSystemMgtHome getFileSystemMgtHome()
-            throws HomeFactoryException {
-        return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
     }
 
     private byte[] storeToFile(DcmParser parser, Dataset ds, File file, byte[] buffer)
@@ -831,12 +827,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closed(Association assoc) {
-		SeriesStored seriesStored = 
-			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
-		if (seriesStored != null) {
-			log.debug("Send SeriesStoredNotification - association closed");
-			doAfterSeriesIsStored(assoc.getSocket(), seriesStored, true);
-		}
+        Integer assocpk = (Integer) assoc.getProperty(ASSOC_PK);
+        if (assocpk != null) {
+            try {
+                Storage store = getStorage();
+                SeriesStored seriesStored = store.checkSeriesStored(assocpk,
+                        null);
+                if (seriesStored != null) {
+                    log.debug("Send SeriesStoredNotification - association closed");
+                    doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
+                }
+                store.removeAssociation(assocpk);
+            } catch (Exception e) {
+                log.error("Clean up on Association close failed:", e);
+            }
+        }
         if ( service.isFreeDiskSpaceOnDemand() ) {
         	service.callFreeDiskSpace();
         }
@@ -855,32 +860,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	 * @param s	The Association socket or null if series is stored local (e.g. undelete)
 	 * @param seriesStored
 	 */
-	protected void doAfterSeriesIsStored(Socket s, SeriesStored seriesStored, boolean sendNotification) {
-		updateDBStudiesAndSeries(seriesStored);
+	protected void doAfterSeriesIsStored(Storage store, Socket s,
+            SeriesStored seriesStored) {
+        updateDBSeries(store, seriesStored.getSeriesInstanceUID());
+        updateDBStudy(store, seriesStored.getStudyInstanceUID());
 		updateStudyAccessTime(seriesStored);
 		service.logInstancesStored(s, seriesStored);
-		if ( sendNotification )
-			service.sendJMXNotification(seriesStored);
+		service.sendJMXNotification(seriesStored);
 	}
-
-	private void updateDBStudiesAndSeries(SeriesStored seriesStored) {
-        try {
-			Storage store = getStorageHome().create();
-			try {
-				updateDBSeries(store, seriesStored.getSeriesInstanceUID());
-				updateDBStudy(store, seriesStored.getStudyInstanceUID());
-	        } finally {
-	            try {
-	                store.remove();
-	            } catch (Exception ignore) {
-	            }
-	        }
-        } catch (Exception e) {
-            log.warn("Failed to update derived fields for series - "
-					+ seriesStored.getSeriesInstanceUID(), e);
-        }
-	}
-
 	
     private void updateDBStudy(Storage store, final String suid) {
         int retry = 0;
@@ -934,7 +921,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.getLog().error(
                             "give up update DB Series Record [iuid=" + seriuid
                                     + "]:", e);
-                    ;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
@@ -950,63 +936,29 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-	private SeriesStored updateSeriesStored(Association assoc, Dataset ds,
-			FileSystemDTO fsInfo, FileInfo fileInfo) {
-		SeriesStored prev = null;
-		SeriesStored cur = 
-			(SeriesStored) assoc.getProperty(SeriesStored.class.getName());
-		final String seriesIUID = ds.getString(Tags.SeriesInstanceUID);
-		if (cur != null 
-				&& !seriesIUID.equals(cur.getSeriesInstanceUID())) {
-			prev = cur;
-			cur = null;
-		}
-		if (cur == null) {
-			cur = newSeriesStored(ds, assoc.getCallingAET(), assoc.getCalledAET(), 
-					fsInfo.getRetrieveAET(), fsInfo.getDirectoryPath());
-			assoc.putProperty(SeriesStored.class.getName(), cur);
-		}
-		cur.addFileInfo(fileInfo); 
-		return prev;
-	}
-	
-	protected SeriesStored newSeriesStored( Dataset ds, String callingAET, 
-            String calledAET, String retrieveAET, String fsPath ){
-		SeriesStored seriesStored = new SeriesStored();
-		seriesStored.setCalledAET(calledAET);
-		seriesStored.setCallingAET(callingAET);
-		seriesStored.setRetrieveAET(retrieveAET);
-		seriesStored.setFileSystemPath(fsPath);
-		seriesStored.setPatientID(ds.getString(Tags.PatientID));
-		seriesStored.setPatientName(ds.getString(Tags.PatientName));
-		seriesStored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
-		seriesStored.setStudyInstanceUID(ds.getString(Tags.StudyInstanceUID));
-		seriesStored.setSeriesInstanceUID(ds.getString(Tags.SeriesInstanceUID));
-		Dataset refSOP = ds.getItem(Tags.RefPPSSeq);
-		if (refSOP != null) {
-			seriesStored.setRefPPS(
-					refSOP.getString(Tags.RefSOPInstanceUID),
-					refSOP.getString(Tags.RefSOPClassUID));
-		}
-		return seriesStored;
-	}
-
     private void updateStudyAccessTime(SeriesStored seriesStored) {
+        String suid = seriesStored.getStudyInstanceUID();
         try {
-			FileSystemMgt fsMgt = getFileSystemMgtHome().create();
-			try {
-				fsMgt.touchStudyOnFileSystem(seriesStored.getStudyInstanceUID(),
-						seriesStored.getFileSystemPath());
-			} finally {
-				try {
-					fsMgt.remove();
-				} catch (Exception ignore) {}
-			}
+            HashSet fsSet = new HashSet();
+            List infos = seriesStored.getFileInfos();
+            for (Iterator iter = infos.iterator(); iter.hasNext();) {
+                FileInfo info = (FileInfo) iter.next();
+                String fsPath = info.getFileSystemPath();
+                if (fsSet.add(fsPath)) {                    
+                    getFileSystemMgt().touchStudyOnFileSystem(suid, fsPath);
+                }
+            }
         } catch (Exception e) {
             log.warn("Failed to update access time for study "
-					+ seriesStored.getStudyInstanceUID(), e);
+					+ suid, e);
             return;
         }
+    }
+
+    private FileSystemMgt getFileSystemMgt() throws CreateException,
+            RemoteException, HomeFactoryException {
+        return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
     }
 
 }

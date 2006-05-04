@@ -103,9 +103,39 @@ FOREIGN KEY (gppps_fk) REFERENCES gppps(pk)
 CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
 CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);
 
+CREATE SEQUENCE assoc_pk_seq;
+CREATE TABLE assoc (
+	pk              INTEGER NOT NULL CONSTRAINT assoc_pk PRIMARY KEY,
+	calling_aet    	VARCHAR(254),
+	called_aet     	VARCHAR(254),
+	retrieve_aet   	VARCHAR(254),
+	pat_id         	VARCHAR(254),
+	pat_name    	VARCHAR(254),
+	accession_no	VARCHAR(254),
+	study_iuid      VARCHAR(254),
+	pps_iuid		VARCHAR(254),
+	pps_cuid		VARCHAR(254),
+	series_iuid		VARCHAR(254),
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP
+);
+CREATE INDEX assoc_created_time ON assoc(created_time);
+
+CREATE TABLE rel_assoc_files (
+	assoc_fk       INTEGER,
+	files_fk       INTEGER,
+FOREIGN KEY (assoc_fk) REFERENCES assoc(pk),
+FOREIGN KEY (files_fk) REFERENCES files(pk)
+);
+CREATE INDEX files_assoc_fk ON rel_assoc_files(assoc_fk);
+CREATE INDEX assoc_files_fk ON rel_assoc_files(files_fk);
+
 GRANT ALL PRIVILEGES ON TABLE gppps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_gppps TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE assoc TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE rel_assoc_files TO USER tiani;
 
 GRANT USAGE ON SEQUENCE gppps_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE assoc_pk_seq TO USER tiani;
 
 TERMINATE;

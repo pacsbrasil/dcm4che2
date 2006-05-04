@@ -122,16 +122,18 @@ public class StorageBeanTest extends TestCase {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         ds.putAE(PrivateTags.CallingAET, CALLING_AET);
         ds.putAE(PrivateTags.CalledAET, CALLED_AET);
-        ds.putAE(Tags.RetrieveAET, RETRIEVE_AET);        
-        storage.store(ds, "/", path.substring(1), (int) file.length(),
-        		md.digest());
+        ds.putAE(Tags.RetrieveAET, RETRIEVE_AET);
+        Integer assocpk = storage.initAssociation(CALLING_AET, CALLED_AET, RETRIEVE_AET);
+        storage.store(assocpk, ds, "/", path.substring(1), (int) file.length(),
+                md.digest());
+        storage.removeAssociation(assocpk);
     }
 
     private Dataset loadDataset(File file, MessageDigest md)
         throws IOException {
         InputStream is = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(is);
-        DigestInputStream dis = new DigestInputStream(is, md);
+        DigestInputStream dis = new DigestInputStream(bis, md);
         Dataset ds = objFact.newDataset();
         try {
             ds.readFile(dis, FileFormat.DICOM_FILE, -1);

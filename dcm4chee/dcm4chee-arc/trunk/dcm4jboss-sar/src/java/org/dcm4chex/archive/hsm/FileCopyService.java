@@ -50,8 +50,8 @@ import java.util.List;
 
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4chex.archive.common.FileInfo;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
-import org.dcm4chex.archive.notif.FileInfo;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**

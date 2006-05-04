@@ -34,6 +34,20 @@ accessed studies.</description>
       </descriptors>
    </attribute>   
    <attribute access="read-write" 
+      getMethod="getDefStorageDir"
+      setMethod="setDefStorageDir">
+      <description><![CDATA[Default Storage Directory, used if there is no
+      File system entry configured for given Retrieve AET.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>DefaultStorageDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="archive"/>
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write" 
       getMethod="getMinFreeDiskSpace"
       setMethod="setMinFreeDiskSpace">
       <description><![CDATA[Minimum free disk space. If the free available disk space
@@ -400,6 +414,7 @@ accessed studies.</description>
         <name>user info</name>
         <type>java.lang.String</type>
       </parameter>
+      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Update file system configuration.

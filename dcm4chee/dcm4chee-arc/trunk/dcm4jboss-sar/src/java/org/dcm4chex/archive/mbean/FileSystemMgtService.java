@@ -71,7 +71,6 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
@@ -95,6 +94,8 @@ public class FileSystemMgtService extends TimerSupport {
     private float checkFreeDiskSpaceThreshold = 5f;
     
     private String retrieveAET = "DCM4JBOSS";
+    
+    private String defStorageDir = "archive";
 
 	private float freeDiskSpaceLowerThreshold = 1.5f;
 	
@@ -195,12 +196,19 @@ public class FileSystemMgtService extends TimerSupport {
      */
     public final void setRetrieveAET(String aet) 
     throws FinderException, IOException {
-        if (getState() == FileSystemMgtService.STARTED)
-            initStorageFileSystem(aet);
         this.retrieveAET = aet;
+        this.storageFileSystem = null;
     }
 
-	public final String getMinFreeDiskSpace() {
+	public final String getDefStorageDir() {
+        return defStorageDir;
+    }
+
+    public final void setDefStorageDir(String defStorageDir) {
+        this.defStorageDir = defStorageDir;
+    }
+
+    public final String getMinFreeDiskSpace() {
         return FileUtils.formatSize(minFreeDiskSpace);
     }
 
@@ -439,7 +447,6 @@ public class FileSystemMgtService extends TimerSupport {
     
     protected void startService() throws Exception {
          super.startService();
-         initStorageFileSystem(retrieveAET);
          freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
          		freeDiskSpaceInterval, freeDiskSpaceListener);
          purgeFilesListenerID = startScheduler("CheckFilesToPurge",
@@ -447,29 +454,33 @@ public class FileSystemMgtService extends TimerSupport {
          
     }
     
-    private void initStorageFileSystem(String aet) throws FinderException, IOException {
+    private void initStorageFileSystem() throws Exception {
         FileSystemMgt fsmgt = newFileSystemMgt();
-        FileSystemDTO[] c = fsmgt.findFileSystems(aet, 
+        FileSystemDTO[] c = fsmgt.findFileSystems(retrieveAET, 
                 Availability.ONLINE, FileSystemStatus.DEF_RW);
-        if (c.length == 0) {
-            c = fsmgt.findFileSystems(aet, 
+        if (c.length > 0) {
+            storageFileSystem = c[0];
+        } else {
+            c = fsmgt.findFileSystems(retrieveAET, 
                     Availability.ONLINE, FileSystemStatus.RW);
-            if (c.length == 0)
-                throw new ConfigurationException("No writable file system associated " +
-                        " with Retrieve AET " + aet);
-            
-            c[0].setStatus(FileSystemStatus.DEF_RW);
-            fsmgt.updateFileSystem(c[0]);
+            if (c.length > 0) {
+                storageFileSystem = c[0];
+                storageFileSystem.setStatus(FileSystemStatus.DEF_RW);
+                fsmgt.updateFileSystem(storageFileSystem);
+            } else {
+                storageFileSystem = addFileSystem(defStorageDir, retrieveAET,
+                        Availability.ONLINE, FileSystemStatus.DEF_RW, null);
+                log.warn("No writeable Storage Directory configured for retrieve AET " +
+                        retrieveAET + "- initalize default " + storageFileSystem);
+            }
         }
-        storageFileSystem = c[0];
-        if (!checkStorageFileSystem(storageFileSystem) 
-                && !switchStorageFileSystem(storageFileSystem)) {
-            throw new ConfigurationException("No space left on configured file systems");            
-        }
+        checkStorageFileSystem = 0;
     }
 
-    public FileSystemDTO selectStorageFileSystem() throws FinderException,
-            IOException {
+    public FileSystemDTO selectStorageFileSystem() throws Exception {
+        if (storageFileSystem == null) {
+            initStorageFileSystem();
+        }
         if (checkStorageFileSystem == 0L
                 || checkStorageFileSystem < System.currentTimeMillis())
             if (!checkStorageFileSystem(storageFileSystem))
@@ -848,16 +859,25 @@ public class FileSystemMgtService extends TimerSupport {
         return newFileSystemMgt().getAllFileSystems();    	
     }
 
-    public void addFileSystem(String dirPath, String retrieveAET,
-    		String availability, String status, String userInfo)
+    public FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
+            String availability, String status, String userInfo)
+    throws RemoteException, CreateException {        
+        return addFileSystem(dirPath, retrieveAET,
+                Availability.toInt(availability),
+                FileSystemStatus.toInt(status),
+                userInfo);       
+    }
+    
+    private FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
+    		int availability, int status, String userInfo)
     throws RemoteException, CreateException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
         dto.setRetrieveAET(retrieveAET);
-        dto.setAvailability(Availability.toInt(availability));
-        dto.setStatus(FileSystemStatus.toInt(status));
+        dto.setAvailability(availability);
+        dto.setStatus(status);
         dto.setUserInfo(userInfo);
-		newFileSystemMgt().addFileSystem(dto);    	
+		return newFileSystemMgt().addFileSystem(dto);    	
     }
 
     public void updateFileSystem(String dirPath, String retrieveAET,

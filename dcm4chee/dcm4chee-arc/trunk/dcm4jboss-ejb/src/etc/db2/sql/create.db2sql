@@ -239,6 +239,33 @@ CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);
 
+CREATE SEQUENCE assoc_pk_seq;
+CREATE TABLE assoc (
+	pk              INTEGER NOT NULL CONSTRAINT assoc_pk PRIMARY KEY,
+	calling_aet    	VARCHAR(254),
+	called_aet     	VARCHAR(254),
+	retrieve_aet   	VARCHAR(254),
+	pat_id         	VARCHAR(254),
+	pat_name    	VARCHAR(254),
+	accession_no	VARCHAR(254),
+	study_iuid      VARCHAR(254),
+	pps_iuid		VARCHAR(254),
+	pps_cuid		VARCHAR(254),
+	series_iuid		VARCHAR(254),
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP
+);
+CREATE INDEX assoc_created_time ON assoc(created_time);
+
+CREATE TABLE rel_assoc_files (
+	assoc_fk       INTEGER,
+	files_fk       INTEGER,
+FOREIGN KEY (assoc_fk) REFERENCES assoc(pk),
+FOREIGN KEY (files_fk) REFERENCES files(pk)
+);
+CREATE INDEX files_assoc_fk ON rel_assoc_files(assoc_fk);
+CREATE INDEX assoc_files_fk ON rel_assoc_files(files_fk);
+
 CREATE SEQUENCE study_on_fs_pk_seq;
 CREATE TABLE study_on_fs (
 	pk              INTEGER NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
@@ -619,6 +646,9 @@ INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(NEXTVAL FOR ae_pk_seq,'DCM4JBOSS','localhost',11112);
+INSERT INTO ae (pk,aet,hostname,port)
+	VALUES(NEXTVAL FOR ae_pk_seq,'CDRECORD','localhost',10104);
+
 INSERT INTO filesystem (pk,dirpath,retrieve_aet,availability,fs_status)
 	VALUES(NEXTVAL FOR filesystem_pk_seq,'archive','DCM4JBOSS',0,0);
 
@@ -633,6 +663,8 @@ GRANT ALL PRIVILEGES ON TABLE series_req TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE media TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE assoc TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE rel_assoc_files TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE study_on_fs TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE mwl_item TO USER tiani;
@@ -666,6 +698,7 @@ GRANT USAGE ON SEQUENCE series_req_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE media_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE instance_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE assoc_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE study_on_fs_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE files_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE mwl_item_pk_seq TO USER tiani;

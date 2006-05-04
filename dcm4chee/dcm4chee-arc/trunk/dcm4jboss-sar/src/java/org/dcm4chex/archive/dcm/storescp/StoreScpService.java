@@ -40,14 +40,12 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.ejb.CreateException;
 import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -64,16 +62,15 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
+import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.notif.FileInfo;
-import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -539,55 +536,38 @@ public class StoreScpService extends AbstractScpService {
      * The FileDTO object refers to an existing DICOM file (This method does NOT check this file!) and the
      * Dataset object holds the meta data for database.
      * <p>
-     * The SeriesStored object can be used to collect instances for a series to minimize db update on series level.
-     * Therefore, if the SeriesIUID of the given Dataset and the seriesStored differs, the db will be updated
-     * with the <code>seriesStored</code> object and a new SeriesStored object will be created for the 
-     * current import file. 
-     * <p>
-     * <code>doSeriesStored</code> forces the database update after the import.
-     * (Usual set to true when importing the last file of a fileset) 
      * 
      * @param fileDTO			Refers the DICOM file.
      * @param ds				Dataset with metadata for database.
-     * @param seriesStored		Notification object to collect instances for db updates on series level.
-     * @param doSeriesStored	Force DB update after import.
-     * @param sendNotification	Enable/disable sending SeriesStored notification.
-     * 
-     * @return Updated or new SeriesStored notification object.
-     * @throws DcmServiceException
-     * @throws CreateException
-     * @throws HomeFactoryException
-     * @throws IOException
+     * @param last		        last file to import
      */
-	public SeriesStored importFile(FileDTO fileDTO, Dataset ds, SeriesStored seriesStored, 
-									boolean doSeriesStored, boolean sendNotification) 
-						throws DcmServiceException, CreateException, HomeFactoryException, IOException {
-		if ( seriesStored != null && 
-				!ds.getString(Tags.SOPInstanceUID).equals(seriesStored.getSeriesInstanceUID()) ) {//a new series begins
-			scp.doAfterSeriesIsStored(null, seriesStored, sendNotification); //null means remoteNode = localhost
-			seriesStored = null;
-		}
-		if ( seriesStored == null ) {
-			seriesStored = scp.newSeriesStored(ds, "IMPORT", "IMPORT", 
-						fileDTO.getRetrieveAET(), fileDTO.getDirectoryPath());
-		}
+	public Integer importFile(Integer pk, FileDTO fileDTO, Dataset ds,
+            boolean last) throws Exception {
+        Storage store = scp.getStorage();
+        if (pk == null) {
+            pk = store.initAssociation("IMPORT", "IMPORT", fileDTO.getRetrieveAET());
+        } else {
+            SeriesStored seriesStored = store.checkSeriesStored(pk, ds.getString(Tags.SeriesInstanceUID));
+            if (seriesStored != null) {
+                log.debug("Send SeriesStoredNotification - series changed");
+                scp.doAfterSeriesIsStored(store, null, seriesStored);
+                store.resetAssociation(pk);
+            }
+        }
 		String cuid = ds.getString(Tags.SOPClassUID);
 		String iuid = ds.getString(Tags.SOPInstanceUID);
 		FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,iuid,fileDTO.getFileTsuid());
 		ds.setFileMetaInfo(fmi);
-		File f = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
-		scp.updateDB(ds, fileDTO.getDirectoryPath(), fileDTO.getFilePath(),f, fileDTO.getFileMd5() );
-		FileInfo fileInfo = new FileInfo(iuid, 
-										 cuid, 
-										 fileDTO.getFileTsuid(),
-										 fileDTO.getDirectoryPath(),
-										 fileDTO.getFilePath(), fileDTO.getFileSize(), 
-										 fileDTO.getFileMd5() );
-		seriesStored.addFileInfo(fileInfo);
-		if ( doSeriesStored ) {
-			scp.doAfterSeriesIsStored(null, seriesStored, sendNotification); //null means remoteNode = localhost
-		}
-		return seriesStored;
+		String fsPath = fileDTO.getDirectoryPath();
+        String filePath = fileDTO.getFilePath();
+        File f = FileUtils.toFile(fsPath, filePath);
+		scp.updateDB(store, pk, ds, fsPath, filePath, f, fileDTO.getFileMd5() );
+		if (last) {
+            SeriesStored seriesStored = store.checkSeriesStored(pk, null);
+            scp.doAfterSeriesIsStored(store, null, seriesStored);
+            store.removeAssociation(pk);
+ 		}
+		return pk;
 	}
 
 }

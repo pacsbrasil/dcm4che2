@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.nio.charset.Charset;
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,9 +67,12 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.FileInfo;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
+import org.dcm4chex.archive.ejb.interfaces.AssociationLocal;
+import org.dcm4chex.archive.ejb.interfaces.AssociationLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
@@ -96,6 +100,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
+ * @ejb.ejb-ref ejb-name="FileSystemMgt" view-type="remote" ref-name="ejb/FileSystemMgt"
+ * @ejb.ejb-ref ejb-name="Association" view-type="local" ref-name="ejb/Association"
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-filter.xml"
@@ -110,8 +116,6 @@ public abstract class StorageBean implements SessionBean {
     
 	private static Logger log = Logger.getLogger(StorageBean.class);
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
     private PatientLocalHome patHome;
 
     private StudyLocalHome studyHome;
@@ -124,6 +128,8 @@ public abstract class StorageBean implements SessionBean {
 
     private FileSystemLocalHome fileSystemHome;
 
+    private AssociationLocalHome assocHome;
+    
     private AttributeFilter attrFilter;
 
     private SessionContext sessionCtx;
@@ -144,6 +150,8 @@ public abstract class StorageBean implements SessionBean {
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
             fileSystemHome = (FileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/FileSystem");
+            assocHome = (AssociationLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Association");
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
             try {
@@ -172,13 +180,15 @@ public abstract class StorageBean implements SessionBean {
         instHome = null;
         fileHome = null;
         fileSystemHome = null;
+        assocHome = null;
     }
 
     /**
      * @ejb.interface-method
      */
-    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
-            java.lang.String dirpath, java.lang.String fileid, int size,
+    public org.dcm4che.data.Dataset store(Integer assocpk,
+            org.dcm4che.data.Dataset ds, java.lang.String dirpath,
+            java.lang.String fileid, int size,
             byte[] md5) throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -186,8 +196,8 @@ public abstract class StorageBean implements SessionBean {
         final String tsuid = fmi.getTransferSyntaxUID();
         log.info("inserting instance " + fmi);
         try {
-            Dataset coercedElements = dof.newDataset();
-            InstanceLocal instance = null;
+            Dataset coercedElements = DcmObjectFactory.getInstance().newDataset();
+            InstanceLocal instance;
             try {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
@@ -201,6 +211,12 @@ public abstract class StorageBean implements SessionBean {
                     0, instance, fs);
             instance.setAvailability(Availability.ONLINE);
             instance.addRetrieveAET(fs.getRetrieveAET());
+            AssociationLocal assoc = assocHome.findByPrimaryKey(assocpk);            
+            Collection files = assoc.getFiles();
+            if (files.isEmpty()) {
+                assoc.setAttributes(ds);
+            }
+            files.add(file);
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
@@ -210,7 +226,77 @@ public abstract class StorageBean implements SessionBean {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Integer initAssociation(String callingAET, String calledAET,
+            String retrieveAET) throws CreateException {
+        return assocHome.create(callingAET, calledAET, retrieveAET).getPk();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void resetAssociation(Integer assocpk) throws FinderException {
+        assocHome.findByPrimaryKey(assocpk).getFiles().clear();
+    }
     
+    /**
+     * @ejb.interface-method
+     */
+    public void removeAssociation(Integer assocpk) throws RemoveException {
+        assocHome.remove(assocpk);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public SeriesStored checkSeriesStored(Integer assocpk, String seriuid)
+    throws FinderException, RemoteException, CreateException {
+        if (log.isDebugEnabled()) {
+            log.debug("enter checkSeriesStored - assoc:" + assocpk
+                    + ", seriuid:" + seriuid);
+        }
+        AssociationLocal assoc = assocHome.findByPrimaryKey(assocpk);
+        if (assoc.getSeriesInstanceUID().equals(seriuid)) {
+            log.debug("exit checkSeriesStored - same Series");
+            return null;
+        }
+        Collection files = assoc.getFiles();
+        if (files.isEmpty()) {
+            log.debug("exit checkSeriesStored - no Instances");
+            return null;
+        }
+        SeriesStored seriesStored = new SeriesStored();
+        seriesStored.setCalledAET(assoc.getCalledAET());
+        seriesStored.setCallingAET(assoc.getCallingAET());
+        seriesStored.setRetrieveAET(assoc.getRetrieveAET());
+        seriesStored.setPatientID(assoc.getPatientId());
+        seriesStored.setPatientName(assoc.getPatientName());
+        seriesStored.setAccessionNumber(assoc.getAccessionNumber());
+        seriesStored.setStudyInstanceUID(assoc.getStudyInstanceUID());
+        seriesStored.setSeriesInstanceUID(assoc.getSeriesInstanceUID());
+        seriesStored.setRefPPS(assoc.getPPSInstanceUID(),
+                assoc.getPPSClassUID());
+        for (Iterator iter = files.iterator(); iter.hasNext();) {
+            FileLocal f = (FileLocal) iter.next();
+            FileSystemLocal fs = f.getFileSystem();
+            InstanceLocal inst = f.getInstance();
+            String fsPath = fs.getDirectoryPath();
+            FileInfo fileInfo = new FileInfo(inst.getSopIuid(), 
+                    inst.getSopCuid(), f.getFileTsuid(),
+                    fsPath, f.getFilePath(), 
+                    f.getFileSize(), f.getFileMd5());
+            seriesStored.addFileInfo(fileInfo);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("exit checkSeriesStored - " 
+                    + seriesStored.getNumberOfInstances() + " instances");
+        }
+        return seriesStored;
+    }
+
     /**
      * @ejb.interface-method
      */
@@ -480,7 +566,8 @@ public abstract class StorageBean implements SessionBean {
         }
     }
 
-    private void commited(HashSet seriesSet, HashSet studySet, final String iuid, final String aet) throws FinderException {
+    private void commited(HashSet seriesSet, HashSet studySet,
+            final String iuid, final String aet) throws FinderException {
 		InstanceLocal inst = instHome.findBySopIuid(iuid);
 		inst.setExternalRetrieveAET(aet);
 		SeriesLocal series = inst.getSeries();
@@ -493,20 +580,16 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateStudy(String iuid) throws FinderException {
-    	try { 
-	   		final StudyLocal study = studyHome.findByStudyIuid(iuid);
-	   		study.updateDerivedFields(true, true, false, true, true, true);
-    	} catch ( FinderException ignore ) {}
+   		final StudyLocal study = studyHome.findByStudyIuid(iuid);
+   		study.updateDerivedFields(true, true, false, true, true, true);
     }
     
     /**
      * @ejb.interface-method
      */
     public void updateSeries(String iuid) throws FinderException {
-    	try { 
-	   		final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
-	   		series.updateDerivedFields(true, true, false, true, true);
-		} catch ( FinderException ignore ) {}
+   		final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
+   		series.updateDerivedFields(true, true, false, true, true);
     }
     
     /**

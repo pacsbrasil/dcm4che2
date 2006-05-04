@@ -64,7 +64,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.PrivateManager;
 import org.dcm4chex.archive.ejb.interfaces.PrivateManagerHome;
 import org.dcm4chex.archive.notif.PatientUpdated;
-import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -76,8 +75,6 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 17.02.2005
  */
 public class ContentEditService extends ServiceMBeanSupport {
-
-    private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
 
 	private ContentEdit contentEdit;
     private static Logger log = Logger.getLogger( ContentEditService.class.getName() );
@@ -99,8 +96,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 	
 	private PrivateManager privateMgr;
 	
-	private static long msgCtrlid = System.currentTimeMillis();
-
 	public ContentEditService() {
     }
     
@@ -254,16 +249,16 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public Dataset createSeries(Dataset ds, Integer studyPk) throws CreateException, RemoteException, HomeFactoryException, FinderException {
-    	if ( log.isDebugEnabled() ) log.debug("create Series");
     	Dataset ds1 =  lookupContentEdit().createSeries( ds, studyPk.intValue() );
-    	if ( log.isDebugEnabled() ) {log.debug("create Series ds1:"); log.debug( ds1 );}
+        log.debug("create Series ds1:"); 
+        log.debug( ds1 );
 		sendStudyMgt( ds1.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds1);
 		String seriesIUID = ds1.get(Tags.RefSeriesSeq).getItem().getString(Tags.SeriesInstanceUID);
 		return lookupContentManager().getSeriesByIUID(seriesIUID);
     }
     
     public void updatePatient(Dataset ds) throws RemoteException, HomeFactoryException, CreateException {
-    	if ( log.isDebugEnabled() ) log.debug("update Partient");
+    	log.debug("update Patient");
     	Collection col = lookupContentEdit().updatePatient( ds );
     	sendHL7PatientXXX( ds, "ADT^A08" );
 
@@ -281,9 +276,12 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     private void sendStudyMgt(String iuid, int commandField, int actionTypeID, Dataset dataset) {
-    	String infoStr = "iuid"+iuid+" cmd:"+commandField+ " action:"+actionTypeID+" ds:";
-		if (log.isDebugEnabled()) {log.debug("send StudyMgt command: "+infoStr);log.debug(dataset);}
-
+    	String infoStr = "iuid: "+ iuid + ", cmd:"+ commandField
+            + ", action: "+ actionTypeID +", ds:";
+		if (log.isDebugEnabled()) {
+            log.debug("send StudyMgt command: "+infoStr);
+            log.debug(dataset);
+        }
 		
 		try {
             server.invoke(this.studyMgtScuServiceName,
@@ -436,21 +434,19 @@ public class ContentEditService extends ServiceMBeanSupport {
 			throw new IllegalArgumentException("List array for files to recover is illegal:"+files);
 		}
 		List failed = new ArrayList();
-		FileDTO fileDTO;
-		Dataset ds;
 		Iterator iterFileDTO = files[0].iterator();
 		Iterator iterDS = files[1].iterator();
-		SeriesStored tmp, seriesStored = null;
+		Integer pk = null;
 		while ( iterFileDTO.hasNext() ) {
-			fileDTO = (FileDTO) iterFileDTO.next();
-			ds = (Dataset) iterDS.next();
-			tmp = importFile(fileDTO, ds, seriesStored, !iterFileDTO.hasNext() );
-			if ( tmp != null ) {
-				seriesStored = tmp;
-			} else {
-				failed.add(fileDTO);
-				log.warn("Undelete failed for file "+fileDTO+" ds:");log.warn(ds);
-			}
+            FileDTO fileDTO = (FileDTO) iterFileDTO.next();
+            Dataset ds = (Dataset) iterDS.next();
+			try {
+                pk = importFile(pk, fileDTO, ds, !iterFileDTO.hasNext() );
+            } catch (Exception e) {
+                failed.add(fileDTO);
+                log.warn("Undelete failed for file "+fileDTO +" ds:");
+                log.warn(ds);
+            }
 		}
 		return failed;
 	}
@@ -548,19 +544,21 @@ public class ContentEditService extends ServiceMBeanSupport {
         super.sendNotification(notif);
 	}
 	
-	private SeriesStored importFile(FileDTO fileDTO, Dataset ds, SeriesStored seriesStored, boolean doSeriesStored) {
-        try {
-            return (SeriesStored) server.invoke(this.storeScpServiceName,
+    private Integer importFile(Integer pk, FileDTO fileDTO, Dataset ds,
+            boolean last) throws Exception {
+        return (Integer) server.invoke(
+                    this.storeScpServiceName,
                     "importFile",
-                    new Object[] {  fileDTO, ds, seriesStored, new Boolean(doSeriesStored), Boolean.TRUE },
-                    new String[] { FileDTO.class.getName(), Dataset.class.getName(),
-            						SeriesStored.class.getName(), boolean.class.getName(), boolean.class.getName() });
-        } catch (Exception e) {
-            log.error("Failed to importFile:", e);log.error(ds);
-            return null;
-        }
-		
+                    new Object[] {  
+                        pk, 
+                        fileDTO,
+                        ds, 
+                        new Boolean(last) },
+                    new String[] { 
+                        Integer.class.getName(),
+                        FileDTO.class.getName(),
+                        Dataset.class.getName(),
+            			boolean.class.getName() });
 	}
-/*_*/	
     
 }

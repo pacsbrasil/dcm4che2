@@ -49,10 +49,10 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.notif.PatientUpdated;
-import org.dcm4chex.archive.notif.SeriesStored;
 import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.jboss.system.ServiceMBeanSupport;
 

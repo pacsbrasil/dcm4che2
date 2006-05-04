@@ -101,3 +101,30 @@ FOREIGN KEY (gppps_fk) REFERENCES gppps(pk)
 );
 CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
 CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);
+
+CREATE SEQUENCE assoc_pk_seq;
+CREATE TABLE assoc (
+	pk              NUMBER(38,0) NOT NULL CONSTRAINT assoc_pk PRIMARY KEY,
+	calling_aet    	VARCHAR2(255),
+	called_aet     	VARCHAR2(255),
+	retrieve_aet   	VARCHAR2(255),
+	pat_id         	VARCHAR2(255),
+	pat_name    	VARCHAR2(255),
+	accession_no	VARCHAR2(255),
+	study_iuid      VARCHAR2(255),
+	pps_iuid		VARCHAR2(255),
+	pps_cuid		VARCHAR2(255),
+	series_iuid		VARCHAR2(255),
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP
+);
+CREATE INDEX assoc_created_time ON assoc(created_time);
+
+CREATE TABLE rel_assoc_files (
+	assoc_fk       NUMBER(38,0),
+	files_fk       NUMBER(38,0),
+FOREIGN KEY (assoc_fk) REFERENCES assoc(pk),
+FOREIGN KEY (files_fk) REFERENCES files(pk)
+);
+CREATE INDEX files_assoc_fk ON rel_assoc_files(assoc_fk);
+CREATE INDEX assoc_files_fk ON rel_assoc_files(files_fk);

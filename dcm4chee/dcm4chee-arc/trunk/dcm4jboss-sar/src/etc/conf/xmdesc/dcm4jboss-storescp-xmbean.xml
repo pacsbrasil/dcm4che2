@@ -762,6 +762,13 @@ StoreSCP service.
    <operation impact="ACTION">
       <description>Import a DICOM file (internal use only)</description>
       <name>importFile</name>
+       <parameter>
+        <description>Identifies (virtual) Association Entity used to accumulate
+          imported files of one Series.
+        </description>
+        <name>pk</name>
+        <type>java.lang.Integer</type>
+      </parameter>
       <parameter>
         <description>Transfer object for File</description>
         <name>fileDTO</name>
@@ -773,21 +780,11 @@ StoreSCP service.
         <type>org.dcm4che.data.Dataset</type>
       </parameter>
       <parameter>
-        <description>SeriesStored Notification object to collect instances stored for a series.</description>
-        <name>seriesStored</name>
-        <type>org.dcm4chex.archive.notif.SeriesStored</type>
-      </parameter>
-      <parameter>
-        <description>Force series related database update after import.</description>
-        <name>doSeriesStored</name>
+        <description>mark last object to import - triggers SeriesStored Notification</description>
+        <name>last</name>
         <type>boolean</type>
       </parameter>
-      <parameter>
-        <description>Enable/Disable sending SeriesStored notification after DB update on series level.</description>
-        <name>sendNotification</name>
-        <type>boolean</type>
-      </parameter>
-      <return-type>org.dcm4chex.archive.notif.SeriesStored</return-type>
+      <return-type>java.lang.Integer</return-type>
    </operation>
 
    <!-- Notifications -->
