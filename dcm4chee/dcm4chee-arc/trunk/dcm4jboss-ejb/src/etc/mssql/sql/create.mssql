@@ -609,5 +609,3 @@ INSERT INTO ae (aet,hostname,port)
 	VALUES('DCM4JBOSS','localhost',11112);
 INSERT INTO ae (aet,hostname,port)
 	VALUES('CDRECORD','localhost',10104);
-INSERT INTO filesystem (dirpath,retrieve_aet,availability,fs_status)
-	VALUES('archive','DCM4JBOSS',0,0);

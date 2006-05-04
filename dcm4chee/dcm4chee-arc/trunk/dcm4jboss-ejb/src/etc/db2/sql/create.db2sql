@@ -649,9 +649,6 @@ INSERT INTO ae (pk,aet,hostname,port)
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(NEXTVAL FOR ae_pk_seq,'CDRECORD','localhost',10104);
 
-INSERT INTO filesystem (pk,dirpath,retrieve_aet,availability,fs_status)
-	VALUES(NEXTVAL FOR filesystem_pk_seq,'archive','DCM4JBOSS',0,0);
-
 GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE code TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE patient TO USER tiani;

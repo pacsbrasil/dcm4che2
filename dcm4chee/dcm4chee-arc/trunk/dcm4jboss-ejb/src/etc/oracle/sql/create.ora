@@ -638,7 +638,4 @@ INSERT INTO ae (pk,aet,hostname,port)
 INSERT INTO ae (aet,hostname,port)
 	VALUES(ae_pk_seq.nextval,'CDRECORD','localhost',10104);
 
-INSERT INTO filesystem (pk,dirpath,retrieve_aet,availability,fs_status)
-	VALUES(filesystem_pk_seq.nextval,'archive','DCM4JBOSS',0,0);
-
 COMMIT;
