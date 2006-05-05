@@ -1014,7 +1014,7 @@ public abstract class VR
 
         public byte[] toBytes(double val, boolean bigEndian)
         {
-            byte[] b = new byte[4];
+            byte[] b = new byte[8];
             return bigEndian
                     ? ByteUtils.double2bytesBE(val, b, 0)
                     : ByteUtils.double2bytesLE(val, b, 0);
