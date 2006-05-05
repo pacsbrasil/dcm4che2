@@ -49,6 +49,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer
@@ -57,8 +58,10 @@ import org.dcm4chex.wado.mbean.cache.WADOCache;
  * <p>
  * This class use WADOSupport for the WADO methods and WADOCache for caching jpg images.
  */
-public abstract class AbstractCacheService extends TimerSupport {
+public abstract class AbstractCacheService extends ServiceMBeanSupport {
 
+    protected final TimerSupport timer = new TimerSupport(this);
+    
 	protected Logger log = Logger.getLogger( getClass().getName() );
 	protected WADOCache cache = null;
 	
@@ -157,9 +160,9 @@ public abstract class AbstractCacheService extends TimerSupport {
     public void setFreeDiskSpaceInterval(String interval) {
         freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+            timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
             		freeDiskSpaceListener);
-            freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
+            freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
             		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
@@ -192,8 +195,8 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 * This queue is used to receive media creation request from scheduler or web interface.
 	 */
     protected void startService() throws Exception {
-        super.startService();
-        freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace", 
+        timer.init();
+        freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace", 
         		freeDiskSpaceInterval, freeDiskSpaceListener);
     }
 
@@ -202,7 +205,7 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 * 
 	 */
     protected void stopService() throws Exception {
-        stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
         		freeDiskSpaceListener);
         super.stopService();
     }
