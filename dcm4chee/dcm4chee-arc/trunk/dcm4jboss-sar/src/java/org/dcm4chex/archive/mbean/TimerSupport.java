@@ -41,11 +41,13 @@ package org.dcm4chex.archive.mbean;
 
 import java.util.Date;
 
+import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.timer.TimerNotification;
 
+import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -54,9 +56,9 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 06.02.2005
  */
 
-public class TimerSupport extends ServiceMBeanSupport {
+public class TimerSupport {
     public static String DEFAULT_TIMER_NAME = "jboss:service=Timer";
-
+    private final ServiceMBeanSupport service;
     private ObjectName mTimer;
 
     private static class NotificationFilter implements
@@ -86,28 +88,35 @@ public class TimerSupport extends ServiceMBeanSupport {
         }
     }
 
-    protected void startService() throws Exception {
+    public TimerSupport(ServiceMBeanSupport service) {
+        this.service = service;
+    }
+    
+    public void init() throws Exception {
         // Create Timer MBean if need be
 
         mTimer = new ObjectName(DEFAULT_TIMER_NAME);
 
-        if (!getServer().isRegistered(mTimer)) {
-            getServer().createMBean("javax.management.timer.Timer", mTimer);
+        MBeanServer server = service.getServer();
+        if (!server.isRegistered(mTimer)) {
+            server.createMBean("javax.management.timer.Timer", mTimer);
         }
-        if (!((Boolean) getServer().getAttribute(mTimer, "Active"))
+        if (!((Boolean) server.getAttribute(mTimer, "Active"))
                 .booleanValue()) {
             // Now start the Timer
-            getServer().invoke(mTimer, "start", new Object[] {},
+            server.invoke(mTimer, "start", new Object[] {},
                     new String[] {});
         }
     }
 
-    protected Integer startScheduler(String name, long period, NotificationListener listener) {
+    public Integer startScheduler(String name, long period, NotificationListener listener) {
         if (period <= 0L) return null;
+        Logger log = service.getLog();
         try {
         	log.info("Start Scheduler " + name + " with period of " + period + "ms");
             Date now = new Date(System.currentTimeMillis() + 1000);
-            Integer id = (Integer) getServer().invoke(
+            MBeanServer server = service.getServer();
+            Integer id = (Integer) server.invoke(
                     mTimer,
                     "addNotification",
                     new Object[] { "Schedule", "Scheduler Notification", null,
@@ -115,7 +124,7 @@ public class TimerSupport extends ServiceMBeanSupport {
                     new String[] { String.class.getName(),
                             String.class.getName(), Object.class.getName(),
                             Date.class.getName(), Long.TYPE.getName() });
-            getServer().addNotificationListener(mTimer, listener,
+            server.addNotificationListener(mTimer, listener,
                     new TimerSupport.NotificationFilter(id), null);
             return id;
         } catch (Exception e) {
@@ -124,12 +133,14 @@ public class TimerSupport extends ServiceMBeanSupport {
         return null;
     }
 
-    protected void stopScheduler(String name, Integer id, NotificationListener listener) {
+    public void stopScheduler(String name, Integer id, NotificationListener listener) {
         if (id == null) return;
+        Logger log = service.getLog();
         try {
-        	log.info("Stop Scheduler " + name);
-            getServer().removeNotificationListener(mTimer, listener);
-            getServer().invoke(mTimer, "removeNotification",
+            log.info("Stop Scheduler " + name);
+            MBeanServer server = service.getServer();
+            server.removeNotificationListener(mTimer, listener);
+            server.invoke(mTimer, "removeNotification",
                     new Object[] { id },
                     new String[] { Integer.class.getName() });
         } catch (Exception e) {

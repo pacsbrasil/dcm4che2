@@ -364,7 +364,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
 	public void handleNotification(Notification notif, Object handback) {
 		SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-		String suid = seriesStored.getStudyInstanceUID();
+        Dataset ian = seriesStored.getIAN();
+		String suid = ian.getString(Tags.StudyInstanceUID);
 		for (int i = 1; i < exportSelectorTitles.length; i++, i++)
 			onSeriesStored(suid, exportSelectorTitles[i-1], exportSelectorTitles[i]);
 	}	

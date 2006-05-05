@@ -70,6 +70,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -77,10 +78,12 @@ import org.dcm4chex.archive.util.FileUtils;
  * @since 12.09.2004
  *
  */
-public class CompressionService extends TimerSupport {
-
+public class CompressionService extends ServiceMBeanSupport {
+    
     private static final String _DCM = ".dcm";
     
+    private final TimerSupport timer = new TimerSupport(this);
+
     private long taskInterval = 0L;
 
     private int disabledStartHour;
@@ -177,8 +180,8 @@ public class CompressionService extends TimerSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            stopScheduler("CheckFilesToCompress", listenerID, delayedCompressionListener);
-            listenerID = startScheduler("CheckFilesToCompress", 
+            timer.stopScheduler("CheckFilesToCompress", listenerID, delayedCompressionListener);
+            listenerID = timer.startScheduler("CheckFilesToCompress", 
             		taskInterval, delayedCompressionListener);
         }
     }
@@ -434,13 +437,13 @@ public class CompressionService extends TimerSupport {
     }
 
     protected void startService() throws Exception {
-        super.startService();
-        listenerID = startScheduler("CheckFilesToCompress", taskInterval,
+        timer.init();
+        listenerID = timer.startScheduler("CheckFilesToCompress", taskInterval,
         		delayedCompressionListener);
     }
 
     protected void stopService() throws Exception {
-        stopScheduler("CheckFilesToCompress", listenerID,
+        timer.stopScheduler("CheckFilesToCompress", listenerID,
         		delayedCompressionListener);
         super.stopService();
     }

@@ -267,6 +267,34 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getCheckPendingSeriesStoredInterval"
+      setMethod="setCheckPendingSeriesStoredInterval">
+      <description><![CDATA[Interval in days (#d), hours (#h) or minutes (#m) of
+      check for pending Series Stored Notifications, which were not emitted
+      caused by a crash of the Storage Service during an open association.
+      NEVER = disable check. ]]>
+      </description>
+      <name>CheckPendingSeriesStoredInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1h"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPendingSeriesStoredTimeout"
+      setMethod="setPendingSeriesStoredTimeout">
+      <description><![CDATA[Timeout in hours (#h) or minutes (#m) for
+      emission of Series Stored Notifications after an object of this Series,
+      before the emission of the Notification is triggered by the check for
+      pending Series Stored Notifications. ]]>
+      </description>
+      <name>PendingSeriesStoredTimeout</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="10m"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSerializeDBUpdate"
       setMethod="setSerializeDBUpdate">
       <description><![CDATA[Serialize updates of DB records for received objects. Decreases Storage Performance!]]>

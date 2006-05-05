@@ -121,7 +121,7 @@ public class RetrieveCmd extends BaseReadCmd {
 		return new RetrieveCmd(new SeriesSql(keys, true).getSql());
 	}
 
-	public static ImageRetrieveCmd createInstanceRetrieve(Dataset keys)
+	public static RetrieveCmd createInstanceRetrieve(Dataset keys)
 		throws SQLException {
 		return new ImageRetrieveCmd(new ImageSql(keys).getSql(), 
 				keys.getStrings(Tags.SOPInstanceUID));

@@ -28,13 +28,16 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since Nov 22, 2005
  */
-public class SyncFileStatusService extends TimerSupport {
+public class SyncFileStatusService extends ServiceMBeanSupport {
+
+    private final TimerSupport timer = new TimerSupport(this);
 
     private static final String NONE = "NONE";
 	private static final String INFO_PARAM = "%i";
@@ -208,8 +211,8 @@ public class SyncFileStatusService extends TimerSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            stopScheduler(TIMER_ID, listenerID, timerListener);
-            listenerID = startScheduler(TIMER_ID, taskInterval,
+            timer.stopScheduler(TIMER_ID, listenerID, timerListener);
+            listenerID = timer.startScheduler(TIMER_ID, taskInterval,
             		timerListener);
         }
     }
@@ -238,12 +241,12 @@ public class SyncFileStatusService extends TimerSupport {
     }
 
     protected void startService() throws Exception {
-        super.startService();
-        listenerID = startScheduler(TIMER_ID, taskInterval, timerListener);
+        timer.init();
+        listenerID = timer.startScheduler(TIMER_ID, taskInterval, timerListener);
     }
 
     protected void stopService() throws Exception {
-        stopScheduler(TIMER_ID, listenerID, timerListener);
+        timer.stopScheduler(TIMER_ID, listenerID, timerListener);
         super.stopService();
     }
     

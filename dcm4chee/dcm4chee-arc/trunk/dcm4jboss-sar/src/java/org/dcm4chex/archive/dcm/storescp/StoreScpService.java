@@ -48,6 +48,7 @@ import java.util.Map;
 
 import javax.management.JMException;
 import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
@@ -64,11 +65,13 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 
@@ -79,6 +82,23 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class StoreScpService extends AbstractScpService {
 
+    private final TimerSupport timer = new TimerSupport(this);
+    private final NotificationListener checkPendingSeriesStoredListener = 
+        new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                log.info("Check for Pending Series Stored");
+                checkPendingSeriesStored();
+            } catch (Exception e) {
+                log.error("Check for Pending Series Stored failed:", e);
+            }
+        }
+    };
+    
+    private Integer listenerID;
+    private long checkPendingSeriesStoredInterval;
+    private long pendingSeriesStoredTimeout;    
+    
     /** Map containing accepted Image SOP Class UID.
      * key is name (as in config string), value is real uid) */
     private Map imageCUIDS = new LinkedHashMap();
@@ -125,6 +145,28 @@ public class StoreScpService extends AbstractScpService {
     
     private StoreScp scp = new StoreScp(this);
 
+    public final String getCheckPendingSeriesStoredInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(checkPendingSeriesStoredInterval);
+    }
+
+    public void setCheckPendingSeriesStoredInterval(String interval) {
+        long oldInterval = checkPendingSeriesStoredInterval;
+        checkPendingSeriesStoredInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED && oldInterval != checkPendingSeriesStoredInterval) {
+            timer.stopScheduler("CheckPendingSeriesStored", listenerID, checkPendingSeriesStoredListener);
+            listenerID = timer.startScheduler("CheckPendingSeriesStored", checkPendingSeriesStoredInterval,
+                    checkPendingSeriesStoredListener);
+        }
+    }
+
+    public final String getPendingSeriesStoredTimeout() {
+        return RetryIntervalls.formatInterval(pendingSeriesStoredTimeout);
+    }
+
+    public void setPendingSeriesStoredTimeout(String interval) {
+        pendingSeriesStoredTimeout = RetryIntervalls.parseIntervalOrNever(interval);
+    }
+    
     public final boolean isMd5sum()
     {
         return md5sum;
@@ -235,16 +277,16 @@ public class StoreScpService extends AbstractScpService {
         return EJBHomeFactory.getEjbProviderURL();
     }
 
+    public void setEjbProviderURL(String ejbProviderURL) {
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+    
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
 
     public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
         this.fileSystemMgtName = fileSystemMgtName;
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     public final String getIgnorePatientIDCallingAETs() {
@@ -402,13 +444,20 @@ public class StoreScpService extends AbstractScpService {
 	public void setCheckIncorrectWorklistEntry(boolean check) {
 		scp.setCheckIncorrectWorklistEntry(check);
 	}
-
-
 	
 	protected void startService() throws Exception {
         super.startService();
+        timer.init();
+        listenerID = timer.startScheduler("CheckPendingSeriesStored", 
+                checkPendingSeriesStoredInterval, checkPendingSeriesStoredListener);
     }
 
+    protected void stopService() throws Exception {
+        timer.stopScheduler("CheckPendingSeriesStored", listenerID,
+                checkPendingSeriesStoredListener);
+        super.stopService();        
+    }
+    
     protected void bindDcmServices(DcmServiceRegistry services) {
         bindAll(valuesToStringArray(imageCUIDS), scp);
         bindAll(valuesToStringArray(videoCUIDS), scp);
@@ -496,19 +545,22 @@ public class StoreScpService extends AbstractScpService {
 	void logInstancesStored(Socket s, SeriesStored seriesStored) {
         if (auditLogName == null) return;
 	    final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+        Dataset ian = seriesStored.getIAN();
+        Dataset pps = ian.getItem(Tags.RefPPSSeq);
+        String ppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID) : null;
 	    InstancesAction action = alf.newInstancesAction("Create", 
-				seriesStored.getStudyInstanceUID(),
+				ian.getString(Tags.StudyInstanceUID),
 	            alf.newPatient(
 						seriesStored.getPatientID(),
 						seriesStored.getPatientName()));
-		action.setMPPSInstanceUID(seriesStored.getPPSInstanceUID());
+        action.setMPPSInstanceUID(ppsiuid );
 	    action.setAccessionNumber(seriesStored.getAccessionNumber());
-		DcmElement sq = seriesStored.getRefSOPSeq();
+		DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
 		int n = sq.vm();
 		for (int i = 0; i < n; i++) {
-			action.addSOPClassUID(sq.getItem(i).getString(Tags.SOPClassUID));
+			action.addSOPClassUID(sq.getItem(i).getString(Tags.RefSOPClassUID));
 		}
-		action.setNumberOfInstances(seriesStored.getNumberOfInstances());
+		action.setNumberOfInstances(n);
 	    RemoteNode remoteNode;
 	    if (s != null) {
 	    	remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
@@ -564,10 +616,25 @@ public class StoreScpService extends AbstractScpService {
 		scp.updateDB(store, pk, ds, fsPath, filePath, f, fileDTO.getFileMd5() );
 		if (last) {
             SeriesStored seriesStored = store.checkSeriesStored(pk, null);
-            scp.doAfterSeriesIsStored(store, null, seriesStored);
+            if (seriesStored != null) {
+                scp.doAfterSeriesIsStored(store, null, seriesStored);
+            }
             store.removeAssociation(pk);
  		}
 		return pk;
 	}
+
+    private void checkPendingSeriesStored() throws Exception {
+        Storage store = scp.getStorage();        
+        Integer pk;
+        while ((pk = store.nextPendingAssociation(pendingSeriesStoredTimeout)) != null) {
+            SeriesStored seriesStored = store.checkSeriesStored(pk, null);
+            if (seriesStored != null) {
+                log.info("Detect pending " + seriesStored);
+                scp.doAfterSeriesIsStored(store, null, seriesStored);
+            }
+            store.removeAssociation(pk);            
+        }        
+    }
 
 }

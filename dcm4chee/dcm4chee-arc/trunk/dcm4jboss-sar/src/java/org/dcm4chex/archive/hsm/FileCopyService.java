@@ -50,8 +50,8 @@ import java.util.List;
 
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
-import org.dcm4chex.archive.common.FileInfo;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -73,14 +73,14 @@ public class FileCopyService extends AbstractFileCopyService {
 	        digest  = MessageDigest.getInstance("MD5");
 		for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
 			FileInfo finfo = (FileInfo) iter.next();
-			File src = FileUtils.toFile(finfo.getFileSystemPath() + '/'
-					+ finfo.getFilePath());
-			File dst = FileUtils.toFile(destPath + '/' + finfo.getFilePath());
+			File src = FileUtils.toFile(finfo.basedir + '/' + finfo.fileID);
+			File dst = FileUtils.toFile(destPath + '/' + finfo.fileID);
 			try {
 				copy(src, dst, buffer);
-				if (finfo.getMd5sum() != null && digest != null) {
+				byte[] md5sum0 = finfo.md5 != null ? MD5Utils.toBytes(finfo.md5) : null;
+				if (md5sum0 != null && digest != null) {
 					byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
-				    if (!Arrays.equals(finfo.getMd5sum(), md5sum))
+                    if (!Arrays.equals(md5sum0, md5sum))
 				    {
 				    	String prompt = "md5 sum of copy " + dst
 				    		+ " differs from md5 sum in DB for file " + src;
@@ -88,9 +88,9 @@ public class FileCopyService extends AbstractFileCopyService {
 				    	throw new IOException(prompt);
 				    }
 				}
-				storage.storeFile(finfo.getSOPInstanceUID(),
-						finfo.getTransferSyntaxUID(), destPath, finfo.getFilePath(),
-						(int) finfo.getFileSize(), finfo.getMd5sum(), fileStatus);
+				storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, 
+                        finfo.fileID,
+						(int) finfo.size, md5sum0, fileStatus);
 				iter.remove();
 			} catch (Exception e) {
 				dst.delete();
@@ -104,7 +104,11 @@ public class FileCopyService extends AbstractFileCopyService {
 	private void copy(File src, File dst, byte[] buffer) throws IOException {
 		FileInputStream fis = new FileInputStream(src);
 		try {
-			mkdirs(dst.getParentFile());
+			File dir = dst.getParentFile();
+            if (dir.mkdirs()) {
+            	log.info("M-WRITE dir:" + dir);
+            }
+            log.info("M-WRITE file:" + dst);
 			BufferedOutputStream bos = new BufferedOutputStream(
 					new FileOutputStream(dst), buffer);
 			try {
@@ -117,12 +121,6 @@ public class FileCopyService extends AbstractFileCopyService {
 			throw e;
 		} finally {
 			fis.close();
-		}
-	}
-
-	private void mkdirs(File dir) {
-		if (dir.mkdirs()) {
-			log.info("M-WRITE dir:" + dir);
 		}
 	}
 

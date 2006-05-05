@@ -40,6 +40,7 @@
 
 package org.dcm4chex.archive.hsm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,12 +54,16 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.dcm4chex.archive.common.Availability;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
@@ -98,7 +103,7 @@ implements MessageListener, NotificationListener {
 	public final int getBufferSize() {
 		return bufferSize;
 	}
-
+    
 	public final void setBufferSize(int bufferSize) {
 		this.bufferSize = bufferSize;
 	}
@@ -110,6 +115,16 @@ implements MessageListener, NotificationListener {
 	public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
 		this.fileSystemMgtName = fileSystemMgtName;
 	}
+    
+    protected String getRetrieveAET() {
+        try {
+            return (String) server.getAttribute(fileSystemMgtName,
+                    "RetrieveAETitle");
+        } catch (Exception e) {
+            log.error("JMX error: ", e);
+            return null;
+        }
+    }
 
 	public String getEjbProviderURL() {
 		return EJBHomeFactory.getEjbProviderURL();
@@ -202,12 +217,40 @@ implements MessageListener, NotificationListener {
 		param.put("calling", new String[] { seriesStored.getCallingAET() });
 		param.put("called", new String[] { seriesStored.getCalledAET() });
 		String[] dests = copyingRules.getForwardDestinationsFor(param);
+        if (dests.length == 0)
+            return;
+        List fileInfos;
+        try {
+            fileInfos = toFileInfos(seriesStored.getIAN());
+        } catch (Exception e) {
+            log.error("Failed to query DB for fileInfos:", e);
+            // TODO Error handling
+            return;
+        }
 		for (int i = 0; i < dests.length; i++) {
 			final String dest = ForwardingRules.toAET(dests[i]);
 			final long scheduledTime = ForwardingRules
 					.toScheduledTime(dests[i]);
-			scheduleCopy(seriesStored.getFileInfos(), dest, scheduledTime);
+			scheduleCopy(fileInfos, dest, scheduledTime);
 		}
+	}
+    
+	private List toFileInfos(Dataset ian) throws Exception {
+        Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
+        DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
+        FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
+        List list = new ArrayList(aa.length);
+        String retrieveAET = getRetrieveAET();
+        for (int i = 0; i < aa.length; i++) {
+            FileInfo[] a = aa[i];
+            for (int j = 0; j < a.length; j++) {
+                if (a[j].fileRetrieveAET.equals(retrieveAET)) {
+                    list.add(a[j]);
+                    break;
+                }
+            }
+        }
+	    return list;
 	}
 
 	public void scheduleCopy(List fileInfos, String destFsPath,

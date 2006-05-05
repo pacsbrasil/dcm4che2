@@ -40,13 +40,8 @@
 package org.dcm4chex.archive.common;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 
 /**
@@ -56,7 +51,7 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 	
-    private static final long serialVersionUID = -7105441672592412211L;
+    private static final long serialVersionUID = -3511801621407861264L;
     private String callingAET;
 	private String calledAET;
 	private String patientID;
@@ -64,16 +59,18 @@ public class SeriesStored implements Serializable {
 	private String retrieveAET;
 	private String accessionNumber;
 	private final Dataset ian;
-	private final ArrayList fileInfos = new ArrayList();
 	
-	public SeriesStored() {
-		ian = DcmObjectFactory.getInstance().newDataset();
-		ian.putSQ(Tags.RefPPSSeq);
-		DcmElement sq = ian.putSQ(Tags.RefSeriesSeq);
-		sq.addNewItem().putSQ(Tags.RefSOPSeq);
+	public SeriesStored(Dataset ian) {
+		this.ian = ian;
 	}
+    
+    public String toString() {
+        return "SeriesStored[calling=" + callingAET + ", called=" + calledAET
+            + ", suid=" + (ian != null ? ian.getString(Tags.StudyInstanceUID) : null)
+            + "]";
+    }
 
-	public final Dataset getInstanceAvailabilityNotification() {
+	public final Dataset getIAN() {
 		return ian;
 	}
 	
@@ -125,69 +122,4 @@ public class SeriesStored implements Serializable {
 		this.accessionNumber = accessionNumber;
 	}
 
-	private Dataset getSeries() {
-		return ian.getItem(Tags.RefSeriesSeq);
-	}
-
-	public String getStudyInstanceUID() {
-		return ian.getString(Tags.StudyInstanceUID);
-	}
-
-	public void setStudyInstanceUID(String iuid) {
-		ian.putUI(Tags.StudyInstanceUID, iuid);
-	}
-
-	public String getSeriesInstanceUID() {
-		return  getSeries().getString(Tags.SeriesInstanceUID);
-	}
-
-	public void setSeriesInstanceUID(String iuid) {
-		getSeries().putUI(Tags.SeriesInstanceUID, iuid);
-	}
-
-	public int getNumberOfInstances() {
-		return getSeries().vm(Tags.RefSOPSeq);
-	}
-
-	public String getPPSInstanceUID() {
-		return getPPS(Tags.RefSOPInstanceUID);
-	}
-
-	public String getPPSClassUID() {
-		return getPPS(Tags.RefSOPClassUID);
-	}
-
-	private String getPPS(int tag) {
-		Dataset pps = ian.getItem(Tags.RefPPSSeq);
-		return pps != null ? pps.getString(tag) : null;
-	}
-
-	public void setRefPPS(String instanceUID, String classUID) {
-		DcmElement sq = ian.putSQ(Tags.RefPPSSeq);
-		if (instanceUID != null && classUID != null) {
-		    Dataset item = sq.addNewItem();
-		    item.putUI(Tags.RefSOPInstanceUID, instanceUID);
-		    item.putUI(Tags.RefSOPClassUID, classUID);
-		    item.putSQ(Tags.PerformedWorkitemCodeSeq);
-		}
-	}
-
-	public DcmElement getRefSOPSeq() {
-		return getSeries().get(Tags.RefSOPSeq);
-	}
-	
-	public void addFileInfo(FileInfo fileInfo) {
-		Dataset item = getRefSOPSeq().addNewItem();
-		item.putAE(Tags.RetrieveAET, retrieveAET);
-		item.putCS(Tags.InstanceAvailability, "ONLINE");
-		item.putUI(Tags.RefSOPInstanceUID, fileInfo.getSOPInstanceUID());
-		item.putUI(Tags.RefSOPClassUID, fileInfo.getSOPClassUID());
-		fileInfos.add(fileInfo);
-	}
-	
-	public List getFileInfos() {
-		return Collections.unmodifiableList(fileInfos);
-	}
-	
-	
 }

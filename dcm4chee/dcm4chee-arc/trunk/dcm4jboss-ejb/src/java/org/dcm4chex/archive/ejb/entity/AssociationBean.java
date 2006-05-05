@@ -43,9 +43,13 @@ import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.DatasetUtils;
 
 /**
+ * @author gunter zeilinger(gunterze@gmail.com)
+ * @version $Revision$ $Date$
+ * @since May 3, 2006
+ *
  * @ejb.bean name="Association" type="CMP" view-type="local" primkey-field="pk"
  *           local-jndi-name="ejb/Association"
  * 
@@ -55,14 +59,12 @@ import org.dcm4che.dict.Tags;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
- * @ejb.finder signature="java.util.Collection findNotUpdatedSince(java.sql.Timestamp time)"
- *             query="SELECT OBJECT(a) FROM Association a WHERE a.updatedTime < ?1"
- *             transaction-type="Supports"
- * 
- * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
- * @since May 3, 2006
- *
+ * @ejb.finder
+ *  signature="java.util.Collection findNotUpdatedSince(java.sql.Timestamp time)"
+ *  query="" transaction-type="Supports"
+ * @jboss.query
+ *  signature="java.util.Collection findNotUpdatedSince(java.sql.Timestamp time)"
+ *  query="SELECT OBJECT(a) FROM Association a WHERE a.updatedTime < ?1 ORDER BY a.pk LIMIT 1"
  */
 public abstract class AssociationBean implements EntityBean {
 
@@ -135,6 +137,9 @@ public abstract class AssociationBean implements EntityBean {
      * @ejb.persistence column-name="pat_id"
      */
     public abstract String getPatientId();
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPatientId(String pid);
 
     /**
@@ -142,6 +147,9 @@ public abstract class AssociationBean implements EntityBean {
      * @ejb.persistence column-name="pat_name"
      */
     public abstract String getPatientName();
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPatientName(String name);
 
     /**
@@ -149,66 +157,28 @@ public abstract class AssociationBean implements EntityBean {
      * @ejb.persistence column-name="accession_no"
      */
     public abstract String getAccessionNumber();
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setAccessionNumber(String no);
     
     /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="study_iuid"
+     * @ejb.persistence column-name="ian_attrs"
      */
-    public abstract String getStudyInstanceUID();
-    public abstract void setStudyInstanceUID(String uid);
+    public abstract byte[] getEncodedAttributes();
+    public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="series_iuid"
      */
-    public abstract String getSeriesInstanceUID();
-    public abstract void setSeriesInstanceUID(String uid);
-    
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pps_iuid"
-     */
-    public abstract String getPPSInstanceUID();
-    public abstract void setPPSInstanceUID(String uid);
-    
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="pps_cuid"
-     */
-    public abstract String getPPSClassUID();
-    public abstract void setPPSClassUID(String uid);
-    
-    /**
-     * @ejb.relation name="assoc-files" role-name="assoc-store-files"
-     *               target-ejb="File" target-role-name="file-stored-in-assoc"
-     *               target-multiple="yes"
-     * @jboss.relation-table table-name="rel_assoc_files"
-     * @jboss.relation fk-column="files_fk" related-pk-field="pk"     
-     * @jboss.target-relation fk-column="assoc_fk" related-pk-field="pk"     
-     *    
-     * @ejb.interface-method
-     */
-    public abstract java.util.Collection getFiles();
-    public abstract void setFiles(java.util.Collection files);
-    
-    /**
-     * @ejb.interface-method
-     */
-    public void setAttributes(Dataset attrs) {
-        setPatientId(attrs.getString(Tags.PatientID));
-        setPatientName(attrs.getString(Tags.PatientName));
-        setAccessionNumber(attrs.getString(Tags.AccessionNumber));
-        setStudyInstanceUID(attrs.getString(Tags.StudyInstanceUID));
-        setSeriesInstanceUID(attrs.getString(Tags.SeriesInstanceUID));
-        Dataset refpps = attrs.getItem(Tags.RefPPSSeq);
-        if (refpps == null) {
-            setPPSInstanceUID(null);
-            setPPSClassUID(null);
-        } else {
-            setPPSInstanceUID(refpps.getString(Tags.RefSOPInstanceUID));
-            setPPSClassUID(refpps.getString(Tags.RefSOPClassUID));
-        }
+    public Dataset getIAN() {
+        return DatasetUtils.fromByteArray(getEncodedAttributes());
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public void setIAN(Dataset ian) {
+        setEncodedAttributes(DatasetUtils.toByteArray(ian));
+    }
 }

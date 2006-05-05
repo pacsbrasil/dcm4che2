@@ -88,6 +88,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer
@@ -99,7 +100,7 @@ import org.dcm4chex.archive.util.JMSDelegate;
  * 3) process a media creation request. (move instances and send media creation request and action to media creation managment AET)
  * 
  */
-public class MCMScuService extends TimerSupport implements MessageListener {
+public class MCMScuService extends ServiceMBeanSupport implements MessageListener {
 	
     private static final Logger log = Logger.getLogger(MCMScuService.class);
 
@@ -119,6 +120,8 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 
     private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
         UIDs.ImplicitVRLittleEndian};
+
+    private final TimerSupport timer = new TimerSupport(this);
     
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
 	private long maxMediaUsage = 680 * FileUtils.MEGA;
@@ -328,9 +331,9 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public void setBurnMediaInterval(String interval) {
         this.burnMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
+            timer.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
             		burnMediaListener);
-            burnMediaListenerID = startScheduler("CheckForMediaToBurn",
+            burnMediaListenerID = timer.startScheduler("CheckForMediaToBurn",
             		burnMediaInterval, burnMediaListener);
         }
     }
@@ -391,9 +394,9 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public void setScheduleMediaInterval(String interval) {
         this.scheduleMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
+            timer.stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
             		scheduleMediaListener);
-            scheduleMediaListenerID = startScheduler(
+            scheduleMediaListenerID = timer.startScheduler(
             		"CheckForStudiesToSchedule", scheduleMediaInterval,
                     scheduleMediaListener);
         }
@@ -406,9 +409,9 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public void setUpdateMediaStatusInterval(String interval) {
         this.updateMediaStatusInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
+            timer.stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
             		updateMediaStatusListener);
-            updateMediaStatusListenerID = startScheduler("CheckMediaStatus",
+            updateMediaStatusListenerID = timer.startScheduler("CheckMediaStatus",
             		updateMediaStatusInterval, updateMediaStatusListener);
         }
     }
@@ -674,12 +677,12 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 * This queue is used to receive media creation request from scheduler or web interface.
 	 */
     protected void startService() throws Exception {
-        super.startService();
-        scheduleMediaListenerID = startScheduler("CheckForStudiesToSchedule", 
+        timer.init();
+        scheduleMediaListenerID = timer.startScheduler("CheckForStudiesToSchedule", 
         		scheduleMediaInterval, scheduleMediaListener);
-        updateMediaStatusListenerID = startScheduler("CheckMediaStatus",
+        updateMediaStatusListenerID = timer.startScheduler("CheckMediaStatus",
         		updateMediaStatusInterval, updateMediaStatusListener);
-        burnMediaListenerID = startScheduler("CheckForMediaToBurn",
+        burnMediaListenerID = timer.startScheduler("CheckForMediaToBurn",
         		burnMediaInterval, burnMediaListener);
         JMSDelegate.startListening(QUEUE, this, concurrency);
     }
@@ -689,11 +692,11 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 * 
 	 */
     protected void stopService() throws Exception {
-        stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
+        timer.stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
         		scheduleMediaListener);
-        stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
+        timer.stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
         		updateMediaStatusListener);
-        stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
+        timer.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
         		burnMediaListener);
         JMSDelegate.stopListening(QUEUE);
         super.stopService();

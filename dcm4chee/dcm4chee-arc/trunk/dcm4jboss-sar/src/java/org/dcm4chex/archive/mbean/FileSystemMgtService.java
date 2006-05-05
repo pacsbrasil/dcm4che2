@@ -76,6 +76,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -83,7 +84,9 @@ import org.dcm4chex.archive.util.FileUtils;
  * @since 12.09.2004
  *
  */
-public class FileSystemMgtService extends TimerSupport {
+public class FileSystemMgtService extends ServiceMBeanSupport {
+
+    private final TimerSupport timer = new TimerSupport(this);
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     
@@ -391,9 +394,9 @@ public class FileSystemMgtService extends TimerSupport {
     public void setFreeDiskSpaceInterval(String interval) {
         this.freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+            timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
             		freeDiskSpaceListener);
-            freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
+            freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
             		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
@@ -430,9 +433,9 @@ public class FileSystemMgtService extends TimerSupport {
     public void setPurgeFilesInterval(String interval) {
         this.purgeFilesInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+            timer.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
             		purgeFilesListener);
-            purgeFilesListenerID = startScheduler("CheckFilesToPurge",
+            purgeFilesListenerID = timer.startScheduler("CheckFilesToPurge",
             		purgeFilesInterval, purgeFilesListener);
         }
     }
@@ -446,10 +449,10 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     protected void startService() throws Exception {
-         super.startService();
-         freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
+         timer.init();
+         freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
          		freeDiskSpaceInterval, freeDiskSpaceListener);
-         purgeFilesListenerID = startScheduler("CheckFilesToPurge",
+         purgeFilesListenerID = timer.startScheduler("CheckFilesToPurge",
          		purgeFilesInterval, purgeFilesListener);
          
     }
@@ -557,9 +560,9 @@ public class FileSystemMgtService extends TimerSupport {
     }
     
     protected void stopService() throws Exception {
-        stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
         		freeDiskSpaceListener);
-        stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+        timer.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
         		purgeFilesListener);
         super.stopService();
     }

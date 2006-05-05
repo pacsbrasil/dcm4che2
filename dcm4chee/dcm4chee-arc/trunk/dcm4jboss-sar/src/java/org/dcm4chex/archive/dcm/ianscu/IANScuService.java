@@ -354,9 +354,11 @@ public class IANScuService extends ServiceMBeanSupport
 	private void onSeriesStored(SeriesStored stored) {
         if (notifiedAETs.length == 0)
             return;
-	    String mppsiuid = stored.getPPSInstanceUID();
+        Dataset ian = stored.getIAN();
+        Dataset pps = ian.getItem(Tags.RefPPSSeq);
+	    String mppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID) : null;
         if (mppsiuid == null || !sendOneIANforEachMPPS) {
-            schedule(stored.getInstanceAvailabilityNotification());
+            schedule(ian);
         } else {
             try {
                 onMPPSReceived(getMPPSManagerHome().create().getMPPS(mppsiuid));

@@ -252,23 +252,11 @@ CREATE TABLE assoc (
 	pat_id         	VARCHAR(256),
 	pat_name    	VARCHAR(256),
 	accession_no	VARCHAR(256),
-	study_iuid      VARCHAR(256),
-	pps_iuid		VARCHAR(256),
-	pps_cuid		VARCHAR(256),
-	series_iuid		VARCHAR(256),
 	created_time	TIMESTAMP,
-	updated_time	TIMESTAMP
+	updated_time	TIMESTAMP,
+	ian_attrs       VARBINARY
 );
-CREATE INDEX assoc_created_time ON assoc(created_time);
-
-CREATE TABLE rel_assoc_files (
-	assoc_fk       INTEGER,
-	files_fk       INTEGER,
-FOREIGN KEY (assoc_fk) REFERENCES assoc(pk),
-FOREIGN KEY (files_fk) REFERENCES files(pk)
-);
-CREATE INDEX files_assoc_fk ON rel_assoc_files(assoc_fk);
-CREATE INDEX assoc_files_fk ON rel_assoc_files(files_fk);
+CREATE INDEX assoc_updated_time ON assoc(updated_time);
 
 CREATE TABLE study_on_fs (
 	pk              IDENTITY PRIMARY KEY,

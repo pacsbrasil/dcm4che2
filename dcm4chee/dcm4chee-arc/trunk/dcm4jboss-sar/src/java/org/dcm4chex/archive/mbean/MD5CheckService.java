@@ -48,22 +48,20 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 import javax.ejb.FinderException;
-import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
-import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.dcm.storescp.StoreScp;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -71,7 +69,9 @@ import org.dcm4chex.archive.util.FileUtils;
  * @since 35.03.2005
  *
  */
-public class MD5CheckService extends TimerSupport {
+public class MD5CheckService extends ServiceMBeanSupport {
+
+    private final TimerSupport timer = new TimerSupport(this);
 
     private long taskInterval = 0L;
 	private long maxCheckedBefore;
@@ -83,9 +83,6 @@ public class MD5CheckService extends TimerSupport {
 
     private Integer listenerID;
 
-    private ObjectName fileSystemMgtName;
-    
-    
     private static final Logger log = Logger.getLogger(MD5CheckService.class);
 
     private final NotificationListener timerListener = new NotificationListener() {
@@ -136,8 +133,8 @@ public class MD5CheckService extends TimerSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            stopScheduler("CheckMD5", listenerID, timerListener);
-            listenerID = startScheduler("CheckMD5", taskInterval,
+            timer.stopScheduler("CheckMD5", listenerID, timerListener);
+            listenerID = timer.startScheduler("CheckMD5", taskInterval,
             		timerListener);
         }
     }
@@ -239,26 +236,15 @@ public class MD5CheckService extends TimerSupport {
     }
 
     protected void startService() throws Exception {
-        super.startService();
-        listenerID = startScheduler("CheckMD5", taskInterval, timerListener);
+        timer.init();
+        listenerID = timer.startScheduler("CheckMD5", taskInterval, timerListener);
     }
 
     protected void stopService() throws Exception {
-        stopScheduler("CheckMD5", listenerID, timerListener);
+        timer.stopScheduler("CheckMD5", listenerID, timerListener);
         super.stopService();
     }
     
-    private String[] fileSystemDirPaths() {
-        try {
-            return (String[]) server.invoke(fileSystemMgtName,
-                    "fileSystemDirPaths", null, null);
-        } catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke fileSystemDirPaths", e);
-        }
-    }
-    
-
     private FileSystemMgt newFileSystemMgt() {
         try {
             FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory

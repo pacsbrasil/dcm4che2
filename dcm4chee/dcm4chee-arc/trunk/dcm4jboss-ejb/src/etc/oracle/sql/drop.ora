@@ -19,7 +19,6 @@ DROP TABLE gpsps_req;
 DROP TABLE gpsps;
 DROP TABLE mwl_item;
 DROP TABLE study_on_fs;
-DROP TABLE rel_assoc_files;
 DROP TABLE assoc;
 DROP TABLE files;
 DROP TABLE filesystem;

@@ -51,7 +51,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -82,15 +81,13 @@ import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.TMFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
-import org.dcm4chex.archive.common.FileInfo;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
@@ -472,11 +469,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
-        return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
-    }
-    
     private boolean checkIncorrectWorklistEntry(Dataset ds) throws Exception {
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
         if (refPPS == null) {
@@ -488,13 +480,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         Dataset mpps;
         try {
-            mpps = getMPPSManagerHome().create().getMPPS(ppsUID);
+            mpps = getMPPSManager().getMPPS(ppsUID);
         } catch (ObjectNotFoundException e) {
             return false;
         }
         Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
         return item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
                 "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
+    }
+
+    private MPPSManager getMPPSManager() throws CreateException,
+            RemoteException, HomeFactoryException {
+        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
     }
 
 	private Map toXsltParam(Association a, Date now) {
@@ -862,9 +860,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	 */
 	protected void doAfterSeriesIsStored(Storage store, Socket s,
             SeriesStored seriesStored) {
-        updateDBSeries(store, seriesStored.getSeriesInstanceUID());
-        updateDBStudy(store, seriesStored.getStudyInstanceUID());
-		updateStudyAccessTime(seriesStored);
+        Dataset ian = seriesStored.getIAN();       
+        updateDBSeries(store, 
+                ian.getItem(Tags.RefSeriesSeq).getString(Tags.SeriesInstanceUID));
+        updateDBStudy(store, ian.getString(Tags.StudyInstanceUID));
 		service.logInstancesStored(s, seriesStored);
 		service.sendJMXNotification(seriesStored);
 	}
@@ -934,31 +933,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
             }
         }
-    }
-
-    private void updateStudyAccessTime(SeriesStored seriesStored) {
-        String suid = seriesStored.getStudyInstanceUID();
-        try {
-            HashSet fsSet = new HashSet();
-            List infos = seriesStored.getFileInfos();
-            for (Iterator iter = infos.iterator(); iter.hasNext();) {
-                FileInfo info = (FileInfo) iter.next();
-                String fsPath = info.getFileSystemPath();
-                if (fsSet.add(fsPath)) {                    
-                    getFileSystemMgt().touchStudyOnFileSystem(suid, fsPath);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to update access time for study "
-					+ suid, e);
-            return;
-        }
-    }
-
-    private FileSystemMgt getFileSystemMgt() throws CreateException,
-            RemoteException, HomeFactoryException {
-        return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
     }
 
 }

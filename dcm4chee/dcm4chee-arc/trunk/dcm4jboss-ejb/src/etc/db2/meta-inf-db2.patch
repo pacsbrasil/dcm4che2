@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-05-04 00:32:56.000000000 +0200
-+++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2006-05-04 01:59:52.406655990 +0200
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-05-05 14:08:54.024627097 +0200
++++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2006-05-05 14:21:28.312673739 +0200
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -243,9 +243,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1788,7 +1810,8 @@
- 
-         </cmp-field>
+@@ -1783,7 +1805,8 @@
+             <jboss-ql><![CDATA[SELECT OBJECT(a) FROM Association a WHERE a.updatedTime < ?1 ORDER BY a.pk LIMIT 1]]></jboss-ql>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="pk-sql">
@@ -253,7 +253,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1833,7 +1856,8 @@
+@@ -1828,7 +1851,8 @@
  
          </cmp-field>
  
@@ -263,7 +263,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1893,7 +1917,8 @@
+@@ -1888,7 +1912,8 @@
  			</read-ahead>
           </query>
  
@@ -273,7 +273,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1958,7 +1983,8 @@
+@@ -1953,7 +1978,8 @@
  			</read-ahead>
           </query>
  

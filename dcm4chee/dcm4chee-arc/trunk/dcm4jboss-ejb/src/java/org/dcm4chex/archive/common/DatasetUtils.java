@@ -87,6 +87,8 @@ public class DatasetUtils {
 
 	public static Dataset fromByteArray(byte[] data, Dataset ds,
             DcmDecodeParam decodeParam) {
+        if (data == null)
+            return null;
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         if (ds == null)
             ds = DcmObjectFactory.getInstance().newDataset();
@@ -105,6 +107,8 @@ public class DatasetUtils {
     }
     
     public static byte[] toByteArray(Dataset ds, DcmEncodeParam encodeParam) {
+        if (ds == null)
+            return null;
         ByteArrayOutputStream bos =
             new ByteArrayOutputStream(ds.calcLength(encodeParam));
         try {

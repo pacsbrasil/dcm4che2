@@ -56,6 +56,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSEmulatorHome;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -63,7 +64,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  * @since 26.02.2005
  */
 
-public class MPPSEmulatorService extends TimerSupport implements
+public class MPPSEmulatorService extends ServiceMBeanSupport implements
         NotificationListener {
 
     private static final String IN_PROGRESS = "IN PROGRESS";
@@ -98,6 +99,8 @@ public class MPPSEmulatorService extends TimerSupport implements
         Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
         Tags.PatientBirthDate, Tags.PatientSex
 	};
+
+    private final TimerSupport timer = new TimerSupport(this);
     
     private long pollInterval = 0L;
 
@@ -188,8 +191,8 @@ public class MPPSEmulatorService extends TimerSupport implements
         this.pollInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
-            schedulerID = startScheduler("CheckSeriesWithoutMPPS",
+            timer.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+            schedulerID = timer.startScheduler("CheckSeriesWithoutMPPS",
             		pollInterval, this);
         }
     }
@@ -351,18 +354,20 @@ public class MPPSEmulatorService extends TimerSupport implements
 							   String.class.getName(),
 							   boolean.class.getName() });
         } catch (Exception e) {
-            log.error("Failed to send HL7 patient merge message:", e);log.error(dsDominant);
+            log.error("Failed to send HL7 patient merge message:", e);
+            log.error(dsDominant);
         }
 	}
     
 
     protected void startService() throws Exception {
-        super.startService();
-        schedulerID = startScheduler("CheckSeriesWithoutMPPS",
-        		pollInterval, this);    }
+        timer.init();
+        schedulerID = timer.startScheduler("CheckSeriesWithoutMPPS",
+        		pollInterval, this);
+    }
 
     protected void stopService() throws Exception {
-        stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+        timer.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
         super.stopService();
     }
 }
