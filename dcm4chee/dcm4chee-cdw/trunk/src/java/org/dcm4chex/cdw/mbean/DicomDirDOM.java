@@ -392,7 +392,7 @@ class DicomDirDOM {
         try {
             Transformer tr = tf.newTransformer();
             tr.setOutputProperty(OutputKeys.INDENT, "yes");
-            tr.transform(new DOMSource(doc), new StreamResult(out));
+            tr.transform(new DOMSource(doc), new StreamResult(toSystemId(out)));
         } catch (TransformerConfigurationException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
@@ -406,7 +406,7 @@ class DicomDirDOM {
             throws MediaCreationException {
         File file = new File(rq.getFilesetDir(), INDEX_HTM);
         try {
-            xslt(indexTpl, new StreamResult(file), rq);
+            xslt(indexTpl, new StreamResult(toSystemId(file)), rq);
         } finally {
             service.getSpoolDir().register(file);
         }
@@ -417,13 +417,22 @@ class DicomDirDOM {
         File dir = new File(rq.getFilesetDir(), IHE_PDI);
         try {
 	        log.info("Start Creating HTML content for " + rq);
-	        xslt(webTpl, new StreamResult(new File(rq.getFilesetDir(), IHE_PDI
-	                + File.separatorChar + INDEX_HTM)), rq);
+	        File indexFile = new File(rq.getFilesetDir(), IHE_PDI
+	                + File.separatorChar + INDEX_HTM);
+            xslt(webTpl, new StreamResult(toSystemId(indexFile)), rq);
 	        log.info("Finished Creating HTML content for " + rq);
         } finally {
             service.getSpoolDir().register(dir);
         }
 	        
+    }
+
+    private String toSystemId(File f) {
+        String fpath=f.getAbsolutePath();
+        if (File.separatorChar != '/') {
+            fpath = fpath.replace(File.separatorChar, '/');
+        }
+        return (fpath.startsWith("/") ? "file://" : "file:///") + fpath;
     }
 
     public void createLabel(MediaCreationRequest rq, ContentHandler handler)

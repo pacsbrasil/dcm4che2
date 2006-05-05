@@ -88,7 +88,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     private DirRecordFactory dirRecordFactory = new DirRecordFactory(
-            "resource:dicomdir-records.xml");
+            "resource:dcm4jboss-cdw/dicomdir-records.xml");
 
     private LabelCreator labelCreator = new LabelCreator();
     

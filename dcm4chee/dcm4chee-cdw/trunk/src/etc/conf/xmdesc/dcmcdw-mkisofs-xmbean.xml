@@ -115,7 +115,7 @@
       getMethod="isSortEnabled"
       setMethod="setSortEnabled">
       <description>Sort file content locations according to rules in
-      server/default/conf/mkisofs.sort.
+      server/default/conf/dcm4jboss-cdw/mkisofs.sort.
       </description>
       <name>SortEnabled</name>
       <type>boolean</type>      
