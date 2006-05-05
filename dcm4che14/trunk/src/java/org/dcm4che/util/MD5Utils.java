@@ -84,6 +84,12 @@ public class MD5Utils {
 
     private static final char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5',
             '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    
+    private static int hex2digit(char ch) {
+        return ch < '0' ? 0 : ch <= '9' ? (ch - '0') 
+                : ch < 'A' ? 0 : ch <= 'F' ? (ch - ('A' - 10)) 
+                : ch < 'a' ? 0 : ch <= 'f' ? (ch - ('a' - 10)) : 0;
+    }
 
     public static void toHexChars(byte[] bs, char[] cbuf) {
         for (int i = 0, j = 0; i < bs.length; i++, j++, j++) {
@@ -92,13 +98,22 @@ public class MD5Utils {
         }
     }
 
-    public static void toHexChars(byte[] bs, byte[] cbuf, int off) {
-        for (int i = 0, j = off; i < bs.length; i++, j++, j++) {
-            cbuf[j] = (byte) HEX_DIGIT[(bs[i] >>> 4) & 0xf];
-            cbuf[j + 1] = (byte) HEX_DIGIT[bs[i] & 0xf];
+    public static void toBytes(char[] cbuf, byte[] bs) {
+        for (int i = 0, j = 0; i < bs.length; i++, j++, j++) {
+            bs[i] = (byte) ((hex2digit(cbuf[j]) << 4) | hex2digit(cbuf[j+1]));
         }
     }
 
+    public static byte[] toBytes(char[] cbuf) {
+        byte[] bs = new byte[cbuf.length/2];
+        toBytes(cbuf, bs);
+        return bs;        
+    }
+
+    public static byte[] toBytes(String s) {
+        return toBytes(s.toCharArray());
+    }
+    
     public static void md5sum(File f, char[] cbuf,
             MessageDigest digest, byte[] bbuf) throws IOException {
         toHexChars(md5sum(f, digest, bbuf), cbuf);
