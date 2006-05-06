@@ -35,7 +35,11 @@
       (Manifest) considered by this service.
       Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
       Separate multiple values by new line. NONE = service disabled.
-      E.g: TCE001^IHERADTF, TCE002^IHERADTF, TCE007^IHERADTF, 113007^DCM]]>
+      Default:
+         TCE001^IHERADTF,
+         TCE002^IHERADTF,
+         TCE007^IHERADTF,
+         113007^DCM]]>
       </description>
       <name>ExportSelectorTitles</name>
       <type>java.lang.String</type>
