@@ -40,7 +40,11 @@
       <name>ExportSelectorTitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE"/>
+         <value value="
+         TCE001^IHERADTF
+         TCE002^IHERADTF
+         TCE007^IHERADTF
+         113007^DCM"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
