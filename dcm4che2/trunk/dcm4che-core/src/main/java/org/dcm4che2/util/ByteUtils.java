@@ -89,7 +89,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -107,7 +107,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -154,7 +154,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -215,7 +215,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 2 != 0)
+        if ((b.length & 0x1) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 1];
         for (int i = 0; i < val.length; i++)
@@ -232,7 +232,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 2 != 0)
+        if ((b.length & 0x1) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 1];
         for (int i = 0; i < val.length; i++)
@@ -249,7 +249,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 2 != 0)
+        if ((b.length & 0x1) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 1];
         for (int i = 0; i < val.length; i++)
@@ -266,7 +266,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 2 != 0)
+        if ((b.length & 0x1) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         int[] val = new int[b.length >> 1];
         for (int i = 0; i < val.length; i++)
@@ -313,7 +313,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         float[] val = new float[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -325,7 +325,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         double[] val = new double[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -342,7 +342,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         float[] val = new float[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -354,7 +354,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 4 != 0)
+        if ((b.length & 0x3) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         double[] val = new double[b.length >> 2];
         for (int i = 0; i < val.length; i++)
@@ -402,9 +402,9 @@ public class ByteUtils
     {
         if (val == null)
             return null;
-        byte[] b = new byte[val.length << 2];
+        byte[] b = new byte[val.length << 3];
         for (int i = 0; i < val.length; i++)
-            long2bytesBE(val[i], b, i << 2);
+            long2bytesBE(val[i], b, i << 3);
         return b;
     }
 
@@ -420,7 +420,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 8 != 0)
+        if ((b.length & 0x7) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         long[] val = new long[b.length >> 3];
         for (int i = 0; i < val.length; i++)
@@ -440,7 +440,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 8 != 0)
+        if ((b.length & 0x7) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         long[] val = new long[b.length >> 3];
         for (int i = 0; i < val.length; i++)
@@ -457,9 +457,9 @@ public class ByteUtils
     {
         if (val == null)
             return null;
-        byte[] b = new byte[val.length << 2];
+        byte[] b = new byte[val.length << 3];
         for (int i = 0; i < val.length; i++)
-            double2bytesLE(val[i], b, i << 2);
+            double2bytesLE(val[i], b, i << 3);
         return b;
     }
 
@@ -472,9 +472,9 @@ public class ByteUtils
     {
         if (val == null)
             return null;
-        byte[] b = new byte[val.length << 2];
+        byte[] b = new byte[val.length << 3];
         for (int i = 0; i < val.length; i++)
-            double2bytesBE(val[i], b, i << 2);
+            double2bytesBE(val[i], b, i << 3);
         return b;
     }
 
@@ -487,7 +487,7 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 8 != 0)
+        if ((b.length & 0x7) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
         double[] val = new double[b.length >> 3];
         for (int i = 0; i < val.length; i++)
@@ -504,11 +504,11 @@ public class ByteUtils
     {
         if (b == null)
             return null;
-        if (b.length % 8 != 0)
+        if ((b.length & 0x7) != 0)
             throw new IllegalArgumentException("byte[" + b.length + "]");
-        double[] val = new double[b.length >> 2];
+        double[] val = new double[b.length >> 3];
         for (int i = 0; i < val.length; i++)
-            val[i] = bytesBE2double(b, i << 2);
+            val[i] = bytesBE2double(b, i << 3);
         return val;
     }
 
