@@ -26,7 +26,7 @@
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
-  <property name="jai_imagio.jar" value="${dcm4che.home}/lib/jai_imageio_api.zip"/>
+  <property name="jai_imagio.jar" value="${dcm4che.home}/../lib/jai_imageio.jar"/>
 
     <!-- Override with your dcm4jboss-ejb dist location -->
 	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
