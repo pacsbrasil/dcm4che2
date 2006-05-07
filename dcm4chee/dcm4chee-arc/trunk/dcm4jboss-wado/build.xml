@@ -44,7 +44,7 @@
 	<property name="web.dir" value="src/web"/>
 	<property name="etc.dir" value="src/etc"/>
 	<property name="service.xml.dir" value="${etc.dir}/deploy"/>
-	<property name="xmbean.xml.dir" value="${etc.dir}/config/xmdesc"/>
+	<property name="xmbean.xml.dir" value="${etc.dir}/conf/xmdesc"/>
 	
 	<!-- deploy properties. Overwrite deploy.root with your running application instance. -->
 	<property name="deploy.root" value="${jboss.home}/server/pacs"/>
