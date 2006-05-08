@@ -98,6 +98,13 @@ public class MD5Utils {
         }
     }
 
+    public static void toHexChars(byte[] bs, byte[] cbuf, int off) {
+        for (int i = 0, j = off; i < bs.length; i++, j++, j++) {
+            cbuf[j] = (byte) HEX_DIGIT[(bs[i] >>> 4) & 0xf];
+            cbuf[j + 1] = (byte) HEX_DIGIT[bs[i] & 0xf];
+        }
+    }
+
     public static void toBytes(char[] cbuf, byte[] bs) {
         for (int i = 0, j = 0; i < bs.length; i++, j++, j++) {
             bs[i] = (byte) ((hex2digit(cbuf[j]) << 4) | hex2digit(cbuf[j+1]));
