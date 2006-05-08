@@ -39,13 +39,12 @@
 
 package org.dcm4chex.archive.web.maverick.admin;
 
-import org.dcm4chex.archive.web.maverick.Errable;
 
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
  */
-public class UserChgPwdSubmitCtrl extends Errable
+public class UserChgPwdSubmitCtrl extends UserAdminCtrl
 {
 	private String cancelPar = null;
 	private String userID;
@@ -105,6 +104,6 @@ public class UserChgPwdSubmitCtrl extends Errable
 			}
 		}
 		
-		return "success";
+		return SUCCESS;
 	}		
 }

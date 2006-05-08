@@ -39,54 +39,30 @@
 
 package org.dcm4chex.archive.web.maverick;
 
-import java.util.List;
-
-import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
-
 /**
  * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandPatientCtrl extends Dcm4JbossFormController {
+public class CollapseStudyCtrl extends Dcm4JbossFormController {
 
-    protected int patPk;
-    protected boolean expand;
+    private int patPk;
+    private int studyPk;
 
-    public final void setPatPk(int patPk) {
+    public final void setPatPk(int patPk)
+    {
         this.patPk = patPk;
     }
-    
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
+
+    public final void setStudyPk(int studyPk)
+    {
+        this.studyPk = studyPk;
     }
 
     protected String perform() throws Exception {
         FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
-        } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
-        }
+        folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
         return SUCCESS;
     }
 

@@ -45,7 +45,7 @@ import org.dcm4chex.archive.web.maverick.*;
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class AEEditCtrl extends Errable
+public class AEEditCtrl extends AEFormCtrl
 {
 	private String title;
 	
@@ -61,19 +61,15 @@ public class AEEditCtrl extends Errable
 
 	protected String perform() throws Exception 
 	{
+		setPopupMsg(null);
 		try
 		{
 			getAE();
-			this.errorType = "";
-			this.message = "";
-			this.backURL= "";
-			return "success";
+			return SUCCESS;
 		}
 		catch (Exception e)
 		{
-			this.errorType = e.getClass().getName();
-			this.message = e.getMessage();
-			this.backURL= ""; //TBD
+			setPopupMsg("Failed to change AE Title:"+getAE()+"!");
 			return "error";
 		}	
 	}

@@ -53,24 +53,14 @@ import org.dcm4chex.archive.web.maverick.model.SeriesModel;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandStudyCtrl extends Dcm4JbossController {
+public class ExpandStudyCtrl extends ExpandPatientCtrl {
 
-    private int patPk;
-    private int studyPk;
-    private boolean expand;
+    protected int studyPk;
 
-    public final void setPatPk(int patPk)
-    {
-        this.patPk = patPk;
-    }
 
     public final void setStudyPk(int studyPk)
     {
         this.studyPk = studyPk;
-    }
-
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
     }
 
     protected String perform() throws Exception {

@@ -45,7 +45,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 
 /**
@@ -54,25 +53,15 @@ import org.dcm4chex.archive.web.maverick.model.SeriesModel;
  * @version $Revision$ $Date$
  * @since 19.12.2005
  */
-public class ExpandTrashStudyCtrl extends Dcm4JbossController {
+public class ExpandTrashStudyCtrl extends ExpandTrashPatientCtrl {
 
-    private int patPk;
-    private int studyPk;
-    private boolean expand;
-
-    public final void setPatPk(int patPk)
-    {
-        this.patPk = patPk;
-    }
+    protected int studyPk;
 
     public final void setStudyPk(int studyPk)
     {
         this.studyPk = studyPk;
     }
 
-    public final void setExpand(boolean expand) {
-        this.expand = expand;
-    }
 
     protected String perform() throws Exception {
     	TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());

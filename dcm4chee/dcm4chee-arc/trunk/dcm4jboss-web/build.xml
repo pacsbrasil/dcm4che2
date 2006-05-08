@@ -40,6 +40,7 @@
 	
 	<property name="deploy.root" value="${jboss.home}/server/pacs"/>
 	<property name="war.deploy.dir" value="${deploy.root}/deploy"/>
+	<property name="conf.deploy.dir" value="${deploy.root}/conf"/>
 	
 	<property name="target.dir" value="target"/>
 	<property name="file" value="${ant.project.name}.war"/>
@@ -48,6 +49,7 @@
 	<property name="javasrc.dir" value="src/java"/>
 	<property name="classes.dir" value="${target.dir}/classes"/>
 	<property name="web.dir" value="src/web"/>
+	<property name="etc.dir" value="src/etc"/>
 
 	<path id="master-classpath">
 		<pathelement location="${jboss-jmx.jar}"/>
@@ -107,10 +109,16 @@
 		</war>
 	</target>
 
-	<target name="deploy" depends="war,deploy-only"/>
+	<target name="deploy" depends="war,deploy-only,deploy-conf"/>
 	
 	<target name="deploy-only">
 		<copy file="${product}" todir="${war.deploy.dir}" />
 	</target>
+	<target name="deploy-conf">
+		<copy todir="${conf.deploy.dir}" >
+			<fileset dir="${etc.dir}/conf" includes="**" />
+		</copy>
+	</target>
+
 	
 </project>

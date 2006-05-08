@@ -103,6 +103,13 @@
 					<img src="images/delete.gif" alt="delete" border="0"/>							
 					</a>					
 			</td>
+			<xsl:if test="/model/currentUser=userID">
+				<td align="left" valign="top" >
+					<a href="useradmin_console.m?chgpwd='true'">
+					 passwd							
+					</a>					
+				</td>
+			</xsl:if>
 		</tr>
 	</xsl:template>
  

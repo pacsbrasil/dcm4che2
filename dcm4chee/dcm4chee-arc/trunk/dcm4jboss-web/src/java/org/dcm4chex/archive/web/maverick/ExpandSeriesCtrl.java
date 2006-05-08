@@ -53,29 +53,14 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandSeriesCtrl extends Dcm4JbossController {
+public class ExpandSeriesCtrl extends ExpandStudyCtrl {
 
-    private int patPk;
-    private int studyPk;
-    private int seriesPk;
-    private boolean expand;
-
-    public final void setPatPk(int patPk) {
-        this.patPk = patPk;
-    }
+    protected int seriesPk;
 
     public final void setSeriesPk(int seriesPk) {
         this.seriesPk = seriesPk;
     }
 
-    public final void setStudyPk(int studyPk) {
-        this.studyPk = studyPk;
-    }
-
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
-    }
-    
     protected String perform() throws Exception {
         FolderForm folderForm = FolderForm.getFolderForm(getCtx());
         if ( expand ) {

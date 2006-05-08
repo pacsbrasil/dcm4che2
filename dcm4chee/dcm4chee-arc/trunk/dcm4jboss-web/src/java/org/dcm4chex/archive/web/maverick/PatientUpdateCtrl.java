@@ -45,7 +45,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class PatientUpdateCtrl extends Dcm4JbossController {
+public class PatientUpdateCtrl extends Dcm4JbossFormController {
     private int pk;
 
     private String patientID = "";

@@ -50,7 +50,7 @@ public class UserEditCtrl extends UserAdminCtrl
 	{
 		getModel().selectEditUser( getCtx().getRequest().getParameter("userHash" ) );
 		if ( ! model.isAdmin() ) return "error";
-		return "success";
+		return SUCCESS;
 	}
 
 }

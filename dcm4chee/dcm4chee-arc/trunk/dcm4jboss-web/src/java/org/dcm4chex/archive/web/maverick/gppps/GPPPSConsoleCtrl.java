@@ -109,7 +109,7 @@ public class GPPPSConsoleCtrl extends Dcm4JbossFormController {
             		performAction( action, request );
             	}
             }
-            return "success";
+            return SUCCESS;
         } catch (Exception e) {
             model.setPopupMsg(e.getMessage());
             return "error";
@@ -151,6 +151,10 @@ public class GPPPSConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	public static GPPPSDelegate getGPPPSDelegate() {
 		return delegate;
+	}
+	
+	protected String getCtrlName() {
+		return "gppps_console";
 	}
 	
 }

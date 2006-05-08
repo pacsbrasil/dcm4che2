@@ -53,7 +53,7 @@ import javax.servlet.http.HttpServletRequest;
  * @since 5.10.2004
  *
  */
-public class AddWorklistCtrl extends Dcm4JbossController {
+public class AddWorklistCtrl extends Dcm4JbossFormController {
 
     /** Popup message */
     private String popupMsg = null;
@@ -145,7 +145,7 @@ public class AddWorklistCtrl extends Dcm4JbossController {
                 || rq.getParameter("add.x") != null) { return addWorklistItem(); }
         if (rq.getParameter("cancel") != null
                 || rq.getParameter("cancel.x") != null) { return "cancel"; }
-    	return "success";
+    	return SUCCESS;
     }
 
 	/**
@@ -158,7 +158,7 @@ public class AddWorklistCtrl extends Dcm4JbossController {
 			return "folder";
 		} else {
 			popupMsg = "Failed to add new worklist item!";
-			return "success";//to open AddWorklistCtrl!
+			return SUCCESS;//to open AddWorklistCtrl!
 		}
 	}
     

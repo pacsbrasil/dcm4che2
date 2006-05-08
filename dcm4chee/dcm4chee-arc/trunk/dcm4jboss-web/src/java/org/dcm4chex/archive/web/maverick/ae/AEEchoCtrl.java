@@ -40,14 +40,14 @@
 package org.dcm4chex.archive.web.maverick.ae;
 
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.Errable;
+import org.dcm4chex.archive.web.maverick.AEFormCtrl;
 
 /**
  * @author umberto.cappellini@tiani.com
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class AEEchoCtrl extends Errable
+public class AEEchoCtrl extends AEFormCtrl
 {
 	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
 	private int port, pk;

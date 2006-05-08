@@ -50,7 +50,7 @@ public class UserListCtrl extends UserAdminCtrl
 	protected String perform() throws Exception
 	{
 		getModel().queryUsers();
-		return "success";
+		return SUCCESS;
 	}		
 	
 }

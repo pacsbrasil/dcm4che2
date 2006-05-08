@@ -110,7 +110,7 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
             		performAction( action, request );
             	}
             }
-            return "success";
+            return SUCCESS;
         } catch (Exception e) {
             model.setPopupMsg(e.getMessage());
             return "error";
@@ -157,6 +157,10 @@ public class MPPSConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	public static MPPSDelegate getMppsDelegate() {
 		return delegate;
+	}
+	
+	protected String getCtrlName() {
+		return "mpps_console";
 	}
 	
 }

@@ -53,7 +53,6 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
-import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -61,7 +60,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
  * @since 5.10.2004
  *
  */
-public class StudyViewCtrl extends Dcm4JbossController {
+public class StudyViewCtrl extends Dcm4JbossFormController {
 	private static final String SELECT = "select";
 	
 	private int patPk = -1;

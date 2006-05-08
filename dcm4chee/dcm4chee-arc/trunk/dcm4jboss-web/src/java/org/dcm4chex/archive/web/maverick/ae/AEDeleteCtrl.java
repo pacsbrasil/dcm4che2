@@ -39,14 +39,15 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.web.maverick.Errable;
+import org.dcm4chex.archive.web.maverick.AEFormCtrl;
+import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author umberto.cappellini@tiani.com
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class AEDeleteCtrl extends Errable
+public class AEDeleteCtrl extends AEFormCtrl
 {
 	private String title;
 
@@ -60,16 +61,14 @@ public class AEDeleteCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		setPopupMsg(null);
 		try
 		{
 			lookupAEDelegate().delAE(title);
-			return "success";
 		} catch (Throwable e)
 		{
-			this.errorType = e.getClass().getName();
-			this.message = e.getMessage();
-			this.backURL = "aedelete.m?title=" + this.title;
-			return ERROR_VIEW;				
+			setPopupMsg("Failed to delete AE Title:"+title+"!");
 		}
+		return SUCCESS;				
 	}	
 }

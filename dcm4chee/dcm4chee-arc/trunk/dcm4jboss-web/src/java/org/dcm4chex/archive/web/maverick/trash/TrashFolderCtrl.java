@@ -97,7 +97,7 @@ public class TrashFolderCtrl extends FolderCtrl {
     protected String perform() throws Exception {
         try {
             TrashFolderForm folderForm = (TrashFolderForm) getForm();
-        	if ( ! folderForm.isDatacareUser() ) return FOLDER;
+        	if ( getPermissions().getPermissionsForApp("trash") == null ) return FOLDER;
     		folderForm.setErrorCode( TrashFolderForm.NO_ERROR );//reset error code
     		folderForm.setPopupMsg(null);
             setSticky(folderForm.getStickyPatients(), "stickyPat");
@@ -123,12 +123,10 @@ public class TrashFolderCtrl extends FolderCtrl {
                     || rq.getParameter("prev.x") != null
                     || rq.getParameter("next") != null
                     || rq.getParameter("next.x") != null) { return query(false); }
-            if ( folderForm.isDatacareUser() ) {
-	            if (rq.getParameter("del") != null
-	                    || rq.getParameter("del.x") != null) { return delete(); }
-	            if (rq.getParameter("undel") != null
-	                    || rq.getParameter("undel.x") != null) { return undelete(rq); }
-            }
+            if (rq.getParameter("del") != null
+                    || rq.getParameter("del.x") != null) { return delete(); }
+            if (rq.getParameter("undel") != null
+                    || rq.getParameter("undel.x") != null) { return undelete(rq); }
             return TRASH;
         } catch (Exception e) {
             e.printStackTrace();
@@ -374,5 +372,8 @@ public class TrashFolderCtrl extends FolderCtrl {
     	return LOGOUT;
 	}
 
+	protected String getCtrlName() {
+		return "trash";
+	}
 	
 }

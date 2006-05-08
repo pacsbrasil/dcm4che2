@@ -39,55 +39,43 @@
 
 package org.dcm4chex.archive.web.maverick;
 
-import java.util.List;
+import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
+ * @author umberto.cappellini@tiani.com
+ * Created: Feb 24, 2004 - 11:16:30 AM
+ * Module: dcm4jboss-web
  * 
- * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
- * @since 28.01.2004
  */
-public class ExpandPatientCtrl extends Dcm4JbossFormController {
-
-    protected int patPk;
-    protected boolean expand;
-
-    public final void setPatPk(int patPk) {
-        this.patPk = patPk;
+public abstract class AEFormCtrl extends Dcm4JbossFormController
+{
+	private static AEDelegate aeDelegate = null;
+	
+	private String popupMsg;
+	
+	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
+	}
+    public AEDelegate lookupAEDelegate() {
+        if ( aeDelegate == null ) {
+        	aeDelegate = new AEDelegate();
+        	aeDelegate.init( getCtx().getServletConfig() );
+        }
+        return aeDelegate;
     }
     
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
-    }
-
-    protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
-        } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
-        }
-        return SUCCESS;
-    }
-
+	protected String getCtrlName() {
+		return "ae_mgr";
+	}
+	
 }

@@ -170,7 +170,7 @@ public class UserEditSubmitCtrl extends Dcm4JbossFormController
 				}
 			}
 		}
-		return "success";
+		return SUCCESS;
 	}
 
 }

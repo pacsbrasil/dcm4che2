@@ -48,7 +48,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class PatientMergeCtrl extends Errable {
+public class PatientMergeCtrl extends Dcm4JbossFormController {
 
     private int pk;
 
@@ -63,10 +63,8 @@ public class PatientMergeCtrl extends Errable {
             if (merge != null) executeMerge();
             return SUCCESS;
         } catch (Exception e1) {
-            this.errorType = e1.getClass().getName();
-            this.message = e1.getMessage();
-            this.backURL = "folder.m";
-            return ERROR_VIEW;
+        	((FolderForm) getForm()).setPopupMsg("Merge failed! reason:"+e1.getMessage());
+            return SUCCESS;
         }
     }
     

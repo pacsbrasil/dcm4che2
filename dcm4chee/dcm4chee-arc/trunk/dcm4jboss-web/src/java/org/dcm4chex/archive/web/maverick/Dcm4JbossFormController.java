@@ -42,9 +42,15 @@ package org.dcm4chex.archive.web.maverick;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.log4j.Logger;
+import org.dcm4chex.archive.web.maverick.admin.UserAdminDelegate;
+import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
+import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsFactory;
 import org.infohazard.maverick.ctl.Throwaway2;
+import org.infohazard.maverick.flow.ControllerContext;
 
 /**
  * Variation of Maverick's ThrowawayFormBeanUser, including support for 
@@ -56,10 +62,17 @@ import org.infohazard.maverick.ctl.Throwaway2;
  */
 public class Dcm4JbossFormController extends Throwaway2
 {
+	public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
+				"offline_storage","mwl_console","mpps_console",
+				"gpwl_console","gppps_console","user_admin","audit_repository"};	
+	
 	public static final String ERROR_PARSE_DATE = "parseError_date";
 	public static final String ERROR_PARSE_TIME = "parseError_time";
 	public static final String ERROR_PARSE_DATETIME = "parseError_datetime";
-	
+
+	private UserAdminDelegate delegate = new UserAdminDelegate();
+
+	private static Logger log = Logger.getLogger(Dcm4JbossFormController.class.getName());
 	/**
 	 * The form bean gets set here
 	 */
@@ -102,6 +115,7 @@ public class Dcm4JbossFormController extends Throwaway2
 
 		this.getCtx().setModel(this.formBean);
 
+		applyPermissions(getCtrlName());
 		return this.perform();
 	}
 
@@ -130,4 +144,38 @@ public class Dcm4JbossFormController extends Throwaway2
 	{
 		return this;
 	}
+	
+	protected void applyPermissions(String app) {
+		FolderPermissions perms = getPermissions();
+		Set allowed = perms.getPermissionsForApp(app);
+		ControllerContext ctx = getCtx();
+		String param;
+		if ( allowed != null ) {
+			for ( Iterator iter = allowed.iterator() ; iter.hasNext() ; ) {
+				param = (String)iter.next();
+				log.info("setTranformParam method:"+param);
+				ctx.setTransformParam( param,"true");
+			}
+		}
+		for ( int i = 0, len = FOLDER_APPLICATIONS.length ; i < len ; i++ ) {
+			param = FOLDER_APPLICATIONS[i];
+			log.info("setTransformPath for application:"+param+"="+(perms.getPermissionsForApp(param)!=null));
+			ctx.setTransformParam( param, 
+					String.valueOf(perms.getPermissionsForApp(param)!=null));
+		}
+	}
+	
+	protected FolderPermissions getPermissions() {
+		FolderPermissions perm = (FolderPermissions) getCtx().getRequest().getSession().getAttribute("folderPermissions");
+		if ( perm == null ) {
+			perm = FolderPermissionsFactory.getInstance(getCtx().getServletConfig()).getFolderPermissions(getCtx().getRequest().getUserPrincipal().getName());
+			getCtx().getRequest().getSession().setAttribute("folderPermissions",perm);
+		}
+		return perm;
+	}
+	
+	protected String getCtrlName() {
+		return "folder";
+	}
+	
 }

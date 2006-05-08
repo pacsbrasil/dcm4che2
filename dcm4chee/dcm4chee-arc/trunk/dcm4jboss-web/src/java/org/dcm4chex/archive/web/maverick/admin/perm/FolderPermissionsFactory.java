@@ -36,58 +36,64 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4chex.archive.web.maverick.admin.perm;
 
-package org.dcm4chex.archive.web.maverick;
+import javax.servlet.ServletConfig;
 
-import java.util.List;
-
-import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.apache.log4j.Logger;
 
 /**
  * 
- * @author gunter.zeilinger@tiani.com
+ * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 28.01.2004
+ * @since 13.04.2006
  */
-public class ExpandPatientCtrl extends Dcm4JbossFormController {
+public abstract class FolderPermissionsFactory {
+	
+	private static Logger log = Logger.getLogger(FolderPermissionsFactory.class.getName());
+	
+	private static FolderPermissionsFactory instance = null;
+	
+	public static FolderPermissionsFactory getInstance(ServletConfig cfg) {
+		if ( instance != null ) return instance;
+		String factoryClassName = cfg.getInitParameter("folderPermissionsFactory");
+		if ( factoryClassName == null ) factoryClassName = "org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsPropertyFactory";
+		try {
+			ClassLoader l = Thread.currentThread().getContextClassLoader();
+			instance = (FolderPermissionsFactory) l.loadClass( factoryClassName ).newInstance();
+			instance.init( cfg.getInitParameter("folderPermissionsFactory_cfg"));
+			return instance;
+		} catch (InstantiationException x) {
+			log.error("Could not instantiate: "+factoryClassName, x);
+			return new DummyPermissionFactory();
+		} catch (IllegalAccessException x) {
+			log.error("No access to instantiate factory: "+factoryClassName, x);
+			return new DummyPermissionFactory();
+		} catch (ClassNotFoundException x) {
+			log.error("Class not found: "+factoryClassName, x);
+			return new DummyPermissionFactory();
+		}
+	}
+	
+	public abstract void init(String initString);
+	
+	public abstract FolderPermissions getFolderPermissions(String userID);
+	
+	/**
+	 * Dummy implementation of FolderPermissionsFactory.
+	 * <p>
+	 * Returns always an empty FolderPermissions object!
+	 * 
+	 * @author franz.willer
+	 *
+	 */
+	static class DummyPermissionFactory extends FolderPermissionsFactory {
 
-    protected int patPk;
-    protected boolean expand;
+		public void init(String initString) {}
 
-    public final void setPatPk(int patPk) {
-        this.patPk = patPk;
-    }
-    
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
-    }
-
-    protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
-        } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
-        }
-        return SUCCESS;
-    }
-
+		public FolderPermissions getFolderPermissions(String userID) {
+			return new FolderPermissions();
+		}
+		
+	}
 }

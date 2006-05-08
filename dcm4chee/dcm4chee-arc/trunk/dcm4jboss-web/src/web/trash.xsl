@@ -3,6 +3,9 @@
  $Id$
  -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:param name="trash.remove" select="'false'" />
+
 <xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
 <xsl:variable name="page_title">Patient List</xsl:variable>
 <xsl:include href="page.xsl"/>
@@ -63,28 +66,19 @@
 							</xsl:if>
 						</input>
 					</td>
-					<xsl:if test="/model/datacareUser='true'">
-						<td class="folder_header" width="40">
-							&#160;
-<!-- not implemented yet.						
-							<input type="image" value="DelTrash" name="deltrash" src="images/deltrash.gif" alt="delete Trash" border="0"
-								title="Delete Trash"
-								onclick="return confirm('Delete trash folder?')">
-								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">disabled</xsl:attribute>
-								</xsl:if>
-							</input>
--->						
-						</td>
-						<td class="folder_header" width="40">
-							<input type="image" value="Undel" name="undel" src="images/undel.gif" alt="undelete" border="0"
-								title="Undelete selected Entities"
-								onclick="return confirm('Undelete selected Entities?')">
-								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">disabled</xsl:attribute>
-								</xsl:if>
-							</input>
-						</td>
+					<td class="folder_header" width="40">
+						&#160;
+					</td>
+					<td class="folder_header" width="40">
+						<input type="image" value="Undel" name="undel" src="images/undel.gif" alt="undelete" border="0"
+							title="Undelete selected Entities"
+							onclick="return confirm('Undelete selected Entities?')">
+							<xsl:if test="total &lt;= 0">
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
+							</xsl:if>
+						</input>
+					</td>
+					<xsl:if test="$trash.remove='true'">	
 						<td class="folder_header" width="40">
 							<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
 								title="Delete selected Entities"

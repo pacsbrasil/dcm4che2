@@ -36,58 +36,46 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4chex.archive.web.maverick.admin.perm;
 
-package org.dcm4chex.archive.web.maverick;
-
-import java.util.List;
-
-import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 
- * @author gunter.zeilinger@tiani.com
+ * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 28.01.2004
+ * @since 13.04.2006
  */
-public class ExpandPatientCtrl extends Dcm4JbossFormController {
-
-    protected int patPk;
-    protected boolean expand;
-
-    public final void setPatPk(int patPk) {
-        this.patPk = patPk;
-    }
-    
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
-    }
-
-    protected String perform() throws Exception {
-        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-        if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
-        } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
-        }
-        return SUCCESS;
-    }
-
+public class FolderPermissions {
+	private Map allPermissions = new HashMap();
+	public Set getPermissionsForApp(String app) {
+		return (Set) allPermissions.get(app);
+	}
+	/**
+	 * @param string
+	 * @param string2
+	 */
+	public void addPermissions(String app, String[] methods) {
+		Set allowed = (Set) allPermissions.get(app);
+		if ( allowed == null ) {
+			allowed = new HashSet();
+			allPermissions.put(app,allowed);
+		}
+		if ( methods != null ) {
+			for ( int j=0 ; j < methods.length ; j++ ) {
+				allowed.add(app+"."+methods[j]);
+			}
+		}
+	}
+	
+	public int getNumberOfPrivilegedApps() {
+		return allPermissions.size();
+	}
+	
+	public String toString() {
+		return "FolderPermissions:"+allPermissions;
+	}
 }

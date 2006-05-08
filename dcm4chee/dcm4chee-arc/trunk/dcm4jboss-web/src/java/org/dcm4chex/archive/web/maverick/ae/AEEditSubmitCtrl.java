@@ -40,14 +40,15 @@
 package org.dcm4chex.archive.web.maverick.ae;
 
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.Errable;
+import org.dcm4chex.archive.web.maverick.AEFormCtrl;
+import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author umberto.cappellini@tiani.com
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class AEEditSubmitCtrl extends Errable
+public class AEEditSubmitCtrl extends AEFormCtrl
 {
 	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
 	private int port, pk;
@@ -154,6 +155,7 @@ public class AEEditSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		setPopupMsg(null);
 		AEDelegate delegate = lookupAEDelegate();
 		if (update != null)
 		{
@@ -161,19 +163,17 @@ public class AEEditSubmitCtrl extends Errable
 			try
 			{
 				lookupAEDelegate().updateAE( title, hostName, port, cipherSuites);
-				return "success";
+				return SUCCESS;
 			} catch (Throwable e)
 			{
-				this.errorType = e.getClass().getName();
-				this.message = e.getMessage();
-				this.backURL = "aeedit.m?pk=" + pk;
-				return ERROR_VIEW;
+				setPopupMsg("Failed to change AE Title:"+getAE()+"!");
+				return SUCCESS;
 			}
 		} else 	if ( echo != null ) {
 			popupMsg = delegate.echo( getAE(), 5);
-			return "success";
+			return SUCCESS;
 		} else
-			return "success";
+			return SUCCESS;
 	}
 
 }

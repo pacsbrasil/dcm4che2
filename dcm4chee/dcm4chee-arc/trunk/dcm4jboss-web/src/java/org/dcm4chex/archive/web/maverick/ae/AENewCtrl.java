@@ -45,7 +45,7 @@ import org.dcm4chex.archive.web.maverick.*;
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class AENewCtrl extends Errable
+public class AENewCtrl extends AEFormCtrl
 {
 	
 	public AEData getAE() throws Exception
@@ -55,10 +55,7 @@ public class AENewCtrl extends Errable
 
 	protected String perform() throws Exception 
 	{
-			this.errorType = "";
-			this.message = "";
-			this.backURL= "";
-			return "success";
+			return SUCCESS;
 	}
 
 }

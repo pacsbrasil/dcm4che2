@@ -48,7 +48,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @since 5.10.2004
  *
  */
-public class StudyEditCtrl extends Dcm4JbossController {
+public class StudyEditCtrl extends Dcm4JbossFormController {
     private int patPk;
 
     private int studyPk;

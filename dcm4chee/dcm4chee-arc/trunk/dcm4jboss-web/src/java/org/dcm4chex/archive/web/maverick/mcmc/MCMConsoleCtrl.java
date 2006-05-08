@@ -85,9 +85,9 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
             HttpServletRequest request = getCtx().getRequest();
     		model = MCMModel.getModel(request);
     		model.setPopupMsg(null);
-    		if ( !model.isMcmUser() && !model.isAdmin() ) {
+    		if ( getPermissions().getPermissionsForApp("offline_storage").isEmpty() ) {
     			model.setPopupMsg("Access denied!");
-    			return "success";
+    			return SUCCESS;
     		}
     		model.setErrorCode( MCMModel.NO_ERROR );
             if ( request.getParameter("checkMCM") != null ) {
@@ -112,7 +112,7 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
             		performAction( action, request );
             	}
             }
-            return "success";
+            return SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -185,6 +185,10 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 	
 	public static MCMScuDelegate getMcmScuDelegate() {
 		return delegate;
+	}
+	
+	protected String getCtrlName() {
+		return "offline_storage";
 	}
 	
 }

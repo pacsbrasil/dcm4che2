@@ -52,26 +52,30 @@ public abstract class BasicFormModel {
 
     public static final String NO_ERROR ="OK";
 
+    private String currentUser;
     private final boolean admin;
-    private boolean mcmUser;
-    private boolean datacareUser;
     
     /** Error code for rendering message. */
     private String errorCode = NO_ERROR;
     
     /** Popup message */
     private String popupMsg = null;
-    /** externalPopup message (from a foreign controller */
+    /** externalPopup message (from a foreign controller) */
     private String externalPopupMsg = null;
     
 	protected BasicFormModel( HttpServletRequest request ) {
+		currentUser = request.getUserPrincipal().getName();
     	admin = request.isUserInRole(DCMUser.WEBADMIN);
-        datacareUser = request.isUserInRole(DCMUser.DATACARE_USER) || admin;
-        mcmUser = request.isUserInRole(DCMUser.MCMUSER);
-    }
+   }
 	
 	public String getModelName() { return "BASIC"; }
 
+	/**
+	 * @return Returns the currentUser.
+	 */
+	public String getCurrentUser() {
+		return currentUser;
+	}
 	/**
 	 * @return Returns the admin.
 	 */
@@ -80,18 +84,6 @@ public abstract class BasicFormModel {
 	}
 	
     
-	/**
-	 * @return Returns the datacareUser.
-	 */
-	public boolean isDatacareUser() {
-		return datacareUser;
-	}
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return mcmUser;
-	}
     public final String getErrorCode() {
     	return errorCode;
     }

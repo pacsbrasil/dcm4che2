@@ -58,7 +58,7 @@ public class UserNewCtrl extends UserAdminCtrl
 		if ( getCtx().getRequest().getParameter("newUser") != null ) { //set from button 'new user'
 			model.selectEditUser(null); //reset editUser
 		}
-		return "success";
+		return SUCCESS;
 	}
 
 }

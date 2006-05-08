@@ -39,13 +39,12 @@
 
 package org.dcm4chex.archive.web.maverick.admin;
 
-import org.dcm4chex.archive.web.maverick.Errable;
 
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
  */
-public class UserDeleteCtrl extends Errable
+public class UserDeleteCtrl extends UserAdminCtrl
 {
 	private int userHash;
 
@@ -66,6 +65,6 @@ public class UserDeleteCtrl extends Errable
 		UserAdminModel model = UserAdminModel.getModel( getCtx().getRequest() );
 		if ( !model.isAdmin() ) return "error";
 		model.deleteUser( userHash );//Any failure will be marked in popUpMessage!
-		return "success";
+		return SUCCESS;
 	}		
 }

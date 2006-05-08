@@ -42,13 +42,13 @@ package org.dcm4chex.archive.web.maverick.ae;
 
 import java.util.List;
 
-import org.dcm4chex.archive.web.maverick.Errable;
+import org.dcm4chex.archive.web.maverick.AEFormCtrl;
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class AEListCtrl extends Errable
+public class AEListCtrl extends AEFormCtrl
 {
 	public List getAEs() {
 		return this.lookupAEDelegate().getAEs();
@@ -61,15 +61,6 @@ public class AEListCtrl extends Errable
 	public boolean isAdmin() {
 		return this.getCtx().getRequest().isUserInRole(DCMUser.WEBADMIN);
 	}
-	/**
-	 * @return Returns the mcmUser.
-	 */
-	public boolean isMcmUser() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.MCMUSER);
-	}
-
-	public boolean isDatacareUser() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.DATACARE_USER)||isAdmin();
-	}
-
+	
+ 
 }

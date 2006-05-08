@@ -146,15 +146,24 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("next.x") != null) { return query(false); }
             if (rq.getParameter("send") != null
                     || rq.getParameter("send.x") != null) { return send(); }
-            if ( folderForm.isDatacareUser() ) {
+            Set allowedMethods = getPermissions().getPermissionsForApp("folder");
+            if ( allowedMethods.contains("folder.delete") ) {
 	            if (rq.getParameter("del") != null
 	                    || rq.getParameter("del.x") != null) { return delete(); }
+            }
+            if ( allowedMethods.contains("folder.edit") ) {
 	            if (rq.getParameter("merge") != null
-	                    || rq.getParameter("merge.x") != null) { return MERGE; }
-	            if (rq.getParameter("move") != null
+	                    || rq.getParameter("merge.x") != null) { return merge(); }
+            }
+            if ( allowedMethods.contains("folder.move") ) {
+            	if (rq.getParameter("move") != null
 	                    || rq.getParameter("move.x") != null) { return move(); }
+            }
+            if ( allowedMethods.contains("folder.export_tf") ) {
 	            if (rq.getParameter("exportTF") != null
 	                    || rq.getParameter("exportTF.x") != null) { return exportTF(); }
+            }
+            if ( allowedMethods.contains("folder.export_xds") ) {
 	            if (rq.getParameter("exportXDSI") != null
 	                    || rq.getParameter("exportXDSI.x") != null) { return exportXDSI(); }
             }
@@ -419,6 +428,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
     }
  
 
+    private String merge() {
+    	return MERGE;
+    }
 
     /**
      * Move one ore more model instances to another parent.

@@ -39,13 +39,12 @@
 
 package org.dcm4chex.archive.web.maverick.admin;
 
-import org.dcm4chex.archive.web.maverick.Errable;
 
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
  */
-public class UserChgPwdCtrl extends Errable
+public class UserChgPwdCtrl extends UserAdminCtrl
 {
 	private String userID;
 	private String popupMsg;
@@ -65,6 +64,6 @@ public class UserChgPwdCtrl extends Errable
 		UserAdminModel model = UserAdminModel.getModel(this.getCtx().getRequest());
 		userID = getCtx().getRequest().getUserPrincipal().getName();
 		popupMsg = model.getPopupMsg();
-		return "success";
+		return SUCCESS;
 	}		
 }

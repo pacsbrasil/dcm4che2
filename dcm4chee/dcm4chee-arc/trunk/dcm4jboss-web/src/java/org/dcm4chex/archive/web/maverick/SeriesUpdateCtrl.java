@@ -56,7 +56,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @since 5.10.2004
  *
  */
-public class SeriesUpdateCtrl extends Dcm4JbossController {
+public class SeriesUpdateCtrl extends Dcm4JbossFormController {
 
     private int patPk;
 

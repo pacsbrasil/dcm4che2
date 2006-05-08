@@ -48,7 +48,7 @@ import org.dcm4chex.archive.web.maverick.*;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class AENewSubmitCtrl extends Errable
+public class AENewSubmitCtrl extends AEFormCtrl
 {
 
 	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
@@ -130,22 +130,21 @@ public class AENewSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		setPopupMsg(null);
 		if (newPar != null)
 		{
 			try
 			{
 				AEData newAE = getAE();
 				lookupAEDelegate().updateAE( title, hostName, port, cipherSuites);
-				return "success";
+				return SUCCESS;
 			} catch (Throwable e)
 			{
-				this.errorType = e.getClass().getName();
-				this.message = e.getMessage();
-				this.backURL = "aenew.m";
-				return ERROR_VIEW;				
+				setPopupMsg("Failed to create new AE Title:"+getAE()+"!");
+				return SUCCESS;				
 			}
 		}
 		else
-			return "success";			
+			return SUCCESS;			
 	}
 }

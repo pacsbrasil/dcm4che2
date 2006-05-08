@@ -117,7 +117,7 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
             		return performAction( action, request );
             	}
             }
-            return "success";
+            return SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -158,7 +158,7 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 			model.setMppsIDs(null);
 			return "cancelLink";
 		}
-		return "success";
+		return SUCCESS;
 	}
 
 
@@ -173,13 +173,13 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 		String[] spsIDs = getSPSIds(request);
 		if ( spsIDs == null || spsIDs.length < 1) {
 			model.setPopupMsg("No Worklist Entry selected!");
-			return "success";
+			return SUCCESS;
 		} else if ( spsIDs.length > 1 ) {
 			String patID = (String) model.getMWLEntry(spsIDs[0]).getPatientID();
 			for ( int i = 1 ; i < spsIDs.length ; i++ ) {
 				if ( ! patID.equals(model.getMWLEntry(spsIDs[i]).getPatientID())) {
 					model.setPopupMsg("All selected Worklist Entries must be from the same patient!");
-					return "success";
+					return SUCCESS;
 				}
 			}
 		}
@@ -242,6 +242,10 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	public static MWLScuDelegate getMwlScuDelegate() {
 		return delegate;
+	}
+	
+	protected String getCtrlName() {
+		return "mwl_console";
 	}
 	
 }

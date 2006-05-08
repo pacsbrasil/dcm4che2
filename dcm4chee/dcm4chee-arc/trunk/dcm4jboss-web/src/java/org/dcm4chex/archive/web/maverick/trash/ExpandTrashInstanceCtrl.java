@@ -42,7 +42,6 @@ package org.dcm4chex.archive.web.maverick.trash;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 
 /**
@@ -51,36 +50,12 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandTrashInstanceCtrl extends Dcm4JbossController {
+public class ExpandTrashInstanceCtrl extends ExpandTrashSeriesCtrl {
 
-    private int patPk;
-
-    private int studyPk;
-
-    private int seriesPk;
-    
     private int instancePk;
     
-    private boolean expand;
-
-    public final void setPatPk(int patPk) {
-        this.patPk = patPk;
-    }
-
-    public final void setSeriesPk(int seriesPk) {
-        this.seriesPk = seriesPk;
-    }
-
-    public final void setStudyPk(int studyPk) {
-        this.studyPk = studyPk;
-    }
-
     public final void setInstancePk(int pk) {
         this.instancePk = pk;
-    }
-    
-    public final void setExpand( boolean expand ) {
-    	this.expand = expand;
     }
     
     protected String perform() throws Exception {

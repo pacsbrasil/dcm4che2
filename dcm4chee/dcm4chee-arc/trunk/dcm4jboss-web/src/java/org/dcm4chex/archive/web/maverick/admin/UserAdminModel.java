@@ -39,17 +39,12 @@
 
 package org.dcm4chex.archive.web.maverick.admin;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.interfaces.UserManager;
-import org.dcm4chex.archive.ejb.interfaces.UserManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
 
@@ -62,6 +57,8 @@ public class UserAdminModel extends BasicFormModel {
 
 	private List userList = null;
 	private DCMUser editUser = null;
+	
+	private UserAdminDelegate delegate = new UserAdminDelegate();
 
 	private static final String USERMODEL_ATTR_NAME = "UserAdminModel";
 
@@ -138,8 +135,7 @@ public class UserAdminModel extends BasicFormModel {
 		} else {
 			String userID = user.getUserID();
 			try {
-				UserManager manager = lookupUserManager();
-				manager.addUser(user.getUserID(),passwd, user.roles());
+				delegate.addUser(user.getUserID(),passwd, user.roles());
 			} catch (Exception e) {
 				log.error("Cant create new user "+userID+" with roles "+user.roles(), e);
 				this.setPopupMsg("Cant create user "+userID+"! Exception:"+e.getMessage());
@@ -170,8 +166,7 @@ public class UserAdminModel extends BasicFormModel {
 			Collection roles = user.roles();
 			String role;
 			try {
-				UserManager manager = lookupUserManager();
-				manager.updateUser(userID, roles);
+				delegate.updateUser(userID, roles);
 			} catch (Exception e) {
 				log.error("Cant update user "+userID+" with roles "+roles, e);
 				this.setPopupMsg( "Cant update user "+userID+"! Exception:"+e.getMessage());
@@ -184,7 +179,7 @@ public class UserAdminModel extends BasicFormModel {
 	
 	public boolean changePassword(String user, String oldPasswd, String newPasswd){
 		try {
-			if ( lookupUserManager().changePasswordForUser(user, oldPasswd, newPasswd) ) {
+			if ( delegate.changePasswordForUser(user, oldPasswd, newPasswd) ) {
 				log.info("Password changed of user "+user );
 				return true;
 			}
@@ -235,7 +230,7 @@ public class UserAdminModel extends BasicFormModel {
 	public boolean deleteUser( int userHash ) {
 		String userID = getUser( userHash ).getUserID();
 		try {
-			this.lookupUserManager().removeUser( userID );
+			delegate.removeUser( userID );
 		} catch (Exception e) {
 			log.error("Cant delete user "+userID, e );
 			this.setPopupMsg( "Cant delete user "+userID+"! Reason:"+e.getMessage());
@@ -249,51 +244,14 @@ public class UserAdminModel extends BasicFormModel {
 	 * @throws Exception
 	 */
 	public void queryUsers() {
-		userList = new ArrayList();
 		try {
-			UserManager manager = lookupUserManager();
-			Iterator iterUsers = manager.getUsers().iterator();
-			String user; 
-			StringBuffer sbRoles;
-			while ( iterUsers.hasNext() ) {
-				user = (String) iterUsers.next();
-				userList.add( new DCMUser( user, manager.getRolesOfUser( user ) ) );
-			}
+			userList = delegate.queryUsers();
 		} catch ( Exception x ) {
 			log.error("Cant query user list!", x);
 			this.setPopupMsg( "Cant query user list! Exception:"+x.getMessage());
 		}
 	}
 	
-	/**
-	 * @param rolesOfUser
-	 * @return
-	 */
-	private String getRolesString(Collection col) {
-		if ( col == null ) return null;
-		StringBuffer sb = new StringBuffer();
-		Iterator iter = col.iterator();
-		if ( iter.hasNext()) 
-			sb.append( iter.next() );
-		while ( iter.hasNext() ) {
-			sb.append(",").append(iter.next());
-		}
-		return sb.toString();
-	}
 
-	/**
-	 * Returns the UserManager bean.
-	 * 
-	 * @return The UserManager bean.
-	 * @throws Exception
-	 */
-	protected UserManager lookupUserManager() throws Exception
-	{
-		UserManagerHome home =
-			(UserManagerHome) EJBHomeFactory.getFactory().lookup(
-					UserManagerHome.class,
-					UserManagerHome.JNDI_NAME);
-		return home.create();
-	}			
 	
 }

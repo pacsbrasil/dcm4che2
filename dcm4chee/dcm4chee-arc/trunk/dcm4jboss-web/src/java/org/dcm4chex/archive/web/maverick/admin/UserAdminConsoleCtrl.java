@@ -49,7 +49,7 @@ public class UserAdminConsoleCtrl extends UserAdminCtrl
 	
 	protected String perform() throws Exception
 	{
-		if( getModel().isAdmin() )
+		if( getModel().isAdmin() && getCtx().getRequest().getParameter("chgpwd") == null )
 			return "userlist";
 		else
 			return "chgpwd";

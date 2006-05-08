@@ -45,7 +45,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossController;
+import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
@@ -54,10 +54,10 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @version $Revision$ $Date$
  * @since 19.12.2005
  */
-public class ExpandTrashPatientCtrl extends Dcm4JbossController {
+public class ExpandTrashPatientCtrl extends Dcm4JbossFormController {
 
-    private int patPk;
-    private boolean expand;
+    protected int patPk;
+    protected boolean expand;
     
     public final void setPatPk(int patPk) {
         this.patPk = patPk;
@@ -91,4 +91,8 @@ public class ExpandTrashPatientCtrl extends Dcm4JbossController {
         return SUCCESS;
     }
 
+	protected String getCtrlName() {
+		return "trash";
+	}
+    
 }

@@ -54,7 +54,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  * @since 5.10.2004
  *
  */
-public class KeyObjectViewCtrl extends Dcm4JbossController {
+public class KeyObjectViewCtrl extends Dcm4JbossFormController {
     private int studyPk;
     private int seriesPk;
 

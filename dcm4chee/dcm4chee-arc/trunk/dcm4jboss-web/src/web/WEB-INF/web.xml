@@ -192,6 +192,15 @@
 			<param-value>dcm4jboss.archive:service=GPPPSScp</param-value>
 		</init-param>
 
+		<init-param>
+			<param-name>folderPermissionsFactory</param-name>
+			<param-value>org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsPropertyFactory</param-value>
+		</init-param>
+		<init-param>
+			<param-name>folderPermissionsFactory_cfg</param-name>
+			<param-value>conf/web/folder.permissions</param-value>
+		</init-param>
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	

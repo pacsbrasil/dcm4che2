@@ -178,4 +178,8 @@ public class GPWLConsoleCtrl extends Dcm4JbossFormController {
 		return delegate;
 	}
 
+	protected String getCtrlName() {
+		return "gpwl_console";
+	}
+	
 }
