@@ -74,8 +74,6 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 	private UserAdminDelegate delegate = new UserAdminDelegate();
 	
 	public void init(String initString) {
-		log.info("#################################################################################");
-		log.info("INIT FOLDER PERMISSION FACTORY!!!");
 		try {
 			if ( initString == null) {
 				log.warn("No initString set. Use default");
@@ -104,15 +102,12 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 		Set set;
 		for ( int i = 0, len = apps.length ; i < len ; i++ ) {
 			perm = props.getProperty(apps[i]);
-			log.info("perm:"+perm);
 			if ( perm != null ) {
 				StringTokenizer st = new StringTokenizer(perm, ";");
 				while ( st.hasMoreTokens() ) {
 					value = st.nextToken();
-					log.info("value:"+value);
 					pos = value.indexOf('(');
 					role = value.substring(0,pos);
-					log.info("role:"+role);
 					map = (Map)mapPermissions.get(role);
 					if ( map == null ) {
 						map = new HashMap();
@@ -125,7 +120,6 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 					}
 					
 					methods = value.substring(++pos,value.length()-1);
-					log.info("methods:"+methods);
 					addMethods(set, apps[i], methods, props);
 				}
 			}
@@ -133,7 +127,6 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 	}
 
 	private void addMethods(Set set, String app, String methods, Properties props ) {
-		log.info("addMethods:"+set+" app:"+app+" methods:"+methods);
 		if ( methods != null ) {
 			StringTokenizer st = new StringTokenizer(methods,",");
 			String method;
@@ -149,8 +142,7 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 	}
 
 	public FolderPermissions getFolderPermissions(String userID) {
-		log.info("-----------------------------------------------------------------------------");
-		log.info("getFolderPermission for user:"+userID);
+		log.debug("getFolderPermission for user:"+userID);
 		FolderPermissions permissions = new FolderPermissions();
 		Collection roles;
 		try {
@@ -161,13 +153,13 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 			roles.add("default");
 			
 		}
-		log.info("Roles:"+roles);
+		log.debug("Roles:"+roles);
 		Map map;
 		Set set;
 		Map.Entry entry;
 		for ( Iterator iter = roles.iterator() ; iter.hasNext() ; ) {
 			map = (Map) mapPermissions.get(iter.next());//permission for a role (key=app,value=list of methods)
-			log.info("permission for role:"+map);
+			log.debug("permission for role:"+map);
 			if ( map != null ) {
 				for ( Iterator iter1 = map.entrySet().iterator() ; iter1.hasNext() ; ) {
 					entry = (Map.Entry) iter1.next();
@@ -178,7 +170,6 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 		}
 		if ( permissions.getNumberOfPrivilegedApps() == 0 ) {
 			log.warn("User "+userID+" has no Permissions for any Folder Application! Set to use folder only!");
-			log.info("permissions:"+permissions);
 			permissions.addPermissions("folder",null);
 		}
 		return permissions;
