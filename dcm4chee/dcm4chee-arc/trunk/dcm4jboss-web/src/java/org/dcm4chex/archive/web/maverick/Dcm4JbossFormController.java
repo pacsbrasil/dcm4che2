@@ -153,13 +153,13 @@ public class Dcm4JbossFormController extends Throwaway2
 		if ( allowed != null ) {
 			for ( Iterator iter = allowed.iterator() ; iter.hasNext() ; ) {
 				param = (String)iter.next();
-				log.info("setTranformParam method:"+param);
+				log.debug("setTranformParam method:"+param);
 				ctx.setTransformParam( param,"true");
 			}
 		}
 		for ( int i = 0, len = FOLDER_APPLICATIONS.length ; i < len ; i++ ) {
 			param = FOLDER_APPLICATIONS[i];
-			log.info("setTransformPath for application:"+param+"="+(perms.getPermissionsForApp(param)!=null));
+			log.debug("setTransformPath for application:"+param+"="+(perms.getPermissionsForApp(param)!=null));
 			ctx.setTransformParam( param, 
 					String.valueOf(perms.getPermissionsForApp(param)!=null));
 		}
