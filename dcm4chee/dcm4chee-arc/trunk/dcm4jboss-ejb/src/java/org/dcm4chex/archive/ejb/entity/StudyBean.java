@@ -96,7 +96,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1"
+ * 	            query="SELECT SUM(s.num_instances) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
@@ -106,7 +106,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2 AND f.fileSystem.availability <> 3 AND f.fileSystem.status = 2"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
- * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.study.pk = ?1"
+ * 	            query="SELECT MAX(s.availability) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1"
  *
