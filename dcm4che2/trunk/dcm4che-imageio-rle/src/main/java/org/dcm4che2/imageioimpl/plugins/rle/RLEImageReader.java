@@ -132,9 +132,9 @@ public class RLEImageReader extends ImageReader {
             short[] ss = db instanceof DataBufferUShort 
                     ? ((DataBufferUShort) db).getData()
                     : ((DataBufferShort) db).getData();
-            unrle(ss, 8);
+            unrleMSB(ss);
             seekSegment(2);
-            unrle(ss, 0);            
+            unrleLSB(ss);            
         }
         seekInputToEndOfRLEData();
         return bi;
@@ -274,7 +274,30 @@ public class RLEImageReader extends ImageReader {
         }        
     }
 
-    private void unrle(short[] ss, int shift)
+    private void unrleMSB(short[] ss)
+    throws IOException {
+        int l, pos = 0;
+        short s;
+        byte b;
+        while (pos < ss.length) {
+            b = nextByte();
+            if (b >= 0) {
+                l = b + 1;
+                for (int i = 0; i < l; i++, pos++) {
+                    ss[pos] = (short) (nextByte() << 8);
+                }
+             } else if (b != -128) {
+                l = -b + 1;
+                s = (short) (nextByte() << 8);
+                for (int i = 0; i < l; i++, pos++) {
+                    ss[pos] = s;
+                }
+             }
+        }        
+    }
+
+
+    private void unrleLSB(short[] ss)
     throws IOException {
         int v, l, pos = 0;
         byte b;
@@ -283,17 +306,15 @@ public class RLEImageReader extends ImageReader {
             if (b >= 0) {
                 l = b + 1;
                 for (int i = 0; i < l; i++, pos++) {
-                    v = (nextByte() & 0xff) << shift;
-                    ss[pos] |= v;
+                    ss[pos] |= (nextByte() & 0xff);
                 }
              } else if (b != -128) {
                 l = -b + 1;
-                v = (nextByte() & 0xff) << shift;
+                v = (nextByte() & 0xff);
                 for (int i = 0; i < l; i++, pos++) {
                     ss[pos] |= v;
                 }
              }
         }        
     }
-
 }
