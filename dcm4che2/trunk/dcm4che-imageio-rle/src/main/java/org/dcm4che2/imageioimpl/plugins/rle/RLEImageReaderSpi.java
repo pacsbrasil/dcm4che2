@@ -58,10 +58,15 @@ public class RLEImageReaderSpi extends ImageReaderSpi {
     private static String version;
     static {
         Package p = RLEImageReaderSpi.class.getPackage();
-        vendor = p.getImplementationVendor();
-        version = p.getImplementationVersion();
+        vendor = maskNull(p.getImplementationVendor(), "");
+        version = maskNull(p.getImplementationVersion(), "");
     }
 
+    private static String maskNull(String s, String def) {
+        return s != null ? s : def;
+    }
+
+    
     public RLEImageReaderSpi() {
         super(vendor, version, formatNames, null, null,
                 "org.dcm4che2.imageioimpl.plugins.rle.RLEImageReader",
