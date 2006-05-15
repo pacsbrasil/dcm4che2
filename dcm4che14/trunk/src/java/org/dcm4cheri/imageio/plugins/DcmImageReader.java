@@ -70,6 +70,7 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.image.ColorModelParam;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
@@ -111,6 +112,7 @@ public class DcmImageReader extends ImageReader {
     private int planes = 0;
 	private int samplesPerPixel = 1;
     private String pmi = null;
+    private boolean ybr2rgb = false;
 	private ColorModelParam cmParam;
 
 
@@ -244,6 +246,7 @@ public class DcmImageReader extends ImageReader {
         if (rLen == -1) {
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             String ts = theDataset.getFileMetaInfo().getTransferSyntaxUID();
+            this.ybr2rgb = ts.equals(UIDs.JPEGBaseline) || ts.equals(UIDs.JPEGExtended);
             this.decompressor = f.getReaderForTransferSyntax(ts);
             this.itemParser = new ItemParser(theParser);
             this.itemStream = new SegmentedImageInputStream(stream, itemParser);
@@ -295,6 +298,28 @@ public class DcmImageReader extends ImageReader {
     private static final ColorSpace sRGB = ColorSpace
             .getInstance(ColorSpace.CS_sRGB);
 
+    private static final ColorSpace CS_YBR_FULL = 
+            SimpleYBRColorSpace.createYBRFullColorSpace();
+    
+    private static final ColorSpace CS_YBR_PARTIAL = 
+            SimpleYBRColorSpace.createYBRPartialColorSpace();
+
+    private static final ImageTypeSpecifier YBR_FULL_PLANE = ImageTypeSpecifier
+            .createBanded(CS_YBR_FULL, new int[] { 0, 1, 2 }, new int[] { 0, 0, 0 },
+                    DataBuffer.TYPE_BYTE, false, false);
+
+    private static final ImageTypeSpecifier YBR_FULL_PIXEL = ImageTypeSpecifier
+            .createInterleaved(CS_YBR_FULL, new int[] { 0, 1, 2 },
+                    DataBuffer.TYPE_BYTE, false, false);
+
+    private static final ImageTypeSpecifier YBR_PARTIAL_PLANE = ImageTypeSpecifier
+            .createBanded(CS_YBR_PARTIAL, new int[] { 0, 1, 2 }, new int[] { 0, 0, 0 },
+                    DataBuffer.TYPE_BYTE, false, false);
+
+    private static final ImageTypeSpecifier YBR_PARTIAL_PIXEL = ImageTypeSpecifier
+            .createInterleaved(CS_YBR_PARTIAL, new int[] { 0, 1, 2 },
+                    DataBuffer.TYPE_BYTE, false, false);
+
     private static final ImageTypeSpecifier RGB_PLANE = ImageTypeSpecifier
             .createBanded(sRGB, new int[] { 0, 1, 2 }, new int[] { 0, 0, 0 },
                     DataBuffer.TYPE_BYTE, false, false);
@@ -316,9 +341,16 @@ public class DcmImageReader extends ImageReader {
     }
     
     private ImageTypeSpecifier getImageTypeSpecifier(byte[] pv2dll) {
-    	return this.samplesPerPixel == 3
-    			? (this.planes != 0 ? RGB_PLANE : RGB_PIXEL)
-    			: new ImageTypeSpecifier(cmFactory.getColorModel(
+        if (this.samplesPerPixel == 3) {
+            if (!ybr2rgb) {
+                if (pmi.startsWith("YBR_FULL"))
+                    return this.planes != 0 ? YBR_FULL_PLANE : YBR_FULL_PIXEL;
+                if (pmi.startsWith("YBR_PARTIAL"))
+                    return this.planes != 0 ? YBR_PARTIAL_PLANE : YBR_PARTIAL_PIXEL;
+            }
+            return this.planes != 0 ? RGB_PLANE : RGB_PIXEL;
+        }
+    	return new ImageTypeSpecifier(cmFactory.getColorModel(
     					this.cmParam = cmFactory.makeParam(theDataset, pv2dll)),
     					new PixelInterleavedSampleModel(
     							this.dataType, 1, 1, 1, 1, new int[] { 0 }));
@@ -627,6 +659,7 @@ public class DcmImageReader extends ImageReader {
         if (decompressor != null)
             decompressor.dispose();
         decompressor = null;
+        ybr2rgb = false;
         itemStream = null;
         itemParser = null;        
     }
