@@ -46,7 +46,7 @@ package org.dcm4che2.hp;
  */
 public class ImagePlane
 {
-    public static final ImagePlane AXIAL = new ImagePlane("AXIAL");
+    public static final ImagePlane TRANSVERSE = new ImagePlane("TRANSVERSE");
     public static final ImagePlane SAGITTAL = new ImagePlane("SAGITTAL");
     public static final ImagePlane CORONAL = new ImagePlane("CORONAL");
     public static final ImagePlane OBLIQUE = new ImagePlane("OBLIQUE");

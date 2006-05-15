@@ -1,14 +1,14 @@
 #!/bin/sh
 ### ====================================================================== ###
 ##                                                                          ##
-##  dcm4che2/dcm2txt  Launch Script                                         ##
+##  dcm4che2/rgb2ybr  Launch Script                                         ##
 ##                                                                          ##
 ### ====================================================================== ###
 
 ### $Id$ ###
 
-MAIN_CLASS=org.dcm4che2.tool.dcm2txt.Dcm2Txt
-MAIN_JAR=dcm4che-tool-dcm2txt-2.0.4.jar
+MAIN_CLASS=org.dcm4che2.tool.rgb2ybr.Rgb2Ybr
+MAIN_JAR=dcm4che-tool-rgb2ybr-2.0.4.jar
 
 DIRNAME=`dirname $0`
 

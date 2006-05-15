@@ -77,7 +77,7 @@ public class ImageOrientation
     public ImagePlane toImagePlane(float minCosine)
     {
         if (Math.abs(rx * cy - ry * cx) >= minCosine)
-            return ImagePlane.AXIAL;
+            return ImagePlane.TRANSVERSE;
         if (Math.abs(ry * cz - rz * cy) >= minCosine)
             return ImagePlane.SAGITTAL;
         if (Math.abs(rz * cx - rx * cz) >= minCosine)

@@ -55,7 +55,7 @@ public class HPDisplaySetTest extends TestCase {
             "1.000000\\0.000000\\0.000000\\0.000000\\0.000000\\-1.000000";
     private static final String SAGITAL = 
             "0.000000\\-1.000000\\0.000000\\0.000000\\0.000000\\-1.000000";
-    private static final String AXIAL =
+    private static final String TRANSVERSE =
             "1.000000\\0.000000\\0.000000\\0.000000\\1.000000\\0.000000";
 
     private final DicomObject CT_CORONAL = 
@@ -64,18 +64,18 @@ public class HPDisplaySetTest extends TestCase {
     private final DicomObject CT_SAGITAL = 
             image("ORIGINAL\\PRIMARY\\LOCALIZER", "CT", "HEAD", 
                     "0.000000\\248.187592\\30.000000", SAGITAL);
-    private final DicomObject CT_AXIAL1 = 
+    private final DicomObject CT_TRANSVERSE1 = 
             image("ORIGINAL\\PRIMARY\\AXIAL", "CT", "HEAD", 
-                    "-158.135818\\-179.035812\\-59.200001", AXIAL);
-    private final DicomObject CT_AXIAL2 =
+                    "-158.135818\\-179.035812\\-59.200001", TRANSVERSE);
+    private final DicomObject CT_TRANSVERSE2 =
             image("ORIGINAL\\PRIMARY\\AXIAL", "CT", "HEAD", 
-                    "-158.135818\\-179.035812\\-29.200001", AXIAL);
-    private final DicomObject MR_AXIAL1 =
+                    "-158.135818\\-179.035812\\-29.200001", TRANSVERSE);
+    private final DicomObject MR_TRANSVERSE1 =
             image("ORIGINAL\\PRIMARY", "MR", "HEAD", 
-                    "-120.000000\\-116.699997\\-19.799999", AXIAL);
-    private final DicomObject MR_AXIAL2 = 
+                    "-120.000000\\-116.699997\\-19.799999", TRANSVERSE);
+    private final DicomObject MR_TRANSVERSE2 = 
             image("ORIGINAL\\PRIMARY", "MR", "HEAD", 
-                    "-120.000000\\-116.699997\\-5.800000", AXIAL);
+                    "-120.000000\\-116.699997\\-5.800000", TRANSVERSE);
 
 
     private static File locateFile(String name) {
@@ -133,27 +133,27 @@ public class HPDisplaySetTest extends TestCase {
         HPImageSet is2 = ds5.getImageSet();
         assertEquals(true, is2.contains(CT_CORONAL, 0));
         assertEquals(true, is2.contains(CT_SAGITAL, 0));
-        assertEquals(true, is2.contains(CT_AXIAL1, 0));
-        assertEquals(true, is2.contains(CT_AXIAL2, 0));
-        assertEquals(false, is2.contains(MR_AXIAL1, 0));
-        assertEquals(false, is2.contains(MR_AXIAL2, 0));
+        assertEquals(true, is2.contains(CT_TRANSVERSE1, 0));
+        assertEquals(true, is2.contains(CT_TRANSVERSE2, 0));
+        assertEquals(false, is2.contains(MR_TRANSVERSE1, 0));
+        assertEquals(false, is2.contains(MR_TRANSVERSE2, 0));
         assertEquals(false, ds5.contains(CT_CORONAL, 0));
         assertEquals(false, ds5.contains(CT_SAGITAL, 0));
-        assertEquals(true, ds5.contains(CT_AXIAL1, 0));
-        assertEquals(true, ds5.contains(CT_AXIAL2, 0));
-        assertEquals(true, ds5.compare(CT_AXIAL1, 1, CT_AXIAL2, 1) > 0);
+        assertEquals(true, ds5.contains(CT_TRANSVERSE1, 0));
+        assertEquals(true, ds5.contains(CT_TRANSVERSE2, 0));
+        assertEquals(true, ds5.compare(CT_TRANSVERSE1, 1, CT_TRANSVERSE2, 1) > 0);
 
         HPDisplaySet ds10 = (HPDisplaySet) mrOnlyDisplay.get(4);
         HPImageSet is1 = ds10.getImageSet();
         assertEquals(false, is1.contains(CT_CORONAL, 0));
         assertEquals(false, is1.contains(CT_SAGITAL, 0));
-        assertEquals(false, is1.contains(CT_AXIAL1, 0));
-        assertEquals(false, is1.contains(CT_AXIAL2, 0));
-        assertEquals(true, is1.contains(MR_AXIAL1, 0));
-        assertEquals(true, is1.contains(MR_AXIAL2, 0));
-        assertEquals(true, ds10.contains(MR_AXIAL1, 0));
-        assertEquals(true, ds10.contains(MR_AXIAL2, 0));
-        assertEquals(true, ds10.compare(MR_AXIAL1, 1, MR_AXIAL2, 1) > 0);
+        assertEquals(false, is1.contains(CT_TRANSVERSE1, 0));
+        assertEquals(false, is1.contains(CT_TRANSVERSE2, 0));
+        assertEquals(true, is1.contains(MR_TRANSVERSE1, 0));
+        assertEquals(true, is1.contains(MR_TRANSVERSE2, 0));
+        assertEquals(true, ds10.contains(MR_TRANSVERSE1, 0));
+        assertEquals(true, ds10.contains(MR_TRANSVERSE2, 0));
+        assertEquals(true, ds10.compare(MR_TRANSVERSE1, 1, MR_TRANSVERSE2, 1) > 0);
         
         List filterOps = ds10.getFilterOperations();
         assertEquals(1, filterOps.size());

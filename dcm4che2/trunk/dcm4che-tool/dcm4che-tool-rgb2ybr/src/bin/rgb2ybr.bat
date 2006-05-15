@@ -1,6 +1,6 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem dcm4che2/mkvrmap  Launcher
+rem dcm4che2/rgb2ybr  Launcher
 rem -------------------------------------------------------------------------
 
 rem $Id$
@@ -8,8 +8,8 @@ rem $Id$
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che2.data.VRMap
-set MAIN_JAR=dcm4che-core-2.0.4.jar
+set MAIN_CLASS=org.dcm4che2.tool.rgb2ybr.Rgb2Ybr
+set MAIN_JAR=dcm4che-tool-rgb2ybr-2.0.4.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -42,7 +42,11 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-set CP=%DCM4CHE_HOME%\lib\%MAIN_JAR%
+set CP=%DCM4CHE_HOME%\etc\
+set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.4.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\nlog4j-1.2.19.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.0.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
 

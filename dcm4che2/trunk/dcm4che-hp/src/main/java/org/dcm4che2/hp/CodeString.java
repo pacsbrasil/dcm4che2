@@ -79,7 +79,7 @@ public class CodeString
     public static final String SLAB = "SLAB";
 
     public static final String SAGITTAL = "SAGITTAL";
-    public static final String AXIAL = "AXIAL";
+    public static final String TRANSVERSE = "TRANSVERSE";
     public static final String CORONAL = "CORONAL";
     public static final String OBLIQUE = "OBLIQUE";
 

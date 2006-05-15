@@ -79,7 +79,7 @@ public class PatientOrientation
     {
         if (r.indexOf('H') == -1 && r.indexOf('F') == -1
                 && c.indexOf('H') == -1 && c.indexOf('F') == -1)
-            return ImagePlane.AXIAL;
+            return ImagePlane.TRANSVERSE;
         if (r.indexOf('A') == -1 && r.indexOf('P') == -1
                 && c.indexOf('A') == -1 && c.indexOf('P') == -1)
             return ImagePlane.CORONAL;

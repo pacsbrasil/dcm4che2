@@ -263,7 +263,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -316,7 +316,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -369,7 +369,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -476,7 +476,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -525,7 +525,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -576,7 +576,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -627,7 +627,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -715,7 +715,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -760,7 +760,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -813,7 +813,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -868,7 +868,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -915,7 +915,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -996,7 +996,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1079,7 +1079,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1126,7 +1126,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1179,7 +1179,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1232,7 +1232,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1279,7 +1279,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1362,7 +1362,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->
@@ -1445,7 +1445,7 @@
                     <!--Selector Attribute VR-->
                     <attr tag="00720050" vr="CS">CS</attr>
                     <!--Selector CS Value-->
-                    <attr tag="00720062" vr="CS">AXIAL</attr>
+                    <attr tag="00720062" vr="CS">TRANSVERSE</attr>
                     <!--Filter-by Category-->
                     <attr tag="00720402" vr="CS">IMAGE_PLANE</attr>
                     <!--Filter-by Operator-->

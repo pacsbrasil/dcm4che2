@@ -146,6 +146,10 @@ public class Association implements Runnable
         return a;
     }
     
+    public final Socket getSocket() {
+        return socket;
+    }
+    
     final void setApplicationEntity(NetworkApplicationEntity ae)
     {
         this.ae = ae;
