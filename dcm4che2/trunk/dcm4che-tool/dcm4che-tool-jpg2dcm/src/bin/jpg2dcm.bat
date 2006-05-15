@@ -8,7 +8,7 @@ rem $Id$
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che2.tool.jpg2dcm.jpg2Dcm
+set MAIN_CLASS=org.dcm4che2.tool.jpg2dcm.Jpg2Dcm
 set MAIN_JAR=dcm4che-tool-Jpg2dcm-2.0.4.jar
 
 set DIRNAME=.\
