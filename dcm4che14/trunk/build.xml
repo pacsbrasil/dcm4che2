@@ -201,7 +201,7 @@
       <mkdir dir="${build.lib.dir}"/>
       <jar jarfile="${build.lib.dir}/dcm4che.jar">
         	<manifest>
-				<attribute name="Class-Path" value="log4j.jar dcm4che-imageio-rle-2.0.3.jar jai_imageio.jar clibwrapper_jiio.jar jai_imageio_api.zip"/>
+				<attribute name="Class-Path" value="log4j.jar dcm4che-imageio-rle-2.0.4.jar jai_imageio.jar clibwrapper_jiio.jar jai_imageio_api.zip"/>
 				<attribute name="Implementation-Title" value="dcm4che"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="TIANI MEDGRAPH AG (gunter.zeilinger@tiani.com)"/>
@@ -425,7 +425,7 @@
       <mkdir dir="${dist.dir}"/>
       <copy todir="${dist.dir}">
          <fileset dir="${build.dir}" includes="lib/**,bin/**,doc/**"/>
-         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,lib/dcm4che-imageio-rle-2.0.3.jar,bin/*"/>
+         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,lib/dcm4che-imageio-rle-2.0.4.jar,bin/*"/>
          <fileset dir="${doc.dir}" excludes="BUILD,**/.nbattrs"/>
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>
