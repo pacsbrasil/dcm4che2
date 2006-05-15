@@ -39,6 +39,19 @@
 
 package org.dcm4chex.archive.codec;
 
+import java.awt.Point;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
+import java.util.Hashtable;
+
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
@@ -127,5 +140,31 @@ public abstract class CodecCmd {
 
     public final int getPixelDataLength() {
     	return pixelDataLength;
+    }
+
+    protected BufferedImage createBufferedImage() {
+        int pixelStride;
+        int[] bandOffset;
+        int dataType;
+        int colorSpace;
+        if (samples == 3) {
+            pixelStride = 3;
+            bandOffset = new int[] { 0, 1, 2 };
+            dataType = DataBuffer.TYPE_BYTE;
+            colorSpace = ColorSpace.CS_sRGB;
+        } else {
+            pixelStride = 1;
+            bandOffset = new int[] { 0 };
+            dataType = bitsAllocated == 8 ? DataBuffer.TYPE_BYTE 
+                    : DataBuffer.TYPE_USHORT;
+            colorSpace = ColorSpace.CS_GRAY;
+        }
+        SampleModel sm = new PixelInterleavedSampleModel(dataType, columns,
+                rows, pixelStride, columns * pixelStride, bandOffset);
+        ColorModel cm = new ComponentColorModel(
+                ColorSpace.getInstance(colorSpace), sm.getSampleSize(),
+                false, false, Transparency.OPAQUE, dataType);
+        WritableRaster r = Raster.createWritableRaster(sm, new Point(0, 0));
+        return new BufferedImage(cm, r, false, new Hashtable());
     }
 }

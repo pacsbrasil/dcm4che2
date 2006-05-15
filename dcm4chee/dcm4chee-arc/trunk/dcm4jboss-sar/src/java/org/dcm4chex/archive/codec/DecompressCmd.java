@@ -145,7 +145,10 @@ public class DecompressCmd extends CodecCmd {
         this.tsuid = tsuid;
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
-        if (samples == 3) ds.putCS(Tags.PhotometricInterpretation, "RGB");
+        if (samples == 3 && (tsuid.equals(UIDs.JPEGBaseline)
+                          || tsuid.equals(UIDs.JPEGExtended))) {
+            ds.putCS(Tags.PhotometricInterpretation, "RGB");
+        }
     }
 
     public void decompress(ByteOrder byteOrder, OutputStream out)
@@ -164,11 +167,12 @@ public class DecompressCmd extends CodecCmd {
             SegmentedImageInputStream siis = new SegmentedImageInputStream(iis, itemParser);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
+            bi = createBufferedImage();
             for (int i = 0; i < frames; ++i) {
                 log.debug("start decompression of frame #" + (i + 1));
                 reader.setInput(siis);
                 ImageReadParam param = reader.getDefaultReadParam();
-                if (bi != null) param.setDestination(bi);
+                param.setDestination(bi);
                 bi = reader.read(0, param);
                 reader.reset();
                 itemParser.seekNextFrame(siis);
