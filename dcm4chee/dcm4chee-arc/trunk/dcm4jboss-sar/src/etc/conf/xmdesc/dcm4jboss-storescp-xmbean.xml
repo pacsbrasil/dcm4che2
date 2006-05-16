@@ -428,8 +428,7 @@ StoreSCP service.
          JPEGBaseline
          JPEGExtended
          JPEGLSLossy
-         JPEG2000Lossy
-         RLELossless"/>
+         JPEG2000Lossy"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
