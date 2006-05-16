@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Alex Kogan <akogan@radiology.northwestern.edu>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -87,9 +88,9 @@ public class ResourceLocator {
 	}
 
     private static Enumeration enumResources(String name) throws IOException {
-        Enumeration e = Thread.currentThread().getContextClassLoader()
-                .getResources(name);        
-        return e.hasMoreElements() ? e 
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Enumeration e;      
+        return (cl != null && (e = cl.getResources(name)).hasMoreElements()) ? e 
                 : ResourceLocator.class.getClassLoader().getResources(name);
     }
 
@@ -107,17 +108,18 @@ public class ResourceLocator {
     
 	private static Class loadClass(String name) throws ClassNotFoundException {
         try {
-            return Thread.currentThread().getContextClassLoader()
-                    .loadClass(name);
-        } catch (ClassNotFoundException ex) {
-            return ResourceLocator.class.getClassLoader().loadClass(name);
-        }
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            if (cl != null) {
+                return cl.loadClass(name);
+            }
+        } catch (ClassNotFoundException ex) {}
+        return ResourceLocator.class.getClassLoader().loadClass(name);
     }
 
     public static Object loadResource(String name) {
-		InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(name);
-        if (is == null) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        InputStream is;
+        if (cl == null || (is = cl.getResourceAsStream(name)) == null) {
             is = ResourceLocator.class.getClassLoader()
                     .getResourceAsStream(name);
     		if (is == null) {

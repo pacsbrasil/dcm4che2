@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Alex Kogan <akogan@radiology.northwestern.edu>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -80,7 +81,16 @@ public class ElementDictionary implements Serializable {
 	private static Hashtable privDicts;
 
 	static {
-		ElementDictionary.reloadDictionaries();
+        try {
+            ElementDictionary.reloadDictionaries();
+        } catch (java.lang.Throwable e) {
+            e.printStackTrace();
+            while (e.getCause() != null)
+            {
+                e = e.getCause();
+                e.printStackTrace();
+            }
+        }
 	}
 
 	public static void main(String args[]) {
