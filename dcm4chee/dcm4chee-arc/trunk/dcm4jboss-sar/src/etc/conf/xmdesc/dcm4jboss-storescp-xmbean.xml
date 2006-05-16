@@ -68,7 +68,7 @@
       <name>AcceptMissingPatientID</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -79,7 +79,7 @@
       <name>AcceptMissingPatientName</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -190,7 +190,7 @@
       <name>HourInFilePath</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false"/>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -428,7 +428,8 @@ StoreSCP service.
          JPEGBaseline
          JPEGExtended
          JPEGLSLossy
-         JPEG2000Lossy"/>
+         JPEG2000Lossy
+         RLELossless"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
