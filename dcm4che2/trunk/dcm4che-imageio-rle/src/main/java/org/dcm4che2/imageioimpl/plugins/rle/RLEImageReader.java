@@ -132,9 +132,9 @@ public class RLEImageReader extends ImageReader {
             short[] ss = db instanceof DataBufferUShort 
                     ? ((DataBufferUShort) db).getData()
                     : ((DataBufferShort) db).getData();
-            unrleMSB(ss);
+            unrle(ss);
             seekSegment(2);
-            unrleLSB(ss);            
+            unrle(ss);            
         }
         seekInputToEndOfRLEData();
         return bi;
@@ -274,30 +274,7 @@ public class RLEImageReader extends ImageReader {
         }        
     }
 
-    private void unrleMSB(short[] ss)
-    throws IOException {
-        int l, pos = 0;
-        short s;
-        byte b;
-        while (pos < ss.length) {
-            b = nextByte();
-            if (b >= 0) {
-                l = b + 1;
-                for (int i = 0; i < l; i++, pos++) {
-                    ss[pos] = (short) (nextByte() << 8);
-                }
-             } else if (b != -128) {
-                l = -b + 1;
-                s = (short) (nextByte() << 8);
-                for (int i = 0; i < l; i++, pos++) {
-                    ss[pos] = s;
-                }
-             }
-        }        
-    }
-
-
-    private void unrleLSB(short[] ss)
+    private void unrle(short[] ss)
     throws IOException {
         int v, l, pos = 0;
         byte b;
@@ -306,15 +283,18 @@ public class RLEImageReader extends ImageReader {
             if (b >= 0) {
                 l = b + 1;
                 for (int i = 0; i < l; i++, pos++) {
-                    ss[pos] |= (nextByte() & 0xff);
-                }
+                    ss[pos] <<= 8;
+                    ss[pos] |= nextByte() & 0xff;
+               }
              } else if (b != -128) {
                 l = -b + 1;
-                v = (nextByte() & 0xff);
+                v = nextByte() & 0xff;
                 for (int i = 0; i < l; i++, pos++) {
+                    ss[pos] <<= 8;
                     ss[pos] |= v;
                 }
              }
         }        
     }
+
 }
