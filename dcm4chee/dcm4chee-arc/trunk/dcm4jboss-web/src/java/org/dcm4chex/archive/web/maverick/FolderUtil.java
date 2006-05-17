@@ -154,10 +154,10 @@ public class FolderUtil {
 		DcmElement refSerSq = ds.get(Tags.RefSeriesSeq);
 		DcmElement refSopSq;
 		Dataset seriesItem;
-		for ( int i = 0 ; i < refSerSq.vm() ; i++) {
+		for ( int i = 0 ; i < refSerSq.countItems() ; i++) {
 			seriesItem = refSerSq.getItem(i);
 			refSopSq = seriesItem.get(Tags.RefSOPSeq);
-			for ( int j = 0 ; j < refSopSq.vm() ; j++ ) {
+			for ( int j = 0 ; j < refSopSq.countItems() ; j++ ) {
 				instances.add(refSopSq.getItem(j).getString(Tags.RefSOPInstanceUID));
 			}
 		}

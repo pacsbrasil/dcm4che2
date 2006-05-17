@@ -98,7 +98,7 @@ public class MPPSEntry {
 		ssAttrs = new ArrayList();
 		DcmElement e = ds.get( Tags.ScheduledStepAttributesSeq );
 		if ( e != null ) {
-			for ( int i=0, len=e.vm() ; i < len ; i++ ) {
+			for ( int i=0, len=e.countItems() ; i < len ; i++ ) {
 				ssAttrs.add( new SSAttr( e.getItem(i)));
 			}
 		}
@@ -109,7 +109,7 @@ public class MPPSEntry {
 		series = new ArrayList();
 		DcmElement e = ds.get( Tags.PerformedSeriesSeq );
 		if ( e != null ) {
-			for ( int i=0, len=e.vm() ; i < len ; i++ ) {
+			for ( int i=0, len=e.countItems() ; i < len ; i++ ) {
 				series.add( new PSeries( e.getItem(i)));
 			}
 		}
@@ -245,7 +245,7 @@ public class MPPSEntry {
 	}
 	private String getCodeValues( DcmElement elem ) {
 		if ( elem == null) return null;
-		int len = elem.vm();
+		int len = elem.countItems();
 		Dataset dsCode;
 		StringBuffer sb = new StringBuffer();
 		for ( int i = 0 ; i < len ; i++ ) {
@@ -358,9 +358,9 @@ public class MPPSEntry {
 		private void calcNoI() {
 			noi = 0;
 			DcmElement elem = dsPS.get( Tags.RefImageSeq );
-			if ( elem != null && elem.vm() > 0 ) noi += elem.vm();
+			if ( elem != null && elem.countItems() > 0 ) noi += elem.countItems();
 			elem = dsPS.get( Tags.RefNonImageCompositeSOPInstanceSeq );
-			if ( elem != null && elem.vm() > 0 ) noi += elem.vm();
+			if ( elem != null && elem.countItems() > 0 ) noi += elem.countItems();
 			numberOfInstances += noi;
 		}
 

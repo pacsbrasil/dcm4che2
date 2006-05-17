@@ -97,7 +97,7 @@ public class GPPPSEntry {
 		refRequests = new ArrayList();
 		DcmElement e = ds.get( Tags.RefRequestSeq );
 		if ( e != null ) {
-			for ( int i=0, len=e.vm() ; i < len ; i++ ) {
+			for ( int i=0, len=e.countItems() ; i < len ; i++ ) {
 				refRequests.add( new RefRequest( e.getItem(i)));
 			}
 		}
@@ -107,7 +107,7 @@ public class GPPPSEntry {
 		gpspsList = new ArrayList();
 		DcmElement e = ds.get( Tags.RefGPSPSSeq );
 		if ( e != null ) {
-			for ( int i=0, len=e.vm() ; i < len ; i++ ) {
+			for ( int i=0, len=e.countItems() ; i < len ; i++ ) {
 				gpspsList.add( new GPSPS( e.getItem(i)));
 			}
 		}
@@ -118,7 +118,7 @@ public class GPPPSEntry {
 		results = new ArrayList();
 		DcmElement e = ds.get( Tags.OutputInformationSeq );
 		if ( e != null ) {
-			for ( int i=0, len=e.vm() ; i < len ; i++ ) {
+			for ( int i=0, len=e.countItems() ; i < len ; i++ ) {
 				results.addAll( getRefIUIDs( e.getItem(i)));
 			}
 		}
@@ -129,10 +129,10 @@ public class GPPPSEntry {
 		DcmElement series = ds.get( Tags.RefSeriesSeq );
 		DcmElement instances;
 		if ( series != null ) {
-			for ( int i=0, len=series.vm() ; i < len ; i++ ) {
+			for ( int i=0, len=series.countItems() ; i < len ; i++ ) {
 				instances = series.getItem(i).get(Tags.RefSOPSeq);
 				if ( instances != null ) {
-					for ( int j = 0, len1=instances.vm() ; j < len1 ; j++ ) {
+					for ( int j = 0, len1=instances.countItems() ; j < len1 ; j++ ) {
 						l.add( instances.getItem(j).getString(Tags.RefSOPInstanceUID));
 					}
 				}
@@ -202,8 +202,8 @@ public class GPPPSEntry {
 	public String[] getActualHumanPerformers() {
 		DcmElement elem = ds.get(Tags.ActualHumanPerformersSeq);
 		if ( elem != null ) {
-			String[] performers = new String[elem.vm()];
-			for ( int i = 0 ; i < elem.vm() ; i++) {
+			String[] performers = new String[elem.countItems()];
+			for ( int i = 0 ; i < elem.countItems() ; i++) {
 				performers[i] = elem.getItem(i).getItem(Tags.HumanPerformerCodeSeq).getString(Tags.CodeMeaning);
 			}
 			return performers;
@@ -265,7 +265,7 @@ public class GPPPSEntry {
 
 	
 	private String getCodeValue( DcmElement elem ) {
-		if ( elem == null || elem.vm() < 1) return null;
+		if ( elem == null || elem.countItems() < 1) return null;
 		StringBuffer sb = new StringBuffer();
 		Dataset dsCode = elem.getItem();
 		sb.append( dsCode.getString( Tags.CodeMeaning ) ).append("[");
@@ -274,8 +274,8 @@ public class GPPPSEntry {
 		
 	}
 	private String[] getCodeValues( DcmElement elem ) {
-		if ( elem == null || elem.vm() < 1 ) return null;
-		int len = elem.vm();
+		if ( elem == null || elem.countItems() < 1 ) return null;
+		int len = elem.countItems();
 		Dataset dsCode;
 		StringBuffer sb = new StringBuffer();
 		String[] sa = new String[len];

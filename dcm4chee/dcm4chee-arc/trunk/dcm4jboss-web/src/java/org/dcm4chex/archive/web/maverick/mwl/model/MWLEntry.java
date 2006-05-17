@@ -175,7 +175,7 @@ public class MWLEntry {
 	}
 	
 	private String getCodeValues( DcmElement elem ) {
-		int len = elem.vm();
+		int len = elem.countItems();
 		Dataset dsCode;
 		StringBuffer sb = new StringBuffer();
 		for ( int i = 0 ; i < len ; i++ ) {

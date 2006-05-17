@@ -5,7 +5,7 @@
 
 <xsl:param name="ae_mgr.edit" select="'false'" />
 
-<xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
+<xsl:output method="html" indent="yes" encoding="UTF-8"/>
 <xsl:variable name="page_title">AE List</xsl:variable>
 <xsl:include href="page.xsl"/>
 <xsl:template match="model">

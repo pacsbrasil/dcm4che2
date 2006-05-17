@@ -142,8 +142,8 @@ public class GPWLEntry {
 	public String[] getHumanPerformers() {
 		DcmElement elem = ds.get(Tags.ScheduledHumanPerformersSeq);
 		if ( elem != null ) {
-			String[] performers = new String[elem.vm()];
-			for ( int i = 0 ; i < elem.vm() ; i++) {
+			String[] performers = new String[elem.countItems()];
+			for ( int i = 0 ; i < elem.countItems() ; i++) {
 				performers[i] = elem.getItem(i).getItem(Tags.HumanPerformerCodeSeq).getString(Tags.CodeMeaning);
 			}
 			return performers;
@@ -161,7 +161,7 @@ public class GPWLEntry {
 	}
 	
 	private String getCodeValues( DcmElement elem ) {
-		int len = elem.vm();
+		int len = elem.countItems();
 		Dataset dsCode;
 		StringBuffer sb = new StringBuffer();
 		for ( int i = 0 ; i < len ; i++ ) {

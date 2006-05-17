@@ -237,7 +237,7 @@ public class ECGSupport {
 	        tmpOut = new FileOutputStream( tmpFile);
 	        
 			DcmElement elem = ds.get( Tags.WaveformSeq);
-			int nrOfWFGroups = elem.vm();
+			int nrOfWFGroups = elem.countItems();
 			WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
 			for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
 				wfgrps[i] = new WaveformGroup( ds.getString(Tags.SOPClassUID),elem, i,

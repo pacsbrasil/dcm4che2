@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-<xsl:output method="html" indent="yes" encoding="ISO-8859-1" />
+<xsl:output method="html" indent="yes" encoding="UTF-8" />
 <xsl:variable name="page_title">Patient Merge</xsl:variable>
 <xsl:include href  = "page.xsl" />
 

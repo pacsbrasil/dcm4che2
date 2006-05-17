@@ -6,7 +6,7 @@
 
 <xsl:param name="trash.remove" select="'false'" />
 
-<xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
+<xsl:output method="html" indent="yes" encoding="UTF-8"/>
 <xsl:variable name="page_title">Patient List</xsl:variable>
 <xsl:include href="page.xsl"/>
 

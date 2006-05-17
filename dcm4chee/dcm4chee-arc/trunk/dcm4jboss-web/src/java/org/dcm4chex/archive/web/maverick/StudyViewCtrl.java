@@ -224,7 +224,7 @@ public class StudyViewCtrl extends Dcm4JbossFormController {
     		DcmElement serSeq = ds.get( Tags.RefSeriesSeq );
     		SeriesContainer ser;
     		String mod;
-    		for ( int i = 0, len = serSeq.vm() ; i < len ; i++ ) {
+    		for ( int i = 0, len = serSeq.countItems() ; i < len ; i++ ) {
     			ser = new SeriesContainer( serSeq.getItem(i));
     			if ( seriesIUID != null && ! seriesIUID.equals(ser.getSeriesIUID()) ) continue;
     			mod = ser.getModality();
@@ -255,7 +255,7 @@ public class StudyViewCtrl extends Dcm4JbossFormController {
     		modality = ds.getString( Tags.Modality );
     		seriesNumber = ds.getString( Tags.SeriesNumber );
 			DcmElement refSopSq = ds.get(Tags.RefSOPSeq);
-    		for ( int i = 0, len = refSopSq.vm() ; i < len ; i++ ) {
+    		for ( int i = 0, len = refSopSq.countItems() ; i < len ; i++ ) {
     			instanceUIDs.add( refSopSq.getItem(i).getString( Tags.RefSOPInstanceUID ) );
     		}
     	}

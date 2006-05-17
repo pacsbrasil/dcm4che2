@@ -149,7 +149,7 @@ public class WaveformGroup {
 	 * @param element
 	 */
 	private void prepareChannels( DcmElement chDefs, float fCorr ) {
-		int len = chDefs.vm();
+		int len = chDefs.countItems();
 		channels = new WaveFormChannel[ len ];
 		WaveFormChannel ch;
 		for ( int i = 0 ; i < len ; i++ ) {
