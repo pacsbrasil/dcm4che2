@@ -376,18 +376,18 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 			Dataset inputInfo = inSq.addNewItem();
 			inputInfo.putUI(Tags.StudyInstanceUID, siuid);
 			DcmElement inSeriesSq = inputInfo.putSQ(Tags.RefSeriesSeq);
-			for (int i = 0, n = perfSeriesSq.vm(); i < n; ++i) {
+			for (int i = 0, n = perfSeriesSq.countItems(); i < n; ++i) {
 				Dataset perfSeries = perfSeriesSq.getItem(i);
 				Dataset inSeries = inSeriesSq.addNewItem();
 				inSeries.putUI(Tags.SeriesInstanceUID,
 						perfSeries.getString(Tags.SeriesInstanceUID));
 				DcmElement inRefSopSq = inSeries.putSQ(Tags.RefSOPSeq);
 				DcmElement refImgSopSq = perfSeries.get(Tags.RefImageSeq);
-				for (int j = 0, m = refImgSopSq.vm(); j < m; ++j) {
+				for (int j = 0, m = refImgSopSq.countItems(); j < m; ++j) {
 					inRefSopSq.addItem(refImgSopSq.getItem(j));
 				}
 				DcmElement refNoImgSopSq = perfSeries.get(Tags.RefNonImageCompositeSOPInstanceSeq);
-				for (int j = 0, m = refNoImgSopSq.vm(); j < m; ++j) {
+				for (int j = 0, m = refNoImgSopSq.countItems(); j < m; ++j) {
 					inRefSopSq.addItem(refNoImgSopSq.getItem(j));
 				}
 			}
@@ -407,7 +407,7 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
             throws Exception {
         DcmObjectFactory dof = DcmObjectFactory.getInstance();
         DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
-        for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
+        for (int i = 0, n = ssaSq.countItems(); i < n; ++i) {
             Dataset ssa = ssaSq.getItem(i);
             String spsid = ssa.getString(Tags.SPSID);
             if (spsid != null) {

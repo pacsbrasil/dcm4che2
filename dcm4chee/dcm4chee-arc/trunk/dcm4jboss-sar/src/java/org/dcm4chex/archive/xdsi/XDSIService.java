@@ -829,7 +829,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		DcmElement sq = kos.get(Tags.CurrentRequestedProcedureEvidenceSeq);
 		if ( sq != null ) {
 			suids = new LinkedHashSet();
-			for ( int i = 0,len=sq.vm() ; i < len ; i++ ) {
+			for ( int i = 0,len=sq.countItems() ; i < len ; i++ ) {
 				suids.add(sq.getItem(i).getString(Tags.StudyInstanceUID));
 			}
 		}

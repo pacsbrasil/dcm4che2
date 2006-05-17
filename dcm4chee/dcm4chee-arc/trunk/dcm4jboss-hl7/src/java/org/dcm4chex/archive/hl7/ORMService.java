@@ -157,7 +157,7 @@ public class ORMService extends AbstractHL7Service {
 			try {
 				DcmElement spsSq = ds.remove(Tags.SPSSeq);
 				Dataset sps;
-				for (int i = 0, n = spsSq.vm(); i < n; ++i) {
+				for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
 					sps = spsSq.getItem(i);
 					switch (msgType) {
 					case NW:
@@ -296,7 +296,7 @@ public class ORMService extends AbstractHL7Service {
 		DcmElement spcSq0, spcSqI;
 		Dataset sps;
 		String spsid;
-		for (int i = 0, n = prevSpsSq.vm(); i < n; ++i) {
+		for (int i = 0, n = prevSpsSq.countItems(); i < n; ++i) {
 			sps = prevSpsSq.getItem(i);
 			spsid = sps.getString(Tags.SPSID);
 			spcSqI = sps.get(Tags.ScheduledProtocolCodeSeq);

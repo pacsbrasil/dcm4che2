@@ -152,14 +152,14 @@ class PPSScp extends DcmServiceBase {
                                     + Tags.toString(TYPE1_NCREATE_ATTR[i]));
         }
         DcmElement refReqSQ = gppps.get(Tags.RefRequestSeq);
-        for (int i = 0, n = refReqSQ.vm(); i < n; ++i) {
+        for (int i = 0, n = refReqSQ.countItems(); i < n; ++i) {
             if (refReqSQ.getItem(i).vm(Tags.StudyInstanceUID) <= 0)
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Study Instance UID in Referenced Request Seq.");
         }
         DcmElement refGPSPSSQ = gppps.get(Tags.RefGPSPSSeq);
         if (refGPSPSSQ != null) {
-            for (int i = 0, n = refGPSPSSQ.vm(); i < n; ++i) {
+            for (int i = 0, n = refGPSPSSQ.countItems(); i < n; ++i) {
                 Dataset refGPSPS = refGPSPSSQ.getItem(i);
                 for (int j = 0; j < TYPE1_REF_GPSPS_ATTR.length; ++j) {
                     if (refGPSPS.vm(TYPE1_REF_GPSPS_ATTR[j]) <= 0)
@@ -171,7 +171,7 @@ class PPSScp extends DcmServiceBase {
             }
         }
         DcmElement ahpSQ = gppps.get(Tags.ActualHumanPerformersSeq);
-        for (int i = 0, n = ahpSQ.vm(); i < n; ++i) {            
+        for (int i = 0, n = ahpSQ.countItems(); i < n; ++i) {            
             Dataset item = ahpSQ.getItem(i);
             checkCodeItem(item, Tags.HumanPerformerCodeSeq, true);
         }

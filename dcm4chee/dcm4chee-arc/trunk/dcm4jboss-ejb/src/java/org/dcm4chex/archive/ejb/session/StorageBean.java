@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.ejb.session;
 
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -63,6 +62,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
@@ -456,7 +456,7 @@ public abstract class StorageBean implements SessionBean {
             DcmElement dsEl = (DcmElement) it.next();
             final int tag = dsEl.tag();
             final int vr = dsEl.vr();
-            final int vm = dsEl.vm();
+            final int vm = dsEl.countItems();
             if (Tags.isPrivate(tag) || dsEl.isEmpty())
                 continue;            
             DcmElement refEl = ref.get(tag);
@@ -469,7 +469,7 @@ public abstract class StorageBean implements SessionBean {
                    for (int i = 0; i < vm; i++)
                          refEl.addItem(dsEl.getItem());
                     updateEntity = true;
-                } else if (refEl.vm() == vm) {
+                } else if (refEl.countItems() == vm) {
                     for (int i = 0; i < vm; i++)
                         if (updateEntity(refEl.getItem(), dsEl.getItem()))
                             updateEntity = true;
@@ -501,9 +501,9 @@ public abstract class StorageBean implements SessionBean {
             final int tag = refEl.tag();
 			DcmElement el = ds.get(tag);
             if (!equals(el,
-                    ds.getCharset(),
+                    ds.getSpecificCharacterSet(),
                     refEl,
-                    ref.getCharset(),
+                    ref.getSpecificCharacterSet(),
                     coercedElements)) {
             	if (attrFilter.isCoercionForbidden(tag)) {
             		throw new DcmServiceException(ForbiddenAttributeCoercion,
@@ -524,11 +524,12 @@ public abstract class StorageBean implements SessionBean {
         return coercedIdentity;
     }
 
-    private boolean equals(DcmElement el, Charset cs, DcmElement refEl,
-            Charset refCS, Dataset coercedElements)
+    private boolean equals(DcmElement el, SpecificCharacterSet cs,
+            DcmElement refEl, SpecificCharacterSet refCS,
+            Dataset coercedElements)
     		throws DcmServiceException {
-        final int vm = refEl.vm();
-        if (el == null || el.vm() != vm) { return false; }
+        final int vm = refEl.countItems();
+        if (el == null || el.countItems() != vm) { return false; }
         final int vr = refEl.vr();
         if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN) {
             // no check implemented!
@@ -570,7 +571,7 @@ public abstract class StorageBean implements SessionBean {
         HashSet seriesSet = new HashSet();
         HashSet studySet = new HashSet();
         final String aet0 = stgCmtResult.getString(Tags.RetrieveAET);
-        for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
+        for (int i = 0, n = refSOPSeq.countItems(); i < n; ++i) {
             final Dataset refSOP = refSOPSeq.getItem(i);
             final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
             final String aet = refSOP.getString(Tags.RetrieveAET, aet0);

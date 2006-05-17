@@ -137,7 +137,7 @@ public abstract class CodeToDeviceMappingBean implements SessionBean {
     public void createMapping( Dataset ds  ) throws CreateException, FinderException {
     	DcmElement spsSeq = ds.get( Tags.SPSSeq );
     	DcmElement codeSeq;
-    	int len = spsSeq.vm();
+    	int len = spsSeq.countItems();
     	int lenCS;
     	Dataset ds1, dsCode;
     	for ( int i = 0 ; i < len ; i++ ) {
@@ -145,7 +145,7 @@ public abstract class CodeToDeviceMappingBean implements SessionBean {
     		DeviceLocal dl = getDeviceLocal( ds1 );
     		List codes = new ArrayList();
     		codeSeq = ds1.get( Tags.ScheduledProtocolCodeSeq );
-    		lenCS = codeSeq.vm();
+    		lenCS = codeSeq.countItems();
     		for ( int j = 0 ; j < lenCS ; j++ ) {
     			dsCode = codeSeq.getItem( j );
     	    	codes.add( CodeBean.valueOf( codeHome, dsCode ) );
@@ -188,7 +188,7 @@ public abstract class CodeToDeviceMappingBean implements SessionBean {
 	public Dataset addScheduledStationInfo(Dataset ds) throws FinderException {
 		DcmElement spsSeq = ds.get(Tags.SPSSeq);
 		DcmElement codeSeq;
-		int len = spsSeq.vm();
+		int len = spsSeq.countItems();
 		Dataset sps;
 		for (int i = 0; i < len; i++) {
 			sps = spsSeq.getItem(i);

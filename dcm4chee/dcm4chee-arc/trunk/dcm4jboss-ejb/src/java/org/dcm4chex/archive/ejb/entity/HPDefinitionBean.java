@@ -133,7 +133,7 @@ public abstract class HPDefinitionBean implements EntityBean {
 			FinderException {
 		if (sq == null)
 			return;
-		for (int i = 0, n = sq.vm(); i < n; i++) {
+		for (int i = 0, n = sq.countItems(); i < n; i++) {
 			c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
 		}
 	}

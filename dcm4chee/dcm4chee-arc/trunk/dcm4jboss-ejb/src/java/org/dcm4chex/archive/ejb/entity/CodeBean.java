@@ -198,7 +198,7 @@ public abstract class CodeBean implements EntityBean {
         Dataset item = sq.getItem(0);
         if (item.isEmpty()) return;
         c.add(CodeBean.valueOf(codeHome, item));
-    	for (int i = 1, n = sq.vm(); i < n; i++) {
+    	for (int i = 1, n = sq.countItems(); i < n; i++) {
     		c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
     	}
     }

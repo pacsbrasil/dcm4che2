@@ -505,7 +505,7 @@ class MoveTask implements Runnable {
         	service.logInstancesSent(remoteNode, instancesAction);
         service.updateStudyAccessTime(studyInfos);
         String stgCmtAET = service.getStgCmtAET(moveDest);
-        if (stgCmtAET != null && refSOPSeq.vm() > 0)
+        if (stgCmtAET != null && refSOPSeq.countItems() > 0)
             service
                     .queueStgCmtOrder(moveCalledAET, stgCmtAET,
                             stgCmtActionInfo);

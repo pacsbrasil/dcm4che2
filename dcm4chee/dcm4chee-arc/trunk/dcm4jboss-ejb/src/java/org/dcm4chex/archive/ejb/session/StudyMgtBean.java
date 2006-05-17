@@ -223,7 +223,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			if (seriesSq != null) {
 				Set dirtyStudies = new HashSet();
 				Set dirtySeries = new HashSet();
-				for (int i = 0, n = seriesSq.vm(); i < n; ++i) {
+				for (int i = 0, n = seriesSq.countItems(); i < n; ++i) {
 					updateSeries(seriesSq.getItem(i), study, dirtyStudies,
 							dirtySeries);
 				}
@@ -280,7 +280,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			series.setAttributes(attrs);
 			DcmElement sopSq = ds.get(Tags.RefSOPSeq);
 			if (sopSq != null) {
-				for (int i = 0, n = sopSq.vm(); i < n; ++i) {
+				for (int i = 0, n = sopSq.countItems(); i < n; ++i) {
 					updateInstance(sopSq.getItem(i), series, 
 							dirtyStudies, dirtySeries);
 				}

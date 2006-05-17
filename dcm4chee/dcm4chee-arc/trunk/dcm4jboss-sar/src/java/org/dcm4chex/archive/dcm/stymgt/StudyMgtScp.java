@@ -142,7 +142,7 @@ class StudyMgtScp extends DcmServiceBase {
 			throw new DcmServiceException(Status.MissingAttribute,
 					"Missing Referenced Series Seq.");
 		}
-		for (int i = 0, n = sersq.vm(); i < n; ++i) {
+		for (int i = 0, n = sersq.countItems(); i < n; ++i) {
 			Dataset ser = sersq.getItem(i);
 			String siuid = ser.getString(Tags.SeriesInstanceUID);
 			if (siuid == null) {
@@ -157,7 +157,7 @@ class StudyMgtScp extends DcmServiceBase {
 					throw new DcmServiceException(Status.MissingAttribute,
 							"Missing Referenced SOP Seq.");
 				}
-				for (int j = 0, m = sops.vm(); j < m; ++j) {
+				for (int j = 0, m = sops.countItems(); j < m; ++j) {
 					Dataset sop = sops.getItem(i);
 					String iuid = sop.getString(Tags.RefSOPInstanceUID);
 					if (iuid == null) {

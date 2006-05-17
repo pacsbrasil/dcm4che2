@@ -98,7 +98,7 @@ class GPSPSScp extends DcmServiceBase {
         DcmElement src = actionInfo.get(Tags.ActualHumanPerformersSeq);
         if (src != null) {
 	    	Dataset item, code;
-	    	for (int i = 0, n = src.vm(); i < n; ++i) {
+	    	for (int i = 0, n = src.countItems(); i < n; ++i) {
 	    		item = src.getItem(i);
 	    		code = item.getItem(Tags.HumanPerformerCodeSeq);
 	    		if (code == null) {

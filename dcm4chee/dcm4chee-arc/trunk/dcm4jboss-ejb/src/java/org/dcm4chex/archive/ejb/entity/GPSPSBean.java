@@ -171,7 +171,7 @@ public abstract class GPSPSBean implements EntityBean {
             return;
         Collection c = getScheduledHumanPerformers();
         GPSPSLocal gpsps = (GPSPSLocal) ejbctx.getEJBLocalObject();
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             c.add(performerHome.create(sq.getItem(i), gpsps));
         }
     }
@@ -179,7 +179,7 @@ public abstract class GPSPSBean implements EntityBean {
         if (sq == null) return;
         Collection c = getRefRequests();
         GPSPSLocal gpsps = (GPSPSLocal) ejbctx.getEJBLocalObject();
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             c.add(rqHome.create(sq.getItem(i), gpsps));
         }
     }

@@ -191,7 +191,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 keys.getString(Tags.Modality));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
                 type2,
-                keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));
+                keys.getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         if (rqAttrs != null) {
             sqlBuilder.addWildCardMatch(null,
@@ -263,7 +263,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
                 	if (el.isEmpty()) el.addNewItem();
-                    for (int i = 0, n = el.vm(); i < n; ++i) {
+                    for (int i = 0, n = el.countItems(); i < n; ++i) {
                         adjustDataset(el.getItem(i), keyItem);
                     }
                 }

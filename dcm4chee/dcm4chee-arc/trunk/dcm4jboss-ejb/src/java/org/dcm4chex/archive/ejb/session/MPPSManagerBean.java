@@ -263,7 +263,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     		DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
     		String ssaSpsID, studyIUID = null;
     		boolean spsNotInList = true;
-    		for ( int i = 0, len = ssaSQ.vm() ; i < len ; i++ ) {
+    		for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++ ) {
     			ssa = ssaSQ.getItem(i);
     			if ( ssa != null ) {
     				if ( studyIUID == null ) { 

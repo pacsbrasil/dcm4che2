@@ -228,7 +228,7 @@ implements NotificationListener {
 			return;
 		}
 		if (oneORMperSPS) {
-			for (int i = 0, n = sq.vm(); i < n; i++) {
+			for (int i = 0, n = sq.countItems(); i < n; i++) {
 				mpps.putSQ(Tags.ScheduledStepAttributesSeq).addItem(
 						sq.getItem(i));
 				scheduleORM(makeORM(mpps));

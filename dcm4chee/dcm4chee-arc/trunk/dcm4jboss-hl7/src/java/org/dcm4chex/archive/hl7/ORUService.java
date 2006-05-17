@@ -164,7 +164,7 @@ public class ORUService extends AbstractHL7Service
         sr.putUI(Tags.SOPInstanceUID, uidgen.createUID());
         String cuid = sr.getString(Tags.SOPClassUID);
         DcmElement identicalDocumentsSeq = sr.get(Tags.IdenticalDocumentsSeq);
-        for (int i = 0, n = identicalDocumentsSeq.vm(); i < n; i++)
+        for (int i = 0, n = identicalDocumentsSeq.countItems(); i < n; i++)
         {
             Dataset studyItem = identicalDocumentsSeq.getItem(i);
             Dataset seriesItem = studyItem.putSQ(Tags.RefSeriesSeq).addNewItem();

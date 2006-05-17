@@ -167,7 +167,7 @@ public abstract class GPPPSManagerBean implements SessionBean {
     private Collection findRefGpsps(DcmElement spssq, PatientLocal pat)
     throws DcmServiceException {
         if (spssq == null) return null;
-        int n = spssq.vm();
+        int n = spssq.countItems();
         ArrayList c = new ArrayList(n);
         for (int i = 0; i < n; i++) {
             Dataset refSOP = spssq.getItem(i);

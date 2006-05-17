@@ -286,10 +286,10 @@ public class KeyObjectService extends ServiceMBeanSupport {
     	for ( Iterator iter = refSopInstances.iterator() ; iter.hasNext() ; ) {
     		sopInstRef = (Dataset) iter.next();
     		refSerSq = sopInstRef.get(Tags.RefSeriesSeq);
-    		for ( int i = 0,len = refSerSq.vm() ; i < len ; i++ ) {
+    		for ( int i = 0,len = refSerSq.countItems() ; i < len ; i++ ) {
     			refSerItem = refSerSq.getItem(i);
     			refSopSq = refSerItem.get(Tags.RefSOPSeq);
-    			for ( int j=0,n=refSopSq.vm() ; j < n ; j++ ) {
+    			for ( int j=0,n=refSopSq.countItems() ; j < n ; j++ ) {
     				refSopItem = refSopSq.getItem(j);
     				item = sq.addNewItem();
     				item.putCS(Tags.RelationshipType, "CONTAINS");

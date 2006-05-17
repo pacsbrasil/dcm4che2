@@ -556,7 +556,7 @@ public class StoreScpService extends AbstractScpService {
         action.setMPPSInstanceUID(ppsiuid );
 	    action.setAccessionNumber(seriesStored.getAccessionNumber());
 		DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
-		int n = sq.vm();
+		int n = sq.countItems();
 		for (int i = 0; i < n; i++) {
 			action.addSOPClassUID(sq.getItem(i).getString(Tags.RefSOPClassUID));
 		}

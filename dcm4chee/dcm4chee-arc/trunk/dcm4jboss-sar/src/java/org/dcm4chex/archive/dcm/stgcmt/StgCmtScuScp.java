@@ -157,7 +157,7 @@ class StgCmtScuScp extends DcmServiceBase {
             throws DcmServiceException {
         if (sq == null)
             return;
-        for (int i = 0, n = sq.vm(); i < n; ++i) {
+        for (int i = 0, n = sq.countItems(); i < n; ++i) {
             final Dataset refSOP = sq.getItem(i);
             final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
             final String cuid = refSOP.getString(Tags.RefSOPClassUID);

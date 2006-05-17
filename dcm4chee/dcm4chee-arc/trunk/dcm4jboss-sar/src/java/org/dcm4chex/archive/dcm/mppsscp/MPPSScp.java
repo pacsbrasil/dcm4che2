@@ -161,7 +161,7 @@ class MPPSScp extends DcmServiceBase {
                                     + Tags.toString(TYPE1_NCREATE_ATTR[i]));
         }
         DcmElement ssaSq = mpps.get(Tags.ScheduledStepAttributesSeq);
-        for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
+        for (int i = 0, n = ssaSq.countItems(); i < n; ++i) {
             if (ssaSq.getItem(i).vm(Tags.StudyInstanceUID) <= 0)
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Study Instance UID in Scheduled Step Attributes Seq.");

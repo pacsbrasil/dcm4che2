@@ -530,7 +530,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void sendSeriesUpdatedNotifications( Dataset studyMgtDS, String description ) {
 		DcmElement sq = studyMgtDS.get(Tags.RefSeriesSeq);
 		String aet = getRetrieveAET();
-		for ( int i = 0, len = sq.vm(); i < len ; i++ ) {
+		for ( int i = 0, len = sq.countItems(); i < len ; i++ ) {
 			sendJMXNotification( new SeriesUpdated(sq.getItem(i).getString(Tags.SeriesInstanceUID), 
 								description, aet));
 		}

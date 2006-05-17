@@ -214,7 +214,7 @@ public abstract class QueryCmd extends BaseReadCmd {
                 SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionalDepartmentName)));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
                 type2,
-                keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));
+                keys.getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET",
                 type2,
@@ -282,7 +282,7 @@ public abstract class QueryCmd extends BaseReadCmd {
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
                 	if (el.isEmpty()) el.addNewItem();
-                    for (int i = 0, n = el.vm(); i < n; ++i) {
+                    for (int i = 0, n = el.countItems(); i < n; ++i) {
                         adjustDataset(el.getItem(i), keyItem);
                     }
                 }

@@ -195,7 +195,7 @@ public class MWLFindScpService extends AbstractScpService
             return;
         }
         try {
-            for (int i = 0, n = sq.vm(); i < n; ++i) {
+            for (int i = 0, n = sq.countItems(); i < n; ++i) {
                 Dataset item = sq.getItem(i);
                 String spsid = item.getString(Tags.SPSID);
                 if (spsid != null) {

@@ -403,7 +403,7 @@ public abstract class SeriesBean implements EntityBean {
         if (sq == null) return;
         Collection c = getRequestAttributes();
         SeriesLocal series = (SeriesLocal) ejbctx.getEJBLocalObject();
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             c.add(reqHome.create(sq.getItem(i), series));
         }
         

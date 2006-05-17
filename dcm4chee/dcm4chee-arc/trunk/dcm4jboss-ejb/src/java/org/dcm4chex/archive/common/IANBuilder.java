@@ -73,8 +73,8 @@ public class IANBuilder {
     public int getNumberOfInstances() {
         int num = 0;
         DcmElement sq = ian.get(Tags.RefSeriesSeq);
-        for (int i = 0, n = sq.vm(); i < n; i++) {
-            num += sq.getItem(i).get(Tags.RefSOPSeq).vm();
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
+            num += sq.getItem(i).get(Tags.RefSOPSeq).countItems();
         }
         return num;
     }
@@ -132,7 +132,7 @@ public class IANBuilder {
 
     private DcmElement getRefSOPSeq(String seruid) {
         DcmElement sq = ian.get(Tags.RefSeriesSeq);
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             Dataset series = sq.getItem(i);
             String seruid0 = series.getString(Tags.SeriesInstanceUID);
             if (seruid.equals(seruid0)) {

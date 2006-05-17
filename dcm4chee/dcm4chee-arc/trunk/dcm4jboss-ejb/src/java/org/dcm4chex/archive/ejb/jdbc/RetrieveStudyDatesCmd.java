@@ -252,7 +252,7 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
 
 	private static class RefSOPSql extends Sql {
 		RefSOPSql(DcmElement refSOPSeq) {
-	        String[] uid = new String[refSOPSeq.vm()];
+	        String[] uid = new String[refSOPSeq.countItems()];
 	        for (int i = 0; i < uid.length; i++) {
 	            uid[i] = refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID);
 	        }

@@ -141,7 +141,7 @@ public abstract class HPBean implements EntityBean {
         if (sq == null) return;
         Collection c = getHPDefinition();
 		HPLocal hp = (HPLocal) ejbctx.getEJBLocalObject();
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             c.add(defHome.create(sq.getItem(i), hp));
         }
 	}

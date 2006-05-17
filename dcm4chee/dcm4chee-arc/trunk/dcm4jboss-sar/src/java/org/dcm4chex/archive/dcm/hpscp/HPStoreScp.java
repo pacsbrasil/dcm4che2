@@ -141,30 +141,30 @@ public class HPStoreScp extends DcmServiceBase {
 		}
 		checkType1Attrs(hp, TYPE1_HP_ATTR, "Missing Type 1 Attribute ");
 		DcmElement issq = hp.get(Tags.ImageSetsSeq);
-		for (int i = 0, n = issq.vm(); i < n; i++) {
+		for (int i = 0, n = issq.countItems(); i < n; i++) {
 			Dataset is = issq.getItem(i);
 			checkType1Attrs(is, TYPE1_IMAGESET_ATTR,
 					"Missing Type 1 Attribute (0072,0020)/");
 			DcmElement isselsq = is.get(Tags.ImageSetSelectorSeq);
-			for (int j = 0, m = isselsq.vm(); j < m; j++) {
+			for (int j = 0, m = isselsq.countItems(); j < m; j++) {
 				checkType1Attrs(isselsq.getItem(j),
 						TYPE1_IMAGESET_SELECTOR_ATTR,
 						"Missing Type 1 Attribute (0072,0020)/(0072,0022)/");
 			}
 			DcmElement tbissq = is.get(Tags.TimeBasedImageSetsSeq);
-			for (int j = 0, m = tbissq.vm(); j < m; j++) {
+			for (int j = 0, m = tbissq.countItems(); j < m; j++) {
 				checkType1Attrs(tbissq.getItem(j),
 						TYPE1_TIMEBASED_IMAGESET_ATTR,
 						"Missing Type 1 Attribute (0072,0020)/(0072,0030)/");
 			}
 		}
 		DcmElement dssq = hp.get(Tags.DisplaySetsSeq);
-		for (int i = 0, n = issq.vm(); i < n; i++) {
+		for (int i = 0, n = issq.countItems(); i < n; i++) {
 			Dataset ds = dssq.getItem(i);
 			checkType1Attrs(ds, TYPE1_DISPLAYSET_ATTR,
 					"Missing Type 1 Attribute (0072,0200)/");
 			DcmElement ibsq = ds.get(Tags.ImageBoxesSeq);
-			for (int j = 0, m = ibsq.vm(); j < m; j++) {
+			for (int j = 0, m = ibsq.countItems(); j < m; j++) {
 				checkType1Attrs(ibsq.getItem(j), TYPE1_IMAGEBOX_ATTR,
 						"Missing Type 1 Attribute (0072,0200)/(0072,0300)/");
 			}

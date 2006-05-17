@@ -376,7 +376,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 				.getString(Tags.TransactionUID));
 		DcmElement successSOPSeq = eventInfo.putSQ(Tags.RefSOPSeq);
 		DcmElement failedSOPSeq = eventInfo.putSQ(Tags.FailedSOPSeq);
-		for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
+		for (int i = 0, n = refSOPSeq.countItems(); i < n; ++i) {
 			Dataset refSOP = refSOPSeq.getItem(i);
 			if (storage != null
 					&& fileInfos != null

@@ -416,7 +416,7 @@ public class IANScuService extends ServiceMBeanSupport
         String iuid = mpps.getString(Tags.SOPInstanceUID);
         DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
         String suid = null;
-        for (int i = 0, n = perfSeriesSq.vm(); i < n; i++) {
+        for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
             Dataset perfSeries = perfSeriesSq.getItem(i);
             DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
             if (refImageSeq == null) {
@@ -433,9 +433,9 @@ public class IANScuService extends ServiceMBeanSupport
                 String seruid = perfSeries.getString(Tags.SeriesInstanceUID);
                 if (log.isInfoEnabled()) {
                     log.info("Series[" + seruid + "]: " + aa.length + " from "
-                            + refImageSeq.vm() + " Instances available");
+                            + refImageSeq.countItems() + " Instances available");
                 }
-                if (aa.length != refImageSeq.vm()) {
+                if (aa.length != refImageSeq.countItems()) {
                     return null;
                 }
                 Dataset refSeries = refSeriesSq.addNewItem();
@@ -628,14 +628,14 @@ public class IANScuService extends ServiceMBeanSupport
 		scn.putUI(Tags.StudyInstanceUID, ian.getString(Tags.StudyInstanceUID));
 		DcmElement ianSeriesSeq = ian.get(Tags.RefSeriesSeq);
 		DcmElement scnSeriesSeq = scn.putSQ(Tags.RefSeriesSeq);
-		for (int i = 0, n = ianSeriesSeq.vm(); i < n; ++i) {
+		for (int i = 0, n = ianSeriesSeq.countItems(); i < n; ++i) {
 			Dataset ianSeries = ianSeriesSeq.getItem(i);
 			Dataset scnSeries = scnSeriesSeq.addNewItem();
 			scnSeries.putUI(Tags.SeriesInstanceUID, ianSeries
 					.getString(Tags.SeriesInstanceUID));
 			DcmElement ianSOPSeq = ianSeries.get(Tags.RefSOPSeq);
 			DcmElement scnSOPSeq = scnSeries.putSQ(Tags.RefImageSeq);
-			for (int j = 0, m = ianSOPSeq.vm(); j < m; ++j) {
+			for (int j = 0, m = ianSOPSeq.countItems(); j < m; ++j) {
 				scnSOPSeq.addItem(ianSOPSeq.getItem(i));
 			}
 		}

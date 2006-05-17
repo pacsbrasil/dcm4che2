@@ -252,14 +252,14 @@ public abstract class GPWLManagerBean implements SessionBean {
     }
 
 	private void addActualHumanPerformers(Dataset attrs, DcmElement src) {
-		if (src == null || src.vm() == 0) return;
+		if (src == null || src.countItems() == 0) return;
         HashSet perfs = new HashSet();
         DcmElement dest = attrs.get(Tags.ActualHumanPerformersSeq);
         if (dest == null) {
         	dest = attrs.putSQ(Tags.ActualHumanPerformersSeq);
         } else {
         	Dataset item, code;
-        	for (int i = 0, n = dest.vm(); i < n; ++i) {
+        	for (int i = 0, n = dest.countItems(); i < n; ++i) {
         		item = dest.getItem(i);
         		code = item.getItem(Tags.HumanPerformerCodeSeq);
         		perfs.add(code.getString(Tags.CodeValue) + '\\'
@@ -267,7 +267,7 @@ public abstract class GPWLManagerBean implements SessionBean {
         	}
         }
     	Dataset item, code;
-    	for (int i = 0, n = src.vm(); i < n; ++i) {
+    	for (int i = 0, n = src.countItems(); i < n; ++i) {
     		item = src.getItem(i);
     		code = item.getItem(Tags.HumanPerformerCodeSeq);
     		if (code != null) {

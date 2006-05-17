@@ -493,7 +493,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	
 	private boolean isDelayed(Dataset manifest) {
         DcmElement sq = manifest.get(Tags.ContentSeq);
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             Dataset item = sq.getItem(i);
             Dataset cn = item.getItem(Tags.ConceptNameCodeSeq);
             if (cn != null && "113011".equals(cn.getString(Tags.CodeValue))
@@ -632,14 +632,14 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         String appProfile = config.getProperty("create-media-app-profile");
         DcmElement refSOPSeq = data.putSQ(Tags.RefSOPSeq);
         DcmElement sopInstRefSeq = manifest.get(Tags.CurrentRequestedProcedureEvidenceSeq);
-        for (int i = 0, n = sopInstRefSeq.vm(); i < n; i++) {
+        for (int i = 0, n = sopInstRefSeq.countItems(); i < n; i++) {
             Dataset refStudyItem = sopInstRefSeq.getItem(i);
             pat.addStudyInstanceUID(refStudyItem.getString(Tags.StudyInstanceUID));
             DcmElement refSerSeq = refStudyItem.get(Tags.RefSeriesSeq);
-            for (int j = 0, m = refSerSeq.vm(); j < m; j++) {
+            for (int j = 0, m = refSerSeq.countItems(); j < m; j++) {
                 Dataset refSer = refSerSeq.getItem(j);
                 DcmElement srcRefSOPSeq = refSer.get(Tags.RefSOPSeq);
-                for (int k = 0, l = srcRefSOPSeq.vm(); k < l; k++) {                    
+                for (int k = 0, l = srcRefSOPSeq.countItems(); k < l; k++) {                    
                     Dataset srcRefSOP = srcRefSOPSeq.getItem(k);
                     Dataset refSOP = df.newDataset();
                     refSOP.putUI(Tags.RefSOPClassUID,
@@ -682,7 +682,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private String extractPersonObserverName(Dataset manifest) {
         DcmElement contentSeq = manifest.get(Tags.ContentSeq);
-        for (int i = 0, n = contentSeq.vm(); i < n; i++) {
+        for (int i = 0, n = contentSeq.countItems(); i < n; i++) {
             Dataset item = contentSeq.getItem(i);
             Dataset conceptName = item.getItem(Tags.ConceptNameCodeSeq);
             if ("121008".equals(conceptName.getString(Tags.CodeValue)) && 
@@ -777,7 +777,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             Dataset refSOPItem = seriesItem.putSQ(Tags.RefSOPSeq).addNewItem();
             refSOPItem.putUI(Tags.RefSOPInstanceUID, manifest.getString(Tags.SOPInstanceUID));
             refSOPItem.putUI(Tags.RefSOPClassUID, manifest.getString(Tags.SOPClassUID));
-            for (int i = 0, n = identicalsq.vm(); i < n; i++)
+            for (int i = 0, n = identicalsq.countItems(); i < n; i++)
             {
                 Dataset otherStudyItem = identicalsq.getItem(i);
                 manifest.putUI(Tags.StudyInstanceUID,
@@ -800,7 +800,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     {
         DcmElement oldsq = manifest.get(Tags.ContentSeq);
         DcmElement newsq = manifest.putSQ(Tags.ContentSeq);
-        for (int i = 0, n = oldsq.vm(); i < n; i++) {
+        for (int i = 0, n = oldsq.countItems(); i < n; i++) {
             Dataset item = oldsq.getItem(i);
             Dataset cn = item.getItem(Tags.ConceptNameCodeSeq);
             if (cn != null && "113011".equals(cn.getString(Tags.CodeValue))
@@ -920,7 +920,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         File indexFile = FileUtils.resolve(dispConfigFile);
         Properties index = getProperties(indexFile);
         DcmElement sq = manifest.get(Tags.ContentSeq);
-        for (int i = 0, n = sq.vm(); i < n; i++) {
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
             Dataset item = sq.getItem(i);
             if (!"TEXT".equals(item.getString(Tags.ValueType)))
                 continue;
@@ -996,13 +996,13 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	private void copyIUIDs(DcmElement sq1, List list) {
 		if (sq1 == null)
 			return;
-		for (int i1 = 0, n1 = sq1.vm(); i1 < n1; ++i1) {
+		for (int i1 = 0, n1 = sq1.countItems(); i1 < n1; ++i1) {
 			Dataset item1 = sq1.getItem(i1);
 			DcmElement sq2 = item1.get(Tags.RefSeriesSeq);
-			for (int i2 = 0, n2 = sq2.vm(); i2 < n2; ++i2) {
+			for (int i2 = 0, n2 = sq2.countItems(); i2 < n2; ++i2) {
 				Dataset item2 = sq2.getItem(i2);
 				DcmElement sq3 = item2.get(Tags.RefSOPSeq);
-				for (int i3 = 0, n3 = sq3.vm(); i3 < n3; ++i3) {
+				for (int i3 = 0, n3 = sq3.countItems(); i3 < n3; ++i3) {
 					Dataset item3 = sq3.getItem(i3);
 					String iuid = item3.getString(Tags.RefSOPInstanceUID);
 					list.add(iuid);
@@ -1104,7 +1104,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 ds.putUI(elm.tag(), to);
                 count++;
             } else if (elm.vr() == VRs.SQ) {
-                for (int i = 0, n = elm.vm(); i < n; i++)
+                for (int i = 0, n = elm.countItems(); i < n; i++)
                     count += replaceUIDs(elm.getItem(i), uidmap);
             }
         }
