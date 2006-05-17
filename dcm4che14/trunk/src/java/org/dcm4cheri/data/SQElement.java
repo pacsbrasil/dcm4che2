@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.VRs;
 
 /**
@@ -91,17 +92,15 @@ class SQElement extends DcmElementImpl
         return VRs.SQ;
     }
 
+    public final int vm(SpecificCharacterSet cs)
+    {
+        return countItems();
+    }
 
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
-    public final int vm()
+    public final int countItems()
     {
         return list.size();
     }
-
 
     /**
      *  Description of the Method
@@ -122,7 +121,7 @@ class SQElement extends DcmElementImpl
      */
     public Dataset getItem(int index)
     {
-        if (index >= vm()) {
+        if (index >= list.size()) {
             return null;
         }
         return (Dataset) list.get(index);
@@ -162,7 +161,7 @@ class SQElement extends DcmElementImpl
     public int calcLength(DcmEncodeParam param)
     {
         totlen = param.undefSeqLen ? 8 : 0;
-        for (int i = 0, n = vm(); i < n; ++i) {
+        for (int i = 0, n = list.size(); i < n; ++i) {
             totlen += getItem(i).calcLength(param) +
                     (param.undefItemLen ? 16 : 8);
         }
@@ -191,7 +190,7 @@ class SQElement extends DcmElementImpl
         StringBuffer sb = new StringBuffer(DICT.toString(tag));
         sb.append(",SQ");
         if (!isEmpty()) {
-            for (int i = 0, n = vm(); i < n; ++i) {
+            for (int i = 0, n = list.size(); i < n; ++i) {
                 sb.append("\n\tItem-").append(i + 1).append(getItem(i));
             }
         }
@@ -211,9 +210,9 @@ class SQElement extends DcmElementImpl
     protected boolean matchValue(DcmElement key, boolean ignorePNCase, boolean ignoreEmpty,
             Charset keyCS, Charset dsCS)
     {
-        for (int i = 0, m = key.vm(); i < m; ++i) {
+        for (int i = 0, m = key.countItems(); i < m; ++i) {
             Dataset keys = key.getItem(i);
-            for (int j = 0, n = vm(); j < n; ++j) {
+            for (int j = 0, n = list.size(); j < n; ++j) {
                 if (getItem(j).match(keys, ignorePNCase, ignoreEmpty)) {
                     return true;
                 }

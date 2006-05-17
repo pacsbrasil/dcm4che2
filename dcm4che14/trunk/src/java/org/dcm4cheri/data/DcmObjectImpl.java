@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,6 +58,7 @@ import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.PersonName;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDDictionary;
@@ -79,28 +79,15 @@ abstract class DcmObjectImpl implements DcmObject {
     static UIDDictionary DICT =
         DictionaryFactory.getInstance().getDefaultUIDDictionary();
 
-    /**  Description of the Field */
     protected final static Logger log = Logger.getLogger(DcmObjectImpl.class);
 
-    /**  Description of the Field */
     protected ArrayList list = new ArrayList();
-    private final static int MIN_TRUNCATE_STRING_LEN = 16;
 
 
-    /**
-     *  Gets the dcmHandler attribute of the DcmObjectImpl object
-     *
-     * @return    The dcmHandler value
-     */
     public DcmHandler getDcmHandler() {
         return new DcmObjectHandlerImpl(this);
     }
 
-    /**
-     *  Gets the sAXHandler attribute of the DcmObjectImpl object
-     *
-     * @return    The sAXHandler value
-     */
     public DefaultHandler getSAXHandler() {
         return new SAXHandlerAdapter(getDcmHandler());
     }
@@ -109,52 +96,26 @@ abstract class DcmObjectImpl implements DcmObject {
         return new SAXHandlerAdapter2(getDcmHandler(), basedir);
     }
     
-    /**
-     *  Gets the privateCreatorID attribute of the DcmObjectImpl object
-     *
-     * @return    The privateCreatorID value
-     */
     public String getPrivateCreatorID() {
         return null;
     }
 
-    /**
-     *  Sets the privateCreatorID attribute of the DcmObjectImpl object
-     *
-     * @param  privateCreatorID  The new privateCreatorID value
-     */
     public void setPrivateCreatorID(String privateCreatorID) {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     *  Gets the charset attribute of the DcmObjectImpl object
-     *
-     * @return    The charset value
-     */
-    public Charset getCharset() {
+    public SpecificCharacterSet getSpecificCharacterSet() {
         return null;
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
     public int size() {
         return list.size();
     }
 
-    /**
-     *  Gets the empty attribute of the DcmObjectImpl object
-     *
-     * @return    The empty value
-     */
     public boolean isEmpty() {
         return list.isEmpty();
     }
 
-    /**  Description of the Method */
     public void clear() {
         list.clear();
     }
@@ -186,12 +147,6 @@ abstract class DcmObjectImpl implements DcmObject {
         return - (low + 1); // key not found
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
-     */
     public boolean contains(int tag) {
         if (Tags.isPrivate(tag)) {
             try {
@@ -207,12 +162,11 @@ abstract class DcmObjectImpl implements DcmObject {
         return indexOf(tag) >= 0;
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
-     */
+    public boolean containsValue(int tag) {
+        DcmElement e = get(tag);
+        return e != null && !e.isEmpty();
+    }
+
     public int vm(int tag) {
         if (Tags.isPrivate(tag)) {
             try {
@@ -226,7 +180,7 @@ abstract class DcmObjectImpl implements DcmObject {
             }
         }
         int index = indexOf(tag);
-        return index >= 0 ? ((DcmElement) list.get(index)).vm() : -1;
+        return index >= 0 ? ((DcmElement) list.get(index)).vm(getSpecificCharacterSet()) : -1;
     }
 
     private int adjustPrivateTag(int tag, boolean create)
@@ -242,7 +196,7 @@ abstract class DcmObjectImpl implements DcmObject {
         if (index >= 0) {
             DcmElement elm = (DcmElement) list.get(index);
             while (++index < list.size()) {
-                if (creatorID.equals(elm.getString(getCharset()))) {
+                if (creatorID.equals(elm.getString(getSpecificCharacterSet()))) {
                     return gr | (el << 8) | (tag & 0xff);
                 }
                 elm = (DcmElement) list.get(index);
@@ -254,16 +208,10 @@ abstract class DcmObjectImpl implements DcmObject {
         if (!create) {
             return 0;
         }
-        doPut(StringElement.createLO(gr | el, creatorID, getCharset()));
+        doPut(StringElement.createLO(gr | el, creatorID, getSpecificCharacterSet()));
         return gr | (el << 8) | (tag & 0xff);
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
-     */
     public DcmElement get(int tag) {
         if (Tags.isPrivate(tag)) {
             try {
@@ -280,12 +228,6 @@ abstract class DcmObjectImpl implements DcmObject {
         return index >= 0 ? (DcmElement) list.get(index) : null;
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
-     */
     public DcmElement remove(int tag) {
         synchronized (list) {
             int index = indexOf(tag);
@@ -293,565 +235,318 @@ abstract class DcmObjectImpl implements DcmObject {
         }
     }
 
-    /**
-     *  Gets the byteBuffer attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The byteBuffer value
-     */
     public ByteBuffer getByteBuffer(int tag) {
         DcmElement e = get(tag);
         return e != null ? e.getByteBuffer() : null;
     }
 
-    /**
-     *  Gets the string attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The string value
-     */
     public String getString(int tag, String defVal) {
-        return getString(tag, 0, defVal);
-    }
-
-    /**
-     *  Gets the string attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The string value
-     */
-    public String getString(int tag) {
-        return getString(tag, 0, null);
-    }
-
-    /**
-     *  Gets the string attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The string value
-     */
-    public String getString(int tag, int index) {
-        return getString(tag, index, null);
-    }
-
-    /**
-     *  Gets the string attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The string value
-     */
-    public String getString(int tag, int index, String defVal) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return defVal;
-        }
         try {
-            return el.getString(index, getCharset());
+            return el != null && !el.isEmpty() 
+                            ? el.getString(getSpecificCharacterSet())
+                            : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
     }
 
-    /**
-     *  Gets the strings attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The strings value
-     */
+    public String getString(int tag) {
+        return getString(tag, null);
+    }
+
+    public String getString(int tag, int index) {
+        DcmElement el = get(tag);
+        try {
+            return el != null ? el.getString(index, getSpecificCharacterSet())
+                    : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
+    }
+
+    public String getString(int tag, int index, String defVal) {
+        String s = getString(tag, index);
+        return s != null ? s : defVal;
+    }
+
     public String[] getStrings(int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
         try {
-            return el.getStrings(getCharset());
+            return el != null ? el.getStrings(getSpecificCharacterSet()) : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the boundedString attribute of the DcmObjectImpl object
-     *
-     * @param  maxLen  Description of the Parameter
-     * @param  tag     Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The boundedString value
-     */
     public String getBoundedString(int maxLen, int tag, String defVal) {
-        return getBoundedString(maxLen, tag, 0, defVal);
-    }
-
-    /**
-     *  Gets the boundedString attribute of the DcmObjectImpl object
-     *
-     * @param  maxLen  Description of the Parameter
-     * @param  tag     Description of the Parameter
-     * @return         The boundedString value
-     */
-    public String getBoundedString(int maxLen, int tag) {
-        return getBoundedString(maxLen, tag, 0, null);
-    }
-
-    /**
-     *  Gets the boundedString attribute of the DcmObjectImpl object
-     *
-     * @param  maxLen  Description of the Parameter
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @return         The boundedString value
-     */
-    public String getBoundedString(int maxLen, int tag, int index) {
-        return getBoundedString(maxLen, tag, index, null);
-    }
-
-    /**
-     *  Gets the boundedString attribute of the DcmObjectImpl object
-     *
-     * @param  maxLen  Description of the Parameter
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The boundedString value
-     */
-    public String getBoundedString(
-        int maxLen,
-        int tag,
-        int index,
-        String defVal) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return defVal;
-        }
-
         try {
-            return el.getBoundedString(maxLen, index, getCharset());
+            return el != null && !el.isEmpty() 
+                ? el.getBoundedString(maxLen, getSpecificCharacterSet())
+                : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
     }
 
-    /**
-     *  Gets the boundedStrings attribute of the DcmObjectImpl object
-     *
-     * @param  maxLen  Description of the Parameter
-     * @param  tag     Description of the Parameter
-     * @return         The boundedStrings value
-     */
+    public String getBoundedString(int maxLen, int tag) {
+        return getBoundedString(maxLen, tag, null);
+    }
+
+    public String getBoundedString(int maxLen, int tag, int index) {
+        DcmElement el = get(tag);
+        try {
+            return el != null ? el.getBoundedString(index, getSpecificCharacterSet())
+                    : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
+    }
+
+    public String getBoundedString(int maxLen, int tag, int index, String defVal) {
+        String s = getBoundedString(tag, index);
+        return s != null ? s : defVal;
+    }
+
     public String[] getBoundedStrings(int maxLen, int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
-
         try {
-            return el.getBoundedStrings(maxLen, getCharset());
+            return el != null
+                    ? el.getBoundedStrings(maxLen, getSpecificCharacterSet())
+                    : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the integer attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The integer value
-     */
     public Integer getInteger(int tag) {
-        return getInteger(tag, 0);
-    }
-
-    /**
-     *  Gets the integer attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The integer value
-     */
-    public Integer getInteger(int tag, int index) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
+        try {
+            return el != null && !el.isEmpty() ? new Integer(el.getInt()) : null;
+        } catch (DcmValueException e) {
             return null;
         }
+    }
 
+    public Integer getInteger(int tag, int index) {
+        DcmElement el = get(tag);
         try {
-            return new Integer(el.getInt(index));
+            return el != null && index < el.vm(null)
+                        ? new Integer(el.getInt(index))
+                        : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
     public PersonName getPersonName(int tag) {
-        return getPersonName(tag, 0);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? el.getPersonName(getSpecificCharacterSet()) : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
+    }
+
+    public PersonName[] getPersonNames(int tag) {
+        DcmElement el = get(tag);
+        try {
+            return el != null ? el.getPersonNames(getSpecificCharacterSet()) : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
     }
 
     public PersonName getPersonName(int tag, int index) {
-        DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return null;
-        }
-
-        try {
-            return el.getPersonName(index, getCharset());
-        } catch (DcmValueException e) {
-            return null;
-        }
+        PersonName[] pns = getPersonNames(tag);
+        return pns != null && index < pns.length ? pns[index] : null;
     }
     
-    /**
-     *  Gets the int attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The int value
-     */
     public int getInt(int tag, int defVal) {
-        return getInt(tag, 0, defVal);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? el.getInt() : defVal;
+        } catch (DcmValueException e) {
+            return defVal;
+        }
     }
 
-    /**
-     *  Gets the int attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The int value
-     */
     public int getInt(int tag, int index, int defVal) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return defVal;
-        }
-
         try {
-            return el.getInt(index);
+            return el != null && index < el.vm(null) ? el.getInt(index) : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
     }
 
-    /**
-     *  Gets the ints attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The ints value
-     */
     public int[] getInts(int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
-
         try {
-            return el.getInts();
+            return el != null ? el.getInts() : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the tag attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The tag value
-     */
     public int getTag(int tag, int defVal) {
-        return getTag(tag, 0, defVal);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? el.getTag() : defVal;
+        } catch (DcmValueException e) {
+            return defVal;
+        }
     }
 
-    /**
-     *  Gets the tag attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The tag value
-     */
     public int getTag(int tag, int index, int defVal) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return defVal;
-        }
-
         try {
-            return el.getTag(index);
+            return el != null && index < el.vm(null) ? el.getTag(index) : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
     }
 
-    /**
-     *  Gets the tags attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The tags value
-     */
     public int[] getTags(int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
-
         try {
-            return el.getTags();
+            return el != null ? el.getTags() : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the float attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The float value
-     */
     public Float getFloat(int tag) {
-        return getFloat(tag, 0);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? new Float(el.getFloat()) : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
     }
 
-    /**
-     *  Gets the float attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The float value
-     */
     public Float getFloat(int tag, int index) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return null;
-        }
-
         try {
-            return new Float(el.getFloat(index));
+            return el != null && index < el.vm(null)
+                        ? new Float(el.getFloat(index))
+                        : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the float attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The float value
-     */
     public float getFloat(int tag, float defVal) {
-        return getFloat(tag, 0, defVal);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? el.getFloat() : defVal;
+        } catch (DcmValueException e) {
+            return defVal;
+        }
     }
 
-    /**
-     *  Gets the float attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The float value
-     */
     public float getFloat(int tag, int index, float defVal) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return defVal;
-        }
-
         try {
-            return el.getFloat(index);
+            return el != null && index < el.vm(null) ? el.getFloat(index) : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
     }
 
-    /**
-     *  Gets the floats attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The floats value
-     */
     public float[] getFloats(int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
-
         try {
-            return el.getFloats();
+            return el != null ? el.getFloats() : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the double attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The double value
-     */
     public Double getDouble(int tag) {
-        return getDouble(tag, 0);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? new Double(el.getDouble()) : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
     }
 
-    /**
-     *  Gets the double attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The double value
-     */
     public Double getDouble(int tag, int index) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return null;
-        }
-
         try {
-            return new Double(el.getDouble(index));
+            return el != null && index < el.vm(null)
+                        ? new Double(el.getDouble(index))
+                        : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the double attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The double value
-     */
     public double getDouble(int tag, double defVal) {
-        return getDouble(tag, 0, defVal);
+        DcmElement el = get(tag);
+        try {
+            return el != null && !el.isEmpty() ? el.getDouble() : defVal;
+        } catch (DcmValueException e) {
+            return defVal;
+        }
     }
 
-    /**
-     *  Gets the double attribute of the DcmObjectImpl object
-     *
-     * @param  tag     Description of the Parameter
-     * @param  index   Description of the Parameter
-     * @param  defVal  Description of the Parameter
-     * @return         The double value
-     */
     public double getDouble(int tag, int index, double defVal) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return defVal;
-        }
-
         try {
-            return el.getDouble(index);
+            return el != null && index < el.vm(null) ? el.getDouble(index) : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
     }
 
-    /**
-     *  Gets the doubles attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The doubles value
-     */
     public double[] getDoubles(int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
-
         try {
-            return el.getDoubles();
+            return el != null ? el.getDoubles() : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the date attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The date value
-     */
     public Date getDate(int tag) {
-        return getDate(tag, 0);
+        DcmElement el = get(tag);
+        try {
+            return el != null ? el.getDate() : null;
+        } catch (DcmValueException e) {
+            return null;
+        }
     }
 
-    /**
-     *  Gets the date attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The date value
-     */
     public Date getDate(int tag, int index) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return null;
-        }
-
         try {
-            return el.getDate(index);
+            return el != null ? el.getDate(index) : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the dateRange attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The dateRange value
-     */
     public Date[] getDateRange(int tag) {
-        return getDateRange(tag, 0);
-    }
-
-    /**
-     *  Gets the dateRange attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The dateRange value
-     */
-    public Date[] getDateRange(int tag, int index) {
         DcmElement el = get(tag);
-        if (el == null || el.vm() <= index) {
-            return null;
-        }
-
         try {
-            return el.getDateRange(index);
+            return el != null && !el.isEmpty() ? el.getDateRange() : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the dates attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The dates value
-     */
     public Date[] getDates(int tag) {
         DcmElement el = get(tag);
-        if (el == null) {
-            return null;
-        }
-
         try {
-            return el.getDates();
+            return el != null ? el.getDates() : null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
-     *  Gets the dateTime attribute of the DcmObjectImpl object
-     *
-     * @param  dateTag  Description of the Parameter
-     * @param  timeTag  Description of the Parameter
-     * @return          The dateTime value
-     */
     public Date getDateTime(int dateTag, int timeTag) {
         DcmElement date = get(dateTag);
         if (date == null || date.isEmpty()) {
@@ -870,13 +565,6 @@ abstract class DcmObjectImpl implements DcmObject {
         }
     }
 
-    /**
-     *  Gets the dateTimeRange attribute of the DcmObjectImpl object
-     *
-     * @param  dateTag  Description of the Parameter
-     * @param  timeTag  Description of the Parameter
-     * @return          The dateTimeRange value
-     */
     public Date[] getDateTimeRange(int dateTag, int timeTag) {
         DcmElement time = get(timeTag);
         if (time == null || time.isEmpty()) {
@@ -919,30 +607,13 @@ abstract class DcmObjectImpl implements DcmObject {
 		return result;
 	}
 
-	/**
-     *  Gets the item attribute of the DcmObjectImpl object
-     *
-     * @param  tag  Description of the Parameter
-     * @return      The item value
-     */
     public Dataset getItem(int tag) {
         return getItem(tag, 0);
     }
 
-    /**
-     *  Gets the item attribute of the DcmObjectImpl object
-     *
-     * @param  tag    Description of the Parameter
-     * @param  index  Description of the Parameter
-     * @return        The item value
-     */
     public Dataset getItem(int tag, int index) {
         DcmElement e = get(tag);
-        if (e == null || e.vm() <= index) {
-            return null;
-        }
-
-        return e.getItem(index);
+        return e != null && index < e.countItems() ? e.getItem(index) : null;
     }
 
     /**
@@ -1607,7 +1278,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putLO(int tag, String value) {
         return put(
             value != null
-                ? StringElement.createLO(tag, value, getCharset())
+                ? StringElement.createLO(tag, value, getSpecificCharacterSet())
                 : StringElement.createLO(tag));
     }
 
@@ -1621,7 +1292,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putLO(int tag, String[] values) {
         return put(
             values != null
-                ? StringElement.createLO(tag, values, getCharset())
+                ? StringElement.createLO(tag, values, getSpecificCharacterSet())
                 : StringElement.createLO(tag));
     }
 
@@ -1645,7 +1316,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putLT(int tag, String value) {
         return put(
             value != null
-                ? StringElement.createLT(tag, value, getCharset())
+                ? StringElement.createLT(tag, value, getSpecificCharacterSet())
                 : StringElement.createLT(tag));
     }
 
@@ -1659,7 +1330,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putLT(int tag, String[] values) {
         return put(
             values != null
-                ? StringElement.createLT(tag, values, getCharset())
+                ? StringElement.createLT(tag, values, getSpecificCharacterSet())
                 : StringElement.createLT(tag));
     }
 
@@ -1827,7 +1498,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putPN(int tag, PersonName value) {
         return put(
             value != null
-                ? StringElement.createPN(tag, value, getCharset())
+                ? StringElement.createPN(tag, value, getSpecificCharacterSet())
                 : StringElement.createPN(tag));
     }
 
@@ -1841,7 +1512,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putPN(int tag, PersonName[] values) {
         return put(
             values != null
-                ? StringElement.createPN(tag, values, getCharset())
+                ? StringElement.createPN(tag, values, getSpecificCharacterSet())
                 : StringElement.createPN(tag));
     }
 
@@ -1858,7 +1529,7 @@ abstract class DcmObjectImpl implements DcmObject {
                 ? StringElement.createPN(
                     tag,
                     new PersonNameImpl(value),
-                    getCharset())
+                    getSpecificCharacterSet())
                 : StringElement.createPN(tag));
     }
 
@@ -1877,7 +1548,7 @@ abstract class DcmObjectImpl implements DcmObject {
         for (int i = 0; i < a.length; ++i) {
             a[i] = new PersonNameImpl(values[i]);
         }
-        return put(StringElement.createPN(tag, a, getCharset()));
+        return put(StringElement.createPN(tag, a, getSpecificCharacterSet()));
     }
 
     /**
@@ -1900,7 +1571,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putSH(int tag, String value) {
         return put(
             value != null
-                ? StringElement.createSH(tag, value, getCharset())
+                ? StringElement.createSH(tag, value, getSpecificCharacterSet())
                 : StringElement.createSH(tag));
     }
 
@@ -1914,7 +1585,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putSH(int tag, String[] values) {
         return put(
             values != null
-                ? StringElement.createSH(tag, values, getCharset())
+                ? StringElement.createSH(tag, values, getSpecificCharacterSet())
                 : StringElement.createSH(tag));
     }
 
@@ -2092,7 +1763,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putST(int tag, String value) {
         return put(
             value != null
-                ? StringElement.createST(tag, value, getCharset())
+                ? StringElement.createST(tag, value, getSpecificCharacterSet())
                 : StringElement.createST(tag));
     }
 
@@ -2106,7 +1777,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putST(int tag, String[] values) {
         return put(
             values != null
-                ? StringElement.createST(tag, values, getCharset())
+                ? StringElement.createST(tag, values, getSpecificCharacterSet())
                 : StringElement.createST(tag));
     }
 
@@ -2432,7 +2103,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putUT(int tag, String value) {
         return put(
             value != null
-                ? StringElement.createUT(tag, value, getCharset())
+                ? StringElement.createUT(tag, value, getSpecificCharacterSet())
                 : StringElement.createUT(tag));
     }
 
@@ -2446,7 +2117,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DcmElement putUT(int tag, String[] values) {
         return put(
             values != null
-                ? StringElement.createUT(tag, values, getCharset())
+                ? StringElement.createUT(tag, values, getSpecificCharacterSet())
                 : StringElement.createUT(tag));
     }
 
@@ -2838,7 +2509,7 @@ abstract class DcmObjectImpl implements DcmObject {
                     	sq = itemTreatment != REPLACE_ITEMS ? get(el.tag()) : null;
                     	if (sq == null || sq.vr() != VRs.SQ)
                     		sq = putSQ(el.tag());
-                        for (int i = 0, n = el.vm(); i < n; ++i) {
+                        for (int i = 0, n = el.countItems(); i < n; ++i) {
                         	item = itemTreatment == MERGE_ITEMS ? sq.getItem(i) : null;
                         	if (item == null)
                         		item = sq.addNewItem();
@@ -2851,7 +2522,7 @@ abstract class DcmObjectImpl implements DcmObject {
                     case VRs.UN :
                         if (el.hasDataFragments()) {
                             sq = putXXsq(el.tag(), el.vr());
-                            for (int i = 0, n = el.vm(); i < n; ++i) {
+                            for (int i = 0, n = el.countItems(); i < n; ++i) {
                                 sq.addDataFragment(el.getDataFragment(i));
                             }
                             break;

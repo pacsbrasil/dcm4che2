@@ -309,6 +309,13 @@ public class StringUtils {
         retval[i] = s.substring(l);
         return retval;
     }
+
+    public static int count(String s, char delim) {
+        if (s == null) return 0;
+        int c = 0;
+        for (int pos = -1; (pos = s.indexOf(delim, pos+1)) != -1; c++);
+        return c;
+    }
     
     public static String toString(String[] a, char delim) {
         if (a == null) {

@@ -444,13 +444,13 @@ class PrintSCUDataSource implements DataSource
         String iuid = ds.getString(Tags.SOPInstanceUID);
         Dataset item;
         DcmElement ris;
-        final int n = scVoiLutSeq.vm();
+        final int n = scVoiLutSeq.countItems();
         
         for (int i = 0; i < n; i++) {
             item = scVoiLutSeq.getItem(i);
             ris = item.get(Tags.RefImageSeq);
             if (ris != null) {
-                for (int j = 0; j < ris.vm(); j++)
+                for (int j = 0; j < ris.countItems(); j++)
                     if (ris.getItem(j).getString(Tags.RefSOPInstanceUID, "")
                         .equals(iuid))
                         return item;
@@ -721,7 +721,6 @@ class PrintSCUDataSource implements DataSource
     }
     
 	private void copy(InputStream in, OutputStream out, int len) throws IOException {
-		byte tmp;
 		int c, remain = len;
 		byte[] buffer = printSCU.getBuffer();
 		while (remain > 0) {

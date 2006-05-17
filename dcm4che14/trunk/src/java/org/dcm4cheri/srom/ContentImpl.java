@@ -394,7 +394,7 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
 		if (sq == null) {
 			return;
 		}
-		for (int i = 0, n = sq.vm(); i < n; ++i) {
+		for (int i = 0, n = sq.countItems(); i < n; ++i) {
 			Dataset child = sq.getItem(i);
 			appendChild(Content.RelationType.valueOf(child
 					.getString((Tags.RelationshipType))), newContent(owner,

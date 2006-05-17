@@ -56,7 +56,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
@@ -72,6 +71,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.dcm4che.data.ConfigurationError;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DatasetSerializer;
 import org.dcm4che.data.DcmDecodeParam;
@@ -79,6 +79,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
@@ -120,13 +121,6 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
                .newInstance();
        }
        return tfFactory;
-   }
-
-   static class ConfigurationError extends Error {
-
-       ConfigurationError(String msg, Exception x) {
-           super(msg, x);
-       }
    }
 
    private static Templates getTemplates() {
@@ -288,7 +282,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
                int len = param.undefSeqLen ? -1 : el.length();
                handler.startElement(el.tag(), VRs.SQ, el.getStreamPosition());
                handler.startSequence(len);
-               for (int j = 0, m = el.vm(); j < m;) {
+               for (int j = 0, m = el.countItems(); j < m;) {
                    BaseDatasetImpl ds = (BaseDatasetImpl) el.getItem(j);
                    int itemlen = param.undefItemLen ? -1 : ds.length();
                    handler.startItem(++j, ds.getItemOffset(), itemlen);
@@ -304,7 +298,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
                if (offset != -1L) {
                    offset += 12;
                }
-               for (int j = 0, m = el.vm(); j < m;) {
+               for (int j = 0, m = el.countItems(); j < m;) {
                    ByteBuffer bb = el.getDataFragment(j, param.byteOrder);
                    handler.fragment(++j,
                        offset,
@@ -561,7 +555,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
     */
    public boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty) {
        if (keys == null) { return true; }
-       Charset keyCS = keys.getCharset();
+       SpecificCharacterSet keyCS = keys.getSpecificCharacterSet();
        for (Iterator iter = keys.iterator(); iter.hasNext();) {
            if (!match((DcmElementImpl) iter.next(),
                ignorePNCase,
@@ -572,13 +566,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
    }
 
    private boolean match(DcmElementImpl key, boolean ignorePNCase,
-       boolean ignoreEmpty, Charset keyCS) {
+       boolean ignoreEmpty, SpecificCharacterSet keyCS) {
        final int tag = key.tag();
        // ignore Character Set Attribute in key
        if (tag == Tags.SpecificCharacterSet) return true;
        DcmElementImpl e = (DcmElementImpl) get(tag);
        if (e == null) { return ignoreEmpty || key.isEmpty(); }
-       return e.match(key, ignorePNCase, ignoreEmpty, keyCS, getCharset());
+       return e.match(key, ignorePNCase, ignoreEmpty, keyCS, getSpecificCharacterSet());
    }
 
    /**

@@ -114,7 +114,7 @@ class SRDocumentImpl extends KeyObjectImpl
         if (sq == null)
             return;
         
-        for (int i = 0, n = sq.vm(); i < n; ++i) {
+        for (int i = 0, n = sq.countItems(); i < n; ++i) {
             addVerification(new VerificationImpl(sq.getItem(i)));
         }
     }

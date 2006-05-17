@@ -39,19 +39,21 @@
 package org.dcm4cheri.data;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.regex.Pattern;
+
 import org.apache.log4j.Logger;
-import org.dcm4che.data.*;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.PersonName;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.DTFormat;
 import org.dcm4che.util.TMFormat;
+import org.dcm4cheri.util.StringUtils;
 
 /**
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
@@ -60,7 +62,8 @@ import org.dcm4che.util.TMFormat;
  * @version    $Revision$ $Date$
  */
 abstract class StringElement extends ValueElement {
-    private static long MS_PER_DAY = 24 * 3600000L;
+    private static final String[] STRING0 = {};
+    private static final long MS_PER_DAY = 24 * 3600000L;
 
     static Logger log = Logger.getLogger(StringElement.class);
 
@@ -164,133 +167,55 @@ abstract class StringElement extends ValueElement {
         return false;
     }
 
-    private static ByteBuffer toByteBuffer(
-        String value,
-        Trim trim,
-        Check check,
-        Charset cs) {
-        if (value == null || value.length() == 0) {
+    private static ByteBuffer toByteBuffer(String value, Trim trim, Check check,
+        SpecificCharacterSet cs) {
+        if (value == null || (value = trim.trim(value)).length() == 0) {
             return EMPTY_VALUE;
         }
-        try {
-            return (cs != null ? cs : Charsets.ASCII).newEncoder().encode(
-                CharBuffer.wrap(check.check(trim.trim(value))));
-        } catch (CharacterCodingException ex) {
-            if (cs == null) {
-                log.warn(
-                    "Non ASCII chars in "
-                        + value
-                        + " - try to encode as ISO_8859_1");
-                try {
-                    return Charsets.ISO_8859_1.newEncoder().encode(
-                        CharBuffer.wrap(check.check(trim.trim(value))));
-                } catch (CharacterCodingException e) {}
-            }
-            throw new IllegalArgumentException(value);
-        }
-    }
-
-    private static ByteBuffer toByteBuffer(ByteBuffer[] bbs, int totLen) {
-        ByteBuffer bb = ByteBuffer.wrap(new byte[totLen]);
-        bb.put(bbs[0]);
-        for (int i = 1; i < bbs.length; ++i) {
-            bb.put(DELIM);
-            bb.put(bbs[i]);
-        }
-        bb.rewind();
-        return bb;
+        check.check(value);
+        return ByteBuffer.wrap(cs == null ? value.getBytes() : cs.encode(value));
     }
 
     private static ByteBuffer toByteBuffer(
         String[] values,
         Trim trim,
         Check check,
-        Charset cs) {
+        SpecificCharacterSet cs) {
         if (values.length == 0) {
             return EMPTY_VALUE;
         }
-
         if (values.length == 1) {
             return toByteBuffer(values[0], trim, check, cs);
         }
-
-        ByteBuffer[] bbs = new ByteBuffer[values.length];
-        int totLen = -1;
-        for (int i = 0; i < values.length; ++i) {
-            bbs[i] = toByteBuffer(values[i], trim, check, cs);
-            totLen += bbs[i].limit() + 1;
+        String[] ss = new String[values.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = check.check(trim.trim(values[i]));
         }
-        return toByteBuffer(bbs, totLen);
+        String s = StringUtils.toString(ss, '\\');
+        return ByteBuffer.wrap(cs == null ? s.getBytes() : cs.encode(s));
     }
 
-    private final Trim trim;
+    protected final Trim trim;
 
     StringElement(int tag, ByteBuffer data, Trim trim) {
         super(tag, data);
         this.trim = trim;
     }
 
-    /**
-     *  Gets the string attribute of the StringElement object
-     *
-     * @param  index                  Description of the Parameter
-     * @param  cs                     Description of the Parameter
-     * @return                        The string value
-     * @exception  DcmValueException  Description of the Exception
-     */
-    public String getString(int index, Charset cs)
+    public String getString(int index, SpecificCharacterSet cs)
         throws DcmValueException {
-        ByteBuffer bb = getByteBuffer(index);
+        ByteBuffer bb = getByteBuffer();
         if (bb == null) {
             return null;
         }
-        final Charset charset = cs != null ? cs : Charsets.ASCII;
-        final int start = bb.position();
-        String s;
-        try {
-            s = charset.newDecoder().decode(bb).toString();
-        } catch (Exception ex) {
-            s = new String(bb.array(), start, bb.limit() - start);
-            log.warn(
-                "Failed to decode value["
-                    + index
-                    + "] of "
-                    + this
-                    + " using "
-                    + charset
-                    + "; return "
-                    + s);
-        }
-        return trim.trim(s);
+        byte[] b = bb.array();
+        return trim.trim(cs == null ? new String(b) : cs.decode(b));
     }
 
-    /**
-     *  Gets the strings attribute of the StringElement object
-     *
-     * @param  cs                     Description of the Parameter
-     * @return                        The strings value
-     * @exception  DcmValueException  Description of the Exception
-     */
-    public String[] getStrings(Charset cs)
+    public String[] getStrings(SpecificCharacterSet cs)
         throws DcmValueException {
-        String[] a = new String[vm()];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = getString(i, cs);
-        }
-        return a;
-    }
-
-    /**
-     *  Gets the byteBuffer attribute of the StringElement object
-     *
-     * @param  index  Description of the Parameter
-     * @return        The byteBuffer value
-     */
-    public ByteBuffer getByteBuffer(int index) {
-        if (index >= vm()) {
-            return null;
-        }
-        return data.duplicate().order(data.order());
+        String s = getString(0, cs);
+        return s == null ? STRING0 : new String[] { s };
     }
 
     private static boolean isUniversalMatch(String p) {
@@ -305,43 +230,36 @@ abstract class StringElement extends ValueElement {
         return true;
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  key           Description of the Parameter
-     * @param  ignorePNCase  Description of the Parameter
-     * @param  keyCS         Description of the Parameter
-     * @param  dsCS          Description of the Parameter
-     * @return               Description of the Return Value
-     */
     protected boolean matchValue(
         DcmElement key,
         boolean ignorePNCase,
         boolean ignoreEmpty,
-        Charset keyCS,
-        Charset dsCS) {
-        for (int i = 0, m = key.vm(); i < m; ++i) {
-            String pattern;
-            try {
-                pattern = key.getString(i, keyCS);
-            } catch (DcmValueException e) {
-                throw new IllegalArgumentException("key: " + key);
-            }
-            if (isUniversalMatch(pattern)) {
+        SpecificCharacterSet keyCS,
+        SpecificCharacterSet dsCS) {
+        String[] patterns, values;
+        if (isEmpty()) {
+            return true;
+        }
+        try {
+            values = getStrings(dsCS);
+        } catch (DcmValueException e) {
+            // Illegal Value match always (like null value)
+            return true;
+        }
+        try {
+            patterns = key.getStrings(keyCS);
+        } catch (DcmValueException e) {
+            throw new IllegalArgumentException("key: " + key);
+        }
+        for (int i = 0; i < patterns.length; ++i) {
+            if (isUniversalMatch(patterns[i])) {
                 return true;
             }
-            String s;
-            for (int j = 0, n = vm(); j < n; ++j) {
-                try {
-                    s = getString(j, dsCS);
-                } catch (DcmValueException e) {
-                    // Illegal Value match always (like null value)
-                    return true;
-                }
+            for (int j = 0; j < values.length; ++j) {
                 if (ignorePNCase
                     && vr() == VRs.PN
-                        ? match(pattern.toUpperCase(), s.toUpperCase())
-                        : match(pattern, s)) {
+                        ? match(patterns[i].toUpperCase(), values[j].toUpperCase())
+                        : match(patterns[i], values[j])) {
                     return true;
                 }
             }
@@ -405,11 +323,11 @@ abstract class StringElement extends ValueElement {
         return new LT(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createLT(int tag, String value, Charset cs) {
+    static DcmElement createLT(int tag, String value, SpecificCharacterSet cs) {
         return new LT(tag, toByteBuffer(value, TRAIL_TRIM, LT_CHECK, cs));
     }
 
-    static DcmElement createLT(int tag, String[] values, Charset cs) {
+    static DcmElement createLT(int tag, String[] values, SpecificCharacterSet cs) {
         return new LT(tag, toByteBuffer(values, TRAIL_TRIM, LT_CHECK, cs));
     }
 
@@ -434,11 +352,11 @@ abstract class StringElement extends ValueElement {
         return new ST(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createST(int tag, String value, Charset cs) {
+    static DcmElement createST(int tag, String value, SpecificCharacterSet cs) {
         return new ST(tag, toByteBuffer(value, TRAIL_TRIM, ST_CHECK, cs));
     }
 
-    static DcmElement createST(int tag, String[] values, Charset cs) {
+    static DcmElement createST(int tag, String[] values, SpecificCharacterSet cs) {
         return new ST(tag, toByteBuffer(values, TRAIL_TRIM, ST_CHECK, cs));
     }
 
@@ -463,11 +381,11 @@ abstract class StringElement extends ValueElement {
         return new UT(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createUT(int tag, String value, Charset cs) {
+    static DcmElement createUT(int tag, String value, SpecificCharacterSet cs) {
         return new UT(tag, toByteBuffer(value, TRAIL_TRIM, UT_CHECK, cs));
     }
 
-    static DcmElement createUT(int tag, String[] values, Charset cs) {
+    static DcmElement createUT(int tag, String[] values, SpecificCharacterSet cs) {
         return new UT(tag, toByteBuffer(values, TRAIL_TRIM, UT_CHECK, cs));
     }
 
@@ -475,47 +393,56 @@ abstract class StringElement extends ValueElement {
     private final static byte DELIM = 0x5c;
 
     private abstract static class MultiStringElement extends StringElement {
-        private int[] delimPos = null;
-
+ 
         MultiStringElement(int tag, ByteBuffer data, Trim trim) {
             super(tag, data, trim);
         }
 
-        public final int vm() {
-            if (delimPos != null) {
-                return delimPos.length - 1;
-            }
-            byte[] a = data.array();
-            if (a.length == 0) {
+         public final int vm(SpecificCharacterSet cs) {
+            if (data.limit() == 0) {
                 return 0;
             }
-            int vm = 1;
-            for (int i = 0; i < a.length; ++i) {
-                if (a[i] == DELIM) {
-                    ++vm;
+            if (cs == null) {
+                int vm = 1;
+                byte[] a = data.array();
+                for (int i = 0; i < a.length; i++) {
+                    if (a[i] == DELIM) {
+                        ++vm;
+                    }
                 }
+                return vm;
             }
-            delimPos = new int[vm + 1];
-            delimPos[0] = -1;
-            delimPos[vm] = a.length;
-            for (int i = 0, j = 0; i < a.length; ++i) {
-                if (a[i] == DELIM) {
-                    delimPos[++j] = i;
-                }
+            return StringUtils.count(cs.decode(data.array()), '\\') + 1;
+         }
+
+         public String getString(SpecificCharacterSet cs)
+             throws DcmValueException {
+             if (isEmpty()) {
+                 return null;
+             }
+             byte[] b = data.array();
+             String s = trim.trim(cs == null ? new String(b) : cs.decode(b));
+             int end = s.indexOf('\\');
+             return end != -1 ? s.substring(0, end) : s;             
+         }
+
+        public String getString(int index, SpecificCharacterSet cs)
+            throws DcmValueException {
+            if (index == 0) {
+                return getString(cs);
             }
-            return vm;
+            String[] ss = getStrings(cs);
+            return index < ss.length ? ss[index] : null;
         }
 
-        public ByteBuffer getByteBuffer(int index) {
-            if (index >= vm()) {
-                return null;
+        public String[] getStrings(SpecificCharacterSet cs)
+            throws DcmValueException {
+            if (isEmpty()) {
+                return STRING0;
             }
-            ByteBuffer bb = data.duplicate().order(data.order());
-            if (vm() != 1) {
-                bb.position(delimPos[index] + 1);
-                bb.limit(delimPos[index + 1]);
-            }
-            return bb;
+            byte[] b = data.array();
+            String s = trim.trim(cs == null ? new String(b) : cs.decode(b));
+            return StringUtils.split(s, '\\');
         }
     }
 
@@ -540,11 +467,11 @@ abstract class StringElement extends ValueElement {
         return new LO(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createLO(int tag, String value, Charset cs) {
+    static DcmElement createLO(int tag, String value, SpecificCharacterSet cs) {
         return new LO(tag, toByteBuffer(value, TOT_TRIM, LO_CHECK, cs));
     }
 
-    static DcmElement createLO(int tag, String[] values, Charset cs) {
+    static DcmElement createLO(int tag, String[] values, SpecificCharacterSet cs) {
         return new LO(tag, toByteBuffer(values, TOT_TRIM, LO_CHECK, cs));
     }
 
@@ -558,9 +485,24 @@ abstract class StringElement extends ValueElement {
             return 0x504E;
         }
 
-        public final PersonName getPersonName(int index, Charset cs)
+        public final PersonName getPersonName(SpecificCharacterSet cs)
+            throws DcmValueException {
+            return new PersonNameImpl(getString(cs));
+        }
+
+        public final PersonName getPersonName(int index, SpecificCharacterSet cs)
             throws DcmValueException {
             return new PersonNameImpl(getString(index, cs));
+        }
+
+        public final PersonName[] getPersonNames(SpecificCharacterSet cs)
+            throws DcmValueException {
+            String[] ss = getStrings(cs);
+            PersonName[] pns = new PersonName[ss.length];
+            for (int i = 0; i < ss.length; i++) {
+                pns[i] = new PersonNameImpl(ss[i]);
+            }
+            return pns;
         }
     }
 
@@ -572,13 +514,13 @@ abstract class StringElement extends ValueElement {
         return new PN(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createPN(int tag, PersonName value, Charset cs) {
+    static DcmElement createPN(int tag, PersonName value, SpecificCharacterSet cs) {
         return new PN(
             tag,
             toByteBuffer(value.toString(), NO_TRIM, NO_CHECK, cs));
     }
 
-    static DcmElement createPN(int tag, PersonName[] values, Charset cs) {
+    static DcmElement createPN(int tag, PersonName[] values, SpecificCharacterSet cs) {
         String[] tmp = new String[values.length];
         for (int i = 0; i < values.length; ++i) {
             tmp[i] = values[i].toString();
@@ -607,11 +549,11 @@ abstract class StringElement extends ValueElement {
         return new SH(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createSH(int tag, String value, Charset cs) {
+    static DcmElement createSH(int tag, String value, SpecificCharacterSet cs) {
         return new SH(tag, toByteBuffer(value, TOT_TRIM, SH_CHECK, cs));
     }
 
-    static DcmElement createSH(int tag, String[] values, Charset cs) {
+    static DcmElement createSH(int tag, String[] values, SpecificCharacterSet cs) {
         return new SH(tag, toByteBuffer(values, TOT_TRIM, SH_CHECK, cs));
     }
 
@@ -622,7 +564,7 @@ abstract class StringElement extends ValueElement {
             super(tag, data, trim);
         }
 
-        public final String getString(int index, Charset cs)
+        public final String getString(int index, SpecificCharacterSet cs)
             throws DcmValueException {
             return super.getString(index, null);
         }
@@ -769,9 +711,10 @@ abstract class StringElement extends ValueElement {
         }
 
         public final float[] getFloats() throws DcmValueException {
-            float[] retval = new float[vm()];
+            String[] ss = super.getStrings(null);
+            float[] retval = new float[ss.length];
             for (int i = 0; i < retval.length; ++i) {
-                retval[i] = getFloat(i);
+                retval[i] = Float.parseFloat(ss[i]);
             }
             return retval;
         }
@@ -841,9 +784,10 @@ abstract class StringElement extends ValueElement {
         }
 
         public final int[] getInts() throws DcmValueException {
-            int[] retval = new int[vm()];
+            String[] ss = super.getStrings(null);
+            int[] retval = new int[ss.length];
             for (int i = 0; i < retval.length; ++i) {
-                retval[i] = getInt(i);
+                retval[i] = Integer.parseInt(ss[i]);
             }
             return retval;
         }
@@ -971,19 +915,24 @@ abstract class StringElement extends ValueElement {
             return false;
         }
 
+        public final Date getDate() throws DcmValueException {
+            return toDate(getFormat(), super.getString(null));
+        }
+
         public final Date getDate(int index) throws DcmValueException {
             return toDate(getFormat(), super.getString(index, null));
         }
 
-        public final Date[] getDateRange(int index) throws DcmValueException {
-            return toDateRange(getFormat(), super.getString(index, null), getTimeResolution());
+        public final Date[] getDateRange() throws DcmValueException {
+            return toDateRange(getFormat(), super.getString(null), getTimeResolution());
         }
 
         public final Date[] getDates() throws DcmValueException {
             DateFormat f = getFormat();
-            Date[] a = new Date[vm()];
+            String[] ss = super.getStrings(null);
+            Date[] a = new Date[ss.length];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = toDate(f, super.getString(i, null));
+                a[i] = toDate(f, ss[i]);
             }
             return a;
         }
@@ -992,15 +941,16 @@ abstract class StringElement extends ValueElement {
             DcmElement key,
             boolean ignorePNCase,
             boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
-            for (int i = 0, n = key.vm(); i < n; ++i) {
-                Date[] range;
-                try {
-                    range = key.getDateRange(i);
-                } catch (DcmValueException e) {
-                    throw new IllegalArgumentException("key: " + key);
-                }
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
+            String[] keys;
+            try {
+                keys = key.getStrings(null);
+            } catch (DcmValueException e) {
+                throw new IllegalArgumentException("key: " + key);
+            }
+            for (int i = 0; i < keys.length; ++i) {
+                Date[] range = toDateRange(getFormat(), keys[i], getTimeResolution());
                 long from =
                     range[0] != null ? range[0].getTime() : Long.MIN_VALUE;
                 long to =

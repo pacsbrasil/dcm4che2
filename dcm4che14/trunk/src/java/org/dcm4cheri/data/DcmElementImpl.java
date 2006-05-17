@@ -42,6 +42,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.PersonName;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.VRs;
@@ -49,7 +50,6 @@ import org.dcm4cheri.util.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 
 import java.util.Date;
 
@@ -89,12 +89,25 @@ class DcmElementImpl implements DcmElement {
         return VRs.NONE;
     }
 
-    public int vm() {
+    /**
+     * @deprecated may return wrong number in case of multi-byte char sets;
+     * use {@link #vm(SpecificCharacterSet)} or for number of items/fragments
+     * in sequences {@link #countItems()} instead.
+     */
+    public final int vm() {
+        return vm(null);
+    }
+
+    public int vm(SpecificCharacterSet cs) {
+        return 0;
+    }
+
+    public int countItems() {
         return 0;
     }
 
     public boolean isEmpty() {
-        return vm() == 0;
+        return length() == 0;
     }
 
     public int length() {
@@ -118,7 +131,7 @@ class DcmElementImpl implements DcmElement {
         return toString(
             tag,
             vr(),
-            vm(),
+            vm(null),
             length(),
             StringUtils.promptValue(vr(), getByteBuffer(), 64));
     }
@@ -140,8 +153,8 @@ class DcmElementImpl implements DcmElement {
         DcmElement key,
         boolean ignorePNCase,
         boolean ignoreEmpty,
-        Charset keyCS,
-        Charset dsCS) {
+        SpecificCharacterSet keyCS,
+        SpecificCharacterSet dsCS) {
         if (key == null) {
             return true;
         }
@@ -158,8 +171,8 @@ class DcmElementImpl implements DcmElement {
         DcmElement key,
         boolean ignorePNCase,
         boolean ignoreEmpty,
-        Charset keyCS,
-        Charset dsCS) {
+        SpecificCharacterSet keyCS,
+        SpecificCharacterSet dsCS) {
         throw new UnsupportedOperationException("" + this);
     }
 
@@ -187,56 +200,61 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final PersonName getPersonName(Charset cs)
-        throws DcmValueException {
-        return getPersonName(0, cs);
-    }
-
-    public PersonName getPersonName(int index, Charset cs)
+    public PersonName getPersonName(SpecificCharacterSet cs)
         throws DcmValueException {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final String getString(Charset cs) throws DcmValueException {
+    public PersonName getPersonName(int index, SpecificCharacterSet cs)
+        throws DcmValueException {
+        throw new UnsupportedOperationException("" + this);
+    }
+
+    public PersonName[] getPersonNames(SpecificCharacterSet cs)
+    throws DcmValueException {
+        throw new UnsupportedOperationException("" + this);
+    }
+
+    public String getString(SpecificCharacterSet cs) throws DcmValueException {
         return getString(0, cs);
     }
 
-    public String getString(int index, Charset cs) throws DcmValueException {
+    public String getString(int index, SpecificCharacterSet cs) throws DcmValueException {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public String[] getStrings(Charset cs) throws DcmValueException {
+    public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final String getBoundedString(int maxLen, Charset cs)
+    public String getBoundedString(int maxLen, SpecificCharacterSet cs)
         throws DcmValueException {
         return getBoundedString(maxLen, 0, cs);
-    }
+   }
 
-    public String getBoundedString(int maxLen, int index, Charset cs)
+    public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs)
         throws DcmValueException {
         return getString(index, cs);
     }
 
-    public String[] getBoundedStrings(int maxLen, Charset cs)
+    public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs)
         throws DcmValueException {
         return getStrings(cs);
     }
 
-    public final int getInt() throws DcmValueException {
+    public int getInt() throws DcmValueException {
         return getInt(0);
     }
 
     public int getInt(int index) throws DcmValueException {
-        throw new UnsupportedOperationException("" + this);
+         throw new UnsupportedOperationException("" + this);
     }
 
     public int[] getInts() throws DcmValueException {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final int getTag() throws DcmValueException {
+    public int getTag() throws DcmValueException {
         return getTag(0);
     }
 
@@ -248,7 +266,7 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final float getFloat() throws DcmValueException {
+    public float getFloat() throws DcmValueException {
         return getFloat(0);
     }
 
@@ -260,7 +278,7 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final double getDouble() throws DcmValueException {
+    public double getDouble() throws DcmValueException {
         return getDouble(0);
     }
 
@@ -272,8 +290,8 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final Date getDate() throws DcmValueException {
-        return getDate(0);
+    public Date getDate() throws DcmValueException {
+        throw new UnsupportedOperationException("" + this);
     }
 
     public Date getDate(int index) throws DcmValueException {
@@ -284,11 +302,7 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public final Date[] getDateRange() throws DcmValueException {
-        return getDateRange(0);
-    }
-
-    public Date[] getDateRange(int index) throws DcmValueException {
+    public Date[] getDateRange() throws DcmValueException {
         throw new UnsupportedOperationException("" + this);
     }
 
@@ -349,7 +363,7 @@ class DcmElementImpl implements DcmElement {
         }
         bb.order(swap(bb.order()));
     }
-
+    
     static void swapLongs(ByteBuffer bb) {
         if ((bb.limit() & 7) != 0)
             throw new IllegalArgumentException("illegal value length " + bb);

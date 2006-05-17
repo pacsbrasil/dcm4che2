@@ -39,6 +39,7 @@
 package org.dcm4cheri.data;
 
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
@@ -56,8 +57,6 @@ import java.util.ArrayList;
  */
 abstract class FragmentElement extends DcmElementImpl {
     
-    private static final byte[] EMPTY_BYTE_ARRAY = {};
-    
     private final ArrayList list = new ArrayList();
 
     /** Creates a new instance of ElementImpl */
@@ -65,7 +64,11 @@ abstract class FragmentElement extends DcmElementImpl {
         super(tag);
     }
     
-    public final int vm() {
+    public final int vm(SpecificCharacterSet cs) {
+        return list.size();
+    }
+    
+    public final int countItems() {
         return list.size();
     }
     
@@ -74,40 +77,29 @@ abstract class FragmentElement extends DcmElementImpl {
     }
     
     public final ByteBuffer getDataFragment(int index) {
-        if (index >= vm()) {
-            return null;
-        }
-        return (ByteBuffer)list.get(index);
+        return index < list.size() ? (ByteBuffer)list.get(index) : null;
     }
     
     public final ByteBuffer getDataFragment(int index, ByteOrder byteOrder) {
-        if (index >= vm()) {
-            return null;
-        }
-        ByteBuffer data = (ByteBuffer)list.get(index);
-        if (data.order() != byteOrder) {
+        ByteBuffer data = getDataFragment(index) ;
+        if (data != null && data.order() != byteOrder) {
             swapOrder(data);
         }
         return data;
     }
     
     public final int getDataFragmentLength(int index) {
-        if (index >= vm()) {
-            return 0;
-        }
-        ByteBuffer data = (ByteBuffer)list.get(index);
-        return (data.limit()+1)&(~1);
+        return (((ByteBuffer)list.get(index)).limit()+1) & ~1;
     }
 
     public String getString(int index, Charset cs) {
-       return getBoundedString(Integer.MAX_VALUE, index, cs);
+        return getBoundedString(Integer.MAX_VALUE, index, cs);
     }
-    
+
     public String getBoundedString(int maxLen, int index, Charset cs) {
-        if (index >= vm()) {
-            return null;
-        }
-        return StringUtils.promptValue(vr(), getDataFragment(index), maxLen);
+        return index < list.size()
+                ? StringUtils.promptValue(vr(), (ByteBuffer)list.get(index), maxLen)
+                : null;
     }
 
     public String[] getStrings(Charset cs) {
@@ -115,15 +107,15 @@ abstract class FragmentElement extends DcmElementImpl {
     }
     
     public String[] getBoundedStrings(int maxLen, Charset cs) {
-        String[] a = new String[vm()];
+        String[] a = new String[list.size()];
         for (int i = 0; i < a.length; ++i)
-            a[i] = StringUtils.promptValue(vr(), getDataFragment(i), maxLen);
+            a[i] = StringUtils.promptValue(vr(), (ByteBuffer)list.get(i), maxLen);
         return a;
     }
     
     int calcLength() {
         int len = 8;
-        for (int i = 0, n = vm(); i < n; ++i)
+        for (int i = 0, n = list.size(); i < n; ++i)
             len += getDataFragmentLength(i) + 8;
         return len;
     }
@@ -218,10 +210,10 @@ abstract class FragmentElement extends DcmElementImpl {
        StringBuffer sb = new StringBuffer(DICT.toString(tag));
        sb.append(",").append(VRs.toString(vr()));
        if (!isEmpty()) {
-          for (int i = 0, n = vm(); i < n; ++i) {
+          for (int i = 0, n = list.size(); i < n; ++i) {
               sb.append("\n\tFrag-").append(i+1)
                 .append(",#").append(getDataFragmentLength(i)).append("[")
-                .append(StringUtils.promptValue(vr(), getDataFragment(i), 64))
+                .append(StringUtils.promptValue(vr(), (ByteBuffer)list.get(i), 64))
                 .append("]");
           }
        }

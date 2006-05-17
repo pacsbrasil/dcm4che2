@@ -15,12 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * Gunter Zeilinger <gunterze@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -36,56 +36,30 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4cheri.data;
+package org.dcm4che.data;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.SpecificCharacterSet;
-import org.dcm4che.dict.VRs;
+public class ConfigurationError extends RuntimeException {
 
+	private static final long serialVersionUID = 3257008748156172597L;
 
-/**
- * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
- * @since 20.09.2004
- *
- */
-class ExcludePrivateSQElement extends DcmElementImpl implements DcmElement {
+	public ConfigurationError() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
-    private final SQElement sqElem;
-    private int totlen = -1;
+	public ConfigurationError(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
 
-    public ExcludePrivateSQElement(SQElement sqElem) {
-        super(sqElem.tag());
-        this.sqElem = sqElem;
-    }
+	public ConfigurationError(Throwable cause) {
+		super(cause);
+		// TODO Auto-generated constructor stub
+	}
 
-    public final int vr() {
-        return VRs.SQ;
-    }
+	public ConfigurationError(String message, Throwable cause) {
+		super(message, cause);
+		// TODO Auto-generated constructor stub
+	}
 
-    public final int vm(SpecificCharacterSet cs) {
-        return sqElem.vm(cs);
-    }
-    
-    public final int countItems() {
-        return sqElem.countItems();
-    }
-    
-    public Dataset getItem(int index) {
-        return new FilterDataset.ExcludePrivate(sqElem.getItem(index));
-    }
-    
-    public int calcLength(DcmEncodeParam param) {
-        totlen = param.undefSeqLen ? 8 : 0;
-        for (int i = 0, n = countItems(); i < n; ++i)
-            totlen += getItem(i).calcLength(param) +
-                    (param.undefItemLen ? 16 : 8);
-        return totlen;
-    }
-    
-    public int length() {
-        return totlen;
-    }        
 }

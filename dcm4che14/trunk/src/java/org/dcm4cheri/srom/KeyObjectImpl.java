@@ -149,7 +149,7 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
         if (sq == null)
             return;
         
-        for (int i = 0, n = sq.vm(); i < n; ++i) {
+        for (int i = 0, n = sq.countItems(); i < n; ++i) {
             requests.add(new RequestImpl(sq.getItem(i)));
         }
     }
@@ -159,16 +159,16 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
         if (sq == null)
             return;
         
-        for (int i = 0, n = sq.vm(); i < n; ++i) {
+        for (int i = 0, n = sq.countItems(); i < n; ++i) {
             Dataset ds = sq.getItem(i);
             String studyInstanceUID = ds.getString(Tags.StudyInstanceUID);
             DcmElement sq2 = ds.get(Tags.RefSeriesSeq);
-            for (int i2 = 0, n2 = sq2.vm(); i2 < n2; ++i2) {
+            for (int i2 = 0, n2 = sq2.countItems(); i2 < n2; ++i2) {
                 Dataset ds2 = sq2.getItem(i2);
                 String seriesInstanceUID = ds2.getString(Tags.SeriesInstanceUID);
                 DcmElement sq3 = ds2.get(Tags.RefSOPSeq);
                 if (sq3 != null) {
-                    for (int i3 = 0, n3 = sq3.vm(); i3 < n3; ++i3) {
+                    for (int i3 = 0, n3 = sq3.countItems(); i3 < n3; ++i3) {
                         Dataset ds3 = sq3.getItem(i3);
                         list.add(new SOPInstanceRefImpl(
                                 ds3.getString(Tags.RefSOPClassUID),

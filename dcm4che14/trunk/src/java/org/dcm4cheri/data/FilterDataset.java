@@ -43,13 +43,13 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.SpecificCharacterSet;
 
 import org.dcm4che.dict.Tags;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -133,8 +133,8 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         return size() == 0;
     }
 
-    public Charset getCharset() {
-        return backend.getCharset();
+    public SpecificCharacterSet getSpecificCharacterSet() {
+        return backend.getSpecificCharacterSet();
     }
     
     public Dataset getParent() {

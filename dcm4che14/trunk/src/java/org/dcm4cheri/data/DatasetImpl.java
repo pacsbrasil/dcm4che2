@@ -43,6 +43,7 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Tags;
 
 import java.io.BufferedInputStream;
@@ -50,7 +51,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -66,7 +66,7 @@ final class DatasetImpl extends BaseDatasetImpl
         implements org.dcm4che.data.Dataset {
 
     private final Dataset parent;
-    private Charset charset = null;
+    private SpecificCharacterSet charset = null;
     private String privateCreatorID = null;
     private long itemOffset = -1L;
     DatasetImpl() {
@@ -86,9 +86,9 @@ final class DatasetImpl extends BaseDatasetImpl
                 : parent != null ? parent.getPrivateCreatorID() : null;
     }
     
-    public Charset getCharset() {
+    public SpecificCharacterSet getSpecificCharacterSet() {
         return charset != null ? charset
-                : parent != null ? parent.getCharset() : null;
+                : parent != null ? parent.getSpecificCharacterSet() : null;
     }
 
     public final Dataset getParent() {
@@ -119,7 +119,7 @@ final class DatasetImpl extends BaseDatasetImpl
         }
         if (newElem.tag() == Tags.SpecificCharacterSet) {
             try {
-                this.charset = Charsets.lookup(newElem.getStrings(null));
+                this.charset = SpecificCharacterSet.valueOf(newElem.getStrings(null));
             } catch (Exception ex) {
                 log.warn("Failed to consider specified Charset!");
                 this.charset = null;

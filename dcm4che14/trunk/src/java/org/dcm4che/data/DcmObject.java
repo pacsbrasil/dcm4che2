@@ -42,9 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Iterator;
+
 import javax.imageio.stream.ImageOutputStream;
 
 import org.xml.sax.helpers.DefaultHandler;
@@ -77,7 +77,7 @@ public interface DcmObject {
 
    String getPrivateCreatorID();
    
-   Charset getCharset();
+   SpecificCharacterSet getSpecificCharacterSet();
    
    boolean isEmpty();
    
@@ -96,6 +96,8 @@ public interface DcmObject {
    Iterator iterator();
    
    boolean contains(int tag);
+
+   boolean containsValue(int tag);
    
    int vm(int tag);
 
@@ -126,6 +128,8 @@ public interface DcmObject {
    String[] getBoundedStrings(int maxLen, int tag);
    
    PersonName getPersonName(int tag);
+
+   PersonName[] getPersonNames(int tag);
 
    PersonName getPersonName(int tag, int index);
 
@@ -174,8 +178,6 @@ public interface DcmObject {
    Date getDateTime(int dateTag, int timeTag);
    
    Date[] getDateRange(int tag);
-   
-   Date[] getDateRange(int tag, int index);
    
    Date[] getDateTimeRange(int dateTag, int timeTag);
 

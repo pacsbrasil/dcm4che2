@@ -40,7 +40,6 @@ package org.dcm4che.data;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.Date;
 
 /** Element in <code>DcmObject</code>.
@@ -57,7 +56,16 @@ public interface DcmElement {
    
    int vr();
    
+   /**
+    * @deprecated may return wrong number in case of multi-byte char sets;
+    * use {@link #vm(SpecificCharacterSet)} or for number of items/fragments
+    * in sequences {@link #countItems()} instead.
+    */
    int vm();
+
+   int vm(SpecificCharacterSet cs);
+   
+   int countItems();
    
    int length();
    
@@ -79,19 +87,19 @@ public interface DcmElement {
    
    int getDataFragmentLength(int index);
    
-   String getString(Charset cs) throws DcmValueException;
+   String getString(SpecificCharacterSet cs) throws DcmValueException;
    
-   String getString(int index, Charset cs) throws DcmValueException;
+   String getString(int index, SpecificCharacterSet cs) throws DcmValueException;
    
-   String[] getStrings(Charset cs) throws DcmValueException;
+   String[] getStrings(SpecificCharacterSet cs) throws DcmValueException;
    
-   String getBoundedString(int maxLen, Charset cs)
+   String getBoundedString(int maxLen, SpecificCharacterSet cs)
    throws DcmValueException;
    
-   String getBoundedString(int maxLen, int index, Charset cs)
+   String getBoundedString(int maxLen, int index, SpecificCharacterSet cs)
    throws DcmValueException;
    
-   String[] getBoundedStrings(int maxLen, Charset cs)
+   String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs)
    throws DcmValueException;
    
    int getInt() throws DcmValueException;
@@ -126,11 +134,11 @@ public interface DcmElement {
 
    Date[] getDateRange() throws DcmValueException;
 
-   Date[] getDateRange(int index) throws DcmValueException;
+   PersonName getPersonName(SpecificCharacterSet cs)  throws DcmValueException;
+
+   PersonName getPersonName(int index, SpecificCharacterSet cs) throws DcmValueException;
    
-   PersonName getPersonName(Charset cs)  throws DcmValueException;
-    
-   PersonName getPersonName(int index, Charset cs) throws DcmValueException;
+   PersonName[] getPersonNames(SpecificCharacterSet cs)  throws DcmValueException;
    
    void addDataFragment(ByteBuffer byteBuffer);
    

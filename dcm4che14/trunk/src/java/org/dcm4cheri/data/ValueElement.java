@@ -42,11 +42,11 @@ package org.dcm4cheri.data;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.WeakHashMap;
 
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 
@@ -112,6 +112,10 @@ abstract class ValueElement extends DcmElementImpl {
         return ((data.limit() + 1) & (~1));
     }
 
+    public final boolean isEmpty() {
+        return data.limit() == 0;
+    }
+    
     /**
      *  Gets the byteBuffer attribute of the ValueElement object
      *
@@ -134,43 +138,20 @@ abstract class ValueElement extends DcmElementImpl {
         return getByteBuffer();
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
-    public int vm() {
+    public int vm(SpecificCharacterSet cs) {
         return data.limit() == 0 ? 0 : 1;
     }
 
-    /**
-     *  Gets the string attribute of the ValueElement object
-     *
-     * @param  index                  Description of the Parameter
-     * @param  cs                     Description of the Parameter
-     * @return                        The string value
-     * @exception  DcmValueException  Description of the Exception
-     */
-    public String getString(int index, Charset cs) throws DcmValueException {
-        if (index >= vm()) {
-            return null;
-        }
-        return String.valueOf(getInt(index));
+    public String getString(int index, SpecificCharacterSet cs) throws DcmValueException {
+        return index < vm(null) ? Integer.toString(getInt(index)) : null;
     }
 
-    /**
-     *  Gets the strings attribute of the ValueElement object
-     *
-     * @param  cs                     Description of the Parameter
-     * @return                        The strings value
-     * @exception  DcmValueException  Description of the Exception
-     */
-    public String[] getStrings(Charset cs) throws DcmValueException {
-        String[] a = new String[vm()];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = String.valueOf(getInt(i));
+    public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
+        String[] ss = new String[vm(null)];
+        for (int i = 0; i < ss.length; ++i) {
+            ss[i] = Integer.toString(getInt(i));
         }
-        return a;
+        return ss;
     }
 
     /**  Description of the Method */
@@ -212,21 +193,18 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x5353;
         }
 
-        public final int vm() {
+        public final int vm(SpecificCharacterSet cs) {
             return data.limit() >> 1;
         }
 
         public final int getInt(int index) {
-            if (index >= vm()) {
-                return 0;
-            }
-            return data.getShort(index << 1);
+            return index < vm(null) ? data.getShort(index << 1) : 0;
         }
 
         public final int[] getInts() {
-            int[] a = new int[vm()];
+            int[] a = new int[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getInt(i);
+                a[i] = data.getShort(i << 1);
             }
             return a;
         }
@@ -239,16 +217,16 @@ abstract class ValueElement extends DcmElementImpl {
             DcmElement key,
             boolean ignorePNCase,
 			boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
             int v;
             try {
                 v = key.getInt();
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            for (int i = 0, n = vm(); i < n; ++i) {
-                if (getInt(i) == v) {
+            for (int i = 0, n = data.limit() >> 1; i < n; ++i) {
+                if (data.getShort(i >> 1) == v) {
                     return true;
                 }
             }
@@ -290,21 +268,18 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x5553;
         }
 
-        public final int vm() {
+        public final int vm(SpecificCharacterSet cs) {
             return data.limit() >> 1;
         }
 
         public final int getInt(int index) {
-            if (index >= vm()) {
-                return 0;
-            }
-            return data.getShort(index << 1) & 0xffff;
+            return index < vm(null) ? data.getShort(index << 1) & 0xffff : 0;
         }
 
         public final int[] getInts() {
-            int[] a = new int[vm()];
+            int[] a = new int[data.limit() >> 1];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getInt(i);
+                a[i] = data.getShort(i << 1) & 0xffff;
             }
             return a;
         }
@@ -317,16 +292,16 @@ abstract class ValueElement extends DcmElementImpl {
             DcmElement key,
             boolean ignorePNCase,
 			boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
             int v;
             try {
                 v = key.getInt();
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            for (int i = 0, n = vm(); i < n; ++i) {
-                if (getInt(i) == v) {
+            for (int i = 0, n = data.limit() >> 1; i < n; ++i) {
+                if ((data.getShort(i >> 1) & 0xffff) == v) {
                     return true;
                 }
             }
@@ -388,25 +363,22 @@ abstract class ValueElement extends DcmElementImpl {
             super(tag, data);
         }
 
-        public final int getInt(int index) {
-            if (index >= vm()) {
-                return 0;
-            }
-            return data.getInt(index << 2);
-        }
-
-        public final int[] getInts() {
-            int[] a = new int[vm()];
-            for (int i = 0; i < a.length; ++i) {
-                a[i] = getInt(i);
-            }
-            return a;
-        }
-
-        public final int vm() {
+        public final int vm(SpecificCharacterSet cs) {
             return data.limit() >> 2;
         }
 
+        public final int getInt(int index) {
+            return index < vm(null) ? data.getInt(index << 2) : 0;
+        }
+
+        public final int[] getInts() {
+            int[] a = new int[vm(null)];
+            for (int i = 0; i < a.length; ++i) {
+                a[i] = data.getInt(i << 2);
+            }
+            return a;
+        }
+        
         protected void swapOrder() {
             swapInts(data);
         }
@@ -415,16 +387,16 @@ abstract class ValueElement extends DcmElementImpl {
             DcmElement key,
             boolean ignorePNCase,
 			boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
             int v;
             try {
                 v = key.getInt();
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            for (int i = 0, n = vm(); i < n; ++i) {
-                if (getInt(i) == v) {
+            for (int i = 0, n = data.limit() >> 2; i < n; ++i) {
+                if (data.getInt(i >> 2) == v) {
                     return true;
                 }
             }
@@ -475,20 +447,17 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x554C;
         }
 
-        public String getString(int index, Charset cs) {
-            if (index >= super.vm()) {
-                return null;
-            }
-            return String.valueOf(getInt(index) & 0xFFFFFFFFL);
+        public String getString(int index, SpecificCharacterSet cs) throws DcmValueException {
+            return index < vm(null) ? Long.toString(getInt(index) & 0xffffffffL) : null;
         }
 
-        public String[] getStrings(Charset cs) throws DcmValueException {
-            String[] a = new String[super.vm()];
-            for (int i = 0; i < a.length; ++i) {
-                a[i] = String.valueOf(getInt(i) & 0xFFFFFFFFL);
+        public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
+            String[] ss = new String[vm(null)];
+            for (int i = 0; i < ss.length; ++i) {
+                ss[i] = Long.toString(getInt(i) & 0xffffffffL);
             }
-            return a;
-        }
+            return ss;
+        }        
     }
 
     static DcmElement createUL(int tag, ByteBuffer data) {
@@ -552,39 +521,36 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x4154;
         }
 
-        public final int vm() {
+        public final int vm(SpecificCharacterSet cs) {
             return data.limit() >> 2;
         }
 
         public final int getTag(int index) {
-            if (index >= vm()) {
-                return 0;
-            }
-            final int pos = index << 2;
-            return (
-                (data.getShort(pos) << 16) | (data.getShort(pos + 2) & 0xffff));
+            return index < vm(null) ? toTag(index) : 0;
         }
 
         public final int[] getTags() {
-            int[] a = new int[vm()];
+            int[] a = new int[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getTag(i);
+                a[i] = toTag(i);
             }
             return a;
         }
 
-        public String getString(int index, Charset cs)
-            throws DcmValueException {
-            if (index >= vm()) {
-                return null;
-            }
-            return Tags.toHexString(getTag(index), 8);
+        private final int toTag(int i) {
+            return (data.getShort(i << 2) << 16)
+                    | (data.getShort((i << 2) + 2) & 0xffff);
         }
 
-        public String[] getStrings(Charset cs) throws DcmValueException {
-            String[] a = new String[vm()];
+        public String getString(int index, SpecificCharacterSet cs)
+            throws DcmValueException {
+            return index < vm(null) ? Tags.toHexString(toTag(index), 8) : null;
+        }
+
+        public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getString(i, null);
+                a[i] = Tags.toHexString(toTag(i), 8);
             }
             return a;
         }
@@ -597,15 +563,15 @@ abstract class ValueElement extends DcmElementImpl {
             DcmElement key,
             boolean ignorePNCase,
 			boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
             int v;
             try {
                 v = key.getTag();
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            for (int i = 0, n = vm(); i < n; ++i) {
+            for (int i = 0, n = vm(null); i < n; ++i) {
                 if (getTag(i) == v) {
                     return true;
                 }
@@ -668,7 +634,7 @@ abstract class ValueElement extends DcmElementImpl {
             super(tag, data);
         }
 
-        public final int vm() {
+        public final int vm(SpecificCharacterSet cs) {
             return data.limit() >> 2;
         }
 
@@ -677,31 +643,25 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public final float getFloat(int index) {
-            if (index >= vm()) {
-                return 0.f;
-            }
-            return data.getFloat(index << 2);
+            return index < vm(null) ? data.getFloat(index << 2) : 0.f;
         }
 
         public final float[] getFloats() {
-            float[] a = new float[vm()];
+            float[] a = new float[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getFloat(i);
+                a[i] = data.getFloat(i << 2);
             }
             return a;
         }
 
-        public String getString(int index, Charset cs) {
-            if (index >= vm()) {
-                return null;
-            }
-            return String.valueOf(getFloat(index));
+        public String getString(int index, SpecificCharacterSet cs) {
+            return index < vm(null) ? Float.toString(data.getFloat(index << 2)) : null;
         }
 
-        public String[] getStrings(Charset cs) throws DcmValueException {
-            String[] a = new String[vm()];
+        public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = String.valueOf(getFloat(i));
+                a[i] = Float.toString(data.getFloat(i << 2));
             }
             return a;
         }
@@ -714,16 +674,16 @@ abstract class ValueElement extends DcmElementImpl {
             DcmElement key,
             boolean ignorePNCase,
 			boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
             float v;
             try {
                 v = key.getFloat();
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            for (int i = 0, n = vm(); i < n; ++i) {
-                if (getFloat(i) == v) {
+            for (int i = 0, n = vm(null); i < n; ++i) {
+                if (data.getFloat(i << 2) == v) {
                     return true;
                 }
             }
@@ -786,7 +746,7 @@ abstract class ValueElement extends DcmElementImpl {
             super(tag, data);
         }
 
-        public final int vm() {
+        public final int vm(SpecificCharacterSet cs) {
             return data.limit() >>> 3;
         }
 
@@ -795,31 +755,25 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public final double getDouble(int index) {
-            if (index >= vm()) {
-                return 0.;
-            }
-            return data.getDouble(index << 3);
+            return index < vm(null) ? data.getDouble(index << 3) : 0.;
         }
 
         public final double[] getDoubles() {
-            double[] a = new double[vm()];
+            double[] a = new double[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getDouble(i);
+                a[i] = data.getDouble(i << 3);
             }
             return a;
         }
 
-        public String getString(int index, Charset cs) {
-            if (index >= vm()) {
-                return null;
-            }
-            return String.valueOf(getDouble(index));
+        public String getString(int index, SpecificCharacterSet cs) {
+            return index < vm(null) ? Double.toString(data.getDouble(index << 3)) : null;
         }
 
-        public String[] getStrings(Charset cs) throws DcmValueException {
-            String[] a = new String[vm()];
+        public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = String.valueOf(getDouble(i));
+                a[i] = Double.toString(data.getDouble(i << 3));
             }
             return a;
         }
@@ -832,16 +786,16 @@ abstract class ValueElement extends DcmElementImpl {
             DcmElement key,
             boolean ignorePNCase,
 			boolean ignoreEmpty,
-            Charset keyCS,
-            Charset dsCS) {
+            SpecificCharacterSet keyCS,
+            SpecificCharacterSet dsCS) {
             double v;
             try {
                 v = key.getDouble();
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            for (int i = 0, n = vm(); i < n; ++i) {
-                if (getDouble(i) == v) {
+            for (int i = 0, n = vm(null); i < n; ++i) {
+                if (data.getDouble(i << 3) == v) {
                     return true;
                 }
             }
@@ -885,40 +839,34 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public final float getFloat(int index) {
-            final int pos = index << 2;
-            if (pos >= data.limit()) {
-                return 0.f;
-            }
-            return data.getFloat(pos);
+            return index < (data.limit() >> 2) 
+                    ? data.getFloat(index << 2) : 0.f;
         }
 
         public final float[] getFloats() {
             float[] a = new float[data.limit() >> 2];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getFloat(i);
+                a[i] = data.getFloat(i << 2);
             }
             return a;
         }
 
-        public String getString(int index, Charset cs) {
+        public String getString(int index, SpecificCharacterSet cs) {
             return getBoundedString(Integer.MAX_VALUE, index, cs);
         }
 
-        public String getBoundedString(int maxLen, int index, Charset cs) {
-            if (index >= vm()) {
-                return null;
-            }
-            return StringUtils.promptOF(data, maxLen);
+        public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
+            return index < vm(null) ? StringUtils.promptOF(data, maxLen) : null;
         }
 
-        public String[] getStrings(Charset cs) throws DcmValueException {
+        public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
             return getBoundedStrings(Integer.MAX_VALUE, cs);
         }
 
-        public String[] getBoundedStrings(int maxLen, Charset cs) {
-            String[] a = new String[vm()];
+        public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getBoundedString(maxLen, i, null);
+                a[i] = StringUtils.promptOF(data, maxLen);
             }
             return a;
         }
@@ -964,40 +912,34 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public final int getInt(int index) {
-            final int pos = index << 1;
-            if (pos >= data.limit()) {
-                return 0;
-            }
-            return data.getShort(pos) & 0xffff;
+            return index < (data.limit() >> 1) ? 
+                    data.getShort(index << 1) & 0xffff : 0;
         }
 
         public final int[] getInts() {
             int[] a = new int[data.limit() >> 1];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getInt(i);
+                a[i] = data.getShort(i << 1) & 0xffff;
             }
             return a;
         }
 
-        public String getString(int index, Charset cs) {
+        public String getString(int index, SpecificCharacterSet cs) {
             return getBoundedString(Integer.MAX_VALUE, index, cs);
         }
 
-        public String getBoundedString(int maxLen, int index, Charset cs) {
-            if (index >= vm()) {
-                return null;
-            }
-            return StringUtils.promptOW(data, maxLen);
+        public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
+            return index < vm(null) ? StringUtils.promptOW(data, maxLen) : null;
         }
 
-        public String[] getStrings(Charset cs) {
+        public String[] getStrings(SpecificCharacterSet cs) {
             return getBoundedStrings(Integer.MAX_VALUE, cs);
         }
 
-        public String[] getBoundedStrings(int maxLen, Charset cs) {
-            String[] a = new String[vm()];
+        public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getBoundedString(maxLen, i, null);
+                a[i] = StringUtils.promptOW(data, maxLen);
             }
             return a;
         }
@@ -1042,25 +984,22 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x4F42;
         }
 
-        public String getString(int index, Charset cs) {
+        public String getString(int index, SpecificCharacterSet cs) {
             return getBoundedString(Integer.MAX_VALUE, index, cs);
         }
 
-        public String getBoundedString(int maxLen, int index, Charset cs) {
-            if (index >= vm()) {
-                return null;
-            }
-            return StringUtils.promptOB(data, maxLen);
+        public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
+            return index < vm(null) ? StringUtils.promptOB(data, maxLen) : null;
         }
 
-        public String[] getStrings(Charset cs) {
+        public String[] getStrings(SpecificCharacterSet cs) {
             return getBoundedStrings(Integer.MAX_VALUE, cs);
         }
 
-        public String[] getBoundedStrings(int maxLen, Charset cs) {
-            String[] a = new String[vm()];
+        public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getBoundedString(maxLen, i, null);
+                a[i] = StringUtils.promptOB(data, maxLen);
             }
             return a;
         }
@@ -1087,25 +1026,22 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x554E;
         }
 
-        public String getString(int index, Charset cs) {
+        public String getString(int index, SpecificCharacterSet cs) {
             return getBoundedString(Integer.MAX_VALUE, index, cs);
         }
 
-        public String getBoundedString(int maxLen, int index, Charset cs) {
-            if (index >= vm()) {
-                return null;
-            }
-            return StringUtils.promptOB(data, maxLen);
+        public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
+            return index < vm(null) ? StringUtils.promptOB(data, maxLen) : null;
         }
 
-        public String[] getStrings(Charset cs) throws DcmValueException {
+        public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
             return getBoundedStrings(Integer.MAX_VALUE, cs);
         }
 
-        public String[] getBoundedStrings(int maxLen, Charset cs) {
-            String[] a = new String[vm()];
+        public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
+            String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = getBoundedString(maxLen, i, null);
+                a[i] = StringUtils.promptOB(data, maxLen);
             }
             return a;
         }

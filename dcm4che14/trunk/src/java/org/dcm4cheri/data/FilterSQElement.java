@@ -63,8 +63,12 @@ class FilterSQElement extends DcmElementImpl {
         return VRs.SQ;
     }
 
-    public final int vm() {
-        return sqElem.vm();
+    public final int vm(SpecificCharacterSet cs) {
+        return sqElem.vm(cs);
+    }
+    
+    public final int countItems() {
+        return sqElem.countItems();
     }
     
     public Dataset getItem(int index) {
@@ -73,7 +77,7 @@ class FilterSQElement extends DcmElementImpl {
     
     public int calcLength(DcmEncodeParam param) {
         totlen = param.undefSeqLen ? 8 : 0;
-        for (int i = 0, n = vm(); i < n; ++i)
+        for (int i = 0, n = countItems(); i < n; ++i)
             totlen += getItem(i).calcLength(param) +
                     (param.undefItemLen ? 16 : 8);
         return totlen;
