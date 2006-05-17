@@ -118,7 +118,7 @@ class DirRecordFactory {
         DcmElement srcSq = obj.get(Tags.ContentSeq);
         if (srcSq != null) {
             DcmElement dstSq = keys.putSQ(Tags.ContentSeq);
-            for (int i = 0, n = srcSq.vm(); i < n; ++i) {
+            for (int i = 0, n = srcSq.countItems(); i < n; ++i) {
                 Dataset item = srcSq.getItem(i);
                 if (Content.RelationType.HAS_CONCEPT_MOD.equals(item
                         .getString(Tags.RelationshipType))) {

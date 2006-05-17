@@ -40,7 +40,6 @@ package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,6 +63,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.media.DirBuilderFactory;
 import org.dcm4che.media.DirReader;
@@ -344,18 +344,18 @@ class DicomDirDOM {
 
     private void appendAttrs(Element parent, DcmObject ds)
             throws DcmValueException {
-        Charset cs = ds.getCharset();
+        SpecificCharacterSet cs = ds.getSpecificCharacterSet();
         for (Iterator it = ds.iterator(); it.hasNext();)
             appendAttr(parent, (DcmElement) it.next(), cs);
     }
 
-    private void appendAttr(Element parent, DcmElement dcmElm, Charset cs)
+    private void appendAttr(Element parent, DcmElement dcmElm, SpecificCharacterSet cs)
             throws DcmValueException {
         if (dcmElm.isEmpty() || dcmElm.tag() == Tags.IconImageSeq) return;
         Element elm = doc.createElement(ATTR);
         elm.setAttribute(TAG, Tags.toString(dcmElm.tag()));
         if (dcmElm.hasItems())
-            for (int i = 0, n = dcmElm.vm(); i < n; ++i) {
+            for (int i = 0, n = dcmElm.countItems(); i < n; ++i) {
                 Element item = doc.createElement(ITEM);
                 appendAttrs(item, dcmElm.getItem(i));
                 elm.appendChild(item);

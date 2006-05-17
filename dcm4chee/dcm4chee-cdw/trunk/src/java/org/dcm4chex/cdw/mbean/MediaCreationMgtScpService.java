@@ -321,7 +321,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             DcmElement refSOPs = info.get(Tags.RefSOPSeq);
             String prompt = refSOPs == null ? "N-Create Information:\n"
                     : "N-Create Information:\n(0008,1199) SQ #-1 *"
-                            + refSOPs.vm() + " // Referenced SOP Sequence\n";
+                            + refSOPs.countItems() + " // Referenced SOP Sequence\n";
             logDataset(prompt, info.subSet(new int[] { Tags.RefSOPSeq}, true, true));
         }
         checkCreateAttributes(info, rspCmd);
@@ -384,10 +384,10 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 ds.putCS(Tags.IncludeNonDICOMObjects,
                         defaultIncludeNonDICOMObjects);
         DcmElement refSOPs = ds.get(Tags.RefSOPSeq);
-        if (refSOPs == null || refSOPs.vm() == 0)
+        if (refSOPs == null || refSOPs.countItems() == 0)
                 throw new DcmServiceException(Status.MissingAttribute,
                         "Missing or empty Referenced SOP Sequence");
-        for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
+        for (int i = 0, n = refSOPs.countItems(); i < n; ++i) {
             Dataset item = refSOPs.getItem(i);
             if (item.vm(Tags.RefSOPInstanceUID) <= 0)
                     throw new DcmServiceException(Status.MissingAttribute,
@@ -416,7 +416,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         HashSet profiles = new HashSet();
         LinkedHashMap checkForDuplicate = new LinkedHashMap();
         DcmElement refSOPs = attrs.get(Tags.RefSOPSeq);
-        for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
+        for (int i = 0, n = refSOPs.countItems(); i < n; ++i) {
             Dataset item = refSOPs.getItem(i);
             String cuid = item.getString(Tags.RefSOPClassUID);
             String iuid = item.getString(Tags.RefSOPInstanceUID);
@@ -445,7 +445,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         if (!missingSOPs.isEmpty())
                 throw new MediaCreationException(
                         ExecutionStatusInfo.NO_INSTANCE, missingSOPs);
-        if (checkForDuplicate.size() < refSOPs.vm()) {
+        if (checkForDuplicate.size() < refSOPs.countItems()) {
             if (!tolerateDuplicateRefSOPInstances)
                     throw new MediaCreationException(
                             ExecutionStatusInfo.DUPL_REF_INST);

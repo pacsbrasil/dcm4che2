@@ -137,7 +137,7 @@ public class SpoolDirDelegate {
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation)))
                 return;
         DcmElement refSOPs = rq.get(Tags.RefSOPSeq);
-        for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
+        for (int i = 0, n = refSOPs.countItems(); i < n; ++i) {
             Dataset item = refSOPs.getItem(i);
             deleteInstanceFile(item.getString(Tags.RefSOPInstanceUID));
         }

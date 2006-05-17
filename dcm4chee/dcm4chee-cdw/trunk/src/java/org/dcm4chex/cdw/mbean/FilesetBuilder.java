@@ -250,7 +250,7 @@ class FilesetBuilder {
             HashMap serRecs = new HashMap();
             try {
                 DcmElement refSOPs = attrs.get(Tags.RefSOPSeq);
-                for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
+                for (int i = 0, n = refSOPs.countItems(); i < n; ++i) {
                     addFile(rootDir,
                             refSOPs.getItem(i),
                             dirWriter,
