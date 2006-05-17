@@ -2,7 +2,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 	
-    <property name="version" value="2.8.0"/>
+    <property name="version" value="2.8.1"/>
     <property name="dist.jboss.conf" value="default"/>
     <property name="target.dir" value="${basedir}/target"/>
 
@@ -69,6 +69,7 @@
 				<include name="lib/dcm4che.jar"/>
 			</zipfileset>
 			<zipfileset dir="../dcm4che14" prefix="${dist.standalone.config}">
+				<include name="lib/dcm4che-imageio-rle-2.0.4.jar"/>
 				<include name="lib/jai_imageio.jar"/>
 				<include name="lib/clibwrapper_jiio.jar"/>
 			</zipfileset>
@@ -132,8 +133,11 @@
 			<zipfileset dir="../dcm4jboss-web/target" prefix="${dist.standalone.config}">
 				<include name="deploy/*"/>
 			</zipfileset>  			
+			<zipfileset dir="../dcm4jboss-web/src/etc" prefix="${dist.standalone.config}">
+				<include name="conf/**"/>
+			</zipfileset>
 			<zipfileset dir="../dcm4jboss-web/src" prefix="${dist.standalone}">
-				<include name="etc/**"/>
+				<include name="etc/dcm4jboss-web.cfg/**"/>
 			</zipfileset>
 
 			<zipfileset dir="../dcm4jboss-arr/target/common" prefix="${dist.standalone.config}">
