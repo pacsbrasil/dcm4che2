@@ -7,7 +7,7 @@
 # Format: <application>.*[<grpid>]=<method1>[,<method2>[,<method3>]..]
 # e.g. 'folder.*=delete,export_tf' 
 
-folder.*=delete,*export
+folder.*=edit,delete,*export
 folder.*export=export_tf,export_xds
 
 # Application - Role Mapping
