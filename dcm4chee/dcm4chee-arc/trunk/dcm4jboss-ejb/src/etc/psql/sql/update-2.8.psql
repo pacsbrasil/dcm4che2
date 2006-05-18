@@ -111,6 +111,6 @@ CREATE TABLE assoc (
 	accession_no	TEXT,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	ian_attrs       BLOB
+	ian_attrs       BYTEA
 );
 CREATE INDEX assoc_updated_time ON assoc(updated_time);
