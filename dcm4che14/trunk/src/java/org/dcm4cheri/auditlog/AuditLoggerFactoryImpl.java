@@ -119,7 +119,7 @@ public class AuditLoggerFactoryImpl extends AuditLoggerFactory
      */
     public RemoteNode newRemoteNode(Socket socket, String aet)
     {
-        return new RemoteNodeImpl(socket, aet);
+        return new RemoteNodeImpl(socket, aet, disableHostLookup);
     }
 
 

@@ -75,10 +75,12 @@ class RemoteNodeImpl implements RemoteNode {
         this.aet = aet;
     }
 
-    public RemoteNodeImpl(Socket s, String aet) {
+    public RemoteNodeImpl(Socket s, String aet, boolean disableHostLookup) {
         InetAddress addr = s.getInetAddress();
         this.ip = addr.getHostAddress();
-        this.hname = toHname(addr.getHostName());
+        if (!disableHostLookup) {
+            this.hname = toHname(addr.getHostName());
+        }
         this.aet = aet;
     }
         

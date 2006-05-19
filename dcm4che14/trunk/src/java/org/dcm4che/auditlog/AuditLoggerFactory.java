@@ -58,6 +58,8 @@ public abstract class AuditLoggerFactory
         (AuditLoggerFactory) Implementation.findFactory(
                 "dcm4che.auditlog.AuditLoggerFactory");
 
+    protected static boolean disableHostLookup = false;
+    
     // Constructor ---------------------------------------------------
     /**
      *  Gets the instance attribute of the AuditLoggerFactory class
@@ -70,6 +72,14 @@ public abstract class AuditLoggerFactory
     }
 
     // Public --------------------------------------------------------
+    public static final boolean isDisableHostLookup() {
+        return disableHostLookup;
+    }
+
+    public static final void setDisableHostLookup(boolean disableHostLookup) {
+        AuditLoggerFactory.disableHostLookup = disableHostLookup;
+    }
+
     /**
      *  Description of the Method
      *
