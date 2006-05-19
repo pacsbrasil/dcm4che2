@@ -77,6 +77,14 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     
     private ArrayList supressLogForAETs = new ArrayList();
 
+    public final boolean isDisableHostLookup() {
+        return AuditLoggerFactory.isDisableHostLookup();
+    }
+
+    public final void setDisableHostLookup(boolean disableHostLookup) {
+        AuditLoggerFactory.setDisableHostLookup(disableHostLookup);
+    }
+
     public final String getActorName() {
         return actorName;
     }

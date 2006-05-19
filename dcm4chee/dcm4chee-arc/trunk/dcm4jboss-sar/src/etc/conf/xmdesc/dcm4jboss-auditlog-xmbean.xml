@@ -102,6 +102,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isDisableHostLookup"
+      setMethod="setDisableHostLookup">
+      <description>Disable reverse DNS lookup to get Host name for remote
+        application. => Use only IP to identify remote hosts in emitted
+        Audit messages.
+      </description>
+      <name>DisableHostLookup</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogActorConfig"
       setMethod="setLogActorConfig">
       <description>Emit ActorConfig audit messages.
