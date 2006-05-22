@@ -391,6 +391,13 @@
          <fileset dir="${build.classes.dir}" includes="HPQRScu*,Configuration*"/>
          <fileset dir="${build.res.dir}" includes="HPQRScu*"/>
     </jar>
+    <jar jarfile="${build.bin.dir}/lsiioreg.jar">
+      	<manifest>
+				<attribute name="Main-Class" value="ListIIORegistry"/>
+				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar"/>
+	    	</manifest>
+         <fileset dir="${build.classes.dir}" includes="ListIIORegistry.class"/>
+    </jar>
    </target>
    
    <target name="check-javadoc" depends="xslt-generate">
