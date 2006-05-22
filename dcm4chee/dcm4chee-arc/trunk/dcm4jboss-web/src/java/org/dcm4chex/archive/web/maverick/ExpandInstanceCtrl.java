@@ -54,8 +54,6 @@ public class ExpandInstanceCtrl extends ExpandSeriesCtrl {
 
     private int instancePk;
     
-    private boolean expand;
-
     public final void setInstancePk(int pk) {
         this.instancePk = pk;
     }
