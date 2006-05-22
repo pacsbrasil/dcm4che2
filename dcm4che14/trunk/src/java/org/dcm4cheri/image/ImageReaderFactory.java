@@ -85,7 +85,8 @@ public class ImageReaderFactory {
 		    if (className.equals(r.getClass().getName()))
 		            return r;
         }
-    	throw new ConfigurationException("No Image Reader for format:" + formatName);        
+        throw new ConfigurationException("No Image Reader of class " + className
+                + " available for format:" + formatName); 
     }
     
     static class ConfigurationException extends RuntimeException {

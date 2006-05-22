@@ -85,7 +85,8 @@ public class ImageWriterFactory {
 		    if (className.equals(r.getClass().getName()))
 		            return r;
         }
-    	throw new ConfigurationException("No Image Writer for format:" + formatName);        
+        throw new ConfigurationException("No Image Writer of class " + className
+                + " available for format:" + formatName); 
     }
     
     static class ConfigurationException extends RuntimeException {
