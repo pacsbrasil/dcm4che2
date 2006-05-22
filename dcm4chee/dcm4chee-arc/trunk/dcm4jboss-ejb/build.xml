@@ -114,103 +114,24 @@
 	<property name="target.meta-inf-oracle" value="${target.xdoclet}/META-INF-oracle"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.res" value="${target.dir}/res"/>
-	<property name="target.res-hsql" value="${target.res}-hsql"/>
-	<property name="target.res-psql" value="${target.res}-psql"/>
-	<property name="target.res-mysql" value="${target.res}-mysql"/>
-	<property name="target.res-mssql" value="${target.res}-mssql"/>
-	<property name="target.res-oracle" value="${target.res}-oracle"/>
-	<property name="target.res-db2" value="${target.res}-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
-	<property name="target.hsql.deploy" value="${target.dir}/hsql/deploy"/>
-	<property name="target.psql.deploy" value="${target.dir}/psql/deploy"/>
-	<property name="target.mysql.deploy" value="${target.dir}/mysql/deploy"/>
-	<property name="target.mssql.deploy" value="${target.dir}/mssql/deploy"/>
-	<property name="target.oracle.deploy" value="${target.dir}/oracle/deploy"/>
-	<property name="target.db2.deploy" value="${target.dir}/db2/deploy"/>
 	<property name="target.common.bin" value="${target.dir}/common/bin"/>	
 	<property name="target.common.lib" value="${target.dir}/common/lib"/>	
-	<property name="target.hsql.lib" value="${target.dir}/hsql/lib"/>
-	<property name="target.psql.lib" value="${target.dir}/psql/lib"/>
-	<property name="target.mysql.lib" value="${target.dir}/mysql/lib"/>
-	<property name="target.mssql.lib" value="${target.dir}/mssql/lib"/>
-	<property name="target.oracle.lib" value="${target.dir}/oracle/lib"/>
-	<property name="target.db2.lib" value="${target.dir}/db2/lib"/>
 	<property name="target.test.web-inf" value="${target.dir}/test/WEB-INF"/>
 	<property name="target.reports" value="${target.dir}/reports"/>
 
 	<property name="dist" value="${ant.project.name}-${version}"/>
 	
 	
-   	<!-- =================================================================== -->
-    <!-- Initialize                                                          -->
     <!-- =================================================================== -->
-    
-    <target name="init">
-    	<tstamp>
-            <format property="TODAY" pattern="yyyy-MM-dd"/>
-        </tstamp>
-        <taskdef
-            name="xdoclet"
-            classname="xdoclet.DocletTask"
-            classpathref="xdoclet.path"
-            />
+    <!-- Invoke XDoclet's ejbdoclet                                          -->
+    <!-- =================================================================== -->
+    <target name="ejbdoclet" unless="xdoclet.skip">
         <taskdef
             name="ejbdoclet"
             classname="xdoclet.modules.ejb.EjbDocletTask"
             classpathref="xdoclet.path"
             />
-        <taskdef
-            name="webdoclet"
-            classname="xdoclet.modules.web.WebDocletTask"
-            classpathref="xdoclet.path"
-            />
-        <taskdef
-            name="jmxdoclet"
-            classname="xdoclet.modules.jmx.JMXDocletTask"
-            classpathref="xdoclet.path"
-            />
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Prepares the directory structure                                    -->
-    <!-- =================================================================== -->
-    <target name="prepare" depends="init">
-        <mkdir dir="${target.classes}"/>
-        <mkdir dir="${target.java}"/>
-        <mkdir dir="${target.res-hsql}"/>
-        <mkdir dir="${target.res-psql}"/>
-        <mkdir dir="${target.res-mysql}"/>
-        <mkdir dir="${target.res-mssql}"/>
-        <mkdir dir="${target.res-oracle}"/>
-        <mkdir dir="${target.res-db2}"/>
-        <mkdir dir="${target.meta-inf-hsql}"/>
-        <mkdir dir="${target.meta-inf-psql}"/>
-        <mkdir dir="${target.meta-inf-mysql}"/>
-        <mkdir dir="${target.meta-inf-mssql}"/>
-        <mkdir dir="${target.meta-inf-oracle}"/>
-        <mkdir dir="${target.meta-inf-db2}"/>
-        <mkdir dir="${target.hsql.deploy}"/>
-        <mkdir dir="${target.psql.deploy}"/>
-        <mkdir dir="${target.mysql.deploy}"/>
-        <mkdir dir="${target.mssql.deploy}"/>
-        <mkdir dir="${target.oracle.deploy}"/>
-        <mkdir dir="${target.db2.deploy}"/>
-        <mkdir dir="${target.common.bin}"/>
-        <mkdir dir="${target.common.lib}"/>
-        <mkdir dir="${target.hsql.lib}"/>
-        <mkdir dir="${target.psql.lib}"/>
-        <mkdir dir="${target.mysql.lib}"/>
-        <mkdir dir="${target.mssql.lib}"/>
-        <mkdir dir="${target.oracle.lib}"/>
-        <mkdir dir="${target.db2.lib}"/>
-        <mkdir dir="${target.test.web-inf}"/>
-        <mkdir dir="${target.reports}"/>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Invoke XDoclet's ejbdoclet                                          -->
-    <!-- =================================================================== -->
-    <target name="ejbdoclet" depends="prepare" unless="xdoclet.skip">
 
         <ejbdoclet
             destdir="${target.java}"
@@ -353,6 +274,7 @@
    	<!-- =================================================================== -->
    
    	<target name="compile" depends="ejbdoclet">
+		<mkdir dir="${target.dir}/classes"/>
 		<javac
         	destdir="${target.classes}"
 			debug="${javac.debug}"
@@ -431,6 +353,7 @@
     </target>
 
     <target name="common-jar" depends="compile">
+        <mkdir dir="${target.common.lib}"/>
         <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
          	<manifest>
 				<attribute name="Implementation-Title" value="dcm4jboss-ejb-client"/>
@@ -443,6 +366,7 @@
                 <include name="**/interfaces/*"/>
             </fileset>
         </jar>
+        <mkdir dir="${target.common.bin}"/>
         <jar jarfile="${target.common.bin}/editgpwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditGpwl"/>
@@ -475,6 +399,7 @@
         </jar>
     </target>
     <target name="ejb-jdbc-jar">
+        <mkdir dir="${target.dir}/${db.name}/deploy"/>
         <jar jarfile="${target.dir}/${db.name}/deploy/dcm4jboss-ejb-${db.name}.jar">
         	<metainf dir="${target.meta-inf}-${db.name}"/>
         	<manifest>
@@ -500,6 +425,7 @@
             		 location="${jboss.home}/docs/dtd/jbosscmp-jdbc_3_2.dtd"/>
 		    </xmlcatalog>        
         </style>
+        <mkdir dir="${target.dir}/${db.name}/lib"/>
         <jar jarfile="${target.dir}/${db.name}/lib/dcm4jboss-jdbc-${db.name}.jar">
         	<manifest>
 				<attribute name="Implementation-Title" value="dcm4jboss-jdbc-${db.name}"/>
@@ -566,6 +492,7 @@
     </target>
 
     <target name="test-report">
+      <mkdir dir="${target.reports}"/>
       <junitreport todir="${target.reports}">
          <fileset dir="${target.reports}" includes="TEST-*.xml"/>
          <report format="frames" todir="${target.reports}/html"/>
