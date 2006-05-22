@@ -88,6 +88,10 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
         return new PersonNameImpl(s);
     }
     
+    public PersonName newPersonName() {
+        return new PersonNameImpl();
+    }
+    
     public FileMetaInfo newFileMetaInfo(Dataset ds, String transferSyntaxUID) {
             return new FileMetaInfoImpl().init(
                     ds.getString(Tags.SOPClassUID, null),

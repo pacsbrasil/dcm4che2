@@ -53,7 +53,9 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
     private final String[] components = new String[5];
     private PersonNameImpl ideographic;
     private PersonNameImpl phonetic;  
-  
+
+    public PersonNameImpl() {}
+    
     public PersonNameImpl(String s) {
         int grLen = s.indexOf('=');
         if ((grLen == -1 ? s.length() : grLen) > 64) {

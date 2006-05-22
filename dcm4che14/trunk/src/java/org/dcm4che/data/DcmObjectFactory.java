@@ -68,4 +68,6 @@ public abstract class DcmObjectFactory {
 
     public abstract PersonName newPersonName(String s);
 
+    public abstract PersonName newPersonName();
+    
 }
