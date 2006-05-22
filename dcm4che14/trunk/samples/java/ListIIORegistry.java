@@ -54,12 +54,6 @@ public class ListIIORegistry {
      * @param args
      */
     public static void main(String[] args) {
-        System.out.println("\n== BEFORE ImageIO.scanForPlugins() ==");
-        printImageReader();
-        printImageWriter();
-        printServiceProviders();
-        System.out.println("\n== AFTER ImageIO.scanForPlugins() ==");
-        ImageIO.scanForPlugins();
         printImageReader();
         printImageWriter();
         printServiceProviders();
