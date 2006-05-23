@@ -130,19 +130,17 @@
 		      			<a class="tab" href="gppps_console.m?filter.x=1">GPPPS Console</a>
 		      		</td>
 		      	</xsl:if>
-	    		<xsl:if test="$user_admin='true'">
-		      		<td width="120" align="center">
-		      			<xsl:choose>
-			    			<xsl:when test="model/modelName = 'UserAdmin'">
-								<xsl:attribute name="class">tab-selected</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="class">tab</xsl:attribute>
-							</xsl:otherwise>
-	    				</xsl:choose>
-	      				<a class="tab" href="useradmin_console.m">User Admin</a>
-		      		</td>
-		      	</xsl:if>
+	      		<td width="120" align="center">
+	      			<xsl:choose>
+		    			<xsl:when test="model/modelName = 'UserAdmin'">
+							<xsl:attribute name="class">tab-selected</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="class">tab</xsl:attribute>
+						</xsl:otherwise>
+    				</xsl:choose>
+      				<a class="tab" href="useradmin_console.m">User Admin</a>
+	      		</td>
 	    		<xsl:if test="$audit_repository='true'">
 			      	<td class="tab" width="120" align="center"><a class="tab" href="../dcm4jboss-arr">Audit Repository</a></td>
 		      	</xsl:if>
