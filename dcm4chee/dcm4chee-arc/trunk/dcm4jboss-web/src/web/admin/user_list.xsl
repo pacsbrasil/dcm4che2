@@ -106,7 +106,7 @@
 			<xsl:if test="/model/currentUser=userID">
 				<td align="left" valign="top" >
 					<a href="useradmin_console.m?chgpwd='true'">
-					 passwd							
+					 Password							
 					</a>					
 				</td>
 			</xsl:if>
