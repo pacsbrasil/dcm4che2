@@ -52,6 +52,11 @@ public class UserChgPwdSubmitCtrl extends UserAdminCtrl
 	private String passwd;
 	private String passwd1;
 
+	
+    protected Object makeFormBean() {
+        return this;
+    }
+	
 	/**
 	 * @param userID The userID to set.
 	 */

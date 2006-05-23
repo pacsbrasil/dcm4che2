@@ -49,6 +49,9 @@ public class UserChgPwdCtrl extends UserAdminCtrl
 	private String userID;
 	private String popupMsg;
 
+    protected Object makeFormBean() {
+        return this;
+    }
 	/**
 	 * @return Returns the userID.
 	 */

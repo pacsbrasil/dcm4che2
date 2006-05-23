@@ -48,6 +48,9 @@ public class UserDeleteCtrl extends UserAdminCtrl
 {
 	private int userHash;
 
+    protected Object makeFormBean() {
+        return this;
+    }
 	/**
 	 * @return Returns the userID.
 	 */
