@@ -690,7 +690,7 @@ private BufferedImage getImage(File file, int frame, String rows, String columns
     try {
     	bi = reader.read( frame );
     } catch ( Exception x ) {
-    	if (log.isDebugEnabled()) log.debug("Cant read image:", x);
+    	log.error("Cant read image:", x);
     	return null;
     }
 	if ( rows != null || columns != null ) {
