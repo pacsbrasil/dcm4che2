@@ -13,8 +13,8 @@
  -->
 <xsl:param name="folder.export_tf" select="'false'"/>
 <xsl:param name="folder.export_xds" select="'false'"/>
-<xsl:param name="folder.send" select="'true'"/>
-<xsl:param name="folder.delete" select="'true'"/>
+<xsl:param name="folder.send" select="'false'"/>
+<xsl:param name="folder.delete" select="'false'"/>
 <xsl:param name="folder.edit" select="'false'"/>
 <xsl:param name="folder.move" select="'false'"/>
 
@@ -155,6 +155,7 @@
 							</xsl:for-each>						
 						</select>
 					</td>
+					<td class="folder_header" width="5" title="Show only studies from selected source AET">AET Filter</td>
 				</table>
 				<table class="folder_search" border="0" width="100%" cellpadding="0" cellspacing="0">
 				  <tr>
