@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ><?xml version="1.0" encoding="ISO-8859-1"?>
- -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html"
 	doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
- doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
- indent = "yes" encoding="ISO-8859-1" />
+  doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+  indent = "yes" encoding="UTF-8" />
 <xsl:variable name="page_title">Audit Repository Log</xsl:variable>
 <xsl:include href="page.xsl"/>
 <!-- root document -->

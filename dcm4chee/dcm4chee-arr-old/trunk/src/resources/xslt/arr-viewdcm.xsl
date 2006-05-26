@@ -3,7 +3,7 @@
 	<xsl:output method="html"
 		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-		encoding="ISO-8859-1"/>
+		encoding="UTF-8"/>
 	
 	<xsl:template match="/">
 		<html>
