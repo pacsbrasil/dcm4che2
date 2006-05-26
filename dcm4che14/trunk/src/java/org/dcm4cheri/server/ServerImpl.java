@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -90,6 +91,9 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     private List hcl = null;
     private List hfl = null;
     private ServerSocketFactory ssf = ServerSocketFactory.getDefault();
+    private int soRcvBuf;
+    private int soSndBuf;
+    private boolean tcpNoDelay = true;
     
     // Static --------------------------------------------------------
     
@@ -105,7 +109,36 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     }
     
     // Public --------------------------------------------------------
+    public final int getReceiveBufferSize() {
+        return soRcvBuf;
+    }
     
+    public final void setReceiveBufferSize(int size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("size: " + size);
+        }
+        this.soRcvBuf = size;
+    }
+
+    public final int getSendBufferSize() {
+        return soSndBuf;        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("size: " + size);
+        }
+        this.soSndBuf = size;
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return tcpNoDelay;
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        this.tcpNoDelay = on;
+    }
+
     // Server implementation -----------------------------------------
     public void addHandshakeCompletedListener(
             HandshakeCompletedListener listener) {
@@ -235,6 +268,12 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                 init((SSLSocket) s);
             }
             
+            initSendBufferSize(s);
+            initReceiveBufferSize(s);
+            if (s.getTcpNoDelay() != tcpNoDelay) {
+                s.setTcpNoDelay(tcpNoDelay );
+            }
+            
             pool.promoteNewLeader();
             handler.handle(s);
             if (!handler.isSockedClosedByHandler() && s != null) {
@@ -258,6 +297,28 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     // Protected -----------------------------------------------------
     
     // Private -------------------------------------------------------
+    private void initSendBufferSize(Socket s) throws SocketException {
+        int tmp = s.getSendBufferSize();
+        if (soSndBuf == 0) {
+            soSndBuf = tmp;
+        }
+        if (soSndBuf != tmp) {
+            s.setSendBufferSize(soSndBuf);
+            soSndBuf = s.getSendBufferSize();
+        }
+    }
+
+    private void initReceiveBufferSize(Socket s) throws SocketException {
+        int tmp = s.getReceiveBufferSize();
+        if (soRcvBuf == 0) {
+            soRcvBuf = tmp;
+        }
+        if (soRcvBuf != tmp) {
+            s.setReceiveBufferSize(soRcvBuf);
+            soRcvBuf = s.getReceiveBufferSize();
+        }
+    }
+
     private void checkNotRunning() {
         if (ss != null) {
             throw new IllegalStateException("Already Running - " + threadPool);

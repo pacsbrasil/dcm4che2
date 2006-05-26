@@ -54,12 +54,19 @@ import org.dcm4che.util.HandshakeFailedListener;
  */
 public interface Server
 {
-    /**
-     *  Description of the Interface
-     *
-     * @author     gunter
-     * @since    May, 2002
-     */
+    
+    int getReceiveBufferSize();
+    
+    void setReceiveBufferSize(int size);
+
+    int getSendBufferSize();
+    
+    void setSendBufferSize(int size);
+        
+    boolean isTcpNoDelay();
+
+    void setTcpNoDelay(boolean on);
+    
     interface Handler
     {
         void handle(Socket s)
@@ -68,8 +75,7 @@ public interface Server
 
         boolean isSockedClosedByHandler();
     }
-
-
+    
     void addHandshakeCompletedListener(HandshakeCompletedListener listener);
 
 
