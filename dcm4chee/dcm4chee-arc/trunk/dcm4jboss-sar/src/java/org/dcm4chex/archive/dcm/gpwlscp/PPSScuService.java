@@ -288,6 +288,30 @@ public class PPSScuService extends ServiceMBeanSupport implements
 		tlsConfig.setTLSConfigName(tlsConfigName);
 	}
 
+    public final int getReceiveBufferSize() {
+        return tlsConfig.getReceiveBufferSize();        
+    }
+    
+    public final void setReceiveBufferSize(int size) {
+        tlsConfig.setReceiveBufferSize(size);
+    }
+
+    public final int getSendBufferSize() {
+        return tlsConfig.getSendBufferSize();        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        tlsConfig.setSendBufferSize(size);
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return tlsConfig.isTcpNoDelay();
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        tlsConfig.setTcpNoDelay(on);
+    }
+        
 	public final String getQueueName() {
 		return queueName;
 	}

@@ -145,6 +145,30 @@ public class DcmServerService extends ServiceMBeanSupport {
         handler.setPackPDVs(newPackPDVs);
     }
 
+    public final int getReceiveBufferSize() {
+        return dcmsrv.getReceiveBufferSize();        
+    }
+    
+    public final void setReceiveBufferSize(int size) {
+        dcmsrv.setReceiveBufferSize(size);
+    }
+
+    public final int getSendBufferSize() {
+        return dcmsrv.getSendBufferSize();        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        dcmsrv.setSendBufferSize(size);
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return dcmsrv.isTcpNoDelay();
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        dcmsrv.setTcpNoDelay(on);
+    }
+    
     public int getMaxClients() {
         return dcmsrv.getMaxClients();
     }

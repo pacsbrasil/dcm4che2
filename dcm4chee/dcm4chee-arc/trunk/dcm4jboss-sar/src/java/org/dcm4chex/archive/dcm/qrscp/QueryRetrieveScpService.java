@@ -189,7 +189,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     /** Map containing accepted Transfer Syntax UIDs for private SOP Classes.
      * key is name (as in config string), value is real uid) */
     private Map privateTSuidMap = new LinkedHashMap();
-    
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -224,6 +224,30 @@ public class QueryRetrieveScpService extends AbstractScpService {
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+    public final int getReceiveBufferSize() {
+        return tlsConfig.getReceiveBufferSize();        
+    }
+    
+    public final void setReceiveBufferSize(int size) {
+        tlsConfig.setReceiveBufferSize(size);
+    }
+
+    public final int getSendBufferSize() {
+        return tlsConfig.getSendBufferSize();        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        tlsConfig.setSendBufferSize(size);
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return tlsConfig.isTcpNoDelay();
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        tlsConfig.setTcpNoDelay(on);
+    }
+    
     public final ObjectName getStgCmtScuScpName() {
         return stgCmtScuScpName;
     }

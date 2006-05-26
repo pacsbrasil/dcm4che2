@@ -70,7 +70,6 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -138,8 +137,6 @@ public class StoreScpService extends AbstractScpService {
     
     private ObjectName fileSystemMgtName;
 
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-    
     private int bufferSize = 8192;
     private boolean md5sum = true;
     
@@ -264,14 +261,6 @@ public class StoreScpService extends AbstractScpService {
 	public final void setIssuerOfPatientIDRules(String rules) {
 		scp.setIssuerOfPatientIDRules(rules);
 	}
-
-	public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();

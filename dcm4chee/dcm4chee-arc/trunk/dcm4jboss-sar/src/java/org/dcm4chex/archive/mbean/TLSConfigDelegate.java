@@ -41,6 +41,7 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -63,6 +64,12 @@ public final class TLSConfigDelegate {
 
     private final ServiceMBeanSupport service;
     
+    private int soSndBuf;
+
+    private int soRcvBuf;
+
+    private boolean tcpNoDelay = true;
+
     private ObjectName tlsConfigName;
 
     public TLSConfigDelegate(final ServiceMBeanSupport service) {
@@ -76,7 +83,37 @@ public final class TLSConfigDelegate {
     public final void setTLSConfigName(ObjectName tlsConfigName) {
         this.tlsConfigName = tlsConfigName;
     }
+
+    public final int getReceiveBufferSize() {
+        return soRcvBuf;
+    }
     
+    public final void setReceiveBufferSize(int size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("size: " + size);
+        }
+        this.soRcvBuf = size;
+    }
+
+    public final int getSendBufferSize() {
+        return soSndBuf;        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("size: " + size);
+        }
+        this.soSndBuf = size;
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return tcpNoDelay;
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        this.tcpNoDelay = on;
+    }
+                
     public HandshakeFailedListener handshakeFailedListener() {
         try {
 	        return (HandshakeFailedListener) service.getServer().invoke(
@@ -121,12 +158,42 @@ public final class TLSConfigDelegate {
 
     public Socket createSocket(AEData aeData) throws IOException {
         String[] cipherSuites = aeData.getCipherSuites();
+        Socket s;
         if (cipherSuites == null || cipherSuites.length == 0) {
-            return new Socket(aeData.getHostName(), aeData.getPort());
+            s = new Socket(aeData.getHostName(), aeData.getPort());
         } else {
-            return socketFactory(cipherSuites).createSocket(
+            s = socketFactory(cipherSuites).createSocket(
                     aeData.getHostName(), aeData.getPort());
         }
+        initSendBufferSize(s);
+        initReceiveBufferSize(s);
+        if (s.getTcpNoDelay() != tcpNoDelay) {
+            s.setTcpNoDelay(tcpNoDelay );
+        }
+        return s;
     }
+
+    private void initSendBufferSize(Socket s) throws SocketException {
+        int tmp = s.getSendBufferSize();
+        if (soSndBuf == 0) {
+            soSndBuf = tmp;
+        }
+        if (soSndBuf != tmp) {
+            s.setSendBufferSize(soSndBuf);
+            soSndBuf = s.getSendBufferSize();
+        }
+    }
+    
+    private void initReceiveBufferSize(Socket s) throws SocketException {
+        int tmp = s.getReceiveBufferSize();
+        if (soRcvBuf == 0) {
+            soRcvBuf = tmp;
+        }
+        if (soRcvBuf != tmp) {
+            s.setReceiveBufferSize(soRcvBuf);
+            soRcvBuf = s.getReceiveBufferSize();
+        }
+    }
+    
     
 }

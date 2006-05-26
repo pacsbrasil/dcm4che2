@@ -752,17 +752,6 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4jboss.archive:service=TLSConfig"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
       <description>Used internally. Do NOT modify.

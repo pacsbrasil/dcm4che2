@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.ejb.CreateException;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -68,6 +69,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -105,10 +107,43 @@ public class MWLScuService extends ServiceMBeanSupport {
     private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
         UIDs.ImplicitVRLittleEndian};
 
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+    
 	private MWLManager mwlManager;
     
-            
-	/**
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+    
+    public final int getReceiveBufferSize() {
+        return tlsConfig.getReceiveBufferSize();        
+    }
+    
+    public final void setReceiveBufferSize(int size) {
+        tlsConfig.setReceiveBufferSize(size);
+    }
+
+    public final int getSendBufferSize() {
+        return tlsConfig.getSendBufferSize();        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        tlsConfig.setSendBufferSize(size);
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return tlsConfig.isTcpNoDelay();
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        tlsConfig.setTcpNoDelay(on);
+    }
+
+    /**
 	 * Returns the calling AET defined in this MBean.
 	 * 
 	 * @return The calling AET.
@@ -305,7 +340,7 @@ public class MWLScuService extends ServiceMBeanSupport {
     	try {
 //get association for mwl find.    		
     		AEData aeData = new AECmd( calledAET ).getAEData();
-			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getCFINDAssocReq() );
+			assoc = openAssoc( tlsConfig.createSocket(aeData), getCFINDAssocReq() );
 			if ( assoc == null ) {
 				log.error( "Couldnt open association to " + aeData );
 				return list;
@@ -355,9 +390,9 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	private ActiveAssociation openAssoc( String host, int port, AAssociateRQ assocRQ ) throws IOException, GeneralSecurityException {
+	private ActiveAssociation openAssoc( Socket sock, AAssociateRQ assocRQ ) throws IOException, GeneralSecurityException {
 		AssociationFactory aFact = AssociationFactory.getInstance();
-		Association assoc = aFact.newRequestor( new Socket( host, port ) );
+		Association assoc = aFact.newRequestor( sock );
 		assoc.setAcTimeout(acTimeout);
 		assoc.setDimseTimeout(dimseTimeout);
         assoc.setSoCloseDelay(soCloseDelay);
@@ -368,7 +403,6 @@ public class MWLScuService extends ServiceMBeanSupport {
 		return retval;
     }
   
-    
     /**
      * Return the association request for media creation.
      * <p>
