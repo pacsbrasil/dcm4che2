@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:fo="http://www.w3.org/1999/XSL/Format" version="1.0">
-    <xsl:output method="xml" indent="yes" media-type="text/xml-fo"/>
+    <xsl:output method="xml" indent="yes" media-type="text/xml-fo"
+      encoding="UTF-8"/>
     <xsl:include href="common.xsl"/>
     <xsl:variable name="SR_1" select="'1.2.840.10008.5.1.4.1.1.88.11'"/><!-- BasicTextSR -->
     <xsl:variable name="SR_2" select="'1.2.840.10008.5.1.4.1.1.88.22'"/><!-- EnhancedSR -->
