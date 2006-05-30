@@ -39,6 +39,7 @@
 package org.dcm4che2.data;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -49,17 +50,26 @@ import java.util.Properties;
  */
 public class Implementation {
 
+    private static final String IMPL_PROPERTIES = "org/dcm4che2/data/Implementation.properties";
     private static String classUID;
     private static String versionName;
 
     static  {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        InputStream is;
+        if (cl == null || (is = cl.getResourceAsStream(IMPL_PROPERTIES)) == null) {
+            is = Implementation.class.getClassLoader().getResourceAsStream(IMPL_PROPERTIES);
+            if (is == null) {
+                throw new ConfigurationError("Missing Resource: " + IMPL_PROPERTIES);
+            }
+        }
         Properties p = new Properties();
         try {
-            p.load(cl.getResourceAsStream("org/dcm4che2/data/Implementation.properties"));
+            p.load(is);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to load resource org/dcm4che2/data/Implementation.properties", e);
+            throw new ConfigurationError("Failed to load Resource: " + IMPL_PROPERTIES);
+        } finally {
+            try { is.close(); } catch (IOException ignore) {}
         }
         classUID = p.getProperty("classUID");
         versionName = p.getProperty("versionName");
