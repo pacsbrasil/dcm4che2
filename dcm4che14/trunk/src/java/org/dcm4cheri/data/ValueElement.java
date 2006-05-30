@@ -489,7 +489,7 @@ abstract class ValueElement extends DcmElementImpl {
         return ByteBuffer
             .wrap(new byte[4])
             .order(ByteOrder.LITTLE_ENDIAN)
-            .putShort(0, (short) (v >> 8))
+            .putShort(0, (short) (v >> 16))
             .putShort(2, (short) v);
     }
 
