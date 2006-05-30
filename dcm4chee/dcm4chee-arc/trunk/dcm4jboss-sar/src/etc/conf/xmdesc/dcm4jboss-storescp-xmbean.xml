@@ -591,6 +591,10 @@ StoreSCP service.
            RTTreatmentSummaryRecordStorage
            RTIonPlanStorage
            RTIonBeamsTreatmentRecordStorage
+           StandaloneOverlayStorage
+           StandaloneCurveStorage
+           StandaloneModalityLUTStorage
+           StandaloneVOILUTStorage
            "/>
       </descriptors>
    </attribute>

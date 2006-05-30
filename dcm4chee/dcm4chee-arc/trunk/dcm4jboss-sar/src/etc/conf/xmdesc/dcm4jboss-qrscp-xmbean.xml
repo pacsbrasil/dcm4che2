@@ -83,6 +83,61 @@ QueryRetrieveScp service.</description>
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getIgnorableSOPClasses"
+      setMethod="setIgnorableSOPClasses">
+      <description><![CDATA[
+      Failed transfer of instances of listed SOP Classes to move destinations
+      caused by rejection of the SOP Class by the destination STORE SCP will NOT
+      result in a warning status "Sub-Operation fails" in the final Move
+      Response to the Move SCU. Use either the SOP Class UID value or the name
+      specified in DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+      concatenating individual words without spaces.]]>
+      </description>
+      <name>IgnorableSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           BasicTextSR
+           EnhancedSR
+           ComprehensiveSR
+           ProcedureLogStorage
+           MammographyCADSR
+           KeyObjectSelectionDocument
+           ChestCADSR
+           XRayRadiationDoseSR
+           TwelveLeadECGWaveformStorage
+           GeneralECGWaveformStorage
+           AmbulatoryECGWaveformStorage
+           HemodynamicWaveformStorage
+           CardiacElectrophysiologyWaveformStorage
+           BasicVoiceAudioWaveformStorage
+           MRSpectroscopyStorage
+           GrayscaleSoftcopyPresentationStateStorage
+           ColorSoftcopyPresentationStateStorage
+           PseudoColorSoftcopyPresentationStateStorage
+           BlendingSoftcopyPresentationStateStorage
+           RawDataStorage
+           SpatialRegistrationStorage
+           SpatialFiducialsStorage
+           RealWorldValueMappingStorage
+           StereometricRelationshipStorage
+           EncapsulatedPDFStorage
+           RTDoseStorage
+           RTStructureSetStorage
+           RTBeamsTreatmentRecordStorage
+           RTPlanStorage
+           RTBrachyTreatmentRecordStorage
+           RTTreatmentSummaryRecordStorage
+           RTIonPlanStorage
+           RTIonBeamsTreatmentRecordStorage
+           StandaloneOverlayStorage
+           StandaloneCurveStorage
+           StandaloneModalityLUTStorage
+           StandaloneVOILUTStorage
+           "/>
+      </descriptors>
+   </attribute>
    
    <attribute access="read-write"
       getMethod="getRequestStgCmtFromAETs"

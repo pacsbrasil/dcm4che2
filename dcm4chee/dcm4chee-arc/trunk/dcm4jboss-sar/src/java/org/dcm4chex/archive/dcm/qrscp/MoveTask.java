@@ -238,10 +238,7 @@ class MoveTask implements Runnable {
         }
         storeAssoc = asf.newActiveAssociation(a, null);
         storeAssoc.start();
-        final boolean ignoreUnsupportedSOPClassFailures = service
-                .isIgnoreUnsupportedSOPClassFailures(moveDest);
-        if (!ignoreUnsupportedSOPClassFailures
-                && a.countAcceptedPresContext() == 0) {
+        if (a.countAcceptedPresContext() == 0) {
             try {
                 storeAssoc.release(false);
             } catch (Exception e) {
@@ -266,7 +263,7 @@ class MoveTask implements Runnable {
                         + uidDict.toString(cuid) + " accepted by " + moveDest
                         + "\n\tCannot send " + iuids.size()
                         + " instances of this class";
-                if (!ignoreUnsupportedSOPClassFailures) {
+                if (!service.isIgnorableSOPClass(cuid, moveDest)) {
                     failedIUIDs.addAll(iuids);
                     failed += iuids.size();
                     log.warn(prompt);

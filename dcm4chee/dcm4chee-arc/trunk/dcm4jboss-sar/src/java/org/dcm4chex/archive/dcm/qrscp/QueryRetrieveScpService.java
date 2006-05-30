@@ -124,6 +124,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
     
+    private Map ignorableSOPClasses = new LinkedHashMap();
+
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
     
     private ObjectName fileSystemMgtName;
@@ -421,6 +423,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 : StringUtils.split(aets, '\\');
     }
     
+    public final String getIgnorableSOPClasses() {
+        return toString(ignorableSOPClasses);
+    }
+
+    public final void setIgnorableSOPClasses(String s) {
+        this.ignorableSOPClasses = parseUIDs(s);
+    }
+
     public final String getRequestStgCmtFromAETs() {
         if (requestStgCmtFromAETs.isEmpty()) return NONE;        
         StringBuffer sb = new StringBuffer();
@@ -579,8 +589,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
             && Arrays.asList(sendDecompressedToAETs).contains(moveDest);
     }
     
-    boolean isIgnoreUnsupportedSOPClassFailures(String moveDest) {
-        return ignoreUnsupportedSOPClassFailuresByAETs != null
+    boolean isIgnorableSOPClass(String cuid, String moveDest) {
+        return ignorableSOPClasses.containsValue(cuid)
+            || ignoreUnsupportedSOPClassFailuresByAETs != null
             && Arrays.asList(ignoreUnsupportedSOPClassFailuresByAETs).contains(moveDest);
     }
     
