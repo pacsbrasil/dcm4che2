@@ -146,6 +146,7 @@ class PDUDecoder extends PDVInputStream
     
     public void nextPDU() throws IOException
     {
+        log.debug("{} waiting for PDU", as);
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         readFully(0, 10);
