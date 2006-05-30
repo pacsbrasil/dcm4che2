@@ -6,5 +6,5 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-core-test-dictionary</artifactId>
-  <version>2.0.4</version>
+  <version>2.0.5</version>
 </model>

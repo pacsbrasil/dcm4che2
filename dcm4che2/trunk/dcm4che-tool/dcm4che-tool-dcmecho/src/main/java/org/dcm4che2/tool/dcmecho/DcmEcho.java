@@ -176,9 +176,6 @@ public class DcmEcho
                 "socket by default");
         opts.addOption(OptionBuilder.create("L"));
         
-        opts.addOption("tcpnodelay", false, 
-                "set TCP_NODELAY socket option to true, false by default");
-        
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(

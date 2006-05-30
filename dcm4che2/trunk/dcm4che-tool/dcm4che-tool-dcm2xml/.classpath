@@ -8,7 +8,7 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="MAVEN_REPOSITORY/commons-cli/commons-cli/1.0/commons-cli-1.0.jar">
+	<classpathentry kind="var" path="M2_REPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar">
 		<attributes>
 		</attributes>
 	</classpathentry>

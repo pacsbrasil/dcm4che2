@@ -85,7 +85,7 @@ public class DcmRcv extends StorageService {
     private static final String REQUEST_TO = "requestTO";
     private static final String RELEASE_TO = "releaseTO";
     private static final String SO_CLOSEDELAY = "soclosedelay";
-    private static final String TCP_NODELAY = "tcpnodelay";
+    private static final String TCP_DELAY = "tcpdelay";
     private static final String SO_RCVBUF = "sorcvbuf";
     private static final String SO_SNDBUF = "sosndbuf";
     private static final String SND_PDULEN = "sndpdulen";
@@ -379,8 +379,8 @@ public class DcmRcv extends StorageService {
         opts.addOption(PDV1, false, 
                 "send only one PDV in one P-Data-TF PDU, " +
                 "pack command and data PDV in one P-DATA-TF PDU by default.");
-        opts.addOption(TCP_NODELAY, false, 
-                "set TCP_NODELAY socket option to true, false by default");
+        opts.addOption(TCP_DELAY, false, 
+                "set TCP_NODELAY socket option to false, true by default");
         
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
@@ -543,7 +543,7 @@ public class DcmRcv extends StorageService {
                     "illegal argument of option -bufsize", 1, 10000) * KB);
         
         dcmrcv.setPackPDV(!cl.hasOption(PDV1));
-        dcmrcv.setTcpNoDelay(cl.hasOption(TCP_NODELAY));
+        dcmrcv.setTcpNoDelay(!cl.hasOption(TCP_DELAY));
         if (cl.hasOption(ASYNC))
             dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue(ASYNC), 
                     "illegal argument of option -async", 0, 0xffff));

@@ -19,6 +19,7 @@
     <module>dcm4che-tool-dcmrcv</module>
     <module>dcm4che-tool-dcmsnd</module>
     <module>dcm4che-tool-dcmwado</module>   
+    <module>dcm4che-tool-logger</module>
     <module>dcm4che-tool-jpg2dcm</module>
     <module>dcm4che-tool-pdf2dcm</module>
     <module>dcm4che-tool-rgb2ybr</module>

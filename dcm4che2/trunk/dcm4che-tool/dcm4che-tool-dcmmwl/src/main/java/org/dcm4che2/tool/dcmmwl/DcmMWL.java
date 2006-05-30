@@ -346,7 +346,7 @@ public class DcmMWL {
             dcmmwl.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000) * KB);
         dcmmwl.setPackPDV(!cl.hasOption("pdv1"));
-        dcmmwl.setTcpNoDelay(cl.hasOption("tcpnodelay"));
+        dcmmwl.setTcpNoDelay(!cl.hasOption("tcpdelay"));
         if (cl.hasOption("C"))
             dcmmwl.setCancelAfter(parseInt(cl.getOptionValue("C"),
                     "illegal argument of option -C", 1, Integer.MAX_VALUE));
@@ -439,8 +439,8 @@ public class DcmMWL {
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
-        opts.addOption("tcpnodelay", false,
-                "set TCP_NODELAY socket option to true, false by default");
+        opts.addOption("tcpdelay", false,
+                "set TCP_NODELAY socket option to false, true by default");
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();

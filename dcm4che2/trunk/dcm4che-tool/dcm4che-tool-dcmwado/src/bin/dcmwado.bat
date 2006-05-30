@@ -9,7 +9,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che2.tool.dcmwado.DcmWado
-set MAIN_JAR=dcm4che-tool-dcmwado-2.0.4.jar
+set MAIN_JAR=dcm4che-tool-dcmwado-2.0.5.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -44,7 +44,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.4.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.5.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\nlog4j-1.2.19.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.0.jar
 

@@ -371,8 +371,8 @@ public class DcmQR {
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
-        opts.addOption("tcpnodelay", false,
-                "set TCP_NODELAY socket option to true, false by default");
+        opts.addOption("tcpdelay", false,
+                "set TCP_NODELAY socket option to false, true by default");
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
@@ -558,7 +558,7 @@ public class DcmQR {
                     "illegal argument of option -sorcvbuf", 1, 10000)
                     * KB);
         dcmqr.setPackPDV(!cl.hasOption("pdv1"));
-        dcmqr.setTcpNoDelay(cl.hasOption("tcpnodelay"));
+        dcmqr.setTcpNoDelay(!cl.hasOption("tcpdelay"));
         dcmqr.setMaxOpsInvoked(cl.hasOption("async") ? parseInt(cl
                 .getOptionValue("async"), "illegal argument of option -async",
                 0, 0xffff) : 1);

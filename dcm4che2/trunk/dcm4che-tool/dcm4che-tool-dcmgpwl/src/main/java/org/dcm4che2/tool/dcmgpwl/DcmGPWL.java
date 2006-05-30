@@ -655,7 +655,7 @@ public class DcmGPWL {
             dcmgpwl.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000) * KB);
         dcmgpwl.setPackPDV(!cl.hasOption("pdv1"));
-        dcmgpwl.setTcpNoDelay(cl.hasOption("tcpnodelay"));
+        dcmgpwl.setTcpNoDelay(!cl.hasOption("tcpdelay"));
         
         if (cl.hasOption("o")) {
             dcmgpwl.setOutDir(new File(cl.getOptionValue("o")));
@@ -881,8 +881,8 @@ public class DcmGPWL {
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
-        opts.addOption("tcpnodelay", false,
-                "set TCP_NODELAY socket option to true, false by default");
+        opts.addOption("tcpdelay", false,
+                "set TCP_NODELAY socket option to false, true by default");
         
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();

@@ -15,4 +15,24 @@
     <module>dcm4che-hp</module>
     <module>dcm4che-tool</module>
   </modules>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+      <!--plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
+          </descriptors>
+          <finalName>dcm4che-2.0.5</finalName>
+        </configuration>
+      </plugin-->
+    </plugins>
+  </build>
 </model>
