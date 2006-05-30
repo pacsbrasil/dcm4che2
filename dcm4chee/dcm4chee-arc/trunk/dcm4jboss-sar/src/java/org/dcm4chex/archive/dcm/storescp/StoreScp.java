@@ -677,10 +677,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	            ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
         } finally {
-            try {
-                bos.close();
-            } catch (IOException ignore) {
-            }
+            // We don't want to ignore the IOException since in rare cases the close() may cause
+            // exception due to running out of physical space while the File System still holds
+            // some internally cached data. In this case, we do want to fail this C-STORE.
+            bos.close();
         }
         return md != null ? md.digest(): null;
     }
