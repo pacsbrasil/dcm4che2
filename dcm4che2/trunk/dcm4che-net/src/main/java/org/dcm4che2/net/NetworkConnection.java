@@ -44,6 +44,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLServerSocket;
@@ -58,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * A DICOM supplement 67 compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
  * <p>
- * The “network connection” describes one TCP port on one network device. This
+ * The <i>network connection</i> describes one TCP port on one network device. This
  * can be used for a TCP connection over which a DICOM association can be
  * negotiated with one or more Network AEs. It specifies 8 the hostname and TCP
  * port number. A network connection may support multiple Network AEs. The
@@ -72,7 +73,7 @@ import org.slf4j.LoggerFactory;
 public class NetworkConnection
 {
     static Logger log = LoggerFactory.getLogger(NetworkConnection.class);
-    public static final int DEFAULT = -1;
+    public static final int DEFAULT = 0;
 
     private String commonName;
     private String hostname;
@@ -88,7 +89,7 @@ public class NetworkConnection
     private int socketCloseDelay = 50;
     private int sendBufferSize = DEFAULT;
     private int receiveBufferSize = DEFAULT;
-    private boolean tcpNoDelay;
+    private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
     private String[] tlsProtocol = { "TLSv1", "SSLv3",
     // "SSLv2Hello"
@@ -100,8 +101,7 @@ public class NetworkConnection
     /**
      * @see java.lang.Object#toString()
      */
-    public String toString()
-    {
+    public String toString() {
         StringBuffer sb = new StringBuffer("NetworkConnection[");
         sb.append(getSocketAddress());
         if (tlsCipherSuite.length != 0)
@@ -114,59 +114,48 @@ public class NetworkConnection
         return sb.toString();
     }
 
-    public final Device getDevice()
-    {
+    public final Device getDevice() {
         return device;
     }
 
-    final void setDevice(Device device)
-    {
+    final void setDevice(Device device) {
         this.device = device;
     }
 
-    public final String getHostname()
-    {
+    public final String getHostname() {
         return hostname;
     }
 
-    public final void setHostname(String hostname)
-    {
+    public final void setHostname(String hostname) {
         this.hostname = hostname;
     }
 
-    public final String getCommonName()
-    {
+    public final String getCommonName() {
         return commonName;
     }
 
-    public final void setCommonName(String name)
-    {
+    public final void setCommonName(String name) {
         this.commonName = name;
     }
 
-    public final int getPort()
-    {
+    public final int getPort() {
         return port;
     }
 
-    public final void setPort(int port)
-    {
+    public final void setPort(int port) {
         this.port = port;
     }
 
-    public final String[] getTlsCipherSuite()
-    {
+    public final String[] getTlsCipherSuite() {
         return tlsCipherSuite;
     }
 
-    public final void setTlsCipherSuite(String[] tlsCipherSuite)
-    {
+    public final void setTlsCipherSuite(String[] tlsCipherSuite) {
         checkNotNull("tlsCipherSuite", tlsCipherSuite);
         this.tlsCipherSuite = tlsCipherSuite;
     }
 
-    private static void checkNotNull(String name, Object[] a)
-    {
+    private static void checkNotNull(String name, Object[] a) {
         if (a == null)
             throw new NullPointerException(name);
         for (int i = 0; i < a.length; i++)
@@ -174,169 +163,172 @@ public class NetworkConnection
                 throw new NullPointerException(name + '[' + i + ']');
     }
 
-    public final boolean isInstalled()
-    {
+    public final boolean isInstalled() {
         return installed != null ? installed.booleanValue() : device == null
                 || device.isInstalled();
     }
 
-    public final void setInstalled(boolean installed)
-    {
+    public final void setInstalled(boolean installed) {
         this.installed = Boolean.valueOf(installed);
     }
 
-    public boolean isListening()
-    {
+    public boolean isListening() {
         return port > 0;
     }
 
-    public boolean isTLS()
-    {
+    public boolean isTLS() {
         return tlsCipherSuite.length > 0;
     }
 
-    public final int getBacklog()
-    {
+    public final int getBacklog() {
         return backlog;
     }
 
-    public final void setBacklog(int backlog)
-    {
+    public final void setBacklog(int backlog) {
+        if (backlog < 1)
+            throw new IllegalArgumentException("backlog: " + backlog);
         this.backlog = backlog;
     }
 
-    public final int getAcceptTimeout()
-    {
+    public final int getAcceptTimeout() {
         return acceptTimeout;
     }
 
-    public final void setAcceptTimeout(int timeout)
-    {
+    public final void setAcceptTimeout(int timeout) {
+        if (timeout < 0)
+            throw new IllegalArgumentException("timeout: " + timeout);
         this.acceptTimeout = timeout;
     }
 
-    public final int getConnectTimeout()
-    {
+    public final int getConnectTimeout() {
         return connectTimeout;
     }
 
-    public final void setConnectTimeout(int timeout)
-    {
+    public final void setConnectTimeout(int timeout) {
+        if (timeout < 0)
+            throw new IllegalArgumentException("timeout: " + timeout);
         this.connectTimeout = timeout;
     }
 
-    public final int getRequestTimeout()
-    {
+    public final int getRequestTimeout() {
         return requestTimeout;
     }
 
-    public final void setRequestTimeout(int timeout)
-    {
+    public final void setRequestTimeout(int timeout) {
+        if (timeout < 0)
+            throw new IllegalArgumentException("timeout: " + timeout);
         this.requestTimeout = timeout;
     }
 
-    public final int getReleaseTimeout()
-    {
+    public final int getReleaseTimeout() {
         return releaseTimeout;
     }
 
-    public final void setReleaseTimeout(int timeout)
-    {
+    public final void setReleaseTimeout(int timeout) {
+        if (timeout < 0)
+            throw new IllegalArgumentException("timeout: " + timeout);
         this.releaseTimeout = timeout;
     }
 
-    public final int getSocketCloseDelay()
-    {
+    public final int getSocketCloseDelay() {
         return socketCloseDelay;
     }
 
-    public final void setSocketCloseDelay(int delay)
-    {
+    public final void setSocketCloseDelay(int delay) {
+        if (delay < 0)
+            throw new IllegalArgumentException("delay: " + delay);
         this.socketCloseDelay = delay;
     }
 
-    public final int getReceiveBufferSize()
-    {
+    public final int getReceiveBufferSize() {
         return receiveBufferSize;
     }
 
-    public final void setReceiveBufferSize(int size)
-    {
+    public final void setReceiveBufferSize(int size) {
+        if (size < 0)
+            throw new IllegalArgumentException("size: " + size);
         this.receiveBufferSize = size;
     }
 
-    public final int getSendBufferSize()
-    {
+    public final int getSendBufferSize() {
         return sendBufferSize;
     }
 
-    public final void setSendBufferSize(int size)
-    {
+    public final void setSendBufferSize(int size) {
+        if (size < 0)
+            throw new IllegalArgumentException("size: " + size);
         this.sendBufferSize = size;
     }
 
-    public final boolean isTcpNoDelay()
-    {
+    public final boolean isTcpNoDelay() {
         return tcpNoDelay;
     }
 
-    public final void setTcpNoDelay(boolean tcpNoDelay)
-    {
+    public final void setTcpNoDelay(boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
     }
 
-    public final boolean isTlsNeedClientAuth()
-    {
+    public final boolean isTlsNeedClientAuth() {
         return tlsNeedClientAuth;
     }
 
-    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth)
-    {
+    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
 
-    public final String[] getTlsProtocol()
-    {
+    public final String[] getTlsProtocol()  {
         return tlsProtocol;
     }
 
-    public final void setTlsProtocol(String[] tlsProtocol)
-    {
+    public final void setTlsProtocol(String[] tlsProtocol) {
         this.tlsProtocol = tlsProtocol;
     }
 
-    private InetSocketAddress getSocketAddress()
-    {
+    private InetSocketAddress getSocketAddress() {
         return getSocketAddress(port);
     }
 
-    private InetSocketAddress getSocketAddress(int newPort)
-    {
+    private InetSocketAddress getSocketAddress(int newPort) {
         return hostname == null ? new InetSocketAddress(newPort)
                 : new InetSocketAddress(hostname, newPort);
     }
 
-    public Socket connect(NetworkConnection peerConfig) throws IOException
-    {
+    public Socket connect(NetworkConnection peerConfig) throws IOException {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
         if (!peerConfig.isListening())
             throw new IllegalArgumentException("Only initiates associations - "
                     + peerConfig);
         Socket s = isTLS() ? createTLSSocket() : new Socket();
-        if (receiveBufferSize != DEFAULT)
-            server.setReceiveBufferSize(receiveBufferSize);
-        if (sendBufferSize != DEFAULT)
-            s.setSendBufferSize(sendBufferSize);
-        s.setTcpNoDelay(tcpNoDelay);
         s.bind(getSocketAddress(0));
+        setSocketOptions(s);
         log.debug("Initiate connection to {}", peerConfig.getSocketAddress());
         s.connect(peerConfig.getSocketAddress(), connectTimeout);
         return s;
     }
 
-    public synchronized void bind(final Executor executor) throws IOException
-    {
+    private void setSocketOptions(Socket s) throws SocketException {
+        int size;
+        size = s.getReceiveBufferSize();
+        if (receiveBufferSize == DEFAULT) {
+            receiveBufferSize = size;
+        } else if (receiveBufferSize != size) {
+            s.setReceiveBufferSize(size);
+            receiveBufferSize = s.getReceiveBufferSize();
+        }
+        size = s.getSendBufferSize();
+        if (sendBufferSize == DEFAULT) {
+            sendBufferSize = size;
+        } else if (sendBufferSize != size) {
+            s.setSendBufferSize(size);
+            sendBufferSize = s.getSendBufferSize();
+        }
+        if (s.getTcpNoDelay() != tcpNoDelay) {
+            s.setTcpNoDelay(tcpNoDelay);
+        }
+    }
+
+    public synchronized void bind(final Executor executor) throws IOException {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
         if (!isListening())
@@ -345,31 +337,22 @@ public class NetworkConnection
         if (server != null)
             throw new IllegalStateException("Already listening - " + server);
         server = isTLS() ? createTLSServerSocket() : new ServerSocket();
-        if (receiveBufferSize != DEFAULT)
-            server.setReceiveBufferSize(receiveBufferSize);
-        server.bind(getSocketAddress(), getBacklog());
-        executor.execute(new Runnable()
-        {
+        server.bind(getSocketAddress(), backlog);
+        executor.execute(new Runnable() {
 
-            public void run()
-            {
+            public void run() {
                 SocketAddress addr = server.getLocalSocketAddress();
                 log.info("Start listening on {}", addr);
-                try
-                {
-                    for (;;)
-                    {
+                try {
+                    for (;;) {
                         log.debug("Wait for connection on {}", addr);
                         Socket s = server.accept();
-                        if (sendBufferSize != DEFAULT)
-                            s.setSendBufferSize(sendBufferSize);
-                        s.setTcpNoDelay(tcpNoDelay);
+                        setSocketOptions(s);
                         Association a = Association.accept(s,
                                 NetworkConnection.this);
                         executor.execute(a);
                     }
-                } catch (Throwable e)
-                {
+                } catch (Throwable e) {
                     // assume exception was raised by graceful stop of server
                 }
                 log.info("Stop listening on {}", addr);
@@ -377,22 +360,18 @@ public class NetworkConnection
         });
     }
 
-    public synchronized void unbind()
-    {
+    public synchronized void unbind() {
         if (server == null)
             return;
-        try
-        {
+        try {
             server.close();
-        } catch (Throwable e)
-        {
+        } catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
         server = null;
     }
 
-    private Socket createTLSSocket() throws IOException
-    {
+    private Socket createTLSSocket() throws IOException {
         SSLSocketFactory sf = device.getSSLContext().getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
         s.setEnabledProtocols(tlsProtocol);
@@ -400,8 +379,7 @@ public class NetworkConnection
         return s;
     }
 
-    private ServerSocket createTLSServerSocket() throws IOException
-    {
+    private ServerSocket createTLSServerSocket() throws IOException {
         SSLServerSocketFactory ssf = device.getSSLContext()
                 .getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
