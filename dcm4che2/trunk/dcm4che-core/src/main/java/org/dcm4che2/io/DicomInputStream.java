@@ -337,10 +337,10 @@ public class DicomInputStream extends FilterInputStream
                         : ByteUtils.bytesLE2ushort(header, 6);
                 return tag;
             }
-            if (vr == VR.UN)
-            {
-                vr = attrs.vrOf(tag);
-            }
+//            if (vr == VR.UN)
+//            {
+//                vr = attrs.vrOf(tag);
+//            }
             readFully(header, 4, 4);
         }
         vallen = ts.bigEndian() ? ByteUtils.bytesBE2int(header, 4) : ByteUtils
