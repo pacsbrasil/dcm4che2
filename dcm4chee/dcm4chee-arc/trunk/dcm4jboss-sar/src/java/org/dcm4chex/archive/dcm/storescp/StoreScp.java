@@ -423,7 +423,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     		} catch (Exception e) {
     			log.warn("Coercion of attributes failed:", e);
     		}
-            Storage store = getStorage();
+            Storage store = getStorage(assoc);
             Long assocpk = (Long) assoc.getProperty(ASSOC_PK);
             if (assocpk == null) {
                 assocpk = store.initAssociation(assoc.getCallingAET(),
@@ -555,7 +555,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         for (;;) {
             try {
                 if (serializeDBUpdate) {
-                    synchronized (this) {
+                    synchronized (storage) {
                         return storage.store(assocpk, ds, baseDir, filePath,
                                 (int) file.length(), md5);
                     }
@@ -585,10 +585,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    Storage getStorage() throws RemoteException, CreateException,
+    Storage getStorage(Association assoc) throws RemoteException, CreateException,
             HomeFactoryException {
-        return ((StorageHome) EJBHomeFactory.getFactory().lookup(
-                StorageHome.class, StorageHome.JNDI_NAME)).create();
+        Storage store = (Storage) assoc.getProperty(StorageHome.JNDI_NAME);
+        if (store == null) {
+            store = service.getStorage();
+            assoc.putProperty(StorageHome.JNDI_NAME, store);
+        }
+        return store;
     }
 
     private File makeFile(File basedir, Dataset ds) throws IOException {
@@ -828,7 +832,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Long assocpk = (Long) assoc.getProperty(ASSOC_PK);
         if (assocpk != null) {
             try {
-                Storage store = getStorage();
+                Storage store = getStorage(assoc);
                 SeriesStored seriesStored = store.checkSeriesStored(assocpk,
                         null);
                 if (seriesStored != null) {
@@ -836,6 +840,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
                 }
                 store.removeAssociation(assocpk);
+                store.remove();
             } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);
             }
@@ -873,7 +878,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         for (;;) {
             try {
 				if (serializeDBUpdate) {
-	                synchronized (this) {
+	                synchronized (store) {
 	                    store.updateStudy(suid);
 	                }
 				} else {
@@ -907,7 +912,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         for (;;) {
             try {
 				if (serializeDBUpdate) {
-	                synchronized (this) {
+	                synchronized (store) {
 	                    store.updateSeries(seriuid);
 	                }
 				} else {

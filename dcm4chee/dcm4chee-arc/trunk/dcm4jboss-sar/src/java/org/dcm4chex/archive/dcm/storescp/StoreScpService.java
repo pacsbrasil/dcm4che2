@@ -43,9 +43,11 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.ejb.CreateException;
 import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -70,9 +72,11 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
+import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -584,7 +588,7 @@ public class StoreScpService extends AbstractScpService {
      */
 	public Long importFile(Long pk, FileDTO fileDTO, Dataset ds,
             boolean last) throws Exception {
-        Storage store = scp.getStorage();
+        Storage store = getStorage();
         if (pk == null) {
             pk = store.initAssociation("IMPORT", "IMPORT", fileDTO.getRetrieveAET());
         } else {
@@ -614,7 +618,7 @@ public class StoreScpService extends AbstractScpService {
 	}
 
     private void checkPendingSeriesStored() throws Exception {
-        Storage store = scp.getStorage();        
+        Storage store = getStorage();        
         Long pk;
         while ((pk = store.nextPendingAssociation(pendingSeriesStoredTimeout)) != null) {
             SeriesStored seriesStored = store.checkSeriesStored(pk, null);
@@ -624,6 +628,12 @@ public class StoreScpService extends AbstractScpService {
             }
             store.removeAssociation(pk);            
         }        
+    }
+
+    Storage getStorage() throws RemoteException, CreateException,
+            HomeFactoryException {
+        return ((StorageHome) EJBHomeFactory.getFactory().lookup(
+                StorageHome.class, StorageHome.JNDI_NAME)).create();
     }
 
 }

@@ -297,7 +297,8 @@ StoreSCP service.
    <attribute access="read-write"
       getMethod="isSerializeDBUpdate"
       setMethod="setSerializeDBUpdate">
-      <description><![CDATA[Serialize updates of DB records for received objects. Decreases Storage Performance!]]>
+      <description><![CDATA[Serialize updates of DB records for received
+      objects in one association. May decreases Storage Performance!]]>
       </description>
       <name>SerializeDBUpdate</name>
       <type>boolean</type>
