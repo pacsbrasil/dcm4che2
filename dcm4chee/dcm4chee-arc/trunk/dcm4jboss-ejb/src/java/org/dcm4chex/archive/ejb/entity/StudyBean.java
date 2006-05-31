@@ -64,6 +64,7 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -93,21 +94,21 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.query signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
  *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
  *  
- * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Long pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
- * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Long pk)"
  * 	            query="SELECT SUM(s.numberOfSeriesRelatedInstances) FROM Series s WHERE s.study.pk = ?1"
- * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Long pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
- * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Long pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.commitment = TRUE"
- * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Long pk)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
- * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Integer pk, int status)"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Long pk, int status)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2 AND f.fileSystem.availability <> 3 AND f.fileSystem.status = 2"
- * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectAvailability(java.lang.Long pk)"
  * 	            query="SELECT MAX(s.availability) FROM Series s WHERE s.study.pk = ?1"
- * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Long pk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
@@ -155,9 +156,9 @@ public abstract class StudyBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -423,7 +424,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, PatientLocal patient)
+    public Long ejbCreate(Dataset ds, PatientLocal patient)
             throws CreateException {    	
         setAttributes(ds);
        return null;
@@ -451,54 +452,54 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query="SELECT DISTINCT s.retrieveAETs FROM Series s WHERE s.study.pk = ?1"
      */
-    public abstract Set ejbSelectSeriesRetrieveAETs(Integer pk)
+    public abstract Set ejbSelectSeriesRetrieveAETs(Long pk)
             throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1"
      */
-    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk)
+    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Long pk)
             throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT i.media FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND i.media.mediaStatus = ?2"
      */
-    public abstract java.util.Set ejbSelectMediaWithStatus(Integer pk,
+    public abstract java.util.Set ejbSelectMediaWithStatus(Long pk,
             int status) throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE st.pk = ?1"
      */
-    public abstract Set ejbSelectModalityInStudies(Integer pk)
+    public abstract Set ejbSelectModalityInStudies(Long pk)
             throws FinderException;
 
     /**
      * @ejb.select query=""
      */
     public abstract int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(
-            Integer pk, int status) throws FinderException;
+            Long pk, int status) throws FinderException;
 
     /**
      * @ejb.select query=""
      */
-    public abstract int ejbSelectNumberOfStudyRelatedInstances(Integer pk)
+    public abstract int ejbSelectNumberOfStudyRelatedInstances(Long pk)
             throws FinderException;
 
     /**
      * @ejb.select query=""
      */
-    public abstract int ejbSelectNumberOfStudyRelatedSeries(Integer pk)
+    public abstract int ejbSelectNumberOfStudyRelatedSeries(Long pk)
             throws FinderException;
 
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfCommitedInstances(Integer pk) throws FinderException;
+    public abstract int ejbSelectNumberOfCommitedInstances(Long pk) throws FinderException;
 
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfExternalRetrieveableInstances(Integer pk) throws FinderException;
+    public abstract int ejbSelectNumberOfExternalRetrieveableInstances(Long pk) throws FinderException;
 
     /**
      * @ejb.interface-method
@@ -518,31 +519,31 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query=""
      */
-    public abstract int ejbSelectAvailability(Integer pk)
+    public abstract int ejbSelectAvailability(Long pk)
             throws FinderException;
 
     /**
      * @ejb.select query=""
      */
-    public abstract long ejbSelectStudyFileSize(Integer pk)
+    public abstract long ejbSelectStudyFileSize(Long pk)
             throws FinderException;
 
  
     /**
      * @ejb.select query=""
      */
-    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Integer pk, int status)
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Long pk, int status)
             throws FinderException;
 
     /**    
      * @throws FinderException
      * @ejb.home-method
      */
-    public long ejbHomeSelectStudySize( Integer pk ) throws FinderException {
+    public long ejbHomeSelectStudySize( Long pk ) throws FinderException {
     	return ejbSelectStudyFileSize(pk);
     }
     
-    private boolean updateRetrieveAETs(Integer pk, int numI)
+    private boolean updateRetrieveAETs(Long pk, int numI)
     		throws FinderException {
     	boolean updated = false;
         String aets = null;
@@ -582,7 +583,7 @@ public abstract class StudyBean implements EntityBean {
         return sb.toString();
     }
 
-    private boolean updateExternalRetrieveAET(Integer pk, int numI)
+    private boolean updateExternalRetrieveAET(Long pk, int numI)
     	throws FinderException {
     	boolean updated = false;
     	String aet = null;
@@ -600,7 +601,7 @@ public abstract class StudyBean implements EntityBean {
     }
     
 
-    private boolean updateAvailability(Integer pk, int numI) throws FinderException {
+    private boolean updateAvailability(Long pk, int numI) throws FinderException {
     	boolean updated = false;
         int availability = getNumberOfStudyRelatedInstances() > 0
         			? ejbSelectAvailability(getPk())
@@ -611,7 +612,7 @@ public abstract class StudyBean implements EntityBean {
         return updated;
     }
     
-    private boolean updateNumberOfInstances(Integer pk) throws FinderException {
+    private boolean updateNumberOfInstances(Long pk) throws FinderException {
     	boolean updated = false;
         final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
         if (getNumberOfStudyRelatedSeries() != numS) {
@@ -627,7 +628,7 @@ public abstract class StudyBean implements EntityBean {
         return updated;
     }
     
-    private boolean updateFilesetId(Integer pk, int numI) throws FinderException {
+    private boolean updateFilesetId(Long pk, int numI) throws FinderException {
        	boolean updated = false;
        	String fileSetId = null;
        	String fileSetIuid = null;
@@ -654,7 +655,7 @@ public abstract class StudyBean implements EntityBean {
         return updated;
     }
 
-    private boolean updateModalitiesInStudy(Integer pk, int numI) throws FinderException {
+    private boolean updateModalitiesInStudy(Long pk, int numI) throws FinderException {
       	boolean updated = false;
         String mds = "";
         if (numI > 0) {
@@ -685,7 +686,7 @@ public abstract class StudyBean implements EntityBean {
             boolean filesetId, boolean availibility, boolean modsInStudies)
             throws FinderException {
     	boolean updated = false;
-    	final Integer pk = getPk();
+    	final Long pk = getPk();
 		if (numOfInstances)
 			if (updateNumberOfInstances(pk)) updated = true;
     	final int numI = getNumberOfStudyRelatedInstances();
@@ -726,7 +727,7 @@ public abstract class StudyBean implements EntityBean {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.StudyPk, getPk().intValue());
+            ds.putOB(PrivateTags.StudyPk, Convert.toBytes(getPk().longValue()));
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(
                     getModalitiesInStudy(), '\\'));
             ds.putIS(Tags.NumberOfStudyRelatedSeries,

@@ -71,7 +71,7 @@ public abstract class AssociationBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(String callingAET, String calledAET,
+    public Long ejbCreate(String callingAET, String calledAET,
             String retrieveAET) throws CreateException {
         setCallingAET(callingAET);
         setCalledAET(calledAET);
@@ -91,9 +91,9 @@ public abstract class AssociationBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method

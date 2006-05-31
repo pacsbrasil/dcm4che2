@@ -58,17 +58,17 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @since 31.08.2004
  *
  * @ejb.bean name="FileSystem"
- * 	         type="CMP"
- * 	         view-type="local"
- * 	         primkey-field="pk"
- * 	         local-jndi-name="ejb/FileSystem"
+ *           type="CMP"
+ *           view-type="local"
+ *           primkey-field="pk"
+ *           local-jndi-name="ejb/FileSystem"
  * 
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="filesystem"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
- *             query=""transaction-type="Supports"
+ *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findAll()"
  *             query="SELECT OBJECT(a) FROM FileSystem AS a"
  *             strategy="on-find" eager-load-group="*"
@@ -97,45 +97,45 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2 AND (a.status = ?3 OR a.status = ?4)"
  *             strategy="on-find" eager-load-group="*"
  *             
- * @jboss.query signature="int ejbSelectNumberOfFiles(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM File f WHERE f.fileSystem.pk = ?1"
- * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk = ?1"
  */
 public abstract class FileSystemBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(FileSystemBean.class);
-	private EntityContext ctx;
+    private EntityContext ctx;
 
 
-	public void setEntityContext(EntityContext ctx) 
-	throws EJBException, RemoteException {
-		this.ctx = ctx;		
-	}
+    public void setEntityContext(EntityContext ctx) 
+    throws EJBException, RemoteException {
+        this.ctx = ctx;     
+    }
 
-	public void unsetEntityContext() throws EJBException, RemoteException {
-		this.ctx = null;		
-	}
-	
+    public void unsetEntityContext() throws EJBException, RemoteException {
+        this.ctx = null;        
+    }
+    
     /**
-	 * Create File System.
-	 * 
-	 * @ejb.create-method
-	 */
-    public Integer ejbCreate(String dirpath, String aet, int availability,
-    		int status, String userInfo)
+     * Create File System.
+     * 
+     * @ejb.create-method
+     */
+    public Long ejbCreate(String dirpath, String aet, int availability,
+            int status, String userInfo)
         throws CreateException
     {
-		setDirectoryPath(dirpath);      
-		setRetrieveAET(aet);
-		setAvailability(availability);
-		setStatus(status);
-		setUserInfo(userInfo);
+        setDirectoryPath(dirpath);      
+        setRetrieveAET(aet);
+        setAvailability(availability);
+        setStatus(status);
+        setUserInfo(userInfo);
         return null;
     }
 
     public void ejbPostCreate(String dirpath, String aets, int availability,
-    		String userInfo)
+            String userInfo)
         throws CreateException
     {
         log.info("Created " + asString());
@@ -150,7 +150,7 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfFiles(Integer pk)
+    public abstract int ejbSelectNumberOfFiles(Long pk)
     throws FinderException;
     
     /**
@@ -163,7 +163,7 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfPrivateFiles(Integer pk)
+    public abstract int ejbSelectNumberOfPrivateFiles(Long pk)
     throws FinderException;
     
     /**
@@ -204,12 +204,12 @@ public abstract class FileSystemBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
     /**
-	 * @ejb.interface-method
-	 * @ejb.persistence column-name="dirpath"
-	 */
+     * @ejb.interface-method
+     * @ejb.persistence column-name="dirpath"
+     */
     public abstract String getDirectoryPath();
 
     /**
@@ -219,8 +219,8 @@ public abstract class FileSystemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-	 * @ejb.persistence column-name="retrieve_aet"
-	 */
+     * @ejb.persistence column-name="retrieve_aet"
+     */
     public abstract String getRetrieveAET();
 
     /**
@@ -252,8 +252,8 @@ public abstract class FileSystemBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-	 * @ejb.persistence column-name="user_info"
-	 */
+     * @ejb.persistence column-name="user_info"
+     */
     public abstract String getUserInfo();
 
     /**
@@ -302,20 +302,20 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public FileSystemDTO toDTO() {
-		FileSystemDTO dto = new FileSystemDTO();
-		dto.setPk(getPk().intValue());
-		dto.setDirectoryPath(getDirectoryPath());
-		dto.setRetrieveAET(getRetrieveAET());
-		dto.setAvailability(getAvailability());
-		dto.setStatus(getStatus());
-		dto.setUserInfo(getUserInfo());
-    	FileSystemLocal next = getNextFileSystem();
-    	if (next != null) {
-    		// prevent reentry in case of next == this
-    		String nextPath = next.isIdentical(ctx.getEJBLocalObject()) 
-    				? getDirectoryPath() : next.getDirectoryPath();
-    		dto.setNext(nextPath);
-    	}
-    	return dto;
+        FileSystemDTO dto = new FileSystemDTO();
+        dto.setPk(getPk().intValue());
+        dto.setDirectoryPath(getDirectoryPath());
+        dto.setRetrieveAET(getRetrieveAET());
+        dto.setAvailability(getAvailability());
+        dto.setStatus(getStatus());
+        dto.setUserInfo(getUserInfo());
+        FileSystemLocal next = getNextFileSystem();
+        if (next != null) {
+            // prevent reentry in case of next == this
+            String nextPath = next.isIdentical(ctx.getEJBLocalObject()) 
+                    ? getDirectoryPath() : next.getDirectoryPath();
+            dto.setNext(nextPath);
+        }
+        return dto;
     }
 }

@@ -72,7 +72,7 @@ public abstract class PrivateStudyBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(int type, Dataset ds, PrivatePatientLocal patient)
+    public Long ejbCreate(int type, Dataset ds, PrivatePatientLocal patient)
     throws CreateException {
     	setPrivateType(type);
         setAttributes(ds);
@@ -92,8 +92,8 @@ public abstract class PrivateStudyBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
-    public abstract void setPk(Integer pk);
+    public abstract Long getPk();
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method

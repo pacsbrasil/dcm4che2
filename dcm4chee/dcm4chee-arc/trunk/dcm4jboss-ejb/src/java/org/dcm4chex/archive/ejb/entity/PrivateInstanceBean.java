@@ -71,7 +71,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(int type, Dataset ds, PrivateSeriesLocal series)
+    public Long ejbCreate(int type, Dataset ds, PrivateSeriesLocal series)
     throws CreateException {
     	setPrivateType(type);
         setAttributes(ds);
@@ -91,8 +91,8 @@ public abstract class PrivateInstanceBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
-    public abstract void setPk(Integer pk);
+    public abstract Long getPk();
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method

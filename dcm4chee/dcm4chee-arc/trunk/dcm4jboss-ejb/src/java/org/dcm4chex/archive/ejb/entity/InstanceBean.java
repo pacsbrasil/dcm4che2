@@ -55,6 +55,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
@@ -65,6 +66,7 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * Instance Bean
@@ -104,11 +106,11 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.srCode = ?2"
  *             transaction-type="Supports"
  *
- * @ejb.finder signature="java.util.Collection findBySeriesPk(java.lang.Integer seriesPk)"
+ * @ejb.finder signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1"
  *             transaction-type="Supports"
  *
- * @jboss.query signature="java.util.Collection findBySeriesPk(java.lang.Integer seriesPk)"
+ * @jboss.query signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
  *              strategy="on-find"
  *              eager-load-group="*"
  * 
@@ -157,9 +159,9 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -391,7 +393,7 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, SeriesLocal series)
+    public Long ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
         setAttributes(ds);
         return null;
@@ -418,7 +420,7 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
      */ 
-    public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
+    public abstract Set ejbSelectRetrieveAETs(Long pk) throws FinderException;
     
     /**
      * @ejb.interface-method
@@ -434,7 +436,7 @@ public abstract class InstanceBean implements EntityBean {
     	}   		
     }
     
-    private boolean updateRetrieveAETs(Integer pk) throws FinderException {
+    private boolean updateRetrieveAETs(Long pk) throws FinderException {
         final Set aetSet = ejbSelectRetrieveAETs(pk);
         if (aetSet.remove(null))
             log.warn("Instance[iuid=" + getSopIuid()
@@ -449,9 +451,9 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.select query="SELECT MIN(f.fileSystem.availability) FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
      */ 
-    public abstract int ejbSelectLocalAvailability(Integer pk) throws FinderException;
+    public abstract int ejbSelectLocalAvailability(Long pk) throws FinderException;
     
-    private boolean updateAvailability(Integer pk, String retrieveAETs) throws FinderException {
+    private boolean updateAvailability(Long pk, String retrieveAETs) throws FinderException {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
         if (retrieveAETs != null)
@@ -474,7 +476,7 @@ public abstract class InstanceBean implements EntityBean {
     public boolean updateDerivedFields(boolean retrieveAETs, boolean availability) 
     		throws FinderException {
     	boolean updated = false;
-        final Integer pk = getPk();
+        final Long pk = getPk();
 		if (retrieveAETs)
 			if (updateRetrieveAETs(pk)) updated = true;
         if (availability)
@@ -493,10 +495,19 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
-        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        Dataset ds;
+        try { 
+        	ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        } catch ( IllegalArgumentException x ){
+        	//BLOB size not sufficient to store Attributes
+        	log.warn("Instance (pk:"+getPk()+") Attributes truncated in database! (BLOB size not sufficient to store Attributes correctly) !");
+        	ds = DcmObjectFactory.getInstance().newDataset();
+        	ds.putUI(Tags.SOPInstanceUID, this.getSopIuid());
+        	ds.putUI(Tags.SOPClassUID, this.getSopCuid());
+        }
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.InstancePk, getPk().intValue());
+            ds.putOB(PrivateTags.InstancePk, Convert.toBytes(getPk().longValue()));
             MediaLocal media = getMedia();
             if (media != null && media.getMediaStatus() == MediaDTO.COMPLETED) {
                 ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId());

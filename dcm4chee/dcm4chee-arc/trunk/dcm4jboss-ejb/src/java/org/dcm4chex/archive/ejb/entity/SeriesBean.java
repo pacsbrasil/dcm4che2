@@ -68,6 +68,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -102,13 +103,13 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *              strategy="on-find"
  *              eager-load-group="*"
  * 
- * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Long pk, java.lang.String retrieveAET)"
  *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
- * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Long pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
- * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Long pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
- * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectAvailability(java.lang.Long pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
  * 
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
@@ -163,9 +164,9 @@ public abstract class SeriesBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -383,7 +384,7 @@ public abstract class SeriesBean implements EntityBean {
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, StudyLocal study)
+    public Long ejbCreate(Dataset ds, StudyLocal study)
             throws CreateException {
     	ds.setPrivateCreatorID(PrivateTags.CreatorID);
     	setSourceAET(ds.getString(PrivateTags.CallingAET));
@@ -412,39 +413,39 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
      */ 
-    public abstract java.util.Set ejbSelectInternalRetrieveAETs(Integer pk) throws FinderException;
+    public abstract java.util.Set ejbSelectInternalRetrieveAETs(Long pk) throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Series s, IN(s.instances) i WHERE s.pk = ?1"
      */ 
-    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk) throws FinderException;
+    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Long pk) throws FinderException;
     
     /**
      * @ejb.select query="SELECT DISTINCT i.media FROM Series s, IN(s.instances) i WHERE s.pk = ?1 AND i.media.mediaStatus = ?2"
      */ 
-    public abstract java.util.Set ejbSelectMediaWithStatus(Integer pk, int status) throws FinderException;
+    public abstract java.util.Set ejbSelectMediaWithStatus(Long pk, int status) throws FinderException;
 
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(Integer pk, int status) throws FinderException;
+    public abstract int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(Long pk, int status) throws FinderException;
 
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+    public abstract int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(Long pk, String retrieveAET) throws FinderException;
 
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfSeriesRelatedInstances(Integer pk) throws FinderException;
+    public abstract int ejbSelectNumberOfSeriesRelatedInstances(Long pk) throws FinderException;
     
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
+    public abstract int ejbSelectAvailability(Long pk) throws FinderException;
     
-    private boolean updateRetrieveAETs(Integer pk, int numI) throws FinderException {
+    private boolean updateRetrieveAETs(Long pk, int numI) throws FinderException {
     	boolean updated = false;
         String aets = null;
         if (numI > 0) {
@@ -471,7 +472,7 @@ public abstract class SeriesBean implements EntityBean {
         return updated;
     }
     
-    private boolean updateExternalRetrieveAET(Integer pk, int numI) throws FinderException {
+    private boolean updateExternalRetrieveAET(Long pk, int numI) throws FinderException {
     	boolean updated = false;
     	String aet = null;
         if (numI > 0) {
@@ -487,7 +488,7 @@ public abstract class SeriesBean implements EntityBean {
         return updated;
     }
     
-    private boolean updateAvailability(Integer pk, int numI) throws FinderException {
+    private boolean updateAvailability(Long pk, int numI) throws FinderException {
         int availability = numI > 0 ? ejbSelectAvailability(getPk()) 
         		: Availability.UNAVAILABLE;
         boolean updated;
@@ -497,7 +498,7 @@ public abstract class SeriesBean implements EntityBean {
         return updated;
     }
     
-    private boolean updateNumberOfInstances(Integer pk) throws FinderException {
+    private boolean updateNumberOfInstances(Long pk) throws FinderException {
     	boolean updated = false;
         final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
         if (getNumberOfSeriesRelatedInstances() != numI) {
@@ -507,7 +508,7 @@ public abstract class SeriesBean implements EntityBean {
         return updated;
     }
     
-    private boolean updateFilesetId(Integer pk, int numI) throws FinderException {
+    private boolean updateFilesetId(Long pk, int numI) throws FinderException {
     	boolean updated = false;
        	String fileSetId = null;
        	String fileSetIuid = null;
@@ -541,7 +542,7 @@ public abstract class SeriesBean implements EntityBean {
     		boolean retrieveAETs, boolean externalRettrieveAETs,
             boolean filesetId, boolean availibility) throws FinderException {
     	boolean updated = false;
-    	final Integer pk = getPk();
+    	final Long pk = getPk();
 		if (numOfInstances)
 			if (updateNumberOfInstances(pk)) updated = true;
     	final int numI = getNumberOfSeriesRelatedInstances();
@@ -618,7 +619,7 @@ public abstract class SeriesBean implements EntityBean {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.SeriesPk, getPk().intValue());
+            ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(getPk().longValue()));
             ds.putAE(PrivateTags.CallingAET, getSourceAET());
             ds.putIS(Tags.NumberOfSeriesRelatedInstances,
                     getNumberOfSeriesRelatedInstances());

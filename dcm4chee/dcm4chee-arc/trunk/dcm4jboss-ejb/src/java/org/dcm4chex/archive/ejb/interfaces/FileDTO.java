@@ -50,7 +50,7 @@ public final class FileDTO implements Serializable {
 
     private static final long serialVersionUID = 3617574916212536371L;
     
-    private int pk;
+    private long pk;
 
     private String aet;
 
@@ -83,14 +83,14 @@ public final class FileDTO implements Serializable {
     /**
      * @return Returns the pk.
      */
-    public final int getPk() {
+    public final long getPk() {
         return pk;
     }
 
     /**
      * @param pk The pk to set.
      */
-    public final void setPk(int pk) {
+    public final void setPk(long pk) {
         this.pk = pk;
     }
 

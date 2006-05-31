@@ -53,6 +53,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @ejb.bean name="Patient" type="CMP" view-type="local"
@@ -97,9 +98,9 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -285,7 +286,7 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds) throws CreateException {
+    public Long ejbCreate(Dataset ds) throws CreateException {
         setAttributes(ds);
         return null;
     }
@@ -312,7 +313,7 @@ public abstract class PatientBean implements EntityBean {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.PatientPk, getPk().intValue());
+            ds.putOB(PrivateTags.PatientPk, Convert.toBytes(getPk().longValue()));
         }
         return ds;
     }

@@ -60,11 +60,6 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * 
- * @ejb.finder signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
- *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
- *             query="SELECT OBJECT(f) FROM File AS f WHERE f.instance IS NULL AND f.fileSystem.directoryPath = ?1 LIMIT ?2"
- *              strategy="on-find" eager-load-group="*"
  * @ejb.finder signature="java.util.Collection findFilesToCompress(java.lang.String dirPath, java.lang.String cuid, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findFilesToCompress(java.lang.String dirPath, java.lang.String cuid, java.sql.Timestamp before, int limit)"
@@ -93,9 +88,9 @@ public abstract class FileBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -261,7 +256,7 @@ public abstract class FileBean implements EntityBean {
      * 
      * @ejb.create-method
      */
-    public Integer ejbCreate(String path, String tsuid, int size, byte[] md5,
+    public Long ejbCreate(String path, String tsuid, int size, byte[] md5,
     		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setFilePath(path);

@@ -63,15 +63,21 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="study_on_fs"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  * 	           query="" transaction-type="Supports"
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"
  *             strategy="on-find" eager-load-group="*"
- * @ejb.finder signature="java.util.Collection findByReleaseAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
+ * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
  *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByReleaseAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
- *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.retrieveAET = ?1 AND sof.accessTime < ?2 ORDER BY sof.accessTime ASC"
+ * @jboss.query signature="java.util.Collection findByRetrieveAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
+ *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.retrieveAET = ?1 AND sof.accessTime < ?2 AND sof.fileSystem.status >= 0 ORDER BY sof.accessTime ASC"
+ *             strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByRetrieveAETAndOldest(java.lang.String aet, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByRetrieveAETAndOldest(java.lang.String aet, int limit)"
+ *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.retrieveAET = ?1 AND sof.fileSystem.status >= 0 ORDER BY sof.accessTime ASC LIMIT ?2"
  *             strategy="on-find" eager-load-group="*"
  */
 public abstract class StudyOnFileSystemBean implements EntityBean {
@@ -85,9 +91,9 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -129,7 +135,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(StudyLocal study, FileSystemLocal fs)
+    public Long ejbCreate(StudyLocal study, FileSystemLocal fs)
             throws CreateException {
         setAccessTime(new Timestamp(System.currentTimeMillis()));
         return null;
@@ -162,16 +168,16 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT OBJECT(f) FROM StudyOnFileSystem sof, File f WHERE sof.pk = ?1 AND f.fileSystem = sof.fileSystem AND f.instance.series.study = sof.study"
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
      *             transaction-type="Supports"
      */
-    public abstract Collection ejbSelectFiles(java.lang.Integer pk)
+    public abstract Collection ejbSelectFiles(java.lang.Long study_fk, java.lang.Long filesystem_fk)
             throws FinderException;
 
     /**    
      * @ejb.interface-method
      */
-    public Collection getFiles() throws FinderException {
-        return ejbSelectFiles(getPk());
+    public Collection getFiles() throws FinderException {    	
+        return ejbSelectFiles(getStudy().getPk(), getFileSystem().getPk());
     }
 }
