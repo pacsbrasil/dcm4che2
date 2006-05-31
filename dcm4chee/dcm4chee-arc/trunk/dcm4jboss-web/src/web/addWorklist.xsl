@@ -24,13 +24,13 @@
 				<td width="33%" align="center">
 					<select size="1" name="template" title="Worklist template">
 						<xsl:for-each select="templateList/item">
-								<xsl:sort data-type="text" order="ascending" select="codeMeaning"/>
+								<xsl:sort data-type="text" order="ascending" />
 							<option>
-								<xsl:attribute name="value"><xsl:value-of select="codeValue"/></xsl:attribute>
-								<xsl:if test="/model/template = codeValue">
+								<xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
+								<xsl:if test="/model/template = .">
 									<xsl:attribute name="selected"/>
 								</xsl:if>
-								<xsl:value-of select="codeMeaning"/>
+								<xsl:value-of select="."/>
 							</option>
 						</xsl:for-each>						
 					</select>
