@@ -52,7 +52,6 @@ public class HomeFactoryException extends Exception {
      */
     public HomeFactoryException() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -60,7 +59,6 @@ public class HomeFactoryException extends Exception {
      */
     public HomeFactoryException(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -68,7 +66,6 @@ public class HomeFactoryException extends Exception {
      */
     public HomeFactoryException(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -77,7 +74,5 @@ public class HomeFactoryException extends Exception {
      */
     public HomeFactoryException(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
-
 }
