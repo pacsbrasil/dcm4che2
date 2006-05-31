@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Jun 6, 2005 12:02:21 AM                                                        
+
+     project    
+     description
+                   
+     gunter                                                                
+     ====================================================================== -->
+<project name="project" default="all">
+	<description>
+            description
+    </description>
+	
+	<!-- Allow user to adjust build properties 
+	     without modifying this build script. --> 
+	<property file="build.properties"/>
+	<property name="office.dtd" value="src/main/dtd/office.dtd"/>
+	<property name="package" value="org.dcm4che2.data"/>
+	<property name="folder" value="org/dcm4che2/data"/>
+	<property name="tagclass" value="Tag"/>
+	<property name="uidclass" value="UID"/>
+
+
+    <target name="all" depends="dictionary,uids"/>
+    	
+	<!-- ================================= 
+          target: dictionary              
+         ================================= -->
+	<target name="dictionary" depends="p6_element" description="--> description">
+		<xslt in="src/main/xml/elements.xml" out="target/xml/dictionary.xml" 
+			style="src/main/xsl/elements.xsl">
+		</xslt>
+		<xslt in="target/xml/dictionary.xml" 
+			out="target/java/${folder}/${tagclass}.java" 
+			style="src/main/xsl/Tag.xsl">
+			<param name="package" expression="${package}" />
+			<param name="class" expression="${tagclass}" />
+		</xslt>
+	</target>
+
+	<target name="uids" depends="p6_uid" description="--> description">
+		<xslt in="src/main/xml/uids.xml" out="target/xml/uids.xml" 
+			style="src/main/xsl/uids.xsl">
+		</xslt>
+		<xslt in="target/xml/uids.xml" 
+			out="target/java/${folder}/${uidclass}.java" 
+			style="src/main/xsl/UID.xsl">
+			<param name="package" expression="${package}" />
+			<param name="class" expression="${uidclass}" />
+		</xslt>
+	</target>
+	
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: extract content                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="unzip">
+		<antcall target="unzip-sxw">
+			<param name="fname" value="04_07_09"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="04_06_14"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup60_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup83_ft2"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup100_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup101_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup102_14"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup103_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup104_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup105_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp465_ft2"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp483_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp486_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp487_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp491_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp507_ft"/>
+		</antcall>
+	</target>
+	
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: grepElements                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="p6_element" depends="unzip">
+		<antcall target="grep">
+			<param name="fname" value="04_07_09"/>
+			<param name="style" value="p7_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="04_06_14"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup60_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup83_ft2"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup100_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup101_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup102_14"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup103_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup104_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp465_ft2"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp483_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp486_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp487_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp491_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp507_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: p6_uid                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="p6_uid" depends="unzip">
+		<antcall target="grep">
+			<param name="fname" value="04_06_14"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup60_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup83_ft2"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup100_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup101_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup102_14"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup103_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup104_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup105_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+	</target>
+	
+	<target name="unzip-sxw">
+		<unzip src="src/main/sxw/${fname}.sxw" dest="target/xml/${fname}">
+			<patternset includes="content.xml"/>
+		</unzip>
+	</target>
+
+	<target name="grep">
+		<xslt in="target/xml/${fname}/content.xml" out="target/xml/${style}/${fname}.xml" 
+			style="src/main/xsl/${style}.xsl">
+			<xmlcatalog>
+				<dtd publicId="-//OpenOffice.org//DTD OfficeDocument 1.0//EN" 
+					location="${office.dtd}" />
+			</xmlcatalog>
+		</xslt>
+	</target>
+	
+	<target name="clean">
+		<delete dir="target"/>
+	</target>
+
+</project>
+
+
