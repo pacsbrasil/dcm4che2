@@ -40,9 +40,9 @@
 
 package org.dcm4chex.archive.common;
 
-import java.util.Arrays;
 
 /**
+ * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since Jan 25, 2006
@@ -50,23 +50,25 @@ import java.util.Arrays;
 public class FileSystemStatus {
 
     private static final String[] ENUM = { 
+    	"PENDING",
     	"RW+",
     	"RW",
-    	"RO",
+    	"RO"
     };
 
+    public static final int PENDING = -1;
     public static final int DEF_RW = 0;
     public static final int RW = 1;
     public static final int RO = 2;
-
+    
     public static final String toString(int value) {
-        return ENUM[value];
+       return ENUM[++value];
     }
 
-    public static final int toInt(String s) {        
-        final int index = Arrays.asList(ENUM).indexOf(s);
-        if (index == -1)
-            throw new IllegalArgumentException(s);
-        return index;
+    public static final int toInt(String s) {
+    	for ( int i = 0 ; i < ENUM.length ; i++) {
+    		if ( ENUM[i].equals(s) ) return --i;
+    	}
+        throw new IllegalArgumentException(s);
     }
 }
