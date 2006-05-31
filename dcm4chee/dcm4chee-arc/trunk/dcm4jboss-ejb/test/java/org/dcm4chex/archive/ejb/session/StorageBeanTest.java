@@ -123,7 +123,7 @@ public class StorageBeanTest extends TestCase {
         ds.putAE(PrivateTags.CallingAET, CALLING_AET);
         ds.putAE(PrivateTags.CalledAET, CALLED_AET);
         ds.putAE(Tags.RetrieveAET, RETRIEVE_AET);
-        Integer assocpk = storage.initAssociation(CALLING_AET, CALLED_AET, RETRIEVE_AET);
+        Long assocpk = storage.initAssociation(CALLING_AET, CALLED_AET, RETRIEVE_AET);
         storage.store(assocpk, ds, "/", path.substring(1), (int) file.length(),
                 md.digest());
         storage.removeAssociation(assocpk);
