@@ -788,7 +788,7 @@ StoreSCP service.
           imported files of one Series.
         </description>
         <name>pk</name>
-        <type>java.lang.Integer</type>
+        <type>java.lang.Long</type>
       </parameter>
       <parameter>
         <description>Transfer object for File</description>
@@ -805,7 +805,7 @@ StoreSCP service.
         <name>last</name>
         <type>boolean</type>
       </parameter>
-      <return-type>java.lang.Integer</return-type>
+      <return-type>java.lang.Long</return-type>
    </operation>
 
    <!-- Notifications -->

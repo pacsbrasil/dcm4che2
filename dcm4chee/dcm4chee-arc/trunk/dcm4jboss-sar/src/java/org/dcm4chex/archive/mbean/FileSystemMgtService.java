@@ -50,6 +50,9 @@ import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
@@ -57,6 +60,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
+import org.dcm4chex.archive.common.ActionOrder;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
@@ -76,6 +80,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -84,7 +89,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 12.09.2004
  *
  */
-public class FileSystemMgtService extends ServiceMBeanSupport {
+public class FileSystemMgtService extends ServiceMBeanSupport implements MessageListener {
 
     private final TimerSupport timer = new TimerSupport(this);
 
@@ -141,6 +146,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     private FileSystemDTO storageFileSystem;
     
     private long checkStorageFileSystem = 0L;
+    
 	        
     private final NotificationListener purgeFilesListener = 
         new NotificationListener(){
@@ -454,6 +460,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
          		freeDiskSpaceInterval, freeDiskSpaceListener);
          purgeFilesListenerID = timer.startScheduler("CheckFilesToPurge",
          		purgeFilesInterval, purgeFilesListener);
+ 		JMSDelegate.startListening("PurgeFiles", this, 1);
          
     }
     
@@ -564,6 +571,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         		freeDiskSpaceListener);
         timer.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
         		purgeFilesListener);
+ 		JMSDelegate.stopListening("PurgeFiles");
         super.stopService();
     }
 
@@ -585,6 +593,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
                 getAvailableDiskSpace(listLocalOnlineRWFileSystems()));
     }
     
+    /**
+     * Search for unreferenced private files and delete them.
+     * 
+     * @return
+     */
     public int purgeFiles() {
         log.info("Check for unreferenced files to delete");
         synchronized (this) {
@@ -627,7 +640,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     	        }
     	        isPurging = true;
             }
-            log.info("Check for unreferenced files to delete in filesystem:"+purgeDirPath);
+            log.info("Check for unreferenced (private) files to delete in filesystem:"+purgeDirPath);
 		    FileSystemMgt fsMgt = newFileSystemMgt();
 			total = purgeFiles(purgeDirPath,fsMgt);
 			isPurging = false;
@@ -641,23 +654,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     
     private int purgeFiles( String path, FileSystemMgt fsMgt ) {
     	int limit = getLimitNumberOfFilesPerTask();
-    	int deleted = purgeFiles( path, fsMgt, false, limit );
+    	int deleted = purgeFiles( path, fsMgt, limit );
     	if ( deleted < 0 ) return -1;//mark error
-    	int total = deleted;
-    	if ( total < limit ) { //try also in trash (PrivateFiles) for remaining number of files per task
-    		deleted = purgeFiles( path, fsMgt, true, limit - total );
-    		if ( deleted > 0 ) {
-    			total += deleted;
-    		}
-    	}
-    	return total;
+    	return deleted;
     }
     
-    private int purgeFiles( String purgeDirPath, FileSystemMgt fsMgt, boolean fromPrivate, int limit ) {
+    private int purgeFiles( String purgeDirPath, FileSystemMgt fsMgt, int limit ) {
         FileDTO[] toDelete;
     	try {
-    		toDelete = fromPrivate ? fsMgt.getDereferencedPrivateFiles( purgeDirPath, limit ) :
-    					fsMgt.getDereferencedFiles( purgeDirPath, limit );
+    		toDelete = fsMgt.getDereferencedPrivateFiles( purgeDirPath, limit );
             if ( log.isDebugEnabled()) 
             	log.debug("purgeFiles: found "+toDelete.length+" files to delete on dirPath:"+purgeDirPath);
         } catch (Exception e) {
@@ -669,11 +674,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 			File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
                     fileDTO.getFilePath());
             try {
-            	if ( fromPrivate ) {
-                    fsMgt.deletePrivateFile(fileDTO.getPk());
-            	} else {
-            		fsMgt.deleteFile(fileDTO.getPk());
-            	}
+                fsMgt.deletePrivateFile(fileDTO.getPk());
             } catch (Exception e) {
                 log.warn("Failed to remove File Record[pk=" 
 						+ fileDTO.getPk() + "] from DB:", e);
@@ -773,7 +774,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
                 try {
                     Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
                             flushExternalRetrievable, flushOnROFsAvailable, validFileStatus,
-                            maxSizeToDel);
+                            maxSizeToDel, limitNumberOfFilesPerTask);
                     sendIANs(ians);
                     if ( autoPurge ) {
                     	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
@@ -840,7 +841,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
                 FileSystemStatus.DEF_RW, FileSystemStatus.RW);
     }
 
-    public long showStudySize( Integer pk ) throws RemoteException, FinderException {
+    public long showStudySize( Long pk ) throws RemoteException, FinderException {
         FileSystemMgt fsMgt = newFileSystemMgt();
     	return fsMgt.getStudySize(pk);
     }
@@ -951,4 +952,28 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     	dto.setUserInfo(userInfo);
     	return newFileSystemMgt().addAndLinkFileSystem(dto).toString();
 	}
+	
+
+	/* (non-Javadoc)
+	 * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
+	 */
+	public void onMessage(Message msg) {
+		ObjectMessage om = (ObjectMessage) msg;
+		try {
+			ActionOrder order = (ActionOrder) om.getObject();
+			log.info("Start processing " + order);
+			try {
+				List l = (List)order.getData();
+				for ( Iterator iter = l.iterator() ; iter.hasNext() ;) {
+					this.delete( FileUtils.toFile((String) iter.next() ) );
+				}
+				log.info("Finished processing " + order);
+			} catch (Exception e) {
+				log.warn("Failed to process " + order, e);
+			}
+		} catch (Throwable e) {
+			log.error("unexpected error during processing message: " + msg,	e);
+		}
+	}
+	
 }

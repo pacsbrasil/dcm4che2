@@ -55,10 +55,10 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  */
 public class ExpandPatientCtrl extends Dcm4JbossFormController {
 
-    protected int patPk;
+    protected long patPk;
     protected boolean expand;
 
-    public final void setPatPk(int patPk) {
+    public final void setPatPk(long patPk) {
         this.patPk = patPk;
     }
     

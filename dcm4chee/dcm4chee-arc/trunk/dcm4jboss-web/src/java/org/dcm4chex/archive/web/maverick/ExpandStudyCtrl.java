@@ -55,10 +55,10 @@ import org.dcm4chex.archive.web.maverick.model.SeriesModel;
  */
 public class ExpandStudyCtrl extends ExpandPatientCtrl {
 
-    protected int studyPk;
+    protected long studyPk;
 
 
-    public final void setStudyPk(int studyPk)
+    public final void setStudyPk(long studyPk)
     {
         this.studyPk = studyPk;
     }

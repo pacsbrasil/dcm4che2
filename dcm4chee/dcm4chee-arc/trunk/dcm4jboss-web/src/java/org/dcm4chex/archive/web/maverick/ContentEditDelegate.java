@@ -88,38 +88,38 @@ public class ContentEditDelegate {
         return (Dataset) o;
     }
 
-    public Dataset createStudy(Dataset ds, int patPk) {
+    public Dataset createStudy(Dataset ds, long patPk) {
     	Object o = null;
         try {
             o = server.invoke(contentEditName,
                     "createStudy",
-                    new Object[] { ds, new Integer( patPk ) },
-                    new String[] { Dataset.class.getName(), Integer.class.getName() });
+                    new Object[] { ds, new Long( patPk ) },
+                    new String[] { Dataset.class.getName(), Long.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to create Study:", e);
         }
         return (Dataset) o;
     }
 
-    public Dataset createSeries(Dataset ds, int studyPk) {
+    public Dataset createSeries(Dataset ds, long studyPk) {
     	Object o = null;
         try {
             o = server.invoke(contentEditName,
                     "createSeries",
-                    new Object[] { ds, new Integer( studyPk ) },
-                    new String[] { Dataset.class.getName(), Integer.class.getName() });
+                    new Object[] { ds, new Long( studyPk ) },
+                    new String[] { Dataset.class.getName(), Long.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to create Series:", e);
         }
         return (Dataset) o;
     }
 
-    public void mergePatients(int pk, int[] patPks) {
+    public void mergePatients(long pk, long[] patPks) {
         try {
             server.invoke(contentEditName,
                     "mergePatients",
-                    new Object[] { new Integer(pk), patPks },
-                    new String[] { Integer.class.getName(), int[].class.getName() });
+                    new Object[] { new Long(pk), patPks },
+                    new String[] { Long.class.getName(), long[].class.getName() });
         } catch (Exception e) {
             log.warn("Failed to merge Patients:", e);
         }
@@ -158,87 +158,87 @@ public class ContentEditDelegate {
         }
     }
  
-    public void movePatientToTrash(int pk) {
+    public void movePatientToTrash(long pk) {
     	invokeCmd("movePatientToTrash", pk);
     }
-    public void moveStudyToTrash(int pk) {
+    public void moveStudyToTrash(long pk) {
     	invokeCmd("moveStudyToTrash", pk);
     }
-    public void moveSeriesToTrash(int pk) {
+    public void moveSeriesToTrash(long pk) {
     	invokeCmd("moveSeriesToTrash", pk);
     }
-    public void moveInstanceToTrash(int pk) {
+    public void moveInstanceToTrash(long pk) {
     	invokeCmd("moveInstanceToTrash", pk);
     }
 
-    public void undeletePatient( int pk ) {
+    public void undeletePatient( long pk ) {
     	invokeCmd("undeletePatient", pk);
     }
-    public void undeleteStudy( int pk ) {
+    public void undeleteStudy( long pk ) {
     	invokeCmd("undeleteStudy", pk);
     }
-    public void undeleteSeries( int pk ) {
+    public void undeleteSeries( long pk ) {
     	invokeCmd("undeleteSeries", pk);
     }
-    public void undeleteInstance( int pk ) {
+    public void undeleteInstance( long pk ) {
     	invokeCmd("undeleteInstance", pk);
     }
     
-    public void deletePatient( int pk ) {
+    public void deletePatient( long pk ) {
     	invokeCmd("deletePatient", pk);
     }
-    public void deleteStudy( int pk ) {
+    public void deleteStudy( long pk ) {
     	invokeCmd("deleteStudy", pk);
     }
-    public void deleteSeries( int pk ) {
+    public void deleteSeries( long pk ) {
     	invokeCmd("deleteSeries", pk);
     }
-    public void deleteInstance( int pk ) {
+    public void deleteInstance( long pk ) {
     	invokeCmd("deleteInstance", pk);
     }
 
-    private void invokeCmd( String cmd, int pk ) {
+    private void invokeCmd( String cmd, long pk ) {
         try {
             server.invoke(contentEditName,
                     cmd,
-                    new Object[] { new Integer( pk ) },
-                    new String[] { int.class.getName() });
+                    new Object[] { new Long( pk ) },
+                    new String[] { long.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to invoke command '"+cmd+"' with (pk="+pk+") !", e);
         }
     }
     
     
-    public void moveStudies(int[] study_pks, int patient_pk) {
+    public void moveStudies(long[] study_pks, long patient_pk) {
         try {
             server.invoke(contentEditName,
                     "moveStudies",
-                    new Object[] { study_pks, new Integer(patient_pk) },
-                    new String[] { int[].class.getName(), Integer.class.getName() });
+                    new Object[] { study_pks, new Long(patient_pk) },
+                    new String[] { long[].class.getName(), Long.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to move Studies:", e);
         }
      	
     }
  
-    public void moveSeries(int[] series_pks, int study_pk) {
+    public void moveSeries(long[] series_pks, long study_pk) {
         try {
             server.invoke(contentEditName,
                     "moveSeries",
-                    new Object[] { series_pks, new Integer(study_pk) },
-                    new String[] { int[].class.getName(), Integer.class.getName() });
+                    new Object[] { series_pks, new Long(study_pk) },
+                    new String[] { long[].class.getName(), Long.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to move Series:", e);
         }
      	
     }
 
-    public void moveInstances(int[] instance_pks, int series_pk) {
+    public void moveInstances(long[] instance_pks, long series_pk) {
         try {
             server.invoke(contentEditName,
                     "moveInstances",
-                    new Object[] { instance_pks, new Integer(series_pk) },
-                    new String[] { int[].class.getName(), Integer.class.getName() });
+                    new Object[] { instance_pks, new Long(series_pk) },
+                    new String[] { long[].class.getName(), Long.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to move Instances:", e);
         }

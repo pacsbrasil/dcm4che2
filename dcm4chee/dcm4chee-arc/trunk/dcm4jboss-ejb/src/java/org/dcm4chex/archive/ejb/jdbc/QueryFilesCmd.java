@@ -61,7 +61,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
             FileDTO fi1 = (FileDTO) o1;
             FileDTO fi2 = (FileDTO) o2;
             int diffAvail = fi1.getAvailability() - fi2.getAvailability();
-            return diffAvail != 0 ? diffAvail : fi2.getPk() - fi1.getPk();
+            return diffAvail != 0 ? diffAvail : (int)(fi2.getPk() - fi1.getPk());
         }
     };
     public static int transactionIsolationLevel = 0;
@@ -89,7 +89,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
     
     private FileDTO getFileDTO() throws SQLException {
         FileDTO dto = new FileDTO();
-        dto.setPk(rs.getInt(1));
+        dto.setPk(rs.getLong(1));
         dto.setFilePath(rs.getString(2));
         dto.setFileMd5(MD5.toBytes(rs.getString(3)));
         dto.setFileStatus(rs.getInt(4));

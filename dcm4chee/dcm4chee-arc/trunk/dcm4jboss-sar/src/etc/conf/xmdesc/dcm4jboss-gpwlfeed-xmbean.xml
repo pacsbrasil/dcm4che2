@@ -51,22 +51,13 @@
          <value value="conf/dcm4jboss-gpwl.conf"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getTemplateURL" setMethod="setTemplateURL">
+   <attribute access="read-write" getMethod="getTemplatePath" setMethod="setTemplatePath">
       <description>URL to the directory of worklist entry templates.
       </description>
-      <name>TemplateURL</name>
+      <name>TemplatePath</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="gpwl"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getTemplates" setMethod="setTemplates">
-      <description>List of templates for worklist entries.
-      </description>
-      <name>TemplateList</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="P1.ERL_MESA.xml^Interpretation,P102.ERL_MESA.xml^CT 3D reconstruction"/>
+         <value value="conf/dcm4jboss-gpwl"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getHumanPerformer" setMethod="setHumanPerformer">
@@ -88,7 +79,7 @@
       <parameter>
         <description>study pk</description>
         <name>studyPk</name>
-        <type>java.lang.Integer</type>
+        <type>java.lang.Long</type>
       </parameter>
       <parameter>
         <description>name of template file</description>
@@ -105,6 +96,19 @@
         <name>scheduleDate</name>
         <type>java.lang.Long</type>
       </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description>List of templates for worklist entries. (List of all files in TemplateURL)
+      </description>
+      <name>listTemplates</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Clear cached list of templates for worklist entries.
+      </description>
+      <name>clearTemplateList</name>
       <return-type>void</return-type>
    </operation>
 

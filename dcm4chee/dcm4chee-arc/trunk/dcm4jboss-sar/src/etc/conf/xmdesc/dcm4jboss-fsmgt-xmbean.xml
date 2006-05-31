@@ -218,8 +218,8 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="getPurgeFilesInterval"
       setMethod="setPurgeFilesInterval">
-      <description>Interval in which unreferenced files are deleted. The 
-      Delete Files Interval must be less than the Free Disk Space Interval.
+      <description>Interval in which unreferenced files are deleted. Unreferenced files are the result
+      of deleting instances from the web trash folder.
       Format: ##s (in seconds), ##m (in minutes), ##h (in hours)
       NEVER = never delete unreferenced files.
       </description>
@@ -246,8 +246,7 @@ accessed studies.</description>
       setMethod="setFreeDiskSpaceInterval">
       <description>Interval in which free disk space checked to 
       see whether the deletion of the most infrequently accessed
-      studies should be triggered. The Free Disk Space Interval must be
-      greater than Delete Files Interval.
+      studies should be triggered.
       Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
       NEVER = do not delete of studies.          
       </description>
@@ -273,7 +272,7 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="isPurgeFilesAfterFreeDiskSpace"
       setMethod="setPurgeFilesAfterFreeDiskSpace">
-      <description>Enables deletion of files after free disk space has processed.
+      <description>Enables deletion of (unreferenced) files after free disk space has processed.
       </description>
       <name>DeleteFilesAfterFreeDiskSpace</name>
       <type>boolean</type>
@@ -547,7 +546,7 @@ accessed studies.</description>
       <parameter>
         <description>Study pk</description>
         <name>studyPk</name>
-        <type>java.lang.Integer</type>
+        <type>java.lang.Long</type>
       </parameter>
       <return-type>long</return-type>
    </operation>
@@ -565,5 +564,4 @@ accessed studies.</description>
       <name>listLocalOnlineRWFileSystems</name>
       <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
    </operation>
-   
 </mbean>

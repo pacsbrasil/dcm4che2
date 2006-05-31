@@ -83,6 +83,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryPrivateStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -184,8 +185,8 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset getStudy(int studyPk) throws FinderException {
-        return studyHome.findByPrimaryKey(new Integer(studyPk)).getAttributes(true);
+    public Dataset getStudy(long studyPk) throws FinderException {
+        return studyHome.findByPrimaryKey(new Long(studyPk)).getAttributes(true);
     }
    
     /**
@@ -200,8 +201,8 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset getSeries(int seriesPk) throws FinderException {
-        return seriesHome.findByPrimaryKey(new Integer(seriesPk)).getAttributes(true);
+    public Dataset getSeries(long seriesPk) throws FinderException {
+        return seriesHome.findByPrimaryKey(new Long(seriesPk)).getAttributes(true);
     }
     /**
      * @ejb.interface-method
@@ -279,9 +280,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listStudiesOfPatient(int patientPk) throws FinderException {
+    public List listStudiesOfPatient(long patientPk) throws FinderException {
         Collection c =
-            patHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
+            patHome.findByPrimaryKey(new Long(patientPk)).getStudies();
         List result = new ArrayList(c.size());
         StudyLocal study;
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -295,9 +296,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listSeriesOfStudy(int studyPk) throws FinderException {
+    public List listSeriesOfStudy(long studyPk) throws FinderException {
         Collection c =
-            studyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
+            studyHome.findByPrimaryKey(new Long(studyPk)).getSeries();
         List result = new ArrayList(c.size());
         SeriesLocal series;
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -323,9 +324,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listInstancesOfSeries(int seriesPk) throws FinderException {
+    public List listInstancesOfSeries(long seriesPk) throws FinderException {
         Collection c =
-            instanceHome.findBySeriesPk(new Integer(seriesPk));
+            instanceHome.findBySeriesPk(new Long(seriesPk));
         List result = new ArrayList(c.size());
         InstanceLocal inst;
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -339,9 +340,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listFilesOfInstance(int instancePk) throws FinderException {
+    public List listFilesOfInstance(long instancePk) throws FinderException {
         Collection c =
-            instanceHome.findByPrimaryKey(new Integer(instancePk)).getFiles();
+            instanceHome.findByPrimaryKey(new Long(instancePk)).getFiles();
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
             FileLocal file = (FileLocal) it.next();
@@ -355,9 +356,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listStudiesOfPrivatePatient(int patientPk) throws FinderException {
+    public List listStudiesOfPrivatePatient(long patientPk) throws FinderException {
         Collection c =
-            privPatHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
+            privPatHome.findByPrimaryKey(new Long(patientPk)).getStudies();
         List result = new ArrayList(c.size());
         PrivateStudyLocal study;
         Dataset ds;
@@ -365,7 +366,7 @@ public abstract class ContentManagerBean implements SessionBean {
             study = (PrivateStudyLocal) it.next();
             ds = study.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.StudyPk, study.getPk().intValue() );
+            ds.putOB(PrivateTags.StudyPk, Convert.toBytes(study.getPk().longValue()) );
         	result.add(ds);
         }
         return result;
@@ -375,9 +376,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listSeriesOfPrivateStudy(int studyPk) throws FinderException {
+    public List listSeriesOfPrivateStudy(long studyPk) throws FinderException {
         Collection c =
-            privStudyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
+            privStudyHome.findByPrimaryKey(new Long(studyPk)).getSeries();
         List result = new ArrayList(c.size());
         PrivateSeriesLocal series;
         Dataset ds;
@@ -387,7 +388,7 @@ public abstract class ContentManagerBean implements SessionBean {
             series = (PrivateSeriesLocal) it.next();
             ds = series.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.SeriesPk, series.getPk().intValue() );
+            ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(series.getPk().longValue()) );
             refPPS = ds.getItem(Tags.RefPPSSeq);
             if ( refPPS != null) {
             	ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
@@ -406,9 +407,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listInstancesOfPrivateSeries(int seriesPk) throws FinderException {
+    public List listInstancesOfPrivateSeries(long seriesPk) throws FinderException {
         Collection c =
-            privSeriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
+            privSeriesHome.findByPrimaryKey(new Long(seriesPk)).getInstances();
         List result = new ArrayList(c.size());
         PrivateInstanceLocal inst;
         Dataset ds;
@@ -416,7 +417,7 @@ public abstract class ContentManagerBean implements SessionBean {
             inst = (PrivateInstanceLocal) it.next();
         	ds = inst.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putUL(PrivateTags.InstancePk, inst.getPk().intValue() );
+            ds.putOB(PrivateTags.InstancePk, Convert.toBytes(inst.getPk().longValue()) );
         	result.add(ds);
         }
         return result;
@@ -426,9 +427,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List listFilesOfPrivateInstance(int instancePk) throws FinderException {
+    public List listFilesOfPrivateInstance(long instancePk) throws FinderException {
         Collection c =
-            privInstanceHome.findByPrimaryKey(new Integer(instancePk)).getFiles();
+            privInstanceHome.findByPrimaryKey(new Long(instancePk)).getFiles();
         List result = new ArrayList(c.size());
         PrivateFileLocal file;
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -442,9 +443,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List[] listInstanceFilesToRecover(int pk) throws FinderException {
+    public List[] listInstanceFilesToRecover(long pk) throws FinderException {
     	List[] result = new List[]{new ArrayList(),new ArrayList()};
-    	addInstanceFilesToRecover(privInstanceHome.findByPrimaryKey(new Integer(pk)), result, null);
+    	addInstanceFilesToRecover(privInstanceHome.findByPrimaryKey(new Long(pk)), result, null);
         return result;
     }
     
@@ -452,9 +453,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List[] listSeriesFilesToRecover(int pk) throws FinderException {
+    public List[] listSeriesFilesToRecover(long pk) throws FinderException {
     	List[] result = new List[]{new ArrayList(),new ArrayList()};
-    	addSeriesToRecover(privSeriesHome.findByPrimaryKey(new Integer(pk)), result, null);
+    	addSeriesToRecover(privSeriesHome.findByPrimaryKey(new Long(pk)), result, null);
         return result;
     }
     
@@ -462,9 +463,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List[] listStudyFilesToRecover(int pk) throws FinderException {
+    public List[] listStudyFilesToRecover(long pk) throws FinderException {
     	List[] result = new List[]{new ArrayList(),new ArrayList()};
-    	addStudyToRecover(privStudyHome.findByPrimaryKey(new Integer(pk)), result, null);
+    	addStudyToRecover(privStudyHome.findByPrimaryKey(new Long(pk)), result, null);
         return result;
     }
 
@@ -472,9 +473,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public List[] listPatientFilesToRecover(int pk) throws FinderException {
+    public List[] listPatientFilesToRecover(long pk) throws FinderException {
     	List[] result = new List[]{new ArrayList(),new ArrayList()};
-    	PrivatePatientLocal pat = privPatHome.findByPrimaryKey(new Integer(pk));
+    	PrivatePatientLocal pat = privPatHome.findByPrimaryKey(new Long(pk));
     	for ( Iterator iter = pat.getStudies().iterator() ; iter.hasNext() ; ) {
         	addStudyToRecover((PrivateStudyLocal)iter.next(), result, pat.getAttributes());
     	}
@@ -508,7 +509,7 @@ public abstract class ContentManagerBean implements SessionBean {
     		seriesAttrs.putAll( instance.getSeries().getStudy().getPatient().getAttributes() );
     	}
     	instanceAttrs.putAll(seriesAttrs);
-    	Iterator iter = listFilesOfPrivateInstance( instance.getPk().intValue() ).iterator();
+    	Iterator iter = listFilesOfPrivateInstance( instance.getPk().longValue() ).iterator();
     	if ( iter.hasNext() ) {
 			result[0].add( iter.next() );
 			result[1].add( instanceAttrs );
@@ -520,9 +521,9 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset getSOPInstanceRefMacro( int studyPk, boolean insertModality ) throws FinderException {
+    public Dataset getSOPInstanceRefMacro( long studyPk, boolean insertModality ) throws FinderException {
     	Dataset ds = dof.newDataset();
-    	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
+    	StudyLocal sl = studyHome.findByPrimaryKey( new Long( studyPk ) );
     	ds.putUI( Tags.StudyInstanceUID, sl.getStudyIuid() );
 		DcmElement refSerSq = ds.putSQ(Tags.RefSeriesSeq);
 		Iterator iterSeries = sl.getSeries().iterator();
@@ -565,7 +566,7 @@ public abstract class ContentManagerBean implements SessionBean {
 	 * Get a collection of SOP Instance Reference Macro Datasets.
 	 * <p>
 	 * The parameter <code>instanceUIDs</code> can either use SOP Instance UIDs (String) or 
-	 * Instance.pk values (Integer).
+	 * Instance.pk values (Long).
 	 * 
      * @throws FinderException
      * @ejb.interface-method
@@ -580,8 +581,8 @@ public abstract class ContentManagerBean implements SessionBean {
     	Object o;
     	for ( Iterator iter = instanceUIDs.iterator() ; iter.hasNext() ; ) {
     		o = iter.next();
-    		instance = ( o instanceof Integer ) ? 
-    						instanceHome.findByPrimaryKey((Integer)o) : 
+    		instance = ( o instanceof Long ) ? 
+    						instanceHome.findByPrimaryKey((Long)o) : 
     						instanceHome.findBySopIuid( o.toString() );
     		series = instance.getSeries();
     		study = series.getStudy();
@@ -621,8 +622,8 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset getPatientForStudy(int studyPk) throws FinderException {
-    	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
+    public Dataset getPatientForStudy(long studyPk) throws FinderException {
+    	StudyLocal sl = studyHome.findByPrimaryKey( new Long( studyPk ) );
     	return sl.getPatient().getAttributes(false);
     }    
 

@@ -50,9 +50,9 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  */
 public class PatientMergeCtrl extends Dcm4JbossFormController {
 
-    private int pk;
+    private long pk;
 
-    private int[] to_be_merged;
+    private long[] to_be_merged;
 
     private String merge = null;
 
@@ -75,7 +75,7 @@ public class PatientMergeCtrl extends Dcm4JbossFormController {
 
     
     private void executeMerge() throws Exception {
-        int[] priors = new int[to_be_merged.length-1];
+        long[] priors = new long[to_be_merged.length-1];
         for (int i = 0, j = 0; i < to_be_merged.length; i++) {
             if (to_be_merged[i] != pk)
                 priors[j++] = to_be_merged[i];
@@ -97,11 +97,11 @@ public class PatientMergeCtrl extends Dcm4JbossFormController {
         }
     }
 
-    public final void setPk(int pk) {
+    public final void setPk(long pk) {
         this.pk = pk;
     }
 
-    public final void setToBeMerged(int[] tbm) {
+    public final void setToBeMerged(long[] tbm) {
         this.to_be_merged = tbm;
     }
 
@@ -109,7 +109,7 @@ public class PatientMergeCtrl extends Dcm4JbossFormController {
         this.merge = merge;
     }
 
-    public PatientModel getPatient(int ppk) {
+    public PatientModel getPatient(long ppk) {
         return FolderForm.getFolderForm(getCtx())
                 .getPatientByPk(ppk);
     }

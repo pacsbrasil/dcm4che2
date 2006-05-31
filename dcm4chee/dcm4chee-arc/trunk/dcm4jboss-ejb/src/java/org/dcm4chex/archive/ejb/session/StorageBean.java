@@ -160,10 +160,6 @@ public abstract class StorageBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Association");
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
-            try {
-            } catch ( Throwable t ) {
-            	t.printStackTrace();
-            }
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
@@ -193,7 +189,7 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public org.dcm4che.data.Dataset store(Integer assocpk,
+    public org.dcm4che.data.Dataset store(Long assocpk,
             org.dcm4che.data.Dataset ds, java.lang.String dirpath,
             java.lang.String fileid, int size,
             byte[] md5) throws DcmServiceException {
@@ -244,7 +240,7 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Integer initAssociation(String callingAET, String calledAET,
+    public Long initAssociation(String callingAET, String calledAET,
             String retrieveAET) throws CreateException {
         return assocHome.create(callingAET, calledAET, retrieveAET).getPk();
     }
@@ -253,7 +249,7 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Integer nextPendingAssociation(long maxPendingTime)
+    public Long nextPendingAssociation(long maxPendingTime)
             throws FinderException {
         Timestamp ts = new Timestamp(System.currentTimeMillis() - maxPendingTime);
         Collection c = assocHome.findNotUpdatedSince(ts);
@@ -266,21 +262,21 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void resetAssociation(Integer assocpk) throws FinderException {
+    public void resetAssociation(Long assocpk) throws FinderException {
         assocHome.findByPrimaryKey(assocpk).setIAN(null);
     }
     
     /**
      * @ejb.interface-method
      */
-    public void removeAssociation(Integer assocpk) throws RemoveException {
+    public void removeAssociation(Long assocpk) throws RemoveException {
         assocHome.remove(assocpk);
     }
     
     /**
      * @ejb.interface-method
      */
-    public SeriesStored checkSeriesStored(Integer assocpk, String seriuid)
+    public SeriesStored checkSeriesStored(Long assocpk, String seriuid)
     throws FinderException, RemoteException, CreateException {
         if (log.isDebugEnabled()) {
             log.debug("enter checkSeriesStored - assoc:" + assocpk

@@ -50,6 +50,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -170,13 +171,13 @@ public class QueryStudiesCmd extends BaseReadCmd {
             while (next()) {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putUL(PrivateTags.PatientPk, rs.getInt(1));
+                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
                 final byte[] patAttrs = getBytes(2);
-                int studyPk = rs.getInt(3);
+                long studyPk = rs.getLong(3);
                 final byte[] styAttrs = getBytes(4);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
-                    ds.putUL(PrivateTags.StudyPk, studyPk);
+                    ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
                     DatasetUtils.fromByteArray(styAttrs, ds);
                     ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs
                             .getString(5), '\\'));

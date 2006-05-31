@@ -68,6 +68,8 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -88,6 +90,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study"
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
+ * @ejb.ejb-ref ejb-name="PatientUpdate" view-type="local" ref-name="ejb/PatientUpdate" 
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-filter.xml"
@@ -105,6 +108,8 @@ public abstract class StudyMgtBean implements SessionBean {
 	private InstanceLocalHome instHome;
 
 	private AttributeFilter attrFilter;
+	
+	private PatientUpdateLocalHome patientUpdateHome;
 
 	public void setSessionContext(SessionContext arg0) throws EJBException,
 			RemoteException {
@@ -121,6 +126,9 @@ public abstract class StudyMgtBean implements SessionBean {
 					.lookup("java:comp/env/ejb/Instance");
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
+            patientUpdateHome = (PatientUpdateLocalHome) jndiCtx
+            		.lookup("java:comp/env/ejb/PatientUpdate");
+
 		} catch (NamingException e) {
 			throw new EJBException(e);
 		} catch (ConfigurationException e) {
@@ -198,6 +206,39 @@ public abstract class StudyMgtBean implements SessionBean {
 		} catch (ObjectNotFoundException e) {
 			throw new DcmServiceException(Status.NoSuchSOPClass, suid);
 		}
+	}
+	
+	/**
+	 * This method is invoked when post-storage message is processed. All patient and study
+	 * attributes will be replaced with the new data, which is different from data coercion
+	 * during the storage, where only empty attibutes are updated.
+	 * 
+     * @ejb.interface-method
+     */
+	public void updateStudyAndPatientOnly(String iuid, Dataset ds) throws DcmServiceException {
+		try {
+			StudyLocal study = getStudy(iuid);
+			
+			//
+			// Update patient attributes
+			//
+			PatientUpdateLocal patientUpdate = patientUpdateHome.create();
+			try
+			{
+				patientUpdate.updatePatient(study, ds);
+			}
+			finally
+			{
+				patientUpdate.remove();
+			}
+			
+			//
+			// Update study attributes
+			//
+			updateStudy(iuid, ds);
+		} catch (Exception e) {
+			throw new EJBException(e);
+		}	
 	}
 
 	/**

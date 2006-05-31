@@ -150,8 +150,8 @@ public class FolderMoveDelegate {
 	 * @param cm ContentManagerBean to update the model.
 	 */
 	private void _move_studies( ContentManager cm ) throws Exception {
-		int iDest = Integer.parseInt( (String) folderForm.getStickyPatients().iterator().next().toString() );
-		int[] iaSrc = getIntArrayFromSet( folderForm.getStickyStudies() );
+		long iDest = Long.parseLong( (String) folderForm.getStickyPatients().iterator().next().toString() );
+		long[] iaSrc = getLongArrayFromSet( folderForm.getStickyStudies() );
 		delegate.moveStudies( iaSrc, iDest );
 		
 		PatientModel destPat = folderForm.getPatientByPk( iDest );
@@ -168,13 +168,13 @@ public class FolderMoveDelegate {
 	}
 	
 	private void _move_series( ContentManager cm, int dest ) throws Exception {
-		int iDestStdy = -1, iDestPat = -1;
+		long iDestStdy = -1, iDestPat = -1;
 		if ( dest == STUDY ) {
 			iDestStdy = Integer.parseInt( folderForm.getStickyStudies().iterator().next().toString() );
 		} else {
 			iDestPat = Integer.parseInt( folderForm.getStickyPatients().iterator().next().toString() );
 		}
-		int[] iaSrc = getIntArrayFromSet( folderForm.getStickySeries() );
+		long[] iaSrc = getLongArrayFromSet( folderForm.getStickySeries() );
 		
 		List sourcePath = findModelPath( folderForm.getPatients(), iaSrc[0], 2 );
 		StudyModel srcStudy = (StudyModel) sourcePath.get(1);//0..patient,1..study,2..series
@@ -205,7 +205,7 @@ public class FolderMoveDelegate {
 	}
 	
 	private void _move_instances( ContentManager cm, int dest ) throws Exception {
-		int iDestSeries = -1,iDestStdy = -1, iDestPat = -1;
+		long iDestSeries = -1,iDestStdy = -1, iDestPat = -1;
 		if ( dest == SERIES ) {
 			iDestSeries = Integer.parseInt( (String) folderForm.getStickySeries().iterator().next().toString() );
 		} else if ( dest == STUDY ) {
@@ -213,7 +213,7 @@ public class FolderMoveDelegate {
 		} else {
 			iDestPat = Integer.parseInt( (String) folderForm.getStickyPatients().iterator().next().toString() );
 		}
-		int[] iaSrc = getIntArrayFromSet( folderForm.getStickyInstances() );
+		long[] iaSrc = getLongArrayFromSet( folderForm.getStickyInstances() );
 
 		List sourcePath = findModelPath( folderForm.getPatients(), iaSrc[0], 3 );
 		StudyModel srcStudy = (StudyModel) sourcePath.get(1);//0..patient,1..study,2..series
@@ -431,7 +431,7 @@ public class FolderMoveDelegate {
 		Iterator iter = stickySrc.iterator();
 		iter.next(); //skip first element (is used for listChilds)
 		while ( iter.hasNext() ) {
-			if ( !model.containsPK( Integer.parseInt( iter.next().toString() ) ) ) {
+			if ( !model.containsPK( Long.valueOf( iter.next().toString() ) ) ) {
 				if ( src == STUDY)
 					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_STUDY_PARENT );
 				else if ( src == SERIES)
@@ -451,14 +451,12 @@ public class FolderMoveDelegate {
 	 * @param set Set with String objects of int
 	 * @return int Array
 	 */
-	public static int[] getIntArrayFromSet(Set set) {
+	public static long[] getLongArrayFromSet(Set set) {
 		if ( set == null ) return null;
-		int[] ia = new int[ set.size() ];
+		long[] ia = new long[ set.size() ];
 		int i = 0;
-		Iterator iter = set.iterator();
-		while ( iter.hasNext() ) {
-			ia[i] = Integer.parseInt( (String) iter.next() );
-			i++;
+		for ( Iterator iter = set.iterator() ; iter.hasNext() ; i++ ) {
+			ia[i] = Long.parseLong( (String) iter.next() );
 		}
 		return ia;
 	}
@@ -477,8 +475,8 @@ public class FolderMoveDelegate {
 	 * @return A list with all nodes to get the model.
 	 */
     private List findModelPath( List parent, String pk, int depth ) {
-       	int iPk = Integer.parseInt(pk);
-   	    return findModelPath( parent, iPk, depth );
+       	long lPk = Long.parseLong(pk);
+   	    return findModelPath( parent, lPk, depth );
     }
  
 	/**
@@ -493,19 +491,19 @@ public class FolderMoveDelegate {
 	 * @param depth		The tree depth where the pk should be found.
 	 * @return A list with all nodes to get the model.
 	 */
-    private List findModelPath( List parent, int iPk, int depth ) {
+    private List findModelPath( List parent, long pk, int depth ) {
     	Iterator iter = parent.iterator();
     	AbstractModel model = null;
     	List l = new ArrayList();
     	while ( iter.hasNext() ) {
     		model = (AbstractModel) iter.next();
     		if ( depth == 0 ) {//should pk in this parent?
-	    		if ( model.getPk() == iPk ) {
+	    		if ( model.getPk() == pk ) {
 		    			l.add( model );
 		    			return l;
 	    		}
     		} else { //search in next tree segment.
- 				List l1 = findModelPath( model.listOfChilds(), iPk, depth-1 );
+ 				List l1 = findModelPath( model.listOfChilds(), pk, depth-1 );
 				if ( l1 != null ) {
 					l.add( model );
 					l.addAll( l1 );

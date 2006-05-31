@@ -39,12 +39,14 @@
 
 package org.dcm4chex.archive.web.maverick.model;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -54,7 +56,7 @@ import org.dcm4chex.archive.common.PrivateTags;
  */
 public class SeriesModel extends AbstractModel {
 
-    private int pk = -1;
+    private long pk = -1l;
 
     private boolean incorrectWLEntry = false;
     private String drCode = null;
@@ -76,21 +78,22 @@ public class SeriesModel extends AbstractModel {
 	        drCodeDesignator = item.getString(Tags.CodingSchemeDesignator);
 	        incorrectWLEntry = "110514".equals(drCode) && "DCM".equals(drCodeDesignator);
     	}
-        this.pk = ds.getInt(PrivateTags.SeriesPk, -1);
+        ByteBuffer bb = ds.getByteBuffer(PrivateTags.SeriesPk);
+        this.pk = bb == null ? -1 : Convert.toLong(bb.array());
     }
 
-    public final int getPk() {
+    public final long getPk() {
         return pk;
     }
 
-    public final void setPk(int pk) {
+    public final void setPk(long pk) {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        ds.putUL(PrivateTags.SeriesPk, pk);
+        ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(pk));
         this.pk = pk;
     }
 
     public int hashCode() {
-        return pk;
+    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {

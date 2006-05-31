@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +52,7 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
+import org.dcm4chex.archive.util.Convert;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
@@ -64,7 +66,7 @@ public class StudyViewCtrl extends Dcm4JbossFormController {
 	private static final String SELECT = "select";
 	
 	private int patPk = -1;
-    private int studyPk = -1;
+    private long studyPk = -1;
     private int seriesPk = -1;
     
     private String patID = null;
@@ -97,11 +99,11 @@ public class StudyViewCtrl extends Dcm4JbossFormController {
         this.patPk = pk;
     }
 
-    public final int getStudyPk() {
+    public final long getStudyPk() {
         return studyPk;
     }
 
-    public final void setStudyPk(int pk) {
+    public final void setStudyPk(long pk) {
         this.studyPk = pk;
     }
     
@@ -203,7 +205,8 @@ public class StudyViewCtrl extends Dcm4JbossFormController {
     			return 0;
     		}
     	}
-    	studyPk = lookupContentManager().getStudyByIUID(studyUID).getInt(PrivateTags.StudyPk,-1);
+        ByteBuffer bb = lookupContentManager().getStudyByIUID(studyUID).getByteBuffer(PrivateTags.StudyPk);
+        studyPk = bb == null ? -1 : Convert.toLong(bb.array());
     	return 1;
     }
     

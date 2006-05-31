@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.web.maverick.model;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -47,6 +48,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -56,7 +58,7 @@ import org.dcm4chex.archive.common.PrivateTags;
  */
 public class StudyModel extends AbstractModel {
 
-    private int pk;
+    private long pk;
     
     private static String httpRoot = "";
 
@@ -66,7 +68,8 @@ public class StudyModel extends AbstractModel {
     public StudyModel(Dataset ds) {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        this.pk = ds.getInt(PrivateTags.StudyPk, -1);
+        ByteBuffer bb = ds.getByteBuffer(PrivateTags.StudyPk);
+        this.pk = bb == null ? -1 : Convert.toLong(bb.array());
     }
     
     public static void setHttpRoot(String root) {
@@ -74,18 +77,18 @@ public class StudyModel extends AbstractModel {
     	httpRoot = root;
     }
     
-    public final int getPk() {
+    public final long getPk() {
         return pk;
     }
 
-    public final void setPk(int pk) {
+    public final void setPk(long pk) {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        ds.putUL(PrivateTags.StudyPk, pk);
+        ds.putOB(PrivateTags.StudyPk, Convert.toBytes(pk));
         this.pk = pk;
     }
 
     public int hashCode() {
-        return pk;
+    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {

@@ -53,7 +53,36 @@ public abstract class BaseUpdateCmd extends BaseCmd {
 		super(dsJndiName, transactionIsolationLevel, sql);
     }
 	
-    public int execute() throws SQLException {
-        return ((PreparedStatement) stmt).executeUpdate();
+    public int execute() throws SQLException {        
+        
+        SQLException lastException = null;
+        for(int i = 0; i < updateDatabaseMaxRetries; i++)
+        {
+	        try
+	        {
+	        	return ((PreparedStatement) stmt).executeUpdate();
+	        }
+	        catch(SQLException e)
+	        {
+	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
+		        	log.warn( "failed to execute sql: "+sql+" - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
+	        	else
+		        	log.warn( "failed to execute sql: "+sql+". Got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);
+	        	lastException = e;
+	        	
+				close();
+				
+				try {
+					Thread.sleep(updateDatabaseRetryInterval);
+				} catch (InterruptedException e1) { log.warn(e1);} 
+				
+				try
+				{
+					open();
+				}
+				catch(SQLException e1){}
+	        }
+        }
+        throw new SQLException("give up executing SQL statement after all retries: " + sql);       
     }
 }

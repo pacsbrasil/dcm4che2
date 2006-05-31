@@ -424,7 +424,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     			log.warn("Coercion of attributes failed:", e);
     		}
             Storage store = getStorage();
-            Integer assocpk = (Integer) assoc.getProperty(ASSOC_PK);
+            Long assocpk = (Long) assoc.getProperty(ASSOC_PK);
             if (assocpk == null) {
                 assocpk = store.initAssociation(assoc.getCallingAET(),
                         assoc.getCalledAET(), fsDTO.getRetrieveAET());
@@ -547,7 +547,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             seriesDir.getParentFile().delete();
     }
 
-    protected Dataset updateDB(Storage storage, Integer assocpk, Dataset ds,
+    protected Dataset updateDB(Storage storage, Long assocpk, Dataset ds,
             String baseDir, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             IOException {
@@ -825,7 +825,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closed(Association assoc) {
-        Integer assocpk = (Integer) assoc.getProperty(ASSOC_PK);
+        Long assocpk = (Long) assoc.getProperty(ASSOC_PK);
         if (assocpk != null) {
             try {
                 Storage store = getStorage();

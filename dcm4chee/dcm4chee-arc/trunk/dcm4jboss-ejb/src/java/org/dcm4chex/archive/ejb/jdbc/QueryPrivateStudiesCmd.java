@@ -48,6 +48,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -134,13 +135,13 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
 /*    private static final String[] SELECT_ATTRIBUTE = { "PrivatePatient.pk", "PrivatePatient.privateType",
             "PrivatePatient.encodedAttributes", "PrivateStudy.pk", "PrivateStudy.encodedAttributes"};
 /*_*/
-                ds.putUL(PrivateTags.PatientPk, rs.getInt(1));
+                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
                 final byte[] patAttrs = getBytes(3);
-                int studyPk = rs.getInt(4);
+                long studyPk = rs.getLong(4);
                 final byte[] styAttrs = getBytes(5);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
-                    ds.putUL(PrivateTags.StudyPk, studyPk);
+                    ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
                     DatasetUtils.fromByteArray(styAttrs, ds);
                 } 
                 result.add(ds);

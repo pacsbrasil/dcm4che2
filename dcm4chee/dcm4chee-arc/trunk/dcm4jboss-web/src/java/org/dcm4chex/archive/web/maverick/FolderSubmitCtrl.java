@@ -41,7 +41,10 @@ package org.dcm4chex.archive.web.maverick;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jms.JMSException;
@@ -121,6 +124,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickyInstances(), "stickyInst");
             HttpServletRequest rq = getCtx().getRequest();
             folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
+            folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
             	return logout();
             
@@ -221,7 +225,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return FOLDER;
     }
 
-    private void scheduleMoveStudiesOfPatient(int pk) throws Exception {
+    private void scheduleMoveStudiesOfPatient(long pk) throws Exception {
         List studies = listStudiesOfPatient(pk);
         ArrayList uids = new ArrayList();
         for (int i = 0, n = studies.size(); i < n; i++) {
@@ -412,7 +416,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return home.create();
     }
 
-    private List listStudiesOfPatient(int patPk) throws Exception {
+    private List listStudiesOfPatient(long patPk) throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
                 .getFactory().lookup(ContentManagerHome.class,
                         ContentManagerHome.JNDI_NAME);
@@ -483,7 +487,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     }
    
     /**
-     * Export selected instance to a Teaching Filesystem.
+     * Export selected instances to a XDS Repository.
      * <p>
      * 
      * @return the name of the next view.

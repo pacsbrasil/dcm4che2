@@ -298,7 +298,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
         return stickyInstances.contains("" + instance.getPk());
     }
 
-    public PatientModel getPatientByPk(int patPk) {
+    public PatientModel getPatientByPk(long patPk) {
     	if ( patPk == -1 ) {
     		return editPat;
     	}
@@ -309,11 +309,11 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
         return null;
     }
 
-    public StudyModel getStudyByPk(int patPk, int studyPk) {
+    public StudyModel getStudyByPk(long patPk, long studyPk) {
         return getStudyByPk(getPatientByPk(patPk), studyPk);
     }
 
-    public StudyModel getStudyByPk(PatientModel patient, int studyPk) {
+    public StudyModel getStudyByPk(PatientModel patient, long studyPk) {
         if (patient == null) { return null; }
         List studies = patient.getStudies();
         for (int i = 0, n = studies.size(); i < n; i++) {
@@ -323,11 +323,11 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
         return null;
     }
 
-    public SeriesModel getSeriesByPk(int patPk, int studyPk, int seriesPk) {
+    public SeriesModel getSeriesByPk(long patPk, long studyPk, long seriesPk) {
         return getSeriesByPk(getStudyByPk(patPk, studyPk), seriesPk);
     }
 
-    public SeriesModel getSeriesByPk(StudyModel study, int seriesPk) {
+    public SeriesModel getSeriesByPk(StudyModel study, long seriesPk) {
         if (study == null) { return null; }
         List series = study.getSeries();
         for (int i = 0, n = series.size(); i < n; i++) {
@@ -337,11 +337,11 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
         return null;
     }
     
-    public InstanceModel getInstanceByPk(int patPk, int studyPk, int seriesPk, int instancePk) {
+    public InstanceModel getInstanceByPk(long patPk, long studyPk, long seriesPk, long instancePk) {
         return getInstanceByPk(getSeriesByPk(patPk, studyPk, seriesPk), instancePk);
     }
 
-    public InstanceModel getInstanceByPk(SeriesModel series, int instancePk) {
+    public InstanceModel getInstanceByPk(SeriesModel series, long instancePk) {
         if (series == null) { return null; }
         List instances = series.getInstances();
         for (int i = 0, n = instances.size(); i < n; i++) {

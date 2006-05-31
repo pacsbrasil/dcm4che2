@@ -84,11 +84,14 @@ public class RetrieveCmd extends BaseReadCmd {
 
     private static final Comparator DESC_FILE_PK = new Comparator() {
 
+    	/**
+    	 * This will make sure the most available file will be listed first 
+    	 */
         public int compare(Object o1, Object o2) {
             FileInfo fi1 = (FileInfo) o1;
             FileInfo fi2 = (FileInfo) o2;
             int diffAvail = fi1.availability - fi2.availability;
-            return diffAvail != 0 ? diffAvail : fi2.pk - fi1.pk;
+            return diffAvail != 0 ? diffAvail : fi2.pk == fi1.pk ? 0 : fi2.pk < fi1.pk ? -1 : 1;
         }
     };
 
@@ -144,7 +147,7 @@ public class RetrieveCmd extends BaseReadCmd {
 			ArrayList list;
 			Object key;
 			while (next()) {
-				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3),
+				FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3),
 						rs.getString(4), getBytes(5), rs.getString(6),
 						rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
 						rs.getString(11), rs.getString(12), rs.getString(13),
@@ -171,15 +174,15 @@ public class RetrieveCmd extends BaseReadCmd {
 			ArrayList list;
 			Object seriesKey, instKey;
 			while (next()) {
-				FileInfo info = new FileInfo(rs.getInt(2), rs.getString(3),
+				FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3),
 						rs.getString(4), getBytes(5), rs.getString(6),
 						rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
 						rs.getString(11), rs.getString(12), rs.getString(13),
 						rs.getString(14), rs.getInt(15), rs.getString(16),
 						rs.getString(17), rs.getString(18), rs.getString(19),
 						rs.getInt(20), rs.getInt(21));
-				seriesKey = new Integer( rs.getInt(22));//series.pk
-				instKey = new Integer( rs.getInt(1));//instance.pk
+				seriesKey = new Long( rs.getLong(22));//series.pk
+				instKey = new Long( rs.getLong(1));//instance.pk
 				series = (Map) all.get(seriesKey);
 				if (series == null) {
 					all.put( seriesKey, series = map());
@@ -204,7 +207,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
 
     protected Object key() throws SQLException {
-        return new Integer(rs.getInt(1));
+        return new Long(rs.getLong(1));
     }
 
 

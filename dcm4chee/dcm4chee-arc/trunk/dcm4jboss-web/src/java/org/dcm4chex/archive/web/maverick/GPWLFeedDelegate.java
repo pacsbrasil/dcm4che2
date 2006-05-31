@@ -96,36 +96,28 @@ public class GPWLFeedDelegate {
 
     public List getTemplateList() {
     	Object o = null;
-    	List l = new ArrayList();
         try {
-            o = server.invoke(gpwlFeedServiceName,
-                    "getTemplates",
+            return (List) server.invoke(gpwlFeedServiceName,
+                    "listTemplates",
                     new Object[] {},
                     new String[] {});
         } catch (Exception e) {
             log.warn("Failed to get template list!", e);
         }
-        if ( o != null ) {
-        	String[] sa = StringUtils.split( (String) o, ',');
-        	for ( int i = 0 ; i < sa.length ; i++ ) {
-        		if ( sa[i].length() > 3)
-        			l.add( CodeItem.valueofCDM( sa[i] ) );
-        	}
-        }
-        return l;
+        return new ArrayList();
     }
     
-    public boolean addWorklistItem( int studyPk, String templateFile, String humanPerformer, long scheduleDate ) {
+    public boolean addWorklistItem( long studyPk, String templateFile, String humanPerformer, long scheduleDate ) {
     	log.info("addWorklistItem: studyPk:"+studyPk+" templateFile:"+templateFile+" humanPerformer:"+humanPerformer+" scheduleDate:"+scheduleDate);
         try {
             	server.invoke(gpwlFeedServiceName,
                     "addWorklistItem",
-                    new Object[] { new Integer( studyPk ),
+                    new Object[] { new Long( studyPk ),
             					   templateFile,
 								   humanPerformer,
 								   new Long(scheduleDate)
             						},
-                    new String[] { Integer.class.getName(), String.class.getName(), String.class.getName(), Long.class.getName() });
+                    new String[] { Long.class.getName(), String.class.getName(), String.class.getName(), Long.class.getName() });
             	
             	return true;
         } catch (Exception e) {

@@ -324,7 +324,7 @@ public class TrashFolderCtrl extends FolderCtrl {
         return home.create();
     }
 
-    private List listStudiesOfPatient(int patPk) throws Exception {
+    private List listStudiesOfPatient(long patPk) throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
                 .getFactory().lookup(ContentManagerHome.class,
                         ContentManagerHome.JNDI_NAME);

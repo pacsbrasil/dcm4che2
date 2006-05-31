@@ -81,7 +81,7 @@ public class InstanceCollector {
 	 */
 	public boolean add( InstanceLocal instance ) {
 		isSorted = false; //invalidate sorted state if a new instance is added.
-    	Integer studyPk = instance.getSeries().getStudy().getPk();
+		Long studyPk = instance.getSeries().getStudy().getPk();
     	InstanceContainer container = new InstanceContainer( studyPk );//use this empty container to check if a container for studyPk is already in list.
     	int pos = studies.indexOf( container );
     	if ( pos != -1 ) {
@@ -271,7 +271,7 @@ public class InstanceCollector {
 	 * @return A special InstanceContainer instance for comparison (binary search) reason.
 	 */
 	private InstanceContainer getCompareInstanceContainer( long studySize ) {
-		InstanceContainer c = new InstanceContainer( new Integer(-1) );
+		InstanceContainer c = new InstanceContainer( new Long(-1) );
 		c.studySize = studySize;
 		return c;
 	}
@@ -291,7 +291,7 @@ public class InstanceCollector {
 		private static final long serialVersionUID = 3617294532191269944L;
 		
 		/** Holds the study pk for this container. */
-		private Integer studyPk;
+		private Long studyPk;
 		/** current (file)size of this container */
 		private long studySize = 0;
 		/** List of instances */
@@ -302,14 +302,14 @@ public class InstanceCollector {
 		 * 
 		 * @param studyPk The pk of the referenced study. 
 		 */
-		public InstanceContainer( Integer studyPk ) {
+		public InstanceContainer( Long studyPk ) {
 			this.studyPk = studyPk;
 		}
 
 		/**
 		 * @return Returns the studyPk.
 		 */
-		public Integer getStudyPk() {
+		public Long getStudyPk() {
 			return studyPk;
 		}
 		

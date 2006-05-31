@@ -287,25 +287,25 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     
     public void fillDatasetHierarchical(HashMap data) throws SQLException
 	{
-    	Integer patientPk = null;
-    	Integer studyPk = null;
-    	Integer seriesPk = null;
-    	Integer imagePk = null;
-    	Integer filePk = null;
+    	Long patientPk = null;
+    	Long studyPk = null;
+    	Long seriesPk = null;
+    	Long imagePk = null;
+    	Long filePk = null;
     	
     	String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
     	int level = Arrays.asList(QRLEVEL).indexOf(qrLevel);
     	switch (level) {
     		case 4: // Location    	 
-    			filePk = new Integer(rs.getInt(14));
+    			filePk = new Long(rs.getLong(14));
     		case 3: // Image
-    			imagePk = new Integer(rs.getInt(7)); 
+    			imagePk = new Long(rs.getLong(7)); 
     		case 2: // Series
-    			seriesPk = new Integer(rs.getInt(5));	 
+    			seriesPk = new Long(rs.getLong(5));	 
     		case 1: // Study	        	
-	        	studyPk = new Integer(rs.getInt(3));	        
+	        	studyPk = new Long(rs.getLong(3));	        
     		case 0: // Patient 	            
-	            patientPk = new Integer(rs.getInt(1));    
+	            patientPk = new Long(rs.getInt(1));    
 	            break;
 	            
 	        default:
@@ -319,7 +319,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
    		kd = (kd != null) ? getKeyData(filePk, -1, kd.seq, true) : null;
 	}
     
-    private KeyData getKeyData(Integer pk, int blob, HashMap d, boolean leaf) throws SQLException
+    private KeyData getKeyData(Long pk, int blob, HashMap d, boolean leaf) throws SQLException
     {
     	if( pk == null )
     		return null;

@@ -120,6 +120,8 @@ public class FolderForm extends BasicFolderForm {
 	
 	private boolean addWorklist = false;
 	
+	private boolean filterAET = false;
+	
 	protected static Logger log = Logger.getLogger(FolderForm.class);
     
     static FolderForm getFolderForm(ControllerContext ctx) {
@@ -301,6 +303,7 @@ public class FolderForm extends BasicFolderForm {
             studyFilter.setStudyUID( studyUID );
             studyFilter.setStudyDateRange(studyDateRange);
             studyFilter.setModality(modality);
+            studyFilter.setCallingAET(this.filterAET ? destination:null);
         }
         return studyFilter;
     }
@@ -345,6 +348,18 @@ public class FolderForm extends BasicFolderForm {
 		this.addWorklist = addWorklist;
 	}
 
+	/**
+	 * @return Returns the filterAET.
+	 */
+	public boolean isFilterAET() {
+		return filterAET;
+	}
+	/**
+	 * @param filterAET The filterAET to set.
+	 */
+	public void setFilterAET(boolean filterAET) {
+		this.filterAET = filterAET;
+	}
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
 	 */

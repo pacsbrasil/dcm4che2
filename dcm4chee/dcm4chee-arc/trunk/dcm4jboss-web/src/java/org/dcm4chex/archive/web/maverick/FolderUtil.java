@@ -38,10 +38,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.web.maverick;
 
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -51,6 +53,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.util.Convert;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
@@ -67,24 +70,24 @@ public class FolderUtil {
 	 * @param stickyStudies
 	 * @param stickySeries
 	 * @param stickyInstances
-	 * @return
+	 * @return 
 	 */
 	public static Set getSelectedInstances(Set stickyPatients, Set stickyStudies, Set stickySeries, Set stickyInstances) {
 		if ( stickyPatients.size() > 1 ) {
 			throw new IllegalArgumentException("Instances from different patients are selected! Please check your selection.");
 		}
-		Set instances = new HashSet();
+		Set instanceUIDs = new HashSet();
 		if ( stickyPatients.size() == 1 ) {
-			addPatientInstances(instances, Integer.valueOf(stickyPatients.iterator().next().toString()));
+			addPatientInstances(instanceUIDs, Integer.valueOf(stickyPatients.iterator().next().toString()));
 		}
 		if ( stickyStudies.size() > 0 ) {
 			for ( Iterator iter = stickyStudies.iterator() ; iter.hasNext() ; ) {
-				addStudyInstances( instances, Integer.valueOf(iter.next().toString()) );
+				addStudyInstances( instanceUIDs, Long.parseLong(iter.next().toString()) );
 			}
 		}
 		if ( stickySeries.size() > 0 ) {
 			for ( Iterator iter = stickySeries.iterator() ; iter.hasNext() ; ) {
-				addSeriesInstances( instances, Integer.valueOf(iter.next().toString()) );
+				addSeriesInstances( instanceUIDs, Integer.valueOf(iter.next().toString()) );
 			}
 		}
 		if ( stickyInstances.size() > 0 ) {
@@ -95,7 +98,7 @@ public class FolderUtil {
 			try {
 				Collection col = lookupContentManager().getSOPInstanceRefMacros(set);
 				for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
-					addSOPInstanceRefs( instances, (Dataset) iter.next() );
+					addSOPInstanceRefs( instanceUIDs, (Dataset) iter.next() );
 				}
 			} catch (Exception x) {
 				log.error("Cant add selected instances ! :"+set,x);
@@ -103,18 +106,18 @@ public class FolderUtil {
 			}
 		}
 
-		return instances;
+		return instanceUIDs;
 	}
 	/**
-	 * @param instances
+	 * @param instanceUIDs
 	 * @param integer
 	 */
-	private static void addSeriesInstances(Set instances, Integer seriesPk) {
+	private static void addSeriesInstances(Set instanceUIDs, Integer seriesPk) {
 		List l;
 		try {
 			l = lookupContentManager().listInstancesOfSeries(seriesPk.intValue());
 			for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
-				instances.add( ((Dataset) iter.next()).getString(Tags.SOPInstanceUID));
+				instanceUIDs.add( ((Dataset) iter.next()).getString(Tags.SOPInstanceUID));
 			}
 		} catch (Exception x) {
 			log.error("Cant add instances of series (pk="+seriesPk+")!",x);
@@ -123,12 +126,26 @@ public class FolderUtil {
 	}
 	
 	/**
+	 * @param instanceInfos
+	 * @param ds
+	 */
+	private static void addInstanceInfos(Map instanceInfos, Dataset ds) {
+		Map.Entry entry;
+		Integer key;
+		Set set;
+		for ( Iterator iter = instanceInfos.entrySet().iterator() ; iter.hasNext() ; ) {
+			entry = (Map.Entry) iter.next();
+			set = (Set) entry.getValue();
+			set.add(ds.getString( ((Integer)entry.getKey()).intValue() ) ); 
+		}
+	}
+	/**
 	 * @param integer
 	 */
-	private static void addStudyInstances(Set instances, Integer studyPk) {
+	private static void addStudyInstances(Set instanceUIDs, long studyPk) {
 		try {
-			Dataset ds = lookupContentManager().getSOPInstanceRefMacro(studyPk.intValue(), false);
-			addSOPInstanceRefs( instances, ds );
+			Dataset ds = lookupContentManager().getSOPInstanceRefMacro(studyPk, false);
+			addSOPInstanceRefs( instanceUIDs, ds );
 		} catch (Exception x) {
 			log.error("Cant add instances of study (pk="+studyPk+")!",x);
 			throw new IllegalArgumentException("Cant add instances of study!");
@@ -138,11 +155,12 @@ public class FolderUtil {
 	/**
 	 * @param integer
 	 */
-	private static void addPatientInstances(Set instances, Integer patPk) {
+	private static void addPatientInstances(Set instanceUIDs, Integer patPk) {
 		try {
 			List l = lookupContentManager().listStudiesOfPatient(patPk.intValue());
 			for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
-				addStudyInstances( instances, ((Dataset) iter.next()).getInteger(PrivateTags.StudyPk));
+			addStudyInstances( instanceUIDs, 
+					Convert.toLong( ((Dataset) iter.next()).getByteBuffer(PrivateTags.StudyPk).array()));
 			}
 		} catch (Exception x) {
 			log.error("Cant add instances of patient (pk="+patPk+")!",x);
@@ -150,7 +168,7 @@ public class FolderUtil {
 		}
 	}
 
-	private static void addSOPInstanceRefs( Set instances, Dataset ds) {
+	private static void addSOPInstanceRefs( Set instanceUIDs, Dataset ds) {
 		DcmElement refSerSq = ds.get(Tags.RefSeriesSeq);
 		DcmElement refSopSq;
 		Dataset seriesItem;
@@ -158,7 +176,7 @@ public class FolderUtil {
 			seriesItem = refSerSq.getItem(i);
 			refSopSq = seriesItem.get(Tags.RefSOPSeq);
 			for ( int j = 0 ; j < refSopSq.countItems() ; j++ ) {
-				instances.add(refSopSq.getItem(j).getString(Tags.RefSOPInstanceUID));
+				instanceUIDs.add(refSopSq.getItem(j).getString(Tags.RefSOPInstanceUID));
 			}
 		}
 	}

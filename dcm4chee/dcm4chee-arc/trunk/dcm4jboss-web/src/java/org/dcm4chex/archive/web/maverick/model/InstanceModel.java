@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.web.maverick.model;
 
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -47,6 +48,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -78,20 +80,21 @@ public class InstanceModel extends AbstractModel {
         return new ImageModel(ds);
     }
 
-    private final int pk;
+    private final long pk;
 
     public InstanceModel(Dataset ds) {
         super(ds);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        this.pk = ds.getInt(PrivateTags.InstancePk, -1);
+        ByteBuffer bb = ds.getByteBuffer(PrivateTags.InstancePk);
+        this.pk = bb == null ? -1 : Convert.toLong(bb.array());
     }
 
-    public final int getPk() {
+    public final long getPk() {
         return pk;
     }
 
     public int hashCode() {
-        return pk;
+    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {

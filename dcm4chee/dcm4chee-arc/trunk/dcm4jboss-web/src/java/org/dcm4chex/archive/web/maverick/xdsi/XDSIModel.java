@@ -40,14 +40,19 @@
 package org.dcm4chex.archive.web.maverick.xdsi;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 import org.dcm4chex.archive.web.maverick.util.CodeItem;
 import org.dcm4chex.archive.xdsi.XDSIService;
@@ -67,6 +72,8 @@ public class XDSIModel extends BasicFormModel {
 	private String user;
 	
 	private Set instances;
+	
+	private boolean allowPDF, allowText;
 	
 	private int selectedTitle, selectedEventCode, removeEventCode, selectedClassCode, selectedAuthorRole,
 				selectedContentTypeCode, selectedHealthCareTypeCode;
@@ -154,12 +161,28 @@ public class XDSIModel extends BasicFormModel {
 	 */
 	public void setInstances(Set instances) {
 		this.instances = instances;
+		allowPDF = false;
+		allowText = false;
+		//TODO how to get Modality and SOPClassUID?
 	}
 	
 	public int getNumberOfInstances() {
 		return instances == null ? 0 : instances.size();
 	}
+	
 
+	/**
+	 * @return Returns the allowPDF.
+	 */
+	public boolean isAllowPDF() {
+		return allowPDF;
+	}
+	/**
+	 * @return Returns the allowText.
+	 */
+	public boolean isAllowText() {
+		return allowText;
+	}
 /*************************************************************************
  * 
  */

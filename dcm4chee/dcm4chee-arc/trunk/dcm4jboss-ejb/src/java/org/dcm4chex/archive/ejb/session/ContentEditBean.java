@@ -71,6 +71,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -172,17 +173,17 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Map mergePatients(int patPk, int[] mergedPks) {
+    public Map mergePatients(long patPk, long[] mergedPks) {
     	Map map = new HashMap();
     	try {
-	        PatientLocal dominant = patHome.findByPrimaryKey(new Integer(patPk));
+	        PatientLocal dominant = patHome.findByPrimaryKey(new Long(patPk));
             map.put("DOMINANT",dominant.getAttributes(false) );
             Dataset[] mergedPats = new Dataset[mergedPks.length];
             map.put("MERGED",mergedPats);
 	        ArrayList list = new ArrayList();
 	        for (int i = 0; i < mergedPks.length; i++) {
 	            if ( patPk == mergedPks[i] ) continue;
-	            PatientLocal priorPat = patHome.findByPrimaryKey(new Integer(mergedPks[i]));
+	            PatientLocal priorPat = patHome.findByPrimaryKey(new Long(mergedPks[i]));
 	            mergedPats[i] = priorPat.getAttributes(false);
             	list.addAll(priorPat.getStudies());
 	            dominant.getStudies().addAll(priorPat.getStudies());
@@ -209,9 +210,9 @@ public abstract class ContentEditBean implements SessionBean {
      * @throws CreateException
      * @ejb.interface-method
      */
-    public Dataset createStudy(Dataset ds, int patPk) throws CreateException {
+    public Dataset createStudy(Dataset ds, long patPk) throws CreateException {
     	try {
-	        PatientLocal patient = patHome.findByPrimaryKey(new Integer(patPk));
+	        PatientLocal patient = patHome.findByPrimaryKey(new Long(patPk));
 	        final int[] filter = attrFilter.getStudyFilter();
 	        Dataset ds1 = studyHome.create(ds.subSet(filter), patient).getAttributes(true);
 	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1:");log.debug(ds1);}
@@ -228,9 +229,9 @@ public abstract class ContentEditBean implements SessionBean {
      * @throws CreateException
      * @ejb.interface-method
      */
-    public Dataset createSeries(Dataset ds, int studyPk) throws CreateException {
+    public Dataset createSeries(Dataset ds, long studyPk) throws CreateException {
     	try {
-	        StudyLocal study = studyHome.findByPrimaryKey(new Integer(studyPk));
+	        StudyLocal study = studyHome.findByPrimaryKey(new Long(studyPk));
 	        final int[] filter = attrFilter.getSeriesFilter();
 	        SeriesLocal series =  seriesHome.create(ds.subSet(filter), study);
 	        Collection col = new ArrayList(); col.add( series );
@@ -249,9 +250,9 @@ public abstract class ContentEditBean implements SessionBean {
         try {
         	Collection col = new ArrayList();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            final int pk = ds.getInt(PrivateTags.PatientPk, -1);
+            final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.PatientPk).array());
             PatientLocal patient = patHome
-                    .findByPrimaryKey(new Integer(pk));
+                    .findByPrimaryKey(new Long(pk));
 	        final int[] filter = attrFilter.getPatientFilter();
             patient.setAttributes(ds.subSet(filter));
             Collection studies = patient.getStudies();
@@ -274,9 +275,9 @@ public abstract class ContentEditBean implements SessionBean {
 
         try {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            final int pk = ds.getInt(PrivateTags.StudyPk, -1);
+            final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.StudyPk).array());
             StudyLocal study = studyHome
-                    .findByPrimaryKey(new Integer(pk));
+                    .findByPrimaryKey(new Long(pk));
 	        final int[] filter = attrFilter.getStudyFilter();
             study.setAttributes(ds.subSet(filter));
             return getStudyMgtDataset( study, study.getSeries(), null, CHANGE_MODE_STUDY, 
@@ -293,9 +294,9 @@ public abstract class ContentEditBean implements SessionBean {
 
         try {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            final int pk = ds.getInt(PrivateTags.SeriesPk, -1);
+            final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.SeriesPk).array());
             SeriesLocal series = seriesHome
-                    .findByPrimaryKey(new Integer(pk));
+                    .findByPrimaryKey(new Long(pk));
 	        final int[] filter = attrFilter.getSeriesFilter();
 	        series.setAttributes(ds.subSet(filter));
             StudyLocal study = series.getStudy();
@@ -310,17 +311,16 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection moveStudies(int[] study_pks, int patient_pk)
+    public Collection moveStudies(long[] study_pks, long patient_pk)
     		throws RemoteException {
         try {
         	Collection col = new ArrayList();
-            PatientLocal pat = patHome.findByPrimaryKey(new Integer(
-                    patient_pk));
+            PatientLocal pat = patHome.findByPrimaryKey(new Long(patient_pk));
             Collection studies = pat.getStudies();
             Dataset dsPat = pat.getAttributes(true).subSet( attrFilter.getPatientFilter());
             Dataset ds1;
             for (int i = 0; i < study_pks.length; i++) {
-                StudyLocal study = studyHome.findByPrimaryKey(new Integer(
+                StudyLocal study = studyHome.findByPrimaryKey(new Long(
                         study_pks[i]));
                 PatientLocal oldPat = study.getPatient();
                 if (oldPat.isIdentical(pat)) continue;
@@ -341,15 +341,15 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset moveSeries(int[] series_pks, int study_pk)
+    public Dataset moveSeries(long[] series_pks, long study_pk)
     		throws RemoteException {
         try {
-            StudyLocal study = studyHome.findByPrimaryKey(new Integer(
+            StudyLocal study = studyHome.findByPrimaryKey(new Long(
                     study_pk));
             Collection seriess = study.getSeries();
             Collection movedSeriess = new ArrayList();
             for (int i = 0; i < series_pks.length; i++) {
-                SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
+                SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
                         series_pks[i]));
                 StudyLocal oldStudy = series.getStudy();
                 if (oldStudy.isIdentical(study)) continue;
@@ -369,14 +369,14 @@ public abstract class ContentEditBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset moveInstances(int[] instance_pks, int series_pk)
+    public Dataset moveInstances(long[] instance_pks, long series_pk)
     		throws RemoteException {
         try {
-            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
                     series_pk));
             Collection instances = series.getInstances();
             for (int i = 0; i < instance_pks.length; i++) {
-                InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
+                InstanceLocal instance = instHome.findByPrimaryKey(new Long(
                         instance_pks[i]));
                 SeriesLocal oldSeries = instance.getSeries();
                 if (oldSeries.isIdentical(series)) continue;

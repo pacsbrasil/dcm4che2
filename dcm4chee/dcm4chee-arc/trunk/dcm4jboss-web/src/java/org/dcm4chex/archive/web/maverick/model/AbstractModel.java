@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick.model;
 
+import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DAFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -85,7 +87,11 @@ public abstract class AbstractModel {
     }
     
     public boolean update( Dataset dsNew ) {
-    	if ( ds.getInt(PrivateTags.SeriesPk, -1) != dsNew.getInt(PrivateTags.SeriesPk, -1) ) {
+        ByteBuffer bb = ds.getByteBuffer(PrivateTags.SeriesPk);
+        long pk = bb == null ? -1 : Convert.toLong(bb.array());
+        bb = ds.getByteBuffer(PrivateTags.SeriesPk);
+        long pkNew = bb == null ? -1 : Convert.toLong(bb.array());
+    	if ( pk != pkNew ) {
     		return false;
     	}
     	this.ds = dsNew;
@@ -260,8 +266,8 @@ public abstract class AbstractModel {
      * @param pk The childs pk
      * @return 
      */
-    public boolean containsPK( int pk ) {
-    	return childPKs().contains( new Integer( pk ) );
+    public boolean containsPK( Long pk ) {
+    	return childPKs().contains( pk );
     }
     
     /**
@@ -276,7 +282,7 @@ public abstract class AbstractModel {
     	childsPK = new ArrayList();
     	Iterator iter = listOfChilds().iterator();
     	while ( iter.hasNext() ) {
-    		childsPK.add( new Integer( ((AbstractModel) iter.next() ).getPk() ) );
+    		childsPK.add( new Long( ((AbstractModel) iter.next() ).getPk() ) );
     	}
     	return childsPK;
     }
@@ -286,6 +292,6 @@ public abstract class AbstractModel {
      * 
      * @return pk
      */
-    public abstract int getPk();
+    public abstract long getPk();
     
 }

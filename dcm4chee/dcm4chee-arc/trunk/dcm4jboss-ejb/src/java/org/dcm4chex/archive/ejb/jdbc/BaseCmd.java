@@ -60,39 +60,73 @@ public abstract class BaseCmd {
     protected Connection con;
     protected Statement stmt;
     protected int prevLevel = 0;
+    protected String sql = null;
+    protected int transactionIsolationLevel;
     
+    protected int updateDatabaseMaxRetries = 20;
+    protected long updateDatabaseRetryInterval = 500L; // ms
 
     protected BaseCmd(String dsJndiName, int transactionIsolationLevel, String sql)
 			throws SQLException {
-        try {
-            Context jndiCtx = new InitialContext();
-            try {
-                ds = (DataSource) jndiCtx.lookup(dsJndiName);
-            } finally {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        } catch (NamingException ne) {
-            throw new RuntimeException(
-                    "Failed to access Data Source: " + dsJndiName, ne);
+    	this.sql = sql;
+    	this.transactionIsolationLevel = transactionIsolationLevel;
+    	
+		if (sql != null)
+	        log.debug("SQL: " + sql);
+
+ 	   	 try {
+	         Context jndiCtx = new InitialContext();
+	         try {
+	             ds = (DataSource) jndiCtx.lookup(dsJndiName);
+	         } finally {
+	             try {
+	                 jndiCtx.close();
+	             } catch (NamingException ignore) {
+	             }
+	         }
+	     } catch (NamingException ne) {
+	         throw new RuntimeException(
+	                 "Failed to access Data Source: " + dsJndiName, ne);
+	     }
+
+        open();
+    }
+    
+    public void open() throws SQLException 
+    {	     
+    	Exception lastException = null;
+        for(int i = 0; i < updateDatabaseMaxRetries; i++)
+        {
+	    	try {
+	            con = ds.getConnection();
+	            prevLevel = con.getTransactionIsolation();
+	            if (transactionIsolationLevel > 0)
+	                con.setTransactionIsolation(transactionIsolationLevel);
+				if (sql != null) {
+		            stmt = con.prepareStatement(sql);
+				} else {
+					stmt = con.createStatement();
+				} 
+				
+				if(i > 0)
+					log.info("open connection successfully after retries: " + (i+1));
+				
+				return;
+	        } catch (Exception e) {
+	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
+	        		log.warn("failed to open connection - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
+	        	else
+	        		log.warn("failed to open connection: got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);	        	
+	        	lastException = e;
+				
+	            close();
+
+	            try {
+					Thread.sleep(updateDatabaseRetryInterval); 
+				} catch (InterruptedException e1) { log.warn(e1);} 
+	        }
         }
-        try {
-            con = ds.getConnection();
-            prevLevel = con.getTransactionIsolation();
-            if (transactionIsolationLevel > 0)
-                con.setTransactionIsolation(transactionIsolationLevel);
-			if (sql != null) {
-		        log.debug("SQL: " + sql);
-	            stmt = con.prepareStatement(sql);
-			} else {
-				stmt = con.createStatement();
-			} 
-        } catch (SQLException e) {
-            close();
-            throw e;
-        }
+       	throw new SQLException("give up openning connection after all retries");        
     }
 	
     public void close() {
@@ -111,5 +145,21 @@ public abstract class BaseCmd {
             } catch (SQLException ignore) {}
             con = null;
         }
+    }
+    
+    public final int getUpdateDatabaseMaxRetries() {
+        return updateDatabaseMaxRetries;
+    }
+
+    public final void setUpdateDatabaseMaxRetries(int updateDatabaseMaxRetries) {
+        this.updateDatabaseMaxRetries = updateDatabaseMaxRetries;
+    }
+
+    public final long getUpdateDatabaseRetryInterval() {
+        return updateDatabaseRetryInterval;
+    }
+
+    public final void setUpdateDatabaseRetryInterval(long interval) {
+        this.updateDatabaseRetryInterval = interval;
     }
 }

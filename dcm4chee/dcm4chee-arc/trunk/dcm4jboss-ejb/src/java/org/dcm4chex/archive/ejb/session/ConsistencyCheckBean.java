@@ -186,7 +186,7 @@ public abstract class ConsistencyCheckBean implements SessionBean {
     	boolean updated = false;
         try {
             StudyLocal study = studyHome
-                    .findByPrimaryKey(new Integer(study_pk));
+                    .findByPrimaryKey(new Long(study_pk));
             Collection col = study.getSeries();
             Iterator iter = col.iterator();
             SeriesLocal series;

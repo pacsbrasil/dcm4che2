@@ -582,7 +582,7 @@ public class StoreScpService extends AbstractScpService {
      * @param ds				Dataset with metadata for database.
      * @param last		        last file to import
      */
-	public Integer importFile(Integer pk, FileDTO fileDTO, Dataset ds,
+	public Long importFile(Long pk, FileDTO fileDTO, Dataset ds,
             boolean last) throws Exception {
         Storage store = scp.getStorage();
         if (pk == null) {
@@ -615,7 +615,7 @@ public class StoreScpService extends AbstractScpService {
 
     private void checkPendingSeriesStored() throws Exception {
         Storage store = scp.getStorage();        
-        Integer pk;
+        Long pk;
         while ((pk = store.nextPendingAssociation(pendingSeriesStoredTimeout)) != null) {
             SeriesStored seriesStored = store.checkSeriesStored(pk, null);
             if (seriesStored != null) {

@@ -280,13 +280,12 @@ public abstract class GPPPSManagerBean implements SessionBean {
         }
     }
     
-	/**
+    /**
 	 * @ejb.interface-method
 	 */
 	public void removeGPPPS(String iuid) 
 			throws EJBException, RemoveException, FinderException {
 		ppsHome.findBySopIuid(iuid).remove();
 		log.info("GPPPS removed:"+iuid);
-	}
-    
+	}    
 }

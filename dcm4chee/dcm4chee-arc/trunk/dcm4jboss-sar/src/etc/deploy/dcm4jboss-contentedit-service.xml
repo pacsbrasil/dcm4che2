@@ -12,5 +12,4 @@
     <depends>
       dcm4jboss.archive:service=StudyMgtScu
     </depends> 
-
 </server>

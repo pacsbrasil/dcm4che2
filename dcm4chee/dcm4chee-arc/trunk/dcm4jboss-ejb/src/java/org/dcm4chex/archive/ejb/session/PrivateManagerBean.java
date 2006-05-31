@@ -231,9 +231,9 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateSeries(int series_pk) throws RemoteException, FinderException {
+    public void deletePrivateSeries(long series_pk) throws RemoteException, FinderException {
         try {
-        	PrivateSeriesLocal series = privSeriesHome.findByPrimaryKey(new Integer(series_pk));
+        	PrivateSeriesLocal series = privSeriesHome.findByPrimaryKey(new Long(series_pk));
     		PrivateStudyLocal study = series.getStudy();
     		series.remove();
     		if ( study.getSeries().isEmpty()) {
@@ -254,14 +254,16 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateStudy(int study_pk) throws RemoteException, FinderException {
+    public Collection deletePrivateStudy(long study_pk) throws RemoteException, FinderException {
         try {
-    		PrivateStudyLocal study = privStudyHome.findByPrimaryKey(new Integer(study_pk));
+    		PrivateStudyLocal study = privStudyHome.findByPrimaryKey(new Long(study_pk));
+        	ArrayList files = null;
 			PrivatePatientLocal pat = study.getPatient();
 			study.remove();
 			if( pat.getStudies().isEmpty()) {
 				pat.remove();
 			}
+			return files;
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -269,12 +271,13 @@ public abstract class PrivateManagerBean implements SessionBean {
          }
     }
 
-    /**
+
+	/**
      * @ejb.interface-method
      */
-    public void deletePrivatePatient(int patient_pk) throws RemoteException {
+    public void deletePrivatePatient(long patient_pk) throws RemoteException {
         try {
-        	privPatHome.remove( new Integer(patient_pk) );
+        	privPatHome.remove( new Long(patient_pk) );
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -287,9 +290,9 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateInstance(int instance_pk) throws RemoteException, FinderException {
+    public void deletePrivateInstance(long instance_pk) throws RemoteException, FinderException {
         try {
-        	PrivateInstanceLocal instance = privInstHome.findByPrimaryKey(new Integer(instance_pk));
+        	PrivateInstanceLocal instance = privInstHome.findByPrimaryKey(new Long(instance_pk));
         	PrivateSeriesLocal series = instance.getSeries();
         	instance.remove();
         	if ( series.getInstances().isEmpty() ) {
@@ -314,9 +317,9 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateFile(int file_pk) throws RemoteException {
+    public void deletePrivateFile(long file_pk) throws RemoteException {
         try {
-        	privFileHome.remove(new Integer(file_pk));
+        	privFileHome.remove(new Long(file_pk));
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -330,7 +333,7 @@ public abstract class PrivateManagerBean implements SessionBean {
     public void deletePrivateFiles(Collection fileDTOs) throws RemoteException {
         try {
         	for ( Iterator iter = fileDTOs.iterator() ; iter.hasNext() ; ) {
-        		privFileHome.remove(new Integer( ((FileDTO) iter.next()).getPk()));
+        		privFileHome.remove(new Long( ((FileDTO) iter.next()).getPk()));
         	}
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
@@ -343,9 +346,9 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset moveInstanceToTrash(int instance_pk) throws RemoteException {
+    public Dataset moveInstanceToTrash(long instance_pk) throws RemoteException {
         try {
-            InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
+            InstanceLocal instance = instHome.findByPrimaryKey(new Long(
                     instance_pk));
             SeriesLocal series = instance.getSeries();
             Collection colSeries = new ArrayList(); colSeries.add( series );
@@ -370,9 +373,9 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset moveSeriesToTrash(int series_pk) throws RemoteException {
+    public Dataset moveSeriesToTrash(long series_pk) throws RemoteException {
         try {
-            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(series_pk));
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Long(series_pk));
             StudyLocal study = series.getStudy();
             Collection colSeries = new ArrayList(); colSeries.add( series );
             Collection colInstance = series.getInstances();
@@ -396,7 +399,7 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public Collection moveSeriesOfPPSToTrash(String ppsIUID, boolean removeEmptyParents) throws RemoteException {
-        Collection result = new ArrayList();
+        Collection result = new ArrayList(); // FIXME: NOT IN USE
         try {
         	Object[] ppsSeries = seriesHome.findByPpsIuid(ppsIUID).toArray();
         	if ( ppsSeries.length > 0 ) {
@@ -423,9 +426,9 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset moveStudyToTrash(int study_pk) throws RemoteException {
+    public Dataset moveStudyToTrash(long study_pk) throws RemoteException {
         try {
-            StudyLocal study = studyHome.findByPrimaryKey(new Integer(study_pk));
+            StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
             Collection colSeries = study.getSeries();
         	Dataset ds = getStudyMgtDataset( study, colSeries, null );
             PrivateStudyLocal privStudy =getPrivateStudy( study, DELETED, null, true );
@@ -446,9 +449,9 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset movePatientToTrash(int pat_pk) throws RemoteException {
+    public Dataset movePatientToTrash(long pat_pk) throws RemoteException {
         try {
-        	PatientLocal patient = patHome.findByPrimaryKey(new Integer(pat_pk));
+        	PatientLocal patient = patHome.findByPrimaryKey(new Long(pat_pk));
         	Dataset ds = patient.getAttributes(true);
             PrivatePatientLocal privPat =getPrivatePatient( patient, DELETED, true );
             patient.remove();

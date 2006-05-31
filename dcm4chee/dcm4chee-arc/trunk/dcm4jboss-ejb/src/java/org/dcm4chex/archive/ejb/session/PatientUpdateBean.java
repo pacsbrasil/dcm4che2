@@ -60,6 +60,7 @@ import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * 
@@ -70,7 +71,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  * @ejb.bean
  *  name="PatientUpdate"
  *  type="Stateless"
- *  view-type="remote"
+ *  view-type="both"
  *  jndi-name="ejb/PatientUpdate"
  * 
  * @ejb.transaction-type 
@@ -125,6 +126,32 @@ public abstract class PatientUpdateBean implements SessionBean {
         dominantPat.getGsps().addAll(priorPat.getGsps());
         priorPat.setMergedWith(dominantPat);
     }
+    
+    /**
+     * Update patient data as well as relink study with the patient if the patient
+     * is different than original one.
+     * 
+     * @ejb.interface-method
+     */
+    public void updatePatient(StudyLocal study, Dataset attrs) {
+		String pid = attrs.getString(Tags.PatientID);
+
+		// If the patient id is not included, then we don't have to do any
+		// patient update. Although patient id is type 2 in DICOM, but for DC,
+		// we enforce this.
+		if (pid == null || pid.length() == 0)
+			return;
+		
+		PatientLocal newPatient = updateOrCreate(attrs);
+		
+		// Case 1: it's matching the same patient. Do nothing
+		if(study.getPatient().getPatientId().equals(pid))
+			return;
+			
+		// Case 2: there's no matching, a new patient is created. The study is updated.
+		// Case 3: it's matching another existing patient. The study is updated.
+		study.setPatient(newPatient);
+    }
 
     /**
      * @ejb.interface-method
@@ -161,17 +188,13 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void deletePatient(Dataset ds) throws RemoteException {
+    public void deletePatient(Dataset ds) {
     	try {
     		PatientLocal pat = findPatient(ds);
     		if (pat != null)
     			patHome.remove(pat.getPk());
-    	} catch (EJBException e) {
-    		throw new RemoteException(e.getMessage());
-    	} catch (RemoveException e) {
-    		throw new RemoteException(e.getMessage());
-    	} catch (FinderException e) {
-    		throw new RemoteException(e.getMessage(),e);
+    	} catch (Exception e) {
+    		throw new EJBException(e.getMessage(),e);
     	}
     }
 

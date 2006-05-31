@@ -179,7 +179,6 @@ public abstract class GPWLManagerBean implements SessionBean {
     }
 
     private boolean equals(PatientLocal patient, Dataset ds) {
-        // TODO Auto-generated method stub
         return true;
     }
 

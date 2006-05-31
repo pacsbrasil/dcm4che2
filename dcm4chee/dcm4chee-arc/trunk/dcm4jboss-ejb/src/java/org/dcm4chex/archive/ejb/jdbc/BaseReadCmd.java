@@ -51,7 +51,6 @@ import java.sql.SQLException;
  */
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
-    
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
 			throws SQLException {
@@ -77,14 +76,84 @@ public abstract class BaseReadCmd extends BaseCmd {
             throw new IllegalStateException();
         }		
         log.debug("SQL: " + sql);
-        rs = stmt.executeQuery(sql);
+        
+        Exception lastException = null;
+        for(int i = 0; i < updateDatabaseMaxRetries; i++)
+        {
+	        try
+	        {
+	        	rs = stmt.executeQuery(sql);
+	        	
+	        	// Success 
+				if(i > 0)
+					log.info("execute sql successfully after retry: " + (i+1));
+
+	        	return;
+	        }
+	        catch(Exception e)
+	        {
+	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
+		        	log.warn( "failed to execute sql: "+sql+" - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
+	        	else
+		        	log.warn( "failed to execute sql: "+sql+", got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);
+	        	lastException = e;
+
+				close();
+				
+	        	try {
+					Thread.sleep(updateDatabaseRetryInterval); 
+				} catch (InterruptedException e1) { log.warn(e1);} 
+				
+				try
+				{
+					open();
+				}
+				catch(SQLException e1){}
+	        }
+        }
+       	throw new SQLException("give up executing SQL statement after all retries: " + sql);        
     }
 
     public void execute() throws SQLException {
         if (rs != null) {
             throw new IllegalStateException();
-        }		
- 		rs = ((PreparedStatement) stmt).executeQuery();
+        }		 		
+ 		
+ 		Exception lastException = null;
+        for(int i = 0; i < updateDatabaseMaxRetries; i++)
+        {
+	        try
+	        {
+	        	rs = ((PreparedStatement) stmt).executeQuery();
+	        	
+	        	// Success 
+				if(i > 0)
+					log.info("execute sql successfully after retry: " + (i+1));
+
+	        	return;
+	        }
+	        catch(Exception e)
+	        {
+	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
+		        	log.warn( "failed to execute sql: "+sql+" - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
+	        	else
+		        	log.warn( "failed to execute sql: "+sql+", got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);
+	        	lastException = e;
+				
+				close();
+
+	        	try {
+					Thread.sleep(updateDatabaseRetryInterval); 
+				} catch (InterruptedException e1) { log.warn(e1);}
+
+				try
+				{
+					open();
+				}
+				catch(SQLException e1){}
+	        }
+        }
+       	throw new SQLException("give up executing SQL statement after all retries: " + sql);        
     }
 	
     public boolean next() throws SQLException {

@@ -53,58 +53,66 @@ public class FileInfo implements Serializable {
     public static final Comparator ASC_ORDER = new Comparator() {
 
         public int compare(Object o1, Object o2) {
-            return ((FileInfo) o1).pk - ((FileInfo) o2).pk;
+           	long l1 = ((FileInfo) o1).pk;
+           	long l2 = ((FileInfo) o2).pk;
+           	return l1 == l2 ? 0 : l1 < l2 ? -1 : 1;
         }
     };
 
     public static final Comparator DESC_ORDER = new Comparator() {
 
         public int compare(Object o1, Object o2) {
-            return ((FileInfo) o2).pk - ((FileInfo) o1).pk;
+           	long l1 = ((FileInfo) o1).pk;
+           	long l2 = ((FileInfo) o2).pk;
+           	return l1 == l2 ? 0 : l2 < l1 ? -1 : 1;
         }
     };
 
-    public final int pk;
+    public long pk = -1;
 
-    public final byte[] patAttrs;
+    public byte[] patAttrs = null;
 
-    public final byte[] studyAttrs;
+    public byte[] studyAttrs = null;
 
-    public final byte[] seriesAttrs;
+    public byte[] seriesAttrs = null;
 
-    public final byte[] instAttrs;
+    public byte[] instAttrs = null;
 
-    public final String patID;
+    public String patID = null;
 
-    public final String patName;
+    public String patName = null;
 
-    public final String studyIUID;
+    public String studyIUID = null;
 
-    public final String seriesIUID;
+    public String seriesIUID = null;
 
-    public final String sopIUID;
+    public String sopIUID = null;
 
-    public final String sopCUID;
+    public String sopCUID = null;
 
-    public final String extRetrieveAET;
+    public String extRetrieveAET = null;
     
-    public final String fileRetrieveAET;
+    public String fileRetrieveAET = null;
 
-    public final String basedir;
+    public String basedir = null;
 
-    public final String fileID;
+    public String fileID = null;
 
-    public final String tsUID;
+    public String tsUID = null;
 
-    public final String md5;
+    public String md5 = null;
 
-    public final int size;
+    public int size = 0;
 
-    public final int status;
+    public int status = 0;
     
-    public final int availability;
+    public int availability = 0;
+    
+    public FileInfo()
+    {    	
+    }
 
-    public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
+    public FileInfo(long pk, String patID, String patName, byte[] patAttrs,
             String studyIUID, String seriesIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
             String extRetrieveAET, String fileRetrieveAET, int availability,

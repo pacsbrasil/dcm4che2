@@ -52,9 +52,9 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
  */
 public class ExpandInstanceCtrl extends ExpandSeriesCtrl {
 
-    private int instancePk;
+    private long instancePk;
     
-    public final void setInstancePk(int pk) {
+    public final void setInstancePk(long pk) {
         this.instancePk = pk;
     }
     

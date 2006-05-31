@@ -55,9 +55,9 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
  */
 public class ExpandSeriesCtrl extends ExpandStudyCtrl {
 
-    protected int seriesPk;
+    protected long seriesPk;
 
-    public final void setSeriesPk(int seriesPk) {
+    public final void setSeriesPk(long seriesPk) {
         this.seriesPk = seriesPk;
     }
 
