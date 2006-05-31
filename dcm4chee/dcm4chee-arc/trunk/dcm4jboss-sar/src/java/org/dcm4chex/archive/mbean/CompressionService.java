@@ -341,10 +341,12 @@ public class CompressionService extends ServiceMBeanSupport {
 
     public boolean compress(FileDTO fileDTO) {
         if (!isUncompressed(fileDTO.getFileTsuid())) {
+            log.debug( "The image is already compressed, file = " + fileDTO.getFilePath() );
             return false;
         }
         CompressionRule rule = getCompressionRule(fileDTO.getSopClassUID());
         if (rule == null) {
+            log.debug( "There is no compression rule for this image SOP Class: " + fileDTO.getSopClassUID() );
             return false;
         }
         doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]);
