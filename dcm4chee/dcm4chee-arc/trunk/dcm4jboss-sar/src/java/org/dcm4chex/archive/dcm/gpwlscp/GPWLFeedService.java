@@ -43,11 +43,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -119,11 +120,10 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
     private ObjectName mppsScpServiceName;
     
     private Map humanPerformer = null;
-	private Map templates = null;
+	private List templates = null;
 	
-	private URL templateURL  = null;
+	private File templatePath  = null;
     private File mppsConfigFile;
-    private File templateDir;
     private Properties mppsConfig = new Properties();
 
     
@@ -161,43 +161,18 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 		this.humanPerformer = string2Codes( performer, "DCM4JBOSS" );
 	}
 
-	public String getTemplates() {
-		return codes2String( templates);
-	}
-	
-	/**
-	 * Set templates as codes.
-	 * <p>
-	 * code value is filename, code meaning is template name, designator is ignored
-	 * @param templates The templates to set.
-	 */
-	public void setTemplates(String templates) {
-		this.templates = string2Codes( templates, null );
-	}
-	
 	/**
 	 * @return Returns the configURL.
 	 */
-	public String getTemplateURL() {
-		String s = templateURL.toString();
-		String base = config.getServerConfigURL().toExternalForm();
-		if ( s.length() > base.length() && s.startsWith( base ) ) {
-			return s.substring( base.length() );
-		} else {
-			return s;
-		}
+	public String getTemplatePath() {
+		return templatePath.getPath();
 	}
 	/**
 	 * @param configURL The configURL to set.
 	 * @throws MalformedURLException
 	 */
-	public void setTemplateURL(String configURL) throws MalformedURLException {
-		try {
-			this.templateURL = new URL( configURL );
-		} catch (MalformedURLException e) { //not an URL -> relative to server config URL
-			if ( configURL.indexOf( ':' ) != -1 ) throw e;//no protocol or drive letter in relative URL allowed!
-			this.templateURL = new URL( config.getServerConfigURL().toExternalForm() + configURL);
-		}
+	public void setTemplatePath(String path) throws MalformedURLException {
+		templatePath = new File(path.replace('/', File.separatorChar));
 	}
 
     public final String getMppsConfigFile() {
@@ -283,20 +258,42 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
        	addWorklistItem(makeGPWLItem(getMPPS(mppsiuid)));
     }
 	
-	public void addWorklistItem( Integer studyPk, String templateFile, String humanPerformerCode, Long scheduleDate ) throws Exception {
-		if ( log.isDebugEnabled() ) log.debug( "load template file: "+ (templateURL+"/"+templateFile) );
-		Dataset ds = DatasetUtils.fromXML(new InputSource( templateURL+"/"+templateFile ) );
+	public List listTemplates() {
+		if ( templates == null ) {
+			File tmplPath = FileUtils.resolve( templatePath );
+			File[] files = tmplPath.listFiles();
+			templates = new ArrayList();
+			String fn;
+			for ( int i = 0 ; i < files.length ; i++ ) {
+				fn = files[i].getName();
+				if ( fn.endsWith(".xml")) {
+					templates.add(fn.substring(0,fn.length()-4));
+				}
+			}
+		}
+		log.info("Template List:"+templates);
+		return templates;
+	}
+
+	public void clearTemplateList() {
+		templates = null;
+	}
+	
+	public void addWorklistItem( Long studyPk, String templateFile, String humanPerformerCode, Long scheduleDate ) throws Exception {
+		String uri = FileUtils.resolve(new File(templatePath,templateFile+".xml")).toURI().toString();
+		if ( log.isDebugEnabled() ) log.debug( "load template file: "+ uri );
+		Dataset ds = DatasetUtils.fromXML(new InputSource( uri ) );
 		
 		ContentManager cm = getContentManager();
 		//patient 
-		Dataset patDS = cm.getPatientForStudy( studyPk.intValue() );
+		Dataset patDS = cm.getPatientForStudy( studyPk.longValue() );
 		if ( log.isDebugEnabled() ) {
 			log.debug("Patient Dataset:"); log.debug(patDS);
 		}
 		
 		ds.putAll(patDS.subSet(PAT_ATTR_TAGS));
 		//
-		Dataset sopInstRef = cm.getSOPInstanceRefMacro( studyPk.intValue(), false );
+		Dataset sopInstRef = cm.getSOPInstanceRefMacro( studyPk.longValue(), false );
 		String studyIUID = sopInstRef.getString( Tags.StudyInstanceUID );
 		ds.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
 		ds.putUI(Tags.StudyInstanceUID, studyIUID);
