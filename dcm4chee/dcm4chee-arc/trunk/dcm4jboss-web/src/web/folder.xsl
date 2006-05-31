@@ -155,6 +155,13 @@
 							</xsl:for-each>						
 						</select>
 					</td>
+					<td class="folder_header" width="5">
+						<input type="checkbox" name="filterAET" value="true" title="Show only studies from selected source AET">
+							<xsl:if test="/model/filterAET = 'true'">
+								<xsl:attribute name="checked"/>
+							</xsl:if>
+						</input>
+					</td>
 					<td class="folder_header" width="5" title="Show only studies from selected source AET">AET Filter</td>
 				</table>
 				<table class="folder_search" border="0" width="100%" cellpadding="0" cellspacing="0">
