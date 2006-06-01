@@ -47,6 +47,8 @@ CREATE INDEX pat_p_name ON patient(pat_p_name);
 ALTER TABLE study ADD ref_phys_i_name VARCHAR(250) BINARY;
 ALTER TABLE study ADD ref_phys_p_name VARCHAR(250) BINARY;
 
+ALTER TABLE instance MODIFY inst_attrs LONGBLOB;
+
 CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name);
 CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name);
 

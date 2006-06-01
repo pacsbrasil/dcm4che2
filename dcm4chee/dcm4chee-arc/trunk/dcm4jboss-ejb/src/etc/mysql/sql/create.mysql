@@ -189,7 +189,7 @@ CREATE TABLE instance (
 	commitment			TINYINT NOT NULL,
 	updated_time	    DATETIME,
 	created_time	    DATETIME,
-	inst_attrs			BLOB,
+	inst_attrs			LONGBLOB,
 FOREIGN KEY (series_fk)	REFERENCES series(pk),
 FOREIGN KEY (srcode_fk)	REFERENCES code(pk),
 FOREIGN KEY (media_fk)	REFERENCES media(pk)
