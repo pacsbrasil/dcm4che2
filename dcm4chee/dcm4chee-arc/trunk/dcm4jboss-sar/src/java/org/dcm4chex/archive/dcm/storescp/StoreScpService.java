@@ -496,13 +496,10 @@ public class StoreScpService extends AbstractScpService {
     
     boolean isLocalRetrieveAET(String aet) {
         try {
-            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
-                    "isLocalRetrieveAET",
-                    new Object[] { aet},
-                    new String[] { String.class.getName()});
-            return b.booleanValue();
+            return aet.equals(server.getAttribute(fileSystemMgtName,
+                    "RetrieveAETitle"));
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke isLocalRetrieveAET", e);
+            throw new RuntimeException("Failed to invoke getAttribute 'RetrieveAETitle'", e);
         }
     }
     
