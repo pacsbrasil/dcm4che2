@@ -193,8 +193,6 @@ public class DcmQR {
         UID.ExplicitVRLittleEndian,
         UID.DeflatedExplicitVRLittleEndian };
 
-    private static final int[] FIND_TS_GRPS = { 1, 1, 2 };
-    
     private static final String[] EMPTY_STRING = {};
 
     private Executor executor = new NewThreadExecutor("DCMQR");
@@ -735,7 +733,6 @@ public class DcmQR {
     private TransferCapability mkFindTC(String cuid, String[] ts) {
         ExtQueryTransferCapability tc = new ExtQueryTransferCapability(cuid,
                 ts, TransferCapability.SCU);
-        tc.setTransferSyntaxGroup(FIND_TS_GRPS);
         tc.setExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES,
                 relationQR);
         tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING,

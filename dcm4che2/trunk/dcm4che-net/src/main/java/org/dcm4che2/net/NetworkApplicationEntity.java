@@ -44,13 +44,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.net.pdu.AAssociateAC;
 import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
@@ -58,6 +62,8 @@ import org.dcm4che2.net.pdu.ExtendedNegotiation;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
 import org.dcm4che2.net.service.DicomService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DICOM Supplement 67 compliant description of a DICOM network service.
@@ -75,55 +81,35 @@ import org.dcm4che2.net.service.DicomService;
  * 
  */
 public class NetworkApplicationEntity {
+    
+    private static Logger log = 
+            LoggerFactory.getLogger(NetworkApplicationEntity.class);
+    
     private boolean associationAcceptor;
-
     private boolean associationInitiator;
-
     private String aeTitle;
-
     private String description;
-
     private Object[] vendorData = {};
-
     private String[] applicationCluster = {};
-
     private String[] preferredCallingAETitle = {};
-
     private String[] preferredCalledAETitle = {};
-
     private String[] supportedCharacterSet = {};
-
     private Boolean installed;
-
     private int maxOpsInvoked;
-
     private int maxOpsPerformed;
-
     private int maxPDULengthReceive = 0x4000; // =16384
-
     private int maxPDULengthSend = 0x4000;
-
     private boolean packPDV;
-
     private int dimseRspTimeout = 60000;
-
     private int moveRspTimeout = 600000;
-
     private int idleTimeout = 60000;
-
     private String[] reuseAssocationToAETitle = {};
-
     private String[] reuseAssocationFromAETitle = {};
-
     private NetworkConnection[] networkConnection = {};
-
     private TransferCapability[] transferCapability = {};
-
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-
-    private final List pool = new ArrayList();
-
     private Device device;
+    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+    private final List pool = new ArrayList();
 
     /**
      * Get the device that is identified by this application entity.
@@ -803,24 +789,6 @@ public class NetworkApplicationEntity {
                         + " and remote AE " + remoteAET);
     }
 
-    private static class PC implements Comparable {
-        final int grno;
-
-        final String sopClass;
-
-        final String[] transferSyntax;
-
-        PC(int grno, String sopClass, String[] transferSyntax) {
-            this.grno = grno;
-            this.sopClass = sopClass;
-            this.transferSyntax = transferSyntax;
-        }
-
-        public int compareTo(Object o) {
-            return grno - ((PC) o).grno;
-        }
-    };
-
     private AAssociateRQ makeAAssociateRQ(NetworkApplicationEntity remoteAE)
             throws ConfigurationException {
         AAssociateRQ aarq = new AAssociateRQ();
@@ -830,170 +798,141 @@ public class NetworkApplicationEntity {
         aarq.setMaxOpsInvoked(maxOpsInvoked);
         aarq.setMaxOpsPerformed(maxOpsPerformed);
 
-        LinkedHashMap scpTCs = new LinkedHashMap();
-        LinkedHashMap scuTCs = new LinkedHashMap();
+        LinkedHashMap cuid2ts = new LinkedHashMap();
+        HashSet scu = new HashSet();
+        HashSet scp = new HashSet();
+        evaluateTC(aarq, cuid2ts, scu, scp, remoteAE);
+        int freePc = 128 - cuid2ts.size();
+        if (freePc < 0) {
+            log.info("Not all of " + cuid2ts.size() + " common Transfer "
+                    + "Capabilities can be offered in Association request");
+        }
+        ArrayList cuid2ts2 = new ArrayList();
+        freePc = initPCwithUncompressedLETS(aarq, cuid2ts, freePc, cuid2ts2);
+        initPCwith1TS(aarq, freePc, cuid2ts2);
+        initPCwithRemainingTS(aarq, cuid2ts2);
+        for (Iterator iter = scp.iterator(); iter.hasNext();) {
+            String cuid = (String) iter.next();
+            aarq.addRoleSelection(new RoleSelection(cuid , scu.contains(cuid), true));
+        }
+        return aarq;
+    }
+
+    private void evaluateTC(AAssociateRQ aarq, LinkedHashMap cuid2ts,
+            HashSet scu, HashSet scp, NetworkApplicationEntity remoteAE)
+            throws ConfigurationException {
         TransferCapability[] remoteTCs = remoteAE.getTransferCapability();
         for (int i = 0; i < transferCapability.length; i++) {
             TransferCapability tc = transferCapability[i];
             String cuid = tc.getSopClass();
-            byte[] extInfo = tc.getExtInfo();
+            LinkedHashSet ts1 = new LinkedHashSet(Arrays.asList(tc
+                    .getTransferSyntax()));
             if (remoteTCs.length != 0) {
                 TransferCapability remoteTC = findTC(remoteTCs, cuid, tc
                         .isSCU());
-                if (remoteTC == null
-                        || (tc = intersectTC(tc, remoteTC)) == null) {
+                if (remoteTC == null) {
+                    continue;
+                }
+                ts1.retainAll(Arrays.asList(remoteTC.getTransferSyntax()));
+                if (ts1.isEmpty()) {
                     continue;
                 }
             }
-            (tc.isSCP() ? scpTCs : scuTCs).put(cuid, tc);
+            LinkedHashSet ts = (LinkedHashSet) cuid2ts.get(cuid);
+            if (ts == null) {
+                cuid2ts.put(cuid, ts1);
+            } else {
+                ts.addAll(ts1);
+            }
+            (tc.isSCP() ? scp : scu).add(cuid);
+            byte[] extInfo = tc.getExtInfo();
             if (extInfo.length != 0) {
                 ExtendedNegotiation extneg = new ExtendedNegotiation(cuid,
                         extInfo);
                 aarq.addExtendedNegotiation(extneg);
             }
         }
-        if (scpTCs.isEmpty() && scuTCs.isEmpty()) {
+        if (cuid2ts.isEmpty()) {
             throw new ConfigurationException(
                     "No common Transfer Capability between local AE "
                             + getAETitle() + " and remote AE "
                             + remoteAE.getAETitle());
         }
-        ArrayList pcs = new ArrayList(scuTCs.size());
-        for (Iterator iter = scpTCs.values().iterator(); iter.hasNext();) {
-            TransferCapability scpTC = (TransferCapability) iter.next();
-            String cuid = scpTC.getSopClass();
-            TransferCapability scuTC = (TransferCapability) scuTCs.remove(cuid);
-            int[] grno = scpTC.getTransferSyntaxGroups();
-            if (scuTC != null) {
-                grno = union(grno, scuTC.getTransferSyntaxGroups());
-                for (int i = 0; i < grno.length; i++) {
-                    pcs.add(new PC(grno[i], cuid, union(scpTC
-                            .getTransferSyntaxOfGroup(grno[i]), scuTC
-                            .getTransferSyntaxOfGroup(grno[i]))));
-                }
-            } else {
-                for (int i = 0; i < grno.length; i++) {
-                    pcs.add(new PC(grno[i], cuid, scpTC
-                            .getTransferSyntaxOfGroup(grno[i])));
-                }
+    }
+    
+    private int initPCwithUncompressedLETS(AAssociateRQ aarq,
+            LinkedHashMap cuid2ts, int freePc, ArrayList cuid2ts2) {
+        ArrayList ts2 = new ArrayList(2);
+        for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
+                && iter.hasNext();) {
+            Map.Entry e = (Entry) iter.next();
+            String cuid = (String) e.getKey();
+            LinkedHashSet ts = (LinkedHashSet) e.getValue();
+            if (ts.remove(UID.ExplicitVRLittleEndian)) {
+                ts2.add(UID.ExplicitVRLittleEndian);
             }
-            aarq.addRoleSelection(new RoleSelection(cuid, scuTC != null, true));
-        }
-        for (Iterator iter = scuTCs.values().iterator(); iter.hasNext();) {
-            TransferCapability scuTC = (TransferCapability) iter.next();
-            String cuid = scuTC.getSopClass();
-            int[] grno = scuTC.getTransferSyntaxGroups();
-            for (int i = 0; i < grno.length; i++) {
-                pcs.add(new PC(grno[i], cuid, scuTC
-                        .getTransferSyntaxOfGroup(grno[i])));
+            if (ts.remove(UID.ImplicitVRLittleEndian)) {
+                ts2.add(UID.ImplicitVRLittleEndian);
             }
-        }
-        Collections.sort(pcs);
-        int numPCs = Math.min(pcs.size(), 128);
-        for (int i = 0; i < numPCs; ++i) {
-            PC pc = (PC) pcs.get(i);
+            if (ts2.isEmpty()) {
+                iter.remove();
+                cuid2ts2.add(e);
+                continue;
+            }
             PresentationContext pctx = new PresentationContext();
-            pctx.setPCID((i << 1) + 1);
-            pctx.setAbstractSyntax(pc.sopClass);
-            for (int j = 0; j < pc.transferSyntax.length; j++) {
-                pctx.addTransferSyntax(pc.transferSyntax[j]);
+            pctx.setPCID(aarq.nextPCID());
+            pctx.setAbstractSyntax(cuid);
+            for (Iterator tsiter = ts2.iterator(); tsiter.hasNext();) {
+                pctx.addTransferSyntax((String) tsiter.next());
+            }
+            aarq.addPresentationContext(pctx);
+            ts2.clear();
+            if (ts.isEmpty()) {
+                iter.remove();
+            } else {
+                --freePc;
+            }
+        }
+        cuid2ts2.addAll(cuid2ts.entrySet());
+        return freePc;
+    }
+
+    private void initPCwith1TS(AAssociateRQ aarq, int freePc, ArrayList cuid2ts2) {
+        while (freePc > 0 && !cuid2ts2.isEmpty()) {
+            for (Iterator iter = cuid2ts2.iterator(); freePc > 0 && iter.hasNext();) {
+                Map.Entry e = (Entry) iter.next();
+                String cuid = (String) e.getKey();
+                LinkedHashSet ts = (LinkedHashSet) e.getValue();
+                Iterator tsiter = ts.iterator();
+                PresentationContext pctx = new PresentationContext();
+                pctx.setPCID(aarq.nextPCID());
+                pctx.setAbstractSyntax(cuid);
+                pctx.addTransferSyntax((String) tsiter.next());
+                aarq.addPresentationContext(pctx);
+                tsiter.remove();
+                if (ts.isEmpty()) {
+                    iter.remove();
+                } else {
+                    --freePc;
+                }
+            }
+        }
+    }
+    
+    private void initPCwithRemainingTS(AAssociateRQ aarq, ArrayList cuid2ts2) {
+        for (Iterator iter = cuid2ts2.iterator(); iter.hasNext() 
+                && aarq.getNumberOfPresentationContexts() < 128;) {
+            Map.Entry e = (Entry) iter.next();
+            String cuid = (String) e.getKey();
+            LinkedHashSet ts = (LinkedHashSet) e.getValue();
+            PresentationContext pctx = new PresentationContext();
+            pctx.setPCID(aarq.nextPCID());
+            pctx.setAbstractSyntax(cuid);
+            for (Iterator tsiter = ts.iterator(); tsiter.hasNext();) {
+                pctx.addTransferSyntax((String) tsiter.next());
             }
             aarq.addPresentationContext(pctx);
         }
-        return aarq;
-    }
-
-    private TransferCapability intersectTC(TransferCapability tc,
-            TransferCapability retain) {
-        String[] ts = tc.getTransferSyntax();
-        int[] tsgr = tc.getTransferSyntaxGroup();
-        int common = 0;
-        int last = ts.length - 1;
-        for (int i = 0; i < ts.length; i++) {
-            if (retain.containsTransferSyntax(ts[i])) {
-                common++;
-            } else {
-                last--;
-                for (int j = common; j < last; j++) {
-                    ts[j] = ts[j + 1];
-                    if (tsgr.length > j) {
-                        tsgr[j] = tsgr.length > j + 1 ? tsgr[j + 1] : 0;
-                    }
-                }
-            }
-        }
-        if (common == 0) {
-            return null;
-        }
-        if (common == ts.length) {
-            return tc;
-        }
-        String[] ss = new String[common];
-        System.arraycopy(ts, 0, ss, 0, common);
-        TransferCapability result = new TransferCapability(tc.getSopClass(),
-                ss, tc.getRole());
-        result.setTransferSyntaxGroup(tsgr);
-        return result;
-    }
-
-    private int[] union(int[] a, int[] b) {
-        int n = a.length + b.length;
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < b.length; j++) {
-                if (a[i] == b[j]) {
-                    --n;
-                    break;
-                }
-            }
-        }
-        if (n == a.length) {
-            return a;
-        }
-        if (n == b.length) {
-            return b;
-        }
-        int[] c = new int[n];
-        System.arraycopy(a, 0, c, 0, a.length);
-        int index = a.length;
-        out: for (int i = 0; i < b.length; i++) {
-            for (int j = 0; j < a.length; j++) {
-                if (a[i] == b[j]) {
-                    continue out;
-                }
-            }
-            c[index++] = b[i];
-        }
-        return c;
-    }
-
-    private String[] union(String[] a, String[] b) {
-        int n = a.length + b.length;
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < b.length; j++) {
-                if (a[i].equals(b[j])) {
-                    --n;
-                    break;
-                }
-            }
-        }
-        if (n == a.length) {
-            return a;
-        }
-        if (n == b.length) {
-            return b;
-        }
-        String[] c = new String[n];
-        System.arraycopy(a, 0, c, 0, a.length);
-        int index = a.length;
-        out: for (int i = 0; i < b.length; i++) {
-            for (int j = 0; j < a.length; j++) {
-                if (a[i].equals(b[j])) {
-                    continue out;
-                }
-            }
-            c[index++] = b[i];
-        }
-        return c;
     }
 
     private TransferCapability findTC(TransferCapability[] tcs, String cuid,

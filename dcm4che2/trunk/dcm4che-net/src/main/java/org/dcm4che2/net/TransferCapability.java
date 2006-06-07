@@ -38,8 +38,6 @@
 
 package org.dcm4che2.net;
 
-import java.util.Arrays;
-
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 
 /**
@@ -53,13 +51,11 @@ public class TransferCapability {
     public static final String SCU = "SCU";
     public static final String SCP = "SCP";
     private static byte[] NO_EXT_INFO = {};
-    private static int[] NO_TS_GRP = {};
 
     protected String commonName;
     protected String sopClass;
     protected boolean scp;
     protected String[] transferSyntax = {};
-    protected int[] transferSyntaxGroup = {};
     protected byte[] extInfo = {};
 
     public TransferCapability() {
@@ -118,15 +114,6 @@ public class TransferCapability {
         return (String[]) transferSyntax.clone();
     }
 
-    public boolean containsTransferSyntax(String ts) {
-        for (int i = 0; i < transferSyntax.length; i++) {
-            if (transferSyntax[i].equals(ts)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     public final void setTransferSyntax(String[] transferSyntax) {
         if (transferSyntax.length == 0)
             throw new IllegalArgumentException("transferSyntax.length = 0");
@@ -136,69 +123,7 @@ public class TransferCapability {
             }
         }
         this.transferSyntax = (String[]) transferSyntax.clone();
-    }
-    
-    public final void setTransferSyntaxGroup(int[] transferSyntaxGroup) {
-        this.transferSyntaxGroup = transferSyntaxGroup != null 
-                ? (int[]) transferSyntaxGroup.clone() : NO_TS_GRP;
-    }
-
-    public final int[] getTransferSyntaxGroup() {
-        int[] a = new int[Math.min(transferSyntaxGroup.length, transferSyntax.length)];
-        System.arraycopy(transferSyntaxGroup, 0, a, 0, a.length);
-        return a;
-    }
-
-    int[] getTransferSyntaxGroups() {
-        if (transferSyntaxGroup.length == 0) {
-            return new int[] { 0 };
-        }
-        int[] a = getTransferSyntaxGroup();
-        Arrays.sort(a);
-        int last = 0;
-        boolean addZero = transferSyntaxGroup.length < transferSyntax.length;
-        for (int i = 1; i < a.length; i++) {
-            addZero = addZero && a[i] != 0;
-            if (a[last] != a[i]) {
-                a[++last] = a[i];
-            }
-        }
-        int n = last + 1;
-        if (!addZero && n == a.length) {
-            return a;
-        }
-        int[] b = new int[addZero ? n + 1 : n];
-        System.arraycopy(a, 0, b, addZero ? 1 : 0, n);
-        return b;
-    }
-    
-    String[] getTransferSyntaxOfGroup(int group) {
-        int n = 0;
-        int grlen = Math.min(transferSyntax.length, transferSyntaxGroup.length);
-        for (int i = 0; i < grlen; i++) {
-            if (transferSyntaxGroup[i] == group) {
-                ++n;
-            }
-        }
-        if (group == 0) {
-            n += transferSyntax.length - grlen;
-        }
-        if (n == 0) {
-            return null;
-        }
-        String[] ts = new String[n];
-        int index = 0;
-        for (int i = 0; i < grlen; i++) {
-            if (transferSyntaxGroup[i] == group) {
-                ts[index++] = transferSyntax[i];
-            }
-        }
-        if (index < n) {
-            System.arraycopy(transferSyntax, grlen, ts, index, n - index);
-        }
-        return ts;
-    }
-    
+    }        
 
     public final byte[] getExtInfo() {
         return (byte[]) extInfo.clone();
