@@ -38,51 +38,52 @@
 
 package org.dcm4che2.net;
 
+import java.util.Arrays;
+
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 7, 2005
- *
+ * 
  */
-public class TransferCapability
-{
+public class TransferCapability {
+    
     public static final String SCU = "SCU";
     public static final String SCP = "SCP";
-    
+    private static byte[] NO_EXT_INFO = {};
+    private static int[] NO_TS_GRP = {};
+
     protected String commonName;
     protected String sopClass;
     protected boolean scp;
     protected String[] transferSyntax = {};
-    protected byte[] extInfo;
-    
-    public TransferCapability()
-    {
+    protected int[] transferSyntaxGroup = {};
+    protected byte[] extInfo = {};
+
+    public TransferCapability() {
     }
-    
-    public TransferCapability(String sopClass, String[] transferSyntax, String role)
-    {
-        this.sopClass = sopClass;
-        this.transferSyntax = transferSyntax;
+
+    public TransferCapability(String sopClass, String[] transferSyntax,
+            String role) {
+        setSopClass(sopClass);
+        setTransferSyntax(transferSyntax);
         setRole(role);
     }
-    
-    public final String getCommonName()
-    {
+
+    public final String getCommonName() {
         return commonName;
     }
-    
-    public final void setCommonName(String commonName)
-    {
+
+    public final void setCommonName(String commonName) {
         this.commonName = commonName;
     }
-    
-    public final String getRole()
-    {
-        return scp ? SCP : SCU; 
+
+    public final String getRole() {
+        return scp ? SCP : SCU;
     }
-    
+
     public final void setRole(String role) {
         if (role == null)
             throw new NullPointerException("Role");
@@ -95,44 +96,116 @@ public class TransferCapability
             throw new IllegalArgumentException("Role:" + role);
     }
 
-    public final boolean isSCP()
-    {
-         return scp;
+    public final boolean isSCP() {
+        return scp;
     }
-    
-    public final boolean isSCU()
-    {
-         return !scp;
+
+    public final boolean isSCU() {
+        return !scp;
     }
-    
-    public final String getSopClass()
-    {
+
+    public final String getSopClass() {
         return sopClass;
     }
-    
-    public final void setSopClass(String sopClass)
-    {
+
+    public final void setSopClass(String sopClass) {
+        if (sopClass == null)
+            throw new NullPointerException("sopClass");
         this.sopClass = sopClass;
     }
-    
-    public String[] getTransferSyntax()
-    {
-        return transferSyntax;
+
+    public final String[] getTransferSyntax() {
+        return (String[]) transferSyntax.clone();
+    }
+
+    public boolean containsTransferSyntax(String ts) {
+        for (int i = 0; i < transferSyntax.length; i++) {
+            if (transferSyntax[i].equals(ts)) {
+                return true;
+            }
+        }
+        return false;
     }
     
-    public void setTransferSyntax(String[] transferSyntax)
-    {
-        this.transferSyntax = transferSyntax;
+    public final void setTransferSyntax(String[] transferSyntax) {
+        if (transferSyntax.length == 0)
+            throw new IllegalArgumentException("transferSyntax.length = 0");
+        for (int i = 0; i < transferSyntax.length; i++) {
+            if (transferSyntax[i] == null) {
+                throw new NullPointerException("transferSyntax[" + i + "]");
+            }
+        }
+        this.transferSyntax = (String[]) transferSyntax.clone();
     }
     
-    public byte[] getExtInfo()
-    {
-        return extInfo;
+    public final void setTransferSyntaxGroup(int[] transferSyntaxGroup) {
+        this.transferSyntaxGroup = transferSyntaxGroup != null 
+                ? (int[]) transferSyntaxGroup.clone() : NO_TS_GRP;
+    }
+
+    public final int[] getTransferSyntaxGroup() {
+        int[] a = new int[Math.min(transferSyntaxGroup.length, transferSyntax.length)];
+        System.arraycopy(transferSyntaxGroup, 0, a, 0, a.length);
+        return a;
+    }
+
+    int[] getTransferSyntaxGroups() {
+        if (transferSyntaxGroup.length == 0) {
+            return new int[] { 0 };
+        }
+        int[] a = getTransferSyntaxGroup();
+        Arrays.sort(a);
+        int last = 0;
+        boolean addZero = transferSyntaxGroup.length < transferSyntax.length;
+        for (int i = 1; i < a.length; i++) {
+            addZero = addZero && a[i] != 0;
+            if (a[last] != a[i]) {
+                a[++last] = a[i];
+            }
+        }
+        int n = last + 1;
+        if (!addZero && n == a.length) {
+            return a;
+        }
+        int[] b = new int[addZero ? n + 1 : n];
+        System.arraycopy(a, 0, b, addZero ? 1 : 0, n);
+        return b;
     }
     
-    public void setExtInfo(byte[] info)
-    {
-        extInfo = info;
+    String[] getTransferSyntaxOfGroup(int group) {
+        int n = 0;
+        int grlen = Math.min(transferSyntax.length, transferSyntaxGroup.length);
+        for (int i = 0; i < grlen; i++) {
+            if (transferSyntaxGroup[i] == group) {
+                ++n;
+            }
+        }
+        if (group == 0) {
+            n += transferSyntax.length - grlen;
+        }
+        if (n == 0) {
+            return null;
+        }
+        String[] ts = new String[n];
+        int index = 0;
+        for (int i = 0; i < grlen; i++) {
+            if (transferSyntaxGroup[i] == group) {
+                ts[index++] = transferSyntax[i];
+            }
+        }
+        if (index < n) {
+            System.arraycopy(transferSyntax, grlen, ts, index, n - index);
+        }
+        return ts;
+    }
+    
+
+    public final byte[] getExtInfo() {
+        return (byte[]) extInfo.clone();
+    }
+
+    public final void setExtInfo(byte[] info) {
+        extInfo = info != null ? (byte[]) info.clone() : NO_EXT_INFO;
     }
 
     public boolean getExtInfoBoolean(int field) {
@@ -140,23 +213,24 @@ public class TransferCapability
     }
 
     public int getExtInfoInt(int field) {
-        return extInfo != null && extInfo.length > field ? extInfo[field] & 0xff : 0;
+        return extInfo != null && extInfo.length > field ? extInfo[field] & 0xff
+                : 0;
     }
-    
+
     public void setExtInfoBoolean(int field, boolean b) {
         setExtInfoInt(field, b ? 1 : 0);
     }
-    
+
     public void setExtInfoInt(int field, int value) {
-        extInfo[field] = (byte)value;
+        extInfo[field] = (byte) value;
     }
-    
+
     protected ExtendedNegotiation negotiate(ExtendedNegotiation offered) {
         if (offered == null || extInfo == null)
             return null;
         byte[] info = offered.getInformation();
         for (int i = 0; i < info.length; i++) {
-            info[i] &= getExtInfoInt(i); 
+            info[i] &= getExtInfoInt(i);
         }
         return new ExtendedNegotiation(sopClass, info);
     }

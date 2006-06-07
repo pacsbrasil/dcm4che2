@@ -643,9 +643,15 @@ public class DcmSnd {
             Map.Entry e = (Map.Entry) iter.next();
             String cuid = (String) e.getKey();
             HashSet ts = (HashSet) e.getValue();
+            int n = ts.size();
+            int[] tsgrp = new int[n];
+            for (int j = 0; j < tsgrp.length; j++) {
+                tsgrp[j] = j + 1;
+            }
             tc[i] = new TransferCapability(cuid, 
-                    (String[]) ts.toArray(new String[ts.size()]), 
+                    (String[]) ts.toArray(new String[n]), 
                     TransferCapability.SCU);
+            tc[i].setTransferSyntaxGroup(tsgrp);
         }
         ae.setTransferCapability(tc);
     }

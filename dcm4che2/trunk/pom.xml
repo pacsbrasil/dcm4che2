@@ -30,7 +30,7 @@
           <descriptors>
             <descriptor>src/main/assembly/bin.xml</descriptor>
           </descriptors>
-          <finalName>dcm4che-2.0.5</finalName>
+          <finalName>dcm4che-2.0.6-SNAPSHOT</finalName>
         </configuration>
       </plugin-->
     </plugins>
