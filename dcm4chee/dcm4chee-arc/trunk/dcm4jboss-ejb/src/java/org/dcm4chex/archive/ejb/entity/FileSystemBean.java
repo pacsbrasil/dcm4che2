@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -101,6 +102,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *              query="SELECT COUNT(f) FROM File f WHERE f.fileSystem.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk = ?1"
+ *              
+ * @jboss.query signature="int ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
+ *              query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND f.createdTime > ?2"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -166,6 +170,20 @@ public abstract class FileSystemBean implements EntityBean {
     public abstract int ejbSelectNumberOfPrivateFiles(Long pk)
     throws FinderException;
     
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract long ejbSelectSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
+    throws FinderException;
+    
+    /**
+     * @ejb.home-method
+     */
+    public long ejbHomeSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
+    throws FinderException {
+        return ejbSelectSizeOfFilesCreatedAfter(pk, createdAfter);
+    }
+
     /**
      * @ejb.interface-method
      */

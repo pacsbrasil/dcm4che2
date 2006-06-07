@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,7 @@ import javax.ejb.RemoveException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
@@ -65,6 +67,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -105,10 +108,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     
     private String defStorageDir = "archive";
 
-	private float freeDiskSpaceLowerThreshold = 1.5f;
-	
-	private float freeDiskSpaceUpperThreshold = 2.5f;
-	
+    private DeleterThresholds deleterThresholds = new DeleterThresholds("7:1h;19:24h", true);
+    
+    private long expectedDataVolumnePerDay = 100000L;
+    
 	private boolean flushExternalRetrievable = false;
 	
 	private boolean flushOnMedia = false;
@@ -146,6 +149,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     private FileSystemDTO storageFileSystem;
     
     private long checkStorageFileSystem = 0L;
+    
+    private long adjustExpectedDataVolumnePerDay = 0L;
     
 	        
     private final NotificationListener purgeFilesListener = 
@@ -242,48 +247,41 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         this.checkFreeDiskSpaceThreshold = threshold;
     }
 
-    /**
-	 * Return the factor to calculate watermark for free disk space process.
-	 * <p>
-	 * The threshold for freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceLowerThreshold * numberOfFilesystems</code>
-	 * 
-	 * @return Returns the cleanWaterMarkFactor.
-	 */
-	public float getFreeDiskSpaceLowerThreshold() {
-		return freeDiskSpaceLowerThreshold;
-	}
-	/**
-	 * Set the factor to calculate watermark for free disk space process.
-	 * @param freeDiskSpaceLowerThreshold The freeDiskSpaceLowerThreshold to set.
-	 */
-	public void setFreeDiskSpaceLowerThreshold(float threshold) {
-		if ( threshold < 1.0f ) throw new IllegalArgumentException("FreeDiskSpaceLowerThreshold must NOT be smaller than 1!");
-		this.freeDiskSpaceLowerThreshold = threshold;
-	}
-	
-	/**
-	 * Returns the factor to calculate the watermark to stop free disk space process.
-	 * <p>
-	 * The threshold to stop freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceUpperThreshold * numberOfFileSytsems</code>
-	 * 
-	 * @return Returns the stopCleanWaterMarkFactor.
-	 */
-	public float getFreeDiskSpaceUpperThreshold() {
-		return freeDiskSpaceUpperThreshold;
-	}
-	/**
-	 * Set the factor to calculate the watermark to stop free disk space process.
-	 * <p>
-	 * The watermark to stop freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceUpperThreshold * numberOfFileSytsems</code>
-	 * 
-	 * @param stopCleanWaterMarkFactor The stopCleanWaterMarkFactor to set.
-	 */
-	public void setFreeDiskSpaceUpperThreshold(float threshold) {
-		if ( threshold < freeDiskSpaceLowerThreshold ) throw new IllegalArgumentException("FreeDiskSpaceUpperThreshold must be higher than FreeDiskSpaceLowerThreshold");
-		this.freeDiskSpaceUpperThreshold = threshold;
-	}
+    public String getDeleterThresholds() {
+        return deleterThresholds.toString();
+    }
 
-	/**
+    public void setDeleterThresholds(String s) {
+        this.deleterThresholds = new DeleterThresholds(s, true);
+    }
+    
+    public String getExpectedDataVolumnePerDay() {
+        return FileUtils.formatSize(expectedDataVolumnePerDay);
+    }
+
+    public void setExpectedDataVolumnePerDay(String s) {
+        this.expectedDataVolumnePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
+    }
+
+
+	public final boolean isAdjustExpectedDataVolumnePerDay() {
+        return adjustExpectedDataVolumnePerDay != 0L;
+    }
+
+    public final void setAdjustExpectedDataVolumnePerDay(boolean b) {
+        this.adjustExpectedDataVolumnePerDay = b ? nextMidnight() : 0L;
+    }
+
+    private long nextMidnight() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTimeInMillis();
+    }
+    
+    /**
 	 * Returns true if the freeDiskSpace policy flushExternalRetrievable is enabled.
 	 * <p>
 	 * If this policy is active studies must be external retrievable for deletion.
@@ -755,7 +753,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
      * <p>
      * Checks available disk space if free disk space is necessary.
      * <p>
-     * Remove old files until the stopFreeDiskSpaceWatermark is reached.
+     * Remove old files according configured Deleter Thresholds.
      * <p>
      * The real deletion is done in the purge process! This method removes only the reference to the file system.  
      * <p>
@@ -766,35 +764,32 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     public int freeDiskSpace() {
         log.info("Check available Disk Space");
         try {
-            FileSystemDTO[] fs = listLocalOnlineRWFileSystems();
-            long available = getAvailableDiskSpace(fs);
-            if (available < (minFreeDiskSpace * freeDiskSpaceLowerThreshold * fs.length)) {
-                long maxSizeToDel = (long)((minFreeDiskSpace * freeDiskSpaceUpperThreshold * fs.length)) - available;
-                FileSystemMgt fsMgt = newFileSystemMgt();
-                try {
-                    Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, flushOnROFsAvailable, validFileStatus,
-                            maxSizeToDel, limitNumberOfFilesPerTask);
-                    sendIANs(ians);
-                    if ( autoPurge ) {
-                    	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
-                    	this.purgeFiles();
-                    }
-                    return ians.size();
-                } finally {
-                    fsMgt.remove();
-                }            
+            FileSystemMgt fsMgt = newFileSystemMgt();
+            FileSystemDTO[] fs = listLocalOnlineRWFileSystems(fsMgt);
+            Calendar now = Calendar.getInstance();
+            if (adjustExpectedDataVolumnePerDay != 0 && now.getTimeInMillis() > adjustExpectedDataVolumnePerDay) {
+                adjustExpectedDataVolumnePerDay(fsMgt, fs);
+                adjustExpectedDataVolumnePerDay = nextMidnight();
+            }
+            long available = getAvailableDiskSpace(fs) - minFreeDiskSpace * fs.length;
+            long freeSize = deleterThresholds.getDeleterThreshold(now).getFreeSize(expectedDataVolumnePerDay);
+            long maxSizeToDel = freeSize - available;
+            if (maxSizeToDel > 0) {
+                Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
+                        flushExternalRetrievable, flushOnROFsAvailable, validFileStatus,
+                        maxSizeToDel, limitNumberOfFilesPerTask);
+                sendIANs(ians);
+                if ( autoPurge ) {
+                	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
+                	this.purgeFiles();
+                }
+                return ians.size();
             } else if (studyCacheTimeout > 0L) {
                 long accessedBefore = System.currentTimeMillis() - studyCacheTimeout;
-                FileSystemMgt fsMgt = newFileSystemMgt();
-                try {
-                	Map ians = fsMgt.releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
-                            flushExternalRetrievable, flushOnROFsAvailable, validFileStatus, accessedBefore);
-                    sendIANs(ians);
-                    return ians.size();
-                } finally {
-                    fsMgt.remove();
-                }
+            	Map ians = fsMgt.releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
+                        flushExternalRetrievable, flushOnROFsAvailable, validFileStatus, accessedBefore);
+                sendIANs(ians);
+                return ians.size();
             } else {
                 return 0;
             }
@@ -805,7 +800,29 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     }
     
 
-	private void sendIANs(Map ians) {
+    public String adjustExpectedDataVolumnePerDay() throws Exception {
+        FileSystemMgt fsMgt = newFileSystemMgt();
+        return adjustExpectedDataVolumnePerDay(fsMgt, listLocalOnlineRWFileSystems(fsMgt));        
+    }
+
+    private String adjustExpectedDataVolumnePerDay(FileSystemMgt fsMgt, FileSystemDTO[] fs)
+    throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.roll(Calendar.DAY_OF_MONTH, false);
+        long after = cal.getTimeInMillis();
+        long sum = 0L;
+        for (int i = 0; i < fs.length; i++) {            
+            sum = fsMgt.sizeOfFilesCreatedAfter(new Long(fs[i].getPk()), after);
+        }
+        String size = FileUtils.formatSize(sum);
+        if (sum > expectedDataVolumnePerDay) {
+            server.setAttribute(super.serviceName, 
+                    new Attribute("ExpectedDataVolumnePerDay", size));
+        }
+        return size;
+    }
+
+    private void sendIANs(Map ians) {
 		for (Iterator iter = ians.values().iterator(); iter.hasNext();) {
 			Dataset ian = (Dataset) iter.next();
 			sendJMXNotification(new StudyDeleted(ian));

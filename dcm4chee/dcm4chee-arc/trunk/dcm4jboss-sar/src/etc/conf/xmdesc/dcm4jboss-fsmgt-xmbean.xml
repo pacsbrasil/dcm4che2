@@ -94,33 +94,43 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFreeDiskSpaceLowerThreshold"
-      setMethod="setFreeDiskSpaceLowerThreshold">
-      <description>Defines lower threshold of free disk space for 
-          deleting the most infrequently accessed studies.
-          If the average free disk space on the storage directories falls below 
-          MinimumFreeDiskSpace x FreeDiskSpaceLowerThreshold, the most
-          infrequently accessed studies are deleted.
+      getMethod="getDeleterThresholds"
+      setMethod="setDeleterThresholds">
+      <description><![CDATA[Defines thresholds dependent on hour of day, for deleting the most
+        infrequently accessed studies. Format: HOUR:##MB or HOUR:##GB or HOUR:##h,
+        multiple thresholds with different (start) hour separated by ';'.
+        E.g.: 7:1h;19:24h => free space for expected data volume received in 24 hours between
+        7pm and 7am. Between 7am and 7pm only delete studies if the available free space falls below
+        the expected data volume received in one hour.]]>
       </description>
-      <name>FreeDiskSpaceLowerThreshold</name>
-      <type>float</type>
+      <name>DeleterThresholds</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="1.5"/>
+         <value value="7:1h;19:24h"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFreeDiskSpaceUpperThreshold"
-      setMethod="setFreeDiskSpaceUpperThreshold">
-      <description>Defines the upper threshold of free disk space for 
-          deleting the most infrequently accessed studies.
-          The most infrequently accessed studies are deleted until the 
-          average free disk space on the storage directories exceeds 
-          MinimumFreeDiskSpace x FreeDiskSpaceUpperThreshold.
+      getMethod="getExpectedDataVolumnePerDay"
+      setMethod="setExpectedDataVolumnePerDay">
+      <description><![CDATA[Expected data volume per day. Used to transform time based deleter
+      thresholds (s. DeleterThresholds) into disk space size to free.]]>
       </description>
-      <name>FreeDiskSpaceUpperThreshold</name>
-      <type>float</type>
+      <name>ExpectedDataVolumnePerDay</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="2.0"/>
+         <value value="100MB"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAdjustExpectedDataVolumnePerDay"
+      setMethod="setAdjustExpectedDataVolumnePerDay">
+      <description><![CDATA[Update value of attribute ExpectedDataVolumnePerDay at midnight,
+      if data volumne received during last 24 hours exceeds its current value.]]>
+      </description>
+      <name>AdjustExpectedDataVolumnePerDay</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -539,6 +549,13 @@ accessed studies.</description>
       <name>freeDiskSpace</name>
       <return-type>int</return-type>
    </operation>   
+   <operation impact="ACTION">
+      <description>Update value of attribute ExpectedDataVolumnePerDay at midnight,
+      if data volumne received during last 24 hours exceeds its current value.
+      </description>
+      <name>adjustExpectedDataVolumnePerDay</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
    <operation impact="INFO">
       <description>get file size of study.
       </description>

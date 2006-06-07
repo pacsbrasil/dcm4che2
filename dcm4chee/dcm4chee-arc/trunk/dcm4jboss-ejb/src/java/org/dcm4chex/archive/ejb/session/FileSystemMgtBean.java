@@ -481,6 +481,13 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public long sizeOfFilesCreatedAfter(Long fsPk, long after) throws FinderException {
+        return fileSystemHome.sizeOfFilesCreatedAfter(fsPk, new Timestamp(after));
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public FileSystemDTO[] findFileSystemsLikeDirectoryPath(String dirpath,
             int availability, int status) throws FinderException {
         return toDTO(fileSystemHome.findByLikeDirectoryPath(dirpath, 
