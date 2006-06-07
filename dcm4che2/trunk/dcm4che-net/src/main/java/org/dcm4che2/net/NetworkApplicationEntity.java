@@ -801,7 +801,18 @@ public class NetworkApplicationEntity {
         LinkedHashMap cuid2ts = new LinkedHashMap();
         HashSet scu = new HashSet();
         HashSet scp = new HashSet();
-        evaluateTC(aarq, cuid2ts, scu, scp, remoteAE);
+        evaluateTC(aarq, cuid2ts, scu, scp, remoteAE.getTransferCapability());
+        if (cuid2ts.isEmpty()) {
+            log.info("No common Transfer Capability between local AE "
+                            + getAETitle() + " and remote AE "
+                            + remoteAE.getAETitle());
+            PresentationContext pctx = new PresentationContext();
+            pctx.setPCID(aarq.nextPCID());
+            pctx.setAbstractSyntax(UID.VerificationSOPClass);
+            pctx.addTransferSyntax(UID.ImplicitVRLittleEndian);
+            aarq.addPresentationContext(pctx);
+            return aarq;
+        }
         int freePc = 128 - cuid2ts.size();
         if (freePc < 0) {
             log.info("Not all of " + cuid2ts.size() + " common Transfer "
@@ -819,9 +830,8 @@ public class NetworkApplicationEntity {
     }
 
     private void evaluateTC(AAssociateRQ aarq, LinkedHashMap cuid2ts,
-            HashSet scu, HashSet scp, NetworkApplicationEntity remoteAE)
+            HashSet scu, HashSet scp, TransferCapability[] remoteTCs)
             throws ConfigurationException {
-        TransferCapability[] remoteTCs = remoteAE.getTransferCapability();
         for (int i = 0; i < transferCapability.length; i++) {
             TransferCapability tc = transferCapability[i];
             String cuid = tc.getSopClass();
@@ -851,12 +861,6 @@ public class NetworkApplicationEntity {
                         extInfo);
                 aarq.addExtendedNegotiation(extneg);
             }
-        }
-        if (cuid2ts.isEmpty()) {
-            throw new ConfigurationException(
-                    "No common Transfer Capability between local AE "
-                            + getAETitle() + " and remote AE "
-                            + remoteAE.getAETitle());
         }
     }
     
