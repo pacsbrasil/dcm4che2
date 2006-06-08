@@ -1255,6 +1255,7 @@
   <element tag="(0040,4006)" name="Multiple Copies Flag" vr="CS" vm="1" key="MultipleCopiesFlag" />
   <element tag="(0040,4007)" name="Performed Processing Applications Code Sequence" vr="SQ" vm="1" key="PerformedProcessingApplicationsCodeSeq" />
   <element tag="(0040,4009)" name="Human Performer Code Sequence" vr="SQ" vm="1" key="HumanPerformerCodeSeq" />
+  <element tag="(0040,4010)" name="Scheduled Procedure Step Modification Date and Time" vr="DT" vm="1" key="SPSModificationDateandTime" />
   <element tag="(0040,4011)" name="Expected Completion Date and Time" vr="DT" vm="1" key="ExpectedCompletionDateAndTime" />
   <element tag="(0040,4015)" name="Resulting General Purpose Performed Procedure Steps Sequence" vr="SQ" vm="1" key="ResultingGPPPSSeq" />
   <element tag="(0040,4016)" name="Referenced General Purpose Scheduled Procedure Step Sequence" vr="SQ" vm="1" key="RefGPSPSSeq" />
