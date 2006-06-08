@@ -28,7 +28,7 @@ CREATE TABLE patient (
 	pat_sex		  	VARCHAR(250) BINARY,
 	updated_time	DATETIME,
 	created_time	DATETIME,
-	pat_attrs		BLOB,
+	pat_attrs		LONGBLOB,
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
@@ -62,7 +62,7 @@ CREATE TABLE study (
 	checked_time	DATETIME,
 	updated_time	DATETIME,
 	created_time	DATETIME,
-	study_attrs		BLOB,
+	study_attrs		LONGBLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
@@ -100,7 +100,7 @@ CREATE TABLE mpps (
 	mpps_status			INTEGER NOT NULL,
 	updated_time	    DATETIME,
 	created_time	    DATETIME,
-	mpps_attrs			BLOB,
+	mpps_attrs			LONGBLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
@@ -131,7 +131,7 @@ CREATE TABLE series (
 	availability	INTEGER NOT NULL,
 	created_time	DATETIME,
 	updated_time	DATETIME,
-	series_attrs	BLOB,
+	series_attrs	LONGBLOB,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
 );
@@ -253,7 +253,7 @@ CREATE TABLE assoc (
 	accession_no	VARCHAR(250) BINARY,
 	created_time	DATETIME,
 	updated_time	DATETIME,
-	ian_attrs       BLOB
+	ian_attrs       LONGBLOB
 );
 CREATE INDEX assoc_updated_time ON assoc(updated_time);
 
@@ -285,7 +285,7 @@ CREATE TABLE mwl_item (
 	study_iuid      VARCHAR(250) BINARY NOT NULL,
 	updated_time	DATETIME,
 	created_time	DATETIME,
-	item_attrs		BLOB,
+	item_attrs		LONGBLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
@@ -312,7 +312,7 @@ CREATE TABLE gpsps (
 	gpsps_status    INTEGER,
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
-	item_attrs      BLOB,
+	item_attrs      LONGBLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
@@ -397,7 +397,7 @@ CREATE TABLE gppps (
 	pps_status			INTEGER NOT NULL,
 	created_time	    DATETIME,
 	updated_time	    DATETIME,
-	pps_attrs			BLOB,
+	pps_attrs			LONGBLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE UNIQUE INDEX gppps_iuid ON gppps (pps_iuid);
@@ -423,7 +423,7 @@ CREATE TABLE hp (
 	hp_level        INTEGER,
 	num_priors      INTEGER,
 	num_screens     INTEGER,
-	hp_attrs        BLOB,
+	hp_attrs        LONGBLOB,
 FOREIGN KEY (user_fk) REFERENCES code(pk)
 );
 CREATE INDEX hp_user_fk ON hp(user_fk);
@@ -477,7 +477,7 @@ CREATE TABLE priv_patient (
 	priv_type		INTEGER NOT NULL,
 	pat_id         	VARCHAR(250) BINARY,
 	pat_id_issuer  	VARCHAR(250) BINARY,
-	pat_attrs		BLOB
+	pat_attrs		LONGBLOB
 );
 CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
 CREATE INDEX priv_pat_type ON priv_patient(priv_type);
@@ -487,7 +487,7 @@ CREATE TABLE priv_study (
 	patient_fk      INTEGER,
 	priv_type		INTEGER NOT NULL,
 	study_iuid      VARCHAR(250) BINARY NOT NULL,
-	study_attrs		BLOB,
+	study_attrs		LONGBLOB,
 FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
 );
 CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
@@ -499,7 +499,7 @@ CREATE TABLE priv_series (
 	study_fk		INTEGER,
 	priv_type		INTEGER NOT NULL,
 	series_iuid     VARCHAR(250) BINARY NOT NULL,
-	series_attrs	BLOB,
+	series_attrs	LONGBLOB,
 FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
 );
 CREATE INDEX priv_study_fk ON priv_series(study_fk);
@@ -512,7 +512,7 @@ CREATE TABLE priv_instance (
 	series_fk		INTEGER,
 	priv_type		INTEGER NOT NULL,
 	sop_iuid		VARCHAR(250) BINARY NOT NULL,
-	inst_attrs		BLOB,
+	inst_attrs		LONGBLOB,
 FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
 );
 CREATE INDEX priv_series_fk ON priv_instance(series_fk);
@@ -561,7 +561,7 @@ CREATE TABLE audit_record(
 	user_name 		VARCHAR(250) BINARY,
 	patient_name	VARCHAR(250) BINARY,
 	patient_id 		VARCHAR(250) BINARY,
-	xml_data 		BLOB
+	xml_data 		LONGBLOB
 );
 CREATE INDEX arr_msg_type ON audit_record(msg_type);
 CREATE INDEX arr_host_name ON audit_record(host_name);
