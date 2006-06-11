@@ -107,12 +107,12 @@ public class DcmQR {
     
     private static final String[] PATIENT_LEVEL_FIND_CUID = {
         UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFIND };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
     
     private static final String[] STUDY_LEVEL_FIND_CUID = {
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFIND };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
     
     private static final String[] SERIES_LEVEL_FIND_CUID = {
         UID.StudyRootQueryRetrieveInformationModelFIND,
@@ -125,12 +125,12 @@ public class DcmQR {
     
     private static final String[] PATIENT_LEVEL_MOVE_CUID = {
         UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVE };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
     
     private static final String[] STUDY_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
         UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVE };
+        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
     
     private static final String[] SERIES_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,

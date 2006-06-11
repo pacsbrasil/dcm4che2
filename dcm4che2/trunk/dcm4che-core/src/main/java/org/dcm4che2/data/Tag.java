@@ -1,40 +1,11 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
- *
- * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4che2.data;
 
@@ -96,7 +67,7 @@ public class Tag {
         }
         return tagPath;
     }
-    
+
     /** (0000,0000) VR=UL, VM=1 Group Length  */
     public static final int GroupLength00000000 = 0x00000000;
 
@@ -307,8 +278,8 @@ public class Tag {
     /** (0004,1500) VR=CS, VM=1-8 Referenced File ID  */
     public static final int ReferencedFileID = 0x00041500;
 
-    /** (0004,1504) VR=UL, VM=1 MRDR Directory Record Offset  */
-    public static final int MRDRDirectoryRecordOffset = 0x00041504;
+    /** (0004,1504) VR=UL, VM=1 MRDR Directory Record Offset RET */
+    public static final int MRDRDirectoryRecordOffsetRET = 0x00041504;
 
     /** (0004,1510) VR=UI, VM=1 Referenced SOP Class UID in File  */
     public static final int ReferencedSOPClassUIDinFile = 0x00041510;
@@ -322,8 +293,8 @@ public class Tag {
     /** (0004,151A) VR=UI, VM=1-n Referenced Related General SOP Class UID in File  */
     public static final int ReferencedRelatedGeneralSOPClassUIDinFile = 0x0004151A;
 
-    /** (0004,1600) VR=UL, VM=1 Number of References  */
-    public static final int NumberofReferences = 0x00041600;
+    /** (0004,1600) VR=UL, VM=1 Number of References RET */
+    public static final int NumberofReferencesRET = 0x00041600;
 
     /** (0008,0001) VR=UL, VM=1 Length to End RET */
     public static final int LengthtoEndRET00080001 = 0x00080001;
@@ -370,11 +341,11 @@ public class Tag {
     /** (0008,0023) VR=DA, VM=1 Content Date  */
     public static final int ContentDate = 0x00080023;
 
-    /** (0008,0024) VR=DA, VM=1 Overlay Date  */
-    public static final int OverlayDate = 0x00080024;
+    /** (0008,0024) VR=DA, VM=1 Overlay Date RET */
+    public static final int OverlayDateRET = 0x00080024;
 
-    /** (0008,0025) VR=DA, VM=1 Curve Date  */
-    public static final int CurveDate = 0x00080025;
+    /** (0008,0025) VR=DA, VM=1 Curve Date RET */
+    public static final int CurveDateRET = 0x00080025;
 
     /** (0008,002A) VR=DT, VM=1 Acquisition Datetime  */
     public static final int AcquisitionDatetime = 0x0008002A;
@@ -391,11 +362,11 @@ public class Tag {
     /** (0008,0033) VR=TM, VM=1 Content Time  */
     public static final int ContentTime = 0x00080033;
 
-    /** (0008,0034) VR=TM, VM=1 Overlay Time  */
-    public static final int OverlayTime = 0x00080034;
+    /** (0008,0034) VR=TM, VM=1 Overlay Time RET */
+    public static final int OverlayTimeRET = 0x00080034;
 
-    /** (0008,0035) VR=TM, VM=1 Curve Time  */
-    public static final int CurveTime = 0x00080035;
+    /** (0008,0035) VR=TM, VM=1 Curve Time RET */
+    public static final int CurveTimeRET = 0x00080035;
 
     /** (0008,0040) VR=US, VM=1 Data Set Type RET */
     public static final int DataSetTypeRET = 0x00080040;
@@ -562,8 +533,8 @@ public class Tag {
     /** (0008,1090) VR=LO, VM=1 Manufacturer's Model Name  */
     public static final int ManufacturersModelName = 0x00081090;
 
-    /** (0008,1100) VR=SQ, VM=1 Referenced Results Sequence  */
-    public static final int ReferencedResultsSequence = 0x00081100;
+    /** (0008,1100) VR=SQ, VM=1 Referenced Results Sequence RET */
+    public static final int ReferencedResultsSequenceRET = 0x00081100;
 
     /** (0008,1110) VR=SQ, VM=1 Referenced Study Sequence  */
     public static final int ReferencedStudySequence = 0x00081110;
@@ -580,8 +551,8 @@ public class Tag {
     /** (0008,1125) VR=SQ, VM=1 Referenced Visit Sequence  */
     public static final int ReferencedVisitSequence = 0x00081125;
 
-    /** (0008,1130) VR=SQ, VM=1 Referenced Overlay Sequence  */
-    public static final int ReferencedOverlaySequence00081130 = 0x00081130;
+    /** (0008,1130) VR=SQ, VM=1 Referenced Overlay Sequence RET */
+    public static final int ReferencedOverlaySequenceRET = 0x00081130;
 
     /** (0008,113A) VR=SQ, VM=1 Referenced Waveform Sequence  */
     public static final int ReferencedWaveformSequence = 0x0008113A;
@@ -589,8 +560,8 @@ public class Tag {
     /** (0008,1140) VR=SQ, VM=1 Referenced Image Sequence  */
     public static final int ReferencedImageSequence = 0x00081140;
 
-    /** (0008,1145) VR=SQ, VM=1 Referenced Curve Sequence  */
-    public static final int ReferencedCurveSequence = 0x00081145;
+    /** (0008,1145) VR=SQ, VM=1 Referenced Curve Sequence RET */
+    public static final int ReferencedCurveSequenceRET = 0x00081145;
 
     /** (0008,114A) VR=SQ, VM=1 Referenced Instance Sequence  */
     public static final int ReferencedInstanceSequence = 0x0008114A;
@@ -697,17 +668,17 @@ public class Tag {
     /** (0008,2230) VR=SQ, VM=1 Primary Anatomic Structure Modifier Sequence  */
     public static final int PrimaryAnatomicStructureModifierSequence = 0x00082230;
 
-    /** (0008,2240) VR=SQ, VM=1 Transducer Position Sequence  */
-    public static final int TransducerPositionSequence = 0x00082240;
+    /** (0008,2240) VR=SQ, VM=1 Transducer Position Sequence RET */
+    public static final int TransducerPositionSequenceRET = 0x00082240;
 
-    /** (0008,2242) VR=SQ, VM=1 Transducer Position Modifier Sequence  */
-    public static final int TransducerPositionModifierSequence = 0x00082242;
+    /** (0008,2242) VR=SQ, VM=1 Transducer Position Modifier Sequence RET */
+    public static final int TransducerPositionModifierSequenceRET = 0x00082242;
 
-    /** (0008,2244) VR=SQ, VM=1 Transducer Orientation Sequence  */
-    public static final int TransducerOrientationSequence = 0x00082244;
+    /** (0008,2244) VR=SQ, VM=1 Transducer Orientation Sequence RET */
+    public static final int TransducerOrientationSequenceRET = 0x00082244;
 
-    /** (0008,2246) VR=SQ, VM=1 Transducer Orientation Modifier Sequence  */
-    public static final int TransducerOrientationModifierSequence = 0x00082246;
+    /** (0008,2246) VR=SQ, VM=1 Transducer Orientation Modifier Sequence RET */
+    public static final int TransducerOrientationModifierSequenceRET = 0x00082246;
 
     /** (0008,3001) VR=SQ, VM=1 Alternate Representation Sequence  */
     public static final int AlternateRepresentationSequence = 0x00083001;
@@ -715,8 +686,8 @@ public class Tag {
     /** (0008,3010) VR=UI, VM=1 Irradiation Event UID  */
     public static final int IrradiationEventUID = 0x00083010;
 
-    /** (0008,4000) VR=LT, VM=1 Comments RET */
-    public static final int CommentsRET00084000 = 0x00084000;
+    /** (0008,4000) VR=LT, VM=1 Identifying Comments RET */
+    public static final int IdentifyingCommentsRET = 0x00084000;
 
     /** (0008,9007) VR=CS, VM=4 Frame Type  */
     public static final int FrameType = 0x00089007;
@@ -904,6 +875,15 @@ public class Tag {
     /** (0012,0060) VR=LO, VM=1 Clinical Trial Coordinating Center Name  */
     public static final int ClinicalTrialCoordinatingCenterName = 0x00120060;
 
+    /** (0012,0062) VR=CS, VM=1 Patient Identify Removed  */
+    public static final int PatientIdentifyRemoved = 0x00120062;
+
+    /** (0012,0063) VR=LO, VM=1-n De-identification Method  */
+    public static final int DeidentificationMethod = 0x00120063;
+
+    /** (0012,0064) VR=SQ, VM=1 De-identification Method Code Sequence  */
+    public static final int DeidentificationMethodCodeSequence = 0x00120064;
+
     /** (0018,0010) VR=LO, VM=1 Contrast/Bolus Agent  */
     public static final int ContrastBolusAgent = 0x00180010;
 
@@ -1090,8 +1070,8 @@ public class Tag {
     /** (0018,101A) VR=LO, VM=1-n Hardcopy Device Software Version  */
     public static final int HardcopyDeviceSoftwareVersion = 0x0018101A;
 
-    /** (0018,101B) VR=LO, VM=1 Hardcopy Device Manfuacturer's Model Name  */
-    public static final int HardcopyDeviceManfuacturersModelName = 0x0018101B;
+    /** (0018,101B) VR=LO, VM=1 Hardcopy Device Manufacturer's Model Name  */
+    public static final int HardcopyDeviceManufacturersModelName = 0x0018101B;
 
     /** (0018,1020) VR=LO, VM=1-n Software Version(s)  */
     public static final int SoftwareVersions = 0x00181020;
@@ -1200,6 +1180,12 @@ public class Tag {
 
     /** (0018,1077) VR=DS, VM=1 Radiopharmaceutical Specific Activity  */
     public static final int RadiopharmaceuticalSpecificActivity = 0x00181077;
+
+    /** (0018,1078) VR=DT, VM=1 Radiopharmaceutical Start Datetime  */
+    public static final int RadiopharmaceuticalStartDatetime = 0x00181078;
+
+    /** (0018,1079) VR=DT, VM=1 Radiopharmaceutical Stop Datetime  */
+    public static final int RadiopharmaceuticalStopDatetime = 0x00181079;
 
     /** (0018,1080) VR=CS, VM=1 Beat Rejection Flag  */
     public static final int BeatRejectionFlag = 0x00181080;
@@ -1606,11 +1592,11 @@ public class Tag {
     /** (0018,3104) VR=IS, VM=1 IVUS Pullback Stop Frame Number  */
     public static final int IVUSPullbackStopFrameNumber = 0x00183104;
 
-    /** (0018,3105) VR=IS, VM=1-n Lesion Number   */
+    /** (0018,3105) VR=IS, VM=1-n Lesion Number  */
     public static final int LesionNumber = 0x00183105;
 
-    /** (0018,4000) VR=LT, VM=1 Comments RET */
-    public static final int CommentsRET00184000 = 0x00184000;
+    /** (0018,4000) VR=LT, VM=1 Acquisition Comments RET */
+    public static final int AcquisitionCommentsRET = 0x00184000;
 
     /** (0018,5000) VR=SH, VM=1-n Output Power  */
     public static final int OutputPower = 0x00185000;
@@ -2497,6 +2483,9 @@ public class Tag {
     /** (0018,9412) VR=SQ, VM=1 XA/XRF Frame Characteristics Sequence  */
     public static final int XAXRFFrameCharacteristicsSequence = 0x00189412;
 
+    /** (0018,9417) VR=SQ, VM=1 Frame Acquisition Sequence  */
+    public static final int FrameAcquisitionSequence = 0x00189417;
+
     /** (0018,9420) VR=CS, VM=1 X-Ray Receptor Type  */
     public static final int XRayReceptorType = 0x00189420;
 
@@ -2629,7 +2618,7 @@ public class Tag {
     /** (0018,A001) VR=SQ, VM=1 Contributing Equipment Sequence  */
     public static final int ContributingEquipmentSequence = 0x0018A001;
 
-    /** (0018,A002) VR=DT, VM=1 Contribution DateTime  */
+    /** (0018,A002) VR=DT, VM=1 Contribution Date Time  */
     public static final int ContributionDateTime = 0x0018A002;
 
     /** (0018,A003) VR=ST, VM=1 Contribution Description  */
@@ -2674,14 +2663,14 @@ public class Tag {
     /** (0020,0020) VR=CS, VM=2 Patient Orientation  */
     public static final int PatientOrientation = 0x00200020;
 
-    /** (0020,0022) VR=IS, VM=1 Overlay Number  */
-    public static final int OverlayNumber = 0x00200022;
+    /** (0020,0022) VR=IS, VM=1 Overlay Number RET */
+    public static final int OverlayNumberRET = 0x00200022;
 
-    /** (0020,0024) VR=IS, VM=1 Curve Number  */
-    public static final int CurveNumber = 0x00200024;
+    /** (0020,0024) VR=IS, VM=1 Curve Number RET */
+    public static final int CurveNumberRET = 0x00200024;
 
-    /** (0020,0026) VR=IS, VM=1 Lookup Table Number  */
-    public static final int LookupTableNumber = 0x00200026;
+    /** (0020,0026) VR=IS, VM=1 Lookup Table Number RET */
+    public static final int LookupTableNumberRET = 0x00200026;
 
     /** (0020,0030) VR=DS, VM=3 Image Position RET */
     public static final int ImagePositionRET = 0x00200030;
@@ -2725,8 +2714,8 @@ public class Tag {
     /** (0020,0200) VR=UI, VM=1 Synchronization Frame of Reference UID  */
     public static final int SynchronizationFrameofReferenceUID = 0x00200200;
 
-    /** (0020,1000) VR=IS, VM=1 Series in Study  */
-    public static final int SeriesinStudy = 0x00201000;
+    /** (0020,1000) VR=IS, VM=1 Series in Study RET */
+    public static final int SeriesinStudyRET = 0x00201000;
 
     /** (0020,1001) VR=IS, VM=1 Acquisitions in Series RET */
     public static final int AcquisitionsinSeriesRET = 0x00201001;
@@ -2734,8 +2723,8 @@ public class Tag {
     /** (0020,1002) VR=IS, VM=1 Images in Acquisition  */
     public static final int ImagesinAcquisition = 0x00201002;
 
-    /** (0020,1004) VR=IS, VM=1 Acquisitions in Study  */
-    public static final int AcquisitionsinStudy = 0x00201004;
+    /** (0020,1004) VR=IS, VM=1 Acquisitions in Study RET */
+    public static final int AcquisitionsinStudyRET = 0x00201004;
 
     /** (0020,1020) VR=CS, VM=1-n Reference RET */
     public static final int ReferenceRET = 0x00201020;
@@ -2746,8 +2735,8 @@ public class Tag {
     /** (0020,1041) VR=DS, VM=1 Slice Location  */
     public static final int SliceLocation = 0x00201041;
 
-    /** (0020,1070) VR=IS, VM=1-n Other Study Numbers  */
-    public static final int OtherStudyNumbers = 0x00201070;
+    /** (0020,1070) VR=IS, VM=1-n Other Study Numbers RET */
+    public static final int OtherStudyNumbersRET = 0x00201070;
 
     /** (0020,1200) VR=IS, VM=1 Number of Patient Related Studies  */
     public static final int NumberofPatientRelatedStudies = 0x00201200;
@@ -2767,8 +2756,8 @@ public class Tag {
     /** (0020,1209) VR=IS, VM=1 Number of Series Related Instances  */
     public static final int NumberofSeriesRelatedInstances = 0x00201209;
 
-    /** (0020,31xx) VR=CS, VM=1-n Source Image Ids RET */
-    public static final int SourceImageIdsRET = 0x00203100;
+    /** (0020,31xx) VR=CS, VM=1-n Source Image IDs RET */
+    public static final int SourceImageIDsRET = 0x00203100;
 
     /** (0020,3401) VR=CS, VM=1 Modifying Device ID RET */
     public static final int ModifyingDeviceIDRET = 0x00203401;
@@ -2821,8 +2810,8 @@ public class Tag {
     /** (0020,9128) VR=UL, VM=1 Temporal Position Index  */
     public static final int TemporalPositionIndex = 0x00209128;
 
-    /** (0020,9153) VR=FD, VM=1 Trigger Delay Time  */
-    public static final int TriggerDelayTime = 0x00209153;
+    /** (0020,9153) VR=FD, VM=1 Cardiac Trigger Delay Time  */
+    public static final int CardiacTriggerDelayTime = 0x00209153;
 
     /** (0020,9156) VR=US, VM=1 Frame Acquisition Number  */
     public static final int FrameAcquisitionNumber = 0x00209156;
@@ -2865,6 +2854,21 @@ public class Tag {
 
     /** (0020,9238) VR=LO, VM=1 Functional Group Private Creator  */
     public static final int FunctionalGroupPrivateCreator = 0x00209238;
+
+    /** (0020,9251) VR=FD, VM=1 R - R Interval Time Measured  */
+    public static final int RRIntervalTimeMeasured = 0x00209251;
+
+    /** (0020,9253) VR=SQ, VM=1 Respiratory Trigger Sequence  */
+    public static final int RespiratoryTriggerSequence = 0x00209253;
+
+    /** (0020,9254) VR=FD, VM=1 Respiratory Interval Time  */
+    public static final int RespiratoryIntervalTime = 0x00209254;
+
+    /** (0020,9255) VR=FD, VM=1 Respiratory Trigger Delay Time  */
+    public static final int RespiratoryTriggerDelayTime = 0x00209255;
+
+    /** (0020,9256) VR=FD, VM=1 Respiratory Trigger Delay Threshold  */
+    public static final int RespiratoryTriggerDelayThreshold = 0x00209256;
 
     /** (0020,9421) VR=LO, VM=1 Dimension Description Label  */
     public static final int DimensionDescriptionLabel = 0x00209421;
@@ -3026,7 +3030,7 @@ public class Tag {
     public static final int CorrectedImage = 0x00280051;
 
     /** (0028,0060) VR=CS, VM=1 Compression Code RET */
-    public static final int CompressionCodeRET00280060 = 0x00280060;
+    public static final int CompressionCodeRET = 0x00280060;
 
     /** (0028,0100) VR=US, VM=1 Bits Allocated  */
     public static final int BitsAllocated = 0x00280100;
@@ -3076,6 +3080,12 @@ public class Tag {
     /** (0028,0301) VR=CS, VM=1 Burned In Annotation  */
     public static final int BurnedInAnnotation = 0x00280301;
 
+    /** (0028,0402) VR=CS, VM=1 Pixel Spacing Calibration Type  */
+    public static final int PixelSpacingCalibrationType = 0x00280402;
+
+    /** (0028,0404) VR=LO, VM=1 Pixel Spacing Calibration Description  */
+    public static final int PixelSpacingCalibrationDescription = 0x00280404;
+
     /** (0028,1040) VR=CS, VM=1 Pixel Intensity Relationship  */
     public static final int PixelIntensityRelationship = 0x00281040;
 
@@ -3099,6 +3109,9 @@ public class Tag {
 
     /** (0028,1055) VR=LO, VM=1-n Window Center & Width Explanation  */
     public static final int WindowCenterWidthExplanation = 0x00281055;
+
+    /** (0028,1056) VR=CS, VM=1 VOI LUT Function  */
+    public static final int VOILUTFunction = 0x00281056;
 
     /** (0028,1080) VR=CS, VM=1 Gray Scale RET */
     public static final int GrayScaleRET = 0x00281080;
@@ -3151,6 +3164,12 @@ public class Tag {
     /** (0028,1351) VR=ST, VM=1 Partial View Description  */
     public static final int PartialViewDescription = 0x00281351;
 
+    /** (0028,1352) VR=SQ, VM=1 Partial View Code Sequence  */
+    public static final int PartialViewCodeSequence = 0x00281352;
+
+    /** (0028,135A) VR=CS, VM=1 Spatial Locations Preserved  */
+    public static final int SpatialLocationsPreserved = 0x0028135A;
+
     /** (0028,2000) VR=OB, VM=1 ICC Profile  */
     public static final int ICCProfile = 0x00282000;
 
@@ -3184,8 +3203,8 @@ public class Tag {
     /** (0028,3110) VR=SQ, VM=1 Softcopy VOI LUT Sequence  */
     public static final int SoftcopyVOILUTSequence = 0x00283110;
 
-    /** (0028,4000) VR=LT, VM=1 Comments RET */
-    public static final int CommentsRET00284000 = 0x00284000;
+    /** (0028,4000) VR=LT, VM=1 Image Presentation Comments RET */
+    public static final int ImagePresentationCommentsRET = 0x00284000;
 
     /** (0028,5000) VR=SQ, VM=1 Bi-Plane Acquisition Sequence  */
     public static final int BiPlaneAcquisitionSequence = 0x00285000;
@@ -3232,6 +3251,9 @@ public class Tag {
     /** (0028,6190) VR=ST, VM=1 Mask Operation Explanation  */
     public static final int MaskOperationExplanation = 0x00286190;
 
+    /** (0028,7FE0) VR=UT, VM=1 Pixel Data Provider URL  */
+    public static final int PixelDataProviderURL = 0x00287FE0;
+
     /** (0028,9001) VR=UL, VM=1 Data Point Rows  */
     public static final int DataPointRows = 0x00289001;
 
@@ -3241,8 +3263,8 @@ public class Tag {
     /** (0028,9003) VR=CS, VM=1 Signal Domain Columns  */
     public static final int SignalDomainColumns = 0x00289003;
 
-    /** (0028,9099) VR=US, VM=1 Largest Monochrome Pixel Value Retired */
-    public static final int LargestMonochromePixelValueRetired = 0x00289099;
+    /** (0028,9099) VR=US, VM=1 Largest Monochrome Pixel Value RET */
+    public static final int LargestMonochromePixelValueRET = 0x00289099;
 
     /** (0028,9108) VR=CS, VM=1 Data Representation  */
     public static final int DataRepresentation = 0x00289108;
@@ -3286,50 +3308,50 @@ public class Tag {
     /** (0028,9454) VR=CS, VM=1 Mask Selection Mode  */
     public static final int MaskSelectionMode = 0x00289454;
 
-    /** (0028,9475) VR=CS, VM=1 LUT Function  */
-    public static final int LUTFunction = 0x00289475;
+    /** (0028,9474) VR=CS, VM=1 LUT Function  */
+    public static final int LUTFunction = 0x00289474;
 
-    /** (0032,000A) VR=CS, VM=1 Study Status ID  */
-    public static final int StudyStatusID = 0x0032000A;
+    /** (0032,000A) VR=CS, VM=1 Study Status ID RET */
+    public static final int StudyStatusIDRET = 0x0032000A;
 
-    /** (0032,000C) VR=CS, VM=1 Study Priority ID  */
-    public static final int StudyPriorityID = 0x0032000C;
+    /** (0032,000C) VR=CS, VM=1 Study Priority ID RET */
+    public static final int StudyPriorityIDRET = 0x0032000C;
 
-    /** (0032,0012) VR=LO, VM=1 Study ID Issuer  */
-    public static final int StudyIDIssuer = 0x00320012;
+    /** (0032,0012) VR=LO, VM=1 Study ID Issuer RET */
+    public static final int StudyIDIssuerRET = 0x00320012;
 
-    /** (0032,0032) VR=DA, VM=1 Study Verified Date  */
-    public static final int StudyVerifiedDate = 0x00320032;
+    /** (0032,0032) VR=DA, VM=1 Study Verified Date RET */
+    public static final int StudyVerifiedDateRET = 0x00320032;
 
-    /** (0032,0033) VR=TM, VM=1 Study Verified Time  */
-    public static final int StudyVerifiedTime = 0x00320033;
+    /** (0032,0033) VR=TM, VM=1 Study Verified Time RET */
+    public static final int StudyVerifiedTimeRET = 0x00320033;
 
-    /** (0032,0034) VR=DA, VM=1 Study Read Date  */
-    public static final int StudyReadDate = 0x00320034;
+    /** (0032,0034) VR=DA, VM=1 Study Read Date RET */
+    public static final int StudyReadDateRET = 0x00320034;
 
-    /** (0032,0035) VR=TM, VM=1 Study Read Time  */
-    public static final int StudyReadTime = 0x00320035;
+    /** (0032,0035) VR=TM, VM=1 Study Read Time RET */
+    public static final int StudyReadTimeRET = 0x00320035;
 
-    /** (0032,1000) VR=DA, VM=1 Scheduled Study Start Date  */
-    public static final int ScheduledStudyStartDate = 0x00321000;
+    /** (0032,1000) VR=DA, VM=1 Scheduled Study Start Date RET */
+    public static final int ScheduledStudyStartDateRET = 0x00321000;
 
-    /** (0032,1001) VR=TM, VM=1 Scheduled Study Start Time  */
-    public static final int ScheduledStudyStartTime = 0x00321001;
+    /** (0032,1001) VR=TM, VM=1 Scheduled Study Start Time RET */
+    public static final int ScheduledStudyStartTimeRET = 0x00321001;
 
-    /** (0032,1010) VR=DA, VM=1 Scheduled Study Stop Date  */
-    public static final int ScheduledStudyStopDate = 0x00321010;
+    /** (0032,1010) VR=DA, VM=1 Scheduled Study Stop Date RET */
+    public static final int ScheduledStudyStopDateRET = 0x00321010;
 
-    /** (0032,1011) VR=TM, VM=1 Scheduled Study Stop Time  */
-    public static final int ScheduledStudyStopTime = 0x00321011;
+    /** (0032,1011) VR=TM, VM=1 Scheduled Study Stop Time RET */
+    public static final int ScheduledStudyStopTimeRET = 0x00321011;
 
-    /** (0032,1020) VR=LO, VM=1 Scheduled Study Location  */
-    public static final int ScheduledStudyLocation = 0x00321020;
+    /** (0032,1020) VR=LO, VM=1 Scheduled Study Location RET */
+    public static final int ScheduledStudyLocationRET = 0x00321020;
 
-    /** (0032,1021) VR=AE, VM=1-n Scheduled Study Location AE Title(s)  */
-    public static final int ScheduledStudyLocationAETitles = 0x00321021;
+    /** (0032,1021) VR=AE, VM=1-n Scheduled Study Location AE Title RET */
+    public static final int ScheduledStudyLocationAETitleRET = 0x00321021;
 
-    /** (0032,1030) VR=LO, VM=1 Reason for Study  */
-    public static final int ReasonforStudy = 0x00321030;
+    /** (0032,1030) VR=LO, VM=1 Reason for Study RET */
+    public static final int ReasonforStudyRET = 0x00321030;
 
     /** (0032,1031) VR=SQ, VM=1 Requesting Physician Identification Sequence  */
     public static final int RequestingPhysicianIdentificationSequence = 0x00321031;
@@ -3340,20 +3362,20 @@ public class Tag {
     /** (0032,1033) VR=LO, VM=1 Requesting Service  */
     public static final int RequestingService = 0x00321033;
 
-    /** (0032,1040) VR=DA, VM=1 Study Arrival Date  */
-    public static final int StudyArrivalDate = 0x00321040;
+    /** (0032,1040) VR=DA, VM=1 Study Arrival Date RET */
+    public static final int StudyArrivalDateRET = 0x00321040;
 
-    /** (0032,1041) VR=TM, VM=1 Study Arrival Time  */
-    public static final int StudyArrivalTime = 0x00321041;
+    /** (0032,1041) VR=TM, VM=1 Study Arrival Time RET */
+    public static final int StudyArrivalTimeRET = 0x00321041;
 
-    /** (0032,1050) VR=DA, VM=1 Study Completion Date  */
-    public static final int StudyCompletionDate = 0x00321050;
+    /** (0032,1050) VR=DA, VM=1 Study Completion Date RET */
+    public static final int StudyCompletionDateRET = 0x00321050;
 
-    /** (0032,1051) VR=TM, VM=1 Study Completion Time  */
-    public static final int StudyCompletionTime = 0x00321051;
+    /** (0032,1051) VR=TM, VM=1 Study Completion Time RET */
+    public static final int StudyCompletionTimeRET = 0x00321051;
 
-    /** (0032,1055) VR=CS, VM=1 Study Component Status ID  */
-    public static final int StudyComponentStatusID = 0x00321055;
+    /** (0032,1055) VR=CS, VM=1 Study Component Status ID RET */
+    public static final int StudyComponentStatusIDRET = 0x00321055;
 
     /** (0032,1060) VR=LO, VM=1 Requested Procedure Description  */
     public static final int RequestedProcedureDescription = 0x00321060;
@@ -3382,20 +3404,20 @@ public class Tag {
     /** (0038,0016) VR=LO, VM=1 Route of Admissions  */
     public static final int RouteofAdmissions = 0x00380016;
 
-    /** (0038,001A) VR=DA, VM=1 Scheduled Admission Date  */
-    public static final int ScheduledAdmissionDate = 0x0038001A;
+    /** (0038,001A) VR=DA, VM=1 Scheduled Admission Date RET */
+    public static final int ScheduledAdmissionDateRET = 0x0038001A;
 
-    /** (0038,001B) VR=TM, VM=1 Scheduled Admission Time  */
-    public static final int ScheduledAdmissionTime = 0x0038001B;
+    /** (0038,001B) VR=TM, VM=1 Scheduled Admission Time RET */
+    public static final int ScheduledAdmissionTimeRET = 0x0038001B;
 
-    /** (0038,001C) VR=DA, VM=1 Scheduled Discharge Date  */
-    public static final int ScheduledDischargeDate = 0x0038001C;
+    /** (0038,001C) VR=DA, VM=1 Scheduled Discharge Date RET */
+    public static final int ScheduledDischargeDateRET = 0x0038001C;
 
-    /** (0038,001D) VR=TM, VM=1 Scheduled Discharge Time  */
-    public static final int ScheduledDischargeTime = 0x0038001D;
+    /** (0038,001D) VR=TM, VM=1 Scheduled Discharge Time RET */
+    public static final int ScheduledDischargeTimeRET = 0x0038001D;
 
-    /** (0038,001E) VR=LO, VM=1 Scheduled Patient Institution Residence  */
-    public static final int ScheduledPatientInstitutionResidence = 0x0038001E;
+    /** (0038,001E) VR=LO, VM=1 Scheduled Patient Institution Residence RET */
+    public static final int ScheduledPatientInstitutionResidenceRET = 0x0038001E;
 
     /** (0038,0020) VR=DA, VM=1 Admitting Date  */
     public static final int AdmittingDate = 0x00380020;
@@ -3403,17 +3425,17 @@ public class Tag {
     /** (0038,0021) VR=TM, VM=1 Admitting Time  */
     public static final int AdmittingTime = 0x00380021;
 
-    /** (0038,0030) VR=DA, VM=1 Discharge Date  */
-    public static final int DischargeDate = 0x00380030;
+    /** (0038,0030) VR=DA, VM=1 Discharge Date RET */
+    public static final int DischargeDateRET = 0x00380030;
 
-    /** (0038,0032) VR=TM, VM=1 Discharge Time  */
-    public static final int DischargeTime = 0x00380032;
+    /** (0038,0032) VR=TM, VM=1 Discharge Time RET */
+    public static final int DischargeTimeRET = 0x00380032;
 
-    /** (0038,0040) VR=LO, VM=1 Discharge Diagnosis Description  */
-    public static final int DischargeDiagnosisDescription = 0x00380040;
+    /** (0038,0040) VR=LO, VM=1 Discharge Diagnosis Description RET */
+    public static final int DischargeDiagnosisDescriptionRET = 0x00380040;
 
-    /** (0038,0044) VR=SQ, VM=1 Discharge Diagnosis Code Sequence  */
-    public static final int DischargeDiagnosisCodeSequence = 0x00380044;
+    /** (0038,0044) VR=SQ, VM=1 Discharge Diagnosis Code Sequence RET */
+    public static final int DischargeDiagnosisCodeSequenceRET = 0x00380044;
 
     /** (0038,0050) VR=LO, VM=1 Special Needs  */
     public static final int SpecialNeeds = 0x00380050;
@@ -3862,7 +3884,7 @@ public class Tag {
     /** (0040,4020) VR=CS, VM=1 Input Availability Flag  */
     public static final int InputAvailabilityFlag = 0x00404020;
 
-    /** (0040,4021) VR=SQ, VM=1 Input InformationSequence  */
+    /** (0040,4021) VR=SQ, VM=1 Input Information Sequence  */
     public static final int InputInformationSequence = 0x00404021;
 
     /** (0040,4022) VR=SQ, VM=1 Relevant Information Sequence  */
@@ -3925,13 +3947,13 @@ public class Tag {
     /** (0040,9210) VR=SH, VM=1 LUT Label  */
     public static final int LUTLabel = 0x00409210;
 
-    /** (0040,9211) VR=US/SS, VM=1 Real World Value Last Value Mapped  */
+    /** (0040,9211) VR=US|SS, VM=1 Real World Value Last Value Mapped  */
     public static final int RealWorldValueLastValueMapped = 0x00409211;
 
     /** (0040,9212) VR=FD, VM=1-n Real World Value LUT Data  */
     public static final int RealWorldValueLUTData = 0x00409212;
 
-    /** (0040,9216) VR=US/SS, VM=1 Real World Value First Value Mapped  */
+    /** (0040,9216) VR=US|SS, VM=1 Real World Value First Value Mapped  */
     public static final int RealWorldValueFirstValueMapped = 0x00409216;
 
     /** (0040,9224) VR=FD, VM=1 Real World Value Intercept  */
@@ -3946,10 +3968,10 @@ public class Tag {
     /** (0040,A027) VR=LO, VM=1 Verifying Organization  */
     public static final int VerifyingOrganization = 0x0040A027;
 
-    /** (0040,A030) VR=DT, VM=1 Verification DateTime  */
+    /** (0040,A030) VR=DT, VM=1 Verification Date Time  */
     public static final int VerificationDateTime = 0x0040A030;
 
-    /** (0040,A032) VR=DT, VM=1 Observation DateTime  */
+    /** (0040,A032) VR=DT, VM=1 Observation Date Time  */
     public static final int ObservationDateTime = 0x0040A032;
 
     /** (0040,A040) VR=CS, VM=1 Value Type  */
@@ -4117,7 +4139,7 @@ public class Tag {
     /** (0040,E006) VR=SQ, VM=1 HL7 Document Type Code Sequence  */
     public static final int HL7DocumentTypeCodeSequence = 0x0040E006;
 
-    /** (0040,E010) VR=ST, VM=1 Retrieve URI  */
+    /** (0040,E010) VR=UT, VM=1 Retrieve URI  */
     public static final int RetrieveURI = 0x0040E010;
 
     /** (0042,0010) VR=ST, VM=1 Document Title  */
@@ -4150,7 +4172,7 @@ public class Tag {
     /** (0050,0018) VR=DS, VM=1 Device Volume  */
     public static final int DeviceVolume = 0x00500018;
 
-    /** (0050,0019) VR=DS, VM=1 Inter-marker Distance  */
+    /** (0050,0019) VR=DS, VM=1 Intermarker Distance  */
     public static final int IntermarkerDistance = 0x00500019;
 
     /** (0050,0020) VR=LO, VM=1 Device Description  */
@@ -4492,8 +4514,8 @@ public class Tag {
     /** (0070,0066) VR=US, VM=1 Graphic Layer Recommended Display Grayscale Value  */
     public static final int GraphicLayerRecommendedDisplayGrayscaleValue = 0x00700066;
 
-    /** (0070,0067) VR=US, VM=3 Graphic Layer Recommended Display RGB Value  */
-    public static final int GraphicLayerRecommendedDisplayRGBValue = 0x00700067;
+    /** (0070,0067) VR=US, VM=3 Graphic Layer Recommended Display RGB Value RET */
+    public static final int GraphicLayerRecommendedDisplayRGBValueRET = 0x00700067;
 
     /** (0070,0068) VR=LO, VM=1 Graphic Layer Description  */
     public static final int GraphicLayerDescription = 0x00700068;
@@ -4513,8 +4535,8 @@ public class Tag {
     /** (0070,0084) VR=PN, VM=1 Content Creator's Name  */
     public static final int ContentCreatorsName = 0x00700084;
 
-    /** (0070,0086) VR=SQ, VM=1 Content Creator's Identification Sequence  */
-    public static final int ContentCreatorsIdentificationSequence = 0x00700086;
+    /** (0070,0086) VR=SQ, VM=1 Content Creator's Identification Code Sequence  */
+    public static final int ContentCreatorsIdentificationCodeSequence = 0x00700086;
 
     /** (0070,0100) VR=CS, VM=1 Presentation Size Mode  */
     public static final int PresentationSizeMode = 0x00700100;
@@ -4750,6 +4772,9 @@ public class Tag {
     /** (0072,0202) VR=US, VM=1 Display Set Number  */
     public static final int DisplaySetNumber = 0x00720202;
 
+    /** (0072,0203) VR=LO, VM=1 Display Set Label  */
+    public static final int DisplaySetLabel = 0x00720203;
+
     /** (0072,0204) VR=US, VM=1 Display Set Presentation Group  */
     public static final int DisplaySetPresentationGroup = 0x00720204;
 
@@ -4873,6 +4898,12 @@ public class Tag {
     /** (0072,0716) VR=CS, VM=1 Show Acquisition Techniques Flag  */
     public static final int ShowAcquisitionTechniquesFlag = 0x00720716;
 
+    /** (0072,0717) VR=CS, VM=1 Display Set Horizontal Justification  */
+    public static final int DisplaySetHorizontalJustification = 0x00720717;
+
+    /** (0072,0718) VR=CS, VM=1 Display Set Vertical Justification  */
+    public static final int DisplaySetVerticalJustification = 0x00720718;
+
     /** (0088,0130) VR=SH, VM=1 Storage Media File-set ID  */
     public static final int StorageMediaFilesetID = 0x00880130;
 
@@ -4891,8 +4922,8 @@ public class Tag {
     /** (0088,0910) VR=LO, VM=1 Topic Author  */
     public static final int TopicAuthor = 0x00880910;
 
-    /** (0088,0912) VR=LO, VM=1-32 Topic Key Words  */
-    public static final int TopicKeyWords = 0x00880912;
+    /** (0088,0912) VR=LO, VM=1-32 Topic Keywords  */
+    public static final int TopicKeywords = 0x00880912;
 
     /** (0100,0410) VR=CS, VM=1 SOP Instance Status  */
     public static final int SOPInstanceStatus = 0x01000410;
@@ -4939,6 +4970,18 @@ public class Tag {
     /** (0400,0310) VR=OB, VM=1 Certified Timestamp  */
     public static final int CertifiedTimestamp = 0x04000310;
 
+    /** (0400,0401) VR=SQ, VM=1 Digital Signature Purpose Code Sequence  */
+    public static final int DigitalSignaturePurposeCodeSequence = 0x04000401;
+
+    /** (0400,0402) VR=SQ, VM=1 Referenced Digital Signature Sequence  */
+    public static final int ReferencedDigitalSignatureSequence = 0x04000402;
+
+    /** (0400,0403) VR=SQ, VM=1 Referenced SOP Instance MAC Sequence  */
+    public static final int ReferencedSOPInstanceMACSequence = 0x04000403;
+
+    /** (0400,0404) VR=OB, VM=1 MAC  */
+    public static final int MAC = 0x04000404;
+
     /** (0400,0500) VR=SQ, VM=1 Encrypted Attributes Sequence  */
     public static final int EncryptedAttributesSequence = 0x04000500;
 
@@ -4975,23 +5018,23 @@ public class Tag {
     /** (2000,0061) VR=IS, VM=1 Maximum Memory Allocation  */
     public static final int MaximumMemoryAllocation = 0x20000061;
 
-    /** (2000,0062) VR=CS, VM=1 Color Image Printing Flag  */
-    public static final int ColorImagePrintingFlag = 0x20000062;
+    /** (2000,0062) VR=CS, VM=1 Color Image Printing Flag RET */
+    public static final int ColorImagePrintingFlagRET = 0x20000062;
 
-    /** (2000,0063) VR=CS, VM=1 Collation Flag  */
-    public static final int CollationFlag = 0x20000063;
+    /** (2000,0063) VR=CS, VM=1 Collation Flag RET */
+    public static final int CollationFlagRET = 0x20000063;
 
-    /** (2000,0065) VR=CS, VM=1 Annotation Flag  */
-    public static final int AnnotationFlag = 0x20000065;
+    /** (2000,0065) VR=CS, VM=1 Annotation Flag RET */
+    public static final int AnnotationFlagRET = 0x20000065;
 
-    /** (2000,0067) VR=CS, VM=1 Image Overlay Flag  */
-    public static final int ImageOverlayFlag = 0x20000067;
+    /** (2000,0067) VR=CS, VM=1 Image Overlay Flag RET */
+    public static final int ImageOverlayFlagRET = 0x20000067;
 
-    /** (2000,0069) VR=CS, VM=1 Presentation LUT Flag  */
-    public static final int PresentationLUTFlag = 0x20000069;
+    /** (2000,0069) VR=CS, VM=1 Presentation LUT Flag RET */
+    public static final int PresentationLUTFlagRET = 0x20000069;
 
-    /** (2000,006A) VR=CS, VM=1 Image Box Presentation LUT Flag  */
-    public static final int ImageBoxPresentationLUTFlag = 0x2000006A;
+    /** (2000,006A) VR=CS, VM=1 Image Box Presentation LUT Flag RET */
+    public static final int ImageBoxPresentationLUTFlagRET = 0x2000006A;
 
     /** (2000,00A0) VR=US, VM=1 Memory Bit Depth  */
     public static final int MemoryBitDepth = 0x200000A0;
@@ -5131,32 +5174,32 @@ public class Tag {
     /** (2030,0020) VR=LO, VM=1 Text String  */
     public static final int TextString = 0x20300020;
 
-    /** (2040,0010) VR=SQ, VM=1 Referenced Overlay Plane Sequence  */
-    public static final int ReferencedOverlayPlaneSequence = 0x20400010;
+    /** (2040,0010) VR=SQ, VM=1 Referenced Overlay Plane Sequence RET */
+    public static final int ReferencedOverlayPlaneSequenceRET = 0x20400010;
 
-    /** (2040,0011) VR=US, VM=1-99 Referenced Overlay Plane Groups  */
-    public static final int ReferencedOverlayPlaneGroups = 0x20400011;
+    /** (2040,0011) VR=US, VM=1-99 Referenced Overlay Plane Groups RET */
+    public static final int ReferencedOverlayPlaneGroupsRET = 0x20400011;
 
-    /** (2040,0020) VR=SQ, VM=1 Overlay Pixel Data Sequence  */
-    public static final int OverlayPixelDataSequence = 0x20400020;
+    /** (2040,0020) VR=SQ, VM=1 Overlay Pixel Data Sequence RET */
+    public static final int OverlayPixelDataSequenceRET = 0x20400020;
 
-    /** (2040,0060) VR=CS, VM=1 Overlay Magnification Type  */
-    public static final int OverlayMagnificationType = 0x20400060;
+    /** (2040,0060) VR=CS, VM=1 Overlay Magnification Type RET */
+    public static final int OverlayMagnificationTypeRET = 0x20400060;
 
-    /** (2040,0070) VR=CS, VM=1 Overlay Smoothing Type  */
-    public static final int OverlaySmoothingType = 0x20400070;
+    /** (2040,0070) VR=CS, VM=1 Overlay Smoothing Type RET */
+    public static final int OverlaySmoothingTypeRET = 0x20400070;
 
-    /** (2040,0072) VR=CS, VM=1 Overlay or Image Magnification  */
-    public static final int OverlayorImageMagnification = 0x20400072;
+    /** (2040,0072) VR=CS, VM=1 Overlay or Image Magnification RET */
+    public static final int OverlayorImageMagnificationRET = 0x20400072;
 
-    /** (2040,0074) VR=US, VM=1 Magnify to Number of Columns  */
-    public static final int MagnifytoNumberofColumns = 0x20400074;
+    /** (2040,0074) VR=US, VM=1 Magnify to Number of Columns RET */
+    public static final int MagnifytoNumberofColumnsRET = 0x20400074;
 
-    /** (2040,0080) VR=CS, VM=1 Overlay Foreground Density  */
-    public static final int OverlayForegroundDensity = 0x20400080;
+    /** (2040,0080) VR=CS, VM=1 Overlay Foreground Density RET */
+    public static final int OverlayForegroundDensityRET = 0x20400080;
 
-    /** (2040,0082) VR=CS, VM=1 Overlay Background Density  */
-    public static final int OverlayBackgroundDensity = 0x20400082;
+    /** (2040,0082) VR=CS, VM=1 Overlay Background Density RET */
+    public static final int OverlayBackgroundDensityRET = 0x20400082;
 
     /** (2040,0090) VR=CS, VM=1 Overlay Mode RET */
     public static final int OverlayModeRET = 0x20400090;
@@ -5203,8 +5246,8 @@ public class Tag {
     /** (2100,0170) VR=IS, VM=1 Number of Films  */
     public static final int NumberofFilms = 0x21000170;
 
-    /** (2100,0500) VR=SQ, VM=1 Referenced Print Job Sequence  */
-    public static final int ReferencedPrintJobSequence21000500 = 0x21000500;
+    /** (2100,0500) VR=SQ, VM=1 Referenced Print Job Sequence (Pull Stored Print) RET */
+    public static final int ReferencedPrintJobSequencePullStoredPrintRET = 0x21000500;
 
     /** (2110,0010) VR=CS, VM=1 Printer Status  */
     public static final int PrinterStatus = 0x21100010;
@@ -5215,44 +5258,44 @@ public class Tag {
     /** (2110,0030) VR=LO, VM=1 Printer Name  */
     public static final int PrinterName = 0x21100030;
 
-    /** (2110,0099) VR=SH, VM=1 Print Queue ID  */
-    public static final int PrintQueueID = 0x21100099;
+    /** (2110,0099) VR=SH, VM=1 Print Queue ID RET */
+    public static final int PrintQueueIDRET = 0x21100099;
 
-    /** (2120,0010) VR=CS, VM=1 Queue Status  */
-    public static final int QueueStatus = 0x21200010;
+    /** (2120,0010) VR=CS, VM=1 Queue Status RET */
+    public static final int QueueStatusRET = 0x21200010;
 
-    /** (2120,0050) VR=SQ, VM=1 Print Job Description Sequence  */
-    public static final int PrintJobDescriptionSequence = 0x21200050;
+    /** (2120,0050) VR=SQ, VM=1 Print Job Description Sequence RET */
+    public static final int PrintJobDescriptionSequenceRET = 0x21200050;
 
-    /** (2120,0070) VR=SQ, VM=1 Referenced Print Job Sequence  */
-    public static final int ReferencedPrintJobSequence21200070 = 0x21200070;
+    /** (2120,0070) VR=SQ, VM=1 Referenced Print Job Sequence RET */
+    public static final int ReferencedPrintJobSequenceRET = 0x21200070;
 
-    /** (2130,0010) VR=SQ, VM=1 Print Management Capabilities Sequence  */
-    public static final int PrintManagementCapabilitiesSequence = 0x21300010;
+    /** (2130,0010) VR=SQ, VM=1 Print Management Capabilities Sequence RET */
+    public static final int PrintManagementCapabilitiesSequenceRET = 0x21300010;
 
-    /** (2130,0015) VR=SQ, VM=1 Printer Characteristics Sequence  */
-    public static final int PrinterCharacteristicsSequence = 0x21300015;
+    /** (2130,0015) VR=SQ, VM=1 Printer Characteristics Sequence RET */
+    public static final int PrinterCharacteristicsSequenceRET = 0x21300015;
 
-    /** (2130,0030) VR=SQ, VM=1 Film Box Content Sequence  */
-    public static final int FilmBoxContentSequence = 0x21300030;
+    /** (2130,0030) VR=SQ, VM=1 Film Box Content Sequence RET */
+    public static final int FilmBoxContentSequenceRET = 0x21300030;
 
-    /** (2130,0040) VR=SQ, VM=1 Image Box Content Sequence  */
-    public static final int ImageBoxContentSequence = 0x21300040;
+    /** (2130,0040) VR=SQ, VM=1 Image Box Content Sequence RET */
+    public static final int ImageBoxContentSequenceRET = 0x21300040;
 
-    /** (2130,0050) VR=SQ, VM=1 Annotation Content Sequence  */
-    public static final int AnnotationContentSequence = 0x21300050;
+    /** (2130,0050) VR=SQ, VM=1 Annotation Content Sequence RET */
+    public static final int AnnotationContentSequenceRET = 0x21300050;
 
-    /** (2130,0060) VR=SQ, VM=1 Image Overlay Box Content Sequence  */
-    public static final int ImageOverlayBoxContentSequence = 0x21300060;
+    /** (2130,0060) VR=SQ, VM=1 Image Overlay Box Content Sequence RET */
+    public static final int ImageOverlayBoxContentSequenceRET = 0x21300060;
 
-    /** (2130,0080) VR=SQ, VM=1 Presentation LUT Content Sequence  */
-    public static final int PresentationLUTContentSequence = 0x21300080;
+    /** (2130,0080) VR=SQ, VM=1 Presentation LUT Content Sequence RET */
+    public static final int PresentationLUTContentSequenceRET = 0x21300080;
 
-    /** (2130,00A0) VR=SQ, VM=1 Proposed Study Sequence  */
-    public static final int ProposedStudySequence = 0x213000A0;
+    /** (2130,00A0) VR=SQ, VM=1 Proposed Study Sequence RET */
+    public static final int ProposedStudySequenceRET = 0x213000A0;
 
-    /** (2130,00C0) VR=SQ, VM=1 Original Image Sequence  */
-    public static final int OriginalImageSequence = 0x213000C0;
+    /** (2130,00C0) VR=SQ, VM=1 Original Image Sequence RET */
+    public static final int OriginalImageSequenceRET = 0x213000C0;
 
     /** (2200,0001) VR=CS, VM=1 Label Using Information Extracted From Instances  */
     public static final int LabelUsingInformationExtractedFromInstances = 0x22000001;
@@ -5590,6 +5633,9 @@ public class Tag {
     /** (3008,0020) VR=SQ, VM=1 Treatment Session Beam Sequence  */
     public static final int TreatmentSessionBeamSequence = 0x30080020;
 
+    /** (3008,0021) VR=SQ, VM=1 Treatment Session Ion Beam Sequence  */
+    public static final int TreatmentSessionIonBeamSequence = 0x30080021;
+
     /** (3008,0022) VR=IS, VM=1 Current Fraction Number  */
     public static final int CurrentFractionNumber = 0x30080022;
 
@@ -5611,7 +5657,7 @@ public class Tag {
     /** (3008,0030) VR=SQ, VM=1 Referenced Treatment Record Sequence  */
     public static final int ReferencedTreatmentRecordSequence = 0x30080030;
 
-    /** (3008,0032) VR=DS, VM=1 Specified Primary Meterset   */
+    /** (3008,0032) VR=DS, VM=1 Specified Primary Meterset  */
     public static final int SpecifiedPrimaryMeterset = 0x30080032;
 
     /** (3008,0033) VR=DS, VM=1 Specified Secondary Meterset  */
@@ -5632,11 +5678,23 @@ public class Tag {
     /** (3008,0040) VR=SQ, VM=1 Control Point Delivery Sequence  */
     public static final int ControlPointDeliverySequence = 0x30080040;
 
+    /** (3008,0041) VR=SQ, VM=1 Ion Control Point Delivery Sequence  */
+    public static final int IonControlPointDeliverySequence = 0x30080041;
+
     /** (3008,0042) VR=DS, VM=1 Specified Meterset  */
     public static final int SpecifiedMeterset = 0x30080042;
 
     /** (3008,0044) VR=DS, VM=1 Delivered Meterset  */
     public static final int DeliveredMeterset = 0x30080044;
+
+    /** (3008,0045) VR=FL, VM=1 Meterset Rate Set  */
+    public static final int MetersetRateSet = 0x30080045;
+
+    /** (3008,0046) VR=FL, VM=1 Meterset Rate Delivered  */
+    public static final int MetersetRateDelivered = 0x30080046;
+
+    /** (3008,0047) VR=FL, VM=1-n Scan Spot Metersets Delivered  */
+    public static final int ScanSpotMetersetsDelivered = 0x30080047;
 
     /** (3008,0048) VR=DS, VM=1 Dose Rate Delivered  */
     public static final int DoseRateDelivered = 0x30080048;
@@ -5659,14 +5717,29 @@ public class Tag {
     /** (3008,0060) VR=SQ, VM=1 Override Sequence  */
     public static final int OverrideSequence = 0x30080060;
 
+    /** (3008,0061) VR=AT, VM=1 Parameter Sequence Pointer  */
+    public static final int ParameterSequencePointer = 0x30080061;
+
     /** (3008,0062) VR=AT, VM=1 Override Parameter Pointer  */
     public static final int OverrideParameterPointer = 0x30080062;
+
+    /** (3008,0063) VR=IS, VM=1 Parameter Item Index  */
+    public static final int ParameterItemIndex = 0x30080063;
 
     /** (3008,0064) VR=IS, VM=1 Measured Dose Reference Number  */
     public static final int MeasuredDoseReferenceNumber = 0x30080064;
 
+    /** (3008,0065) VR=AT, VM=1 Parameter Pointer  */
+    public static final int ParameterPointer = 0x30080065;
+
     /** (3008,0066) VR=ST, VM=1 Override Reason  */
     public static final int OverrideReason = 0x30080066;
+
+    /** (3008,0068) VR=SQ, VM=1 Corrected Parameter Sequence  */
+    public static final int CorrectedParameterSequence = 0x30080068;
+
+    /** (3008,006A) VR=FL, VM=1 Correction Value  */
+    public static final int CorrectionValue = 0x3008006A;
 
     /** (3008,0070) VR=SQ, VM=1 Calculated Dose Reference Sequence  */
     public static final int CalculatedDoseReferenceSequence = 0x30080070;
@@ -5712,6 +5785,18 @@ public class Tag {
 
     /** (3008,00E0) VR=SQ, VM=1 Treatment Summary Measured Dose Reference Sequence  */
     public static final int TreatmentSummaryMeasuredDoseReferenceSequence = 0x300800E0;
+
+    /** (3008,00F0) VR=SQ, VM=1 Recorded Snout Sequence  */
+    public static final int RecordedSnoutSequence = 0x300800F0;
+
+    /** (3008,00F2) VR=SQ, VM=1 Recorded Range Shifter Sequence  */
+    public static final int RecordedRangeShifterSequence = 0x300800F2;
+
+    /** (3008,00F4) VR=SQ, VM=1 Recorded Lateral Spreading Device Sequence  */
+    public static final int RecordedLateralSpreadingDeviceSequence = 0x300800F4;
+
+    /** (3008,00F6) VR=SQ, VM=1 Recorded Range Modulator Sequence  */
+    public static final int RecordedRangeModulatorSequence = 0x300800F6;
 
     /** (3008,0100) VR=SQ, VM=1 Recorded Source Sequence  */
     public static final int RecordedSourceSequence = 0x30080100;
@@ -5824,8 +5909,8 @@ public class Tag {
     /** (300A,0009) VR=LO, VM=1-n Treatment Protocols  */
     public static final int TreatmentProtocols = 0x300A0009;
 
-    /** (300A,000A) VR=CS, VM=1 Treatment Intent  */
-    public static final int TreatmentIntent = 0x300A000A;
+    /** (300A,000A) VR=CS, VM=1 Plan Intent  */
+    public static final int PlanIntent = 0x300A000A;
 
     /** (300A,000B) VR=LO, VM=1-n Treatment Sites  */
     public static final int TreatmentSites = 0x300A000B;
@@ -5917,11 +6002,20 @@ public class Tag {
     /** (300A,004A) VR=DS, VM=1 Beam Limiting Device Position Tolerance  */
     public static final int BeamLimitingDevicePositionTolerance = 0x300A004A;
 
+    /** (300A,004B) VR=FL, VM=1 Snout Position Tolerance  */
+    public static final int SnoutPositionTolerance = 0x300A004B;
+
     /** (300A,004C) VR=DS, VM=1 Patient Support Angle Tolerance  */
     public static final int PatientSupportAngleTolerance = 0x300A004C;
 
     /** (300A,004E) VR=DS, VM=1 Table Top Eccentric Angle Tolerance  */
     public static final int TableTopEccentricAngleTolerance = 0x300A004E;
+
+    /** (300A,004F) VR=FL, VM=1 Table Top Pitch Angle Tolerance  */
+    public static final int TableTopPitchAngleTolerance = 0x300A004F;
+
+    /** (300A,0050) VR=FL, VM=1 Table Top Roll Angle Tolerance  */
+    public static final int TableTopRollAngleTolerance = 0x300A0050;
 
     /** (300A,0051) VR=DS, VM=1 Table Top Vertical Position Tolerance  */
     public static final int TableTopVerticalPositionTolerance = 0x300A0051;
@@ -5998,6 +6092,9 @@ public class Tag {
     /** (300A,00BA) VR=DS, VM=1 Source to Beam Limiting Device Distance  */
     public static final int SourcetoBeamLimitingDeviceDistance = 0x300A00BA;
 
+    /** (300A,00BB) VR=FL, VM=1 Isocenter to Beam Limiting Device Distance  */
+    public static final int IsocentertoBeamLimitingDeviceDistance = 0x300A00BB;
+
     /** (300A,00BC) VR=IS, VM=1 Number of Leaf/Jaw Pairs  */
     public static final int NumberofLeafJawPairs = 0x300A00BC;
 
@@ -6055,11 +6152,20 @@ public class Tag {
     /** (300A,00D6) VR=DS, VM=1 Wedge Factor  */
     public static final int WedgeFactor = 0x300A00D6;
 
+    /** (300A,00D7) VR=FL, VM=1 Total Wedge Tray Water-Equivalent Thickness  */
+    public static final int TotalWedgeTrayWaterEquivalentThickness = 0x300A00D7;
+
     /** (300A,00D8) VR=DS, VM=1 Wedge Orientation  */
     public static final int WedgeOrientation = 0x300A00D8;
 
+    /** (300A,00D9) VR=FL, VM=1 Isocenter to Wedge Tray Distance  */
+    public static final int IsocentertoWedgeTrayDistance = 0x300A00D9;
+
     /** (300A,00DA) VR=DS, VM=1 Source to Wedge Tray Distance  */
     public static final int SourcetoWedgeTrayDistance = 0x300A00DA;
+
+    /** (300A,00DB) VR=FL, VM=1 Wedge Thin Edge Position  */
+    public static final int WedgeThinEdgePosition = 0x300A00DB;
 
     /** (300A,00DC) VR=SH, VM=1 Bolus ID  */
     public static final int BolusID = 0x300A00DC;
@@ -6118,6 +6224,9 @@ public class Tag {
     /** (300A,00F2) VR=DS, VM=1 Total Block Tray Factor  */
     public static final int TotalBlockTrayFactor = 0x300A00F2;
 
+    /** (300A,00F3) VR=FL, VM=1 Total Block Tray Water-Equivalent Thickness  */
+    public static final int TotalBlockTrayWaterEquivalentThickness = 0x300A00F3;
+
     /** (300A,00F4) VR=SQ, VM=1 Block Sequence  */
     public static final int BlockSequence = 0x300A00F4;
 
@@ -6126,6 +6235,9 @@ public class Tag {
 
     /** (300A,00F6) VR=DS, VM=1 Source to Block Tray Distance  */
     public static final int SourcetoBlockTrayDistance = 0x300A00F6;
+
+    /** (300A,00F7) VR=FL, VM=1 Isocenter to Block Tray Distance  */
+    public static final int IsocentertoBlockTrayDistance = 0x300A00F7;
 
     /** (300A,00F8) VR=CS, VM=1 Block Type  */
     public static final int BlockType = 0x300A00F8;
@@ -6250,6 +6362,27 @@ public class Tag {
     /** (300A,0134) VR=DS, VM=1 Cumulative Meterset Weight  */
     public static final int CumulativeMetersetWeight = 0x300A0134;
 
+    /** (300A,0140) VR=FL, VM=1 Table Top Pitch Angle  */
+    public static final int TableTopPitchAngle = 0x300A0140;
+
+    /** (300A,0142) VR=CS, VM=1 Table Top Pitch Rotation Direction  */
+    public static final int TableTopPitchRotationDirection = 0x300A0142;
+
+    /** (300A,0144) VR=FL, VM=1 Table Top Roll Angle  */
+    public static final int TableTopRollAngle = 0x300A0144;
+
+    /** (300A,0146) VR=CS, VM=1 Table Top Roll Rotation Direction  */
+    public static final int TableTopRollRotationDirection = 0x300A0146;
+
+    /** (300A,0148) VR=FL, VM=1 Head Fixation Angle  */
+    public static final int HeadFixationAngle = 0x300A0148;
+
+    /** (300A,014A) VR=FL, VM=1 Gantry Pitch Angle  */
+    public static final int GantryPitchAngle = 0x300A014A;
+
+    /** (300A,014C) VR=CS, VM=1 Gantry Pitch Rotation Direction  */
+    public static final int GantryPitchRotationDirection = 0x300A014C;
+
     /** (300A,0180) VR=SQ, VM=1 Patient Setup Sequence  */
     public static final int PatientSetupSequence = 0x300A0180;
 
@@ -6279,6 +6412,9 @@ public class Tag {
 
     /** (300A,0199) VR=FL, VM=1 Fixation Device Pitch Angle  */
     public static final int FixationDevicePitchAngle = 0x300A0199;
+
+    /** (300A,019A) VR=FL, VM=1 Fixation Device Roll Angle  */
+    public static final int FixationDeviceRollAngle = 0x300A019A;
 
     /** (300A,01A0) VR=SQ, VM=1 Shielding Device Sequence  */
     public static final int ShieldingDeviceSequence = 0x300A01A0;
@@ -6367,14 +6503,20 @@ public class Tag {
     /** (300A,0228) VR=DS, VM=1 Source Isotope Half Life  */
     public static final int SourceIsotopeHalfLife = 0x300A0228;
 
+    /** (300A,0229) VR=CS, VM=1 Source Strength Units  */
+    public static final int SourceStrengthUnits = 0x300A0229;
+
     /** (300A,022A) VR=DS, VM=1 Reference Air Kerma Rate  */
     public static final int ReferenceAirKermaRate = 0x300A022A;
 
-    /** (300A,022C) VR=DA, VM=1 Air Kerma Rate Reference Date  */
-    public static final int AirKermaRateReferenceDate = 0x300A022C;
+    /** (300A,022B) VR=DS, VM=1 Source Strength  */
+    public static final int SourceStrength = 0x300A022B;
 
-    /** (300A,022E) VR=TM, VM=1 Air Kerma Rate Reference Time  */
-    public static final int AirKermaRateReferenceTime = 0x300A022E;
+    /** (300A,022C) VR=DA, VM=1 Source Strength Reference Date  */
+    public static final int SourceStrengthReferenceDate = 0x300A022C;
+
+    /** (300A,022E) VR=TM, VM=1 Source Strength Reference Time  */
+    public static final int SourceStrengthReferenceTime = 0x300A022E;
 
     /** (300A,0230) VR=SQ, VM=1 Application Setup Sequence  */
     public static final int ApplicationSetupSequence = 0x300A0230;
@@ -6520,8 +6662,212 @@ public class Tag {
     /** (300A,02E2) VR=DS, VM=1-n Source to Compensator Distance  */
     public static final int SourcetoCompensatorDistance = 0x300A02E2;
 
-    /** (300A,019A) VR=FL, VM=1 Fixation Device Roll Angle  */
-    public static final int FixationDeviceRollAngle = 0x300A019A;
+    /** (300A,02E3) VR=FL, VM=1 Total Compensator Tray Water-Equivalent Thickness  */
+    public static final int TotalCompensatorTrayWaterEquivalentThickness = 0x300A02E3;
+
+    /** (300A,02E4) VR=FL, VM=1 Isocenter to Compensator Tray Distance  */
+    public static final int IsocentertoCompensatorTrayDistance = 0x300A02E4;
+
+    /** (300A,02E5) VR=FL, VM=1 Compensator Column Offset  */
+    public static final int CompensatorColumnOffset = 0x300A02E5;
+
+    /** (300A,02E6) VR=FL, VM=1-n Isocenter to Compensator Distances  */
+    public static final int IsocentertoCompensatorDistances = 0x300A02E6;
+
+    /** (300A,02E7) VR=FL, VM=1 Compensator Relative Stopping Power Ratio  */
+    public static final int CompensatorRelativeStoppingPowerRatio = 0x300A02E7;
+
+    /** (300A,02E8) VR=FL, VM=1 Compensator Milling Tool Diameter  */
+    public static final int CompensatorMillingToolDiameter = 0x300A02E8;
+
+    /** (300A,02EA) VR=SQ, VM=1 Ion Range Compensator Sequence  */
+    public static final int IonRangeCompensatorSequence = 0x300A02EA;
+
+    /** (300A,0302) VR=IS, VM=1 Radiation Mass Number  */
+    public static final int RadiationMassNumber = 0x300A0302;
+
+    /** (300A,0304) VR=IS, VM=1 Radiation Atomic Number  */
+    public static final int RadiationAtomicNumber = 0x300A0304;
+
+    /** (300A,0306) VR=SS, VM=1 Radiation Charge State  */
+    public static final int RadiationChargeState = 0x300A0306;
+
+    /** (300A,0308) VR=CS, VM=1 Scan Mode  */
+    public static final int ScanMode = 0x300A0308;
+
+    /** (300A,030A) VR=FL, VM=2 Virtual Source-Axis Distances  */
+    public static final int VirtualSourceAxisDistances = 0x300A030A;
+
+    /** (300A,030C) VR=SQ, VM=1 Snout Sequence  */
+    public static final int SnoutSequence = 0x300A030C;
+
+    /** (300A,030D) VR=FL, VM=1 Snout Position  */
+    public static final int SnoutPosition = 0x300A030D;
+
+    /** (300A,030F) VR=SH, VM=1 Snout ID  */
+    public static final int SnoutID = 0x300A030F;
+
+    /** (300A,0312) VR=IS, VM=1 Number of Range Shifters  */
+    public static final int NumberofRangeShifters = 0x300A0312;
+
+    /** (300A,0314) VR=SQ, VM=1 Range Shifter Sequence  */
+    public static final int RangeShifterSequence = 0x300A0314;
+
+    /** (300A,0316) VR=IS, VM=1 Range Shifter Number  */
+    public static final int RangeShifterNumber = 0x300A0316;
+
+    /** (300A,0318) VR=SH, VM=1 Range Shifter ID  */
+    public static final int RangeShifterID = 0x300A0318;
+
+    /** (300A,0320) VR=CS, VM=1 Range Shifter Type  */
+    public static final int RangeShifterType = 0x300A0320;
+
+    /** (300A,0322) VR=LO, VM=1 Range Shifter Description  */
+    public static final int RangeShifterDescription = 0x300A0322;
+
+    /** (300A,0330) VR=IS, VM=1 Number of Lateral Spreading Devices  */
+    public static final int NumberofLateralSpreadingDevices = 0x300A0330;
+
+    /** (300A,0332) VR=SQ, VM=1 Lateral Spreading Device Sequence  */
+    public static final int LateralSpreadingDeviceSequence = 0x300A0332;
+
+    /** (300A,0334) VR=IS, VM=1 Lateral Spreading Device Number  */
+    public static final int LateralSpreadingDeviceNumber = 0x300A0334;
+
+    /** (300A,0336) VR=SH, VM=1 Lateral Spreading Device ID  */
+    public static final int LateralSpreadingDeviceID = 0x300A0336;
+
+    /** (300A,0338) VR=CS, VM=1 Lateral Spreading Device Type  */
+    public static final int LateralSpreadingDeviceType = 0x300A0338;
+
+    /** (300A,033A) VR=LO, VM=1 Lateral Spreading Device Description  */
+    public static final int LateralSpreadingDeviceDescription = 0x300A033A;
+
+    /** (300A,033C) VR=FL, VM=1 Lateral Spreading Device Water Equivalent Thickness  */
+    public static final int LateralSpreadingDeviceWaterEquivalentThickness = 0x300A033C;
+
+    /** (300A,0340) VR=IS, VM=1 Number of Range Modulators  */
+    public static final int NumberofRangeModulators = 0x300A0340;
+
+    /** (300A,0342) VR=SQ, VM=1 Range Modulator Sequence  */
+    public static final int RangeModulatorSequence = 0x300A0342;
+
+    /** (300A,0344) VR=IS, VM=1 Range Modulator Number  */
+    public static final int RangeModulatorNumber = 0x300A0344;
+
+    /** (300A,0346) VR=SH, VM=1 Range Modulator ID  */
+    public static final int RangeModulatorID = 0x300A0346;
+
+    /** (300A,0348) VR=CS, VM=1 Range Modulator Type  */
+    public static final int RangeModulatorType = 0x300A0348;
+
+    /** (300A,034A) VR=LO, VM=1 Range Modulator Description  */
+    public static final int RangeModulatorDescription = 0x300A034A;
+
+    /** (300A,034C) VR=SH, VM=1 Beam Current Modulation ID  */
+    public static final int BeamCurrentModulationID = 0x300A034C;
+
+    /** (300A,0350) VR=CS, VM=1 Patient Support Type  */
+    public static final int PatientSupportType = 0x300A0350;
+
+    /** (300A,0352) VR=SH, VM=1 Patient Support ID  */
+    public static final int PatientSupportID = 0x300A0352;
+
+    /** (300A,0354) VR=LO, VM=1 Patient Support Accessory Code  */
+    public static final int PatientSupportAccessoryCode = 0x300A0354;
+
+    /** (300A,0356) VR=FL, VM=1 Fixation Light Azimuthal Angle  */
+    public static final int FixationLightAzimuthalAngle = 0x300A0356;
+
+    /** (300A,0358) VR=FL, VM=1 Fixation Light Polar Angle  */
+    public static final int FixationLightPolarAngle = 0x300A0358;
+
+    /** (300A,035A) VR=FL, VM=1 Meterset Rate  */
+    public static final int MetersetRate = 0x300A035A;
+
+    /** (300A,0360) VR=SQ, VM=1 Range Shifter Settings Sequence  */
+    public static final int RangeShifterSettingsSequence = 0x300A0360;
+
+    /** (300A,0362) VR=LO, VM=1 Range Shifter Setting  */
+    public static final int RangeShifterSetting = 0x300A0362;
+
+    /** (300A,0364) VR=FL, VM=1 Isocenter to Range Shifter Distance  */
+    public static final int IsocentertoRangeShifterDistance = 0x300A0364;
+
+    /** (300A,0366) VR=FL, VM=1 Range Shifter Water Equivalent Thickness  */
+    public static final int RangeShifterWaterEquivalentThickness = 0x300A0366;
+
+    /** (300A,0370) VR=SQ, VM=1 Lateral Spreading Device Settings Sequence  */
+    public static final int LateralSpreadingDeviceSettingsSequence = 0x300A0370;
+
+    /** (300A,0372) VR=LO, VM=1 Lateral Spreading Device Setting  */
+    public static final int LateralSpreadingDeviceSetting = 0x300A0372;
+
+    /** (300A,0374) VR=FL, VM=1 Isocenter to Lateral Spreading Device Distance  */
+    public static final int IsocentertoLateralSpreadingDeviceDistance = 0x300A0374;
+
+    /** (300A,0380) VR=SQ, VM=1 Range Modulator Settings Sequence  */
+    public static final int RangeModulatorSettingsSequence = 0x300A0380;
+
+    /** (300A,0382) VR=FL, VM=1 Range Modulator Gating Start Value  */
+    public static final int RangeModulatorGatingStartValue = 0x300A0382;
+
+    /** (300A,0384) VR=FL, VM=1 Range Modulator Gating Stop Value  */
+    public static final int RangeModulatorGatingStopValue = 0x300A0384;
+
+    /** (300A,0386) VR=FL, VM=1 Range Modulator Gating Start Water Equivalent Thickness  */
+    public static final int RangeModulatorGatingStartWaterEquivalentThickness = 0x300A0386;
+
+    /** (300A,0388) VR=FL, VM=1 Range Modulator Gating Stop Water Equivalent Thickness  */
+    public static final int RangeModulatorGatingStopWaterEquivalentThickness = 0x300A0388;
+
+    /** (300A,038A) VR=FL, VM=1 Isocenter to Range Modulator Distance  */
+    public static final int IsocentertoRangeModulatorDistance = 0x300A038A;
+
+    /** (300A,0390) VR=SH, VM=1 Scan Spot Tune ID  */
+    public static final int ScanSpotTuneID = 0x300A0390;
+
+    /** (300A,0392) VR=IS, VM=1 Number of Scan Spot Positions  */
+    public static final int NumberofScanSpotPositions = 0x300A0392;
+
+    /** (300A,0394) VR=FL, VM=1-n Scan Spot Position Map  */
+    public static final int ScanSpotPositionMap = 0x300A0394;
+
+    /** (300A,0396) VR=FL, VM=1-n Scan Spot Meterset Weights  */
+    public static final int ScanSpotMetersetWeights = 0x300A0396;
+
+    /** (300A,0398) VR=FL, VM=2 Scanning Spot Size  */
+    public static final int ScanningSpotSize = 0x300A0398;
+
+    /** (300A,039A) VR=IS, VM=1 Number of Paintings  */
+    public static final int NumberofPaintings = 0x300A039A;
+
+    /** (300A,03A0) VR=SQ, VM=1 Ion Tolerance Table Sequence  */
+    public static final int IonToleranceTableSequence = 0x300A03A0;
+
+    /** (300A,03A2) VR=SQ, VM=1 Ion Beam Sequence  */
+    public static final int IonBeamSequence = 0x300A03A2;
+
+    /** (300A,03A4) VR=SQ, VM=1 Ion Beam Limiting Device Sequence  */
+    public static final int IonBeamLimitingDeviceSequence = 0x300A03A4;
+
+    /** (300A,03A6) VR=SQ, VM=1 Ion Block Sequence  */
+    public static final int IonBlockSequence = 0x300A03A6;
+
+    /** (300A,03A8) VR=SQ, VM=1 Ion Control Point Sequence  */
+    public static final int IonControlPointSequence = 0x300A03A8;
+
+    /** (300A,03AA) VR=SQ, VM=1 Ion Wedge Sequence  */
+    public static final int IonWedgeSequence = 0x300A03AA;
+
+    /** (300A,03AC) VR=SQ, VM=1 Ion Wedge Position Sequence  */
+    public static final int IonWedgePositionSequence = 0x300A03AC;
+
+    /** (300A,0401) VR=SQ, VM=1 Referenced Image Setup Sequence  */
+    public static final int ReferencedImageSetupSequence = 0x300A0401;
+
+    /** (300A,0402) VR=ST, VM=1 Setup Image Comment  */
+    public static final int SetupImageComment = 0x300A0402;
 
     /** (300C,0002) VR=SQ, VM=1 Referenced RT Plan Sequence  */
     public static final int ReferencedRTPlanSequence = 0x300C0002;
@@ -6607,6 +6953,15 @@ public class Tag {
     /** (300C,00F6) VR=IS, VM=1 Referenced Stop Control Point Index  */
     public static final int ReferencedStopControlPointIndex = 0x300C00F6;
 
+    /** (300C,0100) VR=IS, VM=1 Referenced Range Shifter Number  */
+    public static final int ReferencedRangeShifterNumber = 0x300C0100;
+
+    /** (300C,0102) VR=IS, VM=1 Referenced Lateral Spreading Device Number  */
+    public static final int ReferencedLateralSpreadingDeviceNumber = 0x300C0102;
+
+    /** (300C,0104) VR=IS, VM=1 Referenced Range Modulator Number  */
+    public static final int ReferencedRangeModulatorNumber = 0x300C0104;
+
     /** (300E,0002) VR=CS, VM=1 Approval Status  */
     public static final int ApprovalStatus = 0x300E0002;
 
@@ -6622,170 +6977,170 @@ public class Tag {
     /** (4000,0010) VR=LT, VM=1 Arbitrary RET */
     public static final int ArbitraryRET = 0x40000010;
 
-    /** (4000,4000) VR=LT, VM=1 Comments RET */
-    public static final int CommentsRET40004000 = 0x40004000;
+    /** (4000,4000) VR=LT, VM=1 Text Comments RET */
+    public static final int TextCommentsRET = 0x40004000;
 
-    /** (4008,0040) VR=SH, VM=1 Results ID  */
-    public static final int ResultsID = 0x40080040;
+    /** (4008,0040) VR=SH, VM=1 Results ID RET */
+    public static final int ResultsIDRET = 0x40080040;
 
-    /** (4008,0042) VR=LO, VM=1 Results ID Issuer  */
-    public static final int ResultsIDIssuer = 0x40080042;
+    /** (4008,0042) VR=LO, VM=1 Results ID Issuer RET */
+    public static final int ResultsIDIssuerRET = 0x40080042;
 
-    /** (4008,0050) VR=SQ, VM=1 Referenced Interpretation Sequence  */
-    public static final int ReferencedInterpretationSequence = 0x40080050;
+    /** (4008,0050) VR=SQ, VM=1 Referenced Interpretation Sequence RET */
+    public static final int ReferencedInterpretationSequenceRET = 0x40080050;
 
-    /** (4008,0100) VR=DA, VM=1 Interpretation Recorded Date  */
-    public static final int InterpretationRecordedDate = 0x40080100;
+    /** (4008,0100) VR=DA, VM=1 Interpretation Recorded Date RET */
+    public static final int InterpretationRecordedDateRET = 0x40080100;
 
-    /** (4008,0101) VR=TM, VM=1 Interpretation Recorded Time  */
-    public static final int InterpretationRecordedTime = 0x40080101;
+    /** (4008,0101) VR=TM, VM=1 Interpretation Recorded Time RET */
+    public static final int InterpretationRecordedTimeRET = 0x40080101;
 
-    /** (4008,0102) VR=PN, VM=1 Interpretation Recorder  */
-    public static final int InterpretationRecorder = 0x40080102;
+    /** (4008,0102) VR=PN, VM=1 Interpretation Recorder RET */
+    public static final int InterpretationRecorderRET = 0x40080102;
 
-    /** (4008,0103) VR=LO, VM=1 Reference to Recorded Sound  */
-    public static final int ReferencetoRecordedSound = 0x40080103;
+    /** (4008,0103) VR=LO, VM=1 Reference to Recorded Sound RET */
+    public static final int ReferencetoRecordedSoundRET = 0x40080103;
 
-    /** (4008,0108) VR=DA, VM=1 Interpretation Transcription Date  */
-    public static final int InterpretationTranscriptionDate = 0x40080108;
+    /** (4008,0108) VR=DA, VM=1 Interpretation Transcription Date RET */
+    public static final int InterpretationTranscriptionDateRET = 0x40080108;
 
-    /** (4008,0109) VR=TM, VM=1 Interpretation Transcription Time  */
-    public static final int InterpretationTranscriptionTime = 0x40080109;
+    /** (4008,0109) VR=TM, VM=1 Interpretation Transcription Time RET */
+    public static final int InterpretationTranscriptionTimeRET = 0x40080109;
 
-    /** (4008,010A) VR=PN, VM=1 Interpretation Transcriber  */
-    public static final int InterpretationTranscriber = 0x4008010A;
+    /** (4008,010A) VR=PN, VM=1 Interpretation Transcriber RET */
+    public static final int InterpretationTranscriberRET = 0x4008010A;
 
-    /** (4008,010B) VR=ST, VM=1 Interpretation Text  */
-    public static final int InterpretationText = 0x4008010B;
+    /** (4008,010B) VR=ST, VM=1 Interpretation Text RET */
+    public static final int InterpretationTextRET = 0x4008010B;
 
-    /** (4008,010C) VR=PN, VM=1 Interpretation Author  */
-    public static final int InterpretationAuthor = 0x4008010C;
+    /** (4008,010C) VR=PN, VM=1 Interpretation Author RET */
+    public static final int InterpretationAuthorRET = 0x4008010C;
 
-    /** (4008,0111) VR=SQ, VM=1 Interpretation Approver Sequence  */
-    public static final int InterpretationApproverSequence = 0x40080111;
+    /** (4008,0111) VR=SQ, VM=1 Interpretation Approver Sequence RET */
+    public static final int InterpretationApproverSequenceRET = 0x40080111;
 
-    /** (4008,0112) VR=DA, VM=1 Interpretation Approval Date  */
-    public static final int InterpretationApprovalDate = 0x40080112;
+    /** (4008,0112) VR=DA, VM=1 Interpretation Approval Date RET */
+    public static final int InterpretationApprovalDateRET = 0x40080112;
 
-    /** (4008,0113) VR=TM, VM=1 Interpretation Approval Time  */
-    public static final int InterpretationApprovalTime = 0x40080113;
+    /** (4008,0113) VR=TM, VM=1 Interpretation Approval Time RET */
+    public static final int InterpretationApprovalTimeRET = 0x40080113;
 
-    /** (4008,0114) VR=PN, VM=1 Physician Approving Interpretation  */
-    public static final int PhysicianApprovingInterpretation = 0x40080114;
+    /** (4008,0114) VR=PN, VM=1 Physician Approving Interpretation RET */
+    public static final int PhysicianApprovingInterpretationRET = 0x40080114;
 
-    /** (4008,0115) VR=LT, VM=1 Interpretation Diagnosis Description  */
-    public static final int InterpretationDiagnosisDescription = 0x40080115;
+    /** (4008,0115) VR=LT, VM=1 Interpretation Diagnosis Description RET */
+    public static final int InterpretationDiagnosisDescriptionRET = 0x40080115;
 
-    /** (4008,0117) VR=SQ, VM=1 Interpretation Diagnosis Code Sequence  */
-    public static final int InterpretationDiagnosisCodeSequence = 0x40080117;
+    /** (4008,0117) VR=SQ, VM=1 Interpretation Diagnosis Code Sequence RET */
+    public static final int InterpretationDiagnosisCodeSequenceRET = 0x40080117;
 
-    /** (4008,0118) VR=SQ, VM=1 Results Distribution List Sequence  */
-    public static final int ResultsDistributionListSequence = 0x40080118;
+    /** (4008,0118) VR=SQ, VM=1 Results Distribution List Sequence RET */
+    public static final int ResultsDistributionListSequenceRET = 0x40080118;
 
-    /** (4008,0119) VR=PN, VM=1 Distribution Name  */
-    public static final int DistributionName = 0x40080119;
+    /** (4008,0119) VR=PN, VM=1 Distribution Name RET */
+    public static final int DistributionNameRET = 0x40080119;
 
-    /** (4008,011A) VR=LO, VM=1 Distribution Address  */
-    public static final int DistributionAddress = 0x4008011A;
+    /** (4008,011A) VR=LO, VM=1 Distribution Address RET */
+    public static final int DistributionAddressRET = 0x4008011A;
 
-    /** (4008,0200) VR=SH, VM=1 Interpretation ID  */
-    public static final int InterpretationID = 0x40080200;
+    /** (4008,0200) VR=SH, VM=1 Interpretation ID RET */
+    public static final int InterpretationIDRET = 0x40080200;
 
-    /** (4008,0202) VR=LO, VM=1 Interpretation ID Issuer  */
-    public static final int InterpretationIDIssuer = 0x40080202;
+    /** (4008,0202) VR=LO, VM=1 Interpretation ID Issuer RET */
+    public static final int InterpretationIDIssuerRET = 0x40080202;
 
-    /** (4008,0210) VR=CS, VM=1 Interpretation Type ID  */
-    public static final int InterpretationTypeID = 0x40080210;
+    /** (4008,0210) VR=CS, VM=1 Interpretation Type ID RET */
+    public static final int InterpretationTypeIDRET = 0x40080210;
 
-    /** (4008,0212) VR=CS, VM=1 Interpretation Status ID  */
-    public static final int InterpretationStatusID = 0x40080212;
+    /** (4008,0212) VR=CS, VM=1 Interpretation Status ID RET */
+    public static final int InterpretationStatusIDRET = 0x40080212;
 
-    /** (4008,0300) VR=ST, VM=1 Impressions  */
-    public static final int Impressions = 0x40080300;
+    /** (4008,0300) VR=ST, VM=1 Impressions RET */
+    public static final int ImpressionsRET = 0x40080300;
 
-    /** (4008,4000) VR=ST, VM=1 Results Comments  */
-    public static final int ResultsComments = 0x40084000;
+    /** (4008,4000) VR=ST, VM=1 Results Comments RET */
+    public static final int ResultsCommentsRET = 0x40084000;
 
     /** (4FFE,0001) VR=SQ, VM=1 MAC Parameters Sequence  */
     public static final int MACParametersSequence = 0x4FFE0001;
 
-    /** (50xx,0005) VR=US, VM=1 Curve Dimensions  */
-    public static final int CurveDimensions = 0x50000005;
+    /** (50xx,0005) VR=US, VM=1 Curve Dimensions RET */
+    public static final int CurveDimensionsRET = 0x50000005;
 
-    /** (50xx,0010) VR=US, VM=1 Number of Points  */
-    public static final int NumberofPoints = 0x50000010;
+    /** (50xx,0010) VR=US, VM=1 Number of Points RET */
+    public static final int NumberofPointsRET = 0x50000010;
 
-    /** (50xx,0020) VR=CS, VM=1 Type of Data  */
-    public static final int TypeofData = 0x50000020;
+    /** (50xx,0020) VR=CS, VM=1 Type of Data RET */
+    public static final int TypeofDataRET = 0x50000020;
 
-    /** (50xx,0022) VR=LO, VM=1 Curve Description  */
-    public static final int CurveDescription = 0x50000022;
+    /** (50xx,0022) VR=LO, VM=1 Curve Description RET */
+    public static final int CurveDescriptionRET = 0x50000022;
 
-    /** (50xx,0030) VR=SH, VM=1-n Axis Units  */
-    public static final int AxisUnits = 0x50000030;
+    /** (50xx,0030) VR=SH, VM=1-n Axis Units RET */
+    public static final int AxisUnitsRET = 0x50000030;
 
-    /** (50xx,0040) VR=SH, VM=1-n Axis Labels  */
-    public static final int AxisLabels = 0x50000040;
+    /** (50xx,0040) VR=SH, VM=1-n Axis Labels RET */
+    public static final int AxisLabelsRET = 0x50000040;
 
-    /** (50xx,0103) VR=US, VM=1 Data Value Representation  */
-    public static final int DataValueRepresentation = 0x50000103;
+    /** (50xx,0103) VR=US, VM=1 Data Value Representation RET */
+    public static final int DataValueRepresentationRET = 0x50000103;
 
-    /** (50xx,0104) VR=US, VM=1-n Minimum Coordinate Value  */
-    public static final int MinimumCoordinateValue = 0x50000104;
+    /** (50xx,0104) VR=US, VM=1-n Minimum Coordinate Value RET */
+    public static final int MinimumCoordinateValueRET = 0x50000104;
 
-    /** (50xx,0105) VR=US, VM=1-n Maximum Coordinate Value  */
-    public static final int MaximumCoordinateValue = 0x50000105;
+    /** (50xx,0105) VR=US, VM=1-n Maximum Coordinate Value RET */
+    public static final int MaximumCoordinateValueRET = 0x50000105;
 
-    /** (50xx,0106) VR=SH, VM=1-n Curve Range  */
-    public static final int CurveRange = 0x50000106;
+    /** (50xx,0106) VR=SH, VM=1-n Curve Range RET */
+    public static final int CurveRangeRET = 0x50000106;
 
-    /** (50xx,0110) VR=US, VM=1-n Curve Data Descriptor  */
-    public static final int CurveDataDescriptor = 0x50000110;
+    /** (50xx,0110) VR=US, VM=1-n Curve Data Descriptor RET */
+    public static final int CurveDataDescriptorRET = 0x50000110;
 
-    /** (50xx,0112) VR=US, VM=1-n Coordinate Start Value  */
-    public static final int CoordinateStartValue = 0x50000112;
+    /** (50xx,0112) VR=US, VM=1-n Coordinate Start Value RET */
+    public static final int CoordinateStartValueRET = 0x50000112;
 
-    /** (50xx,0114) VR=US, VM=1-n Coordinate Step Value  */
-    public static final int CoordinateStepValue = 0x50000114;
+    /** (50xx,0114) VR=US, VM=1-n Coordinate Step Value RET */
+    public static final int CoordinateStepValueRET = 0x50000114;
 
-    /** (50xx,1001) VR=CS, VM=1 Curve Activation Layer  */
-    public static final int CurveActivationLayer = 0x50001001;
+    /** (50xx,1001) VR=CS, VM=1 Curve Activation Layer RET */
+    public static final int CurveActivationLayerRET = 0x50001001;
 
-    /** (50xx,2000) VR=US, VM=1 Audio Type  */
-    public static final int AudioType = 0x50002000;
+    /** (50xx,2000) VR=US, VM=1 Audio Type RET */
+    public static final int AudioTypeRET = 0x50002000;
 
-    /** (50xx,2002) VR=US, VM=1 Audio Sample Format  */
-    public static final int AudioSampleFormat = 0x50002002;
+    /** (50xx,2002) VR=US, VM=1 Audio Sample Format RET */
+    public static final int AudioSampleFormatRET = 0x50002002;
 
-    /** (50xx,2004) VR=US, VM=1 Number of Channels  */
-    public static final int NumberofChannels = 0x50002004;
+    /** (50xx,2004) VR=US, VM=1 Number of Channels RET */
+    public static final int NumberofChannelsRET = 0x50002004;
 
-    /** (50xx,2006) VR=UL, VM=1 Number of Samples  */
-    public static final int NumberofSamples = 0x50002006;
+    /** (50xx,2006) VR=UL, VM=1 Number of Samples RET */
+    public static final int NumberofSamplesRET = 0x50002006;
 
-    /** (50xx,2008) VR=UL, VM=1 Sample Rate  */
-    public static final int SampleRate = 0x50002008;
+    /** (50xx,2008) VR=UL, VM=1 Sample Rate RET */
+    public static final int SampleRateRET = 0x50002008;
 
-    /** (50xx,200A) VR=UL, VM=1 Total Time  */
-    public static final int TotalTime = 0x5000200A;
+    /** (50xx,200A) VR=UL, VM=1 Total Time RET */
+    public static final int TotalTimeRET = 0x5000200A;
 
-    /** (50xx,200C) VR=OW|OB, VM=1 Audio Sample Data  */
-    public static final int AudioSampleData = 0x5000200C;
+    /** (50xx,200C) VR=OW|OB, VM=1 Audio Sample Data RET */
+    public static final int AudioSampleDataRET = 0x5000200C;
 
-    /** (50xx,200E) VR=LT, VM=1 Audio Comments  */
-    public static final int AudioComments = 0x5000200E;
+    /** (50xx,200E) VR=LT, VM=1 Audio Comments RET */
+    public static final int AudioCommentsRET = 0x5000200E;
 
-    /** (50xx,2500) VR=LO, VM=1 Curve Label  */
-    public static final int CurveLabel = 0x50002500;
+    /** (50xx,2500) VR=LO, VM=1 Curve Label RET */
+    public static final int CurveLabelRET = 0x50002500;
 
-    /** (50xx,2600) VR=SQ, VM=1 Referenced Overlay Sequence  */
-    public static final int ReferencedOverlaySequence50xx2600 = 0x50002600;
+    /** (50xx,2600) VR=SQ, VM=1 Curve Referenced Overlay Sequence RET */
+    public static final int CurveReferencedOverlaySequenceRET = 0x50002600;
 
-    /** (50xx,2610) VR=US, VM=1 Referenced Overlay Group  */
-    public static final int ReferencedOverlayGroup = 0x50002610;
+    /** (50xx,2610) VR=US, VM=1 Referenced Overlay Group RET */
+    public static final int ReferencedOverlayGroupRET = 0x50002610;
 
-    /** (50xx,3000) VR=OW|OB, VM=1 Curve Data  */
-    public static final int CurveData = 0x50003000;
+    /** (50xx,3000) VR=OW|OB, VM=1 Curve Data RET */
+    public static final int CurveDataRET = 0x50003000;
 
     /** (5200,9229) VR=SQ, VM=1 Shared Functional Groups Sequence  */
     public static final int SharedFunctionalGroupsSequence = 0x52009229;
@@ -6850,8 +7205,8 @@ public class Tag {
     /** (60xx,0052) VR=US, VM=1 Overlay Plane Origin  */
     public static final int OverlayPlaneOrigin = 0x60000052;
 
-    /** (60xx,0060) VR=CS, VM=1 Compression Code RET */
-    public static final int CompressionCodeRET60xx0060 = 0x60000060;
+    /** (60xx,0060) VR=CS, VM=1 Overlay Compression Code RET */
+    public static final int OverlayCompressionCodeRET = 0x60000060;
 
     /** (60xx,0100) VR=US, VM=1 Overlay Bits Allocated  */
     public static final int OverlayBitsAllocated = 0x60000100;
@@ -6907,8 +7262,8 @@ public class Tag {
     /** (60xx,3000) VR=OB|OW, VM=1 Overlay Data  */
     public static final int OverlayData = 0x60003000;
 
-    /** (60xx,4000) VR=LT, VM=1 Comments RET */
-    public static final int CommentsRET60xx4000 = 0x60004000;
+    /** (60xx,4000) VR=LT, VM=1 Overlay Comments RET */
+    public static final int OverlayCommentsRET = 0x60004000;
 
     /** (7FE0,0010) VR=OW|OB, VM=1 Pixel Data  */
     public static final int PixelData = 0x7FE00010;

@@ -119,6 +119,18 @@ public class UID {
     /** JPEG 2000 Image Compression - Transfer Syntax */
     public static final String JPEG2000 = "1.2.840.10008.1.2.4.91";
 
+    /** JPEG 2000 Part 2 Multi-component Image Compression (Lossless Only) - Transfer Syntax */
+    public static final String JPEG2000Part2MulticomponentLosslessOnly = "1.2.840.10008.1.2.4.92";
+
+    /** JPEG 2000 Part 2 Multi-component Image Compression - Transfer Syntax */
+    public static final String JPEG2000Part2Multicomponent = "1.2.840.10008.1.2.4.93";
+
+    /** JPIP Referenced - Transfer Syntax */
+    public static final String JPIPReferenced = "1.2.840.10008.1.2.4.94";
+
+    /** JPIP Referenced Deflate - Transfer Syntax */
+    public static final String JPIPReferencedDeflate = "1.2.840.10008.1.2.4.95";
+
     /** RLE Lossless - Transfer Syntax */
     public static final String RLELossless = "1.2.840.10008.1.2.5";
 
@@ -206,8 +218,8 @@ public class UID {
     /** Procedural Event Logging SOP Instance - Well-known SOP Instance */
     public static final String ProceduralEventLoggingSOPInstance = "1.2.840.10008.1.40.1";
 
-    /** Basic Study Content Notification SOP Class - SOP Class */
-    public static final String BasicStudyContentNotificationSOPClass = "1.2.840.10008.1.9";
+    /** Basic Study Content Notification SOP Class (Retired) - SOP Class */
+    public static final String BasicStudyContentNotificationSOPClassRetired = "1.2.840.10008.1.9";
 
     /** dicomDeviceName - LDAP OID */
     public static final String dicomDeviceName = "1.2.840.10008.15.0.3.1";
@@ -335,20 +347,20 @@ public class UID {
     /** DICOM Application Context Name - Application Context Name */
     public static final String DICOMApplicationContextName = "1.2.840.10008.3.1.1.1";
 
-    /** Detached Patient Management SOP Class - SOP Class */
-    public static final String DetachedPatientManagementSOPClass = "1.2.840.10008.3.1.2.1.1";
+    /** Detached Patient Management SOP Class (Retired) - SOP Class */
+    public static final String DetachedPatientManagementSOPClassRetired = "1.2.840.10008.3.1.2.1.1";
 
-    /** Detached Patient Management Meta SOP Class - Meta SOP Class */
-    public static final String DetachedPatientManagementMetaSOPClass = "1.2.840.10008.3.1.2.1.4";
+    /** Detached Patient Management Meta SOP Class (Retired) - Meta SOP Class */
+    public static final String DetachedPatientManagementMetaSOPClassRetired = "1.2.840.10008.3.1.2.1.4";
 
-    /** Detached Visit Management SOP Class - SOP Class */
-    public static final String DetachedVisitManagementSOPClass = "1.2.840.10008.3.1.2.2.1";
+    /** Detached Visit Management SOP Class (Retired) - SOP Class */
+    public static final String DetachedVisitManagementSOPClassRetired = "1.2.840.10008.3.1.2.2.1";
 
-    /** Detached Study Management SOP Class - SOP Class */
-    public static final String DetachedStudyManagementSOPClass = "1.2.840.10008.3.1.2.3.1";
+    /** Detached Study Management SOP Class (Retired) - SOP Class */
+    public static final String DetachedStudyManagementSOPClassRetired = "1.2.840.10008.3.1.2.3.1";
 
-    /** Study Component Management SOP Class - SOP Class */
-    public static final String StudyComponentManagementSOPClass = "1.2.840.10008.3.1.2.3.2";
+    /** Study Component Management SOP Class (Retired) - SOP Class */
+    public static final String StudyComponentManagementSOPClassRetired = "1.2.840.10008.3.1.2.3.2";
 
     /** Modality Performed Procedure Step SOP Class - SOP Class */
     public static final String ModalityPerformedProcedureStepSOPClass = "1.2.840.10008.3.1.2.3.3";
@@ -359,17 +371,17 @@ public class UID {
     /** Modality Performed Procedure Step Notification SOP Class - SOP Class */
     public static final String ModalityPerformedProcedureStepNotificationSOPClass = "1.2.840.10008.3.1.2.3.5";
 
-    /** Detached Results Management SOP Class - SOP Class */
-    public static final String DetachedResultsManagementSOPClass = "1.2.840.10008.3.1.2.5.1";
+    /** Detached Results Management SOP Class (Retired) - SOP Class */
+    public static final String DetachedResultsManagementSOPClassRetired = "1.2.840.10008.3.1.2.5.1";
 
-    /** Detached Results Management Meta SOP Class - Meta SOP Class */
-    public static final String DetachedResultsManagementMetaSOPClass = "1.2.840.10008.3.1.2.5.4";
+    /** Detached Results Management Meta SOP Class (Retired) - Meta SOP Class */
+    public static final String DetachedResultsManagementMetaSOPClassRetired = "1.2.840.10008.3.1.2.5.4";
 
-    /** Detached Study Management Meta SOP Class - Meta SOP Class */
-    public static final String DetachedStudyManagementMetaSOPClass = "1.2.840.10008.3.1.2.5.5";
+    /** Detached Study Management Meta SOP Class (Retired) - Meta SOP Class */
+    public static final String DetachedStudyManagementMetaSOPClassRetired = "1.2.840.10008.3.1.2.5.5";
 
-    /** Detached Interpretation Management SOP Class - SOP Class */
-    public static final String DetachedInterpretationManagementSOPClass = "1.2.840.10008.3.1.2.6.1";
+    /** Detached Interpretation Management SOP Class (Retired) - SOP Class */
+    public static final String DetachedInterpretationManagementSOPClassRetired = "1.2.840.10008.3.1.2.6.1";
 
     /** Storage Service Class - Service Class */
     public static final String StorageServiceClass = "1.2.840.10008.4.2";
@@ -413,29 +425,29 @@ public class UID {
     /** Image Overlay Box SOP Class (Retired) - SOP Class */
     public static final String ImageOverlayBoxSOPClassRetired = "1.2.840.10008.5.1.1.24";
 
-    /** Basic Print Image Overlay Box SOP Class - SOP Class */
-    public static final String BasicPrintImageOverlayBoxSOPClass = "1.2.840.10008.5.1.1.24.1";
+    /** Basic Print Image Overlay Box SOP Class (Retired) - SOP Class */
+    public static final String BasicPrintImageOverlayBoxSOPClassRetired = "1.2.840.10008.5.1.1.24.1";
 
-    /** Print Queue SOP Instance - Well-known Print Queue SOP Instance */
-    public static final String PrintQueueSOPInstance = "1.2.840.10008.5.1.1.25";
+    /** Print Queue SOP Instance (Retired) - Well-known Print Queue SOP Instance */
+    public static final String PrintQueueSOPInstanceRetired = "1.2.840.10008.5.1.1.25";
 
-    /** Print Queue Management SOP Class - SOP Class */
-    public static final String PrintQueueManagementSOPClass = "1.2.840.10008.5.1.1.26";
+    /** Print Queue Management SOP Class (Retired) - SOP Class */
+    public static final String PrintQueueManagementSOPClassRetired = "1.2.840.10008.5.1.1.26";
 
-    /** Stored Print Storage SOP Class - SOP Class */
-    public static final String StoredPrintStorageSOPClass = "1.2.840.10008.5.1.1.27";
+    /** Stored Print Storage SOP Class (Retired) - SOP Class */
+    public static final String StoredPrintStorageSOPClassRetired = "1.2.840.10008.5.1.1.27";
 
-    /** Hardcopy Grayscale Image Storage SOP Class - SOP Class */
-    public static final String HardcopyGrayscaleImageStorageSOPClass = "1.2.840.10008.5.1.1.29";
+    /** Hardcopy Grayscale Image Storage SOP Class (Retired) - SOP Class */
+    public static final String HardcopyGrayscaleImageStorageSOPClassRetired = "1.2.840.10008.5.1.1.29";
 
-    /** Hardcopy Color Image Storage SOP Class - SOP Class */
-    public static final String HardcopyColorImageStorageSOPClass = "1.2.840.10008.5.1.1.30";
+    /** Hardcopy Color Image Storage SOP Class (Retired) - SOP Class */
+    public static final String HardcopyColorImageStorageSOPClassRetired = "1.2.840.10008.5.1.1.30";
 
-    /** Pull Print Request SOP Class - SOP Class */
-    public static final String PullPrintRequestSOPClass = "1.2.840.10008.5.1.1.31";
+    /** Pull Print Request SOP Class (Retired) - SOP Class */
+    public static final String PullPrintRequestSOPClassRetired = "1.2.840.10008.5.1.1.31";
 
-    /** Pull Stored Print Management Meta SOP Class - Meta SOP Class */
-    public static final String PullStoredPrintManagementMetaSOPClass = "1.2.840.10008.5.1.1.32";
+    /** Pull Stored Print Management Meta SOP Class (Retired) - Meta SOP Class */
+    public static final String PullStoredPrintManagementMetaSOPClassRetired = "1.2.840.10008.5.1.1.32";
 
     /** Media Creation Management SOP Class UID - SOP Class */
     public static final String MediaCreationManagementSOPClassUID = "1.2.840.10008.5.1.1.33";
@@ -476,14 +488,14 @@ public class UID {
     /** Digital Intra-oral X-Ray Image Storage - For Processing - SOP Class */
     public static final String DigitalIntraoralXRayImageStorageForProcessing = "1.2.840.10008.5.1.4.1.1.1.3.1";
 
-    /** Standalone Modality LUT Storage - SOP Class */
-    public static final String StandaloneModalityLUTStorage = "1.2.840.10008.5.1.4.1.1.10";
+    /** Standalone Modality LUT Storage (Retired) - SOP Class */
+    public static final String StandaloneModalityLUTStorageRetired = "1.2.840.10008.5.1.4.1.1.10";
 
     /** Encapsulated PDF Storage - SOP Class */
     public static final String EncapsulatedPDFStorage = "1.2.840.10008.5.1.4.1.1.104.1";
 
-    /** Standalone VOI LUT Storage - SOP Class */
-    public static final String StandaloneVOILUTStorage = "1.2.840.10008.5.1.4.1.1.11";
+    /** Standalone VOI LUT Storage (Retired) - SOP Class */
+    public static final String StandaloneVOILUTStorageRetired = "1.2.840.10008.5.1.4.1.1.11";
 
     /** Grayscale Softcopy Presentation State Storage SOP Class - SOP Class */
     public static final String GrayscaleSoftcopyPresentationStateStorageSOPClass = "1.2.840.10008.5.1.4.1.1.11.1";
@@ -515,8 +527,8 @@ public class UID {
     /** Positron Emission Tomography Image Storage - SOP Class */
     public static final String PositronEmissionTomographyImageStorage = "1.2.840.10008.5.1.4.1.1.128";
 
-    /** Standalone PET Curve Storage - SOP Class */
-    public static final String StandalonePETCurveStorage = "1.2.840.10008.5.1.4.1.1.129";
+    /** Standalone PET Curve Storage (Retired) - SOP Class */
+    public static final String StandalonePETCurveStorageRetired = "1.2.840.10008.5.1.4.1.1.129";
 
     /** CT Image Storage - SOP Class */
     public static final String CTImageStorage = "1.2.840.10008.5.1.4.1.1.2";
@@ -562,6 +574,12 @@ public class UID {
 
     /** RT Treatment Summary Record Storage - SOP Class */
     public static final String RTTreatmentSummaryRecordStorage = "1.2.840.10008.5.1.4.1.1.481.7";
+
+    /** RT Ion Plan Storage - SOP Class */
+    public static final String RTIonPlanStorage = "1.2.840.10008.5.1.4.1.1.481.8";
+
+    /** RT Ion Beams Treatment Record Storage - SOP Class */
+    public static final String RTIonBeamsTreatmentRecordStorage = "1.2.840.10008.5.1.4.1.1.481.9";
 
     /** Nuclear Medicine Image Storage (Retired) - SOP Class */
     public static final String NuclearMedicineImageStorageRetired = "1.2.840.10008.5.1.4.1.1.5";
@@ -635,8 +653,8 @@ public class UID {
     /** VL Multi-frame Image Storage (Retired) -  */
     public static final String VLMultiframeImageStorageRetired = "1.2.840.10008.5.1.4.1.1.77.2";
 
-    /** Standalone Overlay Storage - SOP Class */
-    public static final String StandaloneOverlayStorage = "1.2.840.10008.5.1.4.1.1.8";
+    /** Standalone Overlay Storage (Retired) - SOP Class */
+    public static final String StandaloneOverlayStorageRetired = "1.2.840.10008.5.1.4.1.1.8";
 
     /** Basic Text SR - SOP Class */
     public static final String BasicTextSR = "1.2.840.10008.5.1.4.1.1.88.11";
@@ -659,8 +677,11 @@ public class UID {
     /** Chest CAD SR - SOP Class */
     public static final String ChestCADSR = "1.2.840.10008.5.1.4.1.1.88.65";
 
-    /** Standalone Curve Storage - SOP Class */
-    public static final String StandaloneCurveStorage = "1.2.840.10008.5.1.4.1.1.9";
+    /** X-Ray Radiation Dose SR - SOP Class */
+    public static final String XRayRadiationDoseSR = "1.2.840.10008.5.1.4.1.1.88.67";
+
+    /** Standalone Curve Storage (Retired) - SOP Class */
+    public static final String StandaloneCurveStorageRetired = "1.2.840.10008.5.1.4.1.1.9";
 
     /** 12-lead ECG Waveform Storage - SOP Class */
     public static final String _12leadECGWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.1.1";
@@ -698,14 +719,14 @@ public class UID {
     /** Study Root Query/Retrieve Information Model - GET - SOP Class */
     public static final String StudyRootQueryRetrieveInformationModelGET = "1.2.840.10008.5.1.4.1.2.2.3";
 
-    /** Patient/Study Only Query/Retrieve Information Model - FIND - SOP Class */
-    public static final String PatientStudyOnlyQueryRetrieveInformationModelFIND = "1.2.840.10008.5.1.4.1.2.3.1";
+    /** Patient/Study Only Query/Retrieve Information Model - FIND (Retired) - SOP Class */
+    public static final String PatientStudyOnlyQueryRetrieveInformationModelFINDRetired = "1.2.840.10008.5.1.4.1.2.3.1";
 
-    /** Patient/Study Only Query/Retrieve Information Model - MOVE - SOP Class */
-    public static final String PatientStudyOnlyQueryRetrieveInformationModelMOVE = "1.2.840.10008.5.1.4.1.2.3.2";
+    /** Patient/Study Only Query/Retrieve Information Model - MOVE (Retired) - SOP Class */
+    public static final String PatientStudyOnlyQueryRetrieveInformationModelMOVERetired = "1.2.840.10008.5.1.4.1.2.3.2";
 
-    /** Patient/Study Only Query/Retrieve Information Model - GET - SOP Class */
-    public static final String PatientStudyOnlyQueryRetrieveInformationModelGET = "1.2.840.10008.5.1.4.1.2.3.3";
+    /** Patient/Study Only Query/Retrieve Information Model - GET (Retired) - SOP Class */
+    public static final String PatientStudyOnlyQueryRetrieveInformationModelGETRetired = "1.2.840.10008.5.1.4.1.2.3.3";
 
     /** Modality Worklist Information Model - FIND - SOP Class */
     public static final String ModalityWorklistInformationModelFIND = "1.2.840.10008.5.1.4.31";

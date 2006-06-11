@@ -63,7 +63,7 @@ class SCNSCP extends StorageService
 
     public SCNSCP(DcmOF dcmOF)
     {
-        super(UID.BasicStudyContentNotificationSOPClass);
+        super(UID.BasicStudyContentNotificationSOPClassRetired);
         this.dcmOF = dcmOF;
     }
 
@@ -79,7 +79,7 @@ class SCNSCP extends StorageService
     {
         DicomObject data = dataStream.readDataset();
         String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-        data.initFileMetaInformation(UID.BasicStudyContentNotificationSOPClass,
+        data.initFileMetaInformation(UID.BasicStudyContentNotificationSOPClassRetired,
                 iuid, UID.ExplicitVRLittleEndian);
         try {
             store(iuid, data);

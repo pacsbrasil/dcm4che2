@@ -18,6 +18,8 @@ package </xsl:text>
    <xsl:value-of select="$package"/>
    <xsl:text>;
 
+import java.util.StringTokenizer;
+
 /** Provides tag constants.*/
 public class </xsl:text>
    <xsl:value-of select="$class"/>

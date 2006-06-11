@@ -1,25 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE uids [
-<!ENTITY p04_06 SYSTEM "../../../target/xml/p6_uid/04_06_14.xml">
-<!ENTITY sup60 SYSTEM "../../../target/xml/p6_uid/sup60_ft.xml">
-<!ENTITY sup83 SYSTEM "../../../target/xml/p6_uid/sup83_ft2.xml">
-<!ENTITY sup100 SYSTEM "../../../target/xml/p6_uid/sup100_ft.xml">
-<!ENTITY sup101 SYSTEM "../../../target/xml/p6_uid/sup101_ft.xml">
-<!ENTITY sup102 SYSTEM "../../../target/xml/p6_uid/sup102_14.xml">
-<!ENTITY sup103 SYSTEM "../../../target/xml/p6_uid/sup103_ft.xml">
-<!ENTITY sup104 SYSTEM "../../../target/xml/p6_uid/sup104_ft.xml">
-<!ENTITY sup105 SYSTEM "../../../target/xml/p6_uid/sup105_ft.xml">
+<!ENTITY p06_06 SYSTEM "../../../target/xml/p6_uid/04v06_06.xml">
+
 <!ENTITY private SYSTEM "private-uids.xml">
 ]>
 <uids>
-&p04_06;
-&sup60;
-&sup83;
-&sup100;
-&sup101;
-&sup102;
-&sup103;
-&sup104;
-&sup105;
+&p06_06;
 &private;
 </uids>
