@@ -377,7 +377,7 @@ public class DcmImageReader extends ImageReader {
             if (imageIndex > 0 && frameStartPos[imageIndex] == 0) {
                 if (itemParser.getNumberOfDataFragments() == frameStartPos.length) {
                     for (int i = 1; i < frameStartPos.length; ++i)
-	                    if (frameStartPos[i] == itemParser.getOffsetOfDataFragment(i));                   
+	                    frameStartPos[i] = itemParser.getOffsetOfDataFragment(i);                   
                 } else {
                     for (int i = 0; i < imageIndex; ++i)
 	                    if (frameStartPos[i+1] == 0)
