@@ -83,6 +83,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryPrivateStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
+import org.dcm4chex.archive.ejb.util.EntityPkCache;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -194,7 +195,7 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.transaction type="Required"
      */
     public Dataset getStudyByIUID(String studyIUID) throws FinderException {
-        return studyHome.findByStudyIuid(studyIUID).getAttributes(true);
+        return EntityPkCache.findByStudyIuid(studyHome, studyIUID).getAttributes(true);
     }
     
     /**
@@ -209,7 +210,7 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.transaction type="Required"
      */
     public Dataset getSeriesByIUID(String seriesIUID) throws FinderException {
-        return seriesHome.findBySeriesIuid(seriesIUID).getAttributes(true);
+        return EntityPkCache.findBySeriesIuid(seriesHome, seriesIUID).getAttributes(true);
     }
 
     /**

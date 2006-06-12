@@ -74,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.util.EntityPkCache;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -193,7 +194,7 @@ public abstract class StudyMgtBean implements SessionBean {
 	private void checkDuplicateStudy(String suid) 
 			throws FinderException, DcmServiceException {
 		try {
-			studyHome.findByStudyIuid(suid);
+			EntityPkCache.findByStudyIuid(studyHome, suid);
 			throw new DcmServiceException(Status.DuplicateSOPInstance, suid);
 		} catch (ObjectNotFoundException e) {
 		}
@@ -202,7 +203,7 @@ public abstract class StudyMgtBean implements SessionBean {
 	private StudyLocal getStudy(String suid) 
 			throws FinderException, DcmServiceException {
 		try {
-			return studyHome.findByStudyIuid(suid);
+			return EntityPkCache.findByStudyIuid(studyHome, suid);
 		} catch (ObjectNotFoundException e) {
 			throw new DcmServiceException(Status.NoSuchSOPClass, suid);
 		}
@@ -282,7 +283,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			throws FinderException {
 		for (Iterator it = dirtyStudies.iterator(); it.hasNext();){
 			String iuid = (String) it.next();
-			StudyLocal study = studyHome.findByStudyIuid(iuid);
+			StudyLocal study = EntityPkCache.findByStudyIuid(studyHome, iuid);
 			study.updateDerivedFields(true, true, true, true, true, true);
 		}
 	}
@@ -291,7 +292,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			throws FinderException {
 		for (Iterator it = dirtySeries.iterator(); it.hasNext();){
 			String iuid = (String) it.next();
-			SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
+			SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, iuid);
 			series.updateDerivedFields(true, true, true, true, true);
 		}
 	}
@@ -301,8 +302,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			throws FinderException, CreateException {
 		Dataset newAttrs = ds.subSet(attrFilter.getSeriesFilter());
 		try {
-			SeriesLocal series = seriesHome.findBySeriesIuid(
-					ds.getString(Tags.SeriesInstanceUID));
+			SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, ds.getString(Tags.SeriesInstanceUID));
 			StudyLocal prevStudy = series.getStudy();
 			if (!study.isIdentical(prevStudy)) {
 				log.info("Move " + series.asString() + " from " + 
@@ -358,7 +358,6 @@ public abstract class StudyMgtBean implements SessionBean {
 			dirtyStudies.add(series.getStudy().getStudyIuid());
 		}
 	}
-
 	
 	/**
      * @ejb.interface-method
