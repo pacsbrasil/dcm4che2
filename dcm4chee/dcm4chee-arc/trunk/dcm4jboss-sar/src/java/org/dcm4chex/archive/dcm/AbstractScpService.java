@@ -344,6 +344,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             policy.putPresContext(cuids[i], tsuids);
         }
     }
+    
+    protected void putRoleSelections(AcceptorPolicy policy, String[] cuids, boolean scu, boolean scp)
+    {
+    	for (int i = 0; i < cuids.length; i++) {
+            policy.putRoleSelection(cuids[i], scu, scp);
+        }
+    }
 
     public File getLogFile(Date now, String callingAET, String suffix) {
         File dir = new File(logDir, callingAET);
