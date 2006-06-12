@@ -108,7 +108,7 @@ public class ItemParser implements StreamSegmentMapper {
             if (next() == null)
                 throw new IndexOutOfBoundsException(
                         "index:" + index + " >= size:" + items.size());
-        return last().offset;
+        return ((Item) items.get(index)).offset;
     }
     
     private Item next() {
