@@ -173,8 +173,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
             if (vr == VR.SQ) {
                 attrs.putNull(tag, VR.SQ);
             } else {
-                attrs.putBytes(tag, vr, false, 
-                        getValue(vr, attrs.getSpecificCharacterSet()));
+                attrs.putBytes(tag, vr, getValue(vr, attrs.getSpecificCharacterSet()), 
+                        false);
                 sb.setLength(0);
                 out.reset();
             }

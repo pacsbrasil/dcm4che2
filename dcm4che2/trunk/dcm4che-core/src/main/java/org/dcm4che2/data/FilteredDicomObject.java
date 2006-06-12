@@ -349,7 +349,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         throw new UnsupportedOperationException();
     }
 
-    public DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val)
+    public DicomElement putBytes(int tag, VR vr, byte[] val, boolean bigEndian)
     {
         throw new UnsupportedOperationException();
     }

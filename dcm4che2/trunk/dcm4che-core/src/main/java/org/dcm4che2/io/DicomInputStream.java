@@ -497,8 +497,8 @@ public class DicomInputStream extends FilterInputStream
                 }
             } else
             {
-                DicomElement a = attrs.putBytes(tag, vr, ts.bigEndian(),
-                        readBytes(vallen));
+                DicomElement a = attrs.putBytes(tag, vr, readBytes(vallen),
+                        ts.bigEndian());
                 if (tag == 0x00020000)
                 {
                     fmiEndPos = pos + a.getInt(false);

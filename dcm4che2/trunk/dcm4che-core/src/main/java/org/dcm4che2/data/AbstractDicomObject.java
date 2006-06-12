@@ -48,26 +48,26 @@ import java.util.regex.Pattern;
 import org.dcm4che2.util.DateUtils;
 
 abstract class AbstractDicomObject implements DicomObject {
-		
-	protected Object writeReplace() throws ObjectStreamException {
-		return new DicomObjectSerializer(this);
-	}
 
-	public void serializeElements(ObjectOutputStream oos)
-			throws IOException {
-		oos.writeObject(new ElementSerializer(this));
-	}
-	
-	public void copyTo(final DicomObject dest) {
-		accept(new Visitor(){
-			public boolean visit(DicomElement attr) {
-				dest.add(attr);
-				return true;
-			}});		
-	}
+    protected Object writeReplace() throws ObjectStreamException {
+        return new DicomObjectSerializer(this);
+    }
+
+    public void serializeElements(ObjectOutputStream oos) throws IOException {
+        oos.writeObject(new ElementSerializer(this));
+    }
+
+    public void copyTo(final DicomObject dest) {
+        accept(new Visitor() {
+            public boolean visit(DicomElement attr) {
+                dest.add(attr);
+                return true;
+            }
+        });
+    }
 
     public boolean containsAll(final DicomObject keys) {
-        return keys.accept(new Visitor(){
+        return keys.accept(new Visitor() {
             public boolean visit(DicomElement key) {
                 DicomElement el = get(key.tag());
                 if (el == null)
@@ -84,15 +84,16 @@ abstract class AbstractDicomObject implements DicomObject {
                     }
                 }
                 return true;
-            }});        
+            }
+        });
     }
-    
+
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        toStringBuffer(sb, null);        
+        toStringBuffer(sb, null);
         return sb.toString();
     }
-    
+
     public int toStringBuffer(StringBuffer sb, DicomObjectToStringParam param) {
         if (sb == null)
             throw new NullPointerException();
@@ -127,9 +128,9 @@ abstract class AbstractDicomObject implements DicomObject {
             }
         }
         return lines;
-    }    
+    }
 
-	private static int fragsToStringBuffer(DicomElement e, StringBuffer sb,
+    private static int fragsToStringBuffer(DicomElement e, StringBuffer sb,
             DicomObjectToStringParam param) {
         int lines = 0;
         for (int i = 0, n = e.countItems(); i < n; ++i) {
@@ -155,8 +156,7 @@ abstract class AbstractDicomObject implements DicomObject {
     private static int itemsToStringBuffer(DicomElement e, StringBuffer sb,
             DicomObjectToStringParam param) {
         int lines = 0;
-        for (int i = 0, n = e.countItems(); 
-                 i < n && lines < param.numLines; i++) {
+        for (int i = 0, n = e.countItems(); i < n && lines < param.numLines; i++) {
             if (++lines == param.numLines) {
                 sb.append("...").append(param.lineSeparator);
                 break;
@@ -178,190 +178,197 @@ abstract class AbstractDicomObject implements DicomObject {
             sb.append(param.lineSeparator);
             DicomObjectToStringParam param1 = new DicomObjectToStringParam(
                     param.name, param.valueLength, param.numItems,
-                    param.lineLength, param.numLines - lines,
-                    param.indent, param.lineSeparator);
+                    param.lineLength, param.numLines - lines, param.indent,
+                    param.lineSeparator);
             lines += item.toStringBuffer(sb, param1);
         }
         return lines;
-     }
+    }
 
     public boolean matches(final DicomObject keys, final boolean ignoreCaseOfPN) {
-		return keys.accept(new Visitor(){
-			public boolean visit(DicomElement test) {
-				if (test.isEmpty()) // Universal Matching
-					return true;
-				final int tag = test.tag();
-				DicomElement attr = get(tag);
-				if (attr == null || attr.isEmpty())
-					return true;	// Missing DicomElement (Value) match always
-				
-				final VR vr = test.vr();
-				if (vr instanceof VR.Fragment)
-					return true; 	// ignore OB,OW,OF,UN filter attrs
+        return keys.accept(new Visitor() {
+            public boolean visit(DicomElement test) {
+                if (test.isEmpty()) // Universal Matching
+                    return true;
+                final int tag = test.tag();
+                DicomElement attr = get(tag);
+                if (attr == null || attr.isEmpty())
+                    return true; // Missing DicomElement (Value) match always
 
-				if (vr == VR.SQ)
-					return matchSQ(attr, test.getDicomObject(), ignoreCaseOfPN);
-				
-				if (vr == VR.DA) {
-					int tmTag = DA_TM.getTMTag(tag);
-					return tmTag != 0 
-							? matchRange(getDates(tag, tmTag), 
-									keys.getDateRange(tag, tmTag)) 
-							: matchRange(attr.getDates(cacheGet()), 
-									test.getDateRange(keys.cacheGet()));
-				}
-				if (vr == VR.TM) {
-					int daTag = DA_TM.getDATag(tag);
-					return daTag != 0 && containsValue(daTag) 
-							? true // considered by visit of daTag
-							: matchRange(attr.getDates(cacheGet()), 
-									test.getDateRange(keys.cacheGet()));
-				}
-				if (vr == VR.DT) {
-					return matchRange(attr.getDates(cacheGet()), 
-							test.getDateRange(keys.cacheGet()));
-				}
-				return matchValue(
-						attr.getStrings(getSpecificCharacterSet(), cacheGet()),
-						test.getPattern(keys.getSpecificCharacterSet(), 
-								vr == VR.PN ? ignoreCaseOfPN : false,
-								keys.cacheGet()));				
-			}});		
-		
-	}
-	
-	private boolean matchValue(String[] value, Pattern pattern) {
-		for (int i = 0; i < value.length; i++) {
-			if (pattern.matcher(value[i]).matches())
-				return true;
-		}
-		return false;
-	}
+                final VR vr = test.vr();
+                if (vr instanceof VR.Fragment)
+                    return true; // ignore OB,OW,OF,UN filter attrs
 
-	private boolean matchRange(Date[] dates, DateRange dateRange) {
-		for (int i = 0; i < dates.length; i++) {
-			if (matchRange(dates[i], dateRange.getStart(), dateRange.getEnd()))
-				return true;
-		}
-		return false;
-	}
+                if (vr == VR.SQ)
+                    return matchSQ(attr, test.getDicomObject(), ignoreCaseOfPN);
 
-	private boolean matchRange(Date date, Date start, Date end) {
-		if (start != null && start.after(date))
-			return false;
-		if (end != null && end.before(date))
-			return false;
-		return true;
-	}
+                if (vr == VR.DA) {
+                    int tmTag = DA_TM.getTMTag(tag);
+                    return tmTag != 0 ? matchRange(getDates(tag, tmTag), keys
+                            .getDateRange(tag, tmTag)) : matchRange(attr
+                            .getDates(cacheGet()), test.getDateRange(keys
+                            .cacheGet()));
+                }
+                if (vr == VR.TM) {
+                    int daTag = DA_TM.getDATag(tag);
+                    return daTag != 0 && containsValue(daTag) ? true // considered
+                                                                        // by
+                                                                        // visit
+                                                                        // of
+                                                                        // daTag
+                            : matchRange(attr.getDates(cacheGet()), test
+                                    .getDateRange(keys.cacheGet()));
+                }
+                if (vr == VR.DT) {
+                    return matchRange(attr.getDates(cacheGet()), test
+                            .getDateRange(keys.cacheGet()));
+                }
+                return matchValue(attr.getStrings(getSpecificCharacterSet(),
+                        cacheGet()), test.getPattern(keys
+                        .getSpecificCharacterSet(),
+                        vr == VR.PN ? ignoreCaseOfPN : false, keys.cacheGet()));
+            }
+        });
 
-	private boolean matchSQ(DicomElement sq, DicomObject keys, boolean ignoreCaseOfPN) {
-		if (keys.isEmpty())
-			return true;
-		for (int i = 0, n = sq.countItems(); i < n; i++) {
-			if (!sq.getDicomObject(i).matches(keys, ignoreCaseOfPN))
-				return false;
-		}
-		return true;
-	}
+    }
+
+    private boolean matchValue(String[] value, Pattern pattern) {
+        for (int i = 0; i < value.length; i++) {
+            if (pattern.matcher(value[i]).matches())
+                return true;
+        }
+        return false;
+    }
+
+    private boolean matchRange(Date[] dates, DateRange dateRange) {
+        for (int i = 0; i < dates.length; i++) {
+            if (matchRange(dates[i], dateRange.getStart(), dateRange.getEnd()))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean matchRange(Date date, Date start, Date end) {
+        if (start != null && start.after(date))
+            return false;
+        if (end != null && end.before(date))
+            return false;
+        return true;
+    }
+
+    private boolean matchSQ(DicomElement sq, DicomObject keys,
+            boolean ignoreCaseOfPN) {
+        if (keys.isEmpty())
+            return true;
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
+            if (!sq.getDicomObject(i).matches(keys, ignoreCaseOfPN))
+                return false;
+        }
+        return true;
+    }
 
     public boolean isRoot() {
         return getParent() == null;
     }
-    
-	public boolean isEmpty() {
-		return accept(new Visitor(){
-			public boolean visit(DicomElement attr) {
-				return false;
-			}});
-	}
-	
-	public int size() {
-		final int[] count = { 0 };
-		accept(new Visitor(){
-			public boolean visit(DicomElement attr) {
-				++count[0];
-				return true;
-			}});
-		return count[0];
-	}
 
-	public Iterator commandIterator() {
-		return iterator(0x00000000, 0x0000ffff);
-	}
-	
-	public Iterator fileMetaInfoIterator() {
-		return iterator(0x00020000, 0x0002ffff);
-	}
-	
-	public Iterator datasetIterator() {
-		return iterator(0x00030000, 0xffffffff);
-	}
-	
-	public DicomObject command() {
-		return subSet(0x00000000, 0x0000ffff);
-	}
-	
-	public DicomObject dataset() {
-		return subSet(0x00030000, 0xffffffff);		
-	}
-	
-	public DicomObject fileMetaInfo() {
-		return subSet(0x00020000, 0x0002ffff);
-	}
-	
-	public DicomObject exclude(int[] tags) {
-		return tags != null && tags.length > 0 ?
-				new FilteredDicomObject.Exclude(this, tags) : this;
-	}
+    public boolean isEmpty() {
+        return accept(new Visitor() {
+            public boolean visit(DicomElement attr) {
+                return false;
+            }
+        });
+    }
 
-	public DicomObject excludePrivate() {
-		return new FilteredDicomObject.ExcludePrivate(this);
-	}
+    public int size() {
+        final int[] count = { 0 };
+        accept(new Visitor() {
+            public boolean visit(DicomElement attr) {
+                ++count[0];
+                return true;
+            }
+        });
+        return count[0];
+    }
 
-	public DicomObject subSet(DicomObject filter) {
-		return filter != null ?
-				new FilteredDicomObject.FilterSet(this, filter) : null;
-	}
+    public Iterator commandIterator() {
+        return iterator(0x00000000, 0x0000ffff);
+    }
 
-	public DicomObject subSet(int fromTag, int toTag) {
-		return new FilteredDicomObject.Range(this, fromTag, toTag);
-	}
+    public Iterator fileMetaInfoIterator() {
+        return iterator(0x00020000, 0x0002ffff);
+    }
 
-	public DicomObject subSet(int[] tags) {
-		return tags != null && tags.length > 0 ?
-				new FilteredDicomObject.Include(this, tags) : this;
-	}
-    
+    public Iterator datasetIterator() {
+        return iterator(0x00030000, 0xffffffff);
+    }
+
+    public DicomObject command() {
+        return subSet(0x00000000, 0x0000ffff);
+    }
+
+    public DicomObject dataset() {
+        return subSet(0x00030000, 0xffffffff);
+    }
+
+    public DicomObject fileMetaInfo() {
+        return subSet(0x00020000, 0x0002ffff);
+    }
+
+    public DicomObject exclude(int[] tags) {
+        return tags != null && tags.length > 0 ? new FilteredDicomObject.Exclude(
+                this, tags)
+                : this;
+    }
+
+    public DicomObject excludePrivate() {
+        return new FilteredDicomObject.ExcludePrivate(this);
+    }
+
+    public DicomObject subSet(DicomObject filter) {
+        return filter != null ? new FilteredDicomObject.FilterSet(this, filter)
+                : null;
+    }
+
+    public DicomObject subSet(int fromTag, int toTag) {
+        return new FilteredDicomObject.Range(this, fromTag, toTag);
+    }
+
+    public DicomObject subSet(int[] tags) {
+        return tags != null && tags.length > 0 ? new FilteredDicomObject.Include(
+                this, tags)
+                : this;
+    }
+
     public int vm(int tag) {
         DicomElement attr = get(tag);
         return attr != null ? attr.vm(getSpecificCharacterSet()) : -1;
     }
 
-	public boolean containsValue(int tag) {
-		DicomElement attr = get(tag);
-		return attr != null && !attr.isEmpty();
-	}
+    public boolean containsValue(int tag) {
+        DicomElement attr = get(tag);
+        return attr != null && !attr.isEmpty();
+    }
 
-	public byte[] getBytes(int tag, boolean bigEndian) {
-		return toBytes(get(tag), bigEndian);
-	}
+    public byte[] getBytes(int tag, boolean bigEndian) {
+        return toBytes(get(tag), bigEndian);
+    }
 
     private byte[] toBytes(DicomElement a, boolean bigEndian) {
         return a == null ? null : a.bigEndian(bigEndian).getBytes();
     }
 
-	public DicomObject getNestedDicomObject(int tag) {
-		DicomElement a = get(tag);
-		return a == null || a.isEmpty() ? null : a.getDicomObject();
-	}
+    public DicomObject getNestedDicomObject(int tag) {
+        DicomElement a = get(tag);
+        return a == null || a.isEmpty() ? null : a.getDicomObject();
+    }
 
     public int getInt(int tag) {
         return toInt(get(tag), 0);
     }
 
-	public int getInt(int tag, int defVal) {
-		return toInt(get(tag), defVal);
-	}
+    public int getInt(int tag, int defVal) {
+        return toInt(get(tag), defVal);
+    }
 
     private int toInt(DicomElement a, int defVal) {
         return a == null || a.isEmpty() ? defVal : a.getInt(cacheGet());
@@ -371,14 +378,14 @@ abstract class AbstractDicomObject implements DicomObject {
         return toInts(get(tag));
     }
 
-	public int[] getInts(int tag, int[] defVal) {
-		return toInts(get(tag), defVal);
-	}
+    public int[] getInts(int tag, int[] defVal) {
+        return toInts(get(tag), defVal);
+    }
 
     private int[] toInts(DicomElement a) {
         return a == null ? null : a.getInts(cacheGet());
     }
-    
+
     private int[] toInts(DicomElement a, int[] defVal) {
         return a == null || a.isEmpty() ? defVal : a.getInts(cacheGet());
     }
@@ -387,9 +394,9 @@ abstract class AbstractDicomObject implements DicomObject {
         return toFloat(get(tag), 0.f);
     }
 
-	public float getFloat(int tag, float defVal) {
-		return toFloat(get(tag), defVal);
-	}
+    public float getFloat(int tag, float defVal) {
+        return toFloat(get(tag), defVal);
+    }
 
     private float toFloat(DicomElement a, float defVal) {
         return a == null || a.isEmpty() ? defVal : a.getFloat(cacheGet());
@@ -399,14 +406,14 @@ abstract class AbstractDicomObject implements DicomObject {
         return toFloats(get(tag));
     }
 
-	public float[] getFloats(int tag, float[] defVal) {
-		return toFloats(get(tag), defVal);
-	}
+    public float[] getFloats(int tag, float[] defVal) {
+        return toFloats(get(tag), defVal);
+    }
 
     private float[] toFloats(DicomElement a) {
         return a == null ? null : a.getFloats(cacheGet());
     }
-    
+
     private float[] toFloats(DicomElement a, float[] defVal) {
         return a == null || a.isEmpty() ? defVal : a.getFloats(cacheGet());
     }
@@ -415,9 +422,9 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDouble(get(tag), 0.);
     }
 
-	public double getDouble(int tag, double defVal) {
-		return toDouble(get(tag), defVal);
-	}
+    public double getDouble(int tag, double defVal) {
+        return toDouble(get(tag), defVal);
+    }
 
     private double toDouble(DicomElement a, double defVal) {
         return a == null || a.isEmpty() ? defVal : a.getDouble(cacheGet());
@@ -427,9 +434,9 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDoubles(get(tag));
     }
 
-	public double[] getDoubles(int tag, double[] defVal) {
-		return toDoubles(get(tag), defVal);
-	}
+    public double[] getDoubles(int tag, double[] defVal) {
+        return toDoubles(get(tag), defVal);
+    }
 
     private double[] toDoubles(DicomElement a) {
         return a == null ? null : a.getDoubles(cacheGet());
@@ -443,40 +450,40 @@ abstract class AbstractDicomObject implements DicomObject {
         return toString(get(tag), null);
     }
 
-	public String getString(int tag, String defVal) {
-		return toString(get(tag), defVal);
-	}
+    public String getString(int tag, String defVal) {
+        return toString(get(tag), defVal);
+    }
 
     private String toString(DicomElement a, String defVal) {
-        return a == null || a.isEmpty() ? defVal 
-                : a.getString(getSpecificCharacterSet(), cacheGet());
+        return a == null || a.isEmpty() ? defVal : a.getString(
+                getSpecificCharacterSet(), cacheGet());
     }
 
     public String[] getStrings(int tag) {
         return toStrings(get(tag));
     }
 
-	public String[] getStrings(int tag, String[] defVal) {
-		return toStrings(get(tag), defVal);
-	}
+    public String[] getStrings(int tag, String[] defVal) {
+        return toStrings(get(tag), defVal);
+    }
 
     private String[] toStrings(DicomElement a) {
-        return a == null ? null
-                : a.getStrings(getSpecificCharacterSet(), cacheGet());
+        return a == null ? null : a.getStrings(getSpecificCharacterSet(),
+                cacheGet());
     }
 
     private String[] toStrings(DicomElement a, String[] defVal) {
-        return a == null || a.isEmpty() ? defVal
-                : a.getStrings(getSpecificCharacterSet(), cacheGet());
+        return a == null || a.isEmpty() ? defVal : a.getStrings(
+                getSpecificCharacterSet(), cacheGet());
     }
 
     public Date getDate(int tag) {
         return toDate(get(tag), null);
     }
 
-	public Date getDate(int tag, Date defVal) {
-		return toDate(get(tag), defVal);
-	}
+    public Date getDate(int tag, Date defVal) {
+        return toDate(get(tag), defVal);
+    }
 
     private Date toDate(DicomElement a, Date defVal) {
         return a == null || a.isEmpty() ? defVal : a.getDate(cacheGet());
@@ -486,9 +493,9 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDates(get(tag));
     }
 
-	public Date[] getDates(int tag, Date[] defVal) {
-		return toDates(get(tag), defVal);
-	}
+    public Date[] getDates(int tag, Date[] defVal) {
+        return toDates(get(tag), defVal);
+    }
 
     private Date[] toDates(DicomElement a) {
         return a == null ? null : a.getDates(cacheGet());
@@ -502,9 +509,9 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDateRange(get(tag), null);
     }
 
-	public DateRange getDateRange(int tag, DateRange defVal) {
-		return toDateRange(get(tag), defVal);
-	}
+    public DateRange getDateRange(int tag, DateRange defVal) {
+        return toDateRange(get(tag), defVal);
+    }
 
     private DateRange toDateRange(DicomElement a, DateRange defVal) {
         return a == null || a.isEmpty() ? defVal : a.getDateRange(cacheGet());
@@ -513,210 +520,222 @@ abstract class AbstractDicomObject implements DicomObject {
     public Date getDate(int daTag, int tmTag) {
         return getDate(daTag, tmTag, null);
     }
-    
-	public Date getDate(int daTag, int tmTag, Date defVal) {
+
+    public Date getDate(int daTag, int tmTag, Date defVal) {
         Date da = getDate(daTag);
-		return da == null ? defVal : DateUtils.toDateTime(da, getDate(tmTag));
-	}
+        return da == null ? defVal : DateUtils.toDateTime(da, getDate(tmTag));
+    }
 
     public Date[] getDates(int daTag, int tmTag) {
         return getDates(daTag, tmTag, null);
     }
-    
-	public Date[] getDates(int daTag, int tmTag, Date[] defVal) {
-		Date[] da = getDates(daTag);
-		Date[] tm = getDates(tmTag);
-		if (da == null)
-			return defVal;
-		if (tm != null) {
-			for (int i = 0, n = Math.min(da.length, tm.length); i < n; ++i) {
-				da[i] = DateUtils.toDateTime(da[i], tm[i]);
-			}
-		}
-		return da;
-	}
-	
+
+    public Date[] getDates(int daTag, int tmTag, Date[] defVal) {
+        Date[] da = getDates(daTag);
+        Date[] tm = getDates(tmTag);
+        if (da == null)
+            return defVal;
+        if (tm != null) {
+            for (int i = 0, n = Math.min(da.length, tm.length); i < n; ++i) {
+                da[i] = DateUtils.toDateTime(da[i], tm[i]);
+            }
+        }
+        return da;
+    }
+
     public DateRange getDateRange(int daTag, int tmTag) {
         return getDateRange(daTag, tmTag, null);
     }
-    
-	public DateRange getDateRange(int daTag, int tmTag, DateRange defVal) {
-		DateRange da = getDateRange(daTag);
-		if (da == null) return defVal;
-		DateRange tm = getDateRange(tmTag);
-		if (tm == null) return da;
-		return new DateRange(
-				DateUtils.toDateTime(da.getStart(), tm.getStart()),
-				DateUtils.toDateTime(da.getEnd(), tm.getEnd()));
-	}
+
+    public DateRange getDateRange(int daTag, int tmTag, DateRange defVal) {
+        DateRange da = getDateRange(daTag);
+        if (da == null)
+            return defVal;
+        DateRange tm = getDateRange(tmTag);
+        if (tm == null)
+            return da;
+        return new DateRange(
+                DateUtils.toDateTime(da.getStart(), tm.getStart()), DateUtils
+                        .toDateTime(da.getEnd(), tm.getEnd()));
+    }
 
     public DicomElement get(int[] tagPath) {
         checkTagPathLength(tagPath);
         final int last = tagPath.length - 1;
         final DicomObject item = getItem(tagPath, last, true);
-        return item != null ? item.get(tagPath[last]) : null;        
+        return item != null ? item.get(tagPath[last]) : null;
     }
-        
-	public DicomObject getNestedDicomObject(int[] itemPath) {
+
+    public DicomObject getNestedDicomObject(int[] itemPath) {
         if ((itemPath.length & 1) != 0) {
             throw new IllegalArgumentException("itemPath.length: "
                     + itemPath.length);
         }
         return getItem(itemPath, itemPath.length, true);
     }
-    
+
     private DicomObject getItem(int[] itemPath, int pathLen, boolean readonly) {
-		DicomObject item = this;
-		for (int i = 0; i < pathLen; ++i, ++i) {
-			DicomElement sq = item.get(itemPath[i]);
+        DicomObject item = this;
+        for (int i = 0; i < pathLen; ++i, ++i) {
+            DicomElement sq = item.get(itemPath[i]);
             if (sq == null || !sq.hasItems()) {
                 if (readonly) {
                     return null;
                 }
                 sq = item.putSequence(itemPath[i]);
             }
-			while (sq.countItems() <= itemPath[i+1]) {
+            while (sq.countItems() <= itemPath[i + 1]) {
                 if (readonly) {
                     return null;
                 }
                 sq.addDicomObject(new BasicDicomObject());
             }
-            item = sq.getDicomObject(itemPath[i+1]);
- 		}
-		return item;
-	}
+            item = sq.getDicomObject(itemPath[i + 1]);
+        }
+        return item;
+    }
 
     public byte[] getBytes(int[] tagPath, boolean bigEndian) {
         return toBytes(get(tagPath), bigEndian);
-	}
+    }
 
-	public int getInt(int[] tagPath) {
+    public int getInt(int[] tagPath) {
         return toInt(get(tagPath), 0);
-	}
-	
+    }
+
     public int getInt(int[] tagPath, int defVal) {
         return toInt(get(tagPath), defVal);
     }
-    
+
     public int[] getInts(int[] tagPath) {
         return toInts(get(tagPath));
     }
-    
-	public int[] getInts(int[] tagPath, int[] defVal) {
+
+    public int[] getInts(int[] tagPath, int[] defVal) {
         return toInts(get(tagPath), defVal);
-	}
-	
+    }
+
     public float getFloat(int[] tagPath) {
         return toFloat(get(tagPath), 0.f);
     }
-    
-	public float getFloat(int[] tagPath, float defVal) {
+
+    public float getFloat(int[] tagPath, float defVal) {
         return toFloat(get(tagPath), defVal);
-	}
-	
+    }
+
     public float[] getFloats(int[] tagPath) {
         return toFloats(get(tagPath));
     }
-    
-	public float[] getFloats(int[] tagPath, float[] defVal) {
+
+    public float[] getFloats(int[] tagPath, float[] defVal) {
         return toFloats(get(tagPath), defVal);
-	}
-	
+    }
+
     public double getDouble(int[] tagPath) {
         return toDouble(get(tagPath), 0.);
     }
-    
-	public double getDouble(int[] tagPath, double defVal) {
+
+    public double getDouble(int[] tagPath, double defVal) {
         return toDouble(get(tagPath), defVal);
-	}
-	
+    }
+
     public double[] getDoubles(int[] tagPath) {
         return toDoubles(get(tagPath));
     }
-    
-	public double[] getDoubles(int[] tagPath, double[] defVal) {
+
+    public double[] getDoubles(int[] tagPath, double[] defVal) {
         return toDoubles(get(tagPath), defVal);
-	}
-    
+    }
+
     public String getString(int[] tagPath) {
         return toString(get(tagPath), null);
     }
-    
- 	public String getString(int[] tagPath, String defVal) {
+
+    public String getString(int[] tagPath, String defVal) {
         return toString(get(tagPath), defVal);
-	}
-	
+    }
+
     public String[] getStrings(int[] tagPath) {
         return toStrings(get(tagPath));
     }
-    
-	public String[] getStrings(int[] tagPath, String[] defVal) {
+
+    public String[] getStrings(int[] tagPath, String[] defVal) {
         return toStrings(get(tagPath), defVal);
-	}
-	
+    }
+
     public Date getDate(int[] tagPath) {
         return toDate(get(tagPath), null);
     }
-    
-	public Date getDate(int[] tagPath, Date defVal) {
+
+    public Date getDate(int[] tagPath, Date defVal) {
         return toDate(get(tagPath), defVal);
-	}
-	
+    }
+
     public Date[] getDates(int[] tagPath) {
         return toDates(get(tagPath));
     }
-    
-	public Date[] getDates(int[] tagPath, Date[] defVal) {
+
+    public Date[] getDates(int[] tagPath, Date[] defVal) {
         return toDates(get(tagPath), defVal);
-	}
-	
+    }
+
     public DateRange getDateRange(int[] tagPath) {
         return toDateRange(get(tagPath), null);
     }
-    
-	public DateRange getDateRange(int[] tagPath, DateRange defVal) {
+
+    public DateRange getDateRange(int[] tagPath, DateRange defVal) {
         return toDateRange(get(tagPath), defVal);
-	}
-	
+    }
+
     public Date getDate(int[] itemPath, int daTag, int tmTag) {
         return getDate(itemPath, daTag, tmTag, null);
     }
-    
-	public Date getDate(int[] itemPath, int daTag, int tmTag, Date defVal) {
+
+    public Date getDate(int[] itemPath, int daTag, int tmTag, Date defVal) {
         final DicomObject item = getNestedDicomObject(itemPath);
-		return item != null ? item.getDate(daTag, tmTag, defVal) : null;		
-	}
-	
+        return item != null ? item.getDate(daTag, tmTag, defVal) : null;
+    }
+
     public Date[] getDates(int[] itemPath, int daTag, int tmTag) {
         return getDates(itemPath, daTag, tmTag);
     }
-    
+
     public Date[] getDates(int[] itemPath, int daTag, int tmTag, Date[] defVal) {
         final DicomObject item = getNestedDicomObject(itemPath);
-		return item != null ? item.getDates(daTag, tmTag, defVal) : null;				
-	}
-	
+        return item != null ? item.getDates(daTag, tmTag, defVal) : null;
+    }
+
     public DateRange getDateRange(int[] itemPath, int daTag, int tmTag) {
         return getDateRange(itemPath, daTag, tmTag, null);
     }
-    
-	public DateRange getDateRange(int[] itemPath, int daTag, int tmTag, DateRange defVal) {
-        final DicomObject item = getNestedDicomObject(itemPath);
-		return item != null ? item.getDateRange(daTag, tmTag, defVal) : null;				
-	}
 
-	private void checkTagPathLength(int[] tagPath) {
-	    if ((tagPath.length & 1) == 0) {
-	        throw new IllegalArgumentException("tagPath.length: "
-	                + tagPath.length);
-	    }
-	}
-	
-    public DicomElement putBytes(int[] tagPath, VR vr, boolean bigEndian, byte[] val) {
+    public DateRange getDateRange(int[] itemPath, int daTag, int tmTag,
+            DateRange defVal) {
+        final DicomObject item = getNestedDicomObject(itemPath);
+        return item != null ? item.getDateRange(daTag, tmTag, defVal) : null;
+    }
+
+    private void checkTagPathLength(int[] tagPath) {
+        if ((tagPath.length & 1) == 0) {
+            throw new IllegalArgumentException("tagPath.length: "
+                    + tagPath.length);
+        }
+    }
+
+    public DicomElement putBytes(int tag, VR vr, byte[] val) {
+        return putBytes(tag, vr, val, false);
+    }
+    
+    public DicomElement putBytes(int[] tagPath, VR vr, byte[] val) {
+        return putBytes(tagPath, vr, val);
+    }
+
+    public DicomElement putBytes(int[] tagPath, VR vr, byte[] val,
+            boolean bigEndian) {
         checkTagPathLength(tagPath);
         int last = tagPath.length - 1;
         DicomObject item = getItem(tagPath, last, false);
-        return item.putBytes(tagPath[last], vr, bigEndian, val);
+        return item.putBytes(tagPath[last], vr, val, bigEndian);
     }
 
     public DicomElement putDate(int[] tagPath, VR vr, Date val) {
@@ -768,7 +787,8 @@ abstract class AbstractDicomObject implements DicomObject {
         return item.putFloats(tagPath[last], vr, val);
     }
 
-    public DicomElement putFragments(int[] tagPath, VR vr, boolean bigEndian, int capacity) {
+    public DicomElement putFragments(int[] tagPath, VR vr, boolean bigEndian,
+            int capacity) {
         checkTagPathLength(tagPath);
         int last = tagPath.length - 1;
         DicomObject item = getItem(tagPath, last, false);

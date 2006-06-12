@@ -295,7 +295,7 @@ public class SAXWriter implements DicomInputHandler {
             if (tag == Tag.SpecificCharacterSet
                     || tag == Tag.TransferSyntaxUID
                     || TagUtils.isPrivateCreatorDataElement(tag)) {
-                attrs.putBytes(tag, vr, bigEndian, val);
+                attrs.putBytes(tag, vr, val, bigEndian);
             }
             if (tag == 0x00020000) {
                 in.setEndOfFileMetaInfoPosition(

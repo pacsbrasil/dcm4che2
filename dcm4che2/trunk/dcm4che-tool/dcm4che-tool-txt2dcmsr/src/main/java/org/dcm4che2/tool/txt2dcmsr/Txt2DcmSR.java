@@ -139,8 +139,7 @@ public class Txt2DcmSR {
         attrs.putDate(Tag.InstanceCreationDate, VR.DA, now);
         attrs.putDate(Tag.InstanceCreationTime, VR.TM, now);
         DicomElement sq = attrs.get(Tag.toTagPath(cfg.getProperty("")));
-        sq.getDicomObject().putBytes(Tag.TextValue, VR.UT, false, 
-                readBytes(txtFile));
+        sq.getDicomObject().putBytes(Tag.TextValue, VR.UT, readBytes(txtFile));
         if (paragraphs) {
             splitParagraphs(attrs, sq);
         }

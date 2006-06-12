@@ -777,16 +777,17 @@ public interface DicomObject extends Serializable {
      */
     DicomElement putNull(int tag, VR vr);
 
+    DicomElement putBytes(int tag, VR vr, byte[] val);
     
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
      * @param vr
-     * @param bigEndian
      * @param val
+     * @param bigEndian
      * @return
      */
-    DicomElement putBytes(int tag, VR vr, boolean bigEndian, byte[] val);
+    DicomElement putBytes(int tag, VR vr, byte[] val, boolean bigEndian);
 
     /**
      * @param tag
@@ -936,15 +937,17 @@ public interface DicomObject extends Serializable {
      */
     DicomElement putNull(int[] tagPath, VR vr);
 
+
+    DicomElement putBytes(int[] tagPath, VR vr, byte[] val);
     
     /**
      * @param tagPath
      * @param vr
-     * @param bigEndian
      * @param val
+     * @param bigEndian
      * @return
      */
-    DicomElement putBytes(int[] tagPath, VR vr, boolean bigEndian, byte[] val);
+    DicomElement putBytes(int[] tagPath, VR vr, byte[] val, boolean bigEndian);
 
     /**
      * @param tagPath

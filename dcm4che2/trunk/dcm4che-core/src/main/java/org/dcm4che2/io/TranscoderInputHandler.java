@@ -133,7 +133,7 @@ public class TranscoderInputHandler implements DicomInputHandler
             {
                 byte[] val = in.readBytes(vallen);
                 boolean bigEndian = in.getTransferSyntax().bigEndian();
-                attrs.putBytes(tag, vr, bigEndian, val);
+                attrs.putBytes(tag, vr, val, bigEndian);
                 out.write(val);
             }
             else
