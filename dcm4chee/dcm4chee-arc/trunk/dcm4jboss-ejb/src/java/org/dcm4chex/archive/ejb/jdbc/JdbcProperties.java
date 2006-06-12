@@ -61,7 +61,7 @@ public class JdbcProperties extends Properties {
     public static final int MSSQL = 5;
 
     private static final String HSQL_VAL = "Hypersonic SQL";
-    private static final String PSQL_VAL = "PostgreSQL 7.2";
+    private static final String PSQL_VAL = "PostgreSQL 8.0";
     private static final String MYSQL_VAL = "mySQL";
     private static final String DB2_VAL = "DB2";
     private static final String ORACLE_VAL = "Oracle9i";

@@ -9,7 +9,7 @@
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
     <!--property name="datasource.mapping" value="mySQL"/-->
-    <!--property name="datasource.mapping" value="PostgreSQL 7.2"/-->
+    <!--property name="datasource.mapping" value="PostgreSQL 8.0"/-->
 	<!--property name="datasource.mapping" value="Oracle9i"/-->
     <property name="datasource.name" value="java:/DefaultDS"/>
     <!--property name="datasource.name" value="java:/MySqlDS"/-->
@@ -46,9 +46,11 @@
 	<property name="log4j.jar" value="${jboss.conf}/lib/log4j.jar"/>		
 	<property name="getopt.jar" value="${jboss.client}/getopt.jar"/>		
 	<property name="jboss-system.jar" value="${jboss.home}/lib/jboss-system.jar"/>		
+	<property name="concurrent.jar" value="${jboss.home}/lib/concurrent.jar"/>		
 
 	<path id="base.path">
 		<pathelement location="${jboss-system.jar}"/>
+		<pathelement location="${concurrent.jar}"/>
 		<pathelement location="${ejb.jar}"/>
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${getopt.jar}"/>
@@ -201,7 +203,7 @@
     	<replace file="${target.meta-inf-psql}/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="Hypersonic SQL"
-  				value="PostgreSQL 7.2"/>
+  				value="PostgreSQL 8.0"/>
   			<replacefilter
   				token="hsqldb-fetch-key"
   				value="postgresql-fetch-seq"/>
