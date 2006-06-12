@@ -122,7 +122,12 @@
    
    <operation impact="ACTION">
      <description>Add AE configuration</description>
-     <name>addAE</name>
+     <name>updateAE</name>
+     <parameter>
+       <description>Primary key of AE (use -1 for new AE)</description>
+       <name>pk</name>
+       <type>int</type>
+     </parameter>
      <parameter>
        <description>AE Title</description>
        <name>aet</name>
@@ -142,6 +147,11 @@
        <description>Cipher (seperated with ',')</description>
        <name>cipher</name>
        <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Enable/disable check if host can be resolved to an IP address</description>
+       <name>checkHost</name>
+       <type>boolean</type>
      </parameter>
      <return-type>void</return-type>
 	</operation>
