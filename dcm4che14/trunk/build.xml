@@ -392,6 +392,15 @@
          <fileset dir="${build.classes.dir}" includes="HPQRScu*,Configuration*"/>
          <fileset dir="${build.res.dir}" includes="HPQRScu*"/>
     </jar>
+	<jar jarfile="${build.bin.dir}/imgcodec.jar">
+		<manifest>
+			<attribute name="Main-Class" value="TranscoderMain"/>
+			<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
+			<attribute name="Implementation-Version" value="${version}"/>
+		</manifest>
+        <fileset dir="${build.classes.dir}" includes="Transcoder*,PixelDataParam*"/>
+        <fileset dir="${build.res.dir}" includes="TranscoderMain.properties"/>
+	</jar>
     <jar jarfile="${build.bin.dir}/lsiioreg.jar">
       	<manifest>
 				<attribute name="Main-Class" value="ListIIORegistry"/>
