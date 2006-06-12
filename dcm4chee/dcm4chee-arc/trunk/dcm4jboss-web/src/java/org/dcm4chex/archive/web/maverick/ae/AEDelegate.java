@@ -125,11 +125,13 @@ public class AEDelegate {
 		 * @throws MBeanException
 		 * @throws InstanceNotFoundException
 		 */
-		public void updateAE(String aet, String host, int port, String ciphers) throws InstanceNotFoundException, MBeanException, ReflectionException {
+		public void updateAE( AEData ae, boolean checkHost) throws InstanceNotFoundException, MBeanException, ReflectionException {
 	        server.invoke(aeServiceName,
-	                "addAE",
-	                new Object[]{ aet, host, new Integer(port), ciphers },
-	                new String[]{ String.class.getName(), String.class.getName(), int.class.getName(), String.class.getName()} );
+	                "updateAE",
+	                new Object[]{ new Integer(ae.getPk()), ae.getTitle(), ae.getHostName(), 
+	        					new Integer(ae.getPort()),ae.getCipherSuitesAsString(), new Boolean(checkHost) },
+	                new String[]{ int.class.getName(), String.class.getName(), String.class.getName(),
+	        						int.class.getName(), String.class.getName(), boolean.class.getName()} );
 		}
 	
 		/**

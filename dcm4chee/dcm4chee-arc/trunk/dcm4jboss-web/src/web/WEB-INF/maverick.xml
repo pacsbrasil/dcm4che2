@@ -214,12 +214,14 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="ae_edit.xsl" />
 	    </view>
+	    <view name="failed" type="redirect" path="ae.m"/>
       <view ref="error" />
      </command>
 
     <command name="aeeditsubmit">
         <controller class="org.dcm4chex.archive.web.maverick.ae.AEEditSubmitCtrl" />    
 	    <view name="success" type="redirect" path="ae.m"/>
+	    <view name="failed" type="redirect" path="aeedit.m"/>
         <view ref="error" />
      </command>
      
@@ -228,12 +230,14 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="ae_new.xsl" />
 	    </view>
+	    <view name="failed" type="redirect" path="ae.m"/>
       <view ref="error" />
      </command>
 
     <command name="aenewsubmit">
         <controller class="org.dcm4chex.archive.web.maverick.ae.AENewSubmitCtrl" />    
         <view name="success" type="redirect" path="ae.m"/>
+	    <view name="failed" type="redirect" path="aeedit.m"/>
       <view ref="error" />
      </command>
 

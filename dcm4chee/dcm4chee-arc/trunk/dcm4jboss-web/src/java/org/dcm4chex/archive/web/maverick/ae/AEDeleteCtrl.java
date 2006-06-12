@@ -39,8 +39,6 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.web.maverick.AEFormCtrl;
-import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -49,25 +47,16 @@ import org.dcm4chex.archive.web.maverick.FolderForm;
  */
 public class AEDeleteCtrl extends AEFormCtrl
 {
-	private String title;
-
-	/**
-	 * @param oldPk The oldPk to set.
-	 */
-	public final void setTitle(String title)
-	{
-		this.title = title;
-	}
-
 	protected String perform() throws Exception
 	{
-		setPopupMsg(null);
+		AEModel model = AEModel.getModel(getCtx().getRequest());
+		model.setPopupMsg(null);
 		try
 		{
-			lookupAEDelegate().delAE(title);
+			lookupAEDelegate().delAE(model.getAE().getTitle());
 		} catch (Throwable e)
 		{
-			setPopupMsg("Failed to delete AE Title:"+title+"!");
+			model.setPopupMsg("Failed to delete AE Title:"+model.getAE().getTitle()+"!");
 		}
 		return SUCCESS;				
 	}	

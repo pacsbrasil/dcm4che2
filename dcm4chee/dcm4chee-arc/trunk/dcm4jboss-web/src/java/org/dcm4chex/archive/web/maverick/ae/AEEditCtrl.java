@@ -40,47 +40,31 @@
 package org.dcm4chex.archive.web.maverick.ae;
 
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.*;
+
 
 /**
  * @author umberto.cappellini@tiani.com
  */
 public class AEEditCtrl extends AEFormCtrl
 {
-	private String title;
-	
-	public AEData getAE() throws Exception
-	{
-		try {
-		return lookupAEDelegate().getAE(title);
-		} catch ( Exception x ) {
-			x.printStackTrace();
-		}
-		return null;
-	}
 
 	protected String perform() throws Exception 
 	{
-		setPopupMsg(null);
+		AEModel model = AEModel.getModel(getCtx().getRequest());
 		try
 		{
-			getAE();
+			AEData ae = model.getAE();
+			if (ae.getPort() < 0) { //AE not loaded!
+				model.setAE( lookupAEDelegate().getAE(ae.getTitle()) );
+			}
 			return SUCCESS;
 		}
 		catch (Exception e)
 		{
-			setPopupMsg("Failed to change AE Title:"+getAE()+"!");
-			return "error";
+			model.setPopupMsg("Failed to open AE Editor! Reason:"+e.getMessage());
+			return FAILED;
 		}	
 	}
-	/**
-	 * @param pk The pk to set.
-	 */
-	public final void setTitle(String title)
-	{
-		this.title = title;
-	}
-	
 
 
 }

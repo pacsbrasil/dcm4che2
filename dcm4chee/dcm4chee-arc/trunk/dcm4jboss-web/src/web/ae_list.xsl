@@ -50,7 +50,7 @@
 	        </td>
 	        <xsl:if test="$ae_mgr.edit='true'">
 				<td align="center" valign="top" >
-					<a href="aeedit.m?title={title}">
+					<a href="aeedit.m?aet={title}">
 						<img src="images/edit.gif" alt="edit" border="0"/>		
 					</a>
 		        </td>

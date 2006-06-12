@@ -42,7 +42,6 @@ package org.dcm4chex.archive.web.maverick.ae;
 
 import java.util.List;
 
-import org.dcm4chex.archive.web.maverick.AEFormCtrl;
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 
 /**
@@ -53,6 +52,17 @@ public class AEListCtrl extends AEFormCtrl
 	public List getAEs() {
 		return this.lookupAEDelegate().getAEs();
 	}
+	
+    protected Object makeFormBean() {
+    	return this;
+    }
+
+	protected String perform() throws Exception 
+	{
+		AEModel.getModel(getCtx().getRequest()).setPopupMsg(null);
+		return SUCCESS;
+	}    
+	
 	public String getModelName() { return "AEMgr"; }
 	
 	/**

@@ -7,7 +7,11 @@
    <xsl:variable name="page_title">AE Edit</xsl:variable>
    <xsl:include href  = "page.xsl" />
 
-   <xsl:template match="model/AE">
+   <xsl:template match="model">
+		<xsl:apply-templates select="AE"/>   
+   </xsl:template>
+   
+   <xsl:template match="AE">
 	 <html><body bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" border="0">
 			<center><form name="ae_edit" action="aeeditsubmit.m" method="post">
 			<input type="hidden" name="pk" value="{pk}"/>
@@ -23,6 +27,12 @@
 						<td width="50">Hostname</td>
 				    	<td title="Hostname" >
 							<input size="25" name="hostName" type="text" value="{hostName}"/>
+							<input name="checkHost" type="checkbox" value="true">
+								<xsl:if test="/model/checkHost = 'true'">
+									<xsl:attribute name="checked"/>
+								</xsl:if>
+							</input> check
+							<input name="checkHost" type="hidden" value="false" /> <!-- submit false for unselect state -->
 				    	</td>
 					</tr>
 					<tr>				        

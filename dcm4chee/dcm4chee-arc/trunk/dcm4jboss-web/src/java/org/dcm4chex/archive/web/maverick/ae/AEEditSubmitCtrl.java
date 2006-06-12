@@ -39,9 +39,9 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.AEFormCtrl;
-import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -50,127 +50,28 @@ import org.dcm4chex.archive.web.maverick.FolderForm;
  */
 public class AEEditSubmitCtrl extends AEFormCtrl
 {
-	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
-	private int port, pk;
-
-	private String update = null;
-	private String cancel = null;
-	private String echo = null;
-	private String popupMsg = null;
-	
-	/**
-	 * @param chiperSuites The chiperSuites to set.
-	 */
-	public final void setCipherSuites(String cipherSuites)
-	{
-		this.cipherSuites = cipherSuites;
-	}
-
-	/**
-	 * @param hostName The hostName to set.
-	 */
-	public final void setHostName(String hostName)
-	{
-		this.hostName = hostName;
-	}
-
-	/**
-	 * @param port The port to set.
-	 */
-	public final void setPort(int port)
-	{
-		this.port = port;
-	}
-
-	/**
-	 * @param title The title to set.
-	 */
-	public final void setTitle(String title)
-	{
-		this.title = title;
-	}
-
-	/**
-	 * @param oldPk The oldPk to set.
-	 */
-	public final void setPk(int pk)
-	{
-		this.pk = pk;
-	}
-
-	public final void setUpdate(String update)
-	{
-		this.update = update;
-	}
-
-	public final void setCancel(String cancel)
-	{
-		this.cancel = cancel;
-	}
-	public final void setEcho(String echo)
-	{
-		this.echo = echo;
-	}
-	
-	public final void setCipher1(String cipher)
-	{
-		this.cipher1 = cipher;
-	}
-	public final void setCipher2(String cipher)
-	{
-		this.cipher2 = cipher;
-	}
-	public final void setCipher3(String cipher)
-	{
-		this.cipher3 = cipher;
-	}
-
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
-	private AEData getAE()
-	{
-		if (cipherSuites == null || cipherSuites.length() < 1 ) {
-			StringBuffer sb = new StringBuffer(cipher1);
-			if ( cipher2 != null && cipher2.length() > 0 ) sb.append(",").append( cipher2 );
-			if ( cipher3 != null && cipher3.length() > 0 ) sb.append(",").append( cipher3 );
-			cipherSuites = sb.toString();
-		}
-		return new AEData(
-			pk,
-			this.title,
-			this.hostName,
-			this.port,
-			this.cipherSuites);
-	}
 
 	protected String perform() throws Exception
 	{
-		setPopupMsg(null);
+		HttpServletRequest request = getCtx().getRequest();
+		AEModel model = AEModel.getModel(request);
+		model.setPopupMsg(null);
 		AEDelegate delegate = lookupAEDelegate();
-		if (update != null)
+		if (request.getParameter("update") != null)
 		{
-			AEData newAE = getAE();
+			AEData newAE = model.getAE();
 			try
 			{
-				lookupAEDelegate().updateAE( title, hostName, port, cipherSuites);
+				lookupAEDelegate().updateAE( newAE, model.isCheckHost());
 				return SUCCESS;
-			} catch (Throwable e)
-			{
-				setPopupMsg("Failed to change AE Title:"+getAE()+"!");
-				return SUCCESS;
+			} catch (Throwable e) {
+				Throwable t = e.getCause();
+				if ( t == null ) t = e;
+				model.setPopupMsg("Failed to change AE Title! Reason:"+t.getMessage());
+				return "failed";
 			}
-		} else 	if ( echo != null ) {
-			popupMsg = delegate.echo( getAE(), 5);
+		} else 	if (request.getParameter("echo") != null ) {
+			model.setPopupMsg( delegate.echo( model.getAE(), 5));
 			return SUCCESS;
 		} else
 			return SUCCESS;

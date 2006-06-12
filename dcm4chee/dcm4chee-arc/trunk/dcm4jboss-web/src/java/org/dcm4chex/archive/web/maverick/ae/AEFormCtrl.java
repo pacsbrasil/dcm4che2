@@ -37,9 +37,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.web.maverick;
+package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
+import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
 
 
 /**
@@ -52,20 +52,12 @@ public abstract class AEFormCtrl extends Dcm4JbossFormController
 {
 	private static AEDelegate aeDelegate = null;
 	
-	private String popupMsg;
+	public static final String FAILED = "failed";
+
+    protected Object makeFormBean() {
+    	return AEModel.getModel(this.getCtx().getRequest());
+    }
 	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
     public AEDelegate lookupAEDelegate() {
         if ( aeDelegate == null ) {
         	aeDelegate = new AEDelegate();

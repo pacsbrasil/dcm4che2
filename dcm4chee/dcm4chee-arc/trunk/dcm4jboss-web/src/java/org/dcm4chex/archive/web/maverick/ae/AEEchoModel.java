@@ -39,22 +39,67 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import javax.servlet.http.HttpServletRequest;
+
 
 /**
  * @author umberto.cappellini@tiani.com
+ * @author gunter.zeilinger@tiani.com
+ * @version $Revision$ $Date$
  */
-public class AENewCtrl extends AEFormCtrl
+public class AEEchoModel extends AEModel
 {
+	String aet;
+
+	private boolean echoSucceed = false;
+	private String echoResultMsg = null;
+	
+	
+	/**
+	 * @param echoResultMsg The echoResultMsg to set.
+	 */
+	public void setEchoResultMsg(String echoResultMsg) {
+		this.echoResultMsg = echoResultMsg;
+	}
+	/**
+	 * @param echoSucceed The echoSucceed to set.
+	 */
+	public void setEchoSucceed(boolean echoSucceed) {
+		this.echoSucceed = echoSucceed;
+	}
+	/**
+	 * Creates the model.
+	 * <p>
+	 */
+	protected AEEchoModel(String user, HttpServletRequest request) {
+		super(user, request);
+	}
+	
+	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getEchoResultMsg() {
+		return echoResultMsg;
+	}
 	
 
-	protected String perform() throws Exception 
-	{
-		AEModel model = AEModel.getModel(getCtx().getRequest());
-		model.setAE( new AEData(-1,null,null,-1,null));
-		return SUCCESS;
+	/**
+	 * @return Returns the aet.
+	 */
+	public String getAet() {
+		return aet;
+	}
+	/**
+	 * @param aet The aet to set.
+	 */
+	public void setAet(String aet) {
+		this.aet = aet;
 	}
 
+	/**
+	 * @return Returns the echoSucceed.
+	 */
+	public boolean isEchoSucceed() {
+		return echoSucceed;
+	}
 }
-
-
