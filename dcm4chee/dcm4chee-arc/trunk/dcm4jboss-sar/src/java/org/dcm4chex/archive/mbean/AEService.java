@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.mbean;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -187,22 +188,36 @@ public class AEService extends ServiceMBeanSupport
      * @param host		Hostname or IP addr.
      * @param port		port number
      * @param cipher	String with cypher(s) to create a secure connection (seperated with ',') or null
+     * @param checkHost	Enable/disable checking if the host can be resolved.
+     * 
      * @throws Exception
      * @throws RemoteException
      */
-    public void addAE(String title, String host, int port, String cipher)
+    public void updateAE(int pk, String title, String host, int port, String cipher, boolean checkHost)
         throws RemoteException, Exception
     {
-    	host = InetAddress.getByName(host).getCanonicalHostName();
+    	try {
+    		host = InetAddress.getByName(host).getCanonicalHostName();
+    	} catch ( UnknownHostException x ) {
+    		if ( checkHost ) {
+    			throw new IllegalArgumentException("Host "+host+" cant be resolved! Disable hostname check to add new AE anyway!");
+    		}
+    	}
     	
         AEManager aeManager = lookupAEManager();
-        AEData aeOld = aeManager.getAeByTitle( title );
-        if ( aeOld == null ) {
+        if ( pk == -1 ) {
         	AEData aeNew = new AEData(-1,title,host,port,cipher);
         	aeManager.newAE( aeNew );
             logActorConfig("Add AE " + aeNew +" cipher:"+aeNew.getCipherSuitesAsString());
         } else {
-        	AEData aeNew = new AEData(aeOld.getPk(),title,host,port,cipher);
+            AEData aeOld = aeManager.getAe(pk);
+            if ( !aeOld.getTitle().equals(title) ) {
+            	AEData aeOldByTitle = aeManager.getAeByTitle(title);
+            	if ( aeOldByTitle != null ) {
+            		throw new IllegalArgumentException("AE Title "+title+" already exists!:"+aeOldByTitle);
+            	}
+            }
+        	AEData aeNew = new AEData(pk,title,host,port,cipher);
         	aeManager.updateAE( aeNew );
             logActorConfig("Modify AE " + aeOld +" -> "+aeNew);
         }
