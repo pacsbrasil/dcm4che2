@@ -795,8 +795,10 @@ public class NetworkApplicationEntity {
         aarq.setCallingAET(aeTitle);
         aarq.setCalledAET(remoteAE.getAETitle());
         aarq.setMaxPDULength(maxPDULengthReceive);
-        aarq.setMaxOpsInvoked(maxOpsInvoked);
-        aarq.setMaxOpsPerformed(maxOpsPerformed);
+        aarq.setMaxOpsInvoked(
+                minZeroAsMax(maxOpsInvoked, remoteAE.maxOpsPerformed));
+        aarq.setMaxOpsPerformed(
+                minZeroAsMax(maxOpsPerformed, remoteAE.maxOpsInvoked));
 
         LinkedHashMap cuid2ts = new LinkedHashMap();
         HashSet scu = new HashSet();
@@ -1054,8 +1056,7 @@ public class NetworkApplicationEntity {
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
         ac.setMaxPDULength(maxPDULengthReceive);
-        ac
-                .setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
+        ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
                         maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
