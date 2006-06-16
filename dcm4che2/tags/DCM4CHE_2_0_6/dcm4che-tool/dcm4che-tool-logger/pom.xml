@@ -1,0 +1,21 @@
+<project>
+  <parent>
+    <artifactId>dcm4che-tool</artifactId>
+    <groupId>dcm4che</groupId>
+    <version>1</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dcm4che</groupId>
+  <artifactId>dcm4che-tool-logger</artifactId>
+  <version>2.0.6</version>
+  <packaging>jar</packaging>
+  <name>Logger</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>nlog4j</artifactId>
+      <version>1.2.19</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+</project>
