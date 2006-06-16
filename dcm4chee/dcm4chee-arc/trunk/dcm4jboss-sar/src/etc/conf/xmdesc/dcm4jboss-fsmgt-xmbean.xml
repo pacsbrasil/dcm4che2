@@ -282,7 +282,7 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="isPurgeFilesAfterFreeDiskSpace"
       setMethod="setPurgeFilesAfterFreeDiskSpace">
-      <description>Enables deletion of (unreferenced) files after free disk space has processed.
+      <description>Enables purging of (web) deleted files after free disk space has processed.
       </description>
       <name>DeleteFilesAfterFreeDiskSpace</name>
       <type>boolean</type>
@@ -313,6 +313,26 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getRetryIntervalsForJmsOrder"
+      setMethod="setRetryIntervalsForJmsOrder">
+      <description><![CDATA[Number and interval of retries made for
+      failed JMS order, e.g., purgeFile.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      <br>Example: 
+      <br>5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.]]>
+      </description>
+      <name>RetryIntervalsForJmsOrder</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="5x1m,12x5m,24x1h,7x1d" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
       <description>Size of byte buffer used by WADO/RID service for copying data
@@ -334,6 +354,17 @@ accessed studies.</description>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPurgeStudyQueueName"
+      setMethod="setPurgeStudyQueueName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>PurgeStudyQueueName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PurgeStudy"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
@@ -490,17 +521,6 @@ accessed studies.</description>
       <name>selectStorageFileSystem</name>
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
-   <operation impact="INFO">
-      <description>Show free disk space on specified directory/mount point.</description>
-      <name>availableDiskSpace</name>
-      <parameter>
-        <description>Directory path of filesystem.
-        </description>
-        <name>dirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>java.lang.String</return-type>
-   </operation>
    <operation impact="ACTION">
       <description>Purge unreferenced Files</description>
       <name>purgeFiles</name>
@@ -547,7 +567,7 @@ accessed studies.</description>
       Returns the number of released studies.
       </description>
       <name>freeDiskSpace</name>
-      <return-type>int</return-type>
+      <return-type>void</return-type>
    </operation>   
    <operation impact="ACTION">
       <description>Update value of attribute ExpectedDataVolumnePerDay at midnight,
@@ -557,12 +577,17 @@ accessed studies.</description>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="INFO">
-      <description>get file size of study.
+      <description>get file size of study stored on the given file system.
       </description>
       <name>showStudySize</name>
       <parameter>
         <description>Study pk</description>
         <name>studyPk</name>
+        <type>java.lang.Long</type>
+      </parameter>
+      <parameter>
+        <description>File System pk</description>
+        <name>fileSystemPk</name>
         <type>java.lang.Long</type>
       </parameter>
       <return-type>long</return-type>

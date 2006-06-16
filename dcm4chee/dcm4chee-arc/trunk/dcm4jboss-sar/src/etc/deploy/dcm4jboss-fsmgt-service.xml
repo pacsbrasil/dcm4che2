@@ -4,7 +4,7 @@
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcm4jboss.archive:service=Queue,name=PurgeFiles">
+	 name="dcm4jboss.archive:service=Queue,name=PurgeStudy">
      <attribute name="ReceiversImpl">org.jboss.mq.server.ReceiversImplLinkedList</attribute>	
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
@@ -19,7 +19,7 @@
 	as the FileSystemMgt EJB!
 	-->
     <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt,service=EJB</depends>
-    <depends>dcm4jboss.archive:service=Queue,name=PurgeFiles</depends>
+    <depends>dcm4jboss.archive:service=Queue,name=PurgeStudy</depends>
   </mbean>
 
 </server>

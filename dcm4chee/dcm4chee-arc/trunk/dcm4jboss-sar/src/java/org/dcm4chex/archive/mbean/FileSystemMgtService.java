@@ -41,9 +41,17 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +59,7 @@ import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -64,6 +73,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.common.ActionOrder;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
@@ -73,6 +83,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -95,6 +107,8 @@ import org.jboss.system.ServiceMBeanSupport;
 public class FileSystemMgtService extends ServiceMBeanSupport implements MessageListener {
 
     private final TimerSupport timer = new TimerSupport(this);
+	
+    private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     
@@ -149,8 +163,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     private FileSystemDTO storageFileSystem;
     
     private long checkStorageFileSystem = 0L;
+
+    private String purgeStudyQueueName = null;
     
     private long adjustExpectedDataVolumnePerDay = 0L;
+    
+	protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
     
 	        
     private final NotificationListener purgeFilesListener = 
@@ -452,13 +470,31 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     	limitNumberOfFilesPerTask = limit;
     }
     
+	public final String getRetryIntervalsForJmsOrder() {
+		return retryIntervalsForJmsOrder.toString();
+	}
+
+	public final void setRetryIntervalsForJmsOrder(String s) {
+		this.retryIntervalsForJmsOrder = new RetryIntervalls(s);
+	}
+    
+    
+	public String getPurgeStudyQueueName() {
+		return purgeStudyQueueName;
+	}
+
+	public void setPurgeStudyQueueName(String purgeStudyQueueName) {
+		this.purgeStudyQueueName = purgeStudyQueueName;
+	}
+    
+    
     protected void startService() throws Exception {
          timer.init();
          freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
          		freeDiskSpaceInterval, freeDiskSpaceListener);
          purgeFilesListenerID = timer.startScheduler("CheckFilesToPurge",
          		purgeFilesInterval, purgeFilesListener);
- 		JMSDelegate.startListening("PurgeFiles", this, 1);
+ 		JMSDelegate.startListening(purgeStudyQueueName, this, 1);
          
     }
     
@@ -740,11 +776,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             }
         }
         return null;
-//        String aet = fileInfos[0].fileRetrieveAET;
-//        if (aet == null)
-//        	aet = fileInfos[0].extRetrieveAET;
-//        AEData aeData = new AECmd(fileInfos[0].).getAEData();
-//        return aeData.getHostName();
     }
     
   
@@ -761,7 +792,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
      * 
      * @return The number of released studies.
      */
-    public int freeDiskSpace() {
+    public void freeDiskSpace() {
         log.info("Check available Disk Space");
         try {
             FileSystemMgt fsMgt = newFileSystemMgt();
@@ -775,28 +806,119 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             long freeSize = deleterThresholds.getDeleterThreshold(now).getFreeSize(expectedDataVolumnePerDay);
             long maxSizeToDel = freeSize - available;
             if (maxSizeToDel > 0) {
-                Map ians = fsMgt.freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
-                        flushExternalRetrievable, flushOnROFsAvailable, validFileStatus,
+                freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
+                        flushExternalRetrievable, flushOnROFsAvailable, validFileStatus, 
                         maxSizeToDel, limitNumberOfFilesPerTask);
-                sendIANs(ians);
-                if ( autoPurge ) {
-                	if ( log.isDebugEnabled() ) log.debug("call purgeFiles after freeDiskSpace");
-                	this.purgeFiles();
-                }
-                return ians.size();
             } else if (studyCacheTimeout > 0L) {
                 long accessedBefore = System.currentTimeMillis() - studyCacheTimeout;
-            	Map ians = fsMgt.releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
+                releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
                         flushExternalRetrievable, flushOnROFsAvailable, validFileStatus, accessedBefore);
-                sendIANs(ians);
-                return ians.size();
             } else {
-                return 0;
+                return;
             }
         } catch (Exception e) {
             log.error("Free Disk Space failed:", e);
-            return -1;
+            return;
         }
+    }
+ 
+    private void freeDiskSpace(String retrieveAET, boolean checkUncommited,
+            boolean checkOnMedia, boolean checkExternal, boolean checkOnRO,
+            int validFileStatus, long maxSizeToDel, int deleteStudiesLimit) throws Exception {
+        Map ians = new HashMap();
+        log.info("Free Disk Space: try to release "
+                + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
+        
+        releaseStudies(retrieveAET, ians, checkUncommited, checkOnMedia,
+                checkExternal, checkOnRO, validFileStatus, maxSizeToDel, deleteStudiesLimit);
+    }
+
+    private void releaseStudies(String retrieveAET, boolean checkUncommited,
+            boolean checkOnMedia, boolean checkExternal, boolean checkOnRO,
+            int validFileStatus, long accessedBefore) throws Exception {
+        Timestamp tsBefore = new Timestamp(accessedBefore);
+        log.info("Releasing studies not accessed since " + tsBefore);
+        Map ians = new HashMap();
+        releaseStudies(retrieveAET, ians, checkUncommited, checkOnMedia,
+                checkExternal, checkOnRO, validFileStatus, Long.MAX_VALUE,
+                new Timestamp(accessedBefore));
+    }
+
+    private long releaseStudies(String retrieveAET, Map ians,
+            boolean checkUncommited, boolean checkOnMedia,
+            boolean checkExternal, boolean checkOnRO, int validFileStatus,
+            long maxSizeToDel, Timestamp tsBefore) throws Exception {
+    	
+        Collection c = newFileSystemMgt().getStudiesOnFsByLastAccess(retrieveAET, tsBefore);
+        if (log.isDebugEnabled()) {
+            log.debug("Release studies on filesystem(s) accessed before " + tsBefore
+                    + " :" + c.size());
+            log.debug(" checkUncommited: " + checkUncommited);
+            log.debug(" checkOnMedia: " + checkOnMedia);
+            log.debug(" checkExternal: " + checkExternal);
+            log.debug(" checkCopyAvailable: " + checkOnRO);
+            if(maxSizeToDel != Long.MAX_VALUE)
+            	log.debug(" maxSizeToDel: " + maxSizeToDel);
+        }
+        long sizeToDelete = 0L;
+        for (Iterator iter = c.iterator(); iter.hasNext()
+                && sizeToDelete < maxSizeToDel;) {
+            StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
+                    .next();
+            
+            sizeToDelete += releaseStudy(studyOnFs, checkUncommited, checkOnMedia, checkExternal,
+                    checkOnRO, validFileStatus);
+        }
+
+        log.info("Released " + (sizeToDelete / 1000000.f) + "MB of DiskSpace");
+        return sizeToDelete;
+    }
+    
+    private long releaseStudies(String retrieveAET, Map ians,
+            boolean checkUncommited, boolean checkOnMedia,
+            boolean checkExternal, boolean checkOnRO, int validFileStatus,
+            long maxSizeToDel, int deleteStudiesLimit ) throws Exception {
+        if (log.isDebugEnabled()) {
+        	log.debug("Release oldest studies on " + retrieveAET);
+            log.debug(" checkUncommited: " + checkUncommited);
+            log.debug(" checkOnMedia: " + checkOnMedia);
+            log.debug(" checkExternal: " + checkExternal);
+            log.debug(" checkCopyAvailable: " + checkOnRO);
+            log.debug(" maxSizeToDel: " + maxSizeToDel);
+            log.debug(" deleteStudyBatchSize: " + deleteStudiesLimit);
+        }
+
+        // Studies that can't be deleted because they dont' meet criteria
+        int notDeleted = 0;
+        // Total file size that has been deleted
+        long sizeDeleted = 0L;
+        for(;sizeDeleted < maxSizeToDel;) 
+        {        	
+        	// For those studies that can't be deleted, unfortunately they get selected again for subsequent
+        	// batch, therefore, in order to retrieve more studies to delete, we have to increase the batch size
+        	int thisBatchSize = deleteStudiesLimit + notDeleted;
+        	
+	        Collection c = newFileSystemMgt().getOldestStudiesOnFs(retrieveAET, thisBatchSize);
+	        if(c.size() == notDeleted)
+	        	break;
+	        
+	        if(log.isDebugEnabled())
+	        	log.debug("Retrieved the oldest studies on filesystem(s): " + c.size());
+	        
+	        notDeleted = 0;
+	        for (Iterator iter = c.iterator(); iter.hasNext()
+	                && sizeDeleted < maxSizeToDel;) {
+	            StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter.next();
+	            long size = releaseStudy(studyOnFs, checkUncommited, checkOnMedia, checkExternal,
+	                    checkOnRO, validFileStatus);
+	            if(size != 0)
+	            	sizeDeleted += size;
+	            else
+	            	notDeleted++;
+	        }
+        }
+        log.info("Released " + (sizeDeleted / 1000000.f) + "MB of DiskSpace");
+        return sizeDeleted;
     }
     
 
@@ -822,12 +944,58 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         return size;
     }
 
-    private void sendIANs(Map ians) {
-		for (Iterator iter = ians.values().iterator(); iter.hasNext();) {
-			Dataset ian = (Dataset) iter.next();
-			sendJMXNotification(new StudyDeleted(ian));
-		}		
-	}
+    private long releaseStudy(StudyOnFileSystemLocal studyOnFs, boolean deleteUncommited, boolean flushOnMedia,
+            boolean flushExternal, boolean flushOnROFs, int validFileStatus) throws Exception {
+        long size = 0L;
+        StudyLocal study = studyOnFs.getStudy();
+        boolean release = flushExternal && study.isStudyExternalRetrievable()
+                || flushOnMedia && study.isStudyAvailableOnMedia()
+                || flushOnROFs && study.isStudyAvailableOnROFs(validFileStatus);
+
+        deleteUncommited = (deleteUncommited && study.getNumberOfCommitedInstances() == 0);
+        if ( release || deleteUncommited  ) {
+
+        	// Send PurgeStudy JMS message
+			FileSystemMgt fsmgt = null;
+    		try
+    		{
+   	        	fsmgt = newFileSystemMgt();
+
+   	        	// Get study size for this study stored in this file system
+   	        	size = fsmgt.getStudySize(study.getPk(), studyOnFs.getFileSystem().getPk());
+   	        	this.schedule( new PurgeStudyOrder(study.getPk(), studyOnFs.getFileSystem().getPk(), deleteUncommited), System.currentTimeMillis() );
+   	        	
+   	        	// Remove the StudyOnFs record from database immediately to prevent duplicate query 
+   	        	// when previous jobs are not finished yet
+   	        	studyOnFs.remove();
+    		}		
+    		finally
+    		{
+   				fsmgt.remove();
+    		}
+        }
+        else
+        {
+        	log.warn("Study ["+study.getStudyIuid()+"] can not be deleted" );
+        }
+        return size;
+    }
+
+    private void releaseStudy(PurgeStudyOrder order) throws Exception
+    {
+    	FileSystemMgt fsmgt = newFileSystemMgt();
+    	
+    	Collection files = new ArrayList();
+    	Dataset ian = fsmgt.releaseStudy(order.getStudyPk(), order.getFsPk(), order.isDeleteUncommited(), files);
+    	
+    	for (Iterator iter = files.iterator(); iter.hasNext();)
+    	{
+    		File file = FileUtils.toFile((String)iter.next());
+    		delete(file);
+    	}
+    	
+    	sendJMXNotification(new StudyDeleted(ian));
+    }
 
 	void sendJMXNotification(Object o) {
         long eventID = super.getNextNotificationSequenceNumber();
@@ -858,9 +1026,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
                 FileSystemStatus.DEF_RW, FileSystemStatus.RW);
     }
 
-    public long showStudySize( Long pk ) throws RemoteException, FinderException {
+    public long showStudySize( Long pk, Long fsPk ) throws RemoteException, FinderException {
         FileSystemMgt fsMgt = newFileSystemMgt();
-    	return fsMgt.getStudySize(pk);
+    	return fsMgt.getStudySize(pk, fsPk);
     }
     
 	private static String toString(FileSystemDTO[] dtos) {
@@ -975,22 +1143,73 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 	 * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
 	 */
 	public void onMessage(Message msg) {
-		ObjectMessage om = (ObjectMessage) msg;
+		ObjectMessage message = (ObjectMessage)msg;
+		Object o = null;
 		try {
-			ActionOrder order = (ActionOrder) om.getObject();
-			log.info("Start processing " + order);
+			o = message.getObject();
+		} catch (JMSException e1) {
+			log.error("Processing JMS message failed! message:"+message, e1);
+		}
+		if(o instanceof BaseJmsOrder)
+		{
+			if(log.isDebugEnabled())
+				log.debug("Processing JMS message: " + o);
+			
+			BaseJmsOrder order = (BaseJmsOrder)o;
 			try {
-				List l = (List)order.getData();
-				for ( Iterator iter = l.iterator() ; iter.hasNext() ;) {
-					this.delete( FileUtils.toFile((String) iter.next() ) );
+				if(order instanceof ActionOrder)
+				{
+					ActionOrder actionOrder = (ActionOrder) message.getObject();
+					Method m = this.getClass().getDeclaredMethod(actionOrder.getActionMethod(), new Class[]{Object.class});
+					m.invoke(this, new Object[]{actionOrder.getData()});
 				}
-				log.info("Finished processing " + order);
+				else if(order instanceof PurgeStudyOrder)
+				{
+					releaseStudy((PurgeStudyOrder)order);
+				}
+				if(log.isDebugEnabled())
+					log.debug("Finished processing " + order.toIdString());
 			} catch (Exception e) {
-				log.warn("Failed to process " + order, e);
+				final int failureCount = order.getFailureCount() + 1;
+				order.setFailureCount(failureCount);
+				final long delay = retryIntervalsForJmsOrder.getIntervall(failureCount);
+				if (delay == -1L) {
+					log.error("Give up to process " + order, e);
+				} else {
+					Throwable thisThrowable = e;
+					if(e instanceof InvocationTargetException)
+						thisThrowable = ((InvocationTargetException)e).getTargetException();
+					
+					if(order.getFailureCount() == 1 || 
+							(order.getThrowable() != null && !thisThrowable.getClass().equals(order.getThrowable().getClass()) ))
+					{
+						// If this happens first time, log as error
+						log.error("Failed to process JMS job. Will schedule retry ... Dumping - " + order.toString(), e);
+						// Record this exception
+						order.setThrowable(thisThrowable);
+					}
+					else
+					{
+						// otherwise, if it's the same exception as before
+						log.warn("Failed to process " + order.toIdString() + ". Details should have been provided. Will schedule retry.");
+					}
+					schedule(order, System.currentTimeMillis() + delay);
+				}
 			}
-		} catch (Throwable e) {
-			log.error("unexpected error during processing message: " + msg,	e);
 		}
 	}
+
+	protected void schedule(BaseJmsOrder order, long scheduledTime) {
+		try {
+			if(scheduledTime > 0 && log.isInfoEnabled())
+				log.info("Scheduling job ["+order.toIdString()+"] at "+dtFormatter.format(new Date(scheduledTime))+". Retry times: "+order.getFailureCount() );
+			JMSDelegate.queue(purgeStudyQueueName, order, Message.DEFAULT_PRIORITY,
+					scheduledTime);
+		} catch (Exception e) {
+			log.error("Failed to schedule " + order, e);
+		}
+	}
+	
+	
 	
 }

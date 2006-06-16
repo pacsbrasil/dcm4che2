@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -108,8 +109,8 @@ import org.dcm4chex.archive.util.Convert;
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2 AND f.fileSystem.availability <> 3 AND f.fileSystem.status = 2"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Long pk)"
  * 	            query="SELECT MAX(s.availability) FROM Series s WHERE s.study.pk = ?1"
- * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Long pk)"
- * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1"
+ * @jboss.query signature="int ejbSelectStudyFileSize(java.lang.Long studyPk, java.lang.Long fsPk)"
+ * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
@@ -525,7 +526,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query=""
      */
-    public abstract long ejbSelectStudyFileSize(Long pk)
+    public abstract long ejbSelectStudyFileSize(Long studyPk, Long fsPk)
             throws FinderException;
 
  
@@ -539,8 +540,8 @@ public abstract class StudyBean implements EntityBean {
      * @throws FinderException
      * @ejb.home-method
      */
-    public long ejbHomeSelectStudySize( Long pk ) throws FinderException {
-    	return ejbSelectStudyFileSize(pk);
+    public long ejbHomeSelectStudySize( Long studyPk, Long fsPk ) throws FinderException {
+    	return ejbSelectStudyFileSize(studyPk, fsPk);
     }
     
     private boolean updateRetrieveAETs(Long pk, int numI)
@@ -797,5 +798,19 @@ public abstract class StudyBean implements EntityBean {
     private String prompt() {
         return "Study[pk=" + getPk() + ", uid=" + getStudyIuid()
                 + ", patient->" + getPatient() + "]";
+    }
+    
+    /**
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectFiles(java.lang.Long study_fk, java.lang.Long filesystem_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getFiles(Long fsPk) throws FinderException {    	
+        return ejbSelectFiles(getPk(), fsPk);
     }
 }
