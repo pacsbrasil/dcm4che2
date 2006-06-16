@@ -371,6 +371,8 @@ public interface DicomObject extends Serializable {
      */
     byte[] getBytes(int tag, boolean bigEndian);
 
+    byte[] getBytes(int tag);
+    
     /**
      * @param tagPath
      * @param bigEndian
@@ -378,6 +380,8 @@ public interface DicomObject extends Serializable {
      */
     byte[] getBytes(int[] tagPath, boolean bigEndian);
 
+    byte[] getBytes(int[] tagPath);
+    
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.

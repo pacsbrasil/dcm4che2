@@ -349,6 +349,10 @@ abstract class AbstractDicomObject implements DicomObject {
         return attr != null && !attr.isEmpty();
     }
 
+    public byte[] getBytes(int tag) {
+        return toBytes(get(tag), false);
+    }
+    
     public byte[] getBytes(int tag, boolean bigEndian) {
         return toBytes(get(tag), bigEndian);
     }
@@ -593,6 +597,10 @@ abstract class AbstractDicomObject implements DicomObject {
             item = sq.getDicomObject(itemPath[i + 1]);
         }
         return item;
+    }
+
+    public byte[] getBytes(int[] tagPath) {
+        return toBytes(get(tagPath), false);
     }
 
     public byte[] getBytes(int[] tagPath, boolean bigEndian) {
