@@ -36,53 +36,55 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.general;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.iod.module.Module;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 16, 2006
  *
  */
-public class Module {
+public class EncryptedAttributes extends Module {
 
-    protected final DicomObject dcmobj;
+    public EncryptedAttributes(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public EncryptedAttributes() {
+        super(new BasicDicomObject());
+    }
+
+    public static EncryptedAttributes[] toEncryptedAttributes(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        EncryptedAttributes[] a = new EncryptedAttributes[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new EncryptedAttributes(sq.getDicomObject(i));
         }
+        return a;
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public String getEncryptedContentTransferSyntaxUID() {
+        return dcmobj.getString(Tag.EncryptedContentTransferSyntaxUID);
+    }
+    
+    public void setEncryptedContentTransferSyntaxUID(String s) {
+        dcmobj.putString(Tag.EncryptedContentTransferSyntaxUID, VR.UI, s);
     }
 
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    public byte[] getEncryptedContent() {
+        return dcmobj.getBytes(Tag.EncryptedContent);
+    }
+    
+    public void setEncryptedContent(byte[] b) {
+        dcmobj.putBytes(Tag.EncryptedContent, VR.OB, b);
     }
 }

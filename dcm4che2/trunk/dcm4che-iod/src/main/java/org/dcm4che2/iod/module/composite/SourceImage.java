@@ -36,53 +36,48 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.composite;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.iod.module.macro.ImageSOPInstanceReferenceAndPurpose;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 12, 2006
  *
  */
-public class Module {
+public class SourceImage extends ImageSOPInstanceReferenceAndPurpose {
 
-    protected final DicomObject dcmobj;
+    public SourceImage(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public SourceImage() {
+        this(new BasicDicomObject());
+    }
+
+    public static SourceImage[] toSourceImages(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        SourceImage[] a = new SourceImage[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new SourceImage(sq.getDicomObject(i));
         }
+        return a;
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public String getSpatialLocationsPreserved() {
+        return dcmobj.getString(Tag.SpatialLocationsPreserved);
     }
 
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    public void getSpatialLocationsPreserved(String s) {
+        dcmobj.putString(Tag.SpatialLocationsPreserved, VR.CS, s);
     }
+    
 }

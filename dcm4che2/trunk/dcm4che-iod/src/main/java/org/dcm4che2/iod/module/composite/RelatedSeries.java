@@ -36,53 +36,65 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.composite;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.macro.Code;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
- *
+ * @since Jun 11, 2006
+ * 
  */
-public class Module {
+public class RelatedSeries extends Module {
 
-    protected final DicomObject dcmobj;
+    public RelatedSeries(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public RelatedSeries() {
+        super(new BasicDicomObject());
+        dcmobj.putNull(Tag.PurposeofReferenceCodeSequence, VR.SQ);
+    }
+
+    public static RelatedSeries[] toRelatedSeries(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        RelatedSeries[] a = new RelatedSeries[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new RelatedSeries(sq.getDicomObject(i));
         }
+        return a;
+    }
+    
+    public String getStudyInstanceUID() {
+        return dcmobj.getString(Tag.StudyInstanceUID);
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public void setStudyInstanceUID(String s) {
+        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, s);
     }
 
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    public String getSeriesInstanceUID() {
+        return dcmobj.getString(Tag.SeriesInstanceUID);
+    }
+
+    public void setSeriesInstanceUID(String s) {
+        dcmobj.putString(Tag.SeriesInstanceUID, VR.UI, s);
+    }
+
+    public Code[] getProcedureCodes() {
+        return Code.toCodes(dcmobj.get(Tag.ProcedureCodeSequence));
+    }
+
+    public void setProcedureCodes(Code[] codes) {
+        updateSequence(Tag.PurposeofReferenceCodeSequence, codes);
     }
 }

@@ -36,11 +36,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.composite;
 
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
+import org.dcm4che2.iod.module.Module;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -48,41 +47,10 @@ import org.dcm4che2.data.Tag;
  * @since Jun 9, 2006
  *
  */
-public class Module {
+public class ClinicalTrialSeriesModule extends Module {
 
-    protected final DicomObject dcmobj;
-
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
-        }
-        this.dcmobj = dcmobj;
+    public ClinicalTrialSeriesModule(DicomObject dcmobj) {
+        super(dcmobj);
     }
 
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
-        }
-    }
-
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
-    }
-
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
-    }
 }

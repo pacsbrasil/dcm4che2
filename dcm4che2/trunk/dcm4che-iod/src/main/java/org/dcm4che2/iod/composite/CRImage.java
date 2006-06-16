@@ -2,15 +2,15 @@ package org.dcm4che2.iod.composite;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.CRImageModule;
-import org.dcm4che2.iod.module.CRSeriesModule;
-import org.dcm4che2.iod.module.ContrastBolusModule;
-import org.dcm4che2.iod.module.DeviceModule;
-import org.dcm4che2.iod.module.GeneralImageModule;
-import org.dcm4che2.iod.module.ImagePixelModule;
-import org.dcm4che2.iod.module.ModalityLUTModule;
-import org.dcm4che2.iod.module.OverlayPlaneModule;
-import org.dcm4che2.iod.module.VOILUTModule;
+import org.dcm4che2.iod.module.composite.ContrastBolusModule;
+import org.dcm4che2.iod.module.composite.DeviceModule;
+import org.dcm4che2.iod.module.composite.GeneralImageModule;
+import org.dcm4che2.iod.module.composite.ImagePixelModule;
+import org.dcm4che2.iod.module.cr.CRImageModule;
+import org.dcm4che2.iod.module.cr.CRSeriesModule;
+import org.dcm4che2.iod.module.lut.ModalityLUTModule;
+import org.dcm4che2.iod.module.lut.VOILUTModule;
+import org.dcm4che2.iod.module.overlay.OverlayPlaneModule;
 
 public class CRImage extends Composite {
 

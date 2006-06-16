@@ -36,8 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.macro;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -45,44 +46,36 @@ import org.dcm4che2.data.Tag;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 10, 2006
  *
  */
-public class Module {
+public class ContentItemAndModifier extends ContentItem {
 
-    protected final DicomObject dcmobj;
+    public ContentItemAndModifier(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public ContentItemAndModifier() {
+        super(new BasicDicomObject());
+    }
+
+    public static ContentItemAndModifier[] toContentItemAndModifiers(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        ContentItemAndModifier[] a = new ContentItemAndModifier[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new ContentItemAndModifier(sq.getDicomObject(i));
         }
+        return a;
+    }    
+    
+    public ContentItem[] getContentItemModifier() {
+        return ContentItem.toContentItems(dcmobj.get(Tag.ContentItemModifierSequence));
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
-    }
-
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
-    }
+    public void setContentItemModifier(ContentItem[] items) {
+        updateSequence(Tag.ContentItemModifierSequence, items);
+    }    
+    
 }

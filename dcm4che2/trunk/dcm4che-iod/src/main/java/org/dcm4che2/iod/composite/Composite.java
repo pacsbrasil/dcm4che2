@@ -42,15 +42,15 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
-import org.dcm4che2.iod.module.ClinicalTrialSeriesModule;
-import org.dcm4che2.iod.module.ClinicalTrialStudyModule;
-import org.dcm4che2.iod.module.ClinicalTrialSubjectModule;
-import org.dcm4che2.iod.module.GeneralEquipmentModule;
-import org.dcm4che2.iod.module.GeneralSeriesModule;
-import org.dcm4che2.iod.module.GeneralStudyModule;
-import org.dcm4che2.iod.module.PatientModule;
-import org.dcm4che2.iod.module.PatientStudyModule;
-import org.dcm4che2.iod.module.SOPCommonModule;
+import org.dcm4che2.iod.module.composite.ClinicalTrialSeriesModule;
+import org.dcm4che2.iod.module.composite.ClinicalTrialStudyModule;
+import org.dcm4che2.iod.module.composite.ClinicalTrialSubjectModule;
+import org.dcm4che2.iod.module.composite.GeneralEquipmentModule;
+import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+import org.dcm4che2.iod.module.composite.GeneralStudyModule;
+import org.dcm4che2.iod.module.composite.PatientModule;
+import org.dcm4che2.iod.module.composite.PatientStudyModule;
+import org.dcm4che2.iod.module.general.SOPCommonModule;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)

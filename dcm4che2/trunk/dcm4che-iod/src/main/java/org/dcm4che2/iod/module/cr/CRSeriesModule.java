@@ -36,11 +36,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.cr;
 
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.iod.module.Module;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -48,41 +49,66 @@ import org.dcm4che2.data.Tag;
  * @since Jun 9, 2006
  *
  */
-public class Module {
+public class CRSeriesModule extends Module {
 
-    protected final DicomObject dcmobj;
-
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
-        }
-        this.dcmobj = dcmobj;
+    public CRSeriesModule(DicomObject dcmobj) {
+        super(dcmobj);
     }
 
-    public DicomObject getDicomObject() {
-        return dcmobj;
+    public String getBodyPartExamined() {
+        return dcmobj.getString(Tag.BodyPartExamined);
+    }
+    
+    public void setBodyPartExamined(String s) {
+        dcmobj.putString(Tag.BodyPartExamined, VR.CS, s);
     }
 
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
-        }
+    public String getViewPosition() {
+        return dcmobj.getString(Tag.ViewPosition);
+    }
+    
+    public void setViewPosition(String s) {
+        dcmobj.putString(Tag.ViewPosition, VR.CS, s);
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public String getFilterType() {
+        return dcmobj.getString(Tag.FilterType);
+    }
+    
+    public void setFilterType(String s) {
+        dcmobj.putString(Tag.FilterType, VR.SH, s);
     }
 
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    public String getCollimatorgridName() {
+        return dcmobj.getString(Tag.CollimatorgridName);
     }
+    
+    public void setCollimatorgridName(String s) {
+        dcmobj.putString(Tag.CollimatorgridName, VR.SH, s);
+    }
+
+    public float[] getFocalSpots() {
+        return dcmobj.getFloats(Tag.FocalSpots);
+    }
+    
+    public void setFocalSpots(float[] fs) {
+        dcmobj.putFloats(Tag.FocalSpots, VR.DS, fs);
+    }
+
+    public String getPlateType() {
+        return dcmobj.getString(Tag.PlateType);
+    }
+    
+    public void setPlateType(String s) {
+        dcmobj.putString(Tag.PlateType, VR.SH, s);
+    }
+
+    public String getPhosphorType() {
+        return dcmobj.getString(Tag.PhosphorType);
+    }
+    
+    public void setPhosphorType(String s) {
+        dcmobj.putString(Tag.PhosphorType, VR.LO, s);
+    }
+    
 }

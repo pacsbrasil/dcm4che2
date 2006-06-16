@@ -36,53 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.macro;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 10, 2006
  *
  */
-public class Module {
+public class ImageSOPInstanceReference extends SOPInstanceReference {
 
-    protected final DicomObject dcmobj;
+    public ImageSOPInstanceReference(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public ImageSOPInstanceReference() {
+        this(new BasicDicomObject());
+    }
+
+    public static ImageSOPInstanceReference[] toImageSOPInstanceReferences(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        ImageSOPInstanceReference[] a = new ImageSOPInstanceReference[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new ImageSOPInstanceReference(sq.getDicomObject(i));
         }
+        return a;
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public int[] getReferencedFrameNumber() {
+        return dcmobj.getInts(Tag.ReferencedFrameNumber);
     }
-
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    
+    public void setReferencedFrameNumber(int[] ints) {
+        dcmobj.putInts(Tag.ReferencedFrameNumber, VR.UI, ints);
     }
+    
 }

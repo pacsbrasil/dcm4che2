@@ -36,53 +36,72 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.general;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.iod.module.Module;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 16, 2006
  *
  */
-public class Module {
+public class MACParameters extends Module {
 
-    protected final DicomObject dcmobj;
+    public MACParameters(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public MACParameters() {
+        super(new BasicDicomObject());
+    }
+
+    public static MACParameters[] toMACParameters(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        MACParameters[] a = new MACParameters[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new MACParameters(sq.getDicomObject(i));
         }
+        return a;
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public int getMACIDNumber() {
+        return dcmobj.getInt(Tag.MACIDNumber);
+    }
+    
+    public void setMACIDNumber(int i) {
+        dcmobj.putInt(Tag.MACIDNumber, VR.US, i);
+    }
+    
+    public String getMACCalculationTransferSyntaxUID() {
+        return dcmobj.getString(Tag.MACCalculationTransferSyntaxUID);
+    }
+    
+    public void setMACCalculationTransferSyntaxUID(String s) {
+        dcmobj.putString(Tag.MACCalculationTransferSyntaxUID, VR.UI, s);
+    }
+    
+    public String getMACAlgorithm() {
+        return dcmobj.getString(Tag.MACAlgorithm);
+    }
+    
+    public void setMACAlgorithm(String s) {
+        dcmobj.putString(Tag.MACAlgorithm, VR.CS, s);
     }
 
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    public int[] getDataElementsSigned() {
+        return dcmobj.getInts(Tag.DataElementsSigned);
     }
+    
+    public void setDataElementsSigned(int[] ints) {
+        dcmobj.putInts(Tag.DataElementsSigned, VR.AT, ints);
+    }
+
 }

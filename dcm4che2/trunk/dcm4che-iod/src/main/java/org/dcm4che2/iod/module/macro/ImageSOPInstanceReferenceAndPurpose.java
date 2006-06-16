@@ -36,8 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.macro;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -45,44 +46,38 @@ import org.dcm4che2.data.Tag;
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 11, 2006
  *
  */
-public class Module {
+public class ImageSOPInstanceReferenceAndPurpose extends
+        ImageSOPInstanceReference {
 
-    protected final DicomObject dcmobj;
+    public ImageSOPInstanceReferenceAndPurpose(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public ImageSOPInstanceReferenceAndPurpose() {
+        this(new BasicDicomObject());
+    }
+
+    public static ImageSOPInstanceReferenceAndPurpose[] toImageSOPInstanceReferenceAndPurposes(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        ImageSOPInstanceReferenceAndPurpose[] a = new ImageSOPInstanceReferenceAndPurpose[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new ImageSOPInstanceReferenceAndPurpose(sq.getDicomObject(i));
         }
+        return a;
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public Code getPurposeofReferenceCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.PurposeofReferenceCodeSequence);
+        return item != null ? new Code(item) : null;
     }
-
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    
+    public void setPurposeofReferenceCode(Code code) {
+        updateSequence(Tag.PurposeofReferenceCodeSequence, code);
     }
+    
 }

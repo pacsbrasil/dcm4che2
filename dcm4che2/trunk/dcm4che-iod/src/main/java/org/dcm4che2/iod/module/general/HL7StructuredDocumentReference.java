@@ -36,53 +36,56 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.iod.module;
+package org.dcm4che2.iod.module.general;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.iod.module.macro.SOPInstanceReference;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
- * @since Jun 9, 2006
+ * @since Jun 10, 2006
  *
  */
-public class Module {
+public class HL7StructuredDocumentReference extends SOPInstanceReference {
 
-    protected final DicomObject dcmobj;
+    public HL7StructuredDocumentReference(DicomObject dcmobj) {
+        super(dcmobj);
+    }
 
-    public Module(DicomObject dcmobj) {
-        if (dcmobj == null) {
-            throw new NullPointerException("dcmobj");
+    public HL7StructuredDocumentReference() {
+        this(new BasicDicomObject());
+    }
+
+    public static HL7StructuredDocumentReference[] toHL7StructuredDocumentReferences(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
         }
-        this.dcmobj = dcmobj;
-    }
-
-    public DicomObject getDicomObject() {
-        return dcmobj;
-    }
-
-    protected void updateSequence(int tag, Module module) {
-        if (module != null) {
-            dcmobj.putNestedDicomObject(tag, module.getDicomObject());
-        } else {
-            dcmobj.remove(Tag.ReferencedStudySequence);
+        HL7StructuredDocumentReference[] a = new HL7StructuredDocumentReference[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new HL7StructuredDocumentReference(sq.getDicomObject(i));
         }
+        return a;
     }
 
-    protected void updateSequence(int tag, Module[] module) {
-        if (module != null) {
-            DicomElement sq = dcmobj.putSequence(tag);
-            for (int i = 0; i < module.length; i++) {
-                sq.addDicomObject(module[i].getDicomObject());
-            }
-        } else {
-            dcmobj.remove(tag);
-        }
+    public String getHL7InstanceIdentifier() {
+        return dcmobj.getString(Tag.HL7InstanceIdentifier);
+    }
+    
+    public void setHL7InstanceIdentifier(String s) {
+        dcmobj.putString(Tag.HL7InstanceIdentifier, VR.ST, s);
     }
 
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
+    public String getRetrieveURI() {
+        return dcmobj.getString(Tag.RetrieveURI);
     }
+    
+    public void setRetrieveURI(String s) {
+        dcmobj.putString(Tag.RetrieveURI, VR.UT, s);
+    }
+    
 }
