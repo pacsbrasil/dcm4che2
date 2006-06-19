@@ -215,13 +215,6 @@ public interface WADOCache {
 	File getAbsCacheRoot();
 
 	/**
-	 * Setter of minFreeSpace.
-	 * 
-	 * @param minFreeSpace The minFreeSpace to set.
-	 */
-	public void setMinFreeSpace(long minFreeSpace);
-	
-	/**
 	 * Returns the min drive space that must be available on the caches drive.
 	 * <p>
 	 * This value is used to determine if this cache should be cleaned.
@@ -230,13 +223,6 @@ public interface WADOCache {
 	 */
 	long getMinFreeSpace();
 
-	/**
-	 * Setter of preferredFreeSpace.
-	 * 
-	 * @param preferredFreeSpace The preferredFreeSpace to set.
-	 */
-	void setPreferredFreeSpace(long preferredFreeSpace);
-	
 	/**
 	 * Returns the free space that should be remain after cleaning the cache.
 	 * <p>

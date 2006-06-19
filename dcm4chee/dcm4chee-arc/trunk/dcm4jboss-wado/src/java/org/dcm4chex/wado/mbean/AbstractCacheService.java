@@ -49,6 +49,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
+import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -92,16 +93,21 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 		return cache.getCacheRoot();
 	}
 	
-	public void setMinFreeSpace( String minFree ) {
-		cache.setMinFreeSpace( FileUtils.parseSize(minFree, MIN_FREE) );
-	}
+    public String getDeleterThresholds() {
+        return ((WADOCacheImpl) cache).getDeleterThresholds();
+    }
+
+    public void setDeleterThresholds(String s) {
+    	((WADOCacheImpl) cache).setDeleterThresholds(s);
+    }
+
 	
-	public String getMinFreeSpace() {
+	public String showMinFreeSpace() {
 		return FileUtils.formatSize(cache.getMinFreeSpace());
 	}
 
 	public void setPreferredFreeSpace( String minFree ) {
-		cache.setPreferredFreeSpace( FileUtils.parseSize(minFree, MIN_PREF_FREE) );
+		((WADOCacheImpl) cache).setPreferredFreeSpace( FileUtils.parseSize(minFree, MIN_PREF_FREE) );
 	}
 	
 	public String getPreferredFreeSpace() {
@@ -128,7 +134,7 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 		log.info("getDeleteResult: before:"+before+" , after:"+after+" , delta:"+delta);
 		sb.append(FileUtils.formatSize(delta)).append(" removed!");
 		if ( after < cache.getMinFreeSpace() ) {
-			sb.append(" WARNING: INSUFFICIANT Free disk space! Should be ").append(this.getMinFreeSpace());
+			sb.append(" WARNING: INSUFFICIANT Free disk space! Should be ").append(this.showMinFreeSpace());
 		} else if ( after < cache.getPreferredFreeSpace() ) {
 			sb.append(" WARNING: Free disk space is less than preferred free space (").append(this.getPreferredFreeSpace()).append(")");
 		}

@@ -63,15 +63,17 @@
       </descriptors>
    </attribute>
 
-    <attribute access="read-write"
-      getMethod="getMinFreeSpace"
-      setMethod="setMinFreeSpace">
-      <description>Min space that must be available on cache drive (MB = 1000000 Bytes, GB = 1000MB).
+   <attribute access="read-write"
+      getMethod="getDeleterThresholds"
+      setMethod="setDeleterThresholds">
+      <description><![CDATA[Defines thresholds dependent on hour of day, for deleting the most
+        infrequently accessed images. Format: HOUR:##MB or HOUR:##GB,
+        multiple thresholds with different (start) hour separated by ';'.]]>
       </description>
-      <name>MinFreeSpace</name>
+      <name>DeleterThresholds</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="5MB" />
+         <value value="23:50MB"/>
       </descriptors>
    </attribute>
 
@@ -263,6 +265,11 @@
    <operation impact="INFO">
       <description>Show free disk space</description>
       <name>showFreeSpace</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Show free disk space</description>
+      <name>showMinFreeSpace</name>
       <return-type>java.lang.String</return-type>
    </operation>
    

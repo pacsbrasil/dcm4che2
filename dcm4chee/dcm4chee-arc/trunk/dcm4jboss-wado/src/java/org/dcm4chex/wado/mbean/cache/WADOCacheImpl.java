@@ -46,10 +46,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -101,8 +103,7 @@ public class WADOCacheImpl implements WADOCache {
 	/** holds the min cache size. */
 	private long preferredFreeSpace = 300000000;
 
-	/** holds the max cache size. */
-	private long minFreeSpace = 200000000;
+    private DeleterThresholds deleterThresholds = new DeleterThresholds("23:50MB", true);
 	
 	private int[] directoryTree; 
 	
@@ -410,8 +411,10 @@ public class WADOCacheImpl implements WADOCache {
 	public void freeDiskSpace( boolean background ) throws IOException {
 		long currFree = showFreeSpace();
 		if ( log.isDebugEnabled() ) log.debug("WADOCache.freeDiskSpace: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
-		if ( currFree < getMinFreeSpace() ) {
-			final long sizeToDel = getPreferredFreeSpace() - currFree;
+		long minFree = getMinFreeSpace();
+		if ( currFree < minFree ) {
+			long pref = getPreferredFreeSpace();
+			final long sizeToDel = (pref > minFree ? pref : minFree) - currFree;
 			if ( background ) {
 		        Thread t = new Thread(new Runnable() {
 		            public void run() {
@@ -469,26 +472,19 @@ public class WADOCacheImpl implements WADOCache {
 		}
 	}
 
-	/**
-	 * Returns the min drive space that must be available on the caches drive.
-	 * <p>
-	 * This value is used to determine if this cache should be cleaned.
-	 * 
-	 * @return Min allowed free diskspace in bytes.
-	 */
-	public long getMinFreeSpace() {
-		return this.minFreeSpace;
-	}
+    public String getDeleterThresholds() {
+        return deleterThresholds.toString();
+    }
 
-	/**
-	 * Setter of minFreeSpace.
-	 * 
-	 * @param minFreeSpace The minFreeSpace to set.
-	 */
-	public void setMinFreeSpace(long minFreeSpace) {
-		this.minFreeSpace = minFreeSpace;
-	}
-	
+    public void setDeleterThresholds(String s) {
+        this.deleterThresholds = new DeleterThresholds(s, false);//does not support time based tresholds
+    }
+    
+    public long getMinFreeSpace() {
+    	return deleterThresholds.getDeleterThreshold(Calendar.getInstance()).getFreeSize(0l);
+    }
+
+    
 	/**
 	 * Returns the free space that should be remain after cleaning the cache.
 	 * <p>
@@ -497,7 +493,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * @return Preferred free diskspace in bytes.
 	 */
 	public long getPreferredFreeSpace() {
-		return this.preferredFreeSpace;
+		return preferredFreeSpace;
 	}
 	
 	/**
