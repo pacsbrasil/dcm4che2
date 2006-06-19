@@ -139,7 +139,7 @@ public class SpecificCharacterSet {
 						}
 						break;
 					case 0x2429:
-						if (b[cur+3] == 0x43) {
+						if (b[cur++] == 0x43) {
 							cs = "cp949";
 							step = -1;
 						} else { // decode invalid ESC sequence as chars
