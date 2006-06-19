@@ -36,9 +36,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che;
+package org.dcm4che.util;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
@@ -56,13 +57,7 @@ public class PackageTest extends Object {
     
     public static Test suite() {
         TestSuite suite= new TestSuite();
-        suite.addTest(org.dcm4che.data.PackageTest.suite());
-        suite.addTest(org.dcm4che.dict.PackageTest.suite());
-        suite.addTest(org.dcm4che.hl7.PackageTest.suite());
-        suite.addTest(org.dcm4che.media.PackageTest.suite());
-        suite.addTest(org.dcm4che.net.PackageTest.suite());
-        suite.addTest(org.dcm4che.srom.PackageTest.suite());
-        suite.addTest(org.dcm4che.util.PackageTest.suite());
+        suite.addTest(UIDGeneratorTest.suite());
         return suite;
     }
 }

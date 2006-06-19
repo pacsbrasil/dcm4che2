@@ -177,7 +177,9 @@
          <test name="org.dcm4che.srom.HL7SRExportTest" todir="${build.reports.dir}"/>
 
          <test name="org.dcm4che.hl7.HL7MessageTest" todir="${build.reports.dir}"/>
-      </junit>
+
+         <test name="org.dcm4che.util.UIDGeneratorTest" todir="${build.reports.dir}"/>
+	  </junit>
       <junitreport todir="${build.reports.dir}">
          <fileset dir="${build.reports.dir}" includes="TEST-*.xml"/>
          <report format="frames" todir="${build.reports.dir}/html"/>
