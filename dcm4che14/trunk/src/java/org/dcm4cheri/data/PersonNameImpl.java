@@ -38,6 +38,7 @@
 
 package org.dcm4cheri.data;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.PersonName;
 
 import java.util.Arrays;
@@ -49,6 +50,7 @@ import java.util.StringTokenizer;
  * @version 1.0.0
  */
 class PersonNameImpl implements org.dcm4che.data.PersonName {
+    private static final Logger log = Logger.getLogger(PersonNameImpl.class);
 
     private final String[] components = new String[5];
     private PersonNameImpl ideographic;
@@ -69,8 +71,10 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
             tk = stk.nextToken();
             switch (tk.charAt(0)) {
                 case '^':
-                    if (++field > PersonName.SUFFIX)
-                        throw new IllegalArgumentException(s);
+                    if (++field > PersonName.SUFFIX) {
+                        log.warn("Illegal PN: " + s + " - ignore '^' delimiter");
+                        --field;
+                    }
                     break;
                 case '=':
                     break WHILE;
