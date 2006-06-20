@@ -1,4 +1,4 @@
--- Update DB from dcm4jboss-2.0.x to dcm4jboss-2.1.x
+-- Update DB from dcm4chee-2.0.x to dcm4chee-2.1.x
 
 ALTER TABLE study ADD COLUMN ext_retr_aet	TEXT;
 ALTER TABLE series ADD COLUMN ext_retr_aet	TEXT;

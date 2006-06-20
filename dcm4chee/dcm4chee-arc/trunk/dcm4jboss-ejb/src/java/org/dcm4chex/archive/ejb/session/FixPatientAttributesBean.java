@@ -79,7 +79,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  *  ref-name="ejb/Patient" 
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4jboss-attribute-filter.xml"
+ *                value="resource:dcm4chee-attribute-filter.xml"
  * 
  * @author <a href="mailto:franz.willer@gwi-ag.com">Franz Willer </a>
  * @version $Revision$ $Date$

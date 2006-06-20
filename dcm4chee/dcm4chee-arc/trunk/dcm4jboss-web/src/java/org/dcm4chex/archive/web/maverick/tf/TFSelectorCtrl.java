@@ -41,14 +41,14 @@ package org.dcm4chex.archive.web.maverick.tf;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
  */
-public class TFSelectorCtrl extends Dcm4JbossFormController {
+public class TFSelectorCtrl extends Dcm4cheeFormController {
 
     private TeachingFileDelegate delegate = null;
 	private static final String CANCEL = "cancel";

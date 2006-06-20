@@ -45,7 +45,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
@@ -54,7 +54,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @version $Revision$ $Date$
  * @since 19.12.2005
  */
-public class ExpandTrashPatientCtrl extends Dcm4JbossFormController {
+public class ExpandTrashPatientCtrl extends Dcm4cheeFormController {
 
     protected int patPk;
     protected boolean expand;

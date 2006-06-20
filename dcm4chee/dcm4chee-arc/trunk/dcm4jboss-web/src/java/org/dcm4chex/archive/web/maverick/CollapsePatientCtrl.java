@@ -45,7 +45,7 @@ package org.dcm4chex.archive.web.maverick;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class CollapsePatientCtrl extends Dcm4JbossFormController {
+public class CollapsePatientCtrl extends Dcm4cheeFormController {
     
     private int patPk;
 

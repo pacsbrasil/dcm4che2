@@ -7,7 +7,7 @@
 -->
 
 <web-app>
-	<display-name>dcm4jboss WADO</display-name>
+	<display-name>dcm4chee WADO</display-name>
 
 	<servlet>
 		<servlet-name>wado</servlet-name>
@@ -20,7 +20,7 @@
 		
 		<init-param>
 			<param-name>wadoServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=WADOService</param-value>
+			<param-value>dcm4chee.archive:service=WADOService</param-value>
 		</init-param>
 		
 		<!--
@@ -28,17 +28,17 @@
 		-->
 		<init-param>
 			<param-name>wadoExtServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=WADOExtService</param-value>
+			<param-value>dcm4chee.archive:service=WADOExtService</param-value>
 		</init-param>
 		
 		<!-- 
-			Used by dcm4jboss-web application to find FileSystemMgtService MBean.
+			Used by dcm4chee-web application to find FileSystemMgtService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-auditlog-service.xml.
+			deploy/dcm4chee-auditlog-service.xml.
 		-->
 		<init-param>
 			<param-name>fileSystemMgtName</param-name>
-			<param-value>dcm4jboss.archive:service=FileSystemMgt</param-value>
+			<param-value>dcm4chee.archive:service=FileSystemMgt</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>
@@ -50,7 +50,7 @@
 		<servlet-class>org.dcm4chex.wado.web.RIDServlet</servlet-class>
 		<init-param>
 			<param-name>ridServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=RIDService</param-value>
+			<param-value>dcm4chee.archive:service=RIDService</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
@@ -61,7 +61,7 @@
 		<servlet-class>org.dcm4chex.wado.web.RIDServlet</servlet-class>
 		<init-param>
 			<param-name>ridServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=RIDService</param-value>
+			<param-value>dcm4chee.archive:service=RIDService</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowShortURL</param-name>

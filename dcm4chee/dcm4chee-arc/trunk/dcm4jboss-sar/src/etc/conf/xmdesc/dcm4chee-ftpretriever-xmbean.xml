@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>FTP Retriever Service.</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
+   </descriptors>
+
+   <class>org.dcm4chex.archive.dcm.hsm.FTPRetrieverService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>FTPArchiverService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   <attribute access="read-write" 
+      getMethod="getCacheRoot"
+      setMethod="setCacheRoot">
+      <description><![CDATA[Root directory in which retrieved tars are extracted.
+      A relative path name is resolved relative to 
+      <i>archive-install-directory</i>/server/default/.]]>   
+      </description>
+      <name>CacheRoot</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tmp/tarcache"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getMinFreeDiskSpace"
+      setMethod="setMinFreeDiskSpace">
+      <description><![CDATA[Minimum free disk space on Cache Directory. If the
+      free available disk space on the cache directory falls below this value,
+      least recent accessed sub-directories are deleted, BEFORE further TARs
+      are retrieved and extracted. 1MB = 1000000 bytes, 1GB = 1000MB.]]>   
+      </description>
+      <name>MinimumFreeDiskSpace</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="50MB"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getPreferredFreeDiskSpace"
+      setMethod="setPreferredFreeDiskSpace">
+      <description><![CDATA[Preferred free disk space on Cache Directory. If the
+      free available disk space on the cache directory falls below this value,
+      least recent accessed sub-directories are deleted, WITHOUT blocking
+      retrieve and extraction of further TARs. 1MB = 1000000 bytes, 1GB = 1000MB.]]>   
+      </description>
+      <name>PreferredFreeDiskSpace</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="100MB"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultUser"
+      setMethod="setDefaultUser">
+      <description>Default User, used if not specified in File System configuration.
+      </description>
+      <name>DefaultUser</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="pacs"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultPassword"
+      setMethod="setDefaultPassword">
+      <description>Default Password, used if not specified in File System configuration.
+      </description>
+      <name>DefaultPassword</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="secret"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPassiveMode"
+      setMethod="setPassiveMode">
+      <description>Use Passive mode.
+      </description>
+      <name>PassiveMode</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of write byte buffer.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLRUCacheSize"
+      setMethod="setLRUCacheSize">
+      <description>Number of cached references to least recent accessed directories.
+      </description>
+      <name>LRUCacheSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="20"/>
+      </descriptors>
+   </attribute>
+   &defaultAttributes;
+
+   <!-- Operations -->
+   &defaultOperations;
+   <operation impact="ACTION">
+      <description>retrieve file specified by FTP URL. 
+      </description>
+      <name>retrieveFileFromLTA</name>
+      <parameter>
+        <description>FTP URL</description>
+        <name>ftpURL</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Delete oldest directories to free specified amount of disk space. 
+      </description>
+      <name>free</name>
+      <parameter>
+        <description>minimal amount of disk space to be released</description>
+        <name>amount</name>
+        <type>long</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+</mbean>
+

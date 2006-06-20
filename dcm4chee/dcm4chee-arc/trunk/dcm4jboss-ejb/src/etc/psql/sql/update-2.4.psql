@@ -1,4 +1,4 @@
--- Update DB from dcm4jboss-2.3.x to dcm4jboss-2.4.x
+-- Update DB from dcm4chee-2.3.x to dcm4chee-2.4.x
 
 ALTER TABLE instance ADD COLUMN content_datetime	TIMESTAMP;
 CREATE INDEX content_datetime ON instance(content_datetime);

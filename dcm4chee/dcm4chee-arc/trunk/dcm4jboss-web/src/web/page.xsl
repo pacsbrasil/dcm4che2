@@ -23,7 +23,7 @@
 			<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 		</head>
 		<body onLoad="checkError('{model/errorCode}');checkPopup('{model/popupMsg}')" bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
-		<table class="dcm4jboss_header" width="100%" cellspacing="0">
+		<table class="dcm4chee_header" width="100%" cellspacing="0">
 	  		<tr valign="middle" style="center">
 	    		<td class="logo" width="50" align="left"><img class="logo" src="images/logo.gif" border="0"/></td>
 	    		<xsl:if test="$folder='true'">
@@ -142,7 +142,7 @@
       				<a class="tab" href="useradmin_console.m">User Admin</a>
 	      		</td>
 	    		<xsl:if test="$audit_repository='true'">
-			      	<td class="tab" width="120" align="center"><a class="tab" href="../dcm4jboss-arr">Audit Repository</a></td>
+			      	<td class="tab" width="120" align="center"><a class="tab" href="../dcm4chee-arr">Audit Repository</a></td>
 		      	</xsl:if>
 		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Logout</a></td>
 				<td width="40%"></td>

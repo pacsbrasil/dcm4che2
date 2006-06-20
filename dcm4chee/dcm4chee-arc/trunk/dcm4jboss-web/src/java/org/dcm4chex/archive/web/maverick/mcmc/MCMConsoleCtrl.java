@@ -47,7 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.util.JMSDelegate;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.mcmc.model.MCMFilter;
 import org.dcm4chex.archive.web.maverick.mcmc.model.MCMModel;
 import org.dcm4chex.archive.web.maverick.mcmc.model.MediaData;
@@ -57,7 +57,7 @@ import org.dcm4chex.archive.web.maverick.mcmc.model.MediaData;
  *
  * The Maverick controller for Media Creation Manager.
  */
-public class MCMConsoleCtrl extends Dcm4JbossFormController {
+public class MCMConsoleCtrl extends Dcm4cheeFormController {
 
 	/** The name of the JMS Queue used to queue a media for creation. */
 	public static final String QUEUE = "MCMScu";

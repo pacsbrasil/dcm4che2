@@ -113,10 +113,10 @@ public class TrashFolderCtrl extends FolderCtrl {
             
             if (rq.getParameter("sessionChanged") != null ) {
             	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
-            	rq.getSession().setAttribute("dcm4jboss-session", "RELOADED");
+            	rq.getSession().setAttribute("dcm4chee-session", "RELOADED");
             	return query(true); 
             }
-        	rq.getSession().setAttribute("dcm4jboss-session", "ACTIVE");
+        	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if (folderForm.getTotal() < 1 || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null

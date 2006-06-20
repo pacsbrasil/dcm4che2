@@ -43,14 +43,14 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.FolderForm;
 
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
  */
-public class XDSIExportCtrl extends Dcm4JbossFormController {
+public class XDSIExportCtrl extends Dcm4cheeFormController {
 
     private XDSIExportDelegate delegate = null;
 	private static final String CANCEL = "cancel";

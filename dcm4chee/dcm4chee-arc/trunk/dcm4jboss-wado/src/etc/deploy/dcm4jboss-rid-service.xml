@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id$ -->
-<server>
-  <classpath codebase="lib" archives="dcm4jboss.jar"/>
-  <mbean code="org.dcm4chex.wado.mbean.RIDService" 
-         name="dcm4jboss.archive:service=RIDService"
-         xmbean-dd="xmdesc/dcm4jboss-rid-xmbean.xml">
-  </mbean>
-</server>

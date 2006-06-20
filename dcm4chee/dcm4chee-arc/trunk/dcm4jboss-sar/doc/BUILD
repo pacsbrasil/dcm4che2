@@ -1,7 +1,7 @@
-BUILD INSTRUCTIONS FOR DCM4JBOSS ARCHIVE:
+BUILD INSTRUCTIONS FOR DCM4CHEE ARCHIVE:
 ========================================
 
-In order to build all components of the dcm4jboss archive application you have
+In order to build all components of the dcm4chee archive application you have
 to download and install:
 
 - jai_imageio-1_0_01
@@ -12,7 +12,7 @@ to download and install:
 - JUnit 3.8.x (from http://junit.org)
 
 - Jakarta Cactus 1.7 for J2EE 1.3 [http://jakarta.apache.org/cactus/]
-(needed to build dcm4jboss-ejb, which itself required to build dcm4jboss-sar)
+(needed to build dcm4jboss-ejb, which itself required to build dcm4chee-sar)
 
 - XDoclet 1.2.3 [http://xdoclet.sourceforge.net]
 
@@ -27,8 +27,8 @@ and add the $ANT_HOME/bin directory to your PATH.
 
 Copy junit.jar from the JUnit package into $ANT_HOME/lib/.
 
-You need to build the dcm4che core library and the dcm4jboss-ejb 
-components from the source, before you can build dcm4jboss-web.
+You need to build the dcm4che core library and the dcm4chee-ejb 
+components from the source, before you can build dcm4chee-web.
 
 At first time, connecting to the project CVS repository, you have to login by
 
@@ -50,13 +50,13 @@ with the dcm4che14 distribution directory as working directory.
 
 == 2. Building the Audit Record Repository application ==
 
-Download the source of the dcm4jboss-arr package by
+Download the source of the dcm4chee-arr package by
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  checkout dcm4jboss-arr
+  checkout dcm4chee-arr
 
 The default build script (build.xml) assumes following locations of
-components required for building dcm4jboss-arr:
+components required for building dcm4chee-arr:
 
 <!-- Override with your dcm4che dist location -->
 <property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -82,13 +82,13 @@ After that, invoking
 
 >ant all
 
-with the dcm4jboss-arr distribution directory as working directory
+with the dcm4chee-arr distribution directory as working directory
 builds database specific ejb-jars and jars of the Audit Record Repository
 application.
 
 == 3. Building the EJB and the JDBC Data Access components ==
 
-Download the source of the dcm4jboss-ejb package by
+Download the source of the dcm4chee-ejb package by
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
   checkout dcm4jboss-ejb
@@ -129,14 +129,14 @@ for direct DB access via JDBC.
 
 == 4. Building DICOM services components ==
 
-The source of the dcm4jboss-sar package is available in module dcm4jboss-sar
+The source of the dcm4chee-sar package is available in module dcm4chee-sar
 in the dcm4che project CVS repository:
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  checkout dcm4jboss-sar
+  checkout dcm4chee-sar
 
 The default build script (build.xml) assumes following locations of
-components required for building dcm4jboss-sar:
+components required for building dcm4chee-sar:
 
 <!-- Override with your dcm4che dist location -->
 <property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -144,14 +144,14 @@ components required for building dcm4jboss-sar:
 <!-- Override with your dcm4jboss-ejb dist location -->
 <property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 
-<!-- Override with your dcm4jboss-arr dist location -->
-<property name="dcm4jboss-arr.home" value="../dcm4jboss-arr"/>	
+<!-- Override with your dcm4chee-arr dist location -->
+<property name="dcm4chee-arr.home" value="../dcm4chee-arr"/>	
 
-<!-- Override with your dcm4jboss-hl7 dist location -->
-<property name="dcm4jboss-hl7.home" value="../dcm4jboss-hl7"/>		
+<!-- Override with your dcm4chee-hl7 dist location -->
+<property name="dcm4chee-hl7.home" value="../dcm4chee-hl7"/>		
 
-<!-- Override with your dcm4jboss-wado dist location -->
-<property name="dcm4jboss-wado.home" value="../dcm4jboss-wado"/>		
+<!-- Override with your dcm4chee-wado dist location -->
+<property name="dcm4chee-wado.home" value="../dcm4chee-wado"/>		
 	
 <!-- Override with your FOP dist location -->
 <property name="fop.home" value="${user.home}/fop-0.20.5"/>
@@ -171,21 +171,21 @@ After that, invoking
 
 >ant jar
 
-with the dcm4jboss-sar distribution directory as working directory generates
+with the dcm4chee-sar distribution directory as working directory generates
 
-target/lib/dcm4jboss.jar
+target/lib/dcm4chee.jar
 .
 
 == 5. Building HL7 services components ==
 
-The source of the dcm4jboss-hl7 package is available in module dcm4jboss-hl7
+The source of the dcm4chee-hl7 package is available in module dcm4chee-hl7
 in the dcm4che project CVS repository:
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  checkout dcm4jboss-hl7
+  checkout dcm4chee-hl7
 
 The default build script (build.xml) assumes following locations of
-components required for building dcm4jboss-hl7:
+components required for building dcm4chee-hl7:
 
 <!-- Override with your dcm4che dist location -->
 <property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -193,8 +193,8 @@ components required for building dcm4jboss-hl7:
 <!-- Override with your dcm4jboss-ejb dist location -->
 <property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 
-<!-- Override with your dcm4jboss-sar dist location -->
-<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar"/>		
+<!-- Override with your dcm4chee-sar dist location -->
+<property name="dcm4chee-sar.home" value="../dcm4chee-sar"/>		
 
 <!-- Override with your JBoss/Web server bundle dist location -->
 <property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
@@ -208,21 +208,21 @@ After that, invoking
 
 >ant jar
 
-with the dcm4jboss-hl7 distribution directory as working directory generates
+with the dcm4chee-hl7 distribution directory as working directory generates
 
-target/lib/dcm4jboss-hl7.jar
+target/lib/dcm4chee-hl7.jar
 .
 
 == 6. Building the WADO and IHE RID Services ==
 
-The source of the dcm4jboss-wado package is available in module dcm4jboss-wado
+The source of the dcm4chee-wado package is available in module dcm4chee-wado
 in the dcm4che project CVS repository:
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  checkout dcm4jboss-wado
+  checkout dcm4chee-wado
 
 The default build script (build.xml) assumes following locations of
-components required for building dcm4jboss-wado:
+components required for building dcm4chee-wado:
 
 <!-- Override with your dcm4che dist location -->
 <property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -230,8 +230,8 @@ components required for building dcm4jboss-wado:
 <!-- Override with your dcm4jboss-ejb dist location -->
 <property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 
-<!-- Override with your dcm4jboss-sar dist location -->
-<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar"/>		
+<!-- Override with your dcm4chee-sar dist location -->
+<property name="dcm4chee-sar.home" value="../dcm4chee-sar"/>		
 
 <!-- Override with your FOP dist location -->
 <property name="fop.home" value="${user.home}/fop-0.20.5"/>
@@ -248,22 +248,22 @@ After that, invoking
 
 >ant jar war
 
-with the dcm4jboss-wado distribution directory as working directory generates
+with the dcm4chee-wado distribution directory as working directory generates
 
-target/lib/dcm4jboss-wado.jar
-target/deploy/dcm4jboss-wado.war
+target/lib/dcm4chee-wado.jar
+target/deploy/dcm4chee-wado.war
 .
 
 == 7. Building the Web Application Archive ==
 
-The source of the dcm4jboss-web package is available in module dcm4jboss-web
+The source of the dcm4chee-web package is available in module dcm4chee-web
 in the dcm4che project CVS repository:
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  checkout dcm4jboss-web
+  checkout dcm4chee-web
 
 The default build script (build.xml) assumes following locations of
-components required for building dcm4jboss-web:
+components required for building dcm4chee-web:
 
 <!-- Override with your dcm4che dist location -->
 <property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -271,8 +271,8 @@ components required for building dcm4jboss-web:
 <!-- Override with your dcm4jboss-ejb dist location -->
 <property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 
-<!-- Override with your dcm4jboss-sar dist location -->
-<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar"/>		
+<!-- Override with your dcm4chee-sar dist location -->
+<property name="dcm4chee-sar.home" value="../dcm4chee-sar"/>		
 
 <!-- Override with your JBoss/Web server bundle dist location -->
 <property name="jboss.home" value="${user.home}/jboss-4.0.3SP1" />
@@ -291,26 +291,26 @@ After that, invoking
 
 >ant war
 
-with the dcm4jboss-war dist directory as working directory
+with the dcm4chee-war dist directory as working directory
 generates the Web Application Archive
 
-target/dcm4jboss-web.war
+target/dcm4chee-web.war
 .
 
 
 == 8. Building the Binary Distribution package ==
 
-After changing the working directory back to the dcm4jboss-sar distribution,
+After changing the working directory back to the dcm4chee-sar distribution,
 invoke
 
 >ant dist
 
 to generates the distribution packages
 
-target/dcm4jboss-<version>.zip
-target/dcm4jboss-standalone-hsql-<version>.zip
-target/dcm4jboss-standalone-psql-<version>.zip
-target/dcm4jboss-standalone-mysql-<version>.zip
-target/dcm4jboss-standalone-db2-<version>.zip
-target/dcm4jboss-standalone-oracle-<version>.zip
+target/dcm4chee-<version>.zip
+target/dcm4chee-standalone-hsql-<version>.zip
+target/dcm4chee-standalone-psql-<version>.zip
+target/dcm4chee-standalone-mysql-<version>.zip
+target/dcm4chee-standalone-db2-<version>.zip
+target/dcm4chee-standalone-oracle-<version>.zip
 .

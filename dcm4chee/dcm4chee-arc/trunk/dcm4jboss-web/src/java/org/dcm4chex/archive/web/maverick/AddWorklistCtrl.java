@@ -53,7 +53,7 @@ import javax.servlet.http.HttpServletRequest;
  * @since 5.10.2004
  *
  */
-public class AddWorklistCtrl extends Dcm4JbossFormController {
+public class AddWorklistCtrl extends Dcm4cheeFormController {
 
     /** Popup message */
     private String popupMsg = null;

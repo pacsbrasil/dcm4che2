@@ -1,4 +1,4 @@
-<project name="dcm4jboss-ejb" default="jar">
+<project name="dcm4chee-ejb" default="jar">
 	<!-- Allow user to adjust build properties without
 	modifying this build script.
 	--> 
@@ -32,10 +32,10 @@
     <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.7"/>
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 
-    <!-- Override with your dcm4jboss installation -->
-	<property name="dcm4jboss.home" value="${user.home}/dcm4jboss"/>		
-    <property name="dcm4jboss.lib" value="${dcm4jboss.home}/server/default/lib"/>
-    <property name="dcm4jboss.deploy" value="${dcm4jboss.home}/server/default/deploy"/>
+    <!-- Override with your dcm4chee installation -->
+	<property name="dcm4chee.home" value="${user.home}/dcm4chee"/>		
+    <property name="dcm4chee.lib" value="${dcm4chee.home}/server/default/lib"/>
+    <property name="dcm4chee.deploy" value="${dcm4chee.home}/server/default/deploy"/>
 	
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
@@ -173,7 +173,7 @@
             <deploymentdescriptor
                 destdir="${target.meta-inf-hsql}"
                 validatexml="true"
-                description="dcm4jboss archive EJBs"
+                description="dcm4chee archive EJBs"
                 >
                 <!--configParam name="clientjar" value="blah.jar"/-->
             </deploymentdescriptor>
@@ -356,9 +356,9 @@
 
     <target name="common-jar" depends="compile">
         <mkdir dir="${target.common.lib}"/>
-        <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
+        <jar jarfile="${target.common.lib}/dcm4chee-ejb-client.jar">
          	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-ejb-client"/>
+				<attribute name="Implementation-Title" value="dcm4chee-ejb-client"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
           	</manifest>	
@@ -372,7 +372,7 @@
         <jar jarfile="${target.common.bin}/editgpwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditGpwl"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4jboss-ejb-client.jar"/>
+				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editgpwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
@@ -387,7 +387,7 @@
         <jar jarfile="${target.common.bin}/editmwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4jboss-ejb-client.jar"/>
+				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editmwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
@@ -402,10 +402,10 @@
     </target>
     <target name="ejb-jdbc-jar">
         <mkdir dir="${target.dir}/${db.name}/deploy"/>
-        <jar jarfile="${target.dir}/${db.name}/deploy/dcm4jboss-ejb-${db.name}.jar">
+        <jar jarfile="${target.dir}/${db.name}/deploy/dcm4chee-ejb-${db.name}.jar">
         	<metainf dir="${target.meta-inf}-${db.name}"/>
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-ejb-${db.name}"/>
+				<attribute name="Implementation-Title" value="dcm4chee-ejb-${db.name}"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
 	    	</manifest>
@@ -428,9 +428,9 @@
 		    </xmlcatalog>        
         </style>
         <mkdir dir="${target.dir}/${db.name}/lib"/>
-        <jar jarfile="${target.dir}/${db.name}/lib/dcm4jboss-jdbc-${db.name}.jar">
+        <jar jarfile="${target.dir}/${db.name}/lib/dcm4chee-jdbc-${db.name}.jar">
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-jdbc-${db.name}"/>
+				<attribute name="Implementation-Title" value="dcm4chee-jdbc-${db.name}"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
 	    	</manifest>
@@ -447,7 +447,7 @@
     <target name="test-war" depends="compile">
     	<copy file="${test.web-inf}/web.xml" todir="${target.test.web-inf}">
     		<filterset>
-                <filter token="EJB_JAR" value="dcm4jboss-ejb-psql.jar"/>
+                <filter token="EJB_JAR" value="dcm4chee-ejb-psql.jar"/>
             </filterset>
 		</copy>    		
         <war
@@ -466,14 +466,14 @@
    	<!-- Deploy                                          	                 -->
    	<!-- =================================================================== -->
     <target name="deploy" depends="jar, test-war">
-    	<copy file="${target.psql.deploy}/dcm4jboss-ejb-psql.jar" todir="${jboss.deploy}"/>
+    	<copy file="${target.psql.deploy}/dcm4chee-ejb-psql.jar" todir="${jboss.deploy}"/>
     	<copy file="${target.psql.deploy}/test.war" todir="${jboss.deploy}"/>
     </target>
 
     <target name="deploy-psql" depends="jar">
-    	<copy file="${target.psql.deploy}/dcm4jboss-ejb-psql.jar" todir="${dcm4jboss.deploy}"/>
-    	<copy file="${target.psql.lib}/dcm4jboss-jdbc-psql.jar" todir="${dcm4jboss.lib}"/>
-    	<copy file="${target.common.lib}/dcm4jboss-ejb-client.jar" todir="${dcm4jboss.lib}"/>
+    	<copy file="${target.psql.deploy}/dcm4chee-ejb-psql.jar" todir="${dcm4chee.deploy}"/>
+    	<copy file="${target.psql.lib}/dcm4chee-jdbc-psql.jar" todir="${dcm4chee.lib}"/>
+    	<copy file="${target.common.lib}/dcm4chee-ejb-client.jar" todir="${dcm4chee.lib}"/>
     </target>
 	
    	<!-- =================================================================== -->
@@ -481,7 +481,7 @@
    	<!-- =================================================================== -->
     <target name="undeploy">
     	<delete file="${jboss.deploy}/test.war"/>
-    	<delete file="${jboss.deploy}/dcm4jboss-ejb.jar"/>
+    	<delete file="${jboss.deploy}/dcm4chee-ejb.jar"/>
     </target>
 
    	<!-- =================================================================== -->

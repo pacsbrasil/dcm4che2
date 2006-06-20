@@ -62,7 +62,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  * @since 5.10.2004
  *
  */
-public class StudyViewCtrl extends Dcm4JbossFormController {
+public class StudyViewCtrl extends Dcm4cheeFormController {
 	private static final String SELECT = "select";
 	
 	private int patPk = -1;

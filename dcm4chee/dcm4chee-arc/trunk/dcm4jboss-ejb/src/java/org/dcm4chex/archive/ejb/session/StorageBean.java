@@ -106,7 +106,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
  * @ejb.ejb-ref ejb-name="Association" view-type="local" ref-name="ejb/Association"
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4jboss-attribute-filter.xml"
+ *                value="resource:dcm4chee-attribute-filter.xml"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$

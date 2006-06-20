@@ -1,20 +1,20 @@
-<project name="dcm4jboss-hl7" default="jar">
+<project name="dcm4chee-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.8.1"/>
+	<property name="version" value="2.8.2"/>
 	<property name="javac.debug" value="on"/>
 	
 	<!-- Override with your dcm4che14 dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
-	<!-- Override with your dcm4jboss-ejb dist location -->
-	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
-	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target"/>		
+	<!-- Override with your dcm4chee-ejb dist location -->
+	<property name="dcm4chee-ejb.home" value="../dcm4jboss-ejb"/>		
+	<property name="dcm4chee-ejb.target" value="${dcm4chee-ejb.home}/target"/>		
 
-	<!-- Override with your dcm4jboss-sar dist location -->
-	<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar" />
-	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.home}/target/lib/dcm4jboss.jar" />
+	<!-- Override with your dcm4chee-sar dist location -->
+	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4chee.jar" value="${dcm4chee-sar.home}/target/lib/dcm4chee.jar" />
 	
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>
@@ -29,9 +29,9 @@
 	
 	<path id="class.path">
 		<pathelement location="${dcm4che.jar}"/>
-		<pathelement location="${dcm4jboss.jar}"/>
-		<pathelement location="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar"/>
-		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
+		<pathelement location="${dcm4chee.jar}"/>
+		<pathelement location="${dcm4chee-ejb.target}/common/lib/dcm4chee-ejb-client.jar"/>
+		<pathelement location="${dcm4chee-ejb.target}/hsql/lib/dcm4chee-jdbc-hsql.jar"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>
@@ -62,9 +62,9 @@
 
    	<target name="jar" depends="compile">
         <mkdir dir="${target.lib}"/>
-        <jar jarfile="${target.lib}/dcm4jboss-hl7.jar">
+        <jar jarfile="${target.lib}/dcm4chee-hl7.jar">
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-hl7"/>
+				<attribute name="Implementation-Title" value="dcm4chee-hl7"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>

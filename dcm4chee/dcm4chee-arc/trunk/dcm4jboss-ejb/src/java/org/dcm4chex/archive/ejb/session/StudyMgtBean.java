@@ -94,7 +94,7 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  * @ejb.ejb-ref ejb-name="PatientUpdate" view-type="local" ref-name="ejb/PatientUpdate" 
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4jboss-attribute-filter.xml"
+ *                value="resource:dcm4chee-attribute-filter.xml"
  */
 public abstract class StudyMgtBean implements SessionBean {
 

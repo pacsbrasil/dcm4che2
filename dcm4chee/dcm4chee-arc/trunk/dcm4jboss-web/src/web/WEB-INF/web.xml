@@ -7,7 +7,7 @@
 -->
 
 <web-app>
-	<display-name>dcm4jboss Archive Console</display-name>
+	<display-name>dcm4chee Archive Console</display-name>
 	
 	<!-- Session timeout in minutes. 30 is default timeout of tomcat -->
 	<session-config>
@@ -56,7 +56,7 @@
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web folder application to limit results of studies.
+			Used by dcm4chee-web folder application to limit results of studies.
 			Value must be an integer > 0
 		-->
 		<init-param>
@@ -65,131 +65,131 @@
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find AuditLogger MBean.
+			Used by dcm4chee-web application to find AuditLogger MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-auditlog-service.xml.
+			deploy/dcm4chee-auditlog-service.xml.
 		-->
 		<init-param>
 			<param-name>auditLoggerName</param-name>
-			<param-value>dcm4jboss.archive:service=AuditLogger</param-value>
+			<param-value>dcm4chee.archive:service=AuditLogger</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find MCMScuService MBean.
+			Used by dcm4chee-web application to find MCMScuService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-mcmscu-service.xml.
+			deploy/dcm4chee-mcmscu-service.xml.
 		-->
 		<init-param>
 			<param-name>mcmScuServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=MCMScu</param-value>
+			<param-value>dcm4chee.archive:service=MCMScu</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find MWLScuService MBean.
+			Used by dcm4chee-web application to find MWLScuService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-mwlscu-service.xml.
+			deploy/dcm4chee-mwlscu-service.xml.
 		-->
 		<init-param>
 			<param-name>mwlScuServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=MWLScu</param-value>
+			<param-value>dcm4chee.archive:service=MWLScu</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find MppsScpService MBean.
+			Used by dcm4chee-web application to find MppsScpService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-mppsscp-service.xml.
+			deploy/dcm4chee-mppsscp-service.xml.
 		-->
 		<init-param>
 			<param-name>mppsScpServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=MPPSScp</param-value>
+			<param-value>dcm4chee.archive:service=MPPSScp</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find ContentEdit MBean.
+			Used by dcm4chee-web application to find ContentEdit MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-contentedit-service.xml.
+			deploy/dcm4chee-contentedit-service.xml.
 		-->
 		<init-param>
 			<param-name>contentEditName</param-name>
-			<param-value>dcm4jboss.archive:service=ContentEditService</param-value>
+			<param-value>dcm4chee.archive:service=ContentEditService</param-value>
 		</init-param>
 		
 		<!-- 
-			Used by dcm4jboss-web application to find GPWLFeedService MBean.
+			Used by dcm4chee-web application to find GPWLFeedService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-contentedit-service.xml.
+			deploy/dcm4chee-contentedit-service.xml.
 		-->
 		<init-param>
 			<param-name>gpwlFeedServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=GPWLFeed</param-value>
+			<param-value>dcm4chee.archive:service=GPWLFeed</param-value>
 		</init-param>
 		
 		<!-- 
-			Used by dcm4jboss-web application to find EchoService MBean.
+			Used by dcm4chee-web application to find EchoService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-echo-service.xml.
+			deploy/dcm4chee-echo-service.xml.
 		-->
 		<init-param>
 			<param-name>echoServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=ECHOService</param-value>
+			<param-value>dcm4chee.archive:service=ECHOService</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find AEService MBean.
+			Used by dcm4chee-web application to find AEService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-ae-service.xml.
+			deploy/dcm4chee-ae-service.xml.
 		-->
 		<init-param>
 			<param-name>aeServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=AE</param-value>
+			<param-value>dcm4chee.archive:service=AE</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find MppsScpService MBean.
+			Used by dcm4chee-web application to find MppsScpService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-mppsscp-service.xml.
+			deploy/dcm4chee-mppsscp-service.xml.
 		-->
 		<init-param>
 			<param-name>mppsScpServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=MPPSScp</param-value>
+			<param-value>dcm4chee.archive:service=MPPSScp</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find KeyObjectService MBean.
+			Used by dcm4chee-web application to find KeyObjectService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-keyobject-service.xml.
+			deploy/dcm4chee-keyobject-service.xml.
 		-->
 		<init-param>
 			<param-name>keyObjectServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=KeyObjectService</param-value>
+			<param-value>dcm4chee.archive:service=KeyObjectService</param-value>
 		</init-param>
 		<!-- 
-			Used by dcm4jboss-web application to find ExportManagerService MBean.
+			Used by dcm4chee-web application to find ExportManagerService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-exportmanager-service.xml.
+			deploy/dcm4chee-exportmanager-service.xml.
 		-->
 		<init-param>
 			<param-name>exportManagerServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=ExportManager</param-value>
+			<param-value>dcm4chee.archive:service=ExportManager</param-value>
 		</init-param>
 
 		<init-param>
 			<param-name>xdsiServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=XDS-I</param-value>
+			<param-value>dcm4chee.archive:service=XDS-I</param-value>
 		</init-param>
 
 		<!-- 
-			Used by dcm4jboss-web application to find GPWLScuService MBean.
+			Used by dcm4chee-web application to find GPWLScuService MBean.
 			Value must match mbean name in configured in
-			deploy/dcm4jboss-gpwlscu-service.xml.
+			deploy/dcm4chee-gpwlscu-service.xml.
 		-->
 		<init-param>
 			<param-name>gpwlScuServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=GPWLScu</param-value>
+			<param-value>dcm4chee.archive:service=GPWLScu</param-value>
 		</init-param>
 		<init-param>
 			<param-name>gpppsScpServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=GPPPSScp</param-value>
+			<param-value>dcm4chee.archive:service=GPPPSScp</param-value>
 		</init-param>
 
 		<init-param>

@@ -53,7 +53,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.admin.UserAdminDelegate;
 
 /**
@@ -90,7 +90,7 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 	 */
 	private void initMap(Properties props) throws IOException {
 		mapPermissions.clear();
-		String[] apps = Dcm4JbossFormController.FOLDER_APPLICATIONS;
+		String[] apps = Dcm4cheeFormController.FOLDER_APPLICATIONS;
 		String perm, value, role, methods;
 		int pos;
 		Map map;

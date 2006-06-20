@@ -1,4 +1,4 @@
--- Update DB from dcm4jboss-2.5.x to dcm4jboss-2.6.x
+-- Update DB from dcm4chee-2.5.x to dcm4chee-2.6.x
 
 CONNECT TO tiani;
 SET CURRENT SCHEMA TIANI;

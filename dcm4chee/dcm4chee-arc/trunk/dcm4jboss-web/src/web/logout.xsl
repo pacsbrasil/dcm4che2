@@ -16,7 +16,7 @@
 		</tr>
 		<tr>
 		<td background="white48.jpg">
-		  <img src="white48.jpg" width="10px" height="24px"/><img src="logo.gif" alt="DCM4JBOSS"/>
+		  <img src="white48.jpg" width="10px" height="24px"/><img src="logo.gif" alt="DCM4CHEE"/>
 		</td>
 		</tr>
 		<tr>

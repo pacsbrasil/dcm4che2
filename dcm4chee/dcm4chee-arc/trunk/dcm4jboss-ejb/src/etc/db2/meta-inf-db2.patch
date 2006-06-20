@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-06-12 17:45:17.000000000 +0200
-+++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2006-06-12 17:50:17.000000000 +0200
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2006-06-19 16:50:05.983131373 +0200
++++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2006-06-19 16:50:26.688906494 +0200
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -41,8 +41,8 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -432,7 +435,8 @@
-             <jboss-ql><![CDATA[SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1]]></jboss-ql>
+@@ -433,7 +436,8 @@
+             <jboss-ql><![CDATA[SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2]]></jboss-ql>
           </query>
  
 -	<entity-command name="hsqldb-fetch-key">
@@ -51,7 +51,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -606,7 +610,8 @@
+@@ -607,7 +611,8 @@
              <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1]]></jboss-ql>
           </query>
  
@@ -61,7 +61,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -641,8 +646,9 @@
+@@ -642,8 +647,9 @@
  
          </cmp-field>
  
@@ -73,7 +73,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -716,7 +722,8 @@
+@@ -717,7 +723,8 @@
  			</read-ahead>
           </query>
  
@@ -83,7 +83,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -824,7 +831,8 @@
+@@ -825,7 +832,8 @@
  			</read-ahead>
           </query>
  
@@ -93,7 +93,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -856,7 +864,8 @@
+@@ -857,7 +865,8 @@
  
          </cmp-field>
  
@@ -103,7 +103,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -913,7 +922,8 @@
+@@ -914,7 +923,8 @@
  
          </cmp-field>
  
@@ -113,7 +113,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1055,7 +1065,8 @@
+@@ -1056,7 +1066,8 @@
              <jboss-ql><![CDATA[SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND f.createdTime > ?2]]></jboss-ql>
           </query>
  
@@ -123,7 +123,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1177,8 +1188,9 @@
+@@ -1178,8 +1189,9 @@
  			</read-ahead>
           </query>
  
@@ -135,7 +135,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
          <audit>
-@@ -1217,8 +1229,9 @@
+@@ -1218,8 +1230,9 @@
  
          </cmp-field>
  
@@ -147,7 +147,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1244,8 +1257,9 @@
+@@ -1245,8 +1258,9 @@
  
          </cmp-field>
  
@@ -159,7 +159,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1334,7 +1348,8 @@
+@@ -1335,7 +1349,8 @@
  			</read-ahead>
           </query>
  
@@ -169,7 +169,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1399,8 +1414,9 @@
+@@ -1400,8 +1415,9 @@
  
          </cmp-field>
  
@@ -181,7 +181,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1464,7 +1480,8 @@
+@@ -1465,7 +1481,8 @@
  			</read-ahead>
           </query>
  
@@ -191,7 +191,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1501,8 +1518,9 @@
+@@ -1502,8 +1519,9 @@
  
          </cmp-field>
  
@@ -203,7 +203,7 @@
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
        </entity>
-@@ -1617,7 +1635,8 @@
+@@ -1618,7 +1636,8 @@
              <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1]]></jboss-ql>
           </query>
  
@@ -213,7 +213,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1657,7 +1676,8 @@
+@@ -1658,7 +1677,8 @@
  
          </cmp-field>
  
@@ -223,7 +223,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1689,7 +1709,8 @@
+@@ -1690,7 +1710,8 @@
  
          </cmp-field>
  
@@ -233,7 +233,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1721,7 +1742,8 @@
+@@ -1722,7 +1743,8 @@
  
          </cmp-field>
  
@@ -243,7 +243,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1793,7 +1815,8 @@
+@@ -1794,7 +1816,8 @@
              <jboss-ql><![CDATA[SELECT OBJECT(a) FROM Association a WHERE a.updatedTime < ?1 ORDER BY a.pk LIMIT 1]]></jboss-ql>
           </query>
  
@@ -253,7 +253,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1838,7 +1861,8 @@
+@@ -1839,7 +1862,8 @@
  
          </cmp-field>
  
@@ -263,7 +263,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1898,7 +1922,8 @@
+@@ -1899,7 +1923,8 @@
  			</read-ahead>
           </query>
  
@@ -273,7 +273,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1963,7 +1988,8 @@
+@@ -1964,7 +1989,8 @@
  			</read-ahead>
           </query>
  

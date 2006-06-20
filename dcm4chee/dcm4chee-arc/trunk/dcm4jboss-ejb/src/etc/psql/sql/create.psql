@@ -595,7 +595,7 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (aet,hostname,port)
-	VALUES('DCM4JBOSS','localhost',11112);
+	VALUES('DCM4CHEE','localhost',11112);
 INSERT INTO ae (aet,hostname,port)
 	VALUES('CDRECORD','localhost',10104);
 	

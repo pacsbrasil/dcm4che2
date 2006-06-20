@@ -40,7 +40,7 @@
 package org.dcm4chex.archive.web.maverick.admin;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 
 /**
  * 
@@ -48,7 +48,7 @@ import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
  * @version $Revision$ $Date$
  * @since 22.06.2005
  */
-public class UserAdminCtrl extends Dcm4JbossFormController {
+public class UserAdminCtrl extends Dcm4cheeFormController {
 
 
 	protected static Logger log = Logger.getLogger(UserAdminCtrl.class);

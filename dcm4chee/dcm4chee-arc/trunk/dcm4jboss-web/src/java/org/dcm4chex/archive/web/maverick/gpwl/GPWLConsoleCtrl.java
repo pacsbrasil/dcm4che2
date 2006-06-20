@@ -43,7 +43,7 @@ import java.text.ParseException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLFilter;
 import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLModel;
 import org.dcm4chex.archive.web.maverick.gpwl.GPWLScuDelegate;
@@ -53,7 +53,7 @@ import org.dcm4chex.archive.web.maverick.gpwl.GPWLScuDelegate;
  *
  * The Maverick controller for General Purpose Worklist.
  */
-public class GPWLConsoleCtrl extends Dcm4JbossFormController {
+public class GPWLConsoleCtrl extends Dcm4cheeFormController {
 
 
 	/** the view model. */

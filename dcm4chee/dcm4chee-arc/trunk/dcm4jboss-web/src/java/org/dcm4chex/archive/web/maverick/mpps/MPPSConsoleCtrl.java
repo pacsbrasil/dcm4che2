@@ -43,7 +43,7 @@ import java.text.ParseException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 
@@ -52,7 +52,7 @@ import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
  *
  * The Maverick controller for Media Creation Manager.
  */
-public class MPPSConsoleCtrl extends Dcm4JbossFormController {
+public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 
 
 	/** the view model. */

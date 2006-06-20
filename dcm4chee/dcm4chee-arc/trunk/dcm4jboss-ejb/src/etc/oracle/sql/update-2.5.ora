@@ -1,4 +1,4 @@
--- Update DB from dcm4jboss-2.4.x to dcm4jboss-2.5.x
+-- Update DB from dcm4chee-2.4.x to dcm4chee-2.5.x
 
 ALTER TABLE patient ADD created_time TIMESTAMP;
 ALTER TABLE patient ADD updated_time TIMESTAMP;

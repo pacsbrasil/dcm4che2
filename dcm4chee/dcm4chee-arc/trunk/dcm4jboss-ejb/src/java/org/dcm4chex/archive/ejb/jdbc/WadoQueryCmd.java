@@ -587,7 +587,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         	ds.putUI(Tags.RefSOPTransferSyntaxUIDInFile, rs.getString(16));   
         	
         	 // TODO: need to create a private tag for this: LocationBaseUrl
-            ds.putUN(Tags.ImageLocationRetired, "http://localhost:9080/dcm4jboss-wado/wado".getBytes());
+            ds.putUN(Tags.ImageLocationRetired, "http://localhost:9080/wado".getBytes());
             ds.putCS(Tags.QueryRetrieveLevel, "LOCATION");
     	}
     }

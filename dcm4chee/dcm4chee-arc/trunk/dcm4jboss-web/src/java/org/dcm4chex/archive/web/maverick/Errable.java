@@ -45,10 +45,10 @@ import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 /**
  * @author umberto.cappellini@tiani.com
  * Created: Feb 24, 2004 - 11:16:30 AM
- * Module: dcm4jboss-web
+ * Module: dcm4chee-web
  * 
  */
-public abstract class Errable extends Dcm4JbossController
+public abstract class Errable extends Dcm4cheeController
 {
 	public static String ERROR_VIEW = "error";
 

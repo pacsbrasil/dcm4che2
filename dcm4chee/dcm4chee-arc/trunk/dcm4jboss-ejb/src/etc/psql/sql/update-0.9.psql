@@ -1,4 +1,4 @@
--- Update DB from dcm4jboss-0.7.x/0.8.x to dcm4jboss-0.9.x
+-- Update DB from dcm4chee-0.7.x/0.8.x to dcm4chee-0.9.x
 DROP TABLE move_order;
 
 DROP TABLE mwl_item;

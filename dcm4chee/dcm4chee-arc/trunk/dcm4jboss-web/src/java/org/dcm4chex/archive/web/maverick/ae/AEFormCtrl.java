@@ -39,16 +39,16 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 
 
 /**
  * @author umberto.cappellini@tiani.com
  * Created: Feb 24, 2004 - 11:16:30 AM
- * Module: dcm4jboss-web
+ * Module: dcm4chee-web
  * 
  */
-public abstract class AEFormCtrl extends Dcm4JbossFormController
+public abstract class AEFormCtrl extends Dcm4cheeFormController
 {
 	private static AEDelegate aeDelegate = null;
 	

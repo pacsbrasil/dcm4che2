@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class FolderCtrl extends Dcm4JbossFormController {
+public class FolderCtrl extends Dcm4cheeFormController {
 
 
 	protected static Logger log = Logger.getLogger(FolderCtrl.class);

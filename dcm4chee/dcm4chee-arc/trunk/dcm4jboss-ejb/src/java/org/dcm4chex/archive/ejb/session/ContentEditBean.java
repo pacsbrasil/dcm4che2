@@ -102,7 +102,7 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  *  
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4jboss-attribute-filter.xml"
+ *                value="resource:dcm4chee-attribute-filter.xml"
  *  
  */
 public abstract class ContentEditBean implements SessionBean {

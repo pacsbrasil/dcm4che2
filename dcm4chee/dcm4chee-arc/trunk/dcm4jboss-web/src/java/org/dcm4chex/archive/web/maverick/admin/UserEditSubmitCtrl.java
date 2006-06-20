@@ -40,14 +40,14 @@
 package org.dcm4chex.archive.web.maverick.admin;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 
 /**
  * @author umberto.cappellini@tiani.com
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class UserEditSubmitCtrl extends Dcm4JbossFormController
+public class UserEditSubmitCtrl extends Dcm4cheeFormController
 {
 
 	private String userHash = null;

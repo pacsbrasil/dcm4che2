@@ -1,4 +1,4 @@
--- Update DB from dcm4jboss-2.1.x to dcm4jboss-2.2.x
+-- Update DB from dcm4chee-2.1.x to dcm4chee-2.2.x
 
 ALTER TABLE series ADD COLUMN src_aet	TEXT;
 CREATE INDEX series_src_aet ON series(src_aet);

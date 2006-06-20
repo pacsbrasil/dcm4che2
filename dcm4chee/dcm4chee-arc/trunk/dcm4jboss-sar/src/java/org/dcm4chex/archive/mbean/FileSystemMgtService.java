@@ -118,7 +118,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 
     private float checkFreeDiskSpaceThreshold = 5f;
     
-    private String retrieveAET = "DCM4JBOSS";
+    private String retrieveAET = "DCM4CHEE";
     
     private String defStorageDir = "archive";
 

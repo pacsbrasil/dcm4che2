@@ -590,7 +590,7 @@ public File getDICOMFile( String studyUID, String seriesUID, String instanceUID 
 /**
  * Returns the WADO URL to remote server which serves the object.
  * <p>
- * the remote server have to be a dcm4jboss-wado server on the same port as this WADO server!
+ * the remote server have to be a dcm4chee-wado server on the same port as this WADO server!
  * 
  * @param hostname
  * @param req
@@ -598,7 +598,7 @@ public File getDICOMFile( String studyUID, String seriesUID, String instanceUID 
  */
 private URL getRedirectURL( String hostname, WADORequestObject req ) {
 	StringBuffer sb = new StringBuffer();
-	sb.append( "/dcm4jboss-wado/wado?requestType=WADO");
+	sb.append( "/wado?requestType=WADO");
 	Map mapParam = req.getRequestParams();
 	Iterator iter = mapParam.keySet().iterator();
 	Object key;

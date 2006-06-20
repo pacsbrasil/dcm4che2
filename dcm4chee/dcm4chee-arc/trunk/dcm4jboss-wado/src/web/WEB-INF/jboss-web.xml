@@ -3,7 +3,7 @@
       need to edit the htmladaptor login configuration to setup the
       login modules used to authentication users.
    -->
-   <!--   <security-domain>java:/jaas/dcm4jboss-web</security-domain> -->
+   <!--   <security-domain>java:/jaas/dcm4chee-web</security-domain> -->
    
   <context-root>/</context-root>
 </jboss-web>

@@ -150,7 +150,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  ref-name="ejb/PrivateFile" 
  *  
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4jboss-attribute-filter.xml"
+ *                value="resource:dcm4chee-attribute-filter.xml"
  *  
  */
 public abstract class PrivateManagerBean implements SessionBean {

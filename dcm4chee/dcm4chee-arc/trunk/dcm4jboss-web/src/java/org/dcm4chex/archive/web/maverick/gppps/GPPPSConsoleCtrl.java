@@ -43,7 +43,7 @@ import java.text.ParseException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSModel;
 
 /**
@@ -51,7 +51,7 @@ import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSModel;
  *
  * The Maverick controller for Media Creation Manager.
  */
-public class GPPPSConsoleCtrl extends Dcm4JbossFormController {
+public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
 
 
 	/** the view model. */

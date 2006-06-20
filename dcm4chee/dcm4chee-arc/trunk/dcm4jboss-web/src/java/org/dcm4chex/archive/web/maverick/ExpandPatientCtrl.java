@@ -53,7 +53,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandPatientCtrl extends Dcm4JbossFormController {
+public class ExpandPatientCtrl extends Dcm4cheeFormController {
 
     protected long patPk;
     protected boolean expand;

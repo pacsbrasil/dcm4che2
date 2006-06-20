@@ -47,7 +47,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-public class PatientEditCtrl extends Dcm4JbossFormController
+public class PatientEditCtrl extends Dcm4cheeFormController
 {
 	private int pk = -1;
 	

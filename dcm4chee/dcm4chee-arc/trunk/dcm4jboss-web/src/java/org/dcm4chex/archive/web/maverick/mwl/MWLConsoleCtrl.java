@@ -44,7 +44,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.web.maverick.Dcm4JbossFormController;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLFilter;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
@@ -54,7 +54,7 @@ import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
  *
  * The Maverick controller for Media Creation Manager.
  */
-public class MWLConsoleCtrl extends Dcm4JbossFormController {
+public class MWLConsoleCtrl extends Dcm4cheeFormController {
 
 
 	public static final String ERROR_MWLENTRY_DELETE = "deleteError_mwlEntry";
