@@ -171,9 +171,9 @@ public abstract class FileBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="file_size"
      */
-    public abstract int getFileSize();
+    public abstract long getFileSize();
 
-    public abstract void setFileSize(int size);
+    public abstract void setFileSize(long size);
 
     /**
      * @ejb.interface-method

@@ -103,7 +103,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk = ?1"
  *              
- * @jboss.query signature="int ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
+ * @jboss.query signature="long ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
  *              query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND f.createdTime > ?2"
  */
 public abstract class FileSystemBean implements EntityBean {

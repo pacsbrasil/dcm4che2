@@ -73,7 +73,7 @@ public abstract class PrivateFileBean implements EntityBean {
      * 
      * @ejb.create-method
      */
-    public Long ejbCreate(String path, String tsuid, int size, byte[] md5,
+    public Long ejbCreate(String path, String tsuid, long size, byte[] md5,
     		int status, PrivateInstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setFilePath(path);
@@ -159,8 +159,8 @@ public abstract class PrivateFileBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="file_size"
      */
-    public abstract int getFileSize();
-    public abstract void setFileSize(int size);
+    public abstract long getFileSize();
+    public abstract void setFileSize(long size);
 
     /**
      * @ejb.interface-method

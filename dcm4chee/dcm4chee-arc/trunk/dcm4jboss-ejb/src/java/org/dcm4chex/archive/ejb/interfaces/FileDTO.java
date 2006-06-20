@@ -64,7 +64,7 @@ public final class FileDTO implements Serializable {
 
     private String sopCuid;
 
-    private int size;
+    private long size;
 
     private byte[] md5;
     
@@ -172,14 +172,14 @@ public final class FileDTO implements Serializable {
     /**
      * @return Returns the size.
      */
-    public final int getFileSize() {
+    public final long getFileSize() {
         return size;
     }
 
     /**
      * @param size The size to set.
      */
-    public final void setFileSize(int size) {
+    public final void setFileSize(long size) {
         this.size = size;
     }
 
