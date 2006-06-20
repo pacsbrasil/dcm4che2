@@ -77,7 +77,7 @@
           <table border="0" cellspacing="0" cellpadding="0">
 					<tr>
                 
-		            <form name="frmArrQuery" method="get" action="/dcm4jboss-arr">
+		            <form name="frmArrQuery" method="get" action="/dcm4chee-arr">
 								<xsl:variable name="pagesize_form">
                 	<xsl:choose>
                   	<xsl:when test="@pagesize &lt;= 0"><xsl:value-of select="number(30)"/></xsl:when> <!-- DEFAULT PAGE SIZE -->
@@ -96,14 +96,14 @@
                         <xsl:otherwise><xsl:value-of select="@start - @pagesize"/></xsl:otherwise>
                       </xsl:choose>
                     </xsl:variable>
-                    <a href="/dcm4jboss-arr/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={$startentry}&amp;pagesize={@pagesize}{$sortbystr}"><img src="images/preview.gif" border="0" /> </a>
+                    <a href="/dcm4chee-arr/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={$startentry}&amp;pagesize={@pagesize}{$sortbystr}"><img src="images/preview.gif" border="0" /> </a>
                   	</xsl:if>
  
 									</td>	
 									<td bgcolor="#eeeeee" height="25" valign="top">
                   <xsl:if test="$eof = 'false'">
   
-                    <a href="/dcm4jboss-arr/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={@start + @pagesize}&amp;pagesize={@pagesize}{$sortbystr}"><img src="images/next.gif" border="0"/> </a>
+                    <a href="/dcm4chee-arr/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={@start + @pagesize}&amp;pagesize={@pagesize}{$sortbystr}"><img src="images/next.gif" border="0"/> </a>
                   </xsl:if>
  
 								</td>
@@ -178,11 +178,11 @@
             <!-- audit record list -->
  	          <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	            <tr bgcolor="#eeeeee" height="25" align="top">
-								<td><a href="/dcm4jboss-arr?{$lastquery}&amp;orderby=type&amp;orderdir={$vsortdir-type}"><div class="width: 100%">Audit Event</div></a></td>
+								<td><a href="/dcm4chee-arr?{$lastquery}&amp;orderby=type&amp;orderdir={$vsortdir-type}"><div class="width: 100%">Audit Event</div></a></td>
 								<td width="10" bgcolor="#eeeeee"></td>
-	              <td><a href="/dcm4jboss-arr?{$lastquery}&amp;orderby=host&amp;orderdir={$vsortdir-host}"><div class="width: 100%">Host</div></a></td>
+	              <td><a href="/dcm4chee-arr?{$lastquery}&amp;orderby=host&amp;orderdir={$vsortdir-host}"><div class="width: 100%">Host</div></a></td>
 								<td width="10" bgcolor="#eeeeee"></td>
-	              <td><a href="/dcm4jboss-arr?{$lastquery}&amp;orderby=timestamp&amp;orderdir={$vsortdir-timestamp}"><div class="width: 100%">Timestamp (local)</div></a></td>
+	              <td><a href="/dcm4chee-arr?{$lastquery}&amp;orderby=timestamp&amp;orderdir={$vsortdir-timestamp}"><div class="width: 100%">Timestamp (local)</div></a></td>
 								<td width="5" bgcolor="#eeeeee"></td>								
 	              <td>Information</td>
 								<td width="10" bgcolor="#eeeeee"></td>								

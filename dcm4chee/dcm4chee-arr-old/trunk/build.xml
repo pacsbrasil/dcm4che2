@@ -1,11 +1,11 @@
-<project default="all" name="dcm4jboss-arr">
+<project default="all" name="dcm4chee-arr">
 
 	<!-- Allow user to adjust build properties without
 	modifying this build script.
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.8.1"/>
+	<property name="version" value="2.8.2"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -88,7 +88,7 @@
             <deploymentdescriptor
                 destdir="${basedir}/target/meta-inf-hsql"
                 validatexml="true"
-                description="dcm4jboss arr EJBs"
+                description="dcm4chee arr EJBs"
                 >
                 <!--configParam name="clientjar" value="blah.jar"/-->
             </deploymentdescriptor>
@@ -224,7 +224,7 @@
             </deploymentdescriptor>
             
             <jbosswebxml destdir="${basedir}/target/web-inf"
-                securitydomain="java:/jaas/dcm4jboss-arr" />
+                securitydomain="java:/jaas/dcm4chee-arr" />
         
         </webdoclet>
     </target>
@@ -308,10 +308,10 @@
 
     <target name="ejb-jar">
 		<mkdir dir="${basedir}/target/${db.name}/deploy"/>
-        <jar jarfile="${basedir}/target/${db.name}/deploy/dcm4jboss-arr-ejb.jar">
+        <jar jarfile="${basedir}/target/${db.name}/deploy/dcm4chee-arr-ejb.jar">
         	<metainf dir="${basedir}/target/meta-inf-${db.name}"/>
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-arr-ejb"/>
+				<attribute name="Implementation-Title" value="dcm4chee-arr-ejb"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>
@@ -324,9 +324,9 @@
 
     <target name="common-jar" depends="compile">
 	<mkdir dir="${basedir}/target/common/lib"/>
-        <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr-ejb-client.jar">
+        <jar jarfile="${basedir}/target/common/lib/dcm4chee-arr-ejb-client.jar">
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-arr"/>
+				<attribute name="Implementation-Title" value="dcm4chee-arr"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>
@@ -334,9 +334,9 @@
                 <include name="org/dcm4chex/arr/ejb/session/*Local*" />
             </fileset>
         </jar>
-        <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr.jar">
+        <jar jarfile="${basedir}/target/common/lib/dcm4chee-arr.jar">
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-arr"/>
+				<attribute name="Implementation-Title" value="dcm4chee-arr"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>
@@ -344,9 +344,9 @@
                 <include name="**/mbean/**" />
             </fileset>
         </jar>
-        <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr-login.jar">
+        <jar jarfile="${basedir}/target/common/lib/dcm4chee-arr-login.jar">
         	<manifest>
-				<attribute name="Implementation-Title" value="dcm4jboss-arr-login"/>
+				<attribute name="Implementation-Title" value="dcm4chee-arr-login"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>
@@ -359,7 +359,7 @@
 	<target name="war" depends="compile">
 		<mkdir dir="${basedir}/target/common/deploy"/>
         <war
-            warfile="${basedir}/target/common/deploy/dcm4jboss-arr.war"
+            warfile="${basedir}/target/common/deploy/dcm4chee-arr.war"
             webxml="${basedir}/target/web-inf/web.xml"
         >
             <webinf dir="${basedir}/target/web-inf" includes="jboss-web.xml"/>

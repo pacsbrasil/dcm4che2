@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <server>
-  <classpath codebase="lib" archives="dcm4jboss-arr.jar"/>
+  <classpath codebase="lib" archives="dcm4chee-arr.jar"/>
   <mbean code="org.dcm4chex.arr.mbean.ARRServer" 
-         name="dcm4jboss.audit:service=AuditRecordRepository"
-         xmbean-dd="xmdesc/dcm4jboss-arr-xmbean.xml">
+         name="dcm4chee.audit:service=AuditRecordRepository"
+         xmbean-dd="xmdesc/dcm4chee-arr-xmbean.xml">
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/AuditRecord</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/StoreAuditRecord</depends>
   </mbean>
