@@ -115,7 +115,7 @@
       getMethod="isSortEnabled"
       setMethod="setSortEnabled">
       <description>Sort file content locations according to rules in
-      server/default/conf/dcm4jboss-cdw/mkisofs.sort.
+      server/default/conf/dcm4chee-cdw/mkisofs.sort.
       </description>
       <name>SortEnabled</name>
       <type>boolean</type>      
@@ -142,7 +142,7 @@
       <name>SpoolDirName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="dcm4jboss.dcmcdw:service=SpoolDir" />
+         <value value="dcm4chee.cdw:service=SpoolDir" />
       </descriptors>
    </attribute>
    &defaultAttributes;

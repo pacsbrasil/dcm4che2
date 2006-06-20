@@ -118,7 +118,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
     public MakeIsoImageService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
         sortFile = new File(homedir, "conf" + File.separatorChar 
-                + "dcm4jboss-cdw" + File.separatorChar + "mkisofs.sort");
+                + "dcm4chee-cdw" + File.separatorChar + "mkisofs.sort");
         logFile = new File(homedir, "log" + File.separatorChar + "mkisofs.log");
     }
 

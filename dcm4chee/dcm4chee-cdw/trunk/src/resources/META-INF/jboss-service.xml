@@ -9,67 +9,67 @@
 
 <server>
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcm4jboss.dcmcdw:service=Queue,name=MediaComposer">
+	 name="dcm4chee.cdw:service=Queue,name=MediaComposer">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcm4jboss.dcmcdw:service=Queue,name=MakeIsoImage">
+	 name="dcm4chee.cdw:service=Queue,name=MakeIsoImage">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
    <mbean code="org.dcm4chex.cdw.mbean.SpoolDirService"
-      name="dcm4jboss.dcmcdw:service=SpoolDir"
-      xmbean-dd="xmdesc/dcmcdw-spooldir-xmbean.xml">
+      name="dcm4chee.cdw:service=SpoolDir"
+      xmbean-dd="xmdesc/dcm4chee-cdw-spooldir-xmbean.xml">
    </mbean>
 
    <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	  name="dcm4jboss.dcmcdw:service=SpoolDirScheduler"
-      xmbean-dd="xmdesc/dcmcdw-spooldir-scheduler-xmbean.xml">
+	  name="dcm4chee.cdw:service=SpoolDirScheduler"
+      xmbean-dd="xmdesc/dcm4chee-cdw-spooldir-scheduler-xmbean.xml">
       <depends>
-         dcm4jboss.dcmcdw:service=SpoolDir
+         dcm4chee.cdw:service=SpoolDir
       </depends>
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.DcmServerService"
-      name="dcm4jboss.dcmcdw:service=DcmServer"
-      xmbean-dd="xmdesc/dcmcdw-dcmsrv-xmbean.xml">
+      name="dcm4chee.cdw:service=DcmServer"
+      xmbean-dd="xmdesc/dcm4chee-cdw-dcmsrv-xmbean.xml">
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.StoreScpService"
-      name="dcm4jboss.dcmcdw:service=StoreSCP"
-      xmbean-dd="xmdesc/dcmcdw-storescp-xmbean.xml">
+      name="dcm4chee.cdw:service=StoreSCP"
+      xmbean-dd="xmdesc/dcm4chee-cdw-storescp-xmbean.xml">
       <depends>
-         dcm4jboss.dcmcdw:service=DcmServer
+         dcm4chee.cdw:service=DcmServer
       </depends>
       <depends>
-         dcm4jboss.dcmcdw:service=SpoolDir
+         dcm4chee.cdw:service=SpoolDir
       </depends>
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.MediaCreationMgtScpService"
-      name="dcm4jboss.dcmcdw:service=MediaCreationMgtSCP"
-      xmbean-dd="xmdesc/dcmcdw-mcmscp-xmbean.xml">
+      name="dcm4chee.cdw:service=MediaCreationMgtSCP"
+      xmbean-dd="xmdesc/dcm4chee-cdw-mcmscp-xmbean.xml">
       <depends>
-         dcm4jboss.dcmcdw:service=DcmServer
+         dcm4chee.cdw:service=DcmServer
       </depends>
       <depends>
-         dcm4jboss.dcmcdw:service=SpoolDir
+         dcm4chee.cdw:service=SpoolDir
       </depends>
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.MediaComposerService"
-      name="dcm4jboss.dcmcdw:service=MediaComposer"
-      xmbean-dd="xmdesc/dcmcdw-composer-xmbean.xml">
+      name="dcm4chee.cdw:service=MediaComposer"
+      xmbean-dd="xmdesc/dcm4chee-cdw-composer-xmbean.xml">
       <depends>
-         dcm4jboss.dcmcdw:service=SpoolDir
+         dcm4chee.cdw:service=SpoolDir
       </depends>
       <depends>
-      	dcm4jboss.dcmcdw:service=Queue,name=MediaComposer
+      	dcm4chee.cdw:service=Queue,name=MediaComposer
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
@@ -77,10 +77,10 @@
    </mbean>
 
    <mbean code="org.dcm4chex.cdw.mbean.MakeIsoImageService"
-      name="dcm4jboss.dcmcdw:service=MakeIsoImage"
-      xmbean-dd="xmdesc/dcmcdw-mkisofs-xmbean.xml">
+      name="dcm4chee.cdw:service=MakeIsoImage"
+      xmbean-dd="xmdesc/dcm4chee-cdw-mkisofs-xmbean.xml">
       <depends>
-      	dcm4jboss.dcmcdw:service=Queue,name=MakeIsoImage
+      	dcm4chee.cdw:service=Queue,name=MakeIsoImage
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
@@ -88,7 +88,7 @@
    </mbean>
 
    <mbean code="org.dcm4chex.cdw.mbean.LabelPrintService"
-      name="dcm4jboss.dcmcdw:service=LabelPrint"
-      xmbean-dd="xmdesc/dcmcdw-labelprint-xmbean.xml">
+      name="dcm4chee.cdw:service=LabelPrint"
+      xmbean-dd="xmdesc/dcm4chee-cdw-labelprint-xmbean.xml">
    </mbean>
 </server>

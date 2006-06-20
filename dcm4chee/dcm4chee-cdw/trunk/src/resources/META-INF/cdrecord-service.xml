@@ -10,23 +10,23 @@
 <server>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcm4jboss.dcmcdw:service=Queue,name=CDRecord">
+	 name="dcm4chee.cdw:service=Queue,name=CDRecord">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
    <mbean code="org.dcm4chex.cdw.cdrecord.CDRecordService"
-      name="dcm4jboss.dcmcdw:service=MediaWriter,name=CDRecord"
-      xmbean-dd="xmdesc/dcmcdw-cdrecord-xmbean.xml">
+      name="dcm4chee.cdw:service=MediaWriter,name=CDRecord"
+      xmbean-dd="xmdesc/dcm4chee-cdw-cdrecord-xmbean.xml">
       <depends>
-      	dcm4jboss.dcmcdw:service=Queue,name=CDRecord
+      	dcm4chee.cdw:service=Queue,name=CDRecord
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
       </depends>
       <depends>
-        dcm4jboss.dcmcdw:service=LabelPrint
+        dcm4chee.cdw:service=LabelPrint
       </depends>
    </mbean>
 </server>

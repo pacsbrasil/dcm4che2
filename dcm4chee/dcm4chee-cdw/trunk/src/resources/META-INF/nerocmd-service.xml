@@ -10,23 +10,23 @@
 <server>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcm4jboss.dcmcdw:service=Queue,name=NeroCmd">
+	 name="dcm4chee.cdw:service=Queue,name=NeroCmd">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
    <mbean code="org.dcm4chex.cdw.nerocmd.NeroCmdService"
-      name="dcm4jboss.dcmcdw:service=MediaWriter,name=NeroCmd"
-      xmbean-dd="xmdesc/dcmcdw-nerocmd-xmbean.xml">
+      name="dcm4chee.cdw:service=MediaWriter,name=NeroCmd"
+      xmbean-dd="xmdesc/dcm4chee-cdw-nerocmd-xmbean.xml">
       <depends>
-      	dcm4jboss.dcmcdw:service=Queue,name=NeroCmd
+      	dcm4chee.cdw:service=Queue,name=NeroCmd
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
       </depends>
       <depends>
-        dcm4jboss.dcmcdw:service=LabelPrint
+        dcm4chee.cdw:service=LabelPrint
       </depends>
    </mbean>
 </server>

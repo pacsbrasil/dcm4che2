@@ -13,7 +13,7 @@ Media Creator Application:
 
     This disk was created using:
  
-    dcm4jboss-cdw v@VERSION@ Media Creation Manager 
+    dcm4chee-cdw v@VERSION@ Media Creation Manager 
 
 
 Contact Information:

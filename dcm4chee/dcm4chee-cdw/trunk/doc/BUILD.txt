@@ -1,7 +1,7 @@
-Build Instructions for DICOM CD Writer dcmcdw:
+Build Instructions for DICOM CD Writer dcm4chee-cdw:
 =============================================
 
-In order to build dcmcdw you have to download and install:
+In order to build dcm4chee-cdw you have to download and install:
 - Ant 1.6.x (from http://ant.apache.org)
 - JUnit 3.8.x (from http://junit.org)
 - JBoss 3.2.6 (from http://jboss.org)
@@ -14,7 +14,7 @@ Copy junit.jar from the JUnit package into $ANT_HOME/lib/.
 
 You also need a distribution of dcm4che DICOM core library - download the
 binary disrtribution or build dcm4che from the source - before
-you can build dcmcdw.
+you can build dcm4chee-cdw.
 
 At first time, connecting to the project CVS repository, you have to login by
 
@@ -32,14 +32,14 @@ and build the library jar, by running
 
 with the dcm4che14 distribution directory as working directory.
 
-The source of the dcmcdw package is available in module dcm4jboss-dcmcdw
+The source of the dcm4chee-cdw package is available in module dcm4jboss-cdw
 in the dcm4che project CVS repository:
 
 >cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  checkout dcmcdw
+  checkout dcm4jboss-cdw
 
 The default build script (build.xml) assumes following locations of
-components required for building dcmcdw:
+components required for building dcm4chee-cdw:
 
 <!-- Override with your dcm4che dist location -->
 <property name="dcm4che.home" value="../dcm4che14/build/dcm4che-1.1.4"/>
@@ -58,13 +58,13 @@ After that, invoking
 
 >ant dist
 
-with the dcmcdw distribution directory as working directory builds:
+with the dcm4chee-cdw distribution directory as working directory builds:
 
-target/dcmcdw-VERSION.zip:
+target/dcm4chee-cdw-VERSION.zip:
 Binary distribution without needed JBoss Components
 
-target/dcmcdw-standalone-VERSION.zip:
+target/dcm4chee-cdw-standalone-VERSION.zip:
 Binary distribution included JBoss Application Server
 
-target/dcmcdw-src-VERSION.zip:
+target/dcm4chee-cdw-src-VERSION.zip:
 Source distribution.

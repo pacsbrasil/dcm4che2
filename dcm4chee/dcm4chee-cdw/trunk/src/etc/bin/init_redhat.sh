@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# dcmcdw Control Script
+# dcm4chee-cdw Control Script
 #
 # chkconfig: 3 80 20
-# description: dcmcdw - DICOM CD Writer
+# description: dcm4chee-cdw - DICOM CD Writer
 # 
 # To use this script
 # run it as root - it will switch to the specified user
@@ -11,8 +11,8 @@
 #
 # Here is a little (and extremely primitive) 
 # startup/shutdown script for RedHat systems. It assumes 
-# that dcmcdw lives in /usr/local/dcmcdw, it's run by user 
-# 'dcm4jboss' and JDK binaries are in /usr/local/jdk/bin. All 
+# that dcm4chee-cdw lives in /usr/local/dcm4chee-cdw, it's run by user 
+# 'dcm4chee' and JDK binaries are in /usr/local/jdk/bin. All 
 # this can be changed in the script itself. 
 # Bojan 
 #
@@ -20,10 +20,10 @@
 # or just ensure that the following variables are set correctly 
 # before calling the script
 
-# [ #420297 ] dcmcdw startup/shutdown for RedHat
+# [ #420297 ] dcm4chee-cdw startup/shutdown for RedHat
 
 #define where jboss is - this is the directory containing directories log, bin, conf etc
-JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcmcdw"}
+JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee-cdw"}
 
 #make java is on your path
 JAVAPTH=${JAVAPTH:-"/usr/local/jdk/bin"}
@@ -49,7 +49,7 @@ fi
 JBOSS_CONSOLE=${JBOSS_CONSOLE:-"/dev/null"}
 
 #define the user under which jboss will run, or use RUNASIS to run as the current user
-JBOSSUS=${JBOSSUS:-"dcm4jboss"}
+JBOSSUS=${JBOSSUS:-"dcm4chee"}
 
 CMD_START="cd $JBOSS_HOME/bin; $JBOSSSH" 
 CMD_STOP="java -classpath $JBOSSCP org.jboss.Shutdown --shutdown"

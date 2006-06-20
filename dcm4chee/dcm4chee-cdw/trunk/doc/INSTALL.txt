@@ -1,4 +1,4 @@
-Install Instructions for DICOM CD Writer dcmcdw:
+Install Instructions for DICOM CD Writer dcm4chee-cdw:
 ===============================================
 
 System Requirements:
@@ -14,7 +14,7 @@ System Requirements:
 Prerequisites:
 
   + JDK 1.4.2+ (JRE is not sufficient!), free available at
-    http://java.sun.com/j2se/1.4.2/. (dcmcdw should also run with JDK 1.5,
+    http://java.sun.com/j2se/1.4.2/. (dcm4chee-cdw should also run with JDK 1.5,
     but it was mainly tested with JDK 1.4.2_06).
     It is recommended to define an environment variable JAVA_HOME pointing
     to the JDK directory and to append $JAVA_HOME/bin - or %JAVA_HOME%\bin -
@@ -35,7 +35,7 @@ Prerequisites:
     cdrecord[.exe] to your PATH.
     
   + For Label printing on Windows Printer without Postscript support
-    dcmcdw needs (e.g.) Acrobat Reader (free download from adobe.com).
+    dcm4chee-cdw needs (e.g.) Acrobat Reader (free download from adobe.com).
     
 
 Installation:
@@ -66,8 +66,8 @@ Installation:
     the start up is completed.
     
  5. Open the JBoss Administration Console http://localhost:8080/jmx-console with
-    any Web Browser. Scroll down to section "dcm4jboss.dcmcdw" and follow the link
-    of the section title to only show entires for dcmcdw specific services:
+    any Web Browser. Scroll down to section "dcm4chee.cdw" and follow the link
+    of the section title to only show entires for dcm4chee-cdw specific services:
  
     * name=CDRecord,service=MediaWriter
     * name=CDRecord,service=Queue
@@ -128,7 +128,7 @@ Installation:
      
 
     
-Test dcmcdw using dcmsnd.jar and mcmscu.jar command line utilities:
+Test dcm4chee-cdw using dcmsnd.jar and mcmscu.jar command line utilities:
 
  1. Open a (second) console and change the working directory to default/bin of
     the extracted file set.
@@ -174,7 +174,7 @@ Test dcmcdw using dcmsnd.jar and mcmscu.jar command line utilities:
 
 How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?    
  
-    dcmcdw creates INDEX.HTM, HTML pages and Media Label by applying
+    dcm4chee-cdw creates INDEX.HTM, HTML pages and Media Label by applying
     XSL stylesheets, located at default/conf/xsl/, to a XMLized version
     of the DICOM directory (DICOMDIR) content. So you can change the layout
     by modifying the XSL stylesheets.
@@ -183,7 +183,7 @@ How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?
     
     LogXml=true
     
-    causes dcmcdw to dump the DICOMDIR xml version into
+    causes dcm4chee-cdw to dump the DICOMDIR xml version into
         
     default/log/dicomdir.xml .
     
@@ -213,8 +213,8 @@ How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?
 
 
 Hopefully, these briefly instructions are sufficent to start exploring
-the abilities of dcm4che/dcmcdw yourself. - Contributions to the
-documention of dcmcdw are highly appreciated.
+the abilities of dcm4che/dcm4chee-cdw yourself. - Contributions to the
+documention of dcm4chee-cdw are highly appreciated.
 
 Have Fun,
 
