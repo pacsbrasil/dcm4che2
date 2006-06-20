@@ -623,7 +623,7 @@ INSERT INTO roles VALUES('user','McmUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(ae_pk_seq.nextval,'DCM4CHEE','localhost',11112);
-INSERT INTO ae (aet,hostname,port)
+INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(ae_pk_seq.nextval,'CDRECORD','localhost',10104);
 
 COMMIT;
