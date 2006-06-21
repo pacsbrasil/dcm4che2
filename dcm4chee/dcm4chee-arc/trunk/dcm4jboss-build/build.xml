@@ -75,7 +75,7 @@
   </target>
   
   <target name="standalone-dist">
-    <property name="dist.standalone" value="dcm4jboss-standalone-${db.name}-${version}"/>
+    <property name="dist.standalone" value="dcm4chee-standalone-${db.name}-${version}"/>
     <property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
     <zip destfile="${target.dir}/${dist.standalone}.zip">
       <zipfileset dir="../dcm4che14/build" prefix="${dist.standalone.config}">
@@ -145,7 +145,7 @@
         <include name="conf/**"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-web/src" prefix="${dist.standalone}">
-        <include name="etc/dcm4jboss-web.cfg/**"/>
+        <include name="etc/dcm4chee-web.cfg/**"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-arr/target/common" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
@@ -164,7 +164,7 @@
         <include name="deploy/*"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-cdw/src/etc" prefix="${dist.standalone.config}">
-        <include name="conf/dcm4jboss-cdw/*"/>
+        <include name="conf/dcm4chee-cdw/*"/>
         <include name="conf/xmdesc/*"/>
         <include name="data/**"/>
       </zipfileset>
