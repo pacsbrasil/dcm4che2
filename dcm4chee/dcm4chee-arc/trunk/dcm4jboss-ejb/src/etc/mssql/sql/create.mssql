@@ -229,7 +229,7 @@ CREATE TABLE files (
 	filepath		VARCHAR(255) NOT NULL,
 	file_tsuid      VARCHAR(255) NOT NULL,
 	file_md5        VARCHAR(255),
-	file_size       INTEGER,
+	file_size       DECIMAL(20),
 	file_status     INTEGER,
 	md5_check_time	DATETIME,
 	created_time	DATETIME,
@@ -526,7 +526,7 @@ CREATE TABLE priv_file (
 	filepath		VARCHAR(255) NOT NULL,
 	file_tsuid      VARCHAR(255) NOT NULL,
 	file_md5        VARCHAR(255),
-	file_size       INTEGER,
+	file_size       DECIMAL(20),
 	file_status     INTEGER,
 FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
