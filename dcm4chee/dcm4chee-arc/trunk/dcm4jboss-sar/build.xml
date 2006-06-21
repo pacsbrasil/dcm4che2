@@ -1,4 +1,4 @@
-<project name="dcm4jboss-sar" default="jar">
+<project name="dcm4chee-sar" default="jar">
 	<!-- Allow user to adjust build properties without
 	modifying this build script.
 	--> 
@@ -19,7 +19,7 @@
 	<property name="target.deploy" value="${target.dir}/deploy"/>
 	<property name="target.lib" value="${target.dir}/lib"/>
 
-	<property name="dist.name" value="dcm4jboss-${version}"/>
+	<property name="dist.name" value="dcm4chee-${version}"/>
 	<property name="dist.dir" value="${target.dir}/${dist.name}"/>
 	<property name="dist.config" value="default"/>
 
