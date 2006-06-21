@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id$ -->
-<server>
-  <classpath codebase="lib" archives="dcm4jboss.jar"/>
-  <mbean code="org.dcm4chex.xds.mbean.XDSService" 
-         name="dcm4jboss.archive:service=XDSService"
-         xmbean-dd="xmdesc/dcm4jboss-xds-xmbean.xml">
-  </mbean>
-</server>

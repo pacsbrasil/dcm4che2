@@ -1,4 +1,4 @@
-<project name="dcm4jboss-xds" default="war">
+<project name="dcm4chee-xds" default="war">
 
 	<property file="build.properties"/>
 
@@ -9,17 +9,15 @@
 	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="mail.jar" value="${jboss.server.lib.dir}/mail.jar"/>
-	<property name="tomcat.dir" value="${jboss.home}/server/default/deploy/jbossweb-tomcat50.sar"/>
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
-	<property name="commons-beanutils.jar" value="${tomcat.dir}/commons-beanutils.jar"/>
-
-    <!-- Override with your dcm4che dist location -->
+	
+  <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
-	
-
-	<property name="lib.dir" value="lib" />
+	<!-- Override with your dcm4chee-sar working directory -->
+	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4chee-sar.lib" value="${dcm4chee-sar.home}/lib" />
 	
 	<property name="target.dir" value="target"/>
 	<property name="product" value="${ant.project.name}"/>
@@ -44,8 +42,8 @@
 		<pathelement location="${jboss.lib.dir}/jboss-system.jar"/>
 		<pathelement location="${jboss-jmx.jar}"/>
 		<pathelement location="${servlet-api.jar}"/>
-		<pathelement location="${lib.dir}/saaj-impl.jar"/>
-		<pathelement location="${lib.dir}/saaj-api.jar"/>
+		<pathelement location="${dcm4chee-sar.lib}/saaj-impl.jar"/>
+		<pathelement location="${dcm4chee-sar.lib}/saaj-api.jar"/>
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${mail.jar}"/>
 		<pathelement location="${dcm4che.jar}"/>
@@ -83,7 +81,7 @@
 		<mkdir dir="${target.dir}/lib/"/>
 	    <jar jarfile="${jar.file}">
 	     	<manifest>
-					<attribute name="Implementation-Title" value="dcm4jboss-xds"/>
+					<attribute name="Implementation-Title" value="dcm4chee-xds"/>
 					<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 					<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
 	     	</manifest>

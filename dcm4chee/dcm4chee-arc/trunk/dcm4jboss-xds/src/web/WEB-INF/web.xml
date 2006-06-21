@@ -7,15 +7,15 @@
 -->
 
 <web-app>
-	<display-name>dcm4jboss XDS Repository</display-name>
+	<display-name>dcm4chee XDS Repository</display-name>
 
 	<servlet>
 		<servlet-name>XDSRepository</servlet-name>
-		<display-name>DCM4JBOSS XDS Repository</display-name>
+		<display-name>DCM4CHEE XDS Repository</display-name>
 		<servlet-class>org.dcm4chex.xds.repository.web.XDSRepositoryServlet</servlet-class>
 		<init-param>
 			<param-name>xdsServiceName</param-name>
-			<param-value>dcm4jboss.archive:service=XDSService</param-value>
+			<param-value>dcm4chee.archive:service=XDSService</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>

@@ -59,7 +59,7 @@ import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
- * Use RID Service from dcm4jboss to store XDS files.
+ * Use RID Service from dcm4chee to store XDS files.
  * 
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$

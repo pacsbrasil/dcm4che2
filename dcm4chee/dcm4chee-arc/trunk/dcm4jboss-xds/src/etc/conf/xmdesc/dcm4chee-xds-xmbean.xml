@@ -30,12 +30,12 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
-      <description>Proxy host if http access use http proxy.
+      <description>Proxy host if http access use http proxy. NONE = no proxy.
       </description>
       <name>ProxyHost</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="proxy-wn"/>
+         <value value="NONE"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getProxyPort" setMethod="setProxyPort">
@@ -112,7 +112,7 @@
       <name>RetrieveURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://127.0.0.1:8080/dcm4jboss-wado/XDS?RT=DOCUMENT&amp;UID="/>
+         <value value="http://127.0.0.1:8080/wado?RT=DOCUMENT&amp;UID="/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getContentTypeURIpart" setMethod="setContentTypeURIpart">
@@ -189,7 +189,7 @@
       <name>RidServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4jboss.archive:service=RIDService"/>
+         <value value="dcm4chee.archive:service=RIDService"/>
       </descriptors>
    </attribute>
 
