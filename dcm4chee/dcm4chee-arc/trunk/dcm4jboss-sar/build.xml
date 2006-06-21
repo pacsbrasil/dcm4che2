@@ -19,10 +19,6 @@
 	<property name="target.deploy" value="${target.dir}/deploy"/>
 	<property name="target.lib" value="${target.dir}/lib"/>
 
-	<property name="dist.name" value="dcm4chee-${version}"/>
-	<property name="dist.dir" value="${target.dir}/${dist.name}"/>
-	<property name="dist.config" value="default"/>
-
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
@@ -77,7 +73,6 @@
         <mkdir dir="${target.bin}"/>
         <mkdir dir="${target.lib}"/>
         <mkdir dir="${target.deploy}"/>
-        <mkdir dir="${dist.dir}"/>
    </target>
 
    	<!-- =================================================================== -->
