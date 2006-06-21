@@ -1,6 +1,7 @@
 <project name="dcm4chee-web" default="war">
 
 	<property file="build.properties"/>
+	<property name="lib.dir" value="${basedir}/lib"/>
 
 	<!-- Override with your JBoss dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1" />
@@ -10,18 +11,8 @@
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
-
-	<!-- Override with your Maverick dist location -->
-	<property name="maverick.home" value="../maverick" />
-	<property name="maverick.lib.dir" value="${maverick.home}/lib"/>
-	<property name="maverick.dist.dir" value="${maverick.home}/dist"/>
-	<property name="maverick.jar" value="${maverick.dist.dir}/maverick.jar"/>
-	<property name="commons-beanutils.jar" value="${maverick.lib.dir}/commons-beanutils.jar"/>
-
-	<!-- Override with your Domify dist location -->
-	<property name="opt-domify.home" value="../opt-domify" />
-	<property name="opt-domify.dist.dir" value="${opt-domify.home}/dist"/>
-	<property name="opt-domify.lib.dir" value="${opt-domify.home}/lib"/>
+	<property name="maverick.jar" value="${lib.dir}/maverick.jar"/>
+	<property name="commons-beanutils.jar" value="${lib.dir}/commons-beanutils.jar"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -92,18 +83,11 @@
 				<include name="org/**/*.class" />
 			</classes>
 
-			<lib dir="${maverick.dist.dir}">
+			<lib dir="${lib.dir}">
 				<include name="maverick.jar" />
-			</lib>
-			<lib dir="${maverick.lib.dir}">
 				<include name="commons-beanutils.jar" />
-				<include name="commons-collections.jar" />
 				<include name="jdom.jar" />
-			</lib>
-			<lib dir="${opt-domify.lib.dir}">
 				<include name="domify.jar" />
-			</lib>
-			<lib dir="${opt-domify.dist.dir}">
 				<include name="opt-domify.jar" />
 			</lib>
 		</war>

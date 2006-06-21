@@ -9,9 +9,3 @@ dcm4chee-sar.home=../dcm4jboss-sar
 
 #Override with your JBoss dist location
 jboss.home=${user.home}/jboss-4.0.3SP1
-
-#Maverik
-maverick.home=../maverick
-
-#opt-domify
-opt-domify.home=../opt-domify
