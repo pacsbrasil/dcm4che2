@@ -22,7 +22,6 @@
     <property name="src.dir" value="${basedir}/src/java"/>
     <property name="src.resources" value="${basedir}/src/resources"/>
     <property name="src.etc" value="${basedir}/src/etc"/>
-    <property name="lib.dir" value="${basedir}/lib"/>
     <property name="build.dir" value="${basedir}/target"/>
     <property name="build.classes.dir" value="${build.dir}/classes"/>
     <property name="dist.dir" value="${build.dir}/${dist.name}"/>
@@ -161,7 +160,6 @@
    			</zipfileset>	
 			<zipfileset dir="${basedir}" prefix="${dist.standalone}">
 				<include name="bin/*"/>
-				<include name="lib/endorsed/*"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
 				<include name="bin/run.bat"/>
@@ -173,7 +171,6 @@
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
 				<include name="lib/**"/>
-				<exclude name="lib/endorsed/xalan.jar"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
 				<include name="bin/run.sh"/>
