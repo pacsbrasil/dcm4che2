@@ -196,12 +196,12 @@ public class AEService extends ServiceMBeanSupport
     public void updateAE(int pk, String title, String host, int port, String cipher, boolean checkHost)
         throws RemoteException, Exception
     {
-    	try {
-    		host = InetAddress.getByName(host).getCanonicalHostName();
-    	} catch ( UnknownHostException x ) {
-    		if ( checkHost ) {
-    			throw new IllegalArgumentException("Host "+host+" cant be resolved! Disable hostname check to add new AE anyway!");
-    		}
+    	if ( checkHost ) {
+	    	try {
+	    		host = InetAddress.getByName(host).getCanonicalHostName();
+	    	} catch ( UnknownHostException x ) {
+	    			throw new IllegalArgumentException("Host "+host+" cant be resolved! Disable hostname check to add new AE anyway!");
+	    	}
     	}
     	
         AEManager aeManager = lookupAEManager();

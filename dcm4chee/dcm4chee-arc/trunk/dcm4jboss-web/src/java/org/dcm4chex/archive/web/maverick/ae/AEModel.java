@@ -61,7 +61,7 @@ public class AEModel extends BasicFormModel {
 	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
 	private int port=-1, pk=-1;
 	
-	private boolean checkHost = true;
+	private boolean checkHost = false;
 	
 	/**
 	 * @param chiperSuites The chiperSuites to set.
