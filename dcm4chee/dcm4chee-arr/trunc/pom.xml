@@ -1,0 +1,11 @@
+<model>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dcm4che</groupId>
+  <artifactId>dcm4chee-arr</artifactId>
+  <version>1</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>dcm4chee-arr-ejb</module>
+    <module>dcm4chee-arr-ear</module>
+  </modules>
+</model>
