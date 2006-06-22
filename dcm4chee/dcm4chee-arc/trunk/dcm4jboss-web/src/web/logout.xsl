@@ -12,11 +12,11 @@
 	    <body>
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 		 <tr>
-		  <td><img src="white48.jpg" width="100%" height="5px"/></td>
+		  <td><img src="black48.jpg" width="100%" height="5px"/></td>
 		</tr>
 		<tr>
-		<td background="white48.jpg">
-		  <img src="white48.jpg" width="10px" height="24px"/><img src="logo.gif" alt="DCM4CHEE"/>
+		<td background="black48.jpg">
+		  <img src="black48.jpg" width="10px" height="24px"/><img src="logo.gif" alt="DCM4CHEE"/>
 		</td>
 		</tr>
 		<tr>
