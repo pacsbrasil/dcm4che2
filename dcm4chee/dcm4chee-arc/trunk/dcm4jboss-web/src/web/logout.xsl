@@ -12,11 +12,11 @@
 	    <body>
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 		 <tr>
-		  <td><img src="black48.jpg" width="100%" height="5px"/></td>
+		  <td><img src="white48.jpg" width="100%" height="5px"/></td>
 		</tr>
 		<tr>
-		<td background="black48.jpg">
-		  <img src="black48.jpg" width="10px" height="24px"/><img src="logo.gif" alt="DCM4CHEE"/>
+		<td background="white48.jpg">
+		  <img src="white48.jpg" width="10px" height="24px"/><img src="logo.gif" alt="DCM4CHEE"/>
 		</td>
 		</tr>
 		<tr>
@@ -25,7 +25,7 @@
 		</table>
 
 	    	<center>
-	    		<b><div class="text">You have logged out from DCM Folder:</div></b> 
+	    		<b><div class="text">You have logged out.</div></b> 
 	    		<p>
 	    		<a href="foldersubmit.m?filter=">Login</a>
 	    		</p>
