@@ -63,7 +63,7 @@
             <xsl:otherwise>
                 <!-- Include dcm4chee Logo -->
                 <fo:block text-align="center">
-                    <fo:external-graphic src="dcm4chee_logo.jpg"/>
+                    <fo:external-graphic src="logo.jpg"/>
                 </fo:block>
             </xsl:otherwise>
         </xsl:choose>
