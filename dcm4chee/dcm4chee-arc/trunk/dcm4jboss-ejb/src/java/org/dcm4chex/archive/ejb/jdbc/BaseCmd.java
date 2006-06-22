@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -103,11 +104,10 @@ public abstract class BaseCmd {
 	            if (transactionIsolationLevel > 0)
 	                con.setTransactionIsolation(transactionIsolationLevel);
 				if (sql != null) {
-		            stmt = con.prepareStatement(sql);
+		            stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				} else {
-					stmt = con.createStatement();
+					stmt = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				} 
-				
 				if(i > 0)
 					log.info("open connection successfully after retries: " + (i+1));
 				
