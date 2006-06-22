@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.admin.UserAdminDelegate;
@@ -63,19 +64,20 @@ import org.dcm4chex.archive.web.maverick.admin.UserAdminDelegate;
  * @since 13.04.2006
  */
 public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
+	private static final String RAW_PROPERTIES = "RAW_PROPERTIES";
 	private Map mapPermissions = new HashMap();
 	
 	private static Logger log = Logger.getLogger(FolderPermissionsPropertyFactory.class.getName());
 	private UserAdminDelegate delegate = new UserAdminDelegate();
 	
-	public void init(String initString) {
+	public void init() {
 		try {
-			if ( initString == null) {
+			if ( getInitParameter() == null) {
 				log.warn("No initString set. Use default");
-				initString = "conf/web/folder.permissions";
+				setInitParameter( "conf/web/folder.permissions" );
 			}
 			Properties props = new Properties();
-			File f = FileUtils.resolve(new File(initString));
+			File f = FileUtils.resolve(new File(getInitParameter()));
 			log.info("read permission properties from file: "+f);
 			props.load(new FileInputStream(f));
 			initMap(props);
@@ -90,6 +92,7 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 	 */
 	private void initMap(Properties props) throws IOException {
 		mapPermissions.clear();
+		mapPermissions.put(RAW_PROPERTIES,props);
 		String[] apps = Dcm4cheeFormController.FOLDER_APPLICATIONS;
 		String perm, value, role, methods;
 		int pos;
@@ -166,6 +169,10 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 		if ( permissions.getNumberOfPrivilegedApps() == 0 ) {
 			log.warn("User "+userID+" has no Permissions for any Folder Application! Set to use folder only!");
 			permissions.addPermissions("folder",null);
+		}
+		String aeList = ((Properties) mapPermissions.get(RAW_PROPERTIES)).getProperty("aefilter."+userID);
+		if ( aeList != null ) {
+			permissions.addPermissions("aefilter", StringUtils.split(aeList, ',') );
 		}
 		return permissions;
 	}

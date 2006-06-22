@@ -134,6 +134,11 @@ public class StudyFilterModel extends AbstractModel {
     	ds.setPrivateCreatorID(PrivateTags.CreatorID);
     	ds.putAE(PrivateTags.CallingAET, aet);
     }
+    public final void setCallingAETs(String[] aets ) {
+    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
+    	ds.putAE(PrivateTags.CallingAET, aets);
+    }
+    
     /**
      * Returns -1 because pk isnt use here.
      */

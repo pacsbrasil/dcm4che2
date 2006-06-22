@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -189,15 +190,31 @@ public class FolderSubmitCtrl extends FolderCtrl {
         try {
             FolderForm folderForm = (FolderForm) getForm();
             StudyFilterModel filter;
+        	String[] allowedAets = getAEFilterPermissions();
             try {
             	filter = folderForm.getStudyFilter();
+            	if ( ! folderForm.isFilterAET() ) { //only if not filter a single AET!
+            		filter.setCallingAETs( allowedAets );
+            	}
             } catch ( NumberFormatException x ) {
             	folderForm.setErrorCode( ERROR_PARSE_DATE );
             	return FOLDER;
             }
             if (newQuery) {
                 folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies()));
-                folderForm.setAets(getAEDelegate().getAEs());
+                List aes;
+                if ( allowedAets == null ) {
+                	aes = getAEDelegate().getAEs();
+                } else {
+                	Object ae;
+                	aes = new ArrayList();
+                	for ( int i = 0 ; i < allowedAets.length ; i++ ) {
+                		ae = getAEDelegate().getAE(allowedAets[i]);
+                		if ( ae != null ) 
+                			aes.add( getAEDelegate().getAE(allowedAets[i]));
+                	}
+                }
+                folderForm.setAets(aes);
             }
             List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
 					folderForm.getOffset(), folderForm.getLimit());

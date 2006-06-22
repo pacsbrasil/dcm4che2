@@ -44,6 +44,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.admin.UserAdminDelegate;
@@ -166,9 +168,16 @@ public class Dcm4cheeFormController extends Throwaway2
 	}
 	
 	protected FolderPermissions getPermissions() {
-		FolderPermissions perm = (FolderPermissions) getCtx().getRequest().getSession().getAttribute("folderPermissions");
+		HttpServletRequest req = getCtx().getRequest();
+		FolderPermissions perm = null;
+		FolderPermissionsFactory f = FolderPermissionsFactory.getInstance(getCtx().getServletConfig());
+		if ( req.getParameter("reset")!=null ) {
+			f.init();
+		} else {
+			perm = (FolderPermissions) req.getSession().getAttribute("folderPermissions");
+		}
 		if ( perm == null ) {
-			perm = FolderPermissionsFactory.getInstance(getCtx().getServletConfig()).getFolderPermissions(getCtx().getRequest().getUserPrincipal().getName());
+			perm = f.getFolderPermissions(getCtx().getRequest().getUserPrincipal().getName());
 			getCtx().getRequest().getSession().setAttribute("folderPermissions",perm);
 		}
 		return perm;

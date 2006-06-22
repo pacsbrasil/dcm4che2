@@ -54,6 +54,7 @@ public abstract class FolderPermissionsFactory {
 	
 	private static FolderPermissionsFactory instance = null;
 	
+	private String initParameter;
 	public static FolderPermissionsFactory getInstance(ServletConfig cfg) {
 		if ( instance != null ) return instance;
 		String factoryClassName = cfg.getInitParameter("folderPermissionsFactory");
@@ -61,7 +62,8 @@ public abstract class FolderPermissionsFactory {
 		try {
 			ClassLoader l = Thread.currentThread().getContextClassLoader();
 			instance = (FolderPermissionsFactory) l.loadClass( factoryClassName ).newInstance();
-			instance.init( cfg.getInitParameter("folderPermissionsFactory_cfg"));
+			instance.setInitParameter( cfg.getInitParameter("folderPermissionsFactory_cfg") );
+			instance.init();
 			return instance;
 		} catch (InstantiationException x) {
 			log.error("Could not instantiate: "+factoryClassName, x);
@@ -75,10 +77,22 @@ public abstract class FolderPermissionsFactory {
 		}
 	}
 	
-	public abstract void init(String initString);
+	public abstract void init();
 	
 	public abstract FolderPermissions getFolderPermissions(String userID);
 	
+	/**
+	 * @return Returns the initParameter.
+	 */
+	public String getInitParameter() {
+		return initParameter;
+	}
+	/**
+	 * @param initParameter The initParameter to set.
+	 */
+	public void setInitParameter(String initParameter) {
+		this.initParameter = initParameter;
+	}
 	/**
 	 * Dummy implementation of FolderPermissionsFactory.
 	 * <p>
@@ -89,7 +103,7 @@ public abstract class FolderPermissionsFactory {
 	 */
 	static class DummyPermissionFactory extends FolderPermissionsFactory {
 
-		public void init(String initString) {}
+		public void init() {}
 
 		public FolderPermissions getFolderPermissions(String userID) {
 			return new FolderPermissions();

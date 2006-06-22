@@ -37,3 +37,14 @@ gppps_console=DatacareUser(*);WebAdmin(*)
 user_admin=WebAdmin(*)
 audit_repository=DatacareUser(*);WebAdmin(*)
 
+# USER AE Filter mapping
+# Format:aefilter.<userId>=<AET1>[,<AET2>[,...[,<AETn>]]]
+# 
+# Attention: This filter doesnt mean to be 'multi-client capable'. 
+# (It is not guaranteed to have access to 'allowed' images.
+# 	You will see always the whole study even there is only  one series from an allowed AE!
+#
+
+#aefilter.user1=PACS_NODE1,PACS_NODE2
+#aefilter.user2=PACS_NODE2
+
