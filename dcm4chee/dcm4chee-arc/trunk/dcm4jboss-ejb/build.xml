@@ -87,7 +87,7 @@
 		<path refid="base.path"/>
 	</path>
 	
-	<path id="build.path">
+	<path id="cactus.build.path">
 		<fileset dir="${cactus.lib}">
     	  	<include name="cactus-*.jar"/>
 		</fileset>
@@ -282,10 +282,22 @@
 			debug="${javac.debug}"
          	deprecation="off"
          	optimize="on"
-         	classpathref="build.path"
+         	classpathref="base.path"
       	>
         	<src path="${target.java}"/>
          	<src path="${src.java}"/>
+      	</javac>
+   	</target>
+
+   	<target name="compile-test" depends="compile">
+		<javac
+        	destdir="${target.classes}"
+			debug="${javac.debug}"
+         	deprecation="off"
+         	optimize="on"
+         	classpathref="cactus.build.path"
+      	>
+        	<src path="${target.java}"/>
          	<src path="${test.java}"/>
       	</javac>
    	</target>
@@ -444,7 +456,7 @@
    <!-- =================================================================== -->
    <!-- Creates the test-war                                                -->
    <!-- =================================================================== -->
-    <target name="test-war" depends="compile">
+    <target name="test-war" depends="compile-test">
     	<copy file="${test.web-inf}/web.xml" todir="${target.test.web-inf}">
     		<filterset>
                 <filter token="EJB_JAR" value="dcm4chee-ejb-psql.jar"/>
