@@ -90,6 +90,7 @@
 	<path id="cactus.build.path">
 		<fileset dir="${cactus.lib}">
     	  	<include name="cactus-*.jar"/>
+        	<include name="junit-*.jar"/>
 		</fileset>
 		<path refid="base.path"/>
 	</path>
