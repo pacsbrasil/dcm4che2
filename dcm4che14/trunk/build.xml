@@ -45,6 +45,7 @@
    <property name="dist.dir" value="${build.dir}/${dist}"/>
 
    <path id="base.path">
+      <pathelement location="${lib.dir}/junit.jar" />
       <pathelement location="${lib.dir}/getopt.jar" />
       <pathelement location="${lib.dir}/log4j.jar" />
       <pathelement location="${lib.dir}/majix.jar" />
