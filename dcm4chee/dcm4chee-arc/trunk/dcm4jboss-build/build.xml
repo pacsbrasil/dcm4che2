@@ -109,6 +109,7 @@
         <include name="conf/*"/>
         <include name="deploy/**"/>
         <include name="data/**"/>
+        <include name="lib/*"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.standalone}">
         <include name="sql/*"/>
