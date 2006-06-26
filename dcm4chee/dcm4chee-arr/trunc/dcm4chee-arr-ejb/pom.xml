@@ -52,5 +52,10 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/${db}/resources</directory>
+      </resource>
+    </resources>
   </build>
 </project>

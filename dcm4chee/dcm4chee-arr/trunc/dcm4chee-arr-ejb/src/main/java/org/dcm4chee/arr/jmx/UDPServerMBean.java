@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * @since May 24, 2006
  *
  */
-@Service (objectName="dcm4jboss.arr:service=UDPServer")
+@Service (objectName="dcm4chee.arr:service=UDPServer")
 @Management(UDPServer.class)
 public class UDPServerMBean implements UDPServer {
 
