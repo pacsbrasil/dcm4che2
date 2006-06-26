@@ -15,12 +15,11 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Agfa Healthcare.
+ * Portions created by the Initial Developer are Copyright (C) 2006
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,47 +37,11 @@
 
 package org.dcm4cheri.image;
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-
-/**
- * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
- * @since 22.12.2004
- */
-public class ImageReaderFactory {
-        
-    private static final ImageReaderFactory instance = new ImageReaderFactory();
-    public static final ImageReaderFactory getInstance() {
-        return instance;
+class ConfigurationException extends RuntimeException {
+    ConfigurationException(String msg) {
+        super(msg);
     }
-    
-    private final Properties map = new Properties();
-        
-    private ImageReaderFactory() {
-        ConfigurationUtils.loadPropertiesForClass(map, ImageReaderFactory.class);
-    }
-    
-    public ImageReader getReaderForTransferSyntax(String tsuid) {
-        String s = map.getProperty(tsuid);
-        if (s == null)
-            throw new UnsupportedOperationException(
-                    "No Image Reader available for Transfer Syntax:" + tsuid);
-        int delim = s.indexOf(',');
-        if (delim == -1)
-            throw new ConfigurationException("Missing ',' in " + tsuid + "=" + s); 
-        final String formatName = s.substring(0, delim);
-        final String className = s.substring(delim+1);
-        for (Iterator it = ImageIO.getImageReadersByFormatName(formatName);
-        		it.hasNext();) {
-		    ImageReader r = (ImageReader) it.next();
-		    if (className.equals(r.getClass().getName()))
-		            return r;
-        }
-        throw new ConfigurationException("No Image Reader of class " + className
-                + " available for format:" + formatName); 
+    ConfigurationException(String msg, Exception x) {
+        super(msg,x);
     }
 }

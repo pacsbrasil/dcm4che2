@@ -38,7 +38,6 @@
 
 package org.dcm4cheri.image;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -60,13 +59,7 @@ public class ImageWriterFactory {
     private final Properties map = new Properties();
         
     private ImageWriterFactory() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        try {
-            map.load(loader.getResourceAsStream(
-                    "org/dcm4cheri/image/ImageWriterFactory.properties"));
-        } catch (IOException e) {
-            throw new ConfigurationException("failed not load resource:", e); 
-        }
+        ConfigurationUtils.loadPropertiesForClass(map, ImageWriterFactory.class);
     }
     
     public ImageWriter getWriterForTransferSyntax(String tsuid) {
@@ -87,14 +80,5 @@ public class ImageWriterFactory {
         }
         throw new ConfigurationException("No Image Writer of class " + className
                 + " available for format:" + formatName); 
-    }
-    
-    static class ConfigurationException extends RuntimeException {
-        ConfigurationException(String msg) {
-            super(msg);
-        }
-        ConfigurationException(String msg, Exception x) {
-            super(msg,x);
-        }
     }
 }

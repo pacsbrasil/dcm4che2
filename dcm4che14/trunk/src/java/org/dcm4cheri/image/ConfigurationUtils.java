@@ -15,12 +15,11 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Agfa Healthcare.
+ * Portions created by the Initial Developer are Copyright (C) 2006
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,47 +37,48 @@
 
 package org.dcm4cheri.image;
 
-import java.util.Iterator;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-
 /**
- * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
- * @since 22.12.2004
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Id
+ * @since Jun 26, 2006
  */
-public class ImageReaderFactory {
-        
-    private static final ImageReaderFactory instance = new ImageReaderFactory();
-    public static final ImageReaderFactory getInstance() {
-        return instance;
-    }
-    
-    private final Properties map = new Properties();
-        
-    private ImageReaderFactory() {
-        ConfigurationUtils.loadPropertiesForClass(map, ImageReaderFactory.class);
-    }
-    
-    public ImageReader getReaderForTransferSyntax(String tsuid) {
-        String s = map.getProperty(tsuid);
-        if (s == null)
-            throw new UnsupportedOperationException(
-                    "No Image Reader available for Transfer Syntax:" + tsuid);
-        int delim = s.indexOf(',');
-        if (delim == -1)
-            throw new ConfigurationException("Missing ',' in " + tsuid + "=" + s); 
-        final String formatName = s.substring(0, delim);
-        final String className = s.substring(delim+1);
-        for (Iterator it = ImageIO.getImageReadersByFormatName(formatName);
-        		it.hasNext();) {
-		    ImageReader r = (ImageReader) it.next();
-		    if (className.equals(r.getClass().getName()))
-		            return r;
+class ConfigurationUtils {
+
+    public static void loadPropertiesForClass(Properties map, Class c) {
+        String key = c.getName();
+        String val = System.getProperty(key);
+        URL url;
+        if (val == null) {
+            val = key.replace('.','/') + ".properties";
+            url = c.getResource(val);
+        } else {
+            try {
+                url = new URL(val);
+            } catch (MalformedURLException e) {
+                url = c.getResource(val);
+            }
         }
-        throw new ConfigurationException("No Image Reader of class " + className
-                + " available for format:" + formatName); 
+        if (url == null) {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            if (cl == null || (url = cl.getResource(val)) == null) {
+                throw new ConfigurationException("missing resource: " + val);
+            }
+        }
+        try {
+            InputStream is = url.openStream();
+            try {
+                map.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (IOException e) {
+            throw new ConfigurationException("failed not load resource:", e); 
+        }
     }
 }
