@@ -74,6 +74,7 @@ public class FileDataSource implements DataSource {
 	/** if true use Dataset.writeFile instead of writeDataset */
 	private boolean writeFile = false;
 	private boolean withoutPixeldata = false;
+	private boolean withoutPrivateTags = false;
 
 	// buffer == null => send no Pixeldata
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
@@ -106,6 +107,18 @@ public class FileDataSource implements DataSource {
 		this.withoutPixeldata = withoutPixelData;
 	}
 	
+	/**
+	 * @return Returns the withoutPrivateTags.
+	 */
+	public boolean isWithoutPrivateTags() {
+		return withoutPrivateTags;
+	}
+	/**
+	 * @param withoutPrivateTags The withoutPrivateTags to set.
+	 */
+	public void setWithoutPrivateTags(boolean withoutPrivateTags) {
+		this.withoutPrivateTags = withoutPrivateTags;
+	}
 	/**
 	 * @return Returns the mergeAttrs.
 	 */
@@ -144,10 +157,7 @@ public class FileDataSource implements DataSource {
             if (withoutPixeldata || parser.getReadTag() != Tags.PixelData) {
 				log.debug("Dataset:\n");
 				log.debug(ds);
-				if ( writeFile )
-					ds.writeFile(out, enc);
-				else
-					ds.writeDataset(out, enc);
+				write(ds, out, enc);
                 return;                
             }
             int len = parser.getReadLength();
@@ -156,10 +166,7 @@ public class FileDataSource implements DataSource {
                 len = cmd.getPixelDataLength();
 				log.debug("Dataset:\n");
 				log.debug(ds);
-				if ( writeFile )
-					ds.writeFile(out, enc);
-				else
-					ds.writeDataset(out, enc);
+				write(ds, out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
                 try {
 	                cmd.decompress(enc.byteOrder, out);
@@ -173,10 +180,7 @@ public class FileDataSource implements DataSource {
             } else {
 				log.debug("Dataset:\n");
 				log.debug(ds);
-				if ( writeFile )
-					ds.writeFile(out, enc);
-				else
-					ds.writeDataset(out, enc);
+				write(ds, out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
                 if (len == -1) {
 		            parser.parseHeader();
@@ -201,6 +205,22 @@ public class FileDataSource implements DataSource {
             } catch (IOException ignore) {
             }
         }
+    }
+    
+    private void write(Dataset ds, OutputStream out, DcmEncodeParam enc) throws IOException {
+		if ( writeFile ) {
+			if ( withoutPrivateTags ) 
+				ds.excludePrivate().writeFile(out,enc); 
+			else 
+				ds.writeFile(out, enc);
+		} else {
+			if ( withoutPrivateTags ) 
+				ds.excludePrivate().writeDataset(out,enc); 
+			else 
+				ds.writeDataset(out, enc);
+		}
+        return;                
+    	
     }
 
     private void copy(FileImageInputStream fiis, OutputStream out, int totLen,

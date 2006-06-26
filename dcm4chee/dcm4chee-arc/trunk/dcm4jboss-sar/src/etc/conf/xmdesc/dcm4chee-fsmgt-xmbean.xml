@@ -333,6 +333,19 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isWithoutPrivate"
+      setMethod="setWithoutPrivate">
+      <description><![CDATA[Enabled this attribute to exclude Private Tags. <br/>
+      				(the result getDatasourceOfInstance will exclude private tags in the output).]]>
+      </description>
+      <name>WithoutPrivateTags</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
       <description>Size of byte buffer used by WADO/RID service for copying data

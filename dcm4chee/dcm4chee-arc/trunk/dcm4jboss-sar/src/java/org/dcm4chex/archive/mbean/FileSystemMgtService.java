@@ -169,6 +169,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     private long adjustExpectedDataVolumnePerDay = 0L;
     
 	protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
+	
+	private boolean withoutPrivate;
     
 	        
     private final NotificationListener purgeFilesListener = 
@@ -488,6 +490,18 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 	}
     
     
+	/**
+	 * @return Returns the withoutPrivate.
+	 */
+	public boolean isWithoutPrivate() {
+		return withoutPrivate;
+	}
+	/**
+	 * @param withoutPrivate The withoutPrivate to set.
+	 */
+	public void setWithoutPrivate(boolean withoutPrivate) {
+		this.withoutPrivate = withoutPrivate;
+	}
     protected void startService() throws Exception {
          timer.init();
          freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
@@ -772,6 +786,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
                                         DatasetUtils.fromByteArray(info.instAttrs))));
                 FileDataSource ds = new FileDataSource(f, mergeAttrs, new byte[bufferSize]);
             	ds.setWriteFile(true);//write FileMetaInfo!
+           		ds.setWithoutPrivateTags(withoutPrivate);
             	return ds;
             }
         }
