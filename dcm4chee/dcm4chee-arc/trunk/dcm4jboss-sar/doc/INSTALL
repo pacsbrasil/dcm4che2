@@ -1,0 +1,79 @@
+INSTALL INSTRUCTIONS FOR DCM4CHEE ARCHIVE:
+=========================================
+
+Minimum System Requirements
+JDK 1.4.2 or higher (JDK 5 is recommended)
+512 MB RAM
+100 MB hard disk space (additional to archive storage disk space)  
+400 MHz CPU
+
+Supported Databases
+PostgreSQL 8.1.x
+MySQL 4.1+
+Oracle 9i/10g
+SQL Server
+DB2 8.1+
+
+For image compression/decompression, dcm4chee 2.8.x utilize Sun's Java Advanced
+Imaging Image I/O Tools 1.0_01. The binary distribution packages of dcm4chee
+2.8.x already includes necessary JARs and native libraries for Windows and
+Linux i586. For Solaris, you have to download the SW package from Sun
+[http://java.sun.com/products/java-media/jai/downloads/download-iio-1_0_01.html]
+yourself and replace the Linux version of libclib_jiio.so in DCM4CHE_HOME/bin/
+from the JAI Image IO package for Solaris.
+
+Installation Procedure:
+
+1. Extract the binary distribution package of dcm4chee for the database
+of your choice. Avoid using a directory that has a name that contains spaces
+as installation directory.
+
+2. Install the Database SW - if not already done. You also have to copy an
+apropriate JDBC Driver for the Database to DCM4CHEE_HOME/server/default/lib/
+- except for MySQL and PostgreSQL, which binary distribution packages of
+dcm4chee already contains the JDBC driver. Also ensure, that DB access via
+TCP/IP socket is enabled. E.g. PostgresSQL:
+
+$PGDATA/pg_hba.conf:
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          trust
+
+3. Initate the archive database instance: pacsdb using create DDL script
+DCM4CHEE_HOME/sql/create.xxx.
+
+E.g.: PostgreSQL
+> export PGUSER=postgres
+> createdb pacsdb
+> psql pacsdb -f DCM4CHEE_HOME/sql/create.psql
+
+E.g.: MySQL
+> mysql -uroot
+mysql> create database pacsdb;
+mysql> grant all on pacsdb.* to 'pacs'@'localhost' identified by 'pacs';
+mysql> \q
+> mysql -upacs -ppacs < DCM4CHEE_HOME/sql/create.mysql
+
+4. Set environment variable JAVA_HOME to JDK location
+
+5. Adjust maximum allocation of heap memory: 
+[Windows]: DCM4CHEE_HOME/bin/run.bat:
+rem Sun JVM memory allocation pool parameters. Modify as appropriate.
+set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
+[Linux/Unix]: DCM4CHEE_HOME/bin/run.conf
+# Specify options to pass to the Java VM.
+JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..
+
+according available RAM and memory requirements of other processes on this node. 
+E.g.: if only 512 MB RAM are available, you should decrease the default
+value -Xmx512m on Windows to (e.g.) -Xmx300.
+
+6. At default configuration, all DICOM services are provided with "DCM4CHEE"
+as Application Entity Title. Although it is possible to change the default
+configuration later on the running application using the web interface, it is
+probable more efficient and reliable, to simple replace "DCM4CHEE" by
+"YOUR_AET" in DCM4CHEE_HOME/server/default/conf/xmdesc/*.xml using any utility
+provided by your system (e.g. Linux:
+
+find DCM4CHEE_HOME/server/default/conf/xmdesc -exec \
+           sed -i s/DCM4CHEE/YOUR_AET/g '{}' ';'
+).
