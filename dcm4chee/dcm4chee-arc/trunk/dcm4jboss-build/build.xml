@@ -43,35 +43,50 @@
     <ant inheritAll="false" dir="../dcm4jboss-cdw" target="sar"/>
   </target>
 	
+  <target name="fixcrlf">
+    <mkdir dir="${target.dir}/bin"/>
+  	<fixcrlf srcdir="../dcm4jboss-sar/src/etc/bin" includes="*.sh,*.conf"
+  		destdir="${target.dir}/bin" eol="lf"/>
+  	<fixcrlf srcdir="../dcm4jboss-sar/src/etc/bin" includes="*.bat"
+  		destdir="${target.dir}/bin" eol="crlf"/>
+    <mkdir dir="${target.dir}/doc/licenses"/>
+  	<fixcrlf srcdir="../dcm4che14/doc/licenses"
+  		destdir="${target.dir}/doc/licenses" eol="crlf"/>
+  	<fixcrlf srcdir="../dcm4jboss-sar/doc" includes="INSTALL"
+  		destdir="${target.dir}/doc" eol="crlf" />
+  </target>
+  <target name="chmod" depends="fixcrlf">
+  	<chmod dir="${target.dir}/bin" perm="a+x" includes="*.sh"/>
+  </target>
+  
   <target name="dist" depends="hsql-dist,psql-dist,mysql-dist,mssql-dist,oracle-dist,db2-dist"/>
   
-  <target name="hsql-dist" depends="jar" if="hsql.available">
-    <mkdir dir="${target.dir}"/>
+  <target name="hsql-dist" if="hsql.available" depends="jar,chmod">
     <antcall target="standalone-dist">
       <param name="db.name" value="hsql"/>
     </antcall>
   </target>
-  <target name="psql-dist" depends="jar" if="psql.available">
+  <target name="psql-dist" if="psql.available" depends="jar,chmod">
     <antcall target="standalone-dist">
       <param name="db.name" value="psql"/>
     </antcall>
   </target>
-  <target name="mysql-dist" depends="jar" if="mysql.available">
+  <target name="mysql-dist" if="mysql.available" depends="jar,chmod">
     <antcall target="standalone-dist">
       <param name="db.name" value="mysql"/>
     </antcall>
   </target>
-  <target name="oracle-dist" depends="jar" if="oracle.available">
+  <target name="oracle-dist" if="oracle.available" depends="jar,chmod">
     <antcall target="standalone-dist">
       <param name="db.name" value="oracle"/>
     </antcall>
   </target>
-  <target name="db2-dist" depends="jar" if="db2.available">
+  <target name="db2-dist" if="db2.available" depends="jar,chmod">
     <antcall target="standalone-dist">
       <param name="db.name" value="db2"/>
     </antcall>
   </target>
-  <target name="mssql-dist" depends="jar" if="mssql.available">
+  <target name="mssql-dist" if="mssql.available" depends="jar,chmod">
     <antcall target="standalone-dist">
       <param name="db.name" value="mssql"/>
     </antcall>
@@ -124,8 +139,9 @@
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.standalone}">
+      <zipfileset dir="${target.dir}" prefix="${dist.standalone}">
         <include name="bin/*"/>
+        <include name="doc/**"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-hl7/target" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
