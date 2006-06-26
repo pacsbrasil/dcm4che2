@@ -52,6 +52,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
@@ -209,10 +210,13 @@ public class FileDataSource implements DataSource {
     
     private void write(Dataset ds, OutputStream out, DcmEncodeParam enc) throws IOException {
 		if ( writeFile ) {
-			if ( withoutPrivateTags ) 
-				ds.excludePrivate().writeFile(out,enc); 
-			else 
+			if ( withoutPrivateTags ) {
+				Dataset dsOut = ds.excludePrivate();
+				dsOut.setFileMetaInfo(ds.getFileMetaInfo());
+				dsOut.writeFile(out,enc); 
+			} else { 
 				ds.writeFile(out, enc);
+			}
 		} else {
 			if ( withoutPrivateTags ) 
 				ds.excludePrivate().writeDataset(out,enc); 
