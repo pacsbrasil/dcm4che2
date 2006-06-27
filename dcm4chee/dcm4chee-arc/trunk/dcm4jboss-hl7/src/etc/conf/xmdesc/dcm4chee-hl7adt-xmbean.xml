@@ -38,7 +38,7 @@
       <name>PidStylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/pid2dcm.xsl" />
+         <value value="resource:dcm4chee-hl7/pid2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -49,7 +49,7 @@
       <name>MrgStylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/mrg2dcm.xsl" />
+         <value value="resource:dcm4chee-hl7/mrg2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

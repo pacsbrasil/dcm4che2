@@ -127,7 +127,7 @@
       <name>StylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/mpps2orm.xsl" />
+         <value value="resource:dcm4chee-hl7/mpps2orm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">

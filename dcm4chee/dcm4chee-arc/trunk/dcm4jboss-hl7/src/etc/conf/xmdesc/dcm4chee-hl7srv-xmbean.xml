@@ -153,7 +153,7 @@
       <name>AckStylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/msh2ack.xsl" />
+         <value value="resource:dcm4chee-hl7/msh2ack.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -164,7 +164,7 @@
       <name>LogStylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/logmsg.xsl" />
+         <value value="resource:dcm4chee-hl7/logmsg.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

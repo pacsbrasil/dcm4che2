@@ -75,7 +75,7 @@
       <name>StylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:xsl/hl7/orm2dcm.xsl" />
+         <value value="resource:dcm4chee-hl7/orm2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -67,8 +67,8 @@ import org.xml.sax.ContentHandler;
 public class ORUService extends AbstractHL7Service
 {
 
-    private String oru2srXSL = "resource:xsl/hl7/oru2sr.xsl";
-    private String oru2pdfXSL = "resource:xsl/hl7/oru2pdf.xsl";
+    private String oru2srXSL = "resource:dcm4chee-hl7/oru2sr.xsl";
+    private String oru2pdfXSL = "resource:dcm4chee-hl7/oru2pdf.xsl";
     private ObjectName exportManagerName;
     private int storePriority = 0;
 

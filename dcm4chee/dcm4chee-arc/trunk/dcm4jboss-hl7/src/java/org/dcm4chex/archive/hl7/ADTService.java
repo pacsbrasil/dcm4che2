@@ -60,9 +60,9 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
-	private String pidStylesheetURL = "resource:xsl/hl7/pid2dcm.xsl";
+	private String pidStylesheetURL = "resource:dcm4chee-hl7/pid2dcm.xsl";
 
-    private String mrgStylesheetURL = "resource:xsl/hl7/mrg2dcm.xsl";
+    private String mrgStylesheetURL = "resource:dcm4chee-hl7/mrg2dcm.xsl";
     
 	private boolean ignoreDeleteErrors;
 

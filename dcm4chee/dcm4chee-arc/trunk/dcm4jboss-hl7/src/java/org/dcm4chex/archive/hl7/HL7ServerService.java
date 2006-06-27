@@ -106,9 +106,9 @@ public class HL7ServerService extends ServiceMBeanSupport
         }
     };
 	
-    private String ackStylesheetURL = "resource:xsl/hl7/msh2ack.xsl";
+    private String ackStylesheetURL = "resource:dcm4chee-hl7/msh2ack.xsl";
     
-    private String logStylesheetURL = "resource:xsl/hl7/logmsg.xsl";
+    private String logStylesheetURL = "resource:dcm4chee-hl7/logmsg.xsl";
 
     private File logDir;
 

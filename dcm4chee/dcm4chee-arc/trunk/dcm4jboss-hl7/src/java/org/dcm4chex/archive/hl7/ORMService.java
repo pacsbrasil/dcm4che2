@@ -84,7 +84,7 @@ public class ORMService extends AbstractHL7Service {
 
 	private ObjectName deviceServiceName;
 
-	private String stylesheetURL = "resource:xsl/hl7/orm2dcm.xsl";
+	private String stylesheetURL = "resource:dcm4chee-hl7/orm2dcm.xsl";
 
 	private String defaultStationAET = "UNKOWN";
 
