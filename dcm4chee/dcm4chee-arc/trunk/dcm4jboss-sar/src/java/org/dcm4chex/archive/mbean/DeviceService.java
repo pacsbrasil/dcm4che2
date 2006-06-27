@@ -74,7 +74,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class DeviceService extends ServiceMBeanSupport {
 
-	private static final String STANDARD_XSL_URL = "resource:xsl/device/import.xsl";
+	private static final String STANDARD_XSL_URL = "resource:dcm4chee-device-import.xsl";
 	
     private CodeToDeviceMapping mapper;
 	private Map templates = new HashMap();
