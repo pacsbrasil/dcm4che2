@@ -102,6 +102,16 @@ class SQElement extends DcmElementImpl
         return list.size();
     }
 
+    public final boolean isEmpty()
+    {
+        return list.isEmpty();
+    }    
+
+    public final int getLength()
+    {
+        return list.isEmpty() ? 0 : -1;
+    }    
+    
     /**
      *  Description of the Method
      *
