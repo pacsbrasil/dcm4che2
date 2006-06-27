@@ -198,7 +198,7 @@
 		</init-param>
 		<init-param>
 			<param-name>folderPermissionsFactory_cfg</param-name>
-			<param-value>conf/web/folder.permissions</param-value>
+			<param-value>conf/dcm4chee-web/folder.permissions</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>

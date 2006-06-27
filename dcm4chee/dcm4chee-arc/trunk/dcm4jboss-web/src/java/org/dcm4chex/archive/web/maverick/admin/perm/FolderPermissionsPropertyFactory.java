@@ -74,7 +74,7 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 		try {
 			if ( getInitParameter() == null) {
 				log.warn("No initString set. Use default");
-				setInitParameter( "conf/web/folder.permissions" );
+				setInitParameter( "conf/dcm4chee-web/folder.permissions" );
 			}
 			Properties props = new Properties();
 			File f = FileUtils.resolve(new File(getInitParameter()));
