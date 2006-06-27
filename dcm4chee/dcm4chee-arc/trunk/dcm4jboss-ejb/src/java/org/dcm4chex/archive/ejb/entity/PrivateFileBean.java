@@ -84,7 +84,7 @@ public abstract class PrivateFileBean implements EntityBean {
         return null;
     }
 
-    public void ejbPostCreate(String path, String tsuid, int size, byte[] md5,
+    public void ejbPostCreate(String path, String tsuid, long size, byte[] md5,
     		int status, PrivateInstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setInstance(instance);
