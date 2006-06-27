@@ -1,10 +1,8 @@
 package org.dcm4chex.archive.ejb.util;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import EDU.oswego.cs.dl.util.concurrent.WaitFreeQueue;
 
 import javax.ejb.FinderException;
 
@@ -23,9 +21,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * unique identifier, such as Instance UID, therefore, we can map the other unique identifier to primary key. 
  * As a result, we'll turn all subsequent findByXXXXX calls to findByPrimaryKey thus improve the performance.
  * <p>
- * Primary Key never changes, so we can cache it. Internally, we have a scavenger thread that checks the cache
- * to see of the cache size reaches the maximum or not, if so, remove oldest ones. This is only for StudyPK 
- * and SeriesPK caching.
+ * We use a LinkedHashMap to get a ordered and 'bounded' map.
  * <p>
  * @author fang.yang@agfa.com
  * @version $Id$
@@ -38,70 +34,20 @@ public class EntityPkCache {
 
 	private static final EntityPkCache instance = new EntityPkCache();
 	
+	private int maxCacheSize = 512; 	// lucky number
+
 	/**
 	 * Key: directory path of file system, unique identifier
 	 * Value: Primary Key, Long
 	 */
-	private Map pksFS = new HashMap();
+	private Map pksCache = Collections.synchronizedMap(new LinkedHashMap( maxCacheSize, 0.5f, true ) {
+		     protected boolean removeEldestEntry(Map.Entry eldest) {
+		        return size() > maxCacheSize;
+		     }
+		} );
 
-	/**
-	 * Key: Study Instance UID
-	 * Value: Primary Key, Long
-	 */
-	private Map pksStudy = new HashMap();
 	
-	/**
-	 * Key: Series Instance UID
-	 * Value: Primary Key, Long
-	 */
-	private Map pksSeries = new HashMap();
-	
-	/**
-	 * Keep track FIFO of StudyIuid
-	 */
-	private WaitFreeQueue qStudy = new WaitFreeQueue();
-	
-	/**
-	 * Keep track FIFO of SeriesIuid
-	 */
-	private WaitFreeQueue qSeries = new WaitFreeQueue();
-	
-	private long scavengerInterval = 60000; 	// 1 minute
-	private int maxStudyIuidCacheSize = 168; 	// lucky number
-	private int maxSeriesIuidCacheSize = 168; 	// lucky number
-	
-	private Timer timer = null;
-	
-	private EntityPkCache()
-	{
-		// We start it in case it's being used standalone
-		start();
-	}
-	
-	public void start()
-	{
-		// Fire up cache scavenger
-		timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
-			public void run() {
-				scavenge();
-			}			
-		}, scavengerInterval, scavengerInterval);		
-		log.info("EntityPkCache scavenger started. Interval: "+scavengerInterval+" milliseconds");	
-	}
-	
-	public boolean isScavengerRunning()
-	{
-		return timer != null;
-	}
-	
-	public void stop()
-	{
-		if(timer != null)
-		{
-			timer.cancel();
-			timer = null;
-		}
+	private EntityPkCache(){
 	}
 	
 	public static EntityPkCache getInstance()
@@ -116,16 +62,17 @@ public class EntityPkCache {
 	
 	protected FileSystemLocal _findByDirectoryPath(FileSystemLocalHome fileSystemHome, String dirPath) throws FinderException
 	{
-		synchronized(pksFS)
+		synchronized(pksCache)
 		{
-			if(!pksFS.containsKey(dirPath))
-			{
-				Long pk = fileSystemHome.findByDirectoryPath(dirPath).getPk();
-				pksFS.put(dirPath, pk);
+			if(pksCache.containsKey(dirPath)) {
+				try {
+					return fileSystemHome.findByPrimaryKey((Long)pksCache.get(dirPath));
+				} catch ( FinderException outdated ) {}
 			}
+			Long pk = fileSystemHome.findByDirectoryPath(dirPath).getPk();
+			pksCache.put(dirPath, pk);
 		}
-		
-		return fileSystemHome.findByPrimaryKey((Long)pksFS.get(dirPath)); 
+		return fileSystemHome.findByPrimaryKey((Long)pksCache.get(dirPath)); 
 	}
 	
 	public static StudyLocal findByStudyIuid(StudyLocalHome studyHome, String studyIuid) throws FinderException
@@ -135,21 +82,17 @@ public class EntityPkCache {
 	
 	protected StudyLocal _findByStudyIuid(StudyLocalHome studyHome, String studyIuid) throws FinderException
 	{
-		synchronized(pksStudy)
+		synchronized(pksCache)
 		{
-			if(!pksStudy.containsKey(studyIuid))
-			{
-				Long pk = studyHome.findByStudyIuid(studyIuid).getPk();
-				pksStudy.put(studyIuid, pk);
+			if(pksCache.containsKey(studyIuid)) {
 				try {
-					qStudy.offer(studyIuid,100);
-				} catch (InterruptedException e) {
-					log.warn("Study Pk caching failed! Ignored!",e);
-				}
+					return studyHome.findByPrimaryKey((Long)pksCache.get(studyIuid)); 
+				} catch ( FinderException outdated ) {}
 			}
+			Long pk = studyHome.findByStudyIuid(studyIuid).getPk();
+			pksCache.put(studyIuid, pk);
 		}
-		
-		return studyHome.findByPrimaryKey((Long)pksStudy.get(studyIuid)); 
+		return studyHome.findByPrimaryKey((Long)pksCache.get(studyIuid)); 
 	}
 	
 	public static SeriesLocal findBySeriesIuid(SeriesLocalHome seriesHome, String seriesIuid) throws FinderException
@@ -159,80 +102,31 @@ public class EntityPkCache {
 	
 	protected SeriesLocal _findBySeriesIuid(SeriesLocalHome seriesHome, String seriesIuid) throws FinderException
 	{
-		synchronized(pksSeries)
+		synchronized(pksCache)
 		{
-			if(!pksSeries.containsKey(seriesIuid))
-			{
-				Long pk = seriesHome.findBySeriesIuid(seriesIuid).getPk();
-				pksSeries.put(seriesIuid, pk);
+			if(pksCache.containsKey(seriesIuid)) {
 				try {
-					qSeries.offer(seriesIuid,100);
-				} catch (InterruptedException e) {
-					log.warn("Series Pk caching failed! Ignored!", e);
-				}
+					return seriesHome.findByPrimaryKey((Long)pksCache.get(seriesIuid)); 
+				} catch ( FinderException outdated ) {}
 			}
+			Long pk = seriesHome.findBySeriesIuid(seriesIuid).getPk();
+			pksCache.put(seriesIuid, pk);
 		}
-		
-		return seriesHome.findByPrimaryKey((Long)pksSeries.get(seriesIuid)); 
+		return seriesHome.findByPrimaryKey((Long)pksCache.get(seriesIuid)); 
 	}
 	
-	private void scavenge()
-	{
-		synchronized(pksStudy)
-		{
-			doScavenge(pksStudy, qStudy, maxStudyIuidCacheSize);
-		}
-		
-		synchronized(pksSeries)
-		{
-			doScavenge(pksSeries, qSeries, maxSeriesIuidCacheSize);
-		}
+	/**
+	 * @return Returns the maxFSCacheSize.
+	 */
+	public int getMaxCacheSize() {
+		return maxCacheSize;
 	}
-	
-	private void doScavenge(Map pks, WaitFreeQueue q, int maxCacheSize)
-	{
-		for(int i = pks.size(); i > maxCacheSize; i--)
-		{
-			String iuid = null;
-			try {
-				iuid = (String) q.poll(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(iuid != null)
-				pks.remove(iuid);
-			else
-				break;
-		}
+	/**
+	 * @param maxFSCacheSize The maxFSCacheSize to set.
+	 */
+	public void setMaxCacheSize(int maxCacheSize) {
+		this.maxCacheSize = maxCacheSize;
 	}
 
-	public int getMaxSeriesIuidCacheSize() {
-		return maxSeriesIuidCacheSize;
-	}
 
-	public void setMaxSeriesIuidCacheSize(int maxSeriesIuidCacheSize) {
-		this.maxSeriesIuidCacheSize = maxSeriesIuidCacheSize;
-	}
-
-	public int getMaxStudyIuidCacheSize() {
-		return maxStudyIuidCacheSize;
-	}
-
-	public void setMaxStudyIuidCacheSize(int maxStudyIuidCacheSize) {
-		this.maxStudyIuidCacheSize = maxStudyIuidCacheSize;
-	}
-
-	public long getScavengerInterval() {
-		return scavengerInterval;
-	}
-
-	public void setScavengerInterval(long scavengerInterval) {
-		if(this.scavengerInterval != scavengerInterval)
-		{
-			this.scavengerInterval = scavengerInterval;
-			stop();
-			start();
-		}
-	}
 }
