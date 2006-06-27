@@ -181,7 +181,12 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public long ejbHomeSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
     throws FinderException {
-        return ejbSelectSizeOfFilesCreatedAfter(pk, createdAfter);
+        try {
+            return ejbSelectSizeOfFilesCreatedAfter(pk, createdAfter);
+        } catch (NullPointerException e) {
+            // No matching File Record
+            return 0L;
+        }
     }
 
     /**
