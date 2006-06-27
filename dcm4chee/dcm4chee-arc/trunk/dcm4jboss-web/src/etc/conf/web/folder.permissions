@@ -7,7 +7,7 @@
 # Format: <application>.*[<grpid>]=<method1>[,<method2>[,<method3>]..]
 # e.g. 'folder.*=delete,export_tf' 
 
-folder.*=edit,move,delete,*export
+folder.*=edit,move,delete,*export,add_worklist
 folder.*export=export_tf,export_xds
 
 # Application - Role Mapping
@@ -20,7 +20,7 @@ folder.*export=export_tf,export_xds
 # All users of folder applications have at least same permissions as WebUser (role WebUser is required) 
 # for all folder applications
 
-#Folder: move,send,edit,delete,export_tf,export_xds
+#Folder: move,send,edit,delete,export_tf,export_xds,add_worklist
 folder=WebUser(send);DatacareUser(edit,move,delete,export_xds);WebAdmin(*)
 
 #Trash: undelete, remove (+undelete)

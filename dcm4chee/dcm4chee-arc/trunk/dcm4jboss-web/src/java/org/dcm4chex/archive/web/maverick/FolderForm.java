@@ -118,8 +118,6 @@ public class FolderForm extends BasicFolderForm {
 
 	private boolean showSeriesIUID;
 	
-	private boolean addWorklist = false;
-	
 	private boolean filterAET = false;
 	
 	protected static Logger log = Logger.getLogger(FolderForm.class);
@@ -335,18 +333,6 @@ public class FolderForm extends BasicFolderForm {
 		return showSeriesIUID;
 	}
 
-	/**
-	 * @return Returns the addWorklist.
-	 */
-	public boolean isAddWorklist() {
-		return addWorklist;
-	}
-	/**
-	 * @param addWorklist The addWorklist to set.
-	 */
-	public void setAddWorklist(boolean addWorklist) {
-		this.addWorklist = addWorklist;
-	}
 
 	/**
 	 * @return Returns the filterAET.

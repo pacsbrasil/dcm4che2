@@ -17,6 +17,7 @@
 <xsl:param name="folder.delete" select="'false'"/>
 <xsl:param name="folder.edit" select="'false'"/>
 <xsl:param name="folder.move" select="'false'"/>
+<xsl:param name="folder.add_worklist" select="'false'"/>
 
 <xsl:template match="model">
 	<form action="foldersubmit.m" method="get" name="myForm">
@@ -671,7 +672,7 @@
 	        <xsl:if test="$folder.edit='true'">    
 			    <td class="series_mark" align="right">
 	      			<xsl:choose>
-						<xsl:when test="/model/addWorklist='false'">
+						<xsl:when test="$folder.add_worklist='false'">
 							<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
 								<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
 							</a>
