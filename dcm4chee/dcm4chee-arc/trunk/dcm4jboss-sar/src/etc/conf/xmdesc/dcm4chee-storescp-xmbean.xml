@@ -596,6 +596,7 @@ StoreSCP service.
            StandaloneCurveStorage
            StandaloneModalityLUTStorage
            StandaloneVOILUTStorage
+           AgfaAttributePresentationState
            "/>
       </descriptors>
    </attribute>
