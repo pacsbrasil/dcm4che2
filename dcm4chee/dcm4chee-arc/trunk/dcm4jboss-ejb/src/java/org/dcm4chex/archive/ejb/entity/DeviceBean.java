@@ -98,7 +98,7 @@ public abstract class DeviceBean implements EntityBean {
     /**
 	 * @ejb.create-method
 	 */
-    public Integer ejbCreate(String stationName, String aet, String md)
+    public Long ejbCreate(String stationName, String aet, String md)
         throws CreateException
     {
         setStationName(stationName);
@@ -121,9 +121,9 @@ public abstract class DeviceBean implements EntityBean {
 	 * @jboss.persistence auto-increment="true"
 	 *  
 	 */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
 	 * @ejb.interface-method

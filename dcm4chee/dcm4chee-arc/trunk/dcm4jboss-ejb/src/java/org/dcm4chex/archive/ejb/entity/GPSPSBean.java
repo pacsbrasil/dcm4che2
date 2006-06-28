@@ -131,7 +131,7 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
+    public Long ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
         setAttributes(ds);
         return null;
     }
@@ -196,9 +196,9 @@ public abstract class GPSPSBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
     
     /**
      * @ejb.persistence column-name="gpsps_iuid"

@@ -125,9 +125,9 @@ public abstract class MPPSBean implements EntityBean {
 	 * @jboss.persistence auto-increment="true"
 	 * 
 	 */
-	public abstract Integer getPk();
+	public abstract Long getPk();
 
-	public abstract void setPk(Integer pk);
+	public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -264,7 +264,7 @@ public abstract class MPPSBean implements EntityBean {
 	 * 
 	 * @ejb.create-method
 	 */
-	public Integer ejbCreate(Dataset ds, PatientLocal patient)
+	public Long ejbCreate(Dataset ds, PatientLocal patient)
 			throws CreateException {
 		setSopIuid(ds.getString(Tags.SOPInstanceUID));
 		return null;

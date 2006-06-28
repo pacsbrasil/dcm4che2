@@ -229,6 +229,8 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public abstract Long getPk();
 
+    public abstract void setPk(Long pk);
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="dirpath"
@@ -326,7 +328,7 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public FileSystemDTO toDTO() {
         FileSystemDTO dto = new FileSystemDTO();
-        dto.setPk(getPk().intValue());
+        dto.setPk(getPk().longValue());
         dto.setDirectoryPath(getDirectoryPath());
         dto.setRetrieveAET(getRetrieveAET());
         dto.setAvailability(getAvailability());

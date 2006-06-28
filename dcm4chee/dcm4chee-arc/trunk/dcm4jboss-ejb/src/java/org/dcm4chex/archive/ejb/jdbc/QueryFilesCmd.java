@@ -67,8 +67,9 @@ public final class QueryFilesCmd extends BaseReadCmd {
     public static int transactionIsolationLevel = 0;
 
     private static final String[] SELECT_ATTRIBUTE = { "File.pk", "File.filePath",
-            "File.fileMd5Field", "File.fileStatus", "FileSystem.directoryPath",
-            "FileSystem.retrieveAET", "FileSystem.availability", "FileSystem.userInfo", "Instance.sopCuid"};
+            "File.fileMd5Field", "File.fileStatus", "FileSystem.pk",
+            "FileSystem.directoryPath", "FileSystem.retrieveAET",
+            "FileSystem.availability", "FileSystem.userInfo", "Instance.sopCuid"};
 
     private static final String[] ENTITY = { "Instance", "File", "FileSystem" };
 
@@ -93,11 +94,12 @@ public final class QueryFilesCmd extends BaseReadCmd {
         dto.setFilePath(rs.getString(2));
         dto.setFileMd5(MD5.toBytes(rs.getString(3)));
         dto.setFileStatus(rs.getInt(4));
-        dto.setDirectoryPath(rs.getString(5));
-        dto.setRetrieveAET(rs.getString(6));
-		dto.setAvailability(rs.getInt(7));
-		dto.setUserInfo(rs.getString(8));
-		dto.setSopClassUID(rs.getString(9));
+        dto.setFileSystemPk(rs.getLong(5));
+        dto.setDirectoryPath(rs.getString(6));
+        dto.setRetrieveAET(rs.getString(7));
+		dto.setAvailability(rs.getInt(8));
+		dto.setUserInfo(rs.getString(9));
+		dto.setSopClassUID(rs.getString(10));
 		return dto;
     }
     

@@ -118,7 +118,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds) throws CreateException {
+    public Long ejbCreate(Dataset ds) throws CreateException {
         setAttributes(ds);
         return null;
     }
@@ -163,9 +163,9 @@ public abstract class HPBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
     
     /**
      * @ejb.persistence column-name="hp_iuid"

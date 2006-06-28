@@ -162,16 +162,15 @@ public abstract class ConsistencyCheckBean implements SessionBean {
      * @return int array with pk of studies to check.
      * @ejb.interface-method
      */
-    public int[] findStudiesToCheck(Timestamp createdAfter, Timestamp createdBefore, Timestamp checkedBefore, int limit) throws FinderException {
+    public long[] findStudiesToCheck(Timestamp createdAfter, Timestamp createdBefore, Timestamp checkedBefore, int limit) throws FinderException {
     	if ( log.isDebugEnabled() ) log.debug("findStudiesToCheck: created between "+createdAfter+" - "+createdBefore+" checkedBefore"+checkedBefore+" limit:"+limit);
         Collection c = studyHome.findStudyToCheck( createdAfter, createdBefore, checkedBefore, limit );
-        if ( c.size() < 1 ) return new int[0];
+        if ( c.size() < 1 ) return new long[0];
         Iterator iter = c.iterator();
-        int[] ia = new int[c.size()];
+        long[] ia = new long[c.size()];
         int i = 0;
-        StudyLocal study;
         while ( iter.hasNext() ) {
-        	ia[i++] = ((StudyLocal) iter.next()).getPk().intValue();
+        	ia[i++] = ((StudyLocal) iter.next()).getPk().longValue();
         }
         return ia;
     }
@@ -182,7 +181,7 @@ public abstract class ConsistencyCheckBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateStudy(int study_pk) {
+    public boolean updateStudy(long study_pk) {
     	boolean updated = false;
         try {
             StudyLocal study = studyHome

@@ -122,14 +122,14 @@ public abstract class AEManagerBean implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 */
-	public AEData getAe(int aePk) throws EJBException
+	public AEData getAe(long aePk) throws EJBException
 	{
 		try
 		{
-			AELocal ae = aeHome.findByPrimaryKey(new Integer(aePk));
+			AELocal ae = aeHome.findByPrimaryKey(new Long(aePk));
 			AEData aeDTO =
 				new AEData(
-						ae.getPk().intValue(),
+						ae.getPk().longValue(),
 						ae.getTitle(),
 						ae.getHostName(),
 						ae.getPort(),
@@ -151,7 +151,7 @@ public abstract class AEManagerBean implements SessionBean
 			AELocal ae = aeHome.findByAET( aet );
 			AEData aeDTO =
 				new AEData(
-						ae.getPk().intValue(),
+						ae.getPk().longValue(),
 						ae.getTitle(),
 						ae.getHostName(),
 						ae.getPort(),
@@ -177,7 +177,7 @@ public abstract class AEManagerBean implements SessionBean
 				AELocal ae = (AELocal) i.next();
 				AEData aeDTO =
 					new AEData(
-						ae.getPk().intValue(),
+						ae.getPk().longValue(),
 						ae.getTitle(),
 						ae.getHostName(),
 						ae.getPort(),
@@ -198,7 +198,7 @@ public abstract class AEManagerBean implements SessionBean
 	{
 		try
 		{
-				AELocal ae = aeHome.findByPrimaryKey(new Integer(modAE.getPk()));
+				AELocal ae = aeHome.findByPrimaryKey(new Long(modAE.getPk()));
 				ae.setTitle(modAE.getTitle());
 				ae.setHostName(modAE.getHostName());
 				ae.setPort(modAE.getPort());
@@ -225,11 +225,11 @@ public abstract class AEManagerBean implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 */
-	public void removeAE(int  aePk) throws Exception
+	public void removeAE(long aePk) throws Exception
 	{
 		try
 		{
-			aeHome.remove(new Integer(aePk));
+			aeHome.remove(new Long(aePk));
 		} catch (RemoveException e)
 		{
 			throw new Exception(e);

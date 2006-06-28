@@ -91,9 +91,9 @@ public abstract class CodeBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *  
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * Code Value
@@ -155,7 +155,7 @@ public abstract class CodeBean implements EntityBean {
      * 
      * @ejb.create-method
      */
-    public Integer ejbCreate(String value, String designator, String version,
+    public Long ejbCreate(String value, String designator, String version,
             String meaning) throws CreateException {
         setCodeValue(value);
         setCodingSchemeDesignator(designator);

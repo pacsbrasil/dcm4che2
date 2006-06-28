@@ -347,13 +347,13 @@ public abstract class MediaComposerBean implements SessionBean {
 			return ( (FileLocal) col.iterator().next() ).getFileSize();
 		} else {
 			long size = 0;
-			int pk = Integer.MIN_VALUE;
+			long pk = Long.MIN_VALUE;
 			Iterator iter = col.iterator();
 			FileLocal file;
 			while ( iter.hasNext() ) {
 				file = (FileLocal) iter.next();
-				if ( file.getPk().intValue() > pk ) {
-					pk = file.getPk().intValue();
+				if ( file.getPk().longValue() > pk ) {
+					pk = file.getPk().longValue();
 					size = file.getFileSize();
 				}
 			}
@@ -475,7 +475,7 @@ public abstract class MediaComposerBean implements SessionBean {
      */
     private MediaDTO toMediaDTO(MediaLocal media) {
         MediaDTO dto = new MediaDTO();
-        dto.setPk(media.getPk().intValue());
+        dto.setPk(media.getPk().longValue());
         dto.setCreatedTime(media.getCreatedTime());
         dto.setUpdatedTime(media.getUpdatedTime());
         dto.setMediaUsage(media.getMediaUsage());
@@ -498,9 +498,9 @@ public abstract class MediaComposerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public void setMediaCreationRequestIuid(int pk, String iuid)
+    public void setMediaCreationRequestIuid(long pk, String iuid)
     		throws FinderException {
-        MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
+        MediaLocal media = mediaHome.findByPrimaryKey(new Long(pk));
         media.setMediaCreationRequestIuid(iuid);
     }
 
@@ -513,10 +513,10 @@ public abstract class MediaComposerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public void setMediaStatus(int pk, int status, String info)
+    public void setMediaStatus(long pk, int status, String info)
     		throws FinderException {
     	if (log.isDebugEnabled()) log.debug("setMediaStatus: pk="+pk+", status:"+status+", info"+info);
-        MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
+        MediaLocal media = mediaHome.findByPrimaryKey(new Long(pk));
         media.setMediaStatus(status);
         media.setMediaStatusInfo(info);
         if ( status == MediaDTO.COMPLETED )
@@ -532,9 +532,9 @@ public abstract class MediaComposerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public Collection getStudyUIDSForMedia( int pk ) throws FinderException {
+    public Collection getStudyUIDSForMedia( long pk ) throws FinderException {
     	Collection c = new ArrayList();
-    	MediaLocal media = mediaHome.findByPrimaryKey( new Integer(pk) );
+    	MediaLocal media = mediaHome.findByPrimaryKey( new Long(pk) );
     	Collection studies = studyHome.findStudiesOnMedia( media );
     	for ( Iterator iter = studies.iterator(); iter.hasNext() ; ) {
     		c.add( ((StudyLocal) iter.next()).getStudyIuid() );
@@ -559,8 +559,8 @@ public abstract class MediaComposerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public Dataset prepareMediaCreationRequest( int pk ) throws FinderException {
-    	MediaLocal media = mediaHome.findByPrimaryKey( new Integer(pk) );
+    public Dataset prepareMediaCreationRequest( long pk ) throws FinderException {
+    	MediaLocal media = mediaHome.findByPrimaryKey( new Long(pk) );
 		Dataset ds = DcmObjectFactory.getInstance().newDataset();
 		ds.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
 		ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId() );
@@ -601,7 +601,7 @@ public abstract class MediaComposerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public void deleteMedia( Integer mediaPk ) throws EJBException, RemoveException, FinderException {
+    public void deleteMedia( Long mediaPk ) throws EJBException, RemoveException, FinderException {
     	MediaLocal media = mediaHome.findByPrimaryKey( mediaPk );
     	Collection series = seriesHome.findSeriesOnMedia( media );
       	Collection studies = studyHome.findStudiesOnMedia( media );
@@ -632,7 +632,7 @@ public abstract class MediaComposerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public boolean checkInstancesAvailable( Integer mediaPk ) throws FinderException {
+    public boolean checkInstancesAvailable( Long mediaPk ) throws FinderException {
     	return mediaHome.findByPrimaryKey( mediaPk ).checkInstancesAvailable();
     }
 }

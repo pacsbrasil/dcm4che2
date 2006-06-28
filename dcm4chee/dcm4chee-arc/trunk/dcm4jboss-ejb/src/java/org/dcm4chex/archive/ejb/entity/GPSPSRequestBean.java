@@ -67,7 +67,7 @@ public abstract class GPSPSRequestBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, GPSPSLocal gpsps)
+    public Long ejbCreate(Dataset ds, GPSPSLocal gpsps)
             throws CreateException {
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
@@ -93,9 +93,9 @@ public abstract class GPSPSRequestBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *  
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
     
     /**
      * @ejb.interface-method

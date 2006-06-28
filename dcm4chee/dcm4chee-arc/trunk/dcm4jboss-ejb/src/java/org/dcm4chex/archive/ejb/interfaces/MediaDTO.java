@@ -59,7 +59,7 @@ public class MediaDTO implements Serializable {
     public static final int COMPLETED = 4;
     public static final int ERROR = 999;
 
-    private int pk;
+    private long pk;
     private String filesetId;
     private String filesetIuid;
     private String mediaCreationRequestIuid;
@@ -70,11 +70,11 @@ public class MediaDTO implements Serializable {
     private long updatedTime;
     private boolean instancesAvailable;
 
-    public final int getPk() {
+    public final long getPk() {
         return pk;
     }
 
-    public final void setPk(int pk) {
+    public final void setPk(long pk) {
         this.pk = pk;
     }
 

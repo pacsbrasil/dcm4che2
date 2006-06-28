@@ -102,7 +102,7 @@ public abstract class HPDefinitionBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, HPLocal hp)
+    public Long ejbCreate(Dataset ds, HPLocal hp)
             throws CreateException {
 		setModality(ds.getString(Tags.Modality));
 		setLaterality(ds.getString(Tags.Laterality));
@@ -151,9 +151,9 @@ public abstract class HPDefinitionBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *  
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
     
     /**
      * @ejb.relation name="hp-definition" role-name="definition-for-hp"

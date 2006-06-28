@@ -67,7 +67,7 @@ public abstract class SeriesRequestBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, SeriesLocal series)
+    public Long ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setSpsId(ds.getString(Tags.SPSID));
@@ -93,9 +93,9 @@ public abstract class SeriesRequestBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *  
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
     
     /**
      * @ejb.interface-method

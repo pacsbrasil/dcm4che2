@@ -100,7 +100,7 @@ public abstract class GPSPSPerformerBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, GPSPSLocal gpsps)
+    public Long ejbCreate(Dataset ds, GPSPSLocal gpsps)
             throws CreateException {
         PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
         if (pn != null) {
@@ -148,9 +148,9 @@ public abstract class GPSPSPerformerBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *  
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
     
     /**
      * @ejb.interface-method

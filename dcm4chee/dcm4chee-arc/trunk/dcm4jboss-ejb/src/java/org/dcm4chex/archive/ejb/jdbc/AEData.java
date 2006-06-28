@@ -66,7 +66,7 @@ public class AEData implements Serializable {
     };
 
     // Variables -----------------------------------------------------
-    private final int pk;
+    private final long pk;
     private final String title;
     private final String hostname;
     private final int port;
@@ -74,7 +74,7 @@ public class AEData implements Serializable {
 
     // Constructors --------------------------------------------------
     public AEData(
-        int pk,
+        long pk,
         String title,
         String hostname,
         int port,
@@ -89,7 +89,7 @@ public class AEData implements Serializable {
     /**
      * @return pk
      */
-    public final int getPk() {
+    public final long getPk() {
         return pk;
     }
 

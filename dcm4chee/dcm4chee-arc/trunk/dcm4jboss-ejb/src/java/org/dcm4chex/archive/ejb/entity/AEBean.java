@@ -96,7 +96,8 @@ public abstract class AEBean implements EntityBean
      *  auto-increment="true"
      *
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
+    public abstract void getPk(Long pk);
 
     /**
      * Application Entity Title
@@ -151,7 +152,7 @@ public abstract class AEBean implements EntityBean
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(
+    public Long ejbCreate(
         String title,
         String hostname,
         int port,

@@ -93,7 +93,7 @@ import org.dcm4chex.archive.common.Availability;
  * 	signature="int ejbSelectGenericInt(java.lang.String jbossQl, java.lang.Object[] args)"
  *  dynamic="true"
  *
- * @jboss.query signature="int ejbSelectInstanceAvailability(java.lang.Integer pk)"
+ * @jboss.query signature="int ejbSelectInstanceAvailability(java.lang.Long pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.media.pk = ?1"
  *
  * @author gunter.zeilinger@tiani.com
@@ -113,9 +113,9 @@ public abstract class MediaBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      *  
      */
-    public abstract Integer getPk();
+    public abstract Long getPk();
 
-    public abstract void setPk(Integer pk);
+    public abstract void setPk(Long pk);
 
     /**
      * @ejb.interface-method
@@ -220,7 +220,7 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Integer ejbCreate(String fsIuid) throws CreateException {
+    public Long ejbCreate(String fsIuid) throws CreateException {
         setFilesetIuid(fsIuid);
         return null;
     }
@@ -363,7 +363,7 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.select query=""
      */
-    public abstract int ejbSelectInstanceAvailability(Integer pk)
+    public abstract int ejbSelectInstanceAvailability(Long pk)
             throws FinderException;
     
 }

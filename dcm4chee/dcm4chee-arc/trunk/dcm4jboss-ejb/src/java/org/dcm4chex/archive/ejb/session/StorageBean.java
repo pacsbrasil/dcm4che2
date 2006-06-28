@@ -191,8 +191,8 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(Long assocpk,
-            org.dcm4che.data.Dataset ds, java.lang.String dirpath,
-            java.lang.String fileid, int size,
+            org.dcm4che.data.Dataset ds, long fspk,
+            java.lang.String fileid, long size,
             byte[] md5) throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -201,7 +201,7 @@ public abstract class StorageBean implements SessionBean {
         log.info("inserting instance " + fmi);
         try {
             Dataset coercedElements = DcmObjectFactory.getInstance().newDataset();
-            FileSystemLocal fs = EntityPkCache.findByDirectoryPath(fileSystemHome, dirpath);
+            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
             InstanceLocal instance;
             try {
                 instance = instHome.findBySopIuid(iuid);

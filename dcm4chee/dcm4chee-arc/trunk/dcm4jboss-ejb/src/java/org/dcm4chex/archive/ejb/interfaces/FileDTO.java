@@ -52,6 +52,8 @@ public final class FileDTO implements Serializable {
     
     private long pk;
 
+    private long fspk;
+    
     private String aet;
 
     private String userInfo;
@@ -116,16 +118,18 @@ public final class FileDTO implements Serializable {
 		this.userInfo = userInfo;
 	}
 
-	/**
-     * @return Returns the baseDir.
-     */
+    public final long getFileSystemPk() {
+        return fspk;
+    }
+
+    public final void setFileSystemPk(long fspk) {
+        this.fspk = fspk;
+    }
+
     public final String getDirectoryPath() {
         return basedir;
     }
 
-    /**
-     * @param baseDir The baseDir to set.
-     */
     public final void setDirectoryPath(String baseDir) {
         this.basedir = baseDir;
     }

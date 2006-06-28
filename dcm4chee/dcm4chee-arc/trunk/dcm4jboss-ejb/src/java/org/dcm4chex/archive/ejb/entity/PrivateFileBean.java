@@ -186,8 +186,9 @@ public abstract class PrivateFileBean implements EntityBean {
     public FileDTO getFileDTO() {
         FileSystemLocal fs = getFileSystem();
         FileDTO retval = new FileDTO();
-        retval.setPk(getPk().intValue());
+        retval.setPk(getPk().longValue());
         retval.setRetrieveAET(fs.getRetrieveAET());
+        retval.setFileSystemPk(fs.getPk().longValue());
         retval.setDirectoryPath(fs.getDirectoryPath());
         retval.setAvailability(fs.getAvailability());
         retval.setUserInfo(fs.getUserInfo());

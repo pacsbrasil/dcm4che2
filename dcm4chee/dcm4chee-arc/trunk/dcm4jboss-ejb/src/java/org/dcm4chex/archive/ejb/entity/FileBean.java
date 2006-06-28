@@ -221,8 +221,9 @@ public abstract class FileBean implements EntityBean {
     public FileDTO getFileDTO() {
         FileSystemLocal fs = getFileSystem();
         FileDTO retval = new FileDTO();
-        retval.setPk(getPk().intValue());
+        retval.setPk(getPk().longValue());
         retval.setRetrieveAET(fs.getRetrieveAET());
+        retval.setFileSystemPk(fs.getPk().longValue());
         retval.setDirectoryPath(fs.getDirectoryPath());
         retval.setAvailability(fs.getAvailability());
         retval.setUserInfo(fs.getUserInfo());
@@ -256,7 +257,7 @@ public abstract class FileBean implements EntityBean {
      * 
      * @ejb.create-method
      */
-    public Long ejbCreate(String path, String tsuid, int size, byte[] md5,
+    public Long ejbCreate(String path, String tsuid, long size, byte[] md5,
     		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setFilePath(path);
@@ -267,7 +268,7 @@ public abstract class FileBean implements EntityBean {
         return null;
     }
 
-    public void ejbPostCreate(String path, String tsuid, int size, byte[] md5,
+    public void ejbPostCreate(String path, String tsuid, long size, byte[] md5,
     		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setInstance(instance);
