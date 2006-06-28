@@ -49,9 +49,9 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  */
 public class PatientEditCtrl extends Dcm4cheeFormController
 {
-	private int pk = -1;
+	private long pk = -1;
 	
-	public final void setPk(int pk)
+	public final void setPk(long pk)
 	{
 		this.pk = pk;
 	}

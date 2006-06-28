@@ -63,7 +63,7 @@ public class MediaData {
 	private static Map mapDefinedStati;
 	public static final Collection DEFINED_MEDIA_STATI = _getMediaStatusList();
 	
-	private int mediaPk;
+	private long mediaPk;
 	private Date createdTime;
 	private Date updatedTime;
 	private String filesetID;
@@ -99,7 +99,7 @@ public class MediaData {
 	 * 
 	 * @param pk Primary key of media.
 	 */
-	public MediaData( int pk ) {
+	public MediaData( long pk ) {
 		mediaPk = pk;
 	}
 	
@@ -122,7 +122,7 @@ public class MediaData {
 		return dto;
 	}
 	
-	public int getMediaPk() {
+	public long getMediaPk() {
 		return mediaPk;
 	}
 
@@ -263,7 +263,7 @@ public class MediaData {
     }
     
     public int hashCode() {
-    	return mediaPk;
+    	return (int)mediaPk;
     }
 
 	

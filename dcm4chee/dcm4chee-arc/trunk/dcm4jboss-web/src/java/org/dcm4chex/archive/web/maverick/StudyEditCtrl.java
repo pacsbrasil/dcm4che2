@@ -49,23 +49,23 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  *
  */
 public class StudyEditCtrl extends Dcm4cheeFormController {
-    private int patPk;
+    private long patPk;
 
-    private int studyPk;
+    private long studyPk;
 
-    public final int getPatPk() {
+    public final long getPatPk() {
         return patPk;
     }
 
-    public final void setPatPk(int pk) {
+    public final void setPatPk(long pk) {
         this.patPk = pk;
     }
 
-    public final int getStudyPk() {
+    public final long getStudyPk() {
         return studyPk;
     }
 
-    public final void setStudyPk(int pk) {
+    public final void setStudyPk(long pk) {
         this.studyPk = pk;
     }
 

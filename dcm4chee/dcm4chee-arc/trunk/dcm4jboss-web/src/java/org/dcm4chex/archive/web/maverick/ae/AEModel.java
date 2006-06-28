@@ -59,7 +59,8 @@ public class AEModel extends BasicFormModel {
 
 	private String user;
 	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
-	private int port=-1, pk=-1;
+	private int port=-1;
+    private long pk=-1;
 	
 	private boolean checkHost = false;
 	
@@ -108,7 +109,7 @@ public class AEModel extends BasicFormModel {
 	/**
 	 * @param oldPk The oldPk to set.
 	 */
-	public final void setPk(int pk)
+	public final void setPk(long pk)
 	{
 		this.pk = pk;
 	}

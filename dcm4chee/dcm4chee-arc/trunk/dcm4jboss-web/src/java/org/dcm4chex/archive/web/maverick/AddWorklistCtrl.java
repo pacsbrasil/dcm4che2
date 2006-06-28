@@ -58,7 +58,7 @@ public class AddWorklistCtrl extends Dcm4cheeFormController {
     /** Popup message */
     private String popupMsg = null;
 
-    private int studyPk;
+    private long studyPk;
 	private static GPWLFeedDelegate delegate = null;;
 
 	private String template;
@@ -67,11 +67,11 @@ public class AddWorklistCtrl extends Dcm4cheeFormController {
 	
 	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 
-    public final int getStudyPk() {
+    public final long getStudyPk() {
         return studyPk;
     }
 
-    public final void setStudyPk(int pk) {
+    public final void setStudyPk(long pk) {
         this.studyPk = pk;
     }
 

@@ -124,12 +124,12 @@ public class MCMScuDelegate {
 			
 		}
 		
-		public boolean deleteMedia( int pk ) {
+		public boolean deleteMedia( long pk ) {
 			try {
 		        Object o = server.invoke(mcmScuServiceName,
 		                "deleteMedia",
-		                new Object[]{ new Integer( pk ) },
-		                new String[]{ Integer.class.getName() } );
+		                new Object[]{ new Long( pk ) },
+		                new String[]{ Long.class.getName() } );
 		        return true;
 			} catch ( Exception x ) {
 				log.error( "Exception occured in deleteMedia("+pk+"): "+x.getMessage(), x );

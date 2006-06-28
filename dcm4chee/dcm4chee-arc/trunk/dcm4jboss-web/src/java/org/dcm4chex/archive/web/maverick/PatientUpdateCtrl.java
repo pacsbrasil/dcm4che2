@@ -46,7 +46,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  * @author umberto.cappellini@tiani.com
  */
 public class PatientUpdateCtrl extends Dcm4cheeFormController {
-    private int pk;
+    private long pk;
 
     private String patientID = "";
 
@@ -160,7 +160,7 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
         this.patientBirthDate = date.trim();
     }
 
-    public final void setPk(int pk) {
+    public final void setPk(long pk) {
         this.pk = pk;
     }
 

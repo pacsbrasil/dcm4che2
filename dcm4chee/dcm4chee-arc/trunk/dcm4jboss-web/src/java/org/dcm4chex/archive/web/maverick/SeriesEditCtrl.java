@@ -51,33 +51,33 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  */
 public class SeriesEditCtrl extends Dcm4cheeFormController {
 
-    private int patPk;
+    private long patPk;
 
-    private int studyPk;
+    private long studyPk;
 
-    private int seriesPk;
+    private long seriesPk;
 
-    public final int getPatPk() {
+    public final long getPatPk() {
         return patPk;
     }
 
-    public final void setPatPk(int pk) {
+    public final void setPatPk(long pk) {
         this.patPk = pk;
     }
 
-    public final int getStudyPk() {
+    public final long getStudyPk() {
         return studyPk;
     }
 
-    public final void setStudyPk(int pk) {
+    public final void setStudyPk(long pk) {
         this.studyPk = pk;
     }
 
-    public final int getSeriesPk() {
+    public final long getSeriesPk() {
         return seriesPk;
     }
 
-    public final void setSeriesPk(int seriesPk) {
+    public final void setSeriesPk(long seriesPk) {
         this.seriesPk = seriesPk;
     }
 

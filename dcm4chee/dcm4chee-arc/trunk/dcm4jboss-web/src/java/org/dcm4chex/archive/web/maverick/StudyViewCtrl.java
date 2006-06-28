@@ -65,9 +65,9 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
 public class StudyViewCtrl extends Dcm4cheeFormController {
 	private static final String SELECT = "select";
 	
-	private int patPk = -1;
+	private long patPk = -1;
     private long studyPk = -1;
-    private int seriesPk = -1;
+    private long seriesPk = -1;
     
     private String patID = null;
     private String studyUID = null;
@@ -91,11 +91,11 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
 	public StudyContainer getStudyContainer() {
 		return study;
 	}
-    public final int getPatPk() {
+    public final long getPatPk() {
         return patPk;
     }
 
-    public final void setPatPk(int pk) {
+    public final void setPatPk(long pk) {
         this.patPk = pk;
     }
 
@@ -110,13 +110,13 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
 	/**
 	 * @return Returns the seriesPk.
 	 */
-	public final int getSeriesPk() {
+	public final long getSeriesPk() {
 		return seriesPk;
 	}
 	/**
 	 * @param seriesPk The seriesPk to set.
 	 */
-	public final void setSeriesPk(int seriesPk) {
+	public final void setSeriesPk(long seriesPk) {
 		this.seriesPk = seriesPk;
 	}
 	
