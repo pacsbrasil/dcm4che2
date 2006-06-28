@@ -193,7 +193,7 @@ public class AEService extends ServiceMBeanSupport
      * @throws Exception
      * @throws RemoteException
      */
-    public void updateAE(int pk, String title, String host, int port, String cipher, boolean checkHost)
+    public void updateAE(long pk, String title, String host, int port, String cipher, boolean checkHost)
         throws RemoteException, Exception
     {
     	if ( checkHost ) {

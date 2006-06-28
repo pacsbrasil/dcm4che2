@@ -126,7 +126,7 @@
      <parameter>
        <description>Primary key of AE (use -1 for new AE)</description>
        <name>pk</name>
-       <type>int</type>
+       <type>long</type>
      </parameter>
      <parameter>
        <description>AE Title</description>

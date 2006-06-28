@@ -440,7 +440,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
             }
             Dataset coercedElements = updateDB(store, assocpk , ds,
-                    fsDTO.getDirectoryPath(), filePath, file, md5sum);
+                    fsDTO.getPk(), filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             if (coerced == null)
             	coerced = coercedElements;
@@ -548,7 +548,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected Dataset updateDB(Storage storage, Long assocpk, Dataset ds,
-            String baseDir, String filePath, File file, byte[] md5)
+            long fspk, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             IOException {
         int retry = 0;
@@ -556,11 +556,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             try {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
-                        return storage.store(assocpk, ds, baseDir, filePath,
+                        return storage.store(assocpk, ds, fspk, filePath,
                                 (int) file.length(), md5);
                     }
                 } else {
-                    return storage.store(assocpk, ds, baseDir, filePath,
+                    return storage.store(assocpk, ds, fspk, filePath,
                             (int) file.length(), md5);
                 }
             } catch (Exception e) {

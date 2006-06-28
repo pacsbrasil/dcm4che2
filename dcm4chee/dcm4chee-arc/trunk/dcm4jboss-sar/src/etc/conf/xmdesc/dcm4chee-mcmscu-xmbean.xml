@@ -301,7 +301,7 @@
       <parameter>
         <description>Primary key of media</description>
         <name>mediaPk</name>
-        <type>java.lang.Integer</type>
+        <type>java.lang.Long</type>
       </parameter>
       <return-type>void</return-type>
    </operation>
@@ -313,7 +313,7 @@
       <parameter>
         <description>Primary key of media</description>
         <name>mediaPk</name>
-        <type>int</type>
+        <type>long</type>
       </parameter>
       <return-type>boolean</return-type>
    </operation>

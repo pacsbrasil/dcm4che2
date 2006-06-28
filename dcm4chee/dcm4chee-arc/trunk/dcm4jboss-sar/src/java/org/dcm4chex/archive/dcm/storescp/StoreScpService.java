@@ -603,7 +603,7 @@ public class StoreScpService extends AbstractScpService {
 		String fsPath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         File f = FileUtils.toFile(fsPath, filePath);
-		scp.updateDB(store, pk, ds, fsPath, filePath, f, fileDTO.getFileMd5() );
+		scp.updateDB(store, pk, ds, fileDTO.getFileSystemPk(), filePath, f, fileDTO.getFileMd5() );
 		if (last) {
             SeriesStored seriesStored = store.checkSeriesStored(pk, null);
             if (seriesStored != null) {

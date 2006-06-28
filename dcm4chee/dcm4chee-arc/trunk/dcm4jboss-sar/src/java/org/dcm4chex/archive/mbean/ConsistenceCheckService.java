@@ -209,7 +209,7 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
     	Timestamp checkedBefore = new Timestamp( l - this.maxCheckedBefore );
     	ConsistencyCheck checker = newConsistencyCheck();
     	if ( log.isDebugEnabled() ) log.debug("call findStudiesToCheck: createdAfter:"+createdAfter+" createdBefore:"+createdBefore+" checkedBefore:"+checkedBefore);
-    	int[] studyPks = checker.findStudiesToCheck( createdAfter, createdBefore, checkedBefore, this.limitNumberOfStudiesPerTask );
+    	long[] studyPks = checker.findStudiesToCheck( createdAfter, createdBefore, checkedBefore, this.limitNumberOfStudiesPerTask );
     	for ( int i = 0, len = studyPks.length ; i < len ; i++) {
     		if ( checker.updateStudy( studyPks[i]) ) {
     			updated++;

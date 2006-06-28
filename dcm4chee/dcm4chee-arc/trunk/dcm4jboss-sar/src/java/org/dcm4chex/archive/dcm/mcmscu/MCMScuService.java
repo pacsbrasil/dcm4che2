@@ -1274,8 +1274,8 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
      * @throws HomeFactoryException
      * @throws CreateException
      */
-    public boolean checkMediaInstances( int mediaPk ) throws RemoteException, FinderException, HomeFactoryException, CreateException{
-    	return lookupMediaComposer().checkInstancesAvailable( new Integer( mediaPk ) );
+    public boolean checkMediaInstances( long mediaPk ) throws RemoteException, FinderException, HomeFactoryException, CreateException{
+    	return lookupMediaComposer().checkInstancesAvailable( new Long( mediaPk ) );
     }
     
     /**
@@ -1289,7 +1289,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
      * @throws HomeFactoryException
      * @throws CreateException
      */
-    public void deleteMedia( Integer mediaPk ) throws RemoteException, RemoveException, FinderException, HomeFactoryException, CreateException {
+    public void deleteMedia( Long mediaPk ) throws RemoteException, RemoveException, FinderException, HomeFactoryException, CreateException {
     	lookupMediaComposer().deleteMedia( mediaPk );
     }
 	
