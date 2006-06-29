@@ -45,8 +45,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -74,8 +78,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.util.InstanceCollector;
-import org.dcm4chex.archive.ejb.util.InstanceCollector.InstanceContainer;
 
 /**
  * @ejb.bean name="MediaComposer"
@@ -110,7 +112,7 @@ import org.dcm4chex.archive.ejb.util.InstanceCollector.InstanceContainer;
 public abstract class MediaComposerBean implements SessionBean {
 
 	private static Logger log = Logger.getLogger( MediaComposerBean.class.getName() );
-	
+
     private MediaLocalHome mediaHome;
 
     private InstanceLocalHome instHome;
@@ -158,141 +160,138 @@ public abstract class MediaComposerBean implements SessionBean {
         instHome = null;
     }
     
-    /**
-     * Collect studies to media for storage.
-     * <p>
-     * <DL>
-     * <DD>1) Find all instances that are not assigned to a media and are older as <code>time</code></DD>
-     * <DD>2) collect instances to studies.</DD>
-     * <DD>3) collect studies for media</DD>
-     * <DD>4) assign media to studies</DD>
-     * </DL>
-     * @param time 			Timestamp: instances must be received before this timestamp.
-     * @param maxMediaUsage	The number of bytes that can be used to store instances on a media.
-     * @param prefix		Prefix for the FileSet id. Used if a new media object is created.
-     * 
-     * @ejb.interface-method
-     */
-    public int collectStudiesReceivedBefore(long time, long maxMediaUsage, String prefix) throws FinderException {
-        Collection c = instHome.findNotOnMediaAndStudyReceivedBefore(
-                new Timestamp(time));
-        if ( c.size() < 1 ) return 0;
-        Iterator iter = c.iterator();
-        InstanceLocal instance;
-        InstanceCollector collector = new InstanceCollector();
-        while ( iter.hasNext() ) {
-        	instance = (InstanceLocal) iter.next();
-        	collector.add( instance );
-        }
-        int nrOfStudies = collector.getNumberOfStudies();
-        log.info( "Collected for storage: "+c.size()+" instances in "+nrOfStudies+" studies !");
+    /** 
+    * @ejb.interface-method
+    */
+   public Collection getStudiesReceivedBefore(long time) throws FinderException {
+       return studyHome.findStudiesNotOnMedia(new Timestamp(time));
+   }
+   
+	/** 
+	* @throws FinderException
+	 * @throws CreateException
+	 * @ejb.interface-method
+	*/
+	public List assignStudyToMedia( StudyLocal study, List mediaPool, long maxMediaSize, String prefix ) throws FinderException, CreateException  {
+		if ( mediaPool == null ) {
+			mediaPool = getCollectingMedia();
+		}
+		Map instanceFiles = new HashMap();
+		InstanceLocal instance;
+		FileLocal file, file2;
+		int avail, avail2;
+		Collection files;
+		long size = 0;
+		for ( Iterator iter = study.getInstancesNotOnMedia().iterator() ; iter.hasNext() ; ) {
+			instance = (InstanceLocal) iter.next();
+			files = instance.getFiles();
+			if ( files.isEmpty() ) {
+				log.warn("Instance "+instance.getPk()+"("+instance.getSopIuid()+") has no files! ignored!");
+				continue;
+			}
+			Iterator it = files.iterator();
+			for ( file = (FileLocal) it.next() ; it.hasNext() ; ) {
+				file2 = (FileLocal) it.next();
+				avail = file.getFileSystem().getAvailability();
+				avail2 = file2.getFileSystem().getAvailability();
+				if ( avail2 < avail ) {
+					file = file2;
+				} else if ( file2.getPk().longValue() > file.getPk().longValue() ) {
+					file = file2;
+				}
+			}
+			size += file.getFileSize();
+			instanceFiles.put( instance, file );
+		}
+		if ( size > maxMediaSize ) {
+			log.info("Study size ("+size+") exceed maxMediaSize ("+maxMediaSize+")! Split study is necessary!");
+			splitStudy(instanceFiles, mediaPool, maxMediaSize, prefix );
+		} else {
+			log.debug("assign study "+study.getStudyIuid()+" (size="+size+") to media");
+			assignInstancesToMedia(instanceFiles.keySet(), size, getMedia(mediaPool, maxMediaSize - size, prefix));
+		}
+   		return mediaPool;
+	}
 
-        splitTooLargeStudies( collector, maxMediaUsage, prefix );
-        
-        List mediaCollection = (List) mediaHome.findByStatus( MediaDTO.OPEN );
-        Comparator comp = new Comparator() {
-    		public int compare(Object arg0, Object arg1) {
-    			MediaLocal ml1 = (MediaLocal) arg0;
-    			MediaLocal ml2 = (MediaLocal) arg1;
-    			return (int) ( ml2.getMediaUsage() - ml1.getMediaUsage() );//more usage before lower usage!
-    		}
-    	};
-        Collections.sort( mediaCollection, comp );
-        log.info("Number of 'COLLECTING' media found:"+mediaCollection.size() );
-        MediaLocal mediaLocal;
-        List instancesForMedia;
-        long maxSize, collSize;
-        while ( nrOfStudies > 0 ) {
-        	try {
-				mediaLocal = getNextMediaLocal( mediaCollection, prefix );
-			} catch (CreateException e) {
-				log.error("Cant create MediaLocal! skip "+nrOfStudies+" for assigning media!");
-				break;
+	/**
+	 * 
+	 * @param instanceFiles map with all instances for a media.
+	 * @param maxUsed The max mediaUsage a media must have to can store all instances.
+	 * @param mediaPool List of COLLECTING media
+	 * @param prefix Prefix for Fileset ID. (Used if a new media must be created.
+	 * @throws CreateException
+	 */
+	private void assignInstancesToMedia(Set instances, long size, MediaLocal media) throws CreateException {
+		log.debug("assign instances ("+instances+") to media "+media);
+		for ( Iterator iter = instances.iterator() ; iter.hasNext() ; ) {
+			( (InstanceLocal) iter.next()).setMedia( media );
+		}
+		media.setMediaUsage( media.getMediaUsage() + size );
+	}
+
+	private MediaLocal getMedia(List mediaPool, long maxUsed, String prefix) throws CreateException {
+		maxUsed++;
+		if ( mediaPool.size() > 0 ) {
+			MediaLocal media;
+			for (Iterator iter = mediaPool.iterator() ; iter.hasNext() ; ) {
+			    media = (MediaLocal)iter.next();
+			    if (media.getMediaUsage() < maxUsed)
+			    	return media;
 			}
-        	maxSize = maxMediaUsage - mediaLocal.getMediaUsage();
-        	if ( log.isDebugEnabled() ) log.debug("Collect for media:"+mediaLocal.getFilesetId()+" free:"+maxSize+" - Number of studies avail:"+nrOfStudies+ " totalSize:"+collector.getTotalSize() );
-        	instancesForMedia = new ArrayList();
-        	collSize = collector.collectInstancesForSize( instancesForMedia, maxSize );
-        	if ( collSize > 0L ){
-        		maxSize -= collSize; 
-	          	if ( log.isDebugEnabled() ) log.debug("Initial collected: "+collSize+" free:"+maxSize+" bytes; instancesForMedia:"+instancesForMedia);
-	        	while ( collector.getSmallestStudy() != null && maxSize >= collector.getSmallestStudy().getStudySize() ) { 
-	        		//collector contains one ore more studies that can be collected to current media
-	        		collSize = collector.collectInstancesForSize( instancesForMedia, maxSize );
-	        		if ( collSize > 0L ) {
-	                	maxSize -= collSize;
-	                	if ( log.isDebugEnabled() ) log.debug("Additional Collected: "+collSize );
-	        		} else {
-	        			break; 
-	        		}
-	        	} 
-	        	if ( log.isDebugEnabled() ) log.debug("Final collected for media:"+mediaLocal.getFilesetId()+" free:"+maxSize+" bytes; instancesForMedia:"+instancesForMedia);
-        	}
-        	//media full -> assign media -> new media
-        	this.assignMedia( instancesForMedia, mediaLocal );
-        	
-        	nrOfStudies = collector.getNumberOfStudies();
-        }
-        
-        return c.size();
-    }
-    
-    /**
-     * Returns the next MediaLocal object from <code>col</code>.
-     * <p>
-     * If <code>col</code> is empty, a new MediaLocal is created.
-     * <p>
-     * In the other case the returning MediaLocal object is removed from the collection.
-     *  
-     * @param coll 	Collection with MediaLocal objects.
-     * 
-     * @return		The next MediaLocal object from co or a new created MediaLocal.
-     * 
-     * @throws CreateException if create of a new MediaLocal failed.
-     */
-    private MediaLocal getNextMediaLocal( Collection coll, String prefix ) throws CreateException {
-    	MediaLocal ml = null;
-    	if ( coll.size() > 0 ) {
-    		ml = (MediaLocal) coll.iterator().next();
-    		coll.remove( ml );
-    	} else {
-			ml = createMedia( prefix );
-    	}
-    	return ml;
-    }
-    
-    /**
-     * Checks the <code>collector</code> for studies with a size greater than <code>maxMediaUsage</code>.
-     * <p>
-     * If the collector contains such studies, they will be splitted and assigned to new created media objects.
-     * 
-     * @param collector		The InstanceCollector with instances collected to studies.
-     * @param maxMediaUsage	Max number of bytes that can be used to store instances on a media.
-     * @param prefix		Prefix for FileSet id.
-     */
-    private void splitTooLargeStudies(InstanceCollector collector, long maxMediaUsage, String prefix ){
-        InstanceContainer largest = collector.getLargestStudy();
-        while ( largest != null && largest.getStudySize() > maxMediaUsage ){
-        	if ( log.isInfoEnabled() ) log.info( "Study (pk="+largest.getStudyPk()+") to large ("+largest.getStudySize()+") for a single medium ("+maxMediaUsage+") !");
-        	List splitList = collector.split( largest, maxMediaUsage );
-        	if ( log.isInfoEnabled() ) log.info( "Study (pk="+largest.getStudyPk()+") splitted to "+splitList.size()+" media!");
-        	
-        	try {
-        		Iterator iter = splitList.iterator();
-        		InstanceContainer ic;
-        		MediaLocal ml;
-        		InstanceLocal il;
-        		while ( iter.hasNext() ) {
-        			ic = (InstanceContainer) iter.next();
-        			ml = createMedia( prefix );
-    				assignMedia( ic, ml );
-        		}
-			} catch (Exception e) {
-				log.error("Split study for storage: Cant create new MediaLocal! studyPk:"+largest.getStudyPk(), e );
+		}
+		log.debug("We need new media! mediaPool:"+mediaPool);
+		MediaLocal media = createMedia( prefix );
+		mediaPool.add(media);
+		return media;
+		
+	}
+
+/**
+	 * @param instanceFiles
+	 * @param maxMediaSize
+	 * @param prefix
+ * @throws CreateException
+	 */
+	private void splitStudy(Map instanceFiles, List mediaPool, long maxMediaSize, String prefix) throws CreateException {
+		Map.Entry entry;
+		log.info("Split study!");
+		long fileSize, size = 0;
+		Set instances = new HashSet();
+		for ( Iterator iter = instanceFiles.entrySet().iterator() ; iter.hasNext() ; ) {
+			entry = (Map.Entry) iter.next();
+			fileSize = ((FileLocal) entry.getValue()).getFileSize();
+			size += fileSize;
+			if ( size > maxMediaSize ) {
+				log.debug("assign instances ("+instances.size()+"/"+instanceFiles.size()+") to new media!");
+				assignInstancesToMedia( instances, size, createMedia(prefix));
+				size = fileSize;
+				instances.clear();
 			}
-        	largest = collector.getLargestStudy();
-        }
-    }
+			instances.add( entry.getKey());
+		}
+		if ( !instances.isEmpty() ) {
+			log.debug("assign remaining instances ("+instances.size()+"/"+instanceFiles.size()+") to new media!");
+			assignInstancesToMedia(instances, size, getMedia(mediaPool, maxMediaSize - size, prefix));
+		}
+	}
+
+/**
+    * 
+    * @ejb.interface-method
+  	*/
+   public List getCollectingMedia() throws FinderException {
+	    List mediaCollection = (List) mediaHome.findByStatus( MediaDTO.OPEN );
+	    Comparator comp = new Comparator() {
+			public int compare(Object arg0, Object arg1) {
+				MediaLocal ml1 = (MediaLocal) arg0;
+				MediaLocal ml2 = (MediaLocal) arg1;
+				return (int) ( ml2.getMediaUsage() - ml1.getMediaUsage() );//more usage before lower usage!
+			}
+		};
+	    Collections.sort( mediaCollection, comp );
+	    log.debug("Number of 'COLLECTING' media found:"+mediaCollection.size() );
+    	return mediaCollection;
+   }
 
     /**
      * Creates a new media.
@@ -312,70 +311,6 @@ public abstract class MediaComposerBean implements SessionBean {
 		return ml;
 	}
 
-	/**
-     * Assign the given medialLocal to all instances of given InstanceContainer.
-     * 
-     * @param container		The InstanceContainer with a study for given media
-     * @param mediaLocal	The media that will be assigned.
-     */
-    private void assignMedia( InstanceContainer container, MediaLocal mediaLocal ) {
-		Iterator iterInstances = container.getInstances().iterator();
-		InstanceLocal il;
-		while ( iterInstances.hasNext() ) {
-			il = (InstanceLocal) iterInstances.next();
-        	if ( log.isDebugEnabled() ) log.debug( "Assign media "+mediaLocal.getFilesetId()+
-        										" to instance pk="+il.getPk()+"("+il.getSopIuid()+
-												") of study pk="+container.getStudyPk()+"!");
-			il.setMedia( mediaLocal );
-			mediaLocal.setMediaUsage( mediaLocal.getMediaUsage() + getInstanceSize( il ) );
-		}
-    }
-	/**
-	 * Returns the size of the given instance.
-	 * <p>
-	 * If the instance contains more than one file, the size of the latest (with highest pk) file is used.
-	 * <p>
-	 * Copy of InstanceCollector.getInstanceSize method!!
-	 * 
-	 * @param instance The instance
-	 * 
-	 * @return The file size of the instance.
-	 */
-	private long getInstanceSize(InstanceLocal instance) {
-		Collection col = instance.getFiles();
-		if ( col.size() == 1 ) { FileLocal l;
-			return ( (FileLocal) col.iterator().next() ).getFileSize();
-		} else {
-			long size = 0;
-			long pk = Long.MIN_VALUE;
-			Iterator iter = col.iterator();
-			FileLocal file;
-			while ( iter.hasNext() ) {
-				file = (FileLocal) iter.next();
-				if ( file.getPk().longValue() > pk ) {
-					pk = file.getPk().longValue();
-					size = file.getFileSize();
-				}
-			}
-			return size;
-		}
-	}
-
-    /**
-     * Assign the given MediaLocal to all instances of given collection of InstanceContainer(studies).
-     * 
-     * @param studies		Collection of InstanceContainer.
-     * @param mediaLocal	The media that will be assigned.
-     */
-    private void assignMedia( Collection studies, MediaLocal mediaLocal) {
-    	InstanceContainer ic;
-    	Iterator iter = studies.iterator();
-    	while ( iter.hasNext() ) {
-    		ic = (InstanceContainer) iter.next();
-    		assignMedia( ic, mediaLocal );
-    	}
-    }
-    
     /**
      * Returns a list of all media with the given media status.
      * <p>

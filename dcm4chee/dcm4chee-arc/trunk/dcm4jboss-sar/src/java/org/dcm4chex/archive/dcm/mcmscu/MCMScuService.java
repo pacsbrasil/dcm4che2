@@ -80,6 +80,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposer;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.mbean.SendMailService;
@@ -642,22 +643,24 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 */
 	public int scheduleMedia() {
         log.info("Check for studies for scheduling on media");
+        long l1 = System.currentTimeMillis();
 		MediaComposer mc = null;
 		try {
 			mc = this.lookupMediaComposer();
+			Collection studies = mc.getStudiesReceivedBefore( getSearchDate() );
+			List mediaPool = null;
+			String prefix = getFileSetIdPrefix();
+			log.info(studies.size()+" are selected for scheduling on media!");
+			for ( Iterator iter = studies.iterator() ; iter.hasNext() ; ) {
+				mediaPool = mc.assignStudyToMedia( (StudyLocal) iter.next(), mediaPool, 
+												maxMediaUsage, prefix );
+			}
+			log.info("Schedule of "+studies.size()+" studies completed. Number of collecting media:"+mediaPool.size()+". time:"+(System.currentTimeMillis()-l1)+" ms!");
+			return studies.size();
 		} catch ( Exception x ) {
 			log.error("Can not create MediaComposer!",x);
 			return -1;
 		}
-		
-		try {
-			int size = mc.collectStudiesReceivedBefore( getSearchDate(), maxMediaUsage, getFileSetIdPrefix() );
-			return size;
-		} catch ( Exception x ) {
-			log.error("Can not collect studies!",x);
-			return -2;
-		}
-		
 	}
 	
 	/**

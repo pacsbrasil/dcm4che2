@@ -87,6 +87,9 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.finder signature="java.util.Collection findStudiesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
  *             query="SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1"
  *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findStudiesNotOnMedia(java.sql.Timestamp minCreatedTime)"
+ *             query="SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media IS NULL and st.createdTime < ?1 "
+ *             transaction-type="Supports"
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
  *              strategy="on-find"
  *              eager-load-group="*"
@@ -813,4 +816,20 @@ public abstract class StudyBean implements EntityBean {
     public Collection getFiles(Long fsPk) throws FinderException {    	
         return ejbSelectFiles(getPk(), fsPk);
     }
+    
+    /**
+     * @ejb.select query="SELECT Object(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media IS NULL"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectInstancesNotOnMedia(java.lang.Long study_pk)
+            throws FinderException;
+    
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getInstancesNotOnMedia() throws FinderException {    	
+        return ejbSelectInstancesNotOnMedia(getPk());
+    }
+    
+    
 }
