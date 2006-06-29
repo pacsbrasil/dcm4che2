@@ -17,7 +17,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.Manufacturer);
     }
 
-    public void getManufacturer(String s) {
+    public void setManufacturer(String s) {
         dcmobj.putString(Tag.Manufacturer, VR.LO, s);
     }
 
@@ -25,7 +25,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.InstitutionName);
     }
 
-    public void getInstitutionName(String s) {
+    public void setInstitutionName(String s) {
         dcmobj.putString(Tag.InstitutionName, VR.LO, s);
     }
 
@@ -33,7 +33,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.InstitutionAddress);
     }
 
-    public void getInstitutionAddress(String s) {
+    public void setInstitutionAddress(String s) {
         dcmobj.putString(Tag.InstitutionAddress, VR.ST, s);
     }
 
@@ -41,7 +41,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.StationName);
     }
     
-    public void getStationName(String s) {
+    public void setStationName(String s) {
         dcmobj.putString(Tag.StationName, VR.SH, s);
     }
     
@@ -49,7 +49,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.InstitutionalDepartmentName);
     }
 
-    public void getInstitutionalDepartmentName(String s) {
+    public void setInstitutionalDepartmentName(String s) {
         dcmobj.putString(Tag.InstitutionalDepartmentName, VR.LO, s);
     }
 
@@ -57,7 +57,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.ManufacturersModelName);
     }
 
-    public void getManufacturersModelName(String s) {
+    public void setManufacturersModelName(String s) {
         dcmobj.putString(Tag.ManufacturersModelName, VR.LO, s);
     }
 
@@ -65,7 +65,7 @@ public class GeneralEquipmentModule extends Module {
         return dcmobj.getString(Tag.DeviceSerialNumber);
     }
 
-    public void getDeviceSerialNumber(String s) {
+    public void setDeviceSerialNumber(String s) {
         dcmobj.putString(Tag.DeviceSerialNumber, VR.LO, s);
     }
 
