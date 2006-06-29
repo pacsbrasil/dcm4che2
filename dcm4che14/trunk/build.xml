@@ -3,7 +3,7 @@
 <project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.4.2"/>
+   <property name="version" value="1.4.3"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">
@@ -506,7 +506,15 @@
             <include name="DcmDir.properties"/>
          </fileset>
       </copy>
-      
+    
+    <mkdir dir="${dist.dir}/samples/iftm"/>
+    <copy todir="${dist.dir}/samples/iftm">
+       <fileset dir="${samples.java.dir}">
+          <include name="de/iftm/dcm4che/services/**"/>
+          <include name="de/iftm/sample/*"/>
+       </fileset>
+    </copy>
+   	
       <mkdir dir="${dist.dir}/samples/net"/>
       <copy todir="${dist.dir}/samples/net">
          <fileset dir="${samples.java.dir}">
