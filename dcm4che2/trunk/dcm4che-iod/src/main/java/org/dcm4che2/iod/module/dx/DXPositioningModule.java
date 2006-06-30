@@ -43,6 +43,8 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
 import org.dcm4che2.iod.module.macro.Code;
+import org.dcm4che2.iod.module.macro.PatientOrientationCode;
+import org.dcm4che2.iod.module.macro.ViewCode;
 
 /**
  * 
@@ -120,10 +122,27 @@ public class DXPositioningModule extends Module {
     public String getViewPosition() {
         return dcmobj.getString(Tag.ViewPosition);
     }
+    
+    public void setViewCode(ViewCode code) {
+        updateSequence(Tag.ViewCodeSequence, code);        
+    }
 
-    // TODO View Code Sequence and Modified Code Seuquence
+    public ViewCode getViewCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.ViewCodeSequence);
+        return item != null ? new ViewCode(item) : null;        
+    }
 
-    // TODO Patient Orientation Code and Modifier sequences
+    public void setPatientOrientationCode(PatientOrientationCode code) {
+        updateSequence(Tag.PatientOrientationCodeSequence, code);        
+    }
+
+    public PatientOrientationCode getPatientOrientationCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.PatientOrientationCodeSequence);
+        return item != null ? new PatientOrientationCode(item) : null;        
+    }
+
 
     /**
      * Sequence Sequence which describes the orientation of the patient with
