@@ -43,6 +43,10 @@ import org.dcm4che2.iod.module.composite.ContrastBolusModule;
 import org.dcm4che2.iod.module.composite.DeviceModule;
 import org.dcm4che2.iod.module.composite.GeneralImageModule;
 import org.dcm4che2.iod.module.composite.ImagePixelModule;
+import org.dcm4che2.iod.module.dx.DXAnatomyImagedModule;
+import org.dcm4che2.iod.module.dx.DXDetectorModule;
+import org.dcm4che2.iod.module.dx.DXImageModule;
+import org.dcm4che2.iod.module.dx.DXPositioningModule;
 import org.dcm4che2.iod.module.dx.DXSeriesModule;
 import org.dcm4che2.iod.module.lut.VOILUTModule;
 import org.dcm4che2.iod.module.overlay.OverlayPlaneModule;
@@ -104,11 +108,39 @@ public class DXImage extends Composite {
 
     protected final ContrastBolusModule contrastBolusModule;
 
+    //TODO DisplayShutter
+    
     protected final DeviceModule deviceModule;
 
+    //TODO Intervention Module
+    
+    protected final DXAnatomyImagedModule dxAnatomyImagedModule;
+    
+    protected final DXImageModule dxImageModule;
+    
+    protected final DXDetectorModule dxDetectorModule;
+    
+    //TODO x-ray collimator
+    
+    protected final DXPositioningModule dxPositioningModule;
+    
+    //TODO x-ray tomo axquisition
+    
+    //TODO x-ray acquisition dose
+    
+    //TODO x-ray generation
+    
+    //TODO x-ray filtration
+    
+    //TODO x-ray grid
+    
     protected final OverlayPlaneModule overlayPlaneModule;
 
     protected final VOILUTModule voiLUTModule;
+    
+    //TODO Image Histogram
+    
+    //TODO Acquisition Context THIS IS MANDATORY!!
 
     public DXImage(DicomObject dcmobj) {
         super(dcmobj);
@@ -117,13 +149,58 @@ public class DXImage extends Composite {
         this.generalImageModule = new GeneralImageModule(dcmobj);
         this.imagePixelModule = new ImagePixelModule(dcmobj);
         this.contrastBolusModule = new ContrastBolusModule(dcmobj);
+        
         this.deviceModule = new DeviceModule(dcmobj);
+        this.dxAnatomyImagedModule = new DXAnatomyImagedModule(dcmobj);
+        this.dxImageModule = new DXImageModule(dcmobj);
+        this.dxDetectorModule = new DXDetectorModule(dcmobj);
+        this.dxPositioningModule = new DXPositioningModule(dcmobj);
         this.overlayPlaneModule = new OverlayPlaneModule(dcmobj);
         this.voiLUTModule = new VOILUTModule(dcmobj);
     }
 
     public final DXSeriesModule getDXSeriesModule() {
         return dxSeriesModule;
+    }
+
+    public GeneralImageModule getGeneralImageModule(){
+        return generalImageModule;
+    }
+    
+    public ImagePixelModule getImagePixelModule(){
+        return imagePixelModule;
+    }
+    
+    public ContrastBolusModule getContrastBolusModule(){
+        return contrastBolusModule;
+    }
+    
+    public DeviceModule getDeviceModule(){
+        return deviceModule;
+    }
+    
+    public DXAnatomyImagedModule getDXAnatomyImageModule(){
+        return dxAnatomyImagedModule;
+    }
+    
+    public DXImageModule getDXImageModule(){
+        return dxImageModule;
+    }
+    
+    public DXDetectorModule getDXDetectorModule(){
+        return dxDetectorModule;
+    }
+
+    public DXPositioningModule getDXPositioningModule() {
+        return dxPositioningModule;
+    }
+
+    public OverlayPlaneModule getOverlayPlaneModule(){
+        return overlayPlaneModule;
+    }
+    
+    public VOILUTModule getVOILUTModule(){
+        return voiLUTModule;
     }
 
 }
