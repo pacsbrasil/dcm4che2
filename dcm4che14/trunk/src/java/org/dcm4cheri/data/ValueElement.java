@@ -856,7 +856,7 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
-            return index < vm(null) ? StringUtils.promptOF(data, maxLen) : null;
+            return index < vm(null) ? StringUtils.promptOF(getByteBuffer(), maxLen) : null;
         }
 
         public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
@@ -866,7 +866,7 @@ abstract class ValueElement extends DcmElementImpl {
         public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
             String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = StringUtils.promptOF(data, maxLen);
+                a[i] = StringUtils.promptOF(getByteBuffer(), maxLen);
             }
             return a;
         }
@@ -929,7 +929,7 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
-            return index < vm(null) ? StringUtils.promptOW(data, maxLen) : null;
+            return index < vm(null) ? StringUtils.promptOW(getByteBuffer(), maxLen) : null;
         }
 
         public String[] getStrings(SpecificCharacterSet cs) {
@@ -939,7 +939,7 @@ abstract class ValueElement extends DcmElementImpl {
         public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
             String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = StringUtils.promptOW(data, maxLen);
+                a[i] = StringUtils.promptOW(getByteBuffer(), maxLen);
             }
             return a;
         }
@@ -989,7 +989,7 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
-            return index < vm(null) ? StringUtils.promptOB(data, maxLen) : null;
+            return index < vm(null) ? StringUtils.promptOB(getByteBuffer(), maxLen) : null;
         }
 
         public String[] getStrings(SpecificCharacterSet cs) {
@@ -999,7 +999,7 @@ abstract class ValueElement extends DcmElementImpl {
         public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
             String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = StringUtils.promptOB(data, maxLen);
+                a[i] = StringUtils.promptOB(getByteBuffer(), maxLen);
             }
             return a;
         }
@@ -1031,7 +1031,7 @@ abstract class ValueElement extends DcmElementImpl {
         }
 
         public String getBoundedString(int maxLen, int index, SpecificCharacterSet cs) {
-            return index < vm(null) ? StringUtils.promptOB(data, maxLen) : null;
+            return index < vm(null) ? StringUtils.promptOB(getByteBuffer(), maxLen) : null;
         }
 
         public String[] getStrings(SpecificCharacterSet cs) throws DcmValueException {
@@ -1041,7 +1041,7 @@ abstract class ValueElement extends DcmElementImpl {
         public String[] getBoundedStrings(int maxLen, SpecificCharacterSet cs) {
             String[] a = new String[vm(null)];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = StringUtils.promptOB(data, maxLen);
+                a[i] = StringUtils.promptOB(getByteBuffer(), maxLen);
             }
             return a;
         }
