@@ -80,7 +80,7 @@ public class PrimaryAnatomicStructureCode extends Code {
 	 * 
 	 * @param codes
 	 */
-	public void setCodes(Code[] codes) {
+	public void setPrimaryAnatomicStructureModifierCodes(Code[] codes) {
 		updateSequence(Tag.PrimaryAnatomicStructureModifierSequence, codes);
 	}
 
@@ -91,7 +91,7 @@ public class PrimaryAnatomicStructureCode extends Code {
 	 * 
 	 * @return
 	 */
-	public Code[] getCodes() {
+	public Code[] getPrimaryAnatomicStructureModifierCodes() {
 		return Code.toCodes(dcmobj
 				.get(Tag.PrimaryAnatomicStructureModifierSequence));
 	}
