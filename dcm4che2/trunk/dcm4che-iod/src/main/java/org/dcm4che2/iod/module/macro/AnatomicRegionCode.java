@@ -40,68 +40,36 @@ package org.dcm4che2.iod.module.macro;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.iod.module.Module;
 
 /**
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @see org.dcm4che2.iod.module.macro.GeneralAnatomy
- * @see org.dcm4che2.iod.module.macro.PrimaryAnatomicStructureModifier
+ *
  */
-public class PrimaryAnatomicStructureMacro extends Module {
+public class AnatomicRegionCode extends Code {
 
-    public PrimaryAnatomicStructureMacro(DicomObject dcmobj) {
-        super(dcmobj);
-    }
-
+	public AnatomicRegionCode(DicomObject dcmobj) {
+		super(dcmobj);
+	}
+	
     /**
-     * Sequence Sequence of Items that identifies the primary anatomic
-     * structure(s) of interest in this Instance.
-     * 
-     * One or more Items may be included in this Sequence.
+     * A sequence of {@link Code}s that represent the anatomic region modifiers.
      * 
      * @return
      */
-    public Code[] getPrimaryAnatomicStructures() {
-        return Code.toCodes(dcmobj.get(Tag.PrimaryAnatomicStructureSequence));
-    }
+	public Code[] getAnatomicRegionModifiers(){
+		return Code.toCodes(dcmobj.get(Tag.AnatomicRegionModifierSequence));
+	}
 
     /**
-     * Sequence Sequence of Items that identifies the primary anatomic
-     * structure(s) of interest in this Instance.
-     * 
-     * One or more Items may be included in this Sequence.
+     * A sequence of {@link Code}s that represent the anatomic region modifiers.
      * 
      * @param codes
      */
-    public void setPrimaryAnatomicStructures(Code[] codes) {
-        updateSequence(Tag.PrimaryAnatomicStructureSequence, codes);
-    }
+	public void setAnatomicRegionModifiers(Code[] codes){
+		updateSequence(Tag.AnatomicRegionModifierSequence, codes);
+	}
 
-    /**
-     * Sequence Sequence of Items that modifies the primary anatomic structure
-     * of interest in this Instance.
-     * 
-     * One or more Items may be included in this Sequence.
-     * 
-     * @return
-     */
-    public PrimaryAnatomicStructureModifier[] getPrimaryAnatomicStructureModifiers() {
-        return PrimaryAnatomicStructureModifier
-                .toPrimaryAnatomicStructureModifiers(dcmobj
-                        .get(Tag.PrimaryAnatomicStructureModifierSequence));
-    }
-
-    /**
-     * Sequence Sequence of Items that modifies the primary anatomic structure
-     * of interest in this Instance.
-     * 
-     * One or more Items may be included in this Sequence.
-     * 
-     * @param pasm
-     */
-    public void setPrimaryAnatomicStructureModifiers(
-            PrimaryAnatomicStructureModifier[] pasm) {
-        updateSequence(Tag.PrimaryAnatomicStructureModifierSequence, pasm);
-    }
 
 }

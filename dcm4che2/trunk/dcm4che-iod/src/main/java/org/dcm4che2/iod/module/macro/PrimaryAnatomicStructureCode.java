@@ -41,7 +41,6 @@ package org.dcm4che2.iod.module.macro;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.iod.module.Module;
 
 /**
  * A macro for the primary anatomic structure modifier.
@@ -51,23 +50,25 @@ import org.dcm4che2.iod.module.Module;
  * Anatomic Strucure Macro (Table 10-8 PS3.3 2006).
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
-public class PrimaryAnatomicStructureModifier extends Module {
+public class PrimaryAnatomicStructureCode extends Code {
 
-	public PrimaryAnatomicStructureModifier(DicomObject dcmobj) {
+	public PrimaryAnatomicStructureCode(DicomObject dcmobj) {
 		super(dcmobj);
-		// TODO Auto-generated constructor stub
 	}
 
-	public static PrimaryAnatomicStructureModifier[] toPrimaryAnatomicStructureModifiers(
-			DicomElement sq) {
+	public static PrimaryAnatomicStructureCode[]
+            toPrimaryAnatomicStructureCodes(DicomElement sq) {
 		if (sq == null || !sq.hasItems()) {
 			return null;
 		}
-		PrimaryAnatomicStructureModifier[] a = new PrimaryAnatomicStructureModifier[sq.countItems()];
+		PrimaryAnatomicStructureCode[] a = 
+            new PrimaryAnatomicStructureCode[sq.countItems()];
 		for (int i = 0; i < a.length; i++) {
-			a[i] = new PrimaryAnatomicStructureModifier(sq.getDicomObject(i));
+			a[i] = new PrimaryAnatomicStructureCode(
+                    sq.getDicomObject(i));
 		}
 		return a;
 	}

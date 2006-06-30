@@ -50,6 +50,7 @@ import org.dcm4che2.iod.module.macro.Code;
  * acquiring Digital X-Ray Images.
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
 public class DXPositioningModule extends Module {
@@ -70,17 +71,18 @@ public class DXPositioningModule extends Module {
      * 
      * @param codes
      */
-    public void setProjectionEponymousNameCodes(Code[] codes) {
-        updateSequence(Tag.ProjectionEponymousNameCodeSequence, codes);
+    public void setProjectionEponymousNameCode(Code code) {
+        updateSequence(Tag.ProjectionEponymousNameCodeSequence, code);
     }
 
-    public Code[] getProjectionEponymousNameCodes() {
-        return Code
-                .toCodes(dcmobj.get(Tag.ProjectionEponymousNameCodeSequence));
+    public Code getProjectionEponymousNameCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.ProjectionEponymousNameCodeSequence);
+        return item != null ? new Code(item) : null;
     }
 
     /**
-     * Description of imaging subject’s position relative to the equipment.
+     * Description of imaging subject√ïs position relative to the equipment.
      * 
      * See C.7.3.1.1.2 for Defined Terms and further explanation.
      * 
@@ -101,7 +103,7 @@ public class DXPositioningModule extends Module {
     }
 
     /**
-     * Radiographic view of the image relative to the imaging subject’s
+     * Radiographic view of the image relative to the imaging subject√ïs
      * orientation.
      * 
      * Shall be consistent with View Code Sequence (0054,0220). See C.8.11.5.1.1
@@ -131,13 +133,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      */
-    public void setPatientGantryRelationshipCodes(Code[] codes) {
-        updateSequence(Tag.PatientGantryRelationshipCodeSequence, codes);
+    public void setPatientGantryRelationshipCode(Code code) {
+        updateSequence(Tag.PatientGantryRelationshipCodeSequence, code);
     }
 
-    public Code[] getPatientGantryRelationshipCodes() {
-        return Code.toCodes(dcmobj
-                .get(Tag.PatientGantryRelationshipCodeSequence));
+    public Code getPatientGantryRelationshipCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.PatientGantryRelationshipCodeSequence);
+        return item != null ? new Code(item) : null;
     }
 
     /**
@@ -152,7 +155,7 @@ public class DXPositioningModule extends Module {
      * Subject, but accounts for what is realistically measurable in an
      * automated fashion in a clinical setting.
      * <li> This measurement does not take into account any air gap between the
-     * Imaging Subject and the “front” of the table or bucky.
+     * Imaging Subject and the √ífront√ì of the table or bucky.
      * <li> If the detector is not mounted in a table or bucky, then the actual
      * position relative to the patient is implementation or operator defined.
      * <li> This value is traditionally referred to as Source Object Distance
