@@ -42,7 +42,6 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.iod.module.composite.ContrastBolusModule;
 import org.dcm4che2.iod.module.composite.DeviceModule;
 import org.dcm4che2.iod.module.composite.GeneralImageModule;
-import org.dcm4che2.iod.module.composite.ImagePixelModule;
 import org.dcm4che2.iod.module.dx.DXAnatomyImagedModule;
 import org.dcm4che2.iod.module.dx.DXDetectorModule;
 import org.dcm4che2.iod.module.dx.DXImageModule;
@@ -104,8 +103,6 @@ public class DXImage extends Composite {
 
     protected final GeneralImageModule generalImageModule;
 
-    protected final ImagePixelModule imagePixelModule;
-
     protected final ContrastBolusModule contrastBolusModule;
 
     //TODO DisplayShutter
@@ -147,7 +144,6 @@ public class DXImage extends Composite {
 
         this.dxSeriesModule = new DXSeriesModule(dcmobj);
         this.generalImageModule = new GeneralImageModule(dcmobj);
-        this.imagePixelModule = new ImagePixelModule(dcmobj);
         this.contrastBolusModule = new ContrastBolusModule(dcmobj);
         
         this.deviceModule = new DeviceModule(dcmobj);
@@ -165,10 +161,6 @@ public class DXImage extends Composite {
 
     public GeneralImageModule getGeneralImageModule(){
         return generalImageModule;
-    }
-    
-    public ImagePixelModule getImagePixelModule(){
-        return imagePixelModule;
     }
     
     public ContrastBolusModule getContrastBolusModule(){

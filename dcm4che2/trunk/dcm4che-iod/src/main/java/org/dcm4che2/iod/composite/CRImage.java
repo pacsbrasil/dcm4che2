@@ -5,7 +5,6 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.iod.module.composite.ContrastBolusModule;
 import org.dcm4che2.iod.module.composite.DeviceModule;
 import org.dcm4che2.iod.module.composite.GeneralImageModule;
-import org.dcm4che2.iod.module.composite.ImagePixelModule;
 import org.dcm4che2.iod.module.cr.CRImageModule;
 import org.dcm4che2.iod.module.cr.CRSeriesModule;
 import org.dcm4che2.iod.module.lut.ModalityLUTModule;
@@ -16,7 +15,6 @@ public class CRImage extends Composite {
 
     protected final CRSeriesModule crSeriesModule;
     protected final GeneralImageModule generalImageModule;
-    protected final ImagePixelModule imagePixelModule;
     protected final ContrastBolusModule contrastBolusModule;
     protected final DeviceModule deviceModule;
     protected final CRImageModule crImageModule;
@@ -28,7 +26,6 @@ public class CRImage extends Composite {
         super(dcmobj);
         this.crSeriesModule = new CRSeriesModule(dcmobj);
         this.generalImageModule = new GeneralImageModule(dcmobj);
-        this.imagePixelModule = new ImagePixelModule(dcmobj);
         this.contrastBolusModule = new ContrastBolusModule(dcmobj);
         this.deviceModule = new DeviceModule(dcmobj);
         this.crImageModule = new CRImageModule(dcmobj);
@@ -47,10 +44,6 @@ public class CRImage extends Composite {
     
     public final GeneralImageModule getGeneralImageModule() {
         return generalImageModule;
-    }
-    
-    public final ImagePixelModule getImagePixelModule() {
-        return imagePixelModule;
     }
     
     public final ContrastBolusModule getContrastBolusModule() {

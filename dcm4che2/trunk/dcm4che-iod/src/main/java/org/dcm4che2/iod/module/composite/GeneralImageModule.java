@@ -43,7 +43,6 @@ import java.util.Date;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
 import org.dcm4che2.iod.module.macro.Code;
 import org.dcm4che2.iod.module.macro.ImageSOPInstanceReferenceAndPurpose;
 import org.dcm4che2.iod.module.macro.SOPInstanceReferenceAndPurpose;
@@ -54,7 +53,7 @@ import org.dcm4che2.iod.module.macro.SOPInstanceReferenceAndPurpose;
  * @since Jun 9, 2006
  *
  */
-public class GeneralImageModule extends Module {
+public class GeneralImageModule extends ImagePixel {
 
     public GeneralImageModule(DicomObject dcmobj) {
         super(dcmobj);
@@ -241,4 +240,11 @@ public class GeneralImageModule extends Module {
         dcmobj.putString(Tag.IrradiationEventUID, VR.UI, s);
     }
 
+    public String getPixelDataProviderURL() {
+        return dcmobj.getString(Tag.PixelDataProviderURL);
+    }
+    
+    public void setPixelDataProviderURL(String s) {
+        dcmobj.putString(Tag.PixelDataProviderURL, VR.UT, s);
+    }
 }
