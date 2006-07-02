@@ -41,7 +41,7 @@ package org.dcm4che2.iod.module.cr;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -49,7 +49,7 @@ import org.dcm4che2.iod.module.Module;
  * @since Jun 9, 2006
  *
  */
-public class CRSeriesModule extends Module {
+public class CRSeriesModule extends GeneralSeriesModule {
 
     public CRSeriesModule(DicomObject dcmobj) {
         super(dcmobj);

@@ -47,6 +47,7 @@ import org.dcm4che2.iod.module.Module;
 import org.dcm4che2.iod.module.macro.PersonIdentification;
 import org.dcm4che2.iod.module.macro.ProtocolCodeAndContext;
 import org.dcm4che2.iod.module.macro.SOPInstanceReference;
+import org.dcm4che2.iod.value.PixelRepresentation;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -130,7 +131,7 @@ public class GeneralSeriesModule extends Module {
         return dcmobj.getString(Tag.SeriesDescription);
     }
 
-    public void getSeriesDescription(String s) {
+    public void setSeriesDescription(String s) {
         dcmobj.putString(Tag.SeriesDescription, VR.LO, s);
     }
 
@@ -192,7 +193,7 @@ public class GeneralSeriesModule extends Module {
 
     public void setSmallestPixelValueinSeries(int s) {
         dcmobj.putInt(Tag.SmallestPixelValueinSeries,
-                isSignedPixelValues() ? VR.SS : VR.US, s);
+                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public int getLargestPixelValueinSeries() {
@@ -201,7 +202,7 @@ public class GeneralSeriesModule extends Module {
 
     public void setLargestPixelValueinSeries(int s) {
         dcmobj.putInt(Tag.LargestPixelValueinSeries,
-                isSignedPixelValues() ? VR.SS : VR.US, s);
+                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public RequestAttributes[] getRequestAttributes() {
@@ -235,7 +236,7 @@ public class GeneralSeriesModule extends Module {
         return dcmobj.getString(Tag.PerformedProcedureStepDescription);
     }
 
-    public void getPerformedProcedureStepDescription(String s) {
+    public void setPerformedProcedureStepDescription(String s) {
         dcmobj.putString(Tag.PerformedProcedureStepDescription, VR.LO, s);
     }
 
@@ -252,7 +253,7 @@ public class GeneralSeriesModule extends Module {
         return dcmobj.getString(Tag.CommentsonthePerformedProcedureStep);
     }
 
-    public void getCommentsonthePerformedProcedureStep(String s) {
+    public void setCommentsonthePerformedProcedureStep(String s) {
         dcmobj.putString(Tag.CommentsonthePerformedProcedureStep, VR.ST, s);
     }
 

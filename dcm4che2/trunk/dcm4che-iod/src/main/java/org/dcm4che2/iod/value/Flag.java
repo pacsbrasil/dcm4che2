@@ -35,21 +35,24 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.dx;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+package org.dcm4che2.iod.value;
 
 /**
- * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version Revision $Date$
+ * @since 02.07.2006
  */
-public class IntraOralSeriesModule extends GeneralSeriesModule {
 
-	public IntraOralSeriesModule(DicomObject dcmobj) {
-		super(dcmobj);
-	}
-
+public class Flag {
+    public static final String YES = "YES";
+    public static final String NO = "NO";
+    public static boolean isValid(String cs) {
+        return cs == null || cs.equals(YES) || cs.equals(NO);
+    }
+    public static boolean isYes(String cs) {
+        return cs != null && cs.equals(YES);
+    }
+    public static boolean isNO(String cs) {
+        return cs != null && cs.equals(NO);
+    }
 }

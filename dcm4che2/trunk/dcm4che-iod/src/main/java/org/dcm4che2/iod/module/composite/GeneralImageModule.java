@@ -46,6 +46,11 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.macro.Code;
 import org.dcm4che2.iod.module.macro.ImageSOPInstanceReferenceAndPurpose;
 import org.dcm4che2.iod.module.macro.SOPInstanceReferenceAndPurpose;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
+import org.dcm4che2.iod.value.Flag;
+import org.dcm4che2.iod.value.LossyImageCompression;
+import org.dcm4che2.iod.value.PresentationLUTShape;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -59,6 +64,25 @@ public class GeneralImageModule extends ImagePixel {
         super(dcmobj);
     }
 
+    public void init() {
+        super.init();
+        setSamplesPerPixel(1);
+        setPixelRepresentation(0);
+    }
+    
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        if (!PresentationLUTShape.isValidSoftCopy(getPresentationLUTShape())) {
+            result.logInvalidValue(Tag.PresentationLUTShape, dcmobj);
+        }
+        if (!LossyImageCompression.isValid(getLossyImageCompression())) {
+            result.logInvalidValue(Tag.LossyImageCompression, dcmobj);            
+        }
+        if (!Flag.isValid(getBurnedInAnnotation())) {
+            result.logInvalidValue(Tag.BurnedInAnnotation, dcmobj);
+        }
+    }
+    
     public String getInstanceNumber() {
         return dcmobj.getString(Tag.InstanceNumber);
     }
@@ -130,8 +154,8 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getString(Tag.DerivationDescription);
     }
 
-    public void getDerivationDescription(String s) {
-        dcmobj.putString(Tag.DerivationDescription, VR.LO, s);
+    public void setDerivationDescription(String s) {
+        dcmobj.putString(Tag.DerivationDescription, VR.ST, s);
     }
     
     public Code[] getDerivationCodes() {
@@ -171,7 +195,7 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getString(Tag.ImageComments);
     }
 
-    public void getImageComments(String s) {
+    public void setImageComments(String s) {
         dcmobj.putString(Tag.ImageComments, VR.LT, s);
     }
 
@@ -179,7 +203,7 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getString(Tag.QualityControlImage);
     }
 
-    public void getQualityControlImage(String s) {
+    public void setQualityControlImage(String s) {
         dcmobj.putString(Tag.QualityControlImage, VR.CS, s);
     }
 
@@ -187,7 +211,7 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getString(Tag.BurnedInAnnotation);
     }
 
-    public void getBurnedInAnnotation(String s) {
+    public void setBurnedInAnnotation(String s) {
         dcmobj.putString(Tag.BurnedInAnnotation, VR.CS, s);
     }
 
@@ -195,7 +219,7 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getString(Tag.LossyImageCompression);
     }
 
-    public void getLossyImageCompression(String s) {
+    public void setLossyImageCompression(String s) {
         dcmobj.putString(Tag.LossyImageCompression, VR.CS, s);
     }
 
@@ -203,7 +227,7 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getFloats(Tag.LossyImageCompressionRatio);
     }
 
-    public void getLossyImageCompression(float[] floats) {
+    public void setLossyImageCompression(float[] floats) {
         dcmobj.putFloats(Tag.LossyImageCompressionRatio, VR.DS, floats);
     }
 
@@ -211,7 +235,7 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getStrings(Tag.LossyImageCompressionMethod);
     }
 
-    public void getLossyImageCompressionMethod(String[] ss) {
+    public void setLossyImageCompressionMethod(String[] ss) {
         dcmobj.putStrings(Tag.LossyImageCompressionMethod, VR.CS, ss);
     }
     
@@ -228,15 +252,15 @@ public class GeneralImageModule extends ImagePixel {
         return dcmobj.getString(Tag.PresentationLUTShape);
     }
 
-    public void getPresentationLUTShape(String s) {
+    public void setPresentationLUTShape(String s) {
         dcmobj.putString(Tag.PresentationLUTShape, VR.CS, s);
     }
 
-    public String IrradiationEventUID() {
+    public String getIrradiationEventUID() {
         return dcmobj.getString(Tag.IrradiationEventUID);
     }
 
-    public void getIrradiationEventUID(String s) {
+    public void setIrradiationEventUID(String s) {
         dcmobj.putString(Tag.IrradiationEventUID, VR.UI, s);
     }
 

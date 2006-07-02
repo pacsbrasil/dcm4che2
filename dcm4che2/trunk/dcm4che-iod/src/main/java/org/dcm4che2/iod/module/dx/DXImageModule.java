@@ -41,7 +41,14 @@ package org.dcm4che2.iod.module.dx;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralImageModule;
+import org.dcm4che2.iod.module.lut.LUT;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
+import org.dcm4che2.iod.value.Flag;
+import org.dcm4che2.iod.value.PixelIntensityRelationship;
+import org.dcm4che2.iod.value.RescaleType;
+import org.dcm4che2.iod.value.Sign;
 
 /**
  * 
@@ -52,175 +59,37 @@ import org.dcm4che2.iod.module.Module;
  * additional Attributes.
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
-public class DXImageModule extends Module {
+public class DXImageModule extends GeneralImageModule {
 
 	public DXImageModule(DicomObject dcmobj) {
 		super(dcmobj);
+    }
 
-		// From DICOM docs: Number of samples in this image. Shall have an
-		// Enumerated Value of 1.
-		setSamplesperPixel(1);
-
-		// Data representation of the pixel samples. Shall have the Enumerated
-		// Value: 0000H = Unsigned Integer.
-		setPixelRepresentation(0x0000);
-
-		// The value b in the relationship between
-		// stored values (SV) in Pixel Data
-		// (7FE0,0010) and the output units specified
-		// in Rescale Type (0028,1054).
-		// Output units = m*SV + b.
-		// Enumerated Value: 0
-		// See C.8.11.3.1.2 for further explanation.
-		setRescaleIntercept("0");
-
-		// m in the equation specified by Rescale
-		// Intercept (0028,1052).
-		// Enumerated Value: 1
-		// See C.8.11.3.1.2 for further explanation.
-		setRescaleSlope("1");
-
-		// Specifies the output units of Rescale Slope
-		// (0028,1053) and Rescale Intercept
-		// (0028,1052).
-		// Enumerated Value: US = Unspecified
-		// See C.8.11.3.1.2 for further explanation.
-		setRescaleType("US = Unspecified");
-	}
-
-	/**
-	 * Image identification characteristics.
-	 * 
-	 * See C.8.11.3.1.1 for specialization.
-	 * 
-	 * @param s
-	 */
-	public void setImageType(String s) {
-		dcmobj.putString(Tag.ImageType, VR.CS, s);
-	}
-
-	/**
-	 * Image identification characteristics.
-	 * 
-	 * See C.8.11.3.1.1 for specialization.
-	 * 
-	 * @return
-	 */
-	public String getImageType() {
-		return dcmobj.getString(Tag.ImageType);
-	}
-
-	/**
-	 * Number of samples in this image. Shall have an Enumerated Value of 1.
-	 * 
-	 * @param i
-	 *            Shall have an Enumerated Value of 1.
-	 */
-	private void setSamplesperPixel(int i) {
-		dcmobj.putInt(Tag.SamplesperPixel, VR.US, i);
-	}
-
-	/**
-	 * Number of samples in this image. Shall have an Enumerated Value of 1.
-	 * 
-	 * The setter of this method has been declared private, since this value
-	 * cannot be anything else than 1. So, no option to change it.
-	 * 
-	 * @return will return 1.
-	 */
-	public int getSamplesperPixel() {
-		return dcmobj.getInt(Tag.SamplesperPixel);
-	}
-
-	/**
-	 * Specifies the intended interpretation of the pixel data.
-	 * 
-	 * @param s
-	 *            Enumerated Values: MONOCHROME1 MONOCHROME2
-	 */
-	public void setPhotometricInterpretation(String s) {
-		if (s != "MONOCHROME1" || s != "MONOCRHOME2")
-			throw new UnsupportedOperationException(
-					s
-							+ " is not a permitted Photometric Interpretation enumerated value."
-							+ "Must be either MONOCHROME1 or MONOCRHOME2");
-
-		dcmobj.putString(Tag.PhotometricInterpretation, VR.CS, s);
-	}
-
-	/**
-	 * Returns the intended interpretation of the pixel data.
-	 * 
-	 * @return
-	 */
-	public String getPhotometricInterpretation() {
-		return dcmobj.getString(Tag.PhotometricInterpretation);
-	}
-
-	public void setBitsAllocated(int us) {
-		if (us != 8 || us != 16)
-			throw new UnsupportedOperationException(us
-					+ " is not a permitted Bits Allocated enumerated Value."
-					+ " Must be either 8 or 16.");
-
-		dcmobj.putInt(Tag.BitsAllocated, VR.US, us);
-	}
-
-	public int getBitsAllocated() {
-		return dcmobj.getInt(Tag.BitsAllocated);
-	}
-
-	/**
-	 * Number of bits stored for each pixel sample.
-	 * 
-	 * Enumerated Values: 6 to 16
-	 * 
-	 * @param us
-	 */
-	public void setBitsStored(int us) {
-		// TODO Makre sure this is not a mistake in DICOM, that only 6 and are
-		// allowed.
-		if (us != 6 || us != 16)
-			throw new UnsupportedOperationException(us
-					+ " is not a permitted Bits Stored enumerated Value."
-					+ " Must be either 6 or 16.");
-
-		dcmobj.putInt(Tag.BitsStored, VR.US, us);
-	}
-
-	public int getBitsStored() {
-		return dcmobj.getInt(Tag.BitsStored);
-	}
-
-	/**
-	 * Most significant bit for pixel sample data.
-	 * 
-	 * Shall have an Enumerated Value of one less than the value in Bit Stored
-	 * (0028,0101).
-	 * 
-	 * @param us
-	 */
-	public void setHighBit(int us) {
-		dcmobj.putInt(Tag.HighBit, VR.US, us);
-	}
-
-	/**
-	 * Data representation of the pixel samples.
-	 * 
-	 * Shall have the Enumerated Value: 0000H = Unsigned Integer.
-	 * 
-	 * @param us
-	 */
-	private void setPixelRepresentation(int us) {
-		dcmobj.putInt(Tag.PixelRepresentation, VR.US, us);
-	}
-
-	public int getPixelRepresentation() {
-		return dcmobj.getInt(Tag.PixelRepresentation);
-	}
-
+    public void init() {
+        super.init();
+        setRescaleIntercept(0.f);
+        setRescaleSlope(1.f);
+        setRescaleType(RescaleType.US);
+    }
+    
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        if (!PixelIntensityRelationship.isValid(getPixelIntensityRelationship())) {
+            result.logInvalidValue(Tag.PixelIntensityRelationship, dcmobj);
+        }
+        if (!Sign.isValid(getPixelIntensityRelationshipSign())) {
+            if (dcmobj.containsValue(Tag.PixelIntensityRelationshipSign)) {
+                result.logInvalidValue(Tag.PixelIntensityRelationshipSign, dcmobj);
+            }
+        }
+        if (!Flag.isValid(getCalibrationImage())) {
+            result.logInvalidValue(Tag.CalibrationImage, dcmobj);
+        }
+    }
+    
 	/**
 	 * The relationship between the Pixel sample values and the X-Ray beam
 	 * intensity.
@@ -232,11 +101,6 @@ public class DXImageModule extends Module {
 	 * @param s
 	 */
 	public void setPixelIntensityRelationship(String s) {
-		if (s != "LIN" || s != "LOG")
-			throw new UnsupportedOperationException(
-					s
-							+ " is not a permitted Photometric Interpretation enumerated value."
-							+ "Must be either LIN or LOG");
 		dcmobj.putString(Tag.PixelIntensityRelationship, VR.CS, s);
 	}
 
@@ -255,27 +119,9 @@ public class DXImageModule extends Module {
 	 * @param ss
 	 */
 	public void setPixelIntensityRelationshipSign(int ss) {
-		if (ss != 1 || ss != -1)
-			throw new UnsupportedOperationException(
-					ss
-							+ " is not a permitted Pixel Intensity Relationship Sign enumerated Value."
-							+ " Must be either 1 or -1.");
-
 		dcmobj.putInt(Tag.PixelIntensityRelationshipSign, VR.SS, ss);
 	}
 
-	/**
-	 * The value b in the relationship between stored values (SV) in Pixel Data
-	 * (7FE0,0010) and the output units specified in Rescale Type (0028,1054).
-	 * 
-	 * Output units = m*SV + b.
-	 * 
-	 * Enumerated Value: 0
-	 * 
-	 * See C.8.11.3.1.2 for further explanation.
-	 * 
-	 * @return
-	 */
 	public int getPixelIntensityRelationshipSign() {
 		return dcmobj.getInt(Tag.PixelIntensityRelationshipSign);
 	}
@@ -293,9 +139,13 @@ public class DXImageModule extends Module {
 	 * @param ds
 	 *            0
 	 */
-	private void setRescaleIntercept(String ds) {
-		dcmobj.putString(Tag.RescaleIntercept, VR.DS, ds);
+	public void setRescaleIntercept(float ds) {
+		dcmobj.putFloat(Tag.RescaleIntercept, VR.DS, ds);
 	}
+    
+    public float getRescaleIntercept() {
+        return dcmobj.getFloat(Tag.RescaleIntercept);
+    }
 
 	/**
 	 * m in the equation specified by Rescale Intercept (0028,1052).
@@ -304,11 +154,11 @@ public class DXImageModule extends Module {
 	 * 
 	 * See C.8.11.3.1.2 for further explanation.
 	 * 
-	 * @param ds
+	 * @param f
 	 *            1
 	 */
-	private void setRescaleSlope(String ds) {
-		dcmobj.putString(Tag.RescaleSlope, VR.DS, ds);
+	private void setRescaleSlope(float f) {
+		dcmobj.putFloat(Tag.RescaleSlope, VR.DS, f);
 	}
 
 	/**
@@ -351,143 +201,6 @@ public class DXImageModule extends Module {
 	 */
 	public String getRescaleType() {
 		return dcmobj.getString(Tag.RescaleType);
-	}
-
-	/**
-	 * Specifies an identity transformation for the Presentation LUT, other than
-	 * to account for the value of Photometric Interpretation (0028,0004), such
-	 * that the output of all grayscale transformations defined in the IOD
-	 * containing this Module are defined to be P-Values.
-	 * 
-	 * Enumerated Values:
-	 * 
-	 * IDENTITY - output is in P-Values - shall be used if Photometric
-	 * Interpretation (0028,0004) is MONOCHROME2.
-	 * 
-	 * INVERSE - output after inversion is in P-Values - shall be used if
-	 * Photometric Interpretation (0028,0004) is MONOCHROME1.
-	 * 
-	 * See C.8.11.3.1.2 for further explanation.
-	 * 
-	 * @param cs
-	 */
-	public void setPresentationLUTShape(String cs) {
-		if (cs != "IDENTITY" || cs != "INVERSE")
-			throw new UnsupportedOperationException(
-					cs
-							+ " is not a permitted Presentation LUT Shape enumerated value."
-							+ "Must be either LIN or LOG");
-
-		dcmobj.putString(Tag.PresentationLUTShape, VR.CS, cs);
-
-		// TODO Automatically change/set Photometric Interpretation and vice
-		// versa according to DICOM
-	}
-
-	/**
-	 * Specifies an identity transformation for the Presentation LUT, other than
-	 * to account for the value of Photometric Interpretation (0028,0004), such
-	 * that the output of all grayscale transformations defined in the IOD
-	 * containing this Module are defined to be P-Values.
-	 * 
-	 * Enumerated Values:
-	 * 
-	 * IDENTITY - output is in P-Values - shall be used if Photometric
-	 * Interpretation (0028,0004) is MONOCHROME2.
-	 * 
-	 * INVERSE - output after inversion is in P-Values - shall be used if
-	 * Photometric Interpretation (0028,0004) is MONOCHROME1.
-	 * 
-	 * See C.8.11.3.1.2 for further explanation.
-	 * 
-	 * @return
-	 */
-	public String getPresentationLUTShape() {
-		return dcmobj.getString(Tag.PresentationLUTShape);
-	}
-
-	/**
-	 * Specifies whether an Image has undergone lossy compression.
-	 * 
-	 * Enumerated Values:
-	 * 
-	 * 00 = Image has NOT been subjected to lossy compression.
-	 * 
-	 * 01 = Image has been subjected to lossy compression.
-	 * 
-	 * See C.7.6.1.1.5 for further explanation.
-	 * 
-	 * @param cs
-	 */
-	public void setLossyImageCompression(String cs) {
-		if (cs != "00" || cs != "01")
-			throw new UnsupportedOperationException(
-					cs
-							+ " is not a permitted Lossy Image Compression enumerated value."
-							+ "Must be either 00 or 01");
-
-		dcmobj.putString(Tag.LossyImageCompression, VR.CS, cs);
-	}
-
-	/**
-	 * Specifies whether an Image has undergone lossy compression.
-	 * 
-	 * Enumerated Values:
-	 * 
-	 * 00 = Image has NOT been subjected to lossy compression.
-	 * 
-	 * 01 = Image has been subjected to lossy compression.
-	 * 
-	 * See C.7.6.1.1.5 for further explanation.
-	 * 
-	 * @return
-	 */
-	public String getLossyImageCompression() {
-		return dcmobj.getString(Tag.LossyImageCompression);
-	}
-
-	/**
-	 * See C.7.6.1.1.5 for further explanation.
-	 * 
-	 * Required if Lossy Compression has been performed on the Image.
-	 * 
-	 * @param ds
-	 */
-	public void setLossyImageCompressionRatio(String ds) {
-		dcmobj.putString(Tag.LossyImageCompressionRatio, VR.DS, ds);
-	}
-
-	/**
-	 * See C.7.6.1.1.5 for further explanation.
-	 * 
-	 * Required if Lossy Compression has been performed on the Image.
-	 * 
-	 * @return
-	 */
-	public String getLossyImageCompressionRatio() {
-		return dcmobj.getString(Tag.LossyImageCompressionRatio);
-	}
-
-	/**
-	 * A text description of how this image was derived.
-	 * 
-	 * See C.8.11.3.1.4 for further explanation.
-	 * 
-	 * @param st
-	 */
-	public void setDerivationDescription(String st) {
-		dcmobj.putString(Tag.DerivationDescription, VR.ST, st);
-	}
-
-	/**
-	 * A text description of how this image was derived.
-	 * 
-	 * See C.8.11.3.1.4 for further explanation.
-	 * 
-	 * @return
-	 */
-	public String getDerivationDescription() {
-		return dcmobj.getString(Tag.DerivationDescription);
 	}
 
 	/**
@@ -540,27 +253,6 @@ public class DXImageModule extends Module {
 		return dcmobj.getString(Tag.AcquisitionDeviceProcessingCode);
 	}
 
-	/**
-	 * Patient direction of the rows and columns of the image.
-	 * 
-	 * See C.7.6.1.1.1 for further explanation.
-	 * 
-	 * @param cs
-	 */
-	public void setPatientOrientation(String cs) {
-		dcmobj.putString(Tag.PatientOrientation, VR.CS, cs);
-	}
-
-	/**
-	 * Patient direction of the rows and columns of the image.
-	 * 
-	 * See C.7.6.1.1.1 for further explanation.
-	 * 
-	 * @return
-	 */
-	public String getPatientOrientation() {
-		return dcmobj.getString(Tag.PatientOrientation);
-	}
 
 	/**
 	 * Indicates whether a reference object (phantom) of known size is present
@@ -577,11 +269,6 @@ public class DXImageModule extends Module {
 	 * @param cs
 	 */
 	public void setCalibrationImage(String cs) {
-		if (cs != "YES" || cs != "NO")
-			throw new UnsupportedOperationException(cs
-					+ " is not a permitted Calibration Image enumerated value."
-					+ "Must be either YES or NO");
-
 		dcmobj.putString(Tag.CalibrationImage, VR.CS, cs);
 	}
 
@@ -603,45 +290,13 @@ public class DXImageModule extends Module {
 		return dcmobj.getString(Tag.CalibrationImage);
 	}
 
-	/**
-	 * Indicates whether or not image contains sufficient burned in annotation
-	 * to identify the patient and date the image was acquired.
-	 * 
-	 * Enumerated Values:
-	 * 
-	 * YES
-	 * 
-	 * NO
-	 * 
-	 * @param cs
-	 */
-	public void setBurnedInAnnotation(String cs) {
-		if (cs != "YES" || cs != "NO")
-			throw new UnsupportedOperationException(
-					cs
-							+ " is not a permitted Burned In Annotation enumerated value."
-							+ "Must be either YES or NO");
+    public LUT[] getVOILUTs() {
+        return LUT.toLUTs(dcmobj.get(Tag.VOILUTSequence));
+    }
 
-		dcmobj.putString(Tag.BurnedInAnnotation, VR.CS, cs);
-	}
-
-	/**
-	 * Indicates whether or not image contains sufficient burned in annotation
-	 * to identify the patient and date the image was acquired.
-	 * 
-	 * Enumerated Values:
-	 * 
-	 * YES
-	 * 
-	 * NO
-	 * 
-	 * @return
-	 */
-	public String getBurnedInAnnotation() {
-		return dcmobj.getString(Tag.BurnedInAnnotation);
-	}
-
-	// TODO The entire VOI LUT Sequence is missing. It should go in here.
+    public void setVOILUTs(LUT[] luts) {
+        updateSequence(Tag.VOILUTSequence, luts);
+    }    
 
 	/**
 	 * Defines a Window Center for display.
@@ -652,8 +307,8 @@ public class DXImageModule extends Module {
 	 * VOI LUT Sequence (0028,3010) is not present. May also be present if VOI
 	 * LUT Sequence (0028,3010) is present.
 	 */
-	public void setWindowCenter(String cs) {
-		dcmobj.putString(Tag.WindowCenter, VR.CS, cs);
+	public void setWindowCenter(float[] floats) {
+		dcmobj.putFloats(Tag.WindowCenter, VR.DS, floats);
 	}
 
 	/**
@@ -667,8 +322,8 @@ public class DXImageModule extends Module {
 	 * 
 	 * @return
 	 */
-	public String getWindowCenter() {
-		return dcmobj.getString(Tag.WindowCenter);
+	public float[] getWindowCenter() {
+		return dcmobj.getFloats(Tag.WindowCenter);
 	}
 
 	/**
@@ -680,8 +335,8 @@ public class DXImageModule extends Module {
 	 * 
 	 * @param ds
 	 */
-	public void setWindowWidth(String ds) {
-		dcmobj.putString(Tag.WindowWidth, VR.DS, ds);
+	public void setWindowWidth(float[] floats) {
+		dcmobj.putFloats(Tag.WindowWidth, VR.DS, floats);
 	}
 
 	/**
@@ -693,8 +348,8 @@ public class DXImageModule extends Module {
 	 * 
 	 * @return
 	 */
-	public String getWindowWidth() {
-		return dcmobj.getString(Tag.WindowWidth);
+	public float[] getWindowWidth() {
+		return dcmobj.getFloats(Tag.WindowWidth);
 	}
 
 	/**
@@ -718,4 +373,6 @@ public class DXImageModule extends Module {
 	public String getWindowCenterWidthExplanation() {
 		return dcmobj.getString(Tag.WindowCenterWidthExplanation);
 	}
+
+
 }

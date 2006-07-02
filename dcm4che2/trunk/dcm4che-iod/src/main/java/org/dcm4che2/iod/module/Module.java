@@ -41,6 +41,8 @@ package org.dcm4che2.iod.module;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -50,6 +52,7 @@ import org.dcm4che2.data.Tag;
  */
 public class Module {
 
+    private static final int[] INT0 = {};
     protected final DicomObject dcmobj;
 
     public Module(DicomObject dcmobj) {
@@ -63,6 +66,40 @@ public class Module {
         return dcmobj;
     }
 
+    protected int[] getType1Tags() {
+        return INT0;
+    }
+    
+    protected int[] getType2Tags() {
+        return INT0;
+    }
+
+    public void init() {
+        int[] tags = getType2Tags();
+        for (int i = 0; i < tags.length; i++) {
+            dcmobj.putNull(tags[i], null);
+        }
+    }
+    
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        int[] tags = getType1Tags();
+        for (int i = 0; i < tags.length; i++) {
+            if (!dcmobj.containsValue(tags[0])) {
+                if (!dcmobj.contains(tags[0])) {
+                    result.logMissingAttribute(tags[0]);
+                } else {
+                    result.logMissingValue(tags[0]);                    
+                }
+            }
+        }
+        tags = getType2Tags();
+        for (int i = 0; i < tags.length; i++) {
+            if (!dcmobj.contains(tags[0])) {
+                result.logMissingAttribute(tags[0]);
+            }
+        }
+    }
+    
     protected void updateSequence(int tag, Module module) {
         if (module != null) {
             dcmobj.putNestedDicomObject(tag, module.getDicomObject());
@@ -80,9 +117,5 @@ public class Module {
         } else {
             dcmobj.remove(tag);
         }
-    }
-
-    protected boolean isSignedPixelValues() {
-        return dcmobj.getInt(Tag.PixelRepresentation) != 0;
     }
 }

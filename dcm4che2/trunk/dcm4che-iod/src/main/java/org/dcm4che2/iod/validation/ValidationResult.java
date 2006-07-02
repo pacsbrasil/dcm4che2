@@ -35,21 +35,55 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che2.iod.validation;
 
-package org.dcm4che2.iod.module.dx;
-
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
 
 /**
- * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version Revision $Date$
+ * @since 30.06.2006
  */
-public class IntraOralSeriesModule extends GeneralSeriesModule {
 
-	public IntraOralSeriesModule(DicomObject dcmobj) {
-		super(dcmobj);
-	}
+public class ValidationResult {
+    
+    private DicomObject missingAttributes;
+    private DicomObject missingValue;
+    private DicomObject invalidValue;
+    
+    public void logMissingAttribute(int tag) {
+        if (missingAttributes == null) {
+            missingAttributes = new BasicDicomObject();
+        }
+        missingAttributes.putNull(tag, null);
+    }
 
+    public void logMissingValue(int tag) {
+        if (missingValue == null) {
+            missingValue = new BasicDicomObject();
+        }
+        missingValue.putNull(tag, null);
+    }
+
+    public void logInvalidValue(int tag, DicomObject testObj) {
+        if (invalidValue == null) {
+            invalidValue = new BasicDicomObject();
+        }
+        DicomElement e = testObj.get(tag);
+        missingValue.putBytes(tag, e.vr(), e.getBytes());
+    }
+
+    public void clear() {
+        missingAttributes = null;
+        missingValue = null;
+        invalidValue = null;
+    }
+    
+    public boolean isValid() {
+        return missingAttributes == null
+            && missingValue == null 
+            && invalidValue == null;
+    }
 }

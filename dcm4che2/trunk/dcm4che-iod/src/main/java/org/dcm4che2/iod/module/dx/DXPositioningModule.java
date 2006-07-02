@@ -185,14 +185,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setDistanceSourcetoPatient(String ds) {
-        dcmobj.putString(Tag.DistanceSourcetoPatient, VR.DS, ds);
+    public void setDistanceSourcetoPatient(float f) {
+        dcmobj.putFloat(Tag.DistanceSourcetoPatient, VR.DS, f);
     }
 
-    public String getDistanceSourcetoPatient() {
-        return dcmobj.getString(Tag.DistanceSourcetoPatient);
+    public float getDistanceSourcetoPatient() {
+        return dcmobj.getFloat(Tag.DistanceSourcetoPatient);
     }
 
     /**
@@ -206,14 +206,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setDistanceSourcetoDetector(String ds) {
-        dcmobj.putString(Tag.DistanceSourcetoDetector, VR.DS, ds);
+    public void setDistanceSourcetoDetector(float f) {
+        dcmobj.putFloat(Tag.DistanceSourcetoDetector, VR.DS, f);
     }
 
-    public String getDistanceSourcetoDetector() {
-        return dcmobj.getString(Tag.DistanceSourcetoDetector);
+    public float getDistanceSourcetoDetector() {
+        return dcmobj.getFloat(Tag.DistanceSourcetoDetector);
     }
 
     /**
@@ -222,15 +222,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setEstimatedRadiographicMagnificationFactor(String ds) {
-        dcmobj.putString(Tag.EstimatedRadiographicMagnificationFactor, VR.DS,
-                ds);
+    public void setEstimatedRadiographicMagnificationFactor(float f) {
+        dcmobj.putFloat(Tag.EstimatedRadiographicMagnificationFactor, VR.DS, f);
     }
 
-    public String getEstimatedRadiographicMagnificationFactor() {
-        return dcmobj.getString(Tag.EstimatedRadiographicMagnificationFactor);
+    public float getEstimatedRadiographicMagnificationFactor() {
+        return dcmobj.getFloat(Tag.EstimatedRadiographicMagnificationFactor);
     }
 
     /**
@@ -268,14 +267,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setPositonerPrimaryAngle(String ds) {
-        dcmobj.putString(Tag.PositionerPrimaryAngle, VR.DS, ds);
+    public void setPositonerPrimaryAngle(float f) {
+        dcmobj.putFloat(Tag.PositionerPrimaryAngle, VR.DS, f);
     }
 
-    public String getPositionerPrimaryAngle() {
-        return dcmobj.getString(Tag.PositionerPrimaryAngle);
+    public float getPositionerPrimaryAngle() {
+        return dcmobj.getFloat(Tag.PositionerPrimaryAngle);
     }
 
     /**
@@ -291,14 +290,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setPositonerSecondaryAngle(String ds) {
-        dcmobj.putString(Tag.PositionerSecondaryAngle, VR.DS, ds);
+    public void setPositonerSecondaryAngle(float f) {
+        dcmobj.putFloat(Tag.PositionerSecondaryAngle, VR.DS, f);
     }
 
-    public String getPositionerSecondaryAngle() {
-        return dcmobj.getString(Tag.PositionerSecondaryAngle);
+    public float getPositionerSecondaryAngle() {
+        return dcmobj.getFloat(Tag.PositionerSecondaryAngle);
     }
 
     /**
@@ -314,14 +313,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setDetectorPrimaryAngle(String ds) {
-        dcmobj.putString(Tag.DetectorPrimaryAngle, VR.DS, ds);
+    public void setDetectorPrimaryAngle(float f) {
+        dcmobj.putFloat(Tag.DetectorPrimaryAngle, VR.DS, f);
     }
 
-    public String getDetectorPrimaryAngle() {
-        return dcmobj.getString(Tag.DetectorPrimaryAngle);
+    public float getDetectorPrimaryAngle() {
+        return dcmobj.getFloat(Tag.DetectorPrimaryAngle);
     }
 
     /**
@@ -337,14 +336,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setDetectorSecondaryAngle(String ds) {
-        dcmobj.putString(Tag.DetectorSecondaryAngle, VR.DS, ds);
+    public void setDetectorSecondaryAngle(float f) {
+        dcmobj.putFloat(Tag.DetectorSecondaryAngle, VR.DS, f);
     }
 
-    public String getDetectorSecondaryAngle() {
-        return dcmobj.getString(Tag.DetectorSecondaryAngle);
+    public float getDetectorSecondaryAngle() {
+        return dcmobj.getFloat(Tag.DetectorSecondaryAngle);
     }
 
     /**
@@ -358,14 +357,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setColumnAngulation(String ds) {
-        dcmobj.putString(Tag.ColumnAngulation, VR.DS, ds);
+    public void setColumnAngulation(float f) {
+        dcmobj.putFloat(Tag.ColumnAngulation, VR.DS, f);
     }
 
-    public String getColumnAngulation() {
-        return dcmobj.getString(Tag.ColumnAngulation);
+    public float getColumnAngulation() {
+        return dcmobj.getFloat(Tag.ColumnAngulation);
     }
 
     /**
@@ -391,14 +390,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setTableAngle(String ds) {
-        dcmobj.putString(Tag.TableAngle, VR.DS, ds);
+    public void setTableAngle(float f) {
+        dcmobj.putFloat(Tag.TableAngle, VR.DS, f);
     }
 
-    public String getTableAngle() {
-        return dcmobj.getString(Tag.TableAngle);
+    public float getTableAngle() {
+        return dcmobj.getFloat(Tag.TableAngle);
     }
 
     /**
@@ -407,14 +406,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setBodyPartThickness(String ds) {
-        dcmobj.putString(Tag.BodyPartThickness, VR.DS, ds);
+    public void setBodyPartThickness(float f) {
+        dcmobj.putFloat(Tag.BodyPartThickness, VR.DS, f);
     }
 
-    public String getBodyPartThickness() {
-        return dcmobj.getString(Tag.BodyPartThickness);
+    public float getBodyPartThickness() {
+        return dcmobj.getFloat(Tag.BodyPartThickness);
     }
 
     /**
@@ -423,14 +422,14 @@ public class DXPositioningModule extends Module {
      * 
      * Type 3
      * 
-     * @param ds
+     * @param f
      */
-    public void setCompressionForce(String ds) {
-        dcmobj.putString(Tag.CompressionForce, VR.DS, ds);
+    public void setCompressionForce(float f) {
+        dcmobj.putFloat(Tag.CompressionForce, VR.DS, f);
     }
 
-    public String getCompressionForce() {
-        return dcmobj.getString(Tag.CompressionForce);
+    public float getCompressionForce() {
+        return dcmobj.getFloat(Tag.CompressionForce);
     }
 
 }

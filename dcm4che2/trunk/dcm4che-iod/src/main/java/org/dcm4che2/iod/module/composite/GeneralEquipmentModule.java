@@ -6,6 +6,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.value.PixelRepresentation;
 
 public class GeneralEquipmentModule extends Module {
 
@@ -101,7 +102,7 @@ public class GeneralEquipmentModule extends Module {
 
     public void setLargestPixelValueinSeries(int s) {
         dcmobj.putInt(Tag.PixelPaddingValue,
-                isSignedPixelValues() ? VR.SS : VR.US, s);
+                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
 }

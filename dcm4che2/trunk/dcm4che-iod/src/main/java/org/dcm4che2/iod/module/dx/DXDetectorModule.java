@@ -47,7 +47,7 @@ import org.dcm4che2.data.VR;
  * @since 30.06.2006
  */
 
-public class DXDetectorModule extends DXDetectorMacro {
+public class DXDetectorModule extends DXDetector {
 
     public DXDetectorModule(DicomObject dcmobj) {
         super(dcmobj);

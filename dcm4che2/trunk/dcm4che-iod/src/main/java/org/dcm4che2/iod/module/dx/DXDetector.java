@@ -50,9 +50,9 @@ import org.dcm4che2.iod.module.Module;
  * @since 30.06.2006
  */
 
-public class DXDetectorMacro extends Module {
+public class DXDetector extends Module {
 
-    public DXDetectorMacro(DicomObject dcmobj) {
+    public DXDetector(DicomObject dcmobj) {
         super(dcmobj);
     }
 

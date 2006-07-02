@@ -35,21 +35,28 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.dx;
+package org.dcm4che2.iod.value;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+import org.dcm4che2.data.Tag;
 
 /**
- * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version Revision $Date$
+ * @since 02.07.2006
  */
-public class IntraOralSeriesModule extends GeneralSeriesModule {
 
-	public IntraOralSeriesModule(DicomObject dcmobj) {
-		super(dcmobj);
-	}
+public class PixelRepresentation {
 
+    public static final int UNSIGNED = 0;
+    public static final int SIGNED = 1;
+    public static boolean isValid(int ss) {
+        return ss == UNSIGNED || ss == SIGNED;
+    }
+    public static boolean isSigned(int ss) {
+        return ss != UNSIGNED;
+    }
+    public static boolean isSigned(DicomObject dcmobj) {
+        return isSigned(dcmobj.getInt(Tag.PixelRepresentation));
+    }
 }

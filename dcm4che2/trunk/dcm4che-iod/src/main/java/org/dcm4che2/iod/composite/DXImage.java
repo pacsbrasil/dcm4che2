@@ -41,7 +41,6 @@ package org.dcm4che2.iod.composite;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.iod.module.composite.ContrastBolusModule;
 import org.dcm4che2.iod.module.composite.DeviceModule;
-import org.dcm4che2.iod.module.composite.GeneralImageModule;
 import org.dcm4che2.iod.module.dx.DXAnatomyImagedModule;
 import org.dcm4che2.iod.module.dx.DXDetectorModule;
 import org.dcm4che2.iod.module.dx.DXImageModule;
@@ -49,6 +48,8 @@ import org.dcm4che2.iod.module.dx.DXPositioningModule;
 import org.dcm4che2.iod.module.dx.DXSeriesModule;
 import org.dcm4che2.iod.module.lut.VOILUTModule;
 import org.dcm4che2.iod.module.overlay.OverlayPlaneModule;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
 
 /**
  * The Digital X-Ray (DX) Image Information Object Definition specifies an image
@@ -97,11 +98,7 @@ import org.dcm4che2.iod.module.overlay.OverlayPlaneModule;
  * @author Antonio Magni
  * 
  */
-public class DXImage extends Composite {
-
-    protected final DXSeriesModule dxSeriesModule;
-
-    protected final GeneralImageModule generalImageModule;
+public class DXImage extends Image {
 
     protected final ContrastBolusModule contrastBolusModule;
 
@@ -112,8 +109,6 @@ public class DXImage extends Composite {
     //TODO Intervention Module
     
     protected final DXAnatomyImagedModule dxAnatomyImagedModule;
-    
-    protected final DXImageModule dxImageModule;
     
     protected final DXDetectorModule dxDetectorModule;
     
@@ -140,15 +135,12 @@ public class DXImage extends Composite {
     //TODO Acquisition Context THIS IS MANDATORY!!
 
     public DXImage(DicomObject dcmobj) {
-        super(dcmobj);
+        super(dcmobj, new DXSeriesModule(dcmobj), new DXImageModule(dcmobj));
 
-        this.dxSeriesModule = new DXSeriesModule(dcmobj);
-        this.generalImageModule = new GeneralImageModule(dcmobj);
         this.contrastBolusModule = new ContrastBolusModule(dcmobj);
         
         this.deviceModule = new DeviceModule(dcmobj);
         this.dxAnatomyImagedModule = new DXAnatomyImagedModule(dcmobj);
-        this.dxImageModule = new DXImageModule(dcmobj);
         this.dxDetectorModule = new DXDetectorModule(dcmobj);
         this.dxPositioningModule = new DXPositioningModule(dcmobj);
         this.overlayPlaneModule = new OverlayPlaneModule(dcmobj);
@@ -156,42 +148,60 @@ public class DXImage extends Composite {
     }
 
     public final DXSeriesModule getDXSeriesModule() {
-        return dxSeriesModule;
+        return (DXSeriesModule) generalSeriesModule;
     }
 
-    public GeneralImageModule getGeneralImageModule(){
-        return generalImageModule;
+    public void init() {
+        super.init();
+        contrastBolusModule.init();
+        deviceModule.init();
+        dxAnatomyImagedModule.init();
+        dxDetectorModule.init();
+        dxPositioningModule.init();
+        overlayPlaneModule.init();
+        voiLUTModule.init();
+    }
+
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        contrastBolusModule.validate(ctx, result);
+        deviceModule.validate(ctx, result);
+        dxAnatomyImagedModule.validate(ctx, result);
+        dxDetectorModule.validate(ctx, result);
+        dxPositioningModule.validate(ctx, result);
+        overlayPlaneModule.validate(ctx, result);
+        voiLUTModule.validate(ctx, result);
     }
     
-    public ContrastBolusModule getContrastBolusModule(){
+    public final ContrastBolusModule getContrastBolusModule(){
         return contrastBolusModule;
     }
     
-    public DeviceModule getDeviceModule(){
+    public final DeviceModule getDeviceModule(){
         return deviceModule;
     }
     
-    public DXAnatomyImagedModule getDXAnatomyImageModule(){
+    public final DXAnatomyImagedModule getDXAnatomyImageModule(){
         return dxAnatomyImagedModule;
     }
     
-    public DXImageModule getDXImageModule(){
-        return dxImageModule;
+    public final DXImageModule getDXImageModule(){
+        return (DXImageModule) generalImageModule;
     }
     
-    public DXDetectorModule getDXDetectorModule(){
+    public final DXDetectorModule getDXDetectorModule(){
         return dxDetectorModule;
     }
 
-    public DXPositioningModule getDXPositioningModule() {
+    public final DXPositioningModule getDXPositioningModule() {
         return dxPositioningModule;
     }
 
-    public OverlayPlaneModule getOverlayPlaneModule(){
+    public final OverlayPlaneModule getOverlayPlaneModule(){
         return overlayPlaneModule;
     }
     
-    public VOILUTModule getVOILUTModule(){
+    public final VOILUTModule getVOILUTModule(){
         return voiLUTModule;
     }
 

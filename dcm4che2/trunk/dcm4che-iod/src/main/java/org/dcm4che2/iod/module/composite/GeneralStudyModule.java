@@ -114,7 +114,7 @@ public class GeneralStudyModule extends Module {
         return dcmobj.getString(Tag.StudyDescription);
     }
     
-    public void getStudyDescription(String s) {
+    public void setStudyDescription(String s) {
         dcmobj.putString(Tag.StudyDescription, VR.LO, s);
     }
     
@@ -122,7 +122,7 @@ public class GeneralStudyModule extends Module {
         return dcmobj.getStrings(Tag.PhysiciansofRecord);
     }
     
-    public void getPhysiciansofRecord(String[] ss) {
+    public void setPhysiciansofRecord(String[] ss) {
         dcmobj.putStrings(Tag.PhysiciansofRecord, VR.PN, ss);
     }
     
@@ -139,7 +139,7 @@ public class GeneralStudyModule extends Module {
         return dcmobj.getStrings(Tag.NameofPhysiciansReadingStudy);
     }
     
-    public void getNameofPhysiciansReadingStudy(String[] ss) {
+    public void setNameofPhysiciansReadingStudy(String[] ss) {
         dcmobj.putStrings(Tag.NameofPhysiciansReadingStudy, VR.PN, ss);
     }
     

@@ -35,21 +35,14 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.dx;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+package org.dcm4che2.iod.validation;
 
 /**
- * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version Revision $Date$
+ * @since 30.06.2006
  */
-public class IntraOralSeriesModule extends GeneralSeriesModule {
 
-	public IntraOralSeriesModule(DicomObject dcmobj) {
-		super(dcmobj);
-	}
+public class ValidationContext {
 
 }

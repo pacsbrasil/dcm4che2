@@ -43,6 +43,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.value.PixelRepresentation;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -154,7 +155,7 @@ public class ImagePixel extends Module {
 
     public void setSmallestImagePixelValue(int s) {
         dcmobj.putInt(Tag.SmallestImagePixelValue,
-                isSignedPixelValues() ? VR.SS : VR.US, s);
+                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public int getLargestImagePixelValue() {
@@ -163,7 +164,7 @@ public class ImagePixel extends Module {
 
     public void setLargestImagePixelValue(int s) {
         dcmobj.putInt(Tag.LargestImagePixelValue,
-                isSignedPixelValues() ? VR.SS : VR.US, s);
+                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
     
     public int[] getRedPaletteColorLookupTableDescriptor() {

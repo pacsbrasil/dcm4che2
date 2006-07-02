@@ -51,6 +51,8 @@ import org.dcm4che2.iod.module.composite.GeneralStudyModule;
 import org.dcm4che2.iod.module.composite.PatientModule;
 import org.dcm4che2.iod.module.composite.PatientStudyModule;
 import org.dcm4che2.iod.module.general.SOPCommonModule;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -82,9 +84,12 @@ public class Composite {
                 + UIDDictionary.getDictionary().prompt(cuid));
     }
     
-    protected Composite(DicomObject dcmobj) {
+    protected Composite(DicomObject dcmobj, GeneralSeriesModule seriesModule) {
         if (dcmobj == null) {
             throw new NullPointerException("dcmobj");
+        }
+        if (seriesModule == null) {
+            throw new NullPointerException("seriesModule");
         }
         this.dcmobj = dcmobj;
         this.patientModule = new PatientModule(dcmobj);
@@ -92,10 +97,34 @@ public class Composite {
         this.generalStudyModule = new GeneralStudyModule(dcmobj);
         this.patientStudyModule = new PatientStudyModule(dcmobj);
         this.clinicalTrialStudyModule = new ClinicalTrialStudyModule(dcmobj);
-        this.generalSeriesModule = new GeneralSeriesModule(dcmobj);
+        this.generalSeriesModule = seriesModule;
         this.clinicalTrialSeriesModule = new ClinicalTrialSeriesModule(dcmobj);
         this.generalEquipmentModule = new GeneralEquipmentModule(dcmobj);
         this.sopCommonModule = new SOPCommonModule(dcmobj);
+    }
+    
+    public void init() {
+        patientModule.init();
+        clinicalTrialSubjectModule.init();
+        generalStudyModule.init();
+        patientStudyModule.init();
+        clinicalTrialStudyModule.init();
+        generalSeriesModule.init();
+        clinicalTrialSeriesModule.init();
+        generalEquipmentModule.init();
+        sopCommonModule.init();
+    }
+
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        patientModule.validate(ctx, result);
+        clinicalTrialSubjectModule.validate(ctx, result);
+        generalStudyModule.validate(ctx, result);
+        patientStudyModule.validate(ctx, result);
+        clinicalTrialStudyModule.validate(ctx, result);
+        generalSeriesModule.validate(ctx, result);
+        clinicalTrialSeriesModule.validate(ctx, result);
+        generalEquipmentModule.validate(ctx, result);
+        sopCommonModule.validate(ctx, result);
     }
 
     public DicomObject getDicomObject() {

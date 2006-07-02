@@ -39,7 +39,7 @@
 package org.dcm4che2.iod.module.cr;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralImageModule;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -47,7 +47,7 @@ import org.dcm4che2.iod.module.Module;
  * @since Jun 9, 2006
  *
  */
-public class CRImageModule extends Module {
+public class CRImageModule extends GeneralImageModule {
 
     public CRImageModule(DicomObject dcmobj) {
         super(dcmobj);

@@ -39,17 +39,17 @@
 package org.dcm4che2.iod.module.dx;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralImageModule;
 
 /**
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class IntraOralImageModule extends Module{
+public class IntraOralImageModule extends GeneralImageModule {
 
 	public IntraOralImageModule(DicomObject dcmobj) {
 		super(dcmobj);
-		// TODO Auto-generated constructor stub
 	}
 
 }

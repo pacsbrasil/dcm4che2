@@ -41,7 +41,7 @@ package org.dcm4che2.iod.module.dx;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
 import org.dcm4che2.iod.module.macro.SOPInstanceReference;
 
 /**
@@ -55,30 +55,10 @@ import org.dcm4che2.iod.module.macro.SOPInstanceReference;
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
  * 
  */
-public class DXSeriesModule extends Module {
+public class DXSeriesModule extends GeneralSeriesModule {
 
     public DXSeriesModule(DicomObject dcmobj) {
         super(dcmobj);
-    }
-
-    public String getModality() {
-        return dcmobj.getString(Tag.Modality);
-    }
-
-    /**
-     * Type of equipment that originally acquired the data used to create the
-     * images in this Series.
-     * 
-     * Enumerated Values: DX PX IO MG
-     * 
-     * See section C.7.3.1.1.1 for further explanation.
-     * 
-     * Tpe 1
-     * 
-     * @param s
-     */
-    public void setModality(String s) {
-        dcmobj.putString(Tag.Modality, VR.CS, s);
     }
 
     public SOPInstanceReference[] getReferencedPerformedProcedureSteps() {

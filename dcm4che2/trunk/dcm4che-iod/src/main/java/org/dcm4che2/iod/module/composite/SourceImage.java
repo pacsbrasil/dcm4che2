@@ -76,7 +76,7 @@ public class SourceImage extends ImageSOPInstanceReferenceAndPurpose {
         return dcmobj.getString(Tag.SpatialLocationsPreserved);
     }
 
-    public void getSpatialLocationsPreserved(String s) {
+    public void setSpatialLocationsPreserved(String s) {
         dcmobj.putString(Tag.SpatialLocationsPreserved, VR.CS, s);
     }
     

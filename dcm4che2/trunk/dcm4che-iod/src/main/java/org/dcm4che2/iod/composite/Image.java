@@ -35,21 +35,44 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.dx;
+package org.dcm4che2.iod.composite;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.iod.module.composite.GeneralImageModule;
 import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
 
 /**
- * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version Revision $Date$
+ * @since 01.07.2006
  */
-public class IntraOralSeriesModule extends GeneralSeriesModule {
 
-	public IntraOralSeriesModule(DicomObject dcmobj) {
-		super(dcmobj);
-	}
+public class Image extends Composite {
 
+    protected final GeneralImageModule generalImageModule;
+
+    protected Image(DicomObject dcmobj, GeneralSeriesModule seriesModule,
+            GeneralImageModule imageModule) {
+        super(dcmobj, seriesModule);
+        if (imageModule == null) {
+            throw new NullPointerException("imageModule");
+        }
+        this.generalImageModule = imageModule;
+    }
+
+    public void init() {
+        super.init();
+        generalImageModule.init();
+    }
+
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        generalImageModule.validate(ctx, result);
+    }
+    
+    public final GeneralImageModule getGeneralImageModule() {
+        return generalImageModule;
+    }
 }

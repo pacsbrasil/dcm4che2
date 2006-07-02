@@ -35,21 +35,34 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.dx;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+package org.dcm4che2.iod.value;
 
 /**
- * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version Revision $Date$
+ * @since 01.07.2006
  */
-public class IntraOralSeriesModule extends GeneralSeriesModule {
 
-	public IntraOralSeriesModule(DicomObject dcmobj) {
-		super(dcmobj);
-	}
-
+public class PresentationLUTShape {
+    public static final String IDENTITY = "IDENTITY";
+    public static final String INVERSE = "INVERSE";
+    public static final String LIN_OD = "LIN OD";
+    public static boolean isValidSoftCopy(String s) {
+        return s == null || s.equals(IDENTITY) || s.equals(INVERSE);
+    }
+    public static boolean isValidHardCopy(String s) {
+        return s == null || s.equals(IDENTITY) || s.equals(LIN_OD);
+    }
+    public static boolean isIdentityOrNull(String s) {
+        return s == null || s.equals(IDENTITY);
+    }
+    public static boolean isIdentity(String s) {
+        return s != null &&s.equals(IDENTITY);
+    }
+    public static boolean isInverse(String s) {
+        return s != null && s.equals(INVERSE);
+    }
+    public static boolean isLinOD(String s) {
+        return s != null && s.equals(LIN_OD);
+    }
 }
