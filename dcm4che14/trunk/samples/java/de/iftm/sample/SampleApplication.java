@@ -45,7 +45,7 @@ import org.apache.log4j.*;
  * Sample application to test the implementet service classes.
  *
  * @author Thomas Hacklaender
- * @version 2006-06-23
+ * @version 2006-07-01
  */
 public class SampleApplication extends javax.swing.JFrame {
     
@@ -84,63 +84,7 @@ public class SampleApplication extends javax.swing.JFrame {
      *<p>The server is started here.
      */
     private void postInitComponents() {
-        ConfigProperties cfgStorageSCP;
-        ConfigProperties cfgSaveFilesystem;
-        boolean isOpen;
-        Vector datasetVector;
-        CDimseService cDimseService;
-        
-        try {
-            // Load configuration properties of the server
-            cfgStorageSCP = new ConfigProperties(StorageService.class.getResource("resources/StorageService.cfg"));
-            
-            // Load configuration properties for saving the DICOM objects to the filesystem
-            cfgSaveFilesystem = new ConfigProperties(StorageService.class.getResource("resources/SaveFilesystem.cfg"));
-            
-        } catch (IOException e) {
-            log.error("Error while loading configuration properties");
-            return;
-        }
-        
-        //>>>> Modify the configuration properties of the server
-        
-        // Normally the 'dicom' protocol is used. The data are send unencrypted.
-        // If you would like to use the encrypted transmission, use the 'dicom-tls'
-        // protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
-        // dicom-tls: accept TLS connection (offer AES and DES encryption)
-        // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
-        // dicom-tls.3des: accept TLS connection (force DES encryption)
-        // dicom-tls.nodes : accept TLS connection (no encryption)
-        // cfgStorageSCP.put("protocol", "dicom");
-        cfgStorageSCP.put("protocol", "dicom-tls");
-        // cfgStorageSCP.put("tls-key", tls_key);
-        // cfgStorageSCP.put("tls-key-passwd", tls_key_passwd);
-        // cfgStorageSCP.put("tls-cacerts", tls_cacerts);
-        // cfgStorageSCP.put("tls-cacerts_passwd", tls_cacerts_passwd);
-        
-        // The port number of this computer used to receive DICOM objects.
-        cfgStorageSCP.put("port", "11113");
-        
-        // The AE title of this computer. By default this property is not defined, so the receiver accepts connections with any AET set.
-        // cfgStorageSCP.put("called-aets", "SERVER");
-        // The AE titles of computers which are allowed to call this receiver. By default this property is not defined, which allows any computer to call this receiver.
-        // cfgStorageSCP.put("calling-aets", "CLIENT");
-
-        
-        //>>>> Modify the configuration properties for saving the DICOM objects to the filesystem
-        
-        cfgSaveFilesystem.put("directory", "./tmp");
-        
-        // Create server
-        StorageServiceAdapter ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
-        
-        // Start the server
-        try {
-            ssa.start();
-        } catch (Exception ioe) {
-            log.error("Error while starting the server");
-            return;
-        }
+        // Nothing to do
     }
     
     
@@ -166,7 +110,7 @@ public class SampleApplication extends javax.swing.JFrame {
         Dimension frameSize;
         Dimension scrSize;
         
-        // Frame validieren, die er eine voreingestellte Groeï¿½e besitzen.
+        // Frame validieren, die er eine voreingestellte Groeße besitzen.
         this.validate();
         
         // Frame zentriert zeigen
@@ -193,6 +137,7 @@ public class SampleApplication extends javax.swing.JFrame {
         cFindBtn = new javax.swing.JButton();
         cEchoBtn = new javax.swing.JButton();
         cStoreBtn = new javax.swing.JButton();
+        tslSendReceiveBtn = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
@@ -263,6 +208,19 @@ public class SampleApplication extends javax.swing.JFrame {
         gridBagConstraints.weighty = 10.0;
         testPanel.add(cStoreBtn, gridBagConstraints);
 
+        tslSendReceiveBtn.setText("TSL SEND - RECEIVE");
+        tslSendReceiveBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tslSendReceiveBtnActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.weighty = 10.0;
+        testPanel.add(tslSendReceiveBtn, gridBagConstraints);
+
         getContentPane().add(testPanel, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
@@ -315,10 +273,197 @@ public class SampleApplication extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     
+    private void tslSendReceiveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tslSendReceiveBtnActionPerformed
+        ConfigProperties cfgStorageSCP;
+        ConfigProperties cfgSaveFilesystem;
+        StorageServiceAdapter ssa = null;
+        ConfigProperties cfgCDimseService;
+        boolean isOpen;
+        File imageFile;
+        Dataset imageDataset;
+        CDimseService cDimseService;
+        
+        //>>>> Load and modify the configuration properties of the local server
+        
+        try {
+            // Load configuration properties of the server
+            cfgStorageSCP = new ConfigProperties(StorageService.class.getResource("resources/StorageService.cfg"));
+            
+            // Load configuration properties for saving the DICOM objects to the filesystem
+            cfgSaveFilesystem = new ConfigProperties(StorageService.class.getResource("resources/SaveFilesystem.cfg"));
+            
+        } catch (IOException e) {
+            log.error("Error while loading configuration properties");
+            return;
+        }
+        
+        // Normally the 'dicom' protocol is used. The data are send unencrypted.
+        // If you would like to use the encrypted transmission, use the 'dicom-tls'
+        // protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+        // dicom-tls: accept TLS connection (offer AES and DES encryption)
+        // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+        // dicom-tls.3des: accept TLS connection (force DES encryption)
+        // dicom-tls.nodes : accept TLS connection (no encryption)
+        // cfgStorageSCP.put("protocol", "dicom");
+        cfgStorageSCP.put("protocol", "dicom-tls");
+        
+        // !!!! By default use parameter given in the configuration file !!!!
+        
+        // cfgStorageSCP.put("tls-key", "file:/d:/dos/create_cert/tmp/identityDE.p12");
+        // cfgStorageSCP.put("tls-keystore-passwd", "secret");
+        // cfgStorageSCP.put("tls-key-passwd", "secret");
+        // cfgStorageSCP.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/iftmCacert.jks");
+        // cfgStorageSCP.put("tls-cacerts_passwd", "secret");
+        
+        // cfgStorageSCP.put("tls-key", "file:/d:/dos/create_cert/tmp/identityJava.jks");
+        // cfgStorageSCP.put("tls-keystore-passwd", "secret");
+        // cfgStorageSCP.put("tls-key-passwd", "secret");
+        // cfgStorageSCP.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/identityJava.jks");
+        // cfgStorageSCP.put("tls-cacerts_passwd", "secret");
+        
+        // cfgStorageSCP.put("tls-key", "file:/d:/dos/create_cert/tmp/identityJavaSigned.jks");
+        // cfgStorageSCP.put("tls-keystore-passwd", "secret");
+        // cfgStorageSCP.put("tls-key-passwd", "secret");
+        // cfgStorageSCP.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/jstkCacert.jks");
+        // cfgStorageSCP.put("tls-cacerts_passwd", "secret");
+        
+        // The port number of this computer used to receive DICOM objects.
+        cfgStorageSCP.put("port", "5104");
+        
+        // The AE title of this computer. By default this property is not defined, so the receiver accepts connections with any AET set.
+        // cfgStorageSCP.put("called-aets", "SERVER");
+        // The AE titles of computers which are allowed to call this receiver. By default this property is not defined, which allows any computer to call this receiver.
+        // cfgStorageSCP.put("calling-aets", "CLIENT");
+        
+        cfgSaveFilesystem.put("directory", "./tmp");
+        
+        // Create and start a new local server
+        
+        ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
+        
+        try {
+            ssa.start();
+        } catch (Exception ioe) {
+            log.error("Error while starting the server: " + ioe.getMessage());
+            return;
+        }
+        
+        
+        //>>>> Load the sample image
+        
+        imageFile = new File("./samples/mr_t2.dcm");
+        imageDataset = fileToDataset(imageFile);
+        
+        // Set new IDs to make the image unique
+        
+        // Set Patient Name to date and time
+        imageDataset.putPN(Tags.PatientName, "N" + (new SimpleDateFormat("HHmmssss")).format(new java.util.Date()));
+        // Set Patient ID
+        imageDataset.putSH(Tags.PatientID, "ID" + (new SimpleDateFormat("HHmmssss")).format(new java.util.Date()));
+        // Set Accession Number
+        imageDataset.putSH(Tags.AccessionNumber, "NO" + (new SimpleDateFormat("HHmmssss")).format(new java.util.Date()));
+        // SOP Study UID to new value
+        imageDataset.putUI(Tags.StudyInstanceUID, UIDGenerator.getInstance().createUID());
+        // SOP Series UID to new value
+        imageDataset.putUI(Tags.SeriesInstanceUID, UIDGenerator.getInstance().createUID());
+        // SOP Instance UID to new value
+        imageDataset.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
+        
+        
+        //>>>> Load and modify the configuration properties of the sender
+        
+        try {
+            // Load configuration properties of the server
+            cfgCDimseService = new ConfigProperties(StorageService.class.getResource("resources/CDimseService.cfg"));
+        } catch (Exception e) {
+            log.error("Error while loading configuration properties");
+            return;
+        }
+        
+        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
+        // Normally the 'dicom' protocol is used. The data are send unencrypted.
+        // If you would like to use the encrypted transmission, use the 'dicom-tls'
+        // protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+        // dicom-tls: accept TLS connection (offer AES and DES encryption)
+        // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+        // dicom-tls.3des: accept TLS connection (force DES encryption)
+        // dicom-tls.nodes : accept TLS connection (no encryption)
+        // DcmURL url = new DcmURL("dicom", "SERVER", null, "localhost", 5104);
+        // DcmURL url = new DcmURL("dicom://SERVER@localhost:5104");
+        DcmURL url = new DcmURL("dicom-tls://SERVER@localhost:5104");
+        
+        // !!!! By default use parameter given in the configuration file !!!!
+        
+        // cfgCDimseService.put("tls-key", "file:/d:/dos/create_cert/tmp/identityDE.p12");
+        // cfgCDimseService.put("tls-keystore-passwd", "secret");
+        // cfgCDimseService.put("tls-key-passwd", "secret");
+        // cfgCDimseService.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/iftmCacert.jks");
+        // cfgCDimseService.put("tls-cacerts_passwd", "secret");
+        
+        // cfgCDimseService.put("tls-key", "file:/d:/dos/create_cert/tmp/identityJava.jks");
+        // cfgCDimseService.put("tls-keystore-passwd", "secret");
+        // cfgCDimseService.put("tls-key-passwd", "secret");
+        // cfgCDimseService.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/identityJava.jks");
+        // cfgCDimseService.put("tls-cacerts_passwd", "secret");
+        
+        // cfgCDimseService.put("tls-key", "file:/d:/dos/create_cert/tmp/identityJavaSigned.jks");
+        // cfgCDimseService.put("tls-keystore-passwd", "secret");
+        // cfgCDimseService.put("tls-key-passwd", "secret");
+        // cfgCDimseService.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/jstkCacert.jks");
+        // cfgCDimseService.put("tls-cacerts_passwd", "secret");
+        
+        try {
+            cDimseService = new CDimseService(cfgCDimseService, url);
+        } catch (ParseException e) {
+            log.error("Error in constructor");
+            return;
+        }
+        
+        // Open association
+        try {
+            isOpen = cDimseService.aASSOCIATE();
+            if (! isOpen) {
+                return;
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return;
+        } catch (GeneralSecurityException e) {
+            log.error(e.getMessage());
+            return;
+        }
+        
+        // Store
+        try {
+            cDimseService.cSTORE(imageDataset);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return;
+        }
+        
+        // Release association
+        try {
+            cDimseService.aRELEASE(true);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+        
+        // Stop the local server if currently running
+        if (ssa != null) {
+            ssa.stop();
+            log.info("stop");
+        }
+        
+        log.info(">>>>>>>>>> TSL SEND - RECEIVE finished. <<<<<<<<<<");
+    }//GEN-LAST:event_tslSendReceiveBtnActionPerformed
+    
     
     /**
      * Code to when pressing the cSTORE button.
-     *<p>This test expects a server running on "localhost", listening at port 11112, AET = "ARCHIVE".
+     *<p>This test expects a server running on "localhost", listening at port 104, AET = "ARCHIVE".
      */
     private void cStoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cStoreBtnActionPerformed
         ConfigProperties cfgCDimseService;
@@ -363,8 +508,8 @@ public class SampleApplication extends javax.swing.JFrame {
         
         //>>>> Modify the configuration properties of the server
         
-        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 11112);
+        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
         // Normally the 'dicom' protocol is used. The data are send unencrypted.
         // If you would like to use the encrypted transmission, use the 'dicom-tls'
         // protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
@@ -372,11 +517,12 @@ public class SampleApplication extends javax.swing.JFrame {
         // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
         // dicom-tls.3des: accept TLS connection (force DES encryption)
         // dicom-tls.nodes : accept TLS connection (no encryption)
-        DcmURL url = new DcmURL("dicom://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 11112);
+        DcmURL url = new DcmURL("dicom://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
         
         // cfgCDimseService.put("tls-key", tls_key);
+        // cfgCDimseService.put("tls-keystore-passwd", tls_key_passwd);
         // cfgCDimseService.put("tls-key-passwd", tls_key_passwd);
         // cfgCDimseService.put("tls-cacerts", tls_cacerts);
         // cfgCDimseService.put("tls-cacerts_passwd", tls_cacerts_passwd);
@@ -412,7 +558,7 @@ public class SampleApplication extends javax.swing.JFrame {
         
         // Release association
         try {
-            cDimseService.aRELEASE();
+            cDimseService.aRELEASE(true);
         } catch (IOException e) {
             log.error(e.getMessage());
         } catch (InterruptedException e) {
@@ -425,7 +571,7 @@ public class SampleApplication extends javax.swing.JFrame {
     
     /**
      * Code to when pressing the cECHO button.
-     *<p>This test expects a server running on "localhost", listening at port 11112, AET = "ARCHIVE".
+     *<p>This test expects a server running on "localhost", listening at port 104, AET = "ARCHIVE".
      */
     private void cEchoBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cEchoBtnActionPerformed
         ConfigProperties cfgCDimseService;
@@ -458,11 +604,12 @@ public class SampleApplication extends javax.swing.JFrame {
         // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
         // dicom-tls.3des: accept TLS connection (force DES encryption)
         // dicom-tls.nodes : accept TLS connection (no encryption)
-        DcmURL url = new DcmURL("dicom://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 11112);
+        DcmURL url = new DcmURL("dicom://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
         
         // cfgCDimseService.put("tls-key", tls_key);
+        // cfgCDimseService.put("tls-keystore-passwd", tls_key_passwd);
         // cfgCDimseService.put("tls-key-passwd", tls_key_passwd);
         // cfgCDimseService.put("tls-cacerts", tls_cacerts);
         // cfgCDimseService.put("tls-cacerts_passwd", tls_cacerts_passwd);
@@ -499,7 +646,7 @@ public class SampleApplication extends javax.swing.JFrame {
         
         // Release association
         try {
-            cDimseService.aRELEASE();
+            cDimseService.aRELEASE(true);
         } catch (IOException e) {
             log.error(e.getMessage());
         } catch (InterruptedException e) {
@@ -512,18 +659,91 @@ public class SampleApplication extends javax.swing.JFrame {
     
     /**
      * Code to when pressing the cFIND/cMOVE button.
-     *<p>This test expects a archive running on "localhost", listening at port 11112, AET = "ARCHIVE".
-     *<p>On the archive a C-MOVE destination must be defined: AET = "SERVER", "localhost", port 11113.
-     *<p>This sample program implements the server in method postInitComponents with AET = "SERVER", 
-     * "localhost", port 11113. When using the build-in configuration file the received DICOM objects 
+     *<p>This test expects a archive running on "localhost", listening at port 104, AET = "ARCHIVE".
+     *<p>On the archive a C-MOVE destination must be defined: AET = "SERVER", "localhost", port 5104.
+     *<p>This sample program implements the server in method postInitComponents with AET = "SERVER",
+     * "localhost", port 5104. When using the build-in configuration file the received DICOM objects
      * are stored in the directory "./tmp".
      */
     private void cFindMoveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cFindMoveBtnActionPerformed
+        ConfigProperties cfgStorageSCP;
+        ConfigProperties cfgSaveFilesystem;
+        StorageServiceAdapter ssa = null;
         ConfigProperties cfgCDimseService;
         boolean isOpen;
         Vector datasetVector;
         CDimseService cDimseService;
+
         
+        //>>>> Load and modify the configuration properties of the local server
+        
+        try {
+            // Load configuration properties of the server
+            cfgStorageSCP = new ConfigProperties(StorageService.class.getResource("resources/StorageService.cfg"));
+            
+            // Load configuration properties for saving the DICOM objects to the filesystem
+            cfgSaveFilesystem = new ConfigProperties(StorageService.class.getResource("resources/SaveFilesystem.cfg"));
+            
+        } catch (IOException e) {
+            log.error("Error while loading configuration properties");
+            return;
+        }
+        
+        // Normally the 'dicom' protocol is used. The data are send unencrypted.
+        // If you would like to use the encrypted transmission, use the 'dicom-tls'
+        // protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+        // dicom-tls: accept TLS connection (offer AES and DES encryption)
+        // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+        // dicom-tls.3des: accept TLS connection (force DES encryption)
+        // dicom-tls.nodes : accept TLS connection (no encryption)
+        cfgStorageSCP.put("protocol", "dicom");
+        // cfgStorageSCP.put("protocol", "dicom-tls");
+        
+        // !!!! By default use parameter given in the configuration file !!!!
+        
+        // cfgStorageSCP.put("tls-key", "file:/d:/dos/create_cert/tmp/identityDE.p12");
+        // cfgStorageSCP.put("tls-keystore-passwd", "secret");
+        // cfgStorageSCP.put("tls-key-passwd", "secret");
+        // cfgStorageSCP.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/iftmCacert.jks");
+        // cfgStorageSCP.put("tls-cacerts_passwd", "secret");
+        
+        // cfgStorageSCP.put("tls-key", "file:/d:/dos/create_cert/tmp/identityJava.jks");
+        // cfgStorageSCP.put("tls-keystore-passwd", "secret");
+        // cfgStorageSCP.put("tls-key-passwd", "secret");
+        // cfgStorageSCP.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/identityJava.jks");
+        // cfgStorageSCP.put("tls-cacerts_passwd", "secret");
+        
+        // cfgStorageSCP.put("tls-key", "file:/d:/dos/create_cert/tmp/identityJavaSigned.jks");
+        // cfgStorageSCP.put("tls-keystore-passwd", "secret");
+        // cfgStorageSCP.put("tls-key-passwd", "secret");
+        // cfgStorageSCP.put("tls-cacerts", "file:/d:/dos/create_cert/tmp/jstkCacert.jks");
+        // cfgStorageSCP.put("tls-cacerts_passwd", "secret");
+        
+        // The port number of this computer used to receive DICOM objects.
+        cfgStorageSCP.put("port", "5104");
+        
+        // The AE title of this computer. By default this property is not defined, so the receiver accepts connections with any AET set.
+        // cfgStorageSCP.put("called-aets", "SERVER");
+        // The AE titles of computers which are allowed to call this receiver. By default this property is not defined, which allows any computer to call this receiver.
+        // cfgStorageSCP.put("calling-aets", "CLIENT");
+        
+        cfgSaveFilesystem.put("directory", "./tmp");
+
+        
+        //>>>> Create and start a new local server
+        
+        ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
+        
+        try {
+            ssa.start();
+        } catch (Exception ioe) {
+            log.error("Error while starting the server: " + ioe.getMessage());
+            return;
+        }
+
+        
+        //>>>> Load and modify the configuration properties for C-FIND / C-MOVE
+                
         try {
             // Load configuration properties for C-DIMSE
             cfgCDimseService = new ConfigProperties(StorageService.class.getResource("resources/CDimseService.cfg"));
@@ -533,8 +753,6 @@ public class SampleApplication extends javax.swing.JFrame {
             return;
         }
         
-        //>>>> Modify the configuration properties for C-FIND / C-MOVE
-        
         // Normally the 'dicom' protocol is used. The data are send unencrypted.
         // If you would like to use the encrypted transmission, use the 'dicom-tls'
         // protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
@@ -542,9 +760,9 @@ public class SampleApplication extends javax.swing.JFrame {
         // dicom-tls.aes : accept TLS connection (force AES or DES encryption)
         // dicom-tls.3des: accept TLS connection (force DES encryption)
         // dicom-tls.nodes : accept TLS connection (no encryption)
-        DcmURL url = new DcmURL("dicom://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:11112");
-        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 11112);
+        // DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
+        DcmURL url = new DcmURL("dicom://ARCHIVE@localhost:104");
+        // DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
         
         cfgCDimseService.put("dest", "SERVER");
         
@@ -606,10 +824,10 @@ public class SampleApplication extends javax.swing.JFrame {
             }
         }
         textArea.setText(text);
-
+        
         
         //>>>> Find >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                
+        
         // Ask archive to move objects to destination (local server)
         for (int i = 0; i < datasetVector.size(); i++) {
             try {
@@ -623,11 +841,17 @@ public class SampleApplication extends javax.swing.JFrame {
         
         // Release association
         try {
-            cDimseService.aRELEASE();
+            cDimseService.aRELEASE(true);
         } catch (IOException e) {
             log.error(e.getMessage());
         } catch (InterruptedException e) {
             log.error(e.getMessage());
+        }
+        
+        // Stop the local server if currently running
+        if (ssa != null) {
+            ssa.stop();
+            log.info("stop");
         }
         
         log.info(">>>>>>>>>> C-FIND/C-MOVE finished. <<<<<<<<<<");
@@ -668,6 +892,7 @@ public class SampleApplication extends javax.swing.JFrame {
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel testPanel;
     private javax.swing.JTextArea textArea;
+    private javax.swing.JButton tslSendReceiveBtn;
     // End of variables declaration//GEN-END:variables
     
     

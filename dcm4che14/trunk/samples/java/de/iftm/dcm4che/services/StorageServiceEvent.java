@@ -15,11 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Thomas Hacklaender, FTM Institut fuer Telematik in der Medizin GmbH
- * Portions created by the Initial Developer are Copyright (C) 2006
+ * TIANI Medgraph AG.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or

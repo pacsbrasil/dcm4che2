@@ -15,11 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Thomas Hacklaender, FTM Institut fuer Telematik in der Medizin GmbH
- * Portions created by the Initial Developer are Copyright (C) 2006
+ * TIANI Medgraph AG.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -85,7 +86,7 @@ import org.apache.log4j.Logger;
  * <p>
  * <p> Usage:
  * <p> 1. Create a new instance of this class.
- * <p> 2. Register one or more listeners for StorageServiceClassEvents. These events are fired for each received DICOM object.
+ * <p> 2. Register one or more listeners for StorageServiceEvents. These events are fired for each received DICOM object.
  * <p> 3. Use the start method to start the server.
  * <p> 4. Use the stop method to start the server.
  * <p>
@@ -97,7 +98,7 @@ import org.apache.log4j.Logger;
  * <p>See: PS 3.4 - Annex B STORAGE SERVICE CLASS
  * 
  * @author Thomas Hacklaender
- * @version 2006-06-20
+ * @version 2006-06-28
  */
 public class StorageService extends DcmServiceBase {
     
@@ -198,12 +199,17 @@ public class StorageService extends DcmServiceBase {
     
     
     /**
-     * Initializes TLS connection related parameters.
+     * Initializes TLS (Transport Layer Security, predecessor of SSL, Secure 
+     * Sockets Layer) connection related parameters. TLS expects RSA (Ron Rivest, 
+     * Adi Shamir and Len Adleman) encoded keys and certificates.
+     * <p>Keys and certificates may be stored in PKCS #12 (Public Key 
+     * Cryptography Standards) or JKS (Java Keystore) containers.
      *
      * @param cfg the configuration properties for this class.
      * @throws ParseException
      */
     private void initTLS(ConfigProperties cfg) throws ParseException {
+        char[]  keystorepasswd;
         char[]  keypasswd;
         char[]  cacertspasswd;
         URL     keyURL;
@@ -223,15 +229,20 @@ public class StorageService extends DcmServiceBase {
             // Get a new TLS context
             tls = SSLContextAdapter.getInstance();
             
-            // tls-key-passwd password for keystore and key specified by tls-key [default: secret]
+            
+            //>>>> Managing the keystore file containing the privat key and
+            //>>>> public certificate to establish the communication
+            
+            // Password for keystore [default: secret]
+            keystorepasswd = cfg.getProperty("tls-keystore-passwd", "secret").toCharArray();
+            
+            // Password the private key [default: secret]
             keypasswd = cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             
-            //>>>> URL of the file containing the key
-            
-            // Set to default value
+            // URL of the file containing the keystore
             keyURL = CDimseService.class.getResource("resources/identity.p12");
             
-            // Test if property specified
+            // If availabel, replace URL with the one specified in the configuration file
             if ((value = cfg.getProperty("tls-key")) != null) {
                 try {
                     // Property specified, try to set to specified value
@@ -243,22 +254,21 @@ public class StorageService extends DcmServiceBase {
             
             // log.info("Key URL: " + keyURL.toString());
             
-            // Resource name of the key used for TLS communication
-            // tls-key key from specified resource [default:identity.p12]
             // Sets the key attribute of the SSLContextAdapter object
             // API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
             // API doc: SSLContextAdapter.setKey(java.security.KeyStore key, char[] password)
-            tls.setKey(tls.loadKeyStore(keyURL, keypasswd), keypasswd);
+            tls.setKey(tls.loadKeyStore(keyURL, keystorepasswd), keypasswd);
             
-            // Password of CA certificat tls-cacerts
+            //>>>> Managing the keystore containing the public certificates of the Ceritifying
+            //>>>> Authorities used for signing the public certificates of the public keys
+            
+            // Get the password of the keystore
             cacertspasswd = cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray();
             
-            //>>>> URL of the file containing the CA certificat
-            
-            // Set to default value
+            // URL of the file containing the keystore
             cacertURL = CDimseService.class.getResource("resources/cacerts.jks");
             
-            // Test if property specified
+            // If availabel, replace URL with the one specified in the configuration file
             if ((value = cfg.getProperty("tls-cacerts")) != null) {
                 try {
                     // Property specified, try to set to specified value
@@ -270,18 +280,16 @@ public class StorageService extends DcmServiceBase {
             
             // log.info("Trust certificate URL: " + cacertURL.toString());
             
-            // Resource name of the trust certificate
-            // tls-cacerts trusted CA Certificats from specified resource [default:cacerts.jks]
-            // tls-cacerts-passwd= password for keystore specified by tls-cacerts [default: secret]
             // Sets the trust attribute of the SSLContextAdapter object
             // API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
             // API doc: SSLContextAdapter.setTrust(java.security.KeyStore cacerts)
             tls.setTrust(tls.loadKeyStore(cacertURL, cacertspasswd));
             
-            tls.init();
+            // Get ciphers for selected protocol
+            this.server.setServerSocketFactory(tls.getServerSocketFactory(protocol.getCipherSuites()));
             
         } catch (Exception ex) {
-            throw new ParseException("Could not initalize TLS configuration.", 0);
+            throw new ParseException("Could not initialize TLS configuration.", 0);
         }
     }
     
