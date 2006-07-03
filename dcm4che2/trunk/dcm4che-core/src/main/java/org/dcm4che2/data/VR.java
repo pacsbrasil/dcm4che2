@@ -1951,13 +1951,28 @@ public abstract class VR
             super(0x5554, ' ', 12);
         }
     }
+    
+    /*
+     * DICOM VALUE REPRESENTATIONS 
+     * (PS3.5 2006 Table 6.2-1)
+     */
 
+    /** String */
     public static final VR AE = new AE();
+    
+    /** String */
     public static final VR AS = new AS();
+    
+    /** */
     public static final VR AT = new AT();
+    
+    /** String */ 
     public static final VR CS = new CS();
     public static final VR DA = new DA();
+    
+    /** float */
     public static final VR DS = new DS();
+
     public static final VR DT = new DT();
     public static final VR FL = new FL();
     public static final VR FD = new FD();
