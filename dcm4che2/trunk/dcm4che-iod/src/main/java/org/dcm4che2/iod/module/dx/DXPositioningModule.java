@@ -65,9 +65,9 @@ public class DXPositioningModule extends Module {
      * Sequence A Sequence that describes the radiographic method of patient,
      * tube and detector positioning to achieve a well described projection or
      * view.
-     * 
+     * <p>
      * Only a single Item shall be permitted in this Sequence.
-     * 
+     * <p>
      * Shall be consistent with the other Attributes in this Module, if present,
      * but may more specifically describe the image acquisition.
      * 
@@ -85,13 +85,13 @@ public class DXPositioningModule extends Module {
 
     /**
      * Description of imaging subjectÕs position relative to the equipment.
-     * 
+     * <p>
      * See C.7.3.1.1.2 for Defined Terms and further explanation.
-     * 
+     * <p>
      * If present, shall be consistent with Patient Gantry Relationship Code
      * Sequence (0054,0414) and Patient Orientation Modifier Code Sequence
      * (0054,0412).
-     * 
+     * <p>
      * Type 3
      * 
      * @param cs
@@ -107,10 +107,10 @@ public class DXPositioningModule extends Module {
     /**
      * Radiographic view of the image relative to the imaging subjectÕs
      * orientation.
-     * 
+     * <p>
      * Shall be consistent with View Code Sequence (0054,0220). See C.8.11.5.1.1
      * for further explanation.
-     * 
+     * <p>
      * Type 3
      * 
      * @param cs
@@ -147,9 +147,9 @@ public class DXPositioningModule extends Module {
     /**
      * Sequence Sequence which describes the orientation of the patient with
      * respect to the gantry.
-     * 
+     * <p>
      * Only a single Item shall be permitted in this Sequence.
-     * 
+     * <p>
      * Type 3
      */
     public void setPatientGantryRelationshipCode(Code code) {
@@ -166,7 +166,7 @@ public class DXPositioningModule extends Module {
      * Distance in mm from source to the table, support or bucky side that is
      * closest to the Imaging Subject, as measured along the central ray of the
      * X-Ray beam.
-     * 
+     * <p>
      * Note:
      * <ol>
      * <li> This definition is less useful in terms of estimating geometric
@@ -182,9 +182,9 @@ public class DXPositioningModule extends Module {
      * </ol>
      * See C.8.11.7 Mammography Image Module for explanation if Positioner Type
      * (0018,1508) is MAMMOGRAPHIC.
-     * 
+     * <p>
      * Type 3
-     * 
+     * <p>
      * @param f
      */
     public void setDistanceSourcetoPatient(float f) {
@@ -197,13 +197,13 @@ public class DXPositioningModule extends Module {
 
     /**
      * Distance in mm from source to detector center.
-     * 
+     * <p>
      * Note: This value is traditionally referred to as Source Image Receptor
      * Distance (SID).
-     * 
+     * <p>
      * See C.8.11.7 Mammography Image Module for explanation if Positioner Type
      * (0018,1508) is MAMMOGRAPHIC.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -219,9 +219,9 @@ public class DXPositioningModule extends Module {
     /**
      * Factor Ratio of Source Image Receptor Distance (SID) over Source Object
      * Distance (SOD).
-     * 
+     * <p>
      * Type 3
-     * 
+     * <p>
      * @param f
      */
     public void setEstimatedRadiographicMagnificationFactor(float f) {
@@ -258,13 +258,13 @@ public class DXPositioningModule extends Module {
      * Position of the X-Ray beam about the patient from the RAO to LAO
      * direction where movement from RAO to vertical is positive, if Positioner
      * Type (0018,1508) is CARM.
-     * 
+     * <p>
      * See C.8.7.5 XA Positioner Module for further explanation if Positioner
      * Type (0018,1508) is CARM.
-     * 
+     * <p>
      * See C.8.11.7 Mammography Image Module for explanation if Positioner Type
      * (0018,1508) is MAMMOGRAPHIC.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -281,13 +281,13 @@ public class DXPositioningModule extends Module {
      * Position of the X-Ray beam about the patient from the CAU to CRA
      * direction where movement from CAU to vertical is positive, if Positioner
      * Type (0018,1508) is CARM.
-     * 
+     * <p>
      * See C.8.7.5 XA Positioner Module for further explanation if Positioner
      * Type (0018,1508) is CARM.
-     * 
+     * <p>
      * See C.8.11.7 Mammography Image Module for explanation if Positioner Type
      * (0018,1508) is MAMMOGRAPHIC.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -305,12 +305,12 @@ public class DXPositioningModule extends Module {
      * normal to the detector plane. Positive values indicate that the X-Ray
      * beam is tilted toward higher numbered columns. Negative values indicate
      * that the X-Ray beam is tilted toward lower numbered columns.
-     * 
+     * <p>
      * See C.8.7.5 XA Positioner Module for further explanation.
-     * 
+     * <p>
      * See C.8.11.7 Mammography Image Module for explanation if Positioner Type
      * (0018,1508) is MAMMOGRAPHIC.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -328,12 +328,12 @@ public class DXPositioningModule extends Module {
      * the normal to the detector plane. Positive values indicate that the X-Ray
      * beam is tilted toward lower numbered rows. Negative values indicate that
      * the X-Ray beam is tilted toward higher numbered rows.
-     * 
+     * <p>
      * See C.8.7.5 XA Positioner Module for further explanation.
-     * 
+     * <p>
      * See C.8.11.7 Mammography Image Module for explanation if Positioner Type
      * (0018,1508) is MAMMOGRAPHIC.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -350,11 +350,11 @@ public class DXPositioningModule extends Module {
      * Angle of the X-Ray beam in degree relative to an orthogonal axis to the
      * detector plane. Positive values indicate that the tilt is toward the head
      * of the table.
-     * 
+     * <p>
      * Note: The detector plane is assumed to be parallel to the table plane.
-     * 
+     * <p>
      * Only meaningful if Positioner Type (0018,1508) is COLUMN.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -369,7 +369,7 @@ public class DXPositioningModule extends Module {
 
     /**
      * Defined Terms: FIXED TILTING NONE
-     * 
+     * <p>
      * Type 3
      * 
      * @param cs
@@ -385,9 +385,9 @@ public class DXPositioningModule extends Module {
     /**
      * Angle of table plane in degrees relative to horizontal plane [Gravity
      * plane]. Positive values indicate that the head of the table is upward.
-     * 
+     * <p>
      * Only meaningful if Table Type (0018,113A) is TILTING.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -403,7 +403,7 @@ public class DXPositioningModule extends Module {
     /**
      * The average thickness in mm of the body part examined when compressed, if
      * compression has been applied during exposure.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
@@ -419,7 +419,7 @@ public class DXPositioningModule extends Module {
     /**
      * The compression force applied to the body part during exposure, measured
      * in Newtons.
-     * 
+     * <p>
      * Type 3
      * 
      * @param f
