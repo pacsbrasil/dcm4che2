@@ -154,14 +154,25 @@ public class DatasetTest extends TestCase {
     }
 
     public void testWriteDeflated() throws Exception {
+    	testWriteDeflated(false);
+    }
+    
+    public void testWriteDeflatedWithoutPreamble() throws Exception {
+    	testWriteDeflated(true);
+    }
+    
+    private void testWriteDeflated(boolean skipPreamble) throws Exception {
 		testReadEVR_LE();
 		DcmObjectFactory dof = DcmObjectFactory.getInstance();
 		FileMetaInfo fmi = dof.newFileMetaInfo(ds, UIDs.DeflatedExplicitVRLittleEndian);
+		if (skipPreamble) {
+			fmi.setPreamble(null);
+		}
 		ds.setFileMetaInfo(fmi);
 		ds.writeFile(OUT_FILE, DcmEncodeParam.DEFL_EVR_LE);
 		ds.readFile(OUT_FILE, null, -1);
 	};
-	
+		
 
     /**
      *  A unit test for JUnit

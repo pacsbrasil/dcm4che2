@@ -58,6 +58,8 @@ public interface FileMetaInfo extends DcmObject {
 
     public byte[] getPreamble();
 
+    public void setPreamble(byte[] preamble);
+    
     public String getMediaStorageSOPClassUID();
 
     public String getMediaStorageSOPInstanceUID();
