@@ -72,7 +72,7 @@ public class ValidationResult {
             invalidValue = new BasicDicomObject();
         }
         DicomElement e = testObj.get(tag);
-        missingValue.putBytes(tag, e.vr(), e.getBytes());
+        invalidValue.putBytes(tag, e.vr(), e.getBytes());
     }
 
     public void clear() {
