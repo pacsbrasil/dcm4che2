@@ -313,6 +313,33 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isWADOExcludePrivateAttributes"
+      setMethod="setWADOExcludePrivateAttributes">
+      <description><![CDATA[Excludes private Attributes from Datasets returned
+      by WADO Service]]>
+      </description>
+      <name>WADOExcludePrivateAttributes</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getOnSwitchStorageFilesystemInvoke"
+      setMethod="setOnSwitchStorageFilesystemInvoke">
+      <description><![CDATA[Executes specified command when the current
+      storage file system becomes full and is switch to the next configured.
+      '%1' will be replaced by the directory path of the previous,
+      '%2' with the directory path of the new storage file system.
+       ]]>
+      </description>
+      <name>OnSwitchStorageFilesystemInvoke</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getRetryIntervalsForJmsOrder"
       setMethod="setRetryIntervalsForJmsOrder">
       <description><![CDATA[Number and interval of retries made for
@@ -330,18 +357,6 @@ accessed studies.</description>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m,24x1h,7x1d" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isWithoutPrivate"
-      setMethod="setWithoutPrivate">
-      <description><![CDATA[Enabled this attribute to exclude Private Tags. <br/>
-      				(the result getDatasourceOfInstance will exclude private tags in the output).]]>
-      </description>
-      <name>WithoutPrivateTags</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
       </descriptors>
    </attribute>
    

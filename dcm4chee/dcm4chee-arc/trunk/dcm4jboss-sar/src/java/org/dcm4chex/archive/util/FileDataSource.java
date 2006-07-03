@@ -52,7 +52,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
-import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
@@ -75,7 +74,7 @@ public class FileDataSource implements DataSource {
 	/** if true use Dataset.writeFile instead of writeDataset */
 	private boolean writeFile = false;
 	private boolean withoutPixeldata = false;
-	private boolean withoutPrivateTags = false;
+	private boolean excludePrivate = false;
 
 	// buffer == null => send no Pixeldata
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
@@ -104,25 +103,19 @@ public class FileDataSource implements DataSource {
     public final boolean isWithoutPixeldata() {
 		return withoutPixeldata;
 	}
+    
 	public final void setWithoutPixeldata(boolean withoutPixelData) {
 		this.withoutPixeldata = withoutPixelData;
 	}
 	
-	/**
-	 * @return Returns the withoutPrivateTags.
-	 */
-	public boolean isWithoutPrivateTags() {
-		return withoutPrivateTags;
+	public boolean isExcludePrivate() {
+		return excludePrivate;
 	}
-	/**
-	 * @param withoutPrivateTags The withoutPrivateTags to set.
-	 */
-	public void setWithoutPrivateTags(boolean withoutPrivateTags) {
-		this.withoutPrivateTags = withoutPrivateTags;
+    
+	public void setExcludePrivate(boolean excludePrivate) {
+		this.excludePrivate = excludePrivate;
 	}
-	/**
-	 * @return Returns the mergeAttrs.
-	 */
+    
 	public Dataset getMergeAttrs() {
 		return mergeAttrs;
 	}
@@ -210,7 +203,7 @@ public class FileDataSource implements DataSource {
     
     private void write(Dataset ds, OutputStream out, DcmEncodeParam enc) throws IOException {
 		if ( writeFile ) {
-			if ( withoutPrivateTags ) {
+			if ( excludePrivate ) {
 				Dataset dsOut = ds.excludePrivate();
 				dsOut.setFileMetaInfo(ds.getFileMetaInfo());
 				dsOut.writeFile(out,enc); 
@@ -218,7 +211,7 @@ public class FileDataSource implements DataSource {
 				ds.writeFile(out, enc);
 			}
 		} else {
-			if ( withoutPrivateTags ) 
+			if ( excludePrivate ) 
 				ds.excludePrivate().writeDataset(out,enc); 
 			else 
 				ds.writeDataset(out, enc);

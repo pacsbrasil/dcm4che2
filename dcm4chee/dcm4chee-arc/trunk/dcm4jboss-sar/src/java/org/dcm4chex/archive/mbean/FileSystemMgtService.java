@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.mbean;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -71,6 +72,8 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
+import org.dcm4che.util.Executer;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.ActionOrder;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
@@ -106,12 +109,16 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class FileSystemMgtService extends ServiceMBeanSupport implements MessageListener {
 
+    private static final String NONE = "NONE";
+    private static final String FROM_PARAM = "%1";
+    private static final String TO_PARAM = "%2";    
+    
     private final TimerSupport timer = new TimerSupport(this);
 	
     private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-    private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
-    
+    private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
+
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
     
     private long checkFreeDiskSpaceInterval = 60000L;
@@ -170,7 +177,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     
 	protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
 	
-	private boolean withoutPrivate;
+	private boolean excludePrivate;
+    
+    private String[] onSwitchStorageFSCmd;
     
 	        
     private final NotificationListener purgeFilesListener = 
@@ -489,19 +498,58 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 		this.purgeStudyQueueName = purgeStudyQueueName;
 	}
     
+	public boolean isWADOExcludePrivateAttributes() {
+		return excludePrivate;
+	}
+
+    public void setWADOExcludePrivateAttributes(boolean excludePrivate) {
+		this.excludePrivate = excludePrivate;
+	}
     
-	/**
-	 * @return Returns the withoutPrivate.
-	 */
-	public boolean isWithoutPrivate() {
-		return withoutPrivate;
-	}
-	/**
-	 * @param withoutPrivate The withoutPrivate to set.
-	 */
-	public void setWithoutPrivate(boolean withoutPrivate) {
-		this.withoutPrivate = withoutPrivate;
-	}
+    public final String getOnSwitchStorageFilesystemInvoke() {
+        if (onSwitchStorageFSCmd == null) {
+            return NONE;
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < onSwitchStorageFSCmd.length; i++) {
+            sb.append(onSwitchStorageFSCmd[i]);
+        }
+        return sb.toString();
+    }
+
+    private String makeOnSwitchStorageFSCmd(String from, String to) {
+        if (onSwitchStorageFSCmd == null) {
+            return null;
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < onSwitchStorageFSCmd.length; i++) {
+            sb.append(onSwitchStorageFSCmd[i].equals(FROM_PARAM) ? from
+                    : onSwitchStorageFSCmd[i].equals(TO_PARAM) ? to
+                    : onSwitchStorageFSCmd[i]);
+        }
+        return sb.toString();
+    }
+    
+    public final void setOnSwitchStorageFilesystemInvoke(String command) {
+        String s = command.trim();
+        if (NONE.equalsIgnoreCase(s)) {
+            onSwitchStorageFSCmd = null;
+            return;
+        }
+        try {
+            String[] a = StringUtils.split(s, '%');
+            String[] b = new String[a.length + a.length - 1];
+            b[0] = a[0];
+            for (int i = 1; i < a.length; i++) {
+                b[2 * i - 1] = ("%" + a[i].charAt(0)).intern();
+                b[2 * i] = a[i].substring(1);
+            }
+            this.onSwitchStorageFSCmd = b;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(command);
+        }
+    }
+    
     protected void startService() throws Exception {
          timer.init();
          freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
@@ -551,10 +599,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             throws RemoteException, FinderException, IOException {
         if (storageFileSystem != fsDTO)
             return true; // already switched by another thread
-        String dirPath0 = fsDTO.getDirectoryPath();
+        String dirPath, dirPath0 = fsDTO.getDirectoryPath();
         FileSystemMgt fsmgt = newFileSystemMgt();
         do {
-            String dirPath = fsDTO.getNext();
+            dirPath = fsDTO.getNext();
             if (dirPath == null || dirPath.equals(dirPath0)) {
                 log.error("High Water Mark reached on storage directory " 
                         + FileUtils.toFile(dirPath0)
@@ -567,7 +615,30 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
         fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
         storageFileSystem = fsDTO;
+        if (onSwitchStorageFSCmd != null) {
+            final String cmd = makeOnSwitchStorageFSCmd(
+                    dirPath0.replace('/', File.separatorChar),
+                    dirPath.replace('/', File.separatorChar));
+            new Thread(new Runnable(){
+
+                public void run() {
+                    execute(cmd);
+                }}).start();
+        }
         return true;
+    }
+
+    private void execute(final String cmd) {
+        try {
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            Executer ex = new Executer(cmd, stdout, null);
+            int exit = ex.waitFor();
+            if (exit != 0) {
+                log.info("Non-zero exit code(" + exit + ") of " + cmd);
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute " + cmd, e);
+        }
     }
 
     private boolean checkStorageFileSystem(FileSystemDTO fsDTO) throws IOException {
@@ -786,7 +857,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
                                         DatasetUtils.fromByteArray(info.instAttrs))));
                 FileDataSource ds = new FileDataSource(f, mergeAttrs, new byte[bufferSize]);
             	ds.setWriteFile(true);//write FileMetaInfo!
-           		ds.setWithoutPrivateTags(withoutPrivate);
+           		ds.setExcludePrivate(excludePrivate);
             	return ds;
             }
         }
