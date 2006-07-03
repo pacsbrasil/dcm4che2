@@ -39,6 +39,7 @@
 package org.dcm4che2.iod.composite;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.iod.module.composite.AcquisitionContextModule;
 import org.dcm4che2.iod.module.composite.ContrastBolusModule;
 import org.dcm4che2.iod.module.composite.DeviceModule;
 import org.dcm4che2.iod.module.dx.DXAnatomyImagedModule;
@@ -52,34 +53,36 @@ import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
 
 /**
+ * <p>
  * The Digital X-Ray (DX) Image Information Object Definition specifies an image
  * that has been created by a digital projection radiography imaging device.
  * 
+ * <p>
  * Notes:
- * 
+ * <p>
  * 1. This includes but is not limited to: chest radiography, linear and
  * multi-directional tomography, orthopantomography and skeletal radiography.
  * Acquisition of image data may include but is not limited to: CCD-based
  * sensors, stimulable phosphor imaging plates, amorphous selenium,
  * scintillation based amorphous silicon and secondary capture of film-based
  * images.
- * 
+ * <p>
  * 2. Specific IODs are defined for intra-oral radiography and mammography that
  * further specialize the DX IOD.
- * 
+ * <p>
  * A DX image shall consist of the result of a single X-Ray exposure, in order
  * to ensure that the anatomical and orientation attributes are meaningful for
  * the image, permitting safe annotation, appropriate image processing and
  * appropriate dissemination.
- * 
+ * <p>
  * Notes:
- * 
+ * <p>
  * 1. This requirement specifically deprecates the common film/screen and
  * Computed Radiography practice of making multiple exposures on different areas
  * of a cassette or plate by using lead occlusion between exposures. Such
  * acquisitions could be separated and transformed into multiple DX images
  * during an appropriate quality assurance step by an operator.
- * 
+ * <p>
  * 2. This requirement does not deprecate the acquisition of multiple paired
  * structures during a single exposure, provided that they can be described by
  * the relevant orientation Attributes. For example, an AP or PA projection of
@@ -87,7 +90,7 @@ import org.dcm4che2.iod.validation.ValidationResult;
  * be described by a Patient Orientation (0020,0020) of R\H or L\H since both
  * hands are in the same traditional Anatomical Position. See PS 3.17 annex on
  * Explanation of Patient Orientation.
- * 
+ * <p>
  * The DX Image IOD is used in two SOP Classes as defined in PS 3.4 Storage
  * Service Class, a SOP Class for storage of images intended for presentation,
  * and a SOP Class for storage of images intended for further processing before
@@ -132,7 +135,7 @@ public class DXImage extends Image {
     
     //TODO Image Histogram
     
-    //TODO Acquisition Context THIS IS MANDATORY!!
+    protected final AcquisitionContextModule acquisitionContextModule;
 
     public DXImage(DicomObject dcmobj) {
         super(dcmobj, new DXSeriesModule(dcmobj), new DXImageModule(dcmobj));
@@ -145,6 +148,7 @@ public class DXImage extends Image {
         this.dxPositioningModule = new DXPositioningModule(dcmobj);
         this.overlayPlaneModule = new OverlayPlaneModule(dcmobj);
         this.voiLUTModule = new VOILUTModule(dcmobj);
+        this.acquisitionContextModule = new AcquisitionContextModule(dcmobj);
     }
 
     public final DXSeriesModule getDXSeriesModule() {
@@ -160,6 +164,7 @@ public class DXImage extends Image {
         dxPositioningModule.init();
         overlayPlaneModule.init();
         voiLUTModule.init();
+        acquisitionContextModule.init();
     }
 
     public void validate(ValidationContext ctx, ValidationResult result) {
@@ -171,6 +176,7 @@ public class DXImage extends Image {
         dxPositioningModule.validate(ctx, result);
         overlayPlaneModule.validate(ctx, result);
         voiLUTModule.validate(ctx, result);
+        acquisitionContextModule.validate(ctx, result);
     }
     
     public final ContrastBolusModule getContrastBolusModule(){
@@ -203,6 +209,10 @@ public class DXImage extends Image {
     
     public final VOILUTModule getVOILUTModule(){
         return voiLUTModule;
+    }
+    
+    public final AcquisitionContextModule getAcquisitionContextModule(){
+        return acquisitionContextModule;
     }
 
 }
