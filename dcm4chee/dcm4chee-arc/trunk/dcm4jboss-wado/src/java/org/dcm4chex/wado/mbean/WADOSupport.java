@@ -332,7 +332,7 @@ private WADOResponseObject getUpdatedInstance( WADORequestObject req, String tra
         	if ( ds instanceof FileDataSource ) {
             	d = ((FileDataSource) ds).getMergeAttrs();
             	if ( req.getRequestParams().containsKey("privateTags")) {
-            		((FileDataSource) ds).setWithoutPrivateTags("no".equalsIgnoreCase(((String[])req.getRequestParams().get("privateTags"))[0]));
+            		((FileDataSource) ds).setExcludePrivate("no".equalsIgnoreCase(((String[])req.getRequestParams().get("privateTags"))[0]));
             	}
         	} else {
         		d = getPatientInfo(req);

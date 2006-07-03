@@ -1,7 +1,7 @@
 <project name="dcm4jboss-build" default="dist">
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
-  <property name="version" value="2.8.2"/>
+  <property name="version" value="2.8.3"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
