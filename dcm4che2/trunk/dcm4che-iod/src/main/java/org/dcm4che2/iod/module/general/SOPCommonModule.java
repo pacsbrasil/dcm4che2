@@ -145,10 +145,44 @@ public class SOPCommonModule extends Module {
         updateSequence(Tag.ContributingEquipmentSequence, codes);
     }    
 
+    /**
+     * A number that identifies this composite object instance.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 3
+     * 
+     * @return
+     */
     public String getInstanceNumber() {
         return dcmobj.getString(Tag.InstanceNumber);
     }
-    
+
+    /**
+     * A number that identifies this composite object instance.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 3
+     * 
+     * @param s
+     */
     public void setInstanceNumber(String s) {
         dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
     }

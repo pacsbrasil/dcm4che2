@@ -56,7 +56,7 @@ import org.dcm4che2.iod.value.PresentationLUTShape;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Jun 9, 2006
- *
+ * 
  */
 public class GeneralImageModule extends ImagePixel {
 
@@ -69,81 +69,152 @@ public class GeneralImageModule extends ImagePixel {
         setSamplesPerPixel(1);
         setPixelRepresentation(0);
     }
-    
+
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!PresentationLUTShape.isValidSoftCopy(getPresentationLUTShape())) {
             result.logInvalidValue(Tag.PresentationLUTShape, dcmobj);
         }
         if (!LossyImageCompression.isValid(getLossyImageCompression())) {
-            result.logInvalidValue(Tag.LossyImageCompression, dcmobj);            
+            result.logInvalidValue(Tag.LossyImageCompression, dcmobj);
         }
         if (!Flag.isValid(getBurnedInAnnotation())) {
             result.logInvalidValue(Tag.BurnedInAnnotation, dcmobj);
         }
     }
-    
+
+    /**
+     * A number that identifies this image.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 2
+     * 
+     * @return
+     */
     public String getInstanceNumber() {
         return dcmobj.getString(Tag.InstanceNumber);
     }
-    
+
+    /**
+     * A number that identifies this image.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 2
+     * 
+     * @param s
+     */
     public void setInstanceNumber(String s) {
         dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
     }
-    
+
     public String[] getPatientOrientation() {
         return dcmobj.getStrings(Tag.PatientOrientation);
     }
-    
+
     public void setPatientOrientation(String[] s) {
         dcmobj.putStrings(Tag.PatientOrientation, VR.CS, s);
     }
-    
+
     public Date getContentDateTime() {
         return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
     }
-    
+
     public void setContentDateTime(Date d) {
         dcmobj.putDate(Tag.ContentDate, VR.DA, d);
         dcmobj.putDate(Tag.ContentTime, VR.TM, d);
     }
-    
+
     public String[] getImageType() {
         return dcmobj.getStrings(Tag.ImageType);
     }
-    
+
     public void setImageType(String[] s) {
         dcmobj.putStrings(Tag.ImageType, VR.CS, s);
     }
 
+    /**
+     * A number identifying the single continuous gathering of data over a
+     * period of time that resulted in this image.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 3
+     * 
+     * @return
+     */
     public String getAcquisitionNumber() {
         return dcmobj.getString(Tag.AcquisitionNumber);
     }
-    
+
+    /**
+     * A number identifying the single continuous gathering of data over a
+     * period of time that resulted in this image.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 3
+     * 
+     * @param s
+     */
     public void setAcquisitionNumber(String s) {
         dcmobj.putString(Tag.AcquisitionNumber, VR.IS, s);
     }
-    
+
     public Date getAcquisitionDateTime() {
         return dcmobj.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
     }
-    
+
     public void setAcquisitionDateTime(Date d) {
         dcmobj.putDate(Tag.AcquisitionDate, VR.DA, d);
         dcmobj.putDate(Tag.AcquisitionTime, VR.TM, d);
     }
-    
+
     public Date getAcquisitionDatetime() {
         return dcmobj.getDate(Tag.AcquisitionDatetime);
     }
-    
+
     public void setAcquisitionDatetime(Date d) {
         dcmobj.putDate(Tag.AcquisitionDatetime, VR.DT, d);
     }
 
     public ImageSOPInstanceReferenceAndPurpose[] getReferencedImages() {
-        return ImageSOPInstanceReferenceAndPurpose.toImageSOPInstanceReferenceAndPurposes(
-                dcmobj.get(Tag.ReferencedImageSequence));
+        return ImageSOPInstanceReferenceAndPurpose
+                .toImageSOPInstanceReferenceAndPurposes(dcmobj
+                        .get(Tag.ReferencedImageSequence));
     }
 
     public void setReferencedImages(ImageSOPInstanceReferenceAndPurpose[] sops) {
@@ -157,14 +228,14 @@ public class GeneralImageModule extends ImagePixel {
     public void setDerivationDescription(String s) {
         dcmobj.putString(Tag.DerivationDescription, VR.ST, s);
     }
-    
+
     public Code[] getDerivationCodes() {
         return Code.toCodes(dcmobj.get(Tag.DerivationCodeSequence));
     }
 
     public void setDerivationCodes(Code[] codes) {
         updateSequence(Tag.DerivationCodeSequence, codes);
-    }    
+    }
 
     public SourceImage[] getSourceImages() {
         return SourceImage.toSourceImages(dcmobj.get(Tag.SourceImageSequence));
@@ -175,8 +246,9 @@ public class GeneralImageModule extends ImagePixel {
     }
 
     public SOPInstanceReferenceAndPurpose[] getReferencedInstances() {
-        return SOPInstanceReferenceAndPurpose.toSOPInstanceReferenceAndPurposes(
-                dcmobj.get(Tag.ReferencedInstanceSequence));
+        return SOPInstanceReferenceAndPurpose
+                .toSOPInstanceReferenceAndPurposes(dcmobj
+                        .get(Tag.ReferencedInstanceSequence));
     }
 
     public void setReferencedInstances(SOPInstanceReferenceAndPurpose[] sops) {
@@ -186,7 +258,7 @@ public class GeneralImageModule extends ImagePixel {
     public int getImagesinAcquisition() {
         return dcmobj.getInt(Tag.ImagesinAcquisition);
     }
-    
+
     public void setImagesinAcquisition(int i) {
         dcmobj.putInt(Tag.ImagesinAcquisition, VR.IS, i);
     }
@@ -238,7 +310,7 @@ public class GeneralImageModule extends ImagePixel {
     public void setLossyImageCompressionMethod(String[] ss) {
         dcmobj.putStrings(Tag.LossyImageCompressionMethod, VR.CS, ss);
     }
-    
+
     public ImagePixel getIconImage() {
         DicomObject item = dcmobj.getNestedDicomObject(Tag.IconImageSequence);
         return item != null ? new ImagePixel(item) : null;
@@ -267,7 +339,7 @@ public class GeneralImageModule extends ImagePixel {
     public String getPixelDataProviderURL() {
         return dcmobj.getString(Tag.PixelDataProviderURL);
     }
-    
+
     public void setPixelDataProviderURL(String s) {
         dcmobj.putString(Tag.PixelDataProviderURL, VR.UT, s);
     }

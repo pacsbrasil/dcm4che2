@@ -77,10 +77,44 @@ public class GeneralSeriesModule extends Module {
         dcmobj.putString(Tag.SeriesInstanceUID, VR.UI, s);
     }
 
+    /**
+     * A number that identiries this series.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 2
+     * 
+     * @return
+     */
     public String getSeriesNumber() {
         return dcmobj.getString(Tag.SeriesNumber);
     }
 
+    /**
+     * A number that identiries this series.
+     * <p>
+     * Please not that this is an IS DICOM value, which is supposed to be
+     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+     * because:
+     * <ul>
+     * <li> I have already seen objects, which uses non-numeric values for this
+     * identifiers.
+     * <li>For identifiers, the non-numeric value may still of some
+     * use/information as opposed to e.g. a non-numeric Frame Number..
+     * </ul>
+     * <p>
+     * Type 2
+     * 
+     * @param s
+     */
     public void setSeriesNumber(String s) {
         dcmobj.putString(Tag.SeriesNumber, VR.IS, s);
     }
@@ -111,14 +145,14 @@ public class GeneralSeriesModule extends Module {
     }
 
     public PersonIdentification[] getPerformingPhysicianIdentification() {
-        return PersonIdentification.toPersonIdentifications(
-                dcmobj.get(Tag.PerformingPhysicianIdentificationSequence));
+        return PersonIdentification.toPersonIdentifications(dcmobj
+                .get(Tag.PerformingPhysicianIdentificationSequence));
     }
 
     public void setPerformingPhysicianIdentification(PersonIdentification[] ids) {
         updateSequence(Tag.PerformingPhysicianIdentificationSequence, ids);
     }
-    
+
     public String getProtocolName() {
         return dcmobj.getString(Tag.ProtocolName);
     }
@@ -144,14 +178,14 @@ public class GeneralSeriesModule extends Module {
     }
 
     public PersonIdentification[] getOperatorIdentification() {
-        return PersonIdentification.toPersonIdentifications(
-                dcmobj.get(Tag.OperatorIdentificationSequence));
+        return PersonIdentification.toPersonIdentifications(dcmobj
+                .get(Tag.OperatorIdentificationSequence));
     }
 
     public void setOperatorIdentification(PersonIdentification[] ids) {
         updateSequence(Tag.OperatorIdentificationSequence, ids);
     }
-    
+
     public SOPInstanceReference getReferencedPerformedProcedureStepSOPInstance() {
         DicomObject item = dcmobj
                 .getNestedDicomObject(Tag.ReferencedPerformedProcedureStepSequence);
@@ -164,7 +198,8 @@ public class GeneralSeriesModule extends Module {
     }
 
     public RelatedSeries[] getRelatedSeries() {
-        return RelatedSeries.toRelatedSeries(dcmobj.get(Tag.RelatedSeriesSequence));
+        return RelatedSeries.toRelatedSeries(dcmobj
+                .get(Tag.RelatedSeriesSequence));
     }
 
     public void setRelatedSeries(RelatedSeries[] relseries) {
@@ -192,8 +227,8 @@ public class GeneralSeriesModule extends Module {
     }
 
     public void setSmallestPixelValueinSeries(int s) {
-        dcmobj.putInt(Tag.SmallestPixelValueinSeries,
-                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
+        dcmobj.putInt(Tag.SmallestPixelValueinSeries, PixelRepresentation
+                .isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public int getLargestPixelValueinSeries() {
@@ -201,13 +236,13 @@ public class GeneralSeriesModule extends Module {
     }
 
     public void setLargestPixelValueinSeries(int s) {
-        dcmobj.putInt(Tag.LargestPixelValueinSeries,
-                PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
+        dcmobj.putInt(Tag.LargestPixelValueinSeries, PixelRepresentation
+                .isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public RequestAttributes[] getRequestAttributes() {
-        return RequestAttributes.valuesOf(
-                dcmobj.get(Tag.RequestAttributesSequence));
+        return RequestAttributes.valuesOf(dcmobj
+                .get(Tag.RequestAttributesSequence));
     }
 
     public void setRequestAttributes(RequestAttributes[] rqattrs) {
@@ -241,8 +276,8 @@ public class GeneralSeriesModule extends Module {
     }
 
     public ProtocolCodeAndContext[] getPerformedProtocolCodes() {
-        return ProtocolCodeAndContext.toProtocolCodeAndContexts(
-                dcmobj.get(Tag.PerformedProtocolCodeSequence));
+        return ProtocolCodeAndContext.toProtocolCodeAndContexts(dcmobj
+                .get(Tag.PerformedProtocolCodeSequence));
     }
 
     public void setPerformedProtocolCodes(ProtocolCodeAndContext[] codes) {
