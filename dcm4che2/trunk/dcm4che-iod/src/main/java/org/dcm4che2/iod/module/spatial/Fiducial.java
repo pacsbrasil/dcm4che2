@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -49,16 +49,16 @@ import org.dcm4che2.iod.module.spatial.GraphicCoordinatesData;
  * This class represents a Fiducial.
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * 
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Revision$ $Date$
  */
 public class Fiducial extends GraphicCoordinatesData {
 
     public Fiducial(DicomObject dcmobj) {
         super(dcmobj);
-        // TODO Auto-generated constructor stub
     }
 
-    public static Fiducial[] toFiducial(DicomElement sq) {
+    public static Fiducial[] toFiducials(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
@@ -246,8 +246,8 @@ public class Fiducial extends GraphicCoordinatesData {
      * 
      * @return
      */
-    public float getContourData() {
-        return dcmobj.getFloat(Tag.ContourData);
+    public float[] getContourData() {
+        return dcmobj.getFloats(Tag.ContourData);
     }
 
     /**
@@ -264,8 +264,8 @@ public class Fiducial extends GraphicCoordinatesData {
      * 
      * @param ds
      */
-    public void setContourData(float ds) {
-        dcmobj.putFloat(Tag.ContourData, VR.DS, ds);
+    public void setContourData(float[] ds) {
+        dcmobj.putFloats(Tag.ContourData, VR.DS, ds);
     }
 
     /**
@@ -297,7 +297,7 @@ public class Fiducial extends GraphicCoordinatesData {
     }
 
     /**
-     * The image pixel locations of the fiducialÕs points. Shall contain one or
+     * The image pixel locations of the fiducialï¿½s points. Shall contain one or
      * more items. More than one item shall be present only if a fiducial spans
      * more than one image. Required if Contour Data is not present. May be
      * present otherwise.
@@ -312,7 +312,7 @@ public class Fiducial extends GraphicCoordinatesData {
     }
 
     /**
-     * The image pixel locations of the fiducialÕs points. Shall contain one or
+     * The image pixel locations of the fiducialï¿½s points. Shall contain one or
      * more items. More than one item shall be present only if a fiducial spans
      * more than one image. Required if Contour Data is not present. May be
      * present otherwise.

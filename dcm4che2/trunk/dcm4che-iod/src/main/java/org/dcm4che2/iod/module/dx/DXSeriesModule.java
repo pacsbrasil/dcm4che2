@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -53,6 +53,8 @@ import org.dcm4che2.iod.module.macro.SOPInstanceReference;
  * context of projection Digital X-Ray.
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Revision$ $Date$
  * 
  */
 public class DXSeriesModule extends GeneralSeriesModule {

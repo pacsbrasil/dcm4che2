@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,39 +38,49 @@
 
 package org.dcm4che2.iod.composite;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
 import org.dcm4che2.iod.module.spatial.SpatialFiducialsModule;
 import org.dcm4che2.iod.module.spatial.SpatialFiducialsSeriesModule;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
 
 /**
  * The Fiducials IOD specifies the spatial relationship between the Composite
  * Fiducial instance, to one or more images.
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * 
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Revision$ $Date$
  */
 public class SpatialFiducials extends Composite {
 
-    protected final SpatialFiducialsSeriesModule spatialFiducialsSeriesModule;
-    
     protected final SpatialFiducialsModule spatialFiducialsModule;
     
     //TODO Common Instance Reference Module C.12.2 MANDATORY!!
     
-    /**
-     * @param dcmobj
-     */
-    public SpatialFiducials(DicomObject dcmobj, GeneralSeriesModule generalSeriesModule) {
-        super(dcmobj, generalSeriesModule);
+    public SpatialFiducials(DicomObject dcmobj) {
+        super(dcmobj, new SpatialFiducialsSeriesModule(dcmobj));
         
-        this.spatialFiducialsSeriesModule = new SpatialFiducialsSeriesModule(dcmobj);
-        this.spatialFiducialsModule = new SpatialFiducialsModule(dcmobj);
-        
+        this.spatialFiducialsModule = new SpatialFiducialsModule(dcmobj);        
     }
     
+    public SpatialFiducials() {
+        this(new BasicDicomObject());
+    }
+    
+    public void init() {
+        super.init();
+        spatialFiducialsModule.init();
+    }
+
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        spatialFiducialsModule.validate(ctx, result);
+    }
+
     public SpatialFiducialsSeriesModule getSpacialFiducialsSeriesModule(){
-        return this.spatialFiducialsSeriesModule;
+        return (SpatialFiducialsSeriesModule) generalSeriesModule;
     }
 
     public SpatialFiducialsModule getSpacialFiducialsModule(){

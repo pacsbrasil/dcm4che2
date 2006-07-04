@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -140,10 +140,10 @@ public class SpatialFiducialsModule extends Module {
      * <p>
      * Type 2
      * 
-     * @param cs
+     * @param lo
      */
-    public void setContentDescription(String cs) {
-        dcmobj.putString(Tag.ContentDescription, VR.CS, cs);
+    public void setContentDescription(String lo) {
+        dcmobj.putString(Tag.ContentDescription, VR.LO, lo);
     }
 
     /**

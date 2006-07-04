@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -43,18 +43,18 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
-import org.dcm4che2.iod.module.macro.SOPInstanceReference;
+import org.dcm4che2.iod.module.macro.ImageSOPInstanceReference;
 
 /**
  * 
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
- * 
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Revision$ $Date$
  */
 public class GraphicCoordinatesData extends Module {
 
     public GraphicCoordinatesData(DicomObject dcmobj) {
         super(dcmobj);
-        // TODO Auto-generated constructor stub
     }
 
     public static GraphicCoordinatesData[] toGraphicCoordinatesData(DicomElement sq) {
@@ -73,7 +73,7 @@ public class GraphicCoordinatesData extends Module {
      * Graphic point coordinates of the fiducial.
      * 
      * Graphic point coordinates of the fiducial points in the image of the
-     * Referenced Image Sequence. If Fiducial’s Contour Data (3006,0050) is
+     * Referenced Image Sequence. If Fiducial's Contour Data (3006,0050) is
      * present, these points correlate to the points in the Contour Data, one
      * row-column pair for each point and in the same order. See C.10.5.1.2 for
      * further explanation.
@@ -82,31 +82,31 @@ public class GraphicCoordinatesData extends Module {
      * 
      * @return
      */
-    public float getGraphicData() {
-        return dcmobj.getFloat(Tag.GraphicData);
+    public float[] getGraphicData() {
+        return dcmobj.getFloats(Tag.GraphicData);
     }
 
     /**
      * Graphic point coordinates of the fiducial.
      * 
      * Graphic point coordinates of the fiducial points in the image of the
-     * Referenced Image Sequence. If Fiducial’s Contour Data (3006,0050) is
+     * Referenced Image Sequence. If Fiducial's Contour Data (3006,0050) is
      * present, these points correlate to the points in the Contour Data, one
      * row-column pair for each point and in the same order. See C.10.5.1.2 for
      * further explanation.
      * <p>
      * Type 1
      * 
-     * @param ds
+     * @param fl
      */
-    public void setGraphicData(float ds) {
-        dcmobj.putFloat(Tag.GraphicData, VR.DS, ds);
+    public void setGraphicData(float[] fl) {
+        dcmobj.putFloats(Tag.GraphicData, VR.FL, fl);
     }
 
     /**
-     * Image containing the fiducial’s graphic coordinates.
+     * Image containing the fiducial's graphic coordinates.
      * 
-     * A sequence that specifies the image containing the fiducial’s graphic
+     * A sequence that specifies the image containing the fiducial's graphic
      * coordinates. Only one item shall be present. Shall be an image within the
      * set of the images in the Referenced Image Sequence (0008,1140) of the
      * encapsulating Fiducial Set Sequence (0070,031C) item.
@@ -116,14 +116,14 @@ public class GraphicCoordinatesData extends Module {
      * 
      * @param sop
      */
-    public void setReferencedImage(SOPInstanceReference sop) {
+    public void setReferencedImage(ImageSOPInstanceReference sop) {
         updateSequence(Tag.ReferencedImageSequence, sop);
     }
 
     /**
-     * Image containing the fiducial’s graphic coordinates.
+     * Image containing the fiducial's graphic coordinates.
      * 
-     * A sequence that specifies the image containing the fiducial’s graphic
+     * A sequence that specifies the image containing the fiducial's graphic
      * coordinates. Only one item shall be present. Shall be an image within the
      * set of the images in the Referenced Image Sequence (0008,1140) of the
      * encapsulating Fiducial Set Sequence (0070,031C) item.
@@ -133,10 +133,10 @@ public class GraphicCoordinatesData extends Module {
      * 
      * @return
      */
-    public SOPInstanceReference getReferencedImage() {
+    public ImageSOPInstanceReference getReferencedImage() {
         DicomObject item = dcmobj
                 .getNestedDicomObject(Tag.ReferencedImageSequence);
-        return item != null ? new SOPInstanceReference(item) : null;
+        return item != null ? new ImageSOPInstanceReference(item) : null;
     }
 
 }

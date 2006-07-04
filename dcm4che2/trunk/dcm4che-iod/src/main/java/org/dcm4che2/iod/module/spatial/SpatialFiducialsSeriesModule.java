@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -40,50 +40,41 @@ package org.dcm4che2.iod.module.spatial;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
 import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
+import org.dcm4che2.iod.value.Modality;
 
 /**
  * Table C.21.1-1 defines the general Attributes of the Spatial Fiducials Series
  * Module.
-
+ *
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since 04.07.2006
  *
  */
 public class SpatialFiducialsSeriesModule extends GeneralSeriesModule {
 
     public SpatialFiducialsSeriesModule(DicomObject dcmobj) {
         super(dcmobj);
-        // TODO Auto-generated constructor stub
     }
 
     public void init() {
-        setModality("FID");
+        setModality(Modality.FID);
     }
 
     /**
-     * Modality Type.
-     * 
-     * @return Should always return "FID".
-     */
-    public String getModality() {
-        return dcmobj.getString(Tag.Modality);
-    }
-
-    /**
-     * Modality Type.
-     * <p>
      * DICOM (Table C.21.1, PS3.3 2006) specifies that the modality type for the
      * Spatial Fiducials Series Module can and must only be "FID". Using the
      * {@link #init()} method above will automatically set the Modality.
-     * 
-     * @param cs
-     *            Must be "FID".
      */
-    public void setModality(String cs) {
-        dcmobj.putString(Tag.Modality, VR.CS, cs);
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        if (!Modality.FID.equals(getModality())) {
+            result.logInvalidValue(Tag.Modality, dcmobj);
+        }
     }
-
 
 }
