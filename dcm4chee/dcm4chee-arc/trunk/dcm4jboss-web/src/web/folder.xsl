@@ -32,25 +32,33 @@
 						</input>
 					</td>
 					<td class="folder_header" width="5" title="Show patients without studies">w/o studies</td>
-					<td class="folder_header" align="center">Displaying studies
-						<b>
-							<xsl:value-of select="offset + 1"/>
-						</b>
-							to
-						<b>
-							<xsl:choose>
-								<xsl:when test="offset + limit &lt; total">
-									<xsl:value-of select="offset + limit"/>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of select="total"/>												
-								</xsl:otherwise>
-							</xsl:choose>
-						</b>
-							of
-						<b>
-							<xsl:value-of select="total"/>
-						</b> matching studies.
+					<td class="folder_header" align="center">
+					<xsl:choose>
+						<xsl:when test="total &lt; 1">
+							No matching studies found!
+						</xsl:when>
+						<xsl:otherwise>
+							Displaying studies
+							<b>
+								<xsl:value-of select="offset + 1"/>
+							</b>
+								to
+							<b>
+								<xsl:choose>
+									<xsl:when test="offset + limit &lt; total">
+										<xsl:value-of select="offset + limit"/>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="total"/>												
+									</xsl:otherwise>
+								</xsl:choose>
+							</b>
+								of
+							<b>
+								<xsl:value-of select="total"/>
+							</b> matching studies.
+						</xsl:otherwise>
+					</xsl:choose>
  					</td>
 
 					<td class="folder_header" width="150">
