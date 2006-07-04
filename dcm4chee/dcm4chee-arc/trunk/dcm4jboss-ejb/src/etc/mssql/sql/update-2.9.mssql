@@ -1,0 +1,11 @@
+-- Update DB from dcm4chee-2.8.x to dcm4chee-2.9.x
+
+ALTER TABLE priv_patient ADD pat_name VARCHAR(255);
+ALTER TABLE priv_study ADD accession_no VARCHAR(255);
+ALTER TABLE priv_series ADD src_aet VARCHAR(255);
+ALTER TABLE study ADD status INTEGER NOT NULL;
+
+CREATE INDEX priv_patient_name ON priv_patient(pat_name);
+CREATE INDEX priv_study_accession_no ON priv_study(accession_no);
+CREATE INDEX priv_series_src_aet ON priv_series(src_aet);
+CREATE INDEX study_status ON study(status);
