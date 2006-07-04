@@ -50,6 +50,12 @@ import org.dcm4che2.util.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+/**
+ * This class provides enumaration of DICOM Value Representation.
+ * @see DICOM PS3.5 2006 Table 6.2-1
+ * @author Gunter Zeilinger<gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ */
 public abstract class VR
 {
 
@@ -1952,47 +1958,85 @@ public abstract class VR
         }
     }
     
-    /*
-     * DICOM VALUE REPRESENTATIONS 
-     * (PS3.5 2006 Table 6.2-1)
-     */
-
-    /** String */
+    /** Application Entity (<= 16 chars) */
     public static final VR AE = new AE();
     
-    /** String */
+    /** Age String */
     public static final VR AS = new AS();
     
-    /** */
+    /** Attribute Tag */
     public static final VR AT = new AT();
     
-    /** String */ 
+    /** Code String (<= 16 chars) */ 
     public static final VR CS = new CS();
+    
+    /** Date */    
     public static final VR DA = new DA();
     
-    /** float */
+    /** Decimal String (=> float) */
     public static final VR DS = new DS();
 
+    /** Date Time */
     public static final VR DT = new DT();
+
+    /** Floating Point Single (=> float) */
     public static final VR FL = new FL();
+
+    /** Floating Point Double (=> double) */
     public static final VR FD = new FD();
+
+    /** Integer String (=> int) */
     public static final VR IS = new IS();
+
+    /** Long String (<= 64 chars) */
     public static final VR LO = new LO();
+
+    /** Long Text (<= 10240 chars) */
     public static final VR LT = new LT();
+
+    /** Other Byte String */
     public static final VR OB = new OB();
+
+    /** Other Float String */
     public static final VR OF = new OF();
+
+    /** Other Word String */
     public static final VR OW = new OW();
+
+    /** Person Name (component group <= 64 chars)*/
     public static final VR PN = new PN();
+
+    /** Short String (<= 16 chars) */
     public static final VR SH = new SH();
+
+    /** Signed Long (-2147483648..+2147483647)*/
     public static final VR SL = new SL();
+
+    /** Sequence of Items */
     public static final VR SQ = new SQ();
+
+    /** Signed Short (-32768..+32767) */
     public static final VR SS = new SS();
+
+    /** Short Text (<= 1024 chars)*/
     public static final VR ST = new ST();
+
+    /** Time */
     public static final VR TM = new TM();
+
+    /** Unique Identifier (UID) (<= 64 chars)*/
     public static final VR UI = new UI();
+
+    /** Unsigned Long (0..4294967295)*/
     public static final VR UL = new UL();
+
+    /** Unkown */
     public static final VR UN = new UN();
+
+    /** Unsigned Short (0..65535) */
     public static final VR US = new US();
+
+    /** Unlimited Text (<= 4294967294 chars)*/
     public static final VR UT = new UT();
 
     public static VR valueOf(int code)
