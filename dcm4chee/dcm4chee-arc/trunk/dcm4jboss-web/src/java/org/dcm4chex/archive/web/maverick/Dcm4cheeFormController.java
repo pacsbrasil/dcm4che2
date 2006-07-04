@@ -48,7 +48,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.web.maverick.admin.UserAdminDelegate;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsFactory;
 import org.infohazard.maverick.ctl.Throwaway2;
@@ -71,8 +70,6 @@ public class Dcm4cheeFormController extends Throwaway2
 	public static final String ERROR_PARSE_DATE = "parseError_date";
 	public static final String ERROR_PARSE_TIME = "parseError_time";
 	public static final String ERROR_PARSE_DATETIME = "parseError_datetime";
-
-	private UserAdminDelegate delegate = new UserAdminDelegate();
 
 	private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());
 	/**
