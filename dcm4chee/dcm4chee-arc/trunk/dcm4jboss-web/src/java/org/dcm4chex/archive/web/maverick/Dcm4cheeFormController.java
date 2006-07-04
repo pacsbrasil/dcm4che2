@@ -183,5 +183,13 @@ public class Dcm4cheeFormController extends Throwaway2
 	protected String getCtrlName() {
 		return "folder";
 	}
+
+	/**
+	 * @param filter
+	 */
+	protected String[] getAEFilterPermissions() {
+		Set set = getPermissions().getMethodsForApp("aefilter");
+		return set == null ? null : (String[])set.toArray(new String[set.size()]);
+	}
 	
 }

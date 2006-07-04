@@ -228,22 +228,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return FOLDER;
     }
 
-	/**
-	 * @param filter
-	 */
-	private String[] getAEFilterPermissions() {
-		Set set = getPermissions().getPermissionsForApp("aefilter");
-		String[] aets = null;
-		if ( set != null ) {
-			int i = 0 ;
-			aets = new String[set.size()];
-			for ( Iterator iter = set.iterator() ; iter.hasNext() ; i++ ) {
-				aets[i] = ((String) iter.next()).substring(9); //cut off 'aefilter.'
-			}
-		}
-		return(aets);
-	}
-
 	private String send() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         List patients = folderForm.getPatients();

@@ -40,6 +40,7 @@ package org.dcm4chex.archive.web.maverick.admin.perm;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,8 +52,40 @@ import java.util.Set;
  */
 public class FolderPermissions {
 	private Map allPermissions = new HashMap();
+	
+	/**
+	 * Returns the list of permissions for given application
+	 * <p>
+	 *  This list
+	 * @param app
+	 * @return
+	 */
 	public Set getPermissionsForApp(String app) {
 		return (Set) allPermissions.get(app);
+	}
+	
+	/**
+	 * Returns the list of allowed methods for given application.
+	 * 
+	 * @param app
+	 * @return
+	 */
+	public Set getMethodsForApp( String app){
+		Set set = getPermissionsForApp(app);
+		if ( set == null ) return null;
+		Set methods = new HashSet();
+		app = app+".";
+		int cutLen = app.length();
+		int i = 0 ;
+		String perm;
+		for ( Iterator iter = set.iterator() ; iter.hasNext() ; i++ ) {
+			perm = (String) iter.next();
+			if ( perm.startsWith(app)) {
+				methods.add(perm.substring(cutLen)); //cut off app name (xxx.)
+			}
+		}
+		return methods;
+		
 	}
 	/**
 	 * @param string

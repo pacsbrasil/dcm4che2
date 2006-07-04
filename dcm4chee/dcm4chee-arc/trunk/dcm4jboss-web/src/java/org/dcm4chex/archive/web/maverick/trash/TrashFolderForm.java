@@ -42,6 +42,10 @@ package org.dcm4chex.archive.web.maverick.trash;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.web.maverick.BasicFolderForm;
 import org.infohazard.maverick.flow.ControllerContext;
 
@@ -55,6 +59,8 @@ public class TrashFolderForm extends BasicFolderForm {
     static final String FOLDER_ATTRNAME = "trashFolderFrom";
 
 	protected static Logger log = Logger.getLogger(TrashFolderForm.class);
+	
+	private Dataset ds = DcmObjectFactory.getInstance().newDataset();
 	
     static TrashFolderForm getTrashFolderForm(ControllerContext ctx) {
     	HttpServletRequest request = ctx.getRequest();
@@ -84,6 +90,51 @@ public class TrashFolderForm extends BasicFolderForm {
     	super(request);
     }
 	
+    public final String getPatientID() {
+        return ds.getString(Tags.PatientID);
+    }
+
+    public final void setPatientID(String patientID) {
+        ds.putLO(Tags.PatientID, patientID);
+    }
+
+    public final String getPatientName() {
+        return ds.getString(Tags.PatientName);
+    }
+
+    public final void setPatientName(String patientName) {
+        ds.putPN(Tags.PatientName, patientName);
+    }
+
+	/**
+	 * @return Returns the studyUID.
+	 */
+	public String getStudyUID() {
+        return ds.getString(Tags.StudyInstanceUID);
+	}
+	/**
+	 * @param studyUID The studyUID to set.
+	 */
+	public void setStudyUID(String studyUID) {
+        ds.putUI(Tags.StudyInstanceUID, studyUID);
+	}
+    public final String getAccessionNumber() {
+        return ds.getString(Tags.AccessionNumber);
+    }
+
+    public final void setAccessionNumber(String accessionNumber) {
+        ds.putSH(Tags.AccessionNumber, accessionNumber);
+    }
+
+    public final void setCallingAETs(String[] aets ) {
+    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
+    	ds.putAE(PrivateTags.CallingAET, aets);
+    }
+    
+    public Dataset filterDS() {
+    	return ds;
+    }
+    
 	public String getModelName() { return "TRASH"; }
 
 	/* (non-Javadoc)

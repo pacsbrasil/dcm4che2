@@ -44,10 +44,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.management.ObjectName;
+
+import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.UserManager;
 import org.dcm4chex.archive.ejb.interfaces.UserManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
+import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * 
@@ -56,6 +60,10 @@ import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
  * @since 13.04.2006
  */
 public class UserAdminDelegate {
+	
+	private String securityDomain = "java:/jaas/dcm4chee-web";
+
+	protected static Logger log = Logger.getLogger(UserAdminDelegate.class);
 	
 	/**
 	 * Get list of users from application server. 
@@ -88,6 +96,7 @@ public class UserAdminDelegate {
 	
 	public void removeUser(String userID) throws RemoteException, Exception {
 		lookupUserManager().removeUser( userID );
+		clearAuthenticationCache();
 	}
 	
 	public Collection getRolesOfUser(String userID) throws RemoteException, Exception {
@@ -96,6 +105,17 @@ public class UserAdminDelegate {
 	
 	public FolderPermissions getFolderPermissions(String userID) {
 		return null;
+	}
+	
+	private void clearAuthenticationCache() {
+		try {
+			MBeanServerLocator.locate().invoke(new ObjectName("jboss.security:service=JaasSecurityManager"),
+			        "flushAuthenticationCache",
+			        new Object[] { securityDomain },
+			        new String[] { String.class.getName()});
+		} catch (Exception x) {
+			log.error("Cant clear Authentication Cache! Reason:", x);
+		}
 	}
 	
 	/**
