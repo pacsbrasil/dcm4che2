@@ -57,13 +57,13 @@ public class GraphicCoordinatesData extends Module {
         // TODO Auto-generated constructor stub
     }
 
-    public static Module[] toModules(DicomElement sq) {
+    public static GraphicCoordinatesData[] toGraphicCoordinatesData(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
-        Module[] a = new Module[sq.countItems()];
+        GraphicCoordinatesData[] a = new GraphicCoordinatesData[sq.countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new Module(sq.getDicomObject(i));
+            a[i] = new GraphicCoordinatesData(sq.getDicomObject(i));
         }
         return a;
 

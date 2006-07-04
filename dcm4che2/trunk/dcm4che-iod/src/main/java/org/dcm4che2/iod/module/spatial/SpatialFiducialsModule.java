@@ -189,7 +189,7 @@ public class SpatialFiducialsModule extends Module {
      * @return
      */
     public FiducialSet[] getFiducialSets() {
-        return (FiducialSet[]) GraphicCoordinatesData.toModules(dcmobj
+        return FiducialSet.toFiducialSets(dcmobj
                 .get(Tag.FiducialSetSequence));
     }
 }

@@ -1,5 +1,6 @@
 package org.dcm4che2.iod.module.spatial;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -19,6 +20,18 @@ public class FiducialSet extends Fiducial {
     public FiducialSet(DicomObject dcmobj) {
         super(dcmobj);
         // TODO Auto-generated constructor stub
+    }
+    
+    public static FiducialSet[] toFiducialSets(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
+        }
+        FiducialSet[] a = new FiducialSet[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new FiducialSet(sq.getDicomObject(i));
+        }
+        return a;
+
     }
 
     /**
@@ -92,7 +105,7 @@ public class FiducialSet extends Fiducial {
      * @return
      */
     public Fiducial[] getFiducials() {
-        return (Fiducial[]) toModules(dcmobj.get(Tag.FiducialSequence));
+        return Fiducial.toFiducial(dcmobj.get(Tag.FiducialSequence));
     }
 
     /**
