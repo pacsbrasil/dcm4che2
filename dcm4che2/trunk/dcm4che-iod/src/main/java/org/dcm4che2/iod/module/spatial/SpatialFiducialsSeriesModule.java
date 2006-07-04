@@ -42,6 +42,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
 
 /**
  * Table C.21.1-1 defines the general Attributes of the Spatial Fiducials Series
@@ -50,7 +51,7 @@ import org.dcm4che2.iod.module.Module;
  * @author Antonio Magni <dcm4ceph@antoniomagni.org>
  *
  */
-public class SpatialFiducialsSeriesModule extends Module {
+public class SpatialFiducialsSeriesModule extends GeneralSeriesModule {
 
     public SpatialFiducialsSeriesModule(DicomObject dcmobj) {
         super(dcmobj);
