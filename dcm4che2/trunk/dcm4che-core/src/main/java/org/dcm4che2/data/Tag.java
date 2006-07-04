@@ -2633,13 +2633,13 @@ public class Tag {
     /** (0020,0010) VR=SH, VM=1 Study ID  */
     public static final int StudyID = 0x00200010;
 
-    /** (0020,0011) VR=IS, VM=1 Series Number  */
+    /** (0020,0011) VR=IS, VM=1 Series Number  Represented as String. */
     public static final int SeriesNumber = 0x00200011;
 
-    /** (0020,0012) VR=IS, VM=1 Acquisition Number  */
+    /** (0020,0012) VR=IS, VM=1 Acquisition Number  Represented as String. */
     public static final int AcquisitionNumber = 0x00200012;
 
-    /** (0020,0013) VR=IS, VM=1 Instance Number  */
+    /** (0020,0013) VR=IS, VM=1 Instance Number  Represented as String. */
     public static final int InstanceNumber = 0x00200013;
 
     /** (0020,0014) VR=IS, VM=1 Isotope Number RET */
