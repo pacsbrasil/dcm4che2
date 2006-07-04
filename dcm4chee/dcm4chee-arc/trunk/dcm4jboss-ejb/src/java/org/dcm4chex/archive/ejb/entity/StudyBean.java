@@ -98,6 +98,11 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.query signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
  *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
  *  
+ * @ejb.finder signature="java.util.Collection findStudiesWithStatus(int status, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findStudiesWithStatus(int status, int limit)"
+ *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.status = ?1) LIMIT ?2"
+ *             
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Long pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Long pk)"
@@ -250,6 +255,19 @@ public abstract class StudyBean implements EntityBean {
     public abstract String getStudyDescription();
 
     public abstract void setStudyDescription(String description);
+
+    /**
+     * Study Status
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="status"
+     */
+    public abstract int getStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setStatus(int status);
     
     /**
      * Study Status ID
