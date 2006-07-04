@@ -46,6 +46,7 @@ import javax.ejb.EntityBean;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
 
 /**
@@ -116,9 +117,18 @@ public abstract class PrivateSeriesBean implements EntityBean {
     
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="src_aet"
+     */
+    public abstract String getSourceAET();
+    public abstract void setSourceAET(String aet);
+    
+    /**
+     * @ejb.interface-method
      */
     public Dataset getAttributes() {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ds.putAE(PrivateTags.CallingAET, getSourceAET());
         return ds;
     }
 
@@ -127,6 +137,8 @@ public abstract class PrivateSeriesBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
     	setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setSourceAET( ds.getString(PrivateTags.CallingAET) );
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }

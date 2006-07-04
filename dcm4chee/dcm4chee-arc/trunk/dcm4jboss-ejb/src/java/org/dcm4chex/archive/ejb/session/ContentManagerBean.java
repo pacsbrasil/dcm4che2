@@ -260,7 +260,7 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public int countPrivateStudies(Dataset filter, int privateType, boolean hideWithoutStudies) {
         try {
-       		return new QueryPrivateStudiesCmd(null, privateType, hideWithoutStudies).count();
+       		return new QueryPrivateStudiesCmd(filter, privateType, hideWithoutStudies).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }

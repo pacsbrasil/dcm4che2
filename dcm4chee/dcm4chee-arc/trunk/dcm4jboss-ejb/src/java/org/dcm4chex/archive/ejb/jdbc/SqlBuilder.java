@@ -293,8 +293,8 @@ class SqlBuilder {
         addMatch(new Match.ModalitiesInStudyNestedMatch(alias, md));
     }
     
-    public void addCallingAETsNestedMatch(String alias, String[] callingAETs) {
-        addMatch(new Match.CallingAETsNestedMatch(alias, callingAETs));
+    public void addCallingAETsNestedMatch(boolean privateTables, String[] callingAETs) {
+        addMatch(new Match.CallingAETsNestedMatch( privateTables, callingAETs));
     }
     
     public Match.Node addNodeMatch(String orORand, boolean invert) {

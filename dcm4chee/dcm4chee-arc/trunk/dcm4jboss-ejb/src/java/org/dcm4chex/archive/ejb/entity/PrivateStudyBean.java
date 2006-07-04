@@ -114,6 +114,13 @@ public abstract class PrivateStudyBean implements EntityBean {
      */
     public abstract String getStudyIuid();
     public abstract void setStudyIuid(String uid);
+
+    /**
+	 * @ejb.interface-method
+     * @ejb.persistence column-name="accession_no"
+     */
+    public abstract String getAccessionNumber();
+    public abstract void setAccessionNumber(String acc_no);
     
     /**
      * @ejb.interface-method
@@ -129,6 +136,7 @@ public abstract class PrivateStudyBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
     	setStudyIuid(ds.getString(Tags.StudyInstanceUID));
+    	setAccessionNumber(ds.getString(Tags.AccessionNumber));
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp,
                 DcmDecodeParam.EVR_LE));

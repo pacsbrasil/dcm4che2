@@ -192,7 +192,7 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addCallingAETsNestedMatch(null,
+        sqlBuilder.addCallingAETsNestedMatch(false,
                 keys.getStrings(PrivateTags.CallingAET));
     }
 

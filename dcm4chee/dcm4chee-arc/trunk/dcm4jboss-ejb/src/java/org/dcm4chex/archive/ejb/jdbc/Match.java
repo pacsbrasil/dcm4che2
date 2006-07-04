@@ -440,9 +440,11 @@ abstract class Match
     static class CallingAETsNestedMatch extends Match
     {
     	private final String[] callingAETs;
-        public CallingAETsNestedMatch(String alias, String[] callingAETs)
-        {
-            super(alias, "Series.sourceAET", false);
+    	private final boolean privTables;
+        public CallingAETsNestedMatch(boolean privTables, String[] callingAETs)
+            {
+            super(null, privTables ? "PrivateSeries.sourceAET" : "Series.sourceAET", false);
+            this.privTables = privTables;
             this.callingAETs = callingAETs != null ? (String[]) callingAETs.clone() : new String[0];
         }
 
@@ -455,11 +457,11 @@ abstract class Match
         {
             JdbcProperties jp = JdbcProperties.getInstance();
             sb.append("exists (SELECT 1 FROM ");
-            sb.append(jp.getProperty("Series"));
+            sb.append(jp.getProperty( privTables ? "PrivateSeries" : "Series"));
             sb.append(" WHERE ");
-            sb.append(jp.getProperty("Series.study_fk"));
+            sb.append(jp.getProperty( privTables ? "PrivateSeries.study_fk" : "Series.study_fk"));
             sb.append(" = ");
-            sb.append(jp.getProperty("Study.pk"));
+            sb.append(jp.getProperty( privTables ? "PrivateStudy.pk" : "Study.pk"));
             sb.append(" AND ");
             sb.append(column);
             if (callingAETs.length == 1) {

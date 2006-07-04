@@ -87,13 +87,31 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
 	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
 	                SqlBuilder.TYPE2,
 	                filter.getString(Tags.PatientID));
+	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientName",
+	                SqlBuilder.TYPE2,
+	                toWildcardMatchString( filter.getString(Tags.PatientName)) );
+	        sqlBuilder.addWildCardMatch(null, "PrivateStudy.accessionNumber",
+	                SqlBuilder.TYPE2,
+	                filter.getString(Tags.AccessionNumber));
 	        sqlBuilder.addSingleValueMatch(null, "PrivateStudy.studyIuid",
 	                SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
+	        sqlBuilder.addCallingAETsNestedMatch(true,
+	                filter.getStrings(PrivateTags.CallingAET));
         }
         if ( this.hideMissingStudies ) {
         	sqlBuilder.addNULLValueMatch(null,"PrivateStudy.encodedAttributes", true);
     	}
         	
+    }
+
+    private static String toWildcardMatchString(String patientName) {
+    	if ( patientName != null ) {
+    		patientName = patientName.toUpperCase();
+    		if ( patientName.length() > 0 && 
+    				patientName.indexOf('*') == -1 &&
+					patientName.indexOf('?') == -1) patientName+="*";
+    	}
+        return patientName;
     }
 
     public int count() throws SQLException {
@@ -132,9 +150,6 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             while (next()) {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-/*    private static final String[] SELECT_ATTRIBUTE = { "PrivatePatient.pk", "PrivatePatient.privateType",
-            "PrivatePatient.encodedAttributes", "PrivateStudy.pk", "PrivateStudy.encodedAttributes"};
-/*_*/
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
                 final byte[] patAttrs = getBytes(3);
                 long studyPk = rs.getLong(4);

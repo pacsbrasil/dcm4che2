@@ -101,6 +101,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
@@ -124,7 +125,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 filter.getString(Tags.ModalitiesInStudy));
         filter.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addCallingAETsNestedMatch(null,
+        sqlBuilder.addCallingAETsNestedMatch(false,
                 filter.getStrings(PrivateTags.CallingAET));
     	this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {

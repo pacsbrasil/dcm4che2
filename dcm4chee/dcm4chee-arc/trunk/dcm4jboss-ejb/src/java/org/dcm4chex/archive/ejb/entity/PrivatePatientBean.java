@@ -115,6 +115,13 @@ public abstract class PrivatePatientBean implements EntityBean {
     public abstract String getIssuerOfPatientId();
     public abstract void setIssuerOfPatientId(String issuer);
 
+ 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_name"
+     */
+    public abstract String getPatientName();
+    public abstract void setPatientName(String name);
     
 	/**
      * @ejb.persistence column-name="pat_attrs"
@@ -136,10 +143,15 @@ public abstract class PrivatePatientBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
+        setPatientName( toUpperCase(ds.getString(Tags.PatientName)) );
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
+    }
+    
     /**
      * @ejb.interface-method
      * @ejb.relation name="priv-patient-study" role-name="priv-patient-has-studies"
