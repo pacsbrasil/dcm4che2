@@ -103,45 +103,53 @@ import org.dcm4che2.iod.validation.ValidationResult;
  */
 public class DXImage extends Image {
 
+    // DXSeries Module is an extension of GeneralSeries.
+
+    // TODO Frame of Reference Module C.7.4.1
+
     protected final ContrastBolusModule contrastBolusModule;
 
-    //TODO DisplayShutter
-    
+    // TODO DisplayShutter
+
     protected final DeviceModule deviceModule;
 
-    //TODO Intervention Module
-    
+    // TODO Intervention Module
+
     protected final DXAnatomyImagedModule dxAnatomyImagedModule;
-    
+
     protected final DXDetectorModule dxDetectorModule;
-    
-    //TODO x-ray collimator
-    
+
+    // TODO x-ray collimator
+
     protected final DXPositioningModule dxPositioningModule;
-    
-    //TODO x-ray tomo axquisition
-    
-    //TODO x-ray acquisition dose
-    
-    //TODO x-ray generation
-    
-    //TODO x-ray filtration
-    
-    //TODO x-ray grid
-    
+
+    // TODO x-ray tomo axquisition
+
+    // TODO x-ray acquisition dose
+
+    // TODO x-ray generation
+
+    // TODO x-ray filtration
+
+    // TODO x-ray grid
+
     protected final OverlayPlaneModule overlayPlaneModule;
 
     protected final VOILUTModule voiLUTModule;
-    
-    //TODO Image Histogram
-    
+
+    // TODO Image Histogram
+
     protected final AcquisitionContextModule acquisitionContextModule;
 
     public DXImage(DicomObject dcmobj) {
         super(dcmobj, new DXSeriesModule(dcmobj), new DXImageModule(dcmobj));
 
+        // Series IE
+
+        // Frame of Reference IE
+
+        // Image IE
         this.contrastBolusModule = new ContrastBolusModule(dcmobj);
-        
         this.deviceModule = new DeviceModule(dcmobj);
         this.dxAnatomyImagedModule = new DXAnatomyImagedModule(dcmobj);
         this.dxDetectorModule = new DXDetectorModule(dcmobj);
@@ -149,10 +157,6 @@ public class DXImage extends Image {
         this.overlayPlaneModule = new OverlayPlaneModule(dcmobj);
         this.voiLUTModule = new VOILUTModule(dcmobj);
         this.acquisitionContextModule = new AcquisitionContextModule(dcmobj);
-    }
-
-    public final DXSeriesModule getDXSeriesModule() {
-        return (DXSeriesModule) generalSeriesModule;
     }
 
     public void init() {
@@ -178,24 +182,50 @@ public class DXImage extends Image {
         voiLUTModule.validate(ctx, result);
         acquisitionContextModule.validate(ctx, result);
     }
-    
-    public final ContrastBolusModule getContrastBolusModule(){
+
+    /**
+     * Get DX Series Module.
+     * <p>
+     * The DX Series module is an extension of General Series module. It is
+     * therefore not necessary to make use of the
+     * {@link Composite#getGeneralSeriestModule()}, as the
+     * {@link DXSeriesModule} contains all of its attributes already.
+     * 
+     * @return The DX Series modules with the embedded General Series module.
+     */
+    public final DXSeriesModule getDXSeriesModule() {
+        return (DXSeriesModule) generalSeriesModule;
+    }
+
+    public final ContrastBolusModule getContrastBolusModule() {
         return contrastBolusModule;
     }
-    
-    public final DeviceModule getDeviceModule(){
+
+    public final DeviceModule getDeviceModule() {
         return deviceModule;
     }
-    
-    public final DXAnatomyImagedModule getDXAnatomyImageModule(){
+
+    public final DXAnatomyImagedModule getDXAnatomyImageModule() {
         return dxAnatomyImagedModule;
     }
-    
-    public final DXImageModule getDXImageModule(){
+
+    /**
+     * Get DX Image Module.
+     * <p>
+     * The {@link DXImageModule} inherits both the
+     * {@link org.dcm4che2.iod.module.composite.ImagePixel} and the
+     * {@link org.dcm4che2.iod.module.composite.GeneralImageModule}, so you
+     * don't need to make use of the {@link Image#getGeneralImageModule()}.
+     * 
+     * @return The DX Image Module with embedded the Image Pixel Macro and
+     *         General Image Module.
+     * @see org.dcm4che2.iod.module.composite.GeneralImageModule
+     */
+    public final DXImageModule getDXImageModule() {
         return (DXImageModule) generalImageModule;
     }
-    
-    public final DXDetectorModule getDXDetectorModule(){
+
+    public final DXDetectorModule getDXDetectorModule() {
         return dxDetectorModule;
     }
 
@@ -203,15 +233,15 @@ public class DXImage extends Image {
         return dxPositioningModule;
     }
 
-    public final OverlayPlaneModule getOverlayPlaneModule(){
+    public final OverlayPlaneModule getOverlayPlaneModule() {
         return overlayPlaneModule;
     }
-    
-    public final VOILUTModule getVOILUTModule(){
+
+    public final VOILUTModule getVOILUTModule() {
         return voiLUTModule;
     }
-    
-    public final AcquisitionContextModule getAcquisitionContextModule(){
+
+    public final AcquisitionContextModule getAcquisitionContextModule() {
         return acquisitionContextModule;
     }
 

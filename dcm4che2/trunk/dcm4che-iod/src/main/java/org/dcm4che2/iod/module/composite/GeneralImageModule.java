@@ -53,6 +53,13 @@ import org.dcm4che2.iod.value.LossyImageCompression;
 import org.dcm4che2.iod.value.PresentationLUTShape;
 
 /**
+ * Class to represent the General Image Module (C.7.6.1)
+ * <p>
+ * This class is the parent class for all Image Modules, as it contains
+ * attributes that are image specific. It extends
+ * {@link org.dcm4che2.iod.module.composite.ImagePixel}, so the child classes
+ * have all necessary attributes to correctly describe images.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Jun 9, 2006
