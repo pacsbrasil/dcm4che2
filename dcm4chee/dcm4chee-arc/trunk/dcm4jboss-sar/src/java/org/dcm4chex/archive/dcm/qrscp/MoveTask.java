@@ -258,6 +258,7 @@ class MoveTask implements Runnable {
             cuid = (String) it.next();
             if (a.listAcceptedPresContext(cuid).isEmpty()) {
                 iuids = retrieveInfo.removeInstancesOfClass(cuid);
+                it.remove(); // Use Iterator itself to remove the current item to avoid ConcurrentModificationException
                 remaining -= iuids.size();
                 final String prompt = "No Presentation Context for "
                         + uidDict.toString(cuid) + " accepted by " + moveDest

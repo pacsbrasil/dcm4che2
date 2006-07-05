@@ -198,7 +198,7 @@ final class RetrieveInfo {
     
     public Set removeInstancesOfClass(String cuid) {
         IuidsAndTsuids iuidsAndTsuids = 
-            (IuidsAndTsuids) iuidsAndTsuidsByCuid.remove(cuid);
+            (IuidsAndTsuids) iuidsAndTsuidsByCuid.get(cuid);
         Iterator it = iuidsAndTsuids.iuids.iterator();
         String iuid;
         while (it.hasNext()) {
