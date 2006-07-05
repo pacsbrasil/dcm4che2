@@ -135,6 +135,7 @@ QueryRetrieveScp service.</description>
            StandaloneCurveStorage
            StandaloneModalityLUTStorage
            StandaloneVOILUTStorage
+           StandalonePETCurveStorage
            AgfaAttributePresentationState
            "/>
       </descriptors>
