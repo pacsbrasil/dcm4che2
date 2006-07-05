@@ -186,13 +186,13 @@ public class GeneralSeriesModule extends Module {
         updateSequence(Tag.OperatorIdentificationSequence, ids);
     }
 
-    public SOPInstanceReference getReferencedPerformedProcedureStepSOPInstance() {
+    public SOPInstanceReference getReferencedPerformedProcedureStep() {
         DicomObject item = dcmobj
                 .getNestedDicomObject(Tag.ReferencedPerformedProcedureStepSequence);
         return item != null ? new SOPInstanceReference(item) : null;
     }
 
-    public void setReferencedPerformedProcedureStepSOPInstance(
+    public void setReferencedPerformedProcedureStep(
             SOPInstanceReference refSOP) {
         updateSequence(Tag.ReferencedPerformedProcedureStepSequence, refSOP);
     }
