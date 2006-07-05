@@ -85,6 +85,8 @@
 
 	<welcome-file-list>
 		<welcome-file>default.jsp</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 
    <!-- A security constraint that restricts access to the
