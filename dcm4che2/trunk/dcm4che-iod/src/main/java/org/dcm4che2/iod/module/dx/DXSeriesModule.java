@@ -42,7 +42,6 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
-import org.dcm4che2.iod.module.macro.SOPInstanceReference;
 
 /**
  * A class that represents the DX Series Module.
@@ -61,28 +60,6 @@ public class DXSeriesModule extends GeneralSeriesModule {
 
     public DXSeriesModule(DicomObject dcmobj) {
         super(dcmobj);
-    }
-
-    public SOPInstanceReference[] getReferencedPerformedProcedureSteps() {
-        return SOPInstanceReference.toSOPInstanceReferences(dcmobj
-                .get(Tag.ReferencedPerformedProcedureStepSequence));
-    }
-
-    /**
-     * Step Sequence Uniquely identifies the Performed Procedure Step SOP
-     * Instance to which the Series is related (e.g. a Modality or
-     * General-Purpose Performed Procedure Step SOP Instance). The Sequence
-     * shall have one Item.
-     * 
-     * Required if the Modality Performed Procedure Step SOP Class, General
-     * Purpose Performed Procedure Step SOP Class is supported.
-     * 
-     * Type 1C
-     * 
-     * @param sops
-     */
-    public void setSOPInstanceReference(SOPInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedPerformedProcedureStepSequence, sops);
     }
 
     public String getPresentationIntentType() {
