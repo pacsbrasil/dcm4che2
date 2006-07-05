@@ -92,7 +92,9 @@ public class UserAdminDelegate {
 	}
 	
 	public boolean changePasswordForUser(String user, String oldPasswd, String newPasswd) throws RemoteException, Exception {
-		return lookupUserManager().changePasswordForUser(user, oldPasswd, newPasswd);
+		boolean b = lookupUserManager().changePasswordForUser(user, oldPasswd, newPasswd);
+		clearAuthenticationCache();
+		return b;
 	}
 	
 	public void removeUser(String userID) throws RemoteException, Exception {
