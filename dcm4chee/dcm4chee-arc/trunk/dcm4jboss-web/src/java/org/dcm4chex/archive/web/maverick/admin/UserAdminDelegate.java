@@ -88,6 +88,7 @@ public class UserAdminDelegate {
 	
 	public void updateUser(String userID, Collection roles) throws RemoteException, Exception {
 		lookupUserManager().updateUser(userID, roles);
+		clearAuthenticationCache();
 	}
 	
 	public boolean changePasswordForUser(String user, String oldPasswd, String newPasswd) throws RemoteException, Exception {
