@@ -53,6 +53,10 @@ public class AnatomicRegionCode extends Code {
 		super(dcmobj);
 	}
 	
+    public AnatomicRegionCode() {
+        super();
+    }
+    
     /**
      * A sequence of {@link Code}s that represent the anatomic region modifiers.
      * 
