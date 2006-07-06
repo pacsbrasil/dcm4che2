@@ -572,7 +572,7 @@ public class Association implements Runnable {
     public void naction(String cuid, String iuid, int actionTypeId,
             DicomObject attrs, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
-        naction(cuid, cuid, actionTypeId, attrs, tsuid, rspHandler);
+        naction(cuid, cuid, iuid, actionTypeId, attrs, tsuid, rspHandler);
     }
 
     public void naction(String asuid, String cuid, String iuid,
@@ -589,7 +589,7 @@ public class Association implements Runnable {
     public DimseRSP naction(String cuid, String iuid, int actionTypeId,
             DicomObject attrs, String tsuid) throws IOException,
             InterruptedException {
-        return naction(cuid, cuid, actionTypeId, attrs, tsuid);
+        return naction(cuid, cuid, iuid, actionTypeId, attrs, tsuid);
     }
 
     public DimseRSP naction(String asuid, String cuid, String iuid,
