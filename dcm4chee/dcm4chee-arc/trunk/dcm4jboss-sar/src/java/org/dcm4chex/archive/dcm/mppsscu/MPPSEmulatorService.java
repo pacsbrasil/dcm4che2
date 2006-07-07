@@ -245,15 +245,16 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         if (mwlEntries == null)
             return false;
         if (mwlEntries.isEmpty()) {
-        	log.debug("No MWL entry for Study - " + suid + " ! Try with AccessionNumber and PatientID!");
+        	log.debug("No MWL entry for Study - " + suid + " ! Try with AccessionNumber!");
         	filter.putUI(Tags.StudyInstanceUID, (String)null);
         	filter.putSH(Tags.AccessionNumber, ssa.getString(Tags.AccessionNumber));
-        	filter.putLO(Tags.PatientID, mpps.getString( Tags.PatientID ) );
+//        	filter.putLO(Tags.PatientID, mpps.getString( Tags.PatientID ) );
         	mwlEntries = findMWLEntries(filter);
             if (mwlEntries == null)
                 return false;
             if (mwlEntries.isEmpty()) {
 	            log.info("No matching MWL entry for Study - " + suid);
+                ssa.putSH(Tags.AccessionNumber); // clear accession no
 	            fillType2Attrs(ssa, MWL_TAGS);
 	            fillType2Attrs(ssa, SPS_TAGS);
 	            return true;
