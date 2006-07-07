@@ -59,6 +59,19 @@ import org.xml.sax.SAXException;
 public abstract class VR
 {
 
+    /**
+     * Fragments are used for encapsulation of an encoded (=compressed) pixel
+     * data stream into the Pixel Data (7FE0,0010) portion of the DICOM Data
+     * Set. They are encoded as a sequence of items with Value Represention OB.
+     * (s. DICOM Part 5, Page 63ff: A.4 TRANSFER SYNTAXES FOR ENCAPSULATION OF
+     * ENCODED PIXEL DATA). Technically also the value of other attributes than
+     * Pixel Data (7FE0,0010) with a Value Representation of OB, OW, OF or UN
+     * could contain as sequence of "Data Fragments". Perhaps DICOM will make
+     * use of this possibility in future, So dcm4che already allows to
+     * put/access "Fragments" into/from other attributes than Pixel Data
+     * (7FE0,0010).
+     * 
+     */
     public interface Fragment
     {
 
