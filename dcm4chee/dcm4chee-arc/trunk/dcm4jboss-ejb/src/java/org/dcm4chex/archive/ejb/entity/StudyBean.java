@@ -98,10 +98,10 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.query signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
  *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
  *  
- * @ejb.finder signature="java.util.Collection findStudiesWithStatus(int status, int limit)"
+ * @ejb.finder signature="java.util.Collection findStudiesWithStatus(int status, java.sql.Timestamp createdBefore, int limit)"
  *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findStudiesWithStatus(int status, int limit)"
- *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.status = ?1) LIMIT ?2"
+ * @jboss.query signature="java.util.Collection findStudiesWithStatus(int status, java.sql.Timestamp createdBefore, int limit)"
+ *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.status = ?1) AND (s.createdTime < ?2) LIMIT ?3"
  *             
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Long pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
