@@ -34,7 +34,7 @@
    <attribute access="read-write"
       getMethod="getUpdateCalledAET"
       setMethod="setUpdateCalledAET">
-      <description>Called AET of migrated PACS. 
+      <description>Called AET of migration source PACS. 
       </description>
       <name>CalledAETitle</name>
       <type>java.lang.String</type>
@@ -74,7 +74,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getCheckUpdateStatus" setMethod="setCheckUpdateStatus">
-      <description>Status value that indicates 'need to be updated with migrated PACS'.
+      <description>Status value that indicates 'need to be updated with migration source PACS'.
       </description>
       <name>CheckUpdateStatus</name>
       <type>int</type>

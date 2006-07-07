@@ -401,7 +401,7 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 	    if (aassoc == null) {
 	        throw new IllegalStateException("No Association established");
 	    }
-	    if ( log.isDebugEnabled() ) log.debug("Query migrated PACS with "+keys.getString(Tags.QueryRetrieveLevel)+" C-FIND!");
+	    if ( log.isDebugEnabled() ) log.debug("Query migration source PACS with "+keys.getString(Tags.QueryRetrieveLevel)+" C-FIND!");
 	    Command rqCmd = dof.newCommand();
 	    rqCmd.initCFindRQ(aassoc.getAssociation().nextMsgID(),
 	            UIDs.StudyRootQueryRetrieveInformationModelFIND, priority);
@@ -442,7 +442,7 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 		        	ds = queryCmd.getDataset();
 		        	seriesIUID = ds.getString(Tags.SeriesInstanceUID);
 		        	if ( archiveStudy.get( seriesIUID ) == null ) {
-		        		log.warn("Migration Update not possible! Series "+seriesIUID+"not available in migrated PACS! study:"+
+		        		log.warn("Migration Update not possible! Series "+seriesIUID+"not available in migration source PACS! study:"+
 		        				qrSeriesDS.getString(Tags.StudyInstanceUID));
 		        		return null;
 		        	}
@@ -494,7 +494,7 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 					ds = queryCmd.getDataset();
 					iuid = ds.getString(Tags.SOPInstanceUID);
 					if ( archiveSeries.get( iuid ) == null ) {
-						log.warn("Migration Update not possible! Instance "+iuid+"not available in migrated PACS! study:"+
+						log.warn("Migration Update not possible! Instance "+iuid+"not available in migration source PACS! study:"+
 								qrInstanceDS.getString(Tags.StudyInstanceUID)+" series:"+qrInstanceDS.getString(Tags.SeriesInstanceUID));
 						return false;
 					}
