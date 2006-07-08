@@ -91,7 +91,7 @@
         SourceForge (<literal><ulink
         url="http://sourceforge.net/projects/dcm4che/">http://sourceforge.net/projects/dcm4che/</ulink></literal>).
         If you do not see a distribution for your database, you will have to
-        build dcm4chee from the source code. See  for instructions on doing
+        build dcm4chee from the source code. See  <xref linkend="dcm4chee-build"/> for instructions on doing
         so.</para>
       </listitem>
 
