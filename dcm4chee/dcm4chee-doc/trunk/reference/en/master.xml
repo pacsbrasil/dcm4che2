@@ -4,7 +4,7 @@
 [
 <!ENTITY install               SYSTEM "modules/install.xml">
 <!ENTITY util           SYSTEM "modules/util.xml">
-<!ENTITY build          SYSTEM "modules/build.xml">
+<!ENTITY building          SYSTEM "modules/building.xml">
 <!ENTITY dcs     SYSTEM "modules/dcs.xml">
 <!ENTITY iheis          SYSTEM "modules/iheis.xml">
 ]>
@@ -71,7 +71,7 @@
 
     &util;
 
-    &build;
+    &building;
 
     &dcs;
 
