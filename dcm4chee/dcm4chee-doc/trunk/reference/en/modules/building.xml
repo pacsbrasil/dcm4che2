@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter id="dcm4chee-build" revision="1">
+<appendix id="dcm4chee-build" revision="1">
   <title>Building dcm4chee</title>
 
   <sect1 id="build-requirements" revision="1">
@@ -59,4 +59,4 @@
     <para><literal>target/dcm4chee-standalone-oracle-%version%.zip</literal></para>
     <para><literal>target/dcm4chee-standalone-psql-%version%.zip</literal></para>
   </sect1>
-</chapter>
+</appendix>

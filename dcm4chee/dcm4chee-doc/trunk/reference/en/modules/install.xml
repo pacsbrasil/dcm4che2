@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="dcm4chee-installation" revision="1">
-  <title>Installation Instructions for the dcm4chee Archive</title>
+  <title>Installation Instructions</title>
 
   <sect1 id="install-requirements" revision="1">
     <title>Minimum System Requirements and Supporting Software</title>

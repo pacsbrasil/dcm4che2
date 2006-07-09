@@ -1,4 +1,4 @@
-<chapter id="ihe_integration">
+<appendix id="ihe-integration-statement">
 
     <title>dcm4chee IHE Integration Statement</title>
     
@@ -418,4 +418,4 @@
             </tgroup>
         </table>
     </sect1>
-</chapter>
+</appendix>

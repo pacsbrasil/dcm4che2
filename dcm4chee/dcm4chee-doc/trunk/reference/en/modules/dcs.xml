@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter id="dicom-cs"> 
+<appendix id="dicom-cs"> 
     <title>dcm4chee Archive 0.9 DICOM Conformance Statement</title>
 
   <abstract>
@@ -6788,4 +6788,4 @@
     </section>
   </section>
 
-</chapter>
+</appendix>
