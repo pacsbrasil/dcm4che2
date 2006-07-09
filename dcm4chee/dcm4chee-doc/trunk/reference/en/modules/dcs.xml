@@ -2486,9 +2486,9 @@
                       Failure Reasons</title>
 
                       <tgroup align="left" cols="2">
-                        <colspec colwidth="50%" />
+                        <colspec colwidth="50" />
 
-                        <colspec colwidth="50%" />
+                        <colspec colwidth="50" />
 
                         <thead>
                           <row valign="middle">
@@ -2899,7 +2899,7 @@
                     Behaviour</title>
 
                     <tgroup align="left" cols="2">
-                      <colspec colwidth="50%" />
+                      <colspec colwidth="50" />
 
                       <thead>
                         <row valign="middle">
@@ -4318,7 +4318,7 @@
                         Communication Failure Behavior</title>
 
                         <tgroup align="left" cols="2">
-                          <colspec colwidth="50%" />
+                          <colspec colwidth="50" />
 
                           <thead>
                             <row valign="middle">
@@ -5539,9 +5539,9 @@
                     Communication Failure Behavior</title>
 
                     <tgroup align="left" cols="2">
-                      <colspec colwidth="50%" />
+                      <colspec colwidth="50" />
 
-                      <colspec colwidth="50%" />
+                      <colspec colwidth="50" />
 
                       <thead>
                         <row valign="middle">
@@ -6242,9 +6242,9 @@
                   Failure Behavior</title>
 
                   <tgroup align="left" cols="2">
-                    <colspec colwidth="50%" />
+                    <colspec colwidth="50" />
 
-                    <colspec colwidth="50%" />
+                    <colspec colwidth="50" />
 
                     <thead>
                       <row valign="middle">

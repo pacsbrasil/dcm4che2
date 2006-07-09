@@ -3,6 +3,7 @@
                       "../support/docbook-dtd/docbookx.dtd"
 [
 <!ENTITY install               SYSTEM "modules/install.xml">
+<!ENTITY ui-guide               SYSTEM "modules/ui-guide.xml">
 <!ENTITY util           SYSTEM "modules/util.xml">
 <!ENTITY building          SYSTEM "modules/building.xml">
 <!ENTITY dcs     SYSTEM "modules/dcs.xml">
@@ -68,6 +69,8 @@
     </preface>
 
     &install;
+    
+    <!--&ui-guide;-->
 
     &util;
 
