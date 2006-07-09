@@ -128,16 +128,24 @@
         <para>For example, with PostgreSQL you can check the pg_hba.conf file
         for your database:</para>
 
-        <para><computeroutput>$PGDATA/pg_hba.conf: # IPv4 local connections:
-        host all all 127.0.0.1/32 trust</computeroutput></para>
+        <programlisting><![CDATA[
+$PGDATA/pg_hba.conf:
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          trust
+        ]]></programlisting>
 
         <para>With Oracle, you can verify that the TNS Listener is
         enabled:</para>
 
-        <para><computeroutput>C:\&gt;netstat -b -p TCP Active Connections
-        Proto Local Address Foreign Address State PID TCP localhost:1521
-        host.domain.com:1365 ESTABLISHED 1436
-        [TNSLSNR.exe]</computeroutput></para>
+        <programlisting><![CDATA[
+C:\>netstat -b -p TCP
+Active Connections
+  TCP    localhost:1284               host.domain.com:1521     ESTABLISHED     1788
+  [ORACLE.EXE]
+
+  TCP    localhost:1521               host.domain.com:1284     ESTABLISHED     1816
+  [TNSLSNR.exe]
+        ]]></programlisting>
       </listitem>
 
       <listitem>
@@ -147,16 +155,21 @@
 
         <para>For example, with PostgreSQL on a Unix-based system:</para>
 
-        <para><computeroutput>&gt; export PGUSER=postgres &gt; createdb pacsdb
-        &gt; psql pacsdb -f
-        DCM4CHEE_DIST/sql/create.psql</computeroutput></para>
+        <programlisting><![CDATA[
+> export PGUSER=postgres
+> createdb pacsdb
+> psql pacsdb -f DCM4CHEE_DIST/sql/create.psql
+        ]]></programlisting>
 
         <para>To initialize a MySQL database on a Unix-based system:</para>
 
-        <para><computeroutput>&gt; mysql -uroot mysql&gt; create database
-        pacsdb; mysql&gt; grant all on pacsdb.* to 'pacs'@'localhost'
-        identified by 'pacs'; mysql&gt; \q &gt; mysql -upacs -ppacs &lt;
-        DCM4CHEE_DIST/sql/create.mysql</computeroutput></para>
+        <programlisting><![CDATA[
+> mysql -uroot
+mysql> create database pacsdb;
+mysql> grant all on pacsdb.* to 'pacs'@'localhost' identified by 'pacs';
+mysql> \q
+> mysql -upacs -ppacs < DCM4CHEE_DIST/sql/create.mysql
+        ]]></programlisting>
 
         <para><emphasis>Note</emphasis>: If you wish to take advantage of
         specific features of your RDBMS such as tablespaces, partitioning,
