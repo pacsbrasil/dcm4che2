@@ -99,15 +99,8 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
                         (curDcmObject =  new FileMetaInfoImpl()));
         } else
             curDcmObject = (FileMetaInfo)result;
+        ((FileMetaInfo) curDcmObject).setPreamble(preamble);
         seqStack.clear();
-        if (preamble != null) {
-            if (preamble.length == 128) {
-                System.arraycopy(preamble, 0,
-                    ((FileMetaInfo)curDcmObject).getPreamble(), 0, 128);
-            } else {
-                // log.warn
-            }
-        }
     }
     
     public void endFileMetaInfo() {

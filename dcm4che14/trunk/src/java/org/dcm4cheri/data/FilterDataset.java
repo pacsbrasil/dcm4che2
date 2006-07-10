@@ -72,20 +72,23 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         this.backend = (BaseDatasetImpl)backend;
     }
                     
-    protected abstract boolean filter(int tag);
+    protected abstract boolean filter(int tag, int vr);
  
     public boolean contains(int tag) {
-        return filter(tag) && backend.contains(tag);
+        return get(tag) != null;
     }
 
     public int vm(int tag) {
-        return filter(tag) ? backend.vm(tag) : -1;
+        DcmElement el = get(tag);
+        return el != null ? el.vm(backend.getSpecificCharacterSet()) : -1;
     }
 
     public int size() {
         int count = 0;
+        DcmElement el;
         for (Iterator iter = backend.iterator(); iter.hasNext();) {
-            if (filter(((DcmElement)iter.next()).tag())) {
+            el = (DcmElement) iter.next();
+            if (filter(el.tag(), el.vr())) {
                 ++count;
             }
         }
@@ -93,7 +96,8 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     }
 
     public DcmElement get(int tag) {
-        return filter(tag) ? backend.get(tag) : null;
+        DcmElement el = backend.get(tag);
+        return el != null && filter(el.tag(), el.vr()) ? el : null;
     }
     
     public Iterator iterator() {
@@ -103,7 +107,8 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             private DcmElement findNext() {
                 DcmElement el;
                 while (backendIter.hasNext()) {
-                    if (filter((el = (DcmElement)backendIter.next()).tag())) {
+                    el = (DcmElement)backendIter.next();
+                    if (filter(el.tag(), el.tag())) {
                         return el;
                     }
                 }
@@ -162,7 +167,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     }
     
     protected DcmElement put(DcmElement el) {
-       if (!filter(el.tag())) {
+       if (!filter(el.tag(), el.vr())) {
           throw new IllegalArgumentException(
             "" + el + " does not fit in this sub DataSet");
        }
@@ -170,14 +175,15 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     }
     
     public DcmElement remove(int tag) {
-        return filter(tag) ? backend.remove(tag) : null;
+        DcmElement el = backend.get(tag);
+        return (el != null && filter(tag, el.vr())) ? backend.remove(tag) : null;
     }
     
     public void clear() {
       ArrayList toRemove = new ArrayList();
       for (Iterator iter = backend.iterator(); iter.hasNext();) {
          DcmElement el = (DcmElement)iter.next();
-         if (filter(el.tag())) {
+         if (filter(el.tag(), el.vr())) {
             toRemove.add(el);
          }
       }
@@ -217,7 +223,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             this.filter = filter;
         }
 
-        protected  boolean filter(int tag) {
+        protected  boolean filter(int tag, int vr) {
             return filter == null || filter.contains(tag);
         }
 
@@ -252,7 +258,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             super(backend);
         }
 
-        protected  boolean filter(int tag) {
+        protected  boolean filter(int tag, int vr) {
             return !Tags.isPrivate(tag);
         }
 
@@ -292,7 +298,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             return count;
         }
 
-        protected boolean filter(int tag) {
+        protected boolean filter(int tag, int vr) {
             long ltag = tag & 0xFFFFFFFF;
             return ltag >= fromTag && ltag < toTag;
         }
@@ -301,21 +307,33 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     static final int[] EMPTY_INT = {};
     
     static final class TagFilter extends FilterDataset {
-        private final int[] tags;
+        private final int[] tags;        
+        private final int[] vrs;
 		private final boolean exclude;
 		private final boolean excludePrivate;
-        TagFilter(Dataset backend, int[] tags, boolean exclude, 
+        TagFilter(Dataset backend, int[] tags, int[] vrs, boolean exclude, 
                 boolean excludePrivate) {
             super(backend);
             this.tags = tags == null ? EMPTY_INT : (int[]) tags.clone();
             this.exclude = exclude;
             this.excludePrivate = excludePrivate;
+            this.vrs = vrs == null ? EMPTY_INT : (int[]) vrs.clone();
             Arrays.sort(this.tags);
         }
         
-        protected boolean filter(int tag) {
+        protected boolean filter(int tag, int vr) {
             return !(excludePrivate && Tags.isPrivate(tag))
-            	&& Arrays.binarySearch(tags, tag) < 0 ? exclude : !exclude;
+            	&& (containsVR(vr) || (Arrays.binarySearch(tags, tag)) >= 0) ? 
+                        !exclude : exclude;
+        }
+
+        private boolean containsVR(int vr) {
+            for (int i = 0; i < vrs.length; i++) {
+                if (vrs[i] == vr) {
+                    return true;
+                }
+            }
+            return false;
         }
         
     } 

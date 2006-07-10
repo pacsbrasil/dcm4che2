@@ -87,18 +87,23 @@ final class FileMetaInfoImpl extends DcmObjectImpl implements FileMetaInfo {
     }
 
     public final byte[] getPreamble() {
-        return preamble;
+        return preamble != null ? (byte[]) preamble.clone() : null;
     }
 
     public final void setPreamble(byte[] preamble) {
-    	if (preamble != null && preamble.length != 128) {
-    		throw new IllegalArgumentException("preamble length: " + preamble.length);
-    	}
-        this.preamble = preamble;
+        if (preamble == null) {
+            this.preamble = null;
+        } else {
+        	if (preamble.length != 128) {
+        		throw new IllegalArgumentException("preamble length: " + preamble.length);
+        	}
+            this.preamble = (byte[]) preamble.clone();
+        }
     }
     
     FileMetaInfoImpl init(String sopClassUID, String sopInstUID, String tsUID,
             String implClassUID, String implVersName) {
+        preamble = new byte[128];
         putOB(Tags.FileMetaInformationVersion, (byte[]) VERSION.clone());
         putUI(Tags.MediaStorageSOPClassUID, sopClassUID);
         putUI(Tags.MediaStorageSOPInstanceUID, sopInstUID);
