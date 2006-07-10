@@ -69,8 +69,8 @@
     <literal>DCM4CHEE_DIST/bin/</literal> with the file of the same name from
     the Solaris JAI Image IO distribution.</para>
 
-    <para>dcm4chee depends heavily on the JBoss (<ulink
-    url="http://www.jboss.org">http://www.jboss.org</ulink>) application
+    <para>dcm4chee depends heavily on the JBoss (<literal><ulink
+    url="http://www.jboss.org">http://www.jboss.org</ulink></literal>) application
     server for its infrastructure. It is not necessary to download JBoss (as
     dcm4chee is pre-packaged within JBoss), but viewing the online (or
     downloaded) JBoss documentation will assist a great deal in learning the
@@ -248,7 +248,7 @@ JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..</programlisting>
       </listitem>
 
       <listitem>
-        <para>[Optional] Upon installation, all DICOM services are
+        <para><emphasis>Optional:</emphasis> Upon installation, all DICOM services are
         pre-configured with <classname>DCM4CHEE</classname> as the Application
         Entity Title (AE Title, or AET). Although it is possible to modify
         this default configuration at a later date through the Web-based
@@ -265,54 +265,160 @@ JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..</programlisting>
       </listitem>
 
       <listitem>
-        <para>Now you're ready to run the application! Navigate to the
-        <literal>DCM4CHEE_DIST/bin</literal> directory, and execute the
+        <para>You're all done and ready to verify the installation.</para>
+        
+        <para>After verifying that the application is installed and running correctly, you may want to install it as a Windows service or Unix daemon.</para>
+        <orderedlist>
+            <listitem>
+                <para>Stop the application (type <literal>ctrl-c</literal> in the console window).</para>
+            </listitem>
+            <listitem>
+                <para>Windows: install dcm4chee as a Windows service executing <literal>DCM4CHEE_DIST/bin/install_service.bat</literal>.</para>
+            </listitem>
+            <listitem>
+                <para>Redhat Linux: copy the init script <literal>DCM4CHEE_DIST/bin/dcm4chee_init_redhat.sh</literal> to <literal>/etc/init.d/</literal>
+                    and adjust it according to the dcm4chee installation location, the JDK installation location,
+                    and which user the dcm4chee should run under.</para>
+            </listitem>
+        </orderedlist>
+        
+      </listitem>
+    </orderedlist>
+    
+  </sect1>
+  
+    <sect1 id="install-verification" revision="1">
+        <title>Verify the Installation</title>
+        
+        <para>Navigate to the <literal>DCM4CHEE_DIST/bin</literal> directory, and execute the
         run.bat or run.sh script, as appropriate for your operating system.
         Your output should look like the following and contain no error or
         exception messages:</para>
-
-        <para><computeroutput>
-        =========================================================================
-        </computeroutput></para>
-
-        <para><computeroutput>JBoss Bootstrap Environment
-        </computeroutput></para>
-
-        <para><computeroutput>JBOSS_HOME:
-        /home/gunter/dcm4chee-standalone-psql-2.8.2 </computeroutput></para>
-
-        <para><computeroutput>JAVA: /usr/java/j2sdk1.4.2_08/bin/java
-        </computeroutput></para>
-
-        <para><computeroutput>JAVA_OPTS: -server -Xms64m -Xmx200m
-        -Djava.awt.headless=true -Djava.library.path=. -Dprogram.name=run.sh
-        </computeroutput></para>
-
-        <para><computeroutput>CLASSPATH:
-        /home/gunter/dcm4chee-standalone-psql-2.8.2/bin/run.jar:
-        /usr/java/j2sdk1.4.2_08/lib/tools.jar </computeroutput></para>
-
-        <para><computeroutput>=========================================================================
-        </computeroutput></para>
-
-        <para><computeroutput>10:28:10,301 INFO [Server] Starting JBoss (MX
-        MicroKernel)... </computeroutput></para>
-
-        <para><computeroutput>10:28:10,319 INFO [Server] Release ID: JBoss
-        [Zion] 4.0.3SP1 (build: CVSTag=JBoss_4_0_3_SP1 date=200510231054)
-        </computeroutput></para>
-
-        <para><computeroutput>: </computeroutput></para>
-
-        <para><computeroutput>10:30:43,326 INFO -&gt; [JkMain] Jk running ID=0
-        time=0/83 config=null </computeroutput></para>
-
-        <para><computeroutput>10:30:43,352 INFO -&gt; [Server] JBoss (MX
-        MicroKernel) [4.0.3SP1 (build: CVSTag=JBoss_4_0_3_SP1
-        date=200510231054)] Started in 2m:32s:823ms </computeroutput></para>
-      </listitem>
-    </orderedlist>
-
-    <para></para>
-  </sect1>
+    
+        <programlisting><![CDATA[
+===============================================================================
+.
+  JBoss Bootstrap Environment
+.
+  JBOSS_HOME: C:\apps\dcm4chee-standalone-psql-2.8.2\bin\\..
+.
+  JAVA: C:\jdk1.5.0_06\bin\java
+.
+  JAVA_OPTS:  -Dprogram.name=run.bat -Xms128m -Xmx512m
+.
+  CLASSPATH: C:\jdk1.5.0_06\lib\tools.jar;
+    C:\apps\dcm4chee-standalone-psql-2.8.2\bin\\run.jar
+.
+===============================================================================
+.
+14:46:16,046 INFO  [Server] Starting JBoss (MX MicroKernel)...
+14:46:16,046 INFO  [Server] Release ID: JBoss [Zion] 4.0.3SP1 (build: 
+    CVSTag=JBoss_4_0_3_SP1 date=200510231054)
+...
+...
+...
+14:46:50,626 INFO  -> [JkMain] Jk running ID=0 time=0/60  config=null
+14:46:50,636 INFO  -> [Server] JBoss (MX MicroKernel) [4.0.3SP1 (build: 
+    CVSTag=JBoss_4_0_3_SP1 date=200510231054)] Started in 34s:580ms
+        ]]></programlisting>        
+        
+        <orderedlist>
+            <listitem>
+                <para>Connect to the Web-based User Interface (default URL is <literal><ulink url="http://localhost:8080/dcm4chee-web/">http://localhost:8080/dcm4chee-web/</ulink></literal>)
+                of the archive using any Web Browser (most tested are Mozilla Firefox and
+                Microsoft Internet Explorer v6.x). You should get the User Login Screen.
+                Login in using the default Administrator account <literal>admin</literal>, with password <literal>admin</literal>.</para>
+            </listitem>
+            
+            <listitem>
+                <para>Connect to the JBoss JMX Console (default URL is <literal><ulink url="http://localhost:8080/jmx-console/">http://localhost:8080/jmx-console/</ulink></literal>)
+                and login in using the default Administrator account <literal>admin</literal>, with password <literal>admin</literal>.</para>
+                
+                <para>Follow the link <literal>service=FileSystemMgt</literal> to the  
+                            File System Management service configuration page under the <literal>dcm4chee.archive</literal> heading.</para>
+                            
+                <para>Invoke the operation addOnlineFileSystem(), with a directory path argument specifying
+                            where the archive shall store received objects/images.</para>
+            
+                <para><emphasis>Note:</emphasis> If no Storage File System is configured, the archive will auto-configure
+                    <literal>DCM4CHEE_DIST/server/default/archive</literal> as the Storage File System when the
+                    the first object/image is received.</para>
+            </listitem>
+            
+            <listitem>
+                <para><emphasis>Optional:</emphasis> In the default configuration, received images are stored 'as is'
+                    - meaning that no compression is performed. Lossless (or other types of) compression of received
+                    uncompressed images can be activated by the <literal>CompressionRules</literal> attribute in the
+                    Storage SCP Service (<literal>service=StoreScp</literal>) configuration page.  For example, set it
+                    to <literal>JLSL</literal>, to compress all types of images received from any Storage SCU with
+                    JPEG-LS Lossless codec.</para>
+            </listitem>
+            
+            <listitem>
+                <para><emphasis>Optional:</emphasis> The directory used for caching generated JPEG representations
+                    of archived images requested by Web Access to DICOM Persistent Objects (WADO)
+                    can be specified by the <literal>CacheRoot</literal> attribute in the 
+                    the WADO Service (<literal>service=WADOService</literal>) configuration page. 
+                    Default: <literal>DCM4CHEE_DIST/server/default/wadocache</literal>.</para>
+                
+                <para>The directory used for caching generated PDF representations of archived
+                    Structured Report Documents requested by IHE Retrieve Information for Display
+                    (RID) Services can be specified with the <literal>CacheRoot</literal> attribute in 
+                    the RID Service (<literal>service=RIDService</literal>) configuration page. 
+                    Default: <literal>DCM4CHEE_DIST/server/default/ihe_rid_cache</literal>.</para>
+            </listitem>
+            
+            <listitem>
+                <para>Send some objects/images to the archive's Storage SCP, using the 
+                    send utility of the dcm4che14 package, the dcm4che2 package, or another Storage SCU of your choice.</para>
+                    
+                <para>If you're using dcm4che14, see <xref linkend="dcmsnd"/>.  If you're using dcm4che2, see below for an example:</para>
+                
+                <programlisting><![CDATA[
+> dcm4che-2.0.6/bin/dcmsnd DCM4CHEE@localhost:11112 ~/mesa/storage/modality/MR
+                ]]></programlisting>  
+                    
+                <para>Refresh the Web Interface (<literal><ulink url="http://localhost:8080/dcm4chee-web/">http://localhost:8080/dcm4chee-web/</ulink></literal>), which should 
+                    now show the the list of received studies.</para>
+                    
+                <para>Expand a study row to show contained series. Expand one of these series
+                    to show contained instances. In the case of images, you can follow the image
+                    icon on the right to invoke an HTTP WADO request for a JPEG presentation of
+                    this image which will be displayed in a separate browser window.</para>
+            </listitem>
+            
+            <listitem>
+                <para>To test object retrieval, you will need an external Storage SCP acting as
+                    the Destination using the DICOM Receiver utility of the dcm4che14 package, the dcm4che2 package, or another Storage SCP of your choice.</para>
+                    
+                <para>If you're using dcm4che14, see <xref linkend="dcmrcv"/>.  See below for a dcm4che2 example:</para>
+                
+                <programlisting><![CDATA[
+> dcm4che-2.0.6/bin/dcmrcv 11113
+13:55:14,782 INFO   - Start listening on 0.0.0.0/0.0.0.0:11113
+Start Server listening on port 11113
+                ]]></programlisting>  
+                
+                <para>Before initiating the retrieve, you will need to configure an additional Application Entity (AE) Title identifying
+                    your Move Destination using the "AE Management" function of the Web User Interface.  For example:</para>
+                
+                <programlisting><![CDATA[
+AE Title: DCMRCV
+Hostname: localhost
+Port:     11113
+                ]]></programlisting>  
+            </listitem>
+            
+            <listitem>
+                <para>Switch back to the Study List (the Folder view) and mark studies to retrieve using the
+                    check box on the right.  Select "DCMRCV" as the send destination in the combo box
+                    above and click on the send button left from it.</para>
+                    
+                <para>Alternatively, you could initiate a C-MOVE with the utility of your choice with DCMRCV as the destination AE Title.</para>
+            </listitem>
+        </orderedlist>
+        
+        <para>If everything worked, you are ready to start using dcm4chee.  If not, post your questions to the dcm4che-users listserv.</para>
+    
+    </sect1>
 </chapter>
