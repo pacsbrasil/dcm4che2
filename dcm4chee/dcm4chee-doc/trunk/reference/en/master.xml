@@ -28,7 +28,7 @@
         </para>
         
         <para>
-            dcm4chee is an implementation of an <abbrev>IHE</abbrev> (=Integrating the Healthcare Enterprise) compliant
+            dcm4chee is an implementation of an <acronym>IHE</acronym> (Integrating the Healthcare Enterprise) compliant
             Image Archive and Report Repository. This includes the capabilities
         </para> 
         
@@ -70,7 +70,7 @@
 
     &install;
     
-    <!--&ui-guide;-->
+    &ui-guide;
 
     &util;
 
