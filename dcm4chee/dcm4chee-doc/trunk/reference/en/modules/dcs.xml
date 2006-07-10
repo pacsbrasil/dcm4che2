@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <appendix id="dicom-cs"> 
-    <title>dcm4chee Archive 0.9 DICOM Conformance Statement</title>
+    <title>DICOM Conformance Statement (dcm4chee 0.9.x)</title>
 
   <abstract>
     <title>Overview</title>

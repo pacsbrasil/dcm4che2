@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <appendix id="dcm4chee-build" revision="1">
-  <title>Building dcm4chee</title>
+  <title>Building from Source Code</title>
 
   <sect1 id="build-requirements" revision="1">
-    <title>Building the dcm4chee Archive from Source Code</title>
+    <title>Building the dcm4chee Archive</title>
 
-    <para>In order to build all components of the dcm4chee archive application you have to download and install:</para>
+    <para>In order to build all components of the dcm4chee archive application you will need to download and install:</para>
     
     <orderedlist>
-        <listitem> <para>Ant 1.6.x [<ulink url="http://ant.apache.org">http://ant.apache.org]</ulink></para></listitem>
+        <listitem> <para>Ant 1.6.x [<ulink url="http://ant.apache.org">http://ant.apache.org</ulink>]</para></listitem>
 
         <listitem> <para>XDoclet 1.2.3 [<ulink url="http://xdoclet.sourceforge.net">http://xdoclet.sourceforge.net</ulink>]</para></listitem>
 

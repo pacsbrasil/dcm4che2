@@ -1,12 +1,12 @@
 <appendix id="ihe-integration-statement">
 
-    <title>dcm4chee IHE Integration Statement</title>
+    <title>IHE Integration Statement</title>
     
     <sect1 id="ihe-integration" revision="1">
         <title>IHE Integration</title>
         
         <para>
-            An IHE Integration Statement for the dcm4chee system.  This statement follows the structure established by the IHE organization 
+            This appendix constitutes an IHE Integration Statement for the dcm4chee system.  This statement follows the structure established by the IHE organization 
             and describes the transactions that the system can fulfill, and the actors that it can implement in an integrated healthcare environment.
         </para>
     
