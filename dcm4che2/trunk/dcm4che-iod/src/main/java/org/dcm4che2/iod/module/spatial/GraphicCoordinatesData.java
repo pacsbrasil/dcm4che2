@@ -56,7 +56,7 @@ public class GraphicCoordinatesData extends Module {
     public GraphicCoordinatesData(DicomObject dcmobj) {
         super(dcmobj);
     }
-
+    
     public static GraphicCoordinatesData[] toGraphicCoordinatesData(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;

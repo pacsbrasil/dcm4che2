@@ -180,6 +180,22 @@ public class SpatialFiducialsModule extends Module {
     public void setFiducialSets(FiducialSet[] fidsets) {
         updateSequence(Tag.FiducialSetSequence, fidsets);
     }
+    
+    /**
+     * Set a single {@link FiducialSet}.
+     * <p>
+     * This is a shortcut method for {@link #setFiducialSets(FiducialSet[])},
+     * useful when only one {@link FiducialSet} needs to be stored. Creates a
+     * single element array and passes it to
+     * {@link #setFiducialSets(FiducialSet[])}
+     * 
+     * @param fidset
+     */
+    public void setFiducialSet(FiducialSet fidset){
+        FiducialSet[] fs = new FiducialSet[1];
+        fs[0] = fidset;
+        setFiducialSets(fs);
+    }
 
     /**
      * A sequence of one or more items, each of which is a fiducial set.

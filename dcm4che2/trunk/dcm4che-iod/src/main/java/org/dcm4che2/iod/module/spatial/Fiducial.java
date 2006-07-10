@@ -38,11 +38,13 @@
 
 package org.dcm4che2.iod.module.spatial;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.macro.Code;
+import org.dcm4che2.iod.module.macro.ImageSOPInstanceReference;
 import org.dcm4che2.iod.module.spatial.GraphicCoordinatesData;
 
 /**
@@ -58,6 +60,23 @@ public class Fiducial extends GraphicCoordinatesData {
         super(dcmobj);
     }
 
+    /**
+     * Create a new Fiducial based on Image Refernce and fiducial coordinates.
+     * <p>
+     * This is a shortcut which can be used when the fiducial only appears as a
+     * single point.
+     * 
+     * @param p
+     * @param sop
+     */
+    public Fiducial(float[] p, ImageSOPInstanceReference sop){
+        super(new BasicDicomObject());
+        GraphicCoordinatesData[] fidPointsArray = new GraphicCoordinatesData[1];
+        fidPointsArray[0].setGraphicData(p);
+        fidPointsArray[0].setReferencedImage(sop);
+        setGraphicCoordinatesData(fidPointsArray);
+    }
+    
     public static Fiducial[] toFiducials(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;

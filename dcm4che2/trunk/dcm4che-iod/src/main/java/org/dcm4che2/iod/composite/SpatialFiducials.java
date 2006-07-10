@@ -79,11 +79,11 @@ public class SpatialFiducials extends Composite {
         spatialFiducialsModule.validate(ctx, result);
     }
 
-    public SpatialFiducialsSeriesModule getSpacialFiducialsSeriesModule(){
+    public SpatialFiducialsSeriesModule getSpatialFiducialsSeriesModule(){
         return (SpatialFiducialsSeriesModule) generalSeriesModule;
     }
 
-    public SpatialFiducialsModule getSpacialFiducialsModule(){
+    public SpatialFiducialsModule getSpatialFiducialsModule(){
         return this.spatialFiducialsModule;
     }
 
