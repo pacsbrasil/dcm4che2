@@ -42,7 +42,9 @@ package org.dcm4chex.archive.ejb.entity;
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 
 /**
@@ -68,6 +70,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
  */
 public abstract class AssociationBean implements EntityBean {
 
+    private static final Logger log = Logger.getLogger(AssociationBean.class);
     /**
      * @ejb.create-method
      */
@@ -179,6 +182,12 @@ public abstract class AssociationBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setIAN(Dataset ian) {
-        setEncodedAttributes(DatasetUtils.toByteArray(ian));
+        byte[] b = DatasetUtils.toByteArray(ian,
+                UIDs.DeflatedExplicitVRLittleEndian);
+        if (log.isDebugEnabled()) {
+            log.debug(b != null ? "setEncodedAttributes(byte[" + b.length + "])" 
+                    : "setEncodedAttributes(null)");
+        }
+        setEncodedAttributes(b);
     }
 }

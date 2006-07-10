@@ -63,7 +63,7 @@ CREATE TABLE study (
 	fileset_iuid	VARCHAR2(255),
 	fileset_id		VARCHAR2(255),
 	availability	NUMBER(38,0) NOT NULL,
-	status			NUMBER(38,0) NOT NULL,
+	study_status	NUMBER(38,0) NOT NULL,
 	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -82,7 +82,7 @@ CREATE INDEX study_desc ON study(study_desc);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
-CREATE INDEX study_status ON study(status);
+CREATE INDEX study_status ON study(study_status);
 
 CREATE TABLE rel_study_pcode (
 	study_fk       NUMBER(38,0),
@@ -137,6 +137,7 @@ CREATE TABLE series (
 	fileset_iuid	VARCHAR2(255),
 	fileset_id		VARCHAR2(255),
 	availability	NUMBER(38,0) NOT NULL,
+	series_status	NUMBER(38,0) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	series_attrs	BLOB,
@@ -153,6 +154,7 @@ CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
+CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);
 
 CREATE SEQUENCE series_req_pk_seq;
@@ -197,6 +199,8 @@ CREATE TABLE instance (
 	ext_retr_aet	VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
 	availability	NUMBER(38,0) NOT NULL,
+	inst_status		NUMBER(38,0) NOT NULL,
+	no_file			NUMBER(1) NOT NULL,
 	commitment		NUMBER(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -215,6 +219,7 @@ CREATE INDEX content_datetime ON instance(content_datetime);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
+CREATE INDEX inst_status ON instance(inst_status);
 CREATE INDEX commitment ON instance(commitment);
 
 CREATE SEQUENCE filesystem_pk_seq;

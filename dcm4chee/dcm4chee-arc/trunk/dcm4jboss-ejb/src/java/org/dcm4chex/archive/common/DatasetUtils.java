@@ -50,9 +50,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.xml.sax.InputSource;
@@ -78,22 +78,17 @@ public class DatasetUtils {
 	}
 
 	public static Dataset fromByteArray(byte[] data) {
-		return fromByteArray(data, null, DcmDecodeParam.EVR_LE);
+		return fromByteArray(data, null);
 	}
 
-    public static Dataset fromByteArray(byte[] data, Dataset ds) {
-        return fromByteArray(data, ds, DcmDecodeParam.EVR_LE);
-    }
-
-	public static Dataset fromByteArray(byte[] data, Dataset ds,
-            DcmDecodeParam decodeParam) {
+	public static Dataset fromByteArray(byte[] data, Dataset ds) {
         if (data == null)
             return null;
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         if (ds == null)
             ds = DcmObjectFactory.getInstance().newDataset();
         try {
-            ds.readDataset(bin, decodeParam, -1);
+            ds.readFile(bin, null, -1);
         } catch (IOException e) {
             throw new IllegalArgumentException("" + e);
         }
@@ -101,24 +96,43 @@ public class DatasetUtils {
     }
 
 
-    public static byte[] toByteArray(Dataset ds)
-    {
-        return toByteArray(ds, DcmDecodeParam.EVR_LE);
-    }
-    
-    public static byte[] toByteArray(Dataset ds, DcmEncodeParam encodeParam) {
+    public static byte[] toByteArray(Dataset ds) {
         if (ds == null)
             return null;
         ByteArrayOutputStream bos =
-            new ByteArrayOutputStream(ds.calcLength(encodeParam));
+            new ByteArrayOutputStream(ds.calcLength(DcmEncodeParam.EVR_LE));
         try {
-            ds.writeDataset(bos, encodeParam);
+            ds.writeDataset(bos, DcmEncodeParam.EVR_LE);
         } catch (IOException e) {
             throw new IllegalArgumentException("" + e);
         }
+        return bos.toByteArray();                    
+    }
+    
+    public static byte[] toByteArray(Dataset ds, String tsuid) {
+        if (ds == null)
+            return null;
+        if (tsuid == null) {
+            return toByteArray(ds);
+        }
+        FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo();
+        fmi.setPreamble(null);
+        fmi.putUI(Tags.TransferSyntaxUID, tsuid);
+        DcmEncodeParam encodeParam = DcmEncodeParam.valueOf(tsuid);
+        ByteArrayOutputStream bos =
+            new ByteArrayOutputStream(fmi.length() + ds.calcLength(encodeParam));
+        FileMetaInfo prevfmi = ds.getFileMetaInfo();
+        ds.setFileMetaInfo(fmi);
+        try {
+            ds.writeFile(bos, encodeParam);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("" + e);
+        } finally {
+            ds.setFileMetaInfo(prevfmi);
+        }
         return bos.toByteArray();
     }
-
+    
     private static SAXParser getSAXParser() {
         try {
             return SAXParserFactory.newInstance().newSAXParser();

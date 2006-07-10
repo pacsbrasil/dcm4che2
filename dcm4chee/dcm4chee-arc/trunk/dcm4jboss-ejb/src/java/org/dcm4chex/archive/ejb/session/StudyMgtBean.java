@@ -62,7 +62,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
@@ -92,9 +91,6 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
  * @ejb.ejb-ref ejb-name="PatientUpdate" view-type="local" ref-name="ejb/PatientUpdate" 
- * 
- * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4chee-attribute-filter.xml"
  */
 public abstract class StudyMgtBean implements SessionBean {
 
@@ -107,8 +103,6 @@ public abstract class StudyMgtBean implements SessionBean {
 	private SeriesLocalHome seriesHome;
 
 	private InstanceLocalHome instHome;
-
-	private AttributeFilter attrFilter;
 	
 	private PatientUpdateLocalHome patientUpdateHome;
 
@@ -125,8 +119,6 @@ public abstract class StudyMgtBean implements SessionBean {
 					.lookup("java:comp/env/ejb/Series");
 			instHome = (InstanceLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/Instance");
-            attrFilter = new AttributeFilter((String) jndiCtx
-                    .lookup("java:comp/env/AttributeFilterConfigURL"));
             patientUpdateHome = (PatientUpdateLocalHome) jndiCtx
             		.lookup("java:comp/env/ejb/PatientUpdate");
 
@@ -157,8 +149,7 @@ public abstract class StudyMgtBean implements SessionBean {
 	public void createStudy(Dataset ds) throws DcmServiceException {
 		try {
 			checkDuplicateStudy(ds.getString(Tags.StudyInstanceUID));
-			studyHome.create(
-					ds.subSet(attrFilter.getStudyFilter()), getPatient(ds));
+			studyHome.create(ds, getPatient(ds));
 		} catch (FinderException e) {
 			throw new EJBException(e);
 		} catch (CreateException e) {
@@ -176,7 +167,7 @@ public abstract class StudyMgtBean implements SessionBean {
 			final int n = c.size();
 			switch (n) {
 			case 0:
-				return patHome.create(ds.subSet(attrFilter.getPatientFilter()));
+				return patHome.create(ds);
 			case 1:
 				return (PatientLocal) c.iterator().next();
 			default:
@@ -259,7 +250,7 @@ public abstract class StudyMgtBean implements SessionBean {
 				}
 			}
 			Dataset attrs = study.getAttributes(false);
-			attrs.putAll(ds.subSet(attrFilter.getStudyFilter()));
+			attrs.putAll(ds);
 			study.setAttributes(attrs);
 			DcmElement seriesSq = ds.get(Tags.RefSeriesSeq);
 			if (seriesSq != null) {
@@ -300,9 +291,9 @@ public abstract class StudyMgtBean implements SessionBean {
 	private void updateSeries(Dataset ds, StudyLocal study, 
 			Set dirtyStudies, Set dirtySeries)
 			throws FinderException, CreateException {
-		Dataset newAttrs = ds.subSet(attrFilter.getSeriesFilter());
 		try {
-			SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, ds.getString(Tags.SeriesInstanceUID));
+			SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome,
+                    ds.getString(Tags.SeriesInstanceUID));
 			StudyLocal prevStudy = series.getStudy();
 			if (!study.isIdentical(prevStudy)) {
 				log.info("Move " + series.asString() + " from " + 
@@ -312,12 +303,12 @@ public abstract class StudyMgtBean implements SessionBean {
 				dirtyStudies.add(prevStudy.getStudyIuid());
 			}
 			Dataset attrs = series.getAttributes(false);
-			String newModality = newAttrs.getString(Tags.Modality);
+			String newModality = ds.getString(Tags.Modality);
 			if (newModality != null
 					&& !newModality.equals(attrs.getString(Tags.Modality))) {
 				dirtyStudies.add(study.getStudyIuid());				
 			}
-			attrs.putAll(newAttrs);
+			attrs.putAll(ds);
 			series.setAttributes(attrs);
 			DcmElement sopSq = ds.get(Tags.RefSOPSeq);
 			if (sopSq != null) {
@@ -327,7 +318,7 @@ public abstract class StudyMgtBean implements SessionBean {
 				}
 			}
 		} catch (ObjectNotFoundException e) {
-			seriesHome.create(newAttrs, study);
+			seriesHome.create(ds, study);
 			dirtyStudies.add(study.getStudyIuid());
 		}
 	}
@@ -335,7 +326,6 @@ public abstract class StudyMgtBean implements SessionBean {
 	private void updateInstance(Dataset ds, SeriesLocal series,
 			Set dirtyStudies, Set dirtySeries) 
 			throws FinderException, CreateException {
-		Dataset newAttrs = ds.subSet(attrFilter.getInstanceFilter());
 		try {
 			InstanceLocal inst = instHome.findBySopIuid(
 					ds.getString(Tags.RefSOPInstanceUID));
@@ -350,10 +340,10 @@ public abstract class StudyMgtBean implements SessionBean {
 				dirtyStudies.add(prevSeries.getStudy().getStudyIuid());
 			}
 			Dataset attrs = inst.getAttributes(false);
-			attrs.putAll(newAttrs);
+			attrs.putAll(ds);
 			inst.setAttributes(attrs);
 		} catch (ObjectNotFoundException e) {
-			instHome.create(newAttrs, series);
+			instHome.create(ds, series);
 			dirtySeries.add(series.getSeriesIuid());
 			dirtyStudies.add(series.getStudy().getStudyIuid());
 		}

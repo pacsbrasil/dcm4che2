@@ -101,9 +101,6 @@ import org.dcm4chex.archive.util.Convert;
  *  
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  *  
- * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4chee-attribute-filter.xml"
- *  
  */
 public abstract class ContentEditBean implements SessionBean {
 
@@ -121,7 +118,6 @@ public abstract class ContentEditBean implements SessionBean {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
-    private AttributeFilter attrFilter;
     private static Logger log = Logger.getLogger( ContentEditBean.class.getName() );
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
@@ -137,9 +133,6 @@ public abstract class ContentEditBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
-
-            attrFilter = new AttributeFilter((String) jndiCtx
-                    .lookup("java:comp/env/AttributeFilterConfigURL"));
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
@@ -166,8 +159,7 @@ public abstract class ContentEditBean implements SessionBean {
      * @ejb.interface-method
      */
     public Dataset createPatient(Dataset ds) throws CreateException {
-        final int[] filter = attrFilter.getPatientFilter();
-        return patHome.create(ds.subSet(filter)).getAttributes(true);
+        return patHome.create(ds).getAttributes(true);
     }
 
     /**
@@ -213,11 +205,16 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createStudy(Dataset ds, long patPk) throws CreateException {
     	try {
 	        PatientLocal patient = patHome.findByPrimaryKey(new Long(patPk));
-	        final int[] filter = attrFilter.getStudyFilter();
-	        Dataset ds1 = studyHome.create(ds.subSet(filter), patient).getAttributes(true);
-	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1:");log.debug(ds1);}
-	        ds1.putAll( patient.getAttributes(true).subSet(attrFilter.getPatientFilter()) );
-	        if ( log.isDebugEnabled() ) { log.debug("createStudy ds1 with patient:");log.debug(ds1);}
+	        Dataset ds1 = studyHome.create(ds, patient).getAttributes(true);
+	        if ( log.isDebugEnabled() ) { 
+                log.debug("createStudy ds1:");
+                log.debug(ds1);
+            }
+	        ds1.putAll(patient.getAttributes(true));
+	        if ( log.isDebugEnabled() ) { 
+                log.debug("createStudy ds1 with patient:");
+                log.debug(ds1);
+            }
 	        return ds1;
         } catch (FinderException e) {
             throw new EJBException(e);
@@ -232,10 +229,10 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createSeries(Dataset ds, long studyPk) throws CreateException {
     	try {
 	        StudyLocal study = studyHome.findByPrimaryKey(new Long(studyPk));
-	        final int[] filter = attrFilter.getSeriesFilter();
-	        SeriesLocal series =  seriesHome.create(ds.subSet(filter), study);
+	        SeriesLocal series =  seriesHome.create(ds, study);
 	        Collection col = new ArrayList(); col.add( series );
-	        return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, series.getAttributes(true) );
+	        return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, 
+                    series.getAttributes(true) );
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -253,8 +250,7 @@ public abstract class ContentEditBean implements SessionBean {
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.PatientPk).array());
             PatientLocal patient = patHome
                     .findByPrimaryKey(new Long(pk));
-	        final int[] filter = attrFilter.getPatientFilter();
-            patient.setAttributes(ds.subSet(filter));
+            patient.setAttributes(ds);
             Collection studies = patient.getStudies();
             Iterator iter = patient.getStudies().iterator();
             StudyLocal sl;
@@ -278,10 +274,9 @@ public abstract class ContentEditBean implements SessionBean {
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.StudyPk).array());
             StudyLocal study = studyHome
                     .findByPrimaryKey(new Long(pk));
-	        final int[] filter = attrFilter.getStudyFilter();
-            study.setAttributes(ds.subSet(filter));
-            return getStudyMgtDataset( study, study.getSeries(), null, CHANGE_MODE_STUDY, 
-            		study.getAttributes(true) );            
+            study.setAttributes(ds);
+            return getStudyMgtDataset( study, study.getSeries(), null,
+                    CHANGE_MODE_STUDY, study.getAttributes(true) );            
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -295,14 +290,14 @@ public abstract class ContentEditBean implements SessionBean {
         try {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.SeriesPk).array());
-            SeriesLocal series = seriesHome
-                    .findByPrimaryKey(new Long(pk));
-	        final int[] filter = attrFilter.getSeriesFilter();
-	        series.setAttributes(ds.subSet(filter));
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Long(pk));
+	        series.setAttributes(ds);
             StudyLocal study = series.getStudy();
             study.updateDerivedFields(false, false, false, false, false, true);
-            Collection col = new ArrayList(); col.add( series );
-            return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, series.getAttributes(true) );            
+            Collection col = new ArrayList();
+            col.add( series );
+            return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES,
+                    series.getAttributes(true) );            
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -317,7 +312,7 @@ public abstract class ContentEditBean implements SessionBean {
         	Collection col = new ArrayList();
             PatientLocal pat = patHome.findByPrimaryKey(new Long(patient_pk));
             Collection studies = pat.getStudies();
-            Dataset dsPat = pat.getAttributes(true).subSet( attrFilter.getPatientFilter());
+            Dataset dsPat = pat.getAttributes(true);
             Dataset ds1;
             for (int i = 0; i < study_pks.length; i++) {
                 StudyLocal study = studyHome.findByPrimaryKey(new Long(
@@ -325,7 +320,8 @@ public abstract class ContentEditBean implements SessionBean {
                 PatientLocal oldPat = study.getPatient();
                 if (oldPat.isIdentical(pat)) continue;
                 studies.add(study);
-                ds1 = getStudyMgtDataset( study, study.getSeries(), null, CHANGE_MODE_STUDY, dsPat );
+                ds1 = getStudyMgtDataset( study, study.getSeries(), null, 
+                        CHANGE_MODE_STUDY, dsPat );
                 col.add( ds1 );
                 
             }

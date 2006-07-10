@@ -57,10 +57,12 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
@@ -101,7 +103,7 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.finder signature="java.util.Collection findStudiesWithStatus(int status, java.sql.Timestamp createdBefore, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findStudiesWithStatus(int status, java.sql.Timestamp createdBefore, int limit)"
- *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.status = ?1) AND (s.createdTime < ?2) LIMIT ?3"
+ *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.studyStatus = ?1) AND (s.createdTime < ?2) LIMIT ?3"
  *             
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Long pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
@@ -260,14 +262,14 @@ public abstract class StudyBean implements EntityBean {
      * Study Status
      *
      * @ejb.interface-method
-     * @ejb.persistence column-name="status"
+     * @ejb.persistence column-name="study_status"
      */
-    public abstract int getStatus();
+    public abstract int getStudyStatus();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setStatus(int status);
+    public abstract void setStudyStatus(int status);
     
     /**
      * Study Status ID
@@ -771,6 +773,13 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter(cuid);
+        setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
+                filter.getTransferSyntaxUID());
+    }
+    
+    private void setAttributesInternal(Dataset ds, String tsuid) {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setStudyId(ds.getString(Tags.StudyID));
         try {
@@ -792,8 +801,26 @@ public abstract class StudyBean implements EntityBean {
             }
         }
         setStudyDescription(toUpperCase(ds.getString(Tags.StudyDescription)));
-        Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
+    }
+
+    /**
+     * @throws DcmServiceException 
+     * @ejb.interface-method
+     */
+    public void coerceAttributes(Dataset ds, Dataset coercedElements)
+    throws DcmServiceException {
+        Dataset attrs = getAttributes(false);
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter(cuid);
+        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
+        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        }
     }
 
     private static String toUpperCase(String s) {

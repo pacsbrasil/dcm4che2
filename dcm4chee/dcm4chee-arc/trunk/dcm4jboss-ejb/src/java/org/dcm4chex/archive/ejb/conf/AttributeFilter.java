@@ -39,14 +39,11 @@
 
 package org.dcm4chex.archive.ejb.conf;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.UIDs;
 
 /**
  * 
@@ -55,96 +52,113 @@ import org.xml.sax.helpers.DefaultHandler;
  * @since 28.12.2003
  */
 public final class AttributeFilter {
+    private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
+    private static boolean loaded = false;
+    private static HashMap patient = new HashMap();
+    private static HashMap study = new HashMap();
+    private static HashMap series = new HashMap();
+    private static HashMap instance = new HashMap();
+    private int[] tags = {};
+    private int[] noCoercion = {};
+    private int[] vrs = {};
+    private final String tsuid;
+    private final boolean exclude;
+    private final boolean excludePrivate;
+    private boolean noFilter = false;
 
-    private int[] patientFilter;
-    private int[] studyFilter;
-    private int[] seriesFilter;
-    private int[] instanceFilter;
-    private int[] noCoercion;
-
-    private static int[] parseInts(ArrayList list) {
-        int[] array = new int[list.size()];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = Integer.parseInt((String) list.get(i), 16);
-        }
-        Arrays.sort(array);
-        return array;
+    // Test Driver
+    public static void main(String[] args) {
+        AttributeFilterLoader.loadFrom(patient, study, series, instance, args[0]);
     }
     
-    private class MyHandler extends DefaultHandler {
-        private String level;
-        private ArrayList filter = new ArrayList();
-        private ArrayList noCoerceList = new ArrayList();
-
-        public void startElement(
-            String uri,
-            String localName,
-            String qName,
-            Attributes attributes)
-            throws SAXException {
-            if (qName.equals("attr")) {
-            	String tag = attributes.getValue("tag");
-            	String coerce = attributes.getValue("coerce");
-            	filter.add(tag);
-            	if ("false".equalsIgnoreCase(coerce))
-            		noCoerceList.add(tag);
-            } else if (qName.equals("filter")) {
-                level = attributes.getValue("level");
-            }
-        }
-        
-        public void endElement(String uri, String localName, String qName)
-                throws SAXException {
-            if (qName.equals("filter")) {
-	            if (level.equals("PATIENT")) {
-	                patientFilter = AttributeFilter.parseInts(filter);
-	            } else if (level.equals("STUDY")) {
-	                studyFilter = AttributeFilter.parseInts(filter);
-	            } else if (level.equals("SERIES")) {
-	                seriesFilter = AttributeFilter.parseInts(filter);
-	            } else if (level.equals("IMAGE")) {
-	                instanceFilter = AttributeFilter.parseInts(filter);
-	            }
-	            filter.clear();
-            }
-        }
-        
-		public void endDocument() throws SAXException {
-			noCoercion = AttributeFilter.parseInts(noCoerceList);
-			noCoerceList.clear();
-		}
+    public static AttributeFilter getPatientAttributeFilter(String cuid)
+    throws ConfigurationException {
+        load();
+        return getAttributeFilter(cuid, patient);
     }
 
-    public AttributeFilter(String uri) throws ConfigurationException {
-        try {
-            SAXParserFactory.newInstance().newSAXParser().parse(
-                uri,
-                new MyHandler());
-        } catch (Exception e) {
-            throw new ConfigurationException(
-                "Failed to load attribute filter from " + uri,
-                e);
+    public static AttributeFilter getStudyAttributeFilter(String cuid)
+    throws ConfigurationException {
+        load();
+        return getAttributeFilter(cuid, study);
+    }
+
+    public static AttributeFilter getSeriesAttributeFilter(String cuid)
+    throws ConfigurationException {
+        load();
+        return getAttributeFilter(cuid, series);
+    }
+    
+    public static AttributeFilter getInstanceAttributeFilter(String cuid)
+    throws ConfigurationException {
+        load();
+        return getAttributeFilter(cuid, instance);
+    }
+
+    private static void load() throws ConfigurationException {
+        if (!loaded) {
+            AttributeFilterLoader.loadFrom(patient, study, series, instance, 
+                    CONFIG_URL);            
+            loaded = true;
         }
     }
 
-    public final int[] getPatientFilter() {
-        return patientFilter;
+    static AttributeFilter getAttributeFilter(String cuid, HashMap map) {
+        AttributeFilter filter = (AttributeFilter) map.get(cuid);
+        if (filter == null) {
+            filter = (AttributeFilter) map.get(null);
+        }
+        return filter;
     }
 
-    public final int[] getStudyFilter() {
-        return studyFilter;
+    AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate) {
+        this.tsuid = tsuid;
+        this.exclude = exclude;
+        this.excludePrivate = excludePrivate;
+    }
+    
+    final void setNoCoercion(int[] noCoercion) {
+        this.noCoercion = noCoercion;
     }
 
-    public final int[] getSeriesFilter() {
-        return seriesFilter;
+    final void setTags(int[] tags) {
+        this.tags = tags;
     }
 
-    public final int[] getInstanceFilter() {
-        return instanceFilter;
+    final int[] getTags() {
+        return this.tags;
+    }
+    
+    final void setVRs(int[] vrs) {
+        this.vrs = vrs;
+    }
+
+    final int[] getVRs() {
+        return this.vrs;
+    }
+    
+    public final boolean isNoFilter() {
+        return noFilter;
+    }
+         
+    final void setNoFilter(boolean noFilter) {
+        this.noFilter = noFilter;
+    }
+    
+    final boolean isExclude() {
+        return exclude;
     }
     
     public boolean isCoercionForbidden(int tag) {
     	return Arrays.binarySearch(noCoercion, tag) >= 0;
     }
     
+    public final String getTransferSyntaxUID() {
+        return tsuid;
+    }
+
+    public Dataset filter(Dataset ds) {
+        return ds.subSet(tags, vrs, exclude, excludePrivate);
+    }
+
 }

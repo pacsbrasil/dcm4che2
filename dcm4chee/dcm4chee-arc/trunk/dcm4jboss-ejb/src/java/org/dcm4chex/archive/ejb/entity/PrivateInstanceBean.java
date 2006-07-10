@@ -43,8 +43,10 @@ package org.dcm4chex.archive.ejb.entity;
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
 
@@ -67,6 +69,8 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
  *             transaction-type="Supports"
  */
 public abstract class PrivateInstanceBean implements EntityBean {
+
+    private static final Logger log = Logger.getLogger(PrivateInstanceBean.class);
 
     /**
      * @ejb.create-method
@@ -127,8 +131,12 @@ public abstract class PrivateInstanceBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
     	setSopIuid(ds.getString(Tags.SOPInstanceUID));
-        Dataset tmp = ds.excludePrivate();
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+        byte[] b = DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
     }
 
 

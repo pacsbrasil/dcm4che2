@@ -43,8 +43,10 @@ package org.dcm4chex.archive.ejb.entity;
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
@@ -69,6 +71,8 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
  */
 public abstract class PrivateSeriesBean implements EntityBean {
 
+    private static final Logger log = Logger.getLogger(PrivateSeriesBean.class);
+    
     /**
      * @ejb.create-method
      */

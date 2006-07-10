@@ -57,10 +57,12 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
@@ -305,6 +307,29 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
+     * Instance Status
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="inst_status"
+     */
+    public abstract int getInstanceStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setInstanceStatus(int status);
+    
+    /**
+     * @ejb.persistence column-name="no_file"
+     */
+    public abstract boolean getNoFile();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setNoFile(boolean noFile);
+    
+    /**
      * @ejb.persistence column-name="commitment"
      */
     public abstract boolean getCommitment();
@@ -526,6 +551,13 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(cuid);
+        setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
+                filter.getTransferSyntaxUID());
+    }
+    
+    private void setAttributesInternal(Dataset ds, String tsuid) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
@@ -536,8 +568,26 @@ public abstract class InstanceBean implements EntityBean {
         }
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
+    }
+
+    /**
+     * @throws DcmServiceException 
+     * @ejb.interface-method
+     */
+    public void coerceAttributes(Dataset ds, Dataset coercedElements)
+    throws DcmServiceException {
+        Dataset attrs = getAttributes(false);
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
+        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        }
     }
 
     /**

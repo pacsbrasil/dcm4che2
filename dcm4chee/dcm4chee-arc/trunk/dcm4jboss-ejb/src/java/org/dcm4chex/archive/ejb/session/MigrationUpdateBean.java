@@ -59,9 +59,6 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.conf.ConfigurationException;
-import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -92,12 +89,8 @@ public abstract class MigrationUpdateBean implements SessionBean {
 
     private static final Logger log = Logger.getLogger(MigrationUpdateBean.class);
 	
-	private PatientLocalHome patHome;
-
 	private StudyLocalHome studyHome;
 
-	private AttributeFilter attrFilter;
-	
 	private PatientUpdateLocal patientUpdate;
 
 	public void setSessionContext(SessionContext arg0) throws EJBException,
@@ -105,20 +98,14 @@ public abstract class MigrationUpdateBean implements SessionBean {
 		Context jndiCtx = null;
 		try {
 			jndiCtx = new InitialContext();
-			patHome = (PatientLocalHome) jndiCtx
-					.lookup("java:comp/env/ejb/Patient");
 			studyHome = (StudyLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/Study");
-            attrFilter = new AttributeFilter((String) jndiCtx
-                    .lookup("java:comp/env/AttributeFilterConfigURL"));
             patientUpdate = ((PatientUpdateLocalHome) jndiCtx
             		.lookup("java:comp/env/ejb/PatientUpdate")).create();
 
 		} catch (NamingException e) {
 			throw new EJBException(e);
 		} catch (CreateException e) {
-			throw new EJBException(e);
-		} catch (ConfigurationException e) {
 			throw new EJBException(e);
 		} finally {
 			if (jndiCtx != null) {
@@ -131,7 +118,6 @@ public abstract class MigrationUpdateBean implements SessionBean {
 	}
 
 	public void unsetSessionContext() {
-		patHome = null;
 		studyHome = null;
 	}
 	
@@ -165,7 +151,7 @@ public abstract class MigrationUpdateBean implements SessionBean {
     public void updateStatus(Collection studyIuids, int status) throws FinderException, DcmServiceException {
     	if ( studyIuids == null ) return;
     	for ( Iterator iter = studyIuids.iterator() ; iter.hasNext() ;) {
-    		getStudy((String) iter.next()).setStatus(status);	
+    		getStudy((String) iter.next()).setStudyStatus(status);	
     	}
     }
     
@@ -176,7 +162,7 @@ public abstract class MigrationUpdateBean implements SessionBean {
      */
     public void updateStatus(String studyIuid, int status) throws FinderException, DcmServiceException {
     	if ( studyIuid == null ) return;
-   		getStudy(studyIuid).setStatus(status);	
+   		getStudy(studyIuid).setStudyStatus(status);	
     }
     
     /**

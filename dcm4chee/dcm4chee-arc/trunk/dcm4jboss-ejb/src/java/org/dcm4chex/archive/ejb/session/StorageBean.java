@@ -106,17 +106,12 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" view-type="local" ref-name="ejb/StudyOnFileSystem"
  * @ejb.ejb-ref ejb-name="Association" view-type="local" ref-name="ejb/Association"
  * 
- * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4chee-attribute-filter.xml"
- * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$
  *  
  */
 public abstract class StorageBean implements SessionBean {
 
-    private static final int ForbiddenAttributeCoercion = 0xCB00;
-    
 	private static Logger log = Logger.getLogger(StorageBean.class);
 
     private PatientLocalHome patHome;
@@ -135,8 +130,6 @@ public abstract class StorageBean implements SessionBean {
 
     private AssociationLocalHome assocHome;
     
-    private AttributeFilter attrFilter;
-
     private SessionContext sessionCtx;
 
     public void setSessionContext(SessionContext ctx) {
@@ -159,13 +152,9 @@ public abstract class StorageBean implements SessionBean {
                     .lookup("java:comp/env/ejb/StudyOnFileSystem");
             assocHome = (AssociationLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Association");
-            attrFilter = new AttributeFilter((String) jndiCtx
-                    .lookup("java:comp/env/AttributeFilterConfigURL"));
         } catch (NamingException e) {
             throw new EJBException(e);
-        } catch (ConfigurationException e) {
-            throw new EJBException(e);
-  		} finally {
+        } finally {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
@@ -207,9 +196,7 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                final int[] filter = attrFilter.getInstanceFilter();
-                instance = instHome.create(ds.subSet(filter),
-                        getSeries(ds, coercedElements, fs));
+                instance = instHome.create(ds, getSeries(ds, coercedElements, fs));
             }
             FileLocal file = fileHome.create(fileid, tsuid, size, md5,
                     0, instance, fs);
@@ -334,9 +321,7 @@ public abstract class StorageBean implements SessionBean {
             series = EntityPkCache.findBySeriesIuid(seriesHome, uid);
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            final int[] filter = attrFilter.getSeriesFilter();
-            series = seriesHome.create(ds.subSet(filter),
-                    getStudy(ds, coercedElements, fs));
+            series = seriesHome.create(ds, getStudy(ds, coercedElements, fs));
         }
         return series;
     }
@@ -356,9 +341,7 @@ public abstract class StorageBean implements SessionBean {
             study = EntityPkCache.findByStudyIuid(studyHome, uid);
             coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            final int[] filter = attrFilter.getStudyFilter();
-            study = studyHome.create(ds.subSet(filter),
-                    getPatient(ds, coercedElements));
+            study = studyHome.create(ds, getPatient(ds, coercedElements));
             sofHome.create(study, fs);
         }
 
@@ -381,7 +364,7 @@ public abstract class StorageBean implements SessionBean {
 		final int n = c.size();
 		switch (n) {
 		case 0:
-			return patHome.create(ds.subSet(attrFilter.getPatientFilter()));
+			return patHome.create(ds);
 		case 1:
 			PatientLocal pat = checkIfMerged((PatientLocal) c.iterator().next());
             coercePatientIdentity(pat, ds, coercedElements);
@@ -393,163 +376,41 @@ public abstract class StorageBean implements SessionBean {
 		}
     }
     
- 	private PatientLocal checkIfMerged(PatientLocal pat) {
-		PatientLocal merged;
-		while ((merged = pat.getMergedWith()) != null)
-			pat = merged;
-		return pat;
+ 	private PatientLocal checkIfMerged(PatientLocal pat) throws DcmServiceException {
+		PatientLocal merged, ret = pat;
+        HashSet chain = new HashSet();
+        chain.add(pat.getPrimaryKey());
+		while ((merged = ret.getMergedWith()) != null) {
+            if (!chain.add(merged.getPrimaryKey())) {
+                throw new DcmServiceException(Status.ProcessingFailure,
+                        "Detect circular merged Patient " + pat.asString());                                    
+            }
+			ret = merged;
+        }
+		return ret;
 	}
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
-        Dataset patAttrs = patient.getAttributes(false);
-        Dataset filtered = patAttrs.subSet(attrFilter.getPatientFilter());
-        int excludeAttrs = patAttrs.size() - filtered.size();
-        if (excludeAttrs > 0) {
-            log.warn("Detect " + excludeAttrs + " attributes in record of " +
-                    "patient " + patAttrs.getString(Tags.PatientName) + "[" +
-                    patAttrs.getString(Tags.PatientID) + "] which does not " +
-                    "match current configured patient attribute filter -> " +
-                    "removed attributes from patient record");
-            patient.setAttributes(filtered);
-            patAttrs = patient.getAttributes(false);
-        }
-        coerceIdentity(patAttrs, ds, coercedElements);
-        if (updateEntity(patAttrs, ds.subSet(attrFilter.getPatientFilter())))
-            patient.setAttributes(patAttrs);            
+        patient.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         coercePatientIdentity(study.getPatient(), ds, coercedElements);
-        final Dataset studyAttrs = study.getAttributes(false);
-        coerceIdentity(studyAttrs, ds, coercedElements);
-        if (updateEntity(studyAttrs, ds.subSet(attrFilter.getStudyFilter())))
-            study.setAttributes(studyAttrs);            
+        study.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceSeriesIdentity(SeriesLocal series, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         coerceStudyIdentity(series.getStudy(), ds, coercedElements);
-        final Dataset seriesAttrs = series.getAttributes(false);
-        coerceIdentity(seriesAttrs, ds, coercedElements);
-        if (updateEntity(seriesAttrs, ds.subSet(attrFilter.getSeriesFilter())))
-            series.setAttributes(seriesAttrs);            
+        series.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceInstanceIdentity(InstanceLocal instance, Dataset ds,
             Dataset coercedElements) throws DcmServiceException {
         coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
-        final Dataset instAttrs = instance.getAttributes(false);
-        coerceIdentity(instAttrs, ds, coercedElements);
-        if (updateEntity(instAttrs, ds.subSet(attrFilter.getInstanceFilter())))
-            instance.setAttributes(instAttrs);            
-    }
-
-    private boolean updateEntity(Dataset ref, Dataset ds)
-    {
-        boolean updateEntity = false;
-        for (Iterator it = ds.iterator(); it.hasNext();) {
-            DcmElement dsEl = (DcmElement) it.next();
-            final int tag = dsEl.tag();
-            final int vr = dsEl.vr();
-            final int vm = dsEl.countItems();
-            if (Tags.isPrivate(tag) || dsEl.isEmpty())
-                continue;            
-            DcmElement refEl = ref.get(tag);
-            if (dsEl.hasItems()) {
-                // only update empty sequences or with equal number of items
-                if (refEl == null || refEl.isEmpty())
-                {
-                   log.info("Update stored objects with additional element/value from new received object- " + dsEl);
-                   refEl = ref.putSQ(tag);
-                   for (int i = 0; i < vm; i++)
-                         refEl.addItem(dsEl.getItem());
-                    updateEntity = true;
-                } else if (refEl.countItems() == vm) {
-                    for (int i = 0; i < vm; i++)
-                        if (updateEntity(refEl.getItem(), dsEl.getItem()))
-                            updateEntity = true;
-                }
-            } else if (refEl == null || refEl.isEmpty())
-            {
-                log.info("Update stored objects with additional element/value from new received object - " + dsEl);
-                if (dsEl.hasDataFragments()) {
-                      
-                    refEl = ref.putXXsq(tag, vr);
-                      for (int i = 0; i < vm; i++)
-                          refEl.addDataFragment(dsEl.getDataFragment(i));
-                } else {
-                    ref.putXX(tag, vr, dsEl.getByteBuffer());
-                }
-                updateEntity = true;
-            }
-        }
-        return updateEntity;
-    }
-
-    private boolean coerceIdentity(Dataset ref, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException {
-        boolean coercedIdentity = false;
-        for (Iterator it = ref.iterator(); it.hasNext();) {
-            DcmElement refEl = (DcmElement) it.next();
-            if (refEl.isEmpty())
-                continue;
-            final int tag = refEl.tag();
-			DcmElement el = ds.get(tag);
-            if (!equals(el,
-                    ds.getSpecificCharacterSet(),
-                    refEl,
-                    ref.getSpecificCharacterSet(),
-                    coercedElements)) {
-            	if (attrFilter.isCoercionForbidden(tag)) {
-            		throw new DcmServiceException(ForbiddenAttributeCoercion,
-            				"Storage would require forbidden Coercion of " + el + " to " + refEl);
-            	}
-                log.warn("Coerce " + el + " to " + refEl);
-                if (coercedElements != null) {
-                    if (VRs.isLengthField16Bit(refEl.vr())) {
-                        coercedElements.putXX(tag, refEl
-                                .getByteBuffer());
-                    } else {
-                        coercedElements.putXX(tag);
-                    }
-                }
-                coercedIdentity = true;
-            }
-        }
-        return coercedIdentity;
-    }
-
-    private boolean equals(DcmElement el, SpecificCharacterSet cs,
-            DcmElement refEl, SpecificCharacterSet refCS,
-            Dataset coercedElements)
-    		throws DcmServiceException {
-        final int vm = refEl.countItems();
-        if (el == null || el.countItems() != vm) { return false; }
-        final int vr = refEl.vr();
-        if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN) {
-            // no check implemented!
-            return true;
-        }
-        for (int i = 0; i < vm; ++i) {
-            if (vr == VRs.SQ) {
-                if (coerceIdentity(refEl.getItem(i), el.getItem(i), null)) {
-                    if (coercedElements != null) {
-                        coercedElements.putSQ(el.tag());
-                    }
-                }
-            } else {
-                try {
-                    if (!(vr == VRs.PN ? refEl.getPersonName(i, refCS)
-                            .equals(el.getPersonName(i, cs)) : refEl
-                            .getString(i, refCS).equals(el.getString(i, cs)))) { return false; }
-                } catch (DcmValueException e) {
-                    log.warn("Failure during coercion of " + el, e);
-                }
-            }
-        }
-        return true;
+        instance.coerceAttributes(ds, coercedElements);
     }
 
     /**

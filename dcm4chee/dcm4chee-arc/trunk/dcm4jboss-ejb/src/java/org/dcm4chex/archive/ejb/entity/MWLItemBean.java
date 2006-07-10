@@ -55,6 +55,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -326,7 +327,12 @@ public abstract class MWLItemBean implements EntityBean {
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
-        setEncodedAttributes(DatasetUtils.toByteArray(ds));
+        byte[] b = DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
     }
 
     private static String toUpperCase(String s) {
@@ -367,8 +373,13 @@ public abstract class MWLItemBean implements EntityBean {
     	Dataset ds = getAttributes();
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         spsItem.putCS(Tags.SPSStatus, SPSStatus.toString(status));
-        setEncodedAttributes(DatasetUtils.toByteArray(ds));        
-    	setSpsStatusAsInt(status);
+        setSpsStatusAsInt(status);
+        byte[] b = DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
     }
     
     /**

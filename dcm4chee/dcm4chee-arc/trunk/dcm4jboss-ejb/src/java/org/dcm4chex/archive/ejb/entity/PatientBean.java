@@ -49,8 +49,10 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.util.Convert;
@@ -322,6 +324,13 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
+        setAttributesInternal(filter.filter(ds.excludePrivate()),
+                filter.getTransferSyntaxUID());
+    }
+
+    private void setAttributesInternal(Dataset ds, String tsuid) {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
@@ -342,8 +351,26 @@ public abstract class PatientBean implements EntityBean {
 	        log.warn("Illegal Patient Birth Date format: " + e.getMessage());
 	    }
         setPatientSex(ds.getString(Tags.PatientSex));
-        Dataset tmp = ds.excludePrivate();
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
+    }
+    
+    /**
+     * @throws DcmServiceException 
+     * @ejb.interface-method
+     */
+    public void coerceAttributes(Dataset ds, Dataset coercedElements)
+    throws DcmServiceException {
+        Dataset attrs = getAttributes(false);
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
+        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
+        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        }
     }
 
     private static String toUpperCase(String s) {

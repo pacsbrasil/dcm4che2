@@ -59,7 +59,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
@@ -149,9 +148,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  view-type="local"
  *  ref-name="ejb/PrivateFile" 
  *  
- * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- *                value="resource:dcm4chee-attribute-filter.xml"
- *  
  */
 public abstract class PrivateManagerBean implements SessionBean {
 
@@ -170,7 +166,6 @@ public abstract class PrivateManagerBean implements SessionBean {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
-    private AttributeFilter attrFilter;
     private static Logger log = Logger.getLogger( PrivateManagerBean.class.getName() );
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
@@ -194,12 +189,9 @@ public abstract class PrivateManagerBean implements SessionBean {
             privSeriesHome = (PrivateSeriesLocalHome) jndiCtx
             		.lookup("java:comp/env/ejb/PrivateSeries");
             privInstHome = (PrivateInstanceLocalHome) jndiCtx
-    		.lookup("java:comp/env/ejb/PrivateInstance");
+    		        .lookup("java:comp/env/ejb/PrivateInstance");
             privFileHome = (PrivateFileLocalHome) jndiCtx
-    		.lookup("java:comp/env/ejb/PrivateFile");
-            
-            attrFilter = new AttributeFilter((String) jndiCtx
-                    .lookup("java:comp/env/AttributeFilterConfigURL"));
+    		        .lookup("java:comp/env/ejb/PrivateFile");
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {

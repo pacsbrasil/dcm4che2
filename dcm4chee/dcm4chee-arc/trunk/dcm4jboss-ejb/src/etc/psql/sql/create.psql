@@ -59,7 +59,7 @@ CREATE TABLE study (
 	fileset_iuid	TEXT,
 	fileset_id		TEXT,
 	availability	INTEGER NOT NULL,
-	status			INTEGER NOT NULL,
+	study_status	INTEGER NOT NULL,
 	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -131,6 +131,7 @@ CREATE TABLE series (
 	fileset_iuid	TEXT,
 	fileset_id		TEXT,
 	availability	INTEGER NOT NULL,
+	series_status	INTEGER NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	series_attrs	BYTEA,
@@ -147,6 +148,7 @@ CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
+CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);
 
 CREATE TABLE series_req (
@@ -188,6 +190,8 @@ CREATE TABLE instance (
 	ext_retr_aet		TEXT,
 	retrieve_aets		TEXT,
 	availability		INTEGER NOT NULL,
+	inst_status			INTEGER NOT NULL,
+	no_file				BOOLEAN NOT NULL,
 	commitment			BOOLEAN NOT NULL,
 	created_time	    TIMESTAMP,
 	updated_time	    TIMESTAMP,
@@ -207,6 +211,7 @@ CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
+CREATE INDEX instance_status ON study(inst_status);
 
 CREATE TABLE filesystem (
 	pk          	SERIAL NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,

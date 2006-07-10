@@ -55,6 +55,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.GPSPSPriority;
 import org.dcm4chex.archive.common.GPSPSStatus;
@@ -438,7 +439,12 @@ public abstract class GPSPSBean implements EntityBean {
         setInputAvailabilityFlag(ds.getString(Tags.InputAvailabilityFlag));
         setSpsStartDateTime(toTimestamp(ds.getDate(Tags.SPSStartDateAndTime)));
         setExpectedCompletionDateTime(toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
-        setEncodedAttributes(DatasetUtils.toByteArray(ds));
+        byte[] b = DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "]");
+        }
+        setEncodedAttributes(b);
     }
 
     /**

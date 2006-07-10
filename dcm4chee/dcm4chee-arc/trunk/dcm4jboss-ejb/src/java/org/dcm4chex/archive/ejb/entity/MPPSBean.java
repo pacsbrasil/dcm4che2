@@ -52,6 +52,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
@@ -348,7 +349,12 @@ public abstract class MPPSBean implements EntityBean {
 		} catch (FinderException e) {
 			throw new EJBException(e);
 		}
-		setEncodedAttributes(DatasetUtils.toByteArray(ds));
+        byte[] b = DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
 	}
 
 	/**

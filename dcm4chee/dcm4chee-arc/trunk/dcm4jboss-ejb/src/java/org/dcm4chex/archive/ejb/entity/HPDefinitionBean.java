@@ -112,8 +112,6 @@ public abstract class HPDefinitionBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, HPLocal hp)
             throws CreateException {
         setHP(hp);
-        DcmElement sq;
-        Collection c;
         try {
             initCodes(ds.get(Tags.AnatomicRegionSeq),
                     getAnatomicRegionCodes());

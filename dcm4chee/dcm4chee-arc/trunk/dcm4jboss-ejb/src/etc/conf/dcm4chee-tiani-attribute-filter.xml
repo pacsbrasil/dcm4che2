@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dcm4chee-attribute-filter SYSTEM "dcm4chee-attribute-filter.dtd">
 <dcm4chee-attribute-filter>
-    <filter level="PATIENT">
+    <patient>
         <attr tag="00080005"/> <!-- Specific Character Set -->
         <attr tag="00100010"/> <!--  Patient's Name -->
         <attr tag="00100020"/> <!--  Patient ID -->
@@ -9,8 +9,8 @@
         <attr tag="00100030"/> <!-- Patient's Birth Date -->
         <attr tag="00100040"/> <!-- Patient's Sex -->
         <attr tag="00102160"/> <!-- Patient Comments -->
-    </filter>
-    <filter level="STUDY">
+    </patient>
+    <study>
         <attr tag="00080005"/> <!-- Specific Character Set -->
         <attr tag="00080020"/> <!-- Study Date -->
         <attr tag="00080030"/> <!-- Study Time -->
@@ -22,8 +22,8 @@
         <attr tag="00200010"/> <!-- Study ID -->
         <attr tag="00402016"/> <!-- Placer Order Number -->
         <attr tag="00402017"/> <!-- Filler Order Number -->
-    </filter>
-    <filter level="SERIES">
+    </study>
+    <series>
         <attr tag="00080005"/> <!-- Specific Character Set -->
         <attr tag="00080021"/> <!-- Series Date -->
         <attr tag="00080031"/> <!-- Series Time -->
@@ -59,8 +59,8 @@
         <attr tag="00430010"/> <!-- Private Creator ID: dcm4che/archive -->
         <attr tag="00430014"/> <!-- Calling AET (dcm4che/archive private Tag)-->
         <attr tag="00541001"/> <!-- Units -->
-    </filter>
-    <filter level="IMAGE">
+    </series>
+    <instance>
         <attr tag="00080005"/> <!-- Specific Character Set -->
         <attr tag="00080008"/> <!-- Image Type -->
         <attr tag="00080013"/> <!-- Instance Creation Time -->
@@ -236,5 +236,5 @@
         <attr tag="60060100"/> <!-- Overlay bits allocated, Overlay 4 -->
         <attr tag="60060102"/> <!-- Overlay bit position, Overlay 4 -->
         <attr tag="60061500"/> <!-- Overlay label, Overlay 4 -->
-    </filter>
+    </instance>
 </dcm4chee-attribute-filter>

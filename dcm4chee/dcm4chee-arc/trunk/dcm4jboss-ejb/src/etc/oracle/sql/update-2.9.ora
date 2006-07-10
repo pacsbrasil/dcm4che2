@@ -3,9 +3,14 @@
 ALTER TABLE priv_patient ADD pat_name VARCHAR2(255);
 ALTER TABLE priv_study ADD accession_no VARCHAR2(255);
 ALTER TABLE priv_series ADD src_aet VARCHAR2(255);
-ALTER TABLE study ADD status NUMBER(38,0) NOT NULL;
+ALTER TABLE study ADD study_status NUMBER(38,0) NOT NULL DEFAULT 0;
+ALTER TABLE series ADD series_status NUMBER(38,0) NOT NULL DEFAULT 0;
+ALTER TABLE instance ADD inst_status NUMBER(38,0) NOT NULL DEFAULT 0;
+ALTER TABLE instance ADD no_file NUMBER(1) NOT NULL DEFAULT 0;
 
 CREATE INDEX priv_patient_name ON priv_patient(pat_name);
 CREATE INDEX priv_study_accession_no ON priv_study(accession_no);
 CREATE INDEX priv_series_src_aet ON priv_series(src_aet);
-CREATE INDEX study_status ON study(status);
+CREATE INDEX study_status ON study(study_status);
+CREATE INDEX series_status ON series(series_status);
+CREATE INDEX inst_status ON instance(inst_status);

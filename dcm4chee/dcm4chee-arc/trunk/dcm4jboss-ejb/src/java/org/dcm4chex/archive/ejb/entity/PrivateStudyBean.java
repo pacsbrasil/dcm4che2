@@ -43,9 +43,10 @@ package org.dcm4chex.archive.ejb.entity;
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
 
@@ -68,7 +69,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
  *             transaction-type="Supports"
  */
 public abstract class PrivateStudyBean implements EntityBean {
-
+    private static final Logger log = Logger.getLogger(PrivateStudyBean.class);
     /**
      * @ejb.create-method
      */
@@ -126,8 +127,7 @@ public abstract class PrivateStudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                null, DcmDecodeParam.EVR_LE);
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         return ds;
     }
 
@@ -138,8 +138,7 @@ public abstract class PrivateStudyBean implements EntityBean {
     	setStudyIuid(ds.getString(Tags.StudyInstanceUID));
     	setAccessionNumber(ds.getString(Tags.AccessionNumber));
         Dataset tmp = ds.excludePrivate();
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp,
-                DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
 
 

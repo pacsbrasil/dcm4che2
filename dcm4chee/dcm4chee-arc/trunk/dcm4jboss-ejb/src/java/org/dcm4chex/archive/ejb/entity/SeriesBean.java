@@ -58,9 +58,11 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
@@ -343,6 +345,19 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
+     * Series Status
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="series_status"
+     */
+    public abstract int getSeriesStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setSeriesStatus(int status);
+    
+    /**
      * @ejb.interface-method
      * @ejb.relation name="study-series" role-name="series-of-study"
      *               cascade-delete="yes"
@@ -579,6 +594,13 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+        setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
+                filter.getTransferSyntaxUID());
+    }
+    
+    private void setAttributesInternal(Dataset ds, String tsuid) {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
@@ -596,9 +618,28 @@ public abstract class SeriesBean implements EntityBean {
             final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
             setPpsIuid(ppsUID);
         }
-        Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
-        setEncodedAttributes(DatasetUtils.toByteArray(tmp));
+        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        if (log.isDebugEnabled()) {
+            log.debug("setEncodedAttributes(byte[" + b.length + "])");
+        }
+        setEncodedAttributes(b);
     }
+
+    /**
+     * @throws DcmServiceException 
+     * @ejb.interface-method
+     */
+    public void coerceAttributes(Dataset ds, Dataset coercedElements)
+    throws DcmServiceException {
+        Dataset attrs = getAttributes(false);
+        String cuid = ds.getString(Tags.SOPClassUID);
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
+        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        }
+    }
+
 
     private static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : null;

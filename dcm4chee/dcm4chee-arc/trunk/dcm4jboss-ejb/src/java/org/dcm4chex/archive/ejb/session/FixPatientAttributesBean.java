@@ -52,7 +52,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -89,27 +88,13 @@ public abstract class FixPatientAttributesBean implements SessionBean {
 
 	private static Logger log = Logger.getLogger(FixPatientAttributesBean.class);
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
     private PatientLocalHome patHome;
 
-    private AttributeFilter attrFilter;
-
-    private SessionContext sessionCtx;
-
     public void setSessionContext(SessionContext ctx) {
-        sessionCtx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            patHome = (PatientLocalHome) jndiCtx
-            .lookup("java:comp/env/ejb/Patient");
-            attrFilter = new AttributeFilter((String) jndiCtx
-                    .lookup("java:comp/env/AttributeFilterConfigURL"));
-            try {
-            } catch ( Throwable t ) {
-            	t.printStackTrace();
-            }
+            patHome = (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
@@ -125,7 +110,6 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
-        sessionCtx = null;
         patHome = null;
     }
     
@@ -150,10 +134,11 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     	PatientLocal patient;
     	Dataset patAttrs, filtered;
     	int[] result = { 0, 0 };
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
     	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
 			patient = (PatientLocal) iter.next();
 			patAttrs = patient.getAttributes(false);
-			filtered = patAttrs.subSet(attrFilter.getPatientFilter());
+			filtered = filter.filter(patAttrs);
 			if (patAttrs.size() > filtered.size()) {
 			    log.warn("Detect Patient Record [pk= " + patient.getPk() +
 			    		"] with non-patient attributes:");
