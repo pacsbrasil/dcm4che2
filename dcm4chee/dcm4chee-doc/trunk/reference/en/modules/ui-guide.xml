@@ -55,11 +55,7 @@
   <section>
     <title>User Login</title>
 
-    <para>For log-on to the system the user must type in Username and
-    Password.</para>
-
-    <figure>
-      <title>User Login</title>
+    <para>Users must enter their Username and Password to gain access to the system.</para>
 
       <mediaobject>
         <imageobject role="fo">
@@ -69,9 +65,8 @@
             <imagedata fileref="../shared/images/user_login.png" format="PNG"  align="center"/>
         </imageobject>
       </mediaobject>
-    </figure>
 
-    <para>The user is log-on to the system until the web-browser is closed,
+    <para>After logging in, the user will remain logged in until the web-browser is closed,
     which means, that the user can go to other web-sites and back to
     dcm4chee-web without doing a new log-on to the system. The user should be
     aware of the security issues having a browser open that is log-on to the
@@ -115,18 +110,14 @@
       </varlistentry>
     </variablelist>
 
-    <figure>
-      <title>Folder</title>
-
       <mediaobject>
         <imageobject role="fo">
-            <imagedata fileref="images/folder.png" format="PNG" scalefit="1" align="center"/>
+            <imagedata fileref="images/folder.gif" format="GIF" scalefit="1" align="center"/>
         </imageobject>
         <imageobject role="html">
-            <imagedata fileref="../shared/images/folder.png" format="PNG"  scalefit="1" align="center"/>
+            <imagedata fileref="../shared/images/folder.gif" format="GIF"  scalefit="1" align="center"/>
         </imageobject>
       </mediaobject>
-    </figure>
 
     <section>
       <title>Study List</title>
@@ -289,25 +280,19 @@
       <para>All fields are case sensitive – except the Patient Name
       Field.</para>
 
-      <figure pgwide="0">
-        <title>Search Filter</title>
-
         <mediaobject>
           <imageobject role="fo">
-            <imagedata fileref="images/folder.png" format="PNG" align="center"/>
+            <imagedata fileref="images/search_input.gif" format="GIF" align="center"/>
         </imageobject>
         <imageobject role="html">
-            <imagedata fileref="../shared/images/folder.png" format="PNG"  align="center"/>
+            <imagedata fileref="../shared/images/search_input.gif" format="GIF"  align="center"/>
         </imageobject>
         </mediaobject>
-      </figure>
 
-      <para>The above figure shows a search for patients named starting with
-      “M*”.</para>
     </section>
 
     <section>
-      <title>Functions Buttons</title>
+      <title>function Buttons</title>
 
       <para>The buttons for functions in dcm4chee-web can be divided into two
       – the buttons placed in the header section of the window, and the
@@ -430,9 +415,6 @@
             </varlistentry>
           </variablelist>
 
-          <figure>
-            <title>New Patient</title>
-
             <mediaobject>
               <imageobject role="fo">
                     <imagedata fileref="images/new_pat.png" format="PNG"  align="center"/>
@@ -441,7 +423,6 @@
                     <imagedata fileref="../shared/images/new_pat.png" format="PNG"  align="center"/>
                 </imageobject>
             </mediaobject>
-          </figure>
         </section>
 
         <section>
@@ -459,18 +440,14 @@
           The boxes will now contain a checkmark. It is not possible to merge
           patients by a checkmark at the study or series level.</para>
 
-          <figure>
-            <title>Select Patients</title>
-
             <mediaobject>
               <imageobject role="fo">
-                    <imagedata fileref="images/select_patients.png" format="PNG"  align="center"/>
+                    <imagedata fileref="images/select_patients.gif" format="GIF"  align="center"/>
                 </imageobject>
                 <imageobject role="html">
-                    <imagedata fileref="../shared/images/select_patients.png" format="PNG"  align="center"/>
+                    <imagedata fileref="../shared/images/select_patients.gif" format="GIF"  align="center"/>
                 </imageobject>
             </mediaobject>
-          </figure>
 
           <para>After the patients have been marked in the folder list, click
           on the button “Merge Selected Patients”. This shows the list of
@@ -478,9 +455,6 @@
           checkbox to mark which patient should be the remaining patient.
           Click Merge to merge the patients or Cancel to cancel the
           operation.</para>
-
-          <figure>
-            <title>Patient Merge</title>
 
             <mediaobject>
               <imageobject role="fo">
@@ -490,7 +464,6 @@
                     <imagedata fileref="../shared/images/patient_merge.png" format="PNG"  align="center"/>
                 </imageobject>
             </mediaobject>
-          </figure>
         </section>
 
         <section>
@@ -557,18 +530,14 @@
               </listitem>
             </orderedlist>
 
-            <figure>
-              <title>Move Study</title>
-
               <mediaobject>
                 <imageobject role="fo">
-                    <imagedata fileref="images/move_study.png" format="PNG"  align="center" />
+                    <imagedata fileref="images/move_study.gif" format="GIF"  align="center" />
                 </imageobject>
                 <imageobject role="html">
-                    <imagedata fileref="../shared/images/move_study.png" format="PNG"  align="center" />
+                    <imagedata fileref="../shared/images/move_study.gif" format="GIF"  align="center" />
                 </imageobject>
               </mediaobject>
-            </figure>
           </section>
 
           <section>
@@ -591,18 +560,14 @@
               </listitem>
             </orderedlist>
 
-            <figure>
-              <title>Move Series</title>
-
               <mediaobject>
                 <imageobject role="fo">
-                    <imagedata fileref="images/move_series.png" format="PNG"  align="center" />
+                    <imagedata fileref="images/move_series.gif" format="GIF"  align="center" />
                 </imageobject>
                 <imageobject role="html">
-                    <imagedata fileref="../shared/images/move_series.png" format="PNG"  align="center" />
+                    <imagedata fileref="../shared/images/move_series.gif" format="GIF"  align="center" />
                 </imageobject>
               </mediaobject>
-            </figure>
           </section>
 
           <section>
@@ -625,18 +590,14 @@
               </listitem>
             </orderedlist>
 
-            <figure>
-              <title>Move Instance</title>
-
               <mediaobject>
                 <imageobject role="fo">
-                    <imagedata fileref="images/move_instance.png" format="PNG"  align="center" />
+                    <imagedata fileref="images/move_instance.gif" format="GIF"  align="center" />
                 </imageobject>
                 <imageobject role="html">
-                    <imagedata fileref="../shared/images/move_instance.png" format="PNG"  align="center" />
+                    <imagedata fileref="../shared/images/move_instance.gif" format="GIF"  align="center" />
                 </imageobject>
               </mediaobject>
-            </figure>
           </section>
         </section>
 
@@ -651,21 +612,17 @@
             </inlinemediaobject> Export Teaching Files</title>
 
           <para>To export an entity or several entities (patient, study,
-          series, or instance/image) click the check checkbox next to the line
-          or lines to mark the entity/entities..</para>
-
-          <figure>
-            <title>Select Teaching Files</title>
+          series, or instance/image) click the checkbox next to the line
+          or lines to mark the entity/entities.</para>
 
             <mediaobject>
               <imageobject role="fo">
-                    <imagedata fileref="images/select_teaching_files.png" format="PNG"  align="center"/>
+                    <imagedata fileref="images/select_teaching_files.gif" format="GIF"  align="center"/>
                 </imageobject>
                 <imageobject role="html">
-                    <imagedata fileref="../shared/images/select_teaching_files.png" format="PNG"  align="center"/>
+                    <imagedata fileref="../shared/images/select_teaching_files.gif" format="GIF"  align="center"/>
                 </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Export selected instances to Teaching File
           Sytem” to export the entity or entities marked.</para>
@@ -673,9 +630,6 @@
           <para>In the next window you can select different export options and
           define optional included additional Teaching File
           Information.</para>
-
-          <figure>
-            <title>Export Teaching Files</title>
 
             <mediaobject>
               <imageobject role="fo">
@@ -685,7 +639,6 @@
                     <imagedata fileref="../shared/images/export_teaching_files.png" format="PNG"  align="center"/>
                 </imageobject>
             </mediaobject>
-          </figure>
         </section>
 
         <section>
@@ -702,9 +655,6 @@
           <para>To register an image document set click the checkbox next to
           the line or lines to mark the entity/entities.</para>
 
-          <figure>
-            <title>Select for XDS</title>
-
             <mediaobject>
               <imageobject role="fo">
                     <imagedata fileref="images/select_for_xds.png" format="PNG"  align="center" />
@@ -712,14 +662,10 @@
                 <imageobject role="html">
                     <imagedata fileref="../shared/images/select_for_xds.png" format="PNG"  align="center" />
                 </imageobject>
-            </mediaobject>
-          </figure>
+            </mediaobject> 
 
           <para>In the next window you can edit your XDS-I metadata, which
           will be exported with selected entities as a Key Object.</para>
-
-          <figure>
-            <title>Export to XDS</title>
 
             <mediaobject>
               <imageobject role="fo">
@@ -729,7 +675,6 @@
                     <imagedata fileref="../shared/images/export_xds.png" format="PNG"  align="center" />
                 </imageobject>
             </mediaobject>
-          </figure>
         </section>
 
         <section>
@@ -746,10 +691,7 @@
           series, or instance/image) click the checkbox next to the line or
           lines to mark the entity/entities.</para>
 
-          <figure>
-            <title>Select For Trash</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                     <imagedata fileref="images/select_for_trash.png" format="PNG"  align="center" />
                 </imageobject>
@@ -757,24 +699,11 @@
                     <imagedata fileref="../shared/images/select_for_trash.png" format="PNG"  align="center" />
                 </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Delete Selected Entities” to delete the
           entity or entities marked. Confirm or cancel the operation by
-          clicking the appropriate button in the pop-up window.</para>
+          clicking the appropriate button in the ensuing confirmation pop-up window.</para>
 
-          <figure>
-            <title>Confirm Delete</title>
-
-            <mediaobject>
-              <imageobject role="fo">
-                    <imagedata fileref="images/confirm_delete.png" format="PNG"  />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/confirm_delete.png" format="PNG"  />
-                </imageobject>
-            </mediaobject>
-          </figure>
         </section>
 
         <section>
@@ -792,10 +721,7 @@
           delete. Then you press the “Delete selected Entities” button to
           delete the entities irrevocably.</para>
 
-          <figure>
-            <title>Select for Delete</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                     <imagedata fileref="images/select_for_delete.png" format="PNG"  align="center" />
                 </imageobject>
@@ -803,7 +729,6 @@
                     <imagedata fileref="../shared/images/select_for_delete.png" format="PNG"  align="center" />
                 </imageobject>
             </mediaobject>
-          </figure>
         </section>
 
         <section>
@@ -838,10 +763,7 @@
           <para>From the drop-down menu choose which AE Title to send the
           entity or entities to.</para>
 
-          <figure>
-            <title>Select forSend</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                     <imagedata fileref="images/select_for_send.png" format="PNG"  align="center" />
                 </imageobject>
@@ -849,25 +771,12 @@
                     <imagedata fileref="../shared/images/select_for_send.png" format="PNG"  align="center" />
                 </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Send Selected Entities to Specified
           Destination” to send the entity or entities marked. Confirm or
           cancel the operation by clicking the appropriate button in the
-          pop-up window.</para>
+          ensuing confirmation pop-up window.</para>
 
-          <figure>
-            <title>Confirm Send</title>
-
-            <mediaobject>
-              <imageobject role="fo">
-                    <imagedata fileref="images/confirm_send.png" format="PNG"  />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/confirm_send.png" format="PNG"  />
-                </imageobject>
-            </mediaobject>
-          </figure>
         </section>
       </section>
 
@@ -887,10 +796,7 @@
           <para>Click the button “Edit Patients Attributes” to edit patient
           information.</para>
 
-          <figure>
-            <title>Edit Patient Attributes</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                 <imagedata fileref="images/edit_patient.png" format="PNG"  align="center" />
               </imageobject>
@@ -898,7 +804,6 @@
                     <imagedata fileref="../shared/images/edit_patient.png" format="PNG"  align="center" />
                 </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Update” to update the patient attributes or
           “Cancel” to quit without updating the attributes.</para>
@@ -917,10 +822,7 @@
           <para>Click the button “Edit Study Attributes” to edit study
           information.</para>
 
-          <figure>
-            <title>Edit Study Attributes</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                 <imagedata fileref="images/edit_study.png" format="PNG"  align="center" />
               </imageobject>
@@ -928,7 +830,6 @@
                     <imagedata fileref="../shared/images/edit_study.png" format="PNG"  align="center" />
                 </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Update” to update the study attributes or
           “Cancel” to quit without updating the attributes.</para>
@@ -947,10 +848,7 @@
           <para>Click the button “Edit Series Attributes” to edit series
           information.</para>
 
-          <figure>
-            <title>Edit Series Attributes</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                 <imagedata fileref="images/edit_series.png" format="PNG"  align="center" />
               </imageobject>
@@ -958,7 +856,6 @@
                 <imagedata fileref="../shared/images/edit_series.png" format="PNG"  align="center" />
               </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Update” to update the series attributes or
           “Cancel” to quit without updating the attributes.</para>
@@ -982,10 +879,7 @@
           <para>All fields can contain alphanumeric characters, except the
           Date/Time field, where the format yyyy/mm/dd should be used.</para>
 
-          <figure>
-            <title>Add New Study</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                 <imagedata fileref="images/new_study.png" format="PNG"  align="center" />
               </imageobject>
@@ -993,7 +887,6 @@
                 <imagedata fileref="../shared/images/new_study.png" format="PNG"  align="center" />
               </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Add Study” to add the new study or “Cancel”
           to quit without adding a new study.</para>
@@ -1017,10 +910,7 @@
           <para>All fields can contain alphanumeric characters, except the
           Date/Time field, where the format yyyy/mm/dd should be used.</para>
 
-          <figure>
-            <title>Add New Series</title>
-
-            <mediaobject>
+           <mediaobject>
               <imageobject role="fo">
                 <imagedata fileref="images/new_series.png" format="PNG"  align="center" />
               </imageobject>
@@ -1028,7 +918,6 @@
                 <imagedata fileref="../shared/images/new_series.png" format="PNG"  align="center" />
               </imageobject>
             </mediaobject>
-          </figure>
 
           <para>Click the button “Add Series” to add the new series or
           “Cancel” to quit without adding a new series.</para>
@@ -1120,10 +1009,7 @@
     <para>After clicking on AE Management, the following window will be
     shown:</para>
 
-    <figure>
-      <title>AE List</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/ae_list.png" format="PNG"  align="center" />
         </imageobject>
@@ -1131,7 +1017,6 @@
           <imagedata fileref="../shared/images/ae_list.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <variablelist>
       <varlistentry>
@@ -1180,10 +1065,7 @@
       </inlinemediaobject> (Add New AET), and the window for creating a new
     AET opens.</para>
 
-    <figure>
-      <title>New AE</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/new_ae.png" format="PNG"  align="center" />
         </imageobject>
@@ -1191,13 +1073,12 @@
           <imagedata fileref="../shared/images/new_ae.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <para>Fill in the appropriate information for AE Title, Hostname (or
     IP-Address), Port number, and Cipher (for TLS connections over an
     un-trusted network connection). Be careful to type in the right
-    information - dcm4chee-web does only check if the Port number is a number
-    (if not the value is changed to “0”). Click on Create to create the entry
+    information - dcm4chee-web only checks if the Port number is a number
+    (if not, the value is changed to “0”). Click on Create to create the entry
     in the AET-list or Cancel to leave without creating the entry in the
     AET-list.</para>
 
@@ -1262,10 +1143,7 @@
       </inlinemediaobject> (Edit), and the information for this entry is
     shown.</para>
 
-    <figure>
-      <title>Edit AE</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/edit_ae.png" format="PNG"  align="center" />
         </imageobject>
@@ -1273,7 +1151,6 @@
           <imagedata fileref="../shared/images/edit_ae.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <para>After changing the information click Apply Changes to apply the new
     information to the AET-list or Cancel to leave without changing the
@@ -1286,35 +1163,18 @@
         <imageobject role="html">
           <imagedata fileref="../shared/images/delete.gif" format="GIF"  />
         </imageobject>
-      </inlinemediaobject> (Delete), and confirm deletion by a click on OK in
-    the pop-up window. To cancel deletion click Cancel.</para>
+      </inlinemediaobject> (Delete) icon and click OK in
+    the ensuing confirmation pop-up window. To cancel the deletion click the Cancel button.</para>
 
-    <figure>
-      <title>Confirm AE Delete</title>
-
-      <mediaobject>
-        <imageobject role="fo">
-          <imagedata fileref="images/confirm_ae_delete.png" format="PNG"  />
-        </imageobject>
-        <imageobject role="html">
-          <imagedata fileref="../shared/images/confirm_ae_delete.png" format="PNG"  />
-        </imageobject>
-      </mediaobject>
-    </figure>
-
-    <para></para>
   </section>
 
   <section>
-    <title>OThe ID of the Scheduled Procedure Step IDffline Storage</title>
+    <title>Offline Storage</title>
 
     <para>This page shows the information of the off-line storage filesets
     (media).</para>
 
-    <figure>
-      <title>Offline Storage</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/offline_storage.png" format="PNG"  align="center" />
         </imageobject>
@@ -1322,7 +1182,6 @@
           <imagedata fileref="../shared/images/offline_storage.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <para>There are several search parameters to choose between or
     combine.</para>
@@ -1549,18 +1408,14 @@
       actitvation of the burning process, the administrator will only have to
       check the job status occasionally.</para>
 
-      <figure>
-        <title>Check Media Creation Status</title>
-
-        <mediaobject>
+       <mediaobject>
           <imageobject role="fo">
-            <imagedata fileref="images/offline_storage_check_status.png" format="PNG" align="center" />
+            <imagedata fileref="images/offline_storage_check_status.gif" format="GIF" align="center" />
           </imageobject>
           <imageobject role="html">
-            <imagedata fileref="../shared/images/offline_storage_check_status.png" format="PNG"  align="center" />
+            <imagedata fileref="../shared/images/offline_storage_check_status.gif" format="GIF"  align="center" />
           </imageobject>
         </mediaobject>
-      </figure>
 
       <para>If a media has a status of failed <inlinemediaobject>
           <imageobject role="fo">
@@ -1587,10 +1442,7 @@
     <para>This console is the tool to administrate the modality worklist
     information.</para>
 
-    <figure>
-      <title>Worklist Console</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/mwl_console.png" format="PNG"  align="center" />
         </imageobject>
@@ -1598,7 +1450,6 @@
           <imagedata fileref="../shared/images/mwl_console.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <para>By use of one or several search fields it is possible to search for
     specific information in the database. The search fields are:</para>
@@ -1807,10 +1658,7 @@
     logical parts. The content of each part will be described below the
     figure.</para>
 
-    <figure>
-      <title>MPPS Console</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/mpps_console.png" format="PNG"  align="center" />
         </imageobject>
@@ -1818,7 +1666,6 @@
           <imagedata fileref="../shared/images/mpps_console.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <para>By use of one or several search fields it is possible to search for
     specific information in the database. The search fields are:</para>
@@ -1998,10 +1845,7 @@
 
     <para>The first window gives a list of users defined in the system.</para>
 
-    <figure>
-      <title>User Administration</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/user_admin.png" format="PNG"  align="center" />
         </imageobject>
@@ -2009,7 +1853,6 @@
           <imagedata fileref="../shared/images/user_admin.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <para>For each user the roles are shown. The four roles that can be
     combined for each user are:</para>
@@ -2066,10 +1909,7 @@
         </inlinemediaobject> (add new user) and fill in the appropriate
       information in the following window:</para>
 
-      <figure>
-        <title>New User</title>
-
-        <mediaobject>
+       <mediaobject>
           <imageobject role="fo">
             <imagedata fileref="images/new_user.png" format="PNG"  align="center" />
           </imageobject>
@@ -2077,7 +1917,6 @@
             <imagedata fileref="../shared/images/new_user.png" format="PNG"  align="center" />
           </imageobject>
         </mediaobject>
-      </figure>
 
       <para>The entries are:</para>
 
@@ -2175,10 +2014,7 @@
           </imageobject>
         </inlinemediaobject> (Edit) next to the user.</para>
 
-      <figure>
-        <title>Edit User Profile</title>
-
-        <mediaobject>
+       <mediaobject>
           <imageobject role="fo">
             <imagedata fileref="images/edit_user.png" format="PNG"  align="center" />
           </imageobject>
@@ -2186,10 +2022,9 @@
             <imagedata fileref="../shared/images/edit_user.png" format="PNG"  align="center" />
           </imageobject>
         </mediaobject>
-      </figure>
 
-      <para>The roles are check or uncheck by clicking in the appropriate
-      boxes. A <inlinemediaobject>
+      <para>The roles are checked or unchecked by clicking in the appropriate
+      box. A <inlinemediaobject>
           <imageobject role="fo">
             <imagedata fileref="images/checkmcm.gif" format="GIF"  />
           </imageobject>
@@ -2258,10 +2093,7 @@
           </imageobject>
         </inlinemediaobject> (Delete) next to the user.</para>
 
-      <figure>
-        <title>Confirm Delete</title>
-
-        <mediaobject>
+       <mediaobject>
           <imageobject role="fo">
             <imagedata fileref="images/confirm_user_delete.png" format="PNG"  />
           </imageobject>
@@ -2269,7 +2101,6 @@
             <imagedata fileref="../shared/images/confirm_user_delete.png" format="PNG"  />
           </imageobject>
         </mediaobject>
-      </figure>
 
       <para>Press OK to delete the user or Cancel to quit without deleting the
       user.</para>
@@ -2300,10 +2131,7 @@
       </listitem>
     </itemizedlist>
 
-    <figure>
-      <title>Aidt Record Repository List View</title>
-
-      <mediaobject>
+     <mediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/arr_list_view.png" format="PNG"  align="center" />
         </imageobject>
@@ -2311,7 +2139,6 @@
           <imagedata fileref="../shared/images/arr_list_view.png" format="PNG"  align="center" />
         </imageobject>
       </mediaobject>
-    </figure>
 
     <section>
       <title>List Section</title>
@@ -2600,10 +2427,7 @@
       parameters for the event. The parameters will be different for different
       types of events.</para>
 
-      <figure>
-        <title>Audit Record Detailed View</title>
-
-        <mediaobject>
+       <mediaobject>
           <imageobject role="fo">
             <imagedata fileref="images/arr_detail_view.png" format="PNG"  align="center" />
           </imageobject>
@@ -2611,22 +2435,18 @@
             <imagedata fileref="../shared/images/arr_detail_view.png" format="PNG"  align="center" />
           </imageobject>
         </mediaobject>
-      </figure>
 
       <para>The information can also be shown in XML format.</para>
 
-      <figure>
-        <title>Audit Record XML View</title>
-
-        <mediaobject>
+       <mediaobject>
           <imageobject role="fo">
             <imagedata fileref="images/arr_xml_view.png" format="PNG"  align="center" />
           </imageobject>
           <imageobject role="html">
-            <imagedata fileref="../shared/images/arr_xml_view.png" format="PNG"  align="center" />
-          </imageobject>
+            <imagedata fileref="../shared/images/arr_xml_view.png" format="PNG" align="center" />
+         </imageobject>
         </mediaobject>
-      </figure>
+ 
     </section>
   </section>
 </chapter>
