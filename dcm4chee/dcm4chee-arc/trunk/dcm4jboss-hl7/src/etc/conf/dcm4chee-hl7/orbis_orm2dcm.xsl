@@ -65,15 +65,15 @@
   <!--  OBR[1] -->
   <xsl:template match="OBR[1]">
     <xsl:variable name="ordno" select="field[3]/text()"/>
-    <!-- HL7:Filer Order Number -> DICOM:Placer Order Number -->
+    <!-- HL7:Filler Order Number -> DICOM:Placer Order Number -->
     <attr tag="00402016" vr="LO">
       <xsl:value-of select="$ordno"/>
     </attr>
-    <!-- HL7:Filer Order Number -> DICOM:Filler Order Number -->
+    <!-- HL7:Filler Order Number -> DICOM:Filler Order Number -->
     <attr tag="00402017" vr="LO">
       <xsl:value-of select="$ordno"/>
     </attr>
-     <!-- HL7:Filer Order Number -> DICOM:Accession Number -->
+     <!-- HL7:Filler Order Number -> DICOM:Accession Number -->
     <attr tag="00080050" vr="SH">
       <xsl:value-of select="$ordno"/>
     </attr>
