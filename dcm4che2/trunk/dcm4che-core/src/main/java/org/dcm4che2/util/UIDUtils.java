@@ -80,7 +80,7 @@ public class UIDUtils {
         InputStream is;
         if (cl == null 
                 || (is = cl.getResourceAsStream(UIDUTILS_PROPS)) == null) {
-            is = UIDUtils.class.getResourceAsStream(UIDUTILS_PROPS);
+            is = UIDUtils.class.getClassLoader().getResourceAsStream(UIDUTILS_PROPS);
             if (is == null) {
                 throw new ConfigurationError("Missing Resource: "
                         + UIDUTILS_PROPS);
