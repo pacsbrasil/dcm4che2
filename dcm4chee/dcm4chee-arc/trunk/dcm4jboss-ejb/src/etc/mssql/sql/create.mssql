@@ -148,7 +148,7 @@ CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
-CREATE INDEX series_status ON study(series_status);
+CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);
 
 CREATE TABLE series_req (
@@ -210,7 +210,7 @@ CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
-CREATE INDEX inst_status ON study(inst_status);
+CREATE INDEX inst_status ON instance(inst_status);
 
 CREATE TABLE filesystem (
 	pk          	INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,

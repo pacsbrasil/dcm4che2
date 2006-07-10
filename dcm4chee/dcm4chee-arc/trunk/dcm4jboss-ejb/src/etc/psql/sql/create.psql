@@ -211,7 +211,7 @@ CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
-CREATE INDEX instance_status ON study(inst_status);
+CREATE INDEX instance_status ON instance(inst_status);
 
 CREATE TABLE filesystem (
 	pk          	SERIAL NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,

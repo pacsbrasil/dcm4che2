@@ -148,7 +148,7 @@ CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
-CREATE INDEX series_status ON study(series_status);
+CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);
 
 CREATE TABLE series_req (
