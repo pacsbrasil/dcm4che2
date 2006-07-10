@@ -13,4 +13,4 @@ CREATE INDEX priv_study_accession_no ON priv_study(accession_no);
 CREATE INDEX priv_series_src_aet ON priv_series(src_aet);
 CREATE INDEX study_status ON study(study_status);
 CREATE INDEX series_status ON series(series_status);
-CREATE INDEX instance_status ON study(inst_status);
+CREATE INDEX instance_status ON instance(inst_status);
