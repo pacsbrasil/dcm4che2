@@ -5,10 +5,10 @@
   <section>
     <title>Introduction</title>
 
-    <para>The dcm4chee User Interface Guide was written for system administrators, which are
+    <para>The dcm4chee User Interface Guide was written for system administrators
     responsible for the adminstration of dcm4chee archive application.
-    dcm4chee-web is an administration tool of the dcm4chee Archive
-    application. dcm4chee-web will support the user with functionality
+    The unser interface consists of several dynamic web pages, and is named dcm4chee-web.
+    dcm4chee-web contains the following functionality:
     in:</para>
 
     <itemizedlist>
@@ -41,21 +41,14 @@
       </listitem>
     </itemizedlist>
 
-    <para>dcm4chee-web is based on a web-interface, which means that users
-    with a basic knowledge of how to use the functionality in a browser can
-    use the system. This document will not describe the functions in the
-    web-browser in detail, but assumes that the user had this knowledge prior
-    to the use of dcm4che-web.</para>
-
-    <para>The webbrowser used in this document is Firefox version 1.5.0.3.
-    Other browsers can have a slightly different layout and colourchart, but
-    the functionality will be the same as described in this document.</para>
   </section>
 
   <section>
     <title>User Login</title>
 
-    <para>Users must enter their Username and Password to gain access to the system.</para>
+    <para>The default login page for dcm4chee-web is <literal>http://hostname:8080/dcm4chee-web/</literal>.  Upon browsing 
+        to this location, you will be presented with a login screen.  if this is your first time logging into the application, 
+        you may use the username/password combination <literal>admin</literal>/<literal>admin</literal>.</para>
 
       <mediaobject>
         <imageobject role="fo">
@@ -66,20 +59,25 @@
         </imageobject>
       </mediaobject>
 
-    <para>After logging in, the user will remain logged in until the web-browser is closed,
-    which means, that the user can go to other web-sites and back to
-    dcm4chee-web without doing a new log-on to the system. The user should be
-    aware of the security issues having a browser open that is log-on to the
-    system, and therefore we recommend to log out of the system whenever the
-    dcm4chee-web is not in use.</para>
+    <para>After logging in, the user will remain logged in until the web browser is closed.  
+    It is recommended that you log out of the application whenever dcm4chee-web is not 
+    in use.  This will avoid the security issue of having an active, idle session.</para>
   </section>
 
   <section>
     <title>Archive Content Administration</title>
 
-    <para>To administrate the archive content – for example to add or merge
-    patients and to move images and/or studies between patients – click on
+    <para>To administer the archive content (patient, study, and other clinical information) click on
     Folder in the header line of dcm4chee-web.</para>
+    
+    <mediaobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/folder.gif" format="GIF" scalefit="1" align="center"/>
+        </imageobject>
+        <imageobject role="html">
+            <imagedata fileref="../shared/images/folder.gif" format="GIF"  scalefit="1" align="center"/>
+        </imageobject>
+      </mediaobject>
 
     <para>The folder window can be divided into three logical parts:</para>
 
@@ -105,19 +103,10 @@
         <term>Function buttons</term>
 
         <listitem>
-          <para>Invokes particular operations on selected list entires.</para>
+          <para>Invoke operations on selected list entires.</para>
         </listitem>
       </varlistentry>
     </variablelist>
-
-      <mediaobject>
-        <imageobject role="fo">
-            <imagedata fileref="images/folder.gif" format="GIF" scalefit="1" align="center"/>
-        </imageobject>
-        <imageobject role="html">
-            <imagedata fileref="../shared/images/folder.gif" format="GIF"  scalefit="1" align="center"/>
-        </imageobject>
-      </mediaobject>
 
     <section>
       <title>Study List</title>
@@ -138,7 +127,7 @@
         </listitem>
 
         <listitem>
-          <para>Instance (image) – marked with light grey.</para>
+          <para>Instance – marked with light grey.</para>
         </listitem>
 
         <listitem>
@@ -146,16 +135,18 @@
         </listitem>
       </itemizedlist>
 
-      <para>To expand a line for subsequent info lines click on the + sign,
-      and to hide subsequent info lines click on the – sign.</para>
+      <para>To expand the hierarchy of a line item, click on the + sign.
+      To hide the hierarchy beneath a line item, click on the - sign.
+      </para>
 
       <para>In the figure above the patient AAPM Test Pattern has four
-      OT-study with a few series. The second series contains three
-      images.</para>
+      studies containing several OT series. The second series has its instance-level 
+      hierarchy expanded, and contains three DICOM instances.</para>
 
-      <para>The label for a column can be seen on the top of each column. The
-      information at the <emphasis role="bold">Patient</emphasis> level is –
-      all in bold:</para>
+      <para>The label for a column can be seen at the top of each column. The
+      information that is displayed at the <emphasis role="bold">Patient</emphasis> level:</para>
+      
+      <para><emphasis>Note: Patient-level information is always shown in bold type.</emphasis></para>
 
       <itemizedlist>
         <listitem>
@@ -176,7 +167,7 @@
       </itemizedlist>
 
       <para>At the <emphasis role="bold">Study</emphasis> level the
-      information is:</para>
+      information that is displayed:</para>
 
       <itemizedlist>
         <listitem>
@@ -193,6 +184,11 @@
 
         <listitem>
           <para>Study Description/IUID (Instance Unique Identifier)</para>
+          <para>Clicking either Study Description or IUID allows teh user to 
+            toggle between Study Description and IUID information within the column.
+            If Study Instance UID becomes active, the Study ID search field will change 
+            to Study IUID, and vice versa. 
+            </para>
         </listitem>
 
         <listitem>
@@ -208,15 +204,9 @@
         </listitem>
 
         <listitem>
-          <para>Number of Instances/Images</para>
+          <para>Number of Instances</para>
         </listitem>
       </itemizedlist>
-
-      <para>By clicking either Study Description or IUID it is possible to
-      toggle between Study Description and IUID information in the column
-      Study Description/IUID. If Study Instance UID is active the search field
-      Study ID changed to Study IUID. Therewith it is possible to search for a
-      certain study instance UID.</para>
 
       <para>The information at the <emphasis role="bold">Series</emphasis>
       level is:</para>
@@ -237,6 +227,9 @@
         <listitem>
           <para>Series Description/Body Part/IUID (Series Instance Unique
           Identifier)</para>
+          <para>Clicking either Series Description/Body Part or IUID will
+            between the display of Series Description/Body Part and IUID
+            information within the column.</para>
         </listitem>
 
         <listitem>
@@ -248,18 +241,15 @@
         </listitem>
       </itemizedlist>
 
-      <para>By clicking either Series Description/Body Part or IUID it is
-      possible to toggle between Series Description/Body Part and IUID
-      information in the column Series Description/Body Part/IUID.</para>
     </section>
 
     <section id="search_filter_fields">
       <title>Search Filter</title>
 
-      <para>To easily find a record in the study list, a search filter can be
+      <para>To filter the records in the study list, search criteria can be
       specified above the columns labels. It is possible to search for Patient
       Name, Patient ID, Study ID, Study Data, Accession Number, Modality, or a
-      combination of these. To perform a search just press “Return” on the
+      combination thereof. To perform a search just press "Return" on the
       keyboard or click the New Search button. The result of the search will
       be displayed in the list. If the list contains more than ten studies
       (records), the first ten records will be shown. To show the next ten
@@ -268,7 +258,7 @@
       and the total amount of matching records can be seen in the status line
       – ex.:</para>
 
-      <para>“Displaying studies 1 to 10 of 29 matching studies”</para>
+      <para>"Displaying studies 1 to 10 of 29 matching studies"</para>
 
       <para>The search can include a specific entry or part of an entry
       truncated with a question mark (?) or an asterisk (*). A search
@@ -292,7 +282,7 @@
     </section>
 
     <section>
-      <title>function Buttons</title>
+      <title>Function Buttons</title>
 
       <para>The buttons for functions in dcm4chee-web can be divided into two
       – the buttons placed in the header section of the window, and the
@@ -316,7 +306,7 @@
 
           <para>After typing in the search string in the related fields, a
           click on this button will perform a search in the database. As an
-          alternative, the “Return” button on the keyboard will also perform a
+          alternative, the "Return" button on the keyboard will also perform a
           search. For a more detailed description of the search field see
           <xref linkend="search_filter_fields" />.</para>
         </section>
@@ -436,7 +426,7 @@
             </inlinemediaobject> Merge Selected Patient</title>
 
           <para>To merge two (or more) patients in dcm4chee-web, the patients
-          must be marked with a click in the checkbox next to the patients.
+          must be marked (selected) by clicking the checkbox next to the patients.
           The boxes will now contain a checkmark. It is not possible to merge
           patients by a checkmark at the study or series level.</para>
 
@@ -450,7 +440,7 @@
             </mediaobject>
 
           <para>After the patients have been marked in the folder list, click
-          on the button “Merge Selected Patients”. This shows the list of
+          on the button "Merge Selected Patients". This shows the list of
           patients that will be merged. In the column Patient ID click the
           checkbox to mark which patient should be the remaining patient.
           Click Merge to merge the patients or Cancel to cancel the
@@ -476,7 +466,7 @@
                 </imageobject>
             </inlinemediaobject> Move Selected Items</title>
 
-          <para>To move one or several items the source and the destination
+          <para>To move one or several items, the source and the destination
           must be selected. To select a source or a destination just mark it
           in the checkbox next to the entity.</para>
 
@@ -525,19 +515,11 @@
               </listitem>
 
               <listitem>
-                <para>Click the button “Move Selected Items” to perform the
+                <para>Click the "Move Selected Items" button to perform the
                 move.</para>
               </listitem>
             </orderedlist>
 
-              <mediaobject>
-                <imageobject role="fo">
-                    <imagedata fileref="images/move_study.gif" format="GIF"  align="center" />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/move_study.gif" format="GIF"  align="center" />
-                </imageobject>
-              </mediaobject>
           </section>
 
           <section>
@@ -555,49 +537,31 @@
               </listitem>
 
               <listitem>
-                <para>Click the button “Move Selected Items” to perform the
+                <para>Click the button "Move Selected Items" to perform the
                 move.</para>
               </listitem>
             </orderedlist>
 
-              <mediaobject>
-                <imageobject role="fo">
-                    <imagedata fileref="images/move_series.gif" format="GIF"  align="center" />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/move_series.gif" format="GIF"  align="center" />
-                </imageobject>
-              </mediaobject>
           </section>
 
           <section>
-            <title>To Move a Instance to another Series</title>
+            <title>To Move an Instance to another Series</title>
 
             <orderedlist>
               <listitem>
-                <para>Click the checkbox next to the instance (or instances)
-                to mark it.</para>
+                <para>Select the instance (or instances) by clicking on its checkbox.</para>
               </listitem>
 
               <listitem>
-                <para>Click the checkbox next to the series (destination) to
-                mark it.</para>
+                <para>Select the destination series (destination) by clicking on its checkbox.</para>
               </listitem>
 
               <listitem>
-                <para>Click the button “Move Selected Items” to perform the
+                <para>Click the button "Move Selected Items" to perform the
                 move.</para>
               </listitem>
             </orderedlist>
 
-              <mediaobject>
-                <imageobject role="fo">
-                    <imagedata fileref="images/move_instance.gif" format="GIF"  align="center" />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/move_instance.gif" format="GIF"  align="center" />
-                </imageobject>
-              </mediaobject>
           </section>
         </section>
 
@@ -612,20 +576,11 @@
             </inlinemediaobject> Export Teaching Files</title>
 
           <para>To export an entity or several entities (patient, study,
-          series, or instance/image) click the checkbox next to the line
+          series, or instance/image), click the checkbox next to the line
           or lines to mark the entity/entities.</para>
 
-            <mediaobject>
-              <imageobject role="fo">
-                    <imagedata fileref="images/select_teaching_files.gif" format="GIF"  align="center"/>
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/select_teaching_files.gif" format="GIF"  align="center"/>
-                </imageobject>
-            </mediaobject>
-
-          <para>Click the button “Export selected instances to Teaching File
-          Sytem” to export the entity or entities marked.</para>
+          <para>Click the button "Export selected instances to Teaching File
+          Sytem" to export the entity or entities marked.</para>
 
           <para>In the next window you can select different export options and
           define optional included additional Teaching File
@@ -649,23 +604,14 @@
                 <imageobject role="html">
                     <imagedata fileref="../shared/images/export_xdsi.gif" format="GIF"  />
                 </imageobject>
-            </inlinemediaobject> Provide and Register Imaging Document Set at
-          XDS-I Repository</title>
+            </inlinemediaobject> Provide and Register Imaging Document Set to an
+          XDS-I Registry/Repository</title>
 
           <para>To register an image document set click the checkbox next to
           the line or lines to mark the entity/entities.</para>
 
-            <mediaobject>
-              <imageobject role="fo">
-                    <imagedata fileref="images/select_for_xds.png" format="PNG"  align="center" />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/select_for_xds.png" format="PNG"  align="center" />
-                </imageobject>
-            </mediaobject> 
-
           <para>In the next window you can edit your XDS-I metadata, which
-          will be exported with selected entities as a Key Object.</para>
+          will be exported with selected entities as Key Objects.</para>
 
             <mediaobject>
               <imageobject role="fo">
@@ -691,16 +637,7 @@
           series, or instance/image) click the checkbox next to the line or
           lines to mark the entity/entities.</para>
 
-           <mediaobject>
-              <imageobject role="fo">
-                    <imagedata fileref="images/select_for_trash.png" format="PNG"  align="center" />
-                </imageobject>
-                <imageobject role="html">
-                    <imagedata fileref="../shared/images/select_for_trash.png" format="PNG"  align="center" />
-                </imageobject>
-            </mediaobject>
-
-          <para>Click the button “Delete Selected Entities” to delete the
+          <para>Click the button "Delete Selected Entities" to delete the
           entity or entities marked. Confirm or cancel the operation by
           clicking the appropriate button in the ensuing confirmation pop-up window.</para>
 
@@ -714,12 +651,12 @@
                 <imageobject role="html">
                     <imagedata fileref="../shared/images/loeschen.gif" format="GIF"  />
                 </imageobject>
-            </inlinemediaobject> Delete Selected Entities irrevocably</title>
+            </inlinemediaobject> Permanently Delete Selected Entities</title>
 
-          <para>If you want to delete the entities irrevocably, you have to
+          <para>If you want to permanently delete the entities, you have to
           select the Trash folder and select the entities, which you want to
-          delete. Then you press the “Delete selected Entities” button to
-          delete the entities irrevocably.</para>
+          delete. then press the "Delete selected Entities" button to
+          permanently delete the entities.</para>
 
            <mediaobject>
               <imageobject role="fo">
@@ -742,7 +679,7 @@
             </inlinemediaobject> Undelete Selected Entities</title>
 
           <para>To undelete entities in the Trash folder you have to press the
-          “Undelete” button.</para>
+          "Undelete" button.</para>
         </section>
 
         <section>
@@ -772,8 +709,8 @@
                 </imageobject>
             </mediaobject>
 
-          <para>Click the button “Send Selected Entities to Specified
-          Destination” to send the entity or entities marked. Confirm or
+          <para>Click the "Send Selected Entities to Specified
+          Destination" button to send the entity or entities marked. Confirm or
           cancel the operation by clicking the appropriate button in the
           ensuing confirmation pop-up window.</para>
 
@@ -793,7 +730,7 @@
                 </imageobject>
             </inlinemediaobject> Edit Patient Attributes</title>
 
-          <para>Click the button “Edit Patients Attributes” to edit patient
+          <para>Click the "Edit Patients Attributes" button to edit patient
           information.</para>
 
            <mediaobject>
@@ -805,8 +742,8 @@
                 </imageobject>
             </mediaobject>
 
-          <para>Click the button “Update” to update the patient attributes or
-          “Cancel” to quit without updating the attributes.</para>
+          <para>Click the "Update" button to update the patient attributes or
+          "Cancel" to quit without updating the attributes.</para>
         </section>
 
         <section>
@@ -819,7 +756,7 @@
                 </imageobject>
             </inlinemediaobject> Edit Study Attributes</title>
 
-          <para>Click the button “Edit Study Attributes” to edit study
+          <para>Click the "Edit Study Attributes" button to edit study
           information.</para>
 
            <mediaobject>
@@ -831,8 +768,8 @@
                 </imageobject>
             </mediaobject>
 
-          <para>Click the button “Update” to update the study attributes or
-          “Cancel” to quit without updating the attributes.</para>
+          <para>Click the "Update" button to update the study attributes or
+          "Cancel" to quit without updating the attributes.</para>
         </section>
 
         <section>
@@ -845,7 +782,7 @@
                 </imageobject>
             </inlinemediaobject> Edit Series Attributes</title>
 
-          <para>Click the button “Edit Series Attributes” to edit series
+          <para>Click the "Edit Series Attributes" button to edit series
           information.</para>
 
            <mediaobject>
@@ -857,8 +794,8 @@
               </imageobject>
             </mediaobject>
 
-          <para>Click the button “Update” to update the series attributes or
-          “Cancel” to quit without updating the attributes.</para>
+          <para>Click the "Update" button to update the series attributes or
+          "Cancel" to quit without updating the attributes.</para>
         </section>
 
         <section>
@@ -871,13 +808,13 @@
               </imageobject>
             </inlinemediaobject> Add New Study</title>
 
-          <para>To add a new study click the “Add New Study” button, and fill
+          <para>To add a new study click the "Add New Study" button, and fill
           out the fields with the appropriate information. Due to the fact,
           that dcm4chee-web creates a Study Instance UID itself, no fields are
           mandatory.</para>
 
           <para>All fields can contain alphanumeric characters, except the
-          Date/Time field, where the format yyyy/mm/dd should be used.</para>
+          Date/Time field, where the format <literal>yyyy/mm/dd</literal> should be used.</para>
 
            <mediaobject>
               <imageobject role="fo">
@@ -888,7 +825,7 @@
               </imageobject>
             </mediaobject>
 
-          <para>Click the button “Add Study” to add the new study or “Cancel”
+          <para>Click the "Add Study" button to add the new study or "Cancel"
           to quit without adding a new study.</para>
         </section>
 
@@ -902,13 +839,13 @@
               </imageobject>
             </inlinemediaobject> Add New Series</title>
 
-          <para>To add a new series click the “Add New Series” button, and
+          <para>To add a new series click the "Add New Series" button, and
           fill out the fields with the appropriate information. Due to the
           fact, that dcm4chee-web creates a Series Instance UID itself, only
           the modality field is mandatory.</para>
 
           <para>All fields can contain alphanumeric characters, except the
-          Date/Time field, where the format yyyy/mm/dd should be used.</para>
+          Date/Time field, where the format <literal>yyyy/mm/dd</literal> should be used.</para>
 
            <mediaobject>
               <imageobject role="fo">
@@ -919,8 +856,8 @@
               </imageobject>
             </mediaobject>
 
-          <para>Click the button “Add Series” to add the new series or
-          “Cancel” to quit without adding a new series.</para>
+          <para>Click the "Add Series" button to add the new series or
+          "Cancel" to quit without adding a new series.</para>
         </section>
 
         <section>
@@ -933,7 +870,7 @@
               </imageobject>
             </inlinemediaobject> View Image</title>
 
-          <para>Click the button “View Image” to show the image. Icon
+          <para>Click the "View Image" button to show the image. Icon
           appearances are dependent on the instance type/state.</para>
         </section>
 
@@ -947,7 +884,7 @@
               </imageobject>
             </inlinemediaobject> View Report as HTML</title>
 
-          <para>Click the button “View Report as HTML” to show the structured
+          <para>Click the "View Report as HTML" button to show the structured
           report as HTML document. Icon appearances are dependent on the
           instance type/state.</para>
         </section>
@@ -962,7 +899,7 @@
               </imageobject>
             </inlinemediaobject> View Report as PDF</title>
 
-          <para>Click the button “View Report as PDF” to show the structured
+          <para>Click the "View Report as PDF" button to show the structured
           report as pdf document. Icon appearances are dependent on the
           instance type/state.</para>
         </section>
@@ -977,7 +914,7 @@
               </imageobject>
             </inlinemediaobject> View Waveform object</title>
 
-          <para>Click the button “View WaveForm” to show the WaveForm object
+          <para>Click the "View WaveForm" button to show the WaveForm object
           as PDF. Icon appearances are dependent on the instance
           type/state.</para>
         </section>
@@ -1078,7 +1015,7 @@
     IP-Address), Port number, and Cipher (for TLS connections over an
     un-trusted network connection). Be careful to type in the right
     information - dcm4chee-web only checks if the Port number is a number
-    (if not, the value is changed to “0”). Click on Create to create the entry
+    (if not, the value is changed to "0"). Click on Create to create the entry
     in the AET-list or Cancel to leave without creating the entry in the
     AET-list.</para>
 
@@ -1125,12 +1062,12 @@
       </listitem>
 
       <listitem>
-        <para>-</para>
+        <para>...</para>
       </listitem>
     </orderedlist>
 
-    <para>Prefer AES Encryption but also accepts Triple DES EDE, CBC
-    Encryption, but do NOT accept no Encryption (SSL_RSA_WITH_NULL_SHA
+    <para>Prefer AES Encryption, with Triple DES EDE, CBC
+    Encryption being acceptable alternatives.  Try to avoidusing no Encryption (SSL_RSA_WITH_NULL_SHA
     ).</para>
 
     <para>To change an entry in the AET-list click on the <inlinemediaobject>
@@ -1152,8 +1089,8 @@
         </imageobject>
       </mediaobject>
 
-    <para>After changing the information click Apply Changes to apply the new
-    information to the AET-list or Cancel to leave without changing the
+    <para>After changing the information click "Apply Changes" to apply the new
+    information to the AET list or Cancel to leave without changing the
     information.</para>
 
     <para>To delete an entry, click the <inlinemediaobject>
@@ -1506,14 +1443,14 @@
       </varlistentry>
     </variablelist>
 
-    <para>The function buttons are the <inlinemediaobject>
+    <para>The available functions are the <inlinemediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/search.gif" format="GIF"  />
         </imageobject>
         <imageobject role="html">
           <imagedata fileref="../shared/images/search.gif" format="GIF"  />
         </imageobject>
-      </inlinemediaobject> (New Search) that will perform the search
+      </inlinemediaobject> (New Search) button that will perform the search
     (alternative: press the Enter key) and the <inlinemediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/delete.gif" format="GIF"  />
@@ -1521,7 +1458,7 @@
         <imageobject role="html">
           <imagedata fileref="../shared/images/delete.gif" format="GIF"  />
         </imageobject>
-      </inlinemediaobject> (Delete) next to the records in the folder
+      </inlinemediaobject> (Delete) button next to the records in the folder
     information. Pressing <inlinemediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/delete.gif" format="GIF"  />
@@ -1531,7 +1468,7 @@
         </imageobject>
       </inlinemediaobject> will delete the record.</para>
 
-    <para>The information regarding the modality worklist (MWL) are shown in
+    <para>The modality worklist (MWL) information is shown in
     the table. The columns of the table are:</para>
 
     <variablelist>
@@ -1667,7 +1604,7 @@
         </imageobject>
       </mediaobject>
 
-    <para>By use of one or several search fields it is possible to search for
+    <para>By using one or several search fields it is possible to search for
     specific information in the database. The search fields are:</para>
 
     <variablelist>
@@ -1741,14 +1678,14 @@
       </varlistentry>
     </variablelist>
 
-    <para>The function buttons are the <inlinemediaobject>
+    <para>The available functions are the <inlinemediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/search.gif" format="GIF"  />
         </imageobject>
         <imageobject role="html">
           <imagedata fileref="../shared/images/search.gif" format="GIF"  />
         </imageobject>
-      </inlinemediaobject> (New Search) that will perform the search
+      </inlinemediaobject> (New Search) button that will perform the search
     (alternative: press the Enter key) and the <inlinemediaobject>
         <imageobject role="fo">
           <imagedata fileref="images/next.gif" format="GIF"  />
@@ -1756,8 +1693,8 @@
         <imageobject role="html">
           <imagedata fileref="../shared/images/next.gif" format="GIF"  />
         </imageobject>
-      </inlinemediaobject> (Next Search Results), that will show the next page
-    of records in the search.</para>
+      </inlinemediaobject> (Next Search Results) button, which will show the next page
+    of records in the search result.</para>
 
     <para>The information regarding the modality performed procedure step
     worklist (MPPS) are shown in the table. The columns in the table
@@ -1854,8 +1791,8 @@
         </imageobject>
       </mediaobject>
 
-    <para>For each user the roles are shown. The four roles that can be
-    combined for each user are:</para>
+    <para>Roles are shown for each user. The four roles that can be
+    combined for a user are:</para>
 
     <variablelist>
       <varlistentry>
@@ -1871,7 +1808,7 @@
         <term>WebAdmin</term>
 
         <listitem>
-          <para>A user in this role has admin rights in the web interface. To
+          <para>A user in this role has administrative rights within the web interface. To
           have WebAdmin rights the user also has to have the WebUser
           rights.</para>
         </listitem>
@@ -1997,7 +1934,7 @@
       <para>Press Create to create the new user or Cancel to quit without
       creating the user.</para>
 
-      <para><emphasis role="bold">ATTENTION:</emphasis> Modifications of the
+      <para><emphasis role="bold">ATTENTION:</emphasis> Modifications of 
       User Configuration may take up to half an hour to become
       effective!</para>
     </section>
@@ -2093,16 +2030,7 @@
           </imageobject>
         </inlinemediaobject> (Delete) next to the user.</para>
 
-       <mediaobject>
-          <imageobject role="fo">
-            <imagedata fileref="images/confirm_user_delete.png" format="PNG"  />
-          </imageobject>
-          <imageobject role="html">
-            <imagedata fileref="../shared/images/confirm_user_delete.png" format="PNG"  />
-          </imageobject>
-        </mediaobject>
-
-      <para>Press OK to delete the user or Cancel to quit without deleting the
+      <para>A confirmation pop-up window will appear.  Press OK to delete the user or Cancel to quit without deleting the
       user.</para>
 
       <para><emphasis role="bold">ATTENTION:</emphasis> Modifications of the
@@ -2114,7 +2042,7 @@
   <section>
     <title>Audit Repository</title>
 
-    <para>The “Audit Record Repository List View” is divided into three
+    <para>The "Audit Record Repository List View" is divided into three
     logical parts:</para>
 
     <itemizedlist>
@@ -2250,7 +2178,7 @@
 
           <listitem>
             <para>The two values (from and to) for exact time stamp, should be
-            used in the search. The format is “yyyy-mm-dd hh:mm:ss.sss” – only
+            used in the search. The format is "yyyy-mm-dd hh:mm:ss.sss" – only
             whole values can be typed in (no truncation).</para>
           </listitem>
         </varlistentry>
