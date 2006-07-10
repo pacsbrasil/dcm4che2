@@ -72,10 +72,10 @@
     
     <mediaobject>
         <imageobject role="fo">
-            <imagedata fileref="images/folder.gif" format="GIF" scalefit="1" align="center"/>
+            <imagedata fileref="images/folder.gif" format="GIF" align="center"/>
         </imageobject>
         <imageobject role="html">
-            <imagedata fileref="../shared/images/folder.gif" format="GIF"  scalefit="1" align="center"/>
+            <imagedata fileref="../shared/images/folder.gif" format="GIF" align="center"/>
         </imageobject>
       </mediaobject>
 
