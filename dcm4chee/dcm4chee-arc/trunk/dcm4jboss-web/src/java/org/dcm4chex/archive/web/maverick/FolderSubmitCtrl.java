@@ -119,11 +119,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
             FolderForm folderForm = (FolderForm) getForm();
     		folderForm.setErrorCode( FolderForm.NO_ERROR );//reset error code
     		folderForm.setPopupMsg(null);
+            HttpServletRequest rq = getCtx().getRequest();
+            if ( rq.getParameter("accNr") != null ) {
+            	log.warn("Somebody tried AutoLogin for web folder! Denied!");
+            	return logout();
+            }
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
-            HttpServletRequest rq = getCtx().getRequest();
             folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
             folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
