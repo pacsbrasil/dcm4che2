@@ -553,6 +553,7 @@ public abstract class InstanceBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(cuid);
+        setAllAttributes(filter.isNoFilter());
         setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
                 filter.getTransferSyntaxUID());
     }
