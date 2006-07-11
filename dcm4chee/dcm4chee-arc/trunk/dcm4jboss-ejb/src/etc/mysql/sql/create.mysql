@@ -99,7 +99,7 @@ CREATE TABLE mpps (
 	station_aet			VARCHAR(250) BINARY,
 	modality	    	VARCHAR(250) BINARY,
 	accession_no		VARCHAR(250) BINARY,
-	mpps_study_status	INTEGER NOT NULL,
+	mpps_status	INTEGER NOT NULL,
 	updated_time	    DATETIME,
 	created_time	    DATETIME,
 	mpps_attrs			LONGBLOB,
@@ -167,14 +167,14 @@ CREATE TABLE media (
 	fileset_iuid		VARCHAR(250) BINARY NOT NULL,
 	fileset_id			VARCHAR(250) BINARY,
 	media_rq_iuid		VARCHAR(250) BINARY,
-	media_study_status		INTEGER NOT NULL,
-	media_study_status_info	VARCHAR(250) BINARY,
+	media_status		INTEGER NOT NULL,
+	media_status_info	VARCHAR(250) BINARY,
 	media_usage			BIGINT NOT NULL,
 	created_time		DATETIME,
 	updated_time		DATETIME
 );
 CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
-CREATE INDEX media_study_status ON media(media_study_status);
+CREATE INDEX media_status ON media(media_status);
 
 CREATE TABLE instance (
 	pk              	INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -279,7 +279,7 @@ CREATE INDEX access_time ON study_on_fs(access_time);
 CREATE TABLE mwl_item (
 	pk          	INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
 	patient_fk      INTEGER,
-	sps_study_status      INTEGER,
+	sps_status      INTEGER,
 	sps_id			VARCHAR(250) BINARY,
 	start_datetime	DATETIME NOT NULL,
 	station_aet     VARCHAR(250) BINARY NOT NULL,
@@ -296,7 +296,7 @@ CREATE TABLE mwl_item (
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
-CREATE INDEX sps_study_status ON mwl_item(sps_study_status);
+CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);
@@ -316,7 +316,7 @@ CREATE TABLE gpsps (
 	gpsps_tuid      VARCHAR(250) BINARY,
 	start_datetime  DATETIME NOT NULL,
 	end_datetime    DATETIME,
-	gpsps_study_status    INTEGER,
+	gpsps_status    INTEGER,
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
 	item_attrs      LONGBLOB,
@@ -329,7 +329,7 @@ CREATE UNIQUE INDEX gpsps_iuid ON gpsps(gpsps_iuid);
 CREATE INDEX gpsps_tuid ON gpsps(gpsps_tuid);
 CREATE INDEX gpsps_start_time ON gpsps(start_datetime);
 CREATE INDEX gpsps_end_time ON gpsps(end_datetime);
-CREATE INDEX gpsps_study_status ON gpsps(gpsps_study_status);
+CREATE INDEX gpsps_status ON gpsps(gpsps_status);
 CREATE INDEX gpsps_prior ON gpsps(gpsps_prior);
 CREATE INDEX in_availability ON gpsps(in_availability);
 
@@ -401,7 +401,7 @@ CREATE TABLE gppps (
 	patient_fk			INTEGER,
 	pps_iuid			VARCHAR(250) BINARY NOT NULL,
 	pps_start			DATETIME,
-	pps_study_status			INTEGER NOT NULL,
+	pps_status			INTEGER NOT NULL,
 	created_time	    DATETIME,
 	updated_time	    DATETIME,
 	pps_attrs			LONGBLOB,
