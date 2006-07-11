@@ -237,7 +237,7 @@ CREATE TABLE files (
 	file_tsuid      VARCHAR(250) BINARY NOT NULL,
 	file_md5        VARCHAR(250) BINARY,
 	file_size       BIGINT,
-	file_study_status     INTEGER,
+	file_status     INTEGER,
 	md5_check_time	DATETIME,
 	created_time	DATETIME,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
@@ -248,7 +248,7 @@ CREATE INDEX filesystem_fk ON files(filesystem_fk);
 CREATE INDEX file_tsuid ON files(file_tsuid);
 CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
-CREATE INDEX file_study_status ON files(file_study_status);
+CREATE INDEX file_status ON files(file_status);
 
 CREATE TABLE assoc (
 	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -540,7 +540,7 @@ CREATE TABLE priv_file (
 	file_tsuid      VARCHAR(250) BINARY NOT NULL,
 	file_md5        VARCHAR(250) BINARY,
 	file_size       BIGINT,
-	file_study_status     INTEGER,
+	file_status     INTEGER,
 FOREIGN KEY (instance_fk)	REFERENCES priv_instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
