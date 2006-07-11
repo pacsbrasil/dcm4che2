@@ -6,7 +6,7 @@ ALTER TABLE priv_series ADD src_aet VARCHAR2(255);
 ALTER TABLE study ADD study_status NUMBER(38,0) NOT NULL DEFAULT 0;
 ALTER TABLE series ADD series_status NUMBER(38,0) NOT NULL DEFAULT 0;
 ALTER TABLE instance ADD inst_status NUMBER(38,0) NOT NULL DEFAULT 0;
-ALTER TABLE instance ADD no_file NUMBER(1) NOT NULL DEFAULT 0;
+ALTER TABLE instance ADD all_attrs NUMBER(1) NOT NULL DEFAULT 0;
 
 CREATE INDEX priv_patient_name ON priv_patient(pat_name);
 CREATE INDEX priv_study_accession_no ON priv_study(accession_no);

@@ -191,7 +191,7 @@ CREATE TABLE instance (
 	retrieve_aets		TEXT,
 	availability		INTEGER NOT NULL,
 	inst_status			INTEGER NOT NULL,
-	no_file				BOOLEAN NOT NULL,
+	all_attrs				BOOLEAN NOT NULL,
 	commitment			BOOLEAN NOT NULL,
 	created_time	    TIMESTAMP,
 	updated_time	    TIMESTAMP,

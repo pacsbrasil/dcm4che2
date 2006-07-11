@@ -191,7 +191,7 @@ CREATE TABLE instance (
 	retrieve_aets		VARCHAR(250) BINARY,
 	availability		INTEGER NOT NULL,
 	inst_status			INTEGER NOT NULL,
-	no_file				TINYINT NOT NULL,
+	all_attrs				TINYINT NOT NULL,
 	commitment			TINYINT NOT NULL,
 	updated_time	    DATETIME,
 	created_time	    DATETIME,
@@ -219,7 +219,7 @@ CREATE TABLE filesystem (
 	dirpath			VARCHAR(250) BINARY NOT NULL,
 	retrieve_aet	VARCHAR(250) BINARY NOT NULL,
 	availability	INTEGER NOT NULL,
-	fs_study_status		INTEGER NOT NULL,
+	fs_status		INTEGER NOT NULL,
 	user_info		VARCHAR(250) BINARY,
 FOREIGN KEY (next_fk) REFERENCES filesystem(pk)
 );
@@ -227,7 +227,7 @@ CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath);
 CREATE INDEX fs_next_fk ON filesystem(next_fk);
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
 CREATE INDEX fs_availability ON filesystem(availability);
-CREATE INDEX fs_study_status ON filesystem(fs_study_status);
+CREATE INDEX fs_status ON filesystem(fs_status);
 
 CREATE TABLE files (
 	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,

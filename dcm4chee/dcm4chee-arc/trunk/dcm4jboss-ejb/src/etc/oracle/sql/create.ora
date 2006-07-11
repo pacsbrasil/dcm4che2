@@ -200,7 +200,7 @@ CREATE TABLE instance (
 	retrieve_aets	VARCHAR2(255),
 	availability	NUMBER(38,0) NOT NULL,
 	inst_status		NUMBER(38,0) NOT NULL,
-	no_file			NUMBER(1) NOT NULL,
+	all_attrs			NUMBER(1) NOT NULL,
 	commitment		NUMBER(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,

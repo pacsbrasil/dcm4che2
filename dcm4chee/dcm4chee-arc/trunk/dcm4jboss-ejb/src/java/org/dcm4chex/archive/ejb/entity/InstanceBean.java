@@ -320,14 +320,14 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setInstanceStatus(int status);
     
     /**
-     * @ejb.persistence column-name="no_file"
+     * @ejb.persistence column-name="all_attrs"
      */
-    public abstract boolean getNoFile();
+    public abstract boolean getAllAttributes();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setNoFile(boolean noFile);
+    public abstract void setAllAttributes(boolean allAttributes);
     
     /**
      * @ejb.persistence column-name="commitment"
