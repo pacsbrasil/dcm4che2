@@ -13,7 +13,7 @@
 <%@ page import='org.dcm4che.util.Base64' %>
 <html>
 <head>
-  <title>DCM Folder Login</title>
+  <title>Login</title>
   <link href="style.css" rel="stylesheet" type="text/css">
 </head>
 

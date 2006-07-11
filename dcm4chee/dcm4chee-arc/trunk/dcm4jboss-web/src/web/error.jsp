@@ -4,7 +4,7 @@
 --%>
 <html>
 <head>
-	<title>DCM Folder Login</title>
+	<title>Login</title>
 	<link href="style.css" rel="stylesheet" type="text/css">
 </head>
 <body onload="self.focus();document.login.j_username.focus()">
@@ -23,7 +23,7 @@
  </tr>
 </table>
 <center>
-<h1>DCM Folder Login Failed!</h1>
+<h1>Login Failed!</h1>
 <br>
 <form name="login" method="POST" action="j_security_check">
 <table>
