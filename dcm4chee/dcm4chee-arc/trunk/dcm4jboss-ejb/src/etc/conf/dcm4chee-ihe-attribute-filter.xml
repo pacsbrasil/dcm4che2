@@ -8,7 +8,7 @@
         <attr tag="00100021"/> <!-- Issuer of Patient ID -->
         <attr tag="00100030"/> <!-- Patient's Birth Date -->
         <attr tag="00100040"/> <!-- Patient's Sex -->
-        <attr tag="00102160"/> <!-- Patient Comments -->
+        <attr tag="00104000"/> <!-- Patient Comments -->
     </filter>
     <filter entity="STUDY">
         <attr tag="00080005"/> <!-- Specific Character Set -->
