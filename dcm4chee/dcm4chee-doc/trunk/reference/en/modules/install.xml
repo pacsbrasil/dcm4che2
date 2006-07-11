@@ -372,11 +372,7 @@ JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..</programlisting>
                 <para>Send some objects/images to the archive's Storage SCP, using the 
                     send utility of the dcm4che14 package, the dcm4che2 package, or another Storage SCU of your choice.</para>
                     
-                <para>If you're using dcm4che14, see <xref linkend="dcmsnd"/>.  If you're using dcm4che2, see below for an example:</para>
-                
-                <programlisting><![CDATA[
-> dcm4che-2.0.6/bin/dcmsnd DCM4CHEE@localhost:11112 ~/mesa/storage/modality/MR
-                ]]></programlisting>  
+                <para>If you're using dcm4che2, see <xref linkend="dcmsnd"/>.
                     
                 <para>Refresh the Web Interface (<literal><ulink url="http://localhost:8080/dcm4chee-web/">http://localhost:8080/dcm4chee-web/</ulink></literal>), which should 
                     now show the the list of received studies.</para>
@@ -391,13 +387,7 @@ JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..</programlisting>
                 <para>To test object retrieval, you will need an external Storage SCP acting as
                     the Destination using the DICOM Receiver utility of the dcm4che14 package, the dcm4che2 package, or another Storage SCP of your choice.</para>
                     
-                <para>If you're using dcm4che14, see <xref linkend="dcmrcv"/>.  See below for a dcm4che2 example:</para>
-                
-                <programlisting><![CDATA[
-> dcm4che-2.0.6/bin/dcmrcv 11113
-13:55:14,782 INFO   - Start listening on 0.0.0.0/0.0.0.0:11113
-Start Server listening on port 11113
-                ]]></programlisting>  
+                <para>If you're using dcm4che2, see <xref linkend="dcmrcv"/>.
                 
                 <para>Before initiating the retrieve, you will need to configure an additional Application Entity (AE) Title identifying
                     your Move Destination using the "AE Management" function of the Web User Interface.  For example:</para>
@@ -405,7 +395,7 @@ Start Server listening on port 11113
                 <programlisting><![CDATA[
 AE Title: DCMRCV
 Hostname: localhost
-Port:     11113
+Port:     11112
                 ]]></programlisting>  
             </listitem>
             

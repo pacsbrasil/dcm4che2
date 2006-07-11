@@ -1,92 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="dcm4che-utilities" revision="1">
-  <title>Using the dcm4che14 Samples and Utilities</title>
+  <title>dcm4che2 DICOM Toolkit Utilities</title>
 
   <sect1 id="utilities-overview" revision="1">
     <title>Overview</title>
 
     <para>The base dcm4che toolkit contains a number of useful sample
     applications that may be used in conjunction with dcm4chee, with another
-    archive application, or to operate on DICOM objects in a stand alone
+    archive application, or to operate on DICOM objects in a standalone
     fashion.</para>
 
-    <para>The current production version of dcm4che is 1.4.3 within the
-    dcm4che14 CVS code line. dcm4che2 is the next generation of the toolkit,
-    and although you will see that it is available for download, it is still
-    under development and testing. Usage of and feedback for dcm4che2 is
-    desired and encouraged, but this document will not cover its usage.</para>
+    <para>The latest version of dcm4che is 2.0.6 within the
+    dcm4che2 CVS code line. dcm4che2 is the next generation of the toolkit, replacing 
+    dcm4che14.  dcm4che14 is still used within dcm4chee, but that will soon change.
+    </para>
 
-    <para>The dcm4che14 samples are a great place to get started with the
+    <para>The dcm4che2 samples are a great place to get started with the
     toolkit if you are interested in writing your own DICOM applications as
     well. They demonstrate most of the operations that you will have need
     of.</para>
 
     <para>In order to start using the samples, you must first download the
-    distribution from SourceForge. dcm4che is included in the dcm4chee
-    download, but only in a single JAR format without the sample applications.
+    distribution from SourceForge. 
     To begin:</para>
 
     <orderedlist>
       <listitem>
-        <para>Download the binary distribution of dcm4che14 from the Files
+        <para>Download the binary distribution of dcm4che2 from the Files
         page of the dcm4che project page on SourceForge (<literal><ulink
         url="http://sourceforge.net/projects/dcm4che/">http://sourceforge.net/projects/dcm4che/</ulink></literal>).
         The current version available for download is
-        <literal>dcm4che-1.4.2.zip</literal>. If you plan on writing your own
+        <literal>dcm4che-2.0.6.tar.bz2</literal>. If you plan on writing your own
         DICOM applications, it is recommended that you download the source
         distribution as well. The source may then be linked in with your IDE
-        for debugging and browsing purposes. The API documentation may also be
-        useful, but it is not very complete as of this writing.</para>
+        for debugging and browsing purposes.</para>
       </listitem>
 
       <listitem>
-        <para>Unpack the ZIP file to the directory of your choice.</para>
+        <para>Extract the archive file to the directory of your choice.</para>
       </listitem>
     </orderedlist>
     
-    <para>After unpacking the ZIP file, you should see the following directory structure:</para>
+    <para>After extracting the contents, you should see the following directory structure:</para>
     
     <programlisting><![CDATA[
-dcm4che-1.4.x
+dcm4che-2.0.6
 |
 |_bin
 |
+|_dtd
+|
 |_etc
+    |
+    |_dcmof
+    |
+    |_logger
 |
 |_lib
 |
-|_licenses
-|
-|_samples
-    |
-    |_data
-    |
-    |_iftm
-    |
-    |_imageio
-    |
-    |_imgdisp
-    |
-    |_media
-    |
-    |_net
-    |
-    |_rtf2sr
-    |
-    |_syslog
+|_xml
     ]]></programlisting>
     
         <para>This directory listing may be described as follows:</para>
 
         <variablelist spacing="compact">
             <varlistentry>
-                <term>dcm4che-1.4.3</term>
+                <term>dcm4che-2.0.6</term>
                 <listitem>
                     <para>
-                        This is the root directory, named by the version.  It contains some basic information 
-                        (readme and install files), along with license and copyright information for the 
-                        toolkit and supporting libraries.  Note that the <literal>CHANGES</literal> file 
-                        is not up to date as of this writing.
+                        This is the root directory, named by "dcm4che" and the version.  It doesn't 
+                        contain anything other than the following subdirectories.
                     </para>
                 </listitem>
             </varlistentry>
@@ -94,9 +77,16 @@ dcm4che-1.4.x
                 <term>bin</term>
                 <listitem>
                     <para>
-                        The <literal>bin</literal> directory contains the sample applications in binary format, configuration files, certificates 
-                        needed to use networked utilities with TLS (transport layer security) enabled, and some third
-                        party libraries.  Brief descriptions of all of the samples can be seen below.
+                        The <literal>bin</literal> directory contains Unix and Windows scripts to run the sample applications.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>dtd</term>
+                <listitem>
+                    <para>
+                        The <literal>dtd</literal> directory contains DTD files which define the XML format of the DICOM data
+                        dictionary used by dcm4che2, and the XML format of DICOM objects
                     </para>
                 </listitem>
             </varlistentry>
@@ -104,8 +94,13 @@ dcm4che-1.4.x
                 <term>etc</term>
                 <listitem>
                     <para>
-                        The <literal>etc</literal> directory currently contains only a single file <literal>NativeMetadataFormat.dtd</literal>.
-                        This DTD file describes the metadata format that the dcm4che14 toolkit uses when reading/writing DICOM files as XML.
+                        The <literal>etc</literal> directory contains configuration used by the sample applications.  There are a
+                        couple of subdirectories as well:
+                        <itemizedlist>
+                            <listitem>dcmof - information used by the Order Filler samples, currently only a sample Modality Worklist
+                                            (MWL) Item (in XML format for submission to dcm4chee) resides here</listitem>
+                            <listitem>logger - a sample log4j.properties file which defines a syslog appender.</listitem>
+                        </itemizedlist>
                     </para>
                 </listitem>
             </varlistentry>
@@ -113,34 +108,18 @@ dcm4che-1.4.x
                 <term>lib</term>
                 <listitem>
                     <para>
-                        The <literal>lib</literal> directory contains all of the third party libraries that the toolkit depends upon.
+                        The <literal>lib</literal> directory contains the dcm4che2 libraries, all of the third party libraries that the toolkit 
+                        depends upon, and individual JAR files for all of the samples.
                     </para>
                 </listitem>
             </varlistentry>
             <varlistentry>
-                <term>licenses</term>
+                <term>xml</term>
                 <listitem>
                     <para>
-                        The <literal>licenses</literal> directory contains the licenses relevant to the toolkit and third party libraries.
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>samples</term>
-                <listitem>
-                    <para>
-                        The <literal>samples</literal> directory contains source code for all of the sample applications.  These are categorized 
-                        within subdirectories by the type of functionality:
-                        <itemizedlist>
-                            <listitem>data - applications for manipulating and transforming DICOM objects</listitem>
-                            <listitem>iftm - a simple GUI application for performing a few DICOM operations.</listitem>
-                            <listitem>imageio - applications for manipulating and transforming DICOM pixel data</listitem>
-                            <listitem>imgdisp - applications which demonstrate image display</listitem>
-                            <listitem>media - an application for the manipulation of a DICOMDIR</listitem>
-                            <listitem>net - applications for performing various DICOM network operations</listitem>
-                            <listitem>rtf2sr - an application for the transformation of an RTF (Rich Text Format) document to a DICOM SR (Structured Report)</listitem>
-                            <listitem>syslog - a sample Syslog writer</listitem>
-                        </itemizedlist>
+                        The <literal>xml</literal> directory contains the XML definition of the DICOM data dictionary, and the DICOM UIDs
+                        that the toolkit will use.  These items are inclusive of the DICOM 2006 standard, and are actually generated from 
+                        the standard documents during the build process.
                     </para>
                 </listitem>
             </varlistentry>
@@ -151,132 +130,114 @@ dcm4che-1.4.x
     <sect1 id="utilities-usage" revision="1">
         <title>Basic Usage</title>
         
-        <para>Using the dcm4che14 utilities and samples (copied from Thomas Hacklaender's MediaNet Manual).</para>
+        <para>Using the dcm4che2 utilities and samples.</para>
         
-        <sect2 id="dcmdir">
-            <title>dcmdir</title>
+        <sect2 id="dcm2txt">
+            <title>dcm2txt</title>
             <para>
-                This application processes DICOM file-sets, as described in part 10 of the DICOM standard.
-                Keep in mind that DICOM restricts possible file-names: A file-set must contain one file, with
-                name <literal>DICOMDIR</literal>, that contains information concerning the file-set. You can only add files to a
-                file-set, which are stored in the directory of the <literal>DICOMDIR</literal> file or in sub-directories up to eight
-                levels. The name of such files and directories may only be 8 characters long and the characters
-                must be capital letters or numbers. The character <literal>.</literal> is not allowed.
+                TODO
             </para>
-            
+        </sect2>
+        
+        <sect2 id="dcm2xml">
+            <title>dcm2xml</title>
             <para>
-                Using standard CD-writing software it is possible to create a DICOM-CD. Just write the whole
-                contents of the directory containing the <literal>DICOMDIR</literal> file and all its subdirectories to a CD.
+                TODO
             </para>
-            
-            <para>Examples:</para>
-            
-            <para><computeroutput>java -jar dcmdir.jar -c ./tmp/DICOMDIR</computeroutput></para>
-            
-            <para>Creates an empty file-set in the subdirectory <literal>tmp</literal>.</para>
-            
-            <para><computeroutput>java -jar dcmdir.jar -a ./tmp/DICOMDIR ./tmp/SMPTE2</computeroutput></para>
-            
-            <para>Adds the existing DICOM object <literal>./tmp/SMPTE2</literal> to the existing file-set <literal>./tmp/DICOMDIR</literal>.</para>
-            
-            <para>java -jar dcmdir.jar -x ./tmp/DICOMDIR --pat 1234567890 ./tmp</para>
-            
-            <para>Marks all entries in the file-set <literal>./tmp/DICOMDIR</literal> as "<emphasis>not in use</emphasis>", if the referenced files are in
-                directory <literal>./tmp</literal> or its subdirectories and have a patient ID equal to <literal>1234567890.</literal>
+        </sect2>
+        
+        <sect2 id="dcmecho">
+            <title>dcmecho</title>
+            <para>
+                TODO
             </para>
-            
-            <para><computeroutput>java -jar dcmdir.jar -P ./tmp/DICOMDIR</computeroutput></para>
-            
-            <para>Marks all entries in the file-set <literal>./tmp/DICOMDIR</literal> as "<emphasis>not in use</emphasis>", if the referenced files are not
-            physically present at the referenced position in the filesystem.</para>
-            
-            <para><computeroutput>java -jar dcmdir.jar -z ./tmp/DICOMDIR</computeroutput></para>
-            
-            <para>Removes all entries in the file-set <literal>./tmp/DICOMDIR</literal> which are marked as "<emphasis>not in use</emphasis>".</para>
-            
-            <para>Usage:</para>
-
-            <para><computeroutput>java -jar dcmdir.jar -{tcaxXzP} dir-file [OPTION]... [FILE]...</computeroutput></para>
-
-            <para>Commands:</para>             
-            <programlisting><![CDATA[
--c dir-file create new DICOMDIR file with references to files...
--a dir-file add file references to existing DICOMDIR file
--x dir-file remove record(s) from existing DICOMDIR, with specified
---pat id Patient ID
---study uid Study Instance UID
---series uid Series Instance UID
---sop uid SOP Instance UID
-[FILE]... referenced files
--X dir-file same as -x dir-file, but also deletes referenced files
--P dir-file purge records from existing DICOMDIR file, with referenced
-    files do not exist anymore
--z dir-file compact existing DICOMDIR file by removing inactive records
-            ]]></programlisting>
-
-            <para>Options (overrides presets defined in resource <literal>dcmdir.cfg</literal>):</para>
-            
-            <programlisting><![CDATA[
---id id defines File-set ID of created DICOMDIR file
---uid uid defines SOP Instance UID of created DICOMDIR file
---readme readme-file add README file reference to created DICOMDIR file
---readme-charset code specifies character set used in README file
---grouplen encode with (gggg,0000) group length attributes
---seqlen encode sequence attributes with explicit length
---itemlen encode sequence items with explicit length
---onlyInUse hide inactive records in content list
---maxlen line-len maximal line length in listing; default=79
---vallen val-len displayed value length in listing; default=64
---help display this help and exit
---version output version information and exit            
-            ]]></programlisting>
-            
+        </sect2>
+        
+        <sect2 id="dcmgpwl">
+            <title>dcmgpwl</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="dcmmwl">
+            <title>dcmmwl</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="dcmof">
+            <title>dcmof</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="dcmqr">
+            <title>dcmqr</title>
+            <para>
+                TODO
+            </para>
         </sect2>
         
         <sect2 id="dcmrcv">
             <title>dcmrcv</title>
             <para>
-                This application implements a DICOM server listening on <literal>PORT</literal>. It acts as a Storage SCP. The
-                received images are stored to the local file-system or in a DICOM file-set, depending on the
-                <literal>dest</literal> option. If the destination is a file-set, the received objects are stored in subdirectories of
-                the file-set directory. The names of the subdirectories are derived from the received object: PatientName,
-                StudyID and SeriesNumber. The name of the file the object is stored is the InstanceNumber.
-                This behavior may be configured by the <literal>fs-file-id</literal> option.
+                This application implements a DICOM server listening on a specified <literal>PORT</literal> for incoming association
+                requests. If no local IP address of the network interface is specified
+                connections on any/all local addresses are accepted. If an <literal>AET</literal> is specified,
+                only requests with a matching called AE title will be accepted.
             </para>
             
-            <para>Example:</para>
-            
-            <para><computeroutput>java -jar dcmrcv.jar --dest=./tmp 104</computeroutput></para>
-            
-            <para>Starts the server, listening on port 104. The received DICOM objects are stored as plain files in
-                    the subdirectory <literal>tmp</literal>.</para>
-            
             <para>Usage:</para>
-
-            <para><computeroutput>java -jar dcmrcv.jar [OPTION]... PORT</computeroutput></para>
+            
+            <para>
+                <literal><![CDATA[
+                    dcmrcv [Options] [<aet>[@<ip>]:]<port>
+                ]]></literal>
+            </para>
+            
+            <para><literal>dcmrcv DCMRCV:11112 --dest /tmp</literal></para>
+            
+            <para>Starts the server listening on port 11112, accepting association requests
+                with DCMRCV as the called AE title. Received objects are stored to <literal>/tmp</literal>.</para>
 
             <para>Options (overrides presets defined in resource <literal>dcmrcv.cfg</literal>):</para>
             
             <programlisting><![CDATA[
---called-aets=AET1,.. only association requests with matching called and
---calling-aets=AET1,.. calling AET will be accepted
---max-pdu-len=LEN set maximal length of receiving PDUs [default=16352]
---max-op-invoked=NUM set maximal number of invoked operations with outstanding response 
---rsp-delay=SEC define additional delay of response (useful for testing async mode)
---dest=DEST define storage destination for received objects, if DEST specifies a DICOMDIR file path (=last component = "DICOMDIR"), the received objects will be stored as DICOM File-set, further specified by
---fs-id=NAME the File-set Identifier [default=<none>],
---fs-uid=UID the File-set SOP Instance UID [default=<auto>],
---fs-file-id=TAG_PATH specifies schema for generated file IDs [default=StudyDate,StudyID,SeriesNumber,InstanceNumber],
---fs-lazy-update defer update of DICOMDIR at association release, instead of immedately at each object receipt.
---set=TAG:VAL Replace value of specified attribute with specified value in received object (e.g.: --set=PatientName:anonymous).
---buf-len=LEN set length byte buffer, used to store data to file
---tls=CIPHERSUITE1,.. accept TLS connection with specified Cipher Suites eg.: SSL_RSA_WITH_NULL_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA
---tls-key=KEYSTORE get key from specified resource [default:dcmrcv.key]
---tls-key-passwd=PASS password for keystore and key specified by --tls-key [default: dcm4che]
---tls-cacerts=KEYSTORE read trusted CA Certificats from specified resource [default:cacerts]
---tls-cacerts-passwd=PASS password for keystore specified by --tls-cacerts [default: dcm4che]
---help display this help and exit
---version output version information and exit
+ -soclosedelay <in millis>   delay in ms for Socket close after sending A-ABORT,
+                      50ms by default
+ -releaseTO <in millis>      timeout in ms for receiving A-RELEASE-RP, 5s by
+                                        default
+ -requestTO <in millis>      timeout in ms for receiving -ASSOCIATE-RQ, 5s by default
+ -idleTO <in millis>         timeout in ms for receiving DIMSE-RQ, 60s by default
+ -reaper <in millis>         period in ms to check for outstanding DIMSE-RSP, 10s
+                                       by default
+ -rspdelay <in millis>       delay in ms for DIMSE-RSP; useful for testing
+                                        asynchronous mode
+ -pdv1                send only one PDV in one P-Data-TF PDU, pack command
+                      and data PDV in one P-DATA-TF PDU by default.
+ -sndpdulen <KB>      maximal length in KB of sent P-DATA-TF PDUs, 16KB by
+                      default
+ -rcvpdulen <KB>      maximal length in KB of received P-DATA-TF PDUs,
+                      16KB by default
+ -V,--version         print the version information and exit
+ -async <maxops>      maximum number of outstanding operations performed
+                      asynchronously, unlimited by default.
+ -bigendian           accept also Explict VR Big Endian transfer syntax.
+ -bufsize <KB>        minimal buffer size to write received object to
+                      file, 1KB by default
+ -defts               accept only default transfer syntax.
+ -dest <dir>          store received objects into files in specified
+                      directory <dir>. Do not store received objects by default.
+ -h,--help            print this message
+ -native              accept only transfer syntax with uncompressed pixel
+                      data.
+ -sorcvbuf <KB>       set SO_RCVBUF socket option to specified value in KB
+ -sosndbuf <KB>       set SO_SNDBUF socket option to specified value in KB
+ -tcpdelay            set TCP_NODELAY socket option to false, true by
+                      default
             ]]></programlisting>
         </sect2>
         
@@ -284,65 +245,136 @@ dcm4che-1.4.x
             <title>dcmsnd</title>
             <para>
                 This application acts as a Storage SCU to send DICOM objects to a Storage SCP. 
-                The objects are read from the local file-system and are send to an Storage SCP which is
-                defined by <literal>URL</literal>. <literal>FILE</literal> may be the name of a single file, a list of files separated by whitespaces
-                or the name of a directory. In the later case all files in the directory and all subdirectories will be
-                sent. If <literal>FILE</literal> is omitted, the connection to the remote node will simply be verified by DICOM Echo.
+                It loads composite DICOM Object(s) from specified DICOM file(s) or a directory structure and sends them to
+                the specified remote Application Entity. If a directory is specified, all DICOM
+                objects in files under that directory and further sub-directories are sent.
+                If <literal>PORT</literal> is not specified, DICOM default port 104 is assumed. If no
+                 <literal>HOST</literal> is specified, localhost is assumed.
+            </para>
+            
+            <para>Usage:</para>
+            
+            <para>
+                <literal><![CDATA[
+                    dcmsnd [Options] <aet>[@<host>[:<port>]] <file>|<directory>...</literal></para>
+                ]]></literal>
             </para>
             
             <para>Examples:</para>
             
-            <para><computeroutput>java -jar dcmsnd.jar dicom://DCMRCV:DCMSND@localhost:104 ./SMPTE</computeroutput></para>
+            <para><literal>dcmsnd DCMRCV@localhost:11112 image.dcm</literal></para>
             
-            <para>Opens association to local server, listening on port 104, with calling application entity title
-                <literal>DCMSND</literal> and called application entity title <literal>DCMRCV</literal>. Sends the DICOM file <literal>./SMPTE</literal> to the
+            <para>Opens association to local server, listening on port 11112 with called application entity title 
+            <literal>DCMRCV</literal>. Sends the DICOM file <literal>image.dcm</literal> to the
                 server.</para>
-            
-            <para><computeroutput>java -jar dcmsnd.jar dicom://DCMRCV:DCMSND@localhost:104</computeroutput></para>
-            
-            <para>Opens association to local server, listening on port 104, with calling application entity title
-                <literal>DCMSND</literal> and called application entity title <literal>DCMRCV</literal>. Verifies the connection with DICOM Echo.</para>
-                
-            <para>Usage:</para>
-
-            <para><computeroutput>java -jar dcmsnd.jar [OPTION]... URL [FILE]...</computeroutput></para>
-            
-            <para>URL Definition:</para>
-
-            <programlisting><![CDATA[
-dicom://CALLED[:CALLING]@HOST[:PORT]
-CALLED Called AET in association request
-CALLING Calling AET in association request [default=ANONYMOUS]
-HOST Name or IP address of host, where the server is running
-PORT TCP port address, on which the server is listing for incoming TCP Transport Connection Indication [default=104]
-            ]]></programlisting>
-            
+                        
             <para>Options (overrides presets defined in resource <literal>dcmsnd.cfg</literal>):</para>
                 <programlisting><![CDATA[
---prior-high HIGH priority of storage requests [default=NORMAL]
---prior-low LOW priority of storage requests [default=NORMAL]
---max-pdu-len=LEN set maximal length of receiving PDUs [default=16352]
---max-op-invoked=NUM set maximal number of invoked operations with outstanding response [default=0 -> unlimited]
---max-pdu-len=LEN maximal length of receiving PDUs [default=16352]
---buf-len=LEN byte buffer length, used to store data to file [default=2048]
---repeat-dimse=NUM Number of times to repeat single request [default=1]
---repeat-assoc=NUM Number of times to repeat whole operation [default=1]
---buf-len=LEN set length byte buffer, used to store data to file
---set=TAG:VAL Replace value of specified attribute with specified value in transmitted object (e.g.: --set=PatientName:anonymous).
---tls=CIPHERSUITE1,.. accept TLS connection with specified Cipher Suites eg.: SSL_RSA_WITH_NULL_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA
---tls-key=KEYSTORE get key from specified resource [default:dcmsnd.key]
---tls-key-passwd=PASS password for keystore and key specified by --tls-key [default: dcm4che]
---tls-cacerts=KEYSTORE read trusted CA Certificats from specified resource [default:cacerts]
---tls-cacerts-passwd=PASS password for keystore specified by --tls-cacerts [default: dcm4che]
---poll-dir=DIR Poll the specified directory for DICOM files - e.g. received by application dcmrcv - and forward them to the remote DICOM node. [default: <none>]
---poll-period=PERIOD Poll period in s. The default is 5s.
---poll-retry-open=TIME Retry open connection to remote host with specified time interval. The default is 60s.
---poll-delta-last-modified=TIME Only consider files, which modification time differs with the current time more than the specified value. The default is 3s.
---poll-done-dir=DIR Moves sent files to the specified directory, instead of removing it from poll-dir.
---help display this help and exit
---version output version information and exit
+ -soclosedelay <in millis>   delay in ms for Socket close after sending A-ABORT,
+                                          50ms by default
+ -acceptTO <in millis>       timeout in ms for receiving A-ASSOCIATE-AC, 5s by
+                                        default
+ -releaseTO <in millis>      timeout in ms for receiving A-RELEASE-RP, 5s by
+                                        default
+ -reaper <in millis>         period in ms to check for outstanding DIMSE-RSP, 10s
+                                        by default
+ -rspTO <in millis>          timeout in ms for receiving DIMSE-RSP, 60s by
+                      default
+ -lowprior            LOW priority of the C-STORE operation, MEDIUM by
+                      default
+ -highprior           HIGH priority of the C-STORE operation, MEDIUM by
+                      default
+ -pdv1                send only one PDV in one P-Data-TF PDU, pack command
+                      and data PDV in one P-DATA-TF PDU by default.
+ -sndpdulen <KB>      maximal length in KB of sent P-DATA-TF PDUs, 16KB by
+                      default
+ -rcvpdulen <KB>      maximal length in KB of received P-DATA-TF PDUs,
+                      16KB by default
+ -L <aet[@host]>      set AET and local address of local Application
+                      Entity, use ANONYMOUS and pick up any valid local address to bind the
+                      socket by default
+ -V,--version         print the version information and exit
+ -async <maxops>      maximum number of outstanding operations it may
+                      invoke asynchronously, unlimited by default.
+ -bufsize <KB>        transcoder buffer size in KB, 1KB by default
+ -connectTO <in millis>      timeout in ms for TCP connect, no timeout by default
+ -h,--help            print this message
+ -sorcvbuf <KB>       set SO_RCVBUF socket option to specified value in KB
+ -sosndbuf <KB>       set SO_SNDBUF socket option to specified value in KB
+ -tcpdelay            set TCP_NODELAY socket option to false, true by
+                      default
                     ]]></programlisting>
                 
+        </sect2>
+        
+        <sect2 id="dcmwado">
+            <title>dcmwado</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="jpg2dcm">
+            <title>jpg2dcm</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="logger">
+            <title>logger</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="mkelmdic">
+            <title>mkelmdic</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="mkuiddic">
+            <title>mkuiddic</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="mkvrmap">
+            <title>mkvrmap</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="pdf2dcm">
+            <title>pdf2dcm</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="rgb2ybr">
+            <title>rgb2ybr</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="txt2dcmsr">
+            <title>txt2dcmsr</title>
+            <para>
+                TODO
+            </para>
+        </sect2>
+        
+        <sect2 id="xml2dcm">
+            <title>xml2dcm</title>
+            <para>
+                TODO
+            </para>
         </sect2>
         
     </sect1>
