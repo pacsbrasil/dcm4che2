@@ -3,10 +3,18 @@
 ALTER TABLE priv_patient ADD pat_name VARCHAR(255);
 ALTER TABLE priv_study ADD accession_no VARCHAR(255);
 ALTER TABLE priv_series ADD src_aet VARCHAR(255);
-ALTER TABLE study ADD study_status INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE series ADD series_status INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE instance ADD inst_status INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE instance ADD all_attrs BIT NOT NULL DEFAULT 0;
+ALTER TABLE study ADD study_status INTEGER;
+UPDATE study SET study_status=0;
+ALTER TABLE study ALTER study_status NOT NULL; 
+ALTER TABLE series ADD series_status INTEGER;
+UPDATE series SET series_status=0;
+ALTER TABLE series ALTER series_status NOT NULL; 
+ALTER TABLE instance ADD inst_status INTEGER;
+UPDATE instance SET inst_status=0;
+ALTER TABLE instance ALTER inst_status NOT NULL; 
+ALTER TABLE instance ADD all_attrs BIT;
+UPDATE instance SET all_attrs=false;
+ALTER TABLE instance ALTER all_attrs NOT NULL; 
 
 CREATE INDEX priv_patient_name ON priv_patient(pat_name);
 CREATE INDEX priv_study_accession_no ON priv_study(accession_no);
