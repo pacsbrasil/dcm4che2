@@ -108,7 +108,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final String STORE_XSL = "cstorerq.xsl";
     private static final String STORE_XML = "-cstorerq.xml";
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
-    private static final String ASSOC_PK = "ASSOC_PK";
+    private static final String SERIES_IUID = "SERIES_IUID";
 
 	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
@@ -423,24 +423,20 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     		} catch (Exception e) {
     			log.warn("Coercion of attributes failed:", e);
     		}
+    		String seriuid = ds.getString(Tags.SeriesInstanceUID);
+    		String prevseriud = (String) assoc.getProperty(SERIES_IUID);
             Storage store = getStorage(assoc);
-            Long assocpk = (Long) assoc.getProperty(ASSOC_PK);
-            if (assocpk == null) {
-                assocpk = store.initAssociation(assoc.getCallingAET(),
-                        assoc.getCalledAET(), fsDTO.getRetrieveAET());
-                assoc.putProperty(ASSOC_PK, assocpk);
-            } else {
-                String seriuid = ds.getString(Tags.SeriesInstanceUID);
-                SeriesStored seriesStored = store.checkSeriesStored(assocpk,
-                        seriuid);
+            if (prevseriud != null && !prevseriud.equals(seriuid)){                
+                SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
                 if (seriesStored != null) {
                     log.debug("Send SeriesStoredNotification - series changed");
                     doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
-                    store.resetAssociation(assocpk);
+                    store.commitSeriesStored(seriesStored);
                 }
             }
-            Dataset coercedElements = updateDB(store, assocpk , ds,
-                    fsDTO.getPk(), filePath, file, md5sum);
+            assoc.putProperty(SERIES_IUID, seriuid);
+            Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
+                    filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             if (coerced == null)
             	coerced = coercedElements;
@@ -547,8 +543,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             seriesDir.getParentFile().delete();
     }
 
-    protected Dataset updateDB(Storage storage, Long assocpk, Dataset ds,
-            long fspk, String filePath, File file, byte[] md5)
+    protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
+            String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             IOException {
         int retry = 0;
@@ -556,12 +552,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             try {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
-                        return storage.store(assocpk, ds, fspk, filePath,
-                                (int) file.length(), md5);
+                        return storage.store(ds, fspk, filePath, file.length(), md5);
                     }
                 } else {
-                    return storage.store(assocpk, ds, fspk, filePath,
-                            (int) file.length(), md5);
+                    return storage.store(ds, fspk, filePath, file.length(), md5);
                 }
             } catch (Exception e) {
                 ++retry;
@@ -829,17 +823,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closed(Association assoc) {
-        Long assocpk = (Long) assoc.getProperty(ASSOC_PK);
-        if (assocpk != null) {
+        String seriuid = (String) assoc.getProperty(SERIES_IUID);
+        if (seriuid != null) {
             try {
                 Storage store = getStorage(assoc);
-                SeriesStored seriesStored = store.checkSeriesStored(assocpk,
-                        null);
+                SeriesStored seriesStored = store.makeSeriesStored(seriuid);
                 if (seriesStored != null) {
                     log.debug("Send SeriesStoredNotification - association closed");
                     doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
+                    store.commitSeriesStored(seriesStored);
                 }
-                store.removeAssociation(assocpk);
                 store.remove();
             } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);

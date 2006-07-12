@@ -98,6 +98,10 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid = ?1"
  *             transaction-type="Supports"
  * 
+ * @ejb.finder signature="java.util.Collection findByStatusReceivedBefore(int status, java.sql.Timestamp updatedBefore)"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesStatus = ?1 AND s.createdTime < ?2"
+ *             transaction-type="Supports"
+ *             
  * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.createdTime < ?2"
  *             transaction-type="Supports"

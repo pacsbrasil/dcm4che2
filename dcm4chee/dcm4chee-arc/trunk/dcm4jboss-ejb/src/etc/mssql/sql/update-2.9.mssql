@@ -1,5 +1,7 @@
 -- Update DB from dcm4chee-2.8.x to dcm4chee-2.9.x
 
+DROP TABLE assoc;
+
 ALTER TABLE priv_patient ADD pat_name VARCHAR(255);
 ALTER TABLE priv_study ADD accession_no VARCHAR(255);
 ALTER TABLE priv_series ADD src_aet VARCHAR(255);

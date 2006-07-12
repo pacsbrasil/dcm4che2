@@ -246,21 +246,6 @@ CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);
 
-CREATE SEQUENCE assoc_pk_seq;
-CREATE TABLE assoc (
-	pk              INTEGER NOT NULL CONSTRAINT assoc_pk PRIMARY KEY,
-	calling_aet    	VARCHAR(254),
-	called_aet     	VARCHAR(254),
-	retrieve_aet   	VARCHAR(254),
-	pat_id         	VARCHAR(254),
-	pat_name    	VARCHAR(254),
-	accession_no	VARCHAR(254),
-	created_time	TIMESTAMP,
-	updated_time	TIMESTAMP,
-	ian_attrs       BLOB(262144)
-);
-CREATE INDEX assoc_updated_time ON assoc(updated_time);
-
 CREATE SEQUENCE study_on_fs_pk_seq;
 CREATE TABLE study_on_fs (
 	pk              INTEGER NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
@@ -661,8 +646,6 @@ GRANT ALL PRIVILEGES ON TABLE series_req TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE media TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE assoc TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE rel_assoc_files TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE study_on_fs TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE mwl_item TO USER tiani;
@@ -696,7 +679,6 @@ GRANT USAGE ON SEQUENCE series_req_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE media_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE instance_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
-GRANT USAGE ON SEQUENCE assoc_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE study_on_fs_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE files_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE mwl_item_pk_seq TO USER tiani;

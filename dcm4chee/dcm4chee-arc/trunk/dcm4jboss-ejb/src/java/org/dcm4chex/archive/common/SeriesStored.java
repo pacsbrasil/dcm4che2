@@ -51,9 +51,8 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 	
-    private static final long serialVersionUID = -3511801621407861264L;
+    private static final long serialVersionUID = -5829286003479809840L;
     private String callingAET;
-	private String calledAET;
 	private String patientID;
 	private String patientName;
 	private String retrieveAET;
@@ -65,7 +64,7 @@ public class SeriesStored implements Serializable {
 	}
     
     public String toString() {
-        return "SeriesStored[calling=" + callingAET + ", called=" + calledAET
+        return "SeriesStored[calling=" + callingAET
             + ", suid=" + (ian != null ? ian.getString(Tags.StudyInstanceUID) : null)
             + "]";
     }
@@ -74,14 +73,6 @@ public class SeriesStored implements Serializable {
 		return ian;
 	}
 	
-    public final String getCalledAET() {
-		return calledAET;
-	}
-
-	public final void setCalledAET(String calledAET) {
-		this.calledAET = calledAET;
-	}
-
 	public final String getCallingAET() {
 		return callingAET;
 	}

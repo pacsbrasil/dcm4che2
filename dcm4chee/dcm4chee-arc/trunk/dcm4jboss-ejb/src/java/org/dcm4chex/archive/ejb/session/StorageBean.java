@@ -39,8 +39,8 @@
 
 package org.dcm4chex.archive.ejb.session;
 
-import java.rmi.RemoteException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,20 +60,13 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileMetaInfo;
-import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.IANBuilder;
 import org.dcm4chex.archive.common.SeriesStored;
-import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.conf.ConfigurationException;
-import org.dcm4chex.archive.ejb.interfaces.AssociationLocal;
-import org.dcm4chex.archive.ejb.interfaces.AssociationLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
@@ -104,7 +97,6 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" view-type="local" ref-name="ejb/StudyOnFileSystem"
- * @ejb.ejb-ref ejb-name="Association" view-type="local" ref-name="ejb/Association"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$
@@ -112,7 +104,10 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  */
 public abstract class StorageBean implements SessionBean {
 
-	private static Logger log = Logger.getLogger(StorageBean.class);
+    private static final int STORED = 0;
+	private static final int RECEIVED = 1;
+
+    private static Logger log = Logger.getLogger(StorageBean.class);
 
     private PatientLocalHome patHome;
 
@@ -128,8 +123,6 @@ public abstract class StorageBean implements SessionBean {
     
     private StudyOnFileSystemLocalHome sofHome;
 
-    private AssociationLocalHome assocHome;
-    
     private SessionContext sessionCtx;
 
     public void setSessionContext(SessionContext ctx) {
@@ -150,8 +143,6 @@ public abstract class StorageBean implements SessionBean {
                     .lookup("java:comp/env/ejb/FileSystem");
             sofHome = (StudyOnFileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/StudyOnFileSystem");
-            assocHome = (AssociationLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Association");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -173,16 +164,14 @@ public abstract class StorageBean implements SessionBean {
         fileHome = null;
         fileSystemHome = null;
         sofHome = null;
-        assocHome = null;
     }
 
     /**
      * @ejb.interface-method
      */
-    public org.dcm4che.data.Dataset store(Long assocpk,
-            org.dcm4che.data.Dataset ds, long fspk,
-            java.lang.String fileid, long size,
-            byte[] md5) throws DcmServiceException {
+    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
+            long fspk, java.lang.String fileid, long size, byte[] md5)
+    throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
         final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -198,23 +187,12 @@ public abstract class StorageBean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds, getSeries(ds, coercedElements, fs));
             }
-            FileLocal file = fileHome.create(fileid, tsuid, size, md5,
-                    0, instance, fs);
+            FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
+                    instance, fs);
             instance.setAvailability(Availability.ONLINE);
             instance.addRetrieveAET(fs.getRetrieveAET());
-            AssociationLocal assoc = assocHome.findByPrimaryKey(assocpk);            
-            Dataset ianAttrs = assoc.getIAN();
-            IANBuilder ianBuilder;
-            if (ianAttrs != null) {
-                ianBuilder = new IANBuilder(ianAttrs);
-            } else {
-                ianBuilder = new IANBuilder();
-                assoc.setPatientId(ds.getString(Tags.PatientID));
-                assoc.setPatientName(ds.getString(Tags.PatientName));
-                assoc.setAccessionNumber(ds.getString(Tags.AccessionNumber));
-            }
-            ianBuilder.addRefSOP(ds, "ONLINE", fs.getRetrieveAET());
-            assoc.setIAN(ianBuilder.getIAN());
+            instance.setInstanceStatus(RECEIVED);
+            instance.getSeries().setSeriesStatus(RECEIVED);
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
@@ -228,78 +206,109 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Long initAssociation(String callingAET, String calledAET,
-            String retrieveAET) throws CreateException {
-        return assocHome.create(callingAET, calledAET, retrieveAET).getPk();
+    public SeriesStored makeSeriesStored(String seriuid)
+    throws FinderException {
+        SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, seriuid);
+        return makeSeriesStored(series);
     }
 
-
     /**
      * @ejb.interface-method
      */
-    public Long nextPendingAssociation(long maxPendingTime)
-            throws FinderException {
-        Timestamp ts = new Timestamp(System.currentTimeMillis() - maxPendingTime);
-        Collection c = assocHome.findNotUpdatedSince(ts);
-        if (c.isEmpty())
-            return null;
-        AssociationLocal a = (AssociationLocal) c.iterator().next();
-        return a.getPk();
+    public void commitSeriesStored(SeriesStored seriesStored)
+    throws FinderException {
+        Dataset ian = seriesStored.getIAN();
+        Dataset refSeries = ian.get(Tags.RefSeriesSeq).getItem(0);
+        DcmElement refSOPs = refSeries.get(Tags.RefSOPSeq);
+        int numI = refSOPs.countItems();
+        HashSet iuids = new HashSet(numI * 4 / 3 + 1);
+        for (int i = 0; i < numI; i++) {
+            iuids.add(refSOPs.getItem(i).getString(Tags.RefSOPInstanceUID));
+        }
+        String seriuid = refSeries.getString(Tags.SeriesInstanceUID);
+        SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, seriuid);
+        Collection c = series.getInstances();
+        int remaining = 0;
+        for (Iterator iter = c.iterator(); iter.hasNext();) {
+            InstanceLocal inst = (InstanceLocal) iter.next();
+            if (inst.getInstanceStatus() != RECEIVED) {
+                continue;
+            }
+            if (iuids.remove(inst.getSopIuid())) {
+                inst.setInstanceStatus(STORED);
+            } else {
+                ++remaining;
+            }
+        }
+        if (remaining == 0) {
+            series.setSeriesStatus(STORED);
+        }
     }
     
     /**
      * @ejb.interface-method
      */
-    public void resetAssociation(Long assocpk) throws FinderException {
-        assocHome.findByPrimaryKey(assocpk).setIAN(null);
+    public SeriesStored[] checkSeriesStored(long maxPendingTime)
+    throws FinderException {
+        Timestamp before = new Timestamp(System.currentTimeMillis() 
+                - maxPendingTime);
+        Collection c = seriesHome.findByStatusReceivedBefore(RECEIVED, before);
+        if (c.isEmpty()) {
+            return new SeriesStored[0]; 
+        }
+        log.info("Found " + c.size() + " Stored Series");
+        ArrayList list = new ArrayList(c.size());
+        SeriesStored seriesStored;
+        for (Iterator iter = c.iterator(); iter.hasNext();) {
+            seriesStored = makeSeriesStored((SeriesLocal) iter.next());
+            if (seriesStored != null) {
+                list.add(seriesStored);
+            }
+        }
+        return (SeriesStored[]) list.toArray(new SeriesStored[list.size()]);
     }
     
-    /**
-     * @ejb.interface-method
-     */
-    public void removeAssociation(Long assocpk) throws RemoveException {
-        assocHome.remove(assocpk);
-    }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public SeriesStored checkSeriesStored(Long assocpk, String seriuid)
-    throws FinderException, RemoteException, CreateException {
-        if (log.isDebugEnabled()) {
-            log.debug("enter checkSeriesStored - assoc:" + assocpk
-                    + ", seriuid:" + seriuid);
+    private SeriesStored makeSeriesStored(SeriesLocal series) {
+        StudyLocal study = series.getStudy();
+        PatientLocal pat = study.getPatient();
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
+        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
+        Dataset serAttrs = series.getAttributes(false);
+        Dataset pps = serAttrs.getItem(Tags.RefPPSSeq);
+        if (pps != null) {
+            if (!pps.contains(Tags.PerformedWorkitemCodeSeq)) {
+                pps.putSQ(Tags.PerformedWorkitemCodeSeq);
+            }
+            refPPSSeq.addItem(pps);
         }
-        AssociationLocal assoc = assocHome.findByPrimaryKey(assocpk);
-        Dataset ian = assoc.getIAN();
-        if (ian == null) {
-            log.debug("exit checkSeriesStored - no IAN");
-            return null;
+        Dataset refSeries = ian.putSQ(Tags.RefSeriesSeq).addNewItem();
+        DcmElement refSOPs = refSeries.putSQ(Tags.RefSOPSeq);
+        refSeries.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
+        Collection c = series.getInstances();
+        for (Iterator iter = c.iterator(); iter.hasNext();) {
+            InstanceLocal inst = (InstanceLocal) iter.next();
+            if (inst.getInstanceStatus() != RECEIVED) {
+                continue;
+            }
+            Dataset refSOP = refSOPs.addNewItem();           
+            refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
+            refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
+            refSOP.putAE(Tags.RetrieveAET, StringUtils.split(
+                    inst.getRetrieveAETs(), '\\')[0]);
+            refSOP.putCS(Tags.InstanceAvailability, "ONLINE");
         }
-        Dataset refser = ian.getItem(Tags.RefSeriesSeq);
-        if (refser == null ) {
-            log.debug("exit checkSeriesStored - empty IAN");
-            return null;
-        }
-        if (seriuid != null &&
-                seriuid.equals(refser.getString(Tags.SeriesInstanceUID))) {
-            log.debug("exit checkSeriesStored - same Series");
+        if (refSOPs.countItems() == 0) {
             return null;
         }
         SeriesStored seriesStored = new SeriesStored(ian);
-        seriesStored.setCalledAET(assoc.getCalledAET());
-        seriesStored.setCallingAET(assoc.getCallingAET());
-        seriesStored.setRetrieveAET(assoc.getRetrieveAET());
-        seriesStored.setPatientID(assoc.getPatientId());
-        seriesStored.setPatientName(assoc.getPatientName());
-        seriesStored.setAccessionNumber(assoc.getAccessionNumber());
-        if (log.isDebugEnabled()) {
-            log.debug("exit checkSeriesStored - " 
-                    + refser.vm(Tags.RefSOPSeq) + " instances");
-        }
+        seriesStored.setAccessionNumber(study.getAccessionNumber());
+        seriesStored.setCallingAET(series.getSourceAET());
+        seriesStored.setPatientID(pat.getPatientId());
+        seriesStored.setPatientName(pat.getPatientName());
         return seriesStored;
     }
-
+    
     /**
      * @ejb.interface-method
      */

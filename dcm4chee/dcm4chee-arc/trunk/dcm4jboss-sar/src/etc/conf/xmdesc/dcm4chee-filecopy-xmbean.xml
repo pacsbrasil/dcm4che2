@@ -26,18 +26,17 @@ The comma separated list of file system paths after the (optional) condition
 defines the Copying destination. Each file systme path can be suffixed by !<from>-<to> to defer Copying to
 that destination outside a particular time interval.
       <br>Format:
-      <br>[calling|called[!]=<i>aeTitleFrom</i>]<i>dirPath</i>!<i>from</i>-<i>to</i> | NONE 
+      <br>[calling[!]=<i>aeTitle</i>]<i>dirPath</i>!<i>from</i>-<i>to</i> | NONE 
       <br>where
-      <br><i>calling</i> = create a copy condition for objects sent from this calling AE title
-      <br><i>called</i> = create a copy condition for objects are forwarded from the Called AE title in the Association request. Use != to mean NOT.
-      <br><i>aeTitleFrom</i> = the calling AE titles, or the called AE titles, separated by commas
+      <br><i>calling</i> = create a copy condition for objects received from this calling AE title
+      <br><i>aeTitle</i> = the calling AE titles separated by commas
       <br><i>dirPath</i> = the destination file system identified by its path, in a comma-separated list (optional)
       <br><i>!from</i>-<i>to</i> = start and end hour (0-23) when no Copying to this file system should be performed (optional)
       <br>NONE = do not use any Copying rules.
 <br>Example:      
-<br>[calling=SCU1|SCU2,called!=SCP0]/mnt/nfs1,/mnt/nfs2!8-16
-<br>Forwards objects received from AE Title SCU1 or SCU2, when the Called
-AE Title in the Association Request is NOT SCP0, to file systems mounted at /mnt/nfs1 and /mnt/nfs2. Copying of objects received between 8am and
+<br>[calling=SCU1|SCU2]/mnt/nfs1,/mnt/nfs2!8-16
+<br>Forwards objects received from AE Title SCU1 or SCU2 to file systems mounted
+at /mnt/nfs1 and /mnt/nfs2. Copying of objects received between 8am and
 4pm to /mnt/nfs2 is delayed until 4 pm.]]>
       </description>
       <name>CopyingRules</name>

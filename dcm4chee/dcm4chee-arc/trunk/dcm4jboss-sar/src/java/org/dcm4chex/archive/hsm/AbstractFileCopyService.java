@@ -215,7 +215,6 @@ implements MessageListener, NotificationListener {
 		SeriesStored seriesStored = (SeriesStored) notif.getUserData();
 		Map param = new HashMap();
 		param.put("calling", new String[] { seriesStored.getCallingAET() });
-		param.put("called", new String[] { seriesStored.getCalledAET() });
 		String[] dests = copyingRules.getForwardDestinationsFor(param);
         if (dests.length == 0)
             return;

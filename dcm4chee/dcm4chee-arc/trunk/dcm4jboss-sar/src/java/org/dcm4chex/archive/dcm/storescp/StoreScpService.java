@@ -583,17 +583,16 @@ public class StoreScpService extends AbstractScpService {
      * @param ds				Dataset with metadata for database.
      * @param last		        last file to import
      */
-	public Long importFile(Long pk, FileDTO fileDTO, Dataset ds,
+	public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
         Storage store = getStorage();
-        if (pk == null) {
-            pk = store.initAssociation("IMPORT", "IMPORT", fileDTO.getRetrieveAET());
-        } else {
-            SeriesStored seriesStored = store.checkSeriesStored(pk, ds.getString(Tags.SeriesInstanceUID));
+        String seriud = ds.getString(Tags.SeriesInstanceUID);
+        if (prevseriuid != null && !prevseriuid.equals(seriud)) {
+            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid);
             if (seriesStored != null) {
                 log.debug("Send SeriesStoredNotification - series changed");
                 scp.doAfterSeriesIsStored(store, null, seriesStored);
-                store.resetAssociation(pk);
+                store.commitSeriesStored(seriesStored);
             }
         }
 		String cuid = ds.getString(Tags.SOPClassUID);
@@ -603,28 +602,26 @@ public class StoreScpService extends AbstractScpService {
 		String fsPath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         File f = FileUtils.toFile(fsPath, filePath);
-		scp.updateDB(store, pk, ds, fileDTO.getFileSystemPk(), filePath, f, fileDTO.getFileMd5() );
+		scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f,
+                fileDTO.getFileMd5() );
 		if (last) {
-            SeriesStored seriesStored = store.checkSeriesStored(pk, null);
+            SeriesStored seriesStored = store.makeSeriesStored(seriud);
             if (seriesStored != null) {
                 scp.doAfterSeriesIsStored(store, null, seriesStored);
+                store.commitSeriesStored(seriesStored);
             }
-            store.removeAssociation(pk);
  		}
-		return pk;
 	}
 
     private void checkPendingSeriesStored() throws Exception {
-        Storage store = getStorage();        
-        Long pk;
-        while ((pk = store.nextPendingAssociation(pendingSeriesStoredTimeout)) != null) {
-            SeriesStored seriesStored = store.checkSeriesStored(pk, null);
-            if (seriesStored != null) {
-                log.info("Detect pending " + seriesStored);
-                scp.doAfterSeriesIsStored(store, null, seriesStored);
-            }
-            store.removeAssociation(pk);            
-        }        
+        Storage store = getStorage(); 
+        SeriesStored[] seriesStored = 
+            store.checkSeriesStored(pendingSeriesStoredTimeout);
+        for (int i = 0; i < seriesStored.length; i++) {
+            log.info("Detect pending " + seriesStored[i]);
+            scp.doAfterSeriesIsStored(store, null, seriesStored[i]);
+            store.commitSeriesStored(seriesStored[i]);
+        }
     }
 
     Storage getStorage() throws RemoteException, CreateException,

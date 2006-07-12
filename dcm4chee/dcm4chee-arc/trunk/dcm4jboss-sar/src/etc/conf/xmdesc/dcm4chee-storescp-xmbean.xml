@@ -786,13 +786,6 @@ StoreSCP service.
    <operation impact="ACTION">
       <description>Import a DICOM file (internal use only)</description>
       <name>importFile</name>
-       <parameter>
-        <description>Identifies (virtual) Association Entity used to accumulate
-          imported files of one Series.
-        </description>
-        <name>pk</name>
-        <type>java.lang.Long</type>
-      </parameter>
       <parameter>
         <description>Transfer object for File</description>
         <name>fileDTO</name>
@@ -804,11 +797,17 @@ StoreSCP service.
         <type>org.dcm4che.data.Dataset</type>
       </parameter>
       <parameter>
+        <description>Previous Series Instance UID 
+        - triggers SeriesStored Notification if different to Series Instance UID in Dataset</description>
+        <name>prevSeriesInstanceUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
         <description>mark last object to import - triggers SeriesStored Notification</description>
         <name>last</name>
         <type>boolean</type>
       </parameter>
-      <return-type>java.lang.Long</return-type>
+      <return-type>void</return-type>
    </operation>
 
    <!-- Notifications -->

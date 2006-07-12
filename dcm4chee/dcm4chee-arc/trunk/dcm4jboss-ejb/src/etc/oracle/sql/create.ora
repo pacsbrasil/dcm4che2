@@ -261,21 +261,6 @@ CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
 
-CREATE SEQUENCE assoc_pk_seq;
-CREATE TABLE assoc (
-	pk              NUMBER(38,0) NOT NULL CONSTRAINT assoc_pk PRIMARY KEY,
-	calling_aet    	VARCHAR2(255),
-	called_aet     	VARCHAR2(255),
-	retrieve_aet   	VARCHAR2(255),
-	pat_id         	VARCHAR2(255),
-	pat_name    	VARCHAR2(255),
-	accession_no	VARCHAR2(255),
-	created_time	TIMESTAMP,
-	updated_time	TIMESTAMP,
-	ian_attrs       BLOB
-);
-CREATE INDEX assoc_updated_time ON assoc(updated_time);
-
 CREATE SEQUENCE study_on_fs_pk_seq;
 CREATE TABLE study_on_fs (
 	pk              NUMBER(38,0) NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,

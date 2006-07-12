@@ -251,20 +251,6 @@ CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
 
-CREATE TABLE assoc (
-	pk              IDENTITY PRIMARY KEY,
-	calling_aet    	VARCHAR(256),
-	called_aet     	VARCHAR(256),
-	retrieve_aet   	VARCHAR(256),
-	pat_id         	VARCHAR(256),
-	pat_name    	VARCHAR(256),
-	accession_no	VARCHAR(256),
-	created_time	TIMESTAMP,
-	updated_time	TIMESTAMP,
-	ian_attrs       VARBINARY
-);
-CREATE INDEX assoc_updated_time ON assoc(updated_time);
-
 CREATE TABLE study_on_fs (
 	pk              IDENTITY PRIMARY KEY,
 	study_fk		INTEGER,

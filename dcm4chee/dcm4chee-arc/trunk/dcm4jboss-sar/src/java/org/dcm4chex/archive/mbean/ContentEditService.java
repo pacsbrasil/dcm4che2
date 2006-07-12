@@ -48,7 +48,6 @@ import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import javax.jms.JMSException;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
@@ -57,7 +56,6 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.common.ActionOrder;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -69,7 +67,6 @@ import org.dcm4chex.archive.notif.PatientUpdated;
 import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -442,12 +439,13 @@ public class ContentEditService extends ServiceMBeanSupport {
 		List failed = new ArrayList();
 		Iterator iterFileDTO = files[0].iterator();
 		Iterator iterDS = files[1].iterator();
-		Long pk = null;
+        String prevseriuid = null;
 		while ( iterFileDTO.hasNext() ) {
             FileDTO fileDTO = (FileDTO) iterFileDTO.next();
             Dataset ds = (Dataset) iterDS.next();
 			try {
-                pk = importFile(pk, fileDTO, ds, !iterFileDTO.hasNext() );
+                importFile(fileDTO, ds, prevseriuid, !iterFileDTO.hasNext() );
+                prevseriuid = ds.getString(Tags.SeriesInstanceUID);
             } catch (Exception e) {
                 failed.add(fileDTO);
                 log.warn("Undelete failed for file "+fileDTO +" ds:",e);
@@ -550,20 +548,20 @@ public class ContentEditService extends ServiceMBeanSupport {
         super.sendNotification(notif);
 	}
 	
-    private Long importFile(Long pk, FileDTO fileDTO, Dataset ds,
+    private void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
-        return (Long) server.invoke(
+        server.invoke(
                     this.storeScpServiceName,
                     "importFile",
                     new Object[] {  
-                        pk, 
                         fileDTO,
-                        ds, 
+                        ds,
+                        prevseriuid,
                         new Boolean(last) },
                     new String[] { 
-                        Long.class.getName(),
                         FileDTO.class.getName(),
                         Dataset.class.getName(),
+                        String.class.getName(),
             			boolean.class.getName() });
 	}
     
