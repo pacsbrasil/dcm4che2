@@ -123,6 +123,25 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     private String[] cipherSuites = null;
     
+    private static final int[] UPDATE_ATTRIBUTES = new int[] {
+    	Tags.OtherPatientIDs,
+		Tags.OtherPatientNames,
+    	Tags.StudyDescription,
+		Tags.StudyID,
+		Tags.AccessionNumber,
+		Tags.StudyDate,
+		Tags.StudyTime,
+		Tags.ReferringPhysicianName,
+		Tags.SeriesDescription,
+		Tags.SeriesNumber,
+		Tags.Modality,
+		Tags.BodyPartExamined,
+		Tags.SeriesDate,
+		Tags.SeriesTime,
+		Tags.Laterality,
+		Tags.PerformingPhysicianName
+    };
+    
     private static final Logger log = Logger.getLogger(MigrationUpdateService.class);
 
     private final NotificationListener updateCheckListener = new NotificationListener() {
@@ -307,7 +326,7 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 		    				migrationUpdate.mergePatient(origPatDS, patDS);
 		    				numPatMerge++;
 		    			}
-		    			migrationUpdate.updateStatus(studyIuid, updatedStatus);
+		    			migrationUpdate.updateStudyAndSeries(studyIuid, updatedStatus, archiveStudy);
 		    		} else {
 		    			numFailures++;
 		    			migrationUpdate.updateStatus(studyIuid, failureStatus);
@@ -353,6 +372,10 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
     	qrDS.putPN(Tags.PatientName);
     	qrDS.putPN(Tags.PatientBirthDate);
     	qrDS.putPN(Tags.PatientSex);
+		for (int i = 0; i < UPDATE_ATTRIBUTES.length; i++) {
+			if (qrDS.vm(UPDATE_ATTRIBUTES[i]) == -1)
+				qrDS.putXX(UPDATE_ATTRIBUTES[i]);
+		}		
 		return qrDS;
 	}
 	private Dataset getInstanceQueryDS() {
@@ -415,6 +438,7 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 	    for ( int i = 0, len = findRspList.size() ; i < len ; i++ ) {
 	    	ds =((Dimse) findRspList.get(i)).getDataset();
 	    	iuid = ds.getString(tag);
+	    	removeEmptyUpdateAttributes(ds);
 			if (map.put(iuid, ds) != null ) {
 				throw new IllegalArgumentException("C-FIND contains two items with same uid ("+Tags.toString(tag)+") ! :"+iuid);
 			}
@@ -423,6 +447,20 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 	}
 
     /**
+	 * @param ds
+	 */
+	private void removeEmptyUpdateAttributes(Dataset ds) {
+		String value;
+		for ( int i = 0 ; i < UPDATE_ATTRIBUTES.length ; i++ ) {
+			value = ds.getString(UPDATE_ATTRIBUTES[i]);
+			if ( value == null || value.length() < 1 ) {
+				log.info("remove empty update attribute:"+UPDATE_ATTRIBUTES[i]);
+				ds.remove(UPDATE_ATTRIBUTES[i]);
+			}
+		}
+		
+	}
+	/**
 	 * @param qrSeriesDS
 	 * @param archiveStudy
 	 * @param aa

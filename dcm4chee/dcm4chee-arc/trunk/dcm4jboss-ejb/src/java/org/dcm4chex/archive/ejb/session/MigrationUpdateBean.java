@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -61,6 +62,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.util.EntityPkCache;
@@ -177,6 +179,33 @@ public abstract class MigrationUpdateBean implements SessionBean {
      */
     public void mergePatient(Dataset dominant, Dataset prior) {
     	patientUpdate.mergePatient(dominant, prior);
+    }
+
+	/**
+     * @throws DcmServiceException
+	 * @throws FinderException
+	 * @ejb.interface-method
+     */
+    public void updateStudyAndSeries(String studyIuid, int studyStatus, Map map) throws FinderException, DcmServiceException {
+    	if ( studyIuid == null ) return;
+   		StudyLocal study = getStudy(studyIuid);
+   		study.setStudyStatus(studyStatus);
+   		if ( map != null && !map.isEmpty()) {
+   			Iterator iter = study.getSeries().iterator();
+   			Dataset ds, dsOrig;
+   			SeriesLocal sl;
+   			do {
+   				sl = (SeriesLocal)iter.next();
+   				ds = sl.getAttributes(false);
+   				dsOrig = (Dataset)map.get(sl.getSeriesIuid());
+   				ds.putAll(dsOrig);
+   				sl.setAttributes(ds);
+   			} while ( iter.hasNext() );
+   			ds = study.getAttributes(false);
+   			ds.putAll(dsOrig); 
+   			study.setAttributes(ds); 
+   			study.updateDerivedFields(false,false,false,false,false,true);
+   		}
     }
     
 }
