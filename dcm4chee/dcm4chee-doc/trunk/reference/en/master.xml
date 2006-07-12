@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding="iso-8859-1"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
-                      "../support/docbook-dtd/docbookx.dtd"
+                      "../../support/docbook-dtd/docbookx.dtd"
 [
 <!ENTITY install               SYSTEM "modules/install.xml">
 <!ENTITY ui-guide               SYSTEM "modules/ui-guide.xml">
@@ -78,6 +78,6 @@
 
     <!--&dcs;-->
 
-    &iheis;
+    <!--&iheis;-->
 </book>
 
