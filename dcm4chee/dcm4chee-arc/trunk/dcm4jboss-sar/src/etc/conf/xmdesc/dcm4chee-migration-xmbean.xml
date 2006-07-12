@@ -94,7 +94,7 @@
    <attribute access="read-write" getMethod="getFailureStatus" setMethod="setFailureStatus">
       <description>New status value of studies that can not be updated.
       </description>
-      <name>UpdatedStatus</name>
+      <name>FailedStatus</name>
       <type>int</type>
       <descriptors>
          <value value="-1"/>
