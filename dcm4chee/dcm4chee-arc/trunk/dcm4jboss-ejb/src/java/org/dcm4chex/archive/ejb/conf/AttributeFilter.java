@@ -43,7 +43,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.UIDs;
 
 /**
  * 

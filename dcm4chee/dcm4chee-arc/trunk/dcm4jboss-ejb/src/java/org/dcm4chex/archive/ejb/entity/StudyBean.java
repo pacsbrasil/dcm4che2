@@ -129,11 +129,6 @@ public abstract class StudyBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
 
-    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
-            Tags.InstanceAvailability, Tags.NumberOfStudyRelatedSeries,
-            Tags.NumberOfStudyRelatedInstances, Tags.StudyStatusID,
-            Tags.StorageMediaFileSetID, Tags.StorageMediaFileSetUID };
-
     private CodeLocalHome codeHome;
 
     public void setEntityContext(EntityContext ctx) {
@@ -775,8 +770,7 @@ public abstract class StudyBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter(cuid);
-        setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
-                filter.getTransferSyntaxUID());
+        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
     }
     
     private void setAttributesInternal(Dataset ds, String tsuid) {

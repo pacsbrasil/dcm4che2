@@ -107,8 +107,6 @@
         <attr tag="00400260"/> <!-- Performed Protocol Code Sequence -->
         <attr tag="00400280"/> <!-- Comments on the Performed Procedure Step -->
         <attr tag="00400275"/> <!-- Request Attributes Sequence -->
-        <attr tag="00430010"/> <!-- Private Creator ID: dcm4che/archive -->
-        <attr tag="00430014"/> <!-- Calling AET (dcm4che/archive private Tag)-->
         <attr tag="00541001"/> <!-- Units -->
     </series>
     <!-- Deflated Explicit VR LE Transfer Syntax -->

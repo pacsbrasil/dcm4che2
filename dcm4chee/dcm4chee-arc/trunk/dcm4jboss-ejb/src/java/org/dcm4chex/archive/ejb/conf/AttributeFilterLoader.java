@@ -44,6 +44,7 @@ import java.util.HashMap;
 
 import javax.xml.parsers.SAXParserFactory;
 
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -55,6 +56,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * @since Jul 4, 2006
  */
 class AttributeFilterLoader extends DefaultHandler {
+    private static final int[] INST_SUPPL_TAGS = { Tags.RetrieveAET,
+        Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
+        Tags.StorageMediaFileSetUID };
     private final HashMap patient;
     private final HashMap study;
     private final HashMap series;
@@ -151,10 +155,10 @@ class AttributeFilterLoader extends DefaultHandler {
                 if (seriesFilter == null) {
                     throw new SAXException("missing series before instance element");                    
                 }
-                tags = merge(patFilter.getTags(), studyFilter.getTags(),
-                        seriesFilter.getTags(), tags);
-                vrs = merge(patFilter.getVRs(), studyFilter.getVRs(),
-                        seriesFilter.getVRs(), vrs);
+                tags = merge(INST_SUPPL_TAGS, patFilter.getTags(),
+                        studyFilter.getTags(), seriesFilter.getTags(), tags);
+                vrs = merge(new int[]{}, patFilter.getVRs(),
+                        studyFilter.getVRs(), seriesFilter.getVRs(), vrs);
             }
             filter.setTags(tags);
             filter.setNoCoercion(parseInts(noCoerceList));
@@ -168,12 +172,14 @@ class AttributeFilterLoader extends DefaultHandler {
     }
 
 
-    private int[] merge(int[] a, int[] b, int[] c, int[] d) {
-        int[] dst = new int[a.length + b.length + c.length + d.length];
+    private int[] merge(int[] a, int[] b, int[] c, int[] d, int[] e) {
+        int[] dst = new int[a.length + b.length + c.length + d.length + e.length];
         System.arraycopy(a, 0, dst, 0, a.length);
         System.arraycopy(b, 0, dst, a.length, b.length);
         System.arraycopy(c, 0, dst, a.length + b.length, c.length);
         System.arraycopy(d, 0, dst, a.length + b.length + c.length, d.length);
+        System.arraycopy(e, 0, dst, a.length + b.length + c.length + d.length,
+                e.length);
         Arrays.sort(dst);
         return dst;
     }

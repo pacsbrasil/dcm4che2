@@ -326,8 +326,7 @@ public abstract class PatientBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
-        setAttributesInternal(filter.filter(ds.excludePrivate()),
-                filter.getTransferSyntaxUID());
+        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
     }
 
     private void setAttributesInternal(Dataset ds, String tsuid) {

@@ -122,10 +122,6 @@ public abstract class SeriesBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(SeriesBean.class);
 
-    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
-            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances,
-            Tags.StorageMediaFileSetID, Tags.StorageMediaFileSetUID};
-
     private EntityContext ejbctx;
     private MPPSLocalHome mppsHome;
     private SeriesRequestLocalHome reqHome;
@@ -596,8 +592,7 @@ public abstract class SeriesBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
-        setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
-                filter.getTransferSyntaxUID());
+        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
     }
     
     private void setAttributesInternal(Dataset ds, String tsuid) {

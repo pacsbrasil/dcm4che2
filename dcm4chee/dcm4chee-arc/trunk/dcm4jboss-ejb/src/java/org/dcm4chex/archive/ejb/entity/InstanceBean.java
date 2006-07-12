@@ -126,10 +126,6 @@ public abstract class InstanceBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
-    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
-    	Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
-    	Tags.StorageMediaFileSetUID };
-        
     private CodeLocalHome codeHome;
 
     public void setEntityContext(EntityContext ctx) {
@@ -554,8 +550,7 @@ public abstract class InstanceBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(cuid);
         setAllAttributes(filter.isNoFilter());
-        setAttributesInternal(filter.filter(ds.subSet(SUPPL_TAGS, true, true)),
-                filter.getTransferSyntaxUID());
+        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
     }
     
     private void setAttributesInternal(Dataset ds, String tsuid) {
