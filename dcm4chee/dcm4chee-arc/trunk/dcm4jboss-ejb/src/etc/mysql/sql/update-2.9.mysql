@@ -5,7 +5,7 @@ ALTER TABLE priv_study ADD accession_no VARCHAR(250) BINARY;
 ALTER TABLE priv_series ADD src_aet VARCHAR(250) BINARY;
 ALTER TABLE study ADD study_status INTEGER;
 UPDATE study SET study_status=0;
-ALTER TABLE study MODIFY study_status NOT NULL; 
+ALTER TABLE study MODIFY study_status INTEGER NOT NULL; 
 ALTER TABLE series ADD series_status INTEGER;
 UPDATE series SET series_status=0;
 ALTER TABLE series MODIFY series_status INTEGER NOT NULL; 
