@@ -42,6 +42,10 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.macro.GeneralAnatomy;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
+import org.dcm4che2.iod.value.ImageLaterality;
+import org.dcm4che2.iod.value.Modality;
 
 /**
  * DX Anatomy Imaged Module 2006 PS3.3 - C.8.11.2
@@ -59,6 +63,14 @@ public class DXAnatomyImagedModule extends GeneralAnatomy {
         // TODO Auto-generated constructor stub
     }
 
+    public void validate(ValidationContext ctx, ValidationResult result){
+        super.validate(ctx, result);
+        if (!ImageLaterality.isValid(getImageLaterality())) {
+            result.logInvalidValue(Tag.ImageLaterality, dcmobj);
+        }
+
+    }
+    
     /**
      * Laterality of (possibly paired) body part (as described in Anatomic
      * Region Sequence (0008,2218)) examined.
@@ -114,11 +126,6 @@ public class DXAnatomyImagedModule extends GeneralAnatomy {
      * @param s
      */
     public void setImageLaterality(String s) {
-        if (s != "R" || s != "L" || s != "U" || s != "B")
-            throw new UnsupportedOperationException(s
-                    + " is not a permitted Image Laterality enumerated value."
-                    + "Must be either R, L, U or B");
-
         dcmobj.putString(Tag.ImageLaterality, VR.CS, s);
     }
 
