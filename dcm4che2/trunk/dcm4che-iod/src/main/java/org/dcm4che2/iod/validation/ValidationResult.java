@@ -86,4 +86,16 @@ public class ValidationResult {
             && missingValue == null 
             && invalidValue == null;
     }
+    
+    public DicomObject getMissingAttributes(){
+    	return missingAttributes;
+    }
+
+    public DicomObject getMissingValues(){
+    	return missingValue;
+    }
+
+    public DicomObject getInvalidValues(){
+    	return invalidValue;
+    }
 }
