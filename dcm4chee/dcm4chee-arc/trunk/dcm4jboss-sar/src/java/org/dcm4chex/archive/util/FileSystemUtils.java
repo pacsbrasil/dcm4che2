@@ -198,7 +198,7 @@ public class FileSystemUtils {
         int bytesStart = 0;
         int bytesEnd = 0;
         outerLoop: while (i > 0) {
-            line = (String) lines.get(i);
+            line = (String) lines.get(i--);
             if (line.length() > 0) {
                 // found it, so now read from the end of the line to find the
                 // last numeric character on the line, then continue until we
@@ -218,22 +218,26 @@ public class FileSystemUtils {
                 }
                 innerLoop2: while (j >= 0) {
                     char c = line.charAt(j);
-                    if (!Character.isDigit(c) && c != ',' && c != '.') {
+                    if (!Character.isDigit(c) && c != ',' && c != '.' 
+                        && !Character.isWhitespace(c)) {
                       // found the next non-numeric character, this is the
                       // beginning of the free space bytes count
-                      bytesStart = j + 1;
                       break innerLoop2;
                     }
                     j--;
                 }
+                while (Character.isWhitespace(line.charAt(++j)));
+                bytesStart = j;
                 break outerLoop;
             }
         }
 
-        // remove commas and dots in the bytes count
+        // remove commas and dots and whitespaces in the bytes count
         StringBuffer buf = new StringBuffer(line.substring(bytesStart, bytesEnd));
+        char c;
         for (int k = 0; k < buf.length(); k++) {
-            if (buf.charAt(k) == ',' || buf.charAt(k) == '.') {
+            c = buf.charAt(k);
+            if (c == ',' || c == '.' || Character.isWhitespace(c)) {
                 buf.deleteCharAt(k--);
             }
         }
