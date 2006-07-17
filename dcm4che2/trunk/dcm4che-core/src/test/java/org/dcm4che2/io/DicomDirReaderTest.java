@@ -47,6 +47,7 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.media.DicomDirReader;
 
 public class DicomDirReaderTest extends TestCase {
 

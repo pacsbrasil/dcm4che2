@@ -61,233 +61,211 @@ import org.dcm4che2.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DicomInputStream extends FilterInputStream
-        implements DicomInputHandler
-{
+public class DicomInputStream extends FilterInputStream implements
+        DicomInputHandler {
 
     private static Logger log = LoggerFactory.getLogger(DicomInputStream.class);
 
     private static final byte[] EMPTY_BYTES = {};
+
     private DicomInputHandler handler = this;
+
     private TransferSyntax ts;
+
     private DicomObject attrs;
+
     private ArrayList sqStack;
+
     private long pos = 0;
+
     private long tagpos = 0;
+
     private boolean expectFmiEnd = false;
+
     private long fmiEndPos = 0;
+
     private long markedPos = 0;
+
     private byte[] preamble;
+
     private byte[] header = new byte[8];
 
     private int tag;
+
     private VR vr;
+
     private int vallen;
 
     private long vallenLimit = 40000000L;
 
-    public DicomInputStream(RandomAccessFile raf) throws IOException
-    {
+    public DicomInputStream(RandomAccessFile raf) throws IOException {
         this(new RAFInputStreamAdapter(raf));
         pos = raf.getFilePointer();
     }
 
-    public DicomInputStream(File f) throws IOException
-    {
+    public DicomInputStream(RandomAccessFile raf, TransferSyntax ts)
+            throws IOException {
+        this(new RAFInputStreamAdapter(raf), ts);
+        pos = raf.getFilePointer();
+    }
+
+    public DicomInputStream(File f) throws IOException {
         this(new BufferedInputStream(new FileInputStream(f)));
     }
 
-    public DicomInputStream(InputStream in, String tsuid) throws IOException
-    {
+    public DicomInputStream(InputStream in, String tsuid) throws IOException {
         this(in, TransferSyntax.valueOf(tsuid));
     }
 
-    public DicomInputStream(InputStream in) throws IOException
-    {
+    public DicomInputStream(InputStream in) throws IOException {
         super(in);
         this.ts = guessTransferSyntax();
     }
 
     public DicomInputStream(InputStream in, TransferSyntax ts)
-            throws IOException
-    {
+            throws IOException {
         super(in);
         if (ts == null)
             throw new NullPointerException("ts");
         switchTransferSyntax(ts);
     }
 
-    public byte[] getPreamble()
-    {
+    public byte[] getPreamble() {
         return (byte[]) (preamble == null ? null : preamble.clone());
     }
 
-    public final long getStreamPosition()
-    {
+    public final long getStreamPosition() {
         return pos;
     }
 
-    public final void setStreamPosition(long pos)
-    {
+    public final void setStreamPosition(long pos) {
         this.pos = pos;
     }
 
-    public final long getValueLengthLimit()
-    {
+    public final long getValueLengthLimit() {
         return vallenLimit;
     }
 
-    public final void setValueLengthLimit(long vallenLimit)
-    {
+    public final void setValueLengthLimit(long vallenLimit) {
         this.vallenLimit = vallenLimit;
     }
 
-    public final long tagPosition()
-    {
+    public final long tagPosition() {
         return tagpos;
     }
 
-    public final long getEndOfFileMetaInfoPosition()
-    {
+    public final long getEndOfFileMetaInfoPosition() {
         return fmiEndPos;
     }
 
-    public final void setEndOfFileMetaInfoPosition(long fmiEndPos)
-    {
+    public final void setEndOfFileMetaInfoPosition(long fmiEndPos) {
         this.fmiEndPos = fmiEndPos;
     }
 
-    public final void setHandler(DicomInputHandler handler)
-    {
+    public final void setHandler(DicomInputHandler handler) {
         if (handler == null)
             throw new NullPointerException();
         this.handler = handler;
     }
 
-    public final int tag()
-    {
+    public final int tag() {
         return tag;
     }
 
-    public final int level()
-    {
+    public final int level() {
         return sqStack != null ? sqStack.size() : 0;
     }
 
-    public final int valueLength()
-    {
+    public final int valueLength() {
         return vallen;
     }
 
-    public final VR vr()
-    {
+    public final VR vr() {
         return vr;
     }
 
-    public final DicomElement sq()
-    {
+    public final DicomElement sq() {
         return (DicomElement) sqStack.get(sqStack.size() - 1);
     }
 
-    public final TransferSyntax getTransferSyntax()
-    {
+    public final TransferSyntax getTransferSyntax() {
         return ts;
     }
 
-    public final DicomObject getDicomObject()
-    {
+    public final DicomObject getDicomObject() {
         return attrs;
     }
 
-    private TransferSyntax guessTransferSyntax() throws IOException
-    {
+    private TransferSyntax guessTransferSyntax() throws IOException {
         mark(132);
         byte[] b = new byte[128];
-        try
-        {
+        try {
             readFully(b, 0, 128);
             readFully(header, 0, 4);
-            if (header[0] == 'D' 
-                && header[1] == 'I' 
-                && header[2] == 'C'
-                && header[3] == 'M')
-            {
+            if (header[0] == 'D' && header[1] == 'I' && header[2] == 'C'
+                    && header[3] == 'M') {
                 preamble = b;
                 expectFmiEnd = true;
                 return TransferSyntax.ExplicitVRLittleEndian;
             }
-        } catch (IOException ignore)
-        {
+        } catch (IOException ignore) {
         }
         reset();
         boolean bigEndian = b[1] != 0;
         expectFmiEnd = b[bigEndian ? 1 : 0] == 2;
-        try
-        {
+        try {
             VR.valueOf(((b[4] & 0xff) << 8) | (b[5] & 0xff));
             return bigEndian ? TransferSyntax.ExplicitVRBigEndian
                     : TransferSyntax.ExplicitVRLittleEndian;
-        } catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             return bigEndian ? TransferSyntax.ImplicitVRBigEndian
                     : TransferSyntax.ImplicitVRLittleEndian;
         }
     }
 
-    public int read() throws IOException
-    {
+    public int read() throws IOException {
         int ch = in.read();
-        if (ch != -1)
-        {
+        if (ch != -1) {
             ++pos;
         }
         return ch;
     }
 
-    public int read(byte[] b, int off, int len) throws IOException
-    {
+    public int read(byte[] b, int off, int len) throws IOException {
         int result = in.read(b, off, len);
-        if (result != -1)
-        {
+        if (result != -1) {
             pos += result;
         }
         return result;
     }
 
-    public void mark(int readlimit)
-    {
+    public void mark(int readlimit) {
         in.mark(readlimit);
         markedPos = pos;
     }
 
-    public void reset() throws IOException
-    {
+    public void reset() throws IOException {
         in.reset();
         pos = markedPos;
     }
 
-    public long skip(long n) throws IOException
-    {
+    public long skip(long n) throws IOException {
         long result = in.skip(n);
-        if (result > 0)
-        {
+        if (result > 0) {
             pos += result;
         }
         return result;
     }
 
-    public final void readFully(byte b[]) throws IOException
-    {
+    public final void readFully(byte b[]) throws IOException {
         readFully(b, 0, b.length);
     }
 
-    public final void readFully(byte b[], int off, int len) throws IOException
-    {
+    public final void readFully(byte b[], int off, int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
         int n = 0;
-        while (n < len)
-        {
+        while (n < len) {
             int count = read(b, off + n, len - n);
             if (count < 0)
                 throw new EOFException();
@@ -295,52 +273,45 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    public int readHeader() throws IOException
-    {
+    public int readHeader() throws IOException {
         tagpos = pos;
         readFully(header, 0, 8);
         tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
                 .bytesLE2tag(header, 0);
-        if (expectFmiEnd && !TagUtils.isFileMetaInfoElement(tag))
-        {
-            log.warn("Missing or wrong (0002,0000) Group Length of File Meta Information");  
+        if (expectFmiEnd && !TagUtils.isFileMetaInfoElement(tag)) {
+            log
+                    .warn("Missing or wrong (0002,0000) Group Length of File Meta Information");
             String tsuid = attrs.getString(Tag.TransferSyntaxUID);
-            if (tsuid != null)
-            {
+            if (tsuid != null) {
                 ts = TransferSyntax.valueOf(tsuid);
-                tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) 
-                                     : ByteUtils.bytesLE2tag(header, 0);
+                tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0)
+                        : ByteUtils.bytesLE2tag(header, 0);
             } else {
-                log.warn("Missing (0002,0010) Transfer Synatx in File Meta Information");                
+                log
+                        .warn("Missing (0002,0010) Transfer Synatx in File Meta Information");
             }
             expectFmiEnd = false;
         }
         if (tag == Tag.Item || tag == Tag.ItemDelimitationItem
-                || tag == Tag.SequenceDelimitationItem)
-        {
+                || tag == Tag.SequenceDelimitationItem) {
             vr = null;
-        } else if (!ts.explicitVR())
-        {
+        } else if (!ts.explicitVR()) {
             vr = attrs.vrOf(tag);
-        } else
-        {
-            try
-            {
+        } else {
+            try {
                 vr = VR.valueOf(((header[4] & 0xff) << 8) | (header[5] & 0xff));
-            } catch (IllegalArgumentException e)
-            {
+            } catch (IllegalArgumentException e) {
                 vr = attrs.vrOf(tag);
             }
-            if (vr.explicitVRHeaderLength() == 8)
-            {
+            if (vr.explicitVRHeaderLength() == 8) {
                 vallen = ts.bigEndian() ? ByteUtils.bytesBE2ushort(header, 6)
                         : ByteUtils.bytesLE2ushort(header, 6);
                 return tag;
             }
-//            if (vr == VR.UN)
-//            {
-//                vr = attrs.vrOf(tag);
-//            }
+            // if (vr == VR.UN)
+            // {
+            // vr = attrs.vrOf(tag);
+            // }
             readFully(header, 4, 4);
         }
         vallen = ts.bigEndian() ? ByteUtils.bytesBE2int(header, 4) : ByteUtils
@@ -348,8 +319,7 @@ public class DicomInputStream extends FilterInputStream
         return tag;
     }
 
-    public void readItem(DicomObject dest) throws IOException
-    {
+    public void readItem(DicomObject dest) throws IOException {
         dest.setItemOffset(pos);
         if (readHeader() != Tag.Item)
             throw new DicomCodingException("Expected (FFFE,E000) but read "
@@ -357,38 +327,30 @@ public class DicomInputStream extends FilterInputStream
         readDicomObject(dest, vallen);
     }
 
-    public void readDicomObject(DicomObject dest, int len) throws IOException
-    {
+    public void readDicomObject(DicomObject dest, int len) throws IOException {
         DicomObject oldAttrs = attrs;
         this.attrs = dest;
-        try
-        {
+        try {
             parse(len, Tag.ItemDelimitationItem);
-        } finally
-        {
+        } finally {
             this.attrs = oldAttrs;
         }
     }
 
-    public DicomObject readDicomObject() throws IOException
-    {
+    public DicomObject readDicomObject() throws IOException {
         DicomObject dest = new BasicDicomObject();
         readDicomObject(dest, -1);
         return dest;
     }
 
-    private void parse(int len, int endTag) throws IOException
-    {
+    private void parse(int len, int endTag) throws IOException {
         long endPos = len == -1 ? Long.MAX_VALUE : pos + (len & 0xffffffffL);
         boolean quit = false;
         int tag0 = 0;
-        while (!quit && tag0 != endTag && pos < endPos)
-        {
-            try
-            {
+        while (!quit && tag0 != endTag && pos < endPos) {
+            try {
                 tag0 = readHeader();
-            } catch (EOFException e)
-            {
+            } catch (EOFException e) {
                 if (len != -1)
                     throw e;
                 // treat EOF like read of ItemDelimitationItem
@@ -397,20 +359,19 @@ public class DicomInputStream extends FilterInputStream
                 vallen = 0;
             }
             quit = !handler.readValue(this);
-            if (expectFmiEnd && pos == fmiEndPos)
-            {
+            if (expectFmiEnd && pos == fmiEndPos) {
                 String tsuid = attrs.getString(Tag.TransferSyntaxUID);
                 if (tsuid != null)
                     switchTransferSyntax(TransferSyntax.valueOf(tsuid));
                 else
-                    log.warn("Missing (0002,0010) Transfer Synatx in File Meta Information");                
+                    log
+                            .warn("Missing (0002,0010) Transfer Synatx in File Meta Information");
                 this.expectFmiEnd = false;
             }
         }
     }
 
-    private void switchTransferSyntax(TransferSyntax ts)
-    {
+    private void switchTransferSyntax(TransferSyntax ts) {
         if (this.ts != null && this.ts.deflated())
             throw new IllegalStateException(
                     "Cannot switch back from Deflated TS");
@@ -419,21 +380,16 @@ public class DicomInputStream extends FilterInputStream
         this.ts = ts;
     }
 
-    public boolean readValue(DicomInputStream dis) throws IOException
-    {
+    public boolean readValue(DicomInputStream dis) throws IOException {
         if (dis != this)
             throw new IllegalArgumentException("dis != this");
-        switch (tag)
-        {
+        switch (tag) {
         case Tag.Item:
             DicomElement sq = (DicomElement) sqStack.get(sqStack.size() - 1);
-            if (vallen == -1)
-            {
-                if (sq.vr() == VR.UN)
-                {
+            if (vallen == -1) {
+                if (sq.vr() == VR.UN) {
                     DicomElement tmp = attrs.putSequence(sq.tag());
-                    for (int i = 0, n = sq.countItems(); i < n; ++i)
-                    {
+                    for (int i = 0, n = sq.countItems(); i < n; ++i) {
                         byte[] b = sq.getFragment(i);
                         InputStream is = new ByteArrayInputStream(b);
                         DicomInputStream dis1 = new DicomInputStream(is,
@@ -444,63 +400,60 @@ public class DicomInputStream extends FilterInputStream
                     }
                     sqStack.set(sqStack.size() - 1, sq = tmp);
                 }
-                if (sq.vr() != VR.SQ)
-                {
+                if (sq.vr() != VR.SQ) {
                     throw new DicomCodingException(TagUtils.toString(tag) + " "
                             + sq.vr() + " contains item with unknown length.");
                 }
             }
-            if (sq.vr() == VR.SQ)
-            {
+            if (sq.vr() == VR.SQ) {
                 BasicDicomObject item = new BasicDicomObject();
                 item.setParent(attrs);
                 item.setItemOffset(tagpos);
                 readDicomObject(item, vallen);
                 sq.addDicomObject(item);
-            } else
-            {
+            } else {
                 sq.addFragment(readBytes(vallen));
             }
             break;
         case Tag.ItemDelimitationItem:
-            if (vallen > 0)
-            {
-                log.warn("Item Delimitation Item (FFFE,E00D) with non-zero Item Length:"
-                        + vallen + " at pos: " + tagpos + " - try to skip length");
+            if (vallen > 0) {
+                log
+                        .warn("Item Delimitation Item (FFFE,E00D) with non-zero Item Length:"
+                                + vallen
+                                + " at pos: "
+                                + tagpos
+                                + " - try to skip length");
                 skip(vallen);
             }
             break;
         case Tag.SequenceDelimitationItem:
-            if (vallen > 0)
-            {
-                log.warn("Sequence Delimitation Item (FFFE,E0DD) with non-zero Item Length:"
-                        + vallen + " at pos: " + tagpos + " - try to skip length");
+            if (vallen > 0) {
+                log
+                        .warn("Sequence Delimitation Item (FFFE,E0DD) with non-zero Item Length:"
+                                + vallen
+                                + " at pos: "
+                                + tagpos
+                                + " - try to skip length");
                 skip(vallen);
             }
             break;
         default:
-            if (vallen == -1 || vr == VR.SQ)
-            {
+            if (vallen == -1 || vr == VR.SQ) {
                 DicomElement a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
                         .putFragments(tag, vr, ts.bigEndian());
-                if (sqStack == null)
-                { // lazy creation
+                if (sqStack == null) { // lazy creation
                     sqStack = new ArrayList();
                 }
                 sqStack.add(a);
-                try
-                {
+                try {
                     parse(vallen, Tag.SequenceDelimitationItem);
-                } finally
-                {
+                } finally {
                     sqStack.remove(sqStack.size() - 1);
                 }
-            } else
-            {
-                DicomElement a = attrs.putBytes(tag, vr, readBytes(vallen),
-                        ts.bigEndian());
-                if (tag == 0x00020000)
-                {
+            } else {
+                DicomElement a = attrs.putBytes(tag, vr, readBytes(vallen), ts
+                        .bigEndian());
+                if (tag == 0x00020000) {
                     fmiEndPos = pos + a.getInt(false);
                 }
             }
@@ -508,16 +461,13 @@ public class DicomInputStream extends FilterInputStream
         return true;
     }
 
-    public byte[] readBytes(int vallen) throws IOException
-    {
+    public byte[] readBytes(int vallen) throws IOException {
         if (vallen == 0)
             return EMPTY_BYTES;
-        if (vallen > vallenLimit)
-        {
+        if (vallen > vallenLimit) {
             long remaining = vallen;
             long nr;
-            while (remaining > 0)
-            {
+            while (remaining > 0) {
                 nr = skip(remaining);
                 if (nr == 0)
                     throw new EOFException();

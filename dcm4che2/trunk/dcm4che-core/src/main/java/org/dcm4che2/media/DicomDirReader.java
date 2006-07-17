@@ -36,17 +36,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.io;
+package org.dcm4che2.media;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.FileSetInformation;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.util.IntHashtable;
+import org.dcm4che2.util.StringUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -56,26 +61,79 @@ import org.dcm4che2.util.IntHashtable;
  */
 public class DicomDirReader {
 	protected final RandomAccessFile raf;
-	protected DicomInputStream in;
-	protected DicomObject fileSetInfo;
+	protected final DicomInputStream in;
+	protected final FileSetInformation fileSetInfo;
+    protected File file;
 	protected boolean showInactiveRecords;
-	protected IntHashtable cache = new IntHashtable();
+	protected final IntHashtable cache = new IntHashtable();
 	
-	public DicomDirReader(File f) throws FileNotFoundException {
-		this(new RandomAccessFile(f, "r"));
+    protected DicomDirReader(RandomAccessFile raf,
+            FileSetInformation fileSetInfo)
+    throws IOException {
+        this.raf = raf;     
+        this.in = new DicomInputStream(raf, TransferSyntax.ExplicitVRLittleEndian);
+        this.fileSetInfo = fileSetInfo;
+    }
+
+    public DicomDirReader(File file) throws IOException {
+		this(new RandomAccessFile(file, "r"));
+        this.file = file;
 	}
 	
-	public DicomDirReader(RandomAccessFile raf) {
-		this.raf = raf;		
+	public DicomDirReader(RandomAccessFile raf) throws IOException {
+		this.raf = raf;	
+        in = new DicomInputStream(raf);
+        in.setHandler(new StopTagInputHandler(Tag.DirectoryRecordSequence));
+        fileSetInfo = new FileSetInformation();
+        in.readDicomObject(fileSetInfo.getDicomObject(), -1);
+        in.setHandler(in);
 	}
+    
+    public File referencedFile(DicomObject rec) {
+        if (file == null) {
+            throw new IllegalStateException("Unknown File-set Base Directory");            
+        }
+        return referencedFile(rec, file.getParentFile());
+    }
 	
-	public void clearCache() {
+    public File referencedFile(DicomObject rec, File basedir) {
+        String[] fileID = rec.getStrings(Tag.ReferencedFileID);
+        if (fileID == null || fileID.length == 0) {
+            return null;
+        }        
+        StringBuffer sb = new StringBuffer(basedir.getPath());
+        for (int i = 0; i < fileID.length; i++) {
+            sb.append(File.separatorChar).append(fileID[i]);
+        }
+        return new File(sb.toString());
+    }
+    
+    public String[] fileID(File f) throws IOException {
+        if (file == null) {
+            throw new IllegalStateException("Unknown File-set base directory");            
+        }
+        return fileID(f, file.getParentFile());        
+    }
+
+    private String[] fileID(File file, File basedir) throws IOException {
+        String dirpath = basedir.getCanonicalPath();
+        String filepath = file.getCanonicalPath();
+        int start = dirpath.length();
+        if (!filepath.startsWith(dirpath) || start == filepath.length()) {
+            throw new IllegalArgumentException("file " + file 
+                    + " not included in file-set " + basedir);
+        }
+        if (filepath.charAt(start) == File.separatorChar) {
+            ++start;
+        }
+        return StringUtils.split(filepath.substring(start), File.separatorChar);
+    }
+
+    public void clearCache() {
 		cache.clear();
 	}
 	
-	public DicomObject getFileSetInfo()
-			throws IOException {
-		init();
+	public FileSetInformation getFileSetInformation() {
 		return fileSetInfo;
 	}
 
@@ -87,31 +145,32 @@ public class DicomDirReader {
 		this.showInactiveRecords = showInactiveRecords;
 	}
 
-	private void init()
-			throws IOException {
-		if (in != null)
-			return;
-		in = new DicomInputStream(raf);
-		in.setHandler(new StopTagInputHandler(Tag.DirectoryRecordSequence));
-		fileSetInfo = new BasicDicomObject();
-		in.readDicomObject(fileSetInfo, -1);
-		in.setHandler(in);
-	}
-	
 	public DicomObject findFirstRootRecord()
 			throws IOException {
 		return findFirstMatchingRootRecord(null, false);
 	}
 
+    public DicomObject findLastRootRecord()
+    throws IOException {
+        return readRecord(fileSetInfo.getOffsetLastRootRecord(), null, false);
+    }
+
 	public DicomObject findFirstMatchingRootRecord(DicomObject keys,
 			boolean ignoreCaseOfPN)
 			throws IOException {
-		init();
-		return readRecord(fileSetInfo.getInt(
-					Tag.OffsetoftheFirstDirectoryRecordoftheRootDirectoryEntity),
-					keys, ignoreCaseOfPN);
+		return readRecord(fileSetInfo.getOffsetFirstRootRecord(), keys,
+                ignoreCaseOfPN);
 	}
 
+    public DicomObject findPatientRecord(String pid)
+            throws IOException {
+        BasicDicomObject keys = new BasicDicomObject();
+        keys.putString(Tag.DirectoryRecordType, VR.CS,
+                DirectoryRecordType.PATIENT);
+        keys.putString(Tag.PatientID, VR.LO, pid);
+        return findFirstMatchingRootRecord(keys, false);
+    }
+    
 	public DicomObject findNextSiblingRecord(DicomObject prevRecord)
 			throws IOException {
 		return findNextMatchingSiblingRecord(prevRecord, null, false);
@@ -120,7 +179,6 @@ public class DicomDirReader {
 	public DicomObject findNextMatchingSiblingRecord(DicomObject prevRecord,
 			DicomObject keys, boolean ignoreCaseOfPN)
 			throws IOException {
-		init();
 		return readRecord(prevRecord.getInt(
 					Tag.OffsetoftheNextDirectoryRecord),
 					keys, ignoreCaseOfPN);
@@ -134,11 +192,29 @@ public class DicomDirReader {
 	public DicomObject findFirstMatchingChildRecord(DicomObject parentRecord,
 			DicomObject keys, boolean ignoreCaseOfPN)
 			throws IOException {
-		init();
 		return readRecord(parentRecord.getInt(
 				Tag.OffsetofReferencedLowerLevelDirectoryEntity),
 				keys, ignoreCaseOfPN);
 	}
+
+    public DicomObject findStudyRecord(DicomObject patrec, String uid)
+            throws IOException {
+        BasicDicomObject keys = new BasicDicomObject();
+        keys.putString(Tag.DirectoryRecordType, VR.CS,
+                DirectoryRecordType.STUDY);
+        keys.putString(Tag.StudyInstanceUID, VR.UI, uid);
+        keys.putString(Tag.ReferencedSOPInstanceUIDinFile, VR.UI, uid);
+        return findFirstMatchingChildRecord(patrec, keys, false);
+    }
+    
+    public DicomObject findSeriesRecord(DicomObject serrec, String uid)
+            throws IOException {
+        BasicDicomObject keys = new BasicDicomObject();
+        keys.putString(Tag.DirectoryRecordType, VR.CS,
+                DirectoryRecordType.SERIES);
+        keys.putString(Tag.SeriesInstanceUID, VR.UI, uid);
+        return findFirstMatchingChildRecord(serrec, keys, false);
+    }
 
 	private DicomObject readRecord(int offset, DicomObject keys,
 			boolean ignoreCaseOfPN)
