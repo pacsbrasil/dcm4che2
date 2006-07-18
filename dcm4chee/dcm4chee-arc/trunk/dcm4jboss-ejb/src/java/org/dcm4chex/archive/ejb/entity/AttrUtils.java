@@ -38,6 +38,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
@@ -97,31 +98,39 @@ class AttrUtils {
     private static boolean equals(DcmElement el, SpecificCharacterSet cs,
             DcmElement refEl, SpecificCharacterSet refCS,
             Dataset coercedElements, Logger log)
-            throws DcmServiceException {
-        final int vm = refEl.countItems();
-        if (el == null || el.countItems() != vm) { return false; }
+    throws DcmServiceException {
         final int vr = refEl.vr();
+        if (el == null || el.vr() != vr) {
+            return false;
+        }
         if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN) {
             // no check implemented!
             return true;
         }
-        for (int i = 0; i < vm; ++i) {
-            if (vr == VRs.SQ) {
+        if (vr == VRs.SQ) {
+            int n = refEl.countItems();
+            if (el.countItems() != n) {
+                return false;
+            }
+            for (int i = 0; i < n; i++) {
                 if (coerceAttributes(refEl.getItem(i), el.getItem(i), null,
                         null, log)) {
                     if (coercedElements != null) {
                         coercedElements.putSQ(el.tag());
                     }
                 }
-            } else {
-                try {
-                    if (!(vr == VRs.PN ? refEl.getPersonName(i, refCS)
-                            .equals(el.getPersonName(i, cs)) : refEl
-                            .getString(i, refCS).equals(el.getString(i, cs)))) {
-                        return false; }
-                } catch (DcmValueException e) {
-                    log.warn("Failure during coercion of " + el, e);
+            }
+        } else {
+            try {
+                if (vr == VRs.PN 
+                        ? !Arrays.equals(refEl.getPersonNames(refCS),
+                                el.getPersonNames(cs))
+                        : !Arrays.equals(refEl.getStrings(refCS),
+                                el.getStrings(cs))) {
+                    return false; 
                 }
+            } catch (DcmValueException e) {
+                log.warn("Failure during coercion of " + el, e);
             }
         }
         return true;
