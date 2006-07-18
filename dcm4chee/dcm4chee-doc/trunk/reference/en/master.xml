@@ -6,8 +6,6 @@
 <!ENTITY ui-guide               SYSTEM "modules/ui-guide.xml">
 <!ENTITY util           SYSTEM "modules/util.xml">
 <!ENTITY building          SYSTEM "modules/building.xml">
-<!ENTITY dcs     SYSTEM "modules/dcs.xml">
-<!ENTITY iheis          SYSTEM "modules/iheis.xml">
 ]>
 
 <book lang="en">
@@ -75,9 +73,5 @@
     &util;
 
     &building;
-
-    <!--&dcs;-->
-
-    <!--&iheis;-->
 </book>
 
