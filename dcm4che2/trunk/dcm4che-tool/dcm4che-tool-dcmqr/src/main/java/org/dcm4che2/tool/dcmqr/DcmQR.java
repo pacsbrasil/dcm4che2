@@ -899,8 +899,7 @@ public class DcmQR {
     private TransferCapability selectTransferCapability(List cuid) {
         TransferCapability tc;
         for (int i = 0, n = cuid.size(); i < n; i++) {
-            tc = (TransferCapability) cuid.get(i);
-            tc = assoc.getTransferCapabilityAsSCU(tc.getSopClass());
+            tc = assoc.getTransferCapabilityAsSCU((String) cuid.get(i));
             if (tc != null)
                 return tc;
         }
