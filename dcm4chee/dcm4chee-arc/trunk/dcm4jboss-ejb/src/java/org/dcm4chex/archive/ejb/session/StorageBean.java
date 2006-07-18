@@ -396,6 +396,11 @@ public abstract class StorageBean implements SessionBean {
             }
 			ret = merged;
         }
+        if (ret != pat) {
+            log.warn("Received object for merged " + pat.asString()
+                    + " - coerce Patient attributes to dominant "
+                    + ret.asString());
+        }
 		return ret;
 	}
 
