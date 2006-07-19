@@ -116,7 +116,7 @@
           <xsl:value-of select="substring($dt,9)"/>
       </attr>
     </xsl:if>
-    <!-- HL7:Filer Order Number -> DICOM:Study Instance UID -->
+    <!-- HL7:Filler Order Number -> DICOM:Study Instance UID -->
     <xsl:variable name="suid" select="field[3]/component[2]/text()"/>
     <attr tag="0020000D" vr="UI">
       <xsl:value-of select="$suid"/>
