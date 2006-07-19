@@ -121,6 +121,17 @@ public class PersonName {
         }
     }
     
+    public static PersonName[] toPersonNames(String[] ss) {
+        if (ss == null) {
+            return null;
+        }
+        PersonName[] pns = new PersonName[ss.length];
+        for (int i = 0; i < pns.length; i++) {
+            pns[i] = new PersonName(ss[i]);
+        }
+        return pns;
+    }
+    
     public final String get(int field) {
         return get(SINGLE_BYTE, field);
     }
