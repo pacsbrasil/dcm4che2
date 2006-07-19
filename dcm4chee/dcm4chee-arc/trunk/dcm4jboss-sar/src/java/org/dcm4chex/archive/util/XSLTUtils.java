@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -92,9 +93,14 @@ public class XSLTUtils {
 			(SAXTransformerFactory) TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
-		th.setResult(new StreamResult(f));
-		TagDictionary dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
-		ds.writeDataset2(th, dict, null, 64, null);		
+        FileOutputStream out = new FileOutputStream(f);
+        TagDictionary dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
+        try {
+    		th.setResult(new StreamResult(out));
+    		ds.writeDataset2(th, dict, null, 64, null);		
+        } finally {
+            out.close();
+        }
 	}
 
 }
