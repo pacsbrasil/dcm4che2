@@ -321,7 +321,7 @@ public class BasicApplicationProfile implements ApplicationProfile {
 
     private DicomObject makeRecord(String type, int[] keys, DicomObject dcmobj,
             String[] fileIDs) {
-        DicomObject rec = makeRecord(type,  keys, dcmobj, fileIDs);
+        DicomObject rec = makeRecord(type,  keys, dcmobj);
         rec.putStrings(Tag.ReferencedFileID, VR.CS, fileIDs);
         rec.putString(Tag.ReferencedSOPInstanceUIDinFile, VR.UI,
                 dcmobj.getString(Tag.MediaStorageSOPInstanceUID));
