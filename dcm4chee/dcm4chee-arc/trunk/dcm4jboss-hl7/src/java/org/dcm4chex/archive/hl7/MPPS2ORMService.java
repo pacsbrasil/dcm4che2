@@ -57,6 +57,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
@@ -291,10 +293,11 @@ implements NotificationListener {
 
 	private void logXSLT(Dataset mpps, TransformerHandler th, File logFile)
 	throws Exception {
+	    TagDictionary dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
         FileOutputStream out = new FileOutputStream(logFile);
         try {
             th.setResult(new StreamResult(out));
-            mpps.writeDataset2(th, null, null, 64, null);
+            mpps.writeDataset2(th, dict, null, 64, null);
         } finally {
             out.close();
         }
