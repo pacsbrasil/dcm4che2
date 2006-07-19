@@ -41,6 +41,7 @@ package org.dcm4chex.archive.hl7;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -290,8 +291,13 @@ implements NotificationListener {
 
 	private void logXSLT(Dataset mpps, TransformerHandler th, File logFile)
 	throws Exception {
-		th.setResult(new StreamResult(logFile));
-		mpps.writeDataset2(th, null, null, 64, null);
+        FileOutputStream out = new FileOutputStream(logFile);
+        try {
+            th.setResult(new StreamResult(out));
+            mpps.writeDataset2(th, null, null, 64, null);
+        } finally {
+            out.close();
+        }
  	}
 
 
