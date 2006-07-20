@@ -35,7 +35,14 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che2.data;
+package org.dcm4che2.media;
+
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Implementation;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>

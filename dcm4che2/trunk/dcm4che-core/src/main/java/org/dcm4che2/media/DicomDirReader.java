@@ -44,14 +44,12 @@ import java.io.RandomAccessFile;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.FileSetInformation;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.util.IntHashtable;
-import org.dcm4che2.util.StringUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -60,15 +58,17 @@ import org.dcm4che2.util.StringUtils;
  *
  */
 public class DicomDirReader {
+    protected static final int INACTIVE = 0;
+    protected static final int INUSE = 0xffff;
 	protected final RandomAccessFile raf;
 	protected final DicomInputStream in;
-	protected final FileSetInformation fileSetInfo;
+	protected final FilesetInformation fileSetInfo;
     protected File file;
 	protected boolean showInactiveRecords;
 	protected final IntHashtable cache = new IntHashtable();
 	
     protected DicomDirReader(RandomAccessFile raf,
-            FileSetInformation fileSetInfo)
+            FilesetInformation fileSetInfo)
     throws IOException {
         this.raf = raf;     
         this.in = new DicomInputStream(raf, TransferSyntax.ExplicitVRLittleEndian);
@@ -84,56 +84,35 @@ public class DicomDirReader {
 		this.raf = raf;	
         in = new DicomInputStream(raf);
         in.setHandler(new StopTagInputHandler(Tag.DirectoryRecordSequence));
-        fileSetInfo = new FileSetInformation();
+        fileSetInfo = new FilesetInformation();
         in.readDicomObject(fileSetInfo.getDicomObject(), -1);
         in.setHandler(in);
 	}
     
-    public File referencedFile(DicomObject rec) {
+    public final File getFile() {
+        return file;
+    }
+    
+    public File toReferencedFile(DicomObject rec) {
         if (file == null) {
             throw new IllegalStateException("Unknown File-set Base Directory");            
         }
-        return referencedFile(rec, file.getParentFile());
+        return FilesetInformation.toFile(rec.getStrings(Tag.ReferencedFileID),
+                file.getParentFile());
     }
 	
-    public File referencedFile(DicomObject rec, File basedir) {
-        String[] fileID = rec.getStrings(Tag.ReferencedFileID);
-        if (fileID == null || fileID.length == 0) {
-            return null;
-        }        
-        StringBuffer sb = new StringBuffer(basedir.getPath());
-        for (int i = 0; i < fileID.length; i++) {
-            sb.append(File.separatorChar).append(fileID[i]);
-        }
-        return new File(sb.toString());
-    }
-    
-    public String[] fileID(File f) throws IOException {
+    public String[] toFileID(File f) throws IOException {
         if (file == null) {
-            throw new IllegalStateException("Unknown File-set base directory");            
+            throw new IllegalStateException("Unknown File-set Base Directory");            
         }
-        return fileID(f, file.getParentFile());        
-    }
-
-    private String[] fileID(File file, File basedir) throws IOException {
-        String dirpath = basedir.getCanonicalPath();
-        String filepath = file.getCanonicalPath();
-        int start = dirpath.length();
-        if (!filepath.startsWith(dirpath) || start == filepath.length()) {
-            throw new IllegalArgumentException("file " + file 
-                    + " not included in file-set " + basedir);
-        }
-        if (filepath.charAt(start) == File.separatorChar) {
-            ++start;
-        }
-        return StringUtils.split(filepath.substring(start), File.separatorChar);
+        return FilesetInformation.toFileID(f, file.getParentFile());        
     }
 
     public void clearCache() {
 		cache.clear();
 	}
 	
-	public FileSetInformation getFileSetInformation() {
+	public FilesetInformation getFileSetInformation() {
 		return fileSetInfo;
 	}
 
@@ -229,7 +208,8 @@ public class DicomDirReader {
 				in.readItem(item);
 				cache.put(offset, item);
 			}
-			if ((showInactiveRecords || item.getInt(Tag.RecordInuseFlag) != 0)
+			if ((showInactiveRecords 
+                    || item.getInt(Tag.RecordInuseFlag) != INACTIVE)
 					&& (keys == null || item.matches(keys, ignoreCaseOfPN)))
 				return item;
 			offset = item.getInt(Tag.OffsetoftheNextDirectoryRecord);

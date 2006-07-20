@@ -35,8 +35,16 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che2.data;
+package org.dcm4che2.media;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 
 /**
@@ -45,13 +53,13 @@ import org.dcm4che2.util.UIDUtils;
  * @since 10.07.2006
  */
 
-public class FileSetInformation extends FileMetaInformation {
+public class FilesetInformation extends FileMetaInformation {
 
-    public FileSetInformation(DicomObject dcmobj) {
+    public FilesetInformation(DicomObject dcmobj) {
         super(dcmobj);
     }
 
-    public FileSetInformation() {
+    public FilesetInformation() {
         super();
     }
     
@@ -71,6 +79,22 @@ public class FileSetInformation extends FileMetaInformation {
         dcmobj.putString(Tag.FilesetID, VR.CS, id);
     }
 
+    public String[] getFilesetDescriptorFileID() {
+        return dcmobj.getStrings(Tag.FilesetDescriptorFileID);
+    }
+
+    public void setFilesetDescriptorFileID(String[] cs) {
+        dcmobj.putStrings(Tag.FilesetDescriptorFileID, VR.CS, cs);
+    }
+
+    public String getSpecificCharacterSetofFilesetDescriptorFile() {
+        return dcmobj.getString(Tag.SpecificCharacterSetofFilesetDescriptorFile);
+    }
+
+    public void setSpecificCharacterSetofFilesetDescriptorFile(String cs) {
+        dcmobj.putString(Tag.FilesetID, VR.CS, cs);
+    }
+    
     public int getOffsetFirstRootRecord() {
         return dcmobj.getInt(
                 Tag.OffsetoftheFirstDirectoryRecordoftheRootDirectoryEntity);
@@ -109,6 +133,31 @@ public class FileSetInformation extends FileMetaInformation {
 
     protected String getSOPInstanceUID() {
         return UIDUtils.createUID();
+    }
+
+    public static File toFile(String[] fileID, File basedir) {
+        if (fileID == null || fileID.length == 0) {
+            return null;
+        }        
+        StringBuffer sb = new StringBuffer(basedir.getPath());
+        for (int i = 0; i < fileID.length; i++) {
+            sb.append(File.separatorChar).append(fileID[i]);
+        }
+        return new File(sb.toString());
+    }
+
+    public static String[] toFileID(File file, File basedir) throws IOException {
+        String dirpath = basedir.getCanonicalPath();
+        String filepath = file.getCanonicalPath();
+        int start = dirpath.length();
+        if (!filepath.startsWith(dirpath) || start == filepath.length()) {
+            throw new IllegalArgumentException("file " + file 
+                    + " not included in file-set " + basedir);
+        }
+        if (filepath.charAt(start) == File.separatorChar) {
+            ++start;
+        }
+        return StringUtils.split(filepath.substring(start), File.separatorChar);
     }
 
 }
