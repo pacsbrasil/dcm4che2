@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
                       "../../support/docbook-dtd/docbookx.dtd"
 [
-<!ENTITY dcm4chee-cs               SYSTEM "dcm4chee-cs.xml">
+<!ENTITY dcm4chee-cs               SYSTEM "modules/dcm4chee-cs.xml">
 ]>
 
 <book lang="en">
