@@ -4,7 +4,6 @@
 [
 <!ENTITY install               SYSTEM "modules/install.xml">
 <!ENTITY ui-guide               SYSTEM "modules/ui-guide.xml">
-<!ENTITY util           SYSTEM "modules/util.xml">
 <!ENTITY building          SYSTEM "modules/building.xml">
 ]>
 
@@ -13,7 +12,7 @@
     <bookinfo>
         <title>dcm4chee Open Source Image Manager/Archive</title>
         <subtitle>dcm4chee Reference Documentation</subtitle>
-        <releaseinfo>2.9.0</releaseinfo>
+        <releaseinfo>2.9.1</releaseinfo>
     </bookinfo>
 
     <toc/>
@@ -69,8 +68,6 @@
     &install;
     
     &ui-guide;
-
-    &util;
 
     &building;
 </book>

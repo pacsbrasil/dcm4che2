@@ -372,8 +372,6 @@ JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..</programlisting>
                 <para>Send some objects/images to the archive's Storage SCP, using the 
                     send utility of the dcm4che14 package, the dcm4che2 package, or another Storage SCU of your choice.</para>
                     
-                <para>If you're using dcm4che2, see <xref linkend="dcmsnd"/>.</para>
-                    
                 <para>Refresh the Web Interface (<literal><ulink url="http://localhost:8080/dcm4chee-web/">http://localhost:8080/dcm4chee-web/</ulink></literal>), which should 
                     now show the the list of received studies.</para>
                     
@@ -386,8 +384,6 @@ JAVA_OPTS="-server -Xms64m -Xmx200m -Djava.awt.headless=true ..</programlisting>
             <listitem>
                 <para>To test object retrieval, you will need an external Storage SCP acting as
                     the Destination using the DICOM Receiver utility of the dcm4che14 package, the dcm4che2 package, or another Storage SCP of your choice.</para>
-                    
-                <para>If you're using dcm4che2, see <xref linkend="dcmrcv"/>.</para>
                 
                 <para>Before initiating the retrieve, you will need to configure an additional Application Entity (AE) Title identifying
                     your Move Destination using the "AE Management" function of the Web User Interface.  For example:</para>
