@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien@theevansranch.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -46,34 +47,81 @@ import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4che2.net.pdu.AAssociateRQ;
 
 /**
+ * Implementation of the DICOM part 8 TCP/IP state machine. This defines the
+ * various states that a a TCP/IP connection may be in when a DICOM association
+ * is using it.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Nov 25, 2005
- *
+ * 
  */
 public class State
 {
+    /** State 1 = Idle. */
     public static final State STA1 = new Sta1();
+
+    /** State 2 = Transport connection open (Awaiting A-ASSOCIATE-RQ PDU). */
     public static final State STA2 = new Sta2();
+
+    /**
+     * State 3 = Awaiting local A-ASSOCIATE response primitive (from local
+     * user).
+     */
     public static final State STA3 = new Sta3();
+
+    /**
+     * State 4 = Awaiting transport connection opening to complete (from local
+     * transport service).
+     */
     public static final State STA4 = new Sta4();
+
+    /** State 5 = Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU. */
     public static final State STA5 = new Sta5();
+
+    /** State 6 = Association established and ready for data transfer. */
     public static final State STA6 = new Sta6();
+
+    /** State 7 = Awaiting A-RELEASE-RP PDU. */
     public static final State STA7 = new Sta7();
+
+    /** State 8 = Awaiting local A-RELEASE response primitive (from local user). */
     public static final State STA8 = new Sta8();
-//    public static final State STA9 = new Sta9();
-    public static final State STA10 = new Sta10();
-    public static final State STA11 = new Sta11();
-//    public static final State STA12 = new Sta12();
-    public static final State STA13 = new Sta13();
+
+    /*
+     * State 9 (not implemented) = Release collision requestor side; awaiting
+     * A-RELEASE response (from local user).
+     */
+    // public static final State STA9 = new Sta9();
     
+    /** State 10 = Release collision acceptor side; awaiting A-RELEASE-RP PDU. */
+    public static final State STA10 = new Sta10();
+
+    /** State 11 = Release collision requestor side; awaiting A-RELEASE-RP PDU. */
+    public static final State STA11 = new Sta11();
+
+    /*
+     * State 12 (not implemented) = Release collision acceptor side; awaiting
+     * A-RELEASE response primitive (from local user).
+     */
+    // public static final State STA12 = new Sta12();
+    
+    /**
+     * State 13 = Awaiting transport connection close indication (association no
+     * longer exists).
+     */
+    public static final State STA13 = new Sta13();
+
     protected final String name;
 
-    private State(String name)
+    State(String name)
     {
         this.name = name;
     }
 
+    /**
+     * @see java.lang.Object#toString()
+     */
     public String toString()
     {
         return name;
@@ -88,6 +136,9 @@ public class State
             super("Sta1");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#abort(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAbort)
+         */
         void abort(Association as, AAbort aa)
         {
             // NOOP
@@ -102,8 +153,12 @@ public class State
         {
             super("Sta2");
         }
-        
-        void receivedAssociateRQ(Association as, AAssociateRQ rq) throws IOException
+
+        /** 
+         * @see org.dcm4che2.net.State#receivedAssociateRQ(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateRQ)
+         */
+        void receivedAssociateRQ(Association as, AAssociateRQ rq)
+                throws IOException
         {
             as.onAAssociateRQ(rq);
         }
@@ -129,7 +184,11 @@ public class State
             super("Sta4");
         }
 
-        void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException
+        /** 
+         * @see org.dcm4che2.net.State#sendAssociateRQ(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateRQ)
+         */
+        void sendAssociateRQ(Association as, AAssociateRQ rq)
+                throws IOException
         {
             as.writeAssociationRQ(rq);
         }
@@ -144,12 +203,20 @@ public class State
             super("Sta5");
         }
 
-        void receivedAssociateAC(Association as, AAssociateAC ac) throws IOException
+        /** 
+         * @see org.dcm4che2.net.State#receivedAssociateAC(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateAC)
+         */
+        void receivedAssociateAC(Association as, AAssociateAC ac)
+                throws IOException
         {
             as.onAssociateAC(ac);
         }
-        
-        void receivedAssociateRJ(Association as, AAssociateRJ rj) throws IOException
+
+        /** 
+         * @see org.dcm4che2.net.State#receivedAssociateRJ(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateRJ)
+         */
+        void receivedAssociateRJ(Association as, AAssociateRJ rj)
+                throws IOException
         {
             as.onAssociateRJ(rj);
         }
@@ -164,41 +231,62 @@ public class State
             super("Sta6");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedPDataTF(org.dcm4che2.net.Association)
+         */
         void receivedPDataTF(Association as) throws IOException
         {
             as.onPDataTF();
         }
-        
+
+        /** 
+         * @see org.dcm4che2.net.State#sendPDataTF(org.dcm4che2.net.Association)
+         */
         void sendPDataTF(Association as) throws IOException
         {
             as.writePDataTF();
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedReleaseRQ(org.dcm4che2.net.Association)
+         */
         void receivedReleaseRQ(Association as) throws IOException
         {
             as.onReleaseRQ();
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#sendReleaseRQ(org.dcm4che2.net.Association)
+         */
         void sendReleaseRQ(Association as) throws IOException
         {
             as.writeReleaseRQ();
         }
-        
+
+        /** 
+         * @see org.dcm4che2.net.State#isReadyForDataTransfer()
+         */
         boolean isReadyForDataTransfer()
         {
             return true;
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#isReadyForDataSend()
+         */
         boolean isReadyForDataSend()
         {
             return true;
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#isReadyForDataReceive()
+         */
         boolean isReadyForDataReceive()
         {
             return true;
         }
-        
+
     }
 
     /** Sta7 - Awaiting A-RELEASE-RP PDU */
@@ -210,26 +298,38 @@ public class State
             super("Sta7");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedPDataTF(org.dcm4che2.net.Association)
+         */
         void receivedPDataTF(Association as) throws IOException
         {
             as.onPDataTF();
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedReleaseRQ(org.dcm4che2.net.Association)
+         */
         void receivedReleaseRQ(Association as) throws IOException
         {
             as.onCollisionReleaseRQ();
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedReleaseRP(org.dcm4che2.net.Association)
+         */
         void receivedReleaseRP(Association as) throws IOException
         {
             as.onReleaseRP();
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#isReadyForDataReceive()
+         */
         boolean isReadyForDataReceive()
         {
             return true;
         }
-        
+
     }
 
     /** Sta8 - Awaiting local A-RELEASE response primitive */
@@ -241,33 +341,38 @@ public class State
             super("Sta8");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#sendPDataTF(org.dcm4che2.net.Association)
+         */
         void sendPDataTF(Association as) throws IOException
         {
             as.writePDataTF();
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#isReadyForDataSend()
+         */
         boolean isReadyForDataSend()
         {
             return true;
         }
 
     }
-    /** Sta9 - Release collision requestor side;
-     * awaiting A-RELEASE response primitive */
-/*
-    private static class Sta9 extends State
-    {
 
-        public Sta9()
-        {
-            super("Sta9 - Release collision requestor side; " +
-                    "awaiting A-RELEASE response primitive");
-        }
-
-    }
-*/
-    /** Sta10 - Release collision acceptor side;
-     * awaiting A-RELEASE-RP PDU */
+    /*
+     * Sta9 - Release collision requestor side; awaiting A-RELEASE response
+     * primitive
+     */
+    /*
+     * private static class Sta9 extends State {
+     * 
+     * public Sta9() { super("Sta9 - Release collision requestor side; " +
+     * "awaiting A-RELEASE response primitive"); } }
+     */
+    
+    /**
+     * Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU
+     */
     private static class Sta10 extends State
     {
 
@@ -276,14 +381,18 @@ public class State
             super("Sta10");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedReleaseRP(org.dcm4che2.net.Association)
+         */
         void receivedReleaseRP(Association as) throws IOException
         {
             as.onCollisionReleaseRP();
         }
     }
 
-    /** Sta11 - Release collision requestor side;
-     * awaiting A-RELEASE-RP PDU */
+    /**
+     * Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU
+     */
     private static class Sta11 extends State
     {
 
@@ -292,24 +401,24 @@ public class State
             super("Sta11");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#receivedReleaseRP(org.dcm4che2.net.Association)
+         */
         void receivedReleaseRP(Association as) throws IOException
         {
             as.onReleaseRP();
         }
     }
-    /** Sta12 - Release collision acceptor side; 
-     * awaiting A-RELEASE response primitive */
-/*
-    private static class Sta12 extends State
-    {
 
-        public Sta12()
-        {
-            super("Sta12");
-        }
-
-    }
-*/
+    /**
+     * Sta12 - Release collision acceptor side; awaiting A-RELEASE response
+     * primitive
+     */
+    /*
+     * private static class Sta12 extends State {
+     * 
+     * public Sta12() { super("Sta12"); } }
+     */
     /** Sta13 - Awaiting Transport Connection Close Indication */
     private static class Sta13 extends State
     {
@@ -319,74 +428,158 @@ public class State
             super("Sta13 ");
         }
 
+        /** 
+         * @see org.dcm4che2.net.State#abort(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAbort)
+         */
         void abort(Association as, AAbort aa)
         {
             // NOOP
         }
-
     }
 
-    void receivedAssociateRQ(Association as, AAssociateRQ rq) throws IOException
+    /**
+     * Notify the association that an A-ASSOCIATE-RQ PDU has been received.
+     * 
+     * @param as The <code>Association</code> object.
+     * @param rq The <code>AAssociateRQ</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
+    void receivedAssociateRQ(Association as, AAssociateRQ rq)
+            throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-RQ");
     }
 
-    void receivedAssociateAC(Association as, AAssociateAC ac) throws IOException
+    /**
+     * Notify the association that an A-ASSOCIATE-AC PDU has been received.
+     * 
+     * @param as The <code>Association</code> object.
+     * @param ac The <code>AAssociateAC</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
+    void receivedAssociateAC(Association as, AAssociateAC ac)
+            throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-AC");
     }
-    
-    void receivedAssociateRJ(Association as, AAssociateRJ rj) throws IOException
+
+    /**
+     * Notify the association that an A-ASSOCIATE-RJ PDU has been received.
+     * 
+     * @param as The <code>Association</code> object.
+     * @param rj The <code>AAssociateRJ</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
+    void receivedAssociateRJ(Association as, AAssociateRJ rj)
+            throws IOException
     {
         as.unexpectedPDU("A-ASSOCIATE-RJ");
     }
 
+    /**
+     * Notify the association that a P-DATA-TF PDU has been received.
+     * 
+     * @param as The <code>Association</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void receivedPDataTF(Association as) throws IOException
     {
         as.unexpectedPDU("P-DATA-TF");
     }
 
+    /**
+     * Notify the association that an A-RELEASE-RP PDU has been received.
+     * 
+     * @param as The <code>Association</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void receivedReleaseRQ(Association as) throws IOException
     {
         as.unexpectedPDU("A-RELEASE-RQ");
     }
 
+    /**
+     * Notify the association that an A-RELEASE-RP PDU has been received.
+     * 
+     * @param as The <code>Association</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void receivedReleaseRP(Association as) throws IOException
     {
         as.unexpectedPDU("A-RELEASE-RP");
     }
 
+    /**
+     * Send an A-ASSOCIATE-RQ PDU on the association.
+     * 
+     * @param as The <code>Association</code> object.
+     * @param rq The <code>AAssociateRQ</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException
     {
-        //as.illegalStateForSending("A-ASSOCIATE-RQ");
+        // as.illegalStateForSending("A-ASSOCIATE-RQ");
         throw new IllegalStateException(toString());
     }
-    
+
+    /**
+     * Send a P-DATA-TF PDU on the association.
+     * 
+     * @param as The active DICOM <code>Association</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void sendPDataTF(Association as) throws IOException
     {
         as.illegalStateForSending("P-DATA-TF");
     }
-    
+
+    /**
+     * Send a release request to the device on the other end of the association.
+     * 
+     * @param as The active DICOM <code>Association</code> object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void sendReleaseRQ(Association as) throws IOException
     {
         as.illegalStateForSending("A-RELEASE-RQ");
     }
-    
+
+    /**
+     * Abort an association.
+     * 
+     * @param as The active DICOM <code>Association</code> object.
+     * @param aa The <code>AAbort</code> object that should be written to the association.
+     */
     void abort(Association as, AAbort aa)
     {
-        as.writeAbort(aa);        
+        as.writeAbort(aa);
     }
-    
+
+    /**
+     * Determine if the current state allows data transfer.
+     * 
+     * @return boolean True if the current state allows data transfer.
+     */
     boolean isReadyForDataTransfer()
     {
         return false;
     }
 
+    /**
+     * Determine if the current state allows data to be sent.
+     * 
+     * @return boolean True if the current state allows data to be sent.
+     */
     boolean isReadyForDataSend()
     {
         return false;
     }
 
+    /**
+     * Determine if the current state allows data to be received.
+     * 
+     * @return boolean True if the current state allows data to be received.
+     */
     boolean isReadyForDataReceive()
     {
         return false;
