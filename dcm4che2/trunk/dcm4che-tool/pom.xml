@@ -11,6 +11,7 @@
   <modules>
     <module>dcm4che-tool-dcm2txt</module>
     <module>dcm4che-tool-dcm2xml</module>
+    <module>dcm4che-tool-dcmdir</module>
     <module>dcm4che-tool-dcmecho</module>
     <module>dcm4che-tool-dcmgpwl</module>
     <module>dcm4che-tool-dcmmwl</module>
