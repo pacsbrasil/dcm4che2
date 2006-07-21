@@ -61,7 +61,7 @@ public class Fiducial extends GraphicCoordinatesData {
     }
 
     /**
-     * Create a new Fiducial based on Image Refernce and fiducial coordinates.
+     * Create a new Fiducial based on Image Reference and fiducial coordinates.
      * <p>
      * This is a shortcut which can be used when the fiducial only appears as a
      * single point.
