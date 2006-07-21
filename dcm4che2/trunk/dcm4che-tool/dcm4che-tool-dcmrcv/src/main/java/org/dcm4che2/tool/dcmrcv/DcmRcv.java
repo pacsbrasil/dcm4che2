@@ -107,7 +107,7 @@ public class DcmRcv extends StorageService {
         "accepted.\n" +
         "Options:";
     private static final String EXAMPLE = 
-        "\nExample: dcmrcv DCMRCV:11112 --dest /tmp \n" +
+        "\nExample: dcmrcv DCMRCV:11112 -dest /tmp \n" +
         "=> Starts server listening on port 11112, accepting association " +
         "requests with DCMRCV as called AE title. Received objects " +
         "are stored to /tmp.";
