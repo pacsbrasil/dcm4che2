@@ -56,292 +56,293 @@ import org.dcm4che2.iod.module.spatial.GraphicCoordinatesData;
  */
 public class Fiducial extends GraphicCoordinatesData {
 
-    public Fiducial(DicomObject dcmobj) {
-        super(dcmobj);
-    }
+	public Fiducial(DicomObject dcmobj) {
+		super(dcmobj);
+	}
 
-    /**
-     * Create a new Fiducial based on Image Reference and fiducial coordinates.
-     * <p>
-     * This is a shortcut which can be used when the fiducial only appears as a
-     * single point.
-     * 
-     * @param p
-     * @param sop
-     */
-    public Fiducial(float[] p, ImageSOPInstanceReference sop){
-        super(new BasicDicomObject());
-        GraphicCoordinatesData[] fidPointsArray = new GraphicCoordinatesData[1];
-        fidPointsArray[0].setGraphicData(p);
-        fidPointsArray[0].setReferencedImage(sop);
-        setGraphicCoordinatesData(fidPointsArray);
-    }
-    
-    public static Fiducial[] toFiducials(DicomElement sq) {
-        if (sq == null || !sq.hasItems()) {
-            return null;
-        }
-        Fiducial[] a = new Fiducial[sq.countItems()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = new Fiducial(sq.getDicomObject(i));
-        }
-        return a;
+	/**
+	 * Create a new Fiducial based on Image Reference and fiducial coordinates.
+	 * <p>
+	 * This is a shortcut which can be used when the fiducial only appears as a
+	 * single point.
+	 * 
+	 * @param p
+	 * @param sop
+	 */
+	public Fiducial(float[] p, ImageSOPInstanceReference sop) {
+		super(new BasicDicomObject());
+		GraphicCoordinatesData[] fidPointsArray = { new GraphicCoordinatesData(
+				new BasicDicomObject()) };
+		fidPointsArray[0].setGraphicData(p);
+		fidPointsArray[0].setReferencedImage(sop);
+		setGraphicCoordinatesData(fidPointsArray);
+	}
 
-    }
+	public static Fiducial[] toFiducials(DicomElement sq) {
+		if (sq == null || !sq.hasItems()) {
+			return null;
+		}
+		Fiducial[] a = new Fiducial[sq.countItems()];
+		for (int i = 0; i < a.length; i++) {
+			a[i] = new Fiducial(sq.getDicomObject(i));
+		}
+		return a;
 
-    /**
-     * A fiducial assignment identifier.
-     * 
-     * A fiducial assignment identifier that is unique within this Fiducial
-     * Sequence item but may match the fiducial identifier of an equivalent
-     * feature in another item.
-     * <p>
-     * Type 1
-     * 
-     * @return
-     */
-    public String getFiducialIdentifier() {
-        return dcmobj.getString(Tag.FiducialIdentifier);
-    }
+	}
 
-    /**
-     * A fiducial assignment identifier.
-     * 
-     * A fiducial assignment identifier that is unique within this Fiducial
-     * Sequence item but may match the fiducial identifier of an equivalent
-     * feature in another item.
-     * <p>
-     * Type 1
-     * 
-     * @param s
-     */
-    public void setFiducialIdentifier(String sh) {
-        dcmobj.putString(Tag.FiducialIdentifier, VR.SH, sh);
-    }
+	/**
+	 * A fiducial assignment identifier.
+	 * 
+	 * A fiducial assignment identifier that is unique within this Fiducial
+	 * Sequence item but may match the fiducial identifier of an equivalent
+	 * feature in another item.
+	 * <p>
+	 * Type 1
+	 * 
+	 * @return
+	 */
+	public String getFiducialIdentifier() {
+		return dcmobj.getString(Tag.FiducialIdentifier);
+	}
 
-    /**
-     * Sequence A code sequence for a term that identifies a well-known fiducial
-     * type (potentially including methodology, anatomy, tools, etc.). Only one
-     * item shall be present. Required if Identifier (0070,0310) isabsent. May
-     * be present otherwise.
-     * <p>
-     * Type 1C
-     * 
-     * @param code
-     */
-    public void setFiducialIdentifierCode(Code code) {
-        updateSequence(Tag.FiducialIdentifierCodeSequence, code);
-    }
+	/**
+	 * A fiducial assignment identifier.
+	 * 
+	 * A fiducial assignment identifier that is unique within this Fiducial
+	 * Sequence item but may match the fiducial identifier of an equivalent
+	 * feature in another item.
+	 * <p>
+	 * Type 1
+	 * 
+	 * @param s
+	 */
+	public void setFiducialIdentifier(String sh) {
+		dcmobj.putString(Tag.FiducialIdentifier, VR.SH, sh);
+	}
 
-    /**
-     * Sequence A code sequence for a term that identifies a well-known fiducial
-     * type (potentially including methodology, anatomy, tools, etc.). Only one
-     * item shall be present. Required if Identifier (0070,0310) isabsent. May
-     * be present otherwise.
-     * <p>
-     * Type 1C
-     * 
-     * @return
-     */
-    public Code getFiducialIdentifierCode() {
-        DicomObject item = dcmobj
-                .getNestedDicomObject(Tag.FiducialIdentifierCodeSequence);
-        return item != null ? new Code(item) : null;
-    }
+	/**
+	 * Sequence A code sequence for a term that identifies a well-known fiducial
+	 * type (potentially including methodology, anatomy, tools, etc.). Only one
+	 * item shall be present. Required if Identifier (0070,0310) isabsent. May
+	 * be present otherwise.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @param code
+	 */
+	public void setFiducialIdentifierCode(Code code) {
+		updateSequence(Tag.FiducialIdentifierCodeSequence, code);
+	}
 
-    /**
-     * Globally unique identifier for the fiducial instance of this fiducial
-     * assignment.
-     * <p>
-     * Type 3
-     * 
-     * @return
-     */
-    public String getFiducialUID() {
-        return dcmobj.getString(Tag.FiducialUID);
-    }
+	/**
+	 * Sequence A code sequence for a term that identifies a well-known fiducial
+	 * type (potentially including methodology, anatomy, tools, etc.). Only one
+	 * item shall be present. Required if Identifier (0070,0310) isabsent. May
+	 * be present otherwise.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @return
+	 */
+	public Code getFiducialIdentifierCode() {
+		DicomObject item = dcmobj
+				.getNestedDicomObject(Tag.FiducialIdentifierCodeSequence);
+		return item != null ? new Code(item) : null;
+	}
 
-    /**
-     * Globally unique identifier for the fiducial instance of this fiducial
-     * assignment.
-     * <p>
-     * Type 3
-     * 
-     * @param ui
-     */
-    public void setFiducialUID(String ui) {
-        dcmobj.putString(Tag.FiducialUID, VR.UI, ui);
-    }
+	/**
+	 * Globally unique identifier for the fiducial instance of this fiducial
+	 * assignment.
+	 * <p>
+	 * Type 3
+	 * 
+	 * @return
+	 */
+	public String getFiducialUID() {
+		return dcmobj.getString(Tag.FiducialUID);
+	}
 
-    /**
-     * User description or comments about the fiducial.
-     * <p>
-     * Type 3
-     * 
-     * @return
-     */
-    public String getFiducialDescription() {
-        return dcmobj.getString(Tag.FiducialDescription);
-    }
+	/**
+	 * Globally unique identifier for the fiducial instance of this fiducial
+	 * assignment.
+	 * <p>
+	 * Type 3
+	 * 
+	 * @param ui
+	 */
+	public void setFiducialUID(String ui) {
+		dcmobj.putString(Tag.FiducialUID, VR.UI, ui);
+	}
 
-    /**
-     * User description or comments about the fiducial.
-     * <p>
-     * Type 3
-     * 
-     * @param st
-     */
-    public void setFiducialDescription(String st) {
-        dcmobj.putString(Tag.FiducialDescription, VR.ST, st);
-    }
+	/**
+	 * User description or comments about the fiducial.
+	 * <p>
+	 * Type 3
+	 * 
+	 * @return
+	 */
+	public String getFiducialDescription() {
+		return dcmobj.getString(Tag.FiducialDescription);
+	}
 
-    /**
-     * Geometric interpretation of countour and graphic data.
-     * 
-     * Shape Type (0070,0306) defines the geometric interpretation of the
-     * Contour Data (3006,0050) and Graphic Data (0070,0022). A point is defined
-     * as a triplet (x,y,z) in the case of spatial data or a pair (x,y) in the
-     * case of graphic data.
-     * <p>
-     * Type 1
-     * 
-     * @return
-     */
-    public String getShapeType() {
-        return dcmobj.getString(Tag.ShapeType);
-    }
+	/**
+	 * User description or comments about the fiducial.
+	 * <p>
+	 * Type 3
+	 * 
+	 * @param st
+	 */
+	public void setFiducialDescription(String st) {
+		dcmobj.putString(Tag.FiducialDescription, VR.ST, st);
+	}
 
-    /**
-     * Geometric interpretation of countour and graphic data.
-     * 
-     * Shape Type (0070,0306) defines the geometric interpretation of the
-     * Contour Data (3006,0050) and Graphic Data (0070,0022). A point is defined
-     * as a triplet (x,y,z) in the case of spatial data or a pair (x,y) in the
-     * case of graphic data.
-     * <p>
-     * Type 1
-     * 
-     * @param cs
-     */
-    public void setShapeType(String cs) {
-        dcmobj.putString(Tag.ShapeType, VR.CS, cs);
-    }
+	/**
+	 * Geometric interpretation of countour and graphic data.
+	 * 
+	 * Shape Type (0070,0306) defines the geometric interpretation of the
+	 * Contour Data (3006,0050) and Graphic Data (0070,0022). A point is defined
+	 * as a triplet (x,y,z) in the case of spatial data or a pair (x,y) in the
+	 * case of graphic data.
+	 * <p>
+	 * Type 1
+	 * 
+	 * @return
+	 */
+	public String getShapeType() {
+		return dcmobj.getString(Tag.ShapeType);
+	}
 
-    /**
-     * Number of points (triplets) in Contour Data (3006,0050). Required if
-     * Contour Data is present.
-     * <p>
-     * Type 1C
-     * 
-     * @return
-     */
-    public int getNumberofContourPoints() {
-        return dcmobj.getInt(Tag.NumberofContourPoints);
-    }
+	/**
+	 * Geometric interpretation of countour and graphic data.
+	 * 
+	 * Shape Type (0070,0306) defines the geometric interpretation of the
+	 * Contour Data (3006,0050) and Graphic Data (0070,0022). A point is defined
+	 * as a triplet (x,y,z) in the case of spatial data or a pair (x,y) in the
+	 * case of graphic data.
+	 * <p>
+	 * Type 1
+	 * 
+	 * @param cs
+	 */
+	public void setShapeType(String cs) {
+		dcmobj.putString(Tag.ShapeType, VR.CS, cs);
+	}
 
-    /**
-     * Number of points (triplets) in Contour Data (3006,0050). Required if
-     * Contour Data is present.
-     * <p>
-     * Type 1C
-     * 
-     * @param is
-     */
-    public void setNumberofContourPoints(int is) {
-        dcmobj.putInt(Tag.NumberofContourPoints, VR.IS, is);
-    }
+	/**
+	 * Number of points (triplets) in Contour Data (3006,0050). Required if
+	 * Contour Data is present.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @return
+	 */
+	public int getNumberofContourPoints() {
+		return dcmobj.getInt(Tag.NumberofContourPoints);
+	}
 
-    /**
-     * Specifies the coordinates of this item's fiducial. One triplet (x,y,z)
-     * shall be present for each point in the fiducial. See C.21.2.1.2 for
-     * further explanation. Required if Frame of Reference UID (0020,0052) is
-     * present in this item of the Fiducial Set Sequence (0070,031C). Shall not
-     * be present otherwise.
-     * <p>
-     * Note: Contour Data may not be properly encoded if Explicit-VR transfer
-     * syntax is used and the VL of this attribute exceeds 65534 bytes.
-     * <p>
-     * Type 1C
-     * 
-     * @return
-     */
-    public float[] getContourData() {
-        return dcmobj.getFloats(Tag.ContourData);
-    }
+	/**
+	 * Number of points (triplets) in Contour Data (3006,0050). Required if
+	 * Contour Data is present.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @param is
+	 */
+	public void setNumberofContourPoints(int is) {
+		dcmobj.putInt(Tag.NumberofContourPoints, VR.IS, is);
+	}
 
-    /**
-     * Specifies the coordinates of this item's fiducial. One triplet (x,y,z)
-     * shall be present for each point in the fiducial. See C.21.2.1.2 for
-     * further explanation. Required if Frame of Reference UID (0020,0052) is
-     * present in this item of the Fiducial Set Sequence (0070,031C). Shall not
-     * be present otherwise.
-     * <p>
-     * Note: Contour Data may not be properly encoded if Explicit-VR transfer
-     * syntax is used and the VL of this attribute exceeds 65534 bytes.
-     * <p>
-     * Type 1C
-     * 
-     * @param ds
-     */
-    public void setContourData(float[] ds) {
-        dcmobj.putFloats(Tag.ContourData, VR.DS, ds);
-    }
+	/**
+	 * Specifies the coordinates of this item's fiducial. One triplet (x,y,z)
+	 * shall be present for each point in the fiducial. See C.21.2.1.2 for
+	 * further explanation. Required if Frame of Reference UID (0020,0052) is
+	 * present in this item of the Fiducial Set Sequence (0070,031C). Shall not
+	 * be present otherwise.
+	 * <p>
+	 * Note: Contour Data may not be properly encoded if Explicit-VR transfer
+	 * syntax is used and the VL of this attribute exceeds 65534 bytes.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @return
+	 */
+	public float[] getContourData() {
+		return dcmobj.getFloats(Tag.ContourData);
+	}
 
-    /**
-     * The estimated uncertainty radius.
-     * 
-     * The estimated uncertainty radius for the Contour Data in mm. See
-     * C.21.2.1.3
-     * <p>
-     * Type 3
-     * 
-     * @return
-     */
-    public double getContourUncertaintyRadius() {
-        return dcmobj.getDouble(Tag.ContourUncertaintyRadius);
-    }
+	/**
+	 * Specifies the coordinates of this item's fiducial. One triplet (x,y,z)
+	 * shall be present for each point in the fiducial. See C.21.2.1.2 for
+	 * further explanation. Required if Frame of Reference UID (0020,0052) is
+	 * present in this item of the Fiducial Set Sequence (0070,031C). Shall not
+	 * be present otherwise.
+	 * <p>
+	 * Note: Contour Data may not be properly encoded if Explicit-VR transfer
+	 * syntax is used and the VL of this attribute exceeds 65534 bytes.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @param ds
+	 */
+	public void setContourData(float[] ds) {
+		dcmobj.putFloats(Tag.ContourData, VR.DS, ds);
+	}
 
-    /**
-     * The estimated uncertainty radius.
-     * 
-     * The estimated uncertainty radius for the Contour Data in mm. See
-     * C.21.2.1.3
-     * <p>
-     * Type 3
-     * 
-     * @param fd
-     */
-    public void setContourUncertaintyRadius(double fd) {
-        dcmobj.putDouble(Tag.ContourUncertaintyRadius, VR.FD, fd);
-    }
+	/**
+	 * The estimated uncertainty radius.
+	 * 
+	 * The estimated uncertainty radius for the Contour Data in mm. See
+	 * C.21.2.1.3
+	 * <p>
+	 * Type 3
+	 * 
+	 * @return
+	 */
+	public double getContourUncertaintyRadius() {
+		return dcmobj.getDouble(Tag.ContourUncertaintyRadius);
+	}
 
-    /**
-     * The image pixel locations of the fiducial�s points. Shall contain one or
-     * more items. More than one item shall be present only if a fiducial spans
-     * more than one image. Required if Contour Data is not present. May be
-     * present otherwise.
-     * <p>
-     * Type 1C
-     * 
-     * @return
-     */
-    public GraphicCoordinatesData[] getGraphicCoordinatesData() {
-        return GraphicCoordinatesData.toGraphicCoordinatesData(dcmobj
-                .get(Tag.GraphicCoordinatesDataSequence));
-    }
+	/**
+	 * The estimated uncertainty radius.
+	 * 
+	 * The estimated uncertainty radius for the Contour Data in mm. See
+	 * C.21.2.1.3
+	 * <p>
+	 * Type 3
+	 * 
+	 * @param fd
+	 */
+	public void setContourUncertaintyRadius(double fd) {
+		dcmobj.putDouble(Tag.ContourUncertaintyRadius, VR.FD, fd);
+	}
 
-    /**
-     * The image pixel locations of the fiducial�s points. Shall contain one or
-     * more items. More than one item shall be present only if a fiducial spans
-     * more than one image. Required if Contour Data is not present. May be
-     * present otherwise.
-     * <p>
-     * Type 1C
-     * 
-     * @param gcds
-     */
-    public void setGraphicCoordinatesData(GraphicCoordinatesData[] gcds) {
-        updateSequence(Tag.GraphicCoordinatesDataSequence, gcds);
-    }
+	/**
+	 * The image pixel locations of the fiducial�s points. Shall contain one or
+	 * more items. More than one item shall be present only if a fiducial spans
+	 * more than one image. Required if Contour Data is not present. May be
+	 * present otherwise.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @return
+	 */
+	public GraphicCoordinatesData[] getGraphicCoordinatesData() {
+		return GraphicCoordinatesData.toGraphicCoordinatesData(dcmobj
+				.get(Tag.GraphicCoordinatesDataSequence));
+	}
+
+	/**
+	 * The image pixel locations of the fiducial�s points. Shall contain one or
+	 * more items. More than one item shall be present only if a fiducial spans
+	 * more than one image. Required if Contour Data is not present. May be
+	 * present otherwise.
+	 * <p>
+	 * Type 1C
+	 * 
+	 * @param gcds
+	 */
+	public void setGraphicCoordinatesData(GraphicCoordinatesData[] gcds) {
+		updateSequence(Tag.GraphicCoordinatesDataSequence, gcds);
+	}
 
 }
