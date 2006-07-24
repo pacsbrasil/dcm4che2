@@ -60,22 +60,8 @@ public class Fiducial extends GraphicCoordinatesData {
 		super(dcmobj);
 	}
 
-	/**
-	 * Create a new Fiducial based on Image Reference and fiducial coordinates.
-	 * <p>
-	 * This is a shortcut which can be used when the fiducial only appears as a
-	 * single point.
-	 * 
-	 * @param p
-	 * @param sop
-	 */
-	public Fiducial(float[] p, ImageSOPInstanceReference sop) {
+	public Fiducial() {
 		super(new BasicDicomObject());
-		GraphicCoordinatesData[] fidPointsArray = { new GraphicCoordinatesData(
-				new BasicDicomObject()) };
-		fidPointsArray[0].setGraphicData(p);
-		fidPointsArray[0].setReferencedImage(sop);
-		setGraphicCoordinatesData(fidPointsArray);
 	}
 
 	public static Fiducial[] toFiducials(DicomElement sq) {

@@ -50,6 +50,7 @@ import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
 import org.dcm4che2.iod.value.Flag;
 import org.dcm4che2.iod.value.LossyImageCompression;
+import org.dcm4che2.iod.value.PatientOrientation;
 import org.dcm4che2.iod.value.PresentationLUTShape;
 
 /**
@@ -67,287 +68,295 @@ import org.dcm4che2.iod.value.PresentationLUTShape;
  */
 public class GeneralImageModule extends ImagePixel {
 
-    public GeneralImageModule(DicomObject dcmobj) {
-        super(dcmobj);
-    }
+	public GeneralImageModule(DicomObject dcmobj) {
+		super(dcmobj);
+	}
 
-    public void init() {
-        super.init();
-        setSamplesPerPixel(1);
-        setPixelRepresentation(0);
-    }
+	public void init() {
+		super.init();
+		setSamplesPerPixel(1);
+		setPixelRepresentation(0);
+	}
 
-    public void validate(ValidationContext ctx, ValidationResult result) {
-        super.validate(ctx, result);
-        if (!PresentationLUTShape.isValidSoftCopy(getPresentationLUTShape())) {
-            result.logInvalidValue(Tag.PresentationLUTShape, dcmobj);
-        }
-        if (!LossyImageCompression.isValid(getLossyImageCompression())) {
-            result.logInvalidValue(Tag.LossyImageCompression, dcmobj);
-        }
-        if (!Flag.isValid(getBurnedInAnnotation())) {
-            result.logInvalidValue(Tag.BurnedInAnnotation, dcmobj);
-        }
-    }
+	public void validate(ValidationContext ctx, ValidationResult result) {
+		super.validate(ctx, result);
+		if (!PresentationLUTShape.isValidSoftCopy(getPresentationLUTShape())) {
+			result.logInvalidValue(Tag.PresentationLUTShape, dcmobj);
+		}
+		if (!LossyImageCompression.isValid(getLossyImageCompression())) {
+			result.logInvalidValue(Tag.LossyImageCompression, dcmobj);
+		}
+		if (!Flag.isValid(getBurnedInAnnotation())) {
+			result.logInvalidValue(Tag.BurnedInAnnotation, dcmobj);
+		}
+	}
 
-    /**
-     * A number that identifies this image.
-     * <p>
-     * Please not that this is an IS DICOM value, which is supposed to be
-     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
-     * because:
-     * <ul>
-     * <li> I have already seen objects, which uses non-numeric values for this
-     * identifiers.
-     * <li>For identifiers, the non-numeric value may still of some
-     * use/information as opposed to e.g. a non-numeric Frame Number..
-     * </ul>
-     * <p>
-     * Type 2
-     * 
-     * @return
-     */
-    public String getInstanceNumber() {
-        return dcmobj.getString(Tag.InstanceNumber);
-    }
+	/**
+	 * A number that identifies this image.
+	 * <p>
+	 * Please not that this is an IS DICOM value, which is supposed to be
+	 * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+	 * because:
+	 * <ul>
+	 * <li> I have already seen objects, which uses non-numeric values for this
+	 * identifiers.
+	 * <li>For identifiers, the non-numeric value may still of some
+	 * use/information as opposed to e.g. a non-numeric Frame Number..
+	 * </ul>
+	 * <p>
+	 * Type 2
+	 * 
+	 * @return
+	 */
+	public String getInstanceNumber() {
+		return dcmobj.getString(Tag.InstanceNumber);
+	}
 
-    /**
-     * A number that identifies this image.
-     * <p>
-     * Please not that this is an IS DICOM value, which is supposed to be
-     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
-     * because:
-     * <ul>
-     * <li> I have already seen objects, which uses non-numeric values for this
-     * identifiers.
-     * <li>For identifiers, the non-numeric value may still of some
-     * use/information as opposed to e.g. a non-numeric Frame Number..
-     * </ul>
-     * <p>
-     * Type 2
-     * 
-     * @param s
-     */
-    public void setInstanceNumber(String s) {
-        dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
-    }
+	/**
+	 * A number that identifies this image.
+	 * <p>
+	 * Please not that this is an IS DICOM value, which is supposed to be
+	 * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+	 * because:
+	 * <ul>
+	 * <li> I have already seen objects, which uses non-numeric values for this
+	 * identifiers.
+	 * <li>For identifiers, the non-numeric value may still of some
+	 * use/information as opposed to e.g. a non-numeric Frame Number..
+	 * </ul>
+	 * <p>
+	 * Type 2
+	 * 
+	 * @param s
+	 */
+	public void setInstanceNumber(String s) {
+		dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
+	}
 
-    public String[] getPatientOrientation() {
-        return dcmobj.getStrings(Tag.PatientOrientation);
-    }
+	/**
+	 * @see PatientOrientation
+	 * @return
+	 */
+	public String[] getPatientOrientation() {
+		return dcmobj.getStrings(Tag.PatientOrientation);
+	}
 
-    public void setPatientOrientation(String[] s) {
-        dcmobj.putStrings(Tag.PatientOrientation, VR.CS, s);
-    }
+	/**
+	 * @see PatientOrientation
+	 * @param s
+	 */
+	public void setPatientOrientation(String[] s) {
+		dcmobj.putStrings(Tag.PatientOrientation, VR.CS, s);
+	}
 
-    public Date getContentDateTime() {
-        return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
-    }
+	public Date getContentDateTime() {
+		return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
+	}
 
-    public void setContentDateTime(Date d) {
-        dcmobj.putDate(Tag.ContentDate, VR.DA, d);
-        dcmobj.putDate(Tag.ContentTime, VR.TM, d);
-    }
+	public void setContentDateTime(Date d) {
+		dcmobj.putDate(Tag.ContentDate, VR.DA, d);
+		dcmobj.putDate(Tag.ContentTime, VR.TM, d);
+	}
 
-    public String[] getImageType() {
-        return dcmobj.getStrings(Tag.ImageType);
-    }
+	public String[] getImageType() {
+		return dcmobj.getStrings(Tag.ImageType);
+	}
 
-    public void setImageType(String[] s) {
-        dcmobj.putStrings(Tag.ImageType, VR.CS, s);
-    }
+	public void setImageType(String[] s) {
+		dcmobj.putStrings(Tag.ImageType, VR.CS, s);
+	}
 
-    /**
-     * A number identifying the single continuous gathering of data over a
-     * period of time that resulted in this image.
-     * <p>
-     * Please not that this is an IS DICOM value, which is supposed to be
-     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
-     * because:
-     * <ul>
-     * <li> I have already seen objects, which uses non-numeric values for this
-     * identifiers.
-     * <li>For identifiers, the non-numeric value may still of some
-     * use/information as opposed to e.g. a non-numeric Frame Number..
-     * </ul>
-     * <p>
-     * Type 3
-     * 
-     * @return
-     */
-    public String getAcquisitionNumber() {
-        return dcmobj.getString(Tag.AcquisitionNumber);
-    }
+	/**
+	 * A number identifying the single continuous gathering of data over a
+	 * period of time that resulted in this image.
+	 * <p>
+	 * Please not that this is an IS DICOM value, which is supposed to be
+	 * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+	 * because:
+	 * <ul>
+	 * <li> I have already seen objects, which uses non-numeric values for this
+	 * identifiers.
+	 * <li>For identifiers, the non-numeric value may still of some
+	 * use/information as opposed to e.g. a non-numeric Frame Number..
+	 * </ul>
+	 * <p>
+	 * Type 3
+	 * 
+	 * @return
+	 */
+	public String getAcquisitionNumber() {
+		return dcmobj.getString(Tag.AcquisitionNumber);
+	}
 
-    /**
-     * A number identifying the single continuous gathering of data over a
-     * period of time that resulted in this image.
-     * <p>
-     * Please not that this is an IS DICOM value, which is supposed to be
-     * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
-     * because:
-     * <ul>
-     * <li> I have already seen objects, which uses non-numeric values for this
-     * identifiers.
-     * <li>For identifiers, the non-numeric value may still of some
-     * use/information as opposed to e.g. a non-numeric Frame Number..
-     * </ul>
-     * <p>
-     * Type 3
-     * 
-     * @param s
-     */
-    public void setAcquisitionNumber(String s) {
-        dcmobj.putString(Tag.AcquisitionNumber, VR.IS, s);
-    }
+	/**
+	 * A number identifying the single continuous gathering of data over a
+	 * period of time that resulted in this image.
+	 * <p>
+	 * Please not that this is an IS DICOM value, which is supposed to be
+	 * encoded in JAVA as an int. Nevertheless, {@link String} has been chosen
+	 * because:
+	 * <ul>
+	 * <li> I have already seen objects, which uses non-numeric values for this
+	 * identifiers.
+	 * <li>For identifiers, the non-numeric value may still of some
+	 * use/information as opposed to e.g. a non-numeric Frame Number..
+	 * </ul>
+	 * <p>
+	 * Type 3
+	 * 
+	 * @param s
+	 */
+	public void setAcquisitionNumber(String s) {
+		dcmobj.putString(Tag.AcquisitionNumber, VR.IS, s);
+	}
 
-    public Date getAcquisitionDateTime() {
-        return dcmobj.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
-    }
+	public Date getAcquisitionDateTime() {
+		return dcmobj.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
+	}
 
-    public void setAcquisitionDateTime(Date d) {
-        dcmobj.putDate(Tag.AcquisitionDate, VR.DA, d);
-        dcmobj.putDate(Tag.AcquisitionTime, VR.TM, d);
-    }
+	public void setAcquisitionDateTime(Date d) {
+		dcmobj.putDate(Tag.AcquisitionDate, VR.DA, d);
+		dcmobj.putDate(Tag.AcquisitionTime, VR.TM, d);
+	}
 
-    public Date getAcquisitionDatetime() {
-        return dcmobj.getDate(Tag.AcquisitionDatetime);
-    }
+	public Date getAcquisitionDatetime() {
+		return dcmobj.getDate(Tag.AcquisitionDatetime);
+	}
 
-    public void setAcquisitionDatetime(Date d) {
-        dcmobj.putDate(Tag.AcquisitionDatetime, VR.DT, d);
-    }
+	public void setAcquisitionDatetime(Date d) {
+		dcmobj.putDate(Tag.AcquisitionDatetime, VR.DT, d);
+	}
 
-    public ImageSOPInstanceReferenceAndPurpose[] getReferencedImages() {
-        return ImageSOPInstanceReferenceAndPurpose
-                .toImageSOPInstanceReferenceAndPurposes(dcmobj
-                        .get(Tag.ReferencedImageSequence));
-    }
+	public ImageSOPInstanceReferenceAndPurpose[] getReferencedImages() {
+		return ImageSOPInstanceReferenceAndPurpose
+				.toImageSOPInstanceReferenceAndPurposes(dcmobj
+						.get(Tag.ReferencedImageSequence));
+	}
 
-    public void setReferencedImages(ImageSOPInstanceReferenceAndPurpose[] sops) {
-        updateSequence(Tag.ReferencedImageSequence, sops);
-    }
+	public void setReferencedImages(ImageSOPInstanceReferenceAndPurpose[] sops) {
+		updateSequence(Tag.ReferencedImageSequence, sops);
+	}
 
-    public String getDerivationDescription() {
-        return dcmobj.getString(Tag.DerivationDescription);
-    }
+	public String getDerivationDescription() {
+		return dcmobj.getString(Tag.DerivationDescription);
+	}
 
-    public void setDerivationDescription(String s) {
-        dcmobj.putString(Tag.DerivationDescription, VR.ST, s);
-    }
+	public void setDerivationDescription(String s) {
+		dcmobj.putString(Tag.DerivationDescription, VR.ST, s);
+	}
 
-    public Code[] getDerivationCodes() {
-        return Code.toCodes(dcmobj.get(Tag.DerivationCodeSequence));
-    }
+	public Code[] getDerivationCodes() {
+		return Code.toCodes(dcmobj.get(Tag.DerivationCodeSequence));
+	}
 
-    public void setDerivationCodes(Code[] codes) {
-        updateSequence(Tag.DerivationCodeSequence, codes);
-    }
+	public void setDerivationCodes(Code[] codes) {
+		updateSequence(Tag.DerivationCodeSequence, codes);
+	}
 
-    public SourceImage[] getSourceImages() {
-        return SourceImage.toSourceImages(dcmobj.get(Tag.SourceImageSequence));
-    }
+	public SourceImage[] getSourceImages() {
+		return SourceImage.toSourceImages(dcmobj.get(Tag.SourceImageSequence));
+	}
 
-    public void setSourceImages(SourceImage[] sops) {
-        updateSequence(Tag.SourceImageSequence, sops);
-    }
+	public void setSourceImages(SourceImage[] sops) {
+		updateSequence(Tag.SourceImageSequence, sops);
+	}
 
-    public SOPInstanceReferenceAndPurpose[] getReferencedInstances() {
-        return SOPInstanceReferenceAndPurpose
-                .toSOPInstanceReferenceAndPurposes(dcmobj
-                        .get(Tag.ReferencedInstanceSequence));
-    }
+	public SOPInstanceReferenceAndPurpose[] getReferencedInstances() {
+		return SOPInstanceReferenceAndPurpose
+				.toSOPInstanceReferenceAndPurposes(dcmobj
+						.get(Tag.ReferencedInstanceSequence));
+	}
 
-    public void setReferencedInstances(SOPInstanceReferenceAndPurpose[] sops) {
-        updateSequence(Tag.ReferencedInstanceSequence, sops);
-    }
+	public void setReferencedInstances(SOPInstanceReferenceAndPurpose[] sops) {
+		updateSequence(Tag.ReferencedInstanceSequence, sops);
+	}
 
-    public int getImagesinAcquisition() {
-        return dcmobj.getInt(Tag.ImagesinAcquisition);
-    }
+	public int getImagesinAcquisition() {
+		return dcmobj.getInt(Tag.ImagesinAcquisition);
+	}
 
-    public void setImagesinAcquisition(int i) {
-        dcmobj.putInt(Tag.ImagesinAcquisition, VR.IS, i);
-    }
+	public void setImagesinAcquisition(int i) {
+		dcmobj.putInt(Tag.ImagesinAcquisition, VR.IS, i);
+	}
 
-    public String getImageComments() {
-        return dcmobj.getString(Tag.ImageComments);
-    }
+	public String getImageComments() {
+		return dcmobj.getString(Tag.ImageComments);
+	}
 
-    public void setImageComments(String s) {
-        dcmobj.putString(Tag.ImageComments, VR.LT, s);
-    }
+	public void setImageComments(String s) {
+		dcmobj.putString(Tag.ImageComments, VR.LT, s);
+	}
 
-    public String getQualityControlImage() {
-        return dcmobj.getString(Tag.QualityControlImage);
-    }
+	public String getQualityControlImage() {
+		return dcmobj.getString(Tag.QualityControlImage);
+	}
 
-    public void setQualityControlImage(String s) {
-        dcmobj.putString(Tag.QualityControlImage, VR.CS, s);
-    }
+	public void setQualityControlImage(String s) {
+		dcmobj.putString(Tag.QualityControlImage, VR.CS, s);
+	}
 
-    public String getBurnedInAnnotation() {
-        return dcmobj.getString(Tag.BurnedInAnnotation);
-    }
+	public String getBurnedInAnnotation() {
+		return dcmobj.getString(Tag.BurnedInAnnotation);
+	}
 
-    public void setBurnedInAnnotation(String s) {
-        dcmobj.putString(Tag.BurnedInAnnotation, VR.CS, s);
-    }
+	public void setBurnedInAnnotation(String s) {
+		dcmobj.putString(Tag.BurnedInAnnotation, VR.CS, s);
+	}
 
-    public String getLossyImageCompression() {
-        return dcmobj.getString(Tag.LossyImageCompression);
-    }
+	public String getLossyImageCompression() {
+		return dcmobj.getString(Tag.LossyImageCompression);
+	}
 
-    public void setLossyImageCompression(String s) {
-        dcmobj.putString(Tag.LossyImageCompression, VR.CS, s);
-    }
+	public void setLossyImageCompression(String s) {
+		dcmobj.putString(Tag.LossyImageCompression, VR.CS, s);
+	}
 
-    public float[] getLossyImageCompressionRatio() {
-        return dcmobj.getFloats(Tag.LossyImageCompressionRatio);
-    }
+	public float[] getLossyImageCompressionRatio() {
+		return dcmobj.getFloats(Tag.LossyImageCompressionRatio);
+	}
 
-    public void setLossyImageCompression(float[] floats) {
-        dcmobj.putFloats(Tag.LossyImageCompressionRatio, VR.DS, floats);
-    }
+	public void setLossyImageCompression(float[] floats) {
+		dcmobj.putFloats(Tag.LossyImageCompressionRatio, VR.DS, floats);
+	}
 
-    public String[] getLossyImageCompressionMethod() {
-        return dcmobj.getStrings(Tag.LossyImageCompressionMethod);
-    }
+	public String[] getLossyImageCompressionMethod() {
+		return dcmobj.getStrings(Tag.LossyImageCompressionMethod);
+	}
 
-    public void setLossyImageCompressionMethod(String[] ss) {
-        dcmobj.putStrings(Tag.LossyImageCompressionMethod, VR.CS, ss);
-    }
+	public void setLossyImageCompressionMethod(String[] ss) {
+		dcmobj.putStrings(Tag.LossyImageCompressionMethod, VR.CS, ss);
+	}
 
-    public ImagePixel getIconImage() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.IconImageSequence);
-        return item != null ? new ImagePixel(item) : null;
-    }
+	public ImagePixel getIconImage() {
+		DicomObject item = dcmobj.getNestedDicomObject(Tag.IconImageSequence);
+		return item != null ? new ImagePixel(item) : null;
+	}
 
-    public void setIconImage(ImagePixel icon) {
-        updateSequence(Tag.IconImageSequence, icon);
-    }
+	public void setIconImage(ImagePixel icon) {
+		updateSequence(Tag.IconImageSequence, icon);
+	}
 
-    public String getPresentationLUTShape() {
-        return dcmobj.getString(Tag.PresentationLUTShape);
-    }
+	public String getPresentationLUTShape() {
+		return dcmobj.getString(Tag.PresentationLUTShape);
+	}
 
-    public void setPresentationLUTShape(String s) {
-        dcmobj.putString(Tag.PresentationLUTShape, VR.CS, s);
-    }
+	public void setPresentationLUTShape(String s) {
+		dcmobj.putString(Tag.PresentationLUTShape, VR.CS, s);
+	}
 
-    public String getIrradiationEventUID() {
-        return dcmobj.getString(Tag.IrradiationEventUID);
-    }
+	public String getIrradiationEventUID() {
+		return dcmobj.getString(Tag.IrradiationEventUID);
+	}
 
-    public void setIrradiationEventUID(String s) {
-        dcmobj.putString(Tag.IrradiationEventUID, VR.UI, s);
-    }
+	public void setIrradiationEventUID(String s) {
+		dcmobj.putString(Tag.IrradiationEventUID, VR.UI, s);
+	}
 
-    public String getPixelDataProviderURL() {
-        return dcmobj.getString(Tag.PixelDataProviderURL);
-    }
+	public String getPixelDataProviderURL() {
+		return dcmobj.getString(Tag.PixelDataProviderURL);
+	}
 
-    public void setPixelDataProviderURL(String s) {
-        dcmobj.putString(Tag.PixelDataProviderURL, VR.UT, s);
-    }
+	public void setPixelDataProviderURL(String s) {
+		dcmobj.putString(Tag.PixelDataProviderURL, VR.UT, s);
+	}
 }
