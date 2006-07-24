@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -41,15 +42,27 @@ package org.dcm4che2.net;
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 
 /**
+ * DICOM Standard, Part 19, Annex H: Transfer Capability – The description of
+ * the SOP classes and syntaxes supported by a Network AE.
+ * <p>
+ * An instance of the <code>TransferCapability</code> class describes the
+ * DICOM transfer capabilities of an SCU or SCP in terms of a single
+ * presentation syntax. This includes the role selection (SCU or SCP), the
+ * acceptable transfer syntaxes for a given SOP Class, and any extra
+ * information.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 7, 2005
- * 
  */
-public class TransferCapability {
-    
+public class TransferCapability
+{
+
+    /** String representation of the DICOM SCU role. */
     public static final String SCU = "SCU";
+    /** String representation of the DICOM SCP role. */
     public static final String SCP = "SCP";
+
     private static byte[] NO_EXT_INFO = {};
 
     protected String commonName;
@@ -58,29 +71,74 @@ public class TransferCapability {
     protected String[] transferSyntax = {};
     protected byte[] extInfo = {};
 
-    public TransferCapability() {
+    /**
+     * Default constructor.
+     */
+    public TransferCapability()
+    {
     }
 
+    /**
+     * Creates the <code>TransferCapability</code> instance with the specified
+     * presentation context..
+     * 
+     * @param sopClass A String containing the SOP Class UID.
+     * @param transferSyntax A String array containing the acceptable transfer
+     *            syntaxes for <tt>sopClass</tt>.
+     * @param role A String defining the role selection (SCU or SCP) for this
+     *            <code>TransferCapability</code>instance
+     */
     public TransferCapability(String sopClass, String[] transferSyntax,
-            String role) {
+            String role)
+    {
         setSopClass(sopClass);
         setTransferSyntax(transferSyntax);
         setRole(role);
     }
 
-    public final String getCommonName() {
+    /**
+     * Set the name of the Transfer Capability object. Can be a meaningful name
+     * or any unqiue sequence of characters.
+     * 
+     * @return A String containing the common name.
+     */
+    public final String getCommonName()
+    {
         return commonName;
     }
 
-    public final void setCommonName(String commonName) {
+    /**
+     * Get the name of the Transfer Capability object. Can be a meaningful name
+     * or any unqiue sequence of characters.
+     * 
+     * @param commonName A String containing the common name.
+     */
+    public final void setCommonName(String commonName)
+    {
         this.commonName = commonName;
     }
 
-    public final String getRole() {
+    /**
+     * Get the role selection for this <code>TransferCapability</code>instance.
+     * 
+     * @return A String defining the role selection (SCU or SCP) for this
+     *         <code>TransferCapability</code>instance
+     */
+    public final String getRole()
+    {
         return scp ? SCP : SCU;
     }
 
-    public final void setRole(String role) {
+    /**
+     * Set the role selection for this <code>TransferCapability</code>instance.
+     * 
+     * @param role A String defining the role selection (SCU or SCP) for this
+     *            <code>TransferCapability</code>instance
+     * @throws IllegalArgumentException If the role is not equal to <tt>SCU</tt>
+     *             or <tt>SCP</tt>.
+     */
+    public final void setRole(String role)
+    {
         if (role == null)
             throw new NullPointerException("Role");
 
@@ -92,69 +150,147 @@ public class TransferCapability {
             throw new IllegalArgumentException("Role:" + role);
     }
 
-    public final boolean isSCP() {
+    /**
+     * Determine if this Transfer Capability object is capable of acting as an
+     * SCP.
+     * 
+     * @return true if SCP is the selected role of this object.
+     */
+    public final boolean isSCP()
+    {
         return scp;
     }
 
-    public final boolean isSCU() {
+    /**
+     * Determine if this Transfer Capability object is capable of acting as an
+     * SCU.
+     * 
+     * @return true if SCU is the selected role of this object.
+     */
+    public final boolean isSCU()
+    {
         return !scp;
     }
 
-    public final String getSopClass() {
+    /**
+     * Get the SOP Class of this Transfer Capability object.
+     * 
+     * @return A String containing the SOP Class UID.
+     */
+    public final String getSopClass()
+    {
         return sopClass;
     }
 
-    public final void setSopClass(String sopClass) {
+    /**
+     * Set the SOP Class of this Transfer Capability object.
+     * 
+     * @param sopClass A String containing the SOP Class UID.
+     */
+    public final void setSopClass(String sopClass)
+    {
         if (sopClass == null)
             throw new NullPointerException("sopClass");
         this.sopClass = sopClass;
     }
 
-    public final String[] getTransferSyntax() {
+    /**
+     * Get the transfer syntax(es) that may be requested as an SCU or that are
+     * offered as an SCP.
+     * 
+     * @return String array containing the transfer syntaxes.
+     */
+    public final String[] getTransferSyntax()
+    {
         return (String[]) transferSyntax.clone();
     }
 
-    public final void setTransferSyntax(String[] transferSyntax) {
+    /**
+     * Set the transfer syntax(es) that may be requested as an SCU or that are
+     * offered as an SCP.
+     * 
+     * @param transferSyntax String array containing the transfer syntaxes.
+     */
+    public final void setTransferSyntax(String[] transferSyntax)
+    {
         if (transferSyntax.length == 0)
             throw new IllegalArgumentException("transferSyntax.length = 0");
-        for (int i = 0; i < transferSyntax.length; i++) {
-            if (transferSyntax[i] == null) {
+        for (int i = 0; i < transferSyntax.length; i++)
+        {
+            if (transferSyntax[i] == null)
+            {
                 throw new NullPointerException("transferSyntax[" + i + "]");
             }
         }
         this.transferSyntax = (String[]) transferSyntax.clone();
-    }        
+    }
 
-    public final byte[] getExtInfo() {
+    /**
+     * @return
+     */
+    public final byte[] getExtInfo()
+    {
         return (byte[]) extInfo.clone();
     }
 
-    public final void setExtInfo(byte[] info) {
+    /**
+     * @param info
+     */
+    public final void setExtInfo(byte[] info)
+    {
         extInfo = info != null ? (byte[]) info.clone() : NO_EXT_INFO;
     }
 
-    public boolean getExtInfoBoolean(int field) {
+    /**
+     * @param field
+     * @return
+     */
+    public boolean getExtInfoBoolean(int field)
+    {
         return extInfo != null && extInfo.length > field && extInfo[field] != 0;
     }
 
-    public int getExtInfoInt(int field) {
+    /**
+     * @param field
+     * @return
+     */
+    public int getExtInfoInt(int field)
+    {
         return extInfo != null && extInfo.length > field ? extInfo[field] & 0xff
                 : 0;
     }
 
-    public void setExtInfoBoolean(int field, boolean b) {
+    /**
+     * @param field
+     * @param b
+     */
+    public void setExtInfoBoolean(int field, boolean b)
+    {
         setExtInfoInt(field, b ? 1 : 0);
     }
 
-    public void setExtInfoInt(int field, int value) {
+    /**
+     * @param field
+     * @param value
+     */
+    public void setExtInfoInt(int field, int value)
+    {
         extInfo[field] = (byte) value;
     }
 
-    protected ExtendedNegotiation negotiate(ExtendedNegotiation offered) {
+    /**
+     * Negotiate any extended negotiation items for the association.
+     * 
+     * @param offered The <code>ExtendedNegotiation</code> that was offered.
+     * @return <code>ExtendedNegotiation</code> that was negotiated.
+     */
+    protected ExtendedNegotiation negotiate(ExtendedNegotiation offered)
+    {
         if (offered == null || extInfo == null)
             return null;
         byte[] info = offered.getInformation();
-        for (int i = 0; i < info.length; i++) {
+        for (int i = 0; i < info.length; i++)
+        {
             info[i] &= getExtInfoInt(i);
         }
         return new ExtendedNegotiation(sopClass, info);
