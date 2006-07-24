@@ -21,7 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
- * Damien Evans <damien@theevansranch.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -46,6 +46,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -97,6 +98,11 @@ public class NetworkConnection
 
     private Device device;
     private ServerSocket server;
+
+    // Limiting factors
+    private List excludeConnectionsFrom;
+    private int maxScpAssociations = 50;
+    private int associationCount;
 
     /**
      * @see java.lang.Object#toString()
@@ -348,11 +354,15 @@ public class NetworkConnection
                         log.debug("Wait for connection on {}", addr);
                         Socket s = server.accept();
                         setSocketOptions(s);
-                        Association a = Association.accept(s,
-                                NetworkConnection.this);
-                        executor.execute(a);
+                        if (checkConnection(s)) {
+                            Association a = Association.accept(s,
+                                    NetworkConnection.this);
+                            executor.execute(a);
+                            incListenerConnectionCount();
+                        }
                     }
-                } catch (Throwable e) {
+                } catch (Throwable e)
+                {
                     // assume exception was raised by graceful stop of server
                 }
                 log.info("Stop listening on {}", addr);
@@ -360,12 +370,74 @@ public class NetworkConnection
         });
     }
 
-    public synchronized void unbind() {
+    /**
+     * Check the incoming socket connection against the limitations set up for
+     * this Network Connection.
+     * 
+     * @param s The socket connection.
+     * @return boolean True if association negotiation should proceed.
+     */
+    protected boolean checkConnection(Socket s) {
+        if (excludeConnectionsFrom == null
+                || excludeConnectionsFrom.size() == 0)
+            return true;
+        
+        String ip = null;
+        try {
+            // Check to see if this connection attempt is just a keep alive
+            // ping from the CSS. Use a list of possible pingers in the case
+            // of a high-availability network.
+            for (int i = 0; i < excludeConnectionsFrom.size(); i++) {
+                ip = (String) excludeConnectionsFrom.get(i);
+                if (s.getInetAddress().getHostAddress().equals(ip)) {
+                    log.debug("Rejecting connection from {}", ip);
+                    s.close();
+                    return false;
+                }
+            }
+        } catch (IOException e)
+        {
+            log.debug("Caught IOException closing socket from {}", ip);
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Increment the number of active associations.
+     */
+    protected void incListenerConnectionCount() {
+        ++associationCount;
+    }
+
+    /**
+     * Decrement the number of active associations.
+     */
+    protected void decListenerConnectionCount() {
+        --associationCount;
+    }
+
+    /**
+     * Check to see if the specified number of associations has been exceeded.
+     * 
+     * @param maxAssociations An int containing the maximum number of
+     *            associations allowed.
+     * @return boolean True if the max association count has not been exceeded.
+     */
+    public boolean checkConnectionCountWithinLimit() {
+        return true ? associationCount <= maxScpAssociations : false;
+    }
+
+    public synchronized void unbind()
+    {
         if (server == null)
             return;
-        try {
+        try
+        {
             server.close();
-        } catch (Throwable e) {
+        } catch (Throwable e)
+        {
             // Ignore errors when closing the server socket.
         }
         server = null;
@@ -387,6 +459,55 @@ public class NetworkConnection
         ss.setEnabledCipherSuites(tlsCipherSuite);
         ss.setNeedClientAuth(tlsNeedClientAuth);
         return ss;
+    }
+
+    /**
+     * Get a list of IP addresses from which we should ignore connections.
+     * Useful in an environment that utilizes a load balancer. In the case of a
+     * TCP ping from a load balancing switch, we don't want to spin off a new
+     * thread and try to negotiate an association.
+     * 
+     * @return Returns the list of IP addresses which should be ignored.
+     */
+    public List getExcludeConnectionsFrom()
+    {
+        return excludeConnectionsFrom;
+    }
+
+    /**
+     * Set a list of IP addresses from which we should ignore connections.
+     * Useful in an environment that utilizes a load balancer. In the case of a
+     * TCP ping from a load balancing switch, we don't want to spin off a new
+     * thread and try to negotiate an association.
+     * 
+     * @param excludeConnectionsFrom the list of IP addresses which should be
+     *            ignored.
+     */
+    public void setExcludeConnectionsFrom(List excludeConnectionsFrom)
+    {
+        this.excludeConnectionsFrom = excludeConnectionsFrom;
+    }
+
+    /**
+     * Get the maximum number of incoming associations that this Network
+     * Connection will allow.
+     * 
+     * @return int An int which defines the max associations.
+     */
+    public int getMaxScpAssociations()
+    {
+        return maxScpAssociations;
+    }
+
+    /**
+     * Set the maximum number of incoming associations that this Network
+     * Connection will allow.
+     * 
+     * @param maxScpAssociations An int which defines the max associations.
+     */
+    public void setMaxScpAssociations(int maxListenerAssociations)
+    {
+        this.maxScpAssociations = maxListenerAssociations;
     }
 
 }

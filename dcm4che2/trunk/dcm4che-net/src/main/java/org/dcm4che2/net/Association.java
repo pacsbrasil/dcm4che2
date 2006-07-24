@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -796,6 +797,7 @@ public class Association implements Runnable {
             exception = e;
             log.warn("i/o exception in State " + state, e);
         } finally {
+            connector.decListenerConnectionCount();
             closeSocket();
         }
     }
@@ -1012,6 +1014,10 @@ public class Association implements Runnable {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
+            if (!connector.checkConnectionCountWithinLimit())
+                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
+                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                        AAssociateRJ.REASON_TEMPORARY_CONGESTION);
             setApplicationEntity(ae);
             ae.negotiate(this, rq);
             associateAC = ae.negotiate(this, rq);
