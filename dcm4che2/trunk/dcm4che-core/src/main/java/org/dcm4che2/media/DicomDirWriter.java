@@ -400,7 +400,7 @@ public class DicomDirWriter extends DicomDirReader {
 
     private void writeRecord(long offset, DicomObject dcmobj)
 	    throws IOException {
-	log.debug("Write record@?1 to file?2", new Long(offset), file);
+	log.debug("Write record @ {} to file {}", new Long(offset), file);
 	if (rollbackLen == -1) {
 	    rollbackLen = offset;
 	    filesetInfo.setFilesetConsistencyFlag(

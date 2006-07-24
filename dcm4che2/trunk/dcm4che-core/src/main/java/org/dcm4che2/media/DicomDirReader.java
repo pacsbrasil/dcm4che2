@@ -246,9 +246,9 @@ public class DicomDirReader {
 	DicomObject item = (DicomObject) cache.get(offset);
 	long off = offset & 0xffffffffL;
 	if (item != null) {
-	    log.debug("Get record@?1 from cache", new Long(off));
+	    log.debug("Get record @ {} from cache", new Long(off));
 	} else {
-	    log.debug("Load record@?1 from file ?2", new Long(off), file);
+	    log.debug("Load record @ {} from file {}", new Long(off), file);
 	    raf.seek(off);
 	    in.setStreamPosition(off);
 	    item = new BasicDicomObject();
