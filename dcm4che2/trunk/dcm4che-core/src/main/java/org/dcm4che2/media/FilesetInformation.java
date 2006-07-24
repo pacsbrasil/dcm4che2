@@ -38,7 +38,6 @@
 package org.dcm4che2.media;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -55,6 +54,9 @@ import org.dcm4che2.util.UIDUtils;
 
 public class FilesetInformation extends FileMetaInformation {
 
+    public static final int NO_KNOWN_INCONSISTENCIES = 0;
+    public static final int KNOWN_INCONSISTENCIES = 0xffff;    
+    
     public FilesetInformation(DicomObject dcmobj) {
         super(dcmobj);
     }
@@ -87,6 +89,14 @@ public class FilesetInformation extends FileMetaInformation {
         dcmobj.putStrings(Tag.FilesetDescriptorFileID, VR.CS, cs);
     }
 
+    public File getFilesetDescriptorFile(File basedir) {
+	return toFile(getFilesetDescriptorFileID(), basedir);
+    }
+    
+    public void setFilesetDescriptorFile(File file, File basedir) {
+	setFilesetDescriptorFileID(toFileID(file, basedir));
+    }
+    
     public String getSpecificCharacterSetofFilesetDescriptorFile() {
         return dcmobj.getString(Tag.SpecificCharacterSetofFilesetDescriptorFile);
     }
@@ -127,6 +137,10 @@ public class FilesetInformation extends FileMetaInformation {
         dcmobj.putInt(Tag.FilesetConsistencyFlag, VR.US, flag);
     }
     
+    public boolean isNoKnownInconsistencies() {
+	return getFilesetConsistencyFlag() == NO_KNOWN_INCONSISTENCIES;
+    }
+    
     protected String getSOPClassUID() {
         return UID.MediaStorageDirectoryStorage;
     }
@@ -146,9 +160,9 @@ public class FilesetInformation extends FileMetaInformation {
         return new File(sb.toString());
     }
 
-    public static String[] toFileID(File file, File basedir) throws IOException {
-        String dirpath = basedir.getCanonicalPath();
-        String filepath = file.getCanonicalPath();
+    public static String[] toFileID(File file, File basedir) {
+        String dirpath = basedir.getAbsolutePath();
+        String filepath = file.getAbsolutePath();
         int start = dirpath.length();
         if (!filepath.startsWith(dirpath) || start == filepath.length()) {
             throw new IllegalArgumentException("file " + file 
@@ -159,5 +173,6 @@ public class FilesetInformation extends FileMetaInformation {
         }
         return StringUtils.split(filepath.substring(start), File.separatorChar);
     }
+
 
 }

@@ -50,14 +50,15 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.DicomObjectToStringParam;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.media.ApplicationProfile;
-import org.dcm4che2.media.BasicApplicationProfile;
 import org.dcm4che2.media.DicomDirReader;
 import org.dcm4che2.media.DicomDirWriter;
 import org.dcm4che2.media.FilesetInformation;
+import org.dcm4che2.media.StdGenJPEGApplicationProfile;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -66,23 +67,50 @@ import org.dcm4che2.media.FilesetInformation;
  */
 public class DcmDir {
 
-    private static final String USAGE = "dcmdir -{cru} <dicomdir> [Options] [<file>..][<directory>..]";
-    private static final String DESCRIPTION = "Create/Read/Update DICOM File-Set with DICOM directory file\nOptions:";
-    private static final String EXAMPLE = null;
+    private static final int DEF_MAX_WIDTH = 78;
+    private static final int MIN_MAX_WIDTH = 32;
+    private static final int MAX_MAX_WIDTH = 512;
+    private static final int DEF_MAX_VAL_LEN = 64;
+    private static final int MIN_MAX_VAL_LEN = 16;
+    private static final int MAX_MAX_VAL_LEN = 512;      
+    private static final String USAGE = 
+	"dcmdir -{acdtz} <dicomdir> [Options] [<file>..][<directory>..]";
+    private static final String DESCRIPTION = 
+	"Dump/Create/Update/Compact DICOM directory file\nOptions:";
+    private static final String EXAMPLE = 
+"dicomdir -t /media/cdrom/DICOMDIR\n" +
+"-- dump content of DICOMDIR to stdout\n" +
+"dicomdir -c disk99/DICOMDIR -id DISK99 -readme disk99/README disk99/DICOM\n" +
+"-- create new directory file with specified File-set ID and Descriptor File,\n" +
+"-- referencing all DICOM Files in directory disk99/DICOM.\n" +
+"dicomdir -a disk99/DICOMDIR disk99/DICOM/CT1\n" +
+"-- add directory records referencing all DICOM files in directory\n" +
+"-- disk99/DICOM/CT1 to existing directory file.\n" +
+"dicomdir -d disk99/DICOMDIR disk99/DICOM/CT1\n" +
+"-- delete/deactivate directory records referencing DICOM files in directory\n" +
+"-- disk99/DICOM/CT2.\n" +
+"dicomdir -z disk99/DICOMDIR\n" +
+"-- compact DICOMDIR by removing inactive records.";
 
     private final File file;
     private DicomDirReader dicomdir;
     private FilesetInformation fsinfo;
-    private ApplicationProfile ap = new BasicApplicationProfile();
+    private ApplicationProfile ap = new StdGenJPEGApplicationProfile();
+    private int maxValLen = DEF_MAX_VAL_LEN;
+    private int maxWidth = DEF_MAX_WIDTH;
 
-    public DcmDir(String fname) {
-        file = new File(fname);
+    public DcmDir(File file) {
+        this.file = file;
     }
 
-    public void create(boolean explSeqLen) throws IOException {
-        dicomdir = new DicomDirWriter(file, fsinfo(), explSeqLen);        
+    public void setMaxValLen(int maxValLen) {
+        this.maxValLen = maxValLen;
     }
 
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
+    }
+    
     private FilesetInformation fsinfo() {
         if (fsinfo == null) {
             fsinfo = new FilesetInformation();
@@ -91,17 +119,59 @@ public class DcmDir {
         return fsinfo;
     }
 
-    public void update() throws IOException {
+    public void create() throws IOException {
+        dicomdir = new DicomDirWriter(file, fsinfo());        
+    }
+
+    public void openRO() throws IOException {
+        dicomdir = new DicomDirReader(file);        
+    }
+
+    public void open() throws IOException {
         dicomdir = new DicomDirWriter(file);        
     }
 
+    public void setShowInactiveRecords(boolean b) {
+	dicomdir.setShowInactiveRecords(b);	
+    }
+
+    public void dump() throws IOException {
+	DicomObjectToStringParam param = new DicomObjectToStringParam(true,
+		maxValLen, Integer.MAX_VALUE, maxWidth,
+		Integer.MAX_VALUE, "",
+		System.getProperty("line.separator", "\n"));
+	StringBuffer sb = new StringBuffer(512);	
+        FilesetInformation filesetInfo = dicomdir.getFilesetInformation();
+	filesetInfo.getDicomObject().toStringBuffer(sb, param);
+        System.out.println(sb.toString());
+        dump(dicomdir.findFirstRootRecord(), param, "", sb);
+    }
+
+    private void dump(DicomObject firstRec, DicomObjectToStringParam param, 
+	    String id, StringBuffer sb) throws IOException {
+	int i = 1;
+	for (DicomObject rec = firstRec; rec != null;
+		rec = dicomdir.findNextSiblingRecord(rec), ++i) {
+	    sb.setLength(0);
+	    rec.toStringBuffer(sb, param);
+	    System.out.println("" + rec.getItemOffset() + ": "
+		    + rec.getString(Tag.DirectoryRecordType) + " - " + id + i);
+	    System.out.println(sb.toString());
+	    dump(dicomdir.findFirstChildRecord(rec), param,
+		    id + i + '.', sb);
+	}
+    }
+
+    public int compact(File out) throws IOException {
+	return dicomdir.compact(out);
+    }
+        
     public void setSpecificCharacterSetofFilesetDescriptorFile(String cs) {       
         fsinfo().setSpecificCharacterSetofFilesetDescriptorFile(cs);
     }
 
-    public void setFilesetDescriptorFileID(String fname) throws IOException {
-        fsinfo().setFilesetDescriptorFileID(FilesetInformation.toFileID(
-                new File(fname), file.getParentFile()));
+    public void setFilesetDescriptorFileID(String fname) {
+        fsinfo().setFilesetDescriptorFile(new File(fname), file.getParentFile());
     }
 
     public void setMediaStorageSOPInstanceUID(String ui) {
@@ -112,8 +182,12 @@ public class DcmDir {
         fsinfo().setFilesetID(cs);
     }
 
-    public void open() throws IOException {
-        dicomdir = new DicomDirReader(file);        
+    public void setExplicitItemLength(boolean b) {
+	((DicomDirWriter) dicomdir).setExplicitItemLength(b);    
+    }
+
+    public void setExplicitSequenceLength(boolean b) {
+       ((DicomDirWriter) dicomdir).setExplicitSequenceLength(b);    
     }
 
     public int addFile(File f) throws IOException {
@@ -128,15 +202,55 @@ public class DcmDir {
         DicomInputStream in = new DicomInputStream(f);
         in.setHandler(new StopTagInputHandler(Tag.PixelData));
         DicomObject dcmobj =  in.readDicomObject();
-        DicomDirWriter w = (DicomDirWriter) dicomdir;
         DicomObject patrec = ap.makePatientDirectoryRecord(dcmobj);
         DicomObject styrec = ap.makeStudyDirectoryRecord(dcmobj);
         DicomObject serrec = ap.makeSeriesDirectoryRecord(dcmobj);
-        DicomObject instrec = ap.makeInstanceDirectoryRecord(dcmobj, w.toFileID(f));
-        DicomObject rec = w.addPatientRecord(patrec);
-        rec = w.addStudyRecord(rec, styrec);
-        rec = w.addSeriesRecord(rec, serrec);
-        w.addChildRecord(rec, instrec);
+        DicomObject instrec = 
+            	ap.makeInstanceDirectoryRecord(dcmobj, dicomdir.toFileID(f));
+
+        DicomObject rec = ((DicomDirWriter) dicomdir).addPatientRecord(patrec);
+        rec = ((DicomDirWriter) dicomdir).addStudyRecord(rec, styrec);
+        rec = ((DicomDirWriter) dicomdir).addSeriesRecord(rec, serrec);
+        ((DicomDirWriter) dicomdir).addChildRecord(rec, instrec);
+        System.out.print('.');
+        return 1;
+    }
+
+
+    public int delFile(File f) throws IOException {
+        if (f.isDirectory()) {
+            int n = 0;
+            File[] fs = f.listFiles();
+            for (int i = 0; i < fs.length; i++) {
+                n += delFile(fs[i]);
+            }
+            return n;
+        }
+        DicomInputStream in = new DicomInputStream(f);
+        in.setHandler(new StopTagInputHandler(Tag.SeriesInstanceUID + 1));
+        DicomObject dcmobj =  in.readDicomObject();
+        String pid = dcmobj.getString(Tag.PatientID);
+        DicomObject pat = dicomdir.findPatientRecord(pid);
+        if (pat == null) {
+            return 0;
+        }
+        String styuid = dcmobj.getString(Tag.StudyInstanceUID);
+        DicomObject sty = dicomdir.findStudyRecord(pat, styuid);
+        if (sty == null) {
+            return 0;
+        }
+        String seruid = dcmobj.getString(Tag.SeriesInstanceUID);
+        DicomObject ser = dicomdir.findSeriesRecord(sty, seruid);
+        if (ser == null) {
+            return 0;
+        }
+        String iuid = dcmobj.getString(Tag.MediaStorageSOPInstanceUID);
+        DicomObject rec = dicomdir.findInstanceRecord(ser, iuid);
+        if (rec == null) {
+            return 0;
+        }
+        ((DicomDirWriter) dicomdir).deleteRecord(rec);
+        System.out.print('x');
         return 1;
     }
     
@@ -144,35 +258,75 @@ public class DcmDir {
         dicomdir.close();
     }
 
-    public void dump() {
-        // TODO Auto-generated method stub
-        
-    }
-
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
         OptionGroup cmdOpt = new OptionGroup();
         OptionBuilder.withArgName("dicomdir");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("create new directory file <dicomdir> for DICOM file-set "
-                        + "specified by file.. or directory.. arguments");
+        OptionBuilder.withDescription(
+        	"create new directory file <dicomdir> for DICOM file-set " + 
+        	"specified by file.. or directory.. arguments");
         cmdOpt.addOption(OptionBuilder.create("c"));
         OptionBuilder.withArgName("dicomdir");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("read directory file <dicomdir> and dump content to stdout");
-        cmdOpt.addOption(OptionBuilder.create("r"));
+        OptionBuilder.withDescription(
+        	"read directory file <dicomdir> and dump content to stdout");
+        cmdOpt.addOption(OptionBuilder.create("t"));
         OptionBuilder.withArgName("dicomdir");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("update exisitng directory file <dicomdir> with DICOM file-set "
-                        + "specified by file.. or directory.. arguments");
-        cmdOpt.addOption(OptionBuilder.create("u"));
+        OptionBuilder.withDescription(
+        	"add references to specified files to existing directory file " +
+        	"<dicomdir>");
+        cmdOpt.addOption(OptionBuilder.create("a"));
+        OptionBuilder.withArgName("dicomdir");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+        	"delete references to specified files from existing directory " +
+        	"file <dicomdir>");
+        cmdOpt.addOption(OptionBuilder.create("d"));
+        OptionBuilder.withArgName("dicomdir");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+        	"compact existing directory file <dicomdir> by removing unused entries");
+        cmdOpt.addOption(OptionBuilder.create("z"));
+        cmdOpt.setRequired(true);
         opts.addOptionGroup(cmdOpt);
-        opts.addOption("sqlen", false, 
-                "encode Directory Record Sequence with explicit length," +
-                "encode with undefined length by deafult.");
+        OptionBuilder.withArgName("txtfile");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify File-set Descriptor File");
+        opts.addOption(OptionBuilder.create("readme"));
+        OptionBuilder.withArgName("code");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+        	"Character Set used in File-set Descriptor File" +
+        	"(\"ISO_IR 100\" = ISO Latin 1).");
+        opts.addOption(OptionBuilder.create("charset"));
+        OptionBuilder.withArgName("id");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify File-set ID");
+        opts.addOption(OptionBuilder.create("id"));
+        OptionBuilder.withArgName("uid");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify File-set UID");
+        opts.addOption(OptionBuilder.create("uid"));
+        OptionBuilder.withArgName("max");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+        	"maximal number of characters per line, by default: 80");
+        opts.addOption(OptionBuilder.create("w"));
+        OptionBuilder.withArgName("max");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+        	"limit value prompt to <maxlen> characters, by default: 64");
+        opts.addOption(OptionBuilder.create("vallen"));
+        opts.addOption("inactive", false, 
+                "dump also inactive records.");
+        opts.addOption("S", false, 
+                "encode Sequences with undefined length," +
+                "encode with explicit length by default.");
+        opts.addOption("I", false, 
+                "encode Sequence Items with undefined length," +
+                "encode with explicit length by default.");
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
                 "print the version information and exit");
@@ -187,7 +341,7 @@ public class DcmDir {
             System.out.println("dcmdir v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || cl.getArgList().isEmpty()) {
+        if (cl.hasOption('h')) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
@@ -201,44 +355,102 @@ public class DcmDir {
         System.exit(1);
     }
 
+    private static int parseInt(String s, String opt, int min, int max) {
+        try {
+            int i = Integer.parseInt(s);
+            if (i >= min && i <= max)
+                return i;
+        } catch (NumberFormatException e) {}
+        exit("illegal argument for option -" + opt);
+        throw new RuntimeException();
+    }
+    
     public static void main(String[] args) throws IOException {
         CommandLine cl = parse(args);
-        if (cl.hasOption("r")) {
-            DcmDir dcmdir = new DcmDir(cl.getOptionValue("r"));
-            dcmdir.open();
+        List argList = cl.getArgList();
+        long start = System.currentTimeMillis();
+        if (cl.hasOption("t")) {
+            DcmDir dcmdir = new DcmDir(new File(cl.getOptionValue("t")));
+            if (cl.hasOption("w"))
+        	dcmdir.setMaxWidth(parseInt(cl.getOptionValue("w"), "w",
+                        MIN_MAX_WIDTH, MAX_MAX_WIDTH));
+            if (cl.hasOption("vallen"))
+        	dcmdir.setMaxValLen(parseInt(cl.getOptionValue("vallen"), "vallen",
+                        MIN_MAX_VAL_LEN, MAX_MAX_VAL_LEN));
+            dcmdir.openRO();
+            dcmdir.setShowInactiveRecords(cl.hasOption("inactive"));
             dcmdir.dump();
             dcmdir.close();
+        } else if (cl.hasOption("z")) {
+            String fpath = cl.getOptionValue("z");
+            File f = new File(fpath);
+	    DcmDir dcmdir = new DcmDir(f);
+            dcmdir.open();
+            dcmdir.setExplicitSequenceLength(!cl.hasOption("S"));
+            dcmdir.setExplicitItemLength(!cl.hasOption("I"));
+            File out = new File(fpath + ".NEW");
+            File bak = new File(fpath + "~");
+            int count = dcmdir.compact(out);
+            dcmdir.close();
+            f.renameTo(bak);
+            out.renameTo(f);
+            long end = System.currentTimeMillis();
+            System.out.println("Compact " + f + " in " + (end-start) + "ms.\n" +
+            		count + " inactive Directory Records were removed.");
+        } else if (cl.hasOption("d")) {
+            File f = new File(cl.getOptionValue("d"));
+	    DcmDir dcmdir = new DcmDir(f);
+            dcmdir.open();
+            int num = 0;
+            for (int i = 0, n = argList.size(); i < n; ++i) {
+                num += dcmdir.delFile(new File((String) argList.get(i)));
+            }
+            dcmdir.close();            
+            long end = System.currentTimeMillis();
+            System.out.println();
+            System.out.println("Remove " + num 
+        	    + " references from directory file " + f + " in "
+        	    + (end-start) + "ms.");
         } else {
             DcmDir dcmdir;
+            File f;
             if (cl.hasOption("c")) {
-                dcmdir = new DcmDir(cl.getOptionValue("c"));
-                if (cl.hasOption("fsid")) {
-                    dcmdir.setFilesetID(cl.getOptionValue("fsid"));
+        	f = new File(cl.getOptionValue("c"));
+                dcmdir = new DcmDir(f);
+                if (cl.hasOption("id")) {
+                    dcmdir.setFilesetID(cl.getOptionValue("id"));
                 }
-                if (cl.hasOption("fsuid")) {
+                if (cl.hasOption("uid")) {
                     dcmdir.setMediaStorageSOPInstanceUID(
-                            cl.getOptionValue("fsuid"));
+                            cl.getOptionValue("uid"));
                 }
-                if (cl.hasOption("fsdesc")) {
+                if (cl.hasOption("readme")) {
                     dcmdir.setFilesetDescriptorFileID(
-                            cl.getOptionValue("fsdesc"));
+                            cl.getOptionValue("readme"));
                 }
-                if (cl.hasOption("fsdesc-cs")) {
+                if (cl.hasOption("charset")) {
                     dcmdir.setSpecificCharacterSetofFilesetDescriptorFile(
-                            cl.getOptionValue("fsdesc-cs"));
+                            cl.getOptionValue("charset"));
                 }
-                dcmdir.create(cl.hasOption("sqlen"));
-            } else { // cl.hasOption("u")
-                dcmdir = new DcmDir(cl.getOptionValue("u"));
-                dcmdir.update();
+                dcmdir.create();
+                dcmdir.setExplicitSequenceLength(!cl.hasOption("S"));
+                dcmdir.setExplicitItemLength(!cl.hasOption("I"));
+            } else { // cl.hasOption("a") 
+                f = new File(cl.getOptionValue("a"));
+                dcmdir = new DcmDir(f);
+                dcmdir.open();
             }
-            List argList = cl.getArgList();
             int num = 0;
             for (int i = 0, n = argList.size(); i < n; ++i) {
                 num += dcmdir.addFile(new File((String) argList.get(i)));
             }
             dcmdir.close();
-            
-        }
+            long end = System.currentTimeMillis();
+            System.out.println();
+            System.out.println((cl.hasOption("c") ? "Create directory file " 
+        	    : "Update directory file ") + f + " in " + (end-start)
+        	    + "ms.");
+         }
     }
+
 }

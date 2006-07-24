@@ -61,294 +61,366 @@ import org.dcm4che2.util.TagUtils;
 
 public class DicomDirWriter extends DicomDirReader {
 
-    protected final boolean explRecordSeqLen;    
     protected final long firstRecordPos;
-    protected final byte[] dirInfoHeader = { 
-            0x04, 0x00, 0x00, 0x12, 'U', 'L', 4, 0, 0, 0, 0, 0,
-            0x04, 0x00, 0x02, 0x12, 'U', 'L', 4, 0, 0, 0, 0, 0,
-            0x04, 0x00, 0x12, 0x12, 'U', 'S', 2, 0, 0, 0,
-            0x04, 0x00, 0x20, 0x12, 'S', 'Q', 0, 0, 0, 0, 0, 0
-    };
-    protected final byte[] dirRecordHeader = {
-            0x04, 0x00, 0x00, 0x14, 'U', 'L', 4, 0, 0, 0, 0, 0,
-            0x04, 0x00, 0x10, 0x14, 'U', 'S', 2, 0, 0, 0,
-            0x04, 0x00, 0x20, 0x14, 'U', 'L', 4, 0, 0, 0, 0, 0,            
-    };
-    protected long recordSeqLen;
-    protected long rollbackLen = -1;
-    protected ArrayList dirtyRecords = new ArrayList();
-    protected final DicomOutputStream out;
-    private static final Comparator offsetComparator = new Comparator(){
 
-        public int compare(Object o1, Object o2) {
-            DicomObject item1 = (DicomObject) o1; 
-            DicomObject item2 = (DicomObject) o2;
-            long d = item1.getItemOffset() - item2.getItemOffset();
-            return d < 0 ? -1 : d > 0 ? 1 : 0;
-        }};
+    protected final byte[] dirInfoHeader = { 
+	    0x04, 0x00, 0x00, 0x12, 'U', 'L', 4, 0, 0, 0, 0, 0, 
+	    0x04, 0x00, 0x02, 0x12, 'U', 'L', 4, 0, 0, 0, 0, 0, 
+	    0x04, 0x00, 0x12, 0x12, 'U', 'S', 2, 0, (byte) 0xff, (byte) 0xff, 
+	    0x04, 0x00, 0x20, 0x12, 'S', 'Q', 0, 0, 0, 0, 0, 0 };
+
+    protected final byte[] dirRecordHeader = { 
+	    0x04, 0x00, 0x00, 0x14, 'U', 'L', 4, 0, 0, 0, 0, 0, 
+	    0x04, 0x00, 0x10, 0x14, 'U', 'S', 2, 0, 0, 0, 
+	    0x04, 0x00, 0x20, 0x14, 'U', 'L', 4, 0, 0, 0, 0, 0, };
+
+    protected long recordSeqLen;
+
+    protected long rollbackLen = -1;
+
+    protected ArrayList dirtyRecords = new ArrayList();
+
+    protected DicomObject cachedParentRecord;
+
+    protected DicomObject cachedLastChildRecord;
+
+    protected final DicomOutputStream out;
+
+    private static final Comparator offsetComparator = new Comparator() {
+
+	public int compare(Object o1, Object o2) {
+	    DicomObject item1 = (DicomObject) o1;
+	    DicomObject item2 = (DicomObject) o2;
+	    long d = item1.getItemOffset() - item2.getItemOffset();
+	    return d < 0 ? -1 : d > 0 ? 1 : 0;
+	}
+    };
 
     public DicomDirWriter(File file) throws IOException {
-        super(new RandomAccessFile(checkExists(file), "rw"));
-        this.file = file;
-        out = new DicomOutputStream(raf);
-        offsetFirstRootRecord(fileSetInfo.getOffsetFirstRootRecord());
-        offsetLastRootRecord(fileSetInfo.getOffsetLastRootRecord());
-        this.firstRecordPos = in.getStreamPosition();
-        this.recordSeqLen = in.valueLength();
-        this.explRecordSeqLen = recordSeqLen != -1;
-        out.setExplicitSequenceLength(explRecordSeqLen);
-        out.setExplicitItemLength(explRecordSeqLen);
-        if (fileSetInfo.isEmpty()) {
-            this.recordSeqLen = 0;
-        }
+	super(new RandomAccessFile(checkExists(file), "rw"));
+	this.file = file;
+	offsetFirstRootRecord(filesetInfo.getOffsetFirstRootRecord());
+	offsetLastRootRecord(filesetInfo.getOffsetLastRootRecord());
+	this.firstRecordPos = in.getStreamPosition();
+	this.recordSeqLen = in.valueLength();
+	out = new DicomOutputStream(raf);
+	out.setExplicitSequenceLength(recordSeqLen != -1);
+	out.setExplicitItemLength(recordSeqLen != -1);
+	if (filesetInfo.isEmpty()) {
+	    this.recordSeqLen = 0;
+	}
     }
 
     private static File checkExists(File f) throws FileNotFoundException {
-        if (!f.isFile()) {
-            throw new FileNotFoundException(f.getPath());
-        }
-        return f;
+	if (!f.isFile()) {
+	    throw new FileNotFoundException(f.getPath());
+	}
+	return f;
     }
 
-    public DicomDirWriter(File file, FilesetInformation fileSetInfo,
-            boolean explRecordSeqLen)
-        throws IOException {
-        super(new RandomAccessFile(file, "rw"), fileSetInfo);
-        this.file = file;
-        raf.setLength(0);
-        out = new DicomOutputStream(raf);
-        out.writeDicomFile(fileSetInfo.getDicomObject());
-        out.writeHeader(Tag.DirectoryRecordSequence, VR.SQ,
-                explRecordSeqLen ? 0 : -1);
-        this.firstRecordPos = (int) out.getStreamPosition();
-        this.explRecordSeqLen = explRecordSeqLen;
-        out.setExplicitSequenceLength(explRecordSeqLen);
-        out.setExplicitItemLength(explRecordSeqLen);
-        this.recordSeqLen = 0;
-        if (!explRecordSeqLen) {
-            out.writeHeader(Tag.SequenceDelimitationItem, null, 0);                
-        }
+    public DicomDirWriter(File file, FilesetInformation fileSetInfo)
+    throws IOException {
+	super(new RandomAccessFile(file, "rw"), fileSetInfo);
+	this.file = file;
+	// ensure fileSetInfo represents empty file-set 
+	fileSetInfo.setOffsetFirstRootRecord(0);
+	fileSetInfo.setOffsetLastRootRecord(0);
+	raf.setLength(0);
+	out = new DicomOutputStream(raf);
+	out.setExplicitSequenceLength(true);
+	out.setExplicitItemLength(true);
+	out.writeDicomFile(fileSetInfo.getDicomObject());
+	out.writeHeader(Tag.DirectoryRecordSequence, VR.SQ, 0);
+	this.firstRecordPos = (int) out.getStreamPosition();
+	this.recordSeqLen = 0;
     }
 
     private void offsetFirstRootRecord(int val) {
-        ByteUtils.int2bytesLE(val, dirInfoHeader, 8);        
+	ByteUtils.int2bytesLE(val, dirInfoHeader, 8);
     }
 
     private int offsetFirstRootRecord() {
-        return ByteUtils.bytesLE2int(dirInfoHeader, 8);        
+	return ByteUtils.bytesLE2int(dirInfoHeader, 8);
     }
-    
+
     private void offsetLastRootRecord(int val) {
-        ByteUtils.int2bytesLE(val, dirInfoHeader, 20);        
+	ByteUtils.int2bytesLE(val, dirInfoHeader, 20);
     }
 
     private int offsetLastRootRecord() {
-        return ByteUtils.bytesLE2int(dirInfoHeader, 20);        
+	return ByteUtils.bytesLE2int(dirInfoHeader, 20);
     }
-    
+
     private void recordSeqLen(int val) {
-        ByteUtils.int2bytesLE(val, dirInfoHeader, 42);        
+	ByteUtils.int2bytesLE(
+		isExplicitSequenceLength() ? val : -1, dirInfoHeader, 42);
     }
-        
-    public synchronized void addRootRecord(DicomObject rec) throws IOException {
-        DicomObject lastRootRecord = findLastRootRecord();
-        if (lastRootRecord == null) {
-            writeRecord(firstRecordPos, rec);
-            fileSetInfo.setOffsetFirstRootRecord((int) firstRecordPos);
-            fileSetInfo.setOffsetLastRootRecord((int) firstRecordPos);
-        } else {
-            addSiblingRecord(lastRootRecord, rec);
-        }
+
+    public final boolean isExplicitItemLength() {
+        return out.isExplicitItemLength();
+    }
+
+    public final void setExplicitItemLength(boolean explicitItemLength) {
+	out.setExplicitItemLength(explicitItemLength);
+    }
+
+    public final boolean isExplicitItemLengthIfZero() {
+        return out.isExplicitItemLengthIfZero();
+    }
+
+    public final void setExplicitItemLengthIfZero(
+            boolean explicitItemLengthIfZero) {
+	out.setExplicitItemLengthIfZero(explicitItemLengthIfZero);
+    }
+
+    public final boolean isExplicitSequenceLength() {
+        return out.isExplicitSequenceLength();
+    }
+
+    public final void setExplicitSequenceLength(boolean explicitSequenceLength) {
+	out.setExplicitSequenceLength(explicitSequenceLength);
+    }
+
+    public final boolean isExplicitSequenceLengthIfZero() {
+        return out.isExplicitSequenceLengthIfZero();
+    }
+
+    public final void setExplicitSequenceLengthIfZero(
+            boolean explicitSequenceLengthIfZero) {
+	out.setExplicitSequenceLengthIfZero(explicitSequenceLengthIfZero);
+    }
+
+    public final boolean isIncludeGroupLength() {
+        return out.isIncludeGroupLength();
+    }
+
+    public final void setIncludeGroupLength(boolean includeGroupLength) {
+        out.setIncludeGroupLength(includeGroupLength);
     }
     
+    public synchronized void addRootRecord(DicomObject rec) throws IOException {
+	DicomObject lastRootRecord = lastRootRecord();
+	if (lastRootRecord == null) {
+	    writeRecord(firstRecordPos, rec);
+	    filesetInfo.setOffsetFirstRootRecord((int) firstRecordPos);
+	} else {
+	    addRecord(Tag.OffsetoftheNextDirectoryRecord, lastRootRecord, rec);
+	}
+       filesetInfo.setOffsetLastRootRecord((int) rec.getItemOffset());
+    }
+
     public synchronized DicomObject addPatientRecord(DicomObject patrec)
-    throws IOException {
-        DicomObject other = findPatientRecord(patrec.getString(Tag.PatientID));
-        if (other != null) {
-            return other;
-        }
-        addRootRecord(patrec);
-        return patrec;
+	    throws IOException {
+	DicomObject other = findPatientRecord(patrec.getString(Tag.PatientID));
+	if (other != null) {
+	    return other;
+	}
+	addRootRecord(patrec);
+	return patrec;
     }
 
     public synchronized void addSiblingRecord(DicomObject prevRec,
-            DicomObject dcmobj)
-    throws IOException {
-        DicomObject next;
-        while ((next = findNextSiblingRecord(prevRec)) != null) {
-            prevRec = next;
-        }
-        addRecord(Tag.OffsetoftheNextDirectoryRecord, prevRec, dcmobj);
-        if (prevRec.getItemOffset() == fileSetInfo.getOffsetLastRootRecord()) {
-            fileSetInfo.setOffsetLastRootRecord((int) dcmobj.getItemOffset());
-        }
+	    DicomObject dcmobj) throws IOException {
+	prevRec = lastSiblingOrThis(prevRec);
+	addRecord(Tag.OffsetoftheNextDirectoryRecord, prevRec, dcmobj);
+	if (cachedLastChildRecord == prevRec) {
+	    cachedLastChildRecord = dcmobj;
+	} else {
+	    cachedParentRecord = null;
+	    cachedLastChildRecord = null;
+	}
+	if (filesetInfo.getOffsetLastRootRecord() == prevRec.getItemOffset()) {
+	    filesetInfo.setOffsetLastRootRecord((int) dcmobj.getItemOffset());
+	}
     }
 
     public synchronized void addChildRecord(DicomObject parentRec,
-            DicomObject dcmobj) throws IOException {
-        DicomObject prevRec = findFirstChildRecord(parentRec);
-        if (prevRec != null) {
-            addSiblingRecord(prevRec, dcmobj);
-        } else {
-            addRecord(Tag.OffsetofReferencedLowerLevelDirectoryEntity,
-                    parentRec, dcmobj);
-        }
+	    DicomObject dcmobj) throws IOException {
+	if (parentRec == cachedParentRecord) {
+	    log.debug("Hit Parent/LastChild cache");
+	    addRecord(Tag.OffsetoftheNextDirectoryRecord, cachedLastChildRecord, dcmobj);
+	} else {
+	    DicomObject prevRec = lastChildRecord(parentRec);
+	    if (prevRec != null) {
+		addRecord(Tag.OffsetoftheNextDirectoryRecord, prevRec, dcmobj);
+	    } else {
+		addRecord(Tag.OffsetofReferencedLowerLevelDirectoryEntity,
+			parentRec, dcmobj);
+	    }
+	    cachedParentRecord = parentRec;
+	}
+	cachedLastChildRecord = dcmobj;
     }
 
-    public synchronized DicomObject addStudyRecord(DicomObject patrec, 
-            DicomObject styrec) throws IOException {
-        DicomObject other = findStudyRecord(patrec,
-                styrec.getString(Tag.StudyInstanceUID));
-        if (other != null) {
-            return other;
-        }
-        addChildRecord(patrec, styrec);
-        return styrec;
+    public synchronized DicomObject addStudyRecord(DicomObject patrec,
+	    DicomObject styrec) throws IOException {
+	DicomObject other = findStudyRecord(patrec, styrec
+		.getString(Tag.StudyInstanceUID));
+	if (other != null) {
+	    return other;
+	}
+	addChildRecord(patrec, styrec);
+	return styrec;
     }
 
-    public synchronized DicomObject addSeriesRecord(DicomObject styrec, 
-            DicomObject serrec) throws IOException {
-        DicomObject other = findSeriesRecord(styrec,
-                serrec.getString(Tag.SeriesInstanceUID));
-        if (other != null) {
-            return other;
-        }
-        addChildRecord(styrec, serrec);
-        return serrec;
+    public synchronized DicomObject addSeriesRecord(DicomObject styrec,
+	    DicomObject serrec) throws IOException {
+	DicomObject other = findSeriesRecord(styrec, serrec
+		.getString(Tag.SeriesInstanceUID));
+	if (other != null) {
+	    return other;
+	}
+	addChildRecord(styrec, serrec);
+	return serrec;
     }
-    
-    public synchronized void deleteRecord(DicomObject rec)
-    throws IOException {
-        for (DicomObject child = findFirstChildRecord(rec);
-            child != null; child = findNextSiblingRecord(child)) {
-            deleteRecord(rec);
-        }
-        rec.putInt(Tag.RecordInuseFlag, VR.US, INACTIVE);
-        markAsDirty(rec);
+
+    public synchronized void deleteRecord(DicomObject rec) throws IOException {
+	if (rec.getInt(Tag.RecordInuseFlag) == INACTIVE) {
+	    return; // already disabled
+	}
+	for (DicomObject child = readRecord(
+		rec.getInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity));
+		child != null; 
+		child = readRecord(
+			child.getInt(Tag.OffsetoftheNextDirectoryRecord))) {
+	    deleteRecord(child);
+	}
+	rec.putInt(Tag.RecordInuseFlag, VR.US, INACTIVE);
+	markAsDirty(rec);
     }
-    
+
     public synchronized void rollback() throws IOException {
-        fileSetInfo.setOffsetFirstRootRecord(offsetFirstRootRecord());
-        fileSetInfo.setOffsetLastRootRecord(offsetLastRootRecord());
-        cache.clear();
-        dirtyRecords.clear();
-        if (rollbackLen != -1) {
-            recordSeqLen = rollbackLen - firstRecordPos;
-            raf.seek(rollbackLen);
-            if (!explRecordSeqLen) {
-                out.writeHeader(Tag.SequenceDelimitationItem, null, 0);                
-            }
-            raf.setLength(raf.getFilePointer());
-            rollbackLen = -1;
-        }
+	filesetInfo.setOffsetFirstRootRecord(offsetFirstRootRecord());
+	filesetInfo.setOffsetLastRootRecord(offsetLastRootRecord());
+	cache.clear();
+        cachedParentRecord = null;
+        cachedLastChildRecord = null;
+	dirtyRecords.clear();
+	if (rollbackLen != -1) {
+	    recordSeqLen = rollbackLen - firstRecordPos;
+	    raf.seek(rollbackLen);
+	    if (!out.isExplicitSequenceLength() && !isEmpty()) {
+		out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+	    }
+	    raf.setLength(raf.getFilePointer());
+	    rollbackLen = -1;
+	    raf.seek(firstRecordPos - 14);
+	    raf.writeShort(FilesetInformation.NO_KNOWN_INCONSISTENCIES);
+	    filesetInfo.setFilesetConsistencyFlag(
+		    FilesetInformation.NO_KNOWN_INCONSISTENCIES);
+	}
     }
-    
+
     public synchronized void commit() throws IOException {
-        if (rollbackLen != -1 && !explRecordSeqLen) {
-            raf.seek(endPos());
-            out.writeHeader(Tag.SequenceDelimitationItem, null, 0);                
-        }
-        if (updateDirInfoHeader()) {
-            raf.seek(firstRecordPos - dirInfoHeader.length);
-            raf.write(dirInfoHeader, 0, 
-                    explRecordSeqLen ? dirInfoHeader.length : 24);
-        } else if (rollbackLen != -1 && explRecordSeqLen) {
-            raf.seek(firstRecordPos - 4);
-            raf.write(dirInfoHeader, dirInfoHeader.length - 4, 4); 
-        }
-        rollbackLen = -1;
-        for (int i = 0, n = dirtyRecords.size(); i < n; i++) {
-            writeDirRecordHeader((DicomObject) dirtyRecords.get(i));
-        }
-        dirtyRecords.clear();
+	if (rollbackLen != -1 && !out.isExplicitSequenceLength()) {
+	    raf.seek(endPos());
+	    out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+	}
+	if (offsetFirstRootRecord() != filesetInfo.getOffsetFirstRootRecord()) {
+	    offsetFirstRootRecord(filesetInfo.getOffsetFirstRootRecord());
+	}
+	if (offsetLastRootRecord() != filesetInfo.getOffsetLastRootRecord()) {
+	    offsetLastRootRecord(filesetInfo.getOffsetLastRootRecord());
+	}
+	filesetInfo.setFilesetConsistencyFlag(
+		FilesetInformation.KNOWN_INCONSISTENCIES);
+	recordSeqLen((int) recordSeqLen);
+	raf.seek(firstRecordPos - dirInfoHeader.length);
+	raf.write(dirInfoHeader, 0, dirInfoHeader.length);
+	rollbackLen = -1;
+	for (int i = 0, n = dirtyRecords.size(); i < n; i++) {
+	    writeDirRecordHeader((DicomObject) dirtyRecords.get(i));
+	}
+	dirtyRecords.clear();
+	raf.seek(firstRecordPos - 14);
+	raf.writeShort(FilesetInformation.NO_KNOWN_INCONSISTENCIES);
+        filesetInfo.setFilesetConsistencyFlag(
+        	    FilesetInformation.NO_KNOWN_INCONSISTENCIES);
     }
 
     public void close() throws IOException {
-        commit();
-        super.close();
-    }
-    
-    private void writeDirRecordHeader(DicomObject rec) throws IOException {
-        ByteUtils.int2bytesLE(rec.getInt(Tag.OffsetoftheNextDirectoryRecord),
-                dirRecordHeader, 8);        
-        ByteUtils.ushort2bytesLE(rec.getInt(Tag.RecordInuseFlag),
-                dirRecordHeader, 20);        
-        ByteUtils.int2bytesLE(
-                rec.getInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity),
-                dirRecordHeader, 30);        
-        raf.seek(rec.getItemOffset() + 8);
-        raf.write(dirRecordHeader); 
+	commit();
+	super.close();
     }
 
-    private boolean updateDirInfoHeader() {
-        boolean update = false;
-        if (offsetFirstRootRecord() != fileSetInfo.getOffsetFirstRootRecord()) {
-            offsetFirstRootRecord(fileSetInfo.getOffsetFirstRootRecord());
-            update = true;
-        }
-        if (offsetLastRootRecord() != fileSetInfo.getOffsetLastRootRecord()) {
-            offsetLastRootRecord(fileSetInfo.getOffsetLastRootRecord());
-            update = true;
-        }
-        recordSeqLen((int) recordSeqLen);
-        return update;
-    }    
-    
-    private void addRecord(int tag, DicomObject prevRecord, DicomObject dcmobj) throws IOException {
-        long endPos = endPos();
-        writeRecord(endPos, dcmobj);
-        prevRecord.putInt(tag, VR.UL, (int) endPos);
-        markAsDirty(prevRecord);
+    private void writeDirRecordHeader(DicomObject rec) throws IOException {
+	ByteUtils.int2bytesLE(rec.getInt(Tag.OffsetoftheNextDirectoryRecord),
+		dirRecordHeader, 8);
+	ByteUtils.ushort2bytesLE(rec.getInt(Tag.RecordInuseFlag),
+		dirRecordHeader, 20);
+	ByteUtils.int2bytesLE(
+		rec.getInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity),
+		dirRecordHeader, 30);
+	raf.seek(rec.getItemOffset() + 8);
+	raf.write(dirRecordHeader);
+    }
+
+    private void addRecord(int tag, DicomObject prevRecord, DicomObject dcmobj)
+	    throws IOException {
+	long endPos = endPos();
+	writeRecord(endPos, dcmobj);
+	prevRecord.putInt(tag, VR.UL, (int) endPos);
+	markAsDirty(prevRecord);
     }
 
     private long endPos() throws IOException {
-        if (recordSeqLen == -1) {
-            long endPos = raf.length() - 12;
-            raf.seek(endPos);
-            if (in.readHeader() == Tag.SequenceDelimitationItem) {
-                recordSeqLen = (int) (endPos - firstRecordPos);
-            } else {
-                endPos = fileSetInfo.getOffsetLastRootRecord();
-                raf.seek(endPos);
-                in.setStreamPosition(endPos);
-                DicomObject dcmobj = new BasicDicomObject();
-                while (in.readHeader() == Tag.Item) {
-                    in.readDicomObject(dcmobj, in.valueLength());
-                    dcmobj.clear();
-                    endPos = in.getStreamPosition();
-                }
-                if (in.tag() != Tag.SequenceDelimitationItem) {
-                    throw new IOException("Unexpected Tag "
-                            + TagUtils.toString(in.tag()) + " at offset " 
-                            + endPos);
-                }
-                recordSeqLen = (int) (endPos - firstRecordPos);
-            }
-        }
-        return firstRecordPos + recordSeqLen;
+	if (recordSeqLen == -1) {
+	    long endPos = raf.length() - 12;
+	    raf.seek(endPos);
+	    if (in.readHeader() == Tag.SequenceDelimitationItem) {
+		recordSeqLen = (int) (endPos - firstRecordPos);
+	    } else {
+		endPos = filesetInfo.getOffsetLastRootRecord();
+		raf.seek(endPos);
+		in.setStreamPosition(endPos);
+		DicomObject dcmobj = new BasicDicomObject();
+		while (in.readHeader() == Tag.Item) {
+		    in.readDicomObject(dcmobj, in.valueLength());
+		    dcmobj.clear();
+		    endPos = in.getStreamPosition();
+		}
+		if (in.tag() != Tag.SequenceDelimitationItem) {
+		    throw new IOException("Unexpected Tag "
+			    + TagUtils.toString(in.tag()) + " at offset "
+			    + endPos);
+		}
+		recordSeqLen = (int) (endPos - firstRecordPos);
+	    }
+	}
+	return firstRecordPos + recordSeqLen;
     }
-        
+
     private void markAsDirty(DicomObject rec) {
-        int index = Collections.binarySearch(dirtyRecords, rec, 
-                offsetComparator);
-        if (index < 0) {
-            dirtyRecords.add(-(index+1), rec);
-        }        
+	int index = Collections.binarySearch(dirtyRecords, rec,
+		offsetComparator);
+	if (index < 0) {
+	    dirtyRecords.add(-(index + 1), rec);
+	}
     }
 
-    private void writeRecord(long offset, DicomObject dcmobj) throws IOException {
-        raf.seek(offset);
-        out.setStreamPosition(offset);
-        if (rollbackLen == -1) {
-            rollbackLen = offset;
-        }
-        dcmobj.putInt(Tag.OffsetoftheNextDirectoryRecord, VR.UL, 0);
-        dcmobj.putInt(Tag.RecordInuseFlag, VR.US, INUSE);
-        dcmobj.putInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity, VR.UL, 0);
-        out.writeItem(dcmobj, in.getTransferSyntax());
-        recordSeqLen = (int) (out.getStreamPosition() - firstRecordPos);        
-        cache.put((int) dcmobj.getItemOffset(), dcmobj);
+    private void writeRecord(long offset, DicomObject dcmobj)
+	    throws IOException {
+	log.debug("Write record@?1 to file?2", new Long(offset), file);
+	if (rollbackLen == -1) {
+	    rollbackLen = offset;
+	    filesetInfo.setFilesetConsistencyFlag(
+		    FilesetInformation.KNOWN_INCONSISTENCIES);
+	    raf.seek(firstRecordPos - 14);
+	    raf.writeShort(FilesetInformation.KNOWN_INCONSISTENCIES);
+	}
+	raf.seek(offset);
+	out.setStreamPosition(offset);
+	dcmobj.putInt(Tag.OffsetoftheNextDirectoryRecord, VR.UL, 0);
+	dcmobj.putInt(Tag.RecordInuseFlag, VR.US, INUSE);
+	dcmobj.putInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity, VR.UL, 0);
+	out.writeItem(dcmobj, in.getTransferSyntax());
+	recordSeqLen = (int) (out.getStreamPosition() - firstRecordPos);
+	cache.put((int) dcmobj.getItemOffset(), dcmobj);
     }
 
-
+    public synchronized int compact(File out, boolean explRecSqLen)
+    throws IOException {
+	commit();
+	return super.compact(file);
+    }
 }
