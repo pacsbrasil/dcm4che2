@@ -88,6 +88,14 @@ public class BasicDicomObject extends AbstractDicomObject {
         this.table = new IntHashtable(capacity);
     }
 
+    public final DicomObject getDefaults() {
+        return defaults;
+    }
+
+    public final void setDefaults(DicomObject defaults) {
+        this.defaults = defaults;
+    }
+
     public void clear() {
         table.clear();
         charset = null;
