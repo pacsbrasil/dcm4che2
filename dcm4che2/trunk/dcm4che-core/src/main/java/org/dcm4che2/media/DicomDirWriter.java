@@ -418,9 +418,32 @@ public class DicomDirWriter extends DicomDirReader {
 	cache.put((int) dcmobj.getItemOffset(), dcmobj);
     }
 
-    public synchronized int compact(File out, boolean explRecSqLen)
-    throws IOException {
-	commit();
-	return super.compact(file);
+    public synchronized int purge() throws IOException {
+	int[] purged = { 0 };
+	for (DicomObject rec = readRecord(filesetInfo.getOffsetFirstRootRecord());
+		rec != null;
+		rec = readRecord(rec.getInt(Tag.OffsetoftheNextDirectoryRecord))) {
+	    if (rec.getInt(Tag.RecordInuseFlag) != INACTIVE) {
+		purge(rec, purged);
+	    }
+	}
+	return purged[0];
+    }
+
+    private boolean purge(DicomObject rec, int[] purged) throws IOException {
+	boolean purge = !rec.containsValue(Tag.ReferencedFileID);
+	for (DicomObject child = readRecord(
+		rec.getInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity)); 
+		child != null;
+		child = readRecord(child.getInt(Tag.OffsetoftheNextDirectoryRecord))) {
+	    if (child.getInt(Tag.RecordInuseFlag) != INACTIVE) {
+		purge = purge(child, purged) && purge;
+	    }
+	}
+	if (purge) {
+	    deleteRecord(rec);
+	    purged[0]++;
+	}
+	return purge;
     }
 }

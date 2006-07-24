@@ -277,58 +277,5 @@ public class DicomDirReader {
     
     public void close() throws IOException {
 	raf.close();
-    }
-    
-    public synchronized int compact(File out)
-	    throws IOException {
-	BasicDicomObject ds2 = new BasicDicomObject();
-	filesetInfo.getDicomObject().copyTo(ds2);
-	FilesetInformation fs2 = new FilesetInformation(ds2);
-	DicomDirWriter w = new DicomDirWriter(out, fs2);
-	if (this instanceof DicomDirWriter) {
-	    DicomDirWriter w0 = (DicomDirWriter) this;
-	    w.setExplicitSequenceLength(w0.isExplicitSequenceLength());
-	    w.setExplicitSequenceLengthIfZero(
-		    w0.isExplicitSequenceLengthIfZero());
-	    w.setExplicitItemLength(w0.isExplicitItemLength());
-	    w.setExplicitItemLengthIfZero(w0.isExplicitItemLengthIfZero());
-	    w.setIncludeGroupLength(w0.isIncludeGroupLength());
-	}
-	int count = 0;
-	for (DicomObject rec = readRecord(filesetInfo.getOffsetFirstRootRecord());
-		rec != null;
-		rec = readRecord(rec.getInt(Tag.OffsetoftheNextDirectoryRecord))) {
-	    if (rec.getInt(Tag.RecordInuseFlag) != INACTIVE) {
-		BasicDicomObject clone = new BasicDicomObject();
-		rec.copyTo(clone);
-		w.addRootRecord(clone);
-		count += compactChildRecords(rec, clone, w);
-    	    } else {
-    		++count;
-    	    }
-	}
-	w.close();
-	return count;
-    }
-
-    private int compactChildRecords(DicomObject src, DicomObject dst,
-	    DicomDirWriter w)
-	    throws IOException {
-	int count = 0;
-	for (DicomObject child = readRecord(
-	    	src.getInt(Tag.OffsetofReferencedLowerLevelDirectoryEntity)); 
-		child != null;
-		child = readRecord(child.getInt(Tag.OffsetoftheNextDirectoryRecord))) {
-	    if (child.getInt(Tag.RecordInuseFlag) != INACTIVE) {
-		BasicDicomObject clone = new BasicDicomObject();
-		child.copyTo(clone);
-		w.addChildRecord(dst, clone);
-		count += compactChildRecords(child, clone, w);
-	    } else {
-    		++count;
-    	    }
-	}
-	return count;
-    }
-   
+    }       
 }
