@@ -318,7 +318,7 @@ public class DcmDir {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
         	"limit value prompt to <maxlen> characters, by default: 64");
-        opts.addOption(OptionBuilder.create("vallen"));
+        opts.addOption(OptionBuilder.create("W"));
         opts.addOption("inactive", false, 
                 "dump also inactive records.");
         opts.addOption("S", false, 
@@ -374,8 +374,8 @@ public class DcmDir {
             if (cl.hasOption("w"))
         	dcmdir.setMaxWidth(parseInt(cl.getOptionValue("w"), "w",
                         MIN_MAX_WIDTH, MAX_MAX_WIDTH));
-            if (cl.hasOption("vallen"))
-        	dcmdir.setMaxValLen(parseInt(cl.getOptionValue("vallen"), "vallen",
+            if (cl.hasOption("W"))
+        	dcmdir.setMaxValLen(parseInt(cl.getOptionValue("W"), "W",
                         MIN_MAX_VAL_LEN, MAX_MAX_VAL_LEN));
             dcmdir.openRO();
             dcmdir.setShowInactiveRecords(cl.hasOption("inactive"));
