@@ -83,7 +83,7 @@ class AssociationReaper
             public void run()
             {
                 long now = System.currentTimeMillis();
-                Object[] a = list.toArray();
+                Object[] a = getAssociationList().toArray();
                 for (int i = 0; i < a.length; i++)
                     ((Association) a[i]).checkIdle(now);
             }
@@ -110,6 +110,16 @@ class AssociationReaper
     {
         log.debug("Stop check for idle {}", a);
         list.remove(a);
+    }
+
+    /**
+     * Get the internal list of associations that this list is monitoring.
+     * 
+     * @return The List of associations that this reaper is monitoring.
+     */
+    List getAssociationList()
+    {
+        return list;
     }
 
 }
