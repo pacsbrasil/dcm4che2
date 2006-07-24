@@ -38,7 +38,6 @@
 
 package org.dcm4che2.iod.value;
 
-import org.dcm4che2.data.Tag;
 
 /**
  * A Class to represent the Image Type (0008,0008) Value 1 values.
