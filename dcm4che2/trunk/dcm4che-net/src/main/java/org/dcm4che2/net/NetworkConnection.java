@@ -440,6 +440,7 @@ public class NetworkConnection
         {
             // Ignore errors when closing the server socket.
         }
+        associationCount = 0;
         server = null;
     }
 
