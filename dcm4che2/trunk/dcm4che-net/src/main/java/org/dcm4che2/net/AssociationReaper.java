@@ -113,7 +113,7 @@ class AssociationReaper
     }
 
     /**
-     * Get the internal list of associations that this list is monitoring.
+     * Get the internal list of associations that this reaper is monitoring.
      * 
      * @return The List of associations that this reaper is monitoring.
      */
