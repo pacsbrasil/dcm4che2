@@ -45,7 +45,6 @@ import org.dcm4che2.iod.module.macro.GeneralAnatomy;
 import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
 import org.dcm4che2.iod.value.ImageLaterality;
-import org.dcm4che2.iod.value.Modality;
 
 /**
  * DX Anatomy Imaged Module 2006 PS3.3 - C.8.11.2
