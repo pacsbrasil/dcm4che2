@@ -98,8 +98,8 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     private int limitNumberOfStudiesPerTask;
     private long minStudyAge;
     
-    private int checkUpdateStatus = 1;
-    private int updatedStatus = 0;
+    private int scheduledStatus = 1;
+    private int successStatus = 0;
     private int failureStatus = -1;
     
     private String calledAET ="TIANI_ARCHIVE";
@@ -150,14 +150,14 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
             int hour = cal.get(Calendar.HOUR_OF_DAY);
             if (isDisabled(hour)) {
                 if (log.isDebugEnabled())
-                    log.debug("Migration Update ignored in time between "
+                    log.debug("Study Reconciliation ignored in time between "
                             + disabledStartHour + " and " + disabledEndHour
                             + " !");
             } else {
                 try {
                 	log.info(check());
                 } catch (Exception e) {
-                    log.error("Migration Update failed!", e);
+                    log.error("Study Reconciliation failed!", e);
                 }
             }
         }
@@ -239,50 +239,40 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     }
 
     
-	/**
-	 * @return Returns the checkUpdateStatus.
-	 */
-	public int getCheckUpdateStatus() {
-		return checkUpdateStatus;
+	public int getScheduledStatus() {
+		return scheduledStatus;
 	}
-	/**
-	 * @param checkUpdateStatus The checkUpdateStatus to set.
-	 */
-	public void setCheckUpdateStatus(int checkUpdateStatus) {
-		this.checkUpdateStatus = checkUpdateStatus;
+
+    public void setScheduledStatus(int status) {
+		this.scheduledStatus = status;
 	}
-	/**
-	 * @return Returns the updatedStatus.
-	 */
-	public int getUpdatedStatus() {
-		return updatedStatus;
+
+    public int getSuccessStatus() {
+		return successStatus;
 	}
-	/**
-	 * @param updatedStatus The updatedStatus to set.
-	 */
-	public void setUpdatedStatus(int updatedStatus) {
-		this.updatedStatus = updatedStatus;
+
+    public void setSuccessStatus(int status) {
+		this.successStatus = status;
 	}
-	/**
-	 * @return Returns the failureStatus.
-	 */
-	public int getFailureStatus() {
+
+    public int getFailureStatus() {
 		return failureStatus;
 	}
-	/**
-	 * @param failureStatus The failureStatus to set.
-	 */
-	public void setFailureStatus(int failureStatus) {
+
+    public void setFailureStatus(int failureStatus) {
 		this.failureStatus = failureStatus;
 	}
+
     public String check() throws FinderException, InterruptedException, IOException, GeneralSecurityException, DcmServiceException, SQLException, UnkownAETException {
     	long start = System.currentTimeMillis();
     	StudyReconciliation studyReconciliation = newStudyReconciliation();
     	Timestamp createdBefore = new Timestamp( System.currentTimeMillis() - this.minStudyAge );
-    	Collection col = studyReconciliation.getStudyIuidsWithStatus(checkUpdateStatus, createdBefore, limitNumberOfStudiesPerTask);
-    	log.info("Check "+col.size()+" Studies for Migration Update (status:"+this.checkUpdateStatus+")");
+    	Collection col = studyReconciliation.getStudyIuidsWithStatus(scheduledStatus, createdBefore, limitNumberOfStudiesPerTask);
+    	log.info("Check " + col.size() +" Studies for Reconcilitiation (status:"
+                + this.scheduledStatus + ")");
     	if ( col.isEmpty()) {
-    		log.debug("No Studies with status "+checkUpdateStatus+ " found for Migration Update!");
+    		log.debug("No Studies with status " + scheduledStatus
+                    + " found for Reconcilitiation!");
     		return "Nothing to do!";
     	}
     	Map archiveStudy;
@@ -317,7 +307,7 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 		    				studyReconciliation.mergePatient(origPatDS, patDS);
 		    				numPatMerge++;
 		    			}
-		    			studyReconciliation.updateStudyAndSeries(studyIuid, updatedStatus, archiveStudy);
+		    			studyReconciliation.updateStudyAndSeries(studyIuid, successStatus, archiveStudy);
 		    		} else {
 		    			numFailures++;
 		    			studyReconciliation.updateStatus(studyIuid, failureStatus);
@@ -333,7 +323,7 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 			}
 		}
     	StringBuffer sb = new StringBuffer();
-    	sb.append(col.size()).append(" studies checked for Migration Update!(updt:").append(numPatUpdt);
+    	sb.append(col.size()).append(" studies checked for Reconciliation!(updt:").append(numPatUpdt);
     	sb.append(";merged:").append(numPatMerge).append(";failed:").append(numFailures);
     	sb.append(") in ").append(System.currentTimeMillis()-start).append(" ms");
     	return sb.toString();
@@ -415,7 +405,6 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 	    if (aassoc == null) {
 	        throw new IllegalStateException("No Association established");
 	    }
-	    if ( log.isDebugEnabled() ) log.debug("Query migration source PACS with "+keys.getString(Tags.QueryRetrieveLevel)+" C-FIND!");
 	    Command rqCmd = dof.newCommand();
 	    rqCmd.initCFindRQ(aassoc.getAssociation().nextMsgID(),
 	            UIDs.StudyRootQueryRetrieveInformationModelFIND, priority);
@@ -471,7 +460,8 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 		        	ds = queryCmd.getDataset();
 		        	seriesIUID = ds.getString(Tags.SeriesInstanceUID);
 		        	if ( archiveStudy.get( seriesIUID ) == null ) {
-		        		log.warn("Migration Update not possible! Series "+seriesIUID+"not available in migration source PACS! study:"+
+		        		log.warn("Study Reconciliation failed! Series "
+                                + seriesIUID + " not available at reference FIND SCP! study:"+
 		        				qrSeriesDS.getString(Tags.StudyInstanceUID));
 		        		return null;
 		        	}
@@ -480,12 +470,12 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 						return null;
 					}
 	        	} catch ( Exception x ) {
-	        		log.error("Migration Update not possible (study:"+qrSeriesDS.getString(Tags.StudyInstanceUID)+")! Internal error:"+x.getMessage(),x);
+	        		log.error("Study Reconciliation failed! (study:"+qrSeriesDS.getString(Tags.StudyInstanceUID)+")! Internal error:"+x.getMessage(),x);
 	        		return null;
 	        	}
 	        }
 	        if ( archiveStudy.size() != map.size() ) {
-	    		log.warn("Migration Update not possible! Number of Series mismatch! study:"+qrSeriesDS.getString(Tags.StudyInstanceUID));
+	    		log.warn("Study Reconciliation failed! Number of Series mismatch! study:"+qrSeriesDS.getString(Tags.StudyInstanceUID));
 	        	return null;
 	        }
 	        boolean checked = true;
@@ -501,51 +491,64 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 	}
 	
     /**
-	 * @param map
-	 * @param qrInstanceDS
-	 * @param aa
-	 * @return
+     * @param map
+     * @param qrInstanceDS
+     * @param aa
+     * @return
      * @throws IOException
      * @throws InterruptedException
      * @throws SQLException
-	 */
-	private boolean checkSeries(Dataset qrInstanceDS, ActiveAssociation aa) throws InterruptedException, IOException, SQLException {
-		Map archiveSeries = query( aa, qrInstanceDS, Tags.SOPInstanceUID );
+     */
+    private boolean checkSeries(Dataset qrInstanceDS, ActiveAssociation aa)
+            throws InterruptedException, IOException, SQLException {
+        Map archiveSeries = query(aa, qrInstanceDS, Tags.SOPInstanceUID);
 
-		QueryCmd queryCmd = QueryCmd.create(qrInstanceDS, false, false );
-		try {
-			queryCmd.execute();
-			Dataset ds;
-			String iuid = null;
-			Map map = new HashMap();
-			while ( queryCmd.next() ) {
-				try {
-					ds = queryCmd.getDataset();
-					iuid = ds.getString(Tags.SOPInstanceUID);
-					if ( archiveSeries.get( iuid ) == null ) {
-						log.warn("Migration Update not possible! Instance "+iuid+"not available in migration source PACS! study:"+
-								qrInstanceDS.getString(Tags.StudyInstanceUID)+" series:"+qrInstanceDS.getString(Tags.SeriesInstanceUID));
-						return false;
-					}
-					if (map.put(iuid, ds) != null ) {
-						log.error("Local result contains two instances with same iuid! :"+iuid);
-						return false;
-					}
-				} catch ( Exception x ) {
-	        		log.error("Migration Update not possible (Series IUID:"+qrInstanceDS.getString(Tags.SeriesInstanceUID)+")! Internal error:"+x.getMessage(),x);
-	        		return false;
-				}
-			}
-	        if ( archiveSeries.size() != map.size() ) {
-	    		log.warn("Migration Update not possible! Number of Instances mismatch! study:"+
-	    				qrInstanceDS.getString(Tags.StudyInstanceUID)+" series:"+qrInstanceDS.getString(Tags.SeriesInstanceUID));
-	        	return false;
-	        }
-		} finally {
-			queryCmd.close();
-		}
+        QueryCmd queryCmd = QueryCmd.create(qrInstanceDS, false, false);
+        try {
+            queryCmd.execute();
+            Dataset ds;
+            String iuid = null;
+            Map map = new HashMap();
+            while (queryCmd.next()) {
+                try {
+                    ds = queryCmd.getDataset();
+                    iuid = ds.getString(Tags.SOPInstanceUID);
+                    if (archiveSeries.get(iuid) == null) {
+                        log.warn("Study Reconciliation failed! Instance "
+                                + iuid
+                                + " not available at reference FIND SCP! study:"
+                                + qrInstanceDS.getString(Tags.StudyInstanceUID)
+                                + " series:"
+                                + qrInstanceDS.getString(Tags.SeriesInstanceUID));
+                        return false;
+                    }
+                    if (map.put(iuid, ds) != null) {
+                        log
+                                .error("Local result contains two instances with same iuid! :"
+                                        + iuid);
+                        return false;
+                    }
+                } catch (Exception x) {
+                    log.error("Study Reconciliation failed! (Series IUID:"
+                            + qrInstanceDS.getString(Tags.SeriesInstanceUID)
+                            + ")! Internal error:" + x.getMessage(), x);
+                    return false;
+                }
+            }
+            if (archiveSeries.size() != map.size()) {
+                log
+                        .warn("Study Reconciliation failed! Number of Instances mismatch! study:"
+                                + qrInstanceDS.getString(Tags.StudyInstanceUID)
+                                + " series:"
+                                + qrInstanceDS
+                                        .getString(Tags.SeriesInstanceUID));
+                return false;
+            }
+        } finally {
+            queryCmd.close();
+        }
         return true;
-	}
+    }
 	
 	public String reschedule() throws RemoteException, FinderException, DcmServiceException {
     	StudyReconciliation studyReconciliation = newStudyReconciliation();
@@ -555,10 +558,10 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     	while( true) { 
     		col = studyReconciliation.getStudyIuidsWithStatus(failureStatus, createdBefore, limitNumberOfStudiesPerTask);
     		if ( col.isEmpty() ) break;
-   			studyReconciliation.updateStatus(col,checkUpdateStatus);
+   			studyReconciliation.updateStatus(col,scheduledStatus);
    			total += col.size();
     	}
-   		return total+" studies rescheduled for Migration Update!";
+   		return total + " studies rescheduled for Reconciliation!";
 	}
 	public final int getAcTimeout() {
         return acTimeout;

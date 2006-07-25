@@ -60,7 +60,7 @@
    </attribute>
    
    <attribute access="read-write" getMethod="getMinStudyAge" setMethod="setMinStudyAge">
-      <description>Minimum age of a study that will be checked for consistency, in 
+      <description>Minimum age of a study that will be checked for need of Reconciliation, in 
       		##w (in weeks), ##d (in days), or ##h (in hours).</description>
       <name>MinStudyAge</name>
       <type>java.lang.String</type>
@@ -78,28 +78,34 @@
          <value value="100"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getCheckUpdateStatus" setMethod="setCheckUpdateStatus">
-      <description>Status value that indicates 'need to be updated with migration source PACS'.
+   <attribute access="read-write" 
+       getMethod="getScheduledStatus" 
+       setMethod="setScheduledStatus">
+      <description>Status indicating studies scheduled for reconciliation..
       </description>
-      <name>CheckUpdateStatus</name>
+      <name>ScheduledStatus</name>
       <type>int</type>
       <descriptors>
          <value value="1"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getUpdatedStatus" setMethod="setUpdatedStatus">
-      <description>New status value of studies that are sucessfully updated.
+   <attribute access="read-write" 
+       getMethod="getSuccessStatus"
+       setMethod="setSuccessStatus">
+      <description>Status to indicate successful reconciliation.
       </description>
-      <name>UpdatedStatus</name>
+      <name>SuccessStatus</name>
       <type>int</type>
       <descriptors>
          <value value="0"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getFailureStatus" setMethod="setFailureStatus">
-      <description>New status value of studies that can not be updated.
+   <attribute access="read-write" 
+     getMethod="getFailureStatus"
+     setMethod="setFailureStatus">
+      <description>Status to indicate failed reconciliation.
       </description>
-      <name>FailedStatus</name>
+      <name>FailureStatus</name>
       <type>int</type>
       <descriptors>
          <value value="-1"/>
@@ -161,7 +167,7 @@
    </operation>
 
    <operation impact="ACTION">
-      <description>Reschedule failed updates. (set status to CheckUpdateStatus)</description>
+      <description>Reschedule failed Reconciliations.</description>
       <name>reschedule</name>
       <return-type>java.lang.String</return-type>
    </operation>
