@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dicom>
+<dataset>
   <!--Specific Character Set-->
   <attr tag="00080005" vr="CS"/>
   <!--Image Type-->
@@ -121,7 +121,7 @@
   <!--Presentation LUT Shape-->
   <attr tag="20500020" vr="CS">IDENTITY</attr>
   <!--Shared Functional Groups Sequence-->
-  <attr tag="52009229">
+  <attr tag="52009229" vr="SQ">
     <item>
       <!--MR Imaging Modifier Sequence-->
       <attr tag="00189006" vr="SQ">
@@ -242,4 +242,4 @@
       </attr>
     </item>
   </attr>
-</dicom>
+</dataset>
