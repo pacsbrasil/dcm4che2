@@ -550,17 +550,6 @@ accessed studies.</description>
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Delete list of files.</description>
-      <name>purgeFiles</name>
-      <parameter>
-        <description>List of FileDTO objects.
-        </description>
-        <name>files2delete</name>
-        <type>java.util.List</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>   
-   <operation impact="ACTION">
       <description>Purge unreferenced private Files</description>
       <name>purgePrivateFiles</name>
       <return-type>int</return-type>

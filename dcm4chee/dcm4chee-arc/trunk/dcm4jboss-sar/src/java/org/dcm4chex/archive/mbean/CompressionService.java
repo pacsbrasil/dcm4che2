@@ -68,7 +68,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -265,51 +264,26 @@ public class CompressionService extends ServiceMBeanSupport {
         FileSystemDTO[] fsDTOs = listLocalOnlineRWFileSystems();
         FileSystemMgt fsMgt = newFileSystemMgt();
         byte[] buffer = null;
-        List files2delete = new ArrayList();
-        try {
-	        for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
-	            info = (CompressionRule) compressionRuleList.get(i);
-	            cuid = info.getCUID();
-	            before = new Timestamp(System.currentTimeMillis() - info.getDelay());
-	            for (int j = 0; j < fsDTOs.length; j++) {
-	                files = fsMgt.findFilesToCompress(fsDTOs[j].getDirectoryPath(),
-	                        cuid, before, limit);
-	                if (files.length > 0) {
-	                	if (buffer == null)
-	                		buffer = new byte[bufferSize];
-	                    log.debug("Compress " + files.length + " files on filesystem "
-	                            + fsDTOs[j] + " triggered by " + info);
-	                    for (int k = 0; k < files.length; k++) {
-	                        if ( doCompress(fsMgt, files[k], info, buffer) )  {
-	                        	files2delete.add(files[k]);
-	                        }
-	                    }
-	                    limit -= files.length;
-	                }
-	            }
-	        }
-        } finally {
-        	if ( files2delete.size() > 0 ) {
-        		purgeFiles(files2delete);
-        	}
+        for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
+            info = (CompressionRule) compressionRuleList.get(i);
+            cuid = info.getCUID();
+            before = new Timestamp(System.currentTimeMillis() - info.getDelay());
+            for (int j = 0; j < fsDTOs.length; j++) {
+                files = fsMgt.findFilesToCompress(fsDTOs[j].getDirectoryPath(),
+                        cuid, before, limit);
+                if (files.length > 0) {
+                	if (buffer == null)
+                		buffer = new byte[bufferSize];
+                    log.debug("Compress " + files.length + " files on filesystem "
+                            + fsDTOs[j] + " triggered by " + info);
+                    for (int k = 0; k < files.length; k++) {
+                        doCompress(fsMgt, files[k], info, buffer);
+                    }
+                    limit -= files.length;
+                }
+            }
         }
     }
-
-    /**
-	 * @param fileDTO
-     * @throws IOException 
-	 */
-	private void purgeFiles(List files2delete) throws IOException {
-        try {
-            server.invoke(fileSystemMgtName,
-                    "purgeFiles", 
-                    new Object[] { files2delete },
-					new String[] { List.class.getName() });
-        } catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke purgeFiles:"+files2delete, e);
-        }
-	}
 
 	private FileSystemDTO[] listLocalOnlineRWFileSystems() {
         try {
@@ -341,12 +315,7 @@ public class CompressionService extends ServiceMBeanSupport {
             log.debug( "There is no compression rule for this image SOP Class: " + fileDTO.getSopClassUID() );
             return false;
         }
-        if ( doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]) ) {
-        	List l = new ArrayList();
-        	l.add(fileDTO);
-        	purgeFiles(l);
-        }
-        
+        doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]);
         return true;
     }
     
@@ -366,7 +335,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 || tsuid.equals(UIDs.ImplicitVRLittleEndian);
     }
 
-    private boolean doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
+    private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
             CompressionRule info, byte[] buffer) {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
@@ -403,7 +372,7 @@ public class CompressionService extends ServiceMBeanSupport {
                         		FileStatus.VERIFY_COMPRESS_FAILED);
                         if (keepTempFileIfVerificationFails <= 0L)
                             decFile.delete();
-                        return false;
+                        return;
                     }
                 }
                 decFile.delete();
@@ -415,7 +384,11 @@ public class CompressionService extends ServiceMBeanSupport {
                 log.debug("replace File " + srcFile + " with " + destFile);
             fsMgt.replaceFile(fileDTO.getPk(), destFilePath, info
                     .getTransferSyntax(), (int) destFile.length(), md5);
-            return true;
+            fileDTO.setPk( 0 );
+            fileDTO.setFilePath(destFilePath );
+            fileDTO.setFileSize((int)destFile.length());
+            fileDTO.setFileMd5(md5);
+            srcFile.delete();
         } catch (Exception x) {
             log.error("Can't compress file:" + srcFile, x);
             if (destFile != null && destFile.exists())
@@ -426,7 +399,6 @@ public class CompressionService extends ServiceMBeanSupport {
                 log.error("Failed to set FAILED_TO_COMPRESS for file "
                         + srcFile);
             }
-            return false;
         }
     }
 

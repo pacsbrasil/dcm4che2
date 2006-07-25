@@ -109,7 +109,6 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class FileSystemMgtService extends ServiceMBeanSupport implements MessageListener {
 
-    private static final String ACTION_PURGEFILES = "purgeFiles";
 	private static final String NONE = "NONE";
     private static final String FROM_PARAM = "%1";
     private static final String TO_PARAM = "%2";    
@@ -801,10 +800,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         return toDelete.length;
     }
     
-    public void purgeFiles(List fileDTOs) {
-    	this.schedule( new ActionOrder(ACTION_PURGEFILES, fileDTOs), -1);
-    }
-
     private boolean delete(File file) {
         log.info("M-DELETE file: " + file);
         if (!file.exists()) {
@@ -1246,12 +1241,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 				if(order instanceof ActionOrder)
 				{
 					ActionOrder actionOrder = (ActionOrder) order;
-					if ( ACTION_PURGEFILES.equals(actionOrder.getActionMethod())) {
-						deleteFiles( (List) actionOrder.getData());
-					} else {
-						Method m = this.getClass().getDeclaredMethod(actionOrder.getActionMethod(), new Class[]{Object.class});
-						m.invoke(this, new Object[]{actionOrder.getData()});
-					}
+					Method m = this.getClass().getDeclaredMethod(actionOrder.getActionMethod(), new Class[]{Object.class});
+					m.invoke(this, new Object[]{actionOrder.getData()});
 				}
 				else if(order instanceof PurgeStudyOrder)
 				{
@@ -1289,18 +1280,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 		}
 	}
 
-	private void deleteFiles( List files ) {
-		FileDTO fileDTO;
-		File file;
-		log.debug("Start purging "+files.size()+" files.");
-		for ( Iterator iter = files.iterator() ; iter.hasNext() ;) {
-			fileDTO = (FileDTO)iter.next();
-			file = FileUtils.toFile( fileDTO.getDirectoryPath(), fileDTO.getFilePath() );
-			log.debug("delete file "+file);
-			delete(file);
-		}
-	}
-	
 	protected void schedule(BaseJmsOrder order, long scheduledTime) {
 		try {
 			if(scheduledTime > 0 && log.isInfoEnabled())
