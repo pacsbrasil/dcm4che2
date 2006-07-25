@@ -72,8 +72,8 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.MigrationUpdate;
-import org.dcm4chex.archive.ejb.interfaces.MigrationUpdateHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyReconciliation;
+import org.dcm4chex.archive.ejb.interfaces.StudyReconciliationHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
@@ -87,7 +87,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 35.03.2005
  *
  */
-public class MigrationUpdateService extends ServiceMBeanSupport {
+public class StudyReconciliationService extends ServiceMBeanSupport {
 
     private final TimerSupport timer = new TimerSupport(this);
 
@@ -102,8 +102,8 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
     private int updatedStatus = 0;
     private int failureStatus = -1;
     
-    private String updateCalledAET ="PACS_MIGR";
-    private String updateCallingAET ="DCM4CHEE";
+    private String calledAET ="TIANI_ARCHIVE";
+    private String callingAET ="DCM4CHEE";
 
     private Integer listenerID;
 
@@ -142,7 +142,7 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 		Tags.PerformingPhysicianName
     };
     
-    private static final Logger log = Logger.getLogger(MigrationUpdateService.class);
+    private static final Logger log = Logger.getLogger(StudyReconciliationService.class);
 
     private final NotificationListener updateCheckListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -163,29 +163,20 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
         }
     };
 
-	/**
-	 * @return Returns the updateCalledAET.
-	 */
-	public String getUpdateCalledAET() {
-		return updateCalledAET;
+	public String getCalledAET() {
+		return calledAET;
 	}
-	/**
-	 * @param updateCalledAET The updateCalledAET to set.
-	 */
-	public void setUpdateCalledAET(String updateCalledAET) {
-		this.updateCalledAET = updateCalledAET;
+    
+	public void setCalledAET(String calledAET) {
+		this.calledAET = calledAET;
 	}
-	/**
-	 * @return Returns the updateCallingAET.
-	 */
-	public String getUpdateCallingAET() {
-		return updateCallingAET;
+
+    public String getCallingAET() {
+		return callingAET;
 	}
-	/**
-	 * @param updateCallingAET The updateCallingAET to set.
-	 */
-	public void setUpdateCallingAET(String updateCallingAET) {
-		this.updateCallingAET = updateCallingAET;
+
+    public void setCallingAET(String callingAET) {
+		this.callingAET = callingAET;
 	}
     public final String getTaskInterval() {
         String s = RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
@@ -208,9 +199,9 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler("MigrationUpdate", listenerID,
+            timer.stopScheduler("StudyReconciliation", listenerID,
             		updateCheckListener);
-            listenerID = timer.startScheduler("MigrationUpdate", taskInterval,
+            listenerID = timer.startScheduler("StudyReconciliation", taskInterval,
             		updateCheckListener);
         }
     }
@@ -286,9 +277,9 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 	}
     public String check() throws FinderException, InterruptedException, IOException, GeneralSecurityException, DcmServiceException, SQLException, UnkownAETException {
     	long start = System.currentTimeMillis();
-    	MigrationUpdate migrationUpdate = newMigrationUpdate();
+    	StudyReconciliation studyReconciliation = newStudyReconciliation();
     	Timestamp createdBefore = new Timestamp( System.currentTimeMillis() - this.minStudyAge );
-    	Collection col = migrationUpdate.getStudyIuidsWithStatus(checkUpdateStatus, createdBefore, limitNumberOfStudiesPerTask);
+    	Collection col = studyReconciliation.getStudyIuidsWithStatus(checkUpdateStatus, createdBefore, limitNumberOfStudiesPerTask);
     	log.info("Check "+col.size()+" Studies for Migration Update (status:"+this.checkUpdateStatus+")");
     	if ( col.isEmpty()) {
     		log.debug("No Studies with status "+checkUpdateStatus+ " found for Migration Update!");
@@ -317,19 +308,19 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 		      			    	 !compare(patDS, origPatDS, Tags.PatientBirthDate ) ||
 								 !compare(patDS, origPatDS, Tags.PatientSex ) ) {
 			    				log.info("UPDATE patient: "+origPatDS.getString(Tags.PatientID));
-		      			    	migrationUpdate.updatePatient(origPatDS);
+		      			    	studyReconciliation.updatePatient(origPatDS);
 		      			    	numPatUpdt++;
 		      			    }
 		     			} else {
 		    				log.info("MERGE patient: "+patDS.getString(Tags.PatientID)+
 		    						" with "+origPatDS.getString(Tags.PatientID));
-		    				migrationUpdate.mergePatient(origPatDS, patDS);
+		    				studyReconciliation.mergePatient(origPatDS, patDS);
 		    				numPatMerge++;
 		    			}
-		    			migrationUpdate.updateStudyAndSeries(studyIuid, updatedStatus, archiveStudy);
+		    			studyReconciliation.updateStudyAndSeries(studyIuid, updatedStatus, archiveStudy);
 		    		} else {
 		    			numFailures++;
-		    			migrationUpdate.updateStatus(studyIuid, failureStatus);
+		    			studyReconciliation.updateStatus(studyIuid, failureStatus);
 		    		}
 		    	}
     		}
@@ -385,9 +376,9 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 		return qrDS;
 	}
 	private ActiveAssociation openAssoc() throws IOException, DcmServiceException, SQLException, UnkownAETException {
-		AEData aeData = new AECmd(this.updateCalledAET).getAEData();
+		AEData aeData = new AECmd(this.calledAET).getAEData();
 		if (aeData == null) {
-			log.error("Unkown Retrieve AET: " + updateCalledAET);
+			log.error("Unkown Retrieve AET: " + calledAET);
 			return null;
 		}
 		AssociationFactory af = AssociationFactory.getInstance();
@@ -396,19 +387,19 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 		a.setDimseTimeout(dimseTimeout);
 		a.setSoCloseDelay(soCloseDelay);
 		AAssociateRQ rq = af.newAAssociateRQ();
-		rq.setCalledAET(this.updateCalledAET);
-		rq.setCallingAET(this.getUpdateCallingAET());
+		rq.setCalledAET(this.calledAET);
+		rq.setCallingAET(this.callingAET);
         rq.addPresContext(af.newPresContext(PCID_FIND,
                 UIDs.StudyRootQueryRetrieveInformationModelFIND, TS));
 		PDU ac = a.connect(rq);
 		if (!(ac instanceof AAssociateAC)) {
-			log.warn("Association not accepted by " + updateCalledAET + ": " + ac);
+			log.warn("Association not accepted by " + calledAET + ": " + ac);
 			return null;
 		}
 		ActiveAssociation aa = af.newActiveAssociation(a, null);
 		aa.start();
 		if (a.getAcceptedTransferSyntaxUID(PCID_FIND) == null) {
-			log.warn("C-FIND not supported by remote AE: " + updateCalledAET);
+			log.warn("C-FIND not supported by remote AE: " + calledAET);
 			return null;
 		}
     	return aa;
@@ -557,14 +548,14 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 	}
 	
 	public String reschedule() throws RemoteException, FinderException, DcmServiceException {
-    	MigrationUpdate migrationUpdate = newMigrationUpdate();
+    	StudyReconciliation studyReconciliation = newStudyReconciliation();
     	Timestamp createdBefore = new Timestamp( System.currentTimeMillis() );
     	int total = 0;
     	Collection col;
     	while( true) { 
-    		col = migrationUpdate.getStudyIuidsWithStatus(failureStatus, createdBefore, limitNumberOfStudiesPerTask);
+    		col = studyReconciliation.getStudyIuidsWithStatus(failureStatus, createdBefore, limitNumberOfStudiesPerTask);
     		if ( col.isEmpty() ) break;
-   			migrationUpdate.updateStatus(col,checkUpdateStatus);
+   			studyReconciliation.updateStatus(col,checkUpdateStatus);
    			total += col.size();
     	}
    		return total+" studies rescheduled for Migration Update!";
@@ -610,25 +601,25 @@ public class MigrationUpdateService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         timer.init();
-        listenerID = timer.startScheduler("MigrationUpdate", taskInterval,
+        listenerID = timer.startScheduler("StudyReconciliation", taskInterval,
         		updateCheckListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("MigrationUpdate", listenerID,
+        timer.stopScheduler("StudyReconciliation", listenerID,
         		updateCheckListener);
         super.stopService();
     }
     
-    private MigrationUpdate newMigrationUpdate() {
+    private StudyReconciliation newStudyReconciliation() {
         try {
-        	MigrationUpdateHome home = (MigrationUpdateHome) EJBHomeFactory
-                    .getFactory().lookup(MigrationUpdateHome.class,
-                    		MigrationUpdateHome.JNDI_NAME);
+        	StudyReconciliationHome home = (StudyReconciliationHome) EJBHomeFactory
+                    .getFactory().lookup(StudyReconciliationHome.class,
+                    		StudyReconciliationHome.JNDI_NAME);
             return home.create();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to access Migration Update SessionBean:",
-                    e);
+            throw new RuntimeException(
+                    "Failed to access Study Reconciliation SessionBean:", e);
         }
     }
 

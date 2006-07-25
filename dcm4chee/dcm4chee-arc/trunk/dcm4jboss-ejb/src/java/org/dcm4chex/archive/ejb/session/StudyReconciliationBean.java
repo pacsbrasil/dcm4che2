@@ -72,8 +72,8 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  * @version $Revision$ $Date$
  * @since Jun 6, 2005
  * 
- * @ejb.bean name="MigrationUpdate" type="Stateless" view-type="remote"
- *           jndi-name="ejb/MigrationUpdate"
+ * @ejb.bean name="StudyReconciliation" type="Stateless" view-type="remote"
+ *           jndi-name="ejb/StudyReconciliation"
  *           
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
@@ -87,9 +87,9 @@ import org.dcm4chex.archive.ejb.util.EntityPkCache;
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4chee-attribute-filter.xml"
  */
-public abstract class MigrationUpdateBean implements SessionBean {
+public abstract class StudyReconciliationBean implements SessionBean {
 
-    private static final Logger log = Logger.getLogger(MigrationUpdateBean.class);
+    private static final Logger log = Logger.getLogger(StudyReconciliationBean.class);
 	
 	private StudyLocalHome studyHome;
 
