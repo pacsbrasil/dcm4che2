@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
@@ -125,6 +126,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	
 	private boolean acceptMissingPatientID = true;
 	private boolean acceptMissingPatientName = true;
+    private Pattern acceptPatientID;
+    private Pattern ignorePatientID;
 	private String[] generatePatientID = null;
 	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
 			new IssuerOfPatientIDRules("PACS-:TIANI");
@@ -231,6 +234,22 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		this.issuerOfPatientIDRules = new IssuerOfPatientIDRules(rules);
 	}
 
+    public final String getAcceptPatientID() {
+        return acceptPatientID.pattern();
+    }
+
+    public final void setAcceptPatientID(String acceptPatientID) {
+        this.acceptPatientID = Pattern.compile(acceptPatientID);
+    }
+    
+    public final String getIgnorePatientID() {
+        return ignorePatientID.pattern();
+    }
+
+    public final void setIgnorePatientID(String ignorePatientID) {
+        this.ignorePatientID = Pattern.compile(ignorePatientID);
+    }
+    
     public final String getIgnorePatientIDCallingAETs() {
         return StringUtils.toString(ignorePatientIDCallingAETs, '\\');
 	}
@@ -717,7 +736,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Acceptance of objects without Patient Name is disabled");			
 		}
-		if (contains(ignorePatientIDCallingAETs, assoc.getCallingAET())) {
+		if (pid != null && (
+                contains(ignorePatientIDCallingAETs, assoc.getCallingAET())
+                || !acceptPatientID.matcher(pid).matches()
+                || ignorePatientID.matcher(pid).matches())) {
 			log.info("Ignore Patient ID " + pid 
 					+ " for Patient Name " + pname
 					+ " in object received from " + assoc.getCallingAET());

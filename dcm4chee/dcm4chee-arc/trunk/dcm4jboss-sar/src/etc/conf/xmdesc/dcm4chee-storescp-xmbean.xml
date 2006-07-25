@@ -83,6 +83,32 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAcceptPatientID"
+      setMethod="setAcceptPatientID">
+      <description>Regular Expression for valid Patient IDs. Patient IDs which
+      does not match the specified pattern are ignored and replaced by a
+      Patient ID generated according attribute "GeneratePatientID".
+      </description>
+      <name>AcceptPatientID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value=".*"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIgnorePatientID"
+      setMethod="setIgnorePatientID">
+      <description>Regular Expression for invalid Patient IDs. Patient IDs which
+      match the specified pattern are ignored and replaced by a
+      Patient ID generated according attribute "GeneratePatientID".  
+      </description>
+      <name>IgnorePatientID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="UNKOWN"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getIgnorePatientIDCallingAETs"
       setMethod="setIgnorePatientIDCallingAETs">
       <description>List of the AE titles for the Storage SCUs for which the
@@ -101,8 +127,13 @@
       getMethod="getGeneratePatientID"
       setMethod="setGeneratePatientID">
       <description><![CDATA[Generate a patient ID from a hash of the patient name and
-          birth date and/or study instance uid, if the received study has no patient ID or
-          if the object is received from an AE listed in "IgnorePatientIDAETitles".
+          birth date and/or study instance uid, if
+          <ol>
+          <li>the received object has no patient ID or
+          <li>the patient ID does not match the pattern defined in "AcceptPatientID" or
+          <li>it match the pattern defined in "IgnorePatientID" or
+          <li>the object is received from an AE listed in "IgnorePatientIDAETitles".
+          </ol>
           <br>Use ### and/or $$$ as a placeholder for the decimal hash value of patient name and/or study instance uid.
           For example, PACS-##########.
           <br>NONE = do not generate patient IDs. But, this means media creation will fail.]]>

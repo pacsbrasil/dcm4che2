@@ -46,6 +46,7 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
 import javax.management.JMException;
@@ -282,6 +283,22 @@ public class StoreScpService extends AbstractScpService {
         this.fileSystemMgtName = fileSystemMgtName;
     }
 
+    public final String getAcceptPatientID() {
+        return scp.getAcceptPatientID();
+    }
+
+    public final void setAcceptPatientID(String acceptPatientID) {
+        scp.setAcceptPatientID(acceptPatientID);
+    }
+    
+    public final String getIgnorePatientID() {
+        return scp.getIgnorePatientID();
+    }
+
+    public final void setIgnorePatientID(String ignorePatientID) {
+        scp.setIgnorePatientID(ignorePatientID);;
+    }
+    
     public final String getIgnorePatientIDCallingAETs() {
         return scp.getIgnorePatientIDCallingAETs();
 	}
