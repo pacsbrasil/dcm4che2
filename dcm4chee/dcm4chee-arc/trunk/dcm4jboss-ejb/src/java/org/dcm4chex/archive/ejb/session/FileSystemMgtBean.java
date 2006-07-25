@@ -258,14 +258,16 @@ public abstract class FileSystemMgtBean implements SessionBean {
     }
 
     /**
+     * @throws RemoveException
+     * @throws EJBException
      * @ejb.interface-method
      */
     public void replaceFile(long pk, String path, String tsuid, int size,
-            byte[] md5) throws FinderException, CreateException {
+            byte[] md5) throws FinderException, CreateException, EJBException, RemoveException {
         FileLocal oldFile = fileHome.findByPrimaryKey(new Long(pk));
         fileHome.create(path, tsuid, size, md5, 0, oldFile.getInstance(),
                 oldFile.getFileSystem());
-        oldFile.setInstance(null);
+        oldFile.remove();
     }
 
     /**
