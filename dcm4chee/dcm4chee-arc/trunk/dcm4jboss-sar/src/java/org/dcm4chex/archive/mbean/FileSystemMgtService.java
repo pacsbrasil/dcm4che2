@@ -109,7 +109,8 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class FileSystemMgtService extends ServiceMBeanSupport implements MessageListener {
 
-    private static final String NONE = "NONE";
+    private static final String ACTION_PURGEFILES = "purgeFiles";
+	private static final String NONE = "NONE";
     private static final String FROM_PARAM = "%1";
     private static final String TO_PARAM = "%2";    
     
@@ -185,7 +186,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     private final NotificationListener purgeFilesListener = 
         new NotificationListener(){
             public void handleNotification(Notification notif, Object handback) {
-                purgeFiles();
+                purgePrivateFiles();
             }};
 
     private final NotificationListener freeDiskSpaceListener = 
@@ -717,8 +718,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
      * 
      * @return
      */
-    public int purgeFiles() {
-        log.info("Check for unreferenced files to delete");
+    public int purgePrivateFiles() {
+        log.info("Check for unreferenced private files to delete");
         synchronized (this) {
             if (isPurging) {
                 log.info("A purge task is already in progress! Ignore this purge order!");
@@ -735,22 +736,23 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             log.error("Failed to query DB for file system configuration:", e);
             return 0;
         }
+    	int limit = getLimitNumberOfFilesPerTask();
         for (int i = 0; i < list.length; ++i) {
-            deleted = purgeFiles(list[i].getDirectoryPath(), fsMgt);
+            deleted = purgePrivateFiles(list[i].getDirectoryPath(), fsMgt, limit);
             if (deleted < 0)
                 break;
             total += deleted;
-            if (total >= this.getLimitNumberOfFilesPerTask())
+            if (total >= limit)
                 break;
         }
         isPurging = false;
         return total;
     }
     
-    public int purgeFiles( String purgeDirPath ) {
+    public int purgePrivateFiles( String purgeDirPath ) {
     	int total;
     	if ( purgeDirPath == null ) {
-    		total = purgeFiles();
+    		total = purgePrivateFiles();
     	} else {
             synchronized (this) {  
     	        if ( isPurging ) {
@@ -761,7 +763,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             }
             log.info("Check for unreferenced (private) files to delete in filesystem:"+purgeDirPath);
 		    FileSystemMgt fsMgt = newFileSystemMgt();
-			total = purgeFiles(purgeDirPath,fsMgt);
+	    	int limit = getLimitNumberOfFilesPerTask();
+			total = purgePrivateFiles(purgeDirPath,fsMgt,limit);
 			isPurging = false;
 		    try {
 		        fsMgt.remove();
@@ -771,14 +774,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     	return total;
     }
     
-    private int purgeFiles( String path, FileSystemMgt fsMgt ) {
-    	int limit = getLimitNumberOfFilesPerTask();
-    	int deleted = purgeFiles( path, fsMgt, limit );
-    	if ( deleted < 0 ) return -1;//mark error
-    	return deleted;
-    }
-    
-    private int purgeFiles( String purgeDirPath, FileSystemMgt fsMgt, int limit ) {
+    private int purgePrivateFiles( String purgeDirPath, FileSystemMgt fsMgt, int limit ) {
         FileDTO[] toDelete;
     	try {
     		toDelete = fsMgt.getDereferencedPrivateFiles( purgeDirPath, limit );
@@ -803,6 +799,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             delete(file);
         }
         return toDelete.length;
+    }
+    
+    public void purgeFiles(List fileDTOs) {
+    	this.schedule( new ActionOrder(ACTION_PURGEFILES, fileDTOs), -1);
     }
 
     private boolean delete(File file) {
@@ -1245,9 +1245,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 			try {
 				if(order instanceof ActionOrder)
 				{
-					ActionOrder actionOrder = (ActionOrder) message.getObject();
-					Method m = this.getClass().getDeclaredMethod(actionOrder.getActionMethod(), new Class[]{Object.class});
-					m.invoke(this, new Object[]{actionOrder.getData()});
+					ActionOrder actionOrder = (ActionOrder) order;
+					if ( ACTION_PURGEFILES.equals(actionOrder.getActionMethod())) {
+						deleteFiles( (List) actionOrder.getData());
+					} else {
+						Method m = this.getClass().getDeclaredMethod(actionOrder.getActionMethod(), new Class[]{Object.class});
+						m.invoke(this, new Object[]{actionOrder.getData()});
+					}
 				}
 				else if(order instanceof PurgeStudyOrder)
 				{
@@ -1285,6 +1289,18 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 		}
 	}
 
+	private void deleteFiles( List files ) {
+		FileDTO fileDTO;
+		File file;
+		log.debug("Start purging "+files.size()+" files.");
+		for ( Iterator iter = files.iterator() ; iter.hasNext() ;) {
+			fileDTO = (FileDTO)iter.next();
+			file = FileUtils.toFile( fileDTO.getDirectoryPath(), fileDTO.getFilePath() );
+			log.debug("delete file "+file);
+			delete(file);
+		}
+	}
+	
 	protected void schedule(BaseJmsOrder order, long scheduledTime) {
 		try {
 			if(scheduledTime > 0 && log.isInfoEnabled())
@@ -1295,7 +1311,5 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 			log.error("Failed to schedule " + order, e);
 		}
 	}
-	
-	
-	
+
 }
