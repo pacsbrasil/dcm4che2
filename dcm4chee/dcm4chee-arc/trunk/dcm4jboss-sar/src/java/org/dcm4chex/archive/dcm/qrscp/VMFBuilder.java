@@ -93,8 +93,7 @@ class VMFBuilder {
 
 	public void addFrame(Dataset frame) throws DcmServiceException {
 		if (!frame.subSet(COMMON).equals(common))
-			throw new DcmServiceException(0xC002, 
-					"Series contains instance(s) which cannot be put into one MF image");
+			throw new DcmServiceException(0xC002, "Failed to pack series in MF.");
 		addFrameInternal(frame);
 	}
 
