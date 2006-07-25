@@ -34,9 +34,11 @@
         </xsl:call-template>
     </xsl:template>
     <xsl:template name="pregnancyStatus">
-        <xsl:param name="ambulantStatus"/>
-        <xsl:if test="$ambulantStatus = 'B6'">
-            <attr tag="001021C0" vr="US">3</attr>
+        <xsl:param name="ambulantStatus"/>        
+        <xsl:if test="normalize-space($ambulantStatus)">
+          <attr tag="001021C0" vr="US">
+            <xsl:if test="$ambulantStatus = 'B6'">3</xsl:if>
+          </attr>
         </xsl:if>
     </xsl:template>
     <xsl:template match="ORC[1]">
@@ -53,7 +55,7 @@
     </xsl:template>
     <xsl:template name="procedurePriority">
         <xsl:param name="priority"/>
-        <xsl:if test="$priority">
+        <xsl:if test="normalize-space($priority)">
             <attr tag="00401003" vr="CS">
                 <xsl:choose>
                     <xsl:when test="$priority = 'S'">STAT</xsl:when>
@@ -69,14 +71,14 @@
         <xsl:variable name="accno">
             <xsl:choose>
                 <xsl:when test="field[18]/text()">
-                    <xsl:value-of select="field[18]/text()"/>
+                    <xsl:value-of select="string(field[18]/text())"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="field[2]/text()"/>
+                    <xsl:value-of select="string(field[2]/text())"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00080050'"/>
             <xsl:with-param name="vr" select="'SH'"/>
             <xsl:with-param name="val" select="$accno"/>
@@ -87,10 +89,10 @@
             <xsl:with-param name="cn" select="field[16]"/>
         </xsl:call-template>
         <!-- Medical Alerts -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00102000'"/>
             <xsl:with-param name="vr" select="'LO'"/>
-            <xsl:with-param name="val" select="field[13]/text()"/>
+            <xsl:with-param name="val" select="string(field[13]/text())"/>
         </xsl:call-template>
         <!-- Requesting Physician -->
         <xsl:call-template name="cn2pnAttr">
@@ -98,55 +100,55 @@
             <xsl:with-param name="cn" select="field[16]"/>
         </xsl:call-template>
         <!-- (0032,1033) Requesting Service
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00321033'"/>
             <xsl:with-param name="vr" select="'LO'"/>
             <xsl:with-param name="val" select="'Requesting Service'"/>
         </xsl:call-template>
         -->
         <!-- Patient State -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00380500'"/>
             <xsl:with-param name="vr" select="'LO'"/>
-            <xsl:with-param name="val" select="field[12]/text()"/>
+            <xsl:with-param name="val" select="string(field[12]/text())"/>
         </xsl:call-template>
         <!-- Patient Transport Arrangements -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00401004'"/>
             <xsl:with-param name="vr" select="'LO'"/>
-            <xsl:with-param name="val" select="field[30]/text()"/>
+            <xsl:with-param name="val" select="string(field[30]/text())"/>
         </xsl:call-template>
     </xsl:template>
     <xsl:template match="ORC" mode="sps">
         <item>
             <!-- Use Placer Order Number.position() as Scheduled Procedure Step ID -->
-            <xsl:variable name="spsid" select="concat(field[2]/text(),'.',position())"/>
-            <xsl:call-template name="dcmAttr">
+            <xsl:variable name="spsid" select="concat(string(field[2]/text()),'.',position())"/>
+            <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00400009'"/>
                 <xsl:with-param name="vr" select="'SH'"/>
                 <xsl:with-param name="val" select="$spsid"/>
             </xsl:call-template>
             <!-- Use SPS ID as Requested Procedure ID on SPS Level!-->
-            <xsl:call-template name="dcmAttr">
+            <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00401001'"/>
                 <xsl:with-param name="vr" select="'SH'"/>
                 <xsl:with-param name="val" select="$spsid"/>
             </xsl:call-template>
             <!-- Use SPS ID  as Study Instance UID on SPS Level -->
-            <xsl:call-template name="dcmAttr">
+            <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'0020000D'"/>
                 <xsl:with-param name="vr" select="'UI'"/>
                 <xsl:with-param name="val" select="concat($suid-prefix,$spsid)"/>
             </xsl:call-template>
             <!-- Insert Requested Procedure Priority on SPS Level -->
             <xsl:call-template name="procedurePriority">
-                <xsl:with-param name="priority" select="field[7]/component[5]"/>
+                <xsl:with-param name="priority" select="string(field[7]/component[5]/text())"/>
             </xsl:call-template>
             <!-- Scheduled Procedure Step Start Date/Time -->
-            <xsl:call-template name="dcmAttrDATM">
+            <xsl:call-template name="attrDATM">
                 <xsl:with-param name="datag" select="'00400002'"/>
                 <xsl:with-param name="tmtag" select="'00400003'"/>
-                <xsl:with-param name="val" select="field[7]/component[3]"/>
+                <xsl:with-param name="val" select="string(field[7]/component[3]/text())"/>
             </xsl:call-template>
             <xsl:apply-templates select="following-sibling::OBR[1]" mode="sps"/>
         </item>
@@ -155,10 +157,10 @@
     <!-- specific device XX -->
     <xsl:template match="OBR[field[24]/text()='XX']" mode="sps">
          <!-- Use ORB-24 as Scheduled Station Name -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00400010'"/>
             <xsl:with-param name="vr" select="'SH'"/>
-            <xsl:with-param name="val" select="field[24]/text()"/>
+            <xsl:with-param name="val" select="string(field[24]/text())"/>
         </xsl:call-template>
         <!-- Scheduled Performing Physican Name -->
         <xsl:call-template name="cn2pnAttr">
@@ -170,23 +172,23 @@
             <!-- if OBR-4.2-4:6 are missing -->
             <xsl:when test="count(field[4]/component) &lt; 5">
                 <!-- Use ORB-4.2 as Procedure Description as Scheduled Procedure Step -->
-                <xsl:call-template name="dcmAttr">
+                <xsl:call-template name="attr">
                     <xsl:with-param name="tag" select="'00400007'"/>
                     <xsl:with-param name="vr" select="'LO'"/>
-                    <xsl:with-param name="val" select="field[4]/component[1]"/>
+                    <xsl:with-param name="val" select="string(field[4]/component[1]/text())"/>
                 </xsl:call-template>
                 <!-- Use ORB-4.1-3 as Scheduled Protocol Code -->
                 <xsl:call-template name="codeItem">
                     <xsl:with-param name="sqtag" select="'00400008'"/>
-                    <xsl:with-param name="code" select="field[4]/text()"/>
-                    <xsl:with-param name="scheme" select="field[4]/component[2]"/>
-                    <xsl:with-param name="meaning" select="field[4]/component[1]"/>
+                    <xsl:with-param name="code" select="string(field[4]/text())"/>
+                    <xsl:with-param name="scheme" select="string(field[4]/component[2]/text())"/>
+                    <xsl:with-param name="meaning" select="string(field[4]/component[1]/text())"/>
                 </xsl:call-template>                
             </xsl:when>
             <!-- treat according IHE -->
             <xsl:otherwise>
                 <!-- Scheduled Procedure Step Description -->
-                <xsl:call-template name="dcmAttr">
+                <xsl:call-template name="attr">
                     <xsl:with-param name="tag" select="'00400007'"/>
                     <xsl:with-param name="vr" select="'LO'"/>
                     <xsl:with-param name="val" select="field[4]/component[4]"/>
@@ -194,14 +196,14 @@
                 <!-- Scheduled Protocol Code Sequence -->
                 <xsl:call-template name="codeItem">
                     <xsl:with-param name="sqtag" select="'00400008'"/>
-                    <xsl:with-param name="code" select="field[4]/component[3]"/>
-                    <xsl:with-param name="scheme" select="field[4]/component[5]"/>
-                    <xsl:with-param name="meaning" select="field[4]/component[4]"/>
+                    <xsl:with-param name="code" select="string(field[4]/component[3]/text())"/>
+                    <xsl:with-param name="scheme" select="string(field[4]/component[5]/text())"/>
+                    <xsl:with-param name="meaning" select="string(field[4]/component[4]/text())"/>
                 </xsl:call-template>
             </xsl:otherwise>
         </xsl:choose>
         <!-- Use ORB-4.2 as Requested Procedure Description on SPS Level! -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00321060'"/>
             <xsl:with-param name="vr" select="'LO'"/>
             <xsl:with-param name="val" select="field[4]/component[1]"/>
@@ -209,19 +211,19 @@
         <!-- Use ORB-4.1-3 as Requested Procedure Code Sequence on SPS Level-->
         <xsl:call-template name="codeItem">
             <xsl:with-param name="sqtag" select="'00321064'"/>
-            <xsl:with-param name="code" select="field[4]/text()"/>
-            <xsl:with-param name="scheme" select="field[4]/component[2]"/>
-            <xsl:with-param name="meaning" select="field[4]/component[1]"/>
+            <xsl:with-param name="code" select="string(field[4]/text())"/>
+            <xsl:with-param name="scheme" select="string(field[4]/component[2]/text())"/>
+            <xsl:with-param name="meaning" select="string(field[4]/component[1]/text())"/>
         </xsl:call-template>
     </xsl:template>
 
     <!-- other devices -->
     <xsl:template match="OBR" mode="sps">
          <!-- Use ORB-24 as Scheduled Station Name -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00400010'"/>
             <xsl:with-param name="vr" select="'SH'"/>
-            <xsl:with-param name="val" select="field[24]/text()"/>
+            <xsl:with-param name="val" select="string(field[24]/text())"/>
         </xsl:call-template>
         <!-- Scheduled Performing Physican Name -->
         <xsl:call-template name="cn2pnAttr">
@@ -233,48 +235,48 @@
             <!-- if OBR-4.2-4:6 are missing -->
             <xsl:when test="count(field[4]/component) &lt; 5">
                 <!-- Use ORB-4.2 as Procedure Description as Scheduled Procedure Step -->
-                <xsl:call-template name="dcmAttr">
+                <xsl:call-template name="attr">
                     <xsl:with-param name="tag" select="'00400007'"/>
                     <xsl:with-param name="vr" select="'LO'"/>
-                    <xsl:with-param name="val" select="field[4]/component[1]"/>
+                    <xsl:with-param name="val" select="string(field[4]/component[1]/text())"/>
                 </xsl:call-template>
                 <!-- Use ORB-4.1-3 as Scheduled Protocol Code -->
                 <xsl:call-template name="codeItem">
                     <xsl:with-param name="sqtag" select="'00400008'"/>
-                    <xsl:with-param name="code" select="field[4]/text()"/>
-                    <xsl:with-param name="scheme" select="field[4]/component[2]"/>
-                    <xsl:with-param name="meaning" select="field[4]/component[1]"/>
+                    <xsl:with-param name="code" select="string(field[4]/text())"/>
+                    <xsl:with-param name="scheme" select="string(field[4]/component[2]/text())"/>
+                    <xsl:with-param name="meaning" select="string(field[4]/component[1]/text())"/>
                 </xsl:call-template>                
             </xsl:when>
             <!-- treat according IHE -->
             <xsl:otherwise>
                 <!-- Scheduled Procedure Step Description -->
-                <xsl:call-template name="dcmAttr">
+                <xsl:call-template name="attr">
                     <xsl:with-param name="tag" select="'00400007'"/>
                     <xsl:with-param name="vr" select="'LO'"/>
-                    <xsl:with-param name="val" select="field[4]/component[4]"/>
+                    <xsl:with-param name="val" select="string(field[4]/component[4]/text())"/>
                 </xsl:call-template>
                 <!-- Scheduled Protocol Code Sequence -->
                 <xsl:call-template name="codeItem">
                     <xsl:with-param name="sqtag" select="'00400008'"/>
-                    <xsl:with-param name="code" select="field[4]/component[3]"/>
-                    <xsl:with-param name="scheme" select="field[4]/component[5]"/>
-                    <xsl:with-param name="meaning" select="field[4]/component[4]"/>
+                    <xsl:with-param name="code" select="string(field[4]/component[3]/text())"/>
+                    <xsl:with-param name="scheme" select="string(field[4]/component[5]/text())"/>
+                    <xsl:with-param name="meaning" select="string(field[4]/component[4]/text())"/>
                 </xsl:call-template>
             </xsl:otherwise>
         </xsl:choose>
         <!-- Use ORB-4.2 as Requested Procedure Description on SPS Level! -->
-        <xsl:call-template name="dcmAttr">
+        <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00321060'"/>
             <xsl:with-param name="vr" select="'LO'"/>
-            <xsl:with-param name="val" select="field[4]/component[1]"/>
+            <xsl:with-param name="val" select="string(field[4]/component[1]/text())"/>
         </xsl:call-template>
         <!-- Use ORB-4.1-3 as Requested Procedure Code Sequence on SPS Level-->
         <xsl:call-template name="codeItem">
             <xsl:with-param name="sqtag" select="'00321064'"/>
-            <xsl:with-param name="code" select="field[4]/text()"/>
-            <xsl:with-param name="scheme" select="field[4]/component[2]"/>
-            <xsl:with-param name="meaning" select="field[4]/component[1]"/>
+            <xsl:with-param name="code" select="string(field[4]/text()"/>
+            <xsl:with-param name="scheme" select="string(field[4]/component[2]/text())"/>
+            <xsl:with-param name="meaning" select="string(field[4]/component[1]/text())"/>
         </xsl:call-template>
     </xsl:template>
 </xsl:stylesheet>
