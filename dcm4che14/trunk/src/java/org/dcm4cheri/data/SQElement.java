@@ -40,6 +40,8 @@ package org.dcm4cheri.data;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
@@ -81,7 +83,21 @@ class SQElement extends DcmElementImpl
         return this;
     }
 
-
+    public int hashCode() {
+        return tag ^ list.hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof SQElement))
+            return false;
+        SQElement ve = (SQElement) o;
+        if (tag != ve.tag)
+            return false;
+        return list.equals(ve.list);
+    }
+    
     /**
      *  Description of the Method
      *

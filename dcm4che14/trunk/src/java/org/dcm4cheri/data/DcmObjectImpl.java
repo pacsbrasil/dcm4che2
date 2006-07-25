@@ -2492,6 +2492,29 @@ abstract class DcmObjectImpl implements DcmObject {
         return list.iterator();
     }
 
+    public int hashCode() {
+        int h = 0;
+        for (Iterator iter = iterator(); iter.hasNext();) {
+            h = 31*h + iter.next().hashCode();            
+        }
+        return h;
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof DcmObject)) {
+            return false;
+        }
+        DcmObject dcmobj2 = (DcmObject) o;
+        Iterator it1 = iterator();
+        Iterator it2 = dcmobj2.iterator();
+        while (it1.hasNext()) {
+            if (!it2.hasNext() || !it1.next().equals(it2.next())) {
+                return false;
+            }
+        }
+        return !it2.hasNext();
+    }
+
     public void putAll(DcmObject dcmObj) {
     	putAll(dcmObj, REPLACE_ITEMS);
     }
