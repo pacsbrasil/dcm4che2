@@ -116,17 +116,6 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
          <value value="1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isAutoPurge" setMethod="setAutoPurge">
-      <description><![CDATA[Enables deletion after a file is compressed.
-      				The file is deleted if the cache where the compressed file is located is below the <b>MinimumFreeDiskSpace</b> attribute in the FileSystemMgt service.
-      				The deletion process is limited to the cache where the compressed file is stored.]]>
-      </description>
-      <name>AutoDelete</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>	
    <attribute access="read-write" getMethod="getFileSystemMgtName" setMethod="setFileSystemMgtName">
       <description>Used internally. Do not modify.
       </description>
