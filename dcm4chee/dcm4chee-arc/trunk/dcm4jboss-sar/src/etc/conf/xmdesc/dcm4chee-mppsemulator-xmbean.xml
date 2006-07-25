@@ -16,21 +16,32 @@
       <name>MPPSEmulatorService</name>
    </constructor>
 
-   <attribute access="read-write" getMethod="getStationAETsWithDelay" setMethod="setStationAETsWithDelay">
-      <description>Define the AE titles of the stations or modalities for which MPPS
-          messages shall be emulated. For each AE title, you must set a minimum delay time between the time the first object
-          of the last series is received and the generation of the MPPS message.
-          &lt;br&gt;Format: &lt;br&gt;&lt;i&gt;aeTitle&lt;/i&gt;:&lt;i&gt;delay&lt;/i&gt;&lt;br&gt;where&lt;br&gt;&lt;i&gt;aeTitle&lt;/i&gt; = the AE title of the station or modality for which you are emulating MPPS messages&lt;br&gt;&lt;i&gt;delay&lt;/i&gt; = the delay between the time the first object of the last series is received, and the generation of an MPPS message, in seconds (##s) or minutes (##m)&lt;br&gt;String multiple AE titles together by placing a colon between each &lt;i&gt;aeTitle&lt;/i&gt;:&lt;i&gt;delay&lt;/i&gt; pair; for example MOD_1:1m:MOD_2:50s</description>
-      <name>StationAETitlesWithDelay</name>
+   <attribute access="read-write" 
+     getMethod="getEmulateMPPSforModalities" 
+     setMethod="setEmulateMPPSforModalities">
+      <description><![CDATA[Define the AE titles of modalities for which MPPS
+        messages shall be emulated. Multiple AE titles are separated by new line.
+        For each AE title you must also specify a minimum delay time between 
+        the time of the first object of a series is received and the generation
+        of the MPPS message, concerning all images received in series of the
+        same study at this moment. You also have to specify if the Study
+        Instance UID or the Accession Number in the received objects is used
+        to query matching modality worklist entries. 
+        <br>Format: <i>aeTitle</i>[<i>delay</i>]->MWL[StudyInstanceUID]
+        <br>     or <i>aeTitle</i>[<i>delay</i>]->MWL[AccessionNumber]
+        <br><i>delay</i> can be specified in seconds (##s) or minutes (##m).
+        <br>Sample: MOD_WO_MPPS[3m]->MWL[StudyInstanceUID]]]></description>
+      <name>EmulateMPPSforModalities</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MOD_NOMPPS:1m"/>
+         <value value="MOD_WO_MPPS[3m]->MWL[StudyInstanceUID]]"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getPollInterval" setMethod="setPollInterval">
-      <description>Interval for polling for newly received series from
-      the stations or modalities you configured in the &lt;b&gt;StationAETitlesWithDelay&lt;/b&gt; attribute. The interval can be specified in
-      seconds (##s) or minutes (##m). NEVER = disable MPPS emulation.
+      <description><![CDATA[Interval for polling for newly received series from
+          modalities you configured in the <b>EmulateMPPSforModalities</b> attribute.
+          The interval can be specified in seconds (##s) or minutes (##m). 
+          NEVER = disable MPPS emulation.]]>
       </description>
       <name>PollInterval</name>
       <type>java.lang.String</type>
@@ -81,9 +92,9 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Emulate MPPS messages for newly received series from the stations
-          or modalities specified by the &lt;b&gt;StationAETitlesWithDelay&lt;/b&gt; attribute. Returns the number of
-          successfully created MPPS instances at the MPPS SCP that you specified with the &lt;b&gt;CalledAETitle&lt;/b&gt; property.
+      <description><![CDATA[Emulate MPPS messages for newly received series from the stations
+          or modalities specified by the <b>StationAETitlesWithDelay</b> attribute. Returns the number of
+          successfully created MPPS instances at the MPPS SCP that you specified with the <b>CalledAETitle</b> property.]]>
       </description>
       <name>emulateMPPS</name>
       <return-type>int</return-type>

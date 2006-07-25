@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.dcm.mppsscu;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -49,7 +50,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.MPPSEmulator;
 import org.dcm4chex.archive.ejb.interfaces.MPPSEmulatorHome;
@@ -66,6 +66,7 @@ import org.jboss.system.ServiceMBeanSupport;
 
 public class MPPSEmulatorService extends ServiceMBeanSupport implements
         NotificationListener {
+
 
     private static final String IN_PROGRESS = "IN PROGRESS";
 
@@ -100,6 +101,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         Tags.PatientBirthDate, Tags.PatientSex
 	};
 
+
     private final TimerSupport timer = new TimerSupport(this);
     
     private long pollInterval = 0L;
@@ -109,9 +111,9 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     private String calledAET;
 
     private String[] stationAETs = {};
-
-    private long[] delay = {};
-
+    private long[] delays;
+    private int[] mwlAttrs;    
+    
     private ObjectName mppsScuServiceName;
 
     private ObjectName mwlScuServiceName;
@@ -155,32 +157,38 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         this.calledAET = calledAET;
     }
     
-    public final String getStationAETsWithDelay() {
+    public final String getEmulateMPPSforModalities() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < stationAETs.length; i++) {
             sb.append(stationAETs[i]);
-            sb.append(':');
-            sb.append(RetryIntervalls.formatInterval(delay[i]));
-            sb.append(':');
+            sb.append('[');
+            sb.append(RetryIntervalls.formatInterval(delays[i]));
+            sb.append(mwlAttrs[i] == Tags.AccessionNumber 
+                    ? "]->MWL[AccessionNumber]\r\n"
+                    : "]->MWL[StudyInstanceUID]\r\n");
         }
-        sb.setLength(sb.length()-1);
         return sb.toString();
     }
-    
-    public final void setStationAETsWithDelay(String aetDelays) {
-        String[] tokens = StringUtils.split(aetDelays, ':');
-        if ((tokens.length & 1) != 0) {
-            throw new IllegalArgumentException("Missing delay item: "
-                    + aetDelays);
+        
+    public final void setEmulateMPPSforModalities(String s) {
+        StringTokenizer stk = new StringTokenizer(s, "[]\r\n \t;");
+        int tkcount = stk.countTokens();
+        if (tkcount % 4 != 0) {
+            throw new IllegalArgumentException(s);
         }
-        String[] newAETs = new String[tokens.length / 2];
-        long[] newDelay = new long[newAETs.length];
-        for (int i = 0, j = 0; i < newAETs.length; i++) {
-            newAETs[i] = tokens[j++];
-            newDelay[i] = RetryIntervalls.parseInterval(tokens[j++]);
+        String[] newStationAETs = new String[tkcount/4];
+        long[] newDelays = new long[newStationAETs.length];
+        int[] newMWLAttrs = new int[newStationAETs.length];
+        for (int i = 0; i < newStationAETs.length; i++) {
+            newStationAETs[i] = stk.nextToken();
+            newDelays[i] = RetryIntervalls.parseInterval(stk.nextToken());
+            stk.nextToken(); // skip "->MWL"
+            newMWLAttrs[i] = stk.nextToken().charAt(0) == 'A' 
+                    ? Tags.AccessionNumber : Tags.StudyInstanceUID;
         }
-        this.stationAETs = newAETs;
-        this.delay = newDelay;
+        stationAETs = newStationAETs;
+        delays = newDelays;
+        mwlAttrs = newMWLAttrs;
     }
     
     public final String getPollInterval() {
@@ -214,7 +222,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         try {
             for (int i = 0; i < stationAETs.length; ++i) {
                 Dataset[] mpps = mppsEmulator.generateMPPS(stationAETs[i],
-                        delay[i]);
+                        delays[i]);
                 for (int j = 0; j < mpps.length; ++j) {
                     Dataset ssa = mpps[j].getItem(Tags.ScheduledStepAttributesSeq);
                     String suid = ssa.getString(Tags.StudyInstanceUID);
@@ -222,8 +230,8 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
                     		+ mpps[j].getString(Tags.PatientName)
                     		+ " received from Station:" + stationAETs[i]);
                 	fillType2Attrs(mpps[j], MPPS_CREATE_TAGS);
-                    if (addMWLAttrs(mpps[j]) && createMPPS(mpps[j])
-                            && updateMPPS(mpps[j]))
+                    if (addMWLAttrs(mpps[j], mwlAttrs[i])
+                            && createMPPS(mpps[j]) && updateMPPS(mpps[j]))
                         ++num;
                 }
             }
@@ -236,51 +244,93 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         return num;
     }
 
-    private boolean addMWLAttrs(Dataset mpps) {
-        Dataset filter = getPreparedFilter();
+    private boolean addMWLAttrs(Dataset mpps, int mwlAttr) {
         Dataset ssa = mpps.getItem(Tags.ScheduledStepAttributesSeq);
-        final String suid = ssa.getString(Tags.StudyInstanceUID);
-        filter.putUI(Tags.StudyInstanceUID, suid);
+        Dataset filter = getPreparedFilter();
+        String mwlAttrVal = ssa.getString(mwlAttr);
+        String imgAccNo = ssa.getString(Tags.AccessionNumber);
+        String imgSIUD = ssa.getString(Tags.StudyInstanceUID);
+        String imgPID = mpps.getString(Tags.PatientID);
+        String imgPName = mpps.getString(Tags.PatientName);
+        if (mwlAttrVal == null) {
+            log.info("Missing attribute " + Tags.toString(mwlAttr) 
+                    + " in received Study with UID: " + imgSIUD + " and AccNo: "
+                    + imgAccNo + " for Patient: " + imgPName + " with ID: "
+                    + imgPID + " -> cannot query for matching MWL entries.");
+            makeUnscheduled(ssa);
+            return true;            
+        }
+        filter.putXX(mwlAttr, mwlAttrVal);
         List mwlEntries = findMWLEntries(filter);
         if (mwlEntries == null)
             return false;
         if (mwlEntries.isEmpty()) {
-        	log.debug("No MWL entry for Study - " + suid + " ! Try with AccessionNumber!");
-        	filter.putUI(Tags.StudyInstanceUID, (String)null);
-        	filter.putSH(Tags.AccessionNumber, ssa.getString(Tags.AccessionNumber));
-//        	filter.putLO(Tags.PatientID, mpps.getString( Tags.PatientID ) );
-        	mwlEntries = findMWLEntries(filter);
-            if (mwlEntries == null)
-                return false;
-            if (mwlEntries.isEmpty()) {
-	            log.info("No matching MWL entry for Study - " + suid);
-                ssa.putSH(Tags.AccessionNumber); // clear accession no
-	            fillType2Attrs(ssa, MWL_TAGS);
-	            fillType2Attrs(ssa, SPS_TAGS);
-	            return true;
+            log.info("No matching MWL entry for received Study with UID: " 
+                    + imgSIUD + " and AccNo: " + imgAccNo + " for Patient: "
+                    + imgPName + " with ID: " + imgPID + " found.");
+            makeUnscheduled(ssa);
+            return true;
+        }
+        log.info("Found " + mwlEntries.size() 
+                + " matching MWL entry/entries for received Study with UID: " 
+                + imgSIUD + " and AccNo: " + imgAccNo + " for Patient: "
+                + imgPName + " with ID: " + imgPID);
+        Dataset mwlitem1 = ((Dataset) mwlEntries.get(0));
+        String mwlPID = mwlitem1.getString(Tags.PatientID);
+        String mwlPName = mwlitem1.getString(Tags.PatientName);
+        int n = mwlEntries.size();
+        for (int i = 1; i < n; ++i) {
+            if (!mwlPID.equals(((Dataset) mwlEntries.get(i)).getString(Tags.PatientID))) {
+                log.warn("Found " + mwlEntries.size() 
+                        + " matching MWL entries for received Study with UID: " 
+                        + imgSIUD + " and AccNo: " + imgAccNo + " for Patient: "
+                        + imgPName + " with ID: " + imgPID
+                        + " associated to more than one Patient -> treat as unscheduled!");               
+                makeUnscheduled(ssa);
+                return true;
             }
         }
+        if (!mwlPID.equals(imgPID)) {
+            log.info("Patient Information in matching MWL entry for received"
+                    + " Study with UID: " + imgSIUD + " and AccNo: " + imgAccNo 
+                    + " differs from Patient Information in received objects -> "
+                    + " Merge Patient " + imgPName + " with ID: " + imgPID
+                    + " with Patient "+ mwlPName + " with ID: " + mwlPID);               
+            sendHL7Merge(mwlitem1, mpps);
+            mpps.putAll(mwlitem1.subSet(PAT_TAGS));
+        }
         DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
-        String mppsPatID = mpps.getString(Tags.PatientID);
-        for (int i = 0, n = mwlEntries.size(); i < n; ++i) {
+        for (int i = 0; i < n; ++i) {
             ssa = ssaSq.addNewItem();
             Dataset mwlItem = (Dataset) mwlEntries.get(i);
+            String mwlAccNo = mwlItem.getString(Tags.AccessionNumber);
+            String mwlSCUID = mwlItem.getString(Tags.StudyInstanceUID);
+            if (imgAccNo != null && !imgAccNo.equals(mwlAccNo)) {
+                log.info("AccNo: " + mwlAccNo 
+                        + " in matching MWL item for received Study with UID: "
+                        + imgSIUD  + " for Patient: " + imgPName + " with ID: " 
+                        + imgPID + " differs from AccNo: " + imgAccNo +
+                                "in received objects.");
+            }
+            if (!imgSIUD.equals(mwlSCUID)) {
+                log.info("Study Instance UID: " + mwlSCUID 
+                        + " in matching MWL item for received Study with UID: "
+                        + imgSIUD  + " and AccNo: " + imgAccNo
+                        + " for Patient: " + imgPName + " with ID: " + imgPID
+                        + " differs from Study Instance UID in received objects.");                
+            }
             ssa.putAll(mwlItem.subSet(MWL_TAGS));
-            Dataset sps = mwlItem.getItem(Tags.SPSSeq);
-            if (sps != null) {
-                ssa.putAll(sps.subSet(SPS_TAGS)); 
-            }
-            if ( ! mwlItem.getString(Tags.PatientID).equals(mppsPatID) ) {
-            	log.debug("MWL and MPPS patient different! Merge "+mppsPatID+" with (dominant) "+mwlItem.getString(Tags.PatientID));
-            	sendHL7Merge(mwlItem.subSet(PAT_TAGS),mpps.subSet(PAT_TAGS));
-            }
+            ssa.putAll(mwlItem.getItem(Tags.SPSSeq).subSet(SPS_TAGS)); 
         }
         return true;
     }
 
-	/**
-	 * @return
-	 */
+    private void makeUnscheduled(Dataset ssa) {
+        ssa.putSH(Tags.AccessionNumber); // clear accession no
+        fillType2Attrs(ssa, MWL_TAGS);
+        fillType2Attrs(ssa, SPS_TAGS);
+    }
+
 	private Dataset getPreparedFilter() {
 		Dataset filter = DcmObjectFactory.getInstance().newDataset();
         for (int i = 0; i < MWL_TAGS.length; i++) {
