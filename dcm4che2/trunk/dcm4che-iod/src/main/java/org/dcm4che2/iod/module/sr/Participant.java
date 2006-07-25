@@ -37,56 +37,53 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.iod.module.sr;
 
+import java.util.Date;
+
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since 05.07.2006
+ * @version $Revision$
+ * @since 25.07.2006
  */
+public class Participant extends IdentifiedPersonOrDevice {
 
-public class SOPInstanceReferenceMacro extends Module {
-
-    public SOPInstanceReferenceMacro(DicomObject dcmobj) {
-        super(dcmobj);
+    public Participant(DicomObject dcmobj) {
+	super(dcmobj);
     }
 
-    public SOPInstanceReferenceMacro() {
-        super(new BasicDicomObject());
+    public Participant() {
+	super(new BasicDicomObject());
     }
 
-    public static SOPInstanceReferenceMacro[] toSOPInstanceReferenceMacros(
-            DicomElement sq) {
+    public static Participant[] toParticipants(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
-        SOPInstanceReferenceMacro[] a = new SOPInstanceReferenceMacro[sq
-                .countItems()];
+        Participant[] a = new Participant[sq.countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new SOPInstanceReferenceMacro(sq.getDicomObject(i));
+            a[i] = new Participant(sq.getDicomObject(i));
         }
         return a;
     }
-
-    public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.StudyInstanceUID);
+    
+    public String getParticipationType() {
+        return dcmobj.getString(Tag.ParticipationType);
     }
 
-    public void setStudyInstanceUID(String uid) {
-        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, uid);
+    public void setParticipationType(String s) {
+        dcmobj.putString(Tag.ParticipationType, VR.CS, s);
     }
 
-    public SeriesAndInstanceReference[] getReferencedSeries() {
-        return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.ReferencedSeriesSequence));
+    public Date getParticipationDatetime() {
+        return dcmobj.getDate(Tag.ParticipationDatetime);
     }
 
-    public void setReferencedSeries(SeriesAndInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedSeriesSequence, sops);
-    }
+    public void setParticipationDatetime(Date dt) {
+        dcmobj.putDate(Tag.ParticipationDatetime, VR.DT, dt);
+    }    
 }

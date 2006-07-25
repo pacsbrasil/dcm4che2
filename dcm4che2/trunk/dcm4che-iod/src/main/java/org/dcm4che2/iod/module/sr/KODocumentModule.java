@@ -37,8 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.iod.module.sr;
 
-import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.DicomElement;
+import java.util.Date;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -46,47 +46,56 @@ import org.dcm4che2.iod.module.Module;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since 05.07.2006
+ * @version $Revision$
+ * @since 25.07.2006
  */
+public class KODocumentModule extends Module {
 
-public class SOPInstanceReferenceMacro extends Module {
-
-    public SOPInstanceReferenceMacro(DicomObject dcmobj) {
-        super(dcmobj);
+    public KODocumentModule(DicomObject dcmobj) {
+	super(dcmobj);
     }
 
-    public SOPInstanceReferenceMacro() {
-        super(new BasicDicomObject());
+    public String getInstanceNumber() {
+	return dcmobj.getString(Tag.InstanceNumber);
     }
 
-    public static SOPInstanceReferenceMacro[] toSOPInstanceReferenceMacros(
-            DicomElement sq) {
-        if (sq == null || !sq.hasItems()) {
-            return null;
-        }
-        SOPInstanceReferenceMacro[] a = new SOPInstanceReferenceMacro[sq
-                .countItems()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = new SOPInstanceReferenceMacro(sq.getDicomObject(i));
-        }
-        return a;
+    public void setInstanceNumber(String s) {
+	dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
     }
 
-    public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.StudyInstanceUID);
+    public Date getContentDateTime() {
+	return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
     }
 
-    public void setStudyInstanceUID(String uid) {
-        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, uid);
+    public void setContentDateTime(Date d) {
+	dcmobj.putDate(Tag.ContentDate, VR.DA, d);
+	dcmobj.putDate(Tag.ContentTime, VR.TM, d);
     }
 
-    public SeriesAndInstanceReference[] getReferencedSeries() {
-        return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.ReferencedSeriesSequence));
+    public ReferencedRequest[] getReferencedRequests() {
+        return ReferencedRequest.toReferencedRequests(
+        	dcmobj.get(Tag.ReferencedRequestSequence));
     }
 
-    public void setReferencedSeries(SeriesAndInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedSeriesSequence, sops);
+    public void setReferencedRequest(ReferencedRequest[] refrqs) {
+        updateSequence(Tag.ReferencedRequestSequence, refrqs);
+    }
+
+    public SOPInstanceReferenceMacro[] getCurrentRequestedProcedureEvidences() {
+        return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
+        	dcmobj.get(Tag.CurrentRequestedProcedureEvidenceSequence));
+    }
+
+    public void setCurrentRequestedProcedureEvidences(SOPInstanceReferenceMacro[] refs) {
+        updateSequence(Tag.CurrentRequestedProcedureEvidenceSequence, refs);
+    }
+
+    public SOPInstanceReferenceMacro[] getIdenticalDocuments() {
+        return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
+        	dcmobj.get(Tag.IdenticalDocumentsSequence));
+    }
+
+    public void setIdenticalDocuments(SOPInstanceReferenceMacro[] refs) {
+        updateSequence(Tag.IdenticalDocumentsSequence, refs);
     }
 }

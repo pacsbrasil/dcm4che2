@@ -38,55 +38,81 @@
 package org.dcm4che2.iod.module.sr;
 
 import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.macro.Code;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since 05.07.2006
+ * @version $Revision$
+ * @since 25.07.2006
  */
+public class IdentifiedPersonOrDevice extends InsitutionNameAndCode {
 
-public class SOPInstanceReferenceMacro extends Module {
-
-    public SOPInstanceReferenceMacro(DicomObject dcmobj) {
-        super(dcmobj);
+    public IdentifiedPersonOrDevice(DicomObject dcmobj) {
+	super(dcmobj);
     }
 
-    public SOPInstanceReferenceMacro() {
-        super(new BasicDicomObject());
+    public IdentifiedPersonOrDevice() {
+	super(new BasicDicomObject());
     }
 
-    public static SOPInstanceReferenceMacro[] toSOPInstanceReferenceMacros(
-            DicomElement sq) {
-        if (sq == null || !sq.hasItems()) {
-            return null;
-        }
-        SOPInstanceReferenceMacro[] a = new SOPInstanceReferenceMacro[sq
-                .countItems()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = new SOPInstanceReferenceMacro(sq.getDicomObject(i));
-        }
-        return a;
+    public String getObserverType() {
+        return dcmobj.getString(Tag.ObserverType);
     }
 
-    public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.StudyInstanceUID);
+    public void setObserverType(String s) {
+        dcmobj.putString(Tag.ObserverType, VR.CS, s);
     }
 
-    public void setStudyInstanceUID(String uid) {
-        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, uid);
+    public String getPersonName() {
+        return dcmobj.getString(Tag.PersonName);
     }
 
-    public SeriesAndInstanceReference[] getReferencedSeries() {
-        return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.ReferencedSeriesSequence));
+    public void setPersonName(String s) {
+        dcmobj.putString(Tag.PersonName, VR.PN, s);
+    }
+    
+    public Code getPersonIdentificationCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.PersonIdentificationCodeSequence);
+        return item != null ? new Code(item) : null;
     }
 
-    public void setReferencedSeries(SeriesAndInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedSeriesSequence, sops);
+    public void setPersonIdentificationCode(Code code) {
+        updateSequence(Tag.PersonIdentificationCodeSequence, code);
     }
+    
+    public String getStationName() {
+        return dcmobj.getString(Tag.StationName);
+    }
+    
+    public void setStationName(String s) {
+        dcmobj.putString(Tag.StationName, VR.SH, s);
+    }
+    
+    public String getDeviceUID() {
+        return dcmobj.getString(Tag.DeviceUID);
+    }
+
+    public void setDeviceUID(String s) {
+        dcmobj.putString(Tag.DeviceUID, VR.UI, s);
+    }
+
+    public String getManufacturer() {
+        return dcmobj.getString(Tag.Manufacturer);
+    }
+
+    public void setManufacturer(String s) {
+        dcmobj.putString(Tag.Manufacturer, VR.LO, s);
+    }
+
+    public String getManufacturersModelName() {
+        return dcmobj.getString(Tag.ManufacturersModelName);
+    }
+
+    public void setManufacturersModelName(String s) {
+        dcmobj.putString(Tag.ManufacturersModelName, VR.LO, s);
+    }
+
 }

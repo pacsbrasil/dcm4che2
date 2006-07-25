@@ -35,58 +35,37 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4che2.iod.module.sr;
 
-import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.composite.GeneralSeriesModule;
+import org.dcm4che2.iod.validation.ValidationContext;
+import org.dcm4che2.iod.validation.ValidationResult;
+import org.dcm4che2.iod.value.Modality;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since 05.07.2006
+ * @since 25.07.2006
+ *
  */
+public class KODocumentSeriesModule extends GeneralSeriesModule {
 
-public class SOPInstanceReferenceMacro extends Module {
-
-    public SOPInstanceReferenceMacro(DicomObject dcmobj) {
+    public KODocumentSeriesModule(DicomObject dcmobj) {
         super(dcmobj);
     }
 
-    public SOPInstanceReferenceMacro() {
-        super(new BasicDicomObject());
+    public void init() {
+        setModality(Modality.KO);
     }
 
-    public static SOPInstanceReferenceMacro[] toSOPInstanceReferenceMacros(
-            DicomElement sq) {
-        if (sq == null || !sq.hasItems()) {
-            return null;
+    public void validate(ValidationContext ctx, ValidationResult result) {
+        super.validate(ctx, result);
+        if (!Modality.KO.equals(getModality())) {
+            result.logInvalidValue(Tag.Modality, dcmobj);
         }
-        SOPInstanceReferenceMacro[] a = new SOPInstanceReferenceMacro[sq
-                .countItems()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = new SOPInstanceReferenceMacro(sq.getDicomObject(i));
-        }
-        return a;
     }
 
-    public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.StudyInstanceUID);
-    }
-
-    public void setStudyInstanceUID(String uid) {
-        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, uid);
-    }
-
-    public SeriesAndInstanceReference[] getReferencedSeries() {
-        return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.ReferencedSeriesSequence));
-    }
-
-    public void setReferencedSeries(SeriesAndInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedSeriesSequence, sops);
-    }
 }

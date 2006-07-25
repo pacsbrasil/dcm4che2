@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,8 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.composite;
+package org.dcm4che2.iod.module.sr;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -45,35 +44,75 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
 import org.dcm4che2.iod.module.macro.Code;
-import org.dcm4che2.iod.module.macro.ProtocolCodeAndContext;
+import org.dcm4che2.iod.module.macro.SOPInstanceReference;
 
 /**
- * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
- * @since Jun 10, 2006
- *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$
+ * @since 25.07.2006
  */
-public class RequestAttributes extends Module {
+public class ReferencedRequest extends Module {
 
-    public RequestAttributes(DicomObject dcmobj) {
-        super(dcmobj);
+    public ReferencedRequest(DicomObject dcmobj) {
+	super(dcmobj);
     }
 
-    public RequestAttributes() {
-        this(new BasicDicomObject());
+    public ReferencedRequest() {
+	super(new BasicDicomObject());
     }
 
-    public static RequestAttributes[] toRequestAttributes(DicomElement sq) {
+    public static ReferencedRequest[] toReferencedRequests(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
-        RequestAttributes[] a = new RequestAttributes[sq.countItems()];
+        ReferencedRequest[] a = new ReferencedRequest[sq.countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new RequestAttributes(sq.getDicomObject(i));
+            a[i] = new ReferencedRequest(sq.getDicomObject(i));
         }
         return a;
     }
 
+    public String getStudyInstanceUID() {
+        return dcmobj.getString(Tag.StudyInstanceUID);
+    }
+    
+    public void setStudyInstanceUID(String s) {
+        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, s);
+    }
+
+    public SOPInstanceReference getReferencedStudySOPInstance() {
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ReferencedStudySequence);
+        return item != null ? new SOPInstanceReference(item) : null;
+    }
+    
+    public void setReferencedStudySOPInstance(SOPInstanceReference refSOP) {
+        updateSequence(Tag.ReferencedStudySequence, refSOP);
+    }
+    
+    public String getAccessionNumber() {
+        return dcmobj.getString(Tag.AccessionNumber);
+    }
+    
+    public void setAccessionNumber(String s) {
+        dcmobj.putString(Tag.AccessionNumber, VR.SH, s);
+    }
+        
+    public String getPlacerOrderNumberImagingServiceRequest() {
+        return dcmobj.getString(Tag.PlacerOrderNumberImagingServiceRequest);
+    }
+    
+    public void setPlacerOrderNumberImagingServiceRequest(String s) {
+        dcmobj.putString(Tag.PlacerOrderNumberImagingServiceRequest, VR.LO, s);
+    }
+           
+    public String getFillerOrderNumberImagingServiceRequest() {
+        return dcmobj.getString(Tag.FillerOrderNumberImagingServiceRequest);
+    }
+    
+    public void setFillerOrderNumberImagingServiceRequest(String s) {
+        dcmobj.putString(Tag.FillerOrderNumberImagingServiceRequest, VR.LO, s);
+    }
+    
     public String getRequestedProcedureID() {
         return dcmobj.getString(Tag.RequestedProcedureID);
     }
@@ -81,6 +120,24 @@ public class RequestAttributes extends Module {
     public void setRequestedProcedureID(String s) {
         dcmobj.putString(Tag.RequestedProcedureID, VR.SH, s);
     }
+
+    public String getRequestedProcedureDescription() {
+        return dcmobj.getString(Tag.RequestedProcedureDescription);
+    }
+
+    public void setRequestedProcedureDescription(String s) {
+        dcmobj.putString(Tag.RequestedProcedureDescription, VR.LO, s);
+    }
+
+    public Code getRequestedProcedureCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.RequestedProcedureCodeSequence);
+        return item != null ? new Code(item) : null;
+    }
+
+    public void setRequestedProcedureCode(Code code) {
+        updateSequence(Tag.RequestedProcedureCodeSequence, code);
+    }    
 
     public String getReasonfortheRequestedProcedure() {
         return dcmobj.getString(Tag.ReasonfortheRequestedProcedure);
@@ -98,30 +155,5 @@ public class RequestAttributes extends Module {
 
     public void setReasonforRequestedProcedureCode(Code code) {
         updateSequence(Tag.ReasonforRequestedProcedureCodeSequence, code);
-    }    
-
-    public String getScheduledProcedureStepID() {
-        return dcmobj.getString(Tag.ScheduledProcedureStepID);
     }
-
-    public void setScheduledProcedureStepID(String s) {
-        dcmobj.putString(Tag.ScheduledProcedureStepID, VR.SH, s);
-    }
-
-    public String getScheduledProcedureStepDescription() {
-        return dcmobj.getString(Tag.ScheduledProcedureStepDescription);
-    }
-
-    public void setScheduledProcedureStepDescription(String s) {
-        dcmobj.putString(Tag.ScheduledProcedureStepDescription, VR.LO, s);
-    }
-    
-    public ProtocolCodeAndContext[] getScheduledProtocolCode() {
-        return ProtocolCodeAndContext.toProtocolCodeAndContexts(
-                dcmobj.get(Tag.ScheduledProtocolCodeSequence));
-    }
-
-    public void setScheduledProtocolCode(ProtocolCodeAndContext[] codes) {
-        updateSequence(Tag.ScheduledProtocolCodeSequence, codes);
-    }    
 }

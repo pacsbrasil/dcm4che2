@@ -241,7 +241,7 @@ public class GeneralSeriesModule extends Module {
     }
 
     public RequestAttributes[] getRequestAttributes() {
-        return RequestAttributes.valuesOf(dcmobj
+        return RequestAttributes.toRequestAttributes(dcmobj
                 .get(Tag.RequestAttributesSequence));
     }
 

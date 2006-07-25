@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,8 +35,9 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che2.iod.module.sr;
 
-package org.dcm4che2.iod.module.composite;
+import java.util.Date;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -45,83 +46,63 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
 import org.dcm4che2.iod.module.macro.Code;
-import org.dcm4che2.iod.module.macro.ProtocolCodeAndContext;
 
 /**
- * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
- * @since Jun 10, 2006
- *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$
+ * @since 25.07.2006
  */
-public class RequestAttributes extends Module {
+public class VerifyingObserver extends Module {
 
-    public RequestAttributes(DicomObject dcmobj) {
-        super(dcmobj);
+    public VerifyingObserver(DicomObject dcmobj) {
+	super(dcmobj);
     }
 
-    public RequestAttributes() {
-        this(new BasicDicomObject());
+    public VerifyingObserver() {
+	this(new BasicDicomObject());
     }
 
-    public static RequestAttributes[] toRequestAttributes(DicomElement sq) {
+    public static VerifyingObserver[] toVerifyingObservers(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
-        RequestAttributes[] a = new RequestAttributes[sq.countItems()];
+        VerifyingObserver[] a = new VerifyingObserver[sq.countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new RequestAttributes(sq.getDicomObject(i));
+            a[i] = new VerifyingObserver(sq.getDicomObject(i));
         }
         return a;
     }
 
-    public String getRequestedProcedureID() {
-        return dcmobj.getString(Tag.RequestedProcedureID);
-    }
-
-    public void setRequestedProcedureID(String s) {
-        dcmobj.putString(Tag.RequestedProcedureID, VR.SH, s);
-    }
-
-    public String getReasonfortheRequestedProcedure() {
-        return dcmobj.getString(Tag.ReasonfortheRequestedProcedure);
-    }
-
-    public void setReasonfortheRequestedProcedure(String s) {
-        dcmobj.putString(Tag.ReasonfortheRequestedProcedure, VR.LO, s);
+    public String getVerifyingObserverName() {
+        return dcmobj.getString(Tag.VerifyingObserverName);
     }
     
-    public Code getReasonforRequestedProcedureCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.ReasonforRequestedProcedureCodeSequence);
+    public void setVerifyingObserverName(String s) {
+        dcmobj.putString(Tag.VerifyingObserverName, VR.PN, s);
+    }
+    
+    public Code getVerifyingObserverIdentificationCode() {
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.VerifyingObserverIdentificationCodeSequence);
         return item != null ? new Code(item) : null;
     }
-
-    public void setReasonforRequestedProcedureCode(Code code) {
-        updateSequence(Tag.ReasonforRequestedProcedureCodeSequence, code);
-    }    
-
-    public String getScheduledProcedureStepID() {
-        return dcmobj.getString(Tag.ScheduledProcedureStepID);
-    }
-
-    public void setScheduledProcedureStepID(String s) {
-        dcmobj.putString(Tag.ScheduledProcedureStepID, VR.SH, s);
-    }
-
-    public String getScheduledProcedureStepDescription() {
-        return dcmobj.getString(Tag.ScheduledProcedureStepDescription);
-    }
-
-    public void setScheduledProcedureStepDescription(String s) {
-        dcmobj.putString(Tag.ScheduledProcedureStepDescription, VR.LO, s);
+    
+    public void setVerifyingObserverIdentificationCode(Code code) {
+        updateSequence(Tag.VerifyingObserverIdentificationCodeSequence, code);
     }
     
-    public ProtocolCodeAndContext[] getScheduledProtocolCode() {
-        return ProtocolCodeAndContext.toProtocolCodeAndContexts(
-                dcmobj.get(Tag.ScheduledProtocolCodeSequence));
+    public String getVerifyingOrganization() {
+        return dcmobj.getString(Tag.VerifyingOrganization);
     }
 
-    public void setScheduledProtocolCode(ProtocolCodeAndContext[] codes) {
-        updateSequence(Tag.ScheduledProtocolCodeSequence, codes);
-    }    
+    public void setVerifyingOrganization(String s) {
+        dcmobj.putString(Tag.VerifyingOrganization, VR.LO, s);
+    }
+
+    public Date getVerificationDateTime() {
+        return dcmobj.getDate(Tag.VerificationDateTime);
+    }
+
+    public void setVerificationDateTime(Date dt) {
+        dcmobj.putDate(Tag.VerificationDateTime, VR.DT, dt);
+    }
 }

@@ -42,51 +42,47 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.Module;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since 05.07.2006
+ * @version $Revision$
+ * @since 25.07.2006
  */
+public class SRDocumentContent extends SRDocumentContentModule {
 
-public class SOPInstanceReferenceMacro extends Module {
-
-    public SOPInstanceReferenceMacro(DicomObject dcmobj) {
-        super(dcmobj);
+    public SRDocumentContent(DicomObject dcmobj) {
+	super(dcmobj);
     }
 
-    public SOPInstanceReferenceMacro() {
-        super(new BasicDicomObject());
+    public SRDocumentContent() {
+	super(new BasicDicomObject());
     }
 
-    public static SOPInstanceReferenceMacro[] toSOPInstanceReferenceMacros(
-            DicomElement sq) {
+    public static SRDocumentContent[] toSRDocumentContent(DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
-        SOPInstanceReferenceMacro[] a = new SOPInstanceReferenceMacro[sq
-                .countItems()];
+        SRDocumentContent[] a = new SRDocumentContent[sq.countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new SOPInstanceReferenceMacro(sq.getDicomObject(i));
+            a[i] = new SRDocumentContent(sq.getDicomObject(i));
         }
         return a;
     }
-
-    public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.StudyInstanceUID);
+    
+    public String getRelationshipType() {
+        return dcmobj.getString(Tag.RelationshipType);
     }
 
-    public void setStudyInstanceUID(String uid) {
-        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, uid);
+    public void setRelationshipType(String cs) {
+        dcmobj.putString(Tag.RelationshipType, VR.CS, cs);
     }
-
-    public SeriesAndInstanceReference[] getReferencedSeries() {
-        return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.ReferencedSeriesSequence));
+    
+    public int[] getReferencedContentItemIdentifier() {
+	return dcmobj.getInts(Tag.ReferencedContentItemIdentifier);
     }
-
-    public void setReferencedSeries(SeriesAndInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedSeriesSequence, sops);
+    
+    public void setReferencedContentItemIdentifier(int[] ul) {
+        dcmobj.putInts(Tag.ReferencedContentItemIdentifier, VR.UL, ul);
     }
+    
 }

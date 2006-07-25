@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,45 +35,28 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che2.iod.module.macro;
+package org.dcm4che2.iod.module.sr;
 
 import java.util.Date;
 
-import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.macro.Code;
+import org.dcm4che2.iod.module.macro.SOPInstanceReference;
 
 /**
- * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
- * @since Jun 10, 2006
- *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$
+ * @since 25.07.2006
  */
-public class ContentItem extends Module {
+public class SRDocumentContentModule extends Module {
 
-    public ContentItem(DicomObject dcmobj) {
-        super(dcmobj);
-    }
-
-    public ContentItem() {
-        super(new BasicDicomObject());
+    public SRDocumentContentModule(DicomObject dcmobj) {
+	super(dcmobj);
     }
     
-    public static ContentItem[] toContentItems(DicomElement sq) {
-        if (sq == null || !sq.hasItems()) {
-            return null;
-        }
-        ContentItem[] a = new ContentItem[sq.countItems()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = new ContentItem(sq.getDicomObject(i));
-        }
-        return a;
-    }    
-
     public String getValueType() {
         return dcmobj.getString(Tag.ValueType);
     }
@@ -139,30 +122,61 @@ public class ContentItem extends Module {
         dcmobj.putString(Tag.TextValue, VR.UT, s);
     }
         
-    public Code getConceptCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
-        return item != null ? new Code(item) : null;
+    public MeasuredValue getMeasuredValue() {
+        DicomObject item = dcmobj.getNestedDicomObject(
+        	Tag.MeasuredValueSequence);
+        return item != null ? new MeasuredValue(item) : null;
     }
 
-    public void setConceptCode(Code code) {
-        updateSequence(Tag.ConceptCodeSequence, code);
-    }    
-
-    public float getNumericValue() {
-        return dcmobj.getFloat(Tag.NumericValue);
+    public void setMeasuredValue(MeasuredValue value) {
+        updateSequence(Tag.MeasuredValueSequence, value);
     }
     
-    public void setNumericValue(float f) {
-        dcmobj.putFloat(Tag.NumericValue, VR.DS, f);
-    }
-            
-    public Code getMeasurementUnitsCode() {
+    public Code getNumericValueQualifierCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.MeasurementUnitsCodeSequence);
+        	Tag.NumericValueQualifierCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
-    public void setMeasurementUnitsCode(Code code) {
-        updateSequence(Tag.MeasurementUnitsCodeSequence, code);
+    public void setNumericValueQualifierCode(Code code) {
+        updateSequence(Tag.NumericValueQualifierCodeSequence, code);
     }
+    
+    public Code getConceptCode() {
+	DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
+	return item != null ? new Code(item) : null;
+    }
+    
+    public void setConceptCode(Code code) {
+	updateSequence(Tag.ConceptCodeSequence, code);
+    }    
+    
+    public SOPInstanceReference getReferencedSOPInstance() {
+	DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
+	return item != null ? new SOPInstanceReference(item) : null;
+    }
+    
+    public void setReferencedSOPInstance(SOPInstanceReference ref) {
+	updateSequence(Tag.ConceptCodeSequence, ref);
+    }
+    
+    //TODO
+    
+    public SRDocumentContent[] getContent() {
+        return SRDocumentContent.toSRDocumentContent(
+        	dcmobj.get(Tag.ContentSequence));
+    }
+
+    public void setContent(SRDocumentContent[] codes) {
+        updateSequence(Tag.ContentSequence, codes);
+    } 
+    
+    public Date getObservationDateTime() {
+        return dcmobj.getDate(Tag.ObservationDateTime);
+    }
+    
+    public void setObservationDateTime(Date d) {
+        dcmobj.putDate(Tag.ObservationDateTime, VR.DT, d);
+    }    
+
 }
