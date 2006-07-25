@@ -119,6 +119,9 @@ public abstract class FileBean implements EntityBean {
      */
     public abstract String getFilePath();
 
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setFilePath(String path);
 
     /**
@@ -129,6 +132,9 @@ public abstract class FileBean implements EntityBean {
      */
     public abstract String getFileTsuid();
 
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setFileTsuid(String tsuid);
 
     /**
@@ -161,6 +167,9 @@ public abstract class FileBean implements EntityBean {
         return MD5.toBytes(getFileMd5Field());
     }
 
+    /**
+     * @ejb.interface-method
+     */
     public void setFileMd5(byte[] md5) {
         setFileMd5Field(MD5.toString(md5));
     }
@@ -173,6 +182,9 @@ public abstract class FileBean implements EntityBean {
      */
     public abstract long getFileSize();
 
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setFileSize(long size);
 
     /**
