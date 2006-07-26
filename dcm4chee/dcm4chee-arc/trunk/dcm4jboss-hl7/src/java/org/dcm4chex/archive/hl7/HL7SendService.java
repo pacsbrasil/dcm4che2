@@ -571,7 +571,7 @@ public class HL7SendService
 		appendPatIDwithIssuer(sb,ds);
 		sb.append("||||||");
 		String name = ds.getString(Tags.PatientName);
-		if ( name != null ) sb.append("patName");
+		sb.append( name != null ? name : "patName" ); 
 	}
 	
     private void addQPD(StringBuffer sb, String patientID, String issuer, String[] domains) {
