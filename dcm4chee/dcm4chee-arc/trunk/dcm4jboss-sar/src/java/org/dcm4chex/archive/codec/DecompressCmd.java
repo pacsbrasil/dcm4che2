@@ -145,9 +145,12 @@ public class DecompressCmd extends CodecCmd {
         this.tsuid = tsuid;
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
-        if (samples == 3 && (tsuid.equals(UIDs.JPEGBaseline)
-                          || tsuid.equals(UIDs.JPEGExtended))) {
-            ds.putCS(Tags.PhotometricInterpretation, "RGB");
+        if (samples == 3) {
+            ds.putUS(Tags.PlanarConfiguration, 0);
+            if (tsuid.equals(UIDs.JPEGBaseline) 
+                    || tsuid.equals(UIDs.JPEGExtended)) {
+                ds.putCS(Tags.PhotometricInterpretation, "RGB");
+            }
         }
     }
 
