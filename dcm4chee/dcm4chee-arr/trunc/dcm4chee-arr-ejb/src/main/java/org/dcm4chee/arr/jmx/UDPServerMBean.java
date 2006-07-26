@@ -56,6 +56,7 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 
 import org.dcm4chee.arr.util.AuditMessageUtils;
+import org.jboss.annotation.ejb.Depends;
 import org.jboss.annotation.ejb.Management;
 import org.jboss.annotation.ejb.Service;
 import org.slf4j.Logger;
@@ -68,6 +69,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Service (objectName="dcm4chee.arr:service=UDPServer")
+@Depends ("jboss.mq.destination:service=Queue,name=ARRReceiver")
 @Management(UDPServer.class)
 public class UDPServerMBean implements UDPServer {
 
