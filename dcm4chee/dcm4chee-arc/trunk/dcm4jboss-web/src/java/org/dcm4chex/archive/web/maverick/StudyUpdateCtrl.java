@@ -61,6 +61,8 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
 
     private int studyPk;
 
+    private String studyIUID;
+
     private String placerOrderNumber;
 
     private String fillerOrderNumber;
@@ -114,6 +116,10 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
     public final void setStudyID(String s) {
         this.studyID = s.trim();
     }
+    
+    public final void setStudyIUID(String s) {
+        this.studyIUID = s.trim();
+    }
 
     protected String perform() throws Exception {
         if (submit != null)
@@ -134,7 +140,8 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
         try {
 	        StudyModel study = new StudyModel();
 	        study.setPk( -1 );
-            study.setStudyIUID( UIDGenerator.getInstance().createUID() );
+	        if ( studyIUID == null ) studyIUID = UIDGenerator.getInstance().createUID();
+            study.setStudyIUID( studyIUID );
 	        study.setSpecificCharacterSet( "ISO_IR 100" );        
             study.setPlacerOrderNumber(placerOrderNumber);
             study.setFillerOrderNumber(fillerOrderNumber);

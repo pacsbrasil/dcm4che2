@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
@@ -81,6 +82,7 @@ public class StudyEditCtrl extends Dcm4cheeFormController {
     private StudyModel newStudy() {
     	StudyModel studyModel = new StudyModel();
     	studyModel.setSpecificCharacterSet("ISO_IR 100");
+    	studyModel.setStudyIUID(UIDGenerator.getInstance().createUID());
     	return studyModel;
     }
 
