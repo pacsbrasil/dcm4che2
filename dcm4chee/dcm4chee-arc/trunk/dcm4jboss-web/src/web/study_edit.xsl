@@ -3,6 +3,7 @@
   <xsl:output method="html" indent="yes" encoding="UTF-8"/>
   <xsl:variable name="page_title">Study Edit</xsl:variable>
   <xsl:include href="page.xsl"/>
+  <xsl:param name="folder.edit.newStudyUID" select="'false'"/>
   <xsl:template match="model">
     <form action="studyUpdate.m" method="post">
       <input name="patPk" type="hidden" value="{patPk}"/>
@@ -43,7 +44,14 @@
     <tr>
       <td class="label" bgcolor="#eeeeee">Study Instance UID:</td>
       <td>
-        <xsl:value-of select="studyIUID"/>
+	    <xsl:choose>
+			<xsl:when test="/model/studyPk = -1 and $folder.edit.newStudyUID = 'true'">
+		        <input size="64" name="studyIUID" type="text" value="{studyIUID}"/>
+			</xsl:when>
+			<xsl:otherwise>
+	    	    <xsl:value-of select="studyIUID"/>
+			</xsl:otherwise>
+	    </xsl:choose>
       </td>
     </tr>
     <tr>

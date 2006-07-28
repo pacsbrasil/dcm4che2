@@ -7,7 +7,7 @@
 # Format: <application>.*[<grpid>]=<method1>[,<method2>[,<method3>]..]
 # e.g. 'folder.*=delete,export_tf' 
 
-folder.*=edit,move,delete,*export,add_worklist
+folder.*=edit,move,delete,*export,add_worklist,edit.newStudyUID
 folder.*export=export_tf,export_xds
 
 # Application - Role Mapping
@@ -35,7 +35,7 @@ mpps_console=DatacareUser(*);WebAdmin(*)
 gpwl_console=DatacareUser(*);WebAdmin(*)
 gppps_console=DatacareUser(*);WebAdmin(*)
 user_admin=WebAdmin(*)
-audit_repository=DatacareUser(*);WebAdmin(*)
+audit_repository=arr-user(*)
 
 # USER AE Filter mapping
 # Format:aefilter.<userId>=<AET1>[,<AET2>[,...[,<AETn>]]]
