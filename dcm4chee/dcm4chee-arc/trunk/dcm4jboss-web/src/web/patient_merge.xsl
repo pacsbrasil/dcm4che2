@@ -8,11 +8,16 @@
 
 <xsl:template match="model">
 	<form action="patientMerge.m" method="post">
+      <input name="view_name" type="text" value="{mergeViewName}"/>
 		<table border="0" cellspacing="0" cellpadding="0" width="90%">
+			<xsl:if test="mergeReason">
+				<tr>
+					<td class="H1"><center><xsl:value-of select="mergeReason" /></center></td>
+				</tr>
+			</xsl:if>
 			<tr>
 				<td>
-					<center>Select dominant Patient
-:</center>
+					<center>Select dominant Patient:</center>
 	<center>
 		<table border="0" width="500">
 			<tr>
@@ -64,6 +69,9 @@
 	        </td>
 	        <td title="Select dominant patient" align="center">
 						<input type="radio" name="pk" value="{pk}">
+							<xsl:if test="pk = /model/mergeDominant/pk">
+								<xsl:attribute name="checked">true</xsl:attribute>
+							</xsl:if>
 						</input>
 					</td>
 				</tr>

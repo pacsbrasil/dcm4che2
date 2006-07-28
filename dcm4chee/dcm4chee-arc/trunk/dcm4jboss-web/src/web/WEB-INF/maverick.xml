@@ -101,6 +101,7 @@ default-transform-type="xslt">
     <command name="patientMerge">
         <controller class="org.dcm4chex.archive.web.maverick.PatientMergeCtrl" />    
 	    <view type="redirect" path="foldersubmit.m?filter=" name="success"/>        
+	    <view type="redirect" path="mpps_console.m?filter.x=1" name="mpps_link"/>        
 	    <view ref="error" />
 	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
@@ -275,6 +276,10 @@ default-transform-type="xslt">
 	    </view>
 	    <view name="cancelLink" type="redirect" path="mpps_console.m?filter.x=1"/>
 	    <view name="linkDone" type="redirect" path="mpps_console.m?action=linkDone"/>
+	    <view name="mergePatient">
+    	  <!-- <transform path="mwlc/merge_confirm.xsl" /> -->
+	      <transform path="patient_merge.xsl" />
+	    </view>
      </command>
 
 	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->

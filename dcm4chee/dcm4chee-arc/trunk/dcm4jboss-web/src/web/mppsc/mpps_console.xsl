@@ -253,7 +253,11 @@
 					</td>	
 				</xsl:when>
 				<xsl:otherwise>
-					<td>&#160;&#160;</td>
+					<td title="Function">
+						<a href="mpps_console.m?action=unlink&amp;patientName={patientName}&amp;mppsIUID={mppsIUID}&amp;">
+							<img src="images/unlink.gif" alt="unlink" border="0" title="Unlink this MPPS entry from MWL entries"/>		
+						</a>
+					</td>	
 				</xsl:otherwise>
 			</xsl:choose>
 			<td title="Function">
