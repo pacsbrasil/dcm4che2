@@ -8,4 +8,11 @@
     <module>dcm4chee-arr-ejb</module>
     <module>dcm4chee-arr-ear</module>
   </modules>
+  <repositories>
+    <repository>
+      <id>dcm4che</id>
+      <name>dcm4che repo</name>
+      <url>http://www.dcm4che.org/maven2</url>
+    </repository>
+  </repositories>
 </model>
