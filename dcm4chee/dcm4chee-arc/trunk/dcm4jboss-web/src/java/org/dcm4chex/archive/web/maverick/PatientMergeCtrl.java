@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.Map;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
@@ -57,14 +59,19 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
     private String merge = null;
 
     private String cancel = null;
+    
+    private String view_name = null;
 
     protected String perform() {
+        if ( view_name == null || view_name.length() < 3 ) {
+        	view_name = SUCCESS;
+        }
         try {
             if (merge != null) executeMerge();
-            return SUCCESS;
+            return view_name;
         } catch (Exception e1) {
         	((FolderForm) getForm()).setPopupMsg("Merge failed! reason:"+e1.getMessage());
-            return SUCCESS;
+            return view_name;
         }
     }
     
@@ -79,21 +86,26 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
         for (int i = 0, j = 0; i < to_be_merged.length; i++) {
             if (to_be_merged[i] != pk)
                 priors[j++] = to_be_merged[i];
-        }        
-        FolderSubmitCtrl.getDelegate().mergePatients( pk, priors);
-        Dataset dominant = getPatient(pk).toDataset();
-        for (int i = 0; i < priors.length; i++) {
-            Dataset prior = getPatient(priors[i]).toDataset();
-            AuditLoggerDelegate.logPatientRecord(getCtx(),
-                    AuditLoggerDelegate.MODIFY,
-                    dominant.getString(Tags.PatientID),
-                    dominant.getString(Tags.PatientName),
-                    makeMergeDesc(prior));
-            AuditLoggerDelegate.logPatientRecord(getCtx(),
-                    AuditLoggerDelegate.DELETE,
-                    prior.getString(Tags.PatientID),
-                    prior.getString(Tags.PatientName),
-                    makeMergeDesc(dominant));
+        }
+        ContentEditDelegate delegate = FolderSubmitCtrl.getDelegate(getCtx());
+        Map mergedPatMap = delegate.mergePatients( pk, priors);
+        if ( mergedPatMap != null ) {
+	        Dataset dominant = (Dataset) mergedPatMap.get("DOMINANT");
+	        Dataset[] priorPats = (Dataset[]) mergedPatMap.get("MERGED");
+	        Dataset prior;
+	        for (int i = 0; i < priorPats.length; i++) {
+	            prior = priorPats[i];
+	            AuditLoggerDelegate.logPatientRecord(getCtx(),
+	                    AuditLoggerDelegate.MODIFY,
+	                    dominant.getString(Tags.PatientID),
+	                    dominant.getString(Tags.PatientName),
+	                    makeMergeDesc(prior));
+	            AuditLoggerDelegate.logPatientRecord(getCtx(),
+	                    AuditLoggerDelegate.DELETE,
+	                    prior.getString(Tags.PatientID),
+	                    prior.getString(Tags.PatientName),
+	                    makeMergeDesc(dominant));
+	        }
         }
     }
 
@@ -109,6 +121,13 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
         this.merge = merge;
     }
 
+	/**
+	 * @param view_name The view_name to set.
+	 */
+	public void setView_name(String view_name) {
+		this.view_name = view_name;
+	}
+	
     public PatientModel getPatient(long ppk) {
         return FolderForm.getFolderForm(getCtx())
                 .getPatientByPk(ppk);

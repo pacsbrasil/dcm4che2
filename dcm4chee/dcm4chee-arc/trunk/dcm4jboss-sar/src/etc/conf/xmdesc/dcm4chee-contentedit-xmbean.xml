@@ -219,7 +219,7 @@
         <name>pks</name>
         <type>[J</type>
       </parameter>
-      <return-type>void</return-type>
+      <return-type>java.util.Map</return-type>
    </operation>
 <!-- update -->  
    <operation impact="ACTION">

@@ -96,6 +96,8 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
             	model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ), true );
             	model.getFilter().setPatientName( request.getParameter("patientName"));
             	return "link";
+            } else if ( request.getParameter("unlink.x") != null ) {//action from unlink button. (sticky support;redirect to mwl ctrl.)
+            	return unlink(request.getParameterValues( "mppsIUID" ));
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
             	if ( model.getMppsIUIDs() != null ) {
 	            	delegate.deleteMPPSEntries(model.getMppsIUIDs());
@@ -123,10 +125,29 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 	 */
 	private void performAction(String action, HttpServletRequest request) {
 		if ( "linkDone".equals(action) ) {
-        	model.filterWorkList( true );
+        	model.filterWorkList( false );
 			model.setPopupMsg( MWLModel.getModel( request ).getPopupMsg() ); //popup message of doLink is set in MWL!
+		} else if ( "unlink".equals(action) ) {
+			unlink(request.getParameterValues( "mppsIUID" ));
 		}
 	}
+
+	/**
+	 * @param parameterValues
+	 * @return
+	 */
+	private String unlink(String[] mppsIUIDs) {
+		if ( mppsIUIDs != null ) {
+			if ( delegate.unlinkMPPS(mppsIUIDs) ) {
+				model.setMppsIUIDs(null, false);
+				model.filterWorkList( false );
+			} else {
+				model.setPopupMsg("Unlink failed!");
+			}
+		}
+		return SUCCESS;
+	}
+
 
 
 

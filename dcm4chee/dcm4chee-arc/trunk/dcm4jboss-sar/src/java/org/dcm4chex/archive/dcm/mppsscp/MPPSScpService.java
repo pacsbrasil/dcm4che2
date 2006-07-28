@@ -40,12 +40,13 @@
 package org.dcm4chex.archive.dcm.mppsscp;
 
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.ejb.FinderException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
-import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
@@ -53,6 +54,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
@@ -78,8 +80,6 @@ public class MPPSScpService extends AbstractScpService {
         }
     };
 
-    private ObjectName hl7SendServiceName;
-    
     private MPPSScp mppsScp = new MPPSScp(this);
 
     public String getEjbProviderURL() {
@@ -90,18 +90,6 @@ public class MPPSScpService extends AbstractScpService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
-	/**
-	 * @return Returns the hl7SendServiceName.
-	 */
-	public ObjectName getHl7SendServiceName() {
-		return hl7SendServiceName;
-	}
-	/**
-	 * @param hl7SendServiceName The hl7SendServiceName to set.
-	 */
-	public void setHl7SendServiceName(ObjectName hl7SendServiceName) {
-		this.hl7SendServiceName = hl7SendServiceName;
-	}
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.ModalityPerformedProcedureStep, mppsScp);
     }
@@ -122,47 +110,43 @@ public class MPPSScpService extends AbstractScpService {
         super.sendNotification(notif);
     }
     
-    public Map linkMppsToMwl(String spsID, String mppsIUID, boolean sendNotif) throws CreateException, HomeFactoryException, RemoteException, DcmServiceException {
+    public Map linkMppsToMwl(String[] spsIDs, String[] mppsIUIDs) throws CreateException, HomeFactoryException, RemoteException, DcmServiceException {
         MPPSManager mgr = getMPPSManagerHome().create();
-       	Map map = mgr.linkMppsToMwl(spsID, mppsIUID);
-       	logMppsLinkRecord(map, spsID, mppsIUID);
-        Boolean userAction = (Boolean) map.get("userAction");
-       	if ( userAction != null && userAction.booleanValue() ) {
-       		log.warn("User action is needed! MPPS patient has more than one studies and should be merged!");
-       	} else {
-       		if ( map.get("mwlPat") != null ) {
-       			Dataset dominant = (Dataset)map.get("mwlPat");
-       			Dataset prior = (Dataset)map.get("mppsPat");
-       			logPatientMerge(dominant, prior);
-       			sendHL7Merge(dominant, prior);
-       		}
-           	Dataset mpps = (Dataset) map.get("mppsAttrs");
-           	if ( sendNotif ) {
-                sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_LINKED);
-           	}
+        Map map = null;
+        Dataset dominant = null, prior;
+        Map mapPrior = new HashMap();
+        for ( int i = spsIDs.length - 1; i >=0 ; i--) {
+        	for ( int j = 0 ; j < mppsIUIDs.length ; j++ ) {
+		       	map = mgr.linkMppsToMwl(spsIDs[i], mppsIUIDs[j]);
+		       	if ( map.containsKey("mwlPat")) { //need patient merge!
+		       		if (dominant == null ) {
+		       			dominant = (Dataset)map.get("mwlPat");
+		       		}
+		       		prior = (Dataset) map.get("mppsPat");
+		       		mapPrior.put(prior.getString(PrivateTags.PatientPk), prior);
+		       	}
+		       	logMppsLinkRecord(map, spsIDs[i], mppsIUIDs[j]);
+	           	if ( i == 0 ) {
+	                sendMPPSNotification((Dataset) map.get("mppsAttrs"), MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+	           	}
+        	}
         }
+      
+   		if ( dominant != null ) {
+   			map.clear();
+       		Dataset[] priorPats = (Dataset[])mapPrior.values().toArray(new Dataset[mapPrior.size()]);
+       		map.put("dominant", dominant );
+       		map.put("priorPats", priorPats);
+        }
+/*_*/        
        	return map;
     }
     
-	void sendHL7Merge(Dataset dsDominant, Dataset priorPat) {
-        try {
-            server.invoke(this.hl7SendServiceName,
-                    "sendHL7PatientMerge",
-                    new Object[] {  dsDominant, 
-            					new Dataset[] { priorPat }, 
-            					"LOCAL^LOCAL",
-								"LOCAL^LOCAL",
-								Boolean.FALSE },
-                    new String[] { Dataset.class.getName(),
-        					   Dataset[].class.getName(),
-							   String.class.getName(),
-							   String.class.getName(),
-							   boolean.class.getName() });
-        } catch (Exception e) {
-            log.error("Failed to send HL7 patient merge message:", e);log.error(dsDominant);
-        }
-	}
-	
+    public void unlinkMpps(String mppsIUID) throws RemoteException, CreateException, HomeFactoryException, FinderException {
+        MPPSManager mgr = getMPPSManagerHome().create();
+    	mgr.unlinkMpps(mppsIUID);
+    }
+    
 	/**
 	 * Deletes MPPS entries specified by an array of MPPS IUIDs.
 	 * <p>
@@ -178,39 +162,6 @@ public class MPPSScpService extends AbstractScpService {
         mgr.deleteMPPSEntries(iuids);
 		return false;
 	}
-
-    
-    public void logPatientMerge(Dataset dominant, Dataset prior) {
-        logPatientRecord(
-                "Modify",
-                dominant.getString(Tags.PatientID),
-                dominant.getString(Tags.PatientName),
-                makeMergeDesc(prior));
-        logPatientRecord(
-                "Delete",
-                prior.getString(Tags.PatientID),
-                prior.getString(Tags.PatientName),
-                makeMergeDesc(dominant));
-    	
-    }
-    public String makeMergeDesc(Dataset ds) {
-        return "Merged with [" + ds.getString(Tags.PatientID) +
-        	"]" +  ds.getString(Tags.PatientName);
-    }
-	
-    public void logPatientRecord(String action,
-            String patid, String patname, String desc) {
-        try {
-            server.invoke(auditLogName,
-                    "logPatientRecord",
-                    new Object[] { action, patid, patname, desc},
-                    new String[] { String.class.getName(),
-                            String.class.getName(), String.class.getName(),
-                            String.class.getName()});
-        } catch (Exception e) {
-            log.warn("Failed to log patientRecord:", e);
-        }
-    }
 
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
     	Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");

@@ -39,12 +39,14 @@
 
 package org.dcm4chex.archive.web.maverick.mwl;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
@@ -157,16 +159,15 @@ public class MWLScuDelegate {
 		return false;
 	}
 
-	public Map linkMppsToMwl( String spsID, String mppsIUID, boolean sendNotif ) {
+	public Map linkMppsToMwl( String[] spsIDs, String[] mppsIUIDs ) {
 		try {
 			Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
-					new Object[] { spsID, mppsIUID, new Boolean( sendNotif ) }, 
-					new String[] { String.class.getName(), String.class.getName(), boolean.class.getName() });
+					new Object[] { spsIDs, mppsIUIDs }, 
+					new String[] { String[].class.getName(), String[].class.getName() });
 			return map;
 		} catch (Exception x) {
 			log.error("Exception occured in updateMPPS: " + x.getMessage(), x);
 			return null;
 		}
 	}
-	
 }

@@ -138,4 +138,20 @@ public class MPPSDelegate {
 			return false;
 		}
 
+		/**
+		 * @param mppsIUIDs
+		 */
+		public boolean unlinkMPPS(String[] mppsIUIDs) {
+			try {
+				for ( int i = 0 ; i < mppsIUIDs.length ; i++ ) {
+					server.invoke(mppsScpServiceName, "unlinkMpps",
+							new Object[] { mppsIUIDs[i] }, new String[] { String.class.getName() });
+				}
+				return true;
+			} catch (Exception x) {
+				log.error("Exception occured in unlinkMPPS: " + x.getMessage(),x);
+				return false;
+			}
+		}
+
 }

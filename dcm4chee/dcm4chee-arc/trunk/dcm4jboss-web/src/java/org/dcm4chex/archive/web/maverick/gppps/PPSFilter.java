@@ -58,6 +58,7 @@ public class PPSFilter {
 	private static final int END_DATE = 1;
 	private static final int START_DATE = 0;
 	protected Dataset queryDS = DcmObjectFactory.getInstance().newDataset();
+	private String patientName;
 	
 	private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 	
@@ -69,7 +70,7 @@ public class PPSFilter {
 	 * @return Filter value of patient name field or null.
 	 */
 	public String getPatientName() {
-		return queryDS.getString(Tags.PatientName);
+		return patientName;
 	}
 	
 	/**
@@ -77,6 +78,11 @@ public class PPSFilter {
 	 * @param name
 	 */
 	public void setPatientName( String name ){
+		patientName = name;
+    	if ( name != null && 
+			name.length() > 0 && 
+			name.indexOf('*') == -1 &&
+			name.indexOf('?') == -1) name+="*";
 		queryDS.putPN(Tags.PatientName, name);
 	}
 	

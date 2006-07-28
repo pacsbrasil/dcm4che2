@@ -83,6 +83,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
     		model = MWLModel.getModel(request);
     		model.setErrorCode( MWLModel.NO_ERROR );
     		model.setPopupMsg(null);
+    		model.setPatMergeAttributes(null);
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
 	        		checkFilter( request );
@@ -170,6 +171,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 	private String doLink(HttpServletRequest request) {
 		System.out.println("link mpps "+model.getMppsIDs());
 		String[] mppsIUIDs = model.getMppsIDs();
+		model.setMppsIDs(null);
 		String[] spsIDs = getSPSIds(request);
 		if ( spsIDs == null || spsIDs.length < 1) {
 			model.setPopupMsg("No Worklist Entry selected!");
@@ -184,18 +186,14 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 			}
 		}
 		if ( mppsIUIDs != null ) {
-			for ( int j = spsIDs.length-1 ; j >= 0 ; j--) {
-				for ( int i = mppsIUIDs.length-1 ; i >= 0 ; i-- ) {
-					Map map = delegate.linkMppsToMwl( spsIDs[j], mppsIUIDs[i], i==0 ); //send notification on last link (i==0)
-					if ( map == null ) {
-						model.setPopupMsg("Link mpps "+mppsIUIDs[i]+" to mwl "+spsIDs[j]+" failed!");
-					} else if ( map.get("userAction") != null ) {
-						model.setPopupMsg("Patient cant be merged automatically! (MPPS patient has more than one study)! mpps:"+mppsIUIDs[i]);
-					}
-				}
+			Map map = delegate.linkMppsToMwl( spsIDs, mppsIUIDs );
+			if ( map == null ) {
+				model.setPopupMsg("Link selected MPPS to selected MWL failed!");
+			} else if ( map.get("dominant") != null ) {
+				model.setPatMergeAttributes(map);
+				return "mergePatient";
 			}
 		}
-		model.setMppsIDs(null);
 		return "linkDone";
 	}
 

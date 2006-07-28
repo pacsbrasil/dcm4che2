@@ -39,13 +39,16 @@
 
 package org.dcm4chex.archive.web.maverick.mwl.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -54,6 +57,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.mwl.MWLConsoleCtrl;
 
 /**
@@ -81,6 +85,14 @@ public class MWLModel extends BasicFormPagingModel {
 
 	/** Comparator to sort list of SPS datasets. */
 	private Comparator comparator = new SpsDSComparator();
+
+	// hold patient infos for merge (same patients/stickyPatients model structure as FolderForm) 
+    private List patients = new ArrayList();
+    private final Set stickyPatients = new HashSet();
+    /** Holds reason of merge. */
+	private String mergeReason=null;
+	/** Used to preselect dominant patient in patient_merge view */
+	private PatientModel dominantPat;
 
 	/**
 	 * Creates the model.
@@ -177,6 +189,49 @@ public class MWLModel extends BasicFormPagingModel {
 	public void setMppsIDs(String[] mppsIDs) {
 		this.mppsIDs = mppsIDs;
 	}
+	
+	public void setPatMergeAttributes(Map map) {
+		patients.clear();
+		stickyPatients.clear();
+		if ( map != null ) {
+			dominantPat = new PatientModel( (Dataset) map.get("dominant") );
+			stickyPatients.add(new Long(dominantPat.getPk()));
+			patients.add(dominantPat);
+			Dataset[] dsa = (Dataset[]) map.get("priorPats");
+			PatientModel pat;
+			for ( int i = 0 ; i < dsa.length ; i++ ) {
+				pat = new PatientModel( dsa[i]);
+				stickyPatients.add(new Long(pat.getPk()));
+				patients.add(pat);
+			}
+			mergeReason="Linking MWL to MPPS requires patient merge!";
+		} else {
+			dominantPat = null;
+			mergeReason = null;
+		}
+		
+	}
+	
+    public final List getPatients() {
+        return patients;
+    }
+    public final Set getStickyPatients() {
+        return stickyPatients;
+    }
+    public String getMergeReason() {
+    	return mergeReason;
+    }
+	/**
+	 * @return Returns the dominant patient for necessary merge.
+	 */
+	public PatientModel getMergeDominant() {
+		return dominantPat;
+	}
+	/** returns the name of the view used after merge is done. (have to be configured in maverick.xml!) */
+    public String getMergeViewName() {
+    	return "mpps_link";
+    }
+	
 	/**
 	 * Update the list of MWLEntries for the view.
 	 * <p>
@@ -296,6 +351,13 @@ public class MWLModel extends BasicFormPagingModel {
 		return ds;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+	 */
+	public void gotoCurrentPage() {
+		filterWorkList( false );
+	}
+	
 	/**
 	 * Inner class that compares two datasets for sorting Scheduled Procedure Steps 
 	 * according scheduled Procedure step start date.
@@ -355,11 +417,5 @@ public class MWLModel extends BasicFormPagingModel {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
-	 */
-	public void gotoCurrentPage() {
-		filterWorkList( false );
-	}
 	
 }

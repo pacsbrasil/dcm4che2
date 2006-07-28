@@ -135,17 +135,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getHl7SendServiceName"
-      setMethod="setHl7SendServiceName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>Hl7SendServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Send"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
       <description>Used internally - do NOT modify.
@@ -161,24 +150,29 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Link a MPPS to a MWL entry.</description>
+      <description>Link MPPS to MWL entries.</description>
       <name>linkMppsToMwl</name>
       <parameter>
-        <description>Scheduled procedure step ID</description>
-        <name>spsID</name>
-        <type>java.lang.String</type>
+        <description>List of Scheduled Procedure Step IDs</description>
+        <name>spsIDs</name>
+        <type>[Ljava.lang.String;</type>
       </parameter>
       <parameter>
+        <description>List of MPPS SOP Instance UIDs</description>
+        <name>mppsIUIDs</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>java.util.Map</return-type>
+   </operation>   
+   <operation impact="ACTION">
+      <description>Unlink MPPS to MWL entries.</description>
+      <name>unlinkMpps</name>
+       <parameter>
         <description>MPPS SOP Instance UID</description>
         <name>mppsIUID</name>
         <type>java.lang.String</type>
       </parameter>
-      <parameter>
-        <description>If true send a Notification MPPSLinked</description>
-        <name>sendNotif</name>
-        <type>boolean</type>
-      </parameter>
-      <return-type>java.util.Map</return-type>
+      <return-type>void</return-type>
    </operation>   
    <operation impact="ACTION">
       <description>Deletes a list of MPPS entries.</description>

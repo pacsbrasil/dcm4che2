@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.Map;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -114,14 +116,15 @@ public class ContentEditDelegate {
         return (Dataset) o;
     }
 
-    public void mergePatients(long pk, long[] patPks) {
+    public Map mergePatients(long pk, long[] patPks) {
         try {
-            server.invoke(contentEditName,
+            return (Map) server.invoke(contentEditName,
                     "mergePatients",
                     new Object[] { new Long(pk), patPks },
                     new String[] { Long.class.getName(), long[].class.getName() });
         } catch (Exception e) {
             log.warn("Failed to merge Patients:", e);
+            return null;
         }
     }
     

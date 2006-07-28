@@ -41,11 +41,7 @@ package org.dcm4chex.archive.web.maverick;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.jms.JMSException;
@@ -69,6 +65,7 @@ import org.dcm4chex.archive.web.maverick.tf.TFModel;
 import org.dcm4chex.archive.web.maverick.tf.TeachingFileDelegate;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIExportDelegate;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIModel;
+import org.infohazard.maverick.flow.ControllerContext;
 
 /**
  * 
@@ -96,22 +93,26 @@ public class FolderSubmitCtrl extends FolderCtrl {
     public static ContentEditDelegate getDelegate() {
     	return delegate;
     }
+    public static ContentEditDelegate getDelegate(ControllerContext ctx) {
+        if ( delegate == null ) {
+        	delegate = new ContentEditDelegate();
+        	try {
+        		delegate.init( ctx );
+        	} catch( Exception x ) {
+        		log.error("Cant make form bean!", x );
+        	}
+        	StudyModel.setHttpRoot(ctx.getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
+        }
+    	return delegate;
+    }
     
 	/**
 	 * Get the model for the view.
 	 * @throws 
 	 */
     protected Object makeFormBean() {
-        if ( delegate == null ) {
-        	delegate = new ContentEditDelegate();
-        	try {
-        		delegate.init( getCtx() );
-        	} catch( Exception x ) {
-        		log.error("Cant make form bean!", x );
-        	}
-        	StudyModel.setHttpRoot(getCtx().getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
-        }
-       return super.makeFormBean();
+		getDelegate( getCtx() );
+		return super.makeFormBean();
     }
     
     protected String perform() throws Exception {
