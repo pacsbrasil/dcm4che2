@@ -284,10 +284,22 @@ public abstract class MPPSManagerBean implements SessionBean {
     			}
     		}
     		if ( spsNotInList ) {
-    			ssa = mwlAttrs.getItem(Tags.SPSSeq);
+    			ssa = ssaSQ.addNewItem();
+    			Dataset spsDS = mwlAttrs.getItem(Tags.SPSSeq);
     			ssa.putUI(Tags.StudyInstanceUID, studyIUID);
-    			log.debug("add new scheduledStepAttribute item:");log.debug(ssa);
-    			ssaSQ.addItem(ssa);
+    			ssa.putSH(Tags.SPSID, spsID);
+    			ssa.putSH(Tags.AccessionNumber, accNo);
+    			ssa.putSQ(Tags.RefStudySeq);
+    			ssa.putSH(Tags.RequestedProcedureID, mwlAttrs.getString(Tags.RequestedProcedureID));
+    			ssa.putLO(Tags.SPSDescription, spsDS.getString(Tags.SPSDescription));
+    			DcmElement mppsSPCSQ = ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
+    			DcmElement mwlSPCSQ = spsDS.get(Tags.ScheduledProtocolCodeSeq);
+    			if ( mwlSPCSQ != null && mwlSPCSQ.countItems() > 0 ) {
+    				for ( int i = 0, len = mwlSPCSQ.countItems() ; i < len ; i++ ) {
+    					mppsSPCSQ.addNewItem().putAll(mwlSPCSQ.getItem(i));
+    				}
+    			}
+    			log.debug("add new scheduledStepAttribute item:");log.info(ssa);
     			log.debug("new mppsAttrs:");log.debug(mppsAttrs);
     		}
             mpps.setAttributes(mppsAttrs);
@@ -295,12 +307,8 @@ public abstract class MPPSManagerBean implements SessionBean {
             map.put("mppsAttrs",mppsAttrs);
             map.put("mwlAttrs",mwlAttrs);
             if ( ! mwlPat.equals(mppsPat) ) {
-        		if ( mppsPat.getStudies().size() == 1 ) {
-            		map.put( "mwlPat", mwlPat.getAttributes(true));
-            		map.put("mppsPat",mppsPat.getAttributes(true));
-        		} else {
-        			map.put("userAction", Boolean.TRUE );
-        		}
+        		map.put( "mwlPat", mwlPat.getAttributes(true));
+        		map.put( "mppsPat",mppsPat.getAttributes(true));
             }
             return map;
         } catch (ObjectNotFoundException e) {
@@ -308,6 +316,41 @@ public abstract class MPPSManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void unlinkMpps( String mppsIUID ) throws FinderException {
+    	MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
+    	Dataset mppsAttrs = mpps.getAttributes();
+		DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
+		Dataset ds = null;
+		String spsID;
+		for ( int i = ssaSQ.countItems()-1 ; i >= 0 ; i-- ) {
+			ds = ssaSQ.getItem(i);
+			spsID = ds.getString(Tags.SPSID);
+			if ( spsID != null ) {
+				try {
+					MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsID);
+					Dataset mwlDS = mwlItem.getAttributes();
+					mwlDS.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, "SCHEDULED");
+					mwlItem.setAttributes(mwlDS);
+				} catch ( FinderException ignore ) {}
+			}
+		}
+		String studyIUID = ds.getString(Tags.StudyInstanceUID);
+		ds.clear();
+		ds.putUI(Tags.StudyInstanceUID, studyIUID);
+		//add empty type 2 attributes.
+		ds.putSH(Tags.SPSID, (String)null);
+		ds.putSH(Tags.AccessionNumber, (String)null);
+		ds.putSQ(Tags.RefStudySeq);
+		ds.putSH(Tags.RequestedProcedureID, (String)null);
+		ds.putLO(Tags.SPSDescription, (String)null);
+		ds.putSQ(Tags.ScheduledProtocolCodeSeq);
+		mppsAttrs.putSQ(Tags.ScheduledStepAttributesSeq).addItem(ds);
+    	mpps.setAttributes(mppsAttrs);
     }
     
     /**
