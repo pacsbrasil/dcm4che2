@@ -38,10 +38,13 @@
 
 package org.dcm4chee.arr.ejb;
 
+import static org.jboss.seam.ScopeType.EVENT;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -57,6 +60,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.jboss.seam.annotations.Name;
+import org.jboss.seam.annotations.Scope;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
@@ -64,6 +70,8 @@ import javax.persistence.TemporalType;
  *
  */
 @Entity
+@Name("audit_record")
+@Scope(EVENT)
 @Table(name = "audit_record")
 public class AuditRecord implements Serializable {
     private int pk;
@@ -156,7 +164,7 @@ public class AuditRecord implements Serializable {
         this.eventOutcomeIndicator = eventOutcomeIndicator;
     }
     
-    @Temporal(TemporalType.TIMESTAMP)
+    @Basic @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "event_date_time")
     public Date getEventDateTime() {
         return eventDateTime;

@@ -6,7 +6,7 @@
     <version>1</version>
   </parent>
   <groupId>dcm4che</groupId>
-  <artifactId>dcm4chee-arr-ejb</artifactId>
+  <artifactId>dcm4chee-arr-ejb-${db}</artifactId>
   <version>3.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>EJBs and Services for ARR</name>
@@ -15,7 +15,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
       <version>1.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
@@ -41,9 +40,14 @@
       <version>4.0.4.GA</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-seam</artifactId>
+      <version>1.0.1.GA</version>
+    </dependency>
   </dependencies>
   <build>
-    <finalName>${artifactId}-${db}-${version}</finalName>
+    <finalName>dcm4chee-arr-${db}-${version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -55,7 +59,10 @@
     </plugins>
     <resources>
       <resource>
-        <directory>src/${db}/resources</directory>
+        <directory>${basedir}/src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/${db}/resources</directory>
       </resource>
     </resources>
   </build>
