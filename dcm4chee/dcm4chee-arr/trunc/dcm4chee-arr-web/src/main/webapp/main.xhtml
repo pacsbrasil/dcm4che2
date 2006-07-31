@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:f="http://java.sun.com/jsf/core">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <title>Audit Records</title>
+  </head>
+  <body>
+    <h:form id="searchFilter">
+      <h:commandButton value="Refresh" action="#{auditRecordList.find}"/>
+    </h:form>
+    <h:outputText value="No Records Found" rendered="#{records.rowCount==0}"/>
+    <h:dataTable value="#{records}" var="rec" rendered="#{records.rowCount>0}" border="1"
+      cellspacing="2">
+      <h:column>
+        <f:facet name="header">pk</f:facet>#{rec.pk}</h:column>
+      <h:column>
+        <f:facet name="header">Event Date/Time</f:facet>#{rec.eventDateTime}</h:column>
+      <h:column>
+        <f:facet name="header">Event ID</f:facet>#{rec.eventID.meaning}</h:column>
+      <h:column>
+        <f:facet name="header">Action</f:facet>#{rec.eventActionCode}</h:column>
+      <h:column>
+        <f:facet name="header">Outcome</f:facet>#{rec.eventOutcomeIndicator}</h:column>
+      <h:column>
+        <f:facet name="header">Show</f:facet>
+        <h:outputLink value="details.do">
+          <f:param name="pk" value="#{rec.pk}"/>Details</h:outputLink>
+          /
+        <h:outputLink value="viewxml.do">
+          <f:param name="pk" value="#{rec.pk}"/>XML</h:outputLink>
+      </h:column>
+    </h:dataTable>
+  </body>
+</html>
