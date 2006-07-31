@@ -10,8 +10,8 @@
 <project name="ReferenceDocumentation" default="all.doc" basedir=".">
     <!-- Documentation base directories. -->
     <property name="conformance.dir"           value="conformance"/>
-    <property name="dcm4che2-ref.dir"           value="reference/dcm4che2"/>
-    <property name="dcm4chee-ref.dir"           value="reference/dcm4chee"/>
+    <property name="dcm4che2-ref.dir"           value="dcm4che2-ref"/>
+    <property name="dcm4chee-ref.dir"           value="reference"/>
 
     <!-- Support files for build process. -->
     <property name="support.dir"           value="${basedir}/support"/>

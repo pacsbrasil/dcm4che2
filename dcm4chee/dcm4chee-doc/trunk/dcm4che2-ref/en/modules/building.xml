@@ -15,13 +15,21 @@
         </orderedlist>
         
         <para>
-            In addition, you will have to download the dcm4che2 module from the dcm2che project at <ulink url="http://sourceforge.net/cvs/?group_id=37982">SourceForge</ulink>.
+            In addition, you will have to download the dcm4che2 source code from the dcm4che project at <ulink url="http://sourceforge.net/cvs/?group_id=37982">SourceForge</ulink>.
         </para>
                 
          <para>
             There are two pieces to building dcm4che2: building the DICOM dictionary, and building the software itself.  Building the dictionary is optional, 
-            as the standard dictionary is included in the application already.  if you want to customize the dictionary, or add items to it that have not 
-            yet been included in the standard yet, knowing how to build the dictionary is a good thing.
+            as the standard dictionary is included in the application already.  However, if you want to customize the dictionary, or add items to it that have not 
+            yet been included in the standard yet, then knowing how to build the dictionary is a good thing.
+        </para>
+    </sect1>
+    
+    <sect1>
+        <para>
+    	    Building dcm4che2 is relatively easy, as Maven manages the dependencies for you.  Assuming that you have the Maven executable scripts on your path...  Simply navigate to the root of the dcm4che2 source directory structure, and type 
+    	    <literal>mvn install</literal>, then <literal>cd dcm4che-dist</literal> and type <literal>mvn assembly::assembly</literal>.
+    	    This will build distributions of the dcm4che2 toolkit.  That's it!
         </para>
     </sect1>
     
