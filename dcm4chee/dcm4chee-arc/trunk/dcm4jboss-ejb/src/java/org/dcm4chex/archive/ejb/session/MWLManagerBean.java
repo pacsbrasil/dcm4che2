@@ -55,6 +55,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObject;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
@@ -208,7 +209,7 @@ public abstract class MWLManagerBean implements SessionBean {
 				MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps
 						.getString(Tags.SPSID));
 	            Dataset attrs = mwlItem.getAttributes();
-				attrs.putAll(woPatAttrs);
+				attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
 				mwlItem.setAttributes(attrs);
 				PatientLocal pat = mwlItem.getPatient();
 				return true;
