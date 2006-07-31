@@ -129,12 +129,25 @@
   <!-- OBR - sps  -->
   <xsl:template match="OBR" mode="sps">
     <!-- HL7:Results Rpt/Status Chng - Date/Time -> DICOM:Scheduled Procedure Step Start Date/Time -->
-    <xsl:variable name="dt" select="string(field[22]/text())"/>
-    <xsl:if test="string-length($dt) >= 10">
+    <xsl:variable name="obr36" select="normalize-space(field[36]/text())"/>
+    <xsl:variable name="dt">
+      <xsl:choose>
+        <xsl:when test="$obr36">
+          <xsl:value-of select="$obr36"/>
+        </xsl:when>        
+        <xsl:otherwise>
+          <xsl:value-of select="normalize-space(field[22]/text())"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:if test="string-length($dt) >= 8">
       <xsl:call-template name="attrDATM">
         <xsl:with-param name="datag" select="'00400002'"/>
         <xsl:with-param name="tmtag" select="'00400003'"/>
-        <xsl:with-param name="val" select="$dt"/>
+        <xsl:with-param name="val">
+          <xsl:value-of select="$dt"/>
+          <xsl:if test="string-length($dt) &lt; 10">00</xsl:if>
+        </xsl:with-param>
       </xsl:call-template>
     </xsl:if>
     <!-- HL7:Filler Order Number -> DICOM:Study Instance UID -->
