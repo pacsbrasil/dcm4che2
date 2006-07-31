@@ -43,17 +43,17 @@
                 <div class="content">
                     dcm4chee Archive<br/>
                     &nbsp;&nbsp;Reference Manual<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/html/index.html">HTML</a><br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/html_single/index.html">Single HTML Page</a><br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/pdf/dcm4chee-ref.pdf">PDF</a><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/dcm4chee/html/index.html">HTML</a><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/dcm4chee/html_single/index.html">Single HTML Page</a><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/dcm4chee/pdf/dcm4chee-ref.pdf">PDF</a><br/>
                     &nbsp;&nbsp;<a href="docs/conformance/dcm4chee-cs.pdf">DICOM Conformance</a><br/>
                     &nbsp;&nbsp;<a href="docs/conformance/dcm4chee-is.pdf">IHE Integration</a><br/>
                     <br/>
                     dcm4che2 Toolkit<br/>
                     &nbsp;&nbsp;Reference Manual<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="">HTML</a><br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="">Single HTML Page</a><br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="">PDF</a><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/dcm4che/html/index.html">HTML</a><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/dcm4che/html_single/index.html">Single HTML Page</a><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<a href="docs/reference/dcm4che/pdf/dcm4che-ref.pdf">PDF</a><br/>
                     &nbsp;&nbsp;<a href="">API Documentation</a><br/>
                     <br/>
                     <a href="http://medical.nema.org/dicom/2006/">The DICOM Standard</a>
@@ -67,12 +67,18 @@
                 <h2>Open Source Clinical Image and Object Management</h2>
                 <div id="bodytext">
                     <p>
-                        dcm4chee is a Java-based open source Image Manager/Image Archive (according to <acronym title="Integrating the Healthcare Enterprise">IHE</acronym>).
-                        The application contains the <acronym title="Digital Imaging and Communication in Medicine">DICOM</acronym>, <acronym title="Health Level 7">HL7</acronym>, 
-                        and other interfaces that are required to provide storage, retrieval, and workflow to a healthcare environment.
+                        dcm4che is a collection of open source applications and utilities for the healthcare enterprise.  These applications have been developed in the Java programming language for 
+                        performance and portability, supporting deployment on JDK 1.4 and up.
                     </p>
                     <p>
-                        From a technology perspective, dcm4chee is written in the Java language.  It is pre-packaged and deployed within the <a href="http://www.jboss.org">JBoss</a> 
+                        At the core of the dcm4che project is a robust implementation of the DICOM standard.  The dcm4che-1.x DICOM toolkit 
+                        is used in many production applications across the world, while the current (2.x) version of the toolkit has been re-architected for high performance and flexibility.  
+                    </p>
+                    <p>
+                        Also contained within the dcm4che project is dcm4chee (the extra 'e' stands 
+                        for 'enterprise').  dcm4chee is an Image Manager/Image Archive (according to <acronym title="Integrating the Healthcare Enterprise">IHE</acronym>).
+                        The application contains the <acronym title="Digital Imaging and Communication in Medicine">DICOM</acronym>, <acronym title="Health Level 7">HL7</acronym> services
+                        and interfaces that are required to provide storage, retrieval, and workflow to a healthcare environment.  dcm4chee is pre-packaged and deployed within the <a href="http://www.jboss.org">JBoss</a> 
                         application server.  By taking advantage of many JBoss features (<acronym title="Java Message Service">JMS</acronym>, <acronym title="Enterprise java Beans">EJB</acronym>, 
                         Servlet Engine, etc.), and assuming the role of <a href="docs/conformance/dcm4chee-is.pdf">several IHE actors</a> for the sake of interoperability, the application provides many robust and scalable services:
                     </p>
