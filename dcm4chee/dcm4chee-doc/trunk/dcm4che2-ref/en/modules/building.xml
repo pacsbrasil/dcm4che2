@@ -26,6 +26,7 @@
     </sect1>
     
     <sect1>
+        <title>Building dcm4che2</title>
         <para>
     	    Building dcm4che2 is relatively easy, as Maven manages the dependencies for you.  Assuming that you have the Maven executable scripts on your path...  Simply navigate to the root of the dcm4che2 source directory structure, and type 
     	    <literal>mvn install</literal>, then <literal>cd dcm4che-dist</literal> and type <literal>mvn assembly::assembly</literal>.
