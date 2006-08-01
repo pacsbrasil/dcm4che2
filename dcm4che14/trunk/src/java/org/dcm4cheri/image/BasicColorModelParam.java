@@ -119,8 +119,8 @@ abstract class BasicColorModelParam
             max = size;
         }
         else {
-            min = -(size >> 1);
-            max = -min - 1;
+        	max = size>>1;//max is greatest pos value + 1 (as in unsigned!)
+            min = -max;
         }
         shiftmask = 32 - bits;
     }
