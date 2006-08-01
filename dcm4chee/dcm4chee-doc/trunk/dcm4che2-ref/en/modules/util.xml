@@ -15,9 +15,10 @@
         dcm4che14.  dcm4che14 is still used within dcm4chee, but that will soon change.
         </para>
     
-        <para>The dcm4che2 samples are a great place to get started with the
-        toolkit if you are interested in writing your own DICOM applications as
-        well. They demonstrate most of the operations that you will have need
+        <para>The dcm4che2 utilities are a great place to get started with the
+        toolkit.  They're useful applications, and the code can be very helpful if 
+        you are interested in writing your own DICOM applications.
+        They demonstrate most of the operations that you will have need
         of.</para>
 
     </sect1>    
@@ -29,6 +30,32 @@
         
         <sect2 id="dcm2txt">
             <title>dcm2txt</title>
+            <para>
+                The dcm2txt utility will take a DICOM file as input and dump it out to the console as text.
+            </para>
+            
+            <para>Usage:</para>
+            
+            <para>
+                <literal><![CDATA[
+                    dcm2txt [-cVh] [-l <max>] [-w <max>] <dcmfile>
+                ]]></literal>
+            </para>
+            
+            <para>Options:</para>
+            
+            <programlisting><![CDATA[
+ -V,--version           print the version information and exit
+ -c,--compact          dump without attribute names
+ -h,--help                print this message
+ -l,--vallen <max>   limit value prompt to <maxlen> characters, by
+                               default: 64
+ -w,--width <max>  maximal number of characters per line, by default: 80
+            ]]></programlisting>
+        </sect2>
+        
+        <sect2 id="dcmdir">
+            <title>dcmdir</title>
             <para>
                 TODO
             </para>
@@ -98,7 +125,7 @@
             <para>Starts the server listening on port 11112, accepting association requests
                 with DCMRCV as the called AE title. Received objects are stored to <literal>/tmp</literal>.</para>
 
-            <para>Options (overrides presets defined in resource <literal>dcmrcv.cfg</literal>):</para>
+            <para>Options:</para>
             
             <programlisting><![CDATA[
  -soclosedelay <in millis>   delay in ms for Socket close after sending A-ABORT,

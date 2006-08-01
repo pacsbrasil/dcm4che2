@@ -3,6 +3,8 @@
                       "../../support/docbook-dtd/docbookx.dtd"
 [
 <!ENTITY install               SYSTEM "modules/install.xml">
+<!ENTITY core               SYSTEM "modules/core.xml">
+<!ENTITY net               SYSTEM "modules/net.xml">
 <!ENTITY util           SYSTEM "modules/util.xml">
 <!ENTITY building          SYSTEM "modules/building.xml">
 ]>
@@ -40,6 +42,10 @@
     </preface>
 
     &install;
+    
+    &core;
+    
+    &net;
     
     &util;
 
