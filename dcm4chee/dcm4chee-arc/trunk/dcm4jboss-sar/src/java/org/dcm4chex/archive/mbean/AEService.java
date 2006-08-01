@@ -223,6 +223,11 @@ public class AEService extends ServiceMBeanSupport
         }
     }
 
+    public void addAE(String title, String host, int port, String cipher, boolean checkHost)
+    throws RemoteException, Exception
+    {
+        updateAE(-1, title, host, port, cipher, checkHost);
+    }
 
     public void removeAE(String titles)
         throws Exception

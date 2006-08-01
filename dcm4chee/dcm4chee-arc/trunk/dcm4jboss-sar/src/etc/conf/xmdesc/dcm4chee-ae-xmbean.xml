@@ -121,13 +121,44 @@
 	</operation>
    
    <operation impact="ACTION">
-     <description>Add AE configuration</description>
+     <description>Update AE configuration</description>
      <name>updateAE</name>
      <parameter>
        <description>Primary key of AE (use -1 for new AE)</description>
        <name>pk</name>
        <type>long</type>
      </parameter>
+     <parameter>
+       <description>AE Title</description>
+       <name>aet</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Hostname or ip</description>
+       <name>host</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Port number</description>
+       <name>port</name>
+       <type>int</type>
+     </parameter>
+     <parameter>
+       <description>Cipher (seperated with ',')</description>
+       <name>cipher</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Enable/disable check if host can be resolved to an IP address</description>
+       <name>checkHost</name>
+       <type>boolean</type>
+     </parameter>
+     <return-type>void</return-type>
+	</operation>
+	
+   <operation impact="ACTION">
+     <description>Add AE configuration</description>
+     <name>addAE</name>
      <parameter>
        <description>AE Title</description>
        <name>aet</name>
