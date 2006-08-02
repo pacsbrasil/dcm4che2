@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +62,8 @@ import org.dcm4che.dict.Tags;
 public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+    /** Number of max. parameters in IN(...) statement. */
+    public static int MAX_NO_OF_PARMS = 100;
 
     private static final String[] SELECT_ATTRIBUTE = { "Instance.pk", "File.pk",
             "Patient.patientId", "Patient.patientName",
@@ -94,8 +98,8 @@ public class RetrieveCmd extends BaseReadCmd {
             return diffAvail != 0 ? diffAvail : fi2.pk == fi1.pk ? 0 : fi2.pk < fi1.pk ? -1 : 1;
         }
     };
+	private Sql sqlCmd;
 
-    
     public static RetrieveCmd create(Dataset keys)
             throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
@@ -113,93 +117,94 @@ public class RetrieveCmd extends BaseReadCmd {
      }
 
     public static RetrieveCmd createPatientRetrieve(Dataset keys) throws SQLException {
-		return new RetrieveCmd(new PatientSql(keys, true).getSql());
+		return new RetrieveCmd(new PatientSql(keys, true));
 	}
 
 	public static RetrieveCmd createStudyRetrieve(Dataset keys) throws SQLException {
-		return new RetrieveCmd(new StudySql(keys, true).getSql());
+		return new RetrieveCmd(new StudySql(keys, true));
 	}
 
 	public static RetrieveCmd createSeriesRetrieve(Dataset keys) throws SQLException {
-		return new RetrieveCmd(new SeriesSql(keys, true).getSql());
+		return new RetrieveCmd(new SeriesSql(keys, true));
 	}
 
 	public static RetrieveCmd createInstanceRetrieve(Dataset keys)
 		throws SQLException {
-		return new ImageRetrieveCmd(new ImageSql(keys).getSql(), 
+		return new ImageRetrieveCmd(new ImageSql(keys), 
 				keys.getStrings(Tags.SOPInstanceUID));
 	}
 
     public static RetrieveCmd create(DcmElement refSOPSeq)
             throws SQLException {
-        return new RetrieveCmd(new RefSOPSql(refSOPSeq).getSql());
+        return new RetrieveCmd(new RefSOPSql(refSOPSeq));
     }
 
-    protected RetrieveCmd(String sql) throws SQLException {
+    protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-		execute(sql);
+				transactionIsolationLevel, sql.getSql());
+		this.sqlCmd = sql;
 	}
 
     public FileInfo[][] getFileInfos() throws SQLException {
 		Map result = map();
 		try {
-			ArrayList list;
-			Object key;
-			while (next()) {
-				FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3),
-						rs.getString(4), getBytes(5), rs.getString(6),
-						rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
-						rs.getString(11), rs.getString(12), rs.getString(13),
-						rs.getString(14), rs.getInt(15), rs.getString(16),
-						rs.getString(17), rs.getString(18), rs.getString(19),
-						rs.getInt(20), rs.getInt(21));
-				key = key();
-				list = (ArrayList) result.get(key);
-				if (list == null) {
-					result.put(key, list = new ArrayList());
+			PreparedStatement pstmt = ((PreparedStatement) stmt);
+			int start = 0;
+			String[] fixParams = sqlCmd.getFixParams();
+	    	for ( int i=0 ; i<fixParams.length ; i++) {
+	    		pstmt.setString(i+1,fixParams[i]);	
+	    	}
+	    	int firstListIdx = fixParams.length;
+			String[] params = sqlCmd.getParams();
+			if ( params != null ) {
+				int len = sqlCmd.getNumberOfParams();
+				while ( start < params.length ) {
+					if ( start+len > params.length ) { //we need a new statement for the remaining parameter values
+						len = params.length - start;
+						sqlCmd.updateUIDMatch(len);
+						pstmt = con.prepareStatement(sqlCmd.getSql(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+						if ( firstListIdx > 0 ) { //we need to set the fix params for the new statement!
+					    	for ( int i=0 ; i<fixParams.length ; i++) {
+					    		pstmt.setString(i+1,fixParams[i]);	
+					    	}
+						}
+					}
+			    	for ( int i=1 ; i<=len ; i++) {//set the values for the uid list match
+			    		pstmt.setString(firstListIdx+i,params[start++]);	
+			    	}
+					rs = pstmt.executeQuery();
+					addFileInfos(result);
 				}
-				list.add(info);
+			} else {
+				rs = pstmt.executeQuery();
+				addFileInfos(result);
 			}
 		} finally {
 			close();
 		}
 		return toArray(result);
 	}
-
-    public Map getStudyFileInfo() throws SQLException {
-		Map all = map();
-		Map series;
-		try {
-			ArrayList list;
-			Object seriesKey, instKey;
-			while (next()) {
-				FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3),
-						rs.getString(4), getBytes(5), rs.getString(6),
-						rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
-						rs.getString(11), rs.getString(12), rs.getString(13),
-						rs.getString(14), rs.getInt(15), rs.getString(16),
-						rs.getString(17), rs.getString(18), rs.getString(19),
-						rs.getInt(20), rs.getInt(21));
-				seriesKey = new Long( rs.getLong(22));//series.pk
-				instKey = new Long( rs.getLong(1));//instance.pk
-				series = (Map) all.get(seriesKey);
-				if (series == null) {
-					all.put( seriesKey, series = map());
-					series.put(instKey, list = new ArrayList());
-				} else {
-					list = (ArrayList)series.get(instKey);
-					if ( list == null ) {
-						series.put(instKey, list = new ArrayList());
-					}
-				}
-				list.add(info);
+    
+    private void addFileInfos(Map result) throws SQLException {
+		ArrayList list;
+		Object key;
+		while (next()) {
+			FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3),
+					rs.getString(4), getBytes(5), rs.getString(6),
+					rs.getString(7), getBytes(8), getBytes(9), getBytes(10),
+					rs.getString(11), rs.getString(12), rs.getString(13),
+					rs.getString(14), rs.getInt(15), rs.getString(16),
+					rs.getString(17), rs.getString(18), rs.getString(19),
+					rs.getInt(20), rs.getInt(21));
+			key = key();
+			list = (ArrayList) result.get(key);
+			if (list == null) {
+				result.put(key, list = new ArrayList());
 			}
-		} finally {
-			close();
+			list.add(info);
 		}
-		return all;
-	}
+    }
+
     
     protected Map map() {
         return new TreeMap();
@@ -225,7 +230,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
     static class ImageRetrieveCmd extends RetrieveCmd {
         final String[] uids;
-        ImageRetrieveCmd(String sql, String[] uids) throws SQLException {
+        ImageRetrieveCmd(Sql sql, String[] uids) throws SQLException {
             super(sql);
             this.uids = uids;
         }
@@ -238,27 +243,15 @@ public class RetrieveCmd extends BaseReadCmd {
             return rs.getString(11);
         }
         
-        protected FileInfo[][] toArray(Map result) {
-            FileInfo[][] array = new FileInfo[result.size()][];
-            ArrayList list;
-            for (int i = 0, j = 0; j < uids.length; ++j) {
-                list = (ArrayList) result.remove(uids[j]);
-                if (list != null) {
-                	array[i] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
-        			Arrays.sort(array[i], DESC_FILE_PK);
-        			++i;
-                }
-            }
-            if (!result.isEmpty()) {
-                throw new RuntimeException("Result Set contains " 
-						+ result.size() + " non-matching entries!");
-            }
-            return array;
-        }
     }
 
 	private static class Sql {
+		protected String[] params = null;
+		int numberOfParams;
+		Match.AppendLiteral uidMatch = null;
 		final SqlBuilder sqlBuilder = new SqlBuilder();
+		ArrayList fixValues = new ArrayList();
+		
 		Sql() {
 	        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
 	        sqlBuilder.setFrom(ENTITY);
@@ -268,15 +261,62 @@ public class RetrieveCmd extends BaseReadCmd {
 		public final String getSql() {
 			return sqlBuilder.getSql();
 		}
+		
+		public String[] getFixParams() {
+			return (String[]) fixValues.toArray(new String[fixValues.size()]);
+		}
+		/** return all parameter values of the uid list match */
+		public String[] getParams() {
+			return params;
+		}
+		
+		/** returns number of list params in SQL statement (no of ? in uid list match) */
+		public int getNumberOfParams() {
+			return numberOfParams;
+		}
+		
+		public boolean updateUIDMatch(int len) {
+			if (uidMatch == null) return false;
+			uidMatch.setLiteral(getUIDMatchLiteral(len));
+			return true;
+		}
+		
+		protected void addUidMatch(String column, String[] uid) {
+			if ( uid.length == 1 ) {
+				sqlBuilder.addLiteralMatch(null,column, SqlBuilder.TYPE1, "=?");
+				fixValues .add(uid[0]);
+			} else {
+				if ( params != null )
+						throw new IllegalArgumentException("Only one UID list is allowed in RetrieveCmd!");
+				params = uid;
+				numberOfParams = uid.length < MAX_NO_OF_PARMS ? uid.length : MAX_NO_OF_PARMS;
+				uidMatch = (Match.AppendLiteral) sqlBuilder.addLiteralMatch(null,column, 
+						SqlBuilder.TYPE1, getUIDMatchLiteral(numberOfParams));
+			}
+		}
+		/**
+		 * @param uid
+		 * @return
+		 */
+		private String getUIDMatchLiteral(int len) {
+			if ( len == 1 ) return "=?";
+			StringBuffer sb = new StringBuffer();
+			sb.append(" IN (?");
+			for (int i = 1; i < len; i++) {
+			    sb.append(", ?");
+			}
+			sb.append(")");
+			return sb.toString();
+		}
 	}
 	
 	private static class PatientSql extends Sql {
 		PatientSql(Dataset keys, boolean patientRetrieve) {
             String pid = keys.getString(Tags.PatientID);
-            if (pid != null)
-	            sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-	                    SqlBuilder.TYPE2, pid);
-            else if (patientRetrieve)
+            if (pid != null) {
+				sqlBuilder.addLiteralMatch(null,"Patient.patientId", SqlBuilder.TYPE2, "=?");
+				fixValues.add(pid);
+            } else if (patientRetrieve)
                 throw new IllegalArgumentException("Missing PatientID");
 		}
 	}
@@ -285,10 +325,9 @@ public class RetrieveCmd extends BaseReadCmd {
 		StudySql(Dataset keys, boolean studyRetrieve) {
 			super(keys, false);
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
-            if (uid != null && uid.length != 0)
-	            sqlBuilder.addListOfUidMatch(null, "Study.studyIuid",
-	                    SqlBuilder.TYPE1, uid);
-            else if (studyRetrieve)
+            if (uid != null && uid.length != 0) {
+            	addUidMatch("Study.studyIuid",uid);
+            } else if (studyRetrieve)
                 throw new IllegalArgumentException("Missing StudyInstanceUID");
 		}
 	}
@@ -297,22 +336,21 @@ public class RetrieveCmd extends BaseReadCmd {
 		SeriesSql(Dataset keys, boolean seriesRetrieve) {
 			super(keys, false);
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
-            if (uid != null && uid.length != 0)
-	            sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
-	                    SqlBuilder.TYPE1, uid);
-            else if (seriesRetrieve)
+            if (uid != null && uid.length != 0) {
+            	addUidMatch("Series.seriesIuid",uid);
+			} else if (seriesRetrieve)
                 throw new IllegalArgumentException("Missing SeriesInstanceUID");
 		}
+
 	}
 	
 	private static class ImageSql extends SeriesSql {
 		ImageSql(Dataset keys) {
 			super(keys, false);
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
-            if (uid != null && uid.length != 0)
-	            sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
-	                    SqlBuilder.TYPE1, uid);
-            else 
+            if (uid != null && uid.length != 0) {
+            	addUidMatch("Instance.sopIuid",uid);
+			} else 
 				throw new IllegalArgumentException("Missing SOPInstanceUID");
 		}
 	}
@@ -323,9 +361,7 @@ public class RetrieveCmd extends BaseReadCmd {
 	        for (int i = 0; i < uid.length; i++) {
 	            uid[i] = refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID);
 	        }
-
-	        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
-	                uid);
+        	addUidMatch("Instance.sopIuid",uid);
 		}
 	}
 	

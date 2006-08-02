@@ -181,43 +181,44 @@ class SqlBuilder {
 			this.matches = matches;
 	}
 
-	private void addMatch(Match match) {
-        if (!match.isUniveralMatch())
-            matches.add(match);
+	private Match addMatch(Match match) {
+        if (match.isUniveralMatch()) return null;
+        matches.add(match);
+        return match;
     }
     
-    public void addNULLValueMatch(String alias, String field, boolean inverter ) {
-    	addMatch( new Match.NULLValue(alias, field, inverter ) );
+    public Match addNULLValueMatch(String alias, String field, boolean inverter ) {
+    	return addMatch( new Match.NULLValue(alias, field, inverter ) );
     }
 
-    public void addIntValueMatch(String alias, String field, boolean type2,
+    public Match addIntValueMatch(String alias, String field, boolean type2,
             int value) {
-        addMatch(new Match.IntValue(alias, field, type2, value));
+        return addMatch(new Match.IntValue(alias, field, type2, value));
     }
 
-    public void addListOfIntMatch(String alias, String field, boolean type2,
+    public Match addListOfIntMatch(String alias, String field, boolean type2,
             int[] values) {
-        addMatch(new Match.ListOfInt(alias, field, type2, values));
+        return addMatch(new Match.ListOfInt(alias, field, type2, values));
     }
 
-    public void addSingleValueMatch(String alias, String field, boolean type2,
+    public Match addSingleValueMatch(String alias, String field, boolean type2,
         String value) {
-        addMatch(new Match.SingleValue(alias, field, type2, value));
+        return addMatch(new Match.SingleValue(alias, field, type2, value));
     }
 
-    public void addFieldValueMatch(String alias1, String field1, boolean type2,
+    public Match addFieldValueMatch(String alias1, String field1, boolean type2,
             String alias2, String field2) {
-            addMatch(new Match.FieldValue(alias1, field1, type2, alias2, field2));
+            return addMatch(new Match.FieldValue(alias1, field1, type2, alias2, field2));
         }
     
-    public void addLiteralMatch(String alias, String field, boolean type2,
+    public Match addLiteralMatch(String alias, String field, boolean type2,
             String literal) {
-        addMatch(new Match.AppendLiteral(alias, field, type2, literal));
+        return addMatch(new Match.AppendLiteral(alias, field, type2, literal));
     }
     
-    public void addBooleanMatch(String alias,  String field, boolean type2,
+    public Match addBooleanMatch(String alias,  String field, boolean type2,
             boolean value) {
-        addMatch( getBooleanMatch(alias, field, type2, value) );
+        return addMatch( getBooleanMatch(alias, field, type2, value) );
     }
     
     public Match getBooleanMatch(String alias,  String field, boolean type2,
@@ -238,21 +239,21 @@ class SqlBuilder {
         }
     }
 
-    public void addListOfUidMatch(String alias, String field, boolean type2,
+    public Match addListOfUidMatch(String alias, String field, boolean type2,
             String[] uids) {
-        addListOfStringMatch(alias, field, type2, uids);
+        return addListOfStringMatch(alias, field, type2, uids);
     }
 
-    public void addListOfStringMatch(String alias, String field, boolean type2,
+    public Match addListOfStringMatch(String alias, String field, boolean type2,
             String[] vals) {
-         addMatch(new Match.ListOfString(alias, field, type2, vals));
+         return addMatch(new Match.ListOfString(alias, field, type2, vals));
     }
 
-    public void addWildCardMatch(String alias, String field, boolean type2,
+    public Match addWildCardMatch(String alias, String field, boolean type2,
         String wc) {
         if (wc == null || wc.length() == 0 || wc.equals("*"))
-            return;
-        addMatch(new Match.WildCard(alias, field, type2, wc));
+            return null;
+        return addMatch(new Match.WildCard(alias, field, type2, wc));
     }
     
     public void addPNMatch(String[] nameFields, String val) {
@@ -277,9 +278,9 @@ class SqlBuilder {
         return s != null ? s.toUpperCase() : null;
     }
 
-    public void addRangeMatch(String alias, String field, boolean type2,
+    public Match addRangeMatch(String alias, String field, boolean type2,
             Date[] range) {
-        addMatch(getRangeMatch(alias, field, type2, range) );
+        return addMatch(getRangeMatch(alias, field, type2, range) );
     }
     
     public Match getRangeMatch(String alias,  String field, boolean type2,
@@ -289,12 +290,12 @@ class SqlBuilder {
         				ORA_DATE_FORMAT : DATE_FORMAT);
     }
     
-    public void addModalitiesInStudyNestedMatch(String alias, String md) {
-        addMatch(new Match.ModalitiesInStudyNestedMatch(alias, md));
+    public Match addModalitiesInStudyNestedMatch(String alias, String md) {
+        return addMatch(new Match.ModalitiesInStudyNestedMatch(alias, md));
     }
     
-    public void addCallingAETsNestedMatch(boolean privateTables, String[] callingAETs) {
-        addMatch(new Match.CallingAETsNestedMatch( privateTables, callingAETs));
+    public Match addCallingAETsNestedMatch(boolean privateTables, String[] callingAETs) {
+        return addMatch(new Match.CallingAETsNestedMatch( privateTables, callingAETs));
     }
     
     public Match.Node addNodeMatch(String orORand, boolean invert) {
@@ -303,12 +304,12 @@ class SqlBuilder {
     	return m;
     }
     
-    public void addCorrelatedSubquery( SqlBuilder subQuery ) {
-    	addMatch( new Match.Subquery(subQuery, null, null) );
+    public Match addCorrelatedSubquery( SqlBuilder subQuery ) {
+    	return addMatch( new Match.Subquery(subQuery, null, null) );
     }
 
-    public void addUncorrelatedSubquery( SqlBuilder subQuery, String field, String alias ) {
-    	addMatch( new Match.Subquery(subQuery, field, alias) );
+    public Match addUncorrelatedSubquery( SqlBuilder subQuery, String field, String alias ) {
+    	return addMatch( new Match.Subquery(subQuery, field, alias) );
     }
     
     public String getSql() {

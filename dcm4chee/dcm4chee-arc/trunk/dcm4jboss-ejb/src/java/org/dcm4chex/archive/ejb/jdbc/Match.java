@@ -224,7 +224,7 @@ abstract class Match
     
     static class AppendLiteral extends Match
     {
-        private final String literal;
+        private String literal;
         public AppendLiteral(String alias, String field, boolean type2, String literal)
         {
             super(alias, field, type2);
@@ -234,6 +234,10 @@ abstract class Match
         public boolean isUniveralMatch()
         {
             return false;
+        }
+        
+        public void setLiteral(String s) {
+        	literal = s;
         }
 
         protected void appendBodyTo(StringBuffer sb)
