@@ -47,6 +47,8 @@ import javax.ejb.Local;
 @Local
 public interface AuditRecordList {
 
-    String find();
-    AuditRecord getSelectedRecord();
-    void destroy();}
+    void find();
+    void select();
+    void destroy();
+
+}

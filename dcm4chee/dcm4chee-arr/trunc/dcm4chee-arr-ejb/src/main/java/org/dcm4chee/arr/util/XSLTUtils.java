@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Agfa HealthCare.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,55 +35,37 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.arr.ejb;
 
-import java.util.List;
+package org.dcm4chee.arr.util;
 
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
 
-import org.jboss.seam.ScopeType;
-import org.jboss.seam.annotations.Destroy;
-import org.jboss.seam.annotations.Factory;
-import org.jboss.seam.annotations.Name;
-import org.jboss.seam.annotations.Out;
-import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.annotations.datamodel.DataModel;
-import org.jboss.seam.annotations.datamodel.DataModelSelection;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$
- * @since 29.07.2006
+ * @version $Revision$ $Date$
+ * @since Aug 2, 2006
  */
-@Stateful
-@Name("auditRecordList")
-@Scope(ScopeType.SESSION)
-public class AuditRecordListAction implements AuditRecordList {
+public class XSLTUtils {
 
-    @PersistenceContext(type=PersistenceContextType.EXTENDED) 
-    private EntityManager em;
-
-    @DataModel
-    private List<AuditRecord> records;
-    
-    @DataModelSelection
-    @Out(required=false)
-    private AuditRecord selectedRecord;
-        
-    @Factory("records")
-    public void find() {
-       records = em.createQuery("from AuditRecord")
-               	.setHint("org.hibernate.readOnly", Boolean.TRUE)
-                .getResultList();
+    public static String toXML(byte[] b) {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        StringWriter out = new StringWriter(512);
+        try {
+            Transformer tr = tf.newTransformer();
+            tr.setOutputProperty(OutputKeys.INDENT, "yes");
+            tr.transform(new StreamSource(
+                    new ByteArrayInputStream(b)), 
+                    new StreamResult(out));
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return out.toString();
     }
-    
-    public void select() {}
-
-    @Destroy @Remove
-    public void destroy() {}
-    
 }

@@ -38,8 +38,6 @@
 
 package org.dcm4chee.arr.ejb;
 
-import static org.jboss.seam.ScopeType.EVENT;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -59,7 +57,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
+import org.dcm4chee.arr.util.XSLTUtils;
+import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 
@@ -71,7 +72,7 @@ import org.jboss.seam.annotations.Scope;
  */
 @Entity
 @Name("audit_record")
-@Scope(EVENT)
+@Scope(ScopeType.PAGE)
 @Table(name = "audit_record")
 public class AuditRecord implements Serializable {
     private int pk;
@@ -182,6 +183,11 @@ public class AuditRecord implements Serializable {
     
     public void setXmldata(byte[] xmldata) {
         this.xmldata = xmldata;
+    }
+    
+    @Transient
+    public String getXml() {
+        return XSLTUtils.toXML(xmldata);
     }
     
 }
