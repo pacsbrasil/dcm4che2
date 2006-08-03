@@ -219,6 +219,9 @@ public abstract class CodeToDeviceMappingBean implements SessionBean {
 			}
 		}
 		Dataset protocol = sps.getItem(Tags.ScheduledProtocolCodeSeq);
+		if (protocol == null) {
+			return null;			
+		}
 		String codeValue = protocol.getString(Tags.CodeValue);
 		String codingScheme = protocol.getString(Tags.CodingSchemeDesignator);
 		Collection col = codeHome.findByValueAndDesignator(codeValue,
