@@ -173,7 +173,13 @@ public class ORMService extends AbstractHL7Service {
 						adjustAttributes(ds);
 						log("Update", ds);
 						logDataset("Update MWL Item:", ds);
-						mwlManager.updateWorklistItem(ds);
+						if (!mwlManager.updateWorklistItem(ds)) {
+							log("No Such ", ds);
+							addMissingAttributes(ds);
+							log("->Schedule New ", ds);
+							logDataset("Insert MWL Item:", ds);
+							mwlManager.addWorklistItem(ds);
+						}
 						break;
 					case CA:
 					case DC:

@@ -211,10 +211,8 @@ public abstract class MWLManagerBean implements SessionBean {
 	            Dataset attrs = mwlItem.getAttributes();
 				attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
 				mwlItem.setAttributes(attrs);
-				PatientLocal pat = mwlItem.getPatient();
 				return true;
 			} catch (ObjectNotFoundException onfe) {
-				mwlItemHome.create(woPatAttrs, getPatient(ds));
 				return false;
 			}
 		} catch (Exception e) {
