@@ -63,7 +63,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
     /** Number of max. parameters in IN(...) statement. */
-    public static int MAX_NO_OF_PARMS = 100;
+    public static int maxElementsInUIDMatch = 100;
 
     private static final String[] SELECT_ATTRIBUTE = { "Instance.pk", "File.pk",
             "Patient.patientId", "Patient.patientName",
@@ -289,7 +289,7 @@ public class RetrieveCmd extends BaseReadCmd {
 				if ( params != null )
 						throw new IllegalArgumentException("Only one UID list is allowed in RetrieveCmd!");
 				params = uid;
-				numberOfParams = uid.length < MAX_NO_OF_PARMS ? uid.length : MAX_NO_OF_PARMS;
+				numberOfParams = uid.length < maxElementsInUIDMatch ? uid.length : maxElementsInUIDMatch;
 				uidMatch = (Match.AppendLiteral) sqlBuilder.addLiteralMatch(null,column, 
 						SqlBuilder.TYPE1, getUIDMatchLiteral(numberOfParams));
 			}
