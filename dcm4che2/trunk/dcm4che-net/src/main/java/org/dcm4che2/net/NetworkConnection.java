@@ -57,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DICOM supplement 67 compliant class, <code>NetworkConnection</code>
+ * A DICOM Part 19, Annex H compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
  * <p>
  * The <i>network connection</i> describes one TCP port on one network device. This
@@ -120,10 +120,20 @@ public class NetworkConnection
         return sb.toString();
     }
 
+    /**
+     * Get the <code>Device</code> object that this Network Connection belongs to.
+     * 
+     * @return Device
+     */
     public final Device getDevice() {
         return device;
     }
 
+    /**
+     * Set the <code>Device</code> object that this Network Connection belongs to.
+     * 
+     * @param device The owning <code>Device</code> object.
+     */
     final void setDevice(Device device) {
         this.device = device;
     }
@@ -313,7 +323,7 @@ public class NetworkConnection
         return s;
     }
 
-    private void setSocketOptions(Socket s) throws SocketException {
+    protected void setSocketOptions(Socket s) throws SocketException {
         int size;
         size = s.getReceiveBufferSize();
         if (receiveBufferSize == DEFAULT) {
