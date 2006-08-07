@@ -81,7 +81,7 @@ public class AuditRecordListAction implements AuditRecordList {
     private static final int HOUR_OF_DAY = 13;
     private static final int MINUTE = 16;
     private static final int SECOND = 19;
-    private Logger log = LoggerFactory.getLogger(AuditRecordList.class);
+    private static final Logger log = LoggerFactory.getLogger(AuditRecordList.class);
 
     @PersistenceContext(type=PersistenceContextType.EXTENDED) 
     private EntityManager em;
