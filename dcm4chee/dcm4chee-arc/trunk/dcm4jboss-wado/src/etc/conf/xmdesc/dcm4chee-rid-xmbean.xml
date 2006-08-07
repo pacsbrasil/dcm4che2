@@ -181,7 +181,7 @@
       <name>CardiologyPDFConceptCodeNames</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="11522-0;28032-1:LN" />
+         <value value="11522-0:LN;28032-1:LN" />
       </descriptors>
     </attribute>
     <attribute access="read-write"
