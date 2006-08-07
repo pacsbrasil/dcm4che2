@@ -226,50 +226,100 @@ public class NetworkConnection
         this.connectTimeout = timeout;
     }
 
+    /**
+     * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
+     * 
+     * @param An int value containing the milliseconds.
+     */
     public final int getRequestTimeout() {
         return requestTimeout;
     }
 
+    /**
+     * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
+     * 
+     * @param timeout An int value containing the milliseconds.
+     */
     public final void setRequestTimeout(int timeout) {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.requestTimeout = timeout;
     }
 
+    /**
+     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
+     * 
+     * @return An int value containing the milliseconds.
+     */
     public final int getReleaseTimeout() {
         return releaseTimeout;
     }
 
+    /**
+     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
+     * 
+     * @param timeout An int value containing the milliseconds.
+     */
     public final void setReleaseTimeout(int timeout) {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.releaseTimeout = timeout;
     }
 
+    /**
+     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
+     * 
+     * @return An int value containing the milliseconds.
+     */
     public final int getSocketCloseDelay() {
         return socketCloseDelay;
     }
 
+    /**
+     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
+     * 
+     * @param delay An int value containing the milliseconds.
+     */
     public final void setSocketCloseDelay(int delay) {
         if (delay < 0)
             throw new IllegalArgumentException("delay: " + delay);
         this.socketCloseDelay = delay;
     }
 
+    /**
+     * Get SO_RCVBUF socket option to specified value in KB.
+     * 
+     * @return An int value containing the buffer size in KB.
+     */
     public final int getReceiveBufferSize() {
         return receiveBufferSize;
     }
 
+    /**
+     * Set SO_RCVBUF socket option to specified value in KB.
+     * 
+     * @param bufferSize An int value containing the buffer size in KB.
+     */
     public final void setReceiveBufferSize(int size) {
         if (size < 0)
             throw new IllegalArgumentException("size: " + size);
         this.receiveBufferSize = size;
     }
 
+    /**
+     * Get SO_SNDBUF socket option to specified value in KB,
+     * 
+     * @return An int value containing the buffer size in KB.
+     */
     public final int getSendBufferSize() {
         return sendBufferSize;
     }
 
+    /**
+     * Set SO_SNDBUF socket option to specified value in KB,
+     * 
+     * @param bufferSize An int value containing the buffer size in KB.
+     */
     public final void setSendBufferSize(int size) {
         if (size < 0)
             throw new IllegalArgumentException("size: " + size);

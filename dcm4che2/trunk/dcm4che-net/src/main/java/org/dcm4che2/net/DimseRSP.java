@@ -43,19 +43,46 @@ import java.io.IOException;
 import org.dcm4che2.data.DicomObject;
 
 /**
+ * API contract for DIMSE response objects (FutureDimseRSP, MultiFindRSP,
+ * SingleDimseRSP).
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Jan 22, 2006
- *
  */
 public interface DimseRSP
 {
+    /**
+     * Send the next response, returning false when complete.
+     * 
+     * @return boolean True if there are more responses to send.
+     * @throws IOException If there was a problem in the network interaction.
+     * @throws InterruptedException If the thread was interrupted.
+     */
     boolean next() throws IOException, InterruptedException;
 
+    /**
+     * Get the response command object.
+     * 
+     * @return DicomObject The command object.
+     */
     DicomObject getCommand();
 
+    /**
+     * Get the dataset contained within this response, null if there is no
+     * dataset.
+     * 
+     * @return DicomObject The dataset contained in this response, if any.
+     */
     DicomObject getDataset();
 
+    /**
+     * Cancel the operation, if this is a DIMSE action that can be cancelled
+     * (such as C-FIND).
+     * 
+     * @param a Association The active association object.
+     * @throws IOException If there was a problem in the network interaction.
+     */
     void cancel(Association a) throws IOException;
 
 }
