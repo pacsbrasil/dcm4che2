@@ -93,19 +93,19 @@
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00380500'"/>
       <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="string(field[12]/text())"/>
+      <xsl:with-param name="val" select="substring(field[12]/text(),1,64)"/>
     </xsl:call-template>
     <!--  HL7:Relevant Clinical Info -> DICOM:Medical Alerts -->
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00102000'"/>
       <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="string(field[13]/text())"/>
+      <xsl:with-param name="val" select="substring(field[13]/text(),1,64)"/>
     </xsl:call-template>
     <!-- HL7:Transportation Mode  -> DICOM:Patient Transport Arrangements -->
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00401004'"/>
       <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="string(field[30]/text())"/>
+      <xsl:with-param name="val" select="substring(field[30]/text(),1,64)"/>
     </xsl:call-template>
   </xsl:template>
   <!-- ORC - sps -->
@@ -115,26 +115,39 @@
       <xsl:call-template name="attr">
         <xsl:with-param name="tag">00400010</xsl:with-param>
         <xsl:with-param name="vr">SH</xsl:with-param>
-        <xsl:with-param name="val" select="string(field[18]/text())"/>
+        <xsl:with-param name="val" select="substring(field[18]/text(),1,16)"/>
       </xsl:call-template>
       <!-- HL7:Entering Device -> DICOM:Modality -->
       <xsl:call-template name="attr">
         <xsl:with-param name="tag">00080060</xsl:with-param>
         <xsl:with-param name="vr">CS</xsl:with-param>
-        <xsl:with-param name="val" select="string(field[18]/component/text())"/>
+        <xsl:with-param name="val" select="substring(field[18]/component/text(),1,16)"/>
       </xsl:call-template>
       <xsl:apply-templates select="following-sibling::OBR[1]" mode="sps"/>
     </item>
   </xsl:template>
   <!-- OBR - sps  -->
   <xsl:template match="OBR" mode="sps">
-    <!-- HL7:Scheduled Date/Time -> DICOM:Scheduled Procedure Step Start Date/Time -->
-    <xsl:variable name="dt" select="string(field[36]/text())"/>
-    <xsl:if test="string-length($dt) >= 10">
+    <!-- HL7:Results Rpt/Status Chng - Date/Time -> DICOM:Scheduled Procedure Step Start Date/Time -->
+    <xsl:variable name="obr36" select="normalize-space(field[36]/text())"/>
+    <xsl:variable name="dt">
+      <xsl:choose>
+        <xsl:when test="$obr36">
+          <xsl:value-of select="$obr36"/>
+        </xsl:when>        
+        <xsl:otherwise>
+          <xsl:value-of select="normalize-space(field[22]/text())"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:if test="string-length($dt) >= 8">
       <xsl:call-template name="attrDATM">
         <xsl:with-param name="datag" select="'00400002'"/>
         <xsl:with-param name="tmtag" select="'00400003'"/>
-        <xsl:with-param name="val" select="$dt"/>
+        <xsl:with-param name="val">
+          <xsl:value-of select="$dt"/>
+          <xsl:if test="string-length($dt) &lt; 10">00</xsl:if>
+        </xsl:with-param>
       </xsl:call-template>
     </xsl:if>
     <!-- HL7:Filler Order Number -> DICOM:Study Instance UID -->
@@ -153,7 +166,7 @@
       <xsl:value-of select="$id"/>
     </attr>
     <!-- HL7:Universal Service Identifier.2 -> DICOM:Requested Procedure Description -->
-    <xsl:variable name="desc" select="string(field[4]/component[1]/text())"/>
+    <xsl:variable name="desc" select="substring(field[4]/component[1]/text(),1,64)"/>
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00321060'"/>
       <xsl:with-param name="vr" select="'LO'"/>

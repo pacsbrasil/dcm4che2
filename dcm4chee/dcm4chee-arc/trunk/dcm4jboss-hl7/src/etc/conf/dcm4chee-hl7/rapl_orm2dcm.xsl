@@ -93,19 +93,19 @@
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00380500'"/>
       <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="string(field[12]/text())"/>
+      <xsl:with-param name="val" select="substring(field[12]/text(),1,64)"/>
     </xsl:call-template>
     <!--  HL7:Relevant Clinical Info -> DICOM:Medical Alerts -->
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00102000'"/>
       <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="string(field[13]/text())"/>
+      <xsl:with-param name="val" select="substring(field[13]/text(),1,64)"/>
     </xsl:call-template>
     <!-- HL7:Transportation Mode  -> DICOM:Patient Transport Arrangements -->
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00401004'"/>
       <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="string(field[30]/text())"/>
+      <xsl:with-param name="val" select="substring(field[30]/text(),1,64)"/>
     </xsl:call-template>
   </xsl:template>
   <!-- ORC - sps -->
@@ -115,13 +115,13 @@
       <xsl:call-template name="attr">
         <xsl:with-param name="tag">00400010</xsl:with-param>
         <xsl:with-param name="vr">SH</xsl:with-param>
-        <xsl:with-param name="val" select="string(field[18]/text())"/>
+        <xsl:with-param name="val" select="substring(field[18]/text(),1,16)"/>
       </xsl:call-template>
       <!-- HL7:Entering Device -> DICOM:Modality -->
       <xsl:call-template name="attr">
         <xsl:with-param name="tag">00080060</xsl:with-param>
         <xsl:with-param name="vr">CS</xsl:with-param>
-        <xsl:with-param name="val" select="string(field[18]/component/text())"/>
+        <xsl:with-param name="val" select="substring(field[18]/component/text(),1,16)"/>
       </xsl:call-template>
       <xsl:apply-templates select="following-sibling::OBR[1]" mode="sps"/>
     </item>
@@ -166,7 +166,7 @@
       <xsl:value-of select="$id"/>
     </attr>
     <!-- HL7:Universal Service Identifier.2 -> DICOM:Requested Procedure Description -->
-    <xsl:variable name="desc" select="string(field[4]/component[1]/text())"/>
+    <xsl:variable name="desc" select="substring(field[4]/component[1]/text(),1,64)"/>
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00321060'"/>
       <xsl:with-param name="vr" select="'LO'"/>
