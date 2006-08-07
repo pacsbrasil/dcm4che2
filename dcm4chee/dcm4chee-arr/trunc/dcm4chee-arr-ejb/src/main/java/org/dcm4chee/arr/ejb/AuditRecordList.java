@@ -1,7 +1,7 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
- * The contents of this file are subject to the Mozilla Public License Version
+ * The contents of this file are subject to the Mozilla License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
@@ -23,8 +23,8 @@
  * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * either the GNU General License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General License Version 2.1 or later (the "LGPL"),
  * in which case the provisions of the GPL or the LGPL are applicable instead
  * of those above. If you wish to allow use of your version of this file only
  * under the terms of either the GPL or the LGPL, and not to allow others to
@@ -45,10 +45,54 @@ import javax.ejb.Local;
  * @since 29.07.2006
  */
 @Local
-public interface AuditRecordList {
+interface AuditRecordList {
 
+    int getPageSize();
+    void setPageSize(int pageSize);
+    
+    int getCurPage();
+    int getMaxPage();
+    int getCount();
+    int getFirstResult();
+    
+    boolean isOrderByEventDateTime();
+    void setOrderByEventDateTime(boolean enable);
+    
+    String getDateTimeRange();
+    void setDateTimeRange(String dt);
+
+    String[] getEventIDs();
+    void setEventIDs(String[] ids);
+    
+    
+    String[] getEventTypes();
+    void setEventTypes(String[] types);
+    
+    String[] getEventActions();
+    void setEventActions(String[] actions);
+
+    Integer[] getEventOutcomes();
+    void setEventOutcomes(Integer[] outcomes);
+    
+    String getEnterpriseSiteID();
+    void setEnterpriseSiteID(String id);
+
+    String getSourceID();
+    void setSourceID(String id);
+
+    Integer[] getSourceTypes();
+    void setSourceTypes(Integer[] types);
+    
     void find();
+    void selectPage();
+    
     void select();
+    boolean isShowAsXml();
+    void showAsXml();
+    void showAsHtml();
+    
+    String getInfo();
+    
     void destroy();
 
 }

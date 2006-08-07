@@ -67,6 +67,7 @@ class AuditRecordHandler extends DefaultHandler {
     private AuditRecord rec;
     private ActiveParticipant ap;
     private AuditSource as;
+    private int asTypeCount;
     private ParticipantObject po;
     private StringBuffer sb = new StringBuffer(64);
     private boolean append;
@@ -83,6 +84,7 @@ class AuditRecordHandler extends DefaultHandler {
         rec = null;
         ap = null;
         as = null;
+        asTypeCount = 0;
         po = null;
         sb.setLength(0);
         append = false;
@@ -160,11 +162,11 @@ class AuditRecordHandler extends DefaultHandler {
     private void activeParticipant(Attributes attrs) {
         ap = new ActiveParticipant();
         ap.setAuditRecord(rec);
-        ap.setUserID(attrs.getValue("UserID"));
-        ap.setAlternativeUserID(attrs.getValue("AlternativeUserID"));
-        ap.setUserName(attrs.getValue("UserName"));
+        ap.setUserID(toUpper(attrs.getValue("UserID")));
+        ap.setAlternativeUserID(toUpper(attrs.getValue("AlternativeUserID")));
+        ap.setUserName(toUpper(attrs.getValue("UserName")));
         ap.setRequestor(!isFalse(attrs.getValue("UserIsRequestor")));
-        ap.setNetworkAccessPointID(attrs.getValue("NetworkAccessPointID"));
+        ap.setNetworkAccessPointID(toUpper(attrs.getValue("NetworkAccessPointID")));
         ap.setNetworkAccessPointType(parseInt(attrs
                 .getValue("NetworkAccessPointTypeCode")));
         Collection<ActiveParticipant> c = rec.getActiveParticipant();
@@ -191,8 +193,8 @@ class AuditRecordHandler extends DefaultHandler {
     private void auditSourceIdentification(Attributes attrs) {
         as = new AuditSource();
         as.setAuditRecord(rec);
-        as.setAuditEnterpriseSiteID(attrs.getValue("AuditEnterpriseSiteID"));
-        as.setAuditSourceID(attrs.getValue("AuditSourceID"));
+        as.setEnterpriseSiteID(toUpper(attrs.getValue("AuditEnterpriseSiteID")));
+        as.setSourceID(toUpper(attrs.getValue("AuditSourceID")));
         Collection<AuditSource> c = rec.getAuditSource();
         if (c == null) {
             c = new ArrayList<AuditSource>(3);
@@ -202,26 +204,38 @@ class AuditRecordHandler extends DefaultHandler {
     }
 
     private void auditSourceTypeCode(Attributes attrs) {
-        as.setAuditSourceTypeCode(parseInt(attrs.getValue("code")));
+	int code = parseInt(attrs.getValue("code"));
+	switch (++asTypeCount) {
+	case 1:
+	    as.setSourceTypeCode(code);
+	    break;
+	case 2:
+	    as.setSourceTypeCode2(code);
+	    break;
+	case 3:
+	    as.setSourceTypeCode3(code);
+	    break;
+	}
     }
 
     private void auditSourceIdentification() {
         as = null;
+        asTypeCount = 0;
     }
 
     private void participantObjectIdentification(Attributes attrs) {
         po = new ParticipantObject();
         po.setAuditRecord(rec);
-        po.setParticipantObjectID(attrs.getValue("ParticipantObjectID"));
+        po.setParticipantObjectID(toUpper(attrs.getValue("ParticipantObjectID")));
         po.setParticipantObjectTypeCode(parseInt(attrs
                 .getValue("ParticipantObjectTypeCode")));
         po.setParticipantObjectTypeCodeRole(parseInt(attrs
                 .getValue("ParticipantObjectTypeCodeRole")));
         po.setParticipantObjectDataLifeCycle(parseInt(attrs
                 .getValue("ParticipantObjectDataLifeCycle")));
-        po.setParticipantObjectSensitivity(attrs
-                .getValue("ParticipantObjectSensitivity"));
-        po.setParticipantObjectName(attrs.getValue("ParticipantObjectName"));
+        po.setParticipantObjectSensitivity(toUpper(attrs
+                .getValue("ParticipantObjectSensitivity")));
+        po.setParticipantObjectName(toUpper(attrs.getValue("ParticipantObjectName")));
         Collection<ParticipantObject> c = rec.getParticipantObject();
         if (c == null) {
             c = new ArrayList<ParticipantObject>(3);
@@ -246,7 +260,7 @@ class AuditRecordHandler extends DefaultHandler {
     }
 
     private void participantObjectName() {
-        po.setParticipantObjectName(sb.toString());
+        po.setParticipantObjectName(toUpper(sb.toString()));
         sb.setLength(0);
         append = false;
     }
@@ -263,7 +277,7 @@ class AuditRecordHandler extends DefaultHandler {
         }
         String meaning = attrs.getValue("displayName");
         List queryResult = em.createQuery(
-                "from Code c where c.value = :value and c.designator = :designator")
+                "FROM Code c WHERE c.value = :value AND c.designator = :designator")
                 .setParameter("value", value)
                 .setParameter("designator", designator)
                 .setHint("org.hibernate.readOnly", Boolean.TRUE)
@@ -277,6 +291,10 @@ class AuditRecordHandler extends DefaultHandler {
         code.setMeaning(meaning);
         em.persist(code);
         return code;
+    }
+
+    private String toUpper(String s) {
+	return s != null ? s.toUpperCase() : null;
     }
 
     private int parseInt(String s) {

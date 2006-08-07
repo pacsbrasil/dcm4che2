@@ -39,6 +39,7 @@ package org.dcm4chee.arr.ejb;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Date;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -103,6 +104,8 @@ public class ReceiverMDB implements MessageListener {
                         AuditMessageUtils.promptMsg(xmldata));
             }            
             AuditRecord rec = new AuditRecord();
+            rec.setReceiveDateTime(new Date(msg.getJMSTimestamp()));
+            rec.setIHEYr4(AuditMessageUtils.isIHEYr4(xmldata));
             rec.setXmldata(xmldata);
             parse(xmldata, rec);
             em.persist(rec);
@@ -125,7 +128,7 @@ public class ReceiverMDB implements MessageListener {
         try {
             handler.setAuditRecord(rec);
             ByteArrayInputStream is = new ByteArrayInputStream(xmldata);
-            if (AuditMessageUtils.isIHEYr4(xmldata)) {
+            if (rec.isIHEYr4()) {
                 xslt(is);
             } else {
                 parse(is);

@@ -59,9 +59,11 @@ import javax.persistence.Table;
 public class AuditSource implements Serializable {
     private int pk;
     private AuditRecord auditRecord;
-    private String auditEnterpriseSiteID;
-    private String auditSourceID;
-    private int auditSourceTypeCode;    
+    private String enterpriseSiteID;
+    private String sourceID;
+    private int sourceTypeCode;
+    private int sourceTypeCode2;    
+    private int sourceTypeCode3;    
 
     @Id
     @GeneratedValue
@@ -84,30 +86,49 @@ public class AuditSource implements Serializable {
         this.auditRecord = auditRecord;
     }
 
-    @Column(name = "audit_site_id")
-    public String getAuditEnterpriseSiteID() {
-        return auditEnterpriseSiteID;
+    @Column(name = "site_id")
+    public String getEnterpriseSiteID() {
+        return enterpriseSiteID;
     }
     
-    public void setAuditEnterpriseSiteID(String auditEnterpriseSiteID) {
-        this.auditEnterpriseSiteID = auditEnterpriseSiteID;
+    public void setEnterpriseSiteID(String auditEnterpriseSiteID) {
+        this.enterpriseSiteID = auditEnterpriseSiteID;
     }
     
-    @Column(name = "audit_source_id")
-    public String getAuditSourceID() {
-        return auditSourceID;
+    @Column(name = "source_id")
+    public String getSourceID() {
+        return sourceID;
     }
     
-    public void setAuditSourceID(String auditSourceID) {
-        this.auditSourceID = auditSourceID;
+    public void setSourceID(String auditSourceID) {
+        this.sourceID = auditSourceID;
     }
 
-    @Column(name = "audit_source_type")
-    public int getAuditSourceTypeCode() {
-        return auditSourceTypeCode;
+    @Column(name = "source_type")
+    public int getSourceTypeCode() {
+        return sourceTypeCode;
     }
 
-    public void setAuditSourceTypeCode(int auditSourceTypeCode) {
-        this.auditSourceTypeCode = auditSourceTypeCode;
+    public void setSourceTypeCode(int typeCode) {
+        this.sourceTypeCode = typeCode;
+    }
+
+    @Column(name = "source_type2")
+    public int getSourceTypeCode2() {
+        return sourceTypeCode2;
+    }
+
+    public void setSourceTypeCode2(int typeCode) {
+        this.sourceTypeCode2 = typeCode;
+    }
+
+
+    @Column(name = "source_type3")
+    public int getSourceTypeCode3() {
+        return sourceTypeCode3;
+    }
+
+    public void setSourceTypeCode3(int typeCode) {
+        this.sourceTypeCode3 = typeCode;
     }
 }

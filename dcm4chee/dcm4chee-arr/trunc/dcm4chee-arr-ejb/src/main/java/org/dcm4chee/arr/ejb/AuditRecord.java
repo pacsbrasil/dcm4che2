@@ -41,6 +41,7 @@ package org.dcm4chee.arr.ejb;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -57,12 +58,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
-import org.dcm4chee.arr.util.XSLTUtils;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
+import org.jboss.seam.annotations.Transactional;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -80,10 +80,12 @@ public class AuditRecord implements Serializable {
     private String eventActionCode;
     private int eventOutcomeIndicator;
     private Date eventDateTime;
+    private Date receiveDateTime;
     private Collection<Code> eventTypeCode;  
     private Collection<ActiveParticipant> activeParticipant;
     private Collection<AuditSource> auditSource;
     private Collection<ParticipantObject> participantObject;
+    private boolean iheYr4;
     private byte[] xmldata;
 
     @Id
@@ -104,8 +106,7 @@ public class AuditRecord implements Serializable {
 
     public void setEventID(Code eventID) {
         this.eventID = eventID;
-    }
-    
+    }    
 
     @ManyToMany(targetEntity=Code.class)
     @JoinTable(
@@ -119,6 +120,25 @@ public class AuditRecord implements Serializable {
     public void setEventTypeCode(Collection<Code> eventTypeCode) {
         this.eventTypeCode = eventTypeCode;
     }
+    
+    @Transactional
+    public String getSummary() {
+	String id = eventID.getMeaning();
+	if (eventTypeCode == null || eventTypeCode.isEmpty()) {
+	    return id;
+	}
+	StringBuffer sb = new StringBuffer(id);
+	sb.append(" : ");
+	for (Iterator iter = eventTypeCode.iterator(); iter.hasNext();) {
+	    Code code = (Code) iter.next();
+	    sb.append(code.getMeaning()).append(", ");
+	}
+	sb.setLength(sb.length() - 2);
+	return sb.toString();
+    }
+
+    @Transactional
+    public void setSummary(String s) {}
     
     @OneToMany(cascade = CascadeType.ALL, mappedBy="auditRecord")
     public Collection<ActiveParticipant> getActiveParticipant() {
@@ -155,7 +175,7 @@ public class AuditRecord implements Serializable {
     public void setEventActionCode(String eventActionCode) {
         this.eventActionCode = eventActionCode;
     }
-    
+
     @Column(name = "event_outcome")
     public int getEventOutcomeIndicator() {
         return eventOutcomeIndicator;
@@ -164,16 +184,35 @@ public class AuditRecord implements Serializable {
     public void setEventOutcomeIndicator(int eventOutcomeIndicator) {
         this.eventOutcomeIndicator = eventOutcomeIndicator;
     }
-    
+
     @Basic @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "event_date_time")
     public Date getEventDateTime() {
         return eventDateTime;
     }
     
-    public void setEventDateTime(Date eventDateTime) {
-        this.eventDateTime = eventDateTime;
+    public void setEventDateTime(Date dt) {
+        this.eventDateTime = dt;
     }
+    
+    @Basic @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "receive_date_time")
+    public Date getReceiveDateTime() {
+        return receiveDateTime;
+    }
+    
+    public void setReceiveDateTime(Date dt) {
+        this.receiveDateTime = dt;
+    }
+    
+    @Column(name = "iheyr4")
+    public boolean isIHEYr4() {
+        return iheYr4;
+    }
+    
+    public void setIHEYr4(boolean iheYr4) {
+        this.iheYr4 = iheYr4;
+    }    
     
     @Lob
     @Column(name = "xmldata")
@@ -184,10 +223,4 @@ public class AuditRecord implements Serializable {
     public void setXmldata(byte[] xmldata) {
         this.xmldata = xmldata;
     }
-    
-    @Transient
-    public String getXml() {
-        return XSLTUtils.toXML(xmldata);
-    }
-    
 }
