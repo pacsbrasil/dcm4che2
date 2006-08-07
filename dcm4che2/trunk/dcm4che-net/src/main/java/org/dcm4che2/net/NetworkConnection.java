@@ -287,7 +287,7 @@ public class NetworkConnection
     }
 
     /**
-     * Get SO_RCVBUF socket option to specified value in KB.
+     * Get the SO_RCVBUF socket value in KB.
      * 
      * @return An int value containing the buffer size in KB.
      */
@@ -296,7 +296,7 @@ public class NetworkConnection
     }
 
     /**
-     * Set SO_RCVBUF socket option to specified value in KB.
+     * Set the SO_RCVBUF socket option to specified value in KB.
      * 
      * @param bufferSize An int value containing the buffer size in KB.
      */
@@ -307,7 +307,7 @@ public class NetworkConnection
     }
 
     /**
-     * Get SO_SNDBUF socket option to specified value in KB,
+     * Get the SO_SNDBUF socket option value in KB,
      * 
      * @return An int value containing the buffer size in KB.
      */
@@ -316,7 +316,7 @@ public class NetworkConnection
     }
 
     /**
-     * Set SO_SNDBUF socket option to specified value in KB,
+     * Set the SO_SNDBUF socket option to specified value in KB,
      * 
      * @param bufferSize An int value containing the buffer size in KB.
      */
@@ -326,10 +326,22 @@ public class NetworkConnection
         this.sendBufferSize = size;
     }
 
+    /**
+     * Determine if this network connection is using Nagle's algorithm as part of its
+     * network communication.
+     * 
+     * @return boolean True if TCP no delay (Nagle's algorithm) is being used.
+     */
     public final boolean isTcpNoDelay() {
         return tcpNoDelay;
     }
 
+    /**
+     * Set whether or not this network connection should use Nagle's algorithm as part of its
+     * network communication.
+     * 
+     * @param tcpNoDelay boolean True if TCP no delay (Nagle's algorithm) should be used.
+     */
     public final void setTcpNoDelay(boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
     }
