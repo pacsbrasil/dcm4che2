@@ -212,9 +212,10 @@ public class AuditRecordListAction implements AuditRecordList {
     }
 
     @Factory("records")
-    public void find() {
+    public String find() {
 	curPage = 1;
 	updateResults();
+	return ("browse");
     }
     
     public void selectPage() {

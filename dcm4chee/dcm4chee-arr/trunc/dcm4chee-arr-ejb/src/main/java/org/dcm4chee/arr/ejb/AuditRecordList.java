@@ -83,7 +83,7 @@ interface AuditRecordList {
     Integer[] getSourceTypes();
     void setSourceTypes(Integer[] types);
     
-    void find();
+    String find();
     void selectPage();
     
     void select();
