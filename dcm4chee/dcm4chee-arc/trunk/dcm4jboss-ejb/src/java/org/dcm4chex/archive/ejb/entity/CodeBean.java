@@ -202,4 +202,28 @@ public abstract class CodeBean implements EntityBean {
     		c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
     	}
     }
+    
+    public static boolean checkCodes(String prompt, DcmElement sq) {
+        if (sq == null || sq.isEmpty())
+            return true;
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
+            Dataset item = sq.getItem(i);
+            if (!item.containsValue(Tags.CodeValue)) {
+                log.warn("Missing Code Value (0008,0100) in " + prompt
+                        + " - ignore all items");
+                return false;
+            }
+            if (!item.containsValue(Tags.CodingSchemeDesignator)) {
+                log.warn("Missing Coding Scheme Designator (0008,0102) in "
+                        + prompt + " - ignore all items");
+                return false;
+            }
+            if (!item.containsValue(Tags.CodeMeaning)) {
+                log.warn("Missing Code Meaning (0008,0104) in " + prompt
+                        + " - ignore all items");
+                return false;
+            }
+        }
+        return true;
+    }
 }

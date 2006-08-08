@@ -55,6 +55,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
@@ -452,14 +453,17 @@ public abstract class StudyBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, PatientLocal patient)
             throws CreateException {
         try {
-        	setPatient(patient);
-        	CodeBean.addCodesTo(codeHome, 
-        			ds.get(Tags.ProcedureCodeSeq),
-        			getProcedureCodes());
+            setPatient(patient);
+            DcmElement proceCodeSq = ds.get(Tags.ProcedureCodeSeq);
+            if (proceCodeSq != null
+                    && CodeBean.checkCodes(
+                            "Procedure Code Sequence (0008,1032)", proceCodeSq)) {
+                CodeBean.addCodesTo(codeHome, proceCodeSq, getProcedureCodes());
+            }
         } catch (CreateException e) {
-        	throw e;
+            throw e;
         } catch (FinderException e) {
-        	throw new CreateException(e.getMessage());
+            throw new CreateException(e.getMessage());
         }
         log.info("Created " + prompt());
     }
