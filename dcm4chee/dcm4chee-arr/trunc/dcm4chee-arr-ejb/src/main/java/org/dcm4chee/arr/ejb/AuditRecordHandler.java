@@ -47,8 +47,6 @@ import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -61,33 +59,18 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 class AuditRecordHandler extends DefaultHandler {
 
-    private Logger log = LoggerFactory.getLogger(AuditRecordHandler.class);
+    protected final EntityManager em;
+    protected final AuditRecord rec;
+    protected ActiveParticipant ap;
+    protected AuditSource as;
+    protected int asTypeCount;
+    protected ParticipantObject po;
+    protected StringBuffer sb = new StringBuffer(64);
+    protected boolean append;
 
-    private EntityManager em;
-    private AuditRecord rec;
-    private ActiveParticipant ap;
-    private AuditSource as;
-    private int asTypeCount;
-    private ParticipantObject po;
-    private StringBuffer sb = new StringBuffer(64);
-    private boolean append;
-
-    public AuditRecordHandler(EntityManager em) {
+    public AuditRecordHandler(EntityManager em, AuditRecord rec) {
         this.em = em;
-    }
-
-    public void setAuditRecord(AuditRecord rec) {
         this.rec = rec;
-    }
-
-    public void reset() {
-        rec = null;
-        ap = null;
-        as = null;
-        asTypeCount = 0;
-        po = null;
-        sb.setLength(0);
-        append = false;
     }
 
     @Override
@@ -297,15 +280,15 @@ class AuditRecordHandler extends DefaultHandler {
 	return s != null ? s.toUpperCase() : null;
     }
 
-    private int parseInt(String s) {
+    private static int parseInt(String s) {
         return s != null ? Integer.parseInt(s) : 0;
     }
 
-    private boolean isFalse(String s) {
+    private static boolean isFalse(String s) {
         return "false".equalsIgnoreCase(s);
     }
 
-    private Date parseISO8601DateTime(String s) {
+    private static Date parseISO8601DateTime(String s) {
         int tzindex = indexOfTimeZone(s);
         Calendar cal;
         if (tzindex == -1) {
@@ -351,7 +334,7 @@ class AuditRecordHandler extends DefaultHandler {
         return cal.getTime();
     }
 
-    private int indexOfTimeZone(String s) {
+    private static int indexOfTimeZone(String s) {
         int len = s.length();
         int index = len - 1;
         char c = s.charAt(index);
@@ -371,7 +354,7 @@ class AuditRecordHandler extends DefaultHandler {
         return -1;
     }
 
-    private int timeZoneOffset(String s, int tzindex) {
+    private static int timeZoneOffset(String s, int tzindex) {
         char c = s.charAt(tzindex);
         if (c == 'Z') {
             return 0;
@@ -383,7 +366,28 @@ class AuditRecordHandler extends DefaultHandler {
         return c == '-' ? -off : off;
     }
 
-    private boolean isDigit(char c) {
+    private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
+    }
+    
+    static class ATNA extends AuditRecordHandler {
+	
+	public ATNA(EntityManager em, AuditRecord rec) {
+	    super(em, rec);
+	}
+	
+    }
+    
+    static class IHEYr4 extends AuditRecordHandler {
+	
+	public IHEYr4(EntityManager em, AuditRecord rec) {
+	    super(em, rec);
+	}
+	
+    }
+    
+    public static AuditRecordHandler newAuditRecordHandler(EntityManager em,
+	    AuditRecord rec) {
+	return rec.isIHEYr4() ? new IHEYr4(em, rec) : new ATNA(em, rec);
     }
 }

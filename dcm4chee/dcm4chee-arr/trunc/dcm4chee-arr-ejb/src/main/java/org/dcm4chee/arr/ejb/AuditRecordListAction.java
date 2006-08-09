@@ -59,6 +59,7 @@ import org.jboss.seam.annotations.RequestParameter;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
 import org.jboss.seam.annotations.datamodel.DataModelSelection;
+import org.jboss.seam.annotations.datamodel.DataModelSelectionIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +82,8 @@ public class AuditRecordListAction implements AuditRecordList {
     private static final int HOUR_OF_DAY = 13;
     private static final int MINUTE = 16;
     private static final int SECOND = 19;
-    private static final Logger log = LoggerFactory.getLogger(AuditRecordList.class);
+    
+    private Logger log = LoggerFactory.getLogger(AuditRecordList.class);
 
     @PersistenceContext(type=PersistenceContextType.EXTENDED) 
     private EntityManager em;
@@ -89,8 +91,8 @@ public class AuditRecordListAction implements AuditRecordList {
     @DataModel
     private List<AuditRecord> records;
     
-    @DataModelSelection
-    private AuditRecord selected;
+    @DataModelSelectionIndex
+    private int selectedIndex = -1;
     
     @RequestParameter
     private Integer page;
@@ -98,7 +100,7 @@ public class AuditRecordListAction implements AuditRecordList {
     private int curPage = 1;
     private int pageSize = 20;
     private int count = 0;
-    private boolean showAsXml = false;   
+    private boolean showXml = false;   
     private boolean orderByEventDateTime = false;
     
     private String dateTimeRange = today();
@@ -255,6 +257,7 @@ public class AuditRecordListAction implements AuditRecordList {
         	.setHint("org.hibernate.readOnly", Boolean.TRUE)
         	.getResultList();
 	log.info("Found {} records",  count);
+	selectedIndex = -1;
     }
     
     private Date[] parseDateTimeRange() throws ParseException {
@@ -288,25 +291,46 @@ public class AuditRecordListAction implements AuditRecordList {
 	return dtRange;
     }
     
-    public void select() {}
-    
-    public boolean isShowAsXml() {
-        return showAsXml;
+    public boolean isShowXml() {
+        return showXml;
     }
 
-    public void showAsXml() {
-        showAsXml = true;
+    public void showXml() {
+        showXml = true;
     }
 
-    public void showAsHtml() {
-        showAsXml = false;
+    public void showDetails() {
+        showXml = false;
     }
     
-    public String getInfo() {
-        if (selected == null) {
+    public String getXml() {
+        if (selectedIndex == -1) {
             return "No Record selected";
         }
-        return showAsXml ? XSLTUtils.toXML(selected.getXmldata()) : "<b>TO DO</b>";
+        return XSLTUtils.toXML(records.get(selectedIndex).getXmldata());
+    }
+    
+    public String getDetails() {
+        if (selectedIndex == -1) {
+            return "No Record selected";
+        }
+        return XSLTUtils.toDetails(records.get(selectedIndex).getXmldata());
+    }
+    
+    public String getRowClasses() {
+	int n = records.size();
+	if (n == 0) {
+	    return "";
+	}
+	StringBuffer sb = new StringBuffer((n + 3)/2 * 9);
+	for (int i = 0; i < n; i++) {
+	    sb.append((i & 1) == 0 ? "odd" : "even");
+	    if (i == selectedIndex) {
+		sb.append(" selected");
+	    }
+	    sb.append(',');
+	}
+	return sb.substring(0, sb.length()-1);
     }
 
     @Destroy @Remove

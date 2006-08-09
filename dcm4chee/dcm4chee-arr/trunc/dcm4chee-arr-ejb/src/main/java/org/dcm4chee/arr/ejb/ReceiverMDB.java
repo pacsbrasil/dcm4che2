@@ -51,11 +51,6 @@ import javax.persistence.PersistenceContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4chee.arr.util.AuditMessageUtils;
 import org.slf4j.Logger;
@@ -77,16 +72,11 @@ import org.xml.sax.SAXException;
                 propertyValue = "queue/ARRReceiver") })
 public class ReceiverMDB implements MessageListener {
 
-    private Logger log = LoggerFactory.getLogger(ReceiverMDB.class);
+    private static Logger log = LoggerFactory.getLogger(ReceiverMDB.class);
     
-    private static final String IHEYR4_XSL_URL =
-        "resource:org/dcm4chee/arr/ejb/iheyr4.xsl";
-
     @PersistenceContext(unitName="dcm4chee-arr")
     private EntityManager em;
     private SAXParser parser;
-    private Transformer transformer;
-    private AuditRecordHandler handler;
 
     public void onMessage(Message msg) {
         byte[] xmldata;
@@ -107,7 +97,7 @@ public class ReceiverMDB implements MessageListener {
             rec.setReceiveDateTime(new Date(msg.getJMSTimestamp()));
             rec.setIHEYr4(AuditMessageUtils.isIHEYr4(xmldata));
             rec.setXmldata(xmldata);
-            parse(xmldata, rec);
+            parse(rec);
             em.persist(rec);
             if (log.isDebugEnabled()) {
                 log.debug("Finished processing {}", 
@@ -119,47 +109,16 @@ public class ReceiverMDB implements MessageListener {
         }
      }
 
-    private void parse(byte[] xmldata, AuditRecord rec) 
-            throws TransformerException, ParserConfigurationException, 
-            SAXException, IOException {
-        if (handler == null) {
-            handler = new AuditRecordHandler(em);
-        }
-        try {
-            handler.setAuditRecord(rec);
-            ByteArrayInputStream is = new ByteArrayInputStream(xmldata);
-            if (rec.isIHEYr4()) {
-                xslt(is);
-            } else {
-                parse(is);
-            }
-        } finally {
-            handler.reset();
-        }
+    private void parse(AuditRecord rec) throws ParserConfigurationException,
+	    SAXException, IOException {
+	ByteArrayInputStream is = new ByteArrayInputStream(rec.getXmldata());
+	if (parser == null) {
+	    parser = SAXParserFactory.newInstance().newSAXParser();
+	}
+	try {
+	    parser.parse(is, AuditRecordHandler.newAuditRecordHandler(em, rec));
+	} finally {
+	    parser.reset();
+	}
     }
-
-    private void parse(ByteArrayInputStream is) 
-            throws ParserConfigurationException, SAXException, IOException {
-        if (parser == null) {
-            parser = SAXParserFactory.newInstance().newSAXParser();
-        }
-        try {
-            parser.parse(is, handler);
-        } finally {
-            parser.reset();
-        }        
-    }
-
-    private void xslt(ByteArrayInputStream is) throws TransformerException {
-        if (transformer == null) {
-            StreamSource iheyr4xsl = new StreamSource(IHEYR4_XSL_URL);
-            transformer = SAXTransformerFactory.newInstance().newTransformer(iheyr4xsl);
-        }
-        try {
-            transformer.transform(new StreamSource(is), new SAXResult(handler));
-        } finally {
-            transformer.reset();
-        }        
-    }
-
 }

@@ -42,8 +42,12 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -53,19 +57,57 @@ import javax.xml.transform.stream.StreamSource;
  * @since Aug 2, 2006
  */
 public class XSLTUtils {
+    
+    private static final String SUMMARY_XSL = "resource:arr-summary.xsl";
+    private static final String DETAILS_XSL = "resource:arr-details.xsl";
+    private static Templates summaryTpl;
+    private static Templates detailsTpl;
 
-    public static String toXML(byte[] b) {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        StringWriter out = new StringWriter(512);
+    public static String toXML(byte[] xmldata) {
         try {
-            Transformer tr = tf.newTransformer();
+            Transformer tr = TransformerFactory.newInstance().newTransformer();
             tr.setOutputProperty(OutputKeys.INDENT, "yes");
-            tr.transform(new StreamSource(
-                    new ByteArrayInputStream(b)), 
-                    new StreamResult(out));
+            return transform(tr, xmldata);
         } catch (Exception e) {
             return e.getMessage();
         }
-        return out.toString();
     }
+
+    public static String toSummary(byte[] xmldata) {
+	try {
+	    if (summaryTpl == null) {
+		summaryTpl = loadTemplates(SUMMARY_XSL);
+	    }
+	    return transform(detailsTpl.newTransformer(), xmldata);
+	} catch (Exception e) {
+	    return e.getMessage();
+	}
+    }
+
+    public static String toDetails(byte[] xmldata) {
+	try {
+	    if (detailsTpl == null) {
+		detailsTpl = loadTemplates(DETAILS_XSL);
+	    }
+	    return transform(detailsTpl.newTransformer(), xmldata);
+	} catch (Exception e) {
+	    return e.getMessage();
+	}
+    }
+
+    private static String transform(Transformer tr, byte[] xmldata)
+	    throws TransformerException {
+	StringWriter out = new StringWriter(512);
+	tr.transform(new StreamSource(new ByteArrayInputStream(xmldata)),
+		new StreamResult(out));
+	return out.toString();
+    }
+
+    private static Templates loadTemplates(String url)
+	    throws TransformerConfigurationException,
+	    TransformerFactoryConfigurationError {
+	return TransformerFactory.newInstance().newTemplates(
+		new StreamSource(url));
+    }
+    
 }

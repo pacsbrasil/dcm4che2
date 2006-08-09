@@ -76,7 +76,7 @@ public class UDPServerMBean implements UDPServer {
     private static final int MAX_PACKAGE_SIZE = 65507;
     private static final int DEFAULT_PORT = 4000;
 
-    private Logger log = LoggerFactory.getLogger(UDPServerMBean.class);
+    private static Logger log = LoggerFactory.getLogger(UDPServerMBean.class);
     
     @Resource (mappedName="ConnectionFactory")
     private QueueConnectionFactory cf;

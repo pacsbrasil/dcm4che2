@@ -86,12 +86,13 @@ interface AuditRecordList {
     String find();
     void selectPage();
     
-    void select();
-    boolean isShowAsXml();
-    void showAsXml();
-    void showAsHtml();
+    boolean isShowXml();
+    void showXml();
+    void showDetails();
     
-    String getInfo();
+    String getXml();
+    String getDetails();
+    String getRowClasses();
     
     void destroy();
 

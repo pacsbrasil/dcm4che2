@@ -41,7 +41,6 @@ package org.dcm4chee.arr.ejb;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -58,7 +57,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
+import org.dcm4chee.arr.util.XSLTUtils;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -87,6 +88,8 @@ public class AuditRecord implements Serializable {
     private Collection<ParticipantObject> participantObject;
     private boolean iheYr4;
     private byte[] xmldata;
+    @Transient
+    private String summary;
 
     @Id
     @GeneratedValue
@@ -123,22 +126,16 @@ public class AuditRecord implements Serializable {
     
     @Transactional
     public String getSummary() {
-	String id = eventID.getMeaning();
-	if (eventTypeCode == null || eventTypeCode.isEmpty()) {
-	    return id;
-	}
-	StringBuffer sb = new StringBuffer(id);
-	sb.append(" : ");
-	for (Iterator iter = eventTypeCode.iterator(); iter.hasNext();) {
-	    Code code = (Code) iter.next();
-	    sb.append(code.getMeaning()).append(", ");
-	}
-	sb.setLength(sb.length() - 2);
-	return sb.toString();
+//	if (summary == null) {
+	    summary = XSLTUtils.toSummary(xmldata);
+//	}
+	return summary;
     }
 
     @Transactional
-    public void setSummary(String s) {}
+    public void setSummary(String summary) {
+	this.summary = summary;
+    }
     
     @OneToMany(cascade = CascadeType.ALL, mappedBy="auditRecord")
     public Collection<ActiveParticipant> getActiveParticipant() {
