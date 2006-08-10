@@ -58,8 +58,8 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class XSLTUtils {
     
-    private static final String SUMMARY_XSL = "resource:arr-summary.xsl";
-    private static final String DETAILS_XSL = "resource:arr-details.xsl";
+    private static final String SUMMARY_XSL = "arr-summary.xsl";
+    private static final String DETAILS_XSL = "arr-details.xsl";
     private static Templates summaryTpl;
     private static Templates detailsTpl;
 
@@ -103,11 +103,12 @@ public class XSLTUtils {
 	return out.toString();
     }
 
-    private static Templates loadTemplates(String url)
+    private static Templates loadTemplates(String name)
 	    throws TransformerConfigurationException,
 	    TransformerFactoryConfigurationError {
+	ClassLoader cl = Thread.currentThread().getContextClassLoader();
 	return TransformerFactory.newInstance().newTemplates(
-		new StreamSource(url));
+		new StreamSource(cl.getResource(name).toString()));
     }
     
 }
