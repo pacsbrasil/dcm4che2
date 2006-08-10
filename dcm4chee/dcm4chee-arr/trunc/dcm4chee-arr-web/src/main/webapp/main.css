@@ -1,11 +1,23 @@
-#filter  { float:left; width:19.5em }
-#list, #info  { margin-left:22em }
-#details, #xml { border: 1px solid #CCC; background-color: #E9E9E9 }
-select { width:100% }
-body, div, span, td, th, caption { font-family: 'Trebuchet MS', Verdana,
-Arial, Sans-Serif; font-size: small; }
-.selected { background-color: #E9E9E9}
-table { border: 1px solid #CCC; border-collapse: collapse; border-spacing:
-0px; width: 100%; text-align: left }
-td { border: 1px solid #CCC }
-thead tr th { padding: 2px; color: #030; background-color: #E0E0E0 }
+#filter  { float:left; width:21em }
+#list, #info  { margin-left:23.5em }
+#details, #xml  { 
+	border:1px solid #CCC;
+	background-color:#E9E9E9 
+}
+select, fieldset  { width:100% }
+body, div, span, td, th, caption  { 
+	
+	font-family:'Trebuchet MS', Verdana, Arial, Sans-Serif;
+	font-size:small
+}
+.selected  { background-color:#E9E9E9 }
+table  { 
+	border:1px solid #CCC;
+	border-collapse:collapse; border-spacing:0px;
+	width:100%; text-align:left 
+}
+td  { border:1px solid #CCC }
+thead tr th  { 
+	padding:2px; color:#030;
+	background-color:#E0E0E0 
+}
