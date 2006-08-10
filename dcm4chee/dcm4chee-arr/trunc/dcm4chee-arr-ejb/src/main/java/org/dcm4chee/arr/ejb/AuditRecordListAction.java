@@ -58,7 +58,6 @@ import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.RequestParameter;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
-import org.jboss.seam.annotations.datamodel.DataModelSelection;
 import org.jboss.seam.annotations.datamodel.DataModelSelectionIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +82,7 @@ public class AuditRecordListAction implements AuditRecordList {
     private static final int MINUTE = 16;
     private static final int SECOND = 19;
     
-    private Logger log = LoggerFactory.getLogger(AuditRecordList.class);
+    private static Logger log = LoggerFactory.getLogger(AuditRecordList.class);
 
     @PersistenceContext(type=PersistenceContextType.EXTENDED) 
     private EntityManager em;
@@ -107,11 +106,37 @@ public class AuditRecordListAction implements AuditRecordList {
     private String[] eventIDs = { "" };
     private String[] eventTypes = { "" };
     private String[] eventActions = { "" };
-    private Integer[] eventOutcomes = { -1 };
+    private String[] eventOutcomes = { "" };
     
-    private String enterpriseSiteID = "";
+    private String userID1 = "";
+    private String altUserID1 = "";
+    private String userName1 = "";
+    private boolean userIsRequestor1 = false;
+    private String[] roleIDs1 = { "" };
+    private String[] napTypes1 = { "" };
+    private String napID1 = "";
+
+    private String userID2 = "";
+    private String altUserID2 = "";
+    private String userName2 = "";
+    private boolean userIsRequestor2 = false;
+    private String[] roleIDs2 = { "" };
+    private String[] napTypes2 = { "" };
+    private String napID2 = "";
+    
+    private String siteID = "";
     private String sourceID = "";
-    private Integer[] sourceTypes = { -1 };   
+    private String[] sourceTypes = { "" };
+    
+    private String[] objectTypes = { "" };
+    private String[] objectRoles = { "" };
+    private String[] lifeCycles = { "" };
+    private String[] objectIDTypes = { "" };
+    private String objectID = "";
+    private String objectName = "";
+    private String accession = "";
+    private String mpps = "";
+    private String study = "";
 
     public int getPageSize() {
         return pageSize;
@@ -181,20 +206,132 @@ public class AuditRecordListAction implements AuditRecordList {
         this.eventActions = actions;
     }
 
-    public Integer[] getEventOutcomes() {
+    public String[] getEventOutcomes() {
         return eventOutcomes;
     }
 
-    public void setEventOutcomes(Integer[] outcomes) {
+    public void setEventOutcomes(String[] outcomes) {
         this.eventOutcomes = outcomes;
     }
     
-    public String getEnterpriseSiteID() {
-        return enterpriseSiteID;
+    public String getUserID1() {
+        return userID1;
     }
 
-    public void setEnterpriseSiteID(String id) {
-        this.enterpriseSiteID = id;
+    public void setUserID1(String id) {
+        this.userID1 = id;
+    }
+
+    public String getAltUserID1() {
+        return altUserID1;
+    }
+
+    public void setAltUserID1(String id) {
+        this.altUserID1 = id;
+    }
+
+    public String getUserName1() {
+        return userName1;
+    }
+
+    public void setUserName1(String name) {
+        this.userName1 = name;
+    }
+    
+    public boolean isUserIsRequestor1() {
+        return userIsRequestor1;
+    }
+
+    public void setUserIsRequestor1(boolean requestor) {
+        this.userIsRequestor1 = requestor;
+    }
+
+    public String[] getRoleIDs1() {
+	return roleIDs1;
+    }
+    
+    public void setRoleIDs1(String[] ids) {
+	this.roleIDs1 = ids;
+    }
+
+    public String[] getNapTypes1() {
+	return napTypes1;
+    }
+    
+    public void setNapTypes1(String[] types) {
+	this.napTypes1 = types;
+    }
+    
+    public String getNapID1() {
+        return napID1;
+    }
+
+    public void setNapID1(String id) {
+        this.napID1 = id;
+    }
+    
+    public String getUserID2() {
+        return userID2;
+    }
+
+    public void setUserID2(String id) {
+        this.userID2 = id;
+    }
+
+    public String getAltUserID2() {
+        return altUserID2;
+    }
+
+    public void setAltUserID2(String id) {
+        this.altUserID2 = id;
+    }
+
+    public String getUserName2() {
+        return userName2;
+    }
+
+    public void setUserName2(String name) {
+        this.userName2 = name;
+    }
+    
+    public boolean isUserIsRequestor2() {
+        return userIsRequestor2;
+    }
+
+    public void setUserIsRequestor2(boolean requestor) {
+        this.userIsRequestor2 = requestor;
+    }
+
+    public String[] getRoleIDs2() {
+	return roleIDs2;
+    }
+    
+    public void setRoleIDs2(String[] ids) {
+	this.roleIDs2 = ids;
+    }
+
+    public String[] getNapTypes2() {
+	return napTypes2;
+    }
+    
+    public void setNapTypes2(String[] types) {
+	this.napTypes2 = types;
+    }
+    
+    public String getNapID2() {
+        return napID2;
+    }
+
+    public void setNapID2(String id) {
+        this.napID2 = id;
+    }
+    
+    public String getSiteID() {
+        return siteID;
+    }
+
+    public void setSiteID(String id) {
+        this.siteID = id;
     }
 
     public String getSourceID() {
@@ -205,12 +342,84 @@ public class AuditRecordListAction implements AuditRecordList {
         this.sourceID = id;
     }
 
-    public Integer[] getSourceTypes() {
+    public String[] getSourceTypes() {
         return sourceTypes;
     }
 
-    public void setSourceTypes(Integer[] sourceTypes) {
-        this.sourceTypes = sourceTypes;
+    public void setSourceTypes(String[] types) {
+        this.sourceTypes = types;
+    }
+
+    public String[] getObjectTypes() {
+        return objectTypes;
+    }
+
+    public void setObjectTypes(String[] types) {
+        this.objectTypes = types;
+    }
+
+    public String[] getObjectRoles() {
+        return objectRoles;
+    }
+
+    public void setObjectRoles(String[] roles) {
+        this.objectRoles = roles;
+    }
+
+    public String[] getLifeCycles() {
+        return lifeCycles;
+    }
+
+    public void setLifeCycles(String[] lifeCycles) {
+        this.lifeCycles = lifeCycles;
+    }
+
+    public String[] getObjectIDTypes() {
+        return objectIDTypes;
+    }
+
+    public void setObjectIDTypes(String[] types) {
+        this.objectIDTypes = types;
+    }
+
+    public String getObjectID() {
+        return objectID;
+    }
+
+    public void setObjectID(String id) {
+        this.objectID = id;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public void setObjectName(String name) {
+        this.objectName = name;
+    }
+
+    public String getAccession() {
+        return accession;
+    }
+
+    public void setAccession(String accession) {
+        this.accession = accession;
+    }
+
+    public String getMpps() {
+        return mpps;
+    }
+
+    public void setMpps(String uid) {
+        this.mpps = uid;
+    }
+
+    public String getStudy() {
+        return study;
+    }
+
+    public void setStudy(String uid) {
+        this.study = uid;
     }
 
     @Factory("records")

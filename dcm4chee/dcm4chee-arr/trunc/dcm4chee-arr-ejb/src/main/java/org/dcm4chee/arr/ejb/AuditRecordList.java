@@ -63,25 +63,93 @@ interface AuditRecordList {
 
     String[] getEventIDs();
     void setEventIDs(String[] ids);
-    
-    
+        
     String[] getEventTypes();
     void setEventTypes(String[] types);
     
     String[] getEventActions();
     void setEventActions(String[] actions);
 
-    Integer[] getEventOutcomes();
-    void setEventOutcomes(Integer[] outcomes);
+    String[] getEventOutcomes();
+    void setEventOutcomes(String[] outcomes);
     
-    String getEnterpriseSiteID();
-    void setEnterpriseSiteID(String id);
+    String getUserID1();
+    void setUserID1(String id);
+
+    String getAltUserID1();
+    void setAltUserID1(String id);
+
+    String getUserName1();
+    void setUserName1(String name);
+    
+    boolean isUserIsRequestor1();
+    void setUserIsRequestor1(boolean requestor);
+    
+    String[] getRoleIDs1();    
+    void setRoleIDs1(String[] ids);
+
+    String[] getNapTypes1();   
+    void setNapTypes1(String[] types);
+    
+    String getNapID1();
+    void setNapID1(String id);        
+    
+    String getUserID2();
+    void setUserID2(String id);
+
+    String getAltUserID2();
+    void setAltUserID2(String id);
+
+    String getUserName2();
+    void setUserName2(String name);
+    
+    boolean isUserIsRequestor2();
+    void setUserIsRequestor2(boolean requestor);
+    
+    String[] getRoleIDs2();    
+    void setRoleIDs2(String[] ids);
+
+    String[] getNapTypes2();   
+    void setNapTypes2(String[] types);
+    
+    String getNapID2();
+    void setNapID2(String id);        
+    
+    String getSiteID();
+    void setSiteID(String id);
 
     String getSourceID();
     void setSourceID(String id);
 
-    Integer[] getSourceTypes();
-    void setSourceTypes(Integer[] types);
+    String[] getSourceTypes();
+    void setSourceTypes(String[] types);
+    
+    String[] getObjectTypes();
+    void setObjectTypes(String[] types);
+
+    String[] getObjectRoles();
+    void setObjectRoles(String[] roles);
+
+    String[] getLifeCycles();
+    void setLifeCycles(String[] lifeCycles);
+    
+    String[] getObjectIDTypes();
+    void setObjectIDTypes(String[] types);
+
+    String getObjectID();
+    void setObjectID(String id);
+
+    String getObjectName();
+    void setObjectName(String name);
+
+    String getAccession();
+    void setAccession(String accession);
+    
+    String getMpps();
+    void setMpps(String uid);
+    
+    String getStudy();
+    void setStudy(String uid);
     
     String find();
     void selectPage();
