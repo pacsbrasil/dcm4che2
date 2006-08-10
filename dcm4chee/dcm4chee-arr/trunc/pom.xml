@@ -25,4 +25,11 @@
       <url>http://repository.jboss.com/maven2</url>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>www.dcm4che.org</id>
+      <name>dcm4che Repository</name>
+      <url>scp://www.dcm4che.org:443/var/www/maven2</url>
+    </repository>
+  </distributionManagement>
 </model>
