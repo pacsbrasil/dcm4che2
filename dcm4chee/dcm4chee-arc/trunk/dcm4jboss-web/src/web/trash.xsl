@@ -11,7 +11,7 @@
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
-	<form action="trashfolder.m" method="get" name="myForm">
+	<form action="trashfolder.m" method="post" name="myForm" accept-charset="UTF-8">
 		<table class="folder_header" border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td class="folder_header" valign="top">
 				<table class="folder_header" border="0" height="30" cellspacing="0" cellpadding="0" width="100%">

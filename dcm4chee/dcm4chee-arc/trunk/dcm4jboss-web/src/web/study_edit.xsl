@@ -5,7 +5,7 @@
   <xsl:include href="page.xsl"/>
   <xsl:param name="folder.edit.newStudyUID" select="'false'"/>
   <xsl:template match="model">
-    <form action="studyUpdate.m" method="post">
+    <form action="studyUpdate.m" method="post" accept-charset="UTF-8" >
       <input name="patPk" type="hidden" value="{patPk}"/>
       <input name="studyPk" type="hidden" value="{studyPk}"/>
       <table border="1" cellspacing="0" cellpadding="0" width="100%">

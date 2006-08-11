@@ -24,12 +24,10 @@
 			The default charset used to decode input parameters.  If unspecified,
 			the web container default is used.
 		-->
-		<!--
 		<init-param>
 			<param-name>defaultRequestCharset</param-name>
 			<param-value>UTF-8</param-value>
 		</init-param>
-		-->
 		
 		<!--
 			The command which causes Maverick to reload the maverick.xml
@@ -199,6 +197,10 @@
 		<init-param>
 			<param-name>folderPermissionsFactory_cfg</param-name>
 			<param-value>conf/dcm4chee-web/folder.permissions</param-value>
+		</init-param>
+		<init-param>
+			<param-name>qrscpServiceName</param-name>
+			<param-value>dcm4chee.archive:service=QueryRetrieveScp</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>

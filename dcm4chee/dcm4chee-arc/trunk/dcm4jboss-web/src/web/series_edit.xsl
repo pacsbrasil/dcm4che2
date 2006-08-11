@@ -4,7 +4,7 @@
   <xsl:variable name="page_title">Series Edit</xsl:variable>
   <xsl:include href="page.xsl"/>
   <xsl:template match="model">
-    <form action="seriesUpdate.m" method="post">
+    <form action="seriesUpdate.m" method="post" accept-charset="UTF-8" >
       <input name="patPk" type="hidden" value="{patPk}"/>
       <input name="studyPk" type="hidden" value="{studyPk}"/>
       <input name="seriesPk" type="hidden" value="{seriesPk}"/>

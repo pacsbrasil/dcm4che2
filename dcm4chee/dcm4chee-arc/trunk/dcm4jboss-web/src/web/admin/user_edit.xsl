@@ -10,7 +10,7 @@
 
    <xsl:template match="model">
 	 <html><body bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" border="0">
-	 	<center><form name="user_edit" action="user_editsubmit.m" method="post">
+	 	<center><form name="user_edit" action="user_editsubmit.m" method="post" accept-charset="UTF-8" >
 			<table border="0" cellspacing="0" cellpadding="0" width="35%"><tr><td>
 				<center><table border="0">
 					<tr>

@@ -5,7 +5,7 @@
 <xsl:include href="../page.xsl"/>
 <xsl:template match="model">
 <!-- Filter -->
-	<form action="gppps_console.m" method="get" name="myForm">
+	<form action="gppps_console.m" method="post" name="myForm" accept-charset="UTF-8">
 		<table border="0" cellspacing="0" cellpadding="0" width="100%" bgcolor="eeeeee">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">

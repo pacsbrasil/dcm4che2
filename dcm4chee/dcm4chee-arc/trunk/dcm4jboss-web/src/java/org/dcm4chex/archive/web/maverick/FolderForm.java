@@ -45,11 +45,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 import org.infohazard.maverick.flow.ControllerContext;
+import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -119,6 +122,8 @@ public class FolderForm extends BasicFolderForm {
 	private boolean showSeriesIUID;
 	
 	private boolean filterAET = false;
+
+	private boolean noMatchForNoValue = false;
 	
 	protected static Logger log = Logger.getLogger(FolderForm.class);
     
@@ -167,6 +172,17 @@ public class FolderForm extends BasicFolderForm {
             	}
             } catch (Exception x) {
         		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
+            }
+
+            try {
+            	ObjectName qrscpServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("qrscpServiceName"));
+            	MBeanServer server = MBeanServerLocator.locate();
+    			Boolean b = (Boolean) server.getAttribute(qrscpServiceName,"NoMatchForNoValue");
+    			form.setNoMatchForNoValue(b.booleanValue());
+            	
+            }catch (Exception x) {
+        		log.warn("Cant initialize noMatchForNoValue! set to true (NON standard conform!!!)");
+        		form.setNoMatchForNoValue(true);
             }
         }
         form.setErrorCode( NO_ERROR ); //reset error code
@@ -346,6 +362,19 @@ public class FolderForm extends BasicFolderForm {
 	public void setFilterAET(boolean filterAET) {
 		this.filterAET = filterAET;
 	}
+	/**
+	 * @return Returns the noMatchForNoValue.
+	 */
+	public boolean isNoMatchForNoValue() {
+		return noMatchForNoValue;
+	}
+	/**
+	 * @param noMatchForNoValue The noMatchForNoValue to set.
+	 */
+	public void setNoMatchForNoValue(boolean noMatchForNoValue) {
+		this.noMatchForNoValue = noMatchForNoValue;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
 	 */

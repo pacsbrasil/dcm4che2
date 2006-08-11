@@ -7,7 +7,7 @@
 <xsl:include href  = "page.xsl" />
 
 <xsl:template match="model">
-	<form action="addWorklist.m" method="post">
+	<form action="addWorklist.m" method="post" accept-charset="UTF-8" >
 		<table border="0" cellspacing="0" cellpadding="0" width="90%">
 			<tr>
 				<td>

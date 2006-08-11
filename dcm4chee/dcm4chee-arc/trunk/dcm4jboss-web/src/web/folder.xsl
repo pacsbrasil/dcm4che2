@@ -6,6 +6,7 @@
 <xsl:output method="html" indent="yes" encoding="UTF-8"/>
 <xsl:variable name="page_title">Patient List</xsl:variable>
 <xsl:include href="page.xsl"/>
+<xsl:include href="modality_sel.xsl"/>
 
 <!--
  	Enable/disable the patient folder operations to match the project requirements
@@ -20,7 +21,7 @@
 <xsl:param name="folder.add_worklist" select="'false'"/>
 
 <xsl:template match="model">
-	<form action="foldersubmit.m" method="get" name="myForm">
+	<form action="foldersubmit.m" method="post" name="myForm" accept-charset="UTF-8" > 
 		<table class="folder_header" border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td class="folder_header" valign="top">
 				<table class="folder_header" border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
@@ -215,9 +216,13 @@
 		      		</td>
 		      		<td class="label">Modality:
 							</td>
-		      		<td>
-		        		<input size="10" name="modality" type="text" value="{modality}"/>
-		      		</td>
+					<td>
+						<xsl:call-template name="modalityList">
+						    <xsl:with-param name="name">modality</xsl:with-param>
+						    <xsl:with-param name="title">Modality</xsl:with-param>
+						    <xsl:with-param name="selected" select="modality"/>
+						</xsl:call-template>
+					</td>
 		      	  </tr>
 				</table>
 					<xsl:call-template name="overview"/>

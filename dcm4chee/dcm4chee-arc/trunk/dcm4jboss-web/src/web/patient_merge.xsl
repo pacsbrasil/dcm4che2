@@ -7,7 +7,7 @@
 <xsl:include href  = "page.xsl" />
 
 <xsl:template match="model">
-	<form action="patientMerge.m" method="post">
+	<form action="patientMerge.m" method="post" accept-charset="UTF-8" >
       <input name="view_name" type="text" value="{mergeViewName}"/>
 		<table border="0" cellspacing="0" cellpadding="0" width="90%">
 			<xsl:if test="mergeReason">

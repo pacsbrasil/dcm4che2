@@ -12,7 +12,7 @@
    		<xsl:apply-templates select="patient"/>
    </xsl:template>
    <xsl:template match="patient">
-      <form NAME="PatientForm" action="patientUpdate.m" method="post"  >
+      <form NAME="PatientForm" action="patientUpdate.m" method="post" accept-charset="UTF-8" >
          <input name="pk" type="hidden" value="{pk}" />
 
 		   <table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>

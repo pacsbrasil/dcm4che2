@@ -18,6 +18,7 @@
 	<xsl:template match="/">
 		<html>
 		<head>
+			<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 			<title><xsl:copy-of select="$page_title" /></title>
 			<script language = "JavaScript" src= "dcm4che.js"/>
 			<link rel="stylesheet" href="stylesheet.css" type="text/css"/>

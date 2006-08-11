@@ -3,9 +3,10 @@
 <xsl:output method="html" indent="yes" encoding="UTF-8"/>
 <xsl:variable name="page_title">Modality Worklist Console</xsl:variable>
 <xsl:include href="../page.xsl"/>
+<xsl:include href="../modality_sel.xsl"/>
 <xsl:template match="model">
 <!-- Filter -->
-	<form action="mwl_console.m" method="get" name="myForm">
+	<form action="mwl_console.m" method="post" name="myForm" accept-charset="UTF-8">
 		<table border="0" cellspacing="0" cellpadding="0" width="100%" bgcolor="eeeeee">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
@@ -102,8 +103,11 @@
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Modality: </td>
 						<td bgcolor="eeeeee">
-							<input size="10" name="modality" type="text" value="{filter/modality}"
-								title="Modality"/>
+							<xsl:call-template name="modalityList">
+							    <xsl:with-param name="name">modality</xsl:with-param>
+							    <xsl:with-param name="title">Modality</xsl:with-param>
+							    <xsl:with-param name="selected" select="filter/modality"/>
+							</xsl:call-template>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Station AET: </td>

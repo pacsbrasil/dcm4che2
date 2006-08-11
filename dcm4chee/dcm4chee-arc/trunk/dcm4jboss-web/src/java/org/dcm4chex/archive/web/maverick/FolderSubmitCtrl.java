@@ -222,7 +222,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 folderForm.setAets(aes);
             }
             List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
-					folderForm.getOffset(), folderForm.getLimit());
+					folderForm.isNoMatchForNoValue(), folderForm.getOffset(), folderForm.getLimit());
             folderForm.setStudies(studyList);
         } finally {
             try {

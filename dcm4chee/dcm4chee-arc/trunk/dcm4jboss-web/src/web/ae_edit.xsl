@@ -13,7 +13,7 @@
    
    <xsl:template match="AE">
 	 <html><body bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" border="0">
-			<center><form name="ae_edit" action="aeeditsubmit.m" method="post">
+			<center><form name="ae_edit" action="aeeditsubmit.m" method="post" accept-charset="UTF-8">
 			<input type="hidden" name="pk" value="{pk}"/>
 			<table border="0" cellspacing="0" cellpadding="0" width="35%"><tr><td>
 				<center><table border="0">
