@@ -90,11 +90,13 @@ public class Logger {
             return;
         }
         org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Logger.class);
+        long start = System.currentTimeMillis();
         int n = 0;
         for (int i = 1; i < args.length; i++) {
             n += logFile(log, opt, new File(args[i]));
         }
-        System.out.println("Logged " + n + " files.");
+        long end = System.currentTimeMillis();
+        System.out.println("\nEmit " + n + " messages in " + (end-start) + "ms.");
     }
 
     private static int logFile(org.apache.log4j.Logger log, char opt, File f) {
@@ -128,6 +130,7 @@ public class Logger {
             log.info(msg);
             break;
         }
+        System.out.print('.');
         return 1;
     }
 
