@@ -39,15 +39,12 @@
 package org.dcm4chee.arr.ejb;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -58,17 +55,20 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "active_particpant")
+@Table(name = "active_part")
 public class ActiveParticipant implements Serializable {
+
+    private static final long serialVersionUID = -1223510910574955906L;
+
     private int pk;
     private AuditRecord auditRecord;
     private String userID;
     private String alternativeUserID;
     private String userName;
-    private boolean requestor;
+    private boolean userIsRequestor;
     private String networkAccessPointID;
     private int networkAccessPointType;
-    private Collection<Code> roleIDCode;  
+    private Code roleID;  
     
     @Id
     @GeneratedValue
@@ -91,17 +91,14 @@ public class ActiveParticipant implements Serializable {
         this.auditRecord = auditRecord;
     }
 
-    @ManyToMany(targetEntity=Code.class)
-    @JoinTable(
-            name = "rel_act_part_role", 
-            joinColumns = {@JoinColumn(name = "act_participant_fk")},
-            inverseJoinColumns = {@JoinColumn(name = "code_fk")})
-    public Collection<Code> getRoleIDCode() {
-        return roleIDCode;
+    @ManyToOne
+    @JoinColumn(name="role_id_fk")
+    public Code getRoleID() {
+        return roleID;
     }
 
-    public void setRoleIDCode(Collection<Code> roleIDCode) {
-        this.roleIDCode = roleIDCode;
+    public void setRoleID(Code roleID) {
+        this.roleID = roleID;
     }
     
     @Column(name="user_id")
@@ -132,12 +129,12 @@ public class ActiveParticipant implements Serializable {
     }
 
     @Column(name = "requestor")
-    public boolean getRequestor() {
-        return requestor;
+    public boolean getUserIsRequestor() {
+        return userIsRequestor;
     }
 
-    public void setRequestor(boolean requestor) {
-        this.requestor = requestor;
+    public void setUserIsRequestor(boolean userIsRequestor) {
+        this.userIsRequestor = userIsRequestor;
     }
 
     @Column(name = "net_access_pt_id")

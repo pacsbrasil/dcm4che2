@@ -48,8 +48,12 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import org.xml.sax.XMLFilter;
+import org.xml.sax.XMLReader;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -60,12 +64,33 @@ public class XSLTUtils {
     
     private static final String SUMMARY_XSL = "arr-summary.xsl";
     private static final String DETAILS_XSL = "arr-details.xsl";
+    private static final String IHEYR4_TO_ATNA_XSL = "arr-iheyr4-to-atna.xsl";
     private static Templates summaryTpl;
     private static Templates detailsTpl;
+    private static Templates iheYr4toATNATpl;
+    private static SAXTransformerFactory tf;
 
+    private static TransformerFactory transfomerFactory() 
+    throws TransformerFactoryConfigurationError {
+	if (tf == null) {
+	    tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+	}
+	return tf;
+    }
+    
+    public static XMLFilter iheYr4toATNA(XMLReader reader) 
+    throws TransformerConfigurationException {
+	if (iheYr4toATNATpl == null) {
+	    iheYr4toATNATpl = loadTemplates(IHEYR4_TO_ATNA_XSL);
+	}
+	XMLFilter filter = tf.newXMLFilter(iheYr4toATNATpl);
+	filter.setParent(reader);
+	return filter;
+    }
+    
     public static String toXML(byte[] xmldata) {
         try {
-            Transformer tr = TransformerFactory.newInstance().newTransformer();
+            Transformer tr = transfomerFactory().newTransformer();
             tr.setOutputProperty(OutputKeys.INDENT, "yes");
             return transform(tr, xmldata);
         } catch (Exception e) {
@@ -107,7 +132,7 @@ public class XSLTUtils {
 	    throws TransformerConfigurationException,
 	    TransformerFactoryConfigurationError {
 	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	return TransformerFactory.newInstance().newTemplates(
+	return transfomerFactory().newTemplates(
 		new StreamSource(cl.getResource(name).toString()));
     }
     

@@ -39,6 +39,7 @@
 package org.dcm4chee.arr.ejb;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -49,9 +50,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -76,15 +75,19 @@ import org.jboss.seam.annotations.Transactional;
 @Scope(ScopeType.PAGE)
 @Table(name = "audit_record")
 public class AuditRecord implements Serializable {
+
+    private static final long serialVersionUID = 5868055858768841333L;
     private int pk;
     private Code eventID;
-    private String eventActionCode;
-    private int eventOutcomeIndicator;
+    private String eventAction;
+    private int eventOutcome;
     private Date eventDateTime;
     private Date receiveDateTime;
-    private Collection<Code> eventTypeCode;  
+    private Code eventType;  
+    private String enterpriseSiteID;
+    private String sourceID;
+    private int sourceType;
     private Collection<ActiveParticipant> activeParticipant;
-    private Collection<AuditSource> auditSource;
     private Collection<ParticipantObject> participantObject;
     private boolean iheYr4;
     private byte[] xmldata;
@@ -111,17 +114,14 @@ public class AuditRecord implements Serializable {
         this.eventID = eventID;
     }    
 
-    @ManyToMany(targetEntity=Code.class)
-    @JoinTable(
-            name = "rel_event_type", 
-            joinColumns = {@JoinColumn(name = "audit_record_fk")},
-            inverseJoinColumns = {@JoinColumn(name = "code_fk")})
-    public Collection<Code> getEventTypeCode() {
-        return eventTypeCode;
+    @ManyToOne
+    @JoinColumn(name="event_type_fk")
+    public Code getEventType() {
+        return eventType;
     }
 
-    public void setEventTypeCode(Collection<Code> eventTypeCode) {
-        this.eventTypeCode = eventTypeCode;
+    public void setEventType(Code eventTypeCode) {
+        this.eventType = eventTypeCode;
     }
     
     @Transactional
@@ -129,7 +129,7 @@ public class AuditRecord implements Serializable {
 //	if (summary == null) {
 	    summary = XSLTUtils.toSummary(xmldata);
 //	}
-	return summary;
+	return XSLTUtils.toSummary(xmldata);
     }
 
     @Transactional
@@ -137,6 +137,33 @@ public class AuditRecord implements Serializable {
 	this.summary = summary;
     }
     
+    @Column(name = "site_id")
+    public String getEnterpriseSiteID() {
+        return enterpriseSiteID;
+    }
+    
+    public void setEnterpriseSiteID(String auditEnterpriseSiteID) {
+        this.enterpriseSiteID = auditEnterpriseSiteID;
+    }
+    
+    @Column(name = "source_id")
+    public String getSourceID() {
+        return sourceID;
+    }
+    
+    public void setSourceID(String auditSourceID) {
+        this.sourceID = auditSourceID;
+    }
+
+    @Column(name = "source_type")
+    public int getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(int typeCode) {
+        this.sourceType = typeCode;
+    }
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy="auditRecord")
     public Collection<ActiveParticipant> getActiveParticipant() {
         return activeParticipant;
@@ -146,15 +173,14 @@ public class AuditRecord implements Serializable {
         this.activeParticipant = c;
     }
     
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="auditRecord")
-    public Collection<AuditSource> getAuditSource() {
-        return auditSource;
+    public void addActiveParticipant(ActiveParticipant ap) {
+	if (activeParticipant == null) {
+	    activeParticipant = new ArrayList<ActiveParticipant>(3);
+	}
+        activeParticipant.add(ap);
+        ap.setAuditRecord(this);
     }
-        
-    public void setAuditSource(Collection<AuditSource> c) {
-        this.auditSource = c;
-    }
-    
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy="auditRecord")
     public Collection<ParticipantObject> getParticipantObject() {
         return participantObject;
@@ -163,23 +189,31 @@ public class AuditRecord implements Serializable {
     public void setParticipantObject(Collection<ParticipantObject> c) {
         this.participantObject = c;
     }
-    
-    @Column(name = "event_action_code")
-    public String getEventActionCode() {
-        return eventActionCode;
+
+    public void addParticipantObject(ParticipantObject po) {
+	if (participantObject == null) {
+	    participantObject = new ArrayList<ParticipantObject>(3);
+	}
+	participantObject.add(po);
+	po.setAuditRecord(this);
+    }
+        
+    @Column(name = "event_action")
+    public String getEventAction() {
+        return eventAction;
     }
     
-    public void setEventActionCode(String eventActionCode) {
-        this.eventActionCode = eventActionCode;
+    public void setEventAction(String eventActionCode) {
+        this.eventAction = eventActionCode;
     }
 
     @Column(name = "event_outcome")
-    public int getEventOutcomeIndicator() {
-        return eventOutcomeIndicator;
+    public int getEventOutcome() {
+        return eventOutcome;
     }
     
-    public void setEventOutcomeIndicator(int eventOutcomeIndicator) {
-        this.eventOutcomeIndicator = eventOutcomeIndicator;
+    public void setEventOutcome(int eventOutcomeIndicator) {
+        this.eventOutcome = eventOutcomeIndicator;
     }
 
     @Basic @Temporal(TemporalType.TIMESTAMP)

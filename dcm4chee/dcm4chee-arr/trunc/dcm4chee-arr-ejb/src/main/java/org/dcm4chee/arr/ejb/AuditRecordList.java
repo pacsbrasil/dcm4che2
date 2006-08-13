@@ -141,15 +141,6 @@ interface AuditRecordList {
 
     String getObjectName();
     void setObjectName(String name);
-
-    String getAccession();
-    void setAccession(String accession);
-    
-    String getMpps();
-    void setMpps(String uid);
-    
-    String getStudy();
-    void setStudy(String uid);
     
     String find();
     void selectPage();

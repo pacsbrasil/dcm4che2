@@ -91,7 +91,7 @@ public class AuditMessageUtils {
             }
             if (startsWith(AUDIT_MESSAGE, data, i)
                     || startsWith(IHEYR4, data, i)) {
-                return off;
+                return off < 0 ? i : off;
             }
             if (off >= 0) {
                 return -1;

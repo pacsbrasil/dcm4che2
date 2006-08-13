@@ -38,15 +38,15 @@
 
 package org.dcm4chee.arr.ejb;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -59,335 +59,270 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 class AuditRecordHandler extends DefaultHandler {
 
-    protected final EntityManager em;
-    protected final AuditRecord rec;
-    protected ActiveParticipant ap;
-    protected AuditSource as;
-    protected int asTypeCount;
-    protected ParticipantObject po;
-    protected StringBuffer sb = new StringBuffer(64);
-    protected boolean append;
+    private final static Logger log = LoggerFactory
+	    .getLogger(AuditRecordHandler.class);
+
+    private final EntityManager em;
+
+    private final AuditRecord rec;
+
+    private ActiveParticipant ap;
+
+    private ParticipantObject po;
+
+    private StringBuffer sb = new StringBuffer(64);
+
+    private boolean expectAuditSourceTypeCode;
+
+    private boolean append;
 
     public AuditRecordHandler(EntityManager em, AuditRecord rec) {
-        this.em = em;
-        this.rec = rec;
+	this.em = em;
+	this.rec = rec;
     }
 
     @Override
     public void characters(char[] ch, int start, int length)
-            throws SAXException {
-        if (append) {
-            sb.append(ch, start, length);
-        }
+	    throws SAXException {
+	if (append) {
+	    sb.append(ch, start, length);
+	}
     }
 
     @Override
     public void startElement(String uri, String localName, String qName,
-            Attributes attrs) throws SAXException {
-        if ("EventIdentification".equals(qName)) {
-            eventIdentification(attrs);
-        } else if ("EventID".equals(qName)) {
-            eventID(attrs);
-        } else if ("EventTypeCode".equals(qName)) {
-            eventTypeCode(attrs);
-        } else if ("ActiveParticipant".equals(qName)) {
-            activeParticipant(attrs);
-        } else if ("RoleIDCode".equals(qName)) {
-            roleIDCode(attrs);
-        } else if ("AuditSourceIdentification".equals(qName)) {
-            auditSourceIdentification(attrs);
-        } else if ("AuditSourceTypeCode".equals(qName)) {
-            auditSourceTypeCode(attrs);
-        } else if ("ParticipantObjectIdentification".equals(qName)) {
-            participantObjectIdentification(attrs);
-        } else if ("ParticipantObjectIDTypeCode".equals(qName)) {
-            participantObjectIDTypeCode(attrs);
-        } else if ("ParticipantObjectName".equals(qName)) {
-            participantObjectName(attrs);
-        }
+	    Attributes attrs) throws SAXException {
+	if ("EventIdentification".equals(qName)) {
+	    rec.setEventAction(attrs.getValue("EventActionCode"));
+	    rec.setEventOutcome(getInt(attrs, "EventOutcomeIndicator"));
+	    rec.setEventDateTime(parseISO8601DateTime(attrs
+		    .getValue("EventDateTime")));
+	} else if ("EventID".equals(qName)) {
+	    rec.setEventID(toCode(attrs));
+	} else if ("EventTypeCode".equals(qName)) {
+	    if (rec.getEventType() == null) {
+		rec.setEventType(toCode(attrs));
+	    } else {
+		log.info("Received Audit Record with multiple Event Type Codes. "
+			+ "Only matching against first value supported!");
+	    }
+	} else if ("ActiveParticipant".equals(qName)) {
+	    activeParticipant(attrs);
+	} else if ("RoleIDCode".equals(qName)) {
+	    if (ap.getRoleID() == null) {
+		ap.setRoleID(toCode(attrs));
+	    } else {
+		log.info("Received Audit Record with multiple Role ID Codes for "
+			+ "one Active Participant. Only matching against first "
+			+ "value supported!");
+	    }
+	} else if ("AuditSourceIdentification".equals(qName)) {
+	    if (rec.getSourceID() == null) {
+		rec.setSourceID(toUpper(attrs.getValue("AuditSourceID")));
+		rec.setEnterpriseSiteID(toUpper(attrs
+			.getValue("AuditEnterpriseSiteID")));
+		expectAuditSourceTypeCode = true;
+	    } else {
+		log.info("Received Audit Record with multiple Audit Source "
+			+ "Identifications. Only matching against first value " 
+			+ "supported!");
+	    }
+	} else if ("AuditSourceTypeCode".equals(qName)) {
+	    if (expectAuditSourceTypeCode) {
+		if (rec.getSourceType() == 0) {
+		    rec.setSourceType(getInt(attrs, "code"));
+		} else {
+		    log.info("Received Audit Record with multiple Audit Source " 
+			    + "Type Codes. Only matching against first value " 
+			    + "supported!");
+		}
+	    }
+	} else if ("ParticipantObjectIdentification".equals(qName)) {
+	    participantObjectIdentification(attrs);
+	} else if ("ParticipantObjectIDTypeCode".equals(qName)) {
+	    participantObjectIDTypeCode(attrs);
+	} else if ("ParticipantObjectName".equals(qName)) {
+	    append = true;
+	}
     }
 
     @Override
     public void endElement(String uri, String localName, String qName)
-            throws SAXException {
-        if ("ActiveParticipant".equals(qName)) {
-            activeParticipant();
-        } else if ("AuditSourceIdentification".equals(qName)) {
-            auditSourceIdentification();
-        } else if ("ParticipantObjectIdentification".equals(qName)) {
-            participantObjectIdentification();
-        } else if ("ParticipantObjectName".equals(qName)) {
-            participantObjectName();
-        }
-    }
+	    throws SAXException {
+	if ("ActiveParticipant".equals(qName)) {
+	    ap = null;
+	} else if ("AuditSourceIdentification".equals(qName)) {
+	    expectAuditSourceTypeCode = false;
+	} else if ("ParticipantObjectIdentification".equals(qName)) {
+	    po = null;
+	} else if ("ParticipantObjectName".equals(qName)) {
+	    po.setObjectName(toUpper(sb.toString()));
+	}
+	sb.setLength(0);
+	append = false;
 
-    private void eventIdentification(Attributes attrs) {
-        rec.setEventActionCode(attrs.getValue("EventActionCode"));
-        rec.setEventOutcomeIndicator(parseInt(attrs
-                .getValue("EventOutcomeIndicator")));
-        rec.setEventDateTime(parseISO8601DateTime(attrs
-                .getValue("EventDateTime")));
-    }
-
-    private void eventID(Attributes attrs) {
-        rec.setEventID(toCode(attrs));
-    }
-
-    private void eventTypeCode(Attributes attrs) {
-        Collection<Code> c = rec.getEventTypeCode();
-        if (c == null) {
-            c = new ArrayList<Code>(3);
-            rec.setEventTypeCode(c);
-        }
-        c.add(toCode(attrs));
     }
 
     private void activeParticipant(Attributes attrs) {
-        ap = new ActiveParticipant();
-        ap.setAuditRecord(rec);
-        ap.setUserID(toUpper(attrs.getValue("UserID")));
-        ap.setAlternativeUserID(toUpper(attrs.getValue("AlternativeUserID")));
-        ap.setUserName(toUpper(attrs.getValue("UserName")));
-        ap.setRequestor(!isFalse(attrs.getValue("UserIsRequestor")));
-        ap.setNetworkAccessPointID(toUpper(attrs.getValue("NetworkAccessPointID")));
-        ap.setNetworkAccessPointType(parseInt(attrs
-                .getValue("NetworkAccessPointTypeCode")));
-        Collection<ActiveParticipant> c = rec.getActiveParticipant();
-        if (c == null) {
-            c = new ArrayList<ActiveParticipant>(3);
-            rec.setActiveParticipant(c);
-        }
-        c.add(ap);
+	ap = new ActiveParticipant();
+	ap.setAuditRecord(rec);
+	ap.setUserID(toUpper(attrs.getValue("UserID")));
+	ap.setAlternativeUserID(toUpper(attrs.getValue("AlternativeUserID")));
+	ap.setUserName(toUpper(attrs.getValue("UserName")));
+	ap.setUserIsRequestor(!"false".equalsIgnoreCase(attrs
+		.getValue("UserIsRequestor")));
+	ap.setNetworkAccessPointID(toUpper(attrs
+		.getValue("NetworkAccessPointID")));
+	ap.setNetworkAccessPointType(getInt(attrs, "NetworkAccessPointTypeCode"));
+	rec.addActiveParticipant(ap);
     }
 
-    private void roleIDCode(Attributes attrs) {
-        Collection<Code> c = ap.getRoleIDCode();
-        if (c == null) {
-            c = new ArrayList<Code>(3);
-            ap.setRoleIDCode(c);
-        }
-        c.add(toCode(attrs));
-    }
-
-    private void activeParticipant() {
-        ap = null;
-    }
-
-    private void auditSourceIdentification(Attributes attrs) {
-        as = new AuditSource();
-        as.setAuditRecord(rec);
-        as.setEnterpriseSiteID(toUpper(attrs.getValue("AuditEnterpriseSiteID")));
-        as.setSourceID(toUpper(attrs.getValue("AuditSourceID")));
-        Collection<AuditSource> c = rec.getAuditSource();
-        if (c == null) {
-            c = new ArrayList<AuditSource>(3);
-            rec.setAuditSource(c);
-        }
-        c.add(as);
-    }
-
-    private void auditSourceTypeCode(Attributes attrs) {
-	int code = parseInt(attrs.getValue("code"));
-	switch (++asTypeCount) {
-	case 1:
-	    as.setSourceTypeCode(code);
-	    break;
-	case 2:
-	    as.setSourceTypeCode2(code);
-	    break;
-	case 3:
-	    as.setSourceTypeCode3(code);
-	    break;
-	}
-    }
-
-    private void auditSourceIdentification() {
-        as = null;
-        asTypeCount = 0;
+    private int getInt(Attributes attrs, String qName) {
+	String val = attrs.getValue(qName);
+	if (val != null && val.trim().length() > 0)
+	    try {
+		return Integer.parseInt(val);
+	    } catch (NumberFormatException e) {
+		log.info("Received Audit Record with unexpected " + qName 
+			+ ":" + val);
+	    }
+	return 0;
     }
 
     private void participantObjectIdentification(Attributes attrs) {
-        po = new ParticipantObject();
-        po.setAuditRecord(rec);
-        po.setParticipantObjectID(toUpper(attrs.getValue("ParticipantObjectID")));
-        po.setParticipantObjectTypeCode(parseInt(attrs
-                .getValue("ParticipantObjectTypeCode")));
-        po.setParticipantObjectTypeCodeRole(parseInt(attrs
-                .getValue("ParticipantObjectTypeCodeRole")));
-        po.setParticipantObjectDataLifeCycle(parseInt(attrs
-                .getValue("ParticipantObjectDataLifeCycle")));
-        po.setParticipantObjectSensitivity(toUpper(attrs
-                .getValue("ParticipantObjectSensitivity")));
-        po.setParticipantObjectName(toUpper(attrs.getValue("ParticipantObjectName")));
-        Collection<ParticipantObject> c = rec.getParticipantObject();
-        if (c == null) {
-            c = new ArrayList<ParticipantObject>(3);
-            rec.setParticipantObject(c);
-        }
-        c.add(po);
+	po = new ParticipantObject();
+	po.setAuditRecord(rec);
+	po.setObjectID(toUpper(attrs.getValue("ParticipantObjectID")));
+	po.setObjectType(getInt(attrs, "ParticipantObjectTypeCode"));
+	po.setObjectRole(getInt(attrs, "ParticipantObjectTypeCodeRole"));
+	po.setDataLifeCycle(getInt(attrs, "ParticipantObjectDataLifeCycle"));
+	po.setObjectSensitivity(toUpper(attrs
+		.getValue("ParticipantObjectSensitivity")));
+	po.setObjectName(toUpper(attrs.getValue("ParticipantObjectName")));
+	rec.addParticipantObject(po);
     }
 
     private void participantObjectIDTypeCode(Attributes attrs) {
-        Code code = toCode(attrs);
-        if (code != null) {
-            po.setParticipantObjectIDTypeCode(code);
-        } else {
-            po.setParticipantObjectIDTypeCodeRFC(parseInt(attrs
-                    .getValue("code")));
-        }
-    }
-
-    private void participantObjectName(Attributes attrs) {
-        append = true;
-
-    }
-
-    private void participantObjectName() {
-        po.setParticipantObjectName(toUpper(sb.toString()));
-        sb.setLength(0);
-        append = false;
-    }
-
-    private void participantObjectIdentification() {
-        po = null;
+	Code code = toCode(attrs);
+	if (code != null) {
+	    po.setObjectIDType(code);
+	} else {
+	    po.setObjectIDTypeRFC(getInt(attrs, "code"));
+	}
     }
 
     private Code toCode(Attributes attrs) {
-        String value = attrs.getValue("code");
-        String designator = attrs.getValue("codeSystemName");
-        if (value == null || designator == null) {
-            return null;
-        }
-        String meaning = attrs.getValue("displayName");
-        List queryResult = em.createQuery(
-                "FROM Code c WHERE c.value = :value AND c.designator = :designator")
-                .setParameter("value", value)
-                .setParameter("designator", designator)
-                .setHint("org.hibernate.readOnly", Boolean.TRUE)
-                .getResultList();
-        if (!queryResult.isEmpty()) {
-            return (Code) queryResult.get(0);
-        }
-        Code code = new Code();
-        code.setValue(value);
-        code.setDesignator(designator);
-        code.setMeaning(meaning);
-        em.persist(code);
-        return code;
+	String value = attrs.getValue("code");
+	String designator = attrs.getValue("codeSystemName");
+	if (value == null || designator == null) {
+	    return null;
+	}
+	String meaning = attrs.getValue("displayName");
+	List queryResult = em.createQuery("FROM Code c WHERE "
+			+ "c.value = :value AND c.designator = :designator")
+		.setParameter("value", value)
+    		.setParameter("designator", designator)
+    		.setHint("org.hibernate.readOnly", Boolean.TRUE)
+    		.getResultList();
+	if (!queryResult.isEmpty()) {
+	    return (Code) queryResult.get(0);
+	}
+	Code code = new Code();
+	code.setValue(value);
+	code.setDesignator(designator);
+	code.setMeaning(meaning);
+	em.persist(code);
+	return code;
     }
 
-    private String toUpper(String s) {
+    private static String toUpper(String s) {
 	return s != null ? s.toUpperCase() : null;
     }
 
-    private static int parseInt(String s) {
-        return s != null ? Integer.parseInt(s) : 0;
-    }
-
-    private static boolean isFalse(String s) {
-        return "false".equalsIgnoreCase(s);
-    }
-
     private static Date parseISO8601DateTime(String s) {
-        int tzindex = indexOfTimeZone(s);
-        Calendar cal;
-        if (tzindex == -1) {
-            cal = Calendar.getInstance();
-        } else {
-            cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-            cal.set(Calendar.ZONE_OFFSET, timeZoneOffset(s, tzindex));
-            s = s.substring(0, tzindex);
-        }
-        int pos = 0;
-        cal.set(Calendar.YEAR, Integer.parseInt(s.substring(pos, 4)));
-        if (!isDigit(s.charAt(pos += 4))) {
-            ++pos;
-        }
-        cal.set(Calendar.MONTH, 
-                Integer.parseInt(s.substring(pos, pos + 2)) - 1);
-        if (!isDigit(s.charAt(pos += 2))) {
-            ++pos;
-        }
-        cal.set(Calendar.DAY_OF_MONTH, 
-                Integer.parseInt(s.substring(pos, pos + 2)));
-        if (!isDigit(s.charAt(pos += 2))) {
-            ++pos;
-        }
-        cal.set(Calendar.HOUR_OF_DAY,
-                Integer.parseInt(s.substring(pos, pos + 2)));
-        if (!isDigit(s.charAt(pos += 2))) {
-            ++pos;
-        }
-        cal.set(Calendar.MINUTE, Integer.parseInt(s.substring(pos, pos + 2)));
-        int sec = 0;
-        int ms = 0;
-        if ((pos += 2) < s.length()) {
-            if (!isDigit(s.charAt(pos))) {
-                ++pos;
-            }
-            float f = Float.parseFloat(s.substring(pos));
-            sec = (int) f;
-            ms = (int) ((f - sec) * 1000);
-        }
-        cal.set(Calendar.SECOND, sec);
-        cal.set(Calendar.MILLISECOND, ms);
-        return cal.getTime();
+	int tzindex = indexOfTimeZone(s);
+	Calendar cal;
+	if (tzindex == -1) {
+	    cal = Calendar.getInstance();
+	} else {
+	    cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+	    cal.set(Calendar.ZONE_OFFSET, timeZoneOffset(s, tzindex));
+	    s = s.substring(0, tzindex);
+	}
+	int pos = 0;
+	int len = 4;
+	cal.set(Calendar.YEAR, Integer.parseInt(s.substring(pos, len)));
+	if (!isDigit(s.charAt(pos += len))) {
+	    ++pos;
+	}
+	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
+	cal.set(Calendar.MONTH, Integer
+			.parseInt(s.substring(pos, pos + len)) - 1);
+	if (!isDigit(s.charAt(pos += len))) {
+	    ++pos;
+	}
+	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
+	cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s.substring(pos,
+		pos + len)));
+	if (!isDigit(s.charAt(pos += len))) {
+	    ++pos;
+	}
+	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
+	cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s
+		.substring(pos, pos + len)));
+	if (!isDigit(s.charAt(pos += len))) {
+	    ++pos;
+	}
+	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
+	cal.set(Calendar.MINUTE, Integer.parseInt(s.substring(pos, pos + len)));
+	int sec = 0;
+	int ms = 0;
+	if ((pos += 2) < s.length()) {
+	    if (!isDigit(s.charAt(pos))) {
+		++pos;
+	    }
+	    float f = Float.parseFloat(s.substring(pos));
+	    sec = (int) f;
+	    ms = (int) ((f - sec) * 1000);
+	}
+	cal.set(Calendar.SECOND, sec);
+	cal.set(Calendar.MILLISECOND, ms);
+	return cal.getTime();
     }
 
     private static int indexOfTimeZone(String s) {
-        int len = s.length();
-        int index = len - 1;
-        char c = s.charAt(index);
-        if (c == 'Z') {
-            return index;
-        }
-        index = len - 6;
-        c = s.charAt(index);
-        if (c == '-' || c == '+') {
-            return index;
-        }
-        index = len - 3;
-        c = s.charAt(index);
-        if (c == '-' || c == '+') {
-            return index;
-        }
-        return -1;
+	int len = s.length();
+	int index = len - 1;
+	char c = s.charAt(index);
+	if (c == 'Z') {
+	    return index;
+	}
+	index = len - 6;
+	c = s.charAt(index);
+	if (c == '-' || c == '+') {
+	    return index;
+	}
+	index = len - 3;
+	c = s.charAt(index);
+	if (c == '-' || c == '+') {
+	    return index;
+	}
+	return -1;
     }
 
     private static int timeZoneOffset(String s, int tzindex) {
-        char c = s.charAt(tzindex);
-        if (c == 'Z') {
-            return 0;
-        }
-        int off = Integer.parseInt(s.substring(tzindex + 1, tzindex + 3)) * 3600000;
-        if (tzindex + 6 == s.length()) {
-            off += Integer.parseInt(s.substring(tzindex + 4)) * 60000;
-        }
-        return c == '-' ? -off : off;
+	char c = s.charAt(tzindex);
+	if (c == 'Z') {
+	    return 0;
+	}
+	int off = Integer.parseInt(s.substring(tzindex + 1, tzindex + 3)) * 3600000;
+	if (tzindex + 6 == s.length()) {
+	    off += Integer.parseInt(s.substring(tzindex + 4)) * 60000;
+	}
+	return c == '-' ? -off : off;
     }
 
     private static boolean isDigit(char c) {
-        return c >= '0' && c <= '9';
-    }
-    
-    static class ATNA extends AuditRecordHandler {
-	
-	public ATNA(EntityManager em, AuditRecord rec) {
-	    super(em, rec);
-	}
-	
-    }
-    
-    static class IHEYr4 extends AuditRecordHandler {
-	
-	public IHEYr4(EntityManager em, AuditRecord rec) {
-	    super(em, rec);
-	}
-	
-    }
-    
-    public static AuditRecordHandler newAuditRecordHandler(EntityManager em,
-	    AuditRecord rec) {
-	return rec.isIHEYr4() ? new IHEYr4(em, rec) : new ATNA(em, rec);
+	return c >= '0' && c <= '9';
     }
 }

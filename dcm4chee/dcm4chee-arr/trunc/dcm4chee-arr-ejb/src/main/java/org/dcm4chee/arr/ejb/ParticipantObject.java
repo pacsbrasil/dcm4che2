@@ -55,18 +55,21 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "participant_obj")
+@Table(name = "part_obj")
 public class ParticipantObject implements Serializable {
+
+    private static final long serialVersionUID = 3794144950916480382L;
+
     private int pk;
     private AuditRecord auditRecord;
-    private String participantObjectID;
-    private int participantObjectTypeCode;
-    private int participantObjectTypeCodeRole;
-    private int participantObjectDataLifeCycle;
-    private String participantObjectSensitivity;
-    private int participantObjectIDTypeCodeRFC;
-    private Code participantObjectIDTypeCode;
-    private String participantObjectName;
+    private String objectID;
+    private int objectType;
+    private int objectRole;
+    private int dataLifeCycle;
+    private String objectSensitivity;
+    private int objectIDTypeRFC;
+    private Code objectIDType;
+    private String objectName;
     
     @Id
     @GeneratedValue
@@ -90,76 +93,76 @@ public class ParticipantObject implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(name="id_type_code_fk")
-    public Code getParticipantObjectIDTypeCode() {
-        return participantObjectIDTypeCode;
+    @JoinColumn(name="obj_id_type_fk")
+    public Code getObjectIDType() {
+        return objectIDType;
     }
 
-    public void setParticipantObjectIDTypeCode(Code code) {
-        this.participantObjectIDTypeCode = code;
+    public void setObjectIDType(Code code) {
+        this.objectIDType = code;
     }
 
-    @Column(name="part_obj_id_type")
-    public int getParticipantObjectIDTypeCodeRFC() {
-        return participantObjectIDTypeCodeRFC;
+    @Column(name="obj_id_type_rfc")
+    public int getObjectIDTypeRFC() {
+        return objectIDTypeRFC;
     }
 
-    public void setParticipantObjectIDTypeCodeRFC(int code) {
-        this.participantObjectIDTypeCodeRFC = code;
+    public void setObjectIDTypeRFC(int code) {
+        this.objectIDTypeRFC = code;
     }
 
-    @Column(name="part_obj_name")
-    public String getParticipantObjectName() {
-        return participantObjectName;
+    @Column(name="name")
+    public String getObjectName() {
+        return objectName;
     }
 
-    public void setParticipantObjectName(String name) {
-        this.participantObjectName = name;
+    public void setObjectName(String name) {
+        this.objectName = name;
     }
 
-    @Column(name="part_obj_id")
-    public String getParticipantObjectID() {
-        return participantObjectID;
+    @Column(name="obj_id")
+    public String getObjectID() {
+        return objectID;
     }
 
-    public void setParticipantObjectID(String id) {
-        this.participantObjectID = id;
+    public void setObjectID(String id) {
+        this.objectID = id;
     }
 
-    @Column(name="part_obj_type")
-    public int getParticipantObjectTypeCode() {
-        return participantObjectTypeCode;
+    @Column(name="obj_type")
+    public int getObjectType() {
+        return objectType;
     }
 
-    public void setParticipantObjectTypeCode(int code) {
-        this.participantObjectTypeCode = code;
+    public void setObjectType(int code) {
+        this.objectType = code;
     }
 
-    @Column(name="part_obj_role")
-    public int getParticipantObjectTypeCodeRole() {
-        return participantObjectTypeCodeRole;
+    @Column(name="obj_role")
+    public int getObjectRole() {
+        return objectRole;
     }
 
-    public void setParticipantObjectTypeCodeRole(int code) {
-        this.participantObjectTypeCodeRole = code;
+    public void setObjectRole(int code) {
+        this.objectRole = code;
     }
 
-    @Column(name="part_obj_data_lc")
-    public int getParticipantObjectDataLifeCycle() {
-        return participantObjectDataLifeCycle;
+    @Column(name="data_life_cycle")
+    public int getDataLifeCycle() {
+        return dataLifeCycle;
     }
 
-    public void setParticipantObjectDataLifeCycle(int code) {
-        this.participantObjectDataLifeCycle = code;
+    public void setDataLifeCycle(int code) {
+        this.dataLifeCycle = code;
     }
 
-    @Column(name="part_obj_vip")
-    public String getParticipantObjectSensitivity() {
-        return participantObjectSensitivity;
+    @Column(name="obj_sensitivity")
+    public String getObjectSensitivity() {
+        return objectSensitivity;
     }
 
-    public void setParticipantObjectSensitivity(String sensitivity) {
-        this.participantObjectSensitivity = sensitivity;
+    public void setObjectSensitivity(String sensitivity) {
+        this.objectSensitivity = sensitivity;
     }
 
 }

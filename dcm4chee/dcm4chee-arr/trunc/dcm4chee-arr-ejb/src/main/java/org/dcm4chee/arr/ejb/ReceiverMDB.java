@@ -51,11 +51,16 @@ import javax.persistence.PersistenceContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4chee.arr.util.AuditMessageUtils;
+import org.dcm4chee.arr.util.XSLTUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -110,13 +115,22 @@ public class ReceiverMDB implements MessageListener {
      }
 
     private void parse(AuditRecord rec) throws ParserConfigurationException,
-	    SAXException, IOException {
-	ByteArrayInputStream is = new ByteArrayInputStream(rec.getXmldata());
+	    SAXException, IOException, TransformerConfigurationException {
 	if (parser == null) {
 	    parser = SAXParserFactory.newInstance().newSAXParser();
 	}
 	try {
-	    parser.parse(is, AuditRecordHandler.newAuditRecordHandler(em, rec));
+	    XMLReader reader = parser.getXMLReader();
+	    if (rec.isIHEYr4()) {
+		reader = XSLTUtils.iheYr4toATNA(reader);
+	    }
+	    DefaultHandler dh = new AuditRecordHandler(em, rec);
+            reader.setContentHandler(dh);
+            reader.setEntityResolver(dh);
+            reader.setErrorHandler(dh);
+            reader.setDTDHandler(dh);
+	    reader.parse(new InputSource(
+		    new ByteArrayInputStream(rec.getXmldata())));
 	} finally {
 	    parser.reset();
 	}

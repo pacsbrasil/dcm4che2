@@ -134,9 +134,6 @@ public class AuditRecordListAction implements AuditRecordList {
     private String[] objectIDTypes = { "" };
     private String objectID = "";
     private String objectName = "";
-    private String accession = "";
-    private String mpps = "";
-    private String study = "";
 
     public int getPageSize() {
         return pageSize;
@@ -398,30 +395,6 @@ public class AuditRecordListAction implements AuditRecordList {
         this.objectName = name;
     }
 
-    public String getAccession() {
-        return accession;
-    }
-
-    public void setAccession(String accession) {
-        this.accession = accession;
-    }
-
-    public String getMpps() {
-        return mpps;
-    }
-
-    public void setMpps(String uid) {
-        this.mpps = uid;
-    }
-
-    public String getStudy() {
-        return study;
-    }
-
-    public void setStudy(String uid) {
-        this.study = uid;
-    }
-
     @Factory("records")
     public String find() {
 	curPage = 1;
@@ -434,6 +407,7 @@ public class AuditRecordListAction implements AuditRecordList {
 	updateResults();
     }
     
+    @SuppressWarnings("unchecked")
     private void updateResults() {
 	Date[] dtRange;
 	try {

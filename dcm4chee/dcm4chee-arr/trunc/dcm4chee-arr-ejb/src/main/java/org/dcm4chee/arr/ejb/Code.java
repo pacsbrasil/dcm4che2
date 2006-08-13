@@ -55,6 +55,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "code")
 public class Code implements Serializable {
+
+    private static final long serialVersionUID = -2126932270827340622L;
+
     private int pk;
     private String value;
     private String designator;
