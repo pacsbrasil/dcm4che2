@@ -272,12 +272,6 @@
           <h:inputText id="objectID" value="#{auditRecordList.objectID}"/>
           <h:outputLabel for="objectName">Object Name:</h:outputLabel>
           <h:inputText id="objectName" value="#{auditRecordList.objectName}"/>
-          <h:outputLabel for="accession">Accession:</h:outputLabel>
-          <h:inputText id="accession" value="#{auditRecordList.accession}"/>
-          <h:outputLabel for="mpps">MPPS:</h:outputLabel>
-          <h:inputText id="mpps" value="#{auditRecordList.mpps}"/>
-          <h:outputLabel for="study">Study:</h:outputLabel>
-          <h:inputText id="study" value="#{auditRecordList.study}"/>
         </h:panelGrid>
       </fieldset>
     </h:form>
@@ -332,11 +326,11 @@
           rowClasses="#{auditRecordList.rowClasses}">
           <h:column>
             <f:facet name="header">O</f:facet>
-            <h:graphicImage url="img/out#{rec.eventOutcomeIndicator}.gif"/>
+            <h:graphicImage url="img/out#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
             <f:facet name="header">A</f:facet>
-            <h:outputText value="#{rec.eventActionCode}"/>
+            <h:outputText value="#{rec.eventAction}"/>
           </h:column>
           <h:column>
             <f:facet name="header">Summary</f:facet>
@@ -357,7 +351,7 @@
           <h:column>
             <f:facet name="header">View</f:facet>
             <s:link value="Details" action="#{auditRecordList.showDetails}"/>
-            <f:verbatim/>
+            <h:outputText value=" "/>
             <s:link value="XML" action="#{auditRecordList.showXml}"/>
           </h:column>
         </h:dataTable>
