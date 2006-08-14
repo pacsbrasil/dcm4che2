@@ -81,7 +81,7 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.bean
  *  name="ContentEdit"
  *  type="Stateless"
- *  view-type="remote"
+ *  view-type="both"
  *  jndi-name="ejb/ContentEdit"
  * 
  * @ejb.transaction-type 
@@ -303,91 +303,73 @@ public abstract class ContentEditBean implements SessionBean {
     }
     
     /**
+     * @throws FinderException
      * @ejb.interface-method
      */
-    public Collection moveStudies(long[] study_pks, long patient_pk)
-    		throws RemoteException {
-        try {
-        	Collection col = new ArrayList();
-            PatientLocal pat = patHome.findByPrimaryKey(new Long(patient_pk));
-            Collection studies = pat.getStudies();
-            Dataset dsPat = pat.getAttributes(true);
-            Dataset ds1;
-            for (int i = 0; i < study_pks.length; i++) {
-                StudyLocal study = studyHome.findByPrimaryKey(new Long(
-                        study_pks[i]));
-                PatientLocal oldPat = study.getPatient();
-                if (oldPat.isIdentical(pat)) continue;
-                studies.add(study);
-                ds1 = getStudyMgtDataset( study, study.getSeries(), null, 
-                        CHANGE_MODE_STUDY, dsPat );
-                col.add( ds1 );
-                
-            }
-            return col;
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+    public Collection moveStudies(long[] study_pks, long patient_pk) throws FinderException {
+    	Collection col = new ArrayList();
+        PatientLocal pat = patHome.findByPrimaryKey(new Long(patient_pk));
+        Collection studies = pat.getStudies();
+        Dataset dsPat = pat.getAttributes(true);
+        Dataset ds1;
+        for (int i = 0; i < study_pks.length; i++) {
+            StudyLocal study = studyHome.findByPrimaryKey(new Long(
+                    study_pks[i]));
+            PatientLocal oldPat = study.getPatient();
+            if (oldPat.isIdentical(pat)) continue;
+            studies.add(study);
+            ds1 = getStudyMgtDataset( study, study.getSeries(), null, 
+                    CHANGE_MODE_STUDY, dsPat );
+            col.add( ds1 );
+            
         }
+        return col;
     }
 
     
     /**
+     * @throws FinderException
      * @ejb.interface-method
      */
-    public Dataset moveSeries(long[] series_pks, long study_pk)
-    		throws RemoteException {
-        try {
-            StudyLocal study = studyHome.findByPrimaryKey(new Long(
-                    study_pk));
-            Collection seriess = study.getSeries();
-            Collection movedSeriess = new ArrayList();
-            for (int i = 0; i < series_pks.length; i++) {
-                SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
-                        series_pks[i]));
-                StudyLocal oldStudy = series.getStudy();
-                if (oldStudy.isIdentical(study)) continue;
-                seriess.add(series);                
-                movedSeriess.add( series );
-                oldStudy.updateDerivedFields(true, true, true, true, true, true);
-            }
-            study.updateDerivedFields(true, true, true, true, true, true);
-            return getStudyMgtDataset( study, movedSeriess, null );
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+    public Dataset moveSeries(long[] series_pks, long study_pk) throws FinderException {
+        StudyLocal study = studyHome.findByPrimaryKey(new Long(
+                study_pk));
+        Collection seriess = study.getSeries();
+        Collection movedSeriess = new ArrayList();
+        for (int i = 0; i < series_pks.length; i++) {
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
+                    series_pks[i]));
+            StudyLocal oldStudy = series.getStudy();
+            if (oldStudy.isIdentical(study)) continue;
+            seriess.add(series);                
+            movedSeriess.add( series );
+            oldStudy.updateDerivedFields(true, true, true, true, true, true);
         }
+        study.updateDerivedFields(true, true, true, true, true, true);
+        return getStudyMgtDataset( study, movedSeriess, null );
     }
     
     /**
      * @ejb.interface-method
      */
     public Dataset moveInstances(long[] instance_pks, long series_pk)
-    		throws RemoteException {
-        try {
-            SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
-                    series_pk));
-            Collection instances = series.getInstances();
-            for (int i = 0; i < instance_pks.length; i++) {
-                InstanceLocal instance = instHome.findByPrimaryKey(new Long(
-                        instance_pks[i]));
-                SeriesLocal oldSeries = instance.getSeries();
-                if (oldSeries.isIdentical(series)) continue;
-                instances.add(instance);                
-                oldSeries.updateDerivedFields(true, true, true, true, true);
-                oldSeries.getStudy().updateDerivedFields(true, true, true, true, true, true);
-            }
-            series.updateDerivedFields(true, true, true, true, true);
-            series.getStudy().updateDerivedFields(true, true, true, true, true, true);
-            Collection col = new ArrayList(); col.add( series );
-            return getStudyMgtDataset( series.getStudy(), col, instances );
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+    		throws FinderException {
+        SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
+                series_pk));
+        Collection instances = series.getInstances();
+        for (int i = 0; i < instance_pks.length; i++) {
+            InstanceLocal instance = instHome.findByPrimaryKey(new Long(
+                    instance_pks[i]));
+            SeriesLocal oldSeries = instance.getSeries();
+            if (oldSeries.isIdentical(series)) continue;
+            instances.add(instance);                
+            oldSeries.updateDerivedFields(true, true, true, true, true);
+            oldSeries.getStudy().updateDerivedFields(true, true, true, true, true, true);
         }
+        series.updateDerivedFields(true, true, true, true, true);
+        series.getStudy().updateDerivedFields(true, true, true, true, true, true);
+        Collection col = new ArrayList(); col.add( series );
+        return getStudyMgtDataset( series.getStudy(), col, instances );
     }
 
     
