@@ -619,8 +619,9 @@ public class IHEDocumentList implements XMLResponseObject{
 		 */
 		public int compare( Object arg0, Object arg1 ) {
 			Date d1 = getDateFromDS( (Dataset) arg0 );
+			if ( d1 == null) return 1;
 			Date d2 = getDateFromDS( (Dataset) arg1 );
-			return d2.compareTo( d1 );
+			return d2 == null ? -1 : d2.compareTo( d1 );
 		}
 		
 	}
