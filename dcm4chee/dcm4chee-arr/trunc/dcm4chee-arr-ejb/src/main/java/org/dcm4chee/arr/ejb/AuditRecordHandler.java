@@ -63,17 +63,11 @@ class AuditRecordHandler extends DefaultHandler {
 	    .getLogger(AuditRecordHandler.class);
 
     private final EntityManager em;
-
     private final AuditRecord rec;
-
     private ActiveParticipant ap;
-
     private ParticipantObject po;
-
-    private StringBuffer sb = new StringBuffer(64);
-
+    private StringBuffer sb = new StringBuffer(32);
     private boolean expectAuditSourceTypeCode;
-
     private boolean append;
 
     public AuditRecordHandler(EntityManager em, AuditRecord rec) {
@@ -94,7 +88,8 @@ class AuditRecordHandler extends DefaultHandler {
 	    Attributes attrs) throws SAXException {
 	if ("EventIdentification".equals(qName)) {
 	    rec.setEventAction(attrs.getValue("EventActionCode"));
-	    rec.setEventOutcome(getInt(attrs, "EventOutcomeIndicator"));
+	    rec.setEventOutcome(getInt(attrs, "EventOutcomeIndicator",
+		    "EventIdentification"));
 	    rec.setEventDateTime(parseISO8601DateTime(attrs
 		    .getValue("EventDateTime")));
 	} else if ("EventID".equals(qName)) {
@@ -103,11 +98,24 @@ class AuditRecordHandler extends DefaultHandler {
 	    if (rec.getEventType() == null) {
 		rec.setEventType(toCode(attrs));
 	    } else {
-		log.info("Received Audit Record with multiple Event Type Codes. "
-			+ "Only matching against first value supported!");
+		log.info("Received Audit Record with multiple Event Type Codes."
+			+ " Only matching against first value supported!");
 	    }
 	} else if ("ActiveParticipant".equals(qName)) {
-	    activeParticipant(attrs);
+	    ap = new ActiveParticipant();
+	    ap.setAuditRecord(rec);
+	    ap.setUserID(toUpper(attrs.getValue("UserID")));
+	    ap
+		    .setAlternativeUserID(toUpper(attrs
+			    .getValue("AlternativeUserID")));
+	    ap.setUserName(toUpper(attrs.getValue("UserName")));
+	    ap.setUserIsRequestor(!"false".equalsIgnoreCase(attrs
+		    .getValue("UserIsRequestor")));
+	    ap.setNetworkAccessPointID(toUpper(attrs
+		    .getValue("NetworkAccessPointID")));
+	    ap.setNetworkAccessPointType(getInt(attrs,
+		    "NetworkAccessPointTypeCode", "ActiveParticipant"));
+	    rec.addActiveParticipant(ap);
 	} else if ("RoleIDCode".equals(qName)) {
 	    if (ap.getRoleID() == null) {
 		ap.setRoleID(toCode(attrs));
@@ -124,23 +132,42 @@ class AuditRecordHandler extends DefaultHandler {
 		expectAuditSourceTypeCode = true;
 	    } else {
 		log.info("Received Audit Record with multiple Audit Source "
-			+ "Identifications. Only matching against first value " 
+			+ "Identifications. Only matching against first value "
 			+ "supported!");
 	    }
 	} else if ("AuditSourceTypeCode".equals(qName)) {
 	    if (expectAuditSourceTypeCode) {
 		if (rec.getSourceType() == 0) {
-		    rec.setSourceType(getInt(attrs, "code"));
+		    rec.setSourceType(getInt(attrs, "code",
+			    "AuditSourceTypeCode"));
 		} else {
-		    log.info("Received Audit Record with multiple Audit Source " 
-			    + "Type Codes. Only matching against first value " 
+		    log.info("Received Audit Record with multiple Audit Source "
+			    + "Type Codes. Only matching against first value "
 			    + "supported!");
 		}
 	    }
 	} else if ("ParticipantObjectIdentification".equals(qName)) {
-	    participantObjectIdentification(attrs);
+	    po = new ParticipantObject();
+	    po.setAuditRecord(rec);
+	    po.setObjectID(toUpper(attrs.getValue("ParticipantObjectID")));
+	    po.setObjectType(getInt(attrs, "ParticipantObjectTypeCode",
+		    "ParticipantObjectIdentification"));
+	    po.setObjectRole(getInt(attrs, "ParticipantObjectTypeCodeRole",
+		    "ParticipantObjectIdentification"));
+	    po.setDataLifeCycle(getInt(attrs, "ParticipantObjectDataLifeCycle",
+		    "ParticipantObjectIdentification"));
+	    po.setObjectSensitivity(toUpper(attrs
+		    .getValue("ParticipantObjectSensitivity")));
+	    po.setObjectName(toUpper(attrs.getValue("ParticipantObjectName")));
+	    rec.addParticipantObject(po);
 	} else if ("ParticipantObjectIDTypeCode".equals(qName)) {
-	    participantObjectIDTypeCode(attrs);
+	    Code code = toCode(attrs);
+	    if (code != null) {
+		po.setObjectIDType(code);
+	    } else {
+		po.setObjectIDTypeRFC(getInt(attrs, "code",
+			"ParticipantObjectIDTypeCode"));
+	    }
 	} else if ("ParticipantObjectName".equals(qName)) {
 	    append = true;
 	}
@@ -163,52 +190,16 @@ class AuditRecordHandler extends DefaultHandler {
 
     }
 
-    private void activeParticipant(Attributes attrs) {
-	ap = new ActiveParticipant();
-	ap.setAuditRecord(rec);
-	ap.setUserID(toUpper(attrs.getValue("UserID")));
-	ap.setAlternativeUserID(toUpper(attrs.getValue("AlternativeUserID")));
-	ap.setUserName(toUpper(attrs.getValue("UserName")));
-	ap.setUserIsRequestor(!"false".equalsIgnoreCase(attrs
-		.getValue("UserIsRequestor")));
-	ap.setNetworkAccessPointID(toUpper(attrs
-		.getValue("NetworkAccessPointID")));
-	ap.setNetworkAccessPointType(getInt(attrs, "NetworkAccessPointTypeCode"));
-	rec.addActiveParticipant(ap);
-    }
-
-    private int getInt(Attributes attrs, String qName) {
-	String val = attrs.getValue(qName);
+    private int getInt(Attributes attrs, String attrName, String elName) {
+	String val = attrs.getValue(attrName);
 	if (val != null && val.trim().length() > 0)
 	    try {
 		return Integer.parseInt(val);
 	    } catch (NumberFormatException e) {
-		log.info("Received Audit Record with unexpected " + qName 
-			+ ":" + val);
+		log.info("Expected int value but received <{} {}=\"{}\"",
+			new Object[] { elName, attrName, val });
 	    }
 	return 0;
-    }
-
-    private void participantObjectIdentification(Attributes attrs) {
-	po = new ParticipantObject();
-	po.setAuditRecord(rec);
-	po.setObjectID(toUpper(attrs.getValue("ParticipantObjectID")));
-	po.setObjectType(getInt(attrs, "ParticipantObjectTypeCode"));
-	po.setObjectRole(getInt(attrs, "ParticipantObjectTypeCodeRole"));
-	po.setDataLifeCycle(getInt(attrs, "ParticipantObjectDataLifeCycle"));
-	po.setObjectSensitivity(toUpper(attrs
-		.getValue("ParticipantObjectSensitivity")));
-	po.setObjectName(toUpper(attrs.getValue("ParticipantObjectName")));
-	rec.addParticipantObject(po);
-    }
-
-    private void participantObjectIDTypeCode(Attributes attrs) {
-	Code code = toCode(attrs);
-	if (code != null) {
-	    po.setObjectIDType(code);
-	} else {
-	    po.setObjectIDTypeRFC(getInt(attrs, "code"));
-	}
     }
 
     private Code toCode(Attributes attrs) {
@@ -221,9 +212,9 @@ class AuditRecordHandler extends DefaultHandler {
 	List queryResult = em.createQuery("FROM Code c WHERE "
 			+ "c.value = :value AND c.designator = :designator")
 		.setParameter("value", value)
-    		.setParameter("designator", designator)
-    		.setHint("org.hibernate.readOnly", Boolean.TRUE)
-    		.getResultList();
+		.setParameter("designator", designator)
+		.setHint("org.hibernate.readOnly", Boolean.TRUE)
+		.getResultList();
 	if (!queryResult.isEmpty()) {
 	    return (Code) queryResult.get(0);
 	}
@@ -256,20 +247,20 @@ class AuditRecordHandler extends DefaultHandler {
 	    ++pos;
 	}
 	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
-	cal.set(Calendar.MONTH, Integer
-			.parseInt(s.substring(pos, pos + len)) - 1);
+	cal.set(Calendar.MONTH,
+		Integer.parseInt(s.substring(pos, pos + len)) - 1);
 	if (!isDigit(s.charAt(pos += len))) {
 	    ++pos;
 	}
 	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
-	cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s.substring(pos,
-		pos + len)));
+	cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s.substring(pos, pos
+		+ len)));
 	if (!isDigit(s.charAt(pos += len))) {
 	    ++pos;
 	}
 	len = !isDigit(s.charAt(pos + 1)) ? 1 : 2;
-	cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s
-		.substring(pos, pos + len)));
+	cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s.substring(pos, pos
+		+ len)));
 	if (!isDigit(s.charAt(pos += len))) {
 	    ++pos;
 	}

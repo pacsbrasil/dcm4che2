@@ -50,8 +50,10 @@ interface AuditRecordList {
     int getPageSize();
     void setPageSize(int pageSize);
     
+    int getMinPage();
     int getCurPage();
     int getMaxPage();
+    int getLastPage();
     int getCount();
     int getFirstResult();
     

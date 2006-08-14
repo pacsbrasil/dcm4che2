@@ -91,8 +91,7 @@ public class AuditRecord implements Serializable {
     private Collection<ParticipantObject> participantObject;
     private boolean iheYr4;
     private byte[] xmldata;
-    @Transient
-    private String summary;
+    private transient String summary;
 
     @Id
     @GeneratedValue
@@ -124,15 +123,15 @@ public class AuditRecord implements Serializable {
         this.eventType = eventTypeCode;
     }
     
-    @Transactional
+    @Transient
     public String getSummary() {
-//	if (summary == null) {
+	if (summary == null) {
 	    summary = XSLTUtils.toSummary(xmldata);
-//	}
+	}
 	return XSLTUtils.toSummary(xmldata);
     }
 
-    @Transactional
+    @Transient
     public void setSummary(String summary) {
 	this.summary = summary;
     }

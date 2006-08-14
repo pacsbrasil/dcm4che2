@@ -37,8 +37,6 @@
 
 package org.dcm4chee.arr.ejb;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Date;
 
 import javax.ejb.ActivationConfigProperty;
@@ -48,19 +46,14 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4chee.arr.util.AuditMessageUtils;
 import org.dcm4chee.arr.util.XSLTUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -81,7 +74,7 @@ public class ReceiverMDB implements MessageListener {
     
     @PersistenceContext(unitName="dcm4chee-arr")
     private EntityManager em;
-    private SAXParser parser;
+    private XMLReader xmlReader;
 
     public void onMessage(Message msg) {
         byte[] xmldata;
@@ -102,7 +95,15 @@ public class ReceiverMDB implements MessageListener {
             rec.setReceiveDateTime(new Date(msg.getJMSTimestamp()));
             rec.setIHEYr4(AuditMessageUtils.isIHEYr4(xmldata));
             rec.setXmldata(xmldata);
-            parse(rec);
+            if (xmlReader == null) {
+        	xmlReader = XMLReaderFactory.createXMLReader();
+	    }
+            DefaultHandler dh = new AuditRecordHandler(em, rec);
+            if (rec.isIHEYr4()) {
+        	XSLTUtils.parseIHEYr4(xmlReader, dh, xmldata);
+            } else {
+        	XSLTUtils.parseATNA(xmlReader, dh, xmldata);
+            }
             em.persist(rec);
             if (log.isDebugEnabled()) {
                 log.debug("Finished processing {}", 
@@ -113,26 +114,4 @@ public class ReceiverMDB implements MessageListener {
                     AuditMessageUtils.promptMsg(xmldata), e);
         }
      }
-
-    private void parse(AuditRecord rec) throws ParserConfigurationException,
-	    SAXException, IOException, TransformerConfigurationException {
-	if (parser == null) {
-	    parser = SAXParserFactory.newInstance().newSAXParser();
-	}
-	try {
-	    XMLReader reader = parser.getXMLReader();
-	    if (rec.isIHEYr4()) {
-		reader = XSLTUtils.iheYr4toATNA(reader);
-	    }
-	    DefaultHandler dh = new AuditRecordHandler(em, rec);
-            reader.setContentHandler(dh);
-            reader.setEntityResolver(dh);
-            reader.setErrorHandler(dh);
-            reader.setDTDHandler(dh);
-	    reader.parse(new InputSource(
-		    new ByteArrayInputStream(rec.getXmldata())));
-	} finally {
-	    parser.reset();
-	}
-    }
 }

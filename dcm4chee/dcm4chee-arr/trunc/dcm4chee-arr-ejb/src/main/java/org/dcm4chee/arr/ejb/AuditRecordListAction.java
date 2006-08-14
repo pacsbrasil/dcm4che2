@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.arr.ejb;
 
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -151,7 +152,15 @@ public class AuditRecordListAction implements AuditRecordList {
         return curPage;
     }
     
+    public int getMinPage() {
+        return Math.max(1, Math.min(curPage, getLastPage() - 5) - 4);
+    }
+    
     public int getMaxPage() {
+        return Math.min(getLastPage(), Math.max(5, curPage) + 4);
+    }
+    
+    public int getLastPage() {
         return (count-1) / pageSize + 1;
     }
     
@@ -490,7 +499,12 @@ public class AuditRecordListAction implements AuditRecordList {
         if (selectedIndex == -1) {
             return "No Record selected";
         }
-        return XSLTUtils.toXML(records.get(selectedIndex).getXmldata());
+        byte[] xmldata = records.get(selectedIndex).getXmldata();
+        try {
+	    return new String(xmldata, "UTF-8");
+	} catch (UnsupportedEncodingException e) {
+	    return e.getMessage();
+	}        
     }
     
     public String getDetails() {

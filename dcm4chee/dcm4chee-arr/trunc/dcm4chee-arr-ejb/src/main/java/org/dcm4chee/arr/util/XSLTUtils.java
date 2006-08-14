@@ -39,21 +39,25 @@
 package org.dcm4chee.arr.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,7 +65,7 @@ import org.xml.sax.XMLReader;
  * @since Aug 2, 2006
  */
 public class XSLTUtils {
-    
+
     private static final String SUMMARY_XSL = "arr-summary.xsl";
     private static final String DETAILS_XSL = "arr-details.xsl";
     private static final String IHEYR4_TO_ATNA_XSL = "arr-iheyr4-to-atna.xsl";
@@ -70,34 +74,13 @@ public class XSLTUtils {
     private static Templates iheYr4toATNATpl;
     private static SAXTransformerFactory tf;
 
-    private static TransformerFactory transfomerFactory() 
-    throws TransformerFactoryConfigurationError {
+    private static SAXTransformerFactory transfomerFactory() {
 	if (tf == null) {
 	    tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 	}
 	return tf;
     }
     
-    public static XMLFilter iheYr4toATNA(XMLReader reader) 
-    throws TransformerConfigurationException {
-	if (iheYr4toATNATpl == null) {
-	    iheYr4toATNATpl = loadTemplates(IHEYR4_TO_ATNA_XSL);
-	}
-	XMLFilter filter = tf.newXMLFilter(iheYr4toATNATpl);
-	filter.setParent(reader);
-	return filter;
-    }
-    
-    public static String toXML(byte[] xmldata) {
-        try {
-            Transformer tr = transfomerFactory().newTransformer();
-            tr.setOutputProperty(OutputKeys.INDENT, "yes");
-            return transform(tr, xmldata);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
     public static String toSummary(byte[] xmldata) {
 	try {
 	    if (summaryTpl == null) {
@@ -129,11 +112,43 @@ public class XSLTUtils {
     }
 
     private static Templates loadTemplates(String name)
-	    throws TransformerConfigurationException,
-	    TransformerFactoryConfigurationError {
+	    throws TransformerException  {
 	ClassLoader cl = Thread.currentThread().getContextClassLoader();
 	return transfomerFactory().newTemplates(
 		new StreamSource(cl.getResource(name).toString()));
     }
     
+    public static void parseIHEYr4(XMLReader reader, DefaultHandler dh,
+	    byte[] xmldata) throws IOException, SAXException,
+	    TransformerException {
+	if (iheYr4toATNATpl == null) {
+	    iheYr4toATNATpl = loadTemplates(IHEYR4_TO_ATNA_XSL);
+	}
+	XMLFilter filter = transfomerFactory().newXMLFilter(iheYr4toATNATpl);
+	filter.setParent(reader);
+	parseATNA(filter, dh, xmldata);
+    }
+
+    public static void parseATNA(XMLReader reader, DefaultHandler dh, 
+	    byte[] xmldata) throws IOException, SAXException {
+        reader.setContentHandler(dh);
+        reader.setEntityResolver(dh);
+        reader.setErrorHandler(dh);
+        reader.setDTDHandler(dh);
+        reader.parse(new InputSource(new ByteArrayInputStream(xmldata)));
+    }
+    
+    public static void main(String[] args) throws Exception {
+	File f = new File(args[0]);
+	byte[] xmldata = new byte[(int) f.length()];
+	FileInputStream in = new FileInputStream(f);
+	in.read(xmldata);
+	in.close();
+	Transformer tr = AuditMessageUtils.isIHEYr4(xmldata) 
+		? loadTemplates(IHEYR4_TO_ATNA_XSL).newTransformer()
+		: transfomerFactory().newTransformer();
+	tr.setOutputProperty(OutputKeys.INDENT, "yes");
+	tr.transform(new StreamSource(new ByteArrayInputStream(xmldata)), 
+		new StreamResult(System.out));
+    }
 }
