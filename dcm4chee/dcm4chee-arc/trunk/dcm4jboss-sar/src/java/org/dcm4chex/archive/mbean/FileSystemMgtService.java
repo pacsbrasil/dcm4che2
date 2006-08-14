@@ -690,7 +690,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         		freeDiskSpaceListener);
         timer.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
         		purgeFilesListener);
- 		JMSDelegate.stopListening("PurgeFiles");
+ 		JMSDelegate.stopListening(purgeStudyQueueName);
         super.stopService();
     }
 
