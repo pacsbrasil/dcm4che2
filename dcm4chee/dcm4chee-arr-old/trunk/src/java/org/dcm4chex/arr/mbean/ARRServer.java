@@ -111,33 +111,10 @@ public class ARRServer extends ServiceMBeanSupport implements
         udpsrv.setPort(port);
     }
 
-	public final int getMaxClients() {
-        return udpsrv.getMaxClients();
-    }
-
-	public final void setMaxClients(int maxClients) {
-        udpsrv.setMaxClients(maxClients);
-    }
-
-	public final int getNumClients() {
-        return udpsrv.getNumClients();
-    }
-
-    public int getMaxIdleThreads() {
-        return udpsrv.getMaxIdleThreads();
-    }
-    
-    public int getNumIdleThreads() {
-        return udpsrv.getNumIdleThreads();
-    }
-    
-    public void setMaxIdleThreads(int max) {
-        udpsrv.setMaxIdleThreads(max);
-    }
-    
     public String toString() {
         return udpsrv.toString();
     }
+
     public void process(Date date, String host, String content) {
         store(content);
     }
@@ -202,4 +179,41 @@ public class ARRServer extends ServiceMBeanSupport implements
             }
         }
     }
+
+    public String getLocalAddress() {
+        return udpsrv.getLocalAddress();
+    }
+
+    public void setLocalAddress(String laddrStr) {
+        udpsrv.setLocalAddress(laddrStr);
+    }
+    
+    public int getMaxPacketSize() {
+        return udpsrv.getMaxPacketSize();
+    }
+    
+    public void setMaxPacketSize(int maxPacketSize) {
+        udpsrv.setMaxPacketSize(maxPacketSize);
+    }
+
+    public int getReceiveBufferSize() {
+        return udpsrv.getReceiveBufferSize();
+    }
+    
+    public void setReceiveBufferSize(int receiveBufferSize) {
+        udpsrv.setReceiveBufferSize(receiveBufferSize);
+    }
+
+    public boolean isRunning() {
+        return udpsrv.isRunning();
+    }
+    
+    public Date getLastStartedAt() {
+        return udpsrv.getLastStartedAt();
+    }
+    
+    public Date getLastStoppedAt() {
+        return udpsrv.getLastStoppedAt();
+    }
 }
+

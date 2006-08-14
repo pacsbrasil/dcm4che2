@@ -45,40 +45,62 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMaxClients"
-      setMethod="setMaxClients">
-      <description>Maximal number of simultaneously connected clients.
+      getMethod="getLocalAddress"
+      setMethod="setLocalAddress">
+      <description>Bound UDP socket to the specified local address. 
+      If the IP address is 0.0.0.0, the socket will be bound to the wildcard
+      address, an IP address chosen by the kernel.
       </description>
-      <name>MaxClients</name>
-      <type>int</type>
+      <name>LocalAddress</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="100" />
+         <value value="0.0.0.0" />
       </descriptors>
-   </attribute>
-   <attribute access="read-only"
-      getMethod="getNumClients">
-      <description>Current number of connected clients.
-      </description>
-      <name>NumClients</name>
-      <type>int</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMaxIdleThreads"
-      setMethod="setMaxIdleThreads">
-      <description>Maximal number of idle threads.
+      getMethod="getMaxPacketSize"
+      setMethod="setMaxPacketSize">
+      <description>Maximal UDP Packet size. Larger messages will be truncated.
       </description>
-      <name>MaxIdleThreads</name>
+      <name>MaxPacketSize</name>
       <type>int</type>
       <descriptors>
-         <value value="5" />
+         <value value="65507" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getReceiveBufferSize"
+      setMethod="setReceiveBufferSize">
+      <description>UDP receive buffer size. Increasing the receive buffer may
+      allow the network implementation to buffer multiple packets when packets 
+      arrive faster than are being processed.
+      </description>
+      <name>ReceiveBufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
       </descriptors>
    </attribute>
    <attribute access="read-only"
-      getMethod="getNumIdleThreads">
-      <description>Current number of idle threads.
+      getMethod="isRunning">
+      <description>Indicates if UDP Server is listening.
       </description>
-      <name>NumIdleThread</name>
-      <type>int</type>
+      <name>Running</name>
+      <type>boolean</type>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getLastStartedAt">
+      <description>Date/Time when the server was started.
+      </description>
+      <name>LastStartedAt</name>
+      <type>java.util.Date</type>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getLastStoppedAt">
+      <description>Date/Time when the server was stopped.
+      </description>
+      <name>LastStoppedAt</name>
+      <type>java.util.Date</type>
    </attribute>
    &defaultAttributes;
 
