@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * See authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -61,20 +61,9 @@ import org.dcm4che.util.HandshakeFailedListener;
 import org.dcm4cheri.util.LF_ThreadPool;
 
 /**
- * <description>
- *
- * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Thomas Hacklaender <thomas@hacklaender-online.de>
  * @version $Revision$ $Date$
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>20021105 Gunter Zeilinger:</b>
- * <ul>
- * <li> add property port and serverSocketFactory
- * <li> deprecate use of {@link #start(int)} 
- *                   and {@link #start(int,ServerSocketFactory)}
- * </ul>
  */
 class ServerImpl implements LF_ThreadPool.Handler, Server {
     // Constants -----------------------------------------------------
@@ -280,7 +269,11 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                 try { s.close(); } catch (IOException ignore) {}
             }
         } catch (Exception e) {
-            log.error(e, e);
+            if ((e instanceof SocketException) && (s == null)) {
+                log.info("Blocking ServerSocket.accept method canceled");
+            } else {
+                log.error(e, e);
+            }
             if (s != null) {
                 try { s.close(); } catch (IOException ignore) {};
             }
