@@ -40,13 +40,10 @@ package org.dcm4che.server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.util.Date;
 
 /**
- * <description>
- *
- * @see <related>
- * @author  <a href="mailto:{email}">{full name}</a>.
- * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @author gunter zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  */
 public interface UDPServer {
@@ -55,36 +52,22 @@ public interface UDPServer {
         void handle(DatagramPacket datagram) throws IOException;
     }
     
-    void setMaxClients(int max);
+    int getPort();
+    void setPort(int port);
     
-    int getMaxClients();
+    String getLocalAddress();
+    void setLocalAddress(String laddrStr);
     
-    int getNumClients();
+    int getMaxPacketSize();
+    void setMaxPacketSize(int maxPacketSize);
+    
+    int getReceiveBufferSize();
+    void setReceiveBufferSize(int receiveBufferSize);
+    
+    boolean isRunning();
+    Date getLastStoppedAt();
+    Date getLastStartedAt();
 
-    void setMaxIdleThreads(int max);
-    
-    int getMaxIdleThreads();
-    
-    int getNumIdleThreads();
-    
-    /**
-     * @deprecated use {@link #setPort}, {@link #start()} 
-     */    
-    void start(int port) throws IOException;
-    
     void start() throws Exception;
-    
     void stop();
-    
-    /** Getter for property port.
-     * @return Value of property port.
-     *
-     */
-    public int getPort();
-    
-    /** Setter for property port.
-     * @param port New value of property port.
-     *
-     */
-    public void setPort(int port);
 }

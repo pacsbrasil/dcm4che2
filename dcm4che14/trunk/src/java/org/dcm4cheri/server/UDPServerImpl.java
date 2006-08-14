@@ -39,155 +39,170 @@
 package org.dcm4cheri.server;
 
 import org.dcm4che.server.UDPServer;
-import org.dcm4cheri.util.LF_ThreadPool;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
+import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Date;
 
 /**
- * <description>
- *
- * @see <related>
- * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author gunter zeilinger(gunterze@gmail.com)
  * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  */
-public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
-{
-    private static int instCount = 0;
-    private final String name = "UDPServer-" + ++instCount;
-    private final Handler handler;
-    private static final Logger log = Logger.getLogger(UDPServerImpl.class);
-    private LF_ThreadPool threadPool = new LF_ThreadPool(this, name);
-    private DatagramSocket ss;
-    private int port;
+public class UDPServerImpl implements UDPServer {
+    
+    private static Logger log = Logger.getLogger(UDPServerImpl.class);
+    
+    private static final int MAX_PACKAGE_SIZE = 65507;
+    private static final int DEFAULT_PORT = 4000;
 
-    public UDPServerImpl(Handler handler)
-    {
-	if (handler==null)
-	    throw new NullPointerException();
-	this.handler = handler;
+    private InetAddress laddr;
+    private int port = DEFAULT_PORT;
+    private int maxPacketSize = MAX_PACKAGE_SIZE;
+    private int rcvBuf = 0;
+
+    private DatagramSocket socket;
+    private Thread thread;
+    private long lastStartedAt;
+    private long lastStoppedAt;
+    private Handler handler;
+    
+    public UDPServerImpl(Handler handler) {
+    if (handler==null)
+        throw new NullPointerException();
+    this.handler = handler;
+    }
+    
+    public final boolean isRunning() {
+        return socket != null;
     }
 
-    public void setMaxClients(int max)
-    {
-	threadPool.setMaxRunning(max);
+    public Date getLastStoppedAt() {
+        return toDate(lastStoppedAt);
     }
 
-    public int getMaxClients()
-    {
-	return threadPool.getMaxRunning();
+    public Date getLastStartedAt() {
+        return toDate(lastStartedAt);
     }
 
-    public int getNumClients()
-    {
-	return threadPool.running()-1;
+    private static Date toDate(long ms) {
+        return ms > 0 ? new Date(ms) : null;
+    }
+    
+    public final String getLocalAddress() {
+        return laddr == null ? "0.0.0.0" : laddr.getHostAddress();
+    }
+    
+    public void setLocalAddress(String laddrStr) {
+        try {
+            laddr = InetAddress.getByName(laddrStr);           
+        } catch (UnknownHostException e) {
+            throw new IllegalArgumentException("Unknown Host: " + laddrStr);
+        }
+    }
+    
+    public final int getPort() {
+        return port;        
     }
 
-    public void setMaxIdleThreads(int max)
-    {
-	threadPool.setMaxWaiting(max);
+    public void setPort(int port) {
+        if (port < 0 || port > 0xFFFF) {
+            throw new IllegalArgumentException("port: " + port);
+        }
+        this.port = port;        
     }
 
-    public int getMaxIdleThreads()
-    {
-	return threadPool.getMaxWaiting();
+    public final int getMaxPacketSize() {
+        return maxPacketSize;
     }
 
-    public int getNumIdleThreads()
-    {
-	return threadPool.waiting();
-    }
-    /**
-     * @deprecated use {@link #setPort}, {@link #start()} 
-     */
-    public void start(int port)
-	throws SocketException, IOException
-    {
-	setPort(port);
-	start();
+    public void setMaxPacketSize(int maxPacketSize)  {
+        if (maxPacketSize < 512 || maxPacketSize > MAX_PACKAGE_SIZE) {
+            throw new IllegalArgumentException("maxPacketSize: " 
+                    + maxPacketSize + " not in range 512..65507");
+        }
+        this.maxPacketSize = maxPacketSize;
     }
 
-    public void start()
-	throws SocketException, IOException
-    {
-	checkNotRunning();
-	if (log.isInfoEnabled())
-	    log.info("Start Server listening at port " + port);
-	InetAddress iaddr = InetAddress.getByAddress(new byte[] {0,0,0,0});
-	ss = new DatagramSocket(port,iaddr);
-	ss.setSoTimeout(0);
-	new Thread(new Runnable() {
-		public void run() {
-		    threadPool.join();
-		}
-	    }, name).start();
+    public final int getReceiveBufferSize() {
+        return rcvBuf;
     }
 
-    public void stop()
-    {
-	if (ss == null)
-	    return;
-	InetAddress iaddr = ss.getInetAddress();
-	int port = ss.getLocalPort();
-	if (log.isInfoEnabled())
-	    log.info("Stop Server listening at port " + port);
-	ss.close();
-	ss = null;
-	threadPool.shutdown();
-	LF_ThreadPool tp = new LF_ThreadPool(this, name);
-	tp.setMaxRunning( threadPool.getMaxRunning());
-	tp.setMaxWaiting( threadPool.getMaxWaiting());
-	threadPool = tp;
+    public void setReceiveBufferSize(int rcvBuf)  {
+        if (rcvBuf < 0) {
+            throw new IllegalArgumentException("rcvBuf: " + rcvBuf);
+        }
+        this.rcvBuf = rcvBuf;
     }
 
-    public void run(LF_ThreadPool pool)
-    {
-	if (ss == null)
-	    return;
-	final int BufSize = 32768;
-	byte[] buff = new byte[BufSize];
-	DatagramPacket dp = new DatagramPacket(buff,buff.length);
-	try {
-	    ss.receive(dp);
-	    if (log.isInfoEnabled())
-		log.info("handling request on " + ss);
-	    pool.promoteNewLeader();
-	    handler.handle(dp);
-	}
-	catch(IOException ioe) {
-	    log.error(ioe);
-	}
-	if (log.isInfoEnabled())
-	    log.info("finished - " + ss);
+    public synchronized void start() throws Exception {
+        startServer();
     }
 
-    /** Getter for property port.
-     * @return Value of property port.
-     *
-     */
-    public int getPort()
-    {
-	return port;
+    public synchronized void stop() {
+        stopServer();
     }
+    
+    private synchronized void startServer() throws SocketException {
+        if (socket != null) {
+            stopServer();
+        }
+        socket = new DatagramSocket(port, laddr);
+        int prevRcvBuf = socket.getReceiveBufferSize();
+        if (rcvBuf == 0) {
+            rcvBuf = prevRcvBuf;
+        } else if (rcvBuf != prevRcvBuf) {
+            socket.setReceiveBufferSize(rcvBuf);
+            rcvBuf = socket.getReceiveBufferSize();
+        }
+        thread = new Thread(new Runnable() {
+            public void run() {
+                lastStartedAt = System.currentTimeMillis();
+                SocketAddress lsa = socket.getLocalSocketAddress();
+                log.info("Started UDP Server listening on " + lsa);
+                byte[] data = new byte[maxPacketSize];
+                DatagramPacket p = new DatagramPacket(data, data.length);
+                boolean restart = false;
+                while (socket != null && !socket.isClosed()) {
+                    try {
+                        socket.receive(p);
+                        handler.handle(p);
+                    } catch (IOException e) {
+                        if (!socket.isClosed()) {
+                            log.warn("UDP Server throws i/o exception - restart", e);
+                            restart = true;
+                        }
+                        break;
+                    }
+                    p.setLength(data.length);
+                }
+                socket = null;
+                thread = null;
+                lastStoppedAt = System.currentTimeMillis();
+                log.info("Stopped UDP Server listening on " + lsa);
+                if (restart) {
+                    try {
+                        startServer();
+                    } catch (SocketException e) {
+                        log.error("Failed to restart UDP Server", e);
+                    }
+                }
+            }
+        });
+        thread.start();
+    }    
 
-    /** Setter for property port.
-     * @param port New value of property port.
-     *
-     */
-    public void setPort(int port)
-    {
-	this.port = port;
-    }
-
-    private void checkNotRunning() {
-        if (ss != null) {
-            throw new IllegalStateException("Already Running - " + threadPool);
+    private synchronized void stopServer() {
+        if (socket != null) {
+            socket.close();
+            try { thread.join(); } catch (Exception ignore) {}
+            socket = null;
         }
     }
 }
-
