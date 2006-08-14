@@ -473,7 +473,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     	lookupPrivateManager().deletePrivateInstance( pk );//dont delete files of instance (needed for purge process)
     }
     
-    public void moveStudies(long[] study_pks, Long patient_pk) throws RemoteException, HomeFactoryException, CreateException {
+    public void moveStudies(long[] study_pks, Long patient_pk) throws FinderException, HomeFactoryException, CreateException, RemoteException {
     	if ( log.isDebugEnabled() ) log.debug("move Studies");
     	Collection col = lookupContentEdit().moveStudies( study_pks, patient_pk.longValue() );
     	Iterator iter = col.iterator();
@@ -485,14 +485,14 @@ public class ContentEditService extends ServiceMBeanSupport {
     	}
     }   
     
-    public void moveSeries(long[] series_pks, Long study_pk) throws RemoteException, HomeFactoryException, CreateException {
+    public void moveSeries(long[] series_pks, Long study_pk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("move Series");
     	Dataset ds = lookupContentEdit().moveSeries( series_pks, study_pk.longValue() );
 		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds);
 		sendSeriesUpdatedNotifications(ds, "Move series");
     }
     
-    public void moveInstances(long[] instance_pks, Long series_pk) throws RemoteException, HomeFactoryException, CreateException {
+    public void moveInstances(long[] instance_pks, Long series_pk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("move Instances");
     	Dataset ds = lookupContentEdit().moveInstances(instance_pks, series_pk.longValue() );
 		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, ds);
