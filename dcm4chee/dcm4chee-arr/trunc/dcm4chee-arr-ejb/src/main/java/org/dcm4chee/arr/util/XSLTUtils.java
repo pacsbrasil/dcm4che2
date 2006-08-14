@@ -42,7 +42,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Templates;
@@ -80,7 +82,29 @@ public class XSLTUtils {
 	}
 	return tf;
     }
-    
+
+    public static String toXML(byte[] xmldata) {
+        try {
+            InputStreamReader r = new InputStreamReader(new ByteArrayInputStream(xmldata), "UTF-8");
+            StringBuffer sb = new StringBuffer(xmldata.length * 5 / 4);
+            sb.append("<pre>");
+            int prev = '\n', c;
+            while ((c = r.read()) != -1) {
+                if (c == '<') {
+                    sb.append(prev == '\n' ? "&lt;" : "\n&lt;");
+                } else {
+                    sb.append((char)c);
+                }
+                if (c != ' ') {
+                    prev = c;
+                }
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
     public static String toSummary(byte[] xmldata) {
 	try {
 	    if (summaryTpl == null) {

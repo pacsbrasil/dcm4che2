@@ -499,12 +499,7 @@ public class AuditRecordListAction implements AuditRecordList {
         if (selectedIndex == -1) {
             return "No Record selected";
         }
-        byte[] xmldata = records.get(selectedIndex).getXmldata();
-        try {
-	    return new String(xmldata, "UTF-8");
-	} catch (UnsupportedEncodingException e) {
-	    return e.getMessage();
-	}        
+        return XSLTUtils.toXML(records.get(selectedIndex).getXmldata());
     }
     
     public String getDetails() {
