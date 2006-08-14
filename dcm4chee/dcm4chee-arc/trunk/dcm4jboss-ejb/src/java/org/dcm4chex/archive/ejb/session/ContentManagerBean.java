@@ -247,9 +247,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listStudies(Dataset filter, boolean hideWithoutStudies, int offset, int limit) {
+    public List listStudies(Dataset filter, boolean hideWithoutStudies, boolean noMatchForNoValue, int offset, int limit) {
         try {
-       		return new QueryStudiesCmd(filter, hideWithoutStudies).list(offset, limit);
+       		return new QueryStudiesCmd(filter, hideWithoutStudies, noMatchForNoValue).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }
