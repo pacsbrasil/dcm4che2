@@ -294,7 +294,7 @@
                 action="#{auditRecordList.selectPage}">
                 <f:param name="page" value="#{auditRecordList.curPage-1}"/>
               </s:link>
-              <c:forEach var="i" begin="1" end="#{auditRecordList.curPage-1}">
+              <c:forEach var="i" begin="#{auditRecordList.minPage}" end="#{auditRecordList.curPage-1}">
                 <f:verbatim> | </f:verbatim>
                 <s:link value="${i}" action="#{auditRecordList.selectPage}">
                   <f:param name="page" value="${i}"/>
@@ -307,7 +307,7 @@
               <f:param value="#{auditRecordList.curPage}"/>
             </h:outputFormat>
             <h:panelGroup
-              rendered="#{auditRecordList.curPage&lt;auditRecordList.maxPage}">
+              rendered="#{auditRecordList.curPage&lt;auditRecordList.lastPage}">
               <c:forEach var="i" begin="#{auditRecordList.curPage+1}"
                 end="#{auditRecordList.maxPage}">
                 <f:verbatim> | </f:verbatim>
