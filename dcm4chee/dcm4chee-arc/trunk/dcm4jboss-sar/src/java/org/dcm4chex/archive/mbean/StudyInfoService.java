@@ -41,24 +41,17 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.ejb.jdbc.WadoQueryCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
