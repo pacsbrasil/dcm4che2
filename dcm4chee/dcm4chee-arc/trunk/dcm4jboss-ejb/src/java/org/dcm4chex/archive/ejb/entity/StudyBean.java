@@ -105,6 +105,16 @@ import org.dcm4chex.archive.util.Convert;
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findStudiesWithStatus(int status, java.sql.Timestamp createdBefore, int limit)"
  *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.studyStatus = ?1) AND (s.createdTime < ?2) LIMIT ?3"
+ *  
+ * @ejb.finder signature="java.util.Collection findStudiesFromAE(java.lang.String sourceAET, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findStudiesFromAE(java.lang.String sourceAET, int limit)"
+ *              query="SELECT DISTINCT OBJECT(st) FROM Study AS st, IN(st.series) s WHERE (s.sourceAET = ?1) LIMIT ?2"
+ *              
+ * @ejb.finder signature="java.util.Collection findStudiesWithStatusFromAE(int status, java.lang.String sourceAET, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findStudiesWithStatusFromAE(int status, java.lang.String sourceAET, int limit)"
+ *              query="SELECT DISTINCT OBJECT(st) FROM Study AS st, IN(st.series) s WHERE (st.studyStatus = ?1) AND (s.sourceAET = ?2) LIMIT ?3"
  *             
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Long pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
