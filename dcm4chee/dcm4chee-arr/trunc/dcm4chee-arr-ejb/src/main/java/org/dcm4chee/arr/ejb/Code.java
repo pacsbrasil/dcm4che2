@@ -46,6 +46,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.dcm4chee.arr.ejb.Code;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
@@ -96,4 +98,14 @@ public class Code implements Serializable {
     public void setMeaning(String meaning) {
         this.meaning = meaning;
     }
+    
+    public boolean equals(Object other) {
+        if (other == null || !(other instanceof Code)) {
+            return false;
+        }
+
+        Code otherCategory = (Code) other;
+        return (getPk()== otherCategory.getPk());
+    }
+    
 }
