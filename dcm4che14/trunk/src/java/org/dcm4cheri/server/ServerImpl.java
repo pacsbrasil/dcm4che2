@@ -39,7 +39,6 @@
 package org.dcm4cheri.server;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -222,20 +221,16 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         if (ss == null)
             return;
         
-        InetAddress ia = ss.getInetAddress();
         int port = ss.getLocalPort();
-        if (log.isInfoEnabled())
+        if (log.isInfoEnabled()) {
             log.info("Stop Server listening at port " + port);
+        }
+        threadPool.shutdown();
         try {
             ss.close();
         } catch (IOException ignore) {}
         
-        // try to connect to server port to ensure to leave blocking accept
-        /*try {
-            new Socket(ia, port).close();
-        } catch (IOException ignore) {}*/
         ss = null;
-        threadPool.shutdown();
     	LF_ThreadPool tp = new LF_ThreadPool(this, name);
     	tp.setMaxRunning( threadPool.getMaxRunning());
     	tp.setMaxWaiting( threadPool.getMaxWaiting());
@@ -278,7 +273,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                 try { s.close(); } catch (IOException ignore) {};
             }
         }
-        if (log.isInfoEnabled()) {
+        if (log.isInfoEnabled() && s != null) {
             log.info("finished - " + s);
         }
     }
