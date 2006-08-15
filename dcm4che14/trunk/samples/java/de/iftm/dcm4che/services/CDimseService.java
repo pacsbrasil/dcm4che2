@@ -109,7 +109,7 @@ import org.apache.log4j.Logger;
  *
  *
  * @author Thomas Hacklaender
- * @version 2006-06-28
+ * @version 2006-07-25
  */
 public class CDimseService {
     
@@ -318,8 +318,60 @@ public class CDimseService {
      * Initializes TLS (Transport Layer Security, predecessor of SSL, Secure 
      * Sockets Layer) connection related parameters. TLS expects RSA (Ron Rivest, 
      * Adi Shamir and Len Adleman) encoded keys and certificates.
+     *
      * <p>Keys and certificates may be stored in PKCS #12 (Public Key 
      * Cryptography Standards) or JKS (Java Keystore) containers.
+     *
+     * <p>TSL is used to encrypt data during transmission, which is accomplished 
+     * when the connection between the two partners A (normally the client) and B 
+     * (normally the server) is established. If A asks B to send TSL encrypted 
+     * data, both partners exchange some handshake information. In a first step 
+     * B tries to authentify itself against A (server authentification, optional 
+     * in TSL but implementet in this way in dcm4che). For that B presents its 
+     * public key for A to accept or deny. If the authentification is accepted, 
+     * A tries to authentify itself against B (client authentification, optional 
+     * in TSL but implementet in this way in dcm4che).If B accepts the 
+     * authentification A and B agree on a hash (symmetric key, which is 
+     * independent of the private/public keys used for authentification) for the 
+     * duration of their conversation, which is used to encrypt the data.
+     *
+     * <p>To be able to establish a TSL connection B needs a privat/public key 
+     * pair, which identifies B unambiguously. For that the private key is 
+     * generated first; than the root-public key is derived from that private 
+     * key. To bind the root-public key with the identity of B a Certificate 
+     * Authority (CA) is used: The root-public key is send to CA, which returns 
+     * a certified-public key, which includes information about the CA as well 
+     * as the root-public key. Optionally this process can be repeated several 
+     * times so that the certified-public key contains a chain of certificates 
+     * of different CA's.
+     *
+     * <p>The certified-public key of B is presented to A during server 
+     * authentification. Partner A should accept this key, if it can match the 
+     * last certificate in the chain with a root-certificat found in its local 
+     * list of root-certificates of CA's. That means, that A does not check the 
+     * identity of B, but "trusts" B because it was certified by an authority. 
+     * The same happens for client authentification. Handling of authentification 
+     * of the identity of the communication partner is subject of PS 3.15 - 
+     * Security and System Management Profiles.
+     *
+     * <p>In the configuration files of this method the certified-public key is 
+     * stored in the property "tls-key" and the root-certificates of the known 
+     * CA's in "tls-cacerts".
+     *
+     * <p>Usually the certified-public keys of A and B are different, but they 
+     * also may be the same. In this case the root-certificates are also the same.
+     *
+     * <p>It is possible to establish a TLS connection without using a CA: In 
+     * this case both partners creates a individual container holding their 
+     * private and root-public key. These containers could be used for certifying 
+     * also, because the length of the certifying chain is one and therefore the 
+     * root-public key is also the last certified-public key. Therefore the 
+     * root-public key works in this scenario also as the root-certificate of 
+     * the "certifying authoroty".
+     *
+     * <p>If no keystores are specified in the configuration properties, the 
+     * not-certified default-keystore "resources/identityJava.jks" is used for 
+     * "tls-key" and "tls-cacerts" when establishing the connection.
      *
      * @param cfg the configuration properties for this class.
      * @throws ParseException
@@ -349,16 +401,16 @@ public class CDimseService {
             tls = SSLContextAdapter.getInstance();
             
             //>>>> Managing the keystore file containing the privat key and
-            //>>>> public certificate to establish the communication
+            //>>>> certified-public key to establish the communication
             
-            // Password for keystore [default: secret]
+            // Password of the keystore [default: secret]
             keystorepasswd = cfg.getProperty("tls-keystore-passwd", "secret").toCharArray();
             
-            // Password the private key [default: secret]
+            // Password of the private key [default: secret]
             keypasswd = cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             
-            // URL of the file containing the keystore
-            keyURL = CDimseService.class.getResource("resources/identity.p12");
+            // URL of the file containing the default-keystore
+            keyURL = CDimseService.class.getResource("resources/identityJava.jks");
             
             // If availabel, replace URL with the one specified in the configuration file
             if ((value = cfg.getProperty("tls-key")) != null) {
@@ -377,14 +429,14 @@ public class CDimseService {
             // API doc: SSLContextAdapter.setKey(java.security.KeyStore key, char[] password)
             tls.setKey(tls.loadKeyStore(keyURL, keystorepasswd), keypasswd);
             
-            //>>>> Managing the keystore containing the public certificates of the Ceritifying
-            //>>>> Authorities used for signing the public certificates of the public keys
+            //>>>> Managing the keystore containing the root-certificates of the Ceritifying Authorities
+            //>>>> used for signing the public key
             
-            // Get the password of the keystore
+            // Password of the keystore [default: secret]
             cacertspasswd = cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray();
             
-            // URL of the file containing the keystore
-            cacertURL = CDimseService.class.getResource("resources/cacerts.jks");
+            // URL of the file containing the default-keystore
+            cacertURL = CDimseService.class.getResource("resources/identityJava.jks");
             
             // If availabel, replace URL with the one specified in the configuration file
             if ((value = cfg.getProperty("tls-cacerts")) != null) {
@@ -396,7 +448,7 @@ public class CDimseService {
                 }
             }
             
-            // log.info("Trust certificate URL: " + cacertURL.toString());
+            // log.info("Root-certificat of CA URL: " + cacertURL.toString());
             
             // Sets the trust attribute of the SSLContextAdapter object
             // API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
