@@ -492,7 +492,6 @@ CREATE TABLE priv_patient (
 	pat_id         	VARCHAR2(255),
 	pat_id_issuer  	VARCHAR2(255),
 	pat_name	  	VARCHAR2(255),
-	accession_no	VARCHAR2(255),
 	pat_attrs		BLOB
 );
 CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
@@ -505,7 +504,7 @@ CREATE TABLE priv_study (
 	patient_fk      NUMBER(38,0),
 	priv_type		NUMBER(38,0) NOT NULL,
 	study_iuid      VARCHAR2(255) NOT NULL,
-	src_aet 		VARCHAR2(255),
+	accession_no	VARCHAR2(255),
 	study_attrs		BLOB,
 FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
 );
@@ -520,6 +519,7 @@ CREATE TABLE priv_series (
 	study_fk		NUMBER(38,0),
 	priv_type		NUMBER(38,0) NOT NULL,
 	series_iuid     VARCHAR2(255) NOT NULL,
+	src_aet 		VARCHAR2(255),
 	series_attrs	BLOB,
 FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
 );
