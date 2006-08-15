@@ -39,14 +39,12 @@ package org.dcm4chee.arr.ejb;
 
 import javax.ejb.Local;
 
-import org.dcm4chee.arr.ejb.Code;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$
  * @since 29.07.2006
  */
-
+@Local
 interface AuditRecordList {
 
     int getPageSize();
@@ -65,8 +63,8 @@ interface AuditRecordList {
     String getDateTimeRange();
     void setDateTimeRange(String dt);
 
-	Code getEventID();
-	void setEventID(Code ids);
+    String[] getEventIDs();
+    void setEventIDs(String[] ids);
         
     String[] getEventTypes();
     void setEventTypes(String[] types);

@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.arr.ejb;
 
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -51,7 +50,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.TemporalType;
 
-import org.dcm4chee.arr.ejb.Code;
 import org.dcm4chee.arr.util.XSLTUtils;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Destroy;
@@ -105,7 +103,7 @@ public class AuditRecordListAction implements AuditRecordList {
     private boolean orderByEventDateTime = false;
     
     private String dateTimeRange = today();
-	Code eventID = null;
+    private String[] eventIDs = { "" };
     private String[] eventTypes = { "" };
     private String[] eventActions = { "" };
     private String[] eventOutcomes = { "" };
@@ -189,15 +187,14 @@ public class AuditRecordListAction implements AuditRecordList {
         this.orderByEventDateTime = enable;
     }
 
+    public String[] getEventIDs() {
+        return eventIDs;
+    }
 
-	public Code getEventID() {
-		return eventID;
-	}
-
-	public void setEventID(Code eventID) {
-		this.eventID = eventID;
-	}
-	
+    public void setEventIDs(String[] ids) {
+        this.eventIDs = ids;
+    }
+        
     public String[] getEventTypes() {
         return eventTypes;
     }
@@ -431,45 +428,25 @@ public class AuditRecordListAction implements AuditRecordList {
 		throw new RuntimeException(e1);
 	    }
 	}
-	StringBuffer queryStr = new StringBuffer("FROM AuditRecord r WHERE ");
-	queryStr.append(orderByEventDateTime ? "r.eventDateTime" : "r.receiveDateTime");
-	
-	queryStr.append(" BETWEEN :from AND :to ");
-		
-	//Add Filters
-	if (eventID!=null){
-		queryStr.append(" and :cod member of r.eventID ");
-	}
-	
-	//Order of Query
-	queryStr.append(" ORDER BY ");
-	if (orderByEventDateTime) {
-        queryStr.append("r.eventDateTime DESC, ");
-    }
-    queryStr.append("r.pk DESC");
-	
-    //Resolution of Search
-	if (eventID!=null){
-		records = em.createQuery(""+queryStr)
-		.setParameter("cod", eventID)
+	StringBuffer query = new StringBuffer("SELECT COUNT(*) FROM AuditRecord r WHERE ");
+	query.append(orderByEventDateTime ? "r.eventDateTime" : "r.receiveDateTime");
+	query.append(" BETWEEN :from AND :to");
+	count = ((Long) em.createQuery(query.toString())
 		.setParameter("from", dtRange[0], TemporalType.TIMESTAMP)
-	   	.setParameter("to", dtRange[1], TemporalType.TIMESTAMP)
-	   	.setFirstResult(getFirstResult())
-	   	.setMaxResults(pageSize)
-	   	.setHint("org.hibernate.readOnly", Boolean.TRUE)	 	
-	 	.getResultList();
-	}else{
-		records = em.createQuery(""+queryStr)
-		.setParameter("from", dtRange[0], TemporalType.TIMESTAMP)
-	   	.setParameter("to", dtRange[1], TemporalType.TIMESTAMP)
-	   	.setFirstResult(getFirstResult())
-	   	.setMaxResults(pageSize)
-	   	.setHint("org.hibernate.readOnly", Boolean.TRUE)	 	
-	 	.getResultList();  
-	}
-	
-   	count=records.size();    
-        	
+		.setParameter("to", dtRange[1], TemporalType.TIMESTAMP)
+		.getSingleResult()).intValue();
+        query.append(" ORDER BY ");
+        if (orderByEventDateTime) {
+            query.append("r.eventDateTime DESC, ");
+        }
+        query.append("r.pk DESC");
+        records = em.createQuery(query.substring(FROM_POS))
+        	.setParameter("from", dtRange[0], TemporalType.TIMESTAMP)
+        	.setParameter("to", dtRange[1], TemporalType.TIMESTAMP)
+        	.setFirstResult(getFirstResult())
+        	.setMaxResults(pageSize)
+        	.setHint("org.hibernate.readOnly", Boolean.TRUE)
+        	.getResultList();
 	log.info("Found {} records",  count);
 	selectedIndex = -1;
     }

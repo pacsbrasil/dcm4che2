@@ -62,7 +62,6 @@ import org.dcm4chee.arr.util.XSLTUtils;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.annotations.Transactional;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
