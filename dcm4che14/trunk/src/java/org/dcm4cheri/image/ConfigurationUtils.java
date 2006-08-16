@@ -56,18 +56,12 @@ class ConfigurationUtils {
         URL url;
         if (val == null) {
             val = key.replace('.','/') + ".properties";
-            url = c.getResource(val);
+            url = getResource(c, val);
         } else {
             try {
                 url = new URL(val);
             } catch (MalformedURLException e) {
-                url = c.getResource(val);
-            }
-        }
-        if (url == null) {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            if (cl == null || (url = cl.getResource(val)) == null) {
-                throw new ConfigurationException("missing resource: " + val);
+                url = getResource(c, val);
             }
         }
         try {
@@ -81,4 +75,16 @@ class ConfigurationUtils {
             throw new ConfigurationException("failed not load resource:", e); 
         }
     }
+
+	private static URL getResource(Class c, String val) {
+		URL url;
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		if (cl == null || (url = cl.getResource(val)) == null) {
+			if ((url = c.getClassLoader().getResource(val)) == null) {
+				throw new ConfigurationException("missing resource: " + val);
+			}
+		}
+		return url;
+	}
+
 }
