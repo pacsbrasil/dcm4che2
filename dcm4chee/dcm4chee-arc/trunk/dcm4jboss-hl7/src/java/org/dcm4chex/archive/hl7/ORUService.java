@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,10 +49,12 @@ import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.Base64;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
@@ -155,12 +158,12 @@ public class ORUService extends AbstractHL7Service
         return null;
     }
 
-    private void addIUIDs(Dataset sr)
-    {
+    private void addIUIDs(Dataset sr) {
         UIDGenerator uidgen = UIDGenerator.getInstance();
         if (!sr.containsValue(Tags.StudyInstanceUID)) {
-            log.warn("Missing Study Instance UID in ORU - assign new Study Instance UID");
-            sr.putUI(Tags.StudyInstanceUID, uidgen.createUID());            
+            if (!addSUIDs(sr)) {
+                sr.putUI(Tags.StudyInstanceUID, uidgen.createUID());
+            }
         }
         sr.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
         sr.putUI(Tags.SOPInstanceUID, uidgen.createUID());
@@ -177,8 +180,50 @@ public class ORUService extends AbstractHL7Service
         }
     }
 
-    private void storeSR(Dataset sr) throws Exception
-    {
+    private boolean addSUIDs(Dataset sr) {
+        String accno = sr.getString(Tags.AccessionNumber);
+        if (accno == null) {
+            log.warn("Missing Accession Number in ORU - store report in new Study");
+            return false;
+        }
+        Dataset keys = DcmObjectFactory.getInstance().newDataset();
+        keys.putSH(Tags.AccessionNumber, accno);
+        keys.putUI(Tags.StudyInstanceUID);
+        QueryCmd query = null;
+        try {
+            query = QueryCmd.createStudyQuery(keys, false, true);
+            query.execute();
+            if (!query.next()) {
+                log.warn("No Study with given Accession Number: " 
+                        + accno + " - store report in new Study");
+                return false;
+            }
+            copyStudyInstanceUID(query, sr);
+            if (query.next()) {
+                DcmElement sq = sr.putSQ(Tags.IdenticalDocumentsSeq);
+                do {
+                    copyStudyInstanceUID(query, sq.addNewItem());
+                } while (query.next());
+            }
+            return true;
+        } catch (SQLException e) {
+            log.error("Query DB for Studies with Accession Number " + accno
+                    + " failed - store report in new Study", e);
+            sr.putSQ(Tags.IdenticalDocumentsSeq);
+            return false;
+        } finally {
+            if (query != null)
+                query.close();
+        }
+    }
+
+    private void copyStudyInstanceUID(QueryCmd query, Dataset sr) 
+        throws SQLException {
+        sr.putUI(Tags.StudyInstanceUID, 
+                query.getDataset().getString(Tags.StudyInstanceUID));
+    }
+
+    private void storeSR(Dataset sr) throws Exception {
         server.invoke(exportManagerName, "storeExportSelection",
                 new Object[]{sr, new Integer(storePriority)},
                 new String[]{Dataset.class.getName(), int.class.getName()});        

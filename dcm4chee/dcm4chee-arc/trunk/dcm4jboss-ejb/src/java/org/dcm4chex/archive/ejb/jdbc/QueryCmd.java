@@ -91,7 +91,7 @@ public abstract class QueryCmd extends BaseReadCmd {
 		return cmd;
 	}
 
-	private static StudyQueryCmd createStudyQuery(Dataset keys,
+	public static StudyQueryCmd createStudyQuery(Dataset keys,
 			boolean filterResult, boolean noMatchForNoValue) throws SQLException {
 		final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult, noMatchForNoValue);
 		cmd.init();
