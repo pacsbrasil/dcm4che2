@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -66,7 +65,6 @@ import org.xml.sax.ContentHandler;
  */
 public class ORUService extends AbstractHL7Service
 {
-
     private String oru2srXSL = "resource:dcm4chee-hl7/oru2sr.xsl";
     private String oru2pdfXSL = "resource:dcm4chee-hl7/oru2pdf.xsl";
     private ObjectName exportManagerName;
@@ -160,6 +158,10 @@ public class ORUService extends AbstractHL7Service
     private void addIUIDs(Dataset sr)
     {
         UIDGenerator uidgen = UIDGenerator.getInstance();
+        if (!sr.containsValue(Tags.StudyInstanceUID)) {
+            log.warn("Missing Study Instance UID in ORU - assign new Study Instance UID");
+            sr.putUI(Tags.StudyInstanceUID, uidgen.createUID());            
+        }
         sr.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
         sr.putUI(Tags.SOPInstanceUID, uidgen.createUID());
         String cuid = sr.getString(Tags.SOPClassUID);
