@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:output method="xml" indent="yes"/>
+  <xsl:include href="common.xsl"/>
   <xsl:param name="VerifyingOrganization">Verifying Organization</xsl:param>
   <xsl:template match="/hl7">
     <dataset>
@@ -33,7 +34,7 @@
     <!--Modality-->
     <attr tag="00080060" vr="CS">SR</attr>
     <!--Manufacturer-->
-    <attr tag="00080070" vr="LO">Tiani Medgraph AG</attr>
+    <attr tag="00080070" vr="LO">Agfa HealthCare</attr>
     <!--Referring Physician's Name-->
     <attr tag="00080090" vr="PN"/>
     <!--Referenced Performed Procedure Step Sequence -->
@@ -73,69 +74,23 @@
       </item>
     </attr>
   </xsl:template>
-  <xsl:template match="PID">
-    <!--Patient's Name-->
-    <attr tag="00100010" vr="PN">
-      <xsl:call-template name="xpn2pn">
-        <xsl:with-param name="xpn" select="field[5]"/>
-      </xsl:call-template>
-    </attr>
-    <!--Patient ID-->
-    <attr tag="00100020" vr="LO">
-      <xsl:value-of select="field[3]/text()"/>
-    </attr>
-    <!--Issuer of Patient ID-->
-    <attr tag="00100021" vr="LO">
-      <xsl:value-of select="field[3]/component[3]"/>
-    </attr>
-    <!--Patient's Birth Date-->
-    <attr tag="00100030" vr="DA">
-      <xsl:value-of select="field[7]/text()"/>
-    </attr>
-    <!--Patient's Sex-->
-    <attr tag="00100040" vr="CS">
-      <xsl:value-of select="field[8]/text()"/>
-    </attr>
-  </xsl:template>
-  <xsl:template name="xpn2pn">
-    <xsl:param name="xpn"/>
-    <xsl:param name="xpn25" select="$xpn/component"/>
-    <xsl:value-of select="$xpn/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$xpn25[1]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$xpn25[2]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$xpn25[4]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$xpn25[3]/text()"/>
-  </xsl:template>
-  <xsl:template name="cn2pn">
-    <xsl:param name="cn26"/>
-    <xsl:value-of select="$cn26[1]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$cn26[2]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$cn26[3]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$cn26[5]/text()"/>
-    <xsl:text>^</xsl:text>
-    <xsl:value-of select="$cn26[4]/text()"/>
-  </xsl:template>
   <xsl:template match="OBR">
-    <xsl:variable name="acc_no" select="field[3]/text()"/>
-    <xsl:variable name="study_dt" select="field[22]/text()"/>
-    <!--Study Date-->
-    <attr tag="00080020" vr="DA">
-      <xsl:value-of select="substring($study_dt,1,8)"/>
-    </attr>
-    <!--Study Time-->
-    <attr tag="00080030" vr="TM">
-      <xsl:value-of select="substring($study_dt,9)"/>
-    </attr>
+    <xsl:variable name="ordno" select="field[3]/text()"/>
+    <xsl:variable name="dt" select="field[22]/text()"/>
+    <!--Study Date/Time -->
+    <xsl:if test="string-length($dt) >= 8">
+      <xsl:call-template name="attrDATM">
+        <xsl:with-param name="datag" select="'00080020'"/>
+        <xsl:with-param name="tmtag" select="'00080030'"/>
+        <xsl:with-param name="val">
+          <xsl:value-of select="$dt"/>
+          <xsl:if test="string-length($dt) &lt; 10">00</xsl:if>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:if>
     <!--Accession Number-->
     <attr tag="00080050" vr="SH">
-      <xsl:value-of select="$acc_no"/>
+      <xsl:value-of select="$ordno"/>
     </attr>
     <!--Study Instance UID-->
     <attr tag="0020000D" vr="UI">
@@ -143,11 +98,11 @@
     </attr>
     <!--Placer Order Number / Imaging Service Request-->
     <attr tag="00402016" vr="LO">
-      <xsl:value-of select="$acc_no"/>
+      <xsl:value-of select="$ordno"/>
     </attr>
     <!--Filler Order Number / Imaging Service Request-->
     <attr tag="00402017" vr="LO">
-      <xsl:value-of select="$acc_no"/>
+      <xsl:value-of select="$ordno"/>
     </attr>
   </xsl:template>
   <xsl:template match="OBR" mode="identical">
@@ -159,11 +114,11 @@
     </item>
   </xsl:template>
   <xsl:template match="OBR" mode="request">
-    <xsl:variable name="acc_no" select="field[3]/text()"/>
+    <xsl:variable name="ordno" select="field[3]/text()"/>
     <item>
       <!--Accession Number-->
       <attr tag="00080050" vr="SH">
-        <xsl:value-of select="$acc_no"/>
+        <xsl:value-of select="$ordno"/>
       </attr>
       <!--Referenced Study Sequence-->
       <attr tag="00081110" vr="SQ"/>
@@ -179,25 +134,27 @@
       <attr tag="00401001" vr="SH"/>
       <!--Placer Order Number / Imaging Service Request-->
       <attr tag="00402016" vr="LO">
-        <xsl:value-of select="$acc_no"/>
+        <xsl:value-of select="$ordno"/>
       </attr>
       <!--Filler Order Number / Imaging Service Request-->
       <attr tag="00402017" vr="LO">
-        <xsl:value-of select="$acc_no"/>
+        <xsl:value-of select="$ordno"/>
       </attr>
     </item>
   </xsl:template>
   <xsl:template match="ZBU">
-    <xsl:variable name="date" select="field[6]"/>
-    <xsl:variable name="time" select="field[7]"/>
-    <!--Content Date-->
-    <attr tag="00080023" vr="DA">
-      <xsl:value-of select="$date"/>
-    </attr>
-    <!--Content Time-->
-    <attr tag="00080033" vr="TM">
-      <xsl:value-of select="$time"/>
-    </attr>
+    <xsl:variable name="dt" select="concat(field[6]/text(),field[7]/text())"/>
+    <!--Content Date/Time-->
+    <xsl:if test="string-length($dt) >= 8">
+      <xsl:call-template name="attrDATM">
+        <xsl:with-param name="datag" select="'00080023'"/>
+        <xsl:with-param name="tmtag" select="'00080033'"/>
+        <xsl:with-param name="val">
+          <xsl:value-of select="$dt"/>
+          <xsl:if test="string-length($dt) &lt; 10">00</xsl:if>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:if>
     <!-- Verifying Observer Sequence -->
     <attr tag="0040A073" vr="SQ">
       <item>
@@ -207,14 +164,13 @@
         </attr>
         <!-- Verification DateTime -->
         <attr tag="0040A030" vr="DT">
-          <xsl:value-of select="concat($date,$time)"/>
+          <xsl:value-of select="$dt"/>
         </attr>
         <!-- Verifying Observer Name -->
-        <attr tag="0040A075" vr="PN">
-          <xsl:call-template name="cn2pn">
-            <xsl:with-param name="cn26" select="field[3]/subcomponent"/>
-          </xsl:call-template>
-        </attr>
+        <xsl:call-template name="cn2pnAttr">
+          <xsl:with-param name="tag" select="'0040A075'"/>
+          <xsl:with-param name="cn" select="field[3]"/>
+        </xsl:call-template>
         <!-- Verifying Observer Identification Code Sequence -->
         <attr tag="0040A088" vr="SQ"/>
       </item>
@@ -266,11 +222,10 @@
         </item>
       </attr>
       <!--Person Name-->
-      <attr tag="0040A123" vr="PN">
-        <xsl:call-template name="cn2pn">
-          <xsl:with-param name="cn26" select="field[4]/subcomponent"/>
-        </xsl:call-template>
-      </attr>
+      <xsl:call-template name="cn2pnAttr">
+        <xsl:with-param name="tag" select="'0040A123'"/>
+        <xsl:with-param name="cn" select="field[4]"/>
+      </xsl:call-template>
     </item>
   </xsl:template>
   <xsl:template match="OBR" mode="obsctx">
@@ -509,13 +464,18 @@
           </attr>
           <!--Text Value-->
           <attr tag="0040A160" vr="UT">
-            <xsl:value-of select="field[5]"/>
+            <xsl:apply-templates select="field[5]" mode="TEXT"/>
           </attr>
         </item>
       </attr>
     </item>
   </xsl:template>
-  <xsl:template match="ZBU" mode="summary">
+  <xsl:template match="text()" mode="TEXT">
+    <xsl:value-of select='.'/>
+  </xsl:template>
+  <xsl:template match="escape" mode="TEXT">
+    <xsl:text>&#13;&#10;</xsl:text>
+  </xsl:template>  <xsl:template match="ZBU" mode="summary">
     <xsl:variable name="summary" select="field[1]/text()"/>
     <xsl:if test="$summary">
       <item>
