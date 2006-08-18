@@ -166,7 +166,7 @@
       <xsl:value-of select="$id"/>
     </attr>
     <!-- HL7:Universal Service Identifier.2 -> DICOM:Requested Procedure Description -->
-    <xsl:variable name="desc" select="substring(field[4]/component[1]/text(),1,64)"/>
+    <xsl:variable name="desc" select="substring(field[4]/component[2]/text(),1,64)"/>
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00321060'"/>
       <xsl:with-param name="vr" select="'LO'"/>
@@ -200,3 +200,4 @@
     </xsl:call-template>
   </xsl:template>
 </xsl:stylesheet>
+
