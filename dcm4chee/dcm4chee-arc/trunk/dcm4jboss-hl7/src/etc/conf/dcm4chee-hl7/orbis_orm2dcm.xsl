@@ -8,6 +8,7 @@
       <attr tag="00080005" vr="CS">ISO_IR 100</attr>
       <xsl:apply-templates select="PID"/>
       <xsl:apply-templates select="PV1"/>
+      <xsl:apply-templates select="AL1"/>
       <xsl:apply-templates select="ORC[1]"/>
       <xsl:apply-templates select="OBR[1]"/>
       <!-- Scheduled Procedure Step Sequence -->
@@ -43,6 +44,25 @@
         <xsl:if test="$ambulantStatus = 'B6'">3</xsl:if>
       </attr>
     </xsl:if>
+  </xsl:template>
+  <!-- AL1 -->
+  <xsl:template match="AL1">
+    <!-- HL7:Allergy Code/Mnemonic/Description -> Medical Alerts + Contrast Allergies -->
+    <xsl:variable name="al1_3" select="string(field[3]/text())"/>
+    <xsl:choose>
+      <xsl:when test="$al1_3 = '&quot;&quot;'">
+        <attr tag="00102000" vr="LO"/>
+        <attr tag="00102110" vr="LO"/>
+      </xsl:when>
+      <xsl:when test="$al1_3">
+        <attr tag="00102000" vr="LO">
+          <xsl:value-of select="substring-after($al1_3,'$')"/>
+        </attr>
+        <attr tag="00102110" vr="LO">
+          <xsl:value-of select="substring-before($al1_3,'$')"/>
+        </attr>
+      </xsl:when>
+    </xsl:choose>
   </xsl:template>
   <!-- ORC[1] -->
   <xsl:template match="ORC[1]">
@@ -95,12 +115,22 @@
       <xsl:with-param name="vr" select="'LO'"/>
       <xsl:with-param name="val" select="substring(field[12]/text(),1,64)"/>
     </xsl:call-template>
-    <!--  HL7:Relevant Clinical Info -> DICOM:Medical Alerts -->
-    <xsl:call-template name="attr">
-      <xsl:with-param name="tag" select="'00102000'"/>
-      <xsl:with-param name="vr" select="'LO'"/>
-      <xsl:with-param name="val" select="substring(field[13]/text(),1,64)"/>
-    </xsl:call-template>
+    <!--  HL7:Relevant Clinical Info -> DICOM:Reason for the Requested Procedure + Admitting Diagnoses Description -->
+    <xsl:variable name="obr13" select="normalize-space(field[13])"/>
+    <xsl:choose>
+      <xsl:when test="$obr13 = '&quot;&quot;'">
+        <attr tag="00081080" vr="LO"/>
+        <attr tag="00401002" vr="LO"/>
+      </xsl:when>
+      <xsl:when test="$obr13">
+        <attr tag="00081080" vr="LO">
+          <xsl:value-of select="substring-after(substring-after(substring-after($obr13,'$'),'$'),'$')"/>
+        </attr>
+        <attr tag="00401002" vr="LO">
+          <xsl:value-of select="substring-before(substring-after($obr13,'$'),'$')"/>
+        </attr>
+      </xsl:when>
+    </xsl:choose>
     <!-- HL7:Transportation Mode  -> DICOM:Patient Transport Arrangements -->
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00401004'"/>
@@ -134,7 +164,7 @@
       <xsl:choose>
         <xsl:when test="$obr36">
           <xsl:value-of select="$obr36"/>
-        </xsl:when>        
+        </xsl:when>
         <xsl:otherwise>
           <xsl:value-of select="normalize-space(field[22]/text())"/>
         </xsl:otherwise>
@@ -166,7 +196,7 @@
       <xsl:value-of select="$id"/>
     </attr>
     <!-- HL7:Universal Service Identifier.2 -> DICOM:Requested Procedure Description -->
-    <xsl:variable name="desc" select="substring(field[4]/component[1]/text(),1,64)"/>
+    <xsl:variable name="desc" select="substring(field[4]/component[2]/text(),1,64)"/>
     <xsl:call-template name="attr">
       <xsl:with-param name="tag" select="'00321060'"/>
       <xsl:with-param name="vr" select="'LO'"/>
