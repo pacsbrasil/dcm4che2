@@ -474,8 +474,11 @@
     <xsl:value-of select='.'/>
   </xsl:template>
   <xsl:template match="escape" mode="TEXT">
-    <xsl:text>&#13;&#10;</xsl:text>
-  </xsl:template>  <xsl:template match="ZBU" mode="summary">
+    <xsl:if test="text()='.br'">
+      <xsl:text>&#13;&#10;</xsl:text>
+    </xsl:if>
+  </xsl:template>
+  <xsl:template match="ZBU" mode="summary">
     <xsl:variable name="summary" select="field[1]/text()"/>
     <xsl:if test="$summary">
       <item>
