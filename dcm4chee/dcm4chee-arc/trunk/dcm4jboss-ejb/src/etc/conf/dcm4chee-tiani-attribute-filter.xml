@@ -36,7 +36,7 @@
     <attr tag="00081049"/> <!-- Physician(s) of Record Identification Seq -->
     <attr tag="00081060"/> <!-- Name of Physician(s) Reading Study -->
     <attr tag="00081062"/> <!-- Physician(s) Reading Study Identification Seq -->
-    
+    <attr tag="00081080"/> <!-- Admitting Diagnoses Description -->
     <attr tag="00081084"/> <!-- Admitting Diagnoses Code Seq -->        
     <attr tag="00101010"/> <!-- Patient's Age -->
     <attr tag="00101020"/> <!-- Patient's Size -->
