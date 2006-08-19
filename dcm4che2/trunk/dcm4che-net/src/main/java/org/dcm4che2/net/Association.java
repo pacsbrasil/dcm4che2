@@ -86,7 +86,7 @@ public class Association implements Runnable {
 
     private Socket socket;
 
-    private boolean requestor = false;
+    private boolean requestor;
 
     private InputStream in;
 
@@ -110,11 +110,11 @@ public class Association implements Runnable {
 
     private int maxPDULength;
 
-    private int msgID = 0;
+    private int msgID;
 
-    private int performing = 0;
+    private int performing;
 
-    private boolean closed = false;
+    private boolean closed;
 
     private IntHashtable rspHandlerForMsgId = new IntHashtable();
 
@@ -1129,6 +1129,17 @@ public class Association implements Runnable {
                 }
             });
         }
+    }
+
+    /**
+     * Get the <code>NetworkConnection</code> object that is performing this
+     * association.
+     * 
+     * @return NetworkConnection Returns the connector.
+     */
+    public NetworkConnection getConnector()
+    {
+        return connector;
     }
 
 }
