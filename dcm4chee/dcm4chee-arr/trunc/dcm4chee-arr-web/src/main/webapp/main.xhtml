@@ -34,44 +34,55 @@
             value="#{auditRecordList.dateTimeRange}"/>
           <h:outputLabel for="eventID">Event ID:</h:outputLabel>
           <h:selectManyListbox id="eventID" value="#{auditRecordList.eventIDs}"
-            size="3">
+            size="3" >
             <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="110100" itemLabel="Application Activity"/>
-            <f:selectItem itemValue="110101" itemLabel="Audit Log Used"/>
-            <f:selectItem itemValue="110102" itemLabel="Begin Transferring"/>
-            <f:selectItem itemValue="110103" itemLabel="Instances Accessed"/>
-            <f:selectItem itemValue="110104" itemLabel="Instances Transferred"/>
-            <f:selectItem itemValue="110105" itemLabel="Study Deleted"/>
-            <f:selectItem itemValue="110106" itemLabel="Export"/>
-            <f:selectItem itemValue="110107" itemLabel="Import"/>
-            <f:selectItem itemValue="110108" itemLabel="Network Entry"/>
-            <f:selectItem itemValue="110109" itemLabel="Order Record"/>
-            <f:selectItem itemValue="110110" itemLabel="Patient Record"/>
-            <f:selectItem itemValue="110111" itemLabel="Procedure Record"/>
-            <f:selectItem itemValue="110112" itemLabel="Query"/>
-            <f:selectItem itemValue="110113" itemLabel="Security Alert"/>
-            <f:selectItem itemValue="110114" itemLabel="User Authentication"/>
+            <f:selectItem itemValue="110100^DCM"
+              itemLabel="Application Activity"/>
+            <f:selectItem itemValue="110101^DCM" itemLabel="Audit Log Used"/>
+            <f:selectItem itemValue="110102^DCM" itemLabel="Begin Transferring"/>
+            <f:selectItem itemValue="110103^DCM" itemLabel="Instances Accessed"/>
+            <f:selectItem itemValue="110104^DCM"
+              itemLabel="Instances Transferred"/>
+            <f:selectItem itemValue="110105^DCM" itemLabel="Study Deleted"/>
+            <f:selectItem itemValue="110106^DCM" itemLabel="Export"/>
+            <f:selectItem itemValue="110107^DCM" itemLabel="Import"/>
+            <f:selectItem itemValue="110108^DCM" itemLabel="Network Entry"/>
+            <f:selectItem itemValue="110109^DCM" itemLabel="Order Record"/>
+            <f:selectItem itemValue="110110^DCM" itemLabel="Patient Record"/>
+            <f:selectItem itemValue="110111^DCM" itemLabel="Procedure Record"/>
+            <f:selectItem itemValue="110112^DCM" itemLabel="Query"/>
+            <f:selectItem itemValue="110113^DCM" itemLabel="Security Alert"/>
+            <f:selectItem itemValue="110114^DCM" itemLabel="User Authentication"/>
+            <f:selectItem itemValue="IHE0001^IHE" itemLabel="HS Provision Event"/>
+            <f:selectItem itemValue="IHE0002^IHE" itemLabel="Medication Event"/>
+            <f:selectItem itemValue="IHE0003^IHE" itemLabel="PC Resource Assignment"/>
+            <f:selectItem itemValue="IHE0004^IHE" itemLabel="PC Episode"/>
+            <f:selectItem itemValue="IHE0005^IHE" itemLabel="PC Protocol"/>
           </h:selectManyListbox>
           <h:outputLabel for="eventType">Event Type:</h:outputLabel>
           <h:selectManyListbox id="eventType"
             value="#{auditRecordList.eventTypes}" size="3">
             <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="110120" itemLabel="Application Start"/>
-            <f:selectItem itemValue="110121" itemLabel="Application Stop"/>
-            <f:selectItem itemValue="110122" itemLabel="Login"/>
-            <f:selectItem itemValue="110123" itemLabel="Logout"/>
-            <f:selectItem itemValue="110124" itemLabel="Attach"/>
-            <f:selectItem itemValue="110125" itemLabel="Detach"/>
-            <f:selectItem itemValue="110126" itemLabel="Node Authentication"/>
-            <f:selectItem itemValue="110127" itemLabel="Emergency Override"/>
-            <f:selectItem itemValue="110128" itemLabel="Network Configuration"/>
-            <f:selectItem itemValue="110129" itemLabel="Security Configuration"/>
-            <f:selectItem itemValue="110130" itemLabel="Hardware Configuration"/>
-            <f:selectItem itemValue="110131" itemLabel="Software Configuration"/>
-            <f:selectItem itemValue="110132"
+            <f:selectItem itemValue="110120^DCM" itemLabel="Application Start"/>
+            <f:selectItem itemValue="110121^DCM" itemLabel="Application Stop"/>
+            <f:selectItem itemValue="110122^DCM" itemLabel="Login"/>
+            <f:selectItem itemValue="110123^DCM" itemLabel="Logout"/>
+            <f:selectItem itemValue="110124^DCM" itemLabel="Attach"/>
+            <f:selectItem itemValue="110125^DCM" itemLabel="Detach"/>
+            <f:selectItem itemValue="110126^DCM" itemLabel="Node Authentication"/>
+            <f:selectItem itemValue="110127^DCM" itemLabel="Emergency Override"/>
+            <f:selectItem itemValue="110128^DCM"
+              itemLabel="Network Configuration"/>
+            <f:selectItem itemValue="110129^DCM"
+              itemLabel="Security Configuration"/>
+            <f:selectItem itemValue="110130^DCM"
+              itemLabel="Hardware Configuration"/>
+            <f:selectItem itemValue="110131^DCM"
+              itemLabel="Software Configuration"/>
+            <f:selectItem itemValue="110132^DCM"
               itemLabel="Use of Restricted Function"/>
-            <f:selectItem itemValue="110133" itemLabel="Audit Recording Stopped"
-            />
+            <f:selectItem itemValue="110133^DCM"
+              itemLabel="Audit Recording Stopped"/>
           </h:selectManyListbox>
           <h:outputLabel for="eventOutcome">Outcome:</h:outputLabel>
           <h:selectManyListbox id="eventOutcome"
@@ -133,12 +144,13 @@
           <h:selectManyListbox id="roleID1" value="#{auditRecordList.roleIDs1}"
             size="3">
             <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="110150" itemLabel="Application"/>
-            <f:selectItem itemValue="110151" itemLabel="Application Launcher"/>
-            <f:selectItem itemValue="110152" itemLabel="Destination"/>
-            <f:selectItem itemValue="110153" itemLabel="Source"/>
-            <f:selectItem itemValue="110154" itemLabel="Destination Media"/>
-            <f:selectItem itemValue="110155" itemLabel="Source Media"/>
+            <f:selectItem itemValue="110150^DCM" itemLabel="Application"/>
+            <f:selectItem itemValue="110151^DCM"
+              itemLabel="Application Launcher"/>
+            <f:selectItem itemValue="110152^DCM" itemLabel="Destination"/>
+            <f:selectItem itemValue="110153^DCM" itemLabel="Source"/>
+            <f:selectItem itemValue="110154^DCM" itemLabel="Destination Media"/>
+            <f:selectItem itemValue="110155^DCM" itemLabel="Source Media"/>
           </h:selectManyListbox>
           <h:outputLabel for="napType1">Network Access Point Type:</h:outputLabel>
           <h:selectManyListbox id="napType1"
@@ -168,12 +180,13 @@
           <h:selectManyListbox id="roleID2" value="#{auditRecordList.roleIDs2}"
             size="3">
             <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="110150" itemLabel="Application"/>
-            <f:selectItem itemValue="110151" itemLabel="Application Launcher"/>
-            <f:selectItem itemValue="110152" itemLabel="Destination"/>
-            <f:selectItem itemValue="110153" itemLabel="Source"/>
-            <f:selectItem itemValue="110154" itemLabel="Destination Media"/>
-            <f:selectItem itemValue="110155" itemLabel="Source Media"/>
+            <f:selectItem itemValue="110150^DCM" itemLabel="Application"/>
+            <f:selectItem itemValue="110151^DCM"
+              itemLabel="Application Launcher"/>
+            <f:selectItem itemValue="110152^DCM" itemLabel="Destination"/>
+            <f:selectItem itemValue="110153^DCM" itemLabel="Source"/>
+            <f:selectItem itemValue="110154^DCM" itemLabel="Destination Media"/>
+            <f:selectItem itemValue="110155^DCM" itemLabel="Source Media"/>
           </h:selectManyListbox>
           <h:outputLabel for="napType2">Network Access Point Type:</h:outputLabel>
           <h:selectManyListbox id="napType2"
@@ -205,7 +218,7 @@
             <f:selectItem itemValue="" itemLabel="Any"/>
             <f:selectItem itemValue="1" itemLabel="Patient"/>
             <f:selectItem itemValue="2" itemLabel="Location"/>
-            <f:selectItem itemValue="3" itemLabel=" Report"/>
+            <f:selectItem itemValue="3" itemLabel="Report"/>
             <f:selectItem itemValue="4" itemLabel="Resource"/>
             <f:selectItem itemValue="5" itemLabel="Master file"/>
             <f:selectItem itemValue="6" itemLabel="User"/>
@@ -264,9 +277,9 @@
             <f:selectItem itemValue="10" itemLabel="Search Criteria"/>
             <f:selectItem itemValue="11" itemLabel="User Identifier"/>
             <f:selectItem itemValue="12" itemLabel="URI"/>
-            <f:selectItem itemValue="110180" itemLabel="Study Instance UID"/>
-            <f:selectItem itemValue="110181" itemLabel="SOP Class UID"/>
-            <f:selectItem itemValue="110182" itemLabel="Node ID"/>
+            <f:selectItem itemValue="110180^DCM" itemLabel="Study Instance UID"/>
+            <f:selectItem itemValue="110181^DCM" itemLabel="SOP Class UID"/>
+            <f:selectItem itemValue="110182^DCM" itemLabel="Node ID"/>
           </h:selectManyListbox>
           <h:outputLabel for="objectID">Object ID:</h:outputLabel>
           <h:inputText id="objectID" value="#{auditRecordList.objectID}"/>
@@ -294,7 +307,8 @@
                 action="#{auditRecordList.selectPage}">
                 <f:param name="page" value="#{auditRecordList.curPage-1}"/>
               </s:link>
-              <c:forEach var="i" begin="#{auditRecordList.minPage}" end="#{auditRecordList.curPage-1}">
+              <c:forEach var="i" begin="#{auditRecordList.minPage}"
+                end="#{auditRecordList.curPage-1}">
                 <f:verbatim> | </f:verbatim>
                 <s:link value="${i}" action="#{auditRecordList.selectPage}">
                   <f:param name="page" value="${i}"/>
