@@ -7,11 +7,11 @@
         <xsl:attribute name="EventDateTime">
           <xsl:value-of select="TimeStamp"/>
         </xsl:attribute>
-        <xsl:apply-templates mode="EventIdentification"/>
+        <xsl:apply-templates mode="EventIdentification" select="*"/>
       </EventIdentification>
-      <xsl:apply-templates mode="ActiveParticipant"/>
-      <xsl:apply-templates mode="AuditSourceIdentification"/>
-      <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+      <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+      <xsl:apply-templates mode="AuditSourceIdentification" select="*"/>
+      <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
     </AuditMessage>
   </xsl:template>
   <!-- =========================================== -->
@@ -22,14 +22,14 @@
     <xsl:attribute name="EventOutcomeIndicator">0</xsl:attribute>
     <EventID code="110100" codeSystemName="DCM"
       displayName="Application Activity"/>
-    <xsl:apply-templates mode="EventTypeCode"/>
+    <xsl:apply-templates mode="EventTypeCode" select="*"/>
   </xsl:template>
   <xsl:template mode="EventIdentification" match="ActorStartStop">
     <xsl:attribute name="EventActionCode">E</xsl:attribute>
     <xsl:attribute name="EventOutcomeIndicator">0</xsl:attribute>
     <EventID code="110100" codeSystemName="DCM"
       displayName="Application Activity"/>
-    <xsl:apply-templates mode="EventTypeCode"/>
+    <xsl:apply-templates mode="EventTypeCode" select="*"/>
   </xsl:template>
   <xsl:template mode="EventIdentification" match="AuditLogUsed">
     <xsl:attribute name="EventActionCode">R</xsl:attribute>
@@ -78,7 +78,7 @@
     </xsl:attribute>
     <EventID code="110104" codeSystemName="DCM"
       displayName="DICOM Instances Transferred"/>
-    <xsl:apply-templates mode="EventTypeCode"/>
+    <xsl:apply-templates mode="EventTypeCode" select="*"/>
   </xsl:template>
   <xsl:template mode="EventIdentification" match="InstancesStored">
     <xsl:attribute name="EventActionCode">C</xsl:attribute>
@@ -90,7 +90,7 @@
     <xsl:attribute name="EventActionCode">E</xsl:attribute>
     <xsl:attribute name="EventOutcomeIndicator">0</xsl:attribute>
     <EventID code="110108" codeSystemName="DCM" displayName="NetworkEntry"/>
-    <xsl:apply-templates mode="EventTypeCode"/>
+    <xsl:apply-templates mode="EventTypeCode" select="*"/>
   </xsl:template>
   <xsl:template mode="EventIdentification" match="OrderRecord">
     <xsl:attribute name="EventOutcomeIndicator">0</xsl:attribute>
@@ -111,7 +111,7 @@
     <xsl:attribute name="EventActionCode">E</xsl:attribute>
     <xsl:attribute name="EventOutcomeIndicator">4</xsl:attribute>
     <EventID code="110113" codeSystemName="DCM" displayName="Security Alert"/>
-    <xsl:apply-templates mode="EventTypeCode"/>
+    <xsl:apply-templates mode="EventTypeCode" select="*"/>
   </xsl:template>
   <xsl:template mode="EventIdentification" match="StudyDeleted">
     <xsl:attribute name="EventActionCode">D</xsl:attribute>
@@ -121,7 +121,7 @@
   </xsl:template>
   <xsl:template mode="EventIdentification" match="UserAuthenticated">
     <xsl:attribute name="EventActionCode">E</xsl:attribute>
-    <xsl:apply-templates mode="EventTypeCode"/>
+    <xsl:apply-templates mode="EventTypeCode" select="*"/>
     <EventID code="110114" codeSystemName="DCM"
       displayName="User Authentication"/>
   </xsl:template>
@@ -206,7 +206,7 @@
   <!-- Active Participant                          -->
   <!-- =========================================== -->
   <xsl:template mode="ActiveParticipant" match="ActorConfig">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="ActorName">
     <ActiveParticipant>
@@ -217,32 +217,32 @@
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="ActorStartStop">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="AET">
     <xsl:attribute name="AlternativeUserID">AETITLE=<xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="AuditLogUsed">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="BeginStoringInstances">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Destination">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="DICOMInstancesDeleted">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="DICOMInstancesUsed">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="DicomQuery">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Export">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Hname">
     <xsl:attribute name="UserName">
@@ -250,13 +250,13 @@
     </xsl:attribute>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Import">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="InstanceActionDescription">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="InstancesSent">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="InstancesStored">
     <ActiveParticipant>
@@ -313,35 +313,35 @@
   <xsl:template mode="ActiveParticipant" match="Node">
     <ActiveParticipant>
       <xsl:attribute name="UserIsRequestor">false</xsl:attribute>
-      <xsl:apply-templates mode="ActiveParticipant"/>
+      <xsl:apply-templates mode="ActiveParticipant" select="*"/>
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="OrderRecord">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="PatientRecord">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="ProcedureRecord">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="RemoteNode">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Requestor">
     <ActiveParticipant>
       <xsl:attribute name="UserIsRequestor">true</xsl:attribute>
-      <xsl:apply-templates mode="ActiveParticipant"/>
+      <xsl:apply-templates mode="ActiveParticipant" select="*"/>
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="RNode">
     <ActiveParticipant>
       <xsl:attribute name="UserIsRequestor">false</xsl:attribute>
-      <xsl:apply-templates mode="ActiveParticipant"/>
+      <xsl:apply-templates mode="ActiveParticipant" select="*"/>
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="SecurityAlert">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
     <ActiveParticipant>
       <xsl:attribute name="UserID">
         <xsl:value-of select="../Host"/>
@@ -350,16 +350,16 @@
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="StudyDeleted">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="User">
     <ActiveParticipant>
       <xsl:attribute name="UserIsRequestor">true</xsl:attribute>
-      <xsl:apply-templates mode="ActiveParticipant"/>
+      <xsl:apply-templates mode="ActiveParticipant" select="*"/>
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="UserAuthenticated">
-    <xsl:apply-templates mode="ActiveParticipant"/>
+    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="*"/>
   <!-- =========================================== -->
@@ -381,15 +381,15 @@
   <!-- =========================================== -->
   <xsl:template mode="ParticipantObjectIdentification"
     match="BeginStoringInstances">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification"
     match="DICOMInstancesDeleted">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification"
     match="DICOMInstancesUsed">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="DicomQuery">
     <ParticipantObjectIdentification>
@@ -403,23 +403,23 @@
     </ParticipantObjectIdentification>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="Export">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="Import">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification"
     match="InstanceActionDescription">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="InstancesSent">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="InstancesStored">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="OrderRecord">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="Patient">
     <ParticipantObjectIdentification>
@@ -444,10 +444,10 @@
     </ParticipantObjectName>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="PatientRecord">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="ProcedureRecord">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="SecurityAlert">
     <ParticipantObjectIdentification>
@@ -460,7 +460,7 @@
     </ParticipantObjectIdentification>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="StudyDeleted">
-    <xsl:apply-templates mode="ParticipantObjectIdentification"/>
+    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="SUID">
     <ParticipantObjectIdentification>
