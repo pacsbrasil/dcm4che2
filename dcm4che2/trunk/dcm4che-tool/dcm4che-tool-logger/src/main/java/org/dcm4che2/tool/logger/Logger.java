@@ -52,15 +52,18 @@ public class Logger {
 
     
     private static final String[] USAGE = {
-        "Usage: logger {fewidV} files ...",
+        "Usage: logger [-p ms] {fewidV} files ...",
         "Log files to destination specified in etc/logger/log4j.properties",
         "Options:",
+        "    -p  pause specified time between emission of following messages",
         "    -f  log files with FATAL level",
         "    -e  log files with ERROR level",
         "    -w  log files with WARN level",
         "    -i  log files with INFO level",
         "    -d  log files with DEBUG level",
         "    -V  print the version information and exit" };
+    
+    private static long sleep = 0;
 
 
     private static void usage() {
@@ -70,11 +73,29 @@ public class Logger {
     }
     
     public static void main(String[] args) {
-        char opt;
+        char opt = 0;
+        int argi = 0;
+        long pause = 0;
         try {
-            opt = args[0].charAt(0);
-            if (opt == '-') {
-                opt = args[0].charAt(1);
+            String s;
+            char c;
+            int pos;
+            for (;;) {
+                s = args[argi];
+		c = s.charAt(pos=0);
+                if (c == '-') {
+                    c = s.charAt(pos=1);
+                }
+                if (c == 'p') {
+                    pause = Long.parseLong(s.length() > pos+1 
+                	    ? s.substring(pos+1) : args[++argi]);
+                } else {
+                    if (opt != 0) {
+                	break;
+                    }
+                    opt = c;
+                }
+                ++argi;
             }
         } catch (IndexOutOfBoundsException e) {
             usage();
@@ -85,26 +106,26 @@ public class Logger {
             System.out.println("logger v" + p.getImplementationVersion());
             return;
         }
-        if ("fewid".indexOf(opt) == -1 || args.length < 2) {
+        if ("fewid".indexOf(opt) == -1 || argi >= args.length) {
             usage();
             return;
         }
         org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Logger.class);
         long start = System.currentTimeMillis();
         int n = 0;
-        for (int i = 1; i < args.length; i++) {
-            n += logFile(log, opt, new File(args[i]));
+        for (int i = argi; i < args.length; i++) {
+            n += logFile(log, opt, pause, new File(args[i]));
         }
         long end = System.currentTimeMillis();
         System.out.println("\nEmit " + n + " messages in " + (end-start) + "ms.");
     }
 
-    private static int logFile(org.apache.log4j.Logger log, char opt, File f) {
+    private static int logFile(org.apache.log4j.Logger log, char opt, long pause, File f) {
         if (f.isDirectory()) {
             int n = 0;
             String[] ss = f.list();
             for (int i = 0; i < ss.length; i++) {
-                n += logFile(log, opt, new File(f, ss[i]));
+                n += logFile(log, opt, pause, new File(f, ss[i]));
             }
             return n;
         }
@@ -116,6 +137,9 @@ public class Logger {
             e.printStackTrace(System.err);
             return 0;
         }
+        try {
+	    Thread.sleep(sleep);
+	} catch (InterruptedException ignore) {}
         switch (opt) {
         case 'd':
             log.debug(msg);
@@ -131,6 +155,7 @@ public class Logger {
             break;
         }
         System.out.print('.');
+        sleep = pause;
         return 1;
     }
 
