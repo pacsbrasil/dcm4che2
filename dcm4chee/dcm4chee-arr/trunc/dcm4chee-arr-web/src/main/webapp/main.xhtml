@@ -340,11 +340,11 @@
           rowClasses="#{auditRecordList.rowClasses}">
           <h:column>
             <f:facet name="header">O</f:facet>
-            <h:graphicImage url="img/out#{rec.eventOutcome}.gif"/>
+            <h:graphicImage url="img/outcome-#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
             <f:facet name="header">A</f:facet>
-            <h:outputText value="#{rec.eventAction}"/>
+            <h:graphicImage url="img/action-#{rec.eventAction}.gif"/>
           </h:column>
           <h:column>
             <f:facet name="header">Summary</f:facet>
