@@ -7,16 +7,14 @@
   <!-- EventIdentification                         -->
   <!-- =========================================== -->
   <xsl:template match="EventIdentification">
-    <xsl:apply-templates select="*"/>
-  </xsl:template>
-  <xsl:template match="EventID">
     <strong>
-      <xsl:value-of select="@displayName"/>
+      <xsl:value-of select="EventID/@displayName"/>
     </strong>
+    <xsl:apply-templates select="EventTypeCode"/>
   </xsl:template>
   <xsl:template match="EventTypeCode">
     <xsl:choose>
-      <xsl:when test="position()=2">(</xsl:when>
+      <xsl:when test="position()=1">(</xsl:when>
       <xsl:otherwise>,&#32;</xsl:otherwise>
     </xsl:choose>
     <xsl:value-of select="@displayName"/>
