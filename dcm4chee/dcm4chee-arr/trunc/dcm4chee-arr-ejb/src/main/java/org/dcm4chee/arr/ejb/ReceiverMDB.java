@@ -77,6 +77,11 @@ public class ReceiverMDB implements MessageListener {
     private XMLReader xmlReader;
 
     public void onMessage(Message msg) {
+    	if(!(msg instanceof BytesMessage)) {
+    		log.warn("Ignore unsupported message: " + msg);
+    		return;
+    	}
+    	
         byte[] xmldata;
         try {
             BytesMessage bytesMessage = (BytesMessage) msg;
