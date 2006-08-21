@@ -1075,6 +1075,9 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID=0&amp;seriesUID=0&amp;objectUID={sopIUID}&amp;contentType=text/html" target="SRview" >
 						<img src="images/sr.gif" alt="View Report" border="0" title="View Report as html"/>		
 					</a>
+					<a href="xdsiExport.m?docUID={sopIUID}" >
+						<img src="images/sr_pdf.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
+					</a>
 				</td>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1149,6 +1152,9 @@
 				<xsl:when test="availability='ONLINE'" >			
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
 						<img src="images/waveform.gif" alt="View waveform" border="0" title="View waveform"/>		
+					</a>
+					<a href="xdsiExport.m?docUID={sopIUID}" >
+						<img src="images/sr_pdf.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
 					</a>
 				</xsl:when>
 				<xsl:otherwise>
