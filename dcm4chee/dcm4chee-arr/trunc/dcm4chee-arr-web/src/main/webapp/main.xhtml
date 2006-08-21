@@ -339,12 +339,18 @@
         <h:dataTable border="1" value="#{records}" var="rec"
           rowClasses="#{auditRecordList.rowClasses}">
           <h:column>
-            <f:facet name="header">O</f:facet>
-            <h:graphicImage url="img/outcome-#{rec.eventOutcome}.gif"/>
+            <f:facet name="header">
+              <h:outputText value="O"  title="Event Outcome"/>
+            </f:facet>
+            <h:graphicImage title="#{rec.eventOutcome>0 ? (rec.eventOutcome>4 ? (rec.eventOutcome>8 ? messages.majorFailure : messages.seriousFailure) : messages.minorFailure) : messages.success}"
+              url="img/outcome-#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
-            <f:facet name="header">A</f:facet>
-            <h:graphicImage url="img/action-#{rec.eventAction}.gif"/>
+            <f:facet name="header">
+              <h:outputText value="A" title="Event Action"/>
+            </f:facet>
+            <h:graphicImage title="#{messages[rec.eventAction]}"
+              url="img/action-#{rec.eventAction}.gif"/>
           </h:column>
           <h:column>
             <f:facet name="header">Summary</f:facet>
