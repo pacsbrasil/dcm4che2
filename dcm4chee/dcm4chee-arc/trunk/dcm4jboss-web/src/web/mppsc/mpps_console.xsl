@@ -150,11 +150,11 @@
 				</table>
 			</td>
 		</table>
-		<xsl:call-template name="tableheader"/>
-		<xsl:apply-templates select="mppsEntries/item">
-		</xsl:apply-templates>
-
 	</form>
+	<xsl:call-template name="tableheader"/>
+	<xsl:apply-templates select="mppsEntries/item">
+	</xsl:apply-templates>
+
 </xsl:template>
 
 <xsl:template name="tableheader">
@@ -252,9 +252,10 @@
 			<xsl:choose> 
 				<xsl:when test="accNumbers=''">
 					<td title="Function">
-						<a href="mwl_console.m?action=link&amp;patientName={patientName}&amp;mppsIUID={mppsIUID}&amp;">
-							<img src="images/link.gif" alt="link" border="0" title="Link this MPPS entry with a MWL entry"/>		
-						</a>
+						<form action="mwl_console.m?action=link&amp;mppsIUID=" method="post" name="myLink" accept-charset="UTF-8">
+		                  <input name="patientName" type="hidden" value="{patientName}" />
+						  <input type="image" alt="link" name="link" value="link" src="images/link.gif" title="Link this MPPS entry with a MWL entry"/>									
+						</form>
 					</td>	
 				</xsl:when>
 				<xsl:otherwise>
