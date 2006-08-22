@@ -82,7 +82,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
-import org.dcm4chex.archive.ejb.util.EntityPkCache;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -121,8 +120,6 @@ public abstract class FileSystemMgtBean implements SessionBean {
     private PrivateFileLocalHome privFileHome;
 
     private FileSystemLocalHome fileSystemHome;
-    
-    private String purgeFileQueueName;
     
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -292,8 +289,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateFileSystem(FileSystemDTO dto) throws FinderException {
-        FileSystemLocal fs = (dto.getPk() == -1) ? EntityPkCache.findByDirectoryPath(fileSystemHome, dto.getDirectoryPath()) 
-        		: fileSystemHome.findByPrimaryKey(new Long(dto.getPk()));
+        FileSystemLocal fs = (dto.getPk() == -1) 
+                    ? fileSystemHome.findByDirectoryPath(dto.getDirectoryPath()) 
+                    : fileSystemHome.findByPrimaryKey(new Long(dto.getPk()));
         fs.fromDTO(dto);
     }
     
@@ -301,7 +299,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateFileSystemStatus(String dirPath, int status) throws FinderException {
-    	FileSystemLocal fs = EntityPkCache.findByDirectoryPath(fileSystemHome, dirPath);
+    	FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
     	
     	fs.setStatus(status);
     }
@@ -310,7 +308,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateFileSystemAvailability(String dirPath, int availability) throws FinderException {
-    	FileSystemLocal fs = EntityPkCache.findByDirectoryPath(fileSystemHome, dirPath);
+    	FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
 
     	// If we set the file system to OFFLINE, we need to make sure its status should not
     	// DEF_RW.
@@ -334,7 +332,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public FileSystemDTO getFileSystem(String dirPath) throws FinderException {
-        return EntityPkCache.findByDirectoryPath(fileSystemHome, dirPath).toDTO();
+        return fileSystemHome.findByDirectoryPath(dirPath).toDTO();
     }
 
     /**
@@ -342,7 +340,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      */
     public FileSystemDTO removeFileSystem(String dirPath) throws FinderException,
             RemoveException {    	
-        FileSystemLocal fs = EntityPkCache.findByDirectoryPath(fileSystemHome, dirPath);
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
         FileSystemDTO dto = fs.toDTO();
         removeFileSystem(fs);
         return dto;
@@ -435,9 +433,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
      */
     public void linkFileSystems(String prev, String next)
             throws FinderException {
-        FileSystemLocal prevfs = EntityPkCache.findByDirectoryPath(fileSystemHome,prev);
+        FileSystemLocal prevfs = fileSystemHome.findByDirectoryPath(prev);
         FileSystemLocal nextfs = (next != null && next.length() != 0) 
-                ? EntityPkCache.findByDirectoryPath(fileSystemHome, next) : null;
+                ? fileSystemHome.findByDirectoryPath(next) : null;
         prevfs.setNextFileSystem(nextfs);
     }
 
@@ -501,7 +499,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
             sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
         } catch (ObjectNotFoundException e) {
             try {
-                sofHome.create(EntityPkCache.findByStudyIuid(studyHome, siud), EntityPkCache.findByDirectoryPath(fileSystemHome, dirPath));
+                sofHome.create(studyHome.findByStudyIuid(siud),
+                        fileSystemHome.findByDirectoryPath(dirPath));
             } catch (CreateException ignore) {
             	// Check if concurrent create
                 sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
@@ -523,7 +522,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
         
         StudyLocal study = studyHome.findByPrimaryKey(studyPk);
         FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
-        String studyOnFsStr = log.isInfoEnabled() ? study.toString()+" on "+ fs.toString() : null; 
+        String studyOnFsStr = log.isInfoEnabled() 
+                ? study.toString() + " on " + fs.toString() 
+                : null; 
         
         final PatientLocal patient = study.getPatient();
         Dataset patAttrs = patient.getAttributes(false);

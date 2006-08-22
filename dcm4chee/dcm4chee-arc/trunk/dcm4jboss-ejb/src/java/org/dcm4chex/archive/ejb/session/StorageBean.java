@@ -80,7 +80,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
-import org.dcm4chex.archive.ejb.util.EntityPkCache;
 
 /**
  * Storage Bean
@@ -208,7 +207,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public SeriesStored makeSeriesStored(String seriuid)
     throws FinderException {
-        SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, seriuid);
+        SeriesLocal series = seriesHome.findBySeriesIuid(seriuid);
         return makeSeriesStored(series);
     }
 
@@ -226,7 +225,7 @@ public abstract class StorageBean implements SessionBean {
             iuids.add(refSOPs.getItem(i).getString(Tags.RefSOPInstanceUID));
         }
         String seriuid = refSeries.getString(Tags.SeriesInstanceUID);
-        SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, seriuid);
+        SeriesLocal series = seriesHome.findBySeriesIuid(seriuid);
         Collection c = series.getInstances();
         int remaining = 0;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
@@ -317,7 +316,7 @@ public abstract class StorageBean implements SessionBean {
     		int size, byte[] md5, int status)
     throws CreateException, FinderException
     {
-		FileSystemLocal fs = EntityPkCache.findByDirectoryPath(fileSystemHome, dirpath);
+		FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
 		InstanceLocal instance = instHome.findBySopIuid(iuid);
         fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
     }
@@ -327,7 +326,7 @@ public abstract class StorageBean implements SessionBean {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
-            series = EntityPkCache.findBySeriesIuid(seriesHome, uid);
+            series = seriesHome.findBySeriesIuid(uid);
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             series = seriesHome.create(ds, getStudy(ds, coercedElements, fs));
@@ -347,7 +346,7 @@ public abstract class StorageBean implements SessionBean {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
-            study = EntityPkCache.findByStudyIuid(studyHome, uid);
+            study = studyHome.findByStudyIuid(uid);
             coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             study = studyHome.create(ds, getPatient(ds, coercedElements));
@@ -451,11 +450,11 @@ public abstract class StorageBean implements SessionBean {
             	commited(seriesSet, studySet, iuid, aet);
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
-            final SeriesLocal ser = EntityPkCache.findBySeriesIuid(seriesHome, (String) series.next());
+            final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
 			ser.updateDerivedFields(false, false, true, false, false);
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
-            final StudyLocal study = EntityPkCache.findByStudyIuid(studyHome, (String) studies.next());
+            final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
 			study.updateDerivedFields(false, false, true, false, false, false);
         }
     }
@@ -474,7 +473,7 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateStudy(String iuid) throws FinderException {
-   		final StudyLocal study = EntityPkCache.findByStudyIuid(studyHome, iuid);
+   		final StudyLocal study = studyHome.findByStudyIuid(iuid);
    		study.updateDerivedFields(true, true, false, true, true, true);
     }
     
@@ -482,7 +481,7 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateSeries(String iuid) throws FinderException {
-   		final SeriesLocal series = EntityPkCache.findBySeriesIuid(seriesHome, iuid);
+   		final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
    		series.updateDerivedFields(true, true, false, true, true);
     }
     

@@ -65,7 +65,6 @@ import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.util.EntityPkCache;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -126,7 +125,7 @@ public abstract class StudyReconciliationBean implements SessionBean {
 	private StudyLocal getStudy(String suid) 
 			throws FinderException, DcmServiceException {
 		try {
-			return EntityPkCache.findByStudyIuid(studyHome, suid);
+			return studyHome.findByStudyIuid(suid);
 		} catch (ObjectNotFoundException e) {
 			throw new DcmServiceException(Status.NoSuchSOPClass, suid);
 		}
