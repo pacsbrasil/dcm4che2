@@ -24,32 +24,31 @@
  */
 package org.regenstrief.xhl7;
 
-import java.io.Reader;
-import java.io.LineNumberReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.StringTokenizer;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.EntityResolver;
-import org.xml.sax.XMLReader;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
-
-// only needed for main
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 
 /** This is a class that parses HL7 messages and generates a
@@ -122,6 +121,7 @@ import javax.xml.transform.stream.StreamSource;
 */
 public class HL7XMLReader implements XMLReader, HL7XMLLiterate
 { 
+  static final Logger log = Logger.getLogger(HL7XMLReader.class);
   ContentHandler _contentHandler;
 
   AttributesImpl _atts = new AttributesImpl();
@@ -196,6 +196,10 @@ public class HL7XMLReader implements XMLReader, HL7XMLLiterate
     String line = null;
 
     while((line = reader.readLine()) != null) {
+        if (line.length() == 0) {
+            log.warn("Detect duplicate segment delimitors after segment " + segmentTag);
+            continue;
+        }
 
       try{
 	segmentTag = line.substring(0,3).intern();
