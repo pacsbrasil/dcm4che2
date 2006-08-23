@@ -63,7 +63,7 @@ public class StringUtils {
 		for (int i = 0; i < ss.length; i++) {
 			if (ss[i] != null)
 				sb.append(ss[i]);
-			sb.append('\\');
+			sb.append(delim);
 		}
 		sb.setLength(sb.length() - 1);
 		return sb.toString();
