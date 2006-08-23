@@ -82,16 +82,17 @@ public class DcmDir {
 "dicomdir -t /media/cdrom/DICOMDIR\n" +
 "-- dump content of DICOMDIR to stdout\n" +
 "dicomdir -c disk99/DICOMDIR -id DISK99 -desc disk99/README disk99/DICOM\n" +
-"-- create new directory file with specified File-set ID and Descriptor File,\n" +
-"-- referencing all DICOM Files in directory disk99/DICOM.\n" +
+"-- create new directory file with specified File-set ID and Descriptor\n" +
+"-- File, referencing all DICOM Files in directory disk99/DICOM.\n" +
 "dicomdir -a disk99/DICOMDIR disk99/DICOM/CT1\n" +
 "-- add directory records referencing all DICOM files in directory\n" +
 "-- disk99/DICOM/CT1 to existing directory file.\n" +
 "dicomdir -d disk99/DICOMDIR disk99/DICOM/CT1\n" +
-"-- delete/deactivate directory records referencing DICOM files in directory\n" +
-"-- disk99/DICOM/CT2.\n" +
+"-- delete/deactivate directory records referencing DICOM files in\n" +
+"-- directory disk99/DICOM/CT2.\n" +
 "dicomdir -p disk99/DICOMDIR\n" +
-"-- purge directory records without child records referencing any DICOM file.\n" +
+"-- purge directory records without child records referencing any\n" +
+"-- DICOM file." +
 "dicomdir -z disk99/DICOMDIR\n" +
 "-- compact DICOMDIR by removing inactive records.";
 
@@ -353,7 +354,6 @@ public class DcmDir {
         OptionBuilder.withDescription(
         	"compact existing directory file <dicomdir> by removing unused entries");
         cmdOpt.addOption(OptionBuilder.create("z"));
-        cmdOpt.setRequired(true);
         opts.addOptionGroup(cmdOpt);
         OptionBuilder.withArgName("txtfile");
         OptionBuilder.hasArg();
@@ -409,6 +409,14 @@ public class DcmDir {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
+        }
+        if (!(cl.hasOption("a") 
+        	|| cl.hasOption("c") 
+        	|| cl.hasOption("d") 
+        	|| cl.hasOption("p") 
+        	|| cl.hasOption("t") 
+        	|| cl.hasOption("z"))) {
+            exit("dcmdir: You must specify one of the -acdptz options");
         }
         return cl;
     }
