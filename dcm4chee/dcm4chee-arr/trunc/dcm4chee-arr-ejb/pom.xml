@@ -97,7 +97,7 @@
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4che-tool-logger</artifactId>
-			<version>2.0.6</version>
+			<version>2.0.8-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -182,5 +182,23 @@
 				<directory>src/test/conf</directory>
 			</testResource>
 		</testResources>
+				
 	</build>
+	
+	<pluginRepositories>
+		<pluginRepository>
+			<id>tapestry.javaforge</id>
+			<url>http://howardlewisship.com/repository</url>
+			<snapshots> 
+				<enabled>true</enabled> 
+			</snapshots> 
+		</pluginRepository>
+		<pluginRepository>
+			<id>maven.snapshots</id>
+			<url>http://svn.apache.org/maven-snapshot-repository</url>
+			<snapshots> 
+				<enabled>true</enabled> 
+			</snapshots> 
+		</pluginRepository>
+	</pluginRepositories>
 </project>
