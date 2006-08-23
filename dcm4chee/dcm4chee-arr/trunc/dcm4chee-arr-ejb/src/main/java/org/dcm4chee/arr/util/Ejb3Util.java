@@ -13,8 +13,8 @@ import org.jboss.annotation.ejb.RemoteBinding;
 /**
  * EJB3 client utilities
  * 
- * @author fyang
- * @version $id$
+ * @author fang.yang@agfa.com
+ * @version $Id$
  * @since Aug 23, 2006 11:27:09 AM
  * 
  */

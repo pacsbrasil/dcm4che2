@@ -8,8 +8,8 @@ import javax.persistence.Query;
 /**
  * An interface that has generic and basic CRUD functionalities for any entity bean.
  * 
- * @author fyang
- * @version $id$
+ * @author fang.yang@agfa.com
+ * @version $Id$
  * @since Aug 23, 2006 11:30:21 AM
  */
 public interface GenericEntityMgmt {

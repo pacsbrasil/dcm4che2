@@ -20,8 +20,8 @@ import org.jboss.annotation.ejb.RemoteBinding;
 /**
  * A SLSB that has basic and generic CRUD functionalities for any entity bean
  * 
- * @author fyang
- * @version $id$
+ * @author fang.yang@agfa.com
+ * @version $Id$
  * @since Aug 23, 2006 11:30:21 AM
  */
 @Remote(GenericEntityMgmt.class)
