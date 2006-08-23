@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.tool.dcmrcv.DcmRcv
-MAIN_JAR=dcm4che-tool-dcmrcv-2.0.7.jar
+MAIN_JAR=dcm4che-tool-dcmrcv-2.0.8-SNAPSHOT.jar
 
 DIRNAME=`dirname $0`
 
@@ -43,8 +43,8 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.7.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-2.0.7.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.8-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-2.0.8-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/nlog4j-1.2.19.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
 
