@@ -53,19 +53,23 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PostPersist;
+import javax.persistence.PostRemove;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.apache.log4j.Logger;
 import org.dcm4chee.arr.util.XSLTUtils;
+import org.hibernate.annotations.Index;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Id$
  * @since Jun 5, 2006
  *
  */
@@ -75,6 +79,8 @@ import org.jboss.seam.annotations.Scope;
 @Table(name = "audit_record")
 public class AuditRecord implements Serializable {
 
+	public static final Logger log = Logger.getLogger(AuditRecord.class);
+	
     private static final long serialVersionUID = 5868055858768841333L;
     private int pk;
     private Code eventID;
@@ -216,6 +222,7 @@ public class AuditRecord implements Serializable {
 
     @Basic @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "event_date_time")
+    @Index(name = "ar_event_date_time_idx")
     public Date getEventDateTime() {
         return eventDateTime;
     }
@@ -226,6 +233,7 @@ public class AuditRecord implements Serializable {
     
     @Basic @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "receive_date_time")
+    @Index(name = "ar_receive_date_time_idx")
     public Date getReceiveDateTime() {
         return receiveDateTime;
     }
@@ -252,4 +260,22 @@ public class AuditRecord implements Serializable {
     public void setXmldata(byte[] xmldata) {
         this.xmldata = xmldata;
     }
+    
+    @PostPersist
+	public void postPersit() {
+		if(log.isDebugEnabled())
+			log.debug( "Created " + this.toString() );
+	}
+    
+    @PostRemove
+	public void postRemove() {
+		if(log.isDebugEnabled())
+			log.debug( "Removed " + this.toString() );
+	}
+    
+    @Override
+	public String toString() {
+		// Default implementation. Sub class should provide meaningful overriding
+		return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
+	}
 }
