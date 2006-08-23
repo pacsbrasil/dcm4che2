@@ -46,11 +46,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostPersist;
+import javax.persistence.PostRemove;
 import javax.persistence.Table;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Id$
  * @since Jun 13, 2006
  *
  */
@@ -59,6 +63,8 @@ import javax.persistence.Table;
 public class ActiveParticipant implements Serializable {
 
     private static final long serialVersionUID = -1223510910574955906L;
+
+	public static final Logger log = Logger.getLogger(ActiveParticipant.class);
 
     private int pk;
     private AuditRecord auditRecord;
@@ -154,4 +160,22 @@ public class ActiveParticipant implements Serializable {
     public void setNetworkAccessPointType(int code) {
         this.networkAccessPointType = code;
     }
+    
+    @PostPersist
+	public void postPersit() {
+		if(log.isDebugEnabled())
+			log.debug( "Created " + this.toString() );
+	}
+    
+    @PostRemove
+	public void postRemove() {
+		if(log.isDebugEnabled())
+			log.debug( "Removed " + this.toString() );
+	}
+    
+    @Override
+	public String toString() {
+		// Default implementation. Sub class should provide meaningful overriding
+		return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
+	}
 }

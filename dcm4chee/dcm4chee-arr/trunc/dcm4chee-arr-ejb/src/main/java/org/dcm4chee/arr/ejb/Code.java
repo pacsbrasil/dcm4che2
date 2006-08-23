@@ -44,11 +44,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.PostPersist;
+import javax.persistence.PostRemove;
 import javax.persistence.Table;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Id$
  * @since Jun 5, 2006
  *
  */
@@ -57,6 +61,8 @@ import javax.persistence.Table;
 public class Code implements Serializable {
 
     private static final long serialVersionUID = -2126932270827340622L;
+
+	public static final Logger log = Logger.getLogger(Code.class);
 
     private int pk;
     private String value;
@@ -96,4 +102,22 @@ public class Code implements Serializable {
     public void setMeaning(String meaning) {
         this.meaning = meaning;
     }
+    
+    @PostPersist
+	public void postPersit() {
+		if(log.isDebugEnabled())
+			log.debug( "Created " + this.toString() );
+	}
+    
+    @PostRemove
+	public void postRemove() {
+		if(log.isDebugEnabled())
+			log.debug( "Removed " + this.toString() );
+	}
+    
+    @Override
+	public String toString() {
+		// Default implementation. Sub class should provide meaningful overriding
+		return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
+	}
 }
