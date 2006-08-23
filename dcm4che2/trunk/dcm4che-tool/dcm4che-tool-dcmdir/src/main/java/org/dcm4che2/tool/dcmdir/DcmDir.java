@@ -79,22 +79,24 @@ public class DcmDir {
     private static final String DESCRIPTION = 
 	"Dump/Create/Update/Compact DICOM directory file\nOptions:";
     private static final String EXAMPLE = 
-"dicomdir -t /media/cdrom/DICOMDIR\n" +
-"-- dump content of DICOMDIR to stdout\n" +
-"dicomdir -c disk99/DICOMDIR -id DISK99 -desc disk99/README disk99/DICOM\n" +
-"-- create new directory file with specified File-set ID and Descriptor\n" +
-"-- File, referencing all DICOM Files in directory disk99/DICOM.\n" +
-"dicomdir -a disk99/DICOMDIR disk99/DICOM/CT1\n" +
-"-- add directory records referencing all DICOM files in directory\n" +
-"-- disk99/DICOM/CT1 to existing directory file.\n" +
-"dicomdir -d disk99/DICOMDIR disk99/DICOM/CT1\n" +
-"-- delete/deactivate directory records referencing DICOM files in\n" +
-"-- directory disk99/DICOM/CT2.\n" +
-"dicomdir -p disk99/DICOMDIR\n" +
-"-- purge directory records without child records referencing any\n" +
-"-- DICOM file." +
-"dicomdir -z disk99/DICOMDIR\n" +
-"-- compact DICOMDIR by removing inactive records.";
+	"--\nExample 1: to dump content of DICOMDIR to stdout:" +
+	"\n$ dicomdir -t /media/cdrom/DICOMDIR" +
+	"\n--\nExample 2: to create a new directory file with specified File-set" +
+	" ID and Descriptor File, referencing all DICOM Files in directory" +
+	" disk99/DICOM:" +
+	"\n$ dicomdir -c disk99/DICOMDIR -id DISK99 -desc disk99/README" +
+	" disk99/DICOM\n" +
+	"\n--\nExample 3: to add directory records referencing all DICOM files in" +
+	" directory disk99/DICOM/CT1 to existing directory file:" +
+	"\n$ dicomdir -a disk99/DICOMDIR disk99/DICOM/CT1" +
+	"\n--\nExample 4: to delete/deactivate directory records referencing" +
+	" DICOM files in directory disk99/DICOM/CT2:" +
+	"\n$ dicomdir -d disk99/DICOMDIR disk99/DICOM/CT1" +
+	"\n--\nExample 5: to purge directory records without child records" +
+	" referencing any DICOM file:" +
+	"\n$ dicomdir -p disk99/DICOMDIR" +
+	"\n--\nExample 5: to compact DICOMDIR by removing inactive records:" +
+	"\n$ dicomdir -z disk99/DICOMDIR";
 
     private final File file;
     private DicomDirReader dicomdir;
