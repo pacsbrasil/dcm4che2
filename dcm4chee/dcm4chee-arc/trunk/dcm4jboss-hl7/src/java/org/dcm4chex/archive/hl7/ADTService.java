@@ -115,7 +115,7 @@ public class ADTService extends AbstractHL7Service {
 						"Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
             try {
-                if (isMerge(msh)) {
+                if (isMerge(msg)) {
                     Dataset mrg = dof.newDataset();
                     Transformer t2 = getTemplates(mrgStylesheetURL)
                             .newTransformer();
@@ -164,8 +164,8 @@ public class ADTService extends AbstractHL7Service {
         return "A10".equals(msh.triggerEvent);
 	}
 
-	private boolean isMerge(MSH msh) {
-        return "A40".equals(msh.triggerEvent);
+	private boolean isMerge(Document msg) {
+		return msg.getRootElement().element("MRG") != null;
     }
 
     private boolean isDelete(MSH msh) {

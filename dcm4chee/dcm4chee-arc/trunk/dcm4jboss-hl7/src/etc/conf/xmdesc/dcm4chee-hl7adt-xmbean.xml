@@ -27,7 +27,7 @@
       <name>MessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A10,ADT^A23,ADT^A40" />
+         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A10,ADT^A23,ADT^A34,ADT^A40" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
