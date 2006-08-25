@@ -177,8 +177,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final String getGeneratePatientID() {
-        if (generatePatientID == null)
+        if (generatePatientID == null) {
             return "NONE";
+        }
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < generatePatientID.length; i++) {
             sb.append(generatePatientID[i]);
@@ -187,8 +188,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final void setGeneratePatientID(String pattern) {
-        if (pattern.equalsIgnoreCase("NONE"))
-        {
+        if (pattern.equalsIgnoreCase("NONE")) {
             this.generatePatientID = null;
             return;
         }
@@ -196,18 +196,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
         int sl = pattern.indexOf('$');
         int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;		
-        if (pl == -1 && sl == -1)
-        {
+        if (pl == -1 && sl == -1) {
             this.generatePatientID = new String[] { pattern };
-        } else if (pl != -1 && sl != -1)
-        {
+        } else if (pl != -1 && sl != -1) {
             this.generatePatientID = pl < sl 
-            ? split(pattern, pl, pr, sl, sr)
+                    ? split(pattern, pl, pr, sl, sr)
                     : split(pattern, sl, sr, pl, pr);
 
         } else {
             this.generatePatientID = pl != -1 
-            ? split(pattern, pl, pr)
+                    ? split(pattern, pl, pr)
                     : split(pattern, sl, sr);
         }
 
@@ -219,8 +217,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private String[] split(String pattern, int l1, int r1, int l2, int r2) {
-        if (r1 > l2)
+        if (r1 > l2) {
             throw new IllegalArgumentException(pattern);
+        }
         return new String[] { pattern.substring(0, l1),
                 pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1, l2),
                 pattern.substring(l2, r2 + 1), pattern.substring(r2 + 1) };
@@ -398,7 +397,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             log.debug(ds);
             service.logDIMSE(assoc, STORE_XML, ds);
             checkDataset(assoc, rqCmd, ds);
-            if ( isCheckIncorrectWorklistEntry() && checkIncorrectWorklistEntry(ds) ) {
+            if ( isCheckIncorrectWorklistEntry() 
+                    && checkIncorrectWorklistEntry(ds) ) {
                 log.info("Received Instance[uid=" + iuid
                         + "] ignored! Reason: Incorrect Worklist entry selected!");
                 return;
@@ -406,73 +406,76 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             FileSystemDTO fsDTO = service.selectStorageFileSystem();
             File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
             file = makeFile(baseDir, ds);
-            String compressTSUID = parser.getReadTag() == Tags.PixelData
-            && parser.getReadLength() != -1 ? compressionRules
-                    .getTransferSyntaxFor(assoc, ds) : null;
-                    String tsuid = compressTSUID != null ? compressTSUID : rq
-                            .getTransferSyntaxUID();
-                    ds.setFileMetaInfo(objFact.newFileMetaInfo(
-                            rqCmd.getAffectedSOPClassUID(),
-                            rqCmd.getAffectedSOPInstanceUID(),
-                            tsuid ));
+            String compressTSUID = (parser.getReadTag() == Tags.PixelData
+                                && parser.getReadLength() != -1) 
+                    ? compressionRules.getTransferSyntaxFor(assoc, ds)
+                    : null;
+            String tsuid = (compressTSUID != null)
+                    ? compressTSUID 
+                    : rq.getTransferSyntaxUID();
+            ds.setFileMetaInfo(objFact.newFileMetaInfo(
+                    rqCmd.getAffectedSOPClassUID(),
+                    rqCmd.getAffectedSOPInstanceUID(), tsuid));
 
-                    byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
-                    if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
-                        log.info("Received Instance[uid=" + iuid
-                                + "] already exists - ignored");
-                        deleteFailedStorage(file);
-                        return;
-                    }
+            byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+            if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
+                log.info("Received Instance[uid=" + iuid
+                        + "] already exists - ignored");
+                deleteFailedStorage(file);
+                return;
+            }
 
-                    final int baseDirPathLength = baseDir.getPath().length();
-                    final String filePath = file.getPath().substring(
-                            baseDirPathLength + 1).replace(File.separatorChar, '/');
-                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                    ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
-                    ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
-                    ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-                    Dataset coerced = null;
-                    try {
-                        Templates stylesheet = service.getCoercionTemplatesFor(callingAET, STORE_XSL);
-                        if (stylesheet != null)
-                        {
-                            coerced = XSLTUtils.coerce(ds, stylesheet,
-                                    toXsltParam(assoc, new Date()));
-                        }
-                    } catch (Exception e) {
-                        log.warn("Coercion of attributes failed:", e);
-                    }
-                    String seriuid = ds.getString(Tags.SeriesInstanceUID);
-                    String prevseriud = (String) assoc.getProperty(SERIES_IUID);
-                    Storage store = getStorage(assoc);
-                    if (prevseriud != null && !prevseriud.equals(seriuid)){                
-                        SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
-                        if (seriesStored != null) {
-                            log.debug("Send SeriesStoredNotification - series changed");
-                            doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
-                            store.commitSeriesStored(seriesStored);
-                        }
-                    }
-                    assoc.putProperty(SERIES_IUID, seriuid);
-                    Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
-                            filePath, file, md5sum);
-                    ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
-                    if (coerced == null)
-                        coerced = coercedElements;
-                    else
-                        coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
-                    if (coerced.isEmpty()
-                            || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
-                        rspCmd.putUS(Tags.Status, Status.Success);
-                    } else {
-                        int[] coercedTags = new int[coerced.size()];
-                        Iterator it = coerced.iterator();
-                        for (int i = 0; i < coercedTags.length; i++) {
-                            coercedTags[i] = ((DcmElement) it.next()).tag();
-                        }
-                        rspCmd.putAT(Tags.OffendingElement, coercedTags);
-                        rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
-                    }
+            final int baseDirPathLength = baseDir.getPath().length();
+            final String filePath = file.getPath().substring(
+                    baseDirPathLength + 1).replace(File.separatorChar, '/');
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
+            ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
+            ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
+            Dataset coerced = null;
+            try {
+                Templates stylesheet = service.getCoercionTemplatesFor(
+                        callingAET, STORE_XSL);
+                if (stylesheet != null) {
+                    coerced = XSLTUtils.coerce(ds, stylesheet, toXsltParam(
+                            assoc, new Date()));
+                }
+            } catch (Exception e) {
+                log.warn("Coercion of attributes failed:", e);
+            }
+            String seriuid = ds.getString(Tags.SeriesInstanceUID);
+            String prevseriud = (String) assoc.getProperty(SERIES_IUID);
+            Storage store = getStorage(assoc);
+            if (prevseriud != null && !prevseriud.equals(seriuid)) {
+                SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
+                if (seriesStored != null) {
+                    log.debug("Send SeriesStoredNotification - series changed");
+                    doAfterSeriesIsStored(store, assoc.getSocket(),
+                            seriesStored);
+                    store.commitSeriesStored(seriesStored);
+                }
+            }
+            assoc.putProperty(SERIES_IUID, seriuid);
+            Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
+                    filePath, file, md5sum);
+            ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
+            if (coerced == null) {
+                coerced = coercedElements;
+            } else {
+                coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
+            }
+            if (coerced.isEmpty()
+                    || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
+                rspCmd.putUS(Tags.Status, Status.Success);
+            } else {
+                int[] coercedTags = new int[coerced.size()];
+                Iterator it = coerced.iterator();
+                for (int i = 0; i < coercedTags.length; i++) {
+                    coercedTags[i] = ((DcmElement) it.next()).tag();
+                }
+                rspCmd.putAT(Tags.OffendingElement, coercedTags);
+                rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
+            }
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -552,20 +555,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void deleteFailedStorage(File file) {
-        if (file == null)
+        if (file == null) {
             return;
+        }
         log.info("M-DELETE file:" + file);
         file.delete();
         // purge empty series and study directory
         File seriesDir = file.getParentFile();
-        if (seriesDir.delete())
+        if (seriesDir.delete()) {
             seriesDir.getParentFile().delete();
+        }
     }
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
-            String filePath, File file, byte[] md5)
-    throws DcmServiceException, CreateException, HomeFactoryException,
-    IOException {
+            String filePath, File file, byte[] md5) throws DcmServiceException,
+            CreateException, HomeFactoryException, IOException {
         int retry = 0;
         for (;;) {
             try {
@@ -598,8 +602,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    Storage getStorage(Association assoc) throws RemoteException, CreateException,
-    HomeFactoryException {
+    Storage getStorage(Association assoc) throws RemoteException,
+            CreateException, HomeFactoryException {
         Storage store = (Storage) assoc.getProperty(StorageHome.JNDI_NAME);
         if (store == null) {
             store = service.getStorage();
@@ -642,8 +646,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
     }
 
-    private byte[] storeToFile(DcmParser parser, Dataset ds, File file, byte[] buffer)
-    throws Exception {
+    private byte[] storeToFile(DcmParser parser, Dataset ds, File file,
+            byte[] buffer) throws Exception {
         log.info("M-WRITE file:" + file);
         MessageDigest md = null;
         BufferedOutputStream bos = null;
@@ -703,7 +707,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void checkDataset(Association assoc, Command rqCmd, Dataset ds)
-    throws DcmServiceException {
+            throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
             if (ds.vm(TYPE1_ATTR[i]) <= 0) {
                 throw new DcmServiceException(
@@ -779,16 +783,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
 
     private String generatePatientID(Dataset ds) {
-        if (generatePatientID.length == 1)
+        if (generatePatientID.length == 1) {
             return generatePatientID[0];
-
+        }
         int suidHash = ds.getString(Tags.StudyInstanceUID).hashCode();
         String pname = ds.getString(Tags.PatientName);
         // generate different Patient IDs for different studies
         // if no Patient Name
-        int pnameHash = pname == null || pname.length() == 0 ? suidHash
+        int pnameHash = (pname == null || pname.length() == 0) 
+                ? suidHash
                 :  37 * ds.getString(Tags.PatientName).hashCode()
-                + ds.getString(Tags.PatientBirthDate, "").hashCode();
+                    + ds.getString(Tags.PatientBirthDate, "").hashCode();
 
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < generatePatientID.length; i++) {
