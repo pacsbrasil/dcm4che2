@@ -95,7 +95,7 @@ public class DcmDir {
 	"\n--\nExample 5: to purge directory records without child records" +
 	" referencing any DICOM file:" +
 	"\n$ dicomdir -p disk99/DICOMDIR" +
-	"\n--\nExample 5: to compact DICOMDIR by removing inactive records:" +
+	"\n--\nExample 6: to compact DICOMDIR by removing inactive records:" +
 	"\n$ dicomdir -z disk99/DICOMDIR";
 
     private final File file;
