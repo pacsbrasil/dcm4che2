@@ -91,7 +91,7 @@ public class DcmDir {
 	"\n$ dicomdir -a disk99/DICOMDIR disk99/DICOM/CT1" +
 	"\n--\nExample 4: to delete/deactivate directory records referencing" +
 	" DICOM files in directory disk99/DICOM/CT2:" +
-	"\n$ dicomdir -d disk99/DICOMDIR disk99/DICOM/CT1" +
+	"\n$ dicomdir -d disk99/DICOMDIR disk99/DICOM/CT2" +
 	"\n--\nExample 5: to purge directory records without child records" +
 	" referencing any DICOM file:" +
 	"\n$ dicomdir -p disk99/DICOMDIR" +
