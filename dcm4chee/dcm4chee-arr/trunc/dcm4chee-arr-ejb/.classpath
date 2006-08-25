@@ -7,13 +7,6 @@
 	<classpathentry output="target/test-classes" kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.jboss.ide.eclipse.jdt.ejb3.wizards.core.classpath.EJB3_CONTAINER/arr-ejb"/>
-	<classpathentry kind="var" path="M2_REPRO/hibernate/hibernate-entitymanager/3.2.0.CR1/hibernate-entitymanager-3.2.0.CR1.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/org/slf4j/slf4j-log4j12/1.0/slf4j-log4j12-1.0.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/jboss/jboss-seam/1.0.1.GA/jboss-seam-1.0.1.GA.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/jboss/embeddable-ejb3/jboss-ejb3-all/ALPHA_8-patch2/jboss-ejb3-all-ALPHA_8-patch2.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/jboss/embeddable-ejb3/thirdparty-all/ALPHA_8-patch2/thirdparty-all-ALPHA_8-patch2.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/org/testng/testng/5.1/testng-5.1-jdk15.jar"/>
-	<classpathentry kind="var" path="M2_REPRO/dcm4che/dcm4che-tool-logger/2.0.6/dcm4che-tool-logger-2.0.6.jar"/>
+	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
