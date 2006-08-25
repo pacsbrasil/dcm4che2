@@ -21,22 +21,25 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.arr.ejb.AuditRecord;
 import org.dcm4chee.arr.ejb.GenericEntityMgmt;
 import org.dcm4chee.arr.jmx.UDPServerMBean;
 import org.dcm4chee.arr.util.Ejb3Util;
 import org.jboss.annotation.ejb.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
+import test.dcm4chee.JBossTestBase;
+
 public class TestAuditRecord {
 
-	protected final static Logger log = Logger.getLogger(TestAuditRecord.class);
+    private static Logger log = LoggerFactory.getLogger(JBossTestBase.class);
 
-	protected final static Logger syslog = Logger.getLogger("syslog");
+	protected final static Logger syslog = LoggerFactory.getLogger("syslog");
 
 	private ObjectName objectName;
 
@@ -72,7 +75,7 @@ public class TestAuditRecord {
 
 			conn = factory.createQueueConnection();
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
 		}
 	}
@@ -98,7 +101,7 @@ public class TestAuditRecord {
 
 			Thread.sleep(1000);
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
 		} finally {
 			try {
@@ -134,7 +137,7 @@ public class TestAuditRecord {
 
 			Thread.sleep(1000); // Make sure the message is processed fully
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
 		} finally {
 			try {
@@ -168,7 +171,7 @@ public class TestAuditRecord {
 			arrs = mgmt.findAll(AuditRecord.class);
 			assert arrs.size() == 0;
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
 		}
 	}
@@ -191,7 +194,7 @@ public class TestAuditRecord {
 
 			Thread.sleep(1000); // Make sure the message is processed fully
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
 		} finally {
 			try {
@@ -256,7 +259,7 @@ public class TestAuditRecord {
 			log.info("Total audit records in database: " + num);
 			
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
 		} finally {
 			try { zip.close(); } catch(Exception ignore) {};

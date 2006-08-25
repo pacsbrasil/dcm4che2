@@ -48,7 +48,8 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostRemove;
 import javax.persistence.Table;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -62,8 +63,8 @@ public class Code implements Serializable {
 
     private static final long serialVersionUID = -2126932270827340622L;
 
-	public static final Logger log = Logger.getLogger(Code.class);
-
+    private static Logger log = LoggerFactory.getLogger(Code.class);
+    
     private int pk;
     private String value;
     private String designator;

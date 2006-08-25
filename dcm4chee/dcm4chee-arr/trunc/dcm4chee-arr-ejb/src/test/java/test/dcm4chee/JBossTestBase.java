@@ -8,9 +8,10 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Logger;
 import org.jboss.ejb3.embedded.EJB3StandaloneBootstrap;
 import org.jboss.ejb3.embedded.EJB3StandaloneDeployer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
@@ -26,7 +27,7 @@ import org.testng.annotations.BeforeSuite;
  */
 public class JBossTestBase {
 
-	protected final static Logger log = Logger.getLogger(JBossTestBase.class);
+    private static Logger log = LoggerFactory.getLogger(JBossTestBase.class);
 
 	private static final String SERVICE_FILTER_NAME = "dcm4chee.*:*";
 

@@ -60,12 +60,13 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.arr.util.XSLTUtils;
 import org.hibernate.annotations.Index;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -78,10 +79,11 @@ import org.jboss.seam.annotations.Scope;
 @Scope(ScopeType.PAGE)
 @Table(name = "audit_record")
 public class AuditRecord implements Serializable {
-
-	public static final Logger log = Logger.getLogger(AuditRecord.class);
 	
     private static final long serialVersionUID = 5868055858768841333L;
+
+    private static Logger log = LoggerFactory.getLogger(AuditRecord.class);
+    
     private int pk;
     private Code eventID;
     private String eventAction;

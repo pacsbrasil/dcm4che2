@@ -50,7 +50,8 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostRemove;
 import javax.persistence.Table;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -64,7 +65,7 @@ public class ActiveParticipant implements Serializable {
 
     private static final long serialVersionUID = -1223510910574955906L;
 
-	public static final Logger log = Logger.getLogger(ActiveParticipant.class);
+    private static Logger log = LoggerFactory.getLogger(ActiveParticipant.class);
 
     private int pk;
     private AuditRecord auditRecord;
