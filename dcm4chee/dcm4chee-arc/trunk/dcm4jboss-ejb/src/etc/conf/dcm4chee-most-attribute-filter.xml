@@ -49,12 +49,6 @@
         <attr tag="00120051"/> <!-- Clinical Trial Time Point Description -->
         <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
         <attr tag="00200010"/> <!-- Study ID -->
-        <attr tag="00321032"/> <!-- Requesting Physician -->
-        <attr tag="00321033"/> <!-- Requesting Service -->
-        <attr tag="00321060"/> <!-- Requested Procedure Description -->
-        <attr tag="00321064"/> <!-- Requested Procedure Code Sequence -->   
-        <attr tag="00402016"/> <!-- Placer Order Number -->
-        <attr tag="00402017"/> <!-- Filler Order Number -->
     </study>
     <series>
         <attr tag="00080005"/> <!-- Specific Character Set -->
