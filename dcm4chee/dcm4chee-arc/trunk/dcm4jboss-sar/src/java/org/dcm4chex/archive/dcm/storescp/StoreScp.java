@@ -111,28 +111,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
     private static final String SERIES_IUID = "SERIES_IUID";
 
-	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
-            Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
+    private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
+        Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
 
     final StoreScpService service;
 
     private final Logger log;
 
-	private boolean studyDateInFilePath = false;
-	private boolean yearInFilePath = true;
-	private boolean monthInFilePath = true;
-	private boolean dayInFilePath = true;
-	private boolean hourInFilePath = false;
-	
-	private boolean acceptMissingPatientID = true;
-	private boolean acceptMissingPatientName = true;
+    private boolean studyDateInFilePath = false;
+    private boolean yearInFilePath = true;
+    private boolean monthInFilePath = true;
+    private boolean dayInFilePath = true;
+    private boolean hourInFilePath = false;
+
+    private boolean acceptMissingPatientID = true;
+    private boolean acceptMissingPatientName = true;
     private Pattern acceptPatientID;
     private Pattern ignorePatientID;
-	private String[] generatePatientID = null;
-	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
-			new IssuerOfPatientIDRules("PACS-:TIANI");
+    private String[] generatePatientID = null;
+    private IssuerOfPatientIDRules issuerOfPatientIDRules = 
+        new IssuerOfPatientIDRules("PACS-:TIANI");
 
-	private boolean serializeDBUpdate = false;
+    private boolean serializeDBUpdate = false;
     private int updateDatabaseMaxRetries = 2;
     private int maxCountUpdateDatabaseRetries = 0;
 
@@ -143,96 +143,96 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private CompressionRules compressionRules = new CompressionRules("");
 
     private String[] coerceWarnCallingAETs = {};
-	private String[] ignorePatientIDCallingAETs = {};
+    private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
-    
-	public StoreScp(StoreScpService service) {
+
+    public StoreScp(StoreScpService service) {
         this.service = service;
         this.log = service.getLog();
     }
 
-	public final boolean isAcceptMissingPatientID() {
-		return acceptMissingPatientID;
-	}
+    public final boolean isAcceptMissingPatientID() {
+        return acceptMissingPatientID;
+    }
 
-	public final void setAcceptMissingPatientID(boolean accept) {
-		this.acceptMissingPatientID = accept;
-	}
+    public final void setAcceptMissingPatientID(boolean accept) {
+        this.acceptMissingPatientID = accept;
+    }
 
-	public final boolean isAcceptMissingPatientName() {
-		return acceptMissingPatientName;
-	}
+    public final boolean isAcceptMissingPatientName() {
+        return acceptMissingPatientName;
+    }
 
-	public final void setAcceptMissingPatientName(boolean accept) {
-		this.acceptMissingPatientName = accept;
-	}
+    public final void setAcceptMissingPatientName(boolean accept) {
+        this.acceptMissingPatientName = accept;
+    }
 
-	public final boolean isSerializeDBUpdate() {
-		return serializeDBUpdate;
-	}
+    public final boolean isSerializeDBUpdate() {
+        return serializeDBUpdate;
+    }
 
-	public final void setSerializeDBUpdate(boolean serialize) {
-		this.serializeDBUpdate = serialize;
-	}
+    public final void setSerializeDBUpdate(boolean serialize) {
+        this.serializeDBUpdate = serialize;
+    }
 
     public final String getGeneratePatientID() {
-    	if (generatePatientID == null)
-    		return "NONE";
-    	StringBuffer sb = new StringBuffer();
-    	for (int i = 0; i < generatePatientID.length; i++) {
-			sb.append(generatePatientID[i]);
-		}
-		return sb.toString();
-	}
+        if (generatePatientID == null)
+            return "NONE";
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < generatePatientID.length; i++) {
+            sb.append(generatePatientID[i]);
+        }
+        return sb.toString();
+    }
 
-	public final void setGeneratePatientID(String pattern) {
-		if (pattern.equalsIgnoreCase("NONE"))
-		{
-			this.generatePatientID = null;
-			return;
-		}
-		int pl = pattern.indexOf('#');
-		int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
-		int sl = pattern.indexOf('$');
-		int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;		
-		if (pl == -1 && sl == -1)
-		{
-			this.generatePatientID = new String[] { pattern };
-		} else if (pl != -1 && sl != -1)
-		{
-			this.generatePatientID = pl < sl 
-				? split(pattern, pl, pr, sl, sr)
-				: split(pattern, sl, sr, pl, pr);
-				
-		} else {
-			this.generatePatientID = pl != -1 
-				? split(pattern, pl, pr)
-				: split(pattern, sl, sr);
-		}
-			
-	}
+    public final void setGeneratePatientID(String pattern) {
+        if (pattern.equalsIgnoreCase("NONE"))
+        {
+            this.generatePatientID = null;
+            return;
+        }
+        int pl = pattern.indexOf('#');
+        int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
+        int sl = pattern.indexOf('$');
+        int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;		
+        if (pl == -1 && sl == -1)
+        {
+            this.generatePatientID = new String[] { pattern };
+        } else if (pl != -1 && sl != -1)
+        {
+            this.generatePatientID = pl < sl 
+            ? split(pattern, pl, pr, sl, sr)
+                    : split(pattern, sl, sr, pl, pr);
 
-	private String[] split(String pattern, int l1, int r1) {
-		return new String[] { pattern.substring(0, l1),
-				pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1), };
-	}
-	
-	private String[] split(String pattern, int l1, int r1, int l2, int r2) {
-		if (r1 > l2)
-			throw new IllegalArgumentException(pattern);
-		return new String[] { pattern.substring(0, l1),
-				pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1, l2),
-				pattern.substring(l2, r2 + 1), pattern.substring(r2 + 1) };
-	}
+        } else {
+            this.generatePatientID = pl != -1 
+            ? split(pattern, pl, pr)
+                    : split(pattern, sl, sr);
+        }
 
-	public final String getIssuerOfPatientIDRules() {
-		return issuerOfPatientIDRules.toString();
-	}
+    }
 
-	public final void setIssuerOfPatientIDRules(String rules) {
-		this.issuerOfPatientIDRules = new IssuerOfPatientIDRules(rules);
-	}
+    private String[] split(String pattern, int l1, int r1) {
+        return new String[] { pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1), };
+    }
+
+    private String[] split(String pattern, int l1, int r1, int l2, int r2) {
+        if (r1 > l2)
+            throw new IllegalArgumentException(pattern);
+        return new String[] { pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1, l2),
+                pattern.substring(l2, r2 + 1), pattern.substring(r2 + 1) };
+    }
+
+    public final String getIssuerOfPatientIDRules() {
+        return issuerOfPatientIDRules.toString();
+    }
+
+    public final void setIssuerOfPatientIDRules(String rules) {
+        this.issuerOfPatientIDRules = new IssuerOfPatientIDRules(rules);
+    }
 
     public final String getAcceptPatientID() {
         return acceptPatientID.pattern();
@@ -241,7 +241,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public final void setAcceptPatientID(String acceptPatientID) {
         this.acceptPatientID = Pattern.compile(acceptPatientID);
     }
-    
+
     public final String getIgnorePatientID() {
         return ignorePatientID.pattern();
     }
@@ -249,16 +249,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public final void setIgnorePatientID(String ignorePatientID) {
         this.ignorePatientID = Pattern.compile(ignorePatientID);
     }
-    
+
     public final String getIgnorePatientIDCallingAETs() {
         return StringUtils.toString(ignorePatientIDCallingAETs, '\\');
-	}
+    }
 
-	public final void setIgnorePatientIDCallingAETs(String aets) {
+    public final void setIgnorePatientIDCallingAETs(String aets) {
         ignorePatientIDCallingAETs = StringUtils.split(aets, '\\');
-	}
+    }
 
-	public final String getCoerceWarnCallingAETs() {
+    public final String getCoerceWarnCallingAETs() {
         return StringUtils.toString(coerceWarnCallingAETs, '\\');
     }
 
@@ -266,47 +266,47 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         coerceWarnCallingAETs = StringUtils.split(aets, '\\');
     }
 
-	public final boolean isStudyDateInFilePath() {
-		return studyDateInFilePath;
-	}
+    public final boolean isStudyDateInFilePath() {
+        return studyDateInFilePath;
+    }
 
-	public final void setStudyDateInFilePath(boolean studyDateInFilePath) {
-		this.studyDateInFilePath = studyDateInFilePath;
-	}
+    public final void setStudyDateInFilePath(boolean studyDateInFilePath) {
+        this.studyDateInFilePath = studyDateInFilePath;
+    }
 
-	public final boolean isYearInFilePath() {
-		return yearInFilePath;
-	}
+    public final boolean isYearInFilePath() {
+        return yearInFilePath;
+    }
 
-	public final void setYearInFilePath(boolean yearInFilePath) {
-		this.yearInFilePath = yearInFilePath;
-	}
+    public final void setYearInFilePath(boolean yearInFilePath) {
+        this.yearInFilePath = yearInFilePath;
+    }
 
-	public final boolean isMonthInFilePath() {
-		return monthInFilePath;
-	}
+    public final boolean isMonthInFilePath() {
+        return monthInFilePath;
+    }
 
-	public final void setMonthInFilePath(boolean monthInFilePath) {
-		this.monthInFilePath = monthInFilePath;
-	}
+    public final void setMonthInFilePath(boolean monthInFilePath) {
+        this.monthInFilePath = monthInFilePath;
+    }
 
     public final boolean isDayInFilePath() {
-		return dayInFilePath;
-	}
+        return dayInFilePath;
+    }
 
-	public final void setDayInFilePath(boolean dayInFilePath) {
-		this.dayInFilePath = dayInFilePath;
-	}
+    public final void setDayInFilePath(boolean dayInFilePath) {
+        this.dayInFilePath = dayInFilePath;
+    }
 
-	public final boolean isHourInFilePath() {
-		return hourInFilePath;
-	}
+    public final boolean isHourInFilePath() {
+        return hourInFilePath;
+    }
 
-	public final void setHourInFilePath(boolean hourInFilePath) {
-		this.hourInFilePath = hourInFilePath;
-	}
+    public final void setHourInFilePath(boolean hourInFilePath) {
+        this.hourInFilePath = hourInFilePath;
+    }
 
-	public final boolean isStoreDuplicateIfDiffHost() {
+    public final boolean isStoreDuplicateIfDiffHost() {
         return storeDuplicateIfDiffHost;
     }
 
@@ -354,22 +354,22 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.updateDatabaseRetryInterval = interval;
     }
 
-	/**
-	 * @return Returns the checkIncorrectWorklistEntry.
-	 */
-	public boolean isCheckIncorrectWorklistEntry() {
-		return checkIncorrectWorklistEntry;
-	}
-    
-	/**
-	 * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
-	 */
-	public void setCheckIncorrectWorklistEntry(
-			boolean checkIncorrectWorklistEntry) {
-		this.checkIncorrectWorklistEntry = checkIncorrectWorklistEntry;
-	}
-	
-	
+    /**
+     * @return Returns the checkIncorrectWorklistEntry.
+     */
+    public boolean isCheckIncorrectWorklistEntry() {
+        return checkIncorrectWorklistEntry;
+    }
+
+    /**
+     * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
+     */
+    public void setCheckIncorrectWorklistEntry(
+            boolean checkIncorrectWorklistEntry) {
+        this.checkIncorrectWorklistEntry = checkIncorrectWorklistEntry;
+    }
+
+
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
@@ -394,8 +394,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
-			log.debug("Dataset:\n");
-			log.debug(ds);
+            log.debug("Dataset:\n");
+            log.debug(ds);
             service.logDIMSE(assoc, STORE_XML, ds);
             checkDataset(assoc, rqCmd, ds);
             if ( isCheckIncorrectWorklistEntry() && checkIncorrectWorklistEntry(ds) ) {
@@ -407,72 +407,72 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
             file = makeFile(baseDir, ds);
             String compressTSUID = parser.getReadTag() == Tags.PixelData
-                    && parser.getReadLength() != -1 ? compressionRules
+            && parser.getReadLength() != -1 ? compressionRules
                     .getTransferSyntaxFor(assoc, ds) : null;
-            String tsuid = compressTSUID != null ? compressTSUID : rq
-                    .getTransferSyntaxUID();
-			ds.setFileMetaInfo(objFact.newFileMetaInfo(
-					rqCmd.getAffectedSOPClassUID(),
-					rqCmd.getAffectedSOPInstanceUID(),
-                    tsuid ));
+                    String tsuid = compressTSUID != null ? compressTSUID : rq
+                            .getTransferSyntaxUID();
+                    ds.setFileMetaInfo(objFact.newFileMetaInfo(
+                            rqCmd.getAffectedSOPClassUID(),
+                            rqCmd.getAffectedSOPInstanceUID(),
+                            tsuid ));
 
-            byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
-            if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
-                log.info("Received Instance[uid=" + iuid
-                        + "] already exists - ignored");
-                deleteFailedStorage(file);
-                return;
-            }
+                    byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+                    if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
+                        log.info("Received Instance[uid=" + iuid
+                                + "] already exists - ignored");
+                        deleteFailedStorage(file);
+                        return;
+                    }
 
-            final int baseDirPathLength = baseDir.getPath().length();
-            final String filePath = file.getPath().substring(
-                    baseDirPathLength + 1).replace(File.separatorChar, '/');
-            ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
-            ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
-            ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-            Dataset coerced = null;
-    		try {
-    			Templates stylesheet = service.getCoercionTemplatesFor(callingAET, STORE_XSL);
-    			if (stylesheet != null)
-    			{
-    				coerced = XSLTUtils.coerce(ds, stylesheet,
-    						toXsltParam(assoc, new Date()));
-    			}
-    		} catch (Exception e) {
-    			log.warn("Coercion of attributes failed:", e);
-    		}
-    		String seriuid = ds.getString(Tags.SeriesInstanceUID);
-    		String prevseriud = (String) assoc.getProperty(SERIES_IUID);
-            Storage store = getStorage(assoc);
-            if (prevseriud != null && !prevseriud.equals(seriuid)){                
-                SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
-                if (seriesStored != null) {
-                    log.debug("Send SeriesStoredNotification - series changed");
-                    doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
-                    store.commitSeriesStored(seriesStored);
-                }
-            }
-            assoc.putProperty(SERIES_IUID, seriuid);
-            Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
-                    filePath, file, md5sum);
-            ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
-            if (coerced == null)
-            	coerced = coercedElements;
-            else
-            	coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
-            if (coerced.isEmpty()
-                    || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
-                rspCmd.putUS(Tags.Status, Status.Success);
-            } else {
-                int[] coercedTags = new int[coerced.size()];
-                Iterator it = coerced.iterator();
-                for (int i = 0; i < coercedTags.length; i++) {
-                    coercedTags[i] = ((DcmElement) it.next()).tag();
-                }
-                rspCmd.putAT(Tags.OffendingElement, coercedTags);
-                rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
-            }
+                    final int baseDirPathLength = baseDir.getPath().length();
+                    final String filePath = file.getPath().substring(
+                            baseDirPathLength + 1).replace(File.separatorChar, '/');
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                    ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
+                    ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
+                    ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
+                    Dataset coerced = null;
+                    try {
+                        Templates stylesheet = service.getCoercionTemplatesFor(callingAET, STORE_XSL);
+                        if (stylesheet != null)
+                        {
+                            coerced = XSLTUtils.coerce(ds, stylesheet,
+                                    toXsltParam(assoc, new Date()));
+                        }
+                    } catch (Exception e) {
+                        log.warn("Coercion of attributes failed:", e);
+                    }
+                    String seriuid = ds.getString(Tags.SeriesInstanceUID);
+                    String prevseriud = (String) assoc.getProperty(SERIES_IUID);
+                    Storage store = getStorage(assoc);
+                    if (prevseriud != null && !prevseriud.equals(seriuid)){                
+                        SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
+                        if (seriesStored != null) {
+                            log.debug("Send SeriesStoredNotification - series changed");
+                            doAfterSeriesIsStored(store, assoc.getSocket(), seriesStored);
+                            store.commitSeriesStored(seriesStored);
+                        }
+                    }
+                    assoc.putProperty(SERIES_IUID, seriuid);
+                    Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
+                            filePath, file, md5sum);
+                    ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
+                    if (coerced == null)
+                        coerced = coercedElements;
+                    else
+                        coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
+                    if (coerced.isEmpty()
+                            || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
+                        rspCmd.putUS(Tags.Status, Status.Success);
+                    } else {
+                        int[] coercedTags = new int[coerced.size()];
+                        Iterator it = coerced.iterator();
+                        for (int i = 0; i < coercedTags.length; i++) {
+                            coercedTags[i] = ((DcmElement) it.next()).tag();
+                        }
+                        rspCmd.putAT(Tags.OffendingElement, coercedTags);
+                        rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
+                    }
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -501,34 +501,34 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
         return item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
-                "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
+        "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
     }
 
     private MPPSManager getMPPSManager() throws CreateException,
-            RemoteException, HomeFactoryException {
+    RemoteException, HomeFactoryException {
         return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
     }
 
-	private Map toXsltParam(Association a, Date now) {
-		HashMap param = new HashMap();
-		param.put("calling", a.getCallingAET());
-		param.put("called", a.getCalledAET());
-		param.put("date", new DAFormat().format(now));
-		param.put("time", new TMFormat().format(now));
-		return null;
-	}
-    
-	private byte[] getByteBuffer(Association assoc) {
-		byte[] buf = (byte[]) assoc.getProperty(RECEIVE_BUFFER);
-		if (buf == null) {
-			buf = new byte[service.getBufferSize()];
-			assoc.putProperty(RECEIVE_BUFFER, buf);
-		}
-		return buf;
-	}
+    private Map toXsltParam(Association a, Date now) {
+        HashMap param = new HashMap();
+        param.put("calling", a.getCallingAET());
+        param.put("called", a.getCalledAET());
+        param.put("date", new DAFormat().format(now));
+        param.put("time", new TMFormat().format(now));
+        return null;
+    }
 
-	private boolean containsLocal(List duplicates) {
+    private byte[] getByteBuffer(Association assoc) {
+        byte[] buf = (byte[]) assoc.getProperty(RECEIVE_BUFFER);
+        if (buf == null) {
+            buf = new byte[service.getBufferSize()];
+            assoc.putProperty(RECEIVE_BUFFER, buf);
+        }
+        return buf;
+    }
+
+    private boolean containsLocal(List duplicates) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
             if (service.isLocalRetrieveAET(dto.getRetrieveAET()))
@@ -564,8 +564,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
             String filePath, File file, byte[] md5)
-            throws DcmServiceException, CreateException, HomeFactoryException,
-            IOException {
+    throws DcmServiceException, CreateException, HomeFactoryException,
+    IOException {
         int retry = 0;
         for (;;) {
             try {
@@ -581,14 +581,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "failed to update DB with entries for received "
-                                    + file, e);
+                            + file, e);
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB with entries for received " + file
-                                + " - retry", e);
+                        + " - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
@@ -599,7 +599,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     Storage getStorage(Association assoc) throws RemoteException, CreateException,
-            HomeFactoryException {
+    HomeFactoryException {
         Storage store = (Storage) assoc.getProperty(StorageHome.JNDI_NAME);
         if (store == null) {
             store = service.getStorage();
@@ -610,40 +610,40 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private File makeFile(File basedir, Dataset ds) throws IOException {
         Calendar date = Calendar.getInstance();
-		if (studyDateInFilePath) {
-			Date studyDate = ds.getDate(Tags.StudyDate, Tags.StudyTime);
-			if (studyDate != null)
-				date.setTime(studyDate);
-		}
-		StringBuffer filePath = new StringBuffer();
-		if (yearInFilePath) {
-			filePath.append(String.valueOf(date.get(Calendar.YEAR)));
-			filePath.append(File.separatorChar);
-		}
-		if (monthInFilePath) {
-			filePath.append(String.valueOf(date.get(Calendar.MONTH) + 1));
-			filePath.append(File.separatorChar);
-		}
-		if (dayInFilePath) {
-			filePath.append(String.valueOf(date.get(Calendar.DAY_OF_MONTH)));
-			filePath.append(File.separatorChar);
-		}
-		if (hourInFilePath) {
-			filePath.append(String.valueOf(date.get(Calendar.HOUR_OF_DAY)));
-			filePath.append(File.separatorChar);
-		}
-		filePath.append(toHex(ds.getString(Tags.StudyInstanceUID).hashCode()));
-		filePath.append(File.separatorChar);
-		filePath.append(toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
+        if (studyDateInFilePath) {
+            Date studyDate = ds.getDate(Tags.StudyDate, Tags.StudyTime);
+            if (studyDate != null)
+                date.setTime(studyDate);
+        }
+        StringBuffer filePath = new StringBuffer();
+        if (yearInFilePath) {
+            filePath.append(String.valueOf(date.get(Calendar.YEAR)));
+            filePath.append(File.separatorChar);
+        }
+        if (monthInFilePath) {
+            filePath.append(String.valueOf(date.get(Calendar.MONTH) + 1));
+            filePath.append(File.separatorChar);
+        }
+        if (dayInFilePath) {
+            filePath.append(String.valueOf(date.get(Calendar.DAY_OF_MONTH)));
+            filePath.append(File.separatorChar);
+        }
+        if (hourInFilePath) {
+            filePath.append(String.valueOf(date.get(Calendar.HOUR_OF_DAY)));
+            filePath.append(File.separatorChar);
+        }
+        filePath.append(toHex(ds.getString(Tags.StudyInstanceUID).hashCode()));
+        filePath.append(File.separatorChar);
+        filePath.append(toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
         File dir = new File(basedir, filePath.toString());
         if (!dir.exists()) {
             dir.mkdirs();
         }
-		return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
+        return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
     }
 
     private byte[] storeToFile(DcmParser parser, Dataset ds, File file, byte[] buffer)
-    		throws Exception {
+    throws Exception {
         log.info("M-WRITE file:" + file);
         MessageDigest md = null;
         BufferedOutputStream bos = null;
@@ -658,7 +658,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
             String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
-			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
+            DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
             CompressCmd compressCmd = null;
             if (!decParam.encapsulated && encParam.encapsulated) {
                 compressCmd = CompressCmd.createCompressCmd(ds, tsuid);
@@ -666,32 +666,32 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             ds.writeFile(bos, encParam);
             if (parser.getReadTag() == Tags.PixelData) {
-	            int len = parser.getReadLength();
-	            InputStream in = parser.getInputStream();
-	            if (encParam.encapsulated) {
-	                ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
-	                if (decParam.encapsulated) {
-	                    parser.parseHeader();
-	                    while (parser.getReadTag() == Tags.Item) {
-	                        len = parser.getReadLength();
-	                        ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
-	                        bos.copyFrom(in, len);
-	                        parser.parseHeader();
-	                    }
-	                } else {
-	                    int read = compressCmd.compress(decParam.byteOrder, parser
-	                            .getInputStream(), bos);
-	                    in.skip(parser.getReadLength() - read);
-	                }
-	                ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
-	                        VRs.NONE, 0);
-	            } else {
-	                ds.writeHeader(bos, encParam, Tags.PixelData, parser
-	                        .getReadVR(), len);
-	                bos.copyFrom(in, len);
-	            }
-	            parser.parseDataset(decParam, -1);
-	            ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
+                int len = parser.getReadLength();
+                InputStream in = parser.getInputStream();
+                if (encParam.encapsulated) {
+                    ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
+                    if (decParam.encapsulated) {
+                        parser.parseHeader();
+                        while (parser.getReadTag() == Tags.Item) {
+                            len = parser.getReadLength();
+                            ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
+                            bos.copyFrom(in, len);
+                            parser.parseHeader();
+                        }
+                    } else {
+                        int read = compressCmd.compress(decParam.byteOrder, parser
+                                .getInputStream(), bos);
+                        in.skip(parser.getReadLength() - read);
+                    }
+                    ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
+                            VRs.NONE, 0);
+                } else {
+                    ds.writeHeader(bos, encParam, Tags.PixelData, parser
+                            .getReadVR(), len);
+                    bos.copyFrom(in, len);
+                }
+                parser.parseDataset(decParam, -1);
+                ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
         } finally {
             // We don't want to ignore the IOException since in rare cases the close() may cause
@@ -703,69 +703,69 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void checkDataset(Association assoc, Command rqCmd, Dataset ds)
-            throws DcmServiceException {
+    throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
             if (ds.vm(TYPE1_ATTR[i]) <= 0) {
                 throw new DcmServiceException(
                         Status.DataSetDoesNotMatchSOPClassError,
                         "Missing Type 1 Attribute "
-                                + Tags.toString(TYPE1_ATTR[i]));
+                        + Tags.toString(TYPE1_ATTR[i]));
             }
         }
         if (!rqCmd.getAffectedSOPInstanceUID().equals(
                 ds.getString(Tags.SOPInstanceUID))) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-                    "SOP Instance UID in Dataset differs from Affected SOP Instance UID");
+            "SOP Instance UID in Dataset differs from Affected SOP Instance UID");
         }
         if (!rqCmd.getAffectedSOPClassUID().equals(
                 ds.getString(Tags.SOPClassUID))) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-                    "SOP Class UID in Dataset differs from Affected SOP Class UID");
+            "SOP Class UID in Dataset differs from Affected SOP Class UID");
         }
-		String pid = ds.getString(Tags.PatientID);
-		String pname = ds.getString(Tags.PatientName);
-		if (pid == null && !acceptMissingPatientID) {
+        String pid = ds.getString(Tags.PatientID);
+        String pname = ds.getString(Tags.PatientName);
+        if (pid == null && !acceptMissingPatientID) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-                    "Acceptance of objects without Patient ID is disabled");			
-		}
-		if (pname == null && !acceptMissingPatientName) {
+            "Acceptance of objects without Patient ID is disabled");			
+        }
+        if (pname == null && !acceptMissingPatientName) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-                    "Acceptance of objects without Patient Name is disabled");			
-		}
-		if (pid != null && (
+            "Acceptance of objects without Patient Name is disabled");			
+        }
+        if (pid != null && (
                 contains(ignorePatientIDCallingAETs, assoc.getCallingAET())
                 || !acceptPatientID.matcher(pid).matches()
                 || ignorePatientID.matcher(pid).matches())) {
-			log.info("Ignore Patient ID " + pid 
-					+ " for Patient Name " + pname
-					+ " in object received from " + assoc.getCallingAET());
-			pid = null;
-			ds.putLO(Tags.PatientID, pid);
-		}
-		if (pid == null && generatePatientID != null) {
-			if (generatePatientID != null) {
-				pid = generatePatientID(ds);
-				ds.putLO(Tags.PatientID, pid);
-				log.info("Add generated Patient ID " + pid 
-						+ " for Patient Name " + pname);
-			}
-		}
-		if (pid != null) {
-			String issuer = ds.getString(Tags.IssuerOfPatientID);
-			if (issuer == null) {
-				issuer = issuerOfPatientIDRules.issuerOf(pid);
-				if (issuer != null) {
-					ds.putLO(Tags.IssuerOfPatientID, issuer);
-					log.info("Add missing Issuer Of Patient ID " + issuer
-							+ " for Patient ID " + pid 
-							+ " and Patient Name " + pname);					
-				}
-			}
-		}		
+            log.info("Ignore Patient ID " + pid 
+                    + " for Patient Name " + pname
+                    + " in object received from " + assoc.getCallingAET());
+            pid = null;
+            ds.putLO(Tags.PatientID, pid);
+        }
+        if (pid == null && generatePatientID != null) {
+            if (generatePatientID != null) {
+                pid = generatePatientID(ds);
+                ds.putLO(Tags.PatientID, pid);
+                log.info("Add generated Patient ID " + pid 
+                        + " for Patient Name " + pname);
+            }
+        }
+        if (pid != null) {
+            String issuer = ds.getString(Tags.IssuerOfPatientID);
+            if (issuer == null) {
+                issuer = issuerOfPatientIDRules.issuerOf(pid);
+                if (issuer != null) {
+                    ds.putLO(Tags.IssuerOfPatientID, issuer);
+                    log.info("Add missing Issuer Of Patient ID " + issuer
+                            + " for Patient ID " + pid 
+                            + " and Patient Name " + pname);					
+                }
+            }
+        }		
     }
 
     private boolean contains(Object[] a, Object e) {
@@ -777,44 +777,44 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return false;
     }
 
-    
-    private String generatePatientID(Dataset ds) {
-    	if (generatePatientID.length == 1)
-    		return generatePatientID[0];
-    	
-    	int suidHash = ds.getString(Tags.StudyInstanceUID).hashCode();
-    	String pname = ds.getString(Tags.PatientName);
-    	// generate different Patient IDs for different studies
-    	// if no Patient Name
-    	int pnameHash = pname == null || pname.length() == 0 ? suidHash
-    			:  37 * ds.getString(Tags.PatientName).hashCode()
-    					+ ds.getString(Tags.PatientBirthDate, "").hashCode();
-    	
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < generatePatientID.length; i++) {
-			append(sb, generatePatientID[i], pnameHash, suidHash);
-		}
-		return sb.toString();
-	}
-	
-	private void append(StringBuffer sb, String s, int pnameHash, int suidHash) {
-		final int l = s.length();
-		if (l == 0)
-			return;
-		char c = s.charAt(0);
-		if (c != '#' && c != '$')
-		{
-			sb.append(s);
-			return;
-		}
-		String v = Long.toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
-		for (int i = v.length() - l; i < 0; i++)
-			sb.append('0');
-		sb.append(v);
-	}
 
-	private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    private String generatePatientID(Dataset ds) {
+        if (generatePatientID.length == 1)
+            return generatePatientID[0];
+
+        int suidHash = ds.getString(Tags.StudyInstanceUID).hashCode();
+        String pname = ds.getString(Tags.PatientName);
+        // generate different Patient IDs for different studies
+        // if no Patient Name
+        int pnameHash = pname == null || pname.length() == 0 ? suidHash
+                :  37 * ds.getString(Tags.PatientName).hashCode()
+                + ds.getString(Tags.PatientBirthDate, "").hashCode();
+
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < generatePatientID.length; i++) {
+            append(sb, generatePatientID[i], pnameHash, suidHash);
+        }
+        return sb.toString();
+    }
+
+    private void append(StringBuffer sb, String s, int pnameHash, int suidHash) {
+        final int l = s.length();
+        if (l == 0)
+            return;
+        char c = s.charAt(0);
+        if (c != '#' && c != '$')
+        {
+            sb.append(s);
+            return;
+        }
+        String v = Long.toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
+        for (int i = v.length() - l; i < 0; i++)
+            sb.append('0');
+        sb.append(v);
+    }
+
+    private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     private String toHex(int val) {
         char[] ch8 = new char[8];
@@ -861,58 +861,58 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
         }
         if ( service.isFreeDiskSpaceOnDemand() ) {
-        	service.callFreeDiskSpace();
+            service.callFreeDiskSpace();
         }
     }
 
-	/**
-	 * Finalize a stored series.
-	 * <p>
-	 * <dl>
-	 * <dd>1) update database</dd>
-	 * <dd>2) update study access time.</dd>
-	 * <dd>3) Create Audit log entries for instances stored</dd>
-	 * <dd>4) send SeriesStored JMX notification</dd>
-	 * </dl>
-	 * 
-	 * @param s	The Association socket or null if series is stored local (e.g. undelete)
-	 * @param seriesStored
-	 */
-	protected void doAfterSeriesIsStored(Storage store, Socket s,
+    /**
+     * Finalize a stored series.
+     * <p>
+     * <dl>
+     * <dd>1) update database</dd>
+     * <dd>2) update study access time.</dd>
+     * <dd>3) Create Audit log entries for instances stored</dd>
+     * <dd>4) send SeriesStored JMX notification</dd>
+     * </dl>
+     * 
+     * @param s	The Association socket or null if series is stored local (e.g. undelete)
+     * @param seriesStored
+     */
+    protected void doAfterSeriesIsStored(Storage store, Socket s,
             SeriesStored seriesStored) {
         Dataset ian = seriesStored.getIAN();       
         updateDBSeries(store, 
                 ian.getItem(Tags.RefSeriesSeq).getString(Tags.SeriesInstanceUID));
         updateDBStudy(store, ian.getString(Tags.StudyInstanceUID));
-		service.logInstancesStored(s, seriesStored);
-		service.sendJMXNotification(seriesStored);
-	}
-	
+        service.logInstancesStored(s, seriesStored);
+        service.sendJMXNotification(seriesStored);
+    }
+
     private void updateDBStudy(Storage store, final String suid) {
         int retry = 0;
         for (;;) {
             try {
-				if (serializeDBUpdate) {
-	                synchronized (store) {
-	                    store.updateStudy(suid);
-	                }
-				} else {
+                if (serializeDBUpdate) {
+                    synchronized (store) {
+                        store.updateStudy(suid);
+                    }
+                } else {
                     store.updateStudy(suid);					
-				}
+                }
                 return;
             } catch (Exception e) {
                 ++retry;
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "give up update DB Study Record [iuid=" + suid
-                                    + "]:", e);
+                            + "]:", e);
                     ;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB Study Record [iuid=" + suid
-                                + "] - retry:", e);
+                        + "] - retry:", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
@@ -926,26 +926,26 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         int retry = 0;
         for (;;) {
             try {
-				if (serializeDBUpdate) {
-	                synchronized (store) {
-	                    store.updateSeries(seriuid);
-	                }
-				} else {
+                if (serializeDBUpdate) {
+                    synchronized (store) {
+                        store.updateSeries(seriuid);
+                    }
+                } else {
                     store.updateSeries(seriuid);					
-				}
+                }
                 return;
             } catch (Exception e) {
                 ++retry;
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "give up update DB Series Record [iuid=" + seriuid
-                                    + "]:", e);
+                            + "]:", e);
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB Series Record [iuid=" + seriuid
-                                + "] - retry", e);
+                        + "] - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
