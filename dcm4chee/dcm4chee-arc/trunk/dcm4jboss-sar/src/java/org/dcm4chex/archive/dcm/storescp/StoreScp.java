@@ -130,7 +130,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private Pattern ignorePatientID;
     private String[] generatePatientID = null;
     private IssuerOfPatientIDRules issuerOfPatientIDRules = 
-        new IssuerOfPatientIDRules("PACS-:TIANI");
+        new IssuerOfPatientIDRules("PACS-:DCM4CHEE");
 
     private boolean serializeDBUpdate = false;
     private int updateDatabaseMaxRetries = 2;
@@ -807,14 +807,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (l == 0)
             return;
         char c = s.charAt(0);
-        if (c != '#' && c != '$')
-        {
+        if (c != '#' && c != '$') {
             sb.append(s);
             return;
         }
         String v = Long.toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
-        for (int i = v.length() - l; i < 0; i++)
+        for (int i = v.length() - l; i < 0; i++) {
             sb.append('0');
+        }
         sb.append(v);
     }
 
