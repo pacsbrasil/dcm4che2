@@ -11,7 +11,35 @@
     <module>dcm4chee-arr-ear</module>
   </modules>
   <properties>
+    <!-- Hypersonic SQL -->
     <db>hsql</db>
+    <dialect>org.hibernate.dialect.HSQLDialect</dialect>
+    
+    <!-- MySQL
+    <db>mysql</db>
+    <dialect>org.hibernate.dialect.MySQLDialect</dialect>
+    -->
+    
+    <!-- Oracle 
+    <db>oracle</db>
+    <dialect>org.hibernate.dialect.OracleDialect</dialect>
+    -->
+    
+    <!-- PostgreSQL
+    <db>psql</db>
+    <dialect>org.hibernate.dialect.ostgreSQLDialect</dialect>
+    -->
+    
+    <!-- MS SQL server 2000/2005 
+    <db>mssql</db>
+    <dialect>org.hibernate.dialect.SQLServerDialect</dialect>
+    -->
+    
+    <!-- DB2
+    <db>db2</db>
+    <dialect>org.hibernate.dialect.DB2Dialect</dialect>
+    -->
+    
   </properties>
   <repositories>
     <repository>
@@ -24,6 +52,16 @@
       <name>jboss Repository</name>
       <url>http://repository.jboss.com/maven2</url>
     </repository>
+    <repository>
+      <id>codehause.maven.snapshots</id>
+      <url>http://snapshots.maven.codehaus.org/maven2/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>    
+    </repository>  
   </repositories>
   <distributionManagement>
     <repository>
