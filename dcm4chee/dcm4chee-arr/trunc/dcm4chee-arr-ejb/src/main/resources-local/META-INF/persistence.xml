@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is for export database schema only -->
+<persistence>
+	<persistence-unit name="dcm4chee-arr" transaction-type="RESOURCE_LOCAL">
+		<properties>
+			<property name="hibernate.dialect" value="@dialect@"/>			
+			<property name="hibernate.hbm2ddl.auto" value="off" />
+		</properties>
+	</persistence-unit>
+</persistence>
