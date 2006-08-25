@@ -55,7 +55,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -80,7 +79,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  */
 
 public abstract class MPPSEmulatorBean implements SessionBean {
-    private static Logger log = Logger.getLogger(MPPSEmulatorBean.class);
 
     private static final int[] PATIENT_TAGS = { Tags.SpecificCharacterSet,
             Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
@@ -197,9 +195,17 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             final Dataset studyAttrs = study.getAttributes(false);
             mpps.putAll(patAttrs.subSet(PATIENT_TAGS));
             mpps.putAll(studyAttrs.subSet(STUDY_TAGS));
-            Dataset ssa = mpps.putSQ(Tags.ScheduledStepAttributesSeq)
-                    .addNewItem();
-            ssa.putAll(studyAttrs.subSet(STUDY_SSA_TAGS));
+            DcmElement rqaSq = seriesAttrs.get(Tags.RequestAttributesSeq);
+            int rqaSqSize = rqaSq != null ? rqaSq.countItems() : 0;
+            DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
+            for (int i = 0, n = Math.max(1,rqaSqSize); i < n; i++) {
+                Dataset ssa = ssaSq.addNewItem();
+                ssa.putAll(studyAttrs.subSet(STUDY_SSA_TAGS));
+                if (i < rqaSqSize) {
+                    ssa.putAll(rqaSq.getItem(i));
+                }
+            }
+            
             mpps.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
             mpps.putUI(Tags.SOPClassUID, UIDs.ModalityPerformedProcedureStep);
             mpps.putAE(Tags.PerformedStationAET, sourceAET);

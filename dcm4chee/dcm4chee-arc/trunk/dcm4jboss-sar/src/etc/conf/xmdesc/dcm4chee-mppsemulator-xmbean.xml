@@ -24,12 +24,16 @@
         For each AE title you must also specify a minimum delay time between 
         the time of the first object of a series is received and the generation
         of the MPPS message, concerning all images received in series of the
-        same study at this moment. You also have to specify if the Study
-        Instance UID or the Accession Number in the received objects is used
-        to query matching modality worklist entries. 
-        <br>Format: <i>aeTitle</i>[<i>delay</i>]->MWL[StudyInstanceUID]
-        <br>     or <i>aeTitle</i>[<i>delay</i>]->MWL[AccessionNumber]
-        <br><i>delay</i> can be specified in seconds (##s) or minutes (##m).
+        same study at this moment.<br/>
+        Optionally, lookup up for matching modality worklist entries can be 
+        configured. Study Instance UID, Accession Number or the Scheduled
+        Procedure Step ID in the Request Attributes Sequence of received
+        objects can be configured to be used as matching key. 
+        <br/>Format: <i>aeTitle</i>[<i>delay</i>]
+        <br/>or <i>aeTitle</i>[<i>delay</i>]->MWL[StudyInstanceUID]
+        <br/>or <i>aeTitle</i>[<i>delay</i>]->MWL[AccessionNumber]
+        <br/>or <i>aeTitle</i>[<i>delay</i>]->MWL[SPSID]
+        <br/><i>delay</i> can be specified in seconds (##s) or minutes (##m).
         <br>Sample: MOD_WO_MPPS[3m]->MWL[StudyInstanceUID]]]></description>
       <name>EmulateMPPSforModalities</name>
       <type>java.lang.String</type>
