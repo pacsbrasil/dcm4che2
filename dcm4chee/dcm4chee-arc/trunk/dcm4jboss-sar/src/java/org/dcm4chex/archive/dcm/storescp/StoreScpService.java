@@ -46,7 +46,6 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
 import javax.management.JMException;
@@ -87,6 +86,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class StoreScpService extends AbstractScpService {
 
     private final TimerSupport timer = new TimerSupport(this);
+
     private final NotificationListener checkPendingSeriesStoredListener = 
         new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -98,65 +98,88 @@ public class StoreScpService extends AbstractScpService {
             }
         }
     };
-    
+
     private Integer listenerID;
     private long checkPendingSeriesStoredInterval;
-    private long pendingSeriesStoredTimeout;    
-    
-    /** Map containing accepted Image SOP Class UID.
-     * key is name (as in config string), value is real uid) */
+    private long pendingSeriesStoredTimeout;
+
+    /**
+     * Map containing accepted Image SOP Class UID. key is name (as in config
+     * string), value is real uid)
+     */
     private Map imageCUIDS = new LinkedHashMap();
 
-    /** Map containing accepted Image Transfer Syntax UIDs.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted Image Transfer Syntax UIDs. key is name (as in
+     * config string), value is real uid)
+     */
     private Map imageTSUIDS = new LinkedHashMap();
-    
-    /** Map containing accepted Waveform SOP Class UID.
-     * key is name (as in config string), value is real uid) */
+
+    /**
+     * Map containing accepted Waveform SOP Class UID. key is name (as in config
+     * string), value is real uid)
+     */
     private Map waveformCUIDS = new LinkedHashMap();
 
-    /** Map containing accepted Waveform Transfer Syntax UIDs.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted Waveform Transfer Syntax UIDs. key is name (as in
+     * config string), value is real uid)
+     */
     private Map waveformTSUIDS = new LinkedHashMap();
 
-    /** Map containing accepted Video SOP Class UID.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted Video SOP Class UID. key is name (as in config
+     * string), value is real uid)
+     */
     private Map videoCUIDS = new LinkedHashMap();
 
-    /** Map containing accepted Video Transfer Syntax UIDs.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted Video Transfer Syntax UIDs. key is name (as in
+     * config string), value is real uid)
+     */
     private Map videoTSUIDS = new LinkedHashMap();
 
-    /** Map containing accepted SR SOP Class UID.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted SR SOP Class UID. key is name (as in config
+     * string), value is real uid)
+     */
     private Map srCUIDS = new LinkedHashMap();
 
-    /** Map containing accepted SR Transfer Syntax UIDs.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted SR Transfer Syntax UIDs. key is name (as in
+     * config string), value is real uid)
+     */
     private Map srTSUIDS = new LinkedHashMap();
 
-    /** Map containing accepted other SOP Class UIDs.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted other SOP Class UIDs. key is name (as in config
+     * string), value is real uid)
+     */
     private Map otherCUIDS = new LinkedHashMap();
 
-    
     private ObjectName fileSystemMgtName;
 
     private int bufferSize = 8192;
+
     private boolean md5sum = true;
-    
+
     private StoreScp scp = new StoreScp(this);
 
     public final String getCheckPendingSeriesStoredInterval() {
-        return RetryIntervalls.formatIntervalZeroAsNever(checkPendingSeriesStoredInterval);
+        return RetryIntervalls
+                .formatIntervalZeroAsNever(checkPendingSeriesStoredInterval);
     }
 
     public void setCheckPendingSeriesStoredInterval(String interval) {
         long oldInterval = checkPendingSeriesStoredInterval;
-        checkPendingSeriesStoredInterval = RetryIntervalls.parseIntervalOrNever(interval);
-        if (getState() == STARTED && oldInterval != checkPendingSeriesStoredInterval) {
-            timer.stopScheduler("CheckPendingSeriesStored", listenerID, checkPendingSeriesStoredListener);
-            listenerID = timer.startScheduler("CheckPendingSeriesStored", checkPendingSeriesStoredInterval,
+        checkPendingSeriesStoredInterval = RetryIntervalls
+                .parseIntervalOrNever(interval);
+        if (getState() == STARTED
+                && oldInterval != checkPendingSeriesStoredInterval) {
+            timer.stopScheduler("CheckPendingSeriesStored", listenerID,
+                    checkPendingSeriesStoredListener);
+            listenerID = timer.startScheduler("CheckPendingSeriesStored",
+                    checkPendingSeriesStoredInterval,
                     checkPendingSeriesStoredListener);
         }
     }
@@ -166,106 +189,105 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public void setPendingSeriesStoredTimeout(String interval) {
-        pendingSeriesStoredTimeout = RetryIntervalls.parseIntervalOrNever(interval);
+        pendingSeriesStoredTimeout = RetryIntervalls
+                .parseIntervalOrNever(interval);
     }
-    
-    public final boolean isMd5sum()
-    {
+
+    public final boolean isMd5sum() {
         return md5sum;
     }
 
-    public final void setMd5sum(boolean md5sum)
-    {
+    public final void setMd5sum(boolean md5sum) {
         this.md5sum = md5sum;
     }
 
     public final int getBufferSize() {
-        return bufferSize ;
+        return bufferSize;
     }
 
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-        
-    public final boolean isStudyDateInFilePath() {
-		return scp.isStudyDateInFilePath();
-	}
 
-	public final void setStudyDateInFilePath(boolean enable) {
-		scp.setStudyDateInFilePath(enable);
-	}
+    public final boolean isStudyDateInFilePath() {
+        return scp.isStudyDateInFilePath();
+    }
+
+    public final void setStudyDateInFilePath(boolean enable) {
+        scp.setStudyDateInFilePath(enable);
+    }
 
     public final boolean isYearInFilePath() {
-		return scp.isYearInFilePath();
-	}
+        return scp.isYearInFilePath();
+    }
 
-	public final void setYearInFilePath(boolean enable) {
-		scp.setYearInFilePath(enable);
-	}
+    public final void setYearInFilePath(boolean enable) {
+        scp.setYearInFilePath(enable);
+    }
 
     public final boolean isMonthInFilePath() {
-		return scp.isMonthInFilePath();
-	}
+        return scp.isMonthInFilePath();
+    }
 
-	public final void setMonthInFilePath(boolean enable) {
-		scp.setMonthInFilePath(enable);
-	}
+    public final void setMonthInFilePath(boolean enable) {
+        scp.setMonthInFilePath(enable);
+    }
 
     public final boolean isDayInFilePath() {
-		return scp.isDayInFilePath();
-	}
+        return scp.isDayInFilePath();
+    }
 
-	public final void setDayInFilePath(boolean enable) {
-		scp.setDayInFilePath(enable);
-	}
+    public final void setDayInFilePath(boolean enable) {
+        scp.setDayInFilePath(enable);
+    }
 
     public final boolean isHourInFilePath() {
-		return scp.isHourInFilePath();
-	}
+        return scp.isHourInFilePath();
+    }
 
-	public final void setHourInFilePath(boolean enable) {
-		scp.setHourInFilePath(enable);
-	}
+    public final void setHourInFilePath(boolean enable) {
+        scp.setHourInFilePath(enable);
+    }
 
     public final boolean isAcceptMissingPatientID() {
-		return scp.isAcceptMissingPatientID();
-	}
+        return scp.isAcceptMissingPatientID();
+    }
 
-	public final void setAcceptMissingPatientID(boolean accept) {
-		scp.setAcceptMissingPatientID(accept);
-	}
+    public final void setAcceptMissingPatientID(boolean accept) {
+        scp.setAcceptMissingPatientID(accept);
+    }
 
     public final boolean isAcceptMissingPatientName() {
-		return scp.isAcceptMissingPatientName();
-	}
+        return scp.isAcceptMissingPatientName();
+    }
 
-	public final void setAcceptMissingPatientName(boolean accept) {
-		scp.setAcceptMissingPatientName(accept);
-	}
+    public final void setAcceptMissingPatientName(boolean accept) {
+        scp.setAcceptMissingPatientName(accept);
+    }
 
     public final boolean isSerializeDBUpdate() {
-		return scp.isSerializeDBUpdate();
-	}
+        return scp.isSerializeDBUpdate();
+    }
 
-	public final void setSerializeDBUpdate(boolean serialize) {
-		scp.setSerializeDBUpdate(serialize);
-	}
+    public final void setSerializeDBUpdate(boolean serialize) {
+        scp.setSerializeDBUpdate(serialize);
+    }
 
     public final String getGeneratePatientID() {
-		return scp.getGeneratePatientID();
-	}
+        return scp.getGeneratePatientID();
+    }
 
-	public final void setGeneratePatientID(String pattern) {
-		scp.setGeneratePatientID(pattern);
-	}
+    public final void setGeneratePatientID(String pattern) {
+        scp.setGeneratePatientID(pattern);
+    }
 
-	public final String getIssuerOfPatientIDRules() {
-		return scp.getIssuerOfPatientIDRules();
-	}
+    public final String getIssuerOfPatientIDRules() {
+        return scp.getIssuerOfPatientIDRules();
+    }
 
-	public final void setIssuerOfPatientIDRules(String rules) {
-		scp.setIssuerOfPatientIDRules(rules);
-	}
+    public final void setIssuerOfPatientIDRules(String rules) {
+        scp.setIssuerOfPatientIDRules(rules);
+    }
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -274,7 +296,7 @@ public class StoreScpService extends AbstractScpService {
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
-    
+
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -290,24 +312,24 @@ public class StoreScpService extends AbstractScpService {
     public final void setAcceptPatientID(String acceptPatientID) {
         scp.setAcceptPatientID(acceptPatientID);
     }
-    
+
     public final String getIgnorePatientID() {
         return scp.getIgnorePatientID();
     }
 
     public final void setIgnorePatientID(String ignorePatientID) {
-        scp.setIgnorePatientID(ignorePatientID);;
+        scp.setIgnorePatientID(ignorePatientID);
     }
-    
+
     public final String getIgnorePatientIDCallingAETs() {
         return scp.getIgnorePatientIDCallingAETs();
-	}
+    }
 
-	public final void setIgnorePatientIDCallingAETs(String aets) {
+    public final void setIgnorePatientIDCallingAETs(String aets) {
         scp.setIgnorePatientIDCallingAETs(aets);
-	}
+    }
 
-	public String getCoerceWarnCallingAETs() {
+    public String getCoerceWarnCallingAETs() {
         return scp.getCoerceWarnCallingAETs();
     }
 
@@ -318,7 +340,7 @@ public class StoreScpService extends AbstractScpService {
     public boolean isStoreDuplicateIfDiffHost() {
         return scp.isStoreDuplicateIfDiffHost();
     }
-    
+
     public void setStoreDuplicateIfDiffHost(boolean storeDuplicate) {
         scp.setStoreDuplicateIfDiffHost(storeDuplicate);
     }
@@ -326,11 +348,11 @@ public class StoreScpService extends AbstractScpService {
     public boolean isStoreDuplicateIfDiffMD5() {
         return scp.isStoreDuplicateIfDiffMD5();
     }
-    
+
     public void setStoreDuplicateIfDiffMD5(boolean storeDuplicate) {
         scp.setStoreDuplicateIfDiffMD5(storeDuplicate);
     }
-    
+
     public final String getCompressionRules() {
         return scp.getCompressionRules().toString();
     }
@@ -354,27 +376,27 @@ public class StoreScpService extends AbstractScpService {
     public final void resetMaxCountUpdateDatabaseRetries() {
         scp.setMaxCountUpdateDatabaseRetries(0);
     }
-    
+
     public final long getUpdateDatabaseRetryInterval() {
         return scp.getUpdateDatabaseRetryInterval();
     }
-    
+
     public final void setUpdateDatabaseRetryInterval(long interval) {
         scp.setUpdateDatabaseRetryInterval(interval);
     }
-    
+
     public String getAcceptedImageSOPClasses() {
-    	return toString(imageCUIDS);
+        return toString(imageCUIDS);
     }
- 
-	public void setAcceptedImageSOPClasses( String s ) {
+
+    public void setAcceptedImageSOPClasses(String s) {
         updateAcceptedSOPClass(imageCUIDS, s, scp);
     }
 
     public String getAcceptedTransferSyntaxForImageSOPClasses() {
         return toString(imageTSUIDS);
     }
- 
+
     public void setAcceptedTransferSyntaxForImageSOPClasses(String s) {
         updateAcceptedTransferSyntax(imageTSUIDS, s);
     }
@@ -382,39 +404,39 @@ public class StoreScpService extends AbstractScpService {
     public String getAcceptedVideoSOPClasses() {
         return toString(videoCUIDS);
     }
- 
-    public void setAcceptedVideoSOPClasses( String s ) {
+
+    public void setAcceptedVideoSOPClasses(String s) {
         updateAcceptedSOPClass(videoCUIDS, s, scp);
     }
 
     public String getAcceptedTransferSyntaxForVideoSOPClasses() {
         return toString(videoTSUIDS);
     }
- 
-    public void setAcceptedTransferSyntaxForVideoSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForVideoSOPClasses(String s) {
         updateAcceptedTransferSyntax(videoTSUIDS, s);
     }
 
     public String getAcceptedSRSOPClasses() {
         return toString(srCUIDS);
     }
- 
-    public void setAcceptedSRSOPClasses( String s ) {
+
+    public void setAcceptedSRSOPClasses(String s) {
         updateAcceptedSOPClass(srCUIDS, s, scp);
     }
 
     public String getAcceptedTransferSyntaxForSRSOPClasses() {
         return toString(srTSUIDS);
     }
- 
-    public void setAcceptedTransferSyntaxForSRSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForSRSOPClasses(String s) {
         updateAcceptedTransferSyntax(srTSUIDS, s);
     }
 
     public String getAcceptedWaveformSOPClasses() {
         return toString(waveformCUIDS);
     }
- 
+
     public void setAcceptedWaveformSOPClasses(String s) {
         updateAcceptedSOPClass(waveformCUIDS, s, scp);
     }
@@ -422,8 +444,8 @@ public class StoreScpService extends AbstractScpService {
     public String getAcceptedTransferSyntaxForWaveformSOPClasses() {
         return toString(waveformTSUIDS);
     }
- 
-    public void setAcceptedTransferSyntaxForWaveformSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForWaveformSOPClasses(String s) {
         updateAcceptedTransferSyntax(waveformTSUIDS, s);
     }
 
@@ -435,39 +457,42 @@ public class StoreScpService extends AbstractScpService {
         updateAcceptedSOPClass(otherCUIDS, s, scp);
     }
 
-
     protected String[] getCUIDs() {
         return valuesToStringArray(otherCUIDS);
     }
-    
-	/**
-	 * @return Returns the checkIncorrectWorklistEntry.
-	 */
-	public boolean isCheckIncorrectWorklistEntry() {
-		return scp.isCheckIncorrectWorklistEntry();
-	}
-	/**
-	 * Enable/disable check if an MPPS with Discontinued reason 'Incorrect worklist selected' is referenced.
-	 * 
-	 * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
-	 */
-	public void setCheckIncorrectWorklistEntry(boolean check) {
-		scp.setCheckIncorrectWorklistEntry(check);
-	}
-	
-	protected void startService() throws Exception {
+
+    /**
+     * @return Returns the checkIncorrectWorklistEntry.
+     */
+    public boolean isCheckIncorrectWorklistEntry() {
+        return scp.isCheckIncorrectWorklistEntry();
+    }
+
+    /**
+     * Enable/disable check if an MPPS with Discontinued reason 'Incorrect
+     * worklist selected' is referenced.
+     * 
+     * @param checkIncorrectWorklistEntry
+     *            The checkIncorrectWorklistEntry to set.
+     */
+    public void setCheckIncorrectWorklistEntry(boolean check) {
+        scp.setCheckIncorrectWorklistEntry(check);
+    }
+
+    protected void startService() throws Exception {
         super.startService();
         timer.init();
-        listenerID = timer.startScheduler("CheckPendingSeriesStored", 
-                checkPendingSeriesStoredInterval, checkPendingSeriesStoredListener);
+        listenerID = timer.startScheduler("CheckPendingSeriesStored",
+                checkPendingSeriesStoredInterval,
+                checkPendingSeriesStoredListener);
     }
 
     protected void stopService() throws Exception {
         timer.stopScheduler("CheckPendingSeriesStored", listenerID,
                 checkPendingSeriesStoredListener);
-        super.stopService();        
+        super.stopService();
     }
-    
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         bindAll(valuesToStringArray(imageCUIDS), scp);
         bindAll(valuesToStringArray(videoCUIDS), scp);
@@ -501,106 +526,112 @@ public class StoreScpService extends AbstractScpService {
 
     public FileSystemDTO selectStorageFileSystem() throws DcmServiceException {
         try {
-            FileSystemDTO fsDTO = (FileSystemDTO) server.invoke(fileSystemMgtName,
-                    "selectStorageFileSystem", null, null);
+            FileSystemDTO fsDTO = (FileSystemDTO) server.invoke(
+                    fileSystemMgtName, "selectStorageFileSystem", null, null);
             if (fsDTO == null)
-                throw new DcmServiceException(Status.OutOfResources);                            
+                throw new DcmServiceException(Status.OutOfResources);
             return fsDTO;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
-    
+
     boolean isLocalRetrieveAET(String aet) {
         try {
             return aet.equals(server.getAttribute(fileSystemMgtName,
                     "RetrieveAETitle"));
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke getAttribute 'RetrieveAETitle'", e);
+            throw new RuntimeException(
+                    "Failed to invoke getAttribute 'RetrieveAETitle'", e);
         }
     }
-    
-	boolean isFreeDiskSpaceOnDemand() {
+
+    boolean isFreeDiskSpaceOnDemand() {
         try {
             Boolean b = (Boolean) server.getAttribute(fileSystemMgtName,
                     "FreeDiskSpaceOnDemand");
             return b.booleanValue();
         } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke getAttribute 'FreeDiskSpaceOnDemand'", e);
+            throw new RuntimeException(
+                    "Failed to invoke getAttribute 'FreeDiskSpaceOnDemand'", e);
         }
-	}
-	
-	void callFreeDiskSpace() {
+    }
+
+    void callFreeDiskSpace() {
         try {
-            server.invoke(fileSystemMgtName,
-                    "freeDiskSpace",
-                    null,
-                    null);
+            server.invoke(fileSystemMgtName, "freeDiskSpace", null, null);
         } catch (JMException e) {
             throw new RuntimeException("Failed to invoke freeDiskSpace", e);
         }
-		
-	}
 
-	void sendJMXNotification(Object o) {
+    }
+
+    void sendJMXNotification(Object o) {
         long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(o.getClass().getName(), this, eventID);
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
         notif.setUserData(o);
         super.sendNotification(notif);
-	}
+    }
 
-	void logInstancesStored(Socket s, SeriesStored seriesStored) {
-        if (auditLogName == null) return;
-	    final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+    void logInstancesStored(Socket s, SeriesStored seriesStored) {
+        if (auditLogName == null)
+            return;
+        final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
         Dataset ian = seriesStored.getIAN();
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
-        String ppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID) : null;
-	    InstancesAction action = alf.newInstancesAction("Create", 
-				ian.getString(Tags.StudyInstanceUID),
-	            alf.newPatient(
-						seriesStored.getPatientID(),
-						seriesStored.getPatientName()));
-        action.setMPPSInstanceUID(ppsiuid );
-	    action.setAccessionNumber(seriesStored.getAccessionNumber());
-		DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
-		int n = sq.countItems();
-		for (int i = 0; i < n; i++) {
-			action.addSOPClassUID(sq.getItem(i).getString(Tags.RefSOPClassUID));
-		}
-		action.setNumberOfInstances(n);
-	    RemoteNode remoteNode;
-	    if (s != null) {
-	    	remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
-	    } else {
-	    	try {
-				InetAddress iAddr = InetAddress.getLocalHost();
-				remoteNode = alf.newRemoteNode(iAddr.getHostAddress(), iAddr.getHostName(), "LOCAL");
-	    	} catch ( UnknownHostException x ) {
-	    		remoteNode = alf.newRemoteNode("127.0.0.1", "localhost", "LOCAL");
-			}
-	    }
+        String ppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID)
+                : null;
+        InstancesAction action = alf.newInstancesAction("Create", ian
+                .getString(Tags.StudyInstanceUID), alf.newPatient(seriesStored
+                .getPatientID(), seriesStored.getPatientName()));
+        action.setMPPSInstanceUID(ppsiuid);
+        action.setAccessionNumber(seriesStored.getAccessionNumber());
+        DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
+        int n = sq.countItems();
+        for (int i = 0; i < n; i++) {
+            action.addSOPClassUID(sq.getItem(i).getString(Tags.RefSOPClassUID));
+        }
+        action.setNumberOfInstances(n);
+        RemoteNode remoteNode;
+        if (s != null) {
+            remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
+        } else {
+            try {
+                InetAddress iAddr = InetAddress.getLocalHost();
+                remoteNode = alf.newRemoteNode(iAddr.getHostAddress(), iAddr
+                        .getHostName(), "LOCAL");
+            } catch (UnknownHostException x) {
+                remoteNode = alf.newRemoteNode("127.0.0.1", "localhost",
+                        "LOCAL");
+            }
+        }
         try {
-            server.invoke(auditLogName,
-                    "logInstancesStored",
-                    new Object[] { remoteNode, action},
-                    new String[] { RemoteNode.class.getName(), 
-                    	InstancesAction.class.getName()});
+            server.invoke(auditLogName, "logInstancesStored", new Object[] {
+                    remoteNode, action },
+                    new String[] { RemoteNode.class.getName(),
+                            InstancesAction.class.getName() });
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
-        }		
-	}
+        }
+    }
+
     /**
      * Imports a DICOM file.
      * <p>
-     * The FileDTO object refers to an existing DICOM file (This method does NOT check this file!) and the
-     * Dataset object holds the meta data for database.
+     * The FileDTO object refers to an existing DICOM file (This method does NOT
+     * check this file!) and the Dataset object holds the meta data for
+     * database.
      * <p>
      * 
-     * @param fileDTO			Refers the DICOM file.
-     * @param ds				Dataset with metadata for database.
-     * @param last		        last file to import
+     * @param fileDTO
+     *            Refers the DICOM file.
+     * @param ds
+     *            Dataset with metadata for database.
+     * @param last
+     *            last file to import
      */
-	public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
+    public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
         Storage store = getStorage();
         String seriud = ds.getString(Tags.SeriesInstanceUID);
@@ -612,28 +643,29 @@ public class StoreScpService extends AbstractScpService {
                 store.commitSeriesStored(seriesStored);
             }
         }
-		String cuid = ds.getString(Tags.SOPClassUID);
-		String iuid = ds.getString(Tags.SOPInstanceUID);
-		FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,iuid,fileDTO.getFileTsuid());
-		ds.setFileMetaInfo(fmi);
-		String fsPath = fileDTO.getDirectoryPath();
+        String cuid = ds.getString(Tags.SOPClassUID);
+        String iuid = ds.getString(Tags.SOPInstanceUID);
+        FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,
+                iuid, fileDTO.getFileTsuid());
+        ds.setFileMetaInfo(fmi);
+        String fsPath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         File f = FileUtils.toFile(fsPath, filePath);
-		scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f,
-                fileDTO.getFileMd5() );
-		if (last) {
+        scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f, fileDTO
+                .getFileMd5());
+        if (last) {
             SeriesStored seriesStored = store.makeSeriesStored(seriud);
             if (seriesStored != null) {
                 scp.doAfterSeriesIsStored(store, null, seriesStored);
                 store.commitSeriesStored(seriesStored);
             }
- 		}
-	}
+        }
+    }
 
     private void checkPendingSeriesStored() throws Exception {
-        Storage store = getStorage(); 
-        SeriesStored[] seriesStored = 
-            store.checkSeriesStored(pendingSeriesStoredTimeout);
+        Storage store = getStorage();
+        SeriesStored[] seriesStored = store
+                .checkSeriesStored(pendingSeriesStoredTimeout);
         for (int i = 0; i < seriesStored.length; i++) {
             log.info("Detect pending " + seriesStored[i]);
             scp.doAfterSeriesIsStored(store, null, seriesStored[i]);
