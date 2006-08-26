@@ -53,22 +53,18 @@ import org.dcm4chex.archive.common.SPSStatus;
  * @since 10.02.2004
  */
 public class MWLQueryCmd extends BaseReadCmd {
-
-
+    
     public static int transactionIsolationLevel = 0;
-
-    private static final String[] FROM = { "Patient", "MWLItem"};
-
+    private static final String ANY_STATI = "ANY";
+    private static final int[] OPEN_STATI = { SPSStatus.SCHEDULED,
+            SPSStatus.ARRIVED };
+    private static final String[] FROM = { "Patient", "MWLItem" };
     private static final String[] SELECT = { "Patient.encodedAttributes",
-            "MWLItem.encodedAttributes"};
-
+            "MWLItem.encodedAttributes" };
     private static final String[] RELATIONS = { "Patient.pk",
-    		"MWLItem.patient_fk"};
-
-    private static final int[] OPEN_STATI = new int[] { SPSStatus.SCHEDULED, SPSStatus.ARRIVED };
+            "MWLItem.patient_fk" };
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
-
     private final Dataset keys;
 
     /**
@@ -109,14 +105,12 @@ public class MWLQueryCmd extends BaseReadCmd {
                     "MWLItem.performingPhysicianPhoneticName"},
                     spsItem.getString(Tags.PerformingPhysicianName));
         }
-    	if (status != null) {
-            sqlBuilder.addIntValueMatch(null, "MWLItem.spsStatusAsInt",
-                    SqlBuilder.TYPE1,
-                    SPSStatus.toInt(status));
-    	} else {
-    		sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
-                    SqlBuilder.TYPE1,
-                    OPEN_STATI );
+    	if (status == null) {
+    	    sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
+    	            SqlBuilder.TYPE1, OPEN_STATI );
+    	} else if (!ANY_STATI.equals(status)){
+    	    sqlBuilder.addIntValueMatch(null, "MWLItem.spsStatusAsInt",
+    	            SqlBuilder.TYPE1, SPSStatus.toInt(status));
     	}
         sqlBuilder.addSingleValueMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,
