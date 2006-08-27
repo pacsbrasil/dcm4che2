@@ -19,8 +19,14 @@
   </xsl:template>
   <!-- PV1 -->
   <xsl:template match="PV1">
+    <!-- HL7:Assigned Patient Location.1 -> DICOM:Requesting Service -->
+    <xsl:call-template name="attr">
+      <xsl:with-param name="tag" select="'00321033'"/>
+      <xsl:with-param name="vr" select="'LO'"/>
+      <xsl:with-param name="val" select="substring(field[3]/text(),1,64)"/>
+    </xsl:call-template>
     <!-- HL7:Referring Doctor -> DICOM:Referring Physican Name 
-    (may replace HL7:Ordering Provider -> DICOM Referring Physican Name mapping)
+    (may replace HL7:Ordering Provider -> DICOM:Referring Physican Name mapping)
     <xsl:call-template name="cn2pnAttr">
     <xsl:with-param name="tag" select="'00080090'"/>
     <xsl:with-param name="cn" select="field[8]"/>
@@ -56,10 +62,10 @@
       </xsl:when>
       <xsl:when test="$al1_3">
         <attr tag="00102000" vr="LO">
-          <xsl:value-of select="substring-after($al1_3,'$')"/>
+          <xsl:value-of select="substring(substring-after($al1_3,'$'),1,64)"/>
         </attr>
         <attr tag="00102110" vr="LO">
-          <xsl:value-of select="substring-before($al1_3,'$')"/>
+          <xsl:value-of select="substring(substring-before($al1_3,'$'),1,64)"/>
         </attr>
       </xsl:when>
     </xsl:choose>
@@ -124,10 +130,10 @@
       </xsl:when>
       <xsl:when test="$obr13">
         <attr tag="00081080" vr="LO">
-          <xsl:value-of select="substring-after(substring-after(substring-after($obr13,'$'),'$'),'$')"/>
+          <xsl:value-of select="substring(substring-after(substring-after(substring-after($obr13,'$'),'$'),'$'),1,64)"/>
         </attr>
         <attr tag="00401002" vr="LO">
-          <xsl:value-of select="substring-before(substring-after($obr13,'$'),'$')"/>
+          <xsl:value-of select="substring(substring-before(substring-after($obr13,'$'),'$'),1,64)"/>
         </attr>
       </xsl:when>
     </xsl:choose>
