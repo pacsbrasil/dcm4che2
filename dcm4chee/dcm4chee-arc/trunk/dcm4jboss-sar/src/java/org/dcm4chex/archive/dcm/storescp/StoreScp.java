@@ -50,15 +50,12 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
-import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -78,8 +75,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.BufferedOutputStream;
-import org.dcm4che.util.DAFormat;
-import org.dcm4che.util.TMFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -96,7 +91,6 @@ import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -108,6 +102,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final String STORE_XSL = "cstorerq.xsl";
     private static final String STORE_XML = "-cstorerq.xml";
+    private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
+    private static final String STORE2MWL_XSL = "cstorerq2mwl-cfindrq.xsl";
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
     private static final String SERIES_IUID = "SERIES_IUID";
 
@@ -373,10 +369,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         String iuid = rqCmd.getAffectedSOPInstanceUID();
-        String cuid = rqCmd.getAffectedSOPClassUID();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
-        String callingAET = assoc.getCallingAET();
         File file = null;
         try {		
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
@@ -432,38 +426,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-            Dataset coerced = null;
-            try {
-                Templates stylesheet = service.getCoercionTemplatesFor(
-                        callingAET, STORE_XSL);
-                if (stylesheet != null) {
-                    coerced = XSLTUtils.coerce(ds, stylesheet, toXsltParam(
-                            assoc, new Date()));
-                }
-            } catch (Exception e) {
-                log.warn("Coercion of attributes failed:", e);
+            Dataset coerced = 
+                service.getCoercionAttributesFor(assoc, STORE_XSL, ds);
+            if (coerced != null) {
+                service.coerceAttributes(ds, coerced);
             }
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
-            String prevseriud = (String) assoc.getProperty(SERIES_IUID);
             Storage store = getStorage(assoc);
-            if (prevseriud != null && !prevseriud.equals(seriuid)) {
-                SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
-                if (seriesStored != null) {
-                    log.debug("Send SeriesStoredNotification - series changed");
-                    doAfterSeriesIsStored(store, assoc.getSocket(),
-                            seriesStored);
-                    store.commitSeriesStored(seriesStored);
+            String prevseriud = (String) assoc.getProperty(SERIES_IUID);
+            if (!seriuid.equals(prevseriud)) {
+                assoc.putProperty(SERIES_IUID, seriuid);
+                if (prevseriud != null) {
+                    SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
+                    if (seriesStored != null) {
+                        log.debug("Send SeriesStoredNotification - series changed");
+                        doAfterSeriesIsStored(store, assoc.getSocket(),
+                                seriesStored);
+                        store.commitSeriesStored(seriesStored);
+                    }
                 }
+                Dataset mwlFilter = 
+                    service.getCoercionAttributesFor(assoc, STORE2MWL_XSL, ds);
+                if (mwlFilter != null) {
+                    coerced = merge(coerced, 
+                            mergeMatchingMWLItem(assoc, ds, seriuid, mwlFilter));
+                }                
             }
-            assoc.putProperty(SERIES_IUID, seriuid);
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
-            if (coerced == null) {
-                coerced = coercedElements;
-            } else {
-                coerced.putAll(coercedElements, Dataset.MERGE_ITEMS);
-            }
+            coerced = merge(coerced, coercedElements);
             if (coerced.isEmpty()
                     || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
@@ -485,6 +477,54 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             deleteFailedStorage(file);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private Dataset merge(Dataset ds, Dataset merge) {
+        if (ds == null) {
+            return merge;
+        }
+        if (merge == null) {
+            return ds;
+        }
+        ds.putAll(merge, Dataset.MERGE_ITEMS);
+        return ds;
+    }
+
+    private Dataset mergeMatchingMWLItem(Association assoc, Dataset ds,
+            String seriuid, Dataset mwlFilter) {
+        List mwlItems;
+        log.info("Query for matching worklist entries for received Series["
+                + seriuid + "]");
+        try {
+            mwlItems = service.findMWLEntries(mwlFilter);
+        } catch (Exception e) {
+            log.error("Query for matching worklist entries for received Series["
+                    + seriuid + "] failed:", e);
+            return null;
+        }
+        int size = mwlItems.size();
+        log.info("" + size
+                + " matching worklist entries found for received Series[ "
+                + seriuid + "]");
+        if (size == 0) {
+            return null;
+        }
+        if (size > 1) {
+            log.warn("Several (" + size
+                    + ") matching worklist entries found for received Series[ "
+                    + seriuid + "] - Do not coerce series attributes with request information.");
+            return null;
+        }
+        Dataset coerce = service.getCoercionAttributesFor(assoc,
+                MWL2STORE_XSL, (Dataset) mwlItems.get(0));
+        if (coerce == null) {
+            log.error("Failed to find or load stylesheet " + MWL2STORE_XSL
+                    + " for " + assoc.getCallingAET()
+                    + ". Cannot coerce series attributes with request information.");
+        } else {
+            service.coerceAttributes(ds, coerce);
+        }
+        return coerce;
     }
 
     private boolean checkIncorrectWorklistEntry(Dataset ds) throws Exception {
@@ -511,15 +551,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     RemoteException, HomeFactoryException {
         return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
-    }
-
-    private Map toXsltParam(Association a, Date now) {
-        HashMap param = new HashMap();
-        param.put("calling", a.getCallingAET());
-        param.put("called", a.getCalledAET());
-        param.put("date", new DAFormat().format(now));
-        param.put("time", new TMFormat().format(now));
-        return null;
     }
 
     private byte[] getByteBuffer(Association assoc) {

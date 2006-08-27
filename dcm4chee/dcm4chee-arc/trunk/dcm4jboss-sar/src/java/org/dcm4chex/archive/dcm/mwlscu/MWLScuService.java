@@ -311,6 +311,8 @@ public class MWLScuService extends ServiceMBeanSupport {
      * Get a list of work list entries.
      */
     public List findMWLEntries(Dataset searchDS) {
+        log.debug("Query MWL SCP: " + calledAET + " with keys:");
+        log.debug(searchDS);
         if (isLocal()) {
             return findMWLEntriesLocal(searchDS);
         } else {
@@ -329,7 +331,9 @@ public class MWLScuService extends ServiceMBeanSupport {
             queryCmd = new MWLQueryCmd(searchDS);
             queryCmd.execute();
             while (queryCmd.next()) {
-                l.add(queryCmd.getDataset());
+                Dataset rsp = queryCmd.getDataset();
+                logResponse(rsp);
+                l.add(rsp);
             }
         } catch (SQLException x) {
             log.error("Exception in findMWLEntriesLocal! ", x);
@@ -339,9 +343,15 @@ public class MWLScuService extends ServiceMBeanSupport {
         return l;
     }
 
+    private void logResponse(Dataset rsp) {
+        if (log.isDebugEnabled()) {
+            log.debug("Received matching MWL item from " + calledAET + " :");
+            log.debug(rsp);
+        }
+    }
+
     private List findMWLEntriesFromAET(Dataset searchDS) {
         ActiveAssociation assoc = null;
-        String iuid = null;
         List list = new ArrayList();
         try {
             // get association for mwl find.
@@ -363,18 +373,19 @@ public class MWLScuService extends ServiceMBeanSupport {
                     priority);
             Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd,
                     searchDS);
-            if (log.isDebugEnabled())
-                log.debug("make CFIND req:" + mcRQ);
-            FutureRSP rsp = assoc.invoke(mcRQ);
-            Dimse dimse = rsp.get();
-            if (log.isDebugEnabled())
-                log.debug("CFIND resp:" + dimse);
-            List pending = rsp.listPending();
-            if (log.isDebugEnabled())
-                log.debug("CFIND pending:" + pending);
+            FutureRSP findRsp = assoc.invoke(mcRQ);
+            Dimse dimse = findRsp.get();
+            List pending = findRsp.listPending();
             Iterator iter = pending.iterator();
             while (iter.hasNext()) {
-                list.add(((Dimse) iter.next()).getDataset());
+                Dataset rsp = ((Dimse) iter.next()).getDataset();
+                logResponse(rsp);
+                list.add(rsp);
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Received final C-FIND RSP from " + calledAET + " :"
+                        + dimse);
+                
             }
         } catch (Exception e) {
             log.error("Cant get working list! Reason: unexpected error", e);

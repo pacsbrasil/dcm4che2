@@ -778,6 +778,17 @@ StoreSCP service.
          <value value="dcm4chee.archive:service=FileSystemMgt"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getMwlScuServiceName"
+      setMethod="setMwlScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>MwlScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=MWLScu"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">

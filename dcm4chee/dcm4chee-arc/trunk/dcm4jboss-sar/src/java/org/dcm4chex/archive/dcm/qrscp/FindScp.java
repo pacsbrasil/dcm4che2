@@ -89,7 +89,11 @@ public class FindScp extends DcmServiceBase {
 			log.debug(rqData);
             Association a = assoc.getAssociation();
             service.logDIMSE(a , QUERY_XML, rqData);
-            service.coerceDIMSE(a, QUERY_XSL, rqData);
+            Dataset coerce = 
+                service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
+            if (coerce != null) {
+                service.coerceAttributes(rqData, coerce);
+            }
             logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
             return newMultiCFindRsp(rqData);
         } catch (Exception e) {
@@ -147,11 +151,15 @@ public class FindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset data = getDataset(queryCmd);				
-				log.debug("Identifier:\n");
-				log.debug(data);
+                log.debug("Identifier:\n");
+                log.debug(data);
                 Association a = assoc.getAssociation();
                 service.logDIMSE(a , RESULT_XML, data);
-                service.coerceDIMSE(a, RESULT_XSL, data);
+                Dataset coerce = 
+                    service.getCoercionAttributesFor(a, RESULT_XSL, data);
+                if (coerce != null) {
+                    service.coerceAttributes(data, coerce);
+                }
                 return data;
             } catch (DcmServiceException e) {
             	throw e;

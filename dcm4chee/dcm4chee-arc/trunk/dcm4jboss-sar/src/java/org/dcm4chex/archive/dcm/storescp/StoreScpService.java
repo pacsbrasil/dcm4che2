@@ -45,6 +45,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -158,6 +159,7 @@ public class StoreScpService extends AbstractScpService {
     private Map otherCUIDS = new LinkedHashMap();
 
     private ObjectName fileSystemMgtName;
+    private ObjectName mwlScuServiceName;
 
     private int bufferSize = 8192;
 
@@ -303,6 +305,14 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
         this.fileSystemMgtName = fileSystemMgtName;
+    }
+
+    public final ObjectName getMwlScuServiceName() {
+        return mwlScuServiceName;
+    }
+
+    public final void setMwlScuServiceName(ObjectName mwlScuServiceName) {
+        this.mwlScuServiceName = mwlScuServiceName;
     }
 
     public final String getAcceptPatientID() {
@@ -679,4 +689,10 @@ public class StoreScpService extends AbstractScpService {
                 StorageHome.class, StorageHome.JNDI_NAME)).create();
     }
 
+    public List findMWLEntries(Dataset ds) throws Exception {
+        return (List) server.invoke(mwlScuServiceName, "findMWLEntries",
+                new Object[] { ds },
+                new String[] { Dataset.class.getName() });
+    }
+    
 }

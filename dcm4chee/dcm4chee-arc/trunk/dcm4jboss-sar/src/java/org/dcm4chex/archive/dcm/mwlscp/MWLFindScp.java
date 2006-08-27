@@ -73,25 +73,28 @@ public class MWLFindScp extends DcmServiceBase {
 		this.log = service.getLog();
     }
 	
-	protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-	throws IOException, DcmServiceException {
-		Association a = assoc.getAssociation();
-		Dataset rqData = rq.getDataset();
-		log.debug("Identifier:\n");
-		log.debug(rqData);
+	protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
+            Command rspCmd) throws IOException, DcmServiceException {
+        Association a = assoc.getAssociation();
+        Dataset rqData = rq.getDataset();
+        log.debug("Identifier:\n");
+        log.debug(rqData);
         service.logDIMSE(a, QUERY_XML, rqData);
-        service.coerceDIMSE(a, QUERY_XSL, rqData);
-		
-		MWLQueryCmd queryCmd;
-		try {
-			queryCmd = new MWLQueryCmd(rqData);
-			queryCmd.execute();
-		} catch (Exception e) {
-			log.error("Query DB failed:", e);
-			throw new DcmServiceException(Status.ProcessingFailure, e);
-		}
-		return new MultiCFindRsp(queryCmd);
-	}
+        Dataset coerce = service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
+        if (coerce != null) {
+            service.coerceAttributes(rqData, coerce);
+        }
+
+        MWLQueryCmd queryCmd;
+        try {
+            queryCmd = new MWLQueryCmd(rqData);
+            queryCmd.execute();
+        } catch (Exception e) {
+            log.error("Query DB failed:", e);
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+        return new MultiCFindRsp(queryCmd);
+    }
 
 	private class MultiCFindRsp implements MultiDimseRsp {
         private final MWLQueryCmd queryCmd;
@@ -127,7 +130,11 @@ public class MWLFindScp extends DcmServiceBase {
 				log.debug("Identifier:\n");
 				log.debug(rspData);
                 service.logDIMSE(a, RESULT_XML, rspData);
-                service.coerceDIMSE(a, RESULT_XSL, rspData);
+                Dataset coerce = 
+                    service.getCoercionAttributesFor(a, RESULT_XSL, rspData);
+                if (coerce != null) {
+                    service.coerceAttributes(rspData, coerce);
+                }
                 return rspData;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);

@@ -41,7 +41,6 @@ package org.dcm4chex.archive.dcm;
 
 import java.io.File;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -50,12 +49,15 @@ import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObject;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.dict.VRs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
@@ -63,9 +65,7 @@ import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.server.DcmHandler;
-import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.DTFormat;
-import org.dcm4che.util.TMFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.XSLTUtils;
@@ -358,8 +358,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return new File(dir, new DTFormat().format(now) + suffix);
     }
     
-    public Templates getCoercionTemplatesFor(String aet, String fname)
-    throws TransformerConfigurationException {
+    public Templates getCoercionTemplatesFor(String aet, String fname) {
         // check AET specific attribute coercion configuration
         File f = FileUtils.resolve(
                 new File(new File(coerceConfigDir, aet), fname));
@@ -372,8 +371,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
         Templates tpl = (Templates) templates.get(f);
         if (tpl == null) {
-            tpl = TransformerFactory.newInstance().newTemplates(
-                    new StreamSource(f));
+            try {
+                tpl = TransformerFactory.newInstance().newTemplates(
+                        new StreamSource(f));
+            } catch (Exception e) {
+                log.error("Compiling Stylesheet " + f + " failed:", e);
+                return null;
+            }
             templates.put(f, tpl);
         }
         return tpl;
@@ -403,32 +407,91 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    public void coerceDIMSE(Association a, String xsl, Dataset rqData) {
+    public Dataset getCoercionAttributesFor(Association a, String xsl, 
+            Dataset in) {
         String callingAET = a.getCallingAET();
-        try {
-            Templates stylesheet = getCoercionTemplatesFor(callingAET, xsl);
-            if (stylesheet != null)
-            {
-                Dataset coerced = XSLTUtils.coerce(rqData, stylesheet,
-                        toXsltParam(a));
-                log.debug("Coerce attributes:\n");
-                log.debug(coerced);
-                log.debug("Coerced Identifier:\n");
-                log.debug(rqData);
-            }
-        } catch (Exception e) {
-            log.warn("Coercion of query attributes failed:", e);
+        Templates stylesheet = getCoercionTemplatesFor(callingAET, xsl);
+        if (stylesheet == null) {
+            return null;
         }
+        Dataset out = DcmObjectFactory.getInstance().newDataset();
+        try {
+            XSLTUtils.xslt(in, stylesheet, a, out);
+        } catch (Exception e) {
+            log.error("Attribute coercion failed:", e);
+            return null;
+        }
+        return out;
     }
-
-    private Map toXsltParam(Association a) {
-        Date now = new Date();
-        HashMap param = new HashMap();
-        param.put("calling", a.getCallingAET());
-        param.put("called", a.getCalledAET());
-        param.put("date", new DAFormat().format(now ));
-        param.put("time", new TMFormat().format(now));
-        return param;
+    
+    public void coerceAttributes(DcmObject ds, DcmObject coerce) {
+        coerceAttributes(ds, coerce, null);        
     }
-
+    
+    private void coerceAttributes(DcmObject ds, DcmObject coerce, DcmElement parent) {
+        boolean coerced = false;
+        for (Iterator it = coerce.iterator(); it.hasNext();) {
+            DcmElement el = (DcmElement) it.next();
+            DcmElement oldEl = ds.get(el.tag());
+            if (el.isEmpty()) {
+                coerced = oldEl != null && !oldEl.isEmpty();
+                if (oldEl == null || coerced) {
+                    ds.putXX(el.tag(), el.vr());
+                }
+            } else {
+                Dataset item;
+                DcmElement sq = oldEl;
+                switch (el.vr()) {
+                case VRs.SQ:
+                    coerced = oldEl != null && sq.vr() != VRs.SQ;
+                    if (oldEl == null || coerced) {
+                        sq = ds.putSQ(el.tag());
+                    }
+                    for (int i = 0, n = el.countItems(); i < n; ++i) {
+                        item = sq.getItem(i);
+                        if (item == null) {
+                            item = sq.addNewItem();
+                        }
+                        Dataset coerceItem = el.getItem(i);
+                        coerceAttributes(item, coerceItem, el);
+                        if (!coerceItem.isEmpty()) {
+                            coerced = true;
+                        }
+                    }
+                    break;
+                case VRs.OB:
+                case VRs.OF:
+                case VRs.OW:
+                case VRs.UN:
+                    if (el.hasDataFragments()) {
+                        coerced = true;
+                        sq = ds.putXXsq(el.tag(), el.vr());
+                        for (int i = 0, n = el.countItems(); i < n; ++i) {
+                            sq.addDataFragment(el.getDataFragment(i));
+                        }
+                        break;
+                    }
+                default:
+                    coerced = oldEl != null && !oldEl.equals(el);
+                    if (oldEl == null || coerced) {
+                        ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
+                    }
+                    break;
+                }
+            }
+            if (coerced) {
+                log.info(parent == null 
+                        ? ("Coerce " + oldEl + " to " + el)
+                        : ("Coerce " + oldEl + " to " + el 
+                                + " in item of " + parent));
+            } else {
+                if (oldEl == null && log.isDebugEnabled()) {
+                    log.debug(parent == null 
+                            ? ("Add " + el)
+                            : ("Add " + el + " in item of " + parent));                    
+                }
+                it.remove();
+            }
+        }
+    }    
 }
