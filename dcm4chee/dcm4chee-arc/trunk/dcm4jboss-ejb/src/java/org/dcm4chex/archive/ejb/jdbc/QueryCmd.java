@@ -62,55 +62,66 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
-            "OFFLINE", "UNAVAILABLE"};
+    private static final String[] AVAILABILITY = { 
+        "ONLINE", 
+        "NEARLINE",
+        "OFFLINE", 
+        "UNAVAILABLE" };
 
     private static final String SR_CODE = "sr_code";
 
-    private static final String[] SERIES_REQUEST_LEFT_JOIN = {
-        "SeriesRequest", null, "Series.pk", "SeriesRequest.series_fk"};
-    
-    public static QueryCmd create(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
-            throws SQLException {
+    private static final String[] SERIES_REQUEST_LEFT_JOIN = { "SeriesRequest",
+            null, "Series.pk", "SeriesRequest.series_fk" };
+
+    public static QueryCmd create(Dataset keys, boolean filterResult,
+            boolean noMatchForNoValue) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if ("IMAGE".equals(qrLevel))
-        	return createInstanceQuery(keys, filterResult, noMatchForNoValue);
+            return createInstanceQuery(keys, filterResult, noMatchForNoValue);
         if ("SERIES".equals(qrLevel))
-        	return createSeriesQuery(keys, filterResult, noMatchForNoValue);
+            return createSeriesQuery(keys, filterResult, noMatchForNoValue);
         if ("STUDY".equals(qrLevel))
             return createStudyQuery(keys, filterResult, noMatchForNoValue);
         if ("PATIENT".equals(qrLevel))
-        	return createPatientQuery(keys, filterResult, noMatchForNoValue);
+            return createPatientQuery(keys, filterResult, noMatchForNoValue);
         throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
     }
 
-	public static PatientQueryCmd createPatientQuery(Dataset keys, 
-			boolean filterResult, boolean noMatchForNoValue) throws SQLException {
-		final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult, noMatchForNoValue);
-		cmd.init();
-		return cmd;
-	}
+    public static PatientQueryCmd createPatientQuery(Dataset keys,
+            boolean filterResult, boolean noMatchForNoValue)
+            throws SQLException {
+        final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult,
+                noMatchForNoValue);
+        cmd.init();
+        return cmd;
+    }
 
-	public static StudyQueryCmd createStudyQuery(Dataset keys,
-			boolean filterResult, boolean noMatchForNoValue) throws SQLException {
-		final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult, noMatchForNoValue);
-		cmd.init();
-		return cmd;
-	}
+    public static StudyQueryCmd createStudyQuery(Dataset keys,
+            boolean filterResult, boolean noMatchForNoValue)
+            throws SQLException {
+        final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult,
+                noMatchForNoValue);
+        cmd.init();
+        return cmd;
+    }
 
-	public static SeriesQueryCmd createSeriesQuery(Dataset keys,
-			boolean filterResult, boolean noMatchForNoValue) throws SQLException {
-		final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult, noMatchForNoValue);
-		cmd.init();
-		return cmd;
-	}
+    public static SeriesQueryCmd createSeriesQuery(Dataset keys,
+            boolean filterResult, boolean noMatchForNoValue)
+            throws SQLException {
+        final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult,
+                noMatchForNoValue);
+        cmd.init();
+        return cmd;
+    }
 
-	public static ImageQueryCmd createInstanceQuery(Dataset keys,
-			boolean filterResult, boolean noMatchForNoValue) throws SQLException {
-		final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult, noMatchForNoValue);
-		cmd.init();
-		return cmd;
-	}
+    public static ImageQueryCmd createInstanceQuery(Dataset keys,
+            boolean filterResult, boolean noMatchForNoValue)
+            throws SQLException {
+        final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
+                noMatchForNoValue);
+        cmd.init();
+        return cmd;
+    }
 
     protected final Dataset keys;
 
@@ -119,11 +130,11 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected final boolean filterResult;
 
     protected final boolean type2;
-	
-    protected QueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
-    		throws SQLException {
+
+    protected QueryCmd(Dataset keys, boolean filterResult,
+            boolean noMatchForNoValue) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+                transactionIsolationLevel);
         this.keys = keys;
         this.filterResult = filterResult;
         this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
@@ -153,17 +164,16 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addPatientMatch() {
-		sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2,
-                keys.getString(Tags.PatientID));
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
+        sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
+                .getString(Tags.PatientID));
+        sqlBuilder.addPNMatch(
+                new String[] { 
+                        "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" },
                 keys.getString(Tags.PatientName));
-        sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate",
-                type2,
-                keys.getDateTimeRange(Tags.PatientBirthDate,
-                        Tags.PatientBirthTime));
+        sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
+                keys.getDateTimeRange(Tags.PatientBirthDate, Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
                 keys.getString(Tags.PatientSex));
     }
@@ -171,21 +181,22 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected void addStudyMatch() {
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
-        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2, 
                 keys.getString(Tags.StudyID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
                 keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
                 keys.getString(Tags.AccessionNumber));
-        sqlBuilder.addPNMatch(new String[] {
-                "Study.referringPhysicianName",
-                "Study.referringPhysicianIdeographicName",
-                "Study.referringPhysicianPhoneticName"},
+        sqlBuilder.addPNMatch(
+                new String[] { 
+                        "Study.referringPhysicianName",
+                        "Study.referringPhysicianIdeographicName",
+                        "Study.referringPhysicianPhoneticName" },
                 keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
                 SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
         sqlBuilder.addSingleValueMatch(null, "Study.studyStatusId", type2,
-        		keys.getString(Tags.StudyStatusID));
+                keys.getString(Tags.StudyStatusID));
     }
 
     protected void addNestedSeriesMatch() {
@@ -198,8 +209,7 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     protected void addSeriesMatch() {
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SeriesInstanceUID));
+                SqlBuilder.TYPE1, keys.getStrings(Tags.SeriesInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
                 keys.getString(Tags.SeriesNumber));
         String modality = keys.getString(Tags.Modality);
@@ -210,14 +220,12 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
                 SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionName)));
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
-                type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionalDepartmentName)));
-        sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
-                type2,
+                type2, SqlBuilder.toUpperCase(keys
+                        .getString(Tags.InstitutionalDepartmentName)));
+        sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2,
                 keys.getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET",
-                type2,
+        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2,
                 keys.getStrings(PrivateTags.CallingAET));
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         if (rqAttrs != null) {
@@ -231,10 +239,10 @@ public abstract class QueryCmd extends BaseReadCmd {
     }
 
     protected void addInstanceMatch() {
-        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SOPInstanceUID));
-        sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid", SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SOPClassUID));
+        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
+                SqlBuilder.TYPE1, keys.getStrings(Tags.SOPInstanceUID));
+        sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid",
+                SqlBuilder.TYPE1, keys.getStrings(Tags.SOPClassUID));
         sqlBuilder.addWildCardMatch(null, "Instance.instanceNumber", type2,
                 keys.getString(Tags.InstanceNumber));
         sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", type2,
@@ -245,11 +253,10 @@ public abstract class QueryCmd extends BaseReadCmd {
                 type2, keys.getString(Tags.VerificationFlag));
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         if (code != null) {
-            sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codeValue",
-                    type2,
+            sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codeValue", type2,
                     code.getString(Tags.CodeValue));
-            sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codingSchemeDesignator",
-                    type2,
+            sqlBuilder.addSingleValueMatch(SR_CODE,
+                    "Code.codingSchemeDesignator", type2,
                     code.getString(Tags.CodingSchemeDesignator));
         }
     }
@@ -258,7 +265,8 @@ public abstract class QueryCmd extends BaseReadCmd {
         Dataset ds = dof.newDataset();
         fillDataset(ds);
         adjustDataset(ds, keys);
-        if (!filterResult) return ds;
+        if (!filterResult)
+            return ds;
         keys.putCS(Tags.SpecificCharacterSet);
         keys.putAE(Tags.RetrieveAET);
         keys.putSH(Tags.StorageMediaFileSetID);
@@ -271,7 +279,8 @@ public abstract class QueryCmd extends BaseReadCmd {
         for (Iterator it = keys.iterator(); it.hasNext();) {
             DcmElement key = (DcmElement) it.next();
             final int tag = key.tag();
-            if (tag == Tags.SpecificCharacterSet) continue;
+            if (tag == Tags.SpecificCharacterSet)
+                continue;
 
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
@@ -281,7 +290,8 @@ public abstract class QueryCmd extends BaseReadCmd {
             if (vr == VRs.SQ) {
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
-                	if (el.isEmpty()) el.addNewItem();
+                    if (el.isEmpty())
+                        el.addNewItem();
                     for (int i = 0, n = el.countItems(); i < n; ++i) {
                         adjustDataset(el.getItem(i), keyItem);
                     }
@@ -293,13 +303,13 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected abstract void fillDataset(Dataset ds) throws SQLException;
 
     protected void fillDataset(Dataset ds, int column) throws SQLException {
-		DatasetUtils.fromByteArray(getBytes(column), ds);
-	}
+        DatasetUtils.fromByteArray(getBytes(column), ds);
+    }
 
     static class PatientQueryCmd extends QueryCmd {
 
-        PatientQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
-        throws SQLException {
+        PatientQueryCmd(Dataset keys, boolean filterResult,
+                boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
         }
 
@@ -314,18 +324,19 @@ public abstract class QueryCmd extends BaseReadCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes"};
+            return new String[] { "Patient.encodedAttributes" };
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient"};
+            return new String[] { "Patient" };
         }
-        
+
     }
 
     static class StudyQueryCmd extends QueryCmd {
 
-        StudyQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue) throws SQLException {
+        StudyQueryCmd(Dataset keys, boolean filterResult,
+                boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
         }
 
@@ -337,21 +348,26 @@ public abstract class QueryCmd extends BaseReadCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes",
-                    "Study.encodedAttributes", "Study.modalitiesInStudy",
-                    "Study.studyStatusId", "Study.numberOfStudyRelatedSeries",
+            return new String[] {
+                    "Patient.encodedAttributes",
+                    "Study.encodedAttributes",
+                    "Study.modalitiesInStudy",
+                    "Study.studyStatusId",
+                    "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
-                    "Study.filesetId", "Study.filesetIuid",                    
-                    "Study.retrieveAETs", "Study.externalRetrieveAET",
-                    "Study.availability"};
+                    "Study.filesetId",
+                    "Study.filesetIuid",
+                    "Study.retrieveAETs",
+                    "Study.externalRetrieveAET",
+                    "Study.availability" };
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient", "Study"};
+            return new String[] { "Patient", "Study" };
         }
 
         protected String[] getRelations() {
-            return new String[] { "Patient.pk", "Study.patient_fk"};
+            return new String[] { "Patient.pk", "Study.patient_fk" };
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -373,8 +389,8 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     static class SeriesQueryCmd extends QueryCmd {
 
-        SeriesQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
-        throws SQLException {
+        SeriesQueryCmd(Dataset keys, boolean filterResult,
+                boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
         }
 
@@ -386,30 +402,37 @@ public abstract class QueryCmd extends BaseReadCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes",
-                    "Study.encodedAttributes", "Series.encodedAttributes",
+            return new String[] { 
+                    "Patient.encodedAttributes",
+                    "Study.encodedAttributes",
+                    "Series.encodedAttributes",
                     "Series.numberOfSeriesRelatedInstances",
-                    "Series.filesetId", "Series.filesetIuid",                    
-                    "Series.retrieveAETs", "Series.externalRetrieveAET",
-                    "Series.availability"};
+                    "Series.filesetId",
+                    "Series.filesetIuid",
+                    "Series.retrieveAETs",
+                    "Series.externalRetrieveAET",
+                    "Series.availability" };
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient", "Study", "Series"};
+            return new String[] { "Patient", "Study", "Series" };
         }
 
         protected String[] getRelations() {
-            return new String[] { "Patient.pk", "Study.patient_fk", "Study.pk",
-                    "Series.study_fk"};
+            return new String[] { 
+                    "Patient.pk", 
+                    "Study.patient_fk", 
+                    "Study.pk",
+                    "Series.study_fk" };
         }
 
         protected String[] getLeftJoin() {
-            if  (!isMatchRequestAttributes())
+            if (!isMatchRequestAttributes())
                 return null;
             sqlBuilder.setDistinct(true);
             return SERIES_REQUEST_LEFT_JOIN;
         }
-        
+
         protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
@@ -425,8 +448,8 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     static class ImageQueryCmd extends QueryCmd {
 
-        ImageQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
-        throws SQLException {
+        ImageQueryCmd(Dataset keys, boolean filterResult,
+                boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
         }
 
@@ -439,15 +462,20 @@ public abstract class QueryCmd extends BaseReadCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes",
-                    "Study.encodedAttributes", "Series.encodedAttributes",
-                    "Instance.encodedAttributes", "Instance.retrieveAETs",
-                    "Instance.externalRetrieveAET", "Instance.availability",
-                    "Media.filesetId", "Media.filesetIuid"};
+            return new String[] { 
+                    "Patient.encodedAttributes",
+                    "Study.encodedAttributes",
+                    "Series.encodedAttributes",
+                    "Instance.encodedAttributes",
+                    "Instance.retrieveAETs",
+                    "Instance.externalRetrieveAET",
+                    "Instance.availability",
+                    "Media.filesetId",
+                    "Media.filesetIuid" };
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient", "Study", "Series", "Instance"};
+            return new String[] { "Patient", "Study", "Series", "Instance" };
         }
 
         protected String[] getLeftJoin() {
@@ -473,8 +501,13 @@ public abstract class QueryCmd extends BaseReadCmd {
         }
 
         protected String[] getRelations() {
-            return new String[] { "Patient.pk", "Study.patient_fk", "Study.pk",
-                    "Series.study_fk", "Series.pk", "Instance.series_fk"};
+            return new String[] { 
+                    "Patient.pk", 
+                    "Study.patient_fk",
+                    "Study.pk",
+                    "Series.study_fk",
+                    "Series.pk",
+                    "Instance.series_fk" };
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -493,15 +526,13 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     protected boolean isMatchSrCode() {
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
-        return code != null
-                && (code.vm(Tags.CodeValue) > 0 || code
-                        .vm(Tags.CodingSchemeDesignator) > 0);
+        return code != null && (code.vm(Tags.CodeValue) > 0
+                || code.vm(Tags.CodingSchemeDesignator) > 0);
     }
 
     protected boolean isMatchRequestAttributes() {
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
-        return rqAttrs != null
-                && (rqAttrs.vm(Tags.RequestedProcedureID) > 0
-                        || rqAttrs.vm(Tags.SPSID) > 0);
+        return rqAttrs != null && (rqAttrs.vm(Tags.RequestedProcedureID) > 0 
+                || rqAttrs.vm(Tags.SPSID) > 0);
     }
 }
