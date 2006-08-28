@@ -60,8 +60,8 @@ import org.slf4j.LoggerFactory;
  * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
  * <p>
- * The <i>network connection</i> describes one TCP port on one network device. This
- * can be used for a TCP connection over which a DICOM association can be
+ * The <i>network connection</i> describes one TCP port on one network device.
+ * This can be used for a TCP connection over which a DICOM association can be
  * negotiated with one or more Network AEs. It specifies 8 the hostname and TCP
  * port number. A network connection may support multiple Network AEs. The
  * Network AE selection takes place during association negotiation based on the
@@ -71,37 +71,54 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Nov 24, 2005
  */
-public class NetworkConnection
-{
+public class NetworkConnection {
     static Logger log = LoggerFactory.getLogger(NetworkConnection.class);
+
     public static final int DEFAULT = 0;
 
     private String commonName;
+
     private String hostname;
+
     private int port;
+
     private String[] tlsCipherSuite = {};
+
     private Boolean installed;
 
     private int backlog = 50;
+
     private int connectTimeout = 5000;
+
     private int requestTimeout = 5000;
+
     private int acceptTimeout = 5000;
+
     private int releaseTimeout = 5000;
+
     private int socketCloseDelay = 50;
+
     private int sendBufferSize = DEFAULT;
+
     private int receiveBufferSize = DEFAULT;
+
     private boolean tcpNoDelay = true;
+
     private boolean tlsNeedClientAuth = true;
+
     private String[] tlsProtocol = { "TLSv1", "SSLv3",
     // "SSLv2Hello"
     };
 
     private Device device;
-    private ServerSocket server;
+
+    protected ServerSocket server;
 
     // Limiting factors
     private List excludeConnectionsFrom;
+
     private int maxScpAssociations = 50;
+
     private int associationCount;
 
     /**
@@ -121,7 +138,8 @@ public class NetworkConnection
     }
 
     /**
-     * Get the <code>Device</code> object that this Network Connection belongs to.
+     * Get the <code>Device</code> object that this Network Connection belongs
+     * to.
      * 
      * @return Device
      */
@@ -130,42 +148,100 @@ public class NetworkConnection
     }
 
     /**
-     * Set the <code>Device</code> object that this Network Connection belongs to.
+     * Set the <code>Device</code> object that this Network Connection belongs
+     * to.
      * 
-     * @param device The owning <code>Device</code> object.
+     * @param device
+     *            The owning <code>Device</code> object.
      */
     final void setDevice(Device device) {
         this.device = device;
     }
 
+    /**
+     * This is the DNS name for this particular connection. This is used to
+     * obtain the current IP address for connections. Hostname must be
+     * sufficiently qualified to be unambiguous for any client DNS user.
+     * 
+     * @return A String containing the host name.
+     */
     public final String getHostname() {
         return hostname;
     }
 
+    /**
+     * This is the DNS name for this particular connection. This is used to
+     * obtain the current IP address for connections. Hostname must be
+     * sufficiently qualified to be unambiguous for any client DNS user.
+     * 
+     * @param hostname
+     *            A String containing the host name.
+     */
     public final void setHostname(String hostname) {
         this.hostname = hostname;
     }
 
+    /**
+     * An arbitrary name for the Network Connections object. Can be a meaningful
+     * name or any unique sequence of characters.
+     * 
+     * @return A String containing the name.
+     */
     public final String getCommonName() {
         return commonName;
     }
 
+    /**
+     * An arbitrary name for the Network Connections object. Can be a meaningful
+     * name or any unique sequence of characters.
+     * 
+     * @param name
+     *            A String containing the name.
+     */
     public final void setCommonName(String name) {
         this.commonName = name;
     }
 
+    /**
+     * The TCP port that the AE is listening on. (This may be missing for a
+     * network connection that only initiates associations.)
+     * 
+     * @return An int containing the port number.
+     */
     public final int getPort() {
         return port;
     }
 
+    /**
+     * The TCP port that the AE is listening on. (This may be missing for a
+     * network connection that only initiates associations.)
+     * 
+     * @param port
+     *            An int containing the port number.
+     */
     public final void setPort(int port) {
         this.port = port;
     }
 
+    /**
+     * The TLS CipherSuites that are supported on this particular connection.
+     * TLS CipherSuites shall be described using an RFC-2246 string
+     * representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')
+     * 
+     * @return A String array containing the supported cipher suites
+     */
     public final String[] getTlsCipherSuite() {
         return tlsCipherSuite;
     }
 
+    /**
+     * The TLS CipherSuites that are supported on this particular connection.
+     * TLS CipherSuites shall be described using an RFC-2246 string
+     * representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')
+     * 
+     * @param tlsCipherSuite
+     *            A String array containing the supported cipher suites
+     */
     public final void setTlsCipherSuite(String[] tlsCipherSuite) {
         checkNotNull("tlsCipherSuite", tlsCipherSuite);
         this.tlsCipherSuite = tlsCipherSuite;
@@ -179,11 +255,27 @@ public class NetworkConnection
                 throw new NullPointerException(name + '[' + i + ']');
     }
 
+    /**
+     * True if the Network Connection is installed on the network. If not
+     * present, information about the installed status of the Network Connection
+     * is inherited from the device.
+     * 
+     * @return boolean True if the NetworkConnection is installed on the
+     *         network.
+     */
     public final boolean isInstalled() {
         return installed != null ? installed.booleanValue() : device == null
                 || device.isInstalled();
     }
 
+    /**
+     * True if the Network Connection is installed on the network. If not
+     * present, information about the installed status of the Network Connection
+     * is inherited from the device.
+     * 
+     * @param installed
+     *            True if the NetworkConnection is installed on the network.
+     */
     public final void setInstalled(boolean installed) {
         this.installed = Boolean.valueOf(installed);
     }
@@ -229,7 +321,8 @@ public class NetworkConnection
     /**
      * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
      * 
-     * @param An int value containing the milliseconds.
+     * @param An
+     *            int value containing the milliseconds.
      */
     public final int getRequestTimeout() {
         return requestTimeout;
@@ -238,7 +331,8 @@ public class NetworkConnection
     /**
      * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
      * 
-     * @param timeout An int value containing the milliseconds.
+     * @param timeout
+     *            An int value containing the milliseconds.
      */
     public final void setRequestTimeout(int timeout) {
         if (timeout < 0)
@@ -258,7 +352,8 @@ public class NetworkConnection
     /**
      * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
      * 
-     * @param timeout An int value containing the milliseconds.
+     * @param timeout
+     *            An int value containing the milliseconds.
      */
     public final void setReleaseTimeout(int timeout) {
         if (timeout < 0)
@@ -278,7 +373,8 @@ public class NetworkConnection
     /**
      * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
      * 
-     * @param delay An int value containing the milliseconds.
+     * @param delay
+     *            An int value containing the milliseconds.
      */
     public final void setSocketCloseDelay(int delay) {
         if (delay < 0)
@@ -298,7 +394,8 @@ public class NetworkConnection
     /**
      * Set the SO_RCVBUF socket option to specified value in KB.
      * 
-     * @param bufferSize An int value containing the buffer size in KB.
+     * @param bufferSize
+     *            An int value containing the buffer size in KB.
      */
     public final void setReceiveBufferSize(int size) {
         if (size < 0)
@@ -318,7 +415,8 @@ public class NetworkConnection
     /**
      * Set the SO_SNDBUF socket option to specified value in KB,
      * 
-     * @param bufferSize An int value containing the buffer size in KB.
+     * @param bufferSize
+     *            An int value containing the buffer size in KB.
      */
     public final void setSendBufferSize(int size) {
         if (size < 0)
@@ -327,8 +425,8 @@ public class NetworkConnection
     }
 
     /**
-     * Determine if this network connection is using Nagle's algorithm as part of its
-     * network communication.
+     * Determine if this network connection is using Nagle's algorithm as part
+     * of its network communication.
      * 
      * @return boolean True if TCP no delay (Nagle's algorithm) is being used.
      */
@@ -337,10 +435,12 @@ public class NetworkConnection
     }
 
     /**
-     * Set whether or not this network connection should use Nagle's algorithm as part of its
-     * network communication.
+     * Set whether or not this network connection should use Nagle's algorithm
+     * as part of its network communication.
      * 
-     * @param tcpNoDelay boolean True if TCP no delay (Nagle's algorithm) should be used.
+     * @param tcpNoDelay
+     *            boolean True if TCP no delay (Nagle's algorithm) should be
+     *            used.
      */
     public final void setTcpNoDelay(boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
@@ -354,7 +454,7 @@ public class NetworkConnection
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
 
-    public final String[] getTlsProtocol()  {
+    public final String[] getTlsProtocol() {
         return tlsProtocol;
     }
 
@@ -433,8 +533,7 @@ public class NetworkConnection
                             incListenerConnectionCount();
                         }
                     }
-                } catch (Throwable e)
-                {
+                } catch (Throwable e) {
                     // assume exception was raised by graceful stop of server
                 }
                 log.info("Stop listening on {}", addr);
@@ -446,14 +545,15 @@ public class NetworkConnection
      * Check the incoming socket connection against the limitations set up for
      * this Network Connection.
      * 
-     * @param s The socket connection.
+     * @param s
+     *            The socket connection.
      * @return boolean True if association negotiation should proceed.
      */
     protected boolean checkConnection(Socket s) {
         if (excludeConnectionsFrom == null
                 || excludeConnectionsFrom.size() == 0)
             return true;
-        
+
         String ip = null;
         try {
             // Check to see if this connection attempt is just a keep alive
@@ -467,12 +567,11 @@ public class NetworkConnection
                     return false;
                 }
             }
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             log.debug("Caught IOException closing socket from {}", ip);
             return false;
         }
-        
+
         return true;
     }
 
@@ -493,23 +592,20 @@ public class NetworkConnection
     /**
      * Check to see if the specified number of associations has been exceeded.
      * 
-     * @param maxAssociations An int containing the maximum number of
-     *            associations allowed.
+     * @param maxAssociations
+     *            An int containing the maximum number of associations allowed.
      * @return boolean True if the max association count has not been exceeded.
      */
     public boolean checkConnectionCountWithinLimit() {
         return true ? associationCount <= maxScpAssociations : false;
     }
 
-    public synchronized void unbind()
-    {
+    public synchronized void unbind() {
         if (server == null)
             return;
-        try
-        {
+        try {
             server.close();
-        } catch (Throwable e)
-        {
+        } catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
         associationCount = 0;
@@ -542,8 +638,7 @@ public class NetworkConnection
      * 
      * @return Returns the list of IP addresses which should be ignored.
      */
-    public List getExcludeConnectionsFrom()
-    {
+    public List getExcludeConnectionsFrom() {
         return excludeConnectionsFrom;
     }
 
@@ -553,11 +648,10 @@ public class NetworkConnection
      * TCP ping from a load balancing switch, we don't want to spin off a new
      * thread and try to negotiate an association.
      * 
-     * @param excludeConnectionsFrom the list of IP addresses which should be
-     *            ignored.
+     * @param excludeConnectionsFrom
+     *            the list of IP addresses which should be ignored.
      */
-    public void setExcludeConnectionsFrom(List excludeConnectionsFrom)
-    {
+    public void setExcludeConnectionsFrom(List excludeConnectionsFrom) {
         this.excludeConnectionsFrom = excludeConnectionsFrom;
     }
 
@@ -567,8 +661,7 @@ public class NetworkConnection
      * 
      * @return int An int which defines the max associations.
      */
-    public int getMaxScpAssociations()
-    {
+    public int getMaxScpAssociations() {
         return maxScpAssociations;
     }
 
@@ -576,10 +669,10 @@ public class NetworkConnection
      * Set the maximum number of incoming associations that this Network
      * Connection will allow.
      * 
-     * @param maxScpAssociations An int which defines the max associations.
+     * @param maxScpAssociations
+     *            An int which defines the max associations.
      */
-    public void setMaxScpAssociations(int maxListenerAssociations)
-    {
+    public void setMaxScpAssociations(int maxListenerAssociations) {
         this.maxScpAssociations = maxListenerAssociations;
     }
 
