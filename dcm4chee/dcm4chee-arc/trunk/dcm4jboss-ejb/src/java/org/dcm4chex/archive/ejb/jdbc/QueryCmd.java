@@ -234,6 +234,14 @@ public abstract class QueryCmd extends BaseReadCmd {
                     rqAttrs.getString(Tags.RequestedProcedureID));
             sqlBuilder.addWildCardMatch(null, "SeriesRequest.spsId", type2,
                     rqAttrs.getString(Tags.SPSID));
+            sqlBuilder.addWildCardMatch(null, "SeriesRequest.requestingService",
+                    type2, rqAttrs.getString(Tags.RequestingService));
+            sqlBuilder.addPNMatch(
+                    new String[] { 
+                            "SeriesRequest.requestingPhysician",
+                            "SeriesRequest.requestingPhysicianIdeographicName",
+                            "SeriesRequest.requestingPhysicianPhoneticName" },
+                    keys.getString(Tags.RequestingPhysician));
         }
 
     }

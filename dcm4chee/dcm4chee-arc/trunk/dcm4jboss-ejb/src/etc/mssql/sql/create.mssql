@@ -156,11 +156,19 @@ CREATE TABLE series_req (
 	series_fk       INTEGER,
 	req_proc_id     VARCHAR(255),
 	sps_id          VARCHAR(255),
+	req_service		VARCHAR(255),
+	req_physician   VARCHAR(255),
+	req_phys_i_name VARCHAR(255),
+	req_phys_p_name VARCHAR(255),
 FOREIGN KEY (series_fk) REFERENCES series(pk)
 );
 CREATE INDEX ser_req_series_fk ON series_req(series_fk);
 CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
 CREATE INDEX ser_req_sps_id ON series_req(sps_id);	
+CREATE INDEX ser_req_service ON series_req(req_service);
+CREATE INDEX ser_req_phys ON series_req(req_physician);
+CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name);
+CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name);
 
 CREATE TABLE media (
 	pk          	INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT media_pk PRIMARY KEY,

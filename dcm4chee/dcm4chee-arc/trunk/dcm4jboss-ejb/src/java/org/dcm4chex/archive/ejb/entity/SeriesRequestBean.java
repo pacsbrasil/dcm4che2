@@ -45,6 +45,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
@@ -71,7 +72,27 @@ public abstract class SeriesRequestBean implements EntityBean {
             throws CreateException {
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setSpsId(ds.getString(Tags.SPSID));
+        setRequestingService(ds.getString(Tags.RequestingService));
+        PersonName pn = ds.getPersonName(Tags.RequestingPhysician);
+        if (pn != null) {
+            setRequestingPhysician(
+                    toUpperCase(pn.toComponentGroupString(false)));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                setRequestingPhysicianIdeographicName(
+                        ipn.toComponentGroupString(false));                
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                setRequestingPhysicianPhoneticName(
+                        ppn.toComponentGroupString(false));                
+            }
+        }
         return null;
+    }
+
+    private static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : null;
     }
     
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
@@ -98,7 +119,6 @@ public abstract class SeriesRequestBean implements EntityBean {
     public abstract void setPk(Long pk);
     
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="req_proc_id"
      */
     public abstract String getRequestedProcedureId();
@@ -106,13 +126,37 @@ public abstract class SeriesRequestBean implements EntityBean {
     public abstract void setRequestedProcedureId(String id);
 
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="sps_id"
      */
     public abstract String getSpsId();
 
     public abstract void setSpsId(String no);
 
+    /**
+     * @ejb.persistence column-name="req_service"
+     */
+    public abstract String getRequestingService();
+
+    public abstract void setRequestingService(String service);
+
+    /**
+     * @ejb.persistence column-name="req_physician"
+     */
+    public abstract String getRequestingPhysician();
+    public abstract void setRequestingPhysician(String name);
+
+    /**
+     * @ejb.persistence column-name="req_phys_i_name"
+     */
+    public abstract String getRequestingPhysicianIdeographicName();
+    public abstract void setRequestingPhysicianIdeographicName(String name);
+
+    /**
+     * @ejb.persistence column-name="req_phys_p_name"
+     */
+    public abstract String getRequestingPhysicianPhoneticName();
+    public abstract void setRequestingPhysicianPhoneticName(String name);
+    
     /**
      * @ejb.relation name="series-request-attributes"
      *               role-name="request-attributes-of-series"
@@ -130,6 +174,8 @@ public abstract class SeriesRequestBean implements EntityBean {
         return "SeriesRequestAttribute[pk=" + getPk() 
                 + ", rpid=" + getRequestedProcedureId()
                 + ", spsid=" + getSpsId()
+                + ", service=" + getRequestingService()
+                + ", phys=" + getRequestingPhysician()
                 + ", series->" + getSeries() + "]";
     }
     

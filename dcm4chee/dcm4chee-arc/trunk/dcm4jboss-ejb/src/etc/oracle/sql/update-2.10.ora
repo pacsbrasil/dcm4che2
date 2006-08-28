@@ -1,0 +1,10 @@
+-- Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
+
+ALTER TABLE series_req ADD req_service NVARCHAR2(255);
+ALTER TABLE series_req ADD req_physician NVARCHAR2(255);
+ALTER TABLE series_req ADD req_phys_i_name NVARCHAR2(255);
+ALTER TABLE series_req ADD req_phys_p_name NVARCHAR2(255);
+CREATE INDEX ser_req_service ON series_req(req_service);
+CREATE INDEX ser_req_phys ON series_req(req_physician);
+CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name);
+CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name);
