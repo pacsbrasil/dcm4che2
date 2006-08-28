@@ -160,6 +160,29 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createPatient(Dataset ds) throws CreateException {
         return patHome.create(ds).getAttributes(true);
     }
+    
+    /**
+     * @throws CreateException
+     * @ejb.interface-method
+     */
+    public PatientLocal getOrCreatePatient(Dataset ds) {
+        try {
+            String pid = ds.getString(Tags.PatientID);
+            String issuer = ds.getString(Tags.IssuerOfPatientID);
+            Collection c = issuer == null ? patHome.findByPatientId(pid)
+                    : patHome.findByPatientIdWithExactIssuer(pid, issuer);
+            if (c.isEmpty()) { return patHome.create(ds); }
+            if (c.size() > 1) {
+            		throw new FinderException("Patient ID[id="
+                    + pid + ",issuer=" + issuer + " ambiguous"); 
+            }
+            return (PatientLocal) c.iterator().next();
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        }
+    }
 
     /**
      * @ejb.interface-method
