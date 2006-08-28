@@ -40,8 +40,25 @@ class GenericEntityMgmtBean implements GenericEntityMgmt {
     public GenericEntityMgmtBean() {
     }
 
+    public <T> T findByPk(Class<T> entityClass, Integer pk) {
+        return findByPk(entityClass, pk, false);
+    }
+
     public <T> T findByPk(Class<T> entityClass, Long pk) {
         return findByPk(entityClass, pk, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T findByPk(Class<T> entityClass, Integer pk, boolean lock) {
+        T entity;
+        if (lock) {
+            entity = (T) ((org.hibernate.ejb.HibernateEntityManager) em)
+                    .getSession().load(entityClass, pk,
+                            org.hibernate.LockMode.UPGRADE);
+        } else {
+            entity = (T) em.find(entityClass, pk);
+        }
+        return entity;
     }
 
     @SuppressWarnings("unchecked")
@@ -71,6 +88,8 @@ class GenericEntityMgmtBean implements GenericEntityMgmt {
         // Using Hibernate, it's more difficult with EntityManager and EJB-QL
         Criteria crit = session.createCriteria(entityClass);
         Example example = Example.create(exampleInstance);
+        example.excludeNone();
+        example.excludeZeroes();
         for (String exclude : excludeProperty) {
             example.excludeProperty(exclude);
         }
@@ -92,21 +111,40 @@ class GenericEntityMgmtBean implements GenericEntityMgmt {
         }
         return (Collection<T>) entries.values();
     }
-
-    public Query createNamedQuery(String namedQuery) {
-        return em.createNamedQuery(namedQuery);
+    
+    @SuppressWarnings("unchecked")
+    public <T> List<T> query(Class<T> entityClass, String query, Object... paramValues) {
+        org.hibernate.Query q = session.createQuery(query);
+        int i = 0;
+        for (Object param : paramValues) {
+            q.setParameter(i++, param);            
+        }
+        return q.list();
     }
 
-    public org.hibernate.Query createCachedNamedQuery(String cacheRegion,
-            String namedQuery) {
-        org.hibernate.Query query = session.getNamedQuery(namedQuery);
-        query.setCacheable(true).setCacheRegion(cacheRegion);
-        return query;
+    @SuppressWarnings("unchecked")
+    public <T> List<T> queryByName(Class<T> entityClass, String namedQuery, Object... paramValues) {     
+        org.hibernate.Query q = session.getNamedQuery(namedQuery);
+        int i = 0;
+        for (Object param : paramValues) {
+            q.setParameter(i++, param);            
+        }
+        return q.list();
     }
 
-    public Query createQuery(String query) {
-        return em.createQuery(query);
+    @SuppressWarnings("unchecked")
+    public <T> List<T> cachedQueryByName(Class<T> entityClass, String cacheRegion,
+            String namedQuery, Object... paramValues) {
+        org.hibernate.Query q = session.getNamedQuery(namedQuery);
+        q.setCacheable(true).setCacheRegion(cacheRegion);
+        int i = 0;
+        for (Object param : paramValues) {
+            q.setParameter(i++, param);            
+        }
+        return q.list();
     }
+
+   
 
     public void merge(Object entity) {
         em.merge(entity);
