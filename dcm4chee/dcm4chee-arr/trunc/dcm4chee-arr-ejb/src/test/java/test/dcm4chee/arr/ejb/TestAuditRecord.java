@@ -33,8 +33,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-import test.dcm4chee.JBossTestBase;
-
 /**
  * Unit test for AuditRecord related entites
  * 
@@ -44,7 +42,7 @@ import test.dcm4chee.JBossTestBase;
  */
 public class TestAuditRecord {
 
-    private static Logger log = LoggerFactory.getLogger(JBossTestBase.class);
+    private static Logger log = LoggerFactory.getLogger(TestAuditRecord.class);
 
     protected final static Logger syslog = LoggerFactory.getLogger("syslog");
 
@@ -92,6 +90,22 @@ public class TestAuditRecord {
 
     @AfterClass(groups = { "mdb", "integration.jmx", "stress.jmx" })
     public void tearDown() {
+        try {
+            GenericEntityMgmt mgmt = Ejb3Util
+                    .getRemoteInterface(GenericEntityMgmt.class);
+            List<AuditRecord> arrs = mgmt.findAll(AuditRecord.class);
+
+            for (AuditRecord ar : arrs) {
+                mgmt.remove(ar);
+            }
+
+            arrs = mgmt.findAll(AuditRecord.class);
+            assert arrs.size() == 0;
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
+            throw new RuntimeException(ex);
+        }
+        
         try {
             conn.close();
         } catch (Exception e) {
