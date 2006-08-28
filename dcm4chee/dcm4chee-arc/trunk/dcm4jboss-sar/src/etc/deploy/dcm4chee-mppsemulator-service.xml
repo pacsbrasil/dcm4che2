@@ -5,7 +5,6 @@
   <mbean code="org.dcm4chex.archive.dcm.mppsscu.MPPSEmulatorService" 
          name="dcm4chee.archive:service=MPPSEmulator"
          xmbean-dd="xmdesc/dcm4chee-mppsemulator-xmbean.xml">
-    <depends>dcm4chee.archive:service=MWLScu</depends>
     <depends>dcm4chee.archive:service=MPPSScu</depends>
     <!-- To avoid NameNotBoundExceptions during server startup. MUST be
 	removed, if the service is NOT deployed in the same jboss instance
