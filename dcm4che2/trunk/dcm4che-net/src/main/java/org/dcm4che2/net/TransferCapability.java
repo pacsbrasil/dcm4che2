@@ -42,7 +42,7 @@ package org.dcm4che2.net;
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 
 /**
- * DICOM Standard, Part 19, Annex H: Transfer Capability – The description of
+ * DICOM Standard, Part 15, Annex H: Transfer Capability – The description of
  * the SOP classes and syntaxes supported by a Network AE.
  * <p>
  * An instance of the <code>TransferCapability</code> class describes the

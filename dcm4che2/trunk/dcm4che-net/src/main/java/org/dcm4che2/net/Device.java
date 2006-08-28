@@ -51,7 +51,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- * DICOM Supplement 67 compliant description of a DICOM enabled system or
+ * DICOM Part 15, Annex H compliant description of a DICOM enabled system or
  * device. This is used to describe a DICOM-enabled network endpoint in terms of
  * its physical attributes (serial number, manufacturer, etc.), its context
  * (issuer of patient ids used by the device, etc.), as well as its capabilities

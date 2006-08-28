@@ -66,7 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * DICOM Part 19, Annex H compliant description of a DICOM network service.
+ * DICOM Part 15, Annex H compliant description of a DICOM network service.
  * <p>
  * A Network AE is an application entity that provides services on a network. A
  * Network AE will have the 16 same functional capability regardless of the
