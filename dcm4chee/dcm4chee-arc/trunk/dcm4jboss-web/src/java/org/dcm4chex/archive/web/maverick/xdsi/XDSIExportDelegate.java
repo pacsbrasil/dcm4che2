@@ -98,19 +98,49 @@ public class XDSIExportDelegate {
     	Dataset rootInfo = getRootInfo(xdsiModel);
     	List contentItems = getContentItems( xdsiModel );
     	contentItems.addAll(items);
-    	Dataset keyObjectDS = getKeyObject( xdsiModel.getInstances(), rootInfo, contentItems);
         try {
-            Boolean b = (Boolean) server.invoke(xdsiServiceName,
-                    "sendSOAP",
-                    new Object[] { keyObjectDS, xdsiModel.listMetadataProperties() },
-                    new String[] { Dataset.class.getName(), Properties.class.getName() });
+        	Boolean b;
+        	if ( ! xdsiModel.isPdfExport() ) {
+	        	Dataset keyObjectDS = getKeyObject( xdsiModel.getInstances(), rootInfo, contentItems);
+	            b = (Boolean) server.invoke(xdsiServiceName,
+	                    "sendSOAP",
+	                    new Object[] { keyObjectDS, xdsiModel.listMetadataProperties() },
+	                    new String[] { Dataset.class.getName(), Properties.class.getName() });
+        	} else {
+            	String docUID = (String) xdsiModel.getInstances().iterator().next();
+                b = (Boolean) server.invoke(xdsiServiceName,
+                        "exportPDF",
+                        new Object[] { docUID, xdsiModel.listMetadataProperties() },
+                        new String[] { String.class.getName(), Properties.class.getName() });
+            }
             return b.booleanValue();
         } catch (Exception e) {
             log.warn("Failed to export Selection:", e);
             throw e;
         }
     }
-    
+
+     public boolean exportPDF(XDSIModel xdsiModel) throws Exception{
+    	if ( xdsiModel.getNumberOfInstances() < 1 ) {
+    		throw new IllegalArgumentException("No Instances selected!");
+    	}
+    	Collection items = getObserverContextItems(getAuthorPerson(xdsiModel.getUser()));
+    	Dataset rootInfo = getRootInfo(xdsiModel);
+    	List contentItems = getContentItems( xdsiModel );
+    	contentItems.addAll(items);
+    	String docUID = (String) xdsiModel.getInstances().iterator().next();
+        try {
+            Boolean b = (Boolean) server.invoke(xdsiServiceName,
+                    "exportPDF",
+                    new Object[] { docUID, xdsiModel.listMetadataProperties() },
+                    new String[] { String.class.getName(), Properties.class.getName() });
+            return b.booleanValue();
+        } catch (Exception e) {
+            log.warn("Failed to export Selection:", e);
+            throw e;
+        }
+    }
+     
 	private Collection getObserverContextItems(String personName) {
 		Dataset ds = dof.newDataset();
 		ds.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");

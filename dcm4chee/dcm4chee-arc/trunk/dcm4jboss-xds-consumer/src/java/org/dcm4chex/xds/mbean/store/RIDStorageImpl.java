@@ -154,6 +154,7 @@ public class RIDStorageImpl implements Storage {
 					for ( int len; (len = is.read(buffer)) > 0; ) {
 						dos.write(buffer, 0, len);
 					}
+					is.close();
 				} else if ( content instanceof MimeMultipart ) {
 					MimeMultipart mmp = (MimeMultipart) content;
 					mmp.writeTo( dos );

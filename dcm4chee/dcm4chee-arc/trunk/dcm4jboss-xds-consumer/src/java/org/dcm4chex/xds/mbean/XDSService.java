@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.xds.mbean;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,6 +66,10 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.dcm4cheri.util.UIDGeneratorImpl;
@@ -330,7 +335,7 @@ public class XDSService extends ServiceMBeanSupport {
 		this.fetchNewPatIDURL = fetchNewPatIDURL;
 	}
 	
-	public XDSResponseObject exportDocument( SOAPMessage message ) throws SOAPException, IOException {
+	public XDSResponseObject exportDocument( SOAPMessage message ) throws SOAPException, IOException, ParserConfigurationException, SAXException {
 		List storedFiles = new ArrayList();
 		if ( log.isDebugEnabled()) {
 			log.debug("SOAP message:");
@@ -610,9 +615,23 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @return
      * @throws IOException
      * @throws SOAPException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 * @throws SOAPException
 	 */
-	private void dumpSOAPMessage(SOAPMessage message) throws SOAPException, IOException {
-		if ( log.isDebugEnabled() ) message.writeTo(System.out);
+	private void dumpSOAPMessage(SOAPMessage message) throws ParserConfigurationException, SAXException, SOAPException, IOException {
+/*		Document d = getDocumentFromMessage(message);
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write("SOAP message:".getBytes());
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.transform(new DOMSource(d), new StreamResult(out));t.
+            log.info(out.toString());
+        } catch (Exception e) {
+            log.warn("Failed to log SOAP message", e);
+        }
+/*_*/        
 	}
 	
 	public String fetchNewPatientIDfromNIST() throws IOException {

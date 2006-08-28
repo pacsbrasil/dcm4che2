@@ -73,7 +73,7 @@ public class XDSIModel extends BasicFormModel {
 	
 	private Set instances;
 	
-	private boolean allowPDF, allowText;
+	private boolean exportPDF;
 	
 	private int selectedTitle, selectedEventCode, removeEventCode, selectedClassCode, selectedAuthorRole,
 				selectedContentTypeCode, selectedHealthCareTypeCode;
@@ -161,9 +161,6 @@ public class XDSIModel extends BasicFormModel {
 	 */
 	public void setInstances(Set instances) {
 		this.instances = instances;
-		allowPDF = false;
-		allowText = false;
-		//TODO how to get Modality and SOPClassUID?
 	}
 	
 	public int getNumberOfInstances() {
@@ -174,18 +171,14 @@ public class XDSIModel extends BasicFormModel {
 	/**
 	 * @return Returns the allowPDF.
 	 */
-	public boolean isAllowPDF() {
-		return allowPDF;
+	public boolean isPdfExport() {
+		return exportPDF;
 	}
-	/**
-	 * @return Returns the allowText.
-	 */
-	public boolean isAllowText() {
-		return allowText;
+	
+	public void setPdfExport(boolean b) {
+		exportPDF = b;
 	}
-/*************************************************************************
- * 
- */
+	
 	public void setSelectedAuthorRole(int selected) {
 		if ( authorRoles == null || authorRoles.length <= selected) return;
 		this.selectedAuthorRole = selected;
@@ -205,6 +198,8 @@ public class XDSIModel extends BasicFormModel {
 	 */
 	public void setSelectedDocTitle(int selected) {
 		this.selectedTitle = selected;
+		if ( docTitleCodes != null ) 
+			props.setProperty("docTitle", ""+selectedDocTitle());
 	}
 	public int getSelectedDocTitle() {
 		return selectedTitle;

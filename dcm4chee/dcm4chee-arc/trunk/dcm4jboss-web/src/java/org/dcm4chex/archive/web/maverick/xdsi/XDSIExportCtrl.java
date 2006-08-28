@@ -39,7 +39,9 @@
 
 package org.dcm4chex.archive.web.maverick.xdsi;
 
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -75,13 +77,19 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
     protected String perform() {
     	XDSIModel model = (XDSIModel) getForm();
         try {
+        	HttpServletRequest rq = getCtx().getRequest();
+        	if ( rq.getParameter("docUID") != null ) {
+    			Set set = new HashSet();
+    			set.add(rq.getParameter("docUID"));
+    			model.setInstances(set);
+    			model.setPdfExport(true);
+        	}
         	if ( model.getNumberOfInstances() < 1) {
-        		FolderForm.setExternalPopupMsg(this.getCtx(),"Nothing selected for export! Please select at least one patient, study, series or instance");
-        		return CANCEL;
+    			FolderForm.setExternalPopupMsg(this.getCtx(),"Nothing selected for export! Please select at least one patient, study, series or instance");
+    			return CANCEL;
         	}
         	model.setErrorCode("OK");
         	model.setPopupMsg(null);
-        	HttpServletRequest rq = getCtx().getRequest();
         	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
         		return CANCEL;
         	}

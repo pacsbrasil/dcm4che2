@@ -520,7 +520,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		if ( xdsiDelegate == null ) {
     			xdsiDelegate = new XDSIExportDelegate();
     			xdsiDelegate.init(getCtx());
-    			getCtx().getRequest().getSession().setAttribute(TeachingFileDelegate.TF_ATTRNAME, xdsiDelegate);
+    			getCtx().getRequest().getSession().setAttribute(XDSIExportDelegate.XDSI_ATTRNAME, xdsiDelegate);
     		}
         	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
 					 folderForm.getStickyStudies(),
