@@ -77,25 +77,26 @@ import org.jboss.system.ServiceMBeanSupport;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 15.11.2004
- *
+ * 
  */
 public class MPPSScuService extends ServiceMBeanSupport implements
         MessageListener, NotificationListener {
 
     private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian};
+            UIDs.ImplicitVRLittleEndian };
 
-	private static final int ERR_MPPS_RJ = -2;
+    private static final int ERR_MPPS_RJ = -2;
 
-	private static final int ERR_ASSOC_RJ = -1;
+    private static final int ERR_ASSOC_RJ = -1;
 
     private static final int PCID_MPPS = 1;
 
-	private static final String NONE = "NONE";
+    private static final String NONE = "NONE";
 
     private static final String[] EMPTY = {};
 
-    private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID, Tags.SOPInstanceUID};
+    private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID,
+            Tags.SOPInstanceUID };
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
@@ -106,7 +107,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     private String[] forwardAETs = EMPTY;
 
     private ObjectName mppsScpServiceName;
-    
+
     private String queueName;
 
     private int acTimeout;
@@ -115,24 +116,24 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 
     private int soCloseDelay;
 
-	private int concurrency = 1;
+    private int concurrency = 1;
 
-	public final int getConcurrency() {
-		return concurrency;
-	}
+    public final int getConcurrency() {
+        return concurrency;
+    }
 
-	public final void setConcurrency(int concurrency) throws Exception {
-		if (concurrency <= 0)
-			throw new IllegalArgumentException("Concurrency: " + concurrency);
-		if (this.concurrency != concurrency) {
-			final boolean restart = getState() == STARTED;
-			if (restart)
-				stop();
-			this.concurrency = concurrency;
-			if (restart)
-				start();
-		}
-	}
+    public final void setConcurrency(int concurrency) throws Exception {
+        if (concurrency <= 0)
+            throw new IllegalArgumentException("Concurrency: " + concurrency);
+        if (this.concurrency != concurrency) {
+            final boolean restart = getState() == STARTED;
+            if (restart)
+                stop();
+            this.concurrency = concurrency;
+            if (restart)
+                start();
+        }
+    }
 
     public final int getAcTimeout() {
         return acTimeout;
@@ -185,21 +186,21 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     }
 
     public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();        
+        return tlsConfig.getReceiveBufferSize();
     }
-    
+
     public final void setReceiveBufferSize(int size) {
         tlsConfig.setReceiveBufferSize(size);
     }
 
     public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();        
+        return tlsConfig.getSendBufferSize();
     }
-    
+
     public final void setSendBufferSize(int size) {
         tlsConfig.setSendBufferSize(size);
     }
-        
+
     public final boolean isTcpNoDelay() {
         return tlsConfig.isTcpNoDelay();
     }
@@ -207,15 +208,15 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     public final void setTcpNoDelay(boolean on) {
         tlsConfig.setTcpNoDelay(on);
     }
-        
+
     public final String getQueueName() {
         return queueName;
     }
-    
+
     public final void setQueueName(String queueName) {
         this.queueName = queueName;
     }
-    
+
     public final String getCallingAET() {
         return callingAET;
     }
@@ -234,17 +235,13 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 
     protected void startService() throws Exception {
         JMSDelegate.startListening(queueName, this, concurrency);
-        server.addNotificationListener(mppsScpServiceName,
-                this,
-                MPPSScpService.NOTIF_FILTER,
-                null);
+        server.addNotificationListener(mppsScpServiceName, this,
+                MPPSScpService.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
-        server.removeNotificationListener(mppsScpServiceName,
-                this,
-                MPPSScpService.NOTIF_FILTER,
-                null);
+        server.removeNotificationListener(mppsScpServiceName, this,
+                MPPSScpService.NOTIF_FILTER, null);
         JMSDelegate.stopListening(queueName);
     }
 
@@ -254,9 +251,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
             MPPSOrder order = new MPPSOrder(mpps, forwardAETs[i]);
             try {
                 log.info("Scheduling " + order);
-                JMSDelegate.queue(queueName,
-                        order,
-                        Message.DEFAULT_PRIORITY,
+                JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                         0L);
             } catch (JMSException e) {
                 log.error("Failed to schedule " + order, e);
@@ -270,23 +265,24 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         try {
             MPPSOrder order = (MPPSOrder) om.getObject();
             log.info("Start processing " + order);
-			try {
-	            sendMPPS(order.isCreate(), order.getDataset(), order.getDestination());
-	            log.info("Finished processing " + order);
-			} catch (Exception e) {
-				final int failureCount = order.getFailureCount() + 1;
-				order.setFailureCount(failureCount);
-				final long delay = retryIntervalls.getIntervall(failureCount);
-				if (delay == -1L) {
-					log.error("Give up to process " + order, e);
-				} else {
-					log.warn("Failed to process " + order
-							+ ". Scheduling retry.", e);
-					JMSDelegate.queue(queueName, order, 0, System
-							.currentTimeMillis()
-							+ delay);
-				}
-			}
+            try {
+                sendMPPS(order.isCreate(), order.getDataset(), 
+                        order.getDestination());
+                log.info("Finished processing " + order);
+            } catch (Exception e) {
+                final int failureCount = order.getFailureCount() + 1;
+                order.setFailureCount(failureCount);
+                final long delay = retryIntervalls.getIntervall(failureCount);
+                if (delay == -1L) {
+                    log.error("Give up to process " + order, e);
+                } else {
+                    log.warn("Failed to process " + order
+                            + ". Scheduling retry.", e);
+                    JMSDelegate.queue(queueName, order, 0, System
+                            .currentTimeMillis()
+                            + delay);
+                }
+            }
         } catch (JMSException e) {
             log.error("jms error during processing message: " + message, e);
         } catch (Throwable e) {
@@ -296,71 +292,71 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     }
 
     public void sendMPPS(boolean create, Dataset mpps, String aet)
-			throws DcmServiceException, InterruptedException, IOException,
-			UnkownAETException, SQLException {
-		AEData aeData = new AECmd(aet).getAEData();
-		if (aeData == null) {
-			throw new UnkownAETException("Unkown Destination AET: " + aet);
-		}
-		AssociationFactory af = AssociationFactory.getInstance();
-		Association a = af.newRequestor(tlsConfig.createSocket(aeData));
-		a.setAcTimeout(acTimeout);
-		a.setDimseTimeout(dimseTimeout);
-		a.setSoCloseDelay(soCloseDelay);
-		AAssociateRQ rq = af.newAAssociateRQ();
-		rq.setCalledAET(aet);
-		rq.setCallingAET(callingAET);
-		rq.addPresContext(af.newPresContext(PCID_MPPS,
-				UIDs.ModalityPerformedProcedureStep, NATIVE_TS));
-		PDU ac = a.connect(rq);
-		if (!(ac instanceof AAssociateAC)) {
-			throw new DcmServiceException(ERR_ASSOC_RJ,
-					"Association not accepted by " + aet + ": " + ac);
-		}
-		ActiveAssociation aa = af.newActiveAssociation(a, null);
-		try {
-			aa.start();
-			if (a.getAcceptedTransferSyntaxUID(PCID_MPPS) == null) {
-				throw new DcmServiceException(ERR_MPPS_RJ,
-						"MPPS not supported by remote AE: " + aet);
-			}
-			DcmObjectFactory dof = DcmObjectFactory.getInstance();
-			Command cmdRq = dof.newCommand();
-			if (create) {
-				cmdRq.initNCreateRQ(a.nextMsgID(),
-						UIDs.ModalityPerformedProcedureStep, mpps
-								.getString(Tags.SOPInstanceUID));
-			} else {
-				cmdRq.initNSetRQ(a.nextMsgID(),
-						UIDs.ModalityPerformedProcedureStep, mpps
-								.getString(Tags.SOPInstanceUID));
-			}
-			Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, mpps
-					.exclude(EXCLUDE_TAGS));
-			final Dimse dimseRsp = aa.invoke(dimseRq).get();
-			final Command cmdRsp = dimseRsp.getCommand();
-			final int status = cmdRsp.getStatus();
-			switch (status) {
-			case 0x0000:
-				break;
-			case 0x0116:
-				log.warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
-								+ aet);
-				break;
-			default:
-				log.error("Received Error Status " 
-						+ Integer.toHexString(status) 
-						+ "H, Error Comment: "
-						+ cmdRsp.getString(Tags.ErrorComment));
-				throw new DcmServiceException(status, cmdRsp
-						.getString(Tags.ErrorComment));
-			}
-		} finally {
-			try {
-				aa.release(true);
-			} catch (Exception e) {
-				log.warn("Failed to release " + aa.getAssociation());
-			}
-		}
-	}
+            throws DcmServiceException, InterruptedException, IOException,
+            UnkownAETException, SQLException {
+        AEData aeData = new AECmd(aet).getAEData();
+        if (aeData == null) {
+            throw new UnkownAETException("Unkown Destination AET: " + aet);
+        }
+        AssociationFactory af = AssociationFactory.getInstance();
+        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
+        a.setAcTimeout(acTimeout);
+        a.setDimseTimeout(dimseTimeout);
+        a.setSoCloseDelay(soCloseDelay);
+        AAssociateRQ rq = af.newAAssociateRQ();
+        rq.setCalledAET(aet);
+        rq.setCallingAET(callingAET);
+        rq.addPresContext(af.newPresContext(PCID_MPPS,
+                UIDs.ModalityPerformedProcedureStep, NATIVE_TS));
+        PDU ac = a.connect(rq);
+        if (!(ac instanceof AAssociateAC)) {
+            throw new DcmServiceException(ERR_ASSOC_RJ,
+                    "Association not accepted by " + aet + ": " + ac);
+        }
+        ActiveAssociation aa = af.newActiveAssociation(a, null);
+        try {
+            aa.start();
+            if (a.getAcceptedTransferSyntaxUID(PCID_MPPS) == null) {
+                throw new DcmServiceException(ERR_MPPS_RJ,
+                        "MPPS not supported by remote AE: " + aet);
+            }
+            DcmObjectFactory dof = DcmObjectFactory.getInstance();
+            Command cmdRq = dof.newCommand();
+            if (create) {
+                cmdRq.initNCreateRQ(a.nextMsgID(),
+                        UIDs.ModalityPerformedProcedureStep, mpps
+                                .getString(Tags.SOPInstanceUID));
+            } else {
+                cmdRq.initNSetRQ(a.nextMsgID(),
+                        UIDs.ModalityPerformedProcedureStep, mpps
+                                .getString(Tags.SOPInstanceUID));
+            }
+            Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, mpps
+                    .exclude(EXCLUDE_TAGS));            
+            final Dimse dimseRsp = aa.invoke(dimseRq).get();
+            final Command cmdRsp = dimseRsp.getCommand();
+            final int status = cmdRsp.getStatus();
+            switch (status) {
+            case 0x0000:
+                break;
+            case 0x0116:
+                log.warn("Received Warning Status 116H " +
+                        "(=Attribute Value Out of Range) from remote AE "
+                        + aet);
+                break;
+            default:
+                log.error("Received Error Status "
+                        + Integer.toHexString(status) + "H, Error Comment: "
+                        + cmdRsp.getString(Tags.ErrorComment));
+                throw new DcmServiceException(status, cmdRsp
+                        .getString(Tags.ErrorComment));
+            }
+        } finally {
+            try {
+                aa.release(true);
+            } catch (Exception e) {
+                log.warn("Failed to release " + aa.getAssociation());
+            }
+        }
+    }
 }
