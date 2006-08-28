@@ -229,6 +229,16 @@
       </descriptors>
    </attribute>
    
+   <attribute access="read-write" getMethod="getRidURL" setMethod="setRidURL">
+      <description>RID URL to get PDF Document for exportPDF.
+      </description>
+      <name>RidURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="http://localhost:8080/IHERetrieveDocument?requestType=DOCUMENT&amp;preferredContentType=application/pdf&amp;documentUID="/>
+      </descriptors>
+   </attribute>
+   
    <attribute access="read-write" getMethod="getPixQueryServiceName" setMethod="setPixQueryServiceName">
       <description>Used internally - do NOT modify.
       </description>
@@ -296,6 +306,31 @@
      <parameter>
        <description>SOP Instance UID of Key Object</description>
        <name>kosIuid</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <return-type>boolean</return-type>
+	</operation>
+   <operation impact="ACTION">
+     <description>Performs a simple soap test.</description>
+     <name>exportPDF</name>
+     <parameter>
+       <description>SOP Instance UID of PDF RID document</description>
+       <name>iuid</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Metadata properties</description>
+       <name>mdProps</name>
+       <type>java.util.Properties</type>
+     </parameter>
+     <return-type>boolean</return-type>
+	</operation>
+   <operation impact="ACTION">
+     <description>Performs a simple soap test.</description>
+     <name>exportPDF</name>
+     <parameter>
+       <description>SOP Instance UID of PDF RID document</description>
+       <name>iuid</name>
        <type>java.lang.String</type>
      </parameter>
      <return-type>boolean</return-type>

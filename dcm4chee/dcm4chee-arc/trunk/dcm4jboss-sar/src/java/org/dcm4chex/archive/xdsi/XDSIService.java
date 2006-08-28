@@ -40,6 +40,7 @@ package org.dcm4chex.archive.xdsi;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -47,6 +48,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -67,6 +69,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPBody;
@@ -76,6 +79,10 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -83,6 +90,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
@@ -93,6 +101,7 @@ import org.jboss.system.server.ServerConfigLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
 
@@ -116,6 +125,8 @@ public class XDSIService extends ServiceMBeanSupport {
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
 
     private static ServerConfig config = ServerConfigLocator.locate();
+    
+    private DocumentBuilderFactory dbFactory;
 
 	private String testPath;
 	
@@ -160,6 +171,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	private HostnameVerifier origHostnameVerifier = null;
 	private String allowedUrlHost = null;
 	
+	private String ridURL;
     /**
 	 * @return Returns the property file path.
 	 */
@@ -535,6 +547,18 @@ public class XDSIService extends ServiceMBeanSupport {
 		return sb.toString();
 	}
 
+	/**
+	 * @return Returns the ridURL.
+	 */
+	public String getRidURL() {
+		return ridURL;
+	}
+	/**
+	 * @param ridURL The ridURL to set.
+	 */
+	public void setRidURL(String ridURL) {
+		this.ridURL = ridURL;
+	}
 // Operations	
 	
 	/**
@@ -762,7 +786,7 @@ public class XDSIService extends ServiceMBeanSupport {
     }
 	
 	public boolean sendSOAP(String kosIuid, Properties mdProps) throws SQLException {
-		Dataset kos = queryKOS( kosIuid );
+		Dataset kos = queryInstance( kosIuid, UIDs.KeyObjectSelectionDocument );
 		if ( kos == null ) return false;
 		if ( mdProps == null ) mdProps = this.metadataProps;
 		XDSMetadata md = new XDSMetadata(kos, mdProps);
@@ -778,10 +802,10 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	
 	
-	private Dataset queryKOS(String kosIuid) {
+	private Dataset queryInstance(String kosIuid, String sopClassUID) {
 		Dataset keys = DcmObjectFactory.getInstance().newDataset();
 		keys.putUI(Tags.SOPInstanceUID, kosIuid);
-		keys.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
+		keys.putUI(Tags.SOPClassUID, sopClassUID);
 		QueryCmd query = null;
 		try {
 			query = QueryCmd.createInstanceQuery(keys, false, true);
@@ -798,7 +822,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 
 	public boolean sendSOAP(String kosIuid) throws SQLException {
-		Dataset kos = queryKOS( kosIuid );
+		Dataset kos = queryInstance( kosIuid, UIDs.KeyObjectSelectionDocument );
 		return sendSOAP(kos,null);
 	}
 	public boolean sendSOAP(Dataset kos, Properties mdProps) throws SQLException {
@@ -817,6 +841,32 @@ public class XDSIService extends ServiceMBeanSupport {
 							this.getDocRepositoryURI(), 
 							docRepositoryAET,
 							getSUIDs(kos));
+		return b;
+	}
+
+	public boolean exportPDF(String iuid) throws SQLException, MalformedURLException {
+		return exportPDF(iuid,null);
+	}
+	public boolean exportPDF(String iuid, Properties mdProps) throws SQLException, MalformedURLException {
+		log.debug("export PDF to XDS Instance UID:"+iuid);
+		Dataset ds = queryInstance(iuid, null);
+		if ( ds == null ) return false;
+		String pdfUID = UIDGenerator.getInstance().createUID();
+		log.info("Document UID of exported PDF:"+pdfUID);
+		ds.putUI(Tags.SOPInstanceUID,pdfUID);
+		if ( mdProps == null ) mdProps = this.metadataProps;
+		mdProps.setProperty("mimetype", "application/pdf");
+		mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
+		XDSMetadata md = new XDSMetadata(ds, mdProps);
+		Document metadata = md.getMetadata();
+		XDSIDocument doc = new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",DOCUMENT_ID);
+		//XDSIDocument doc = new XDSIFileDocument(new File("C:/xdstest.pdf"), "application/pdf",DOCUMENT_ID);
+		boolean b = sendSOAP(metadata,new XDSIDocument[]{doc} , null);
+		if ( b ) logExport( ds.getString(Tags.PatientID), 
+							ds.getString(Tags.PatientName),
+							this.getDocRepositoryURI(), 
+							docRepositoryAET,
+							getSUIDs(ds));
 		return b;
 	}
 	
@@ -965,9 +1015,34 @@ public class XDSIService extends ServiceMBeanSupport {
 	 * @return
      * @throws IOException
      * @throws SOAPException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
 	 */
-	private void dumpSOAPMessage(SOAPMessage message) throws SOAPException, IOException {
-		message.writeTo(System.out);
+	private void dumpSOAPMessage(SOAPMessage message) throws SOAPException, IOException, ParserConfigurationException, SAXException {
+/*		Document d = getDocumentFromMessage(message);
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write("SOAP message:".getBytes());
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.transform(new DOMSource(d), new StreamResult(out));
+            log.info(out.toString());
+        } catch (Exception e) {
+            log.warn("Failed to log SOAP message", e);
+        }
+/*_*/        
+	}
+	
+	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
+		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
+		if ( dbFactory == null ) {
+	        dbFactory = DocumentBuilderFactory.newInstance();
+	        dbFactory.setNamespaceAware(true);
+		}
+        DocumentBuilder builder = dbFactory.newDocumentBuilder();
+        Document d = builder.parse( src.getInputStream() );
+        NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1","SubmitObjectsRequest");
+        nl.item(0);
+        return d;
 	}
 	
 	private Document readXMLFile(File xmlFile){

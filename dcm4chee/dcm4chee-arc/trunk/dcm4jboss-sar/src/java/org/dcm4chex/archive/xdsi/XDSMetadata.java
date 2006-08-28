@@ -272,11 +272,14 @@ public class XDSMetadata {
 	 */
 	private void addExtrinsicObject() throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		attr.addAttribute("", "id", "id", "", XDSIService.DOCUMENT_ID);		
-		attr.addAttribute("", ATTR_MIMETYPE, ATTR_MIMETYPE, "", "application/dicom");		
+		attr.addAttribute("", "id", "id", "", XDSIService.DOCUMENT_ID);
+		String mime = mdValues.getProperty("mimetype","application/dicom");
+		attr.addAttribute("", ATTR_MIMETYPE, ATTR_MIMETYPE, "", mime);		
 		attr.addAttribute("", ATTR_OBJECTTYPE, ATTR_OBJECTTYPE, "", UUID.XDSDocumentEntry);		
     	th.startElement("", TAG_EXTRINSICOBJECT, TAG_EXTRINSICOBJECT, attr );
-    	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, dsKO.getItem(Tags.ConceptNameCodeSeq).getString(Tags.CodeMeaning));
+    	Dataset cnDS = dsKO.getItem(Tags.ConceptNameCodeSeq);
+    	String title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
+    	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
     	addLocalized("Description", EMPTY_ATTRIBUTES, mdValues.getProperty("description",null));
     	addExtrinsicEntries();
     	th.endElement("", TAG_EXTRINSICOBJECT, TAG_EXTRINSICOBJECT );
@@ -307,6 +310,7 @@ public class XDSMetadata {
 				mdValues.getProperty("confidentialityCodeCodingSchemeOID","Connect-a-thon confidentialityCodes"));
 
 		addEventCodeList();
+		String mime = mdValues.getProperty("mimetype","application/dicom");
 		addClassification(UUID.XDSDocumentEntry_formatCode, XDSIService.DOCUMENT_ID, 
 				UIDs.KeyObjectSelectionDocument,
 				"Key Object Selection Document", 
@@ -444,7 +448,9 @@ public class XDSMetadata {
 		AttributesImpl attr = new AttributesImpl();
 		attr.addAttribute("", "id", "id", "", "SubmissionSet");		
     	th.startElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE, attr );
-    	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, dsKO.getItem(Tags.ConceptNameCodeSeq).getString(Tags.CodeMeaning));
+      	Dataset cnDS = dsKO.getItem(Tags.ConceptNameCodeSeq);
+    	String title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
+    	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
     	addLocalized(TAG_DESCRIPTION, EMPTY_ATTRIBUTES, mdValues.getProperty("comments",null));
     	addRegistryEntries();
     	th.endElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE );
