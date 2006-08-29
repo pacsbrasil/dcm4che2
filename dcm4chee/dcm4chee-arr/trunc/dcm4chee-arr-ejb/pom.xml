@@ -205,11 +205,35 @@
                     </execution>
                 </executions>
                 <dependencies>
+                    <!-- JDBC driver dependencies, necessary only if we want to export to live database -->
                     <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
                         <version>3.1.11</version>
                     </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.jtds</groupId>
+                        <artifactId>jtds</artifactId>
+                        <version>1.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>oracle</groupId>
+                        <artifactId>ojdbc14</artifactId>
+                        <version>9i</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>8.1-407.jdbc3</version>
+                    </dependency>
+                    <!-- Couldn't find this guy
+                    <dependency>
+                        <groupId>com.ibm.db2</groupId>
+                        <artifactId>db2jcc</artifactId>
+                        <version>8.2</version>
+                    </dependency>
+                     -->
+                     
                     <dependency>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-tools</artifactId>
