@@ -642,12 +642,13 @@ public class Device
     }
 
     private void addCertificate(KeyStore trust, final X509Certificate[][] certs)
-            throws KeyStoreException
-    {
-        for (int i = 0; i < certs.length; i++)
-            for (int j = 0; j < certs[i].length; j++)
-                trust.setCertificateEntry(certs[i][j].getSubjectDN().getName(),
-                        certs[i][j]);
+            throws KeyStoreException {
+        if (certs != null) {
+            for (int i = 0; i < certs.length; i++)
+                for (int j = 0; j < certs[i].length; j++)
+                    trust.setCertificateEntry(certs[i][j].getSubjectDN()
+                            .getName(), certs[i][j]);
+        }
     }
 
     /**
