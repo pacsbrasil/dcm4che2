@@ -16,6 +16,11 @@ Working with Eclipse
 	2.4 Notice that there is a small rotated "E" on the top-left corner of the icon of project "dcm4chee-arr-ejb", which means this project is Maven2 enabled. Right click the project to check "Java Build Path -> Libraries", which should have "Maven2 Dependencies" included. 
 	2.5 Create "M2_REPO" variable from "Java Build Path -> Libraries -> Add Variable... -> Configure Variables... -> New.." to point to your local Maven2 repository;
 	2.6 You projects will be rebuilt and should be error free in Eclipse.
+	2.7 Prepare Soure folders on build path (mainly for TestNG):
+		. src/main/java, output folder: target/classes
+		. src/test/java, output folder: target/test-classes
+		. src/test/conf, output folder: target/test-classes
+		. src/test/resource, output folder: target/test-classes
 
 3. Prepare TestNG
 -----------------
