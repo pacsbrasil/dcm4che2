@@ -76,8 +76,8 @@ public class Device
     private String[] institutionName = {};
     private String[] institutionAddress = {};
     private String[] institutionalDepartmentName = {};
-    private X509Certificate[][] authorizedNodeCertificate = {};
-    private X509Certificate[][] thisNodeCertificate = {};
+    private X509Certificate[] authorizedNodeCertificate = {};
+    private X509Certificate[] thisNodeCertificate = {};
     private Object[] relatedDeviceConfiguration = {};
     private Object[] vendorDeviceData = {};
     private int associationReaperPeriod = 10000;
@@ -430,10 +430,9 @@ public class Device
      * Get the certificates of nodes that are authorized to connect to this
      * device.
      * 
-     * @return An X509Certificate two dimensional array containing the
-     *         certificates.
+     * @return An array containing the X509Certificate objects
      */
-    public final X509Certificate[][] getAuthorizedNodeCertificate()
+    public final X509Certificate[] getAuthorizedNodeCertificate()
     {
         return authorizedNodeCertificate;
     }
@@ -442,21 +441,19 @@ public class Device
      * Set the certificates of nodes that are authorized to connect to this
      * device.
      * 
-     * @param cert An X509Certificate two dimensional array containing the
-     *            certificates.
+     * @param certs An array containing the X509Certificate objects.
      */
-    public final void setAuthorizedNodeCertificate(X509Certificate[][] cert)
+    public final void setAuthorizedNodeCertificate(X509Certificate[] certs)
     {
-        this.authorizedNodeCertificate = cert;
+        this.authorizedNodeCertificate = certs;
     }
 
     /**
      * Get the public certificate for this device.
      * 
-     * @return An X509Certificate two dimensional array containing the
-     *         certificates.
+     * @return An array containing the X509Certificate objects
      */
-    public final X509Certificate[][] getThisNodeCertificate()
+    public final X509Certificate[] getThisNodeCertificate()
     {
         return thisNodeCertificate;
     }
@@ -464,12 +461,11 @@ public class Device
     /**
      * Set the public certificates for this device.
      * 
-     * @param cert An X509Certificate two dimensional array containing the
-     *            certificates.
+     * @param certs An array containing the X509Certificate objects.
      */
-    public final void setThisNodeCertificate(X509Certificate[][] cert)
+    public final void setThisNodeCertificate(X509Certificate[] certs)
     {
-        this.thisNodeCertificate = cert;
+        this.thisNodeCertificate = certs;
     }
 
     /**
@@ -641,13 +637,11 @@ public class Device
         initTLS(key, password, trust);
     }
 
-    private void addCertificate(KeyStore trust, final X509Certificate[][] certs)
+    private void addCertificate(KeyStore trust, final X509Certificate[] certs)
             throws KeyStoreException {
         if (certs != null) {
             for (int i = 0; i < certs.length; i++)
-                for (int j = 0; j < certs[i].length; j++)
-                    trust.setCertificateEntry(certs[i][j].getSubjectDN()
-                            .getName(), certs[i][j]);
+                trust.setCertificateEntry(certs[i].getSubjectDN().getName(), certs[i]);
         }
     }
 
