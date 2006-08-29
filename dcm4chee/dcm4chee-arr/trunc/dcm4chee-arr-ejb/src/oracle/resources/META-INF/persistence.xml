@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: mysql-ds.xml,v 1.3.2.3 2006/02/07 14:23:00 acoliver Exp $ -->
+
+<persistence>
+   <persistence-unit name="dcm4chee-arr">
+      <jta-data-source>java:/OracleDS</jta-data-source>
+      <properties>
+          <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
+          <property name="hibernate.hbm2ddl.auto" value="update"/>
+      </properties>
+   </persistence-unit>
+</persistence>
