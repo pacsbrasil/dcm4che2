@@ -150,7 +150,7 @@
                         <configuration>
                             <tasks>
                                 <echo>......copying resource files for exporting schema: ${db}</echo>
-                                <filter token="dialect" value="${dialect}" />
+                                <filter filtersfile="${basedir}/src/${db}/${db}.properties" />
                                 <copy overwrite="true" todir="${basedir}/target/classes" filtering="true">
                                     <fileset dir="${basedir}/src/main/resources-local" />
                                 </copy>
@@ -179,8 +179,9 @@
                         <configuration>
                             <tasks>
                                 <echo>......copying resource files for testing: hsql</echo>
-                                <copy overwrite="true" todir="${basedir}/target/classes">
-                                    <fileset dir="${basedir}/src/hsql/resources" />
+                                <filter filtersfile="${basedir}/src/hsql/hsql.properties" />
+                                <copy overwrite="true" todir="${basedir}/target/classes" filtering="true">
+                                     <fileset dir="${basedir}/src/main/resources" />
                                 </copy>
                             </tasks>
                         </configuration>
@@ -194,8 +195,9 @@
                         <configuration>
                             <tasks>
                                 <echo>......copying resource files for packaging: ${db}</echo>
-                                <copy overwrite="true" todir="${basedir}/target/classes">
-                                    <fileset dir="${basedir}/src/${db}/resources" />
+                                <filter filtersfile="${basedir}/src/${db}/${db}.properties" />
+                                <copy overwrite="true" todir="${basedir}/target/classes" filtering="true">
+                                    <fileset dir="${basedir}/src/main/resources" />
                                 </copy>
                             </tasks>
                         </configuration>
@@ -267,6 +269,9 @@
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
+                <excludes>
+                    <exclude>META-INF/**</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/conf</directory>
