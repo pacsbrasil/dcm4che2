@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -41,18 +42,25 @@ package org.dcm4che2.net;
 import java.io.IOException;
 
 /**
+ * Exception that is thrown when a presentation context (abstract
+ * syntax/transfer syntax combination) cannot be found while negotiating an
+ * association.
+ * 
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Dec 2, 2005
- *
  */
-public class NoPresentationContextException extends IOException
-{
+public class NoPresentationContextException extends IOException {
 
     private static final long serialVersionUID = 7731234547817114229L;
 
-    public NoPresentationContextException(String message)
-    {
+    /**
+     * Constructor.
+     * 
+     * @param message
+     *            The exception message.
+     */
+    public NoPresentationContextException(String message) {
         super(message);
     }
 }
