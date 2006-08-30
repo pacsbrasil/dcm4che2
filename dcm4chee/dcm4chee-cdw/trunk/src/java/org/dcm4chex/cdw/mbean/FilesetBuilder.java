@@ -821,7 +821,7 @@ class FilesetBuilder {
         for (int i = 0, n = insts.size(); i < n; ++i) {
             FilesetComponent inst = (FilesetComponent) insts.get(i);
             recFilter.clear();
-            recFilter.putUI(Tags.SOPInstanceUID, inst.id());
+            recFilter.putUI(Tags.RefSOPInstanceUIDInFile, inst.id());
             DirRecord srcRec = srcSerRec
                     .getFirstChildBy(null, recFilter, false);
             Dataset ds = srcRec.getDataset();
