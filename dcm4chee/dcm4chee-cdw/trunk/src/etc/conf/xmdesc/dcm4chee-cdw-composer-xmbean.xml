@@ -195,6 +195,20 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <!-- PutNewestStudyOnFirstMedia -->
+   <attribute access="read-write"
+      getMethod="isPutNewestStudyOnFirstMedia"
+      setMethod="setPutNewestStudyOnFirstMedia">
+      <description>Controls if in the case of Media Splitting the newest
+      study of one patient is put on the first media, or if studies of one
+      patient are ordered chronological.
+      </description>
+      <name>PutNewestStudyOnFirstMedia</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="isMakeIsoImage"
       setMethod="setMakeIsoImage">

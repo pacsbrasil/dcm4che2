@@ -341,6 +341,7 @@ class FilesetBuilder {
                             DirRecord.STUDY,
                             recFact.makeRecord(DirRecord.STUDY, ds)),
                             FilesetComponent.makeStudyFilesetComponent(ds,
+                                    service.isPutNewestStudyOnFirstMedia(),
                                     toFilePath(fileIDs, 3)));
                     styRecs.put(suid, styRec);
                     patRec.comp.addChild(styRec.comp);

@@ -125,6 +125,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private int jpegHeight = 512;
 
     private boolean includeDisplayApplicationOnAllMedia = true;
+    
+    private boolean putNewestStudyOnFirstMedia = true;
 
     private boolean makeIsoImage = true;
 
@@ -186,11 +188,18 @@ public class MediaComposerService extends ServiceMBeanSupport {
         return includeDisplayApplicationOnAllMedia;
     }
 
-    public final void setIncludeDisplayApplicationOnAllMedia(
-            boolean includeDisplayApplicationOnAllMedia) {
-        this.includeDisplayApplicationOnAllMedia = includeDisplayApplicationOnAllMedia;
+    public final void setIncludeDisplayApplicationOnAllMedia(boolean enable) {
+        this.includeDisplayApplicationOnAllMedia = enable;
     }
 
+    public final boolean isPutNewestStudyOnFirstMedia() {
+        return putNewestStudyOnFirstMedia;
+    }
+
+    public final void setPutNewestStudyOnFirstMedia(boolean enable) {
+        this.putNewestStudyOnFirstMedia = enable;
+    }
+    
     public final String[] getValuesForIncludeMd5Sums() {
         return (String[]) valuesForIncludeMd5Sums
                 .toArray(new String[valuesForIncludeMd5Sums.size()]);

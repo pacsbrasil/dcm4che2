@@ -66,9 +66,15 @@ class FilesetComponent implements Comparable {
 
     public static final int INSTANCE = 4;
 
+    public static final int ASC = 1;
+
+    public static final int DESC = -1;
+    
     private final String id;
 
     private final String comparable;
+    
+    private final int order;
 
     private FilesetComponent parent = null;
 
@@ -109,34 +115,35 @@ class FilesetComponent implements Comparable {
     }
 
     public static FilesetComponent makeRootFilesetComponent() {
-        return new FilesetComponent(null, null, "", ROOT);
+        return new FilesetComponent(null, null, ASC, "", ROOT);
     }
 
     public static FilesetComponent makePatientFilesetComponent(Dataset ds,
             String filePath) {
         return new FilesetComponent(ds.getString(Tags.PatientID), ds.getString(
-                Tags.PatientName, ""), filePath, PATIENT);
+                Tags.PatientName, ""), ASC, filePath, PATIENT);
     }
 
     public static FilesetComponent makeStudyFilesetComponent(Dataset ds,
-            String filePath) {
+            boolean putNewestStudyOnFirstMedia, String filePath) {
         return new FilesetComponent(ds.getString(Tags.StudyInstanceUID), ds
                 .getString(Tags.StudyDate, "")
-                + ds.getString(Tags.StudyTime, ""), filePath, STUDY);
+                + ds.getString(Tags.StudyTime, ""), 
+                putNewestStudyOnFirstMedia ? DESC : ASC, filePath, STUDY);
     }
 
     public static FilesetComponent makeSeriesFilesetComponent(Dataset ds,
             String filePath) {
         return new FilesetComponent(ds.getString(Tags.SeriesInstanceUID), ds
                 .getString(Tags.Modality, "")
-                + padWithLeadingZeros(ds.getString(Tags.SeriesNumber, "")),
+                + padWithLeadingZeros(ds.getString(Tags.SeriesNumber, "")), ASC,
                 filePath, SERIES);
     }
 
     public static FilesetComponent makeInstanceFilesetComponent(Dataset ds,
             String filePath) {
         return new FilesetComponent(ds.getString(Tags.SOPInstanceUID),
-                padWithLeadingZeros(ds.getString(Tags.InstanceNumber, "")),
+                padWithLeadingZeros(ds.getString(Tags.InstanceNumber, "")), ASC,
                 filePath, INSTANCE);
     }
 
@@ -151,10 +158,11 @@ class FilesetComponent implements Comparable {
                         : "") + "]";
     }
 
-    private FilesetComponent(String id, String comparable, String filePath,
-            int level) {
+    private FilesetComponent(String id, String comparable, int order,
+            String filePath, int level) {
         this.id = id;
         this.comparable = comparable;
+        this.order = order;
         this.filePath = filePath;
         this.level = level;
     }
@@ -164,7 +172,7 @@ class FilesetComponent implements Comparable {
     }
 
     public int compareTo(Object o) {
-        return comparable.compareTo(((FilesetComponent) o).comparable);
+        return comparable.compareTo(((FilesetComponent) o).comparable) * order;
     }
 
     public void addChild(FilesetComponent child) {
@@ -205,7 +213,7 @@ class FilesetComponent implements Comparable {
 
     private FilesetComponent newFilesetComponent() {
         FilesetComponent result = new FilesetComponent(id, comparable,
-                filePath, level);
+                order, filePath, level);
         if (parent != null) parent.newFilesetComponent().addChild(result);
         return result;
     }
