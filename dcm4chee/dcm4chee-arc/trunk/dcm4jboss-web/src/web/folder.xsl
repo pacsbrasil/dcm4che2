@@ -1076,7 +1076,7 @@
 						<img src="images/sr.gif" alt="View Report" border="0" title="View Report as html"/>		
 					</a>
 					<a href="xdsiExport.m?docUID={sopIUID}" >
-						<img src="images/sr_pdf.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
+						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
 					</a>
 				</td>
 			</xsl:when>
@@ -1154,7 +1154,7 @@
 						<img src="images/waveform.gif" alt="View waveform" border="0" title="View waveform"/>		
 					</a>
 					<a href="xdsiExport.m?docUID={sopIUID}" >
-						<img src="images/sr_pdf.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
+						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
 					</a>
 				</xsl:when>
 				<xsl:otherwise>
