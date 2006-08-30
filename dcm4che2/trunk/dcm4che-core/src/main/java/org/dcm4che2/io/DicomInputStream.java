@@ -278,11 +278,6 @@ public class DicomInputStream extends FilterInputStream implements
         readFully(header, 0, 8);
         tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0) : ByteUtils
                 .bytesLE2tag(header, 0);
-        if (tag == 0 && pos != 0) {
-            log.warn("Unexpected (0000,0000) Element at position " + pos 
-                    + " - assume (FFFE,E0DD) Sequence Delimitation Item");
-            tag = Tag.SequenceDelimitationItem;
-        }
         if (expectFmiEnd && !TagUtils.isFileMetaInfoElement(tag)) {
             log.warn("Missing or wrong (0002,0000) Group Length of File Meta Information");
             String tsuid = attrs.getString(Tag.TransferSyntaxUID);
