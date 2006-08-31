@@ -51,7 +51,7 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.security.Security;
+//import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -136,7 +136,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
     /**Constructor for the SSLContextAdapterImpl object */
     public SSLContextAdapterImpl()
     {
-        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+//        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         try {
             ctx = SSLContext.getInstance("TLS");
             kmf = KeyManagerFactory.getInstance(
