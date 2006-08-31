@@ -117,6 +117,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.8-SNAPSHOT</version>
                 <configuration>
+                    <skip>${skipTest}</skip>               
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/conf/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
@@ -155,7 +156,6 @@
                                     <fileset dir="${basedir}/src/main/resources-local" />
                                 </copy>
                                 <echo>......exporting database schema: ${db}</echo>
-                                <property name="export" value="false" />
                                 <mkdir dir="target/generated/schema" />
                                 <taskdef name="hibernatetool" classname="org.hibernate.tool.ant.HibernateToolTask" />
                                 <hibernatetool destdir="target/generated/schema">
