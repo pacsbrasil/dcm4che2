@@ -18,6 +18,7 @@ Working with Eclipse
 	2.6 You projects will be rebuilt and should be error free in Eclipse.
 	2.7 Prepare Soure folders on build path (mainly for TestNG):
 		. src/main/java, output folder: target/classes
+		. src/test/dd, output folder: target/classes (the persistence.xml must be under classes)
 		. src/test/java, output folder: target/test-classes
 		. src/test/conf, output folder: target/test-classes
 		. src/test/resource, output folder: target/test-classes
@@ -37,5 +38,15 @@ Working with Eclipse
 	
 	3.6 You now should be able to debug/run the TestNG unit tests.
 	
+Appendix: How to do remote debug to command line "mvn":
+--------------------------------------------------------
+i) export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE
+-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+
+ii) and in eclipse run - debug - new - remote java application
+port is the 5005 specified before
+
+iii) you run mvn and hit debug in eclipse
+
 Any questions, please contact:
 Fang Yang (fang.yang@agfa.com)
