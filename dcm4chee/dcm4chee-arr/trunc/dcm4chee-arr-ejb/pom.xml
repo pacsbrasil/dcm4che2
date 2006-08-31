@@ -125,7 +125,7 @@
                     <systemProperties>
                         <property>
                             <name>java.class.path</name>
-                            <value>target/test-classes;target/classes;</value>
+                            <value>target/classes</value>
                         </property>
                     </systemProperties>
                 </configuration>
