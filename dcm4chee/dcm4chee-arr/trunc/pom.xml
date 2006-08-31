@@ -12,6 +12,7 @@
   </modules>
   <properties>
     <db>hsql</db>
+    <skipTest>true</skipTest>
   </properties>
   <repositories>
     <repository>
