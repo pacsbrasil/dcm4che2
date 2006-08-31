@@ -49,6 +49,7 @@ public class JBossTestBase {
             log.info("  < done!");
 
             log.info("  > start deploying by scanning classpath ....");
+            log.info("    java.class.path=" + System.getProperty("java.class.path"));
             EJB3StandaloneBootstrap.scanClasspath();
             log.info("  < done!");
 
