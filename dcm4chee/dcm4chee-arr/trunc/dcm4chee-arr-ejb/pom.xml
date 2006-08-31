@@ -269,9 +269,6 @@
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
-                <excludes>
-                    <exclude>META-INF/**</exclude>
-                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/conf</directory>
