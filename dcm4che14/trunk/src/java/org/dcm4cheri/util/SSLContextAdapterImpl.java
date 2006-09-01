@@ -567,7 +567,8 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
         {
             ssf = getSSLContext().getServerSocketFactory();
             this.cipherSuites = cipherSuites != null
-                     ? (String[]) cipherSuites.clone() : null;
+            	    ? supported(cipherSuites, ssf.getSupportedCipherSuites()) 
+            	    : null;
         }
 
 
@@ -647,8 +648,10 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
             throws GeneralSecurityException
         {
             sf = getSSLContext().getSocketFactory();
+
             this.cipherSuites = cipherSuites != null
-                     ? (String[]) cipherSuites.clone() : null;
+                     ? supported(cipherSuites, sf.getSupportedCipherSuites()) 
+                     : null;
         }
 
 
@@ -776,6 +779,36 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
         {
             super(msg, x);
         }
+    }
+
+
+    static String[] supported(String[] cipherSuites,
+	    String[] supportedCipherSuites) {
+	String[] supported = new String[cipherSuites.length];
+	int count = 0;
+	for (int i = 0; i < cipherSuites.length; i++) {
+	    if (contains(supportedCipherSuites, cipherSuites[i])) {
+		supported[count++] = cipherSuites[i];
+	    } else {
+		log.warn("CipherSuite " + cipherSuites[i]
+		        + " not supported by JSSE provider.");
+	    }
+	}
+	if (count < supported.length) {
+	    String[] tmp = new String[count];
+	    System.arraycopy(supported, 0, tmp, 0, count);
+	    supported = tmp;
+	}
+	return supported;
+    }
+
+    static boolean contains(String[] ss, String s) {
+	for (int i = 0; i < ss.length; i++) {
+	    if (ss[i].equals(s)) {
+		return true;
+	    }
+	}
+	return false;
     }
 }
 
