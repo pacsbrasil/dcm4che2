@@ -83,14 +83,14 @@ public class DcmGPWL {
 
     private static final int KB = 1024;
     private static final String USAGE = 
-            "dcmgpwl [Options] <aet>[@<host>[:<port>]] [files..]";
+            "dcmgpwl [Options] <aet>[@<host>[:<port>]]";
     private static final String DESCRIPTION = 
             "Query specified remote Application Entity (=General Purpose Worklist SCP) " + 
             "If <port> is not specified, DICOM default port 104 is assumed. " +
             "If also no <host> is specified localhost is assumed.\n" +
             "Options:";
     private static final String EXAMPLE = 
-            "\nExample: dcmgpwl GPWLSCP@localhost:11112 -scheduled\n" +
+            "\nExample: dcmgpwl GPWLSCP@localhost:11112 -status SCHEDULED\n" +
             "=> Query Application Entity GPWLSCP listening on local port 11112 for " +
             "all scheduled GP-SPS";
 
