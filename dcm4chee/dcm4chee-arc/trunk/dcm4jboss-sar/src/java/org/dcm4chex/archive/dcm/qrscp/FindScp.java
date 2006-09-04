@@ -98,7 +98,7 @@ public class FindScp extends DcmServiceBase {
             return newMultiCFindRsp(rqData);
         } catch (Exception e) {
             log.error("Query DB failed:", e);
-            throw new DcmServiceException(Status.ProcessingFailure, e);
+            throw new DcmServiceException(Status.UnableToProcess, e);
         }
     }
 
@@ -165,10 +165,10 @@ public class FindScp extends DcmServiceBase {
             	throw e;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);
+                throw new DcmServiceException(Status.UnableToProcess, e);
             } catch (Exception e) {
                 log.error("Corrupted DB record:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);
+                throw new DcmServiceException(Status.UnableToProcess, e);
             }
         }
 
