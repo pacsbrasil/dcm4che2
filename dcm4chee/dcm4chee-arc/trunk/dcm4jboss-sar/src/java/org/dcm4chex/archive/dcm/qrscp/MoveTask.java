@@ -581,8 +581,10 @@ class MoveTask implements Runnable {
     }
 
     private void notifyMoveFinished() {
-        notifyMoveSCU(canceled ? Status.Cancel
-                : failed > 0 ? Status.SubOpsOneOrMoreFailures : Status.Success,
+        notifyMoveSCU(canceled ? Status.Cancel 
+                : failed == 0 ? Status.Success
+                    : completed == 0 ? Status.UnableToPerformSuboperations 
+                        : Status.SubOpsOneOrMoreFailures ,
                 makeMoveRspIdentifier(), null);
     }
 
