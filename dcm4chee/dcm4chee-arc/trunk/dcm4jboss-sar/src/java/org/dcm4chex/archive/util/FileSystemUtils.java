@@ -259,7 +259,7 @@ public class FileSystemUtils {
 //        path = FilenameUtils.normalize(path);
 
         // build and run the 'dir' command
-        String[] cmdAttribs = new String[] {"df", "-k", path};
+        String[] cmdAttribs = new String[] {"df", "-kP", path};
 
         // read the output from the command until we come to the second line
         BufferedReader in = null;
@@ -283,7 +283,7 @@ public class FileSystemUtils {
 		if (line2 == null) {
             // unknown problem, throw exception
             throw new IOException(
-                    "Command line 'df -k' did not return info as expected " +
+                    "Command line 'df -kP' did not return info as expected " +
                     "for path '" + path +
                     "'- response on first line was '" + line1 + "'");
         }
@@ -298,7 +298,7 @@ public class FileSystemUtils {
                 tok = new StringTokenizer(line3, " ");
             } else {
                 throw new IOException(
-                        "Command line 'df -k' did not return data as expected " +
+                        "Command line 'df -kP' did not return data as expected " +
                         "for path '" + path + "'- check path is valid");
             }
         } else {
@@ -311,7 +311,7 @@ public class FileSystemUtils {
             return (Long.parseLong(freeSpace) << 10); // * 1024
         } catch (NumberFormatException ex) {
             throw new IOException(
-                    "Command line 'df -k' did not return numeric data as expected " +
+                    "Command line 'df -kP' did not return numeric data as expected " +
                     "for path '" + path + "'- check path is valid");
         }
 	}
