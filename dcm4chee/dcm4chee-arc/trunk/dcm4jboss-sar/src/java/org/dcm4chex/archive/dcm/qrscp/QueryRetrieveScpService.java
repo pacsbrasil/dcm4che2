@@ -559,7 +559,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             return (AEData) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);
-            throw new DcmServiceException(Status.ProcessingFailure, e);
+            throw new DcmServiceException(Status.UnableToProcess, e);
         }
     }
     

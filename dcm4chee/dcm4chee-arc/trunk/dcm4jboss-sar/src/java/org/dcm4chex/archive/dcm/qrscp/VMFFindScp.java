@@ -128,7 +128,7 @@ class VMFFindScp extends FindScp {
 						queryCmd.close();
 					}
 				} catch (Exception e) {
-	                throw new DcmServiceException(Status.ProcessingFailure, e);
+	                throw new DcmServiceException(Status.UnableToProcess, e);
 				}
         	}
     		rspCmd.putUS(Tags.Status, Status.Success);

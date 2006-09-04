@@ -103,10 +103,10 @@ public class MoveScp extends DcmServiceBase {
                 throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);
+                throw new DcmServiceException(Status.UnableToProcess, e);
             } catch (Throwable e) {
                 service.getLog().error("Unexpected exception:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);
+                throw new DcmServiceException(Status.UnableToProcess, e);
             }
         } catch (DcmServiceException e) {
             Command rspCmd = objFact.newCommand();
