@@ -193,7 +193,7 @@
     </attr>
     <!-- Study Instance UID -> DICOM:Requested Procedure -->
     <xsl:variable name="id"
-      select="substring-before(substring-after(substring-after(substring-after(substring-after(substring($suid,17),'.'),'.'),'.'),'.'),'.')"/>
+      select="substring(substring-after(substring-after(substring-after(substring-after(substring($suid,17),'.'),'.'),'.'),'.'),1,16)"/>
     <attr tag="00401001" vr="SH">
       <xsl:value-of select="$id"/>
     </attr>
