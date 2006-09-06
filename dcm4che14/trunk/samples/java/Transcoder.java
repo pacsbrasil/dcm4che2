@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -94,78 +93,63 @@ import com.sun.media.imageio.stream.SegmentedImageInputStream;
  */
 public class Transcoder {
 
+    private static final String RGB = "RGB";
+    private static final String YBR_FULL_422 = "YBR_FULL_422";
+    private static final String YBR_RCT = "YBR_RCT";
+    private static final String YBR_ICT = "YBR_ICT";
+
     private static Logger log = Logger.getLogger(Transcoder.class.getName());
-
-    private static DcmParserFactory parserFactory = DcmParserFactory
-            .getInstance();
-
-    private static DcmObjectFactory objectFactory = DcmObjectFactory
-            .getInstance();
+    
+    private static DcmParserFactory parserFactory = 
+            DcmParserFactory.getInstance();
+    
+    private static DcmObjectFactory objectFactory =
+            DcmObjectFactory.getInstance();
 
     protected static UIDGenerator uidGen = UIDGenerator.getInstance();
 
     private FileFormat fileFormat = FileFormat.DICOM_FILE;
-
     private float compressionQuality = 0.75f;
-
     private double encodingRate = 1.;
-
     private ImageInputStream iis;
-
     private ImageOutputStream ios;
-
     private String encodeTS = UIDs.ExplicitVRLittleEndian;
-
     private DcmEncodeParam encodeParam = DcmDecodeParam.EVR_LE;
-
     private DcmParser parser;
-
     private DcmDecodeParam decodeParam;
-
     private PixelDataParam pixelDataParam;
-
     private ImageReader reader;
-
     private ImageWriter writer;
-
     private Dataset dsIn = objectFactory.newDataset();
-
     private Dataset dsOut = objectFactory.newDataset();
-
     private BufferedImage bi;
-
     private int frameIndex = 0;
-
     private boolean truncatePostPixelData = false;
-
     private ItemParser itemParser;
-
     private SegmentedImageInputStream siis;
 
     /**
-     * if true, input stream is directly copied into output stream without pixel decoding.
-     * Makes sense if output ts == input ts. cleared by readHeader if no ts match.  
+     * if true, input stream is directly copied into output stream without pixel
+     * decoding. Makes sense if output ts == input ts. cleared by readHeader if
+     * no ts match.
      */
-    private boolean directCopy=true;
+    private boolean directCopy = true;
+    private boolean ignoreMissingPixelData;
 
-	private boolean ignoreMissingPixelData;
-    
     /**
-     * if true, input stream is directly copied into output stream without pixel decoding.
-     * Makes sense if output ts == input ts 
+     * if true, input stream is directly copied into output stream without pixel
+     * decoding. Makes sense if output ts == input ts
      */
-    public void setDirectCopy(boolean cp)
-    {
-    	directCopy=cp;
+    public void setDirectCopy(boolean cp) {
+        directCopy = cp;
     }
-    
+
     /**
-     * if true, input stream is directly copied into output stream without pixel decoding.
-     * Makes sense if output ts == input ts 
+     * if true, input stream is directly copied into output stream without pixel
+     * decoding. Makes sense if output ts == input ts
      */
-    public boolean doDirectCopy()
-    {
-    	return directCopy;
+    public boolean doDirectCopy() {
+        return directCopy;
     }
 
     public void setInput(ImageInputStream iis) {
@@ -238,36 +222,30 @@ public class Transcoder {
     }
 
     public void transcode() throws IOException {
-        if (iis == null)
-        {
+        if (iis == null) {
             throw new IllegalStateException("no input set");
         }
-        if (ios == null)
-        {
+        if (ios == null) {
             throw new IllegalStateException("no output set");
         }
         // direct copy only if no truncation
         setDirectCopy(doDirectCopy() && !truncatePostPixelData);
         // parse & copy header. may clear doDirectCopy if input ts != output ts
         transcodeHeader();
-        if (doDirectCopy())	// just copy without recoding
+        if (doDirectCopy()) // just copy without recoding
         {
-        	copyPixelData();
-        }
-        else	
-        {
-        	transcodePixelHeader();// copy intro of PixelData
-	        for (int i = 0, n = pixelDataParam.getNumberOfFrames(); i < n; i++)
-	        {
-	            transcodeNextFrame();	// recode frames
-	        }
-	        transcodePixelFooter();// finish up PixelData tag
+            copyPixelData();
+        } else {
+            transcodePixelHeader();// copy intro of PixelData
+            for (int i = 0, n = pixelDataParam.getNumberOfFrames(); i < n; i++) {
+                transcodeNextFrame(); // recode frames
+            }
+            transcodePixelFooter();// finish up PixelData tag
         }
         transcodeFooter();// copy all the stuff after pixel data
     }
 
-	private void transcodePixelFooter() throws IOException
-	{
+    private void transcodePixelFooter() throws IOException {
         if (itemParser != null) {
             itemParser.seekFooter();
         }
@@ -275,16 +253,14 @@ public class Transcoder {
             dsIn.writeHeader(ios, encodeParam, Tags.SeqDelimitationItem,
                     VRs.NONE, 0);
         }
-	}
+    }
 
-	private void transcodePixelHeader() throws IOException
-	{
+    private void transcodePixelHeader() throws IOException {
         readPixelHeader();
         writePixelHeader();
-	}
+    }
 
-	private void writePixelHeader() throws IOException
-	{
+    private void writePixelHeader() throws IOException {
         if (encodeParam.encapsulated) {
             dsIn.writeHeader(ios, encodeParam, Tags.PixelData, VRs.OB, -1);
             dsIn.writeHeader(ios, encodeParam, Tags.Item, VRs.NONE, 0);
@@ -295,17 +271,16 @@ public class Transcoder {
                     pixelDataParam.getPixelDataLength());
         }
         log.debug("wrote header");
-	}
+    }
 
-	private void readPixelHeader() throws IOException
-	{
+    private void readPixelHeader() throws IOException {
         iis.setByteOrder(decodeParam.byteOrder);
         if (decodeParam.encapsulated) {
             itemParser = new ItemParser(parser);
             siis = new SegmentedImageInputStream(iis, itemParser);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
-            reader = f.getReaderForTransferSyntax(
-                    dsIn.getFileMetaInfo().getTransferSyntaxUID());
+            reader = f.getReaderForTransferSyntax(dsIn.getFileMetaInfo()
+                    .getTransferSyntaxUID());
             bi = (BufferedImage) createBufferedImage();
         } else {
             bi = pixelDataParam.createBufferedImage(getMaxBits());
@@ -313,19 +288,17 @@ public class Transcoder {
         if (log.isDebugEnabled()) {
             log.debug("read header: " + pixelDataParam);
         }
-	}
+    }
 
-	/**
-	 * copy pixel tag without de/encoding
-	 */
-	private void copyPixelData() throws IOException
-	{
-		if (parser.hasSeenEOF()) return;
+    /**
+     * copy pixel tag without de/encoding
+     */
+    private void copyPixelData() throws IOException {
+        if (parser.hasSeenEOF())
+            return;
         int len = parser.getReadLength();
-        dsIn.writeHeader(ios, encodeParam,
-                parser.getReadTag(),
-                parser.getReadVR(),
-                len);
+        dsIn.writeHeader(ios, encodeParam, parser.getReadTag(), parser
+                .getReadVR(), len);
         if (len == -1) {
             parser.parseHeader();
             while (parser.getReadTag() == Tags.Item) {
@@ -334,38 +307,31 @@ public class Transcoder {
                 copy(iis, ios, len);
                 parser.parseHeader();
             }
-            dsIn.writeHeader(
-                    ios,
-                    encodeParam,
-                    Tags.SeqDelimitationItem,
-                    VRs.NONE,
-                    0);                
+            dsIn.writeHeader(ios, encodeParam, Tags.SeqDelimitationItem,
+                    VRs.NONE, 0);
         } else {
             copy(iis, ios, len);
         }
-	}
+    }
 
     private void copy(ImageInputStream in, ImageOutputStream out, int totLen)
-    throws IOException
-	{
-	    int toRead = totLen == -1 ? Integer.MAX_VALUE : totLen;
-	    int bufferSize=8192;
-	    byte[] buffer = new byte[bufferSize];
-	    for (int len; toRead > 0; toRead -= len) 
-	    {
-	        len = in.read(buffer, 0, Math.min(toRead, buffer.length));
-	        if (len == -1) {
-	            if (totLen == -1) 
-	            {
-	                return;
-	            }
-	            throw new EOFException();
-	        }
-	        out.write(buffer, 0, len);
-	    }
-	}
+            throws IOException {
+        int toRead = totLen == -1 ? Integer.MAX_VALUE : totLen;
+        int bufferSize = 8192;
+        byte[] buffer = new byte[bufferSize];
+        for (int len; toRead > 0; toRead -= len) {
+            len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+            if (len == -1) {
+                if (totLen == -1) {
+                    return;
+                }
+                throw new EOFException();
+            }
+            out.write(buffer, 0, len);
+        }
+    }
 
-	public void transcodeHeader() throws IOException {
+    public void transcodeHeader() throws IOException {
         readHeader();
         writeHeader();
     }
@@ -377,25 +343,22 @@ public class Transcoder {
         dsIn.clear();
         parser.setDcmHandler(dsIn.getDcmHandler());
         parser.parseDcmFile(fileFormat, Tags.PixelData);
-        if (parser.getReadTag() != Tags.PixelData) 
-        {
-        	if (ignoreMissingPixelData)
-        	{
-        		setDirectCopy(true);
-        	}
-        	else
-        	{
-	        	throw new IOException(
-	                "no pixel data in source object");
-        	}
+        if (parser.getReadTag() != Tags.PixelData) {
+            if (ignoreMissingPixelData) {
+                setDirectCopy(true);
+            } else {
+                throw new IOException("no pixel data in source object");
+            }
         }
-        
+
         dsOut.clear();
-        dsOut.putAll(dsIn);	// copy object, as some tags are modified by coerce
+        dsOut.putAll(dsIn); // copy object, as some tags are modified by coerce
         dsOut.setFileMetaInfo(dsIn.getFileMetaInfo());
 
         onHeaderParsed(dsOut);
-        setDirectCopy(doDirectCopy() && dsIn.getFileMetaInfo().getTransferSyntaxUID().equals(encodeTS));
+        setDirectCopy(doDirectCopy()
+                && dsIn.getFileMetaInfo().getTransferSyntaxUID().equals(
+                        encodeTS));
 
         decodeParam = parser.getDcmDecodeParam();
         pixelDataParam = new PixelDataParam(dsIn, isTypeShortSupported());
@@ -403,8 +366,10 @@ public class Transcoder {
     }
 
     private int getMaxBits() {
-        if (encodeTS.equals(UIDs.JPEGBaseline)) return 8;
-        if (encodeTS.equals(UIDs.JPEGExtended)) return 12;
+        if (encodeTS.equals(UIDs.JPEGBaseline))
+            return 8;
+        if (encodeTS.equals(UIDs.JPEGExtended))
+            return 12;
         return 16;
     }
 
@@ -421,8 +386,8 @@ public class Transcoder {
         log.debug("writing header");
         coerceTS();
         ios.setByteOrder(encodeParam.byteOrder);
-    	if (!doDirectCopy()) 
-    		coerceDataset(dsOut);
+        if (!doDirectCopy())
+            coerceDataset(dsOut);
         dsOut.writeFile(ios, encodeParam);
     }
 
@@ -441,9 +406,8 @@ public class Transcoder {
     public void coerceDataset(Dataset dsOut) throws DcmValueException {
         final int samplesPerPixel = getSamplesPerPixel();
         dsOut.putUS(Tags.SamplesPerPixel, samplesPerPixel);
-        dsOut
-                .putCS(Tags.PhotometricInterpretation,
-                        getPhotometricInterpretation());
+        dsOut.putCS(Tags.PhotometricInterpretation,
+                getPhotometricInterpretation());
         if (samplesPerPixel > 1) {
             dsOut.putUS(Tags.PlanarConfiguration, getPlanarConfiguration());
         }
@@ -459,7 +423,8 @@ public class Transcoder {
             }
             dsOut.putCS(Tags.LossyImageCompression, "01");
             if (encodeTS.equals(UIDs.JPEG2000Lossy)) {
-                float[] oldVal = dsOut.getFloats(Tags.LossyImageCompressionRatio);
+                float[] oldVal = dsOut
+                        .getFloats(Tags.LossyImageCompressionRatio);
                 if (oldVal == null) {
                     oldVal = new float[0];
                 }
@@ -468,10 +433,12 @@ public class Transcoder {
                 newVal[oldVal.length] = (float) (pixelDataParam
                         .getBitsAllocated() / getEncodingRate());
                 dsOut.putDS(Tags.LossyImageCompressionRatio, newVal);
-                dsOut.putST(Tags.DerivationDescription, "JPKI lossy compressed "
-                        + newVal[oldVal.length] + ":1");
+                dsOut.putST(Tags.DerivationDescription,
+                                "JPKI lossy compressed "
+                                        + newVal[oldVal.length] + ":1");
             } else {
-                dsOut.putST(Tags.DerivationDescription, "JPEG lossy compressed");
+                dsOut.putST(Tags.DerivationDescription,
+                                "JPEG lossy compressed");
             }
             DcmElement sq = dsOut.putSQ(Tags.SourceImageSeq);
             Dataset item = sq.addNewItem();
@@ -484,26 +451,27 @@ public class Transcoder {
     }
 
     int getPlanarConfiguration() {
-        if (encodeParam.encapsulated) { return 0; }
+        if (encodeParam.encapsulated) {
+            return 0;
+        }
         return pixelDataParam.getPlanarConfiguration();
     }
 
-    private static final String RGB = "RGB";
-
-    private static final String YBR_FULL_422 = "YBR_FULL_422";
-
-    private static final String YBR_RCT = "YBR_RCT";
-
-    private static final String YBR_ICT = "YBR_ICT";
-
     private String getPhotometricInterpretation() {
-        if (getSamplesPerPixel() == 1) { return pixelDataParam
-                .getPhotoMetricInterpretation(); }
+        if (getSamplesPerPixel() == 1) {
+            return pixelDataParam.getPhotoMetricInterpretation();
+        }
         if (encodeParam.encapsulated) {
             if (encodeTS.equals(UIDs.JPEGBaseline)
-                    || encodeTS.equals(UIDs.JPEGExtended)) { return YBR_FULL_422; }
-            if (encodeTS.equals(UIDs.JPEG2000Lossless)) { return YBR_RCT; }
-            if (encodeTS.equals(UIDs.JPEG2000Lossy)) { return YBR_ICT; }
+                    || encodeTS.equals(UIDs.JPEGExtended)) {
+                return YBR_FULL_422;
+            }
+            if (encodeTS.equals(UIDs.JPEG2000Lossless)) {
+                return YBR_RCT;
+            }
+            if (encodeTS.equals(UIDs.JPEG2000Lossy)) {
+                return YBR_ICT;
+            }
         }
         return RGB;
     }
@@ -513,13 +481,15 @@ public class Transcoder {
     }
 
     public boolean hasMoreFrames() {
-        if (pixelDataParam == null) { throw new IllegalStateException(); }
+        if (pixelDataParam == null) {
+            throw new IllegalStateException();
+        }
         return frameIndex < pixelDataParam.getNumberOfFrames();
     }
 
     public void transcodeNextFrame() throws IOException {
         readNextFrame();
-        BufferedImage outBi=onFrameDecoded(bi);
+        BufferedImage outBi = onFrameDecoded(bi);
         writeNextFrame(outBi);
     }
 
@@ -528,7 +498,8 @@ public class Transcoder {
         if (decodeParam.encapsulated) {
             reader.setInput(siis);
             ImageReadParam param = reader.getDefaultReadParam();
-            if (bi != null) param.setDestination(bi);
+            if (bi != null)
+                param.setDestination(bi);
             bi = reader.read(0, param);
             itemParser.seekNextFrame(siis);
         } else {
@@ -690,42 +661,46 @@ public class Transcoder {
 
     /**
      * called after parsing object from input stream (until Tags.PixelData)
-     * @param ds parsed dataset containing header
+     * 
+     * @param ds
+     *            parsed dataset containing header
      */
-    public void onHeaderParsed(Dataset ds)
-    {
-    	
+    public void onHeaderParsed(Dataset ds) {
+
     }
 
     /**
-     * overwrite to perform processing on decoded frames.  
-	 * @param bi decoded frame
-	 * @return result image (default is image passed as bi)
-	 */
-	public BufferedImage onFrameDecoded(BufferedImage bi)
-	{
-		return bi;
-	}
-	/**
-	 * @return Returns the ignoreMissingPixelData.
-	 */
-	public boolean getIgnoreMissingPixelData()
-	{
-		return ignoreMissingPixelData;
-	}
-	/**
-	 * @param ignoreMissingPixelData The ignoreMissingPixelData to set.
-	 */
-	public void setIgnoreMissingPixelData(boolean ignoreMissingPixelData)
-	{
-		this.ignoreMissingPixelData = ignoreMissingPixelData;
-	}
-	protected BufferedImage createBufferedImage() {
+     * overwrite to perform processing on decoded frames.
+     * 
+     * @param bi
+     *            decoded frame
+     * @return result image (default is image passed as bi)
+     */
+    public BufferedImage onFrameDecoded(BufferedImage bi) {
+        return bi;
+    }
+
+    /**
+     * @return Returns the ignoreMissingPixelData.
+     */
+    public boolean getIgnoreMissingPixelData() {
+        return ignoreMissingPixelData;
+    }
+
+    /**
+     * @param ignoreMissingPixelData
+     *            The ignoreMissingPixelData to set.
+     */
+    public void setIgnoreMissingPixelData(boolean ignoreMissingPixelData) {
+        this.ignoreMissingPixelData = ignoreMissingPixelData;
+    }
+
+    protected BufferedImage createBufferedImage() {
         int pixelStride;
         int[] bandOffset;
         int dataType;
         int colorSpace;
-        if (pixelDataParam.getSamplesPerPixel()== 3) {
+        if (pixelDataParam.getSamplesPerPixel() == 3) {
             pixelStride = 3;
             bandOffset = new int[] { 0, 1, 2 };
             dataType = DataBuffer.TYPE_BYTE;
@@ -733,15 +708,18 @@ public class Transcoder {
         } else {
             pixelStride = 1;
             bandOffset = new int[] { 0 };
-            dataType = pixelDataParam.getBitsAllocated() == 8 ? DataBuffer.TYPE_BYTE 
+            dataType = pixelDataParam.getBitsAllocated() == 8 
+                    ? DataBuffer.TYPE_BYTE
                     : DataBuffer.TYPE_USHORT;
             colorSpace = ColorSpace.CS_GRAY;
         }
-        SampleModel sm = new PixelInterleavedSampleModel(dataType, pixelDataParam.getColumns(),
-        		pixelDataParam.getRows(), pixelStride, pixelDataParam.getColumns() * pixelStride, bandOffset);
+        SampleModel sm = new PixelInterleavedSampleModel(dataType,
+                pixelDataParam.getColumns(), pixelDataParam.getRows(),
+                pixelStride, pixelDataParam.getColumns() * pixelStride,
+                bandOffset);
         ColorModel cm = new ComponentColorModel(
-                ColorSpace.getInstance(colorSpace), sm.getSampleSize(),
-                false, false, Transparency.OPAQUE, dataType);
+                ColorSpace.getInstance(colorSpace), sm.getSampleSize(), false,
+                false, Transparency.OPAQUE, dataType);
         WritableRaster r = Raster.createWritableRaster(sm, new Point(0, 0));
         return new BufferedImage(cm, r, false, new Hashtable());
     }
