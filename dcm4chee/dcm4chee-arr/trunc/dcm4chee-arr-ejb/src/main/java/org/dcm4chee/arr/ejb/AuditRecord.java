@@ -264,20 +264,19 @@ public class AuditRecord implements Serializable {
     }
     
     @PostPersist
-	public void postPersit() {
-		if(log.isDebugEnabled())
-			log.debug( "Created " + this.toString() );
-	}
+    public void postPersit() {
+        if(log.isDebugEnabled())
+            log.debug( "Created " + this.toString() );
+    }
     
     @PostRemove
-	public void postRemove() {
-		if(log.isDebugEnabled())
-			log.debug( "Removed " + this.toString() );
-	}
+    public void postRemove() {
+        if(log.isDebugEnabled())
+            log.debug( "Removed " + this.toString() );
+    }
     
     @Override
-	public String toString() {
-		// Default implementation. Sub class should provide meaningful overriding
-		return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
-	}
+    public String toString() {
+        return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
+    }
 }
