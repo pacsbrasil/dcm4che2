@@ -471,6 +471,17 @@ public class NetworkConnection {
                 : new InetSocketAddress(hostname, newPort);
     }
 
+    /**
+     * Create a socket as an SCU and connect to a peer network connection (the
+     * SCP).
+     * 
+     * @param peerConfig
+     *            The peer <code>NetworkConnection</code> object that this
+     *            network connection is connecting to.
+     * @return Socket The created socket object.
+     * @throws IOException
+     *             If the connection cannot be made due to network IO reasons.
+     */
     public Socket connect(NetworkConnection peerConfig) throws IOException {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
@@ -485,6 +496,16 @@ public class NetworkConnection {
         return s;
     }
 
+    /**
+     * Set options on a socket that was either just accepted (if this network
+     * connection is an SCP), or just created (if this network connection is an
+     * SCU).
+     * 
+     * @param s
+     *            The <code>Socket</code> object.
+     * @throws SocketException
+     *             If the options cannot be set on the socket.
+     */
     protected void setSocketOptions(Socket s) throws SocketException {
         int size;
         size = s.getReceiveBufferSize();
@@ -506,6 +527,17 @@ public class NetworkConnection {
         }
     }
 
+    /**
+     * Bind this network connection to a TCP port and start a server socket
+     * accept loop.
+     * 
+     * @param executor
+     *            The <code>Executor</code> implementation that association
+     *            threads should run within. The executor determines the
+     *            threading model.
+     * @throws IOException
+     *             If there is a problem with the network interaction.
+     */
     public synchronized void bind(final Executor executor) throws IOException {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
