@@ -20,11 +20,14 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.persistence.EntityExistsException;
 
 import org.dcm4chee.arr.ejb.AuditRecord;
+import org.dcm4chee.arr.ejb.Code;
 import org.dcm4chee.arr.ejb.GenericEntityMgmt;
 import org.dcm4chee.arr.jmx.UDPServerMBean;
 import org.dcm4chee.arr.util.Ejb3Util;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jboss.annotation.ejb.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,8 +178,25 @@ public class TestAuditRecord {
             ;
         }
     }
-
+    
     @Test(groups = "mdb", dependsOnMethods = "sendAuditRecord")
+    public void duplicatedCode() {
+        try {
+            // Try to create an already-existing Code to test its uniqueConstraints
+            Code code = new Code();
+            code.setValue("110104");
+            code.setDesignator("DCM");
+            
+            GenericEntityMgmt mgmt = Ejb3Util.getRemoteInterface(GenericEntityMgmt.class);
+            mgmt.persistent(code);
+            
+        } catch(Exception e) {
+            assert e.getCause() instanceof EntityExistsException;
+            assert e.getCause().getCause() instanceof ConstraintViolationException;
+        }
+    }
+
+    @Test(groups = "mdb", dependsOnMethods = "duplicatedCode")
     public void checkData_mdb() {
         doCheckData();
     }
