@@ -43,6 +43,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.ejb.EJBException;
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
@@ -209,23 +211,40 @@ class AuditRecordHandler extends DefaultHandler {
 	    return null;
 	}
 	String meaning = attrs.getValue("displayName");
-	List queryResult = em.createQuery("FROM Code c WHERE "
-			+ "c.value = :value AND c.designator = :designator")
-		.setParameter("value", value)
-		.setParameter("designator", designator)
-		.setHint("org.hibernate.readOnly", Boolean.TRUE)
-		.getResultList();
-	if (!queryResult.isEmpty()) {
-	    return (Code) queryResult.get(0);
-	}
-	Code code = new Code();
-	code.setValue(value);
-	code.setDesignator(designator);
-	code.setMeaning(meaning);
-	em.persist(code);
-	return code;
+	Code code = findCode(value, designator);
+        if(code != null)
+            return code;
+        
+        code = new Code();
+        code.setValue(value);
+        code.setDesignator(designator);
+        code.setMeaning(meaning);
+        try {
+            em.persist(code);
+            return code;
+        } catch(EJBException ex) {
+            if(ex.getCause() instanceof EntityExistsException) {
+                // A Code with the same values must be inserted by a concurrent operation
+                // so we just retrieve it
+                return findCode(value, designator);
+            }
+            throw ex;
+        }
     }
-
+    
+    private Code findCode(String value, String designator) {
+        List queryResult = em.createQuery("FROM Code c WHERE "
+                + "c.value = :value AND c.designator = :designator")
+            .setParameter("value", value)
+            .setParameter("designator", designator)
+            .setHint("org.hibernate.readOnly", Boolean.TRUE)
+            .getResultList();
+        if (!queryResult.isEmpty()) {
+            return (Code) queryResult.get(0);
+        }
+        return null;
+    }
+    
     private static String toUpper(String s) {
 	return s != null ? s.toUpperCase() : null;
     }
