@@ -47,6 +47,7 @@ import javax.persistence.Id;
 import javax.persistence.PostPersist;
 import javax.persistence.PostRemove;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,70 +56,77 @@ import org.slf4j.LoggerFactory;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Id$
  * @since Jun 5, 2006
- *
+ * 
  */
 @Entity
-@Table(name = "code")
+@Table(name = "code", 
+        uniqueConstraints = {@UniqueConstraint(columnNames={"code_value", "code_designator"})})
 public class Code implements Serializable {
 
     private static final long serialVersionUID = -2126932270827340622L;
 
     private static Logger log = LoggerFactory.getLogger(Code.class);
-    
+
     private int pk;
+
     private String value;
+
     private String designator;
+
     private String meaning;
-    
+
     @Id
     @GeneratedValue
-    @Column(name="pk")
+    @Column(name = "pk")
     public int getPk() {
         return pk;
     }
+
     public void setPk(int pk) {
         this.pk = pk;
     }
-    
-    @Column(name="code_value")
+
+    @Column(name = "code_value")
     public String getValue() {
         return value;
     }
+
     public void setValue(String value) {
         this.value = value;
     }
-    
-    @Column(name="code_designator")
+
+    @Column(name = "code_designator")
     public String getDesignator() {
         return designator;
     }
+
     public void setDesignator(String designator) {
         this.designator = designator;
     }
-    
-    @Column(name="code_meaning")
+
+    @Column(name = "code_meaning")
     public String getMeaning() {
         return meaning;
     }
+
     public void setMeaning(String meaning) {
         this.meaning = meaning;
     }
-    
+
     @PostPersist
-	public void postPersit() {
-		if(log.isDebugEnabled())
-			log.debug( "Created " + this.toString() );
-	}
-    
+    public void postPersit() {
+        if (log.isDebugEnabled())
+            log.debug("Created " + this.toString());
+    }
+
     @PostRemove
-	public void postRemove() {
-		if(log.isDebugEnabled())
-			log.debug( "Removed " + this.toString() );
-	}
-    
+    public void postRemove() {
+        if (log.isDebugEnabled())
+            log.debug("Removed " + this.toString());
+    }
+
     @Override
-	public String toString() {
-		// Default implementation. Sub class should provide meaningful overriding
-		return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
-	}
+    public String toString() {
+        return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
+    }
 }
