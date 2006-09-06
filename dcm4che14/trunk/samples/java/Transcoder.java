@@ -1,18 +1,24 @@
 
 
+import java.awt.Point;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -263,6 +269,7 @@ public class Transcoder {
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(
                     dsIn.getFileMetaInfo().getTransferSyntaxUID());
+            bi = (BufferedImage) createBufferedImage();
         } else {
             bi = pixelDataParam.createBufferedImage(getMaxBits());
         }
@@ -676,4 +683,30 @@ public class Transcoder {
 	{
 		this.ignoreMissingPixelData = ignoreMissingPixelData;
 	}
+	protected BufferedImage createBufferedImage() {
+        int pixelStride;
+        int[] bandOffset;
+        int dataType;
+        int colorSpace;
+        if (pixelDataParam.getSamplesPerPixel()== 3) {
+            pixelStride = 3;
+            bandOffset = new int[] { 0, 1, 2 };
+            dataType = DataBuffer.TYPE_BYTE;
+            colorSpace = ColorSpace.CS_sRGB;
+        } else {
+            pixelStride = 1;
+            bandOffset = new int[] { 0 };
+            dataType = pixelDataParam.getBitsAllocated() == 8 ? DataBuffer.TYPE_BYTE 
+                    : DataBuffer.TYPE_USHORT;
+            colorSpace = ColorSpace.CS_GRAY;
+        }
+        SampleModel sm = new PixelInterleavedSampleModel(dataType, pixelDataParam.getColumns(),
+        		pixelDataParam.getRows(), pixelStride, pixelDataParam.getColumns() * pixelStride, bandOffset);
+        ColorModel cm = new ComponentColorModel(
+                ColorSpace.getInstance(colorSpace), sm.getSampleSize(),
+                false, false, Transparency.OPAQUE, dataType);
+        WritableRaster r = Raster.createWritableRaster(sm, new Point(0, 0));
+        return new BufferedImage(cm, r, false, new Hashtable());
+    }
+
 }
