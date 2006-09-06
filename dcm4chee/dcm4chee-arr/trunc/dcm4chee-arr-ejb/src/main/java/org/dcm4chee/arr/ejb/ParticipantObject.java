@@ -46,7 +46,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostPersist;
+import javax.persistence.PostRemove;
 import javax.persistence.Table;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -60,6 +65,8 @@ public class ParticipantObject implements Serializable {
 
     private static final long serialVersionUID = 3794144950916480382L;
 
+    private static Logger log = LoggerFactory.getLogger(ParticipantObject.class);
+    
     private int pk;
     private AuditRecord auditRecord;
     private String objectID;
@@ -165,4 +172,20 @@ public class ParticipantObject implements Serializable {
         this.objectSensitivity = sensitivity;
     }
 
+    @PostPersist
+    public void postPersit() {
+        if (log.isDebugEnabled())
+            log.debug("Created " + this.toString());
+    }
+
+    @PostRemove
+    public void postRemove() {
+        if (log.isDebugEnabled())
+            log.debug("Removed " + this.toString());
+    }
+
+    @Override
+    public String toString() {
+        return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
+    }
 }
