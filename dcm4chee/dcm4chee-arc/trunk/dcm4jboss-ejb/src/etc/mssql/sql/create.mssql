@@ -203,6 +203,7 @@ CREATE TABLE instance (
 	created_time	DATETIME,
 	updated_time	DATETIME,
 	inst_attrs		IMAGE,
+	all_attrs		BIT NOT NULL,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk),
 FOREIGN KEY (media_fk) REFERENCES media(pk)
