@@ -113,8 +113,12 @@ public class TimerSupport {
         if (period <= 0L) return null;
         Logger log = service.getLog();
         try {
-        	log.info("Start Scheduler " + name + " with period of " + period + "ms");
-            Date now = new Date(System.currentTimeMillis() + 1000);
+            // delay start of scheduler, because in JBoss-4.0.4 the EntityContainer
+            // cannot be used immediately after it's been started.
+            // Should be fixed in JBoss-4.0.5            
+            log.info("Start Scheduler " + name + " with period of " + period 
+                    + "ms in 1 min.");
+            Date now = new Date(System.currentTimeMillis() + 60000);
             MBeanServer server = service.getServer();
             Integer id = (Integer) server.invoke(
                     mTimer,

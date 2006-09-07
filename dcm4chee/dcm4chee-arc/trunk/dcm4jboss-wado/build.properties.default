@@ -8,7 +8,7 @@ dcm4chee-ejb.home=../dcm4jboss-ejb
 dcm4chee-sar.home=../dcm4jboss-sar
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-4.0.3SP1
+jboss.home=${user.home}/jboss-4.0.4.GA
 
 #Override with your FOP dist location
 fop.home=${user.home}/fop-0.20.5

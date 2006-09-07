@@ -8,8 +8,8 @@ to download and install:
 
 - XDoclet 1.2.3 [http://xdoclet.sourceforge.net]
 
-- JBoss 4.0.3SP1 [http://labs.jboss.com/jbossas/download]
-(you have to fetch a binary package (e.g jboss-4.0.3SP1.zip) and unpack it,
+- JBoss 4.0.4.GA [http://labs.jboss.com/jbossas/download]
+(you have to fetch a binary package (e.g jboss-4.0.4.GA.zip) and unpack it,
 running the installer does not work!)
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
@@ -28,7 +28,7 @@ The build scripts (dcm4jboss-all/dcm4jboss-xxx/build.xml) assumes following
 locations of XDoclet, JBoss, Apache FOP and Jakarta Cactus:
 
 xdoclet.home=${user.home}/xdoclet-1.2.3
-jboss.home=${user.home}/jboss-4.0.3SP1
+jboss.home=${user.home}/jboss-4.0.4.GA
 fop.home=${user.home}/fop-0.20.5
 cactus.home=${user.home}/jakarta-cactus-13-1.7
 

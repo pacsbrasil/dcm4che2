@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.9.5"/>
+	<property name="version" value="2.10.0"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="bin.dir" value="${basedir}/bin"/>
@@ -30,7 +30,7 @@
 	<property name="dcm4chee-ejb.src" value="${dcm4chee-ejb.home}/src"/>		
 
    <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.3SP1"/>		
+	<property name="jboss.home" value="${user.home}/jboss-4.0.4.GA"/>		
 	<property name="jboss.server" value="${jboss.home}/server"/>		
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.server.home}/deploy"/>		
