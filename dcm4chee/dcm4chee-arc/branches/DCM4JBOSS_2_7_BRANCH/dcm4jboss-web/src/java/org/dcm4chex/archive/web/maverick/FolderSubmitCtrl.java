@@ -116,7 +116,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
             HttpServletRequest rq = getCtx().getRequest();
-            folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
+            if ( rq.getParameter("showWithoutStudies") != null )
+            	folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
             	return logout();
             
