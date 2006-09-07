@@ -25,6 +25,12 @@
       <xsl:with-param name="vr" select="'LO'"/>
       <xsl:with-param name="val" select="substring(field[3]/text(),1,64)"/>
     </xsl:call-template>
+    <!-- HL7:Assigned Patient Location.4 -> DICOM Requesting Physician -->
+    <xsl:call-template name="attr">
+      <xsl:with-param name="tag" select="'00321032'"/>
+      <xsl:with-param name="vr" select="'PN'"/>
+      <xsl:with-param name="val" select="string(field[3]/component[3]/text())"/>
+    </xsl:call-template>   
     <!-- HL7:Referring Doctor -> DICOM:Referring Physican Name 
     (may replace HL7:Ordering Provider -> DICOM:Referring Physican Name mapping)
     <xsl:call-template name="cn2pnAttr">
