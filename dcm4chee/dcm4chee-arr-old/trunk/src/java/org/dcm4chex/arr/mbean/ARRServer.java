@@ -141,7 +141,19 @@ public class ARRServer extends ServiceMBeanSupport implements
     public void startService() throws Exception {
     	storeHome = null;
         udpsrv.start();
-        store(buildActorStartStopAuditMessage(START));
+        // delay invoke of EJB method because in JBoss-4.0.4 the EntityContainer
+        // cannot be used immediately after it's been started.
+        // Should be fixed in JBoss-4.0.5
+        new Thread(new Runnable(){
+
+            public void run() {
+                try {
+                    Thread.sleep(5000);
+                    store(buildActorStartStopAuditMessage(START));                
+                } catch (Exception e) {
+                    log.error("Failed to log start of Audit Record Repository", e);
+                }
+            }}).start();
     }
 
     public String getCurrentPrincipalName() {
