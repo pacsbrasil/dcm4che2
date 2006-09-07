@@ -407,7 +407,7 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 	try {
 		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber );
 		if ( file != null ) {
-			return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
+	        return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
 		} else {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 		}
@@ -430,16 +430,18 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 				String rows, String columns, String frameNumber	) 
 				throws IOException, NeedRedirectionException, NoImageException, ImageCachingException {
 	int frame = 0;
+	String suffix = null;
 	if ( frameNumber != null ) {
 		frame = Integer.parseInt( frameNumber );
+		if ( frame != 0 ) suffix = "-"+frameNumber;
 	}
 	WADOCache cache = WADOCacheImpl.getWADOCache();
 	File file;
 	BufferedImage bi = null;
 	if ( rows == null ) {
-		file = cache.getImageFile( studyUID, seriesUID, instanceUID );
+		file = cache.getImageFile( studyUID, seriesUID, instanceUID, suffix );
 	} else {
-		file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns );
+		file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns, suffix );
 	}
 	if ( file == null ) {
 		File dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
@@ -451,9 +453,9 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 		if ( bi != null ) {
 			try {
 				if ( rows == null ) {
-					file = cache.putImage( bi, studyUID, seriesUID, instanceUID );
+					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, suffix );
 				} else {
-					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
+					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns, suffix );
 				}
 			} catch ( Exception x ) {
 				log.error("Error caching image file! Return image without caching!",x);
@@ -654,11 +656,14 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 		}
 		InputStream is = conn.getInputStream();
 		if ( WADOCacheImpl.getWADOCache().isRedirectCaching() && CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
+		    String suffix = req.getFrameNumber();
+		    if (suffix != null && suffix.equals("0")) suffix = null;//0 is default -> dont use suffix!
 			File file = WADOCacheImpl.getWADOCache().putStream( is, req.getStudyUID(), 
 													req.getSeriesUID(), 
 													req.getObjectUID(), 
 													req.getRows(), 
-													req.getColumns() );
+													req.getColumns(),
+													suffix);
 			is = new FileInputStream( file );
 		}
 		return new WADOStreamResponseObjectImpl( is, conn.getContentType(), HttpServletResponse.SC_OK, null);

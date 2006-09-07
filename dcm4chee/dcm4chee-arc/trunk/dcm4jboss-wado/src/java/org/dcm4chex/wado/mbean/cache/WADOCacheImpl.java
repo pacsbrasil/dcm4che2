@@ -170,8 +170,8 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @return	The image if in cache or null.
 	 */
-	public BufferedImage getImage(String studyUID, String seriesUID, String instanceUID) {
-		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID ) );
+	public BufferedImage getImage(String studyUID, String seriesUID, String instanceUID, String suffix) {
+		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, suffix ) );
 	}
 
 	/**
@@ -185,8 +185,8 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @return	The File of the image if in cache or null.
 	 */
-	public File getImageFile(String studyUID, String seriesUID, String instanceUID) {
-		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
+	public File getImageFile(String studyUID, String seriesUID, String instanceUID, String suffix) {
+		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, suffix, null );
 		if ( file.exists() ) {
 			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
 			return file;
@@ -209,8 +209,8 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @throws IOException
 	 */
-	public File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID) throws IOException {
-		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
+	public File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String suffix) throws IOException {
+		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, suffix, null );
 		_writeImageFile( image, file);
 		return file;
 	}
@@ -228,8 +228,8 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @return				The image if in cache or null.
 	 */
-	public BufferedImage getImage(String studyUID, String seriesUID, String instanceUID, String rows, String columns) {
-		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, rows, columns ) );
+	public BufferedImage getImage(String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix) {
+		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, rows, columns, suffix ) );
 	}
 
 	/**
@@ -245,8 +245,8 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @return				The File object of the image if in cache or null.
 	 */
-	public File getImageFile(String studyUID, String seriesUID, String instanceUID, String rows, String columns) {
-		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
+	public File getImageFile(String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix ) {
+		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, suffix, null );
 		if ( file.exists() ) {
 			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
 			return file;
@@ -271,8 +271,8 @@ public class WADOCacheImpl implements WADOCache {
 	 * @throws IOException
      */
 	public File putImage( BufferedImage image, String studyUID, String seriesUID,
-			String instanceUID, String rows, String columns) throws IOException {
-		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
+			String instanceUID, String rows, String columns, String suffix) throws IOException {
+		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, suffix, null );
 		_writeImageFile( image, file);
 		return file;
 	}
@@ -291,12 +291,12 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @throws IOException
 	 */
-	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns ) throws IOException {
+	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix ) throws IOException {
 		File file;
 		if ( rows == null && columns == null ) {
-			file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
+			file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null, null );
 		} else {
-			file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
+			file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, suffix, null );
 		}
 		if ( ! file.getParentFile().exists() ) {
 			file.getParentFile().mkdirs();
@@ -330,7 +330,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * @return File object to get or store a file.
 	 */
 	public File getFileObject( String studyUID, String seriesUID, String instanceUID, String contentType ) {
-		return this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, contentType );
+		return this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null, contentType );
 	}
 
 	
@@ -608,7 +608,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @return
 	 */
-	private File _getImageFile( String subdir, String studyUID, String seriesUID, String instanceUID, String contentType ) {
+	private File _getImageFile( String subdir, String studyUID, String seriesUID, String instanceUID, String suffix, String contentType ) {
 		if ( contentType == null ) contentType = "image/jpg";//use jpg instead of jpeg here because for extension jpeg is set to jpg.
 		File file = getAbsCacheRoot();
 		if ( subdir != null )
@@ -624,6 +624,8 @@ public class WADOCacheImpl implements WADOCache {
 		} else {
 			file = new File( file, _getSubDirName( instanceUID ) );
 		}
+		if ( suffix != null )
+		    instanceUID += suffix;
 		file = new File( file, instanceUID + ext ); 
 		return file;
 	}

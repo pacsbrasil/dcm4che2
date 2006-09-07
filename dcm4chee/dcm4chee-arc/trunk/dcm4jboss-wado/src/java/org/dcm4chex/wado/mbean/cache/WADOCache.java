@@ -64,7 +64,7 @@ public interface WADOCache {
 	 * 
 	 * @return	The image if in cache or null.
 	 */
-	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID );
+	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String suffix );
 	
 	/**
 	 * Get an image as file from cache.
@@ -74,10 +74,11 @@ public interface WADOCache {
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
+	 * @param frameNumber
 	 * 
 	 * @return	The File of the image if in cache or null.
 	 */
-	File getImageFile( String studyUID, String seriesUID, String instanceUID );
+	File getImageFile( String studyUID, String seriesUID, String instanceUID, String frameNumber );
 	
 	/**
 	 * Put an image as BufferedImage to the cache.
@@ -88,12 +89,13 @@ public interface WADOCache {
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
+	 * @param frameNumber
 	 * 
 	 * @return The File object of the image in this cache.
 	 * 
 	 * @throws IOException
 	 */
-	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID ) throws IOException;
+	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String frameNumber ) throws IOException;
 	
 	/**
 	 * Get an image of special size from cache.
@@ -108,7 +110,7 @@ public interface WADOCache {
 	 * 
 	 * @return				The image if in cache or null.
 	 */
-	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns );
+	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix );
 
 	/**
 	 * Get an image of special size from cache.
@@ -123,7 +125,7 @@ public interface WADOCache {
 	 * 
 	 * @return				The File object of the image if in cache or null.
 	 */
-	File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns );
+	File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix );
 
 	/**
 	 * Put an image of special size to this cache.
@@ -140,7 +142,7 @@ public interface WADOCache {
 	 * @return The File object of the image in this cache.
 	 * @throws IOException
      */
-	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns ) throws IOException;
+	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String suffix ) throws IOException;
 	
 	/**
 	 * Puts a stream to this cache.
@@ -156,7 +158,7 @@ public interface WADOCache {
 	 * 
 	 * @throws IOException
 	 */
-	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns ) throws IOException; 
+	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String suffix ) throws IOException; 
 
 	/**
 	 * Return the File object to get or store a file for given arguments.

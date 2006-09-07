@@ -49,7 +49,6 @@ import java.util.TreeMap;
 import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
-import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
