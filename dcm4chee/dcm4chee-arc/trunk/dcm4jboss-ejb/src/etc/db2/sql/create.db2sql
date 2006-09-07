@@ -317,8 +317,8 @@ CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);
 CREATE INDEX mwl_modality ON mwl_item(modality);
 CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
-CREATE INDEX mwl_perf_phys_i_name ON mwl_item(perf_phys_i_name);
-CREATE INDEX mwl_perf_phys_p_name ON mwl_item(perf_phys_p_name);
+CREATE INDEX mwl_perf_phys_i_nm ON mwl_item(perf_phys_i_name);
+CREATE INDEX mwl_perf_phys_p_nm ON mwl_item(perf_phys_p_name);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
@@ -527,7 +527,7 @@ FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
 CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
 CREATE INDEX priv_study_type ON priv_study(priv_type);
 CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
-CREATE INDEX priv_study_accession_no ON priv_study(accession_no);
+CREATE INDEX priv_study_accs_no ON priv_study(accession_no);
 
 CREATE SEQUENCE priv_series_pk_seq;
 CREATE TABLE priv_series (
@@ -542,7 +542,7 @@ FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
 CREATE INDEX priv_study_fk ON priv_series(study_fk);
 CREATE INDEX priv_series_type ON priv_series(priv_type);
 CREATE INDEX priv_series_iuid ON priv_series(series_iuid);
-CREATE INDEX priv_series_src_aet ON priv_series(src_aet);
+CREATE INDEX priv_ser_src_aet ON priv_series(src_aet);
 
 
 CREATE SEQUENCE priv_instance_pk_seq;
