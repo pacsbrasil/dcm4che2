@@ -60,7 +60,13 @@ public class MPPSFilter extends PPSFilter{
 	 * @return Filter value of modality field or null.
 	 */
 	public String getModality() {
-		return queryDS.getString(Tags.Modality);
+	    String[] sa = queryDS.getStrings(Tags.Modality);
+	    if ( sa == null || sa.length < 1 ) return null;
+	    StringBuffer sb = new StringBuffer(sa[0]);
+	    for ( int i = 1 ; i < sa.length ; i++ ) {
+	        sb.append('\\').append(sa[i]);
+	    }
+	    return sb.toString();
 	}
 	
 	/**
