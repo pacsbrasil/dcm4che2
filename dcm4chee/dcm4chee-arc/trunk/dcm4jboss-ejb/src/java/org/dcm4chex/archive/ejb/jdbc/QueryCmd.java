@@ -194,7 +194,7 @@ public abstract class QueryCmd extends BaseReadCmd {
                         "Study.referringPhysicianPhoneticName" },
                 keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
-                keys.getStrings(Tags.StudyDescription),Boolean.TRUE);
+                SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
                 keys.getStrings(Tags.StudyStatusID));
     }
@@ -218,9 +218,9 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
                 modality);
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
-                keys.getStrings(Tags.InstitutionName), Boolean.TRUE);
+                SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionName)));
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
-                type2, keys.getStrings(Tags.InstitutionalDepartmentName), Boolean.TRUE);
+                type2, SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionalDepartmentName)));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2,
                 keys.getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
