@@ -66,6 +66,9 @@ public abstract class BaseCmd {
     
     protected int updateDatabaseMaxRetries = 20;
     protected long updateDatabaseRetryInterval = 500L; // ms
+    
+    private int resultSetType = ResultSet.TYPE_FORWARD_ONLY;
+    private int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
 
     protected BaseCmd(String dsJndiName, int transactionIsolationLevel, String sql)
 			throws SQLException {
@@ -104,9 +107,9 @@ public abstract class BaseCmd {
 	            if (transactionIsolationLevel > 0)
 	                con.setTransactionIsolation(transactionIsolationLevel);
 				if (sql != null) {
-		            stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		            stmt = con.prepareStatement(sql, resultSetType, resultSetConcurrency);
 				} else {
-					stmt = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+					stmt = con.createStatement( resultSetType, resultSetConcurrency);
 				} 
 				if(i > 0)
 					log.info("open connection successfully after retries: " + (i+1));
@@ -161,5 +164,17 @@ public abstract class BaseCmd {
 
     public final void setUpdateDatabaseRetryInterval(long interval) {
         this.updateDatabaseRetryInterval = interval;
+    }
+    /**
+     * @param resultSetConcurrency The resultSetConcurrency to set.
+     */
+    public void setResultSetConcurrency(int resultSetConcurrency) {
+        this.resultSetConcurrency = resultSetConcurrency;
+    }
+    /**
+     * @param resultSetType The resultSetType to set.
+     */
+    public void setResultSetType(int resultSetType) {
+        this.resultSetType = resultSetType;
     }
 }
