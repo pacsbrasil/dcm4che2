@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,6 +114,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     		throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+        this.setResultSetType( ResultSet.TYPE_SCROLL_INSENSITIVE );
         this.keys = keys;
         this.filterResult = filterResult;
         this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
