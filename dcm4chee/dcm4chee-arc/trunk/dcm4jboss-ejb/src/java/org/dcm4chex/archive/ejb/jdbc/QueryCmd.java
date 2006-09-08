@@ -165,7 +165,7 @@ public abstract class QueryCmd extends BaseReadCmd {
 
     protected void addPatientMatch() {
         sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
-                .getString(Tags.PatientID));
+                .getStrings(Tags.PatientID));
         sqlBuilder.addPNMatch(
                 new String[] { 
                         "Patient.patientName",
@@ -175,18 +175,18 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
                 keys.getDateTimeRange(Tags.PatientBirthDate, Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
-                keys.getString(Tags.PatientSex));
+                keys.getStrings(Tags.PatientSex));
     }
 
     protected void addStudyMatch() {
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2, 
-                keys.getString(Tags.StudyID));
+                keys.getStrings(Tags.StudyID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
                 keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
-                keys.getString(Tags.AccessionNumber));
+                keys.getStrings(Tags.AccessionNumber));
         sqlBuilder.addPNMatch(
                 new String[] { 
                         "Study.referringPhysicianName",
@@ -194,9 +194,9 @@ public abstract class QueryCmd extends BaseReadCmd {
                         "Study.referringPhysicianPhoneticName" },
                 keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
-        sqlBuilder.addSingleValueMatch(null, "Study.studyStatusId", type2,
-                keys.getString(Tags.StudyStatusID));
+                keys.getStrings(Tags.StudyDescription),Boolean.TRUE);
+        sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
+                keys.getStrings(Tags.StudyStatusID));
     }
 
     protected void addNestedSeriesMatch() {
@@ -211,17 +211,16 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SeriesInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
-                keys.getString(Tags.SeriesNumber));
-        String modality = keys.getString(Tags.Modality);
+                keys.getStrings(Tags.SeriesNumber));
+        String[] modality = keys.getStrings(Tags.Modality);
         if (modality == null)
-            modality = keys.getString(Tags.ModalitiesInStudy);
+            modality = keys.getStrings(Tags.ModalitiesInStudy);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
                 modality);
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionName)));
+                keys.getStrings(Tags.InstitutionName), Boolean.TRUE);
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
-                type2, SqlBuilder.toUpperCase(keys
-                        .getString(Tags.InstitutionalDepartmentName)));
+                type2, keys.getStrings(Tags.InstitutionalDepartmentName), Boolean.TRUE);
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2,
                 keys.getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
@@ -231,11 +230,11 @@ public abstract class QueryCmd extends BaseReadCmd {
         if (rqAttrs != null) {
             sqlBuilder.addWildCardMatch(null,
                     "SeriesRequest.requestedProcedureId", type2,
-                    rqAttrs.getString(Tags.RequestedProcedureID));
+                    rqAttrs.getStrings(Tags.RequestedProcedureID));
             sqlBuilder.addWildCardMatch(null, "SeriesRequest.spsId", type2,
-                    rqAttrs.getString(Tags.SPSID));
+                    rqAttrs.getStrings(Tags.SPSID));
             sqlBuilder.addWildCardMatch(null, "SeriesRequest.requestingService",
-                    type2, rqAttrs.getString(Tags.RequestingService));
+                    type2, rqAttrs.getStrings(Tags.RequestingService));
             sqlBuilder.addPNMatch(
                     new String[] { 
                             "SeriesRequest.requestingPhysician",
@@ -252,7 +251,7 @@ public abstract class QueryCmd extends BaseReadCmd {
         sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SOPClassUID));
         sqlBuilder.addWildCardMatch(null, "Instance.instanceNumber", type2,
-                keys.getString(Tags.InstanceNumber));
+                keys.getStrings(Tags.InstanceNumber));
         sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", type2,
                 keys.getDateTimeRange(Tags.ContentDate, Tags.ContentTime));
         sqlBuilder.addSingleValueMatch(null, "Instance.srCompletionFlag",

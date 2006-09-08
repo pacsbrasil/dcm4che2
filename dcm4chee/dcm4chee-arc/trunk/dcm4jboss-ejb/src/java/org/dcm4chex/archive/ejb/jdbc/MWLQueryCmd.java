@@ -86,19 +86,19 @@ public class MWLQueryCmd extends BaseReadCmd {
         String status = null;
         if (spsItem != null) {
         	status = spsItem.getString(Tags.SPSStatus);
-            sqlBuilder.addSingleValueMatch(null, "MWLItem.spsId",
+            sqlBuilder.addListOfStringMatch(null, "MWLItem.spsId",
                     SqlBuilder.TYPE1,
-                    spsItem.getString(Tags.SPSID));
+                    spsItem.getStrings(Tags.SPSID));
             sqlBuilder.addRangeMatch(null, "MWLItem.spsStartDateTime",
                     SqlBuilder.TYPE1,
                     spsItem.getDateTimeRange(Tags.SPSStartDate,
                             Tags.SPSStartTime));
-            sqlBuilder.addSingleValueMatch(null, "MWLItem.modality",
+            sqlBuilder.addListOfStringMatch(null, "MWLItem.modality",
                     SqlBuilder.TYPE1,
-                    spsItem.getString(Tags.Modality));
-            sqlBuilder.addSingleValueMatch(null, "MWLItem.scheduledStationAET",
+                    spsItem.getStrings(Tags.Modality));
+            sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationAET",
                     SqlBuilder.TYPE1,
-                    spsItem.getString(Tags.ScheduledStationAET));
+                    spsItem.getStrings(Tags.ScheduledStationAET));
             sqlBuilder.addPNMatch(new String[] {
                     "MWLItem.performingPhysicianName",
                     "MWLItem.performingPhysicianIdeographicName",
@@ -112,18 +112,18 @@ public class MWLQueryCmd extends BaseReadCmd {
     	    sqlBuilder.addIntValueMatch(null, "MWLItem.spsStatusAsInt",
     	            SqlBuilder.TYPE1, SPSStatus.toInt(status));
     	}
-        sqlBuilder.addSingleValueMatch(null, "MWLItem.requestedProcedureId",
+        sqlBuilder.addListOfStringMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,
-                keys.getString(Tags.RequestedProcedureID));
-        sqlBuilder.addSingleValueMatch(null, "MWLItem.accessionNumber",
+                keys.getStrings(Tags.RequestedProcedureID));
+        sqlBuilder.addListOfStringMatch(null, "MWLItem.accessionNumber",
                 SqlBuilder.TYPE2,
-                keys.getString(Tags.AccessionNumber));
-        sqlBuilder.addSingleValueMatch(null, "MWLItem.studyIuid",
+                keys.getStrings(Tags.AccessionNumber));
+        sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
                 SqlBuilder.TYPE1,
-                keys.getString(Tags.StudyInstanceUID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
+                keys.getStrings(Tags.StudyInstanceUID));
+        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                keys.getString(Tags.PatientID));
+                keys.getStrings(Tags.PatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",

@@ -253,9 +253,52 @@ class SqlBuilder {
         String wc) {
         if (wc == null || wc.length() == 0 || wc.equals("*"))
             return null;
-        return addMatch(new Match.WildCard(alias, field, type2, wc));
+        return addMatch(new Match.WildCard(alias, field, type2, wc));    
     }
     
+    public Match addWildCardMatch(String alias, String field, boolean type2,
+            String[] wc) {
+        return addWildCardMatch(alias, field, type2, wc, null);
+    }
+    
+    public Match addWildCardMatch(String alias, String field, boolean type2,
+        String[] wc, Boolean forceUpperOrLowerCase) {
+        if (wc == null || wc.length == 0 || wc[0].equals("*"))
+            return null;
+        if ( wc.length == 1 ) {
+            return addMatch(new Match.WildCard(alias, field, type2, wc[0]));
+        } else {
+            if ( containsWildCard( wc ) ) {
+                return addMatch(new Match.WildCard(alias, field, type2, wc[0])); //use default behaviour and ignore multi values
+            } else {
+                if ( forceUpperOrLowerCase != null ) {
+                    if ( forceUpperOrLowerCase.booleanValue() ) {
+            	        for ( int i = 0 ; i < wc.length ; i++ ) {
+            	            wc[i] = wc[i] != null ? wc[i].toUpperCase() : null;
+            	        }
+                    } else {
+            	        for ( int i = 0 ; i < wc.length ; i++ ) {
+            	            wc[i] = wc[i] != null ? wc[i].toLowerCase() : null;
+            	        }
+                    }
+                }
+                return addListOfStringMatch(alias, field, type2, wc);
+            }
+        }
+    }
+    
+    /**
+     * @param wc
+     * @return
+     */
+    private boolean containsWildCard(String[] wc) {
+        for ( int i = 0 ; i < wc.length ; i++ ) {
+            if ( wc[i].indexOf('*') != -1 || wc[i].indexOf('?') != -1) 
+                return true;
+        }
+        return false;
+    }
+
     public void addPNMatch(String[] nameFields, String val) {
         if (val == null || val.length() == 0 || val.equals("*"))
             return;

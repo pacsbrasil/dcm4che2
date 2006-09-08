@@ -133,18 +133,18 @@ public class GPWLQueryCmd extends BaseReadCmd {
         }
         item = keys.getItem(Tags.RefRequestSeq);
         if (item != null) {
-            sqlBuilder.addSingleValueMatch(null,
+            sqlBuilder.addListOfStringMatch(null,
                     "GPSPSRequest.requestedProcedureId",
                     SqlBuilder.TYPE2,
-                    item.getString(Tags.RequestedProcedureID));
-            sqlBuilder.addSingleValueMatch(null,
+                    item.getStrings(Tags.RequestedProcedureID));
+            sqlBuilder.addListOfStringMatch(null,
                     "GPSPSRequest.accessionNumber",
                     SqlBuilder.TYPE2,
-                    item.getString(Tags.AccessionNumber));
+                    item.getStrings(Tags.AccessionNumber));
         }        
-        sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
+        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                keys.getString(Tags.PatientID));
+                keys.getStrings(Tags.PatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",

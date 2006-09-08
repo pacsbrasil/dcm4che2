@@ -76,36 +76,36 @@ public class MPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addSingleValueMatch(null, "MPPS.sopIuid",
+        sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid",
                 SqlBuilder.TYPE1,
-                filter.getString(Tags.SOPInstanceUID) );
+                filter.getStrings(Tags.SOPInstanceUID) );
         if ( emptyAccNo ) {
         	sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false );
         } else {
-	        sqlBuilder.addSingleValueMatch(null, "MPPS.accessionNumber",
+	        sqlBuilder.addListOfStringMatch(null, "MPPS.accessionNumber",
 	                SqlBuilder.TYPE2,
-	                filter.getString(Tags.AccessionNumber) );
+	                filter.getStrings(Tags.AccessionNumber) );
         }
-        sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
+        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                filter.getString(Tags.PatientID) );
+                filter.getStrings(Tags.PatientID) );
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 filter.getString(Tags.PatientName));
-        sqlBuilder.addSingleValueMatch(null, "MPPS.modality",
+        sqlBuilder.addListOfStringMatch(null, "MPPS.modality",
                 SqlBuilder.TYPE1,
-                filter.getString(Tags.Modality));
-        sqlBuilder.addSingleValueMatch(null, "MPPS.performedStationAET",
+                filter.getStrings(Tags.Modality));
+        sqlBuilder.addListOfStringMatch(null, "MPPS.performedStationAET",
                 SqlBuilder.TYPE1,
-                filter.getString(Tags.PerformedStationAET));
+                filter.getStrings(Tags.PerformedStationAET));
         sqlBuilder.addRangeMatch(null, "MPPS.ppsStartDateTime",
                 SqlBuilder.TYPE1,
                 filter.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
-        sqlBuilder.addSingleValueMatch(null, "MPPS.ppsStatusAsInt",
+        sqlBuilder.addListOfStringMatch(null, "MPPS.ppsStatusAsInt",
                 SqlBuilder.TYPE1,
-				filter.getString(Tags.PPSStatus));
+				filter.getStrings(Tags.PPSStatus));
     }
 
     public void execute() throws SQLException {

@@ -76,12 +76,12 @@ public class GPPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addSingleValueMatch(null, "GPPPS.sopIuid",
+        sqlBuilder.addListOfStringMatch(null, "GPPPS.sopIuid",
                 SqlBuilder.TYPE1,
-                filter.getString(Tags.SOPInstanceUID) );
-        sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
+                filter.getStrings(Tags.SOPInstanceUID) );
+        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                filter.getString(Tags.PatientID) );
+                filter.getStrings(Tags.PatientID) );
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
@@ -90,9 +90,9 @@ public class GPPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.addRangeMatch(null, "GPPPS.ppsStartDateTime",
                 SqlBuilder.TYPE1,
                 filter.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
-        sqlBuilder.addSingleValueMatch(null, "GPPPS.ppsStatusAsInt",
+        sqlBuilder.addListOfStringMatch(null, "GPPPS.ppsStatusAsInt",
                 SqlBuilder.TYPE1,
-				filter.getString(Tags.PPSStatus));
+				filter.getStrings(Tags.PPSStatus));
     }
 
     public void execute() throws SQLException {

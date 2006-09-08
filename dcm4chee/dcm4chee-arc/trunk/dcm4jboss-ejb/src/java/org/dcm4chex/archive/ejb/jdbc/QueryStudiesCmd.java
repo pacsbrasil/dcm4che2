@@ -108,20 +108,20 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
-                filter.getString(Tags.PatientID));
+                filter.getStrings(Tags.PatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 filter.getString(Tags.PatientName));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
-                filter.getString(Tags.StudyID));
-        sqlBuilder.addSingleValueMatch(null, "Study.studyIuid",
-                SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
+                filter.getStrings(Tags.StudyID));
+        sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
+                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
                 filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
-                filter.getString(Tags.AccessionNumber));
+                filter.getStrings(Tags.AccessionNumber));
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 filter.getString(Tags.ModalitiesInStudy));
         filter.setPrivateCreatorID(PrivateTags.CreatorID);

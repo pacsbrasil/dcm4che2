@@ -86,15 +86,15 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
         if ( filter != null ) {
 	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
 	                SqlBuilder.TYPE2,
-	                filter.getString(Tags.PatientID));
+	                filter.getStrings(Tags.PatientID));
 	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientName",
 	                SqlBuilder.TYPE2,
 	                toWildcardMatchString( filter.getString(Tags.PatientName)) );
 	        sqlBuilder.addWildCardMatch(null, "PrivateStudy.accessionNumber",
 	                SqlBuilder.TYPE2,
-	                filter.getString(Tags.AccessionNumber));
-	        sqlBuilder.addSingleValueMatch(null, "PrivateStudy.studyIuid",
-	                SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
+	                filter.getStrings(Tags.AccessionNumber));
+	        sqlBuilder.addListOfStringMatch(null, "PrivateStudy.studyIuid",
+	                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
 	        sqlBuilder.addCallingAETsNestedMatch(true,
 	                filter.getStrings(PrivateTags.CallingAET));
         }
