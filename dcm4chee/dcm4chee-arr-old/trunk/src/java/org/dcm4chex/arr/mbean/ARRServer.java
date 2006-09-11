@@ -148,7 +148,7 @@ public class ARRServer extends ServiceMBeanSupport implements
 
             public void run() {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(10000);
                     store(buildActorStartStopAuditMessage(START));                
                 } catch (Exception e) {
                     log.error("Failed to log start of Audit Record Repository", e);
