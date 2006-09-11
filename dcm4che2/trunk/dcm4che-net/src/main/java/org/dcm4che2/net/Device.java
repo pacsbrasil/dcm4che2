@@ -595,10 +595,11 @@ public class Device
     }
 
     /**
-     * Get the period of time (in milliseconds) which associations made by this
-     * device may remain idle.
+     * The AssociationReaper will check for idle associations. This time period
+     * (in milliseconds) defines how often the reaper will check this
+     * device's associations for idleness.
      * 
-     * @return An int signifying association idle period in milliseconds.
+     * @return An int signifying association idle check period in milliseconds.
      */
     public final int getAssociationReaperPeriod()
     {
@@ -606,11 +607,13 @@ public class Device
     }
 
     /**
-     * Set the period of time (in milliseconds) which associations made by this
-     * device may remain idle.
+     * The AssociationReaper will check for idle associations. This time period
+     * (in milliseconds) defines how often the reaper will check this
+     * device's associations for idleness.
      * 
-     * @param associationReaperPeriod An int signifying association idle period
-     *            in milliseconds.
+     * @param associationReaperPeriod
+     *            An int signifying association idle check period in
+     *            milliseconds.
      */
     public final void setAssociationReaperPeriod(int associationReaperPeriod)
     {
