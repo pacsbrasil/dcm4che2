@@ -61,7 +61,9 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.dcm4chee.arr.util.XSLTUtils;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Index;
+import org.hibernate.annotations.Parameter;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -101,7 +103,10 @@ public class AuditRecord implements Serializable {
     private transient String summary;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "hibseq")
+    @GenericGenerator(name = "hibseq", strategy = "seqhilo", parameters = {
+            @Parameter(name = "max_lo", value = "100"),
+            @Parameter(name = "sequence", value = "auditrecord_pk_seq") })
     @Column(name = "pk")
     public int getPk() {
         return pk;

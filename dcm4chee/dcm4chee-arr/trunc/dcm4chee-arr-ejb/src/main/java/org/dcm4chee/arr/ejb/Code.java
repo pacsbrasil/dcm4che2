@@ -49,6 +49,8 @@ import javax.persistence.PostRemove;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +78,10 @@ public class Code implements Serializable {
     private String meaning;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "hibseq")
+    @GenericGenerator(name = "hibseq", strategy = "seqhilo", parameters = {
+            @Parameter(name = "max_lo", value = "100"),
+            @Parameter(name = "sequence", value = "code_pk_seq") })
     @Column(name = "pk")
     public int getPk() {
         return pk;

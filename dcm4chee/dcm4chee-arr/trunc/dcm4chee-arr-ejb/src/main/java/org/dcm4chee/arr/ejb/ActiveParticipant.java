@@ -50,6 +50,8 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostRemove;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +80,10 @@ public class ActiveParticipant implements Serializable {
     private Code roleID;  
     
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "hibseq")
+    @GenericGenerator(name = "hibseq", strategy = "seqhilo", parameters = {
+            @Parameter(name = "max_lo", value = "100"),
+            @Parameter(name = "sequence", value = "activeparticipant_pk_seq") })
     @Column(name="pk")
     public int getPk() {
         return pk;
