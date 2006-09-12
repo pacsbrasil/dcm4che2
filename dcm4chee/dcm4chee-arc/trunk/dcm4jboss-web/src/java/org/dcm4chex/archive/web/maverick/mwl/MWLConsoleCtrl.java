@@ -169,7 +169,6 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 	 * @return
 	 */
 	private String doLink(HttpServletRequest request) {
-		System.out.println("link mpps "+model.getMppsIDs());
 		String[] mppsIUIDs = model.getMppsIDs();
 		model.setMppsIDs(null);
 		String[] spsIDs = getSPSIds(request);
