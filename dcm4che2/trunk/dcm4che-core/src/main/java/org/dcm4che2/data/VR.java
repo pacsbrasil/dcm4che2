@@ -1301,7 +1301,7 @@ public abstract class VR
             int end;
             while ((end = sb.indexOf("\\", begin)) != -1)
             {
-                out.write(Integer.parseInt(sb.substring(begin, end)));
+                out.write(Integer.parseInt(sb.substring(begin, end), 16));
                 begin = end + 1;
             }
             String remain = sb.substring(begin);
@@ -1311,7 +1311,7 @@ public abstract class VR
                 sb.append(remain);
                 return null;
             }
-            out.write(Integer.parseInt(remain));
+            out.write(Integer.parseInt(remain, 16));
             return out.toByteArray();
         }
 
