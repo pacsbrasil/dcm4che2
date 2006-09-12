@@ -91,9 +91,6 @@ public abstract class MPPSEmulatorBean implements SessionBean {
     private static final int[] STUDY_TAGS = { Tags.ProcedureCodeSeq,
             Tags.StudyID };
 
-    private static final int[] STUDY_SSA_TAGS = { Tags.AccessionNumber,
-            Tags.StudyInstanceUID };
-
     private static final int[] SERIES_PPS_TAGS = {  
             Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSID };
 
@@ -198,11 +195,40 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             DcmElement rqaSq = seriesAttrs.get(Tags.RequestAttributesSeq);
             int rqaSqSize = rqaSq != null ? rqaSq.countItems() : 0;
             DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
-            for (int i = 0, n = Math.max(1,rqaSqSize); i < n; i++) {
+            if (rqaSqSize == 0) { // unscheduled case
                 Dataset ssa = ssaSq.addNewItem();
-                ssa.putAll(studyAttrs.subSet(STUDY_SSA_TAGS));
-                if (i < rqaSqSize) {
-                    ssa.putAll(rqaSq.getItem(i));
+                ssa.putSH(Tags.AccessionNumber);
+                ssa.putSQ(Tags.RefStudySeq);
+                ssa.putUI(Tags.StudyInstanceUID,
+                        studyAttrs.getString(Tags.StudyInstanceUID));
+                ssa.putLO(Tags.RequestedProcedureDescription);
+                ssa.putSH(Tags.SPSID);
+                ssa.putLO(Tags.SPSDescription);
+                ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
+                ssa.putSH(Tags.RequestedProcedureID);
+            } else {
+                for (int i = 0, n = rqaSqSize; i < n; i++) {
+                    Dataset ssa = rqaSq.getItem(i);
+                    ssaSq.addItem(ssa);
+                    ssa.putSH(Tags.AccessionNumber,
+                            studyAttrs.getString(Tags.AccessionNumber));
+                    ssa.putUI(Tags.StudyInstanceUID,
+                            studyAttrs.getString(Tags.StudyInstanceUID));
+                    if (!ssa.contains(Tags.RefStudySeq)) {
+                        ssa.putSQ(Tags.RefStudySeq);
+                    }
+                    if (!ssa.contains(Tags.SPSID)) {
+                        ssa.putSH(Tags.SPSID);
+                    }
+                    if (!ssa.contains(Tags.SPSDescription)) {
+                        ssa.putLO(Tags.SPSDescription);
+                    }
+                    if (!ssa.contains(Tags.ScheduledProtocolCodeSeq)) {
+                        ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
+                    }
+                    if (!ssa.contains(Tags.RequestedProcedureID)) {
+                        ssa.putSH(Tags.RequestedProcedureID);
+                    }
                 }
             }
             
