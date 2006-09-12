@@ -141,7 +141,9 @@ public class Pdf2Dcm {
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         DicomOutputStream dos = new DicomOutputStream(bos);
         try {
-            dos.writeDicomFile(attrs);
+            dos.writeFileMetaInformation(attrs);
+            dos.writeDataset(attrs.subSet(Tag.SpecificCharacterSet, 
+                    Tag.EncapsulatedDocument), transferSyntax);
             int pdfLen = (int) pdfFile.length();
             dos.writeHeader(Tag.EncapsulatedDocument, VR.OB, (pdfLen+1)&~1);
             byte[] b = new byte[bufferSize];
@@ -152,6 +154,8 @@ public class Pdf2Dcm {
             if ((pdfLen&1) != 0) {
                 dos.write(0);
             }
+            dos.writeDataset(attrs.subSet(Tag.EncapsulatedDocument, -1), 
+                    transferSyntax);
         } finally {
             dos.close();
             pdfInput.close();
