@@ -878,9 +878,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closing(Association assoc) {
-    }
-
-    public void closed(Association assoc) {
         String seriuid = (String) assoc.getProperty(SERIES_IUID);
         if (seriuid != null) {
             try {
@@ -899,6 +896,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if ( service.isFreeDiskSpaceOnDemand() ) {
             service.callFreeDiskSpace();
         }
+    }
+
+    public void closed(Association assoc) {
     }
 
     /**

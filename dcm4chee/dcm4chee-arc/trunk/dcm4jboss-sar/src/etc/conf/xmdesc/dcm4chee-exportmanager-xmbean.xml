@@ -122,6 +122,17 @@
       </descriptors>
    </attribute>   
    <attribute access="read-write"
+      getMethod="getExportDelay"
+      setMethod="setExportDelay">
+      <description>Delay in milliseconds before export process starts.
+      </description>
+      <name>ExportDelay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="2000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.

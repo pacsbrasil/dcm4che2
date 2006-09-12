@@ -165,6 +165,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private boolean deleteKeyObjects;
 
     private ObjectName auditLogName;
+    
+    private int exportDelay = 2000;
 
     public final int getBufferSize() {
         return bufferSize ;
@@ -218,6 +220,18 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 	    }
 	}
     
+    /**
+     * @return Returns the exportDelay.
+     */
+    public int getExportDelay() {
+        return exportDelay;
+    }
+    /**
+     * @param exportDelay The exportDelay to set.
+     */
+    public void setExportDelay(int exportDelay) {
+        this.exportDelay = exportDelay;
+    }
     private String codes2str(String[] codes)
     {
         if (codes.length == 0)
@@ -405,9 +419,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 manifest = loadManifest(manifest);
                 if (isDelayed(manifest))
                 	return;
-                schedule(new ExportTFOrder(manifest), 0L);
-                if ( isDeleteKeyObjects() )
-                	delete(manifest);
+                schedule(new ExportTFOrder(manifest), System.currentTimeMillis()+exportDelay);
             }
             catch (Exception e)
             {
@@ -587,6 +599,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         ActiveAssociation a = openAssociation(fileInfos, pcids, dest, 
                 exportManifest != -1, exportInstances, exportMedia);
         HashMap iuidMap = new HashMap(); 
+        String kosIuid = manifest.getString(Tags.SOPInstanceUID);
+        iuidMap.put(kosIuid,kosIuid);//TF key object iuid must not be changed!
         coerceAttributes(manifest, config, iuidMap);
         if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
             removeDelayReason(manifest);
@@ -608,6 +622,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             sendMediaCreationRequest(a, manifest, config);
         }
         a.release(true);
+        if ( isDeleteKeyObjects() )
+        	delete(manifest);
 	}
 
     private void sendMediaCreationRequest(ActiveAssociation aa,
@@ -745,7 +761,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         File f = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initCStoreRQ(a.getAssociation().nextMsgID(), fileInfo.sopCUID,
-                fileInfo.sopIUID, prior);
+                attrs.getString(Tags.SOPInstanceUID), prior);
         FileDataSource src = new FileDataSource(f, attrs, buffer);
         Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, src);
         a.invoke(dimse, this);        
