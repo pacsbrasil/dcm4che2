@@ -252,7 +252,7 @@
 			<xsl:choose> 
 				<xsl:when test="accNumbers=''">
 					<td title="Function">
-						<form action="mwl_console.m?action=link&amp;mppsIUID=" method="post" name="myLink" accept-charset="UTF-8">
+						<form action="mwl_console.m?action=link&amp;mppsIUID={mppsIUID}" method="post" name="myLink" accept-charset="UTF-8">
 		                  <input name="patientName" type="hidden" value="{patientName}" />
 						  <input type="image" alt="link" name="link" value="link" src="images/link.gif" title="Link this MPPS entry with a MWL entry"/>									
 						</form>
