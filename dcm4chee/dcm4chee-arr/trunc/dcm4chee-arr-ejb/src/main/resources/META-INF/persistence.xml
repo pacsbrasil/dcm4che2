@@ -7,7 +7,8 @@
       <jta-data-source>@ds@</jta-data-source>
       <properties>
           <property name="hibernate.dialect" value="@dialect@"/>
-          <property name="hibernate.hbm2ddl.auto" value="update"/>
+          <property name="hibernate.hbm2ddl.auto" value="off"/>
+          <property name="hibernate.jdbc.use_get_generated_keys" value="true"/>
       </properties>
    </persistence-unit>
 </persistence>
