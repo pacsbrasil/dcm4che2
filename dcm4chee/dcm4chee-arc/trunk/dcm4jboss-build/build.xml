@@ -132,6 +132,9 @@
       <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
       </zipfileset>
+      <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone}">
+        <include name="bin/JavaService.exe"/>
+      </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
       </zipfileset>
