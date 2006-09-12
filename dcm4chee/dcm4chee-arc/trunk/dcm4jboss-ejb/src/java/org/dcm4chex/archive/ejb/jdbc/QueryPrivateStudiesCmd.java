@@ -81,8 +81,8 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
     	this.hideMissingStudies = hideMissingStudies;
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
-        sqlBuilder.addSingleValueMatch(null, "PrivatePatient.privateType",
-                SqlBuilder.TYPE1, String.valueOf(privateType));
+        sqlBuilder.addIntValueMatch(null, "PrivatePatient.privateType",
+                SqlBuilder.TYPE1, privateType);
         if ( filter != null ) {
 	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
 	                SqlBuilder.TYPE2,
