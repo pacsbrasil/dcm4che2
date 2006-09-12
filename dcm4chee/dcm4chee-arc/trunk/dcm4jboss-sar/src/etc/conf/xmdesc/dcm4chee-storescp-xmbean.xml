@@ -853,5 +853,13 @@ StoreSCP service.
    </operation>
 
    <!-- Notifications -->
+   <notification>
+        <description>The notification sent whenever a Series of DICOM composite
+        object was received. It is triggered by the receive of an object
+        belonging to a different Series than the objects received before and
+        at the latests when the association is released.</description>
+        <name>javax.management.Notification</name>
+        <notification-type>org.dcm4chex.archive.common.SeriesStored</notification-type>
+    </notification>
 </mbean>
 
