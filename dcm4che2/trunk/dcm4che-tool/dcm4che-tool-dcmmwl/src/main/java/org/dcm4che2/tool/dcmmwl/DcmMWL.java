@@ -80,7 +80,7 @@ public class DcmMWL {
             "If also no <host> is specified localhost is assumed.\n" +
             "Options:";
     private static final String EXAMPLE = 
-            "\nExample: dcmmwl MWLSCP@localhost:11112 -qModality=CT -d=20060502\n" +
+            "\nExample: dcmmwl MWLSCP@localhost:11112 -mod=CT -date=20060502\n" +
             "=> Query Application Entity MWLSCP listening on local port 11112 for " +
             "CT procedure steps scheduled for May 2, 2006.";
 
@@ -131,7 +131,7 @@ public class DcmMWL {
     
     private static final String[] LE_TS = {
         UID.ExplicitVRLittleEndian, 
-        UID.ImplicitVRLittleEndian };  
+        UID.ImplicitVRLittleEndian };
     
     private Executor executor = new NewThreadExecutor("DCMMWL");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -244,8 +244,8 @@ public class DcmMWL {
         this.cancelAfter = limit;
     }
 
-    public void addKey(int tag, String value) {
-        keys.putString(tag, null, value);
+    public void addKey(int[] tagPath, String value) {
+        keys.putString(tagPath, null, value);
     }
 
     public void addSpsKey(int tag, String value) {
@@ -354,33 +354,30 @@ public class DcmMWL {
             dcmmwl.setPriority(CommandUtils.LOW);
         if (cl.hasOption("highprior"))
             dcmmwl.setPriority(CommandUtils.HIGH);
-        if (cl.hasOption("Q")) {
-            String[] matchingKeys = cl.getOptionValues("Q");
-            for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmmwl.addKey(toTag(matchingKeys[i - 1]), matchingKeys[i]);
-        }
-        if (cl.hasOption("R")) {
-            String[] returnKeys = cl.getOptionValues("R");
-            for (int i = 0; i < returnKeys.length; i++)
-                dcmmwl.addKey(toTag(returnKeys[i]), null);
-        }
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmmwl.addSpsKey(toTag(matchingKeys[i - 1]), matchingKeys[i]);
-        }
-        if (cl.hasOption("d")) {
-            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartDate,
-                    cl.getOptionValue("d"));
-        }
-        if (cl.hasOption("t")) {
-            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartTime,
-                    cl.getOptionValue("t"));
+                dcmmwl.addKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
         }
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
-                dcmmwl.addSpsKey(toTag(returnKeys[i]), null);
+                dcmmwl.addKey(Tag.toTagPath(returnKeys[i]), null);
+        }
+        if (cl.hasOption("date")) {
+            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartDate,
+                    cl.getOptionValue("date"));
+        }
+        if (cl.hasOption("time")) {
+            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartTime,
+                    cl.getOptionValue("time"));
+        }
+        if (cl.hasOption("mod")) {
+            dcmmwl.addSpsKey(Tag.Modality, cl.getOptionValue("mod"));
+        }
+        if (cl.hasOption("aet")) {
+            dcmmwl.addSpsKey(Tag.ScheduledStationAETitle,
+                    cl.getOptionValue("aet"));
         }
 
         dcmmwl.setTransferSyntax(cl.hasOption("ivrle") ? IVRLE_TS : LE_TS);
@@ -417,22 +414,13 @@ public class DcmMWL {
         System.out.println("Released connection to " + remoteAE);
     }
 
-    private static int toTag(String nameOrHex) {
-        try {
-            return (int) Long.parseLong(nameOrHex, 16);
-        } catch (NumberFormatException e) {
-            return Tag.forName(nameOrHex);
-        }
-    }    
-   
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "set AET and local address of local Application Entity, use " +
-                "ANONYMOUS and pick up any valid local address to bind the " +
-                "socket by default");
+        OptionBuilder.withDescription("set AET and local address of local " +
+                "Application Entity, use ANONYMOUS and pick up any valid\n" +
+                "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
         opts.addOption("ivrle", false,
                 "offer only Implicit VR Little Endian Transfer Syntax.");
@@ -492,40 +480,45 @@ public class DcmMWL {
         OptionBuilder.withDescription("set SO_SNDBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sosndbuf"));
 
-        OptionBuilder.withArgName("attr=value");
+        OptionBuilder.withArgName("[seq/]attr=value");
         OptionBuilder.hasArgs(2);
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
-                "specified by name or tag value (in hex), e.g. PatientsName " +
-                "or 00100010.");
-        opts.addOption(OptionBuilder.create("Q"));
-
-        OptionBuilder.withArgName("attr=value");
-        OptionBuilder.hasArgs(2);
-        OptionBuilder.withValueSeparator('=');
-        OptionBuilder.withDescription("specify matching SPS key. attr can be " +
-                "specified by name or tag value (in hex)");
+                "specified by name or tag value (in hex), e.g. PatientsName\n" +
+                "or 00100010. Attributes in nested Datasets can\n" +
+                "be specified by preceding the name/tag value of\n" +
+                "the sequence attribute, e.g. 00400100/00400009\n" +
+                "for Scheduled Procedure Step ID in the Scheduled\n" +
+                "Procedure Step Sequence.");
         opts.addOption(OptionBuilder.create("q"));
 
         OptionBuilder.withArgName("date");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("specify matching SPS start date (range)");
-        opts.addOption(OptionBuilder.create("d"));
+        OptionBuilder.withDescription("specify matching SPS start date " +
+                "(range). Shortcut for -q00400100/00400002=<date>.");
+        opts.addOption(OptionBuilder.create("date"));
 
         OptionBuilder.withArgName("time");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("specify matching SPS start time (range)");
-        opts.addOption(OptionBuilder.create("t"));
+        OptionBuilder.withDescription("specify matching SPS start time " +
+                "(range). Shortcut for -q00400100/00400003=<time>.");
+        opts.addOption(OptionBuilder.create("time"));
+
+        OptionBuilder.withArgName("modality");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify matching Modality. Shortcut " +
+                        "for -q00400100/00080060=<modality>.");
+        opts.addOption(OptionBuilder.create("mod"));
+
+        OptionBuilder.withArgName("aet");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("specify matching Scheduled Station AE " +
+                        "title. Shortcut for -q00400100/00400001=<aet>.");
+        opts.addOption(OptionBuilder.create("aet"));
 
         OptionBuilder.withArgName("attr");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("specify additional return key. attr can " +
-                "be specified by name or tag value (in hex).");
-        opts.addOption(OptionBuilder.create("R"));
-
-        OptionBuilder.withArgName("attr");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("specify additional return SPS key. attr can " +
                 "be specified by name or tag value (in hex).");
         opts.addOption(OptionBuilder.create("r"));
 
