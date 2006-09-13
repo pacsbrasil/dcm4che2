@@ -63,12 +63,12 @@ import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.Executor;
+import org.dcm4che2.net.ExtQueryTransferCapability;
+import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
-import org.dcm4che2.net.ExtQueryTransferCapability;
-import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.TransferCapability;
 
 /**
@@ -329,10 +329,9 @@ public class DcmQR {
         Options opts = new Options();
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "set AET and local address of local Application Entity, use " +
-                "ANONYMOUS and pick up any valid local address to bind the " +
-                "socket by default");
+        OptionBuilder.withDescription("set AET and local address of local " +
+                "Application Entity, use ANONYMOUS and pick up any valid\n" +
+                "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
         OptionBuilder.withArgName("aet");
@@ -350,7 +349,7 @@ public class DcmQR {
         opts.addOption(OptionBuilder.create("async"));
 
         opts.addOption("noextneg", false, "disable extended negotiation.");
-        opts.addOption("relational", false,
+        opts.addOption("rel", false,
                 "negotiate support of relational queries and retrieval.");
         opts.addOption("datetime", false,
                 "negotiate support of combined date and time attribute range matching.");
@@ -359,15 +358,14 @@ public class DcmQR {
         opts.addOption("semantic", false, 
                 "negotiate support of semantic person name attribute matching.");
 
-        opts.addOption("retall", false, 
-                "negotiate private FIND SOP Classes to fetch all available " +
-                "attributes of matching entities.");
-        opts.addOption("blocked", false,
-                "negotiate private FIND SOP Classes to return attributes of " +
-                "several matching entities per FIND response.");
-        opts.addOption("vmf", false,
-                "negotiate private FIND SOP Classes to return attributes of " +
-                "legacy CT/MR images of one series as virtual multiframe object.");
+        opts.addOption("retall", false, "negotiate private FIND SOP Classes " +
+                "to fetch all available attributes of matching entities.");
+        opts.addOption("blocked", false, "negotiate private FIND SOP Classes " +
+                "to return attributes of several matching entities per FIND\n" +
+                "response.");
+        opts.addOption("vmf", false, "negotiate private FIND SOP Classes to " +
+                "return attributes of legacy CT/MR images of one series as\n" +
+                "virtual multiframe object.");
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
@@ -443,12 +441,16 @@ public class DcmQR {
 
         opts.addOptionGroup(qrlevel);
 
-        OptionBuilder.withArgName("attr=value");
+        OptionBuilder.withArgName("[seq/]attr=value");
         OptionBuilder.hasArgs(2);
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
-                "specified by name or tag value (in hex), e.g. PatientsName " +
-                "or 00100010.");
+                "specified by name or tag value (in hex), e.g. PatientsName\n" +
+                "or 00100010. Attributes in nested Datasets can\n" +
+                "be specified by including the name/tag value of\n" +
+                "the sequence attribute, e.g. 00400275/00400009\n" +
+                "for Scheduled Procedure Step ID in the Request\n" +
+                "Attributes Sequence");
         opts.addOption(OptionBuilder.create("q"));
 
         OptionBuilder.withArgName("attr");
@@ -466,7 +468,7 @@ public class DcmQR {
         OptionBuilder.withArgName("aet");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("retrieve matching objects to specified " +
-                "destination.");
+                "move destination.");
         opts.addOption(OptionBuilder.create("dest"));
 
         opts.addOption("lowprior", false,
@@ -581,7 +583,7 @@ public class DcmQR {
             dcmqr.setQueryLevel(STUDY);
         if (cl.hasOption("noextneg"))
             dcmqr.setNoExtNegotiation(true);
-        if (cl.hasOption("relational"))
+        if (cl.hasOption("rel"))
             dcmqr.setRelationQR(true);
         if (cl.hasOption("datetime"))
             dcmqr.setDateTimeMatching(true);
@@ -602,12 +604,12 @@ public class DcmQR {
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmqr.addKey(toTag(matchingKeys[i - 1]), matchingKeys[i]);
+                dcmqr.addKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
         }
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
-                dcmqr.addKey(toTag(returnKeys[i]), null);
+                dcmqr.addKey(Tag.toTagPath(returnKeys[i]), null);
         }
 
         dcmqr.configureTransferCapability(cl.hasOption("ivrle"));
@@ -688,16 +690,8 @@ public class DcmQR {
         this.cancelAfter = limit;
     }
 
-    private void addKey(int tag, String value) {
-        keys.putString(tag, null, value);
-    }
-
-    private static int toTag(String nameOrHex) {
-        try {
-            return (int) Long.parseLong(nameOrHex, 16);
-        } catch (NumberFormatException e) {
-            return Tag.forName(nameOrHex);
-        }
+    private void addKey(int[] tagPath, String value) {
+        keys.putString(tagPath, null, value);
     }
 
     private void configureTransferCapability(boolean ivrle) {
