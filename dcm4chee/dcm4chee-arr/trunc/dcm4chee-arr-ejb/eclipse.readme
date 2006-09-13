@@ -37,6 +37,7 @@ Working with Eclipse
 		These three entries are basically for solving classpath lookup conflict caused by "Maven2 Dependencies" which has some imcompatible versions internally.
 	
 	3.6 You now should be able to debug/run the TestNG unit tests.
+	3.7 Note that command-line "mvn" with different databases other than "hsql" may cause subsequent problem for TestNG inside Eclipse, in this case, please do a project clean from inside Eclipse. This is due to the specific "persistence.xml" in classes path.
 	
 Appendix: How to do remote debug to command line "mvn":
 --------------------------------------------------------
