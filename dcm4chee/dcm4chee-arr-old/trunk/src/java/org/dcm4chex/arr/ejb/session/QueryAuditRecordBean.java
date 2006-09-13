@@ -87,7 +87,7 @@ import org.dcm4chex.arr.ejb.entity.AuditRecordLocalHome;
  * @ejb.env-entry 
  * 	name="Database"
  * 	type="java.lang.String"
- *  value="Hypersonic SQL"
+ *  value="Oracle9i"
  * 
  * @ejb:resource-ref
  *  res-name="jdbc/DS"
@@ -97,7 +97,7 @@ import org.dcm4chex.arr.ejb.entity.AuditRecordLocalHome;
  * @jboss:resource-ref 
  *  res-ref-name="jdbc/DS"
  *  res-type="javax.sql.DataSource"
- *  jndi-name="java:/DefaultDS"
+ *  jndi-name="java:/OracleDS"
  * 
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @author  <a href="mailto:joseph@tiani.com">joseph foraci</a>
