@@ -79,7 +79,8 @@ import org.dcm4chex.archive.util.Convert;
  *           local-jndi-name="ejb/Series"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="series"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="series_pk_seq"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
@@ -380,8 +381,8 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.relation name="series-request-attributes"
-     *               role-name="series-has-request-attributes"
+     * @ejb.relation name="series-request-attrs"
+     *               role-name="series-has-request-attrs"
      */
     public abstract java.util.Collection getRequestAttributes();
     public abstract void setRequestAttributes(java.util.Collection series);

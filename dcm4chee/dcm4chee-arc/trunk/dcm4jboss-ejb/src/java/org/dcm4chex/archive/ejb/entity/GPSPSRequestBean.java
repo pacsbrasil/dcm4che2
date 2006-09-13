@@ -57,7 +57,8 @@ import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
  *           local-jndi-name="ejb/GPSPSRequest" primkey-field="pk"
  * @ejb.persistence table-name="gpsps_req"
  * @ejb.transaction type="Required"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="gpsps_req_pk_seq"
  */
 
 public abstract class GPSPSRequestBean implements EntityBean {

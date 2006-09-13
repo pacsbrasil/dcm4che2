@@ -62,7 +62,8 @@ import org.dcm4chex.archive.util.Convert;
  *           local-jndi-name="ejb/Patient" primkey-field="pk"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="patient"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="patient_pk_seq"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 

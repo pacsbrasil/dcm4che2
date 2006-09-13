@@ -7,19 +7,15 @@
 	<property name="version" value="2.10.0"/>
 	<property name="javac.debug" value="on"/>	
 
-    <property name="datasource.mapping" value="Hypersonic SQL"/>
+    <!--property name="datasource.mapping" value="Hypersonic SQL"/-->
     <!--property name="datasource.mapping" value="mySQL"/-->
     <!--property name="datasource.mapping" value="PostgreSQL 8.0"/-->
-	<!--property name="datasource.mapping" value="Oracle9i"/-->
-    <property name="datasource.name" value="java:/DefaultDS"/>
+	<property name="datasource.mapping" value="Oracle9i"/>
+    <!--property name="datasource.name" value="java:/DefaultDS"/-->
     <!--property name="datasource.name" value="java:/MySqlDS"/-->
     <!--property name="datasource.name" value="java:/PostgresDS"/-->
-	<!--property name="datasource.name" value="java:/OracleDS"/-->
+	<property name="datasource.name" value="java:/OracleDS"/>
 
-	<!-- Uncomment to skip patch task (=not available on Windows) -->
-	<!--property name="oracle.nobuild" value="true" -->
-	<!--property name="db2.nobuild" value="true" -->
-	
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
@@ -171,7 +167,7 @@
             <!--utilobject cacheHomes="true" includeGUID="false"/-->
 
             <deploymentdescriptor
-                destdir="${target.meta-inf-hsql}"
+                destdir="${target.meta-inf-oracle}"
                 validatexml="true"
                 description="dcm4chee archive EJBs"
                 >
@@ -180,10 +176,10 @@
 
 
             <jboss
-                version="3.2"
+                version="4.0"
                 unauthenticatedPrincipal="nobody"
                 xmlencoding="UTF-8"
-                destdir="${target.meta-inf-hsql}"
+                destdir="${target.meta-inf-oracle}"
                 validatexml="true"
                 datasource="${datasource.name}"
                 typeMapping="${datasource.mapping}"                  
@@ -193,84 +189,117 @@
         </ejbdoclet>
     </target>
 
-    <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
+   <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
     	<copy todir="${target.meta-inf-psql}">
-    		<fileset dir="${target.meta-inf-hsql}"/>
+    		<fileset dir="${target.meta-inf-oracle}"/>
     	</copy>
-    	<replace dir="${target.meta-inf-psql}"
-  				token="DefaultDS"
+    	<replace dir="${target.meta-inf-psql}">
+  			<replacefilter
+  				token="OracleDS"
   				value="PostgresDS"/>
+  			<replacefilter
+  				token="Oracle9i"
+  				value="PostgreSQL 8.0"/>
+		</replace>
     	<replace file="${target.meta-inf-psql}/jbosscmp-jdbc.xml">
   			<replacefilter
-  				token="Hypersonic SQL"
-  				value="PostgreSQL 8.0"/>
-  			<replacefilter
-  				token="hsqldb-fetch-key"
+  				token="oracle-table-sequence"
   				value="postgresql-fetch-seq"/>
+  			<replacefilter
+  				token="attribute"
+  				value="!--"/>
 		</replace>
     </target>
 
-    <target name="meta-inf-mysql" unless="meta-inf-mysql.notRequired">
+   <target name="meta-inf-mysql" unless="meta-inf-mysql.notRequired">
     	<copy todir="${target.meta-inf-mysql}">
-    		<fileset dir="${target.meta-inf-hsql}"/>
+    		<fileset dir="${target.meta-inf-oracle}"/>
     	</copy>
-    	<replace dir="${target.meta-inf-mysql}"
-  				token="DefaultDS"
+    	<replace dir="${target.meta-inf-mysql}">
+  			<replacefilter
+  				token="OracleDS"
   				value="MySqlDS"/>
+  			<replacefilter
+  				token="Oracle9i"
+  				value="mySQL"/>
+		</replace>
     	<replace file="${target.meta-inf-mysql}/jbosscmp-jdbc.xml">
   			<replacefilter
-  				token="Hypersonic SQL"
-  				value="mySQL"/>
-  			<replacefilter
-  				token="hsqldb-fetch-key"
+  				token="oracle-table-sequence"
   				value="mysql-get-generated-keys"/>
+			<replacefilter
+				token="attribute"
+				value="!--"/>
 		</replace>
     </target>
 
-    <target name="meta-inf-mssql" unless="meta-inf-mssql.notRequired">
-    	<copy todir="${target.meta-inf-mssql}">
-    		<fileset dir="${target.meta-inf-hsql}"/>
-    	</copy>
-    	<replace dir="${target.meta-inf-mssql}"
-  				token="DefaultDS"
-  				value="MSSQLDS"/>
-    	<replace file="${target.meta-inf-mssql}/jbosscmp-jdbc.xml">
-  			<replacefilter
-  				token="Hypersonic SQL"
-  				value="MS SQLSERVER2000"/>
-  			<replacefilter
-  				token="hsqldb-fetch-key"
-  				value="mssql-fetch-key"/>
-		</replace>
+	<target name="meta-inf-mssql" unless="meta-inf-mssql.notRequired">
+	    	<copy todir="${target.meta-inf-mssql}">
+	    		<fileset dir="${target.meta-inf-oracle}"/>
+	    	</copy>
+	    	<replace dir="${target.meta-inf-mssql}">
+	  			<replacefilter
+	  				token="OracleDS"
+	  				value="MSSQLDS"/>
+	  			<replacefilter
+	  				token="Oracle9i"
+	  				value="MS SQLSERVER2000"/>
+    		</replace>
+        	<replace file="${target.meta-inf-mssql}/jbosscmp-jdbc.xml">
+	  			<replacefilter
+	  				token="oracle-table-sequence"
+	  				value="mssql-fetch-key"/>
+				<replacefilter
+					token="attribute"
+					value="!--"/>
+			</replace>
     </target>
 	
-    <target name="meta-inf-oracle" unless="meta-inf-oracle.notRequired">
-    	<copy todir="${target.meta-inf-oracle}">
-    		<fileset dir="${target.meta-inf-hsql}"/>
+ 
+    <target name="meta-inf-hsql" unless="meta-inf-hsql.notRequired">
+    	<copy todir="${target.meta-inf-hsql}">
+    		<fileset dir="${target.meta-inf-oracle}"/>
     	</copy>
-     	<patch
-    		patchfile="${etc.oracle}/meta-inf-oracle.patch"
-    		originalfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
-    	/>
-    	<replace dir="${target.meta-inf-oracle}"
-  				token="DefaultDS"
-  				value="OracleDS"/>
+    	<replace dir="${target.meta-inf-hsql}">
+  			<replacefilter
+  				token="OracleDS"
+  				value="DefaultDS"/>
+  			<replacefilter
+  				token="Oracle9i"
+  				value="Hypersonic SQL"/>
+		</replace>
+    	<replace file="${target.meta-inf-hsql}/jbosscmp-jdbc.xml">
+  			<replacefilter
+  				token="oracle-table-sequence"
+  				value="hsqldb-fetch-key"/>
+			<replacefilter
+				token="attribute"
+				value="!--"/>
+		</replace>
     </target>
 
     <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
     	<copy todir="${target.meta-inf-db2}">
-    		<fileset dir="${target.meta-inf-hsql}"/>
+    		<fileset dir="${target.meta-inf-oracle}"/>
     	</copy>
-    	<patch
-    		patchfile="${etc.db2}/meta-inf-db2.patch"
-    		originalfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
-    	/>
-    	<replace dir="${target.meta-inf-db2}"
-  				token="DefaultDS"
+    	<replace dir="${target.meta-inf-db2}">
+  			<replacefilter
+  				token="OracleDS"
   				value="DB2DS"/>
+  			<replacefilter
+  				token="Oracle9i"
+  				value="DB2"/>
+		</replace>
+    	<replace file="${target.meta-inf-db2}/jbosscmp-jdbc.xml">
+  			<replacefilter
+  				token="oracle-table-sequence"
+  				value="pk-sql"/>
+			<replacefilter
+				token='sequence">'
+				value='pk-sql">values nextval for '/>
+		</replace>
     </target>
-
-
+		
    	<!-- =================================================================== -->
    	<!-- Compiles the source code                                            -->
    	<!-- =================================================================== -->
@@ -305,74 +334,56 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-jar and jdbc-jar                                    -->
    <!-- =================================================================== -->
-    <target name="jar" depends="hsql-jar,psql-jar,mysql-jar,mssql-jar,oracle-jar,db2-jar,common-jar"/>
-    <target name="hsql-jar" depends="compile" unless="hsql.nobuild">
+    <target name="jar" depends="compile">
+    	<uptodate property="meta-inf-hsql.notRequired"
+    		srcfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-hsql"/> 
      	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="hsql"/>
     	</antcall>
-    </target>
-
-    <target name="psql-jar" depends="compile" unless="psql.nobuild">
     	<uptodate property="meta-inf-psql.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		srcfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-psql"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="psql"/>
     	</antcall>
-    </target>
-
-    <target name="mysql-jar" depends="compile" unless="mysql.nobuild">
     	<uptodate property="meta-inf-mysql.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		srcfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-mysql}/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-mysql"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="mysql"/>
     	</antcall>
-    </target>
-    <target name="mssql-jar" depends="compile" unless="mssql.nobuild">
     	<uptodate property="meta-inf-mssql.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		srcfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-mssql}/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-mssql"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="mssql"/>
     	</antcall>
-    </target>
-
-    <target name="oracle-jar" depends="compile" unless="oracle.nobuild">
-    	<uptodate property="meta-inf-oracle.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
-    		targetfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-oracle"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="oracle"/>
     	</antcall>
-    </target>
-
-    <target name="db2-jar" depends="compile" unless="db2.nobuild">
     	<uptodate property="meta-inf-db2.notRequired"
-    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		srcfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-db2"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
-    </target>
-
-    <target name="common-jar" depends="compile">
         <mkdir dir="${target.common.lib}"/>
         <jar jarfile="${target.common.lib}/dcm4chee-ejb-client.jar">
          	<manifest>
 				<attribute name="Implementation-Title" value="dcm4chee-ejb-client"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
           	</manifest>	
         	<fileset dir="${target.classes}">
                 <include name="**/common/*"/>
@@ -387,7 +398,7 @@
 				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editgpwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
           	</manifest>	
         	<fileset dir="${target.classes}">
                 <include name="**/tools/EditGpwl*"/>
@@ -402,7 +413,7 @@
 				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editmwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
           	</manifest>	
         	<fileset dir="${target.classes}">
                 <include name="**/tools/EditMwl*"/>
@@ -412,6 +423,7 @@
             </fileset>
         </jar>
     </target>
+	
     <target name="ejb-jdbc-jar">
         <mkdir dir="${target.dir}/${db.name}/deploy"/>
         <jar jarfile="${target.dir}/${db.name}/deploy/dcm4chee-ejb-${db.name}.jar">
@@ -419,7 +431,7 @@
         	<manifest>
 				<attribute name="Implementation-Title" value="dcm4chee-ejb-${db.name}"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
 	    	</manifest>
 	        	
         	<fileset dir="${target.classes}">
@@ -435,8 +447,8 @@
              out="${target.res}-${db.name}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
         >
 			<xmlcatalog>
-        		<dtd publicId="-//JBoss//DTD JBOSSCMP-JDBC 3.2//EN"
-            		 location="${jboss.home}/docs/dtd/jbosscmp-jdbc_3_2.dtd"/>
+        		<dtd publicId="-//JBoss//DTD JBOSSCMP-JDBC 4.0//EN"
+            		 location="${jboss.home}/docs/dtd/jbosscmp-jdbc_4_0.dtd"/>
 		    </xmlcatalog>        
         </style>
         <mkdir dir="${target.dir}/${db.name}/lib"/>
@@ -444,7 +456,7 @@
         	<manifest>
 				<attribute name="Implementation-Title" value="dcm4chee-jdbc-${db.name}"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
 	    	</manifest>
         	<fileset dir="${target.classes}">
                 <include name="**/jdbc/*"/>

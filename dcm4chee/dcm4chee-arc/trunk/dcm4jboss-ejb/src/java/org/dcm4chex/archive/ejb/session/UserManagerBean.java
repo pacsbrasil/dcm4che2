@@ -72,7 +72,7 @@ import org.dcm4chex.archive.ejb.jdbc.UpdatePasswordForUserCmd;
  * 	                 res-type="javax.sql.DataSource"
  * 					 res-auth="Container"
  * @jboss:resource-ref res-ref-name="jdbc/DS" 
- *                     jndi-name="java:/DefaultDS"
+ *                     jndi-name="java:/OracleDS"
  *
  */
 public abstract class UserManagerBean

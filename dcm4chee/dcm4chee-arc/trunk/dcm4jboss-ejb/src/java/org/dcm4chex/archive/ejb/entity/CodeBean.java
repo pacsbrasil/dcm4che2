@@ -63,7 +63,8 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
  * 
  * @ejb.persistence table-name="code"
  * 
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="code_pk_seq"
  * 
  * @ejb.finder
  * 	signature="Collection findAll()"

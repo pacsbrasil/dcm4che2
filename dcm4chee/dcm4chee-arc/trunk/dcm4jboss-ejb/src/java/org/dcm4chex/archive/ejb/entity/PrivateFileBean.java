@@ -57,7 +57,8 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
  * 	         local-jndi-name="ejb/PrivateFile"
  * @ejb.persistence table-name="priv_file"
  * @ejb.transaction type="Required"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="priv_file_pk_seq"
  *  
  * @ejb.finder signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
  *             query="" transaction-type="Supports"

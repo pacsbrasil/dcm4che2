@@ -60,7 +60,8 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
  *           local-jndi-name="ejb/PrivateSeries" primkey-field="pk"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_series"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="priv_series_pk_seq"
  * 
  * @ejb.finder signature="java.util.Collection findByPrivateType(int privateType)"
  *             query="SELECT OBJECT(a) FROM PrivateSeries AS a WHERE a.privateType = ?1"

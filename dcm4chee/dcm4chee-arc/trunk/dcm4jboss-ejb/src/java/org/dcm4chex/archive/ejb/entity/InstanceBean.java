@@ -85,7 +85,8 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.persistence table-name="instance"
  * @jboss.load-group name="most"
  * @jboss.eager-load-group name="most"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="instance_pk_seq"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 

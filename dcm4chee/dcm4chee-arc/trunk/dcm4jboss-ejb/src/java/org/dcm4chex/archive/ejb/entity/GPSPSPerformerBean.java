@@ -66,7 +66,8 @@ import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
  *           local-jndi-name="ejb/GPSPSPerformer" primkey-field="pk"
  * @ejb.persistence table-name="gpsps_perf"
  * @ejb.transaction type="Required"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="gpsps_perf_pk_seq"
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  */
 

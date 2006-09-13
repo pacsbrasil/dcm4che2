@@ -57,7 +57,8 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * 	         local-jndi-name="ejb/File"
  * @ejb.persistence table-name="files"
  * @ejb.transaction type="Required"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="files_pk_seq"
  * @jboss.audit-created-time field-name="createdTime"
  * 
  * @ejb.finder signature="java.util.Collection findFilesToCompress(java.lang.String dirPath, java.lang.String cuid, java.sql.Timestamp before, int limit)"

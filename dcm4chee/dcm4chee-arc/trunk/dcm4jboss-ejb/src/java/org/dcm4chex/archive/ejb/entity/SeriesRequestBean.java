@@ -58,7 +58,8 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *           local-jndi-name="ejb/SeriesRequest" primkey-field="pk"
  * @ejb.persistence table-name="series_req"
  * @ejb.transaction type="Required"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="series_req_pk_seq"
  */
 
 public abstract class SeriesRequestBean implements EntityBean {
@@ -158,8 +159,8 @@ public abstract class SeriesRequestBean implements EntityBean {
     public abstract void setRequestingPhysicianPhoneticName(String name);
     
     /**
-     * @ejb.relation name="series-request-attributes"
-     *               role-name="request-attributes-of-series"
+     * @ejb.relation name="series-request-attrs"
+     *               role-name="request-attrs-of-series"
      *               cascade-delete="yes"
      * @jboss.relation fk-column="series_fk" related-pk-field="pk"
      */

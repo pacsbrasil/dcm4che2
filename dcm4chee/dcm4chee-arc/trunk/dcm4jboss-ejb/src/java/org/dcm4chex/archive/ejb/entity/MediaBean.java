@@ -57,7 +57,8 @@ import org.dcm4chex.archive.common.Availability;
  * 
  * @ejb.persistence table-name="media"
  * 
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="media_pk_seq"
  * 
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"

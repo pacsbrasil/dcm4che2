@@ -66,7 +66,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * 
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="filesystem"
- * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.entity-command name="oracle-table-sequence"
+ * @jboss.entity-command-attribute name="sequence" value="filesystem_pk_seq"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
  *             query="" transaction-type="Supports"
