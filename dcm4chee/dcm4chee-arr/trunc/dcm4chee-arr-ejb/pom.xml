@@ -178,10 +178,9 @@
                         <phase>test-compile</phase>
                         <configuration>
                             <tasks>
-                                <echo>......copying resource files for testing: hsql</echo>
-                                <filter filtersfile="${basedir}/src/hsql/hsql.properties" />
-                                <copy overwrite="true" todir="${basedir}/target/classes" filtering="true">
-                                     <fileset dir="${basedir}/src/main/resources" />
+                                <echo>......copying resource files for testing: from test/dd</echo>
+                                <copy overwrite="true" todir="${basedir}/target/classes">
+                                     <fileset dir="${basedir}/src/test/dd" />
                                 </copy>
                             </tasks>
                         </configuration>
