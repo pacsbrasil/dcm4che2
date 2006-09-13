@@ -109,6 +109,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
                 filter.getStrings(Tags.PatientID));
+        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, filter
+                .getString(Tags.IssuerOfPatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",

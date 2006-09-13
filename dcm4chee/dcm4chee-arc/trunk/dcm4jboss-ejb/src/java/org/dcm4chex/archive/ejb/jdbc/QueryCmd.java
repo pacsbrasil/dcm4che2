@@ -166,6 +166,8 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected void addPatientMatch() {
         sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
                 .getStrings(Tags.PatientID));
+        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, keys
+                .getString(Tags.IssuerOfPatientID));
         sqlBuilder.addPNMatch(
                 new String[] { 
                         "Patient.patientName",
