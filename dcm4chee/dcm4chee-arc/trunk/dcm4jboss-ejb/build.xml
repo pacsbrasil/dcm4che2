@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.10.0"/>
+	<property name="version" value="2.10.1"/>
 	<property name="javac.debug" value="on"/>	
 
     <!--property name="datasource.mapping" value="Hypersonic SQL"/-->
@@ -293,10 +293,10 @@
     	<replace file="${target.meta-inf-db2}/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="oracle-table-sequence"
-  				value="pk-sql"/>
+  				value="db2-fetch-key"/>
 			<replacefilter
-				token='sequence">'
-				value='pk-sql">values nextval for '/>
+				token="attribute"
+				value="!--"/>
 		</replace>
     </target>
 		

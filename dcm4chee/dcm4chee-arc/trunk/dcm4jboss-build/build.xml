@@ -1,7 +1,7 @@
 <project name="dcm4jboss-build" default="dist">
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
-  <property name="version" value="2.10.0"/>
+  <property name="version" value="2.10.1"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
@@ -222,6 +222,7 @@
         <include name="conf/**"/>
         <exclude name="conf/log4j.xml"/>
         <exclude name="conf/login-config.xml"/>
+        <exclude name="conf/standardjbosscmp-jdbc.xml"/>
         <!-- include name="deploy/ejb-deployer.xml"/-->
         <include name="deploy/jbossweb-tomcat55.sar/**"/>
         <include name="deploy/jboss-ws4ee.sar/**"/>
