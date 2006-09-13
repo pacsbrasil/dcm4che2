@@ -56,11 +56,24 @@ public class StudyFilterModel extends AbstractModel {
     }
 
     public final String getPatientID() {
-        return ds.getString(Tags.PatientID);
+        if ( ds.vm(Tags.IssuerOfPatientID) < 1)
+            return ds.getString(Tags.PatientID);
+        else
+            return ds.getString(Tags.PatientID)+"^^^"+ds.getString(Tags.IssuerOfPatientID);
     }
 
     public final void setPatientID(String patientID) {
+        String issuer = null;
+        if ( patientID != null ) {
+            int pos=patientID.indexOf("^^^");
+            if ( pos >= 0 ) {
+                if ( pos+3 < patientID.length())
+                    issuer = patientID.substring(pos+3);
+                patientID = pos == 0 ? null : patientID.substring(0,pos);
+            }
+        }
         ds.putLO(Tags.PatientID, patientID);
+        ds.putLO(Tags.IssuerOfPatientID, issuer);
     }
 
     public final String getPatientName() {

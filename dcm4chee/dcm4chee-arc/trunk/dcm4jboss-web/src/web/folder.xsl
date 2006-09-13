@@ -183,8 +183,9 @@
       				</td>
 					<td class="folder_search" >Patient ID:
 					</td>
-					<td>
-						<input size="10" name="patientID" type="text" value="{patientID}"/>
+					<td title="Patient ID. format:patid[^^^issuer]">
+						<input size="10" name="patientID" type="text" title="Patient ID. format:patid[^^^issuer]" 
+								value="{patientID}"/>
 					</td>
 	
 					<xsl:choose>
