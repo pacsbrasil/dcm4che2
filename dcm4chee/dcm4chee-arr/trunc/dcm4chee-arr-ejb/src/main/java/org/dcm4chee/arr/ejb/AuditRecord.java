@@ -259,7 +259,7 @@ public class AuditRecord implements Serializable {
     }    
     
     @Lob
-    @Column(name = "xmldata")
+    @Column(name = "xmldata", length=262144)
     public byte[] getXmldata() {
         return xmldata;
     }
