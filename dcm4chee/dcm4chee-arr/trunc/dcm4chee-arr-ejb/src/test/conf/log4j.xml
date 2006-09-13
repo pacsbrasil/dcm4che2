@@ -33,7 +33,7 @@
 	</appender>
 
 	<appender name="FILE" class="org.jboss.logging.appender.RollingFileAppender">
-		<param name="File" value="${basedir}/target/dcm4chee-arr.log" />
+		<param name="File" value="target/dcm4chee-arr.log" />
 		<param name="Append" value="false" />
 		<param name="MaxFileSize" value="10000KB" />
 		<param name="MaxBackupIndex" value="10" />
@@ -61,11 +61,15 @@
     <category name="org.dcm4chee">
 		<priority value="DEBUG" />
 	</category>
-	
+
 	<category name="test.dcm4chee">
 		<priority value="DEBUG" />
 	</category>
-	
+
+    <category name="org.jboss.ejb3">
+        <priority value="INFO" />
+    </category>
+    	
 	<root>
 		<priority value="INFO" />
 		<appender-ref ref="CONSOLE" />
