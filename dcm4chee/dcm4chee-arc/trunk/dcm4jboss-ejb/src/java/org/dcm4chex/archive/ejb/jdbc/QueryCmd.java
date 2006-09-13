@@ -240,7 +240,7 @@ public abstract class QueryCmd extends BaseReadCmd {
                             "SeriesRequest.requestingPhysician",
                             "SeriesRequest.requestingPhysicianIdeographicName",
                             "SeriesRequest.requestingPhysicianPhoneticName" },
-                    keys.getString(Tags.RequestingPhysician));
+                            rqAttrs.getString(Tags.RequestingPhysician));
         }
 
     }
@@ -540,6 +540,9 @@ public abstract class QueryCmd extends BaseReadCmd {
     protected boolean isMatchRequestAttributes() {
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         return rqAttrs != null && (rqAttrs.vm(Tags.RequestedProcedureID) > 0 
-                || rqAttrs.vm(Tags.SPSID) > 0);
+                || rqAttrs.vm(Tags.SPSID) > 0
+                || rqAttrs.vm(Tags.RequestingService) > 0
+                || rqAttrs.vm(Tags.RequestingPhysician) > 0
+                );
     }
 }
