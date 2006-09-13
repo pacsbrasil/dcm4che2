@@ -1,5 +1,5 @@
-#filter  { float:left; width:21em }
-#list, #info  { margin-left:23.5em }
+#filter  { position:absolute; top:5; left:5; width:21em }
+#list, #info  { margin-left:23.5em; width:100%; }
 #details, #xml  { 
 	border:1px solid #CCC;
 	background-color:#E9E9E9 

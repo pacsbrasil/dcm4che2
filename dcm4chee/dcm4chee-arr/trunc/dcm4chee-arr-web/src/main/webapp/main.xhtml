@@ -11,7 +11,8 @@
     <link href="main.css" rel="stylesheet" type="text/css"/>
   </head>
   <body>
-    <h:form id="filter">
+  	<div id="filter">
+    <h:form>
       <h:panelGrid columns="2">
         <h:outputLink value="http://www.dcm4che.org">
           <h:graphicImage url="img/logo.gif" border="0"/>
@@ -288,6 +289,7 @@
         </h:panelGrid>
       </fieldset>
     </h:form>
+    </div>
     <div id="list">
       <h:outputText value="No matching records."
         rendered="#{auditRecordList.count==0}"/>
