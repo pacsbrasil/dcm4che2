@@ -109,7 +109,7 @@ public class XSLTUtils {
 	    if (summaryTpl == null) {
 		summaryTpl = loadTemplates(SUMMARY_XSL);
 	    }
-	    return transform(detailsTpl.newTransformer(), xmldata);
+	    return transform(summaryTpl.newTransformer(), xmldata);
 	} catch (Exception e) {
 	    return e.getMessage();
 	}
