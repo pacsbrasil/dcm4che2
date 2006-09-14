@@ -63,10 +63,7 @@ import org.apache.log4j.Logger;
  *  table-name="audit_record"
  * 
  * @jboss.entity-command
- *  name="oracle-table-sequence"
- * @jboss.entity-command-attribute
- *  name="sequence"
- *  value="audit_record_pk_seq"
+ *  name="hsqldb-fetch-key"
  * 
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @author  <a href="mailto:joseph@tiani.com">joseph foraci</a>

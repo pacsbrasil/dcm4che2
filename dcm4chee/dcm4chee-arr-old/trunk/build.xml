@@ -82,7 +82,7 @@
             <!--utilobject cacheHomes="true" includeGUID="false"/-->
 
             <deploymentdescriptor
-                destdir="${basedir}/target/meta-inf-oracle"
+                destdir="${basedir}/target/meta-inf-hsql"
                 validatexml="true"
                 description="dcm4chee arr EJBs"
                 >
@@ -94,10 +94,10 @@
                 version="4.0"
                 unauthenticatedPrincipal="nobody"
                 xmlencoding="UTF-8"
-                destdir="${basedir}/target/meta-inf-oracle"
+                destdir="${basedir}/target/meta-inf-hsql"
                 validatexml="true"
-                datasource="java:/OracleDS"
-                typeMapping="Oracle9i"                  
+                datasource="java:/DefaultDS"
+                typeMapping="Hypersonic SQL"                  
                 createTable="false"                  
                 />
             
@@ -106,112 +106,87 @@
 
    <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
     	<copy todir="${basedir}/target/meta-inf-psql">
-    		<fileset dir="${basedir}/target/meta-inf-oracle"/>
+    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
     	<replace dir="${basedir}/target/meta-inf-psql">
   			<replacefilter
-  				token="OracleDS"
+  				token="DefaultDS"
   				value="PostgresDS"/>
   			<replacefilter
-  				token="Oracle9i"
+  				token="Hypersonic SQL"
   				value="PostgreSQL 8.0"/>
-		</replace>
-    	<replace file="${basedir}/target/meta-inf-psql/jbosscmp-jdbc.xml">
   			<replacefilter
-  				token="oracle-table-sequence"
+  				token="hsqldb-fetch-key"
   				value="postgresql-fetch-seq"/>
-  			<replacefilter
-  				token="attribute"
-  				value="!--"/>
 		</replace>
     </target>
 
    <target name="meta-inf-mysql" unless="meta-inf-mysql.notRequired">
     	<copy todir="${basedir}/target/meta-inf-mysql">
-    		<fileset dir="${basedir}/target/meta-inf-oracle"/>
+    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
     	<replace dir="${basedir}/target/meta-inf-mysql">
   			<replacefilter
-  				token="OracleDS"
+  				token="DefaultDS"
   				value="MySqlDS"/>
   			<replacefilter
-  				token="Oracle9i"
+  				token="Hypersonic SQL"
   				value="mySQL"/>
-		</replace>
-    	<replace file="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml">
   			<replacefilter
-  				token="oracle-table-sequence"
+  				token="hsqldb-fetch-key"
   				value="mysql-get-generated-keys"/>
-			<replacefilter
-				token="attribute"
-				value="!--"/>
 		</replace>
     </target>
 
 	<target name="meta-inf-mssql" unless="meta-inf-mssql.notRequired">
 	    	<copy todir="${basedir}/target/meta-inf-mssql">
-	    		<fileset dir="${basedir}/target/meta-inf-oracle"/>
+	    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
 	    	</copy>
 	    	<replace dir="${basedir}/target/meta-inf-mssql">
 	  			<replacefilter
-	  				token="OracleDS"
+	  				token="DefaultDS"
 	  				value="MSSQLDS"/>
 	  			<replacefilter
-	  				token="Oracle9i"
+	  				token="Hypersonic SQL"
 	  				value="MS SQLSERVER2000"/>
-    		</replace>
-        	<replace file="${basedir}/target/meta-inf-mssql/jbosscmp-jdbc.xml">
 	  			<replacefilter
-	  				token="oracle-table-sequence"
+	  				token="hsqldb-fetch-key"
 	  				value="mssql-fetch-key"/>
-				<replacefilter
-					token="attribute"
-					value="!--"/>
 			</replace>
     </target>
 	
  
-    <target name="meta-inf-hsql" unless="meta-inf-hsql.notRequired">
-    	<copy todir="${basedir}/target/meta-inf-hsql">
-    		<fileset dir="${basedir}/target/meta-inf-oracle"/>
+    <target name="meta-inf-oracle" unless="meta-inf-oracle.notRequired">
+    	<copy todir="${basedir}/target/meta-inf-oracle">
+    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
-    	<replace dir="${basedir}/target/meta-inf-hsql">
+    	<replace dir="${basedir}/target/meta-inf-oracle">
   			<replacefilter
-  				token="OracleDS"
-  				value="DefaultDS"/>
+  				token="DefaultDS"
+  				value="OracleDS"/>
   			<replacefilter
-  				token="Oracle9i"
-  				value="Hypersonic SQL"/>
-		</replace>
-    	<replace file="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml">
+  				token="Hypersonic SQL"
+  				value="Oracle)i"/>
   			<replacefilter
-  				token="oracle-table-sequence"
-  				value="hsqldb-fetch-key"/>
-			<replacefilter
-				token="attribute"
-				value="!--"/>
+  				token="hsqldb-fetch-key"
+  				value="oracle-table-sequence"/>
 		</replace>
     </target>
 
     <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
     	<copy todir="${basedir}/target/meta-inf-db2">
-    		<fileset dir="${basedir}/target/meta-inf-oracle"/>
+    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
     	<replace dir="${basedir}/target/meta-inf-db2">
   			<replacefilter
-  				token="OracleDS"
+  				token="DefaultDS"
   				value="DB2DS"/>
   			<replacefilter
-  				token="Oracle9i"
+  				token="Hypersonic SQL"
   				value="DB2"/>
-		</replace>
-    	<replace file="${basedir}/target/meta-inf-db2/jbosscmp-jdbc.xml">
   			<replacefilter
-  				token="oracle-table-sequence"
+  				token="hsqldb-fetch-key"
   				value="db2-fetch-key"/>
-			<replacefilter
-				token="attribute"
-				value="!--"/>
 		</replace>
     </target>
     
@@ -264,16 +239,12 @@
 	</target>
 
 	<target name="jar" depends="compile">
-    	<uptodate property="meta-inf-hsql.notRequired"
-    		srcfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
-    		targetfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-hsql"/> 
+    	<antcall target="meta-inf-oracle"/> 
     	<antcall target="ejb-jar">
     		<param name="db.name" value="hsql"/>
     	</antcall>
     	<uptodate property="meta-inf-psql.notRequired"
-    		srcfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
     		targetfile="${basedir}/target/meta-inf-psql/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-psql"/> 
@@ -281,7 +252,7 @@
     		<param name="db.name" value="psql"/>
     	</antcall>
     	<uptodate property="meta-inf-mysql.notRequired"
-    		srcfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
     		targetfile="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-mysql"/> 
@@ -289,7 +260,7 @@
     		<param name="db.name" value="mysql"/>
     	</antcall>
 	   	<uptodate property="meta-inf-mssql.notRequired"
-	   		srcfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
+	   		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
 	   		targetfile="${basedir}/target/meta-inf-mssql/jbosscmp-jdbc.xml"
 	   	/>
 	   	<antcall target="meta-inf-mssql"/> 
@@ -297,13 +268,17 @@
 	   		<param name="db.name" value="mssql"/>
 	   	</antcall>
     	<uptodate property="meta-inf-db2.notRequired"
-    		srcfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
     		targetfile="${basedir}/target/meta-inf-db2/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-db2"/>
     	<antcall target="ejb-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
+    	<uptodate property="meta-inf-oracle.notRequired"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+    		targetfile="${basedir}/target/meta-inf-oraclejbosscmp-jdbc.xml"
+    	/>
     	<antcall target="ejb-jar">
     		<param name="db.name" value="oracle"/>
     	</antcall>
