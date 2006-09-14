@@ -166,7 +166,7 @@
   				value="OracleDS"/>
   			<replacefilter
   				token="Hypersonic SQL"
-  				value="Oracle)i"/>
+  				value="Oracle9i"/>
   			<replacefilter
   				token="hsqldb-fetch-key"
   				value="oracle-table-sequence"/>
