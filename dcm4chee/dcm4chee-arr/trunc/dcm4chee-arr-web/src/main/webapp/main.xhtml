@@ -292,8 +292,8 @@
     </div>
     <div id="list">
       <h:outputText value="No matching records."
-        rendered="#{auditRecordList.count==0}"/>
-      <h:panelGroup rendered="#{auditRecordList.count>0}">
+        rendered="#{records.rowCount==0}"/>
+      <h:panelGroup rendered="#{records.rowCount>0}">
         <div>
           <h:outputFormat escape="false"
             value="Displaying records &lt;strong&gt;{0}&lt;/strong&gt; to &lt;strong&gt;{1}&lt;/strong&gt; of &lt;strong&gt;{2}&lt;/strong&gt; matching records.">
