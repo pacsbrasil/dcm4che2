@@ -62,8 +62,8 @@ import org.apache.log4j.Logger;
  * @ejb.persistence
  *  table-name="ae"
  * 
- * @jboss.entity-command name="oracle-table-sequence"
- * @jboss.entity-command-attribute name="sequence" value="ae_pk_seq"
+ * @jboss.entity-command
+ *  name="hsqldb-fetch-key"
  * 
  * @ejb.finder
  *  signature="Collection findAll()"

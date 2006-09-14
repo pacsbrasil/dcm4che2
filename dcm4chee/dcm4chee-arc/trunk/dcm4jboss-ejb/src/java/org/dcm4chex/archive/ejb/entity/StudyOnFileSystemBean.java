@@ -62,8 +62,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *          primkey-field="pk"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="study_on_fs"
- * @jboss.entity-command name="oracle-table-sequence"
- * @jboss.entity-command-attribute name="sequence" value="study_on_fs_pk_seq"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  * 	           query="" transaction-type="Supports"

@@ -65,8 +65,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  primkey-field="pk" local-jndi-name="ejb/MWLItem"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="mwl_item"
- * @jboss.entity-command name="oracle-table-sequence"
- * @jboss.entity-command-attribute name="sequence" value="mwl_item_pk_seq"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 

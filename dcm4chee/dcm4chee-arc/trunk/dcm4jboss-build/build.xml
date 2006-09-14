@@ -188,6 +188,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-arr/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
+        <exclude name="conf/standardjbosscmp-jdbc.xml"/>
         <include name="deploy/**"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-cdw/target" prefix="${dist.standalone.config}">

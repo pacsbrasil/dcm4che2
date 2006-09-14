@@ -2969,7 +2969,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
       <!-- this command makes the use of a specific sequence for each table -->
       <entity-command name="oracle-table-sequence"
                       class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleSequenceCreateCommand">
-         <attribute name="sequence_name">%%t_seq</attribute>
+         <attribute name="sequence_name">%%t_pk_seq</attribute>
       </entity-command>
 
       <!-- retrieves generated key of the record inserted into hsql db -->

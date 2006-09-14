@@ -69,8 +69,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
  *           local-jndi-name="ejb/MPPS"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="mpps"
- * @jboss.entity-command name="oracle-table-sequence"
- * @jboss.entity-command-attribute name="sequence" value="mpps_pk_seq"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 

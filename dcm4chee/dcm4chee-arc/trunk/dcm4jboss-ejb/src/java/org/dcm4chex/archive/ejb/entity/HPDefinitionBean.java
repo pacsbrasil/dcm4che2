@@ -67,8 +67,7 @@ import org.dcm4chex.archive.ejb.interfaces.HPLocal;
  *           local-jndi-name="ejb/HPDefinition" primkey-field="pk"
  * @ejb.persistence table-name="hpdef"
  * @ejb.transaction type="Required"
- * @jboss.entity-command name="oracle-table-sequence"
- * @jboss.entity-command-attribute name="sequence" value="hpdef_pk_seq"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * 
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  */
