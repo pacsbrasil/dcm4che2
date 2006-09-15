@@ -59,7 +59,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DICOM Part 19, Annex H compliant class, <code>NetworkConnection</code>
+ * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
  * <p>
  * The <i>network connection</i> describes one TCP port on one network device.
@@ -465,7 +465,7 @@ public class NetworkConnection {
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
 
-    public final String[] getTlsProtocol()  {
+    public final String[] getTlsProtocol() {
         return tlsProtocol;
     }
 
