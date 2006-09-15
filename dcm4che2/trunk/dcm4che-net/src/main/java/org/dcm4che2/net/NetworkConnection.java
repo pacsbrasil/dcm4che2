@@ -188,6 +188,7 @@ public class NetworkConnection {
         try {
             addr = InetAddress.getByName(hostname);
         } catch (UnknownHostException e) {
+            addr = null;
             log.warn("unkown host name: {}", hostname);
         }
     }
