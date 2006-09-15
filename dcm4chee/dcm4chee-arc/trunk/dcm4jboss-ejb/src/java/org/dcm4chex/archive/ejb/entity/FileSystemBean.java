@@ -103,7 +103,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk = ?1"
  *              
- * @jboss.query signature="long ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
+ * @jboss.query signature="Long ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
  *              query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND f.createdTime > ?2"
  */
 public abstract class FileSystemBean implements EntityBean {
@@ -173,7 +173,7 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
-    public abstract long ejbSelectSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
+    public abstract Long ejbSelectSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
     throws FinderException;
     
     /**
@@ -182,9 +182,10 @@ public abstract class FileSystemBean implements EntityBean {
     public long ejbHomeSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
     throws FinderException {
         try {
-            return ejbSelectSizeOfFilesCreatedAfter(pk, createdAfter);
-        } catch (NullPointerException e) {
-            // No matching File Record
+            Long sum = ejbSelectSizeOfFilesCreatedAfter(pk, createdAfter);
+            return sum != null ? sum.longValue() : 0L;
+        } catch (Exception e) {
+            log.info("Failed - assume no matching file records");
             return 0L;
         }
     }
