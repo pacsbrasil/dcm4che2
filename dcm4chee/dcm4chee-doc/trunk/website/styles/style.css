@@ -131,4 +131,6 @@ div#nav .title {
 
 div#nav .content {
   padding: 0px 0px 8px 8px;
+  font: normal x-small verdana, arial, helvetica, sans-serif;
+  font-size: 75%;
 }
