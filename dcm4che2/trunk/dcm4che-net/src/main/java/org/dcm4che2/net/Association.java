@@ -868,8 +868,8 @@ public class Association implements Runnable {
     }
 
     private void stopARTIM() throws IOException {
-        log.debug("{}: stop ARTIM", name);
         socket.setSoTimeout(0);
+        log.debug("{}: stop ARTIM", name);
     }
 
     void receivedAssociateRQ(AAssociateRQ rq) throws IOException {
@@ -942,8 +942,13 @@ public class Association implements Runnable {
 
     void sendAssociateRQ(AAssociateRQ rq) throws IOException {
         try {
-            state.sendAssociateRQ(this, rq);
+            // start ARTIM BEFORE sending A-ASSOCIATE-RQ PDU,
+            // otherwise A-ASSOCIATE-AC PDU may be received and processed,
+            // and startARTIM() invoked AFTER stopARTIM(), which may cause
+            // a socket close during established Association with
+            // WARN   - ARTIM timer expired in State: Sta6
             startARTIM(connector.getAcceptTimeout());
+            state.sendAssociateRQ(this, rq);
         } catch (IOException e) {
             closeSocket();
             throw e;
