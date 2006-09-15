@@ -313,7 +313,9 @@ public class DcmMWL {
             String localAE = (String) cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmmwl.setCalling(callingAETHost[0]);
-            dcmmwl.setLocalHost(toHostname(callingAETHost[1]));
+            if (callingAETHost[1] != null) {
+                dcmmwl.setLocalHost(callingAETHost[1]);
+            }
         }
         if (cl.hasOption("connectTO"))
             dcmmwl.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
@@ -554,10 +556,6 @@ public class DcmMWL {
         }
 
         return cl;
-    }
-
-    private static String toHostname(String host) {
-        return host != null ? host : "127.0.0.1";
     }
 
     private static int toPort(String port) {

@@ -405,7 +405,9 @@ public class DcmSnd {
             String localAE = (String) cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmsnd.setCalling(callingAETHost[0]);
-            dcmsnd.setLocalHost(toHostname(callingAETHost[1]));
+            if (callingAETHost[1] != null) {
+                dcmsnd.setLocalHost(callingAETHost[1]);
+            }
         }
         if (cl.hasOption("connectTO"))
             dcmsnd.setConnectTimeout(
@@ -523,11 +525,6 @@ public class DcmSnd {
             System.out.print(totalSizeSent / KB);
             System.out.print("KB");
         }
-    }
-
-    private static String toHostname(String host)
-    {
-        return host != null ? host : "127.0.0.1";
     }
 
     private static int toPort(String port)

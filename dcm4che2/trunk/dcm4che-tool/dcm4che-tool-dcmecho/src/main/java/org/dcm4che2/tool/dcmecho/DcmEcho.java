@@ -283,7 +283,9 @@ public class DcmEcho
             String localAE = (String) cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmecho.setCalling(callingAETHost[0]);
-            dcmecho.setLocalHost(toHostname(callingAETHost[1]));
+            if (callingAETHost[1] != null) {
+                dcmecho.setLocalHost(callingAETHost[1]);
+            }
         }
         if (cl.hasOption("connectTO"))
             dcmecho.setConnectTimeout(
@@ -375,11 +377,6 @@ public class DcmEcho
                 e.printStackTrace();
             }
         }
-    }
-
-    private static String toHostname(String host)
-    {
-        return host != null ? host : "127.0.0.1";
     }
 
     private static int toPort(String port)

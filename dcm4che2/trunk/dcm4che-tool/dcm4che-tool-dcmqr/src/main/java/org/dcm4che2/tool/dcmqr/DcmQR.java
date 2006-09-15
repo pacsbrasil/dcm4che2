@@ -517,7 +517,9 @@ public class DcmQR {
             String localAE = (String) cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmqr.setCalling(callingAETHost[0]);
-            dcmqr.setLocalHost(toHostname(callingAETHost[1]));
+            if (callingAETHost[1] != null) {
+                dcmqr.setLocalHost(callingAETHost[1]);
+            }
         }
         if (cl.hasOption("connectTO"))
             dcmqr.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
@@ -759,10 +761,6 @@ public class DcmQR {
 
     private boolean isMove() {
         return moveDest != null;
-    }
-
-    private static String toHostname(String host) {
-        return host != null ? host : "127.0.0.1";
     }
 
     private static int toPort(String port) {

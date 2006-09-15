@@ -622,7 +622,9 @@ public class DcmGPWL {
             String localAE = (String) cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmgpwl.setCalling(callingAETHost[0]);
-            dcmgpwl.setLocalHost(toHostname(callingAETHost[1]));
+            if (callingAETHost[1] != null) {
+                dcmgpwl.setLocalHost(callingAETHost[1]);
+            }
         }
         if (cl.hasOption("connectTO"))
             dcmgpwl.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
@@ -1098,10 +1100,6 @@ public class DcmGPWL {
         }
 
         return cl;
-    }
-
-    private static String toHostname(String host) {
-        return host != null ? host : "127.0.0.1";
     }
 
     private static int toPort(String port) {
