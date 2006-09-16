@@ -229,7 +229,7 @@ public class AuditRecord implements Serializable {
 
     @Basic @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "event_date_time")
-    @Index(name = "ar_event_date_time_idx")
+    @Index(name = "ar_event_date_time")
     public Date getEventDateTime() {
         return eventDateTime;
     }
@@ -240,7 +240,7 @@ public class AuditRecord implements Serializable {
     
     @Basic @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "receive_date_time")
-    @Index(name = "ar_receive_date_time_idx")
+    @Index(name = "ar_receive_date_ti")
     public Date getReceiveDateTime() {
         return receiveDateTime;
     }
