@@ -91,7 +91,7 @@ public class Code implements Serializable {
         this.pk = pk;
     }
 
-    @Column(name = "code_value")
+    @Column(name = "code_value", nullable = false)
     public String getValue() {
         return value;
     }
@@ -100,7 +100,7 @@ public class Code implements Serializable {
         this.value = value;
     }
 
-    @Column(name = "code_designator")
+    @Column(name = "code_designator", nullable = false)
     public String getDesignator() {
         return designator;
     }
