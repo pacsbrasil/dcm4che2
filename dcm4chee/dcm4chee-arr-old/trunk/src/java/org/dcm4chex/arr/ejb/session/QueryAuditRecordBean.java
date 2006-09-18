@@ -114,7 +114,7 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZ";
 
     // Be aware of correct order ( implicit mapping to HSQL, PSQL, MYSQL,..) !
-    static final String[] DATABASE = { "Hypersonic SQL", "PostgreSQL 7.2",
+    static final String[] DATABASE = { "Hypersonic SQL", "PostgreSQL 8.0",
             "mySQL", "DB2", "Oracle9i", "MS SQLSERVER2000"};
 
     static final int HSQL = 0;
