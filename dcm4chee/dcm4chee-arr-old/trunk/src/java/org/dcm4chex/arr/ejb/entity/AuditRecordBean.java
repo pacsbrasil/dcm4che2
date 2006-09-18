@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
  *  type="Required"
  * 
  * @ejb.persistence
- *  table-name="audit_record"
+ *  table-name="audit_record_old"
  * 
  * @jboss.entity-command
  *  name="hsqldb-fetch-key"

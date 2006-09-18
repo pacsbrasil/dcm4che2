@@ -389,11 +389,11 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     private StringBuffer appendFromWhere(StringBuffer sb, String[] type,
             String host, String from, String to, String aet, String userName,
             String patientName, String patientId) {
-        sb.append(" FROM audit_record WHERE");
+        sb.append(" FROM audit_record_old WHERE");
         if (type != null && type.length > 0) {
             sb.append('(');
             for (int i = 0; i < type.length; i++) {
-                sb.append(" audit_record.msg_type='").append(
+                sb.append(" audit_record_old.msg_type='").append(
                         type[i].replaceAll("'", "''")).append("' OR");
             }
             sb.setLength(sb.length() - 3);
