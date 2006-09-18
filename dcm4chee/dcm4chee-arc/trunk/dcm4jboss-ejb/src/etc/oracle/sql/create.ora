@@ -585,9 +585,9 @@ FOREIGN KEY (prcode_fk) REFERENCES code(pk)
 CREATE INDEX device_fk ON rel_dev_proto(device_fk);
 CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
-CREATE SEQUENCE audit_record_pk_seq;
-CREATE TABLE audit_record(
-	pk 				NUMBER(38,0) NOT NULL CONSTRAINT audit_record_pk PRIMARY KEY,
+CREATE SEQUENCE audit_record_old_pk_seq;
+CREATE TABLE audit_record_old(
+	pk 				NUMBER(38,0) NOT NULL CONSTRAINT audit_record_old_pk PRIMARY KEY,
 	msg_type 		VARCHAR2(255),
 	host_name 		VARCHAR2(255),
 	time_stamp 		TIMESTAMP,
@@ -597,13 +597,13 @@ CREATE TABLE audit_record(
 	patient_id 		VARCHAR2(255),
 	xml_data 		VARCHAR2(4000)
 );
-CREATE INDEX arr_msg_type ON audit_record(msg_type);
-CREATE INDEX arr_host_name ON audit_record(UPPER(host_name));
-CREATE INDEX arr_time_stamp ON audit_record(time_stamp);
-CREATE INDEX arr_aet ON audit_record(aet);
-CREATE INDEX arr_user_name ON audit_record(user_name);
-CREATE INDEX arr_patient_name ON audit_record(UPPER(patient_name));
-CREATE INDEX arr_patient_id ON audit_record(patient_id);
+CREATE INDEX arr_msg_type ON audit_record_old(msg_type);
+CREATE INDEX arr_host_name ON audit_record_old(UPPER(host_name));
+CREATE INDEX arr_time_stamp ON audit_record_old(time_stamp);
+CREATE INDEX arr_aet ON audit_record_old(aet);
+CREATE INDEX arr_user_name ON audit_record_old(user_name);
+CREATE INDEX arr_patient_name ON audit_record_old(UPPER(patient_name));
+CREATE INDEX arr_patient_id ON audit_record_old(patient_id);
 
 CREATE TABLE users(
 	user_id		VARCHAR2(255) NOT NULL CONSTRAINT users_pk PRIMARY KEY,

@@ -1,5 +1,10 @@
 -- Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
 
+ALTER TABLE RENAME audit_record TO audit_record_old;
+DROP SEQUENCE audit_record_pk;
+CREATE SEQUENCE audit_record_old_pk_seq;
+SELECT setval('audit_record_old_pk_seq', max(pk)) FROM audit_record_old;
+
 ALTER TABLE series_req ADD req_service NVARCHAR2(255);
 ALTER TABLE series_req ADD req_physician NVARCHAR2(255);
 ALTER TABLE series_req ADD req_phys_i_name NVARCHAR2(255);

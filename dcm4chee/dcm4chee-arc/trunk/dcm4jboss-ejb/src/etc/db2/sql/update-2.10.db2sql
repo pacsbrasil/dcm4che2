@@ -1,9 +1,7 @@
 -- Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
--- You have also to run update-2.10.sh for replacement of sequences by
--- identity columns
+-- invoked by update-2.10.sh
 
-CONNECT TO tiani;
-SET CURRENT SCHEMA TIANI;
+RENAME TABLE audit_record TO audit_record_old;
 
 ALTER TABLE series_req ADD req_service VARCHAR(254);
 ALTER TABLE series_req ADD req_physician VARCHAR(254);
@@ -14,4 +12,3 @@ CREATE INDEX ser_req_phys ON series_req(req_physician);
 CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name);
 CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name);
 
-db2 TERMINATE

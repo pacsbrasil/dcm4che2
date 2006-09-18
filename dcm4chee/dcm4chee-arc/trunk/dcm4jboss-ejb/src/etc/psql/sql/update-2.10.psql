@@ -1,5 +1,27 @@
 -- Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
 
+CREATE TABLE audit_record_old(
+	pk 				SERIAL NOT NULL CONSTRAINT audit_record_old_pk PRIMARY KEY,
+	msg_type 		TEXT,
+	host_name 		TEXT,
+	time_stamp 		TIMESTAMP,
+	aet 			TEXT,
+	user_name 		TEXT,
+	patient_name	TEXT,
+	patient_id 		TEXT,
+	xml_data 		TEXT
+);
+INSERT INTO audit_record_old SELECT * FROM audit_record;
+SELECT setval('audit_record_old_pk_seq', max(pk)) FROM audit_record_old;
+DROP TABLE audit_record;
+CREATE INDEX arr_msg_type ON audit_record_old(msg_type);
+CREATE INDEX arr_host_name ON audit_record_old(UPPER(host_name));
+CREATE INDEX arr_time_stamp ON audit_record_old(time_stamp);
+CREATE INDEX arr_aet ON audit_record_old(aet);
+CREATE INDEX arr_user_name ON audit_record_old(user_name);
+CREATE INDEX arr_patient_name ON audit_record_old(UPPER(patient_name));
+CREATE INDEX arr_patient_id ON audit_record_old(patient_id);
+
 ALTER TABLE series_req ADD req_service TEXT;
 ALTER TABLE series_req ADD req_physician TEXT;
 ALTER TABLE series_req ADD req_phys_i_name TEXT;

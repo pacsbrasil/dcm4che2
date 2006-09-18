@@ -1,5 +1,7 @@
 -- Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
 
+RENAME TABLE audit_record TO audit_record_old;
+
 ALTER TABLE series_req ADD req_service VARCHAR(250) BINARY;
 ALTER TABLE series_req ADD req_physician VARCHAR(250) BINARY;
 ALTER TABLE series_req ADD req_phys_i_name VARCHAR(250) BINARY;

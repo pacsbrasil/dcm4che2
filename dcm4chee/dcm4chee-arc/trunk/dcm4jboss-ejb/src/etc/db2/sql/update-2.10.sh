@@ -1,7 +1,5 @@
 #!/bin/bash
 # Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
-# Replace sequences by identity columns
-# You have also to execute SQL script update-2.10.db2sql
 
 db2 CONNECT TO tiani
 db2 SET SCHEMA tiani
@@ -27,6 +25,8 @@ do
   db2 -v "ALTER TABLE $t ALTER COLUMN pk RESTART WITH $pk_start" || bailout
   db2 -v "DROP SEQUENCE ${t}_pk_seq" || bailout
 done
+
+db2 -t\; -fupdate-2.10.db2sql
 
 db2 TERMINATE
 
