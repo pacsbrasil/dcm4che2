@@ -40,15 +40,22 @@
 package org.dcm4chex.archive.dcm.mppsscp;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
+import javax.management.ReflectionException;
+import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -60,6 +67,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.dcm4chex.archive.util.XSLTUtils;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -80,6 +88,9 @@ public class MPPSScpService extends AbstractScpService {
         }
     };
 
+    //should be the same as in StoreSCP.
+    private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
+    
     private MPPSScp mppsScp = new MPPSScp(this);
 
     public String getEjbProviderURL() {
@@ -127,9 +138,37 @@ public class MPPSScpService extends AbstractScpService {
 		       	}
 		       	logMppsLinkRecord(map, spsIDs[i], mppsIUIDs[j]);
 	           	if ( i == 0 ) {
+	               	try {
+	            	    Dataset coerceWL = getCoercionDS((Dataset) map.get("mwlAttrs"));
+	            	    if ( log.isDebugEnabled() ) {
+	            	        log.debug("MWL Attributes:");
+	            	        log.debug(map.get("mwlAttrs"));
+	            	        log.debug("Series Attributes from worklist:");
+		            	    log.debug(coerceWL);
+	            	    }
+	            	    if ( coerceWL != null ) {
+	            	        log.info("Coerce MWL attributes to series/study after manual MWL-MPPS linking!");
+	            	        Collection seriesDS = mgr.getSeriesAndStudyDS(mppsIUIDs[j]);
+	            	        Dataset series;
+	            	        Dataset coerce = DcmObjectFactory.getInstance().newDataset();
+	            	        for ( Iterator iter = seriesDS.iterator() ; iter.hasNext() ; ) {
+	            	            coerce.putAll(coerceWL);
+	            	            series = (Dataset) iter.next();
+	            	            series.remove(Tags.RequestAttributesSeq);
+		            	        coerceAttributes(series,coerce);
+		            	        log.debug("Update series "+series.getString(Tags.SeriesInstanceUID)+" with worklist attributes!");
+	            	        }
+	            	        mgr.updateSeriesAndStudy(seriesDS);
+	            	    }
+	            	} catch ( Exception x ) {
+	            	    log.error("Cant coerce MWL attributes to series)",x);
+	            	}
 	                sendMPPSNotification((Dataset) map.get("mppsAttrs"), MPPSScpService.EVENT_TYPE_MPPS_LINKED);
 	           	}
         	}
+         }
+        if ( spsIDs.length > 1 ) {
+            log.warn("MWL-MPPS linking use multible worklist entries! Series are updated only for the first worlist item!");
         }
       
    		if ( dominant != null ) {
@@ -140,6 +179,23 @@ public class MPPSScpService extends AbstractScpService {
         }
 /*_*/        
        	return map;
+    }
+    
+    private Dataset getCoercionDS(Dataset ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if ( ds == null ) return null;
+        Templates tmpl = this.getCoercionTemplatesFor("",MWL2STORE_XSL);
+        if (tmpl == null) {
+            log.warn("Coercion template "+MWL2STORE_XSL+" not found! Can not store MWL attributes to series!");
+            return null;
+        }
+        Dataset out = DcmObjectFactory.getInstance().newDataset();
+        try {
+            XSLTUtils.xslt(ds, tmpl, null, out);
+        } catch (Exception e) {
+            log.error("Attribute coercion failed:", e);
+            return null;
+        }
+        return out;
     }
     
     public void unlinkMpps(String mppsIUID) throws RemoteException, CreateException, HomeFactoryException, FinderException {

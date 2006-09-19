@@ -75,8 +75,10 @@ public class XSLTUtils {
         TransformerHandler th = tf.newTransformerHandler(tpl);
         Date now = new Date();
         Transformer t = th.getTransformer();
-        t.setParameter("calling", a.getCallingAET());
-        t.setParameter("called", a.getCalledAET());
+        if ( a != null ) {
+	        t.setParameter("calling", a.getCallingAET());
+	        t.setParameter("called", a.getCalledAET());
+        }
         t.setParameter("date", new DAFormat().format(now ));
         t.setParameter("time", new TMFormat().format(now));
         th.setResult(new SAXResult(out.getSAXHandler2(null)));

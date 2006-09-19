@@ -68,6 +68,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -105,6 +106,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             Tags.PatientSex,
     };
     private PatientLocalHome patHome;
+	private SeriesLocalHome seriesHome;
     private MPPSLocalHome mppsHome;
 	private MWLItemLocalHome mwlItemHome;
     private SessionContext sessionCtx;    
@@ -116,6 +118,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             jndiCtx = new InitialContext();
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+			seriesHome = (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
             mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
 			mwlItemHome = (MWLItemLocalHome) jndiCtx.lookup("java:comp/env/ejb/MWLItem");
         } catch (NamingException e) {
@@ -133,6 +136,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         sessionCtx = null;
         mppsHome = null;
         patHome = null;
+		seriesHome = null;
     }
 
     /**
@@ -374,13 +378,46 @@ public abstract class MPPSManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public Collection getSeriesIUIDs(String mppsIUID) throws FinderException {
-    	Collection col = new ArrayList();
-        final MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
-        Iterator iter = mpps.getSeries().iterator();
-        while ( iter.hasNext() ) {
+        Collection col = new ArrayList();
+    	Collection series = seriesHome.findByPpsIuid(mppsIUID);
+        for ( Iterator iter = series.iterator() ; iter.hasNext() ; ) {
         	col.add( ( (SeriesLocal) iter.next()).getSeriesIuid() );
         }
         return col;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection getSeriesAndStudyDS(String mppsIUID) throws FinderException {
+        Collection col = new ArrayList();
+    	Collection seriess = seriesHome.findByPpsIuid(mppsIUID);
+    	SeriesLocal series;
+    	Dataset ds;
+        for ( Iterator iter = seriess.iterator() ; iter.hasNext() ; ) {
+            series = (SeriesLocal) iter.next();
+            ds = series.getAttributes(true);
+            ds.putAll(series.getStudy().getAttributes(true));
+        	col.add( ds );
+        }
+        return col;
+    }
+ 
+    /**
+     * @ejb.interface-method
+     */
+    public void updateSeriesAndStudy(Collection seriesDS) throws FinderException {
+        Dataset ds = null;
+        String iuid;
+        SeriesLocal series = null;;
+        for ( Iterator iter = seriesDS.iterator() ; iter.hasNext() ; ) {
+            ds = (Dataset) iter.next();
+            iuid = ds.getString(Tags.SeriesInstanceUID);
+            series = seriesHome.findBySeriesIuid(iuid);
+	        series.setAttributes(ds);
+        }
+        if ( series != null )
+            series.getStudy().setAttributes(ds);
     }
     
 }
