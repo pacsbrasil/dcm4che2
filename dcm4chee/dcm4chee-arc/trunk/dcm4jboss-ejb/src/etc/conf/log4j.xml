@@ -182,11 +182,6 @@
       <priority value="INFO"/>
    </category>
    
-   <!-- Limit the ca.uhn.hl7v2 to INFO -->
-   <category name="ca.uhn.hl7v2">
-      <priority value="INFO"/>
-   </category>
-   
    <!-- Limit the org.infohazard category to INFO -->
    <category name="org.infohazard">
       <priority value="INFO"/>
