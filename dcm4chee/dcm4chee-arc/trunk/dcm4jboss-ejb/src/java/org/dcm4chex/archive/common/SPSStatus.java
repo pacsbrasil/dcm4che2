@@ -68,4 +68,15 @@ public class SPSStatus {
             throw new IllegalArgumentException(s);
         return index;
     }
+
+    public static int[] toInts(String[] ss) {
+        if (ss == null) {
+            return null;
+        }
+        int[] ret = new int[ss.length];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = toInt(ss[i]);
+        }
+        return ret;
+    }
 }

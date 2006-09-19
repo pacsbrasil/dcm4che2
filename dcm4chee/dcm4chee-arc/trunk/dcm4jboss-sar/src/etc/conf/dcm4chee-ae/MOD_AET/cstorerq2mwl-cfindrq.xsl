@@ -50,10 +50,6 @@ for which MPPS N-CREATE was already received.
           <attr tag="00400008" vr="SQ"/>
           <!-- Scheduled Procedure Step ID -->
           <xsl:copy-of select="attr[@tag='00400275']/item/attr[@tag='00400009']"/>
-          <!-- Scheduled Procedure Step Status -->
-          <attr tag="00400020" vr="CS">
-            <xsl:text>ANY</xsl:text>
-          </attr>
         </item>
       </attr>
       <!-- Requested Procedure ID -->
