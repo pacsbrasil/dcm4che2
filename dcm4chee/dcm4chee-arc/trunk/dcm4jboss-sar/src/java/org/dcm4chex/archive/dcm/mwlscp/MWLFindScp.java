@@ -44,6 +44,7 @@ import java.sql.SQLException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
@@ -68,6 +69,10 @@ public class MWLFindScp extends DcmServiceBase {
     private final MWLFindScpService service;
 	private final Logger log;
 
+    public static int transactionIsolationLevel = 0;
+
+    protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+	
 	public MWLFindScp(MWLFindScpService service) {
         this.service = service;
 		this.log = service.getLog();
@@ -99,9 +104,15 @@ public class MWLFindScp extends DcmServiceBase {
 	private class MultiCFindRsp implements MultiDimseRsp {
         private final MWLQueryCmd queryCmd;
         private boolean canceled = false;
+        private int pendingStatus = Status.Pending;
 
         public MultiCFindRsp(MWLQueryCmd queryCmd) {
             this.queryCmd = queryCmd;
+            if ( queryCmd.isMatchNotSupported() ) { 
+                pendingStatus = 0xff01;
+            } else if ( service.isCheckMatchingKeySupported() && queryCmd.isMatchingKeyNotSupported() ) {
+                pendingStatus = 0xff01;
+            }
         }
 
         public DimseListener getCancelListener() {
@@ -125,7 +136,7 @@ public class MWLFindScp extends DcmServiceBase {
                     return null;
                 }
         		Association a = assoc.getAssociation();
-                rspCmd.putUS(Tags.Status, Status.Pending);
+                rspCmd.putUS(Tags.Status, pendingStatus);
                 Dataset rspData = queryCmd.getDataset();
 				log.debug("Identifier:\n");
 				log.debug(rspData);

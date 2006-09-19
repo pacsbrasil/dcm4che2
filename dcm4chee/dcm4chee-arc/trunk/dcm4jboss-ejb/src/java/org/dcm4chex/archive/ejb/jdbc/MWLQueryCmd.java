@@ -52,9 +52,8 @@ import org.dcm4chex.archive.common.SPSStatus;
  * @version $Revision$ $Date$
  * @since 10.02.2004
  */
-public class MWLQueryCmd extends BaseReadCmd {
+public class MWLQueryCmd extends BaseDSQueryCmd {
     
-    public static int transactionIsolationLevel = 0;
     private static final String ANY_STATI = "ANY";
     private static final int[] OPEN_STATI = { SPSStatus.SCHEDULED,
             SPSStatus.ARRIVED };
@@ -64,17 +63,34 @@ public class MWLQueryCmd extends BaseReadCmd {
     private static final String[] RELATIONS = { "Patient.pk",
             "MWLItem.patient_fk" };
 
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
-    private final Dataset keys;
+    private static final int[] MATCHING_KEYS = new int[] {
+        Tags.RequestedProcedureID,
+		Tags.AccessionNumber,
+		Tags.StudyInstanceUID,
+		Tags.PatientID,
+		Tags.IssuerOfPatientID,
+		Tags.PatientName,
+		Tags.SPSSeq
+		};
+    private static final int[] MATCHING_SPS_SQ_KEYS = new int[] {
+        Tags.SPSStatus,
+		Tags.SPSID,
+		Tags.SPSStartDate, Tags.SPSStartTime,
+		Tags.Modality,
+		Tags.ScheduledStationAET,
+		Tags.PerformingPhysicianName
+		};
+    
+    public static int transactionIsolationLevel = 0;
 
+    protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    
     /**
      * @param ds
      * @throws SQLException
      */
     public MWLQueryCmd(Dataset keys) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-        this.keys = keys;
+        super(keys, true, false, transactionIsolationLevel);
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -131,6 +147,10 @@ public class MWLQueryCmd extends BaseReadCmd {
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 keys.getString(Tags.PatientName));
+        
+        matchingKeys.add(MATCHING_KEYS);
+        seqMatchingKeys.put(new Integer(Tags.SPSSeq), new IntList().add(MATCHING_SPS_SQ_KEYS));
+        
     }
 
     public void execute() throws SQLException {

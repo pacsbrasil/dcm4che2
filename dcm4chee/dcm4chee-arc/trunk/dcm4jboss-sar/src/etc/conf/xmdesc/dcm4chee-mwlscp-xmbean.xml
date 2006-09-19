@@ -80,6 +80,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCheckMatchingKeySupported"
+      setMethod="setCheckMatchingKeySupported">
+      <description>Enable check if unsupported matching key(s) are used in C-FIND. 
+      	In this case the C-FIND PENDING status is changed from 0xff00 to 0xff01.      
+      </description>
+      <name>CheckMatchingKeySupported</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.

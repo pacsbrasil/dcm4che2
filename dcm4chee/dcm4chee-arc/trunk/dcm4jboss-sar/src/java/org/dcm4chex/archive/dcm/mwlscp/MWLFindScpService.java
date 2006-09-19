@@ -87,6 +87,9 @@ public class MWLFindScpService extends AbstractScpService
 	
     private int onMPPSReceived = NO_OP;
     
+    private boolean checkMatchingKeySupported = true;
+
+    
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
 
     public final String getOnMPPSReceived() {
@@ -101,6 +104,18 @@ public class MWLFindScpService extends AbstractScpService
 		this.onMPPSReceived = tmp;
 	}
 	
+    /**
+     * @return Returns the checkMatchingKeySupport.
+     */
+    public boolean isCheckMatchingKeySupported() {
+        return checkMatchingKeySupported;
+    }
+    /**
+     * @param checkMatchingKeySupport The checkMatchingKeySupport to set.
+     */
+    public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
+        this.checkMatchingKeySupported = checkMatchingKeySupport;
+    }
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }        
