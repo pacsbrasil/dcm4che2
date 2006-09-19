@@ -137,7 +137,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone.config}">
         <include name="lib/saaj-api.jar"/>
-        <include name="lib/saaj-api.jar"/>
+        <include name="lib/saaj-impl.jar"/>
       	<!-- not included in jems-installer ejb3 option -->
         <include name="lib/jbossws14.jar"/>
         <include name="lib/scheduler-plugin.jar"/>
