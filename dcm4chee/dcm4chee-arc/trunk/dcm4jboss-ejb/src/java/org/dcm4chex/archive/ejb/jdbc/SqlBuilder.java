@@ -74,7 +74,9 @@ class SqlBuilder {
     private String whereOrAnd = WHERE;
     private boolean distinct = false;
     private boolean subQueryMode = false;
-
+    
+    private boolean matchNotSupported = false;
+    
     private static int getDatabase() {
         return JdbcProperties.getInstance().getDatabase();
     }
@@ -259,9 +261,14 @@ class SqlBuilder {
     public Match addWildCardMatch(String alias, String field, boolean type2,
             String[] vals) {
         if ( vals == null || vals.length < 1 ) return null;
-        return vals.length > 1 
-        		?  addListOfStringMatch(alias, field, type2, vals)
-                :  addWildCardMatch(alias, field, type2, vals[0]);  
+        if ( vals.length > 1 ) {
+            if ( containsWildCard(vals) ) {
+                matchNotSupported = true;
+                return null;
+            }
+    		addListOfStringMatch(alias, field, type2, vals);
+        }
+        return addWildCardMatch(alias, field, type2, vals[0]);  
     }
     
     /**
@@ -294,6 +301,13 @@ class SqlBuilder {
         }
     }   
 
+    /**
+     * Returns true if at least one match is not supported. 
+     * @return matchNotSupported flag.
+     */
+    public boolean isMatchNotSupported() {
+        return matchNotSupported;
+    }
     static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : null;
     }

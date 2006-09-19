@@ -41,13 +41,10 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -56,11 +53,52 @@ import org.dcm4chex.archive.common.PrivateTags;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  */
-public abstract class QueryCmd extends BaseReadCmd {
+public abstract class QueryCmd extends BaseDSQueryCmd {
 
-    public static int transactionIsolationLevel = 0;
+    private static final int[] MATCHING_PATIENT_KEYS = new int[] {
+        Tags.PatientID,
+		Tags.IssuerOfPatientID,
+		Tags.PatientName,
+		Tags.PatientBirthDate, Tags.PatientBirthTime,
+		Tags.PatientSex
+		};
+    private static final int[] MATCHING_STUDY_KEYS = new int[] {
+        Tags.StudyInstanceUID,
+		Tags.StudyID,
+		Tags.StudyDate, Tags.StudyTime,
+		Tags.AccessionNumber,
+		Tags.ReferringPhysicianName,
+		Tags.StudyDescription,
+		Tags.StudyStatusID
+		};
+    private static final int[] MATCHING_SERIES_KEYS = new int[] {
+        Tags.SeriesInstanceUID,
+		Tags.SeriesNumber,
+		Tags.Modality,
+		Tags.ModalitiesInStudy,
+		Tags.InstitutionName,
+		Tags.InstitutionalDepartmentName,
+		Tags.PPSStartDate, Tags.PPSStartTime,
+		PrivateTags.CallingAET,
+		Tags.RequestAttributesSeq
+		};
+    private static final int[] MATCHING_INSTANCE_KEYS = new int[] {
+        Tags.SOPInstanceUID,
+		Tags.SOPClassUID,
+		Tags.InstanceNumber,
+		Tags.VerificationFlag,
+		Tags.ContentDate, Tags.ContentTime,
+		Tags.CompletionFlag,
+		Tags.VerificationFlag,
+		Tags.ConceptNameCodeSeq
+		};
+    private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
+        Tags.RequestedProcedureID,
+		Tags.SPSID,
+		Tags.RequestingService,
+		Tags.RequestingPhysician
+		};
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static final String[] AVAILABILITY = { 
         "ONLINE", 
@@ -73,6 +111,11 @@ public abstract class QueryCmd extends BaseReadCmd {
     private static final String[] SERIES_REQUEST_LEFT_JOIN = { "SeriesRequest",
             null, "Series.pk", "SeriesRequest.series_fk" };
 
+    
+    public static int transactionIsolationLevel = 0;
+
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    
     public static QueryCmd create(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
@@ -123,21 +166,12 @@ public abstract class QueryCmd extends BaseReadCmd {
         return cmd;
     }
 
-    protected final Dataset keys;
 
-    protected final SqlBuilder sqlBuilder = new SqlBuilder();
-
-    protected final boolean filterResult;
-
-    protected final boolean type2;
 
     protected QueryCmd(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel);
-        this.keys = keys;
-        this.filterResult = filterResult;
-        this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
+        super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
+        matchingKeys.add(Tags.QueryRetrieveLevel);
     }
 
     protected void init() {
@@ -162,7 +196,11 @@ public abstract class QueryCmd extends BaseReadCmd {
     public void execute() throws SQLException {
         execute(sqlBuilder.getSql());
     }
-
+    
+    public boolean isMatchNotSupported() {
+        return sqlBuilder.isMatchNotSupported();
+    }
+    
     protected void addPatientMatch() {
         sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
                 .getStrings(Tags.PatientID));
@@ -178,6 +216,7 @@ public abstract class QueryCmd extends BaseReadCmd {
                 keys.getDateTimeRange(Tags.PatientBirthDate, Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
                 keys.getStrings(Tags.PatientSex));
+        matchingKeys.add(MATCHING_PATIENT_KEYS);
     }
 
     protected void addStudyMatch() {
@@ -199,6 +238,7 @@ public abstract class QueryCmd extends BaseReadCmd {
                 SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
                 keys.getStrings(Tags.StudyStatusID));
+        matchingKeys.add(MATCHING_STUDY_KEYS);
     }
 
     protected void addNestedSeriesMatch() {
@@ -207,6 +247,8 @@ public abstract class QueryCmd extends BaseReadCmd {
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(false,
                 keys.getStrings(PrivateTags.CallingAET));
+        matchingKeys.add(Tags.ModalitiesInStudy);
+        matchingKeys.add(PrivateTags.CallingAET);
     }
 
     protected void addSeriesMatch() {
@@ -245,6 +287,8 @@ public abstract class QueryCmd extends BaseReadCmd {
                             rqAttrs.getString(Tags.RequestingPhysician));
         }
 
+        matchingKeys.add(MATCHING_SERIES_KEYS);
+        seqMatchingKeys.put(new Integer(Tags.RequestAttributesSeq), new IntList().add(MATCHING_REQ_ATTR_KEYS));
     }
 
     protected void addInstanceMatch() {
@@ -268,6 +312,10 @@ public abstract class QueryCmd extends BaseReadCmd {
                     "Code.codingSchemeDesignator", type2,
                     code.getString(Tags.CodingSchemeDesignator));
         }
+        
+        matchingKeys.add(MATCHING_INSTANCE_KEYS);
+        seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq), 
+                new IntList().add(Tags.CodeValue).add(Tags.CodingSchemeDesignator));
     }
 
     public Dataset getDataset() throws SQLException {
@@ -282,31 +330,6 @@ public abstract class QueryCmd extends BaseReadCmd {
         keys.putUI(Tags.StorageMediaFileSetUID);
         keys.putCS(Tags.InstanceAvailability);
         return ds.subSet(keys);
-    }
-
-    static void adjustDataset(Dataset ds, Dataset keys) {
-        for (Iterator it = keys.iterator(); it.hasNext();) {
-            DcmElement key = (DcmElement) it.next();
-            final int tag = key.tag();
-            if (tag == Tags.SpecificCharacterSet)
-                continue;
-
-            final int vr = key.vr();
-            DcmElement el = ds.get(tag);
-            if (el == null) {
-                el = ds.putXX(tag, vr);
-            }
-            if (vr == VRs.SQ) {
-                Dataset keyItem = key.getItem();
-                if (keyItem != null) {
-                    if (el.isEmpty())
-                        el.addNewItem();
-                    for (int i = 0, n = el.countItems(); i < n; ++i) {
-                        adjustDataset(el.getItem(i), keyItem);
-                    }
-                }
-            }
-        }
     }
 
     protected abstract void fillDataset(Dataset ds) throws SQLException;

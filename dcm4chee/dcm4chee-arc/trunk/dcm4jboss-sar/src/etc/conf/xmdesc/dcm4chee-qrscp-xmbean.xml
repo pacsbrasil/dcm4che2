@@ -379,6 +379,19 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCheckMatchingKeySupported"
+      setMethod="setCheckMatchingKeySupported">
+      <description>Enable check if unsupported matching key(s) are used in C-FIND. 
+      	In this case the C-FIND PENDING status is changed from 0xff00 to 0xff01.      
+      </description>
+      <name>CheckMatchingKeySupported</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getMaxUIDsPerMoveRQ"
       setMethod="setMaxUIDsPerMoveRQ">
       <description>Maximum number of SOP Instance UIDs in forwarded Move Requests.

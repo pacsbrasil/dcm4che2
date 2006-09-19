@@ -145,6 +145,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	private boolean recordStudyAccessTime = true;
 
     private boolean noMatchForNoValue = true;
+ 
+    private boolean checkMatchingKeySupported = true;
     
     private int acTimeout = 5000;
 
@@ -287,6 +289,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.noMatchForNoValue = noMatchForNoValue;
     }    
     
+    /**
+     * @return Returns the checkMatchingKeySupport.
+     */
+    public boolean isCheckMatchingKeySupported() {
+        return checkMatchingKeySupported;
+    }
+    /**
+     * @param checkMatchingKeySupport The checkMatchingKeySupport to set.
+     */
+    public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
+        this.checkMatchingKeySupported = checkMatchingKeySupport;
+    }
     public final String getQueryTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
     }

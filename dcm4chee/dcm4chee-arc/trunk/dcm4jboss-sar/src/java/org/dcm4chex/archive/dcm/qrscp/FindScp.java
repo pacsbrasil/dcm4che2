@@ -125,8 +125,15 @@ public class FindScp extends DcmServiceBase {
 
         private boolean canceled = false;
         
+        private int pendingStatus = Status.Pending;
+        
         public MultiCFindRsp(QueryCmd queryCmd) {
             this.queryCmd = queryCmd;
+            if ( queryCmd.isMatchNotSupported() ) { 
+                pendingStatus = 0xff01;
+            } else if ( service.isCheckMatchingKeySupported() && queryCmd.isMatchingKeyNotSupported() ) {
+                pendingStatus = 0xff01;
+            }
         }
 
         public DimseListener getCancelListener() {
@@ -149,7 +156,7 @@ public class FindScp extends DcmServiceBase {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;
                 }
-                rspCmd.putUS(Tags.Status, Status.Pending);
+                rspCmd.putUS(Tags.Status, pendingStatus);
                 Dataset data = getDataset(queryCmd);				
                 log.debug("Identifier:\n");
                 log.debug(data);
