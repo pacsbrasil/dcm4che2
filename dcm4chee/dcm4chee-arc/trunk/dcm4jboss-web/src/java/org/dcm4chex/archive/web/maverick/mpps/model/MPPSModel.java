@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -213,6 +214,11 @@ public class MPPSModel extends BasicFormPagingModel {
 			}
 		}
 		setTotal(total - countNull); // the real total (without null entries!)
+	}
+	
+	public String getPatientOfSelectedMpps() {
+	    if ( stickyList.isEmpty() ) return null;
+	    return ((MPPSEntry) stickyList.values().iterator().next()).getPatientName();
 	}
 
 	/**

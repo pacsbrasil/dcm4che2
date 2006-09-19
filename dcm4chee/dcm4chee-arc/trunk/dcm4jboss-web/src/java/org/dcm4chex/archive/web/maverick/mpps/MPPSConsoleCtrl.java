@@ -94,7 +94,6 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
         		model.performNext();
             } else if ( request.getParameter("link.x") != null ) {//action from link button. (sticky support;redirect to mwl ctrl.)
             	model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ), true );
-            	model.getFilter().setPatientName( request.getParameter("patientName"));
             	return "link";
             } else if ( request.getParameter("unlink.x") != null ) {//action from unlink button. (sticky support;redirect to mwl ctrl.)
             	return unlink(request.getParameterValues( "mppsIUID" ));
@@ -119,7 +118,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
         }
     }
 
-	/**
+    /**
 	 * @param action
 	 * @param request
 	 */

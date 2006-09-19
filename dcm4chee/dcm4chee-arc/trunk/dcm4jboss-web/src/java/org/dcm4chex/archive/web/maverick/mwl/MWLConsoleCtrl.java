@@ -145,7 +145,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 			} else {
 				MPPSModel mppsModel = MPPSModel.getModel(request);
 				model.setMppsIDs( mppsModel.getMppsIUIDs() );//redirect from mpps controller
-				filter.setPatientName(mppsModel.getFilter().getPatientName());
+				filter.setPatientName(mppsModel.getPatientOfSelectedMpps());
 			}
 			filter.setAccessionNumber(null);
 			filter.setEndDate(request.getParameter("endDate"));
