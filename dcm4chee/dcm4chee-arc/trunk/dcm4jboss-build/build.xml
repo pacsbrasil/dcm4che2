@@ -136,7 +136,11 @@
         <include name="bin/JavaService.exe"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone.config}">
-        <include name="lib/*"/>
+        <include name="lib/saaj-api.jar"/>
+        <include name="lib/saaj-api.jar"/>
+      	<!-- not included in jems-installer ejb3 option -->
+        <include name="lib/jbossws14.jar"/>
+        <include name="lib/scheduler-plugin.jar"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
@@ -216,28 +220,35 @@
       <zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone.config}">
         <include name="conf/jbossmq-state.xml"/>
       </zipfileset>
+      <!-- use copy in dcm4jboss-sar/lib/, because not included in jems-installer ejb3 option
       <zipfileset dir="${jboss.server.home}/deploy/jbossws14.sar" prefix="${dist.standalone.config}/lib">
         <include name="jbossws14.jar"/>
       </zipfileset>
+      -->
       <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
         <exclude name="conf/log4j.xml"/>
         <exclude name="conf/login-config.xml"/>
         <exclude name="conf/standardjbosscmp-jdbc.xml"/>
-        <!-- include name="deploy/ejb-deployer.xml"/-->
+        <exclude name="conf/jboss-service.xml"/>
         <include name="deploy/jbossweb-tomcat55.sar/**"/>
-        <include name="deploy/jboss-ws4ee.sar/**"/>
         <include name="deploy/jms/jvm-il-service.xml"/>
         <include name="deploy/jmx-console.war/**"/>
         <exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
         <exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
+        <include name="deploy/naming.sar/**"/>
+        <include name="deploy/security.sar/**"/>
+      	<include name="deploy/dynclassloader-service.xml"/>
+      	<include name="deploy/invokers-service.xml"/>
         <include name="deploy/jbossjca-service.xml"/>
         <include name="deploy/jboss-local-jdbc.rar"/>
+      	<include name="deploy/jdbc-metadata-service.xml"/>
         <include name="deploy/jmx-invoker-service.xml"/>
+      	<include name="deploy/jta-service.xml"/>
         <include name="lib/activation.jar"/>
         <include name="lib/bcel.jar"/>
-        <include name="lib/bsh-1.3.0.jar"/>
-        <include name="lib/bsh-deployer.jar"/>
+        <!--include name="lib/bsh-1.3.0.jar"/-->
+        <!--include name="lib/bsh-deployer.jar"/-->
         <include name="lib/commons-logging.jar"/>
         <include name="lib/hsqldb.jar"/>
         <include name="lib/hsqldb-plugin.jar"/>
@@ -246,10 +257,10 @@
         <include name="lib/jboss.jar"/>
         <include name="lib/jboss-common-jdbc-wrapper.jar"/>
         <include name="lib/jboss-j2ee.jar"/>
-        <include name="lib/jboss-jaxrpc.jar"/>
+        <!--include name="lib/jboss-jaxrpc.jar"/-->
         <include name="lib/jboss-jca.jar"/>
-        <include name="lib/jboss-jsr77.jar"/>
-        <include name="lib/jboss-management.jar"/>
+        <!--include name="lib/jboss-jsr77.jar"/-->
+        <!--include name="lib/jboss-management.jar"/-->
       	<include name="lib/jboss-remoting.jar"/>
       	<include name="lib/jboss-serialization.jar"/>
         <include name="lib/jbossmq.jar"/>
@@ -261,7 +272,9 @@
         <include name="lib/jpl-util.jar"/>
         <include name="lib/log4j.jar"/>
         <include name="lib/mail.jar"/>
+      	<!-- use copy in dcm4jboss-sar/lib/, because not included in jems-installer ejb3 option
         <include name="lib/scheduler-plugin.jar"/>
+        -->
       </zipfileset>
       <zipfileset dir="${fop.home}/build" prefix="${dist.standalone.config}/lib">
         <include name="fop.jar"/>
