@@ -39,8 +39,6 @@
 
 package org.dcm4chex.archive.dcm.mwlscp;
 
-import java.util.Arrays;
-
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
@@ -52,6 +50,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4chex.archive.common.PPSStatus;
+import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
@@ -69,13 +69,8 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class MWLFindScpService extends AbstractScpService
 	implements NotificationListener {
 
-    private static final int NO_OP = 0;
-    private static final int UPDATE_STATUS = 1;
-    private static final int REMOVE_ITEM = 2;
-    
-    private static final String[] ON_MPPS_RECEIVED = {
-    		"NO_OP", "UPDATE_STATUS", "REMOVE_ITEM"
-    };
+    private static final String SPS_STATUS_STARTED = SPSStatus.toString(SPSStatus.STARTED);
+    private static final String PPS_STATUS_IN_PROGRESS = PPSStatus.toString(PPSStatus.IN_PROGRESS);
     
 	private static final NotificationFilterSupport mppsFilter = 
 		new NotificationFilterSupport();
@@ -85,25 +80,11 @@ public class MWLFindScpService extends AbstractScpService
 	}
 	private ObjectName mppsScpServiceName;
 	
-    private int onMPPSReceived = NO_OP;
-    
     private boolean checkMatchingKeySupported = true;
 
     
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
 
-    public final String getOnMPPSReceived() {
-		return ON_MPPS_RECEIVED[onMPPSReceived];
-	}
-	
-	public final void setOnMPPSReceived(String onMPPSReceived) {
-		int tmp = Arrays.asList(ON_MPPS_RECEIVED).indexOf(onMPPSReceived);
-		if (tmp == -1) {
-			throw new IllegalArgumentException(onMPPSReceived);
-		}
-		this.onMPPSReceived = tmp;
-	}
-	
     /**
      * @return Returns the checkMatchingKeySupport.
      */
@@ -184,15 +165,13 @@ public class MWLFindScpService extends AbstractScpService
 	}
 	
     public void handleNotification(Notification notif, Object handback) {
-    	if (onMPPSReceived == NO_OP) return; 
         Dataset mpps = (Dataset) notif.getUserData();
 		final String iuid = mpps.getString(Tags.SOPInstanceUID);
 		final String status = mpps.getString(Tags.PPSStatus);
         DcmElement sq = mpps.get(Tags.ScheduledStepAttributesSeq);
         if (sq == null) {
-        	// MPPS N-SET can be ignored for REMOVE_ITEM
-        	// or if status == IN PROGRESS
-        	if (onMPPSReceived == REMOVE_ITEM || "IN PROCESS".equals(status))
+        	// MPPS N-SET can be ignored for status == IN PROGRESS
+        	if (PPS_STATUS_IN_PROGRESS.equals(status))
         		return;
         	try {
 				mpps = getMPPS(iuid);
@@ -210,31 +189,20 @@ public class MWLFindScpService extends AbstractScpService
             return;
         }
         try {
+            final String spsStatus = PPS_STATUS_IN_PROGRESS.equals(status) ? 
+                    		SPS_STATUS_STARTED : status;
             for (int i = 0, n = sq.countItems(); i < n; ++i) {
                 Dataset item = sq.getItem(i);
                 String spsid = item.getString(Tags.SPSID);
                 if (spsid != null) {
-                	if (onMPPSReceived == REMOVE_ITEM) {
-	                    try {
-	                        if (mgr.removeWorklistItem(spsid) != null) {
-	                        	log.info("Removed MWL item[spsid=" + spsid + "]");
-	                        } else {
-	                        	log.warn("No such MWL item[spsid=" + spsid + "]");
-	                        }
-	                    } catch (Exception e) {
-	                        log.error("Failed to remove MWL item[spsid="
-	                        		+ spsid + "]", e);
-	                    }
-                	} else { // onMPPSReceived == UPDATE_STATUS
-	                    try {
-	                        mgr.updateSPSStatus(spsid, status);
-	                        log.info("Update MWL item[spsid=" + spsid
-	                        		+ ", status=" + status + "]");
-	                    } catch (Exception e) {
-	                        log.error("Failed to update MWL item[spsid="
-	                        		+ spsid + "]", e);
-	                    }
-                	}
+                    try {
+                        mgr.updateSPSStatus(spsid, spsStatus);
+                        log.info("Update MWL item[spsid=" + spsid
+                        		+ ", status=" + spsStatus + "]");
+                    } catch (Exception e) {
+                        log.error("Failed to update MWL item[spsid="
+                        		+ spsid + "]", e);
+                    }
                 }
             }
         } finally {

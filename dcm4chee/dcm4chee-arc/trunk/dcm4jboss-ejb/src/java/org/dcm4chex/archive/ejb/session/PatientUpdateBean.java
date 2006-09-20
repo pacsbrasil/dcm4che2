@@ -225,7 +225,8 @@ public abstract class PatientUpdateBean implements SessionBean {
 			Collection c = pat.getMwlItems();
 			for (Iterator iter = c.iterator(); iter.hasNext();) {
 				MWLItemLocal mwlitem = (MWLItemLocal) iter.next();
-				mwlitem.updateSpsStatus(SPSStatus.ARRIVED);
+				if ( mwlitem.getSpsStatusAsInt() == SPSStatus.SCHEDULED )
+				    mwlitem.updateSpsStatus(SPSStatus.ARRIVED);
 			}
 		}
     }

@@ -49,14 +49,15 @@ import java.util.Arrays;
  */
 public class SPSStatus {
 
-    private static final String[] ENUM = { "SCHEDULED", "ARRIVED",
-    	"IN PROGRESS", "COMPLETED", "DISCONTINUED" };
+    private static final String[] ENUM = { "SCHEDULED", "ARRIVED", "READY",
+    	"STARTED", "COMPLETED", "DISCONTINUED" };
 
     public static final int SCHEDULED = 0;    
     public static final int ARRIVED = 1;
-    public static final int IN_PROGRESS = 2;    
-    public static final int COMPLETED = 3;    
-    public static final int DISCONTINUED = 4;
+    public static final int READY = 2;
+    public static final int STARTED = 3;    
+    public static final int COMPLETED = 4;    
+    public static final int DISCONTINUED = 5;
 
     public static final String toString(int value) {
         return ENUM[value];
