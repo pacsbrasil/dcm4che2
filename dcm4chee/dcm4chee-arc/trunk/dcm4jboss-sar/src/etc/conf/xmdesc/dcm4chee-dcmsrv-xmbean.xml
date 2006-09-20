@@ -4,7 +4,7 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>DICOM Server. Sends incoming service reqest to registered DICOM services. When configuring, select the TCP port listening port, the security protocol for communication, timeouts, and the maximum number of connected DICOM clients.</description>
+   <description>DICOM Server. Sends incoming service requests to registered DICOM services. When configuring, select the TCP listening port, the security protocol for communication, timeouts, and the maximum number of connected DICOM clients (SCUs).</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
