@@ -84,8 +84,8 @@ interface AuditRecordList {
     String getUserName1();
     void setUserName1(String name);
     
-    boolean isUserIsRequestor1();
-    void setUserIsRequestor1(boolean requestor);
+    String getUserIsRequestor1();
+    void setUserIsRequestor1(String requestor);
     
     String[] getRoleIDs1();    
     void setRoleIDs1(String[] ids);
@@ -105,8 +105,8 @@ interface AuditRecordList {
     String getUserName2();
     void setUserName2(String name);
     
-    boolean isUserIsRequestor2();
-    void setUserIsRequestor2(boolean requestor);
+    String getUserIsRequestor2();
+    void setUserIsRequestor2(String requestor);
     
     String[] getRoleIDs2();    
     void setRoleIDs2(String[] ids);
