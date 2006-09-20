@@ -13,7 +13,7 @@
   <body>
   	<div id="filter">
     <h:form>
-      <h:panelGrid columns="2">
+      <h:panelGrid bgcolor="#CCCCCC" columns="2">
         <h:outputLink value="http://www.dcm4che.org">
           <h:graphicImage url="img/logo.gif" border="0"/>
         </h:outputLink>
@@ -130,7 +130,7 @@
         </h:panelGrid>
       </fieldset>
       <fieldset>
-        <legend>Active Participant 1</legend>
+        <legend>Active Participant</legend>
         <h:panelGrid columns="2">
           <h:outputLabel for="userID1">User ID:</h:outputLabel>
           <h:inputText id="userID1" value="#{auditRecordList.userID1}"/>
@@ -139,8 +139,11 @@
           <h:outputLabel for="userName1">User Name:</h:outputLabel>
           <h:inputText id="userName1" value="#{auditRecordList.userName1}"/>
           <h:outputLabel for="userIsRequestor1">is Requestor:</h:outputLabel>
-          <h:selectBooleanCheckbox id="userIsRequestor1"
-            value="#{auditRecordList.userIsRequestor1}"/>
+          <h:selectOneRadio id="userIsRequestor1" value="#{auditRecordList.userIsRequestor1}">
+            <f:selectItem itemValue="any" itemLabel="Any"/>
+            <f:selectItem itemValue="true" itemLabel="Yes"/>
+            <f:selectItem itemValue="false" itemLabel="No"/>
+          </h:selectOneRadio>
           <h:outputLabel for="roleID1">Role ID:</h:outputLabel>
           <h:selectManyListbox id="roleID1" value="#{auditRecordList.roleIDs1}"
             size="3">
@@ -163,42 +166,6 @@
           </h:selectManyListbox>
           <h:outputLabel for="napID1">NAP ID:</h:outputLabel>
           <h:inputText id="napID1" value="#{auditRecordList.napID1}"/>
-        </h:panelGrid>
-      </fieldset>
-      <fieldset>
-        <legend>Active Participant 2</legend>
-        <h:panelGrid columns="2">
-          <h:outputLabel for="userID2">User ID:</h:outputLabel>
-          <h:inputText id="userID2" value="#{auditRecordList.userID2}"/>
-          <h:outputLabel for="altUserID2">Alt User ID:</h:outputLabel>
-          <h:inputText id="altUserID2" value="#{auditRecordList.altUserID2}"/>
-          <h:outputLabel for="userName2">User Name:</h:outputLabel>
-          <h:inputText id="userName2" value="#{auditRecordList.userName2}"/>
-          <h:outputLabel for="userIsRequestor2">is Requestor:</h:outputLabel>
-          <h:selectBooleanCheckbox id="userIsRequestor2"
-            value="#{auditRecordList.userIsRequestor2}"/>
-          <h:outputLabel for="roleID2">Role ID:</h:outputLabel>
-          <h:selectManyListbox id="roleID2" value="#{auditRecordList.roleIDs2}"
-            size="3">
-            <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="110150^DCM" itemLabel="Application"/>
-            <f:selectItem itemValue="110151^DCM"
-              itemLabel="Application Launcher"/>
-            <f:selectItem itemValue="110152^DCM" itemLabel="Destination"/>
-            <f:selectItem itemValue="110153^DCM" itemLabel="Source"/>
-            <f:selectItem itemValue="110154^DCM" itemLabel="Destination Media"/>
-            <f:selectItem itemValue="110155^DCM" itemLabel="Source Media"/>
-          </h:selectManyListbox>
-          <h:outputLabel for="napType2">Network Access Point Type:</h:outputLabel>
-          <h:selectManyListbox id="napType2"
-            value="#{auditRecordList.napTypes2}" size="3">
-            <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="1" itemLabel="Machine Name"/>
-            <f:selectItem itemValue="2" itemLabel="IP Address"/>
-            <f:selectItem itemValue="3" itemLabel="Telephone Number"/>
-          </h:selectManyListbox>
-          <h:outputLabel for="napID2">NAP ID:</h:outputLabel>
-          <h:inputText id="napID2" value="#{auditRecordList.napID2}"/>
         </h:panelGrid>
       </fieldset>
       <fieldset>
