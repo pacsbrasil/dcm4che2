@@ -143,9 +143,10 @@
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<colgroup>
 			<col width="10%"/>
+			<col width="7%"/>
 			<col width="10%"/>
 			<col width="9%"/>
-			<col width="27%"/>
+			<col width="20%"/>
 			<col width="11%"/>
 			<col width="14%"/>
 			<col width="15%"/>
@@ -156,6 +157,7 @@
 		</tr>
 		<tr>
 			<th title="Scheduled Procedure Step ID" align="left">ID</th>
+			<th title="SPS Status" align="left">Status</th>
 			<th title="Requested Procedure Step ID" align="left">Req. Proc. ID</th>
 			<th title="Accession Number" align="left">Acc. No.</th>
 			<th title="Requested Procedure Description" align="left">Proc. Desc.</th>
@@ -214,9 +216,10 @@
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<colgroup>
 			<col width="10%"/>
+			<col width="7%"/>
 			<col width="10%"/>
 			<col width="9%"/>
-			<col width="27%"/>
+			<col width="20%"/>
 			<col width="11%"/>
 			<col width="14%"/>
 			<col width="15%"/>
@@ -225,6 +228,9 @@
 		<tr>
 	        <td align="left" title="SPS ID" >
 				<xsl:value-of select="spsID"/>
+	        </td>
+	        <td align="left" title="SPS Status" >
+				<xsl:value-of select="spsStatus"/>
 	        </td>
 	        <td align="left" title="Req. Procedure ID" >
 				<xsl:value-of select="reqProcedureID"/>
@@ -245,7 +251,7 @@
 				<xsl:value-of select="stationAET"/>[<xsl:value-of select="modality"/>]
 	        </td>
 	        <td align="left" title="Patient" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=1&amp;trashFolder=false">
+				<a href="foldersubmit.m?patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=1&amp;trashFolder=false">
 					<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
 				</a>
 			</td>
@@ -279,8 +285,19 @@
 		</colgroup>
 		<tr>
 			<td>&#160;&#160;</td><!-- intend -->
-	        <td title="StudyIUID">
-				<xsl:value-of select="studyUID"/>
+	        <td title="StudyIUID:{studyUID}">
+				<a href="foldersubmit.m?studyUID={studyUID}&amp;filter.x=1">
+				    <xsl:variable name="uid"><xsl:value-of select="studyUID"/></xsl:variable>
+				    <xsl:variable name="uid_len"><xsl:value-of select="string-length($uid)"/></xsl:variable>
+					<xsl:choose>
+						<xsl:when test="$uid_len &lt; 28">
+							<xsl:value-of select="studyUID"/>
+						</xsl:when>
+						<xsl:otherwise>
+							...<xsl:value-of select="substring($uid,$uid_len - 20)"/>
+						</xsl:otherwise>
+					</xsl:choose>
+				</a>
 		 	</td>
 	        <td title="Filler/Placer Order">
 				<xsl:value-of select="fillerOrderNumber"/>/<xsl:value-of select="placerOrderNumber"/>

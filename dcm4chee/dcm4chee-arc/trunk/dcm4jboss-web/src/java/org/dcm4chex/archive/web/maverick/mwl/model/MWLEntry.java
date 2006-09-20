@@ -198,4 +198,8 @@ public class MWLEntry {
 		}
 		return desc;
 	}
+	
+	public String getSpsStatus() {
+	    return spsItem.getString(Tags.SPSStatus);
+	}
 }

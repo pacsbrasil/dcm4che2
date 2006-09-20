@@ -313,6 +313,7 @@ public class MWLModel extends BasicFormPagingModel {
 		//Sched. procedure step seq
 		DcmElement elem = ds.putSQ( Tags.SPSSeq );
 		Dataset ds1 = elem.addNewItem();
+		ds1.putCS(Tags.SPSStatus);
 		ds1.putAE( Tags.ScheduledStationAET, filter.getStationAET() );
 		ds1.putSH( Tags.SPSID );
 		ds1.putCS( Tags.Modality, filter.getModality() );

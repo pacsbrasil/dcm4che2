@@ -284,6 +284,16 @@ public class FolderForm extends BasicFolderForm {
 	 */
 	public void setStudyUID(String studyUID) {
 		this.studyUID = studyUID;
+		if ( studyUID != null && studyUID.trim().length() > 0 ) {
+            patientID = "";
+            patientName = "";
+            accessionNumber = "";
+            studyID = "";
+            studyDateRange = "";
+            modality = "";
+            filterAET = false;
+		    this.showStudyIUID = true;
+		}
 	}
 
     public final List getAets() {
