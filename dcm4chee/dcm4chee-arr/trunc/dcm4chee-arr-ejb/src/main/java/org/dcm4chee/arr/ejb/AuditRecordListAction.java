@@ -37,20 +37,30 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.arr.ejb;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
-import javax.persistence.TemporalType;
 
 import org.dcm4chee.arr.util.XSLTUtils;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Conjunction;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Expression;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Destroy;
 import org.jboss.seam.annotations.Factory;
@@ -70,7 +80,7 @@ import org.slf4j.LoggerFactory;
 @Stateful
 @Name("auditRecordList")
 @Scope(ScopeType.SESSION)
-public class AuditRecordListAction implements AuditRecordList {
+public class AuditRecordListAction implements Serializable, AuditRecordList {
     
     private static final int FROM_POS = 16;
     private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -87,6 +97,9 @@ public class AuditRecordListAction implements AuditRecordList {
     @PersistenceContext(type=PersistenceContextType.EXTENDED) 
     private EntityManager em;
 
+    @PersistenceContext(type=PersistenceContextType.EXTENDED)
+    private Session session;
+    
     @DataModel
     private List<AuditRecord> records;
     
@@ -111,7 +124,7 @@ public class AuditRecordListAction implements AuditRecordList {
     private String userID1 = "";
     private String altUserID1 = "";
     private String userName1 = "";
-    private boolean userIsRequestor1 = false;
+    private String userIsRequestor1 = "any";
     private String[] roleIDs1 = { "" };
     private String[] napTypes1 = { "" };
     private String napID1 = "";
@@ -119,7 +132,7 @@ public class AuditRecordListAction implements AuditRecordList {
     private String userID2 = "";
     private String altUserID2 = "";
     private String userName2 = "";
-    private boolean userIsRequestor2 = false;
+    private String userIsRequestor2 = "any";
     private String[] roleIDs2 = { "" };
     private String[] napTypes2 = { "" };
     private String napID2 = "";
@@ -243,11 +256,11 @@ public class AuditRecordListAction implements AuditRecordList {
         this.userName1 = name;
     }
     
-    public boolean isUserIsRequestor1() {
+    public String getUserIsRequestor1() {
         return userIsRequestor1;
     }
 
-    public void setUserIsRequestor1(boolean requestor) {
+    public void setUserIsRequestor1(String requestor) {
         this.userIsRequestor1 = requestor;
     }
 
@@ -299,11 +312,11 @@ public class AuditRecordListAction implements AuditRecordList {
         this.userName2 = name;
     }
     
-    public boolean isUserIsRequestor2() {
+    public String getUserIsRequestor2() {
         return userIsRequestor2;
     }
 
-    public void setUserIsRequestor2(boolean requestor) {
+    public void setUserIsRequestor2(String requestor) {
         this.userIsRequestor2 = requestor;
     }
 
@@ -414,45 +427,275 @@ public class AuditRecordListAction implements AuditRecordList {
 	curPage = page;
 	updateResults();
     }
-    
+        
     @SuppressWarnings("unchecked")
-    private void updateResults() {
-	Date[] dtRange;
-	try {
-	    dtRange = parseDateTimeRange();
-	} catch (Exception e) {
-	    dateTimeRange = today();
-	    try {
-		dtRange = parseDateTimeRange();
-	    } catch (Exception e1) {
-		throw new RuntimeException(e1);
-	    }
-	}
-	StringBuffer query = new StringBuffer("SELECT COUNT(*) FROM AuditRecord r WHERE ");
-	query.append(orderByEventDateTime ? "r.eventDateTime" : "r.receiveDateTime");
-	query.append(" BETWEEN :from AND :to");
-	count = ((Long) em.createQuery(query.toString())
-		.setParameter("from", dtRange[0], TemporalType.TIMESTAMP)
-		.setParameter("to", dtRange[1], TemporalType.TIMESTAMP)
-		.getSingleResult()).intValue();
-        query.append(" ORDER BY ");
-        if (orderByEventDateTime) {
-            query.append("r.eventDateTime DESC, ");
+    private void updateResults() {        
+        Criteria criteria = session.createCriteria(AuditRecord.class);
+        
+        addCriteriaForEvent(criteria);
+        addCriteriaForAuditSource(criteria);
+        addCriteriaForParticipantObject(criteria);
+
+        if(hasCriteriaForActiveParticipant1()) {
+            if(hasCriteriaForActiveParticipant2()) {
+                // !It's NOT working, see http://opensource.atlassian.com/projects/hibernate/browse/HHH-879
+                // Wait for the fix. For now, we just use ONE ActiveParticipant criteria from JSF xhtml and don't have
+                // to change the code here. (Sep 20, 2006)
+                criteria.add( Expression.disjunction()
+                        .add(addCriteriaForActiveParticipant1(criteria))
+                        .add(addCriteriaForActiveParticipant2(criteria)));
+            }
+            else
+                criteria.add(addCriteriaForActiveParticipant1(criteria));
         }
-        query.append("r.pk DESC");
-        records = em.createQuery(query.substring(FROM_POS))
-        	.setParameter("from", dtRange[0], TemporalType.TIMESTAMP)
-        	.setParameter("to", dtRange[1], TemporalType.TIMESTAMP)
-        	.setFirstResult(getFirstResult())
-        	.setMaxResults(pageSize)
-        	.setHint("org.hibernate.readOnly", Boolean.TRUE)
-        	.getResultList();
-	log.info("Found {} records",  count);
-	selectedIndex = -1;
+        else if(hasCriteriaForActiveParticipant2()) {
+            criteria.add(addCriteriaForActiveParticipant2(criteria));
+        }        
+
+        records = criteria.setFirstResult(getFirstResult())
+                .addOrder(Order.desc(orderByEventDateTime?"eventDateTime":"receiveDateTime"))
+                .setMaxResults(pageSize)
+                .list();
+
+        count = records.size();
+        log.info("Found {} records",  count);
+        selectedIndex = -1;
+    }
+    
+    private Criteria addCriteriaForEvent(Criteria criteria) {
+        // Date/time
+        Date[] dtRange;
+        try {
+            dtRange = parseDateTimeRange();
+        } catch (Exception e) {
+            dateTimeRange = today();
+            try {
+                dtRange = parseDateTimeRange();
+            } catch (Exception e1) {
+                throw new RuntimeException(e1);
+            }
+        }
+        if(dtRange != null)
+            criteria.add(Expression.between(orderByEventDateTime?"eventDateTime":"receiveDateTime", 
+                    dtRange[0], dtRange[1]));
+        
+        // Event ID
+        if(hasCriteria(eventIDs))
+            criteria.createAlias("eventID", "ei").add(Expression.in("ei.codeString", eventIDs));
+            
+        // Event Type
+        if(hasCriteria(eventTypes))
+            criteria.createAlias("eventType", "et").add(Expression.in("et.codeString", eventTypes));
+        
+        // Event Outcome
+        if(hasCriteria(eventOutcomes))            
+            criteria.add(Expression.in("eventOutcome",toIntegerArray(eventOutcomes)));
+        
+        // Event Action
+        if(hasCriteria(eventActions))            
+            criteria.add(Expression.in("eventAction",eventActions));
+        
+        return criteria;
+    }
+    
+    private Criteria addCriteriaForAuditSource(Criteria criteria) {        
+        // Site ID
+        if(hasCriteria(siteID))
+            criteria.add(Expression.ilike("enterpriseSiteID", siteID, MatchMode.START));
+        
+        // Source ID
+        if(hasCriteria(sourceID))
+            criteria.add(Expression.ilike("sourceID", sourceID, MatchMode.START));
+        
+        // Source Type
+        if(hasCriteria(sourceTypes))
+            criteria.add(Expression.in("sourceType",toIntegerArray(sourceTypes)));
+        
+        return criteria;
+    }
+    
+    private Criterion addCriteriaForActiveParticipant1(Criteria criteria) {        
+        criteria.createAlias("activeParticipant", "ap1");
+        Conjunction criterion = Expression.conjunction();
+        
+        // User ID
+        if(hasCriteria(userID1))
+            criterion.add(Expression.ilike("ap1.userID", userID1, MatchMode.START));
+        
+        // Alt User ID
+        if(hasCriteria(altUserID1))
+            criterion.add(Expression.ilike("ap1.alternativeUserID", altUserID1, MatchMode.START));
+
+        // User Name
+        if(hasCriteria(userName1))
+            criterion.add(Expression.ilike("ap1.userName", userName1, MatchMode.START));
+
+        // Is Requestor
+        if(hasCriteriaBoolean(userIsRequestor1))
+            criterion.add(Expression.eq("ap1.userIsRequestor", Boolean.valueOf(userIsRequestor1)));
+        
+        // Role ID
+        if(hasCriteria(roleIDs1)) {
+            criteria.createAlias("ap1.roleID", "rid1");
+            criterion.add(Expression.in("rid1.codeString", roleIDs1));
+        }
+        
+        // Network Access Point Type
+        if(hasCriteria(napTypes1))
+            criterion.add(Expression.in("ap1.networkAccessPointType",toIntegerArray(napTypes1)));
+        
+        // NAP ID
+        if(hasCriteria(napID1))
+            criterion.add(Expression.ilike("ap1.networkAccessPointID", napID1, MatchMode.START));
+        
+        return criterion;
+    }
+
+    private Criterion addCriteriaForActiveParticipant2(Criteria criteria) {        
+        criteria.createAlias("activeParticipant", "ap2");
+        Conjunction criterion = Expression.conjunction();
+        
+        // User ID
+        if(hasCriteria(userID2))
+            criterion.add(Expression.ilike("ap2.userID", userID2, MatchMode.START));
+        
+        // Alt User ID
+        if(hasCriteria(altUserID2))
+            criterion.add(Expression.ilike("ap2.alternativeUserID", altUserID2, MatchMode.START));
+
+        // User Name
+        if(hasCriteria(userName2))
+            criterion.add(Expression.ilike("ap2.userName", userName2, MatchMode.START));
+
+        // Is Requestor
+        if(hasCriteriaBoolean(userIsRequestor2))
+            criterion.add(Expression.eq("ap2.userIsRequestor", Boolean.valueOf(userIsRequestor2)));
+        
+        // Role ID
+        if(hasCriteria(roleIDs2)) {
+            criteria.createAlias("ap2.roleID", "rid2");
+            criterion.add(Expression.in("rid2.codeString", roleIDs2));
+        }
+        
+        // Network Access Point Type
+        if(hasCriteria(napTypes2))
+            criterion.add(Expression.in("ap2.networkAccessPointType",toIntegerArray(napTypes2)));
+        
+        // NAP ID
+        if(hasCriteria(napID2))
+            criterion.add(Expression.ilike("ap2.networkAccessPointID", napID2+"%"));
+        
+        return criterion;
+    }
+
+    private Criteria addCriteriaForParticipantObject(Criteria criteria) {
+        if(hasCriteria(objectTypes) || hasCriteria(objectRoles)
+                || hasCriteria(lifeCycles) || hasCriteria(objectIDTypes)
+                || hasCriteria(objectID) || hasCriteria(objectName) ) {
+            criteria.createAlias("participantObject", "po");
+        }
+        else
+            return criteria;
+        
+        // Object Type
+        if(hasCriteria(objectTypes))
+            criteria.add(Expression.in("po.objectType",toIntegerArray(objectTypes)));
+        
+        // Object Role
+        if(hasCriteria(objectRoles))
+            criteria.add(Expression.in("po.objectRole",toIntegerArray(objectRoles)));
+        
+        // Data Life Cycle
+        if(hasCriteria(lifeCycles))
+            criteria.add(Expression.in("po.dataLifeCycle",toIntegerArray(lifeCycles)));
+        
+        // Object ID Type
+        if(hasCriteria(objectIDTypes)) {
+            // Split the IDTypes into two sets, one for code, which is String;
+            // one for RFC, which is integer
+            List<Integer> rfcIDTypes = new ArrayList<Integer>();
+            List<String> codeIDTypes = new ArrayList<String>();
+            for(String idType : objectIDTypes) {
+                if(idType.indexOf("^") > 0)
+                    codeIDTypes.add(idType);
+                else
+                    rfcIDTypes.add(Integer.valueOf(idType));
+            }
+            
+            if(codeIDTypes.size() > 0)
+                criteria.createAlias("po.objectIDType", "pooit");
+            
+            if(rfcIDTypes.size() > 0) {
+                if(codeIDTypes.size() > 0) {
+                    criteria.add(Expression.or(
+                            Expression.in("pooit.codeString", codeIDTypes.toArray(new String[]{})),
+                            Expression.in("po.objectIDTypeRFC", rfcIDTypes.toArray(new Integer[]{}))));                    
+                }
+                else
+                    criteria.add(Expression.in("po.objectIDTypeRFC", rfcIDTypes.toArray(new Integer[]{})));
+            }
+            else
+                criteria.add(Expression.in("pooit.codeString", codeIDTypes.toArray(new String[]{})));            
+        }
+        
+        // Object ID
+        if(hasCriteria(objectID))
+            criteria.add(Expression.ilike("po.objectID", objectID, MatchMode.START));
+
+        // Object Name
+        if(hasCriteria(objectName))
+            criteria.add(Expression.ilike("po.objectName", objectName, MatchMode.START));
+
+        return criteria;
+    }
+    
+    private boolean hasCriteriaForActiveParticipant1() {
+        return hasCriteria(userID1) || hasCriteria(altUserID1) 
+        || hasCriteria(userName1) || hasCriteriaBoolean(userIsRequestor1)
+        || hasCriteria(roleIDs1) || hasCriteria(napTypes1) || hasCriteria(napID1);
+    }
+
+    private boolean hasCriteriaForActiveParticipant2() {
+        return hasCriteria(userID2) || hasCriteria(altUserID2) 
+        || hasCriteria(userName2) || hasCriteriaBoolean(userIsRequestor2)
+        || hasCriteria(roleIDs2) || hasCriteria(napTypes2) || hasCriteria(napID2);
+    }
+    
+    private boolean hasCriteriaBoolean(String var) {
+        return var != null && var.trim().length() > 0 && !var.equalsIgnoreCase("any"); 
+    }
+    
+    private boolean hasCriteria(String var) {
+        return var != null && var.trim().length() > 0; 
+    }
+    
+    private boolean hasCriteria(String[] vars) {
+        if(vars == null)
+            return false;
+        
+        if(vars.length == 1 && vars[0].trim().length() == 0)
+            return false;
+        
+        // when "Any" is also selected, it's considered the same as "Any"
+        for(String elm : vars)
+            if(elm.trim().length() == 0)
+                return false;
+        
+        return true;
+    }
+    
+    private Integer[] toIntegerArray(String[] vars) {
+        Integer[] ints = new Integer[vars.length];
+        for(int i = 0; i < vars.length; i++)
+            ints[i] = Integer.valueOf(vars[i]);
+        return ints;
     }
     
     private Date[] parseDateTimeRange() throws ParseException {
 	int dtlen = dateTimeRange.length();
+        if(dtlen == 0)
+            return null;
+        
 	if (dtlen < YEAR) {
 	    throw new ParseException("Missing year", dtlen);
 	}
