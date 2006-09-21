@@ -723,12 +723,12 @@ INSERT INTO ae (pk,aet,hostname,port)
         foreign key (audit_record_fk) 
         references audit_record;
 
-    create sequence activeparticipant_pk_seq;
+    create sequence active_part_pk_seq;
 
-    create sequence auditrecord_pk_seq;
+    create sequence audit_record_pk_seq;
 
 --    create sequence code_pk_seq;
 
-    create sequence participantobject_pk_seq;
+    create sequence part_obj_pk_seq;
     
 COMMIT;

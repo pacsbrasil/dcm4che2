@@ -8,13 +8,13 @@
 
     drop table part_obj cascade constraints;
 
-    drop sequence activeparticipant_pk_seq;
+    drop sequence active_part_pk_seq;
 
-    drop sequence auditrecord_pk_seq;
+    drop sequence audit_record_pk_seq;
 
 --    drop sequence code_pk_seq;
 
-    drop sequence participantobject_pk_seq;
+    drop sequence part_obj_pk_seq;
 
 
 DROP TABLE roles;
