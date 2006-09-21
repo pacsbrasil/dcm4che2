@@ -7,6 +7,7 @@
   <!-- ==================================================================== -->
   <!-- Persistence and caching using MySQL                                  -->
   <!-- IMPORTANT: Remove hsqldb-jdbc2-service.xml                           -->
+  <!--                                                                      -->
   <!-- ==================================================================== -->
 
   <!--
@@ -50,14 +51,12 @@
       INSERT_TX = INSERT INTO JMS_NODE_TXS (TXID) values(?)
       INSERT_MESSAGE = INSERT INTO JMS_NODE_MSGS (MESSAGEID, DESTINATION, MESSAGEBLOB, TXID, TXOP) VALUES(?,?,?,?,?)
       SELECT_ALL_UNCOMMITED_TXS = SELECT TXID FROM JMS_NODE_TXS
-      SELECT_MAX_TX = SELECT MAX(TXID) FROM JMS_NODE_MSGS
+      SELECT_MAX_TX = SELECT MAX(TXID) FROM JMS_NODE_MSGS 
       DELETE_ALL_TX = DELETE FROM JMS_NODE_TXS
       SELECT_MESSAGES_IN_DEST = SELECT MESSAGEID, MESSAGEBLOB FROM JMS_NODE_MSGS WHERE DESTINATION=?
+      SELECT_MESSAGE_KEYS_IN_DEST = SELECT MESSAGEID FROM JMS_NODE_MSGS WHERE DESTINATION=?
       SELECT_MESSAGE = SELECT MESSAGEID, MESSAGEBLOB FROM JMS_NODE_MSGS WHERE MESSAGEID=? AND DESTINATION=?
       MARK_MESSAGE = UPDATE JMS_NODE_MSGS SET TXID=?, TXOP=? WHERE MESSAGEID=? AND DESTINATION=?
-      UPDATE_MESSAGE = UPDATE JMS_NODE_MSGS SET MESSAGEBLOB=? WHERE MESSAGEID=? AND DESTINATION=?
-      UPDATE_MARKED_MESSAGES = UPDATE JMS_NODE_MSGS SET TXID=?, TXOP=? WHERE TXOP=?
-      UPDATE_MARKED_MESSAGES_WITH_TX = UPDATE JMS_NODE_MSGS SET TXID=?, TXOP=? WHERE TXOP=? AND TXID=?
       UPDATE_MESSAGE = UPDATE JMS_NODE_MSGS SET MESSAGEBLOB=? WHERE MESSAGEID=? AND DESTINATION=?
       UPDATE_MARKED_MESSAGES = UPDATE JMS_NODE_MSGS SET TXID=?, TXOP=? WHERE TXOP=?
       UPDATE_MARKED_MESSAGES_WITH_TX = UPDATE JMS_NODE_MSGS SET TXID=?, TXOP=? WHERE TXOP=? AND TXID=?
@@ -74,6 +73,8 @@
     </attribute>
     <!-- Uncomment to override the transaction timeout for recovery per queue/subscription, in seconds -->
     <!--attribute name="RecoveryTimeout">0</attribute-->
+    <!-- The number of blobs to load at once during message recovery -->
+    <attribute name="RecoverMessagesChunk">1</attribute>
   </mbean>
 
 </server>
