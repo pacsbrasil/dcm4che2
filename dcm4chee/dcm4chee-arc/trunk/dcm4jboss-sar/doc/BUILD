@@ -8,9 +8,10 @@ to download and install:
 
 - XDoclet 1.2.3 [http://xdoclet.sourceforge.net]
 
-- JBoss 4.0.4.GA [http://labs.jboss.com/jbossas/download]
-(you have to fetch a binary package (e.g jboss-4.0.4.GA.zip) and unpack it,
-running the installer does not work!)
+- JBoss 4.0.4.GA + EJB3 
+(Run JEMS-Installer 
+[http://prdownloads.sourceforge.net/jboss/jems-installer-1.2.0.BETA2.jar?download]
+with ejb3 profile)
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
 
