@@ -41,11 +41,18 @@
      | the database.
      | 
      | This jdbc2 PM configuration has been tested against Oracle
+     | 
+     | Use the OracleThinPeristenceManager if you have the 4K limit problem for blobs
+     | this uses the INSERT_EMPTY_BLOB and LOCK_EMPTY_BLOB before updating the row
+     | with the real blob data to workaround that limit.
    -->
+  <!--mbean code="org.jboss.mq.pm.jdbc2.OracleThinPersistenceManager" -->
   <mbean code="org.jboss.mq.pm.jdbc2.PersistenceManager"
 	 name="jboss.mq:service=PersistenceManager">
     <depends optional-attribute-name="ConnectionManager">jboss.jca:service=DataSourceBinding,name=OracleDS</depends>
     <attribute name="SqlProperties">
+      INSERT_EMPTY_BLOB = INSERT INTO JMS_NODE_MSGS (MESSAGEID, DESTINATION, MESSAGEBLOB, TXID, TXOP) VALUES(?,?,EMPTY_BLOB(),?,?)
+      LOCK_EMPTY_BLOB = SELECT MESSAGEID, MESSAGEBLOB FROM JMS_NODE_MSGS WHERE MESSAGEID = ? AND DESTINATION = ? FOR UPDATE
       BLOB_TYPE=BINARYSTREAM_BLOB
       INSERT_TX = INSERT INTO JMS_NODE_TXS (TXID) values(?)
       INSERT_MESSAGE = INSERT INTO JMS_NODE_MSGS (MESSAGEID, DESTINATION, MESSAGEBLOB, TXID, TXOP) VALUES(?,?,?,?,?)
@@ -53,6 +60,7 @@
       SELECT_MAX_TX = SELECT MAX(TXID) FROM (SELECT MAX(TXID) AS TXID FROM JMS_NODE_TXS UNION SELECT MAX(TXID) AS TXID FROM JMS_NODE_MSGS)
       DELETE_ALL_TX = DELETE FROM JMS_NODE_TXS
       SELECT_MESSAGES_IN_DEST = SELECT MESSAGEID, MESSAGEBLOB FROM JMS_NODE_MSGS WHERE DESTINATION=?
+      SELECT_MESSAGE_KEYS_IN_DEST = SELECT MESSAGEID FROM JMS_NODE_MSGS WHERE DESTINATION=?
       SELECT_MESSAGE = SELECT MESSAGEID, MESSAGEBLOB FROM JMS_NODE_MSGS WHERE MESSAGEID=? AND DESTINATION=?
       MARK_MESSAGE = UPDATE JMS_NODE_MSGS SET TXID=?, TXOP=? WHERE MESSAGEID=? AND DESTINATION=?
       UPDATE_MESSAGE = UPDATE JMS_NODE_MSGS SET MESSAGEBLOB=? WHERE MESSAGEID=? AND DESTINATION=?
@@ -73,6 +81,8 @@
     </attribute>
     <!-- Uncomment to override the transaction timeout for recovery per queue/subscription, in seconds -->
     <!--attribute name="RecoveryTimeout">0</attribute-->
+    <!-- The number of blobs to load at once during message recovery -->
+    <attribute name="RecoverMessagesChunk">0</attribute>
   </mbean>
 
 </server>
