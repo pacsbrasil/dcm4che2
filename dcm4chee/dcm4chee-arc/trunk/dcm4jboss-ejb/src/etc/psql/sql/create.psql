@@ -560,7 +560,7 @@ CREATE INDEX device_fk ON rel_dev_proto(device_fk);
 CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
 CREATE TABLE audit_record_old(
-	pk 				SERIAL NOT NULL CONSTRAINT audit_record_old_pk PRIMARY KEY,
+	pk 				SERIAL NOT NULL CONSTRAINT audit_rec_old_pk PRIMARY KEY,
 	msg_type 		TEXT,
 	host_name 		TEXT,
 	time_stamp 		TIMESTAMP,

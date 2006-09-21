@@ -10,7 +10,7 @@ CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name);
 CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name);
 
 CREATE TABLE audit_record_old(
-	pk 				SERIAL NOT NULL CONSTRAINT audit_record_old_pk PRIMARY KEY,
+	pk 				SERIAL NOT NULL CONSTRAINT audit_rec_old_pk PRIMARY KEY,
 	msg_type 		TEXT,
 	host_name 		TEXT,
 	time_stamp 		TIMESTAMP,

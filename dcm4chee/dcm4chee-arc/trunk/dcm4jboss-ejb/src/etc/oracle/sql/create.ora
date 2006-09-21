@@ -587,7 +587,7 @@ CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
 CREATE SEQUENCE audit_record_old_pk_seq;
 CREATE TABLE audit_record_old(
-	pk 				NUMBER(38,0) NOT NULL CONSTRAINT audit_record_old_pk PRIMARY KEY,
+	pk 				NUMBER(38,0) NOT NULL CONSTRAINT audit_rec_old_pk PRIMARY KEY,
 	msg_type 		VARCHAR2(255),
 	host_name 		VARCHAR2(255),
 	time_stamp 		TIMESTAMP,
