@@ -2,11 +2,15 @@
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
   <property name="version" value="2.10.2"/>
+  <property name="arr.version" value="3.0-SNAPSHOT"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-4.0.4.GA"/>
   <property name="jboss.server.home" value="${jboss.home}/server/default"/>
+  <!-- Override with your local Maven2 repository location -->
+  <property name="m2.repos" value="${user.home}/.m2/repository"/>
+  <property name="m2.dcm4chee-arr-ear" value="${m2.repos}/dcm4che/dcm4chee-arr-ear"/>
   <!-- Override with your FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
   <target name="clean">
@@ -24,12 +28,6 @@
   <target name="jar">
     <ant inheritAll="false" dir="../dcm4che14" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="jar"/>
-  	<available file="../dcm4jboss-ejb/target/hsql" property="hsql.available"/>
-  	<available file="../dcm4jboss-ejb/target/psql" property="psql.available"/>
-  	<available file="../dcm4jboss-ejb/target/mysql" property="mysql.available"/>
-  	<available file="../dcm4jboss-ejb/target/mssql" property="mssql.available"/>
-  	<available file="../dcm4jboss-ejb/target/oracle" property="oracle.available"/>
-  	<available file="../dcm4jboss-ejb/target/db2" property="db2.available"/>
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="jar"/>
@@ -49,49 +47,50 @@
   		destdir="${target.dir}/bin" eol="lf"/>
   	<fixcrlf srcdir="../dcm4jboss-sar/src/etc/bin" includes="*.bat"
   		destdir="${target.dir}/bin" eol="crlf"/>
+  	<fixcrlf srcdir="bin" includes="*.sh"
+  		destdir="${target.dir}/bin" eol="lf"/>
+  	<fixcrlf srcdir="bin" includes="*.bat"
+  		destdir="${target.dir}/bin" eol="crlf"/>
     <mkdir dir="${target.dir}/doc/licenses"/>
   	<fixcrlf srcdir="../dcm4che14/doc/licenses"
   		destdir="${target.dir}/doc/licenses" eol="crlf"/>
   	<fixcrlf srcdir="../dcm4jboss-sar/doc" includes="INSTALL"
   		destdir="${target.dir}/doc" eol="crlf" />
   </target>
-  <target name="chmod" depends="fixcrlf">
-  	<chmod dir="${target.dir}/bin" perm="a+x" includes="*.sh"/>
-  </target>
   
   <target name="dist" depends="hsql-dist,psql-dist,mysql-dist,mssql-dist,oracle-dist,db2-dist"/>
   
-  <target name="hsql-dist" if="hsql.available" depends="jar,chmod">
+  <target name="hsql-dist" depends="jar,fixcrlf">
     <antcall target="standalone-dist">
       <param name="db.name" value="hsql"/>
     </antcall>
   </target>
-  <target name="psql-dist" if="psql.available" depends="jar,chmod">
+  <target name="psql-dist" depends="jar,fixcrlf">
     <antcall target="standalone-dist">
       <param name="db.name" value="psql"/>
     </antcall>
   </target>
-  <target name="mysql-dist" if="mysql.available" depends="jar,chmod">
+  <target name="mysql-dist" depends="jar,fixcrlf">
     <antcall target="standalone-dist">
       <param name="db.name" value="mysql"/>
     </antcall>
   </target>
-  <target name="oracle-dist" if="oracle.available" depends="jar,chmod">
+  <target name="oracle-dist" depends="jar,fixcrlf">
     <antcall target="standalone-dist">
       <param name="db.name" value="oracle"/>
     </antcall>
   </target>
-  <target name="db2-dist" if="db2.available" depends="jar,chmod">
+  <target name="db2-dist" depends="jar,fixcrlf">
     <antcall target="standalone-dist">
       <param name="db.name" value="db2"/>
     </antcall>
   </target>
-  <target name="mssql-dist" if="mssql.available" depends="jar,chmod">
+  <target name="mssql-dist" depends="jar,fixcrlf">
     <antcall target="standalone-dist">
       <param name="db.name" value="mssql"/>
     </antcall>
   </target>
-  
+
   <target name="standalone-dist">
     <property name="dist.standalone" value="dcm4chee-standalone-${db.name}-${version}"/>
     <property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
@@ -118,7 +117,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/*"/>
-        <include name="deploy/**"/>
+        <!--include name="deploy/**"/-->
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.standalone.config}">
         <include name="conf/*"/>
@@ -148,7 +147,13 @@
       </zipfileset>
       <zipfileset dir="${target.dir}" prefix="${dist.standalone}">
         <include name="bin/*"/>
+      	<exclude name="bin/*.sh"/>
+      	<exclude name="bin/uninstall-dcm4chee-arr-old.bat"/>
         <include name="doc/**"/>
+      </zipfileset>
+      <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">
+        <include name="bin/*.sh"/>
+       	<exclude name="bin/uninstall-dcm4chee-arr-old.sh"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-hl7/target" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
@@ -220,6 +225,9 @@
       <zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone.config}">
         <include name="conf/jbossmq-state.xml"/>
       </zipfileset>
+      <zipfileset dir="${jboss.home}/docs/examples" prefix="${dist.standalone.config}/deploy">
+        <include name="jms/file-state-service.xml"/>
+      </zipfileset>
       <!-- use copy in dcm4jboss-sar/lib/, because not included in jems-installer ejb3 option
       <zipfileset dir="${jboss.server.home}/deploy/jbossws14.sar" prefix="${dist.standalone.config}/lib">
         <include name="jbossws14.jar"/>
@@ -232,13 +240,18 @@
         <exclude name="conf/standardjbosscmp-jdbc.xml"/>
         <exclude name="conf/jboss-service.xml"/>
         <include name="deploy/jbossweb-tomcat55.sar/**"/>
+        <include name="deploy/jms/jms-ds.xml"/>
+        <include name="deploy/jms/jms-ra.rar"/>
         <include name="deploy/jms/jvm-il-service.xml"/>
+        <include name="deploy/jms/uil2-service.xml"/>
         <include name="deploy/jmx-console.war/**"/>
-        <exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
-        <exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
+        <!--exclude name="deploy/jmx-console.war/inspectMBean.jsp"/-->
+        <!--exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/-->
         <include name="deploy/naming.sar/**"/>
         <include name="deploy/security.sar/**"/>
       	<include name="deploy/dynclassloader-service.xml"/>
+     	<include name="deploy/ejb-deployer.xml"/>
+      	<!--include name="deploy/ejb-timer-service.xml"/-->
       	<include name="deploy/invokers-service.xml"/>
         <include name="deploy/jbossjca-service.xml"/>
         <include name="deploy/jboss-local-jdbc.rar"/>
@@ -283,6 +296,75 @@
         <include name="lib/avalon-framework-cvs-20020806.jar"/>
         <include name="lib/batik.jar"/>
       </zipfileset>
+      <zipfileset file="${dcm4chee-arr.ear}" prefix="${dist.standalone.arr}/deploy"/>
     </zip>
   </target>
+	
+  <target name="dist-arr"
+  	depends="opt-arr-hsql,opt-arr-psql,opt-arr-mysql,opt-arr-mssql,opt-arr-oracle,opt-arr-db2"/>
+  <target name="opt-arr-hsql">
+    <antcall target="opt-arr">
+      <param name="db.name" value="hsql"/>
+    </antcall>
+  </target>
+  <target name="opt-arr-mysql">
+    <antcall target="opt-arr">
+      <param name="db.name" value="mysql"/>
+    </antcall>
+  </target>
+  <target name="opt-arr-mssql">
+    <antcall target="opt-arr">
+      <param name="db.name" value="mssql"/>
+    </antcall>
+  </target>
+  <target name="opt-arr-psql">
+    <antcall target="opt-arr">
+      <param name="db.name" value="psql"/>
+    </antcall>
+  </target>
+  <target name="opt-arr-oracle">
+    <antcall target="opt-arr">
+      <param name="db.name" value="oracle"/>
+    </antcall>
+  </target>
+  <target name="opt-arr-db2">
+    <antcall target="opt-arr">
+      <param name="db.name" value="db2"/>
+    </antcall>
+  </target>
+  <target name="opt-arr" depends="fixcrlf">  	
+    <property name="dist.standalone" value="dcm4chee-standalone-${db.name}-${version}"/>
+    <property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
+    <property name="dcm4chee-arr-ear" value="dcm4chee-arr-${db.name}-${arr.version}.ear"/>
+   	<copy file="${m2.dcm4chee-arr-ear}-${db.name}/${arr.version}/dcm4chee-arr-ear-${db.name}-${arr.version}.ear"
+  		tofile="${target.dir}/${dcm4chee-arr-ear}"/>
+    <zip destfile="${target.dir}/opt-dcm4chee-arr-${db.name}-${arr.version}.zip">
+	  <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
+	    <include name="deploy/ejb3.deployer/**"/>
+	  	<include name="deploy/jboss-aop-jdk50.deployer/**"/>
+	  	<include name="deploy/ear-deployer.xml"/>
+	  	<include name="deploy/ejb3-interceptors-aop.xml"/>
+	  	<include name="deploy/usertx-service.xml"/>
+	  	<include name="lib/antlr-2.7.6.jar"/>
+	  	<include name="lib/cglib.jar"/>
+	  	<include name="lib/ejb3-persistence.jar"/>
+	  	<include name="lib/hibernate-annotations.jar"/>
+	  	<include name="lib/hibernate-entitymanager.jar"/>
+	  	<include name="lib/hibernate3.jar"/>
+	  	<include name="lib/javassist.jar"/>
+	  	<include name="lib/jboss-jaxrpc.jar"/>
+	  </zipfileset>
+      <zipfileset dir="${jboss.server.home}/deploy/jbossws.sar" prefix="${dist.standalone.config}/lib">
+        <include name="jbossws.jar"/>
+      </zipfileset>
+      <zipfileset file="${target.dir}/${dcm4chee-arr-ear}"
+      	prefix="${dist.standalone.config}/deploy"/>
+      <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">
+    	<include name="bin/uninstall-dcm4chee-arr-old.sh"/>
+      </zipfileset>
+      <zipfileset dir="${target.dir}" prefix="${dist.standalone}">
+      	<include name="bin/uninstall-dcm4chee-arr-old.bat"/>
+      </zipfileset>
+    </zip>  	     
+  </target>		
 </project>
