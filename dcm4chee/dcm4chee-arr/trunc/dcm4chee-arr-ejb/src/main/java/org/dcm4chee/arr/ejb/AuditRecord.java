@@ -106,7 +106,7 @@ public class AuditRecord implements Serializable {
     @GeneratedValue(generator = "hibseq")
     @GenericGenerator(name = "hibseq", strategy = "seqhilo", parameters = {
             @Parameter(name = "max_lo", value = "100"),
-            @Parameter(name = "sequence", value = "auditrecord_pk_seq") })
+            @Parameter(name = "sequence", value = "audit_record_pk_seq") })
     @Column(name = "pk")
     public int getPk() {
         return pk;

@@ -83,7 +83,7 @@ public class ActiveParticipant implements Serializable {
     @GeneratedValue(generator = "hibseq")
     @GenericGenerator(name = "hibseq", strategy = "seqhilo", parameters = {
             @Parameter(name = "max_lo", value = "100"),
-            @Parameter(name = "sequence", value = "activeparticipant_pk_seq") })
+            @Parameter(name = "sequence", value = "active_part_pk_seq") })
     @Column(name="pk")
     public int getPk() {
         return pk;
