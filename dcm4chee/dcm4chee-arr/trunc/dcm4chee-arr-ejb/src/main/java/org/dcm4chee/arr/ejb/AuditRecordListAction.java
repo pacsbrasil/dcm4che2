@@ -58,6 +58,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
@@ -481,11 +482,11 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         
         // Event ID
         if(hasCriteria(eventIDs))
-            criteria.createAlias("eventID", "ei").add(Expression.in("ei.codeString", eventIDs));
+            criteria.createAlias("eventID", "ei").add(getCodeStringCriteria("ei", eventIDs));
             
         // Event Type
         if(hasCriteria(eventTypes))
-            criteria.createAlias("eventType", "et").add(Expression.in("et.codeString", eventTypes));
+            criteria.createAlias("eventType", "et").add(getCodeStringCriteria("et", eventTypes));
         
         // Event Outcome
         if(hasCriteria(eventOutcomes))            
@@ -537,7 +538,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         // Role ID
         if(hasCriteria(roleIDs1)) {
             criteria.createAlias("ap1.roleID", "rid1");
-            criterion.add(Expression.in("rid1.codeString", roleIDs1));
+            criterion.add(getCodeStringCriteria("rid1", roleIDs1));
         }
         
         // Network Access Point Type
@@ -574,7 +575,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         // Role ID
         if(hasCriteria(roleIDs2)) {
             criteria.createAlias("ap2.roleID", "rid2");
-            criterion.add(Expression.in("rid2.codeString", roleIDs2));
+            criterion.add(getCodeStringCriteria("rid2", roleIDs2));
         }
         
         // Network Access Point Type
@@ -628,14 +629,14 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
             if(rfcIDTypes.size() > 0) {
                 if(codeIDTypes.size() > 0) {
                     criteria.add(Expression.or(
-                            Expression.in("pooit.codeString", codeIDTypes.toArray(new String[]{})),
+                            getCodeStringCriteria("pooit", codeIDTypes.toArray(new String[]{})),
                             Expression.in("po.objectIDTypeRFC", rfcIDTypes.toArray(new Integer[]{}))));                    
                 }
                 else
                     criteria.add(Expression.in("po.objectIDTypeRFC", rfcIDTypes.toArray(new Integer[]{})));
             }
             else
-                criteria.add(Expression.in("pooit.codeString", codeIDTypes.toArray(new String[]{})));            
+                criteria.add(getCodeStringCriteria("pooit", codeIDTypes.toArray(new String[]{})));            
         }
         
         // Object ID
@@ -647,6 +648,17 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
             criteria.add(Expression.ilike("po.objectName", objectName, MatchMode.START));
 
         return criteria;
+    }
+    
+    private static Disjunction getCodeStringCriteria(String alias, String[] codeStrings) {
+        Disjunction disjuncation = Expression.disjunction();
+        for(String codeString : codeStrings) {
+            String[] arr = codeString.split("\\^");
+            disjuncation.add(Expression.conjunction()
+                    .add(Expression.eq(alias+".value", arr[0]))
+                    .add(Expression.eq(alias+".designator", arr[1])));
+        }
+        return disjuncation;
     }
     
     private boolean hasCriteriaForActiveParticipant1() {

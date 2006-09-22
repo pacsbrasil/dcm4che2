@@ -49,7 +49,6 @@ import javax.persistence.PostRemove;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.slf4j.Logger;
@@ -78,7 +77,7 @@ public class Code implements Serializable {
 
     private String meaning;
     
-    private String codeString;
+//    private String codeString;
 
     @Id
     @GeneratedValue(generator = "hibseq")
@@ -133,15 +132,15 @@ public class Code implements Serializable {
             log.debug("Removed " + this.toString());
     }
     
-    @Formula("CONCAT(code_value, '^', code_designator)")
-    public String getCodeString() {
-        return codeString;
-    }
+//    @Formula("CONCAT(code_value, CONCAT('^', code_designator))")
+//    public String getCodeString() {
+//        return codeString;
+//    }
 
-    public void setCodeString(String codeString) {
-        this.codeString = codeString;
-    }
-    
+//    public void setCodeString(String codeString) {
+//        this.codeString = codeString;
+//    }
+//    
     @Override
     public String toString() {
         return "[" + this.getClass().getSimpleName() + "[pk=" + pk + "]";
