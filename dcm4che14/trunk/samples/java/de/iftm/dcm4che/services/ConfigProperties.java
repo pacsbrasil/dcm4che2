@@ -62,11 +62,11 @@ import org.apache.log4j.*;
  * <p>No modifications.
  *
  * @author Thomas Hacklaender
- * @version 2006-06-21
+ * @version 2006-08-24
  */
 public class ConfigProperties extends Properties {
     
-    static final Logger log = Logger.getLogger("CDimseService");
+    static final Logger log = Logger.getLogger("ConfigProperties");
     
     // Static --------------------------------------------------------
     
@@ -76,6 +76,21 @@ public class ConfigProperties extends Properties {
     
     
     // Constructors --------------------------------------------------
+    
+    /**
+     * Create an ConfigurationProperty object (extension of Propreties) without 
+     * any Properties included.
+     */
+    public ConfigProperties() {
+    }
+
+    
+    /**
+     * Create an ConfigurationProperty object (extension of Propreties) and load 
+     * Properties from given URL.
+     *
+     * @param url the URL containing the Properties.
+     */
     public ConfigProperties(URL url) throws IOException {
         
         InputStream in = null;

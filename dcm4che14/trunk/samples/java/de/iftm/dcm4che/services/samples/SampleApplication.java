@@ -339,7 +339,12 @@ public class SampleApplication extends javax.swing.JFrame {
         
         // Create and start a new local server
         
-        ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
+        try {
+            ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
+        } catch (ParseException pe) {
+            log.error("Error while parsing the server configuration: " + pe.getMessage());
+            return;
+        }
         
         try {
             ssa.start();
@@ -673,7 +678,7 @@ public class SampleApplication extends javax.swing.JFrame {
         boolean isOpen;
         Vector datasetVector;
         CDimseService cDimseService;
-
+        
         
         //>>>> Load and modify the configuration properties of the local server
         
@@ -728,11 +733,16 @@ public class SampleApplication extends javax.swing.JFrame {
         // cfgStorageSCP.put("calling-aets", "CLIENT");
         
         cfgSaveFilesystem.put("directory", "./tmp");
-
+        
         
         //>>>> Create and start a new local server
         
-        ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
+        try {
+            ssa = new StorageServiceAdapter(cfgStorageSCP, cfgSaveFilesystem);
+        } catch (ParseException pe) {
+            log.error("Error while parsing the server configuration: " + pe.getMessage());
+            return;
+        }
         
         try {
             ssa.start();
@@ -740,10 +750,10 @@ public class SampleApplication extends javax.swing.JFrame {
             log.error("Error while starting the server: " + ioe.getMessage());
             return;
         }
-
+        
         
         //>>>> Load and modify the configuration properties for C-FIND / C-MOVE
-                
+        
         try {
             // Load configuration properties for C-DIMSE
             cfgCDimseService = new ConfigProperties(StorageService.class.getResource("resources/CDimseService.cfg"));

@@ -100,29 +100,42 @@ public class StorageServiceAdapter implements StorageServiceEventListener {
     //>>>> Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     
     /**
-     * Creates a new instance of StorageServiceAdapter
+     * Creates a new instance of StorageServiceAdapter.
+     *
+     * @throws ParseException in case of a parsing error of the configuration properties.
      */
-    public StorageServiceAdapter(ConfigProperties cfgStorageSC, ConfigProperties cfgSaveFilesystem) {
+    public StorageServiceAdapter(ConfigProperties cfgStorageSC, ConfigProperties cfgSaveFilesystem) throws ParseException {
         // Store configuration properties local
         this.cfgStorageSC = cfgStorageSC;
         this.cfgSaveFilesystem = cfgSaveFilesystem;
         
         // Initializelocal fields from the configuration properties for saving to filesystem
         initFieldsFromCfgSaveFilesystem();
-    }
-    
-    
-    /**
-     * Starts the server.
-     */
-    public void start() throws IOException, ParseException {
         
         // Initialize the working class with the actual configuration properties.
         storageSC = new StorageService(cfgStorageSC);
         
         // Register to server as a listener for StorageServiceClassEvents
         storageSC.addStorageServiceClassEventListener(this);
-        
+    }
+    
+    
+    /**
+     * Return the working class StorageService. This can be usedto add additional 
+     * listeners for ServiceClassEvent's.
+     *
+     * @return the working class StorageService.
+     */
+    public StorageService getStorageService() {
+        return storageSC;
+    }
+    
+    /**
+     * Starts the server.
+     *
+     * @throws IOException 
+     */
+    public void start() throws IOException {
         // Start the instance of the working class
         storageSC.start();
     }
@@ -306,7 +319,7 @@ public class StorageServiceAdapter implements StorageServiceEventListener {
             // File mit/ohne File Meta Information Block schreiben
             if (write_fmi) {
                 fmi = DcmObjectFactory.getInstance().newFileMetaInfo(ds,
-                        UIDs.forName(transfersyntax));
+                    UIDs.forName(transfersyntax));
                 ds.setFileMetaInfo(fmi);
                 
                 // Die Methode Dataset#writeFile schreibt -sofern != null- einen
@@ -449,7 +462,7 @@ public class StorageServiceAdapter implements StorageServiceEventListener {
         
         for (int i = 0; i < out.length; ++i) {
             out[i] = (((in[i] >= '0') && (in[i] <= '9')) ||
-                    ((in[i] >= 'A') && (in[i] <= 'Z'))) ? in[i] : '_';
+                ((in[i] >= 'A') && (in[i] <= 'Z'))) ? in[i] : '_';
         }
         
         return new String(out);

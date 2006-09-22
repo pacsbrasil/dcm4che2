@@ -96,6 +96,10 @@ import org.apache.log4j.Logger;
  * <p> 6. Use the cECHO to verfy a association.
  * <p> 7. If you are ready with the C-DIMSE services use the aRELEASE method to close the association.
  * <p>
+ * <p>The query/retrieve levels used by C-FIND and C-MOVE are defined as enummerated constants.
+ * Use the method getQueryRetrieveLevel to convert these values to the String representation
+ * used in the DICOM element QueryRetrieveLevel (0008,0052).
+ * <p>
  * <p>Based on dcm4che 1.4.0 sample: MoveStudy.java revision date 2005-10-05
  * <p>Based on dcm4che 1.4.0 sample: DcmSnd.java revision date 2005-10-05
  * <p>
@@ -109,7 +113,7 @@ import org.apache.log4j.Logger;
  *
  *
  * @author Thomas Hacklaender
- * @version 2006-07-25
+ * @version 2006-08-28
  */
 public class CDimseService {
     
@@ -128,14 +132,17 @@ public class CDimseService {
     /** Default AE title used for the association if it is not explicit given in the url filed. */
     private final static String DEFAULT_CALLING_AET = "MYAET";
     
-    /** Query/Retrieve Level Values for Study. See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/
-    private final static String STUDY_LEVEL = "STUDY";
+    /** Query/Retrieve Level Values for Study = "PATIENT". See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/
+    static public final int PATIENT_LEVEL = 0;
+     
+    /** Query/Retrieve Level Values for Study = "STUDY". See PS 3.4 - C.6. SOP CLASS DEFINITIONS*/
+    static public final int STUDY_LEVEL = 1;
     
-    /** Query/Retrieve Level Values for Series. See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/
-    private final static String SERIES_LEVEL = "SERIES";
+    /** Query/Retrieve Level Values for Series = "SERIES". See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/
+    static public final int SERIES_LEVEL = 2;
     
-    /** Query/Retrieve Level Values for Image. See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/
-    private final static String IMAGE_LEVEL = "IMAGE";
+    /** Query/Retrieve Level Values for Image = "IMAGE". See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/
+    static public final int IMAGE_LEVEL = 3;
     
     /** DICOM URL to define a communication partner for an association.
      * <p>PROTOCOL://CALLED[:CALLING]@HOST[:PORT]
@@ -315,62 +322,62 @@ public class CDimseService {
     
     
     /**
-     * Initializes TLS (Transport Layer Security, predecessor of SSL, Secure 
-     * Sockets Layer) connection related parameters. TLS expects RSA (Ron Rivest, 
+     * Initializes TLS (Transport Layer Security, predecessor of SSL, Secure
+     * Sockets Layer) connection related parameters. TLS expects RSA (Ron Rivest,
      * Adi Shamir and Len Adleman) encoded keys and certificates.
      *
-     * <p>Keys and certificates may be stored in PKCS #12 (Public Key 
+     * <p>Keys and certificates may be stored in PKCS #12 (Public Key
      * Cryptography Standards) or JKS (Java Keystore) containers.
      *
-     * <p>TSL is used to encrypt data during transmission, which is accomplished 
-     * when the connection between the two partners A (normally the client) and B 
-     * (normally the server) is established. If A asks B to send TSL encrypted 
-     * data, both partners exchange some handshake information. In a first step 
-     * B tries to authentify itself against A (server authentification, optional 
-     * in TSL but implementet in this way in dcm4che). For that B presents its 
-     * public key for A to accept or deny. If the authentification is accepted, 
-     * A tries to authentify itself against B (client authentification, optional 
-     * in TSL but implementet in this way in dcm4che).If B accepts the 
-     * authentification A and B agree on a hash (symmetric key, which is 
-     * independent of the private/public keys used for authentification) for the 
+     * <p>TSL is used to encrypt data during transmission, which is accomplished
+     * when the connection between the two partners A (normally the client) and B
+     * (normally the server) is established. If A asks B to send TSL encrypted
+     * data, both partners exchange some handshake information. In a first step
+     * B tries to authentify itself against A (server authentification, optional
+     * in TSL but implementet in this way in dcm4che). For that B presents its
+     * public key for A to accept or deny. If the authentification is accepted,
+     * A tries to authentify itself against B (client authentification, optional
+     * in TSL but implementet in this way in dcm4che).If B accepts the
+     * authentification A and B agree on a hash (symmetric key, which is
+     * independent of the private/public keys used for authentification) for the
      * duration of their conversation, which is used to encrypt the data.
      *
-     * <p>To be able to establish a TSL connection B needs a privat/public key 
-     * pair, which identifies B unambiguously. For that the private key is 
-     * generated first; than the root-public key is derived from that private 
-     * key. To bind the root-public key with the identity of B a Certificate 
-     * Authority (CA) is used: The root-public key is send to CA, which returns 
-     * a certified-public key, which includes information about the CA as well 
-     * as the root-public key. Optionally this process can be repeated several 
-     * times so that the certified-public key contains a chain of certificates 
+     * <p>To be able to establish a TSL connection B needs a privat/public key
+     * pair, which identifies B unambiguously. For that the private key is
+     * generated first; than the root-public key is derived from that private
+     * key. To bind the root-public key with the identity of B a Certificate
+     * Authority (CA) is used: The root-public key is send to CA, which returns
+     * a certified-public key, which includes information about the CA as well
+     * as the root-public key. Optionally this process can be repeated several
+     * times so that the certified-public key contains a chain of certificates
      * of different CA's.
      *
-     * <p>The certified-public key of B is presented to A during server 
-     * authentification. Partner A should accept this key, if it can match the 
-     * last certificate in the chain with a root-certificat found in its local 
-     * list of root-certificates of CA's. That means, that A does not check the 
-     * identity of B, but "trusts" B because it was certified by an authority. 
-     * The same happens for client authentification. Handling of authentification 
-     * of the identity of the communication partner is subject of PS 3.15 - 
+     * <p>The certified-public key of B is presented to A during server
+     * authentification. Partner A should accept this key, if it can match the
+     * last certificate in the chain with a root-certificat found in its local
+     * list of root-certificates of CA's. That means, that A does not check the
+     * identity of B, but "trusts" B because it was certified by an authority.
+     * The same happens for client authentification. Handling of authentification
+     * of the identity of the communication partner is subject of PS 3.15 -
      * Security and System Management Profiles.
      *
-     * <p>In the configuration files of this method the certified-public key is 
-     * stored in the property "tls-key" and the root-certificates of the known 
+     * <p>In the configuration files of this method the certified-public key is
+     * stored in the property "tls-key" and the root-certificates of the known
      * CA's in "tls-cacerts".
      *
-     * <p>Usually the certified-public keys of A and B are different, but they 
+     * <p>Usually the certified-public keys of A and B are different, but they
      * also may be the same. In this case the root-certificates are also the same.
      *
-     * <p>It is possible to establish a TLS connection without using a CA: In 
-     * this case both partners creates a individual container holding their 
-     * private and root-public key. These containers could be used for certifying 
-     * also, because the length of the certifying chain is one and therefore the 
-     * root-public key is also the last certified-public key. Therefore the 
-     * root-public key works in this scenario also as the root-certificate of 
+     * <p>It is possible to establish a TLS connection without using a CA: In
+     * this case both partners creates a individual container holding their
+     * private and root-public key. These containers could be used for certifying
+     * also, because the length of the certifying chain is one and therefore the
+     * root-public key is also the last certified-public key. Therefore the
+     * root-public key works in this scenario also as the root-certificate of
      * the "certifying authoroty".
      *
-     * <p>If no keystores are specified in the configuration properties, the 
-     * not-certified default-keystore "resources/identityJava.jks" is used for 
+     * <p>If no keystores are specified in the configuration properties, the
+     * not-certified default-keystore "resources/identityJava.jks" is used for
      * "tls-key" and "tls-cacerts" when establishing the connection.
      *
      * @param cfg the configuration properties for this class.
@@ -474,8 +481,11 @@ public class CDimseService {
      */
     private void initKeys(ConfigProperties cfg) throws ParseException {
         
+        // Remove all keys
+        keys = dof.newDataset();
+        
         // Query/Retrieve Level. PS 3.4 - C.6.2 Study Root SOP Class Group
-        keys.putCS(Tags.QueryRetrieveLevel, STUDY_LEVEL);
+        keys.putCS(Tags.QueryRetrieveLevel, getQueryRetrieveLevel(STUDY_LEVEL));
         
         // UNIQUE STUDY LEVEL KEY FOR THE STUDY. See PS 3.4 - C.6.2.1.2 Study level
         keys.putUI(Tags.StudyInstanceUID);
@@ -493,6 +503,19 @@ public class CDimseService {
         keys.putUS(Tags.NumberOfStudyRelatedInstances);
         // mutch more defined...
         
+        // Add the keys found in the configuration properties
+        addQueryKeys(cfg);
+    }
+    
+    
+    /**
+     * Add the query keys found in the configuration properties to the Dataset
+     * "keys" used bei the cFIND method.
+     *
+     * @param cfg the configuration properties for this class.
+     * @throws ParseException if a given properties for the keys was not found.
+     */
+    private void addQueryKeys(ConfigProperties cfg) throws ParseException {
         // Add/replace keys found in the configuration file. Syntax key.<element name> = <element value>
         for (Enumeration it = cfg.keys(); it.hasMoreElements(); ) {
             String key = (String) it.nextElement();
@@ -504,6 +527,42 @@ public class CDimseService {
                 }
             }
         }
+    }
+    
+    
+    /**
+     * Sets the Dataset representing the query keys in C-FIND. The user can specify
+     * concret values to limit the search.
+     * <p>Wildcards '*','?', '-' and '\' are allowed as element-values (see PS 3.4 - C.2.2.2 Attribute Matching).
+     * If an key attribute is defined, but has an empty value, it matches every value at the storage side.
+     * <p> At a minimum the key "QueryRetrieveLevel" must be set ("STUDY", "SERIES" or "IMAGE").
+     * See PS 3.4 - C.6.2 Study Root SOP Class Group
+     * <p>As the result for C-FIND these keys are filled with the values found in the archive.
+     * @param ds the Dataset containig the search keys.
+     */
+    public void setQueryKeys(Dataset ds) {
+        keys = ds;
+    }
+    
+    
+    /**
+     * Sets the Dataset representing the query keys in C-FIND. The user can specify
+     * concret values to limit the search.
+     * <p>Wildcards '*','?', '-' and '\' are allowed as element-values (see PS 3.4 - C.2.2.2 Attribute Matching).
+     * If an key attribute is defined, but has an empty value, it matches every value at the storage side.
+     * <p> At a minimum the key "QueryRetrieveLevel" must be set ("STUDY", "SERIES" or "IMAGE").
+     * See PS 3.4 - C.6.2 Study Root SOP Class Group
+     * <p>As the result for C-FIND these keys are filled with the values found in the archive.
+     * @param cfg the configuration properties for this class.
+     * @throws ParseException if a given properties for the keys was not found.
+     */
+    public void setQueryKeys(ConfigProperties cfg) throws ParseException {
+        
+        // Remove all keys
+        keys = dof.newDataset();
+        
+        // Add the keys found in the configuration properties
+        addQueryKeys(cfg);
     }
     
     
@@ -587,7 +646,7 @@ public class CDimseService {
      * Releases the active association.
      * See PS 3.8 - 7.2 A-RELEASE SERVICE
      *
-     * @param waitOnRSP if true, method waits until it receives the responds 
+     * @param waitOnRSP if true, method waits until it receives the responds
      *                  to the release request.
      * @exception  InterruptedException  Description of the Exception
      * @exception  IOException           Description of the Exception
@@ -637,8 +696,8 @@ public class CDimseService {
         
         // Test, if applicable presentation context was found
         if ((pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ImplicitVRLittleEndian)) == null &&
-                (pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ExplicitVRLittleEndian)) == null &&
-                (pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ExplicitVRBigEndian)) == null) {
+            (pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ExplicitVRLittleEndian)) == null &&
+            (pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ExplicitVRBigEndian)) == null) {
             
             throw new ConnectException("No applicable presentation context found");
         }
@@ -677,9 +736,12 @@ public class CDimseService {
     
     
     /**
-     * Queries the archive for DICOM objects matching Attribute Keys.
+     * Queries the archive for DICOM objects matching Attribute Keys defined in
+     * the loacal field "keys". This field is set by the constructor out of the
+     * configuration parameters or by the methods setQueryKeys(Configuration) and setQueryKeys(Dataset).
      * See PS 3.4 - Annex C QUERY/RETRIEVE SERVICE CLASS.
      * <p>The method returns, when the result is received from the communication partner.
+     *
      *
      * @return the result of the cFIND as a Vector of Dataset objects each specifying
      *         one matching DICOM object. If no matching objects are found an empty Vector is returned.
@@ -699,7 +761,7 @@ public class CDimseService {
         // Test, if Presentation Context for C-FIND is supported
         // API doc: Association.getAcceptedPresContext(String asuid, String tsuid)
         if ((pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelFIND, UIDs.ExplicitVRLittleEndian)) == null &&
-                (pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelFIND, UIDs.ImplicitVRLittleEndian)) == null) {
+            (pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelFIND, UIDs.ImplicitVRLittleEndian)) == null) {
             throw new ConnectException("Association does not support presentation context for StudyRootQueryRetrieveInformationModelFIND SOP.");
         }
         
@@ -750,6 +812,16 @@ public class CDimseService {
      * See PS 3.4 - Annex C QUERY/RETRIEVE SERVICE CLASS.
      * <p>Use the Study Root Query/Retrieve Information Model to communicate with the archive.
      * See PS 3.4 - C.6.2 Study Root SOP Class Group.
+     * <p>PS 3.4 - C.4.2.1.4.1 Request Identifier Structure (for C-MOVE):
+     * An Identifier in a C-MOVE request shall contain:
+     * <p>- the Query/Retrieve Level (0008,0052) which defines the level of the retrieval
+     * <p>- Unique Key Attributes which may include Patient ID, Study Instance UIDs, Series Instance UIDs, and the SOP Instance UIDs
+     * <p>PS 3.4 - C.4.2.2.1 Baseline Behavior of SCU (of C-MOVE):
+     * <p>The SCU shall supply a single value in the Unique Key Attribute for each
+     * level above the Query/Retrieve level. For the level of retrieve, the SCU shall
+     * supply one unique key if the level of retrieve is above the STUDY level and
+     * shall supply one UID, or a list of UIDs if a retrieval of several items is desired
+     * and the retrieve level is STUDY, SERIES or IMAGE.
      *
      * @param ds the DICOM object represented as a Dataset.
      * @return a result-code: 0x0000 = SUCCESS sub-operations complete –no failures,
@@ -770,7 +842,7 @@ public class CDimseService {
         // Test, if Presentation Context for C-MOVE is supported
         // API doc: Association.getAcceptedPresContext(String asuid, String tsuid)
         if ((pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, UIDs.ExplicitVRLittleEndian)) == null &&
-                (pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, UIDs.ImplicitVRLittleEndian)) == null) {
+            (pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, UIDs.ImplicitVRLittleEndian)) == null) {
             throw new ConnectException("Association does not support presentation context for StudyRootQueryRetrieveInformationModelMOVE SOP.");
         }
         
@@ -790,7 +862,7 @@ public class CDimseService {
         // API doc: Command.initCMoveRQ(int msgID, String sopClassUID, int priority, String moveDest)
         rqCmd.initCMoveRQ(assoc.nextMsgID(), UIDs.StudyRootQueryRetrieveInformationModelMOVE, priority, dest);
         Dataset rqDs = dof.newDataset();
-        rqDs.putCS(Tags.QueryRetrieveLevel, STUDY_LEVEL);
+        rqDs.putCS(Tags.QueryRetrieveLevel, getQueryRetrieveLevel(STUDY_LEVEL));
         // Only Unique Key allowed in C-MOVE. PS 3.4 -C.2.2.1 Attribute Types
         rqDs.putUI(Tags.StudyInstanceUID, suid);
         // API doc: AssociationFactorynewDimse(int pcid, Command cmd, Dataset ds)
@@ -877,5 +949,31 @@ public class CDimseService {
         
         return System.currentTimeMillis() - t1;
     }
+
     
+    /**
+     * Gets the String value used for DICOM element QueryRetrieveLevel (0008,0052).
+     * <p>See PS 3.4 - C.6 SOP CLASS DEFINITIONS
+     *
+     * @param queryRetrieveLevel query/retrieve level as a enumerated value.
+     * @return the String value assiciated to enumerated query/retrieve level.
+     */
+    static public String getQueryRetrieveLevel(int queryRetrieveLevel) {
+        switch (queryRetrieveLevel) {
+            case PATIENT_LEVEL:
+                return "PATIENT";
+                
+            case STUDY_LEVEL:
+                return "STUDY";
+                
+            case SERIES_LEVEL:
+                return "SERIES";
+                
+            case IMAGE_LEVEL:
+                return "IMAGE";
+                
+            default:
+                return "";
+        }
+    }
 }
