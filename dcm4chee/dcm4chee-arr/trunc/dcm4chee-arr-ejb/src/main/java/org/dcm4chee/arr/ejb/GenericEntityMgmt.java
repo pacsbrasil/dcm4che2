@@ -3,6 +3,8 @@ package org.dcm4chee.arr.ejb;
 import java.util.Collection;
 import java.util.List;
 
+import org.hibernate.criterion.DetachedCriteria;
+
 /**
  * An interface that has generic and basic CRUD functionalities for any entity bean.
  * 
@@ -29,5 +31,6 @@ public interface GenericEntityMgmt {
     
     <T> List<T> query(Class<T> entityClass, String query, Object... paramValues);
     <T> List<T> queryByName(Class<T> entityClass, String namedQuery, Object... paramValues);    
-    <T> List<T> cachedQueryByName(Class<T> entityClass, String cacheRegion, String namedQuery, Object... paramValues);        
+    <T> List<T> cachedQueryByName(Class<T> entityClass, String cacheRegion, String namedQuery, Object... paramValues);
+    <T> List<T> findByCriteria(Class<T> entityClass, DetachedCriteria detachedCriteria);
 }

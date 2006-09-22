@@ -13,9 +13,11 @@ import javax.persistence.Query;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Example;
 import org.jboss.annotation.ejb.LocalBinding;
 import org.jboss.annotation.ejb.RemoteBinding;
+import org.jboss.ejb3.entity.HibernateSession;
 
 /**
  * A SLSB that has basic and generic CRUD functionalities for any entity bean
@@ -95,6 +97,13 @@ class GenericEntityMgmtBean implements GenericEntityMgmt {
         }
         crit.add(example);
         return crit.list();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> findByCriteria(Class<T> entityClass, DetachedCriteria detachedCriteria) {
+        // We can not use the annotated session. See: http://jira.jboss.com/jira/browse/EJBTHREE-714
+        org.hibernate.Session session = ((HibernateSession)em).getHibernateSession();        
+        return detachedCriteria.getExecutableCriteria(session).list();
     }
 
     /**
