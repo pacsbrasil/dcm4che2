@@ -17,6 +17,10 @@ import org.dcm4chee.arr.ejb.AuditRecord;
 import org.dcm4chee.arr.ejb.Code;
 import org.dcm4chee.arr.ejb.GenericEntityMgmt;
 import org.dcm4chee.arr.util.Ejb3Util;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Expression;
+import org.hibernate.criterion.MatchMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -160,6 +164,39 @@ public class TestGenericEntityMgmt {
         assert ar != null;
         
         assert ar.getEventAction().equals("C");
+    }
+    
+    public void criteria1() {
+        DetachedCriteria detachedCriteria = DetachedCriteria.forClass(AuditRecord.class);
+        detachedCriteria.add(Expression.ilike("sourceID", "Reading", MatchMode.START));
+        List<AuditRecord> ars = gem.findByCriteria(AuditRecord.class, detachedCriteria);
+        assert ars.size() == 1;
+    }
+    
+    public void criteria2() {
+        DetachedCriteria detachedCriteria = DetachedCriteria.forClass(AuditRecord.class);
+        String[] codeStrings = new String[] {"110104^DCM", "110153^DCM"};
+        detachedCriteria.createCriteria("eventID").add(getCodeStringCriteria(codeStrings));
+                
+        // CONCAT is not currently supported in Criteria API
+        //detachedCriteria.createAlias("eventID", "ei").add(Expression.in(getCodeString("ei"), new String[]{"110104^DCM"}));
+//        detachedCriteria.createCriteria("eventID").add(Expression.in(
+//                "CONCAT(value, CONCAT('^', designator))", 
+//                new String[]{"110104^DCM"}));
+        
+        List<AuditRecord> ars = gem.findByCriteria(AuditRecord.class, detachedCriteria);
+        assert ars.size() == 1;
+    }
+    
+    private static Disjunction getCodeStringCriteria(String[] codeStrings) {
+        Disjunction disjuncation = Expression.disjunction();
+        for(String codeString : codeStrings) {
+            String[] arr = codeString.split("\\^");
+            disjuncation.add(Expression.conjunction()
+                    .add(Expression.eq("value", arr[0]))
+                    .add(Expression.eq("designator", arr[1])));
+        }
+        return disjuncation;
     }
 
     @AfterClass
