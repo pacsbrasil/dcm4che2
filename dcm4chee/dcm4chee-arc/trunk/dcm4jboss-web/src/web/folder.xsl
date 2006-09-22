@@ -31,6 +31,9 @@
 								<xsl:attribute name="checked"/>
 							</xsl:if>
 						</input>
+						<xsl:if test="/model/showWithoutStudies = 'true'">
+							<input type="hidden" name="woStudies" value="true" />
+						</xsl:if>
 					</td>
 					<td class="folder_header" width="5" title="Show patients without studies">w/o studies</td>
 					<td class="folder_header" align="center">
