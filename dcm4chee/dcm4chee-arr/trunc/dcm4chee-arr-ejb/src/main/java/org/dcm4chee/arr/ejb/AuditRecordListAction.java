@@ -43,13 +43,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 
@@ -83,7 +80,8 @@ import org.slf4j.LoggerFactory;
 @Scope(ScopeType.SESSION)
 public class AuditRecordListAction implements Serializable, AuditRecordList {
     
-    private static final int FROM_POS = 16;
+    private static final long serialVersionUID = 8681124252579882410L;
+
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final int YEAR = 4;
@@ -94,9 +92,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     private static final int SECOND = 19;
     
     private static Logger log = LoggerFactory.getLogger(AuditRecordList.class);
-
-    @PersistenceContext(type=PersistenceContextType.EXTENDED) 
-    private EntityManager em;
 
     @PersistenceContext(type=PersistenceContextType.EXTENDED)
     private Session session;
