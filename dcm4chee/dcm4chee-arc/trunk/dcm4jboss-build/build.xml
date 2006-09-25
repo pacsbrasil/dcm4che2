@@ -1,16 +1,16 @@
 <project name="dcm4jboss-build" default="dist">
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
-  <property name="version" value="2.10.2"/>
-  <property name="arr.version" value="3.0-SNAPSHOT"/>
+  <property name="version" value="2.10.3"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-4.0.4.GA"/>
   <property name="jboss.server.home" value="${jboss.home}/server/default"/>
-  <!-- Override with your local Maven2 repository location -->
-  <property name="m2.repos" value="${user.home}/.m2/repository"/>
-  <property name="m2.dcm4chee-arr-ear" value="${m2.repos}/dcm4che/dcm4chee-arr-ear"/>
+  <!-- Override with your dcm4chee-arr-3.0 location -->
+  <property name="dcm4chee-arr.home" value="${user.home}/dcm4chee/dcm4chee-arr"/>
+  <property name="dcm4chee-arr.ejb" value="${dcm4chee-arr.home}/dcm4chee-arr-ejb"/>
+  <property name="dcm4chee-arr.ear" value="${dcm4chee-arr.home}/dcm4chee-arr-ear"/>
   <!-- Override with your FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
   <target name="clean">
@@ -296,7 +296,7 @@
         <include name="lib/avalon-framework-cvs-20020806.jar"/>
         <include name="lib/batik.jar"/>
       </zipfileset>
-      <zipfileset file="${dcm4chee-arr.ear}" prefix="${dist.standalone.arr}/deploy"/>
+      <zipfileset file="${dcm4chee-arr.ear}" prefix="${dist.standalone.config}/deploy"/>
     </zip>
   </target>
 	
@@ -335,10 +335,7 @@
   <target name="opt-arr" depends="fixcrlf">  	
     <property name="dist.standalone" value="dcm4chee-standalone-${db.name}-${version}"/>
     <property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
-    <property name="dcm4chee-arr-ear" value="dcm4chee-arr-${db.name}-${arr.version}.ear"/>
-   	<copy file="${m2.dcm4chee-arr-ear}-${db.name}/${arr.version}/dcm4chee-arr-ear-${db.name}-${arr.version}.ear"
-  		tofile="${target.dir}/${dcm4chee-arr-ear}"/>
-    <zip destfile="${target.dir}/opt-dcm4chee-arr-${db.name}-${arr.version}.zip">
+    <zip destfile="${target.dir}/upgrade-dcm4chee-arr-${db.name}-${version}.zip">
 	  <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
 	    <include name="deploy/ejb3.deployer/**"/>
 	  	<include name="deploy/jboss-aop-jdk50.deployer/**"/>
@@ -357,8 +354,12 @@
       <zipfileset dir="${jboss.server.home}/deploy/jbossws.sar" prefix="${dist.standalone.config}/lib">
         <include name="jbossws.jar"/>
       </zipfileset>
-      <zipfileset file="${target.dir}/${dcm4chee-arr-ear}"
-      	prefix="${dist.standalone.config}/deploy"/>
+      <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.standalone.config}/deploy">
+        <include name="dcm4chee-arr-${db.name}-*.ear"/>
+      </zipfileset>
+      <zipfileset dir="${dcm4chee-arr.ejb}/target/generated/schema/" prefix="${dist.standalone}/sql">
+        <include name="dcm4chee-arr-${db.name}.ddl"/>
+      </zipfileset>      
       <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">
     	<include name="bin/uninstall-dcm4chee-arr-old.sh"/>
       </zipfileset>
