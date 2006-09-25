@@ -415,6 +415,7 @@
                 <exclude name="**/jdbc/**"/>
                 <exclude name="**/tools/**"/>
                 <exclude name="**/interfaces/**"/>
+                <exclude name="**/util/**"/>
             </fileset>
         </jar>
         <style style="${src.etc}/jdbc-properties.xsl"
