@@ -672,7 +672,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         filePath.append(toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
         File dir = new File(basedir, filePath.toString());
         if (!dir.exists()) {
-            dir.mkdirs();
+            if (!dir.mkdirs()) {
+                throw new IOException("Failed to create directory " + dir);
+            }
         }
         return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
     }
