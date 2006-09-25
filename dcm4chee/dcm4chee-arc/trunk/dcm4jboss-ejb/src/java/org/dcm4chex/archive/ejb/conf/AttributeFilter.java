@@ -52,7 +52,6 @@ import org.dcm4che.data.Dataset;
  */
 public final class AttributeFilter {
     private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
-    private static boolean loaded = false;
     private static HashMap patient = new HashMap();
     private static HashMap study = new HashMap();
     private static HashMap series = new HashMap();
@@ -64,42 +63,31 @@ public final class AttributeFilter {
     private final boolean exclude;
     private final boolean excludePrivate;
     private boolean noFilter = false;
+    
+    static {
+        AttributeFilterLoader.loadFrom(patient, study, series, instance, 
+                CONFIG_URL);        
+    }
 
     // Test Driver
     public static void main(String[] args) {
         AttributeFilterLoader.loadFrom(patient, study, series, instance, args[0]);
     }
     
-    public static AttributeFilter getPatientAttributeFilter(String cuid)
-    throws ConfigurationException {
-        load();
+    public static AttributeFilter getPatientAttributeFilter(String cuid)  {
         return getAttributeFilter(cuid, patient);
     }
 
-    public static AttributeFilter getStudyAttributeFilter(String cuid)
-    throws ConfigurationException {
-        load();
+    public static AttributeFilter getStudyAttributeFilter(String cuid) {
         return getAttributeFilter(cuid, study);
     }
 
-    public static AttributeFilter getSeriesAttributeFilter(String cuid)
-    throws ConfigurationException {
-        load();
+    public static AttributeFilter getSeriesAttributeFilter(String cuid) {
         return getAttributeFilter(cuid, series);
     }
     
-    public static AttributeFilter getInstanceAttributeFilter(String cuid)
-    throws ConfigurationException {
-        load();
+    public static AttributeFilter getInstanceAttributeFilter(String cuid) {
         return getAttributeFilter(cuid, instance);
-    }
-
-    private static void load() throws ConfigurationException {
-        if (!loaded) {
-            AttributeFilterLoader.loadFrom(patient, study, series, instance, 
-                    CONFIG_URL);            
-            loaded = true;
-        }
     }
 
     static AttributeFilter getAttributeFilter(String cuid, HashMap map) {
