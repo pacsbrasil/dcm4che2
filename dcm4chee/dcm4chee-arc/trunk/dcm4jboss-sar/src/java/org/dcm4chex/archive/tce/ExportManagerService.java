@@ -417,22 +417,38 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     private void onSeriesStored(String suid, String code, String designator) {
-        List list = queryExportSelectors(suid, code, designator);
-        for (Iterator iter = list.iterator(); iter.hasNext();) {
-            Dataset manifest = (Dataset) iter.next();
-            if (!isAllReceived(manifest))
-                continue;
-            try {
-                manifest = loadManifest(manifest);
-                if (isDelayed(manifest))
+        Dataset keys = DcmObjectFactory.getInstance().newDataset();
+        keys.putUI(Tags.StudyInstanceUID, suid);
+        keys.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
+        Dataset item = keys.putSQ(Tags.ConceptNameCodeSeq).addNewItem();
+        item.putSH(Tags.CodeValue, code);
+        item.putSH(Tags.CodingSchemeDesignator, designator);
+        QueryCmd query = null;
+        try {
+            query = QueryCmd.createInstanceQuery(keys, false, true);
+            query.execute();
+            while (query.next()) {
+                Dataset manifest = query.getDataset();
+                if (!isAllReceived(manifest))
                     continue;
-                schedule(new ExportTFOrder(manifest), System
-                        .currentTimeMillis()
-                        + exportDelay);
-            } catch (Exception e) {
-                log.error("Failed to process export selector with iuid="
-                        + manifest.getString(Tags.SOPInstanceUID), e);
+                try {
+                    manifest = loadManifest(manifest);
+                    if (isDelayed(manifest))
+                        continue;
+                    schedule(new ExportTFOrder(manifest), System
+                            .currentTimeMillis()
+                            + exportDelay);
+                } catch (Exception e) {
+                    log.error("Failed to process export selector with iuid="
+                            + manifest.getString(Tags.SOPInstanceUID), e);
+                }
             }
+        } catch (SQLException e1) {
+            log.error("Query DB for Export Selectors " + code + '^'
+                    + designator + " of study " + suid + " failed!", e1);
+        } finally {
+            if (query != null)
+                query.close();
         }
     }
 
@@ -473,31 +489,6 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         } finally {
             fis.close();
         }
-    }
-
-    private List queryExportSelectors(String suid, String code,
-            String designator) {
-        ArrayList list = new ArrayList();
-        Dataset keys = DcmObjectFactory.getInstance().newDataset();
-        keys.putUI(Tags.StudyInstanceUID, suid);
-        keys.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
-        Dataset item = keys.putSQ(Tags.ConceptNameCodeSeq).addNewItem();
-        item.putSH(Tags.CodeValue, code);
-        item.putSH(Tags.CodingSchemeDesignator, designator);
-        QueryCmd query = null;
-        try {
-            query = QueryCmd.createInstanceQuery(keys, false, true);
-            query.execute();
-            while (query.next())
-                list.add(query.getDataset());
-        } catch (SQLException e) {
-            log.error("Query DB for Export Selectors " + code + '^'
-                    + designator + " of study " + suid + " failed!", e);
-        } finally {
-            if (query != null)
-                query.close();
-        }
-        return list;
     }
 
     private boolean isAllReceived(Dataset sel) {
