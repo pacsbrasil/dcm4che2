@@ -660,7 +660,7 @@ public class IANScuService extends ServiceMBeanSupport
 			DcmElement ianSOPSeq = ianSeries.get(Tags.RefSOPSeq);
 			DcmElement scnSOPSeq = scnSeries.putSQ(Tags.RefImageSeq);
 			for (int j = 0, m = ianSOPSeq.countItems(); j < m; ++j) {
-				scnSOPSeq.addItem(ianSOPSeq.getItem(i));
+				scnSOPSeq.addItem(ianSOPSeq.getItem(j));
 			}
 		}
 		return scn;
