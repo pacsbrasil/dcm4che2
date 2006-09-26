@@ -421,11 +421,11 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         for (Iterator iter = list.iterator(); iter.hasNext();) {
             Dataset manifest = (Dataset) iter.next();
             if (!isAllReceived(manifest))
-                return;
+                continue;
             try {
                 manifest = loadManifest(manifest);
                 if (isDelayed(manifest))
-                    return;
+                    continue;
                 schedule(new ExportTFOrder(manifest), System
                         .currentTimeMillis()
                         + exportDelay);
