@@ -8,6 +8,7 @@
     <property name="dist.name" value="dcm4chee-cdw-${version}"/>
     <property name="dist.src" value="dcm4chee-cdw-src-${version}"/>
     <property name="dist.standalone" value="dcm4chee-cdw-standalone-${version}"/>
+	<property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
     <property name="jboss.home" value="${user.home}/jboss-4.0.4.GA"/>
@@ -16,8 +17,8 @@
     <property name="fop.home" value="${user.home}/fop-0.20.5"/>
 
    <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="../dcm4che14/build"/>		
-	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
+	<property name="dcm4che.home" value="../dcm4che14"/>		
+	<property name="dcm4che.jar" value="${dcm4che.home}/build/lib/dcm4che.jar"/>		
 
     <property name="src.dir" value="${basedir}/src/java"/>
     <property name="src.resources" value="${basedir}/src/resources"/>
@@ -27,9 +28,9 @@
     <property name="dist.dir" value="${build.dir}/${dist.name}"/>
 
     <path id="build.path">
-        <pathelement location="${dcm4che.home}/lib/dcm4che.jar"/>
+        <pathelement location="${dcm4che.jar}"/>
         <pathelement location="${fop.home}/build/fop.jar"/>
-    	  <pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
+    	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-system.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
@@ -140,9 +141,9 @@
 				<exclude name="data/mergedir/README.TXT"/>
 				<include name="deploy/jms/*"/>
 			</zipfileset>
-			<zipfileset dir="${dcm4che.home}" prefix="${dist.jboss.conf}">
+			<zipfileset dir="${dcm4che.home}/build" prefix="${dist.jboss.conf}">
 				<include name="lib/dcm4che.jar"/>
-   		</zipfileset>	
+   			</zipfileset>	
 			<zipfileset dir="${fop.home}/build" prefix="${dist.jboss.conf}/lib">
 				<include name="fop.jar"/>				
 			</zipfileset>
@@ -152,8 +153,8 @@
 			</zipfileset>
    		</zip>
    		<zip destfile="${build.dir}/${dist.standalone}.zip">
-			<zipfileset src="${build.dir}/${dist.name}.zip" prefix="${dist.standalone}/server"/>
-			<zipfileset dir="${build.dir}" prefix="${dist.standalone}">
+			<zipfileset src="${build.dir}/${dist.name}.zip" prefix="${dist.standalone}/server"/>   			
+   			<zipfileset dir="${build.dir}" prefix="${dist.standalone}">
 				<include name="bin/init_redhat.sh"/>
 				<include name="bin/install_service.bat"/>
 				<include name="bin/run.conf"/>
@@ -177,33 +178,39 @@
 				<include name="bin/shutdown.sh"/>
 				<include name="bin/twiddle.sh"/>
 			</zipfileset>
-			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/default">
+			<zipfileset dir="${src.etc}" prefix="${dist.standalone.config}">
 				<include name="deploy/jmx-console.war/**"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone}/server/default">
+			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone.config}">
 				<include name="conf/jbossmq-state.xml"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone}/server/default">
+   	      <zipfileset dir="${jboss.home}/docs/examples" prefix="${dist.standalone.config}/deploy">
+   	        <include name="jms/file-state-service.xml"/>
+   	      </zipfileset>
+			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone.config}">
 				<include name="deploy/hsqldb-ds.xml"/>
-				<include name="deploy/jboss-jca.sar"/>
-				<include name="deploy/jboss-local-jdbc.rar"/>
 				<include name="deploy/jbossweb-tomcat55.sar/**"/>
 				<include name="deploy/jms/hsqldb-jdbc2-service.xml"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
-        <include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
+        		<include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
 				<include name="deploy/jmx-console.war/**"/>
-				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
-				<include name="deploy/jbossjca-service.xml"/>
-				<include name="deploy/jboss-local-jdbc.rar"/>
-				<include name="deploy/jmx-invoker-service.xml"/>
+		        <exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
+				<!--exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/-->
+		        <include name="deploy/naming.sar/**"/>
+		        <include name="deploy/security.sar/**"/>
+		      	<include name="deploy/dynclassloader-service.xml"/>
+		      	<include name="deploy/invokers-service.xml"/>
+		        <include name="deploy/jbossjca-service.xml"/>
+		        <include name="deploy/jboss-local-jdbc.rar"/>
+		      	<include name="deploy/jdbc-metadata-service.xml"/>
+		        <include name="deploy/jmx-invoker-service.xml"/>
+		      	<include name="deploy/jta-service.xml"/>
 				<include name="conf/props/*"/>
 				<include name="conf/xmdesc/*"/>
-				<include name="conf/jbossmq-state.xml"/>
 				<include name="conf/jndi.properties"/>
 				<include name="conf/login-config.xml"/>
 				<include name="conf/server.policy"/>
 				<include name="conf/standardjbosscmp-jdbc.xml"/>
-				<include name="lib/autonumber-plugin.jar"/>
 				<include name="lib/bcel.jar"/>
 				<include name="lib/commons-logging.jar"/>
 				<include name="lib/hsqldb.jar"/>
@@ -214,7 +221,9 @@
 				<include name="lib/jboss-j2ee.jar"/>
 				<include name="lib/jboss-jca.jar"/>
 				<include name="lib/jboss.jar"/>
-				<include name="lib/jboss-management.jar"/>
+				<!--include name="lib/jboss-management.jar"/-->
+		      	<include name="lib/jboss-remoting.jar"/>
+		      	<include name="lib/jboss-serialization.jar"/>
 				<include name="lib/jbossmq.jar"/>
 				<include name="lib/jbosssx.jar"/>
 				<include name="lib/jboss-transaction.jar"/>
@@ -223,8 +232,19 @@
 				<include name="lib/jpl-pattern.jar"/>
 				<include name="lib/jpl-util.jar"/>
 				<include name="lib/log4j.jar"/>
-				<include name="lib/scheduler-plugin.jar"/>				
 			</zipfileset>
+   	        <zipfileset dir="${basedir}" prefix="${dist.standalone.config}">
+   	          <include name="lib/scheduler-plugin.jar"/>
+   	        </zipfileset>
+   	        <zipfileset dir="${dcm4che.home}" prefix="${dist.standalone.config}">
+   	          <include name="lib/dcm4che-imageio-rle-2.0.4.jar"/>
+   	          <include name="lib/jai_imageio.jar"/>
+   	          <include name="lib/clibwrapper_jiio.jar"/>
+   	        </zipfileset>
+   	        <zipfileset dir="${dcm4che.home}" prefix="${dist.standalone}">
+   	          <include name="bin/libclib_jiio.so"/>
+   	          <include name="bin/clib_jiio.dll"/>
+   	        </zipfileset>
    		</zip>
    		<zip destfile="${build.dir}/${dist.src}.zip"
    			basedir="${basedir}" excludes="target/**,**/.*"/>
