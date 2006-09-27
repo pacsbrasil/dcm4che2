@@ -298,7 +298,6 @@
         <include name="lib/avalon-framework-cvs-20020806.jar"/>
         <include name="lib/batik.jar"/>
       </zipfileset>
-      <zipfileset file="${dcm4chee-arr.ear}" prefix="${dist.standalone.config}/deploy"/>
     </zip>
   </target>
 	
