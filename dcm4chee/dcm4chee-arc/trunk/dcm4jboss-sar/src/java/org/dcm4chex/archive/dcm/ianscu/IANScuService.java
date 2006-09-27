@@ -387,9 +387,9 @@ public class IANScuService extends ServiceMBeanSupport implements
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
         String mppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID)
                 : null;
-        if (mppsiuid == null || !sendOneIANforEachMPPS) {
+        if (!sendOneIANforEachMPPS) {
             schedule(ian);
-        } else {
+        } else if (mppsiuid != null) {
             try {
                 onMPPSReceived(getMPPSManagerHome().create().getMPPS(mppsiuid));
             } catch (ObjectNotFoundException e) {
@@ -407,7 +407,7 @@ public class IANScuService extends ServiceMBeanSupport implements
     }
 
     private void onMPPSReceived(Dataset mpps) {
-        if (notifiedAETs.length == 0 || isIgnoreMPPS(mpps)) {
+        if (notifiedAETs.length == 0 || !sendOneIANforEachMPPS || isIgnoreMPPS(mpps)) {
             return;
         }
         Dataset ian = makeIAN(mpps);
