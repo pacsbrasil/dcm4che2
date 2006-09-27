@@ -57,7 +57,7 @@ public class TFModel extends BasicFormModel {
         "TCE001", "IHERADTF", "For Teaching File Export",
         "TCE002", "IHERADTF", "For Clinical Trial Export",
         "TCE007", "IHERADTF", "For Research Collection Export",
-        "113007", "DCM", "For Patient"};
+        "113019", "99DCM4CHE", "For Media Export"};
     
     public static final String[] DELAY_REASONS = new String[] {
         "TCE011" ,"IHERADTF", "Delay export until final report is available",

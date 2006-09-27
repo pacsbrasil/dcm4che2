@@ -39,7 +39,7 @@
          TCE001^IHERADTF,
          TCE002^IHERADTF,
          TCE007^IHERADTF,
-         113007^DCM]]>
+         113019^99DCM4CHE]]>
       </description>
       <name>ExportSelectorTitles</name>
       <type>java.lang.String</type>
@@ -48,7 +48,7 @@
          TCE001^IHERADTF
          TCE002^IHERADTF
          TCE007^IHERADTF
-         113007^DCM"/>
+         113019^99DCM4CHE"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
