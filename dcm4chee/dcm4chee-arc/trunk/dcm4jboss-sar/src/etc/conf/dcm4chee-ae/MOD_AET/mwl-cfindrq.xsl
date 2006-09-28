@@ -21,7 +21,7 @@
           </attr>
           <!-- Scheduled Procedure Step Status -->
           <attr tag="00400020" vr="CS">
-            <xsl:text>ARRIVED</xsl:text>
+            <xsl:text>ARRIVED\READY</xsl:text>
           </attr>
         </item>
       </attr>
