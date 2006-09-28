@@ -169,6 +169,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private ObjectName auditLogName;
 
     private int exportDelay = 2000;
+    
+    private ArrayList scheduledList = new ArrayList();
 
     public final int getBufferSize() {
         return bufferSize;
@@ -557,12 +559,13 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         ObjectMessage om = (ObjectMessage) message;
         try {
             ExportTFOrder order = (ExportTFOrder) om.getObject();
-            log.info("Start processing " + order);
+            String iuid = order.getManifest().getString(Tags.SOPInstanceUID);
+            log.info("Start processing " + iuid );
             try {
                 process(order);
-                log.info("Finished processing " + order);
+                log.info("Finished processing " + iuid);
             } catch (Exception e) {
-                log.warn("Failed to process " + order, e);
+                log.warn("Failed to process " + iuid, e);
             }
         } catch (Throwable e) {
             log.error("unexpected error during processing message: " + message,
@@ -572,9 +575,20 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private void schedule(ExportTFOrder order, long scheduledTime)
             throws JMSException {
-        log.info("Scheduling " + order);
+        String iuid = order.getManifest().getString(Tags.SOPInstanceUID);
+        log.info("Scheduling Export TF order:" + iuid);
+        if ( log.isDebugEnabled() ) log.debug("already scheduled:"+scheduledList);
+        if ( scheduledList.contains(iuid) ) {
+            log.info("Export TF order "+ iuid+" is already scheduled! Ignore this order!");
+            return;
+        }
         JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                 scheduledTime);
+        scheduledList.add(iuid);
+        copyIUIDs(order.getManifest().get(Tags.IdenticalDocumentsSeq), scheduledList);
+        while ( scheduledList.size() - 100 > 0) {
+            log.debug("Scheduled list > 100 -> Remove eldest order from scheduled list:"+scheduledList.remove(0));
+        }
     }
 
     private void process(ExportTFOrder order) throws Exception {
@@ -594,14 +608,16 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         ActiveAssociation a = openAssociation(fileInfos, pcids, dest,
                 exportManifest != -1, exportInstances, exportMedia);
         HashMap iuidMap = new HashMap();
-        String kosIuid = manifest.getString(Tags.SOPInstanceUID);
-        iuidMap.put(kosIuid, kosIuid);// TF key object iuid must not be
-                                        // changed!
-        coerceAttributes(manifest, config, iuidMap);
         if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
             removeDelayReason(manifest);
+        Dataset sndManifest = null;
+        if ( exportManifest != -1 ) {
+            sndManifest = DcmObjectFactory.getInstance().newDataset();
+            sndManifest.putAll(manifest);
+            coerceAttributes(sndManifest, config, iuidMap);
+        }
         if (exportManifest == 0)
-            sendManifests(a, pcids[fileInfos.length], manifest, prior);
+            sendManifests(a, pcids[fileInfos.length], sndManifest, prior);
         if (exportInstances) {
             byte[] b = new byte[bufferSize];
             for (int i = 0; i < fileInfos.length; i++) {
@@ -611,7 +627,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             }
         }
         if (exportManifest > 0)
-            sendManifests(a, pcids[fileInfos.length], manifest, prior);
+            sendManifests(a, pcids[fileInfos.length], sndManifest, prior);
         if (exportMedia) {
             sendMediaCreationRequest(a, manifest, config);
         }
