@@ -18,7 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package com.tiani.prnscp.scp;
-import java.security.cert.X509Certificate;
+
 import javax.management.ObjectName;
 
 import org.dcm4che.net.AcceptorPolicy;
@@ -72,38 +72,6 @@ public interface PrintScpServiceMBean extends ServiceMBean
      * @param  dcmServerName  The new dcmServerName value
      */
     public void setDcmServerName(ObjectName dcmServerName);
-
-
-    /**
-     *  Gets the licenseFile attribute of the PrintScpServiceMBean object
-     *
-     * @return    The licenseFile value
-     */
-    public String getLicenseFile();
-
-
-    /**
-     *  Sets the licenseFile attribute of the PrintScpServiceMBean object
-     *
-     * @param  licenseFile  The new licenseFile value
-     */
-    public void setLicenseFile(String licenseFile);
-
-
-    /**
-     *  Sets the licensePasswd attribute of the PrintScpServiceMBean object
-     *
-     * @param  passwd  The new licensePasswd value
-     */
-    public void setLicensePasswd(String passwd);
-
-
-    /**
-     *  Gets the license attribute of the PrintScpServiceMBean object
-     *
-     * @return    The license value
-     */
-    public X509Certificate getLicense();
 
 
     /**

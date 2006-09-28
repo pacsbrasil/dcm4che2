@@ -20,27 +20,28 @@
 package com.tiani.prnscp.print;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
-import java.awt.Graphics2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.print.PrinterException;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.print.attribute.standard.Chromaticity;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
 import org.jboss.logging.Logger;
@@ -74,7 +75,6 @@ class PrintableImageBox
     private final static int MAGNIFICATION_NONE = 0;
 
     // Attributes ----------------------------------------------------
-    private final static DcmObjectFactory dof = DcmObjectFactory.getInstance();
     private final PrinterService service;
     private final Logger log;
     private final boolean debug;
@@ -221,7 +221,7 @@ class PrintableImageBox
                     log.debug("ImageBox #" + pos
                              + ": Take PLUT[" + uid + "] from Stored Print");
                 }
-                for (int i = 0; i < pLutSeq.vm(); ++i) {
+                for (int i = 0; i < pLutSeq.countItems(); ++i) {
                     pLUT = pLutSeq.getItem(i);
                     if (uid.equals(pLUT.getString(Tags.SOPInstanceUID))) {
                         return pLUT;

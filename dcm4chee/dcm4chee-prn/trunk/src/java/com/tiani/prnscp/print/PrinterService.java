@@ -26,7 +26,6 @@ import java.awt.print.Paper;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -187,8 +186,6 @@ public class PrinterService extends ServiceMBeanSupport implements
     private boolean reverseLandscape = true;
 
     private float borderThickness = 1;
-
-    private String resolution;
 
     private int maxNumberOfCopies;
 
@@ -1420,19 +1417,6 @@ public class PrinterService extends ServiceMBeanSupport implements
     };
 
     /**
-     *  Description of the Method
-     *
-     * @param  fnames  Description of the Parameter
-     * @param  ext     Description of the Parameter
-     */
-    private static void skipFileExt(String[] fnames, String ext) {
-        int extlen = ext.length();
-        for (int i = 0; i < fnames.length; ++i) {
-            fnames[i] = fnames[i].substring(0, fnames[i].length() - extlen);
-        }
-    }
-
-    /**
      *  Getter for property annotationDisplayFormatIDs.
      *
      * @return    Value of property annotationDisplayFormatIDs.
@@ -1855,45 +1839,6 @@ public class PrinterService extends ServiceMBeanSupport implements
         final int r = (rgb >> 16) & 0xff;
         return applyPLUTonRGB >= Math.max(Math.max(r, g), b)
                 - Math.min(Math.min(r, g), b);
-    }
-
-    /**
-     *  Gets the license attribute of the PrinterService object
-     *
-     * @return    The license value
-     */
-    public X509Certificate getLicense() {
-        try {
-            return (X509Certificate) server.getAttribute(printSCPName,
-                    "License");
-        } catch (Exception e) {
-            throw new RuntimeException("JMX error", e);
-        }
-    }
-
-    /**
-     *  Gets the licenseCN attribute of the PrinterService object
-     *
-     * @return    The licenseCN value
-     */
-    String getLicenseCN() {
-        X509Certificate license = getLicense();
-        if (license == null) { return "nobody"; }
-        String dn = license.getSubjectX500Principal().getName();
-        int start = dn.indexOf("CN=");
-        int end = dn.indexOf(',', start + 3);
-        return dn.substring(start + 3, end);
-    }
-
-    /**
-     *  Gets the licenseEndDate attribute of the PrinterService object
-     *
-     * @return    The licenseEndDate value
-     */
-    Date getLicenseEndDate() {
-        X509Certificate license = getLicense();
-        if (license == null) { return new Date(); }
-        return license.getNotAfter();
     }
 
     /**

@@ -85,10 +85,6 @@ class Annotation {
 
     private final static String PAGES = "$PAGES$";
 
-    private final static String LICENSE_CN = "$LICENSE_CN$";
-
-    private final static String LICENSE_ENDDATE = "$LICENSE_ENDDATE$";
-
     // Attributes ----------------------------------------------------
     private final PrinterService service;
 
@@ -297,7 +293,7 @@ class Annotation {
      */
     public void setAnnotationContentSeq(DcmElement seq) {
         if (seq == null) { return; }
-        for (int j = 0, n = seq.vm(); j < n; ++j) {
+        for (int j = 0, n = seq.countItems(); j < n; ++j) {
             Dataset item = seq.getItem(j);
             setText(item.getInt(Tags.AnnotationPosition, 1), item
                     .getString(Tags.TextString));
@@ -343,11 +339,6 @@ class Annotation {
             s = replaceAll(s, PAGE, String.valueOf(pageIndex + 1));
         }
         s = replaceAll(s, PAGES, numPagesStr);
-        s = replaceAll(s, LICENSE_CN, service.getLicenseCN());
-        if (s.indexOf(LICENSE_ENDDATE) != -1) {
-            s = replaceAll(s, LICENSE_ENDDATE, dateFormat.format(service
-                    .getLicenseEndDate()));
-        }
         return s;
     }
 

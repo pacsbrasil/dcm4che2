@@ -22,7 +22,7 @@ font.color=black
 2.align=right
 2.valign=bottom
 
-3=Licensed for $LICENSE_CN$\nvalid until $LICENSE_ENDDATE$
+3=TO REPLACE in conf/annotation/NO_TITLE.4.adf
 3.x=left
 3.y=bottom
 3.align=left

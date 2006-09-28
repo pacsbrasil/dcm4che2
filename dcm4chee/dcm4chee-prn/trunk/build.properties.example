@@ -1,26 +1,22 @@
 # set property "dcm4che.home" to the path of your installation directory
 # of dcm4che14 [http://sourceforge.org/projects/dcm4che]
-dcm4che.home=../dcm4che14/build
+dcm4che.home=../dcm4che14
 
 # set property "dcm4jboss.home" to the path of your installation directory
 # of dcm4jboss [http://sourceforge.org/projects/dcm4che]
 dcm4jboss.home=../dcm4jboss/build
 
-# set property "license.home" to the path of your installation directory
-# of license module
-license.home=../license/build
-
 # set property "jboss.home" to the path of your installation directory
 # of JBoss [http://sourceforge.org/projects/jboss]
-jboss.home=C:/jboss-3.2.5
+jboss.home=${user.home}/jboss-3.2.7
 
 # set property "docbook-xsl.home" to the path of your installation directory
 # of DocBook XSL Stylesheets [http://sourceforge.net/projects/docbook]
-docbook-xsl.home=C:/docbook-xsl-1.60.1
+docbook-xsl.home=${user.home}/docbook-xsl-1.71.0
 
 # set property "fop.home" to the path of your installation directory 
 # of Apache FOP [http://xml.apache.org/fop/]
-fop.home=C:/fop-0.20.4
+fop.home=${user.home}/fop-0.20.5
 
 # set property "dasho.jar" to your file path of DashoPro.jar
 # for obfuscation of commercial prnscp.jar module.

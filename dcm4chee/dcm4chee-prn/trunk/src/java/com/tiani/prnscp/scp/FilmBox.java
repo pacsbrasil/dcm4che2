@@ -317,8 +317,6 @@ class FilmBox
      */
     public Dataset createStoredPrint(FilmSession session)
     {
-        boolean debug = log.isDebugEnabled();
-
         Dataset result = dof.newDataset();
         String cuid = UIDs.StoredPrintStorage;
         String iuid = uidgen.createUID();
@@ -370,7 +368,7 @@ class FilmBox
 
     private void copyImageBoxSeq(DcmElement refImageBoxSeq, Dataset result)
     {
-        Dataset[] boxes = new Dataset[refImageBoxSeq.vm()];
+        Dataset[] boxes = new Dataset[refImageBoxSeq.countItems()];
         for (Iterator it = imageBoxes.values().iterator(); it.hasNext(); ) {
             Dataset box = (Dataset) it.next();
             int ipos = box.getInt(Tags.ImagePositionOnFilm, -1);
@@ -392,7 +390,7 @@ class FilmBox
         if (refAnnotationBoxSeq == null) {
             return;
         }
-        Dataset[] boxes = new Dataset[refAnnotationBoxSeq.vm()];
+        Dataset[] boxes = new Dataset[refAnnotationBoxSeq.countItems()];
         for (Iterator it = annotationBoxes.values().iterator(); it.hasNext(); ) {
             Dataset box = (Dataset) it.next();
             int apos = box.getInt(Tags.AnnotationPosition, -1);

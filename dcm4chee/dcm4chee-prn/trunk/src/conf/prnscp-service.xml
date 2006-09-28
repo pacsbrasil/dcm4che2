@@ -44,18 +44,6 @@
     set to true.
     -->
     <attribute name="AuditPrintJob">false</attribute>
-
-    <!--
-    Defines file containing license. Relative path names are resolved 
-    using jboss server directory as base directory.
-    -->
-    <attribute name="LicenseFile">conf/license.jks</attribute>
-    
-    <!--
-    Defines password for access to license file, specified by attribute LicenseFile
-    Required to specify, if license is stored in PKCS12 [.p12] keystore
-    -->
-    <attribute name="LicensePasswd"></attribute>
     
     <!--
     Specifies spool directory used for buffering print jobs, before they can be

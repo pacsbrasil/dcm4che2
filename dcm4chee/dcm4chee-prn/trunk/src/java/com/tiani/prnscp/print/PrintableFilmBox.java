@@ -19,7 +19,6 @@
  */
 package com.tiani.prnscp.print;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -31,7 +30,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.print.attribute.standard.Chromaticity;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -62,7 +63,6 @@ class PrintableFilmBox implements Printable
     private final PrintableImageBox[] imageBoxes;
     private final int rows;
     private final int columns;
-    private String cfgInfo;
 
 
     // Static --------------------------------------------------------
@@ -113,7 +113,7 @@ class PrintableFilmBox implements Printable
         this.columns = Integer.parseInt(displayFormat.substring(9, pos));
 
         DcmElement imageBoxContentSeq = storedPrint.get(Tags.ImageBoxContentSeq);
-        this.imageBoxes = new PrintableImageBox[imageBoxContentSeq.vm()];
+        this.imageBoxes = new PrintableImageBox[imageBoxContentSeq.countItems()];
         for (int i = 0; i < imageBoxes.length; ++i) {
             Dataset imageBox = imageBoxContentSeq.getItem(i);
             Dataset refImage = imageBox.getItem(Tags.RefImageSeq);
@@ -211,13 +211,6 @@ class PrintableFilmBox implements Printable
     {
         return pageFormat;
     }
-
-
-    private Color getBorderDensityColor()
-    {
-        return null;
-    }
-
 
     // Printable implementation ----------------------------------------------
     /**

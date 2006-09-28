@@ -24,16 +24,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import com.tiani.license.LicenseStore;
 import com.tiani.prnscp.print.PrinterServiceMBean;
 import com.tiani.prnscp.print.PrinterStatus;
 import com.tiani.prnscp.print.PrinterStatusInfo;
@@ -75,9 +71,6 @@ public class PrintScpService
 
     // Constants -----------------------------------------------------
     private final static String UNKNOWN = "unknown";
-    private final static String PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
-    private final static String DEF_LICENSE = "conf/license.jks";
-    private final static int SHUTDOWN_DELAY_MINUTES = 20;
     private final static Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
@@ -90,8 +83,6 @@ public class PrintScpService
     private AuditLogger auditLog;
     private AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
     private File spoolDir;
-    private File licenseFile;
-    private char[] licensePasswd;
     private boolean maskWarningAsSuccess = false;
     private boolean keepSpoolFiles = false;
     private boolean auditCreateSession = true;
@@ -108,19 +99,12 @@ public class PrintScpService
     private int numCreatedJobs = 0;
     private int numStoredPrints = 0;
 
-    private X509Certificate license;
-
     // Static --------------------------------------------------------
     final static DcmObjectFactory dof = DcmObjectFactory.getInstance();
     final static AssociationFactory asf = AssociationFactory.getInstance();
 
 
     // Constructors --------------------------------------------------
-    /**Constructor for the PrintScpService object */
-    public PrintScpService()
-    {
-        setLicenseFile(DEF_LICENSE);
-    }
 
     // Public --------------------------------------------------------
 
@@ -188,50 +172,6 @@ public class PrintScpService
     public void setSpoolDirectory(String dname)
     {
         this.spoolDir = toFile(dname);
-    }
-
-
-    /**
-     *  Gets the licenseFile attribute of the PrintScpService object
-     *
-     * @return    The licenseFile value
-     */
-    public final String getLicenseFile()
-    {
-        return licenseFile.getPath();
-    }
-
-
-    /**
-     *  Sets the licenseFile attribute of the PrintScpService object
-     *
-     * @param  fname  The new licenseFile value
-     */
-    public final void setLicenseFile(String fname)
-    {
-        this.licenseFile = toFile(fname);
-    }
-
-
-    /**
-     *  Sets the licensePasswd attribute of the PrintScpService object
-     *
-     * @param  passwd  The new licensePasswd value
-     */
-    public void setLicensePasswd(String passwd)
-    {
-        this.licensePasswd = passwd.length() > 0 ? passwd.toCharArray() : null;
-    }
-
-
-    /**
-     *  Gets the license attribute of the PrintScpService object
-     *
-     * @return    The license value
-     */
-    public X509Certificate getLicense()
-    {
-        return this.license;
     }
 
 
@@ -430,7 +370,6 @@ public class PrintScpService
     {
         auditLog = (AuditLogger) server.getAttribute(
                 auditLogName, "AuditLogger");
-        checkLicense();
         if (!spoolDir.exists()) {
             log.info("Creating spool directory - " + spoolDir.getCanonicalPath());
             spoolDir.mkdirs();
@@ -457,37 +396,6 @@ public class PrintScpService
         if (!keepSpoolFiles) {
             cleardir(spoolDir);
         }
-    }
-
-
-    private void checkLicense()
-    {
-        try {
-            LicenseStore store = new LicenseStore(licenseFile, licensePasswd);
-            license = store.getLicenseFor(PRODUCT_UID);
-            if (license != null) {
-                license.checkValidity();
-                if (LicenseStore.countSubjectIDs(license) == 0
-                         || LicenseStore.countMatchingSubjectIDs(license) > 0) {
-                    log.info("Detect valid License for " + license.getSubjectDN());
-                    return;
-                    // OK
-                }
-            }
-        } catch (Exception e) {
-            log.debug(e, e);
-        }
-        log.warn("No valid License detected - shutdown server in "
-                 + SHUTDOWN_DELAY_MINUTES + " minutes!");
-        new Timer().schedule(
-            new TimerTask()
-            {
-                public void run()
-                {
-                    org.jboss.Main.systemExit(null);
-                }
-            },
-                SHUTDOWN_DELAY_MINUTES * 60000L);
     }
 
 
@@ -626,14 +534,14 @@ public class PrintScpService
     }
 
 
-    void checkAttribute(Dataset ds, int tag, String[] enum, Command rsp)
+    void checkAttribute(Dataset ds, int tag, String[] expected, Command rsp)
     {
         String s = ds.getString(tag);
         if (s == null) {
             return;
         }
-        for (int i = 0; i < enum.length; ++i) {
-            if (enum[i].equals(s)) {
+        for (int i = 0; i < expected.length; ++i) {
+            if (expected[i].equals(s)) {
                 return;
             }
         }

@@ -72,19 +72,18 @@ class FilmSessionService
     // Public --------------------------------------------------------
 
     // AssociationListener implementation ----------------------------
-    /**
-     *  Description of the Method
-     *
-     * @param  as Description of the Parameter
-     */
-    public void close(Association as)
-    {
-        FilmSession session = (FilmSession) as.getProperty("FilmSession");
+    public void closed(Association src) {
+        FilmSession session = (FilmSession) src.getProperty("FilmSession");
         if (session != null) {
             scp.purgeSessionSpoolDir(session.dir(), true);
         }
     }
 
+
+    public void closing(Association src) {
+        // TODO Auto-generated method stub
+        
+    }
 
     /**
      *  Description of the Method
@@ -283,6 +282,7 @@ class FilmSessionService
             throw e;
         }
     }
+
 
     // Package protected ---------------------------------------------
 
