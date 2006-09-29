@@ -49,24 +49,27 @@ import java.util.List;
  * @since Nov 9, 2005
  */
 public class FileCopyOrder implements Serializable {
-		
-	private static final long serialVersionUID = 3258409538737550129L;
-	private final ArrayList fileInfos;
-	private final String dstFsPath;
-    private int failureCount = 0;
-	
-	public FileCopyOrder(List fileInfos, String dstFsPath) {
-		this.fileInfos = new ArrayList(fileInfos);
-		this.dstFsPath = dstFsPath;
-	}
-	
-	public final List getFileInfos() {
-		return fileInfos;
-	}
 
-	public final String getDestinationFileSystemPath() {
-		return dstFsPath;
-	}
+    private static final long serialVersionUID = 3258409538737550129L;
+
+    private final ArrayList fileInfos;
+
+    private final String dstFsPath;
+
+    private int failureCount = 0;
+
+    public FileCopyOrder(List fileInfos, String dstFsPath) {
+        this.fileInfos = new ArrayList(fileInfos);
+        this.dstFsPath = dstFsPath;
+    }
+
+    public final List getFileInfos() {
+        return fileInfos;
+    }
+
+    public final String getDestinationFileSystemPath() {
+        return dstFsPath;
+    }
 
     public final int getFailureCount() {
         return failureCount;

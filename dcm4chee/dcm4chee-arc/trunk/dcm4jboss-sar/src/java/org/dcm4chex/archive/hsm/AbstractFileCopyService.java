@@ -37,7 +37,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package org.dcm4chex.archive.hsm;
 
 import java.util.ArrayList;
@@ -75,47 +74,47 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Jan 16, 2006
  */
 public abstract class AbstractFileCopyService extends ServiceMBeanSupport
-implements MessageListener, NotificationListener {
+        implements MessageListener, NotificationListener {
 
-	private static final NotificationFilterSupport seriesStoredFilter = new NotificationFilterSupport();
-	static {
-		seriesStoredFilter.enableType(SeriesStored.class.getName());
-	}
+    private static final NotificationFilterSupport seriesStoredFilter = new NotificationFilterSupport();
+    static {
+        seriesStoredFilter.enableType(SeriesStored.class.getName());
+    }
 
-	protected ObjectName storeScpServiceName;
+    protected ObjectName storeScpServiceName;
 
-	protected String queueName;
+    protected String queueName;
 
-	protected int concurrency = 1;
+    protected int concurrency = 1;
 
-	protected int fileStatus = FileStatus.TO_ARCHIVE;
+    protected int fileStatus = FileStatus.TO_ARCHIVE;
 
-	protected boolean verifyCopy;
+    protected boolean verifyCopy;
 
-	protected ForwardingRules copyingRules = new ForwardingRules("");
+    protected ForwardingRules copyingRules = new ForwardingRules("");
 
-	protected RetryIntervalls retryIntervalls = new RetryIntervalls();
+    protected RetryIntervalls retryIntervalls = new RetryIntervalls();
 
-	protected ObjectName fileSystemMgtName;
+    protected ObjectName fileSystemMgtName;
 
-	protected int bufferSize = 8192;
+    protected int bufferSize = 8192;
 
-	public final int getBufferSize() {
-		return bufferSize;
-	}
-    
-	public final void setBufferSize(int bufferSize) {
-		this.bufferSize = bufferSize;
-	}
+    public final int getBufferSize() {
+        return bufferSize;
+    }
 
-	public final ObjectName getFileSystemMgtName() {
-		return fileSystemMgtName;
-	}
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 
-	public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-		this.fileSystemMgtName = fileSystemMgtName;
-	}
-    
+    public final ObjectName getFileSystemMgtName() {
+        return fileSystemMgtName;
+    }
+
+    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+        this.fileSystemMgtName = fileSystemMgtName;
+    }
+
     protected String getRetrieveAET() {
         try {
             return (String) server.getAttribute(fileSystemMgtName,
@@ -126,96 +125,96 @@ implements MessageListener, NotificationListener {
         }
     }
 
-	public String getEjbProviderURL() {
-		return EJBHomeFactory.getEjbProviderURL();
-	}
+    public String getEjbProviderURL() {
+        return EJBHomeFactory.getEjbProviderURL();
+    }
 
-	public void setEjbProviderURL(String ejbProviderURL) {
-		EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-	}
+    public void setEjbProviderURL(String ejbProviderURL) {
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
 
-	public final ObjectName getStoreScpServiceName() {
-		return storeScpServiceName;
-	}
+    public final ObjectName getStoreScpServiceName() {
+        return storeScpServiceName;
+    }
 
-	public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
-		this.storeScpServiceName = storeScpServiceName;
-	}
+    public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
+        this.storeScpServiceName = storeScpServiceName;
+    }
 
-	public final int getConcurrency() {
-		return concurrency;
-	}
+    public final int getConcurrency() {
+        return concurrency;
+    }
 
-	public final String getCopyingRules() {
-		return copyingRules.toString();
-	}
+    public final String getCopyingRules() {
+        return copyingRules.toString();
+    }
 
-	public final void setCopyingRules(String copyingRules) {
-		this.copyingRules = new ForwardingRules(copyingRules.replace('\\', '/'));
-	}
+    public final void setCopyingRules(String copyingRules) {
+        this.copyingRules = new ForwardingRules(copyingRules.replace('\\', '/'));
+    }
 
-	public final String getFileStatus() {
-		return FileStatus.toString(fileStatus);
-	}
+    public final String getFileStatus() {
+        return FileStatus.toString(fileStatus);
+    }
 
-	public final void setFileStatus(String fileStatus) {
-		this.fileStatus = FileStatus.toInt(fileStatus);
-	}
+    public final void setFileStatus(String fileStatus) {
+        this.fileStatus = FileStatus.toInt(fileStatus);
+    }
 
-	public final boolean isVerifyCopy() {
-		return verifyCopy;
-	}
+    public final boolean isVerifyCopy() {
+        return verifyCopy;
+    }
 
-	public final void setVerifyCopy(boolean verifyCopy) {
-		this.verifyCopy = verifyCopy;
-	}
+    public final void setVerifyCopy(boolean verifyCopy) {
+        this.verifyCopy = verifyCopy;
+    }
 
-	public final String getRetryIntervalls() {
-		return retryIntervalls.toString();
-	}
+    public final String getRetryIntervalls() {
+        return retryIntervalls.toString();
+    }
 
-	public final void setRetryIntervalls(String s) {
-		this.retryIntervalls = new RetryIntervalls(s);
-	}
+    public final void setRetryIntervalls(String s) {
+        this.retryIntervalls = new RetryIntervalls(s);
+    }
 
-	public final void setConcurrency(int concurrency) throws Exception {
-		if (concurrency <= 0)
-			throw new IllegalArgumentException("Concurrency: " + concurrency);
-		if (this.concurrency != concurrency) {
-			final boolean restart = getState() == STARTED;
-			if (restart)
-				stop();
-			this.concurrency = concurrency;
-			if (restart)
-				start();
-		}
-	}
+    public final void setConcurrency(int concurrency) throws Exception {
+        if (concurrency <= 0)
+            throw new IllegalArgumentException("Concurrency: " + concurrency);
+        if (this.concurrency != concurrency) {
+            final boolean restart = getState() == STARTED;
+            if (restart)
+                stop();
+            this.concurrency = concurrency;
+            if (restart)
+                start();
+        }
+    }
 
-	public final String getQueueName() {
-		return queueName;
-	}
+    public final String getQueueName() {
+        return queueName;
+    }
 
-	public final void setQueueName(String queueName) {
-		this.queueName = queueName;
-	}
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-	protected void startService() throws Exception {
-		JMSDelegate.startListening(queueName, this, concurrency);
-		server.addNotificationListener(storeScpServiceName, this,
-				seriesStoredFilter, null);
-	}
+    protected void startService() throws Exception {
+        JMSDelegate.startListening(queueName, this, concurrency);
+        server.addNotificationListener(storeScpServiceName, this,
+                seriesStoredFilter, null);
+    }
 
-	protected void stopService() throws Exception {
-		server.removeNotificationListener(storeScpServiceName, this,
-				seriesStoredFilter, null);
-		JMSDelegate.stopListening(queueName);
-	}
+    protected void stopService() throws Exception {
+        server.removeNotificationListener(storeScpServiceName, this,
+                seriesStoredFilter, null);
+        JMSDelegate.stopListening(queueName);
+    }
 
-	public void handleNotification(Notification notif, Object handback) {
-		SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-		Map param = new HashMap();
-		param.put("calling", new String[] { seriesStored.getCallingAET() });
-		String[] dests = copyingRules.getForwardDestinationsFor(param);
+    public void handleNotification(Notification notif, Object handback) {
+        SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+        Map param = new HashMap();
+        param.put("calling", new String[] { seriesStored.getCallingAET() });
+        String[] dests = copyingRules.getForwardDestinationsFor(param);
         if (dests.length == 0)
             return;
         List fileInfos;
@@ -226,15 +225,15 @@ implements MessageListener, NotificationListener {
             // TODO Error handling
             return;
         }
-		for (int i = 0; i < dests.length; i++) {
-			final String dest = ForwardingRules.toAET(dests[i]);
-			final long scheduledTime = ForwardingRules
-					.toScheduledTime(dests[i]);
-			scheduleCopy(fileInfos, dest, scheduledTime);
-		}
-	}
-    
-	private List toFileInfos(Dataset ian) throws Exception {
+        for (int i = 0; i < dests.length; i++) {
+            final String dest = ForwardingRules.toAET(dests[i]);
+            final long scheduledTime = ForwardingRules
+                    .toScheduledTime(dests[i]);
+            scheduleCopy(fileInfos, dest, scheduledTime);
+        }
+    }
+
+    private List toFileInfos(Dataset ian) throws Exception {
         Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
         DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
         FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
@@ -249,52 +248,51 @@ implements MessageListener, NotificationListener {
                 }
             }
         }
-	    return list;
-	}
+        return list;
+    }
 
-	public void scheduleCopy(List fileInfos, String destFsPath,
-			long scheduledTime) {
-		schedule(new FileCopyOrder(fileInfos, destFsPath), scheduledTime);
-	}
+    public void scheduleCopy(List fileInfos, String destFsPath,
+            long scheduledTime) {
+        schedule(new FileCopyOrder(fileInfos, destFsPath), scheduledTime);
+    }
 
-	private void schedule(FileCopyOrder order, long scheduledTime) {
-		try {
-			log.info("Scheduling " + order);
-			JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
-					scheduledTime);
-		} catch (JMSException e) {
-			log.error("Failed to schedule " + order, e);
-		}
-	}
+    private void schedule(FileCopyOrder order, long scheduledTime) {
+        try {
+            log.info("Scheduling " + order);
+            JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+                    scheduledTime);
+        } catch (JMSException e) {
+            log.error("Failed to schedule " + order, e);
+        }
+    }
 
-	public void onMessage(Message message) {
-		ObjectMessage om = (ObjectMessage) message;
-		try {
-			FileCopyOrder order = (FileCopyOrder) om.getObject();
-			log.info("Start processing " + order);
-			try {
-				process(order);
-				log.info("Finished processing " + order);
-			} catch (Exception e) {
-				final int failureCount = order.getFailureCount() + 1;
-				order.setFailureCount(failureCount);
-				final long delay = retryIntervalls.getIntervall(failureCount);
-				if (delay == -1L) {
-					log.error("Give up to process " + order, e);
-				} else {
-					log.warn("Failed to process " + order
-							+ ". Scheduling retry.", e);
-					schedule(order, System.currentTimeMillis() + delay);
-				}
-			}
-		} catch (Throwable e) {
-			log.error("unexpected error during processing message: " + message,
-					e);
-		}
-	}
+    public void onMessage(Message message) {
+        ObjectMessage om = (ObjectMessage) message;
+        try {
+            FileCopyOrder order = (FileCopyOrder) om.getObject();
+            log.info("Start processing " + order);
+            try {
+                process(order);
+                log.info("Finished processing " + order);
+            } catch (Exception e) {
+                final int failureCount = order.getFailureCount() + 1;
+                order.setFailureCount(failureCount);
+                final long delay = retryIntervalls.getIntervall(failureCount);
+                if (delay == -1L) {
+                    log.error("Give up to process " + order, e);
+                } else {
+                    log.warn("Failed to process " + order
+                            + ". Scheduling retry.", e);
+                    schedule(order, System.currentTimeMillis() + delay);
+                }
+            }
+        } catch (Throwable e) {
+            log.error("unexpected error during processing message: " + message,
+                    e);
+        }
+    }
 
-	protected abstract void process(FileCopyOrder order) throws Exception;
-
+    protected abstract void process(FileCopyOrder order) throws Exception;
 
     static StorageHome getStorageHome() throws HomeFactoryException {
         return (StorageHome) EJBHomeFactory.getFactory().lookup(

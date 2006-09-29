@@ -61,67 +61,65 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class FileCopyService extends AbstractFileCopyService {
 
+    protected void process(FileCopyOrder order) throws Exception {
+        String destPath = order.getDestinationFileSystemPath();
+        List fileInfos = order.getFileInfos();
+        byte[] buffer = new byte[bufferSize];
+        Storage storage = getStorageHome().create();
+        Exception ex = null;
+        MessageDigest digest = null;
+        if (verifyCopy)
+            digest = MessageDigest.getInstance("MD5");
+        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+            FileInfo finfo = (FileInfo) iter.next();
+            File src = FileUtils.toFile(finfo.basedir + '/' + finfo.fileID);
+            File dst = FileUtils.toFile(destPath + '/' + finfo.fileID);
+            try {
+                copy(src, dst, buffer);
+                byte[] md5sum0 = finfo.md5 != null ? MD5Utils
+                        .toBytes(finfo.md5) : null;
+                if (md5sum0 != null && digest != null) {
+                    byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
+                    if (!Arrays.equals(md5sum0, md5sum)) {
+                        String prompt = "md5 sum of copy " + dst
+                                + " differs from md5 sum in DB for file " + src;
+                        log.warn(prompt);
+                        throw new IOException(prompt);
+                    }
+                }
+                storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath,
+                        finfo.fileID, (int) finfo.size, md5sum0, fileStatus);
+                iter.remove();
+            } catch (Exception e) {
+                dst.delete();
+                ex = e;
+            }
+        }
+        if (ex != null)
+            throw ex;
+    }
 
-	protected void process(FileCopyOrder order) throws Exception {
-		String destPath = order.getDestinationFileSystemPath();
-		List fileInfos = order.getFileInfos();
-		byte[] buffer = new byte[bufferSize];
-		Storage storage = getStorageHome().create();
-		Exception ex = null;
-		MessageDigest digest = null;
-		if (verifyCopy)
-	        digest  = MessageDigest.getInstance("MD5");
-		for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-			FileInfo finfo = (FileInfo) iter.next();
-			File src = FileUtils.toFile(finfo.basedir + '/' + finfo.fileID);
-			File dst = FileUtils.toFile(destPath + '/' + finfo.fileID);
-			try {
-				copy(src, dst, buffer);
-				byte[] md5sum0 = finfo.md5 != null ? MD5Utils.toBytes(finfo.md5) : null;
-				if (md5sum0 != null && digest != null) {
-					byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
-                    if (!Arrays.equals(md5sum0, md5sum))
-				    {
-				    	String prompt = "md5 sum of copy " + dst
-				    		+ " differs from md5 sum in DB for file " + src;
-				    	log.warn(prompt);
-				    	throw new IOException(prompt);
-				    }
-				}
-				storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, 
-                        finfo.fileID,
-						(int) finfo.size, md5sum0, fileStatus);
-				iter.remove();
-			} catch (Exception e) {
-				dst.delete();
-				ex = e;
-			}
-		}
-		if (ex != null)
-			throw ex;
-	}
-
-	private void copy(File src, File dst, byte[] buffer) throws IOException {
-		FileInputStream fis = new FileInputStream(src);
-		try {
-			File dir = dst.getParentFile();
+    private void copy(File src, File dst, byte[] buffer) throws IOException {
+        FileInputStream fis = new FileInputStream(src);
+        try {
+            File dir = dst.getParentFile();
             if (dir.mkdirs()) {
-            	log.info("M-WRITE dir:" + dir);
+                log.info("M-WRITE dir:" + dir);
             }
             log.info("M-WRITE file:" + dst);
-			BufferedOutputStream bos = new BufferedOutputStream(
-					new FileOutputStream(dst), buffer);
-			try {
-				bos.copyFrom(fis, (int) src.length());
-			} finally {
-				bos.close();
-			}
-		} catch (IOException e) {
-			dst.delete();
-			throw e;
-		} finally {
-			fis.close();
-		}
-	}
+            BufferedOutputStream bos = new BufferedOutputStream(
+                    new FileOutputStream(dst), buffer);
+            try {
+                bos.copyFrom(fis, (int) src.length());
+            } finally {
+                bos.close();
+            }
+        } catch (IOException e) {
+            dst.delete();
+            throw e;
+        } finally {
+            fis.close();
+        }
+    }
 
 }
