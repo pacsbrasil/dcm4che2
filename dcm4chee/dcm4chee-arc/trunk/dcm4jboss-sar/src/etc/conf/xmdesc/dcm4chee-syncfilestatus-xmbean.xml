@@ -20,12 +20,12 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getDirectoryPathList"
-      setMethod="setDirectoryPathList">
-      <description>List directories (mount points) of files which shall be checked
-      for status changes. NONE = no directory or mount point.
+      getMethod="getFileSystem"
+      setMethod="setFileSystem">
+      <description>Directory/Mount Point of the monitored File System. 
+        NONE = disabled this service.
       </description>
-      <name>DirectoryPathList</name>
+      <name>MonitoredFileSystem</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>

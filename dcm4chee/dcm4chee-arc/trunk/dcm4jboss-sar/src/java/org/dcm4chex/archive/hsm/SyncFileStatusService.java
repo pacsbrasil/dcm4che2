@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.StringTokenizer;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import javax.management.Notification;
@@ -49,8 +49,6 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private static final String TIMER_ID = "SyncFileStatus";
 
-    private static final String[] EMPTY_STRINGS = {};
-
     private long minFileAge = 0L;
 
     private long taskInterval = 0L;
@@ -71,14 +69,14 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private int noMatchFileStatus;
 
-    private String[] fileSystems = {};
+    private String fileSystem = null;
 
     private String[] command = { "mmls ", INFO_PARAM, "/", FILE_PARAM };
 
     private Pattern pattern;
 
     private Integer listenerID;
-
+    
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             Calendar cal = Calendar.getInstance();
@@ -107,21 +105,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
-    public final String getDirectoryPathList() {
-        return fileSystems.length == 0 ? NONE : StringUtils.toString(
-                fileSystems, File.pathSeparatorChar);
+    public final String getFileSystem() {
+        return fileSystem == null ? NONE : fileSystem;
     }
 
-    public final void setDirectoryPathList(String str) {
-        if (NONE.equalsIgnoreCase(str)) {
-            this.fileSystems = EMPTY_STRINGS;
-        } else {
-            StringTokenizer tk = new StringTokenizer(" ,:;");
-            this.fileSystems = new String[tk.countTokens()];
-            for (int i = 0; i < fileSystems.length; i++) {
-                fileSystems[i] = tk.nextToken();
-            }
-        }
+    public final void setFileSystem(String fileSystem) {
+        this.fileSystem =  (NONE.equalsIgnoreCase(fileSystem)) ? null : fileSystem;
     }
 
     public final String getCheckFileStatus() {
@@ -262,8 +251,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         timer.init();
-        listenerID = timer
-                .startScheduler(TIMER_ID, taskInterval, timerListener);
+        listenerID = timer.startScheduler(TIMER_ID, taskInterval, 
+                timerListener);
     }
 
     protected void stopService() throws Exception {
@@ -272,45 +261,47 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     public int check() throws Exception {
+        if (fileSystem == null) {
+            return 0;
+        }
         FileSystemMgt fsmgt = newFileSystemMgt();
-        int limit = limitNumberOfFilesPerTask;
-        Timestamp before = new Timestamp(System.currentTimeMillis()
-                - minFileAge);
+        FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem,
+                checkFileStatus, 
+                new Timestamp(System.currentTimeMillis() - minFileAge),
+                limitNumberOfFilesPerTask);
+        if (c.length == 0) {
+            return 0;
+        }
         int count = 0;
-        for (int i = 0; limit > 0 && i < fileSystems.length; i++) {
-            FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystems[i]
-                    .replace(File.separatorChar, '/'), checkFileStatus, before,
-                    limit);
-            for (int j = 0; j < c.length; j++) {
-                if (check(fsmgt, c[i]))
-                    ++count;
-            }
-            limit -= c.length;
+        HashMap checkedTars = new HashMap();
+        for (int i = 0; i < c.length; i++) {
+            if (check(fsmgt, c[i], checkedTars))
+                ++count;
         }
         return count;
     }
 
-    private boolean check(FileSystemMgt fsmgt, FileDTO fileDTO) {
-        int status = fileDTO.getFileStatus();
-        String cmd = makeCommand(fileDTO.getDirectoryPath().replace('/',
-                File.separatorChar), fileDTO.getFilePath().replace('/',
-                File.separatorChar), fileDTO.getUserInfo());
-        try {
-            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-            Executer ex = new Executer(cmd, stdout, null);
-            int exit = ex.waitFor();
-            if (exit != 0) {
-                log.info("Non-zero exit code(" + exit + ") of " + cmd);
-                status = nonZeroExitFileStatus;
-            } else {
-                String result = stdout.toString();
-                status = pattern.matcher(result).matches() ? matchFileStatus
-                        : noMatchFileStatus;
+    private boolean check(FileSystemMgt fsmgt, FileDTO fileDTO, HashMap checkedTars) {
+        String dirpath = fileDTO.getDirectoryPath();
+        String filePath = fileDTO.getFilePath();
+        String tarPath = null;
+        if (dirpath.startsWith("tar:")) {
+            dirpath = dirpath.substring(4);
+            filePath = filePath.substring(0, filePath.indexOf('!'));
+            tarPath = dirpath + '/' + filePath;
+            Integer status = (Integer) checkedTars.get(tarPath);
+            if (status != null) {
+                return updateFileStatus(fsmgt, fileDTO, status.intValue());                
             }
-        } catch (Exception e) {
-            log.error("Failed to execute " + cmd, e);
-            status = commandFailedFileStatus;
         }
+        int status = queryHSM(dirpath, filePath, fileDTO);
+        if (tarPath != null) {
+            checkedTars.put(tarPath, new Integer(status));
+        }
+        return updateFileStatus(fsmgt, fileDTO, status);
+    }
+
+    private boolean updateFileStatus(FileSystemMgt fsmgt, FileDTO fileDTO, int status) {
         if (fileDTO.getFileStatus() != status) {
             try {
                 fsmgt.setFileStatus(fileDTO.getPk(), status);
@@ -320,6 +311,29 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             }
         }
         return false;
+    }
+
+    private int queryHSM(String dirpath, String filePath, FileDTO fileDTO) {
+        String cmd = makeCommand(
+                dirpath.replace('/', File.separatorChar), 
+                filePath.replace('/', File.separatorChar),
+                fileDTO.getUserInfo());
+        try {
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            Executer ex = new Executer(cmd, stdout, null);
+            int exit = ex.waitFor();
+            if (exit != 0) {
+                log.info("Non-zero exit code(" + exit + ") of " + cmd);
+                return nonZeroExitFileStatus;
+            } else {
+                String result = stdout.toString();
+                return pattern.matcher(result).matches() ? matchFileStatus
+                        : noMatchFileStatus;
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute " + cmd, e);
+            return commandFailedFileStatus;
+        }
     }
 
     private FileSystemMgt newFileSystemMgt() {
