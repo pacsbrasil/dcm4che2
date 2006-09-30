@@ -37,7 +37,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package org.dcm4chex.archive.hsm;
 
 import java.io.DataInputStream;
@@ -62,13 +61,13 @@ import org.apache.commons.compress.tar.TarInputStream;
  */
 public class VerifyTar {
 
-	private static final String USAGE = 
-        "Usage: java -jar verifytar.jar [-p<num>] <file or directory path>[..]\n\n" +
-        " -p<num>  Strip the smallest prefix containing <num> leading slashes from each\n" +
-        "          file name prompted to stdout.";
+    private static final String USAGE = "Usage: java -jar verifytar.jar [-p<num>] <file or directory path>[..]\n\n"
+            + " -p<num>  Strip the smallest prefix containing <num> leading slashes from each\n"
+            + "          file name prompted to stdout.";
+
     private byte[] buf = new byte[8192];
-	
-	public void verify(InputStream in, String tarname) throws IOException,
+
+    public void verify(InputStream in, String tarname) throws IOException,
             VerifyTarException {
         TarInputStream tar = new TarInputStream(in);
         try {
@@ -86,7 +85,8 @@ public class VerifyTar {
                 char[] c = line.toCharArray();
                 byte[] md5sum = new byte[16];
                 for (int i = 0, j = 0; i < md5sum.length; i++, j++, j++) {
-                    md5sum[i] = (byte) ((fromHexDigit(c[j]) << 4) | fromHexDigit(c[j + 1]));
+                    md5sum[i] = (byte) ((fromHexDigit(c[j]) << 4)
+                            | fromHexDigit(c[j + 1]));
                 }
                 md5sums.put(line.substring(34), md5sum);
             }
@@ -120,13 +120,11 @@ public class VerifyTar {
         }
     }
 
-	private static int fromHexDigit(char c) {
-		return c - 
-			((c <= '9') ? '0' :
-				(((c <= 'F') ? 'A' : 'a') - 10));
-	}
+    private static int fromHexDigit(char c) {
+        return c - ((c <= '9') ? '0' : (((c <= 'F') ? 'A' : 'a') - 10));
+    }
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
         if (args.length == 0) {
             System.out.println(USAGE);
             System.exit(-1);
@@ -135,56 +133,57 @@ public class VerifyTar {
         int strip = 0;
         if (args[0].startsWith("-p")) {
             try {
-                strip = Integer.parseInt(args[0].substring(2)); 
+                strip = Integer.parseInt(args[0].substring(2));
                 off = 1;
             } catch (NumberFormatException e) {
                 System.out.println(USAGE);
-                System.exit(-1);              
+                System.exit(-1);
             }
         }
-		int errors = 0;
-		VerifyTar inst = new VerifyTar();
-		for (int i = off; i < args.length; i++) {
-			try {
-				errors += inst.verify(new File(args[i]), strip);
-			} catch (FileNotFoundException e) {
-				System.err.println(e.getMessage());
-				System.exit(-2);
-			}
-		}
-		System.exit(errors);
-	}
+        int errors = 0;
+        VerifyTar inst = new VerifyTar();
+        for (int i = off; i < args.length; i++) {
+            try {
+                errors += inst.verify(new File(args[i]), strip);
+            } catch (FileNotFoundException e) {
+                System.err.println(e.getMessage());
+                System.exit(-2);
+            }
+        }
+        System.exit(errors);
+    }
 
-	private int verify(File file, int strip) throws FileNotFoundException {
-		int errors = 0;
-		if (file.isDirectory()) {
-			String[] ss = file.list();
-			for (int i = 0; i < ss.length; i++) {
-				errors += verify(new File(file, ss[i]), strip);				
-			}
-		} else {
-			FileInputStream in = new FileInputStream(file);
-			String tarname = file.getPath();
-			
-			try {
+    private int verify(File file, int strip) throws FileNotFoundException {
+        int errors = 0;
+        if (file.isDirectory()) {
+            String[] ss = file.list();
+            for (int i = 0; i < ss.length; i++) {
+                errors += verify(new File(file, ss[i]), strip);
+            }
+        } else {
+            FileInputStream in = new FileInputStream(file);
+            String tarname = file.getPath();
+
+            try {
                 int pos = 0;
                 while (strip-- > 0) {
                     pos = tarname.indexOf(File.separatorChar, pos);
-                    if (pos == -1) break;
+                    if (pos == -1)
+                        break;
                     pos++;
                 }
                 if (pos != -1) {
-    				System.out.print(tarname.substring(pos));
-    				System.out.print(' ');
+                    System.out.print(tarname.substring(pos));
+                    System.out.print(' ');
                 }
-				verify(in, tarname);
-				System.out.println("ok");
-			} catch (Exception e) {
-				errors = 1;
-				System.out.println(e.getMessage());
-			}
-		}
-		return errors;
-	}
+                verify(in, tarname);
+                System.out.println("ok");
+            } catch (Exception e) {
+                errors = 1;
+                System.out.println(e.getMessage());
+            }
+        }
+        return errors;
+    }
 
 }
