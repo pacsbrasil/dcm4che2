@@ -41,6 +41,7 @@ package org.dcm4chex.archive.hsm;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -48,8 +49,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.compress.tar.TarEntry;
+import org.apache.commons.compress.tar.TarOutputStream;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.util.FileUtils;
@@ -61,9 +65,20 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class FileCopyService extends AbstractFileCopyService {
 
+    private static final int MD5SUM_ENTRY_LEN = 52;    
+    
     protected void process(FileCopyOrder order) throws Exception {
         String destPath = order.getDestinationFileSystemPath();
         List fileInfos = order.getFileInfos();
+        if (destPath.startsWith("tar:")) {
+            mkTar(fileInfos, destPath);
+        } else {
+            copyFiles(fileInfos, destPath);
+        }
+    }
+
+    private void copyFiles(List fileInfos, String destPath)
+            throws Exception {
         byte[] buffer = new byte[bufferSize];
         Storage storage = getStorageHome().create();
         Exception ex = null;
@@ -122,4 +137,85 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
+    private void mkTar(List fileInfos, String destPath) throws Exception {
+        FileInfo file1Info = (FileInfo) fileInfos.get(0);
+        String tarPath = mkTarPath(file1Info.fileID);
+        File tarFile = FileUtils.toFile(destPath.substring(4) + '/' + tarPath);
+        tarFile.getParentFile().mkdirs();
+        try {
+            TarOutputStream tar = new TarOutputStream(
+                    new FileOutputStream(tarFile));
+            try {
+                writeMD5SUM(tar, fileInfos);
+                for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+                    writeFile(tar, (FileInfo) iter.next());
+                }
+            } finally {
+                tar.close();
+            }
+            if (verifyCopy) {
+                VerifyTar.verify(tarFile, new byte[bufferSize]);
+            }
+        } catch (Exception e) {
+            tarFile.delete();
+            throw e;
+        }
+        Storage storage = getStorageHome().create();
+        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+            FileInfo finfo = (FileInfo) iter.next();
+            String fileId = tarPath + '!' + mkTarEntryName(finfo.fileID);
+            storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
+                    (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
+        }
+    }
+
+    private void writeMD5SUM(TarOutputStream tar, List fileInfos)
+            throws IOException {
+        byte[] md5sum = new byte[fileInfos.size() * MD5SUM_ENTRY_LEN];
+        final TarEntry tarEntry = new TarEntry("MD5SUM");
+        tarEntry.setSize(md5sum.length);
+        tar.putNextEntry(tarEntry);
+        
+        int i = 0;
+        for (Iterator iter = fileInfos.iterator(); iter.hasNext(); 
+                i += MD5SUM_ENTRY_LEN) {
+            FileInfo fileInfo = (FileInfo) iter.next();
+            MD5Utils.toHexChars(MD5.toBytes(fileInfo.md5), md5sum, i);
+            
+            md5sum[i+32] = ' ';
+            md5sum[i+33] = ' ';
+            System.arraycopy(
+                    mkTarEntryName(fileInfo.fileID).getBytes("US-ASCII"), 0, 
+                    md5sum, i+34, 17);
+            md5sum[i+51] = '\n';
+        }
+        tar.write(md5sum);
+        tar.closeEntry();
+    }
+
+    private void writeFile(TarOutputStream tar, FileInfo fileInfo) 
+    throws IOException, FileNotFoundException {
+        File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
+        TarEntry entry = new TarEntry(mkTarEntryName(fileInfo.fileID));
+        entry.setSize(fileInfo.size);
+        tar.putNextEntry(entry);
+        FileInputStream fis = new FileInputStream(file);
+        try {
+            tar.copyEntryContents(fis);
+        } finally {
+            fis.close();
+        }
+        tar.closeEntry();
+    }
+    
+    private String mkTarEntryName(String filePath) {
+        return filePath.substring(filePath.length() - 17);
+    }
+
+    private String mkTarPath(String filePath) {
+        int len = filePath.length();
+        StringBuffer sb = new StringBuffer(len + 4);
+        sb.append(filePath).append(".tar").setCharAt(len - 9, '-');
+        return sb.toString();
+    }
 }

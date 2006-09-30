@@ -17,29 +17,17 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getCopyingRules" setMethod="setCopyingRules">
-      <description><![CDATA[List of Copying rules, dependent upon which application 
-- identified by the Calling AE title - sent the objects, and also dependent
-upon which called AE title was used in the Association Request.
-
-The comma separated list of file system paths after the (optional) condition 
-defines the Copying destination. Each file systme path can be suffixed by !<from>-<to> to defer Copying to
-that destination outside a particular time interval.
-      <br>Format:
-      <br>[calling[!]=<i>aeTitle</i>]<i>dirPath</i>!<i>from</i>-<i>to</i> | NONE 
-      <br>where
-      <br><i>calling</i> = create a copy condition for objects received from this calling AE title
-      <br><i>aeTitle</i> = the calling AE titles separated by commas
-      <br><i>dirPath</i> = the destination file system identified by its path, in a comma-separated list (optional)
-      <br><i>!from</i>-<i>to</i> = start and end hour (0-23) when no Copying to this file system should be performed (optional)
-      <br>NONE = do not use any Copying rules.
-<br>Example:      
-<br>[calling=SCU1|SCU2]/mnt/nfs1,/mnt/nfs2!8-16
-<br>Forwards objects received from AE Title SCU1 or SCU2 to file systems mounted
-at /mnt/nfs1 and /mnt/nfs2. Copying of objects received between 8am and
-4pm to /mnt/nfs2 is delayed until 4 pm.]]>
+   <attribute access="read-write" 
+     getMethod="getDestination" 
+     setMethod="setDestination">
+      <description><![CDATA[Directory/Mount Point of the Destination File System
+        or NONE to disable the service. The Directory/Mount Point can be 
+        suffixed by '!'<i>from</i>'-'<i>to</i> to defer copying outside a 
+        particular time interval, and/or prefixed by a condition 
+        '[calling'['!']'='<i>aeTitle</i>['|'..]']' to limit/exclude copying 
+        to/of series received from modalities with specified AE title(s).]]>
       </description>
-      <name>CopyingRules</name>
+      <name>DestinationFileSystem</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>

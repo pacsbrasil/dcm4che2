@@ -61,14 +61,24 @@ import org.apache.commons.compress.tar.TarInputStream;
  */
 public class VerifyTar {
 
+    private static final int BUF_SIZE = 8192;
     private static final String USAGE = "Usage: java -jar verifytar.jar [-p<num>] <file or directory path>[..]\n\n"
             + " -p<num>  Strip the smallest prefix containing <num> leading slashes from each\n"
             + "          file name prompted to stdout.";
 
-    private byte[] buf = new byte[8192];
 
-    public void verify(InputStream in, String tarname) throws IOException,
-            VerifyTarException {
+    public static void verify(File file, byte[] buf)
+            throws IOException, VerifyTarException {
+        FileInputStream in = new FileInputStream(file);
+        try {
+            verify(in, file.toString(), buf);
+        } finally {
+            in.close();
+        }
+    }
+    
+    public static void verify(InputStream in, String tarname, byte[] buf)
+            throws IOException, VerifyTarException {
         TarInputStream tar = new TarInputStream(in);
         try {
             TarEntry entry = tar.getNextEntry();
@@ -141,10 +151,10 @@ public class VerifyTar {
             }
         }
         int errors = 0;
-        VerifyTar inst = new VerifyTar();
+        byte[] buf = new byte[BUF_SIZE];
         for (int i = off; i < args.length; i++) {
             try {
-                errors += inst.verify(new File(args[i]), strip);
+                errors += VerifyTar.verify(new File(args[i]), strip, buf);
             } catch (FileNotFoundException e) {
                 System.err.println(e.getMessage());
                 System.exit(-2);
@@ -153,16 +163,16 @@ public class VerifyTar {
         System.exit(errors);
     }
 
-    private int verify(File file, int strip) throws FileNotFoundException {
+    private static int verify(File file, int strip, byte[] buf) 
+            throws FileNotFoundException {
         int errors = 0;
         if (file.isDirectory()) {
             String[] ss = file.list();
             for (int i = 0; i < ss.length; i++) {
-                errors += verify(new File(file, ss[i]), strip);
+                errors += verify(new File(file, ss[i]), strip, buf);
             }
         } else {
-            FileInputStream in = new FileInputStream(file);
-            String tarname = file.getPath();
+             String tarname = file.getPath();
 
             try {
                 int pos = 0;
@@ -176,7 +186,7 @@ public class VerifyTar {
                     System.out.print(tarname.substring(pos));
                     System.out.print(' ');
                 }
-                verify(in, tarname);
+                verify(file, buf);
                 System.out.println("ok");
             } catch (Exception e) {
                 errors = 1;
@@ -185,5 +195,6 @@ public class VerifyTar {
         }
         return errors;
     }
+
 
 }

@@ -58,6 +58,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.config.Condition;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
@@ -90,8 +91,10 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     protected int fileStatus = FileStatus.TO_ARCHIVE;
 
     protected boolean verifyCopy;
-
-    protected ForwardingRules copyingRules = new ForwardingRules("");
+    
+    protected Condition condition = null;
+    
+    protected String destination = null;
 
     protected RetryIntervalls retryIntervalls = new RetryIntervalls();
 
@@ -145,12 +148,24 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         return concurrency;
     }
 
-    public final String getCopyingRules() {
-        return copyingRules.toString();
+    public final String getDestination() {
+        return destination == null ? "NONE" : condition == null ? destination
+                : condition.toString() + destination;
     }
 
-    public final void setCopyingRules(String copyingRules) {
-        this.copyingRules = new ForwardingRules(copyingRules.replace('\\', '/'));
+    public final void setDestination(String destination) {
+        this.condition = null;
+        this.destination = null;
+        if ("NONE".equalsIgnoreCase(destination)) {
+            return;
+        }
+        int startDest = destination.indexOf(']');
+        if (startDest != -1) {
+            this.condition = new Condition(destination.substring(0, startDest+1));
+            this.destination = destination.substring(startDest+1);
+        } else {
+            this.destination = destination;
+        }
     }
 
     public final String getFileStatus() {
@@ -211,12 +226,17 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     }
 
     public void handleNotification(Notification notif, Object handback) {
-        SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-        Map param = new HashMap();
-        param.put("calling", new String[] { seriesStored.getCallingAET() });
-        String[] dests = copyingRules.getForwardDestinationsFor(param);
-        if (dests.length == 0)
+        if (destination == null) {
             return;
+        }
+        SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+        if (condition != null) {
+            Map param = new HashMap();
+            param.put("calling", new String[] { seriesStored.getCallingAET() });
+            if (!condition.isTrueFor(param)) {
+                return;
+            }
+        }
         List fileInfos;
         try {
             fileInfos = toFileInfos(seriesStored.getIAN());
@@ -225,12 +245,8 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             // TODO Error handling
             return;
         }
-        for (int i = 0; i < dests.length; i++) {
-            final String dest = ForwardingRules.toAET(dests[i]);
-            final long scheduledTime = ForwardingRules
-                    .toScheduledTime(dests[i]);
-            scheduleCopy(fileInfos, dest, scheduledTime);
-        }
+        scheduleCopy(fileInfos, ForwardingRules.toAET(destination),
+                ForwardingRules.toScheduledTime(destination));
     }
 
     private List toFileInfos(Dataset ian) throws Exception {
