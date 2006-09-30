@@ -608,14 +608,14 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFTPRetrieverName"
-      setMethod="setFTPRetrieverName">
+      getMethod="getTarRetrieverName"
+      setMethod="setTarRetrieverName">
       <description>Used internally. Do NOT modify.
       </description>
-      <name>FTPRetrieverName</name>
+      <name>TarRetrieverName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chee.archive:service=FTPRetriever"/>
+         <value value="dcm4chee.archive:service=TarRetriever"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

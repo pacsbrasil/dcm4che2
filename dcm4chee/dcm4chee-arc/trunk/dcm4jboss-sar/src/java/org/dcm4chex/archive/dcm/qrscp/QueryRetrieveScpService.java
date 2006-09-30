@@ -132,7 +132,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private ObjectName stgCmtScuScpName;
 
-    private ObjectName ftpRetrieverName;
+    private ObjectName tarRetrieverName;
         
     private ObjectName aeServiceName; 
     
@@ -260,12 +260,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.stgCmtScuScpName = stgCmtScuScpName;
     }
     
-    public final ObjectName getFTPRetrieverName() {
-        return ftpRetrieverName;
+    public final ObjectName getTarRetrieverName() {
+        return tarRetrieverName;
     }
 
-    public final void setFTPRetrieverName(ObjectName ftpRetrieverName) {
-        this.ftpRetrieverName = ftpRetrieverName;
+    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
+        this.tarRetrieverName = tarRetrieverName;
     }
 
 	/**
@@ -655,9 +655,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-    File retrieveFileFromLTA(String ftpURL) throws Exception {
-        return (File) server.invoke(ftpRetrieverName, "retrieveFileFromLTA",
-                new Object[] { ftpURL }, new String[] { String.class.getName() });
+    File retrieveFileFromTAR(String tarURI) throws Exception {
+        return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
+                new Object[] { tarURI }, new String[] { String.class.getName() });
     }
 
     FileSystemMgtHome getFileSystemMgtHome()

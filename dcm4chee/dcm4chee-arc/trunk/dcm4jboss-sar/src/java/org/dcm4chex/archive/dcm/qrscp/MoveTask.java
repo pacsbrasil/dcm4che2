@@ -561,8 +561,8 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        File f = info.basedir.startsWith("ftp://") 
-                ? service.retrieveFileFromLTA(info.basedir + '/' + info.fileID)
+        File f = info.basedir.startsWith("tar:") 
+                ? service.retrieveFileFromTAR(info.basedir + '/' + info.fileID)
                 : FileUtils.toFile(info.basedir, info.fileID);
         Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
                 DatasetUtils.fromByteArray(info.studyAttrs,
