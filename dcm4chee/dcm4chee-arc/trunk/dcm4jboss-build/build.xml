@@ -1,7 +1,7 @@
 <project name="dcm4jboss-build" default="dist">
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
-  <property name="version" value="2.10.4"/>
+  <property name="version" value="2.10.5"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
@@ -135,6 +135,7 @@
         <include name="bin/JavaService.exe"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone.config}">
+        <include name="lib/commons-compress-20050911.jar"/>
         <include name="lib/saaj-api.jar"/>
         <include name="lib/saaj-impl.jar"/>
       	<!-- not included in jems-installer ejb3 option -->
