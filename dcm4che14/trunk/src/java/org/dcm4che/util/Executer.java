@@ -101,7 +101,7 @@ public class Executer {
 
     public Executer(String cmd, OutputStream stdout, OutputStream stderr)
             throws IOException {
-        this(tokenize(cmd), null, null);
+        this(tokenize(cmd), stdout, stderr);
     }
 
     public Executer(String[] cmdarray, OutputStream stdout, OutputStream stderr)
