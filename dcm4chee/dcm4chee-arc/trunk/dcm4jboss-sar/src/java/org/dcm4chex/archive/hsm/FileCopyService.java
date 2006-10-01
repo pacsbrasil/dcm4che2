@@ -52,7 +52,9 @@ import java.util.List;
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarOutputStream;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -65,13 +67,72 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class FileCopyService extends AbstractFileCopyService {
 
-    private static final int MD5SUM_ENTRY_LEN = 52;    
+    private static final String NONE = "NONE";    
+    private static final String SRC_PARAM = "%p";
+    private static final String FS_PARAM = "%d";
+    private static final String FILE_PARAM = "%f";
+    private static final int MD5SUM_ENTRY_LEN = 52;
     
+    private String[] tarCopyCmd = null;   
+    private File tarOutgoingDir;
+    private File absTarOutgoingDir;
+    
+    public final String getTarCopyCommand() {
+        if (tarCopyCmd == null) {
+            return NONE;
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < tarCopyCmd.length; i++) {
+            sb.append(tarCopyCmd[i]);
+        }
+        return sb.toString();
+    }
+
+    public final void setTarCopyCommand(String cmd) {
+        if (NONE.equalsIgnoreCase(cmd)) {
+            this.tarCopyCmd = null;
+            return;
+        }
+        String[] a = StringUtils.split(cmd, '%');
+        try {
+            String[] b = new String[a.length + a.length - 1];
+            b[0] = a[0];
+            for (int i = 1; i < a.length; i++) {
+                String s = a[i];
+                b[2 * i - 1] = ("%" + s.charAt(0)).intern();
+                b[2 * i] = s.substring(1);
+            }
+            this.tarCopyCmd = b;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(cmd);
+        }
+    }
+
+    private String makeCommand(String srcParam, String fsID, String fileID) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < tarCopyCmd.length; i++) {
+            sb.append(tarCopyCmd[i] == SRC_PARAM ? srcParam
+                    : tarCopyCmd[i] == FS_PARAM ? fsID
+                    : tarCopyCmd[i] == FILE_PARAM ? fileID
+                    : tarCopyCmd[i]);
+        }
+        return sb.toString();
+    }
+    
+    public final String getTarOutgoingDir() {
+        return tarOutgoingDir.getPath();
+    }
+
+    public final void setTarOutgoingDir(String tarOutgoingDir) {
+        this.tarOutgoingDir = new File(tarOutgoingDir);
+        this.absTarOutgoingDir = FileUtils.resolve(this.tarOutgoingDir);
+    }
+
     protected void process(FileCopyOrder order) throws Exception {
         String destPath = order.getDestinationFileSystemPath();
         List fileInfos = order.getFileInfos();
         if (destPath.startsWith("tar:")) {
-            mkTar(fileInfos, destPath);
+            copyTar(fileInfos, destPath);
         } else {
             copyFiles(fileInfos, destPath);
         }
@@ -137,11 +198,43 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
-    private void mkTar(List fileInfos, String destPath) throws Exception {
+    private void copyTar(List fileInfos, String destPath) throws Exception {
         FileInfo file1Info = (FileInfo) fileInfos.get(0);
         String tarPath = mkTarPath(file1Info.fileID);
-        File tarFile = FileUtils.toFile(destPath.substring(4) + '/' + tarPath);
-        tarFile.getParentFile().mkdirs();
+        if (tarCopyCmd == null) {
+            File tarFile = FileUtils.toFile(destPath.substring(4), tarPath);
+            tarFile.getParentFile().mkdirs();
+            mkTar(fileInfos, tarFile);
+        } else {
+            if (absTarOutgoingDir.mkdirs()) {
+                log.info("M-WRITE " + absTarOutgoingDir);
+            }
+            int tarPathLen = tarPath.length();
+            File tarFile = new File(absTarOutgoingDir,
+                    tarPath.substring(tarPathLen - 21));
+            try {
+                mkTar(fileInfos, tarFile);
+                String cmd = makeCommand(tarFile.getPath(), destPath, tarPath);
+                Executer ex = new Executer(cmd);
+                int exit = ex.waitFor();
+                if (exit != 0) {
+                    throw new IOException("Non-zero exit code(" + exit 
+                            + ") of " + cmd);
+                }
+            } finally {
+                tarFile.delete();
+            }
+        }
+        Storage storage = getStorageHome().create();
+        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+            FileInfo finfo = (FileInfo) iter.next();
+            String fileId = tarPath + '!' + mkTarEntryName(finfo.fileID);
+            storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
+                    (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
+        }
+    }
+    
+    private void mkTar(List fileInfos, File tarFile) throws Exception {
         try {
             TarOutputStream tar = new TarOutputStream(
                     new FileOutputStream(tarFile));
@@ -159,13 +252,6 @@ public class FileCopyService extends AbstractFileCopyService {
         } catch (Exception e) {
             tarFile.delete();
             throw e;
-        }
-        Storage storage = getStorageHome().create();
-        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-            FileInfo finfo = (FileInfo) iter.next();
-            String fileId = tarPath + '!' + mkTarEntryName(finfo.fileID);
-            storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
-                    (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
         }
     }
 

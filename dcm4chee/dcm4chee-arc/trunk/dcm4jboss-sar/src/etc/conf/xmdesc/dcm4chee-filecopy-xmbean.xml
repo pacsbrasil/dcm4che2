@@ -33,6 +33,36 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+     getMethod="getTarCopyCommand" 
+     setMethod="setTarCopyCommand">
+      <description><![CDATA[External command to copy TAR, with
+         <br>%p will be replaced by the source TAR file path,
+         <br>%d will be replaced by destination file system ID,
+         <br>%f will be replaced by destination TAR file ID.
+         <br>NONE = write TAR file on local accessable file system.
+       ]]>
+      </description>
+      <name>TarCopyCommand</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+     getMethod="getTarOutgoingDir" 
+     setMethod="setTarOutgoingDir">
+      <description><![CDATA[Directory from which tars shall be copied
+      by external <b>TarCopyCommand</b>. A relative path name is resolved
+      relative to <i>archive-install-directory</i>/server/default/.
+      Not effective if TarCopyCommand=<code>NONE<code>]]>
+      </description>
+      <name>TarOutgoingDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tar-outgoing"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getFileStatus"
       setMethod="setFileStatus">
