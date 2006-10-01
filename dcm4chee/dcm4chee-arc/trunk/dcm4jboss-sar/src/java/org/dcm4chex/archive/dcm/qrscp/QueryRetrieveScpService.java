@@ -655,9 +655,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-    File retrieveFileFromTAR(String tarURI) throws Exception {
+    File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
         return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
-                new Object[] { tarURI }, new String[] { String.class.getName() });
+                new Object[] { fsID, fileID }, 
+                new String[] { String.class.getName(), String.class.getName()});
     }
 
     FileSystemMgtHome getFileSystemMgtHome()

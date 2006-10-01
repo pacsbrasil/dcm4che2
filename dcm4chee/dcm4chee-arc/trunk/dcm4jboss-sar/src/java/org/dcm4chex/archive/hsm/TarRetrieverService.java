@@ -55,7 +55,9 @@ import java.util.HashMap;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
+import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -67,6 +69,10 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class TarRetrieverService extends ServiceMBeanSupport {
 
+    private static final String NONE = "NONE";
+    private static final String DST_PARAM = "%p";
+    private static final String FS_PARAM = "%d";
+    private static final String FILE_PARAM = "%f";
     private static final int MIN_LRUCACHE_SIZE = 10;
 
     private static final Comparator DIR_INFO_CMP = new Comparator() {
@@ -84,6 +90,12 @@ public class TarRetrieverService extends ServiceMBeanSupport {
 
     private long prefFreeDiskSpace;
 
+    private String[] tarFetchCmd = null; 
+    
+    private File tarIncomingDir;
+    
+    private File absTarIncomingDir;
+    
     private int bufferSize = 8192;
 
     private int lruCacheSize = 20;
@@ -146,25 +158,107 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         this.prefFreeDiskSpace = FileUtils.parseSize(s, 0);
     }
 
-    public File retrieveFileFromTAR(String taruri) throws IOException,
-            VerifyTarException {
-        if (!taruri.startsWith("tar:")) {
-            throw new IllegalArgumentException("Not a tar URI: " + taruri);
+    public final String getTarFetchCommand() {
+        if (tarFetchCmd == null) {
+            return NONE;
         }
-        int tarEnd = taruri.indexOf('!');
-        if (tarEnd == -1)
-            throw new IllegalArgumentException("Missing ! in " + taruri);
-        int dirEnd = taruri.lastIndexOf('/', tarEnd);
-        if (dirEnd == -1)
-            throw new IllegalArgumentException("Missing / before ! in " + taruri);
-        String dpath = taruri.substring(4, dirEnd).replace('/',
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < tarFetchCmd.length; i++) {
+            sb.append(tarFetchCmd[i]);
+        }
+        return sb.toString();
+    }
+
+    public final void setTarFetchCommand(String cmd) {
+        if (NONE.equalsIgnoreCase(cmd)) {
+            this.tarFetchCmd = null;
+            return;
+        }
+        String[] a = StringUtils.split(cmd, '%');
+        try {
+            String[] b = new String[a.length + a.length - 1];
+            b[0] = a[0];
+            for (int i = 1; i < a.length; i++) {
+                String s = a[i];
+                b[2 * i - 1] = ("%" + s.charAt(0)).intern();
+                b[2 * i] = s.substring(1);
+            }
+            this.tarFetchCmd = b;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(cmd);
+        }
+    }
+
+    private String makeCommand(String fsParam, String fileParam,
+            String dstParam) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < tarFetchCmd.length; i++) {
+            sb.append(tarFetchCmd[i] == FS_PARAM ? fsParam
+                    : tarFetchCmd[i] == FILE_PARAM ? fileParam
+                    : tarFetchCmd[i] == DST_PARAM ? dstParam
+                    : tarFetchCmd[i]);
+        }
+        return sb.toString();
+    }
+    
+    public final String getTarIncomingDir() {
+        return tarIncomingDir.getPath();
+    }
+
+    public final void setTarIncomingDir(String tarIncomingDir) {
+        this.tarIncomingDir = new File(tarIncomingDir);
+        this.absTarIncomingDir = FileUtils.resolve(this.tarIncomingDir);
+    }
+        
+    public File retrieveFileFromTAR(String fsID, String fileID)
+            throws IOException, VerifyTarException {
+        if (!fsID.startsWith("tar:")) {
+            throw new IllegalArgumentException(
+                    "Not a tar file system: " + fsID);
+        }
+        int tarEnd = fileID.indexOf('!');
+        if (tarEnd == -1) {
+            throw new IllegalArgumentException("Missing ! in " + fileID);
+        }
+        int dirEnd = fileID.lastIndexOf('/', tarEnd);
+        if (dirEnd == -1) {
+            throw new IllegalArgumentException(
+                    "Missing / before ! in " + fileID);
+        }
+        String dpath = fileID.substring(0, dirEnd).replace('/', 
                 File.separatorChar);
         File cacheDir = new File(absCacheRoot, dpath);
-        String fpath = taruri.substring(tarEnd + 1).replace('/',
-                File.separatorChar);
+        String fpath = fileID.substring(tarEnd + 1).replace('/',
+                File.separatorChar);        
         File f = new File(cacheDir, fpath);
         if (!f.exists()) {
-            fetchTar(taruri.substring(4, tarEnd), cacheDir);
+            String tarPath = fileID.substring(0, tarEnd);
+            if (tarFetchCmd == null) {
+                File tarFile = FileUtils.toFile(fsID.substring(4), tarPath);
+                extractTar(tarFile, cacheDir);
+            } else {
+                if (absTarIncomingDir.mkdirs()) {
+                    log.info("M-WRITE " + absTarIncomingDir);
+                }
+                int tarPathLen = tarPath.length();
+                File tarFile = new File(absTarIncomingDir,
+                        tarPath.substring(tarPathLen - 21));
+                String cmd = makeCommand(fsID, tarPath, tarFile.getPath());
+                try {
+                    Executer ex = new Executer(cmd);
+                    int exit = -1;
+                    try {
+                        exit = ex.waitFor();
+                    } catch (InterruptedException e) {}
+                    if (exit != 0) {
+                        throw new IOException("Non-zero exit code(" + exit 
+                                + ") of " + cmd);
+                    }
+                    extractTar(tarFile, cacheDir);
+                } finally {
+                    tarFile.delete();
+                }
+            }
         }
         File p = f.getParentFile();
         if (lruDirs.remove(p))
@@ -174,7 +268,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         return f;
     }
 
-    private void fetchTar(String path, File cacheDir)
+    private void extractTar(File tarFile, File cacheDir)
             throws IOException, VerifyTarException {
         if (absCacheRoot.mkdirs()) {
             log.warn("M-WRITE " + absCacheRoot);
@@ -183,7 +277,6 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         int count = 0;
         long totalSize = 0;
         long free = FileSystemUtils.freeSpace(absCacheRoot.getPath());
-        File tarFile = FileUtils.toFile(path);
         long fsize = tarFile.length();
         long toDelete = fsize + minFreeDiskSpace - free;
         if (toDelete > 0)
@@ -194,10 +287,10 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         try {
             TarEntry entry = tar.getNextEntry();
             if (entry == null)
-                throw new IOException("No entries in " + path);
+                throw new IOException("No entries in " + tarFile);
             String entryName = entry.getName();
             if (!"MD5SUM".equals(entryName))
-                throw new IOException("Missing MD5SUM entry in " + path);
+                throw new IOException("Missing MD5SUM entry in " + tarFile);
 
             MessageDigest digest = null;
             HashMap md5sums = new HashMap();
@@ -224,7 +317,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                     md5sum = (byte[]) md5sums.remove(entryName);
                     if (md5sum == null)
                         throw new VerifyTarException("Unexpected TAR entry: "
-                                + entryName + " in " + path);
+                                + entryName + " in " + tarFile);
                     digest.reset();
                     in = new DigestInputStream(tar, digest);
                 }
@@ -261,10 +354,10 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                         f.delete();
                         throw new VerifyTarException(
                                 "Failed MD5 check of TAR entry: " + entryName
-                                        + " in " + path);
+                                        + " in " + tarFile);
                     } else
                         log.info("MD5 check is successful for " + entryName
-                                + " in " + path);
+                                + " in " + tarFile);
                 }
 
                 log.info("M-WRITE " + f);
