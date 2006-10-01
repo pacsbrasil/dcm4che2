@@ -165,8 +165,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             String infoParam) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < command.length; i++) {
-            sb
-                    .append(command[i] == DIR_PARAM ? dirParam
+            sb.append(command[i] == DIR_PARAM ? dirParam
                             : command[i] == FILE_PARAM ? fileParam
                                     : command[i] == INFO_PARAM ? infoParam
                                             : command[i]);
