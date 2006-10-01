@@ -10,7 +10,6 @@
 package org.dcm4chex.archive.hsm;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -313,10 +312,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     private int queryHSM(String dirpath, String filePath, FileDTO fileDTO) {
-        String cmd = makeCommand(
-                dirpath.replace('/', File.separatorChar), 
-                filePath.replace('/', File.separatorChar),
-                fileDTO.getUserInfo());
+        String cmd = makeCommand(dirpath, filePath, fileDTO.getUserInfo());
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmd, stdout, null);
