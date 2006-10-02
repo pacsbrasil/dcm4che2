@@ -242,9 +242,10 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 }
                 int tarPathLen = tarPath.length();
                 File tarFile = new File(absTarIncomingDir,
-                        tarPath.substring(tarPathLen - 21));
+                        tarPath.substring(tarPathLen - 21));                
                 String cmd = makeCommand(fsID, tarPath, tarFile.getPath());
                 try {
+                    log.info("Fetch from HSM: " + cmd);
                     Executer ex = new Executer(cmd);
                     int exit = -1;
                     try {
@@ -254,8 +255,10 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                         throw new IOException("Non-zero exit code(" + exit 
                                 + ") of " + cmd);
                     }
+                    log.info("M-WRITE " + tarFile);
                     extractTar(tarFile, cacheDir);
                 } finally {
+                    log.info("M-DELETE " + tarFile);
                     tarFile.delete();
                 }
             }
@@ -328,7 +331,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 if (dir.mkdirs()) {
                     log.info("M-WRITE " + dir);
                 }
-
+                log.info("M-WRITE " + f);
                 // Write the stream to file
                 FileOutputStream out = new FileOutputStream(f);
                 boolean cleanup = true;
@@ -344,13 +347,16 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                     } catch (Exception ignore) {
                     }
                     ;
-                    if (cleanup)
+                    if (cleanup) {
+                        log.info("M-DELETE " + f);
                         f.delete();
+                    }
                 }
 
                 // Verify MD5
                 if (checkMD5) {
                     if (!Arrays.equals(digest.digest(), md5sum)) {
+                        log.info("M-DELETE " + f);
                         f.delete();
                         throw new VerifyTarException(
                                 "Failed MD5 check of TAR entry: " + entryName
@@ -359,8 +365,6 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                         log.info("MD5 check is successful for " + entryName
                                 + " in " + tarFile);
                 }
-
-                log.info("M-WRITE " + f);
                 free -= f.length();
                 count++;
                 totalSize += f.length();

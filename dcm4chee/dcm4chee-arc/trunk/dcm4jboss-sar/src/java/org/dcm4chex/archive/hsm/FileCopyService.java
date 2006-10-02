@@ -203,6 +203,7 @@ public class FileCopyService extends AbstractFileCopyService {
         String tarPath = mkTarPath(file1Info.fileID);
         if (tarCopyCmd == null) {
             File tarFile = FileUtils.toFile(destPath.substring(4), tarPath);
+            log.info("M-WRITE " + tarFile);
             tarFile.getParentFile().mkdirs();
             mkTar(fileInfos, tarFile);
         } else {
@@ -213,8 +214,10 @@ public class FileCopyService extends AbstractFileCopyService {
             File tarFile = new File(absTarOutgoingDir,
                     tarPath.substring(tarPathLen - 21));
             try {
+                log.info("M-WRITE " + tarFile);
                 mkTar(fileInfos, tarFile);
                 String cmd = makeCommand(tarFile.getPath(), destPath, tarPath);
+                log.info("Copy to HSM: " + cmd);
                 Executer ex = new Executer(cmd);
                 int exit = ex.waitFor();
                 if (exit != 0) {
@@ -222,6 +225,7 @@ public class FileCopyService extends AbstractFileCopyService {
                             + ") of " + cmd);
                 }
             } finally {
+                log.info("M-DELETE " + tarFile);
                 tarFile.delete();
             }
         }

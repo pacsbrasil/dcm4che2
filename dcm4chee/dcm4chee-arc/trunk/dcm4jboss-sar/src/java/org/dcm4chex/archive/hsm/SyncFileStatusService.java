@@ -301,6 +301,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private boolean updateFileStatus(FileSystemMgt fsmgt, FileDTO fileDTO, int status) {
         if (fileDTO.getFileStatus() != status) {
+            log.info("Change status of " + fileDTO + " to " + status);
             try {
                 fsmgt.setFileStatus(fileDTO.getPk(), status);
                 return true;
@@ -313,6 +314,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private int queryHSM(String dirpath, String filePath, FileDTO fileDTO) {
         String cmd = makeCommand(dirpath, filePath, fileDTO.getUserInfo());
+        log.info("queryHSM: " + cmd);
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmd, stdout, null);
