@@ -660,12 +660,14 @@ public abstract class ContentManagerBean implements SessionBean {
 		 * @return <0 if arg0<arg1, 0 if equal and >0 if arg0>arg1
 		 */
 		public int compare(Object arg0, Object arg1) {
-			InstanceLocal il1 = (InstanceLocal) arg0;
-			InstanceLocal il2 = (InstanceLocal) arg1;
-			if ( il1.getInstanceNumber() == null ) {
-			    return il1.getInstanceNumber() == null ? 0 : 1;
+			String in0 = ((InstanceLocal) arg0).getInstanceNumber();
+			String in1 = ((InstanceLocal) arg1).getInstanceNumber();
+			if ( in0 == null ) {
+			    return in1 == null ? 0 : 1;
+			} else if ( in1 == null ) {
+			    return 0;
 			} else {
-			    return new Integer(il1.getInstanceNumber()).compareTo( new Integer(il2.getInstanceNumber()) );
+			    return new Integer(in0).compareTo( new Integer(in1) );
 			}
 		}
 		
