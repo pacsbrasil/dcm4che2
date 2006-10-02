@@ -662,7 +662,11 @@ public abstract class ContentManagerBean implements SessionBean {
 		public int compare(Object arg0, Object arg1) {
 			InstanceLocal il1 = (InstanceLocal) arg0;
 			InstanceLocal il2 = (InstanceLocal) arg1;
-			return new Integer(il1.getInstanceNumber()).compareTo( new Integer(il2.getInstanceNumber()) );
+			if ( il1.getInstanceNumber() == null ) {
+			    return il1.getInstanceNumber() == null ? 0 : 1;
+			} else {
+			    return new Integer(il1.getInstanceNumber()).compareTo( new Integer(il2.getInstanceNumber()) );
+			}
 		}
 		
 	}// end class
