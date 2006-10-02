@@ -22,7 +22,9 @@
       setMethod="setCacheRoot">
       <description><![CDATA[Root directory in which retrieved tars are extracted.
       A relative path name is resolved relative to 
-      <i>archive-install-directory</i>/server/default/.]]>   
+      <i>archive-install-directory</i>/server/default/.
+      Attention: For reliable function of the deletion of least recent accessed
+      objects, a separate file system should be used for the cache.]]>   
       </description>
       <name>CacheRoot</name>
       <type>java.lang.String</type>
@@ -61,10 +63,11 @@
    <attribute access="read-write" 
      getMethod="getTarFetchCommand" 
      setMethod="setTarFetchCommand">
-      <description><![CDATA[External command to fetch TAR, with
-         <br>%d will be replaced by source file system ID,
-         <br>%f will be replaced by source TAR file ID,
-         <br>%p will be replaced by the destination TAR file path.
+      <description><![CDATA[External command to fetch tarballs from the source
+      file system, with
+         <br>%d will be replaced by the source file system name,
+         <br>%f will be replaced by the path of tarball on the source file system,
+         <br>%p will be replaced by the destination path.
          <br>NONE = TAR file on local accessable file system.
        ]]>
       </description>

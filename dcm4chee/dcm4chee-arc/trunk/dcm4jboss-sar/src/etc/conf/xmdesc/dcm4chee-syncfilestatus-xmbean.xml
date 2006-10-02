@@ -107,9 +107,9 @@
       getMethod="getCommand"
       setMethod="setCommand">
       <description><![CDATA[Command to query status of specific file.
+         <br>%d will be replaced by file system name (directory path/mount point),
          <br>%f will be replaced by the file path,
-         <br>%d by directory path (mount point),
-         <br>%i by user info associated with the file system.
+         <br>%i will be replaced by user info associated with the file system.
        ]]>
       </description>
       <name>Command</name>

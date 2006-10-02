@@ -20,12 +20,19 @@
    <attribute access="read-write" 
      getMethod="getDestination" 
      setMethod="setDestination">
-      <description><![CDATA[Directory/Mount Point of the Destination File System
-        or NONE to disable the service. The Directory/Mount Point can be 
-        suffixed by '!'<i>from</i>'-'<i>to</i> to defer copying outside a 
-        particular time interval, and/or prefixed by a condition 
+      <description><![CDATA[Destination file system or NONE to disable the
+        service. The file system name can be suffixed by 
+        '!'<i>from</i>'-'<i>to</i> to defer copying outside a particular time
+        interval, and/or prefixed by a condition 
         '[calling'['!']'='<i>aeTitle</i>['|'..]']' to limit/exclude copying 
-        to/of series received from modalities with specified AE title(s).]]>
+        to/of series received from modalities with specified AE title(s).
+        If the file system name is a tar URI (tar:<Directory/Mount Point>),
+        instances of one series are packed into one tarball. Otherwise
+        instance files are copied individually to the destination file system.
+        If an external command is used for the copy of tarballs to the destination,
+        the destination name (after the "tar:" prefix) need not follow the syntax
+        of a directory path (e.g.: tar:ftp://user@pass/service).
+        ]]>
       </description>
       <name>DestinationFileSystem</name>
       <type>java.lang.String</type>
@@ -36,11 +43,13 @@
    <attribute access="read-write" 
      getMethod="getTarCopyCommand" 
      setMethod="setTarCopyCommand">
-      <description><![CDATA[External command to copy TAR, with
-         <br>%p will be replaced by the source TAR file path,
-         <br>%d will be replaced by destination file system ID,
-         <br>%f will be replaced by destination TAR file ID.
-         <br>NONE = write TAR file on local accessable file system.
+      <description><![CDATA[External command to copy tarballs to the destination,
+      with
+         <br>%p will be replaced by the path of tarball to copy,
+         <br>%d will be replaced by the destination file system name,
+         <br>%f will be replaced by the destination TAR file path.
+         <br>NONE = write tarball on local accessable file system.
+      Only effective, if the destination file system name is a tar URI.
        ]]>
       </description>
       <name>TarCopyCommand</name>
@@ -52,7 +61,7 @@
    <attribute access="read-write" 
      getMethod="getTarOutgoingDir" 
      setMethod="setTarOutgoingDir">
-      <description><![CDATA[Directory from which tars shall be copied
+      <description><![CDATA[Directory from which tarballs shall be copied
       by external <b>TarCopyCommand</b>. A relative path name is resolved
       relative to <i>archive-install-directory</i>/server/default/.
       Not effective if TarCopyCommand=<code>NONE<code>]]>
