@@ -233,9 +233,6 @@
 				<include name="lib/jpl-util.jar"/>
 				<include name="lib/log4j.jar"/>
 			</zipfileset>
-   	        <zipfileset dir="${basedir}" prefix="${dist.standalone.config}">
-   	          <include name="lib/scheduler-plugin.jar"/>
-   	        </zipfileset>
    	        <zipfileset dir="${dcm4che.home}" prefix="${dist.standalone.config}">
    	          <include name="lib/dcm4che-imageio-rle-2.0.4.jar"/>
    	          <include name="lib/jai_imageio.jar"/>

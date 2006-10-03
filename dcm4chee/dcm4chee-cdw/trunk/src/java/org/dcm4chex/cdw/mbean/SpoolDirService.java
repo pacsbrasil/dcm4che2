@@ -43,6 +43,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+
 import org.dcm4che.util.MD5Utils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -53,7 +57,8 @@ import org.jboss.system.server.ServerConfigLocator;
  * @since 22.06.2004
  *
  */
-public class SpoolDirService extends ServiceMBeanSupport {
+public class SpoolDirService extends ServiceMBeanSupport 
+        implements NotificationListener {
 
     private static final long MIN_HWM = 10000000L;
 
@@ -105,6 +110,20 @@ public class SpoolDirService extends ServiceMBeanSupport {
 
     private int numberOfArchiveBuckets = 37;
 
+    private long purgeInterval = MS_PER_MINUTE;
+
+    private Integer schedulerID;
+
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
+
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+    
     public final String getArchiveDirPath() {
         return archiveDirPath;
     }
@@ -288,6 +307,28 @@ public class SpoolDirService extends ServiceMBeanSupport {
         this.purgeLabelDirAfter = timeFromString(s);
     }
 
+    public final String getPurgeInterval() {
+        return timeAsString(purgeInterval);
+    }
+
+    public void setPurgeInterval(String interval) throws Exception {
+        this.purgeInterval = timeFromString(interval);
+        if (getState() == STARTED) {
+            scheduler.stopScheduler("PurgeSpoolDir", schedulerID, this);
+            schedulerID = scheduler.startScheduler("PurgeSpoolDir",
+                        purgeInterval, this);
+        }
+    }
+
+    protected void startService() throws Exception {
+        schedulerID = scheduler.startScheduler("PurgeSpoolDir",
+                purgeInterval, this);
+    }
+
+    protected void stopService() throws Exception {
+        scheduler.stopScheduler("PurgeSpoolDir", schedulerID, this);
+    }
+    
     public File getInstanceFile(String iuid) {
         final int i = (iuid.hashCode() & 0x7FFFFFFF) % numberOfArchiveBuckets;
         File bucket = new File(archiveDir, String.valueOf(i));
@@ -488,5 +529,9 @@ public class SpoolDirService extends ServiceMBeanSupport {
         } catch (NumberFormatException e) {
         }
         throw new IllegalArgumentException(str);
+    }
+
+    public void handleNotification(Notification notif, Object handback) {
+        purge();        
     }
 }

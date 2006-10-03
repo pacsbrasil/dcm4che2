@@ -231,7 +231,7 @@
       setMethod="setPurgeLabelDirAfter">
       <description>Persistence duration of residual Disk Labels in Label Spool
       Directory in days (##d), hours (##h) or minutes (##m).
-      0 = Infinite Persistenz.
+      0 = Infinite Persistence.
       </description>
       <name>PurgeLabelDirAfter</name>
       <type>java.lang.String</type>      
@@ -239,6 +239,29 @@
          <value value="1h" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getPurgeInterval"
+      setMethod="setPurgeInterval">
+      <description>Interval in hours (##h), minutes (##m) or seconds (##s) to
+      check the Spool Directory for expired files.
+      </description>
+      <name>PurgeInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.cdw:service=Scheduler"/>
+      </descriptors>
+   </attribute>  
    &defaultAttributes;
    
    <!-- Operations -->
