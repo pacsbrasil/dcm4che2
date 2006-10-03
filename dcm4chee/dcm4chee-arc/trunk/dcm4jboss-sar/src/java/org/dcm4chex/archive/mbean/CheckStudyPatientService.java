@@ -53,6 +53,7 @@ import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -80,7 +81,7 @@ import org.jboss.system.ServiceMBeanSupport;
 public class CheckStudyPatientService extends ServiceMBeanSupport {
 
     private static final String SCHEDULER_NAME = "CheckStudyPatient";
-	private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
     
@@ -112,17 +113,25 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
         }
     };
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+    
     public final String getTaskInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
     }
 
-    public void setTaskInterval(String interval) {
+    public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
         taskInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler(SCHEDULER_NAME, listenerID,
+            scheduler.stopScheduler(SCHEDULER_NAME, listenerID,
             		consistentCheckListener);
-            listenerID = timer.startScheduler(SCHEDULER_NAME, taskInterval,
+            listenerID = scheduler.startScheduler(SCHEDULER_NAME, taskInterval,
             		consistentCheckListener);
         }
     }
@@ -308,14 +317,13 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
 		}
 	}
 
-	protected void startService() throws Exception {
-        timer.init();
-        listenerID = timer.startScheduler(SCHEDULER_NAME, taskInterval,
+    protected void startService() throws Exception {
+        listenerID = scheduler.startScheduler(SCHEDULER_NAME, taskInterval,
         		consistentCheckListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler(SCHEDULER_NAME, listenerID,
+        scheduler.stopScheduler(SCHEDULER_NAME, listenerID,
         		consistentCheckListener);
         super.stopService();
     }

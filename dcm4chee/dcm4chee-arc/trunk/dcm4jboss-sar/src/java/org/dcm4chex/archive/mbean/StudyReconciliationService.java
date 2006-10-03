@@ -84,12 +84,12 @@ import org.jboss.system.ServiceMBeanSupport;
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
- * @since 35.03.2005
+ * @since Juli 2006
  *
  */
 public class StudyReconciliationService extends ServiceMBeanSupport {
 
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
 
@@ -163,6 +163,14 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
         }
     };
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+        
 	public String getCalledAET() {
 		return calledAET;
 	}
@@ -184,7 +192,7 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
                 + disabledEndHour;
     }
 
-    public void setTaskInterval(String interval) {
+    public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
         int pos = interval.indexOf('!');
         if (pos == -1) {
@@ -199,9 +207,9 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler("StudyReconciliation", listenerID,
+            scheduler.stopScheduler("StudyReconciliation", listenerID,
             		updateCheckListener);
-            listenerID = timer.startScheduler("StudyReconciliation", taskInterval,
+            listenerID = scheduler.startScheduler("StudyReconciliation", taskInterval,
             		updateCheckListener);
         }
     }
@@ -603,13 +611,12 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        timer.init();
-        listenerID = timer.startScheduler("StudyReconciliation", taskInterval,
+        listenerID = scheduler.startScheduler("StudyReconciliation", taskInterval,
         		updateCheckListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("StudyReconciliation", listenerID,
+        scheduler.stopScheduler("StudyReconciliation", listenerID,
         		updateCheckListener);
         super.stopService();
     }

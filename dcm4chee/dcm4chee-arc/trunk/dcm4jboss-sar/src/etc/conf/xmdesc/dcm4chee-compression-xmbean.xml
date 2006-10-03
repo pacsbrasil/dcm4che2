@@ -116,15 +116,6 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
          <value value="1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getFileSystemMgtName" setMethod="setFileSystemMgtName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
@@ -136,8 +127,28 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
          <value value="8192"/>
       </descriptors>
    </attribute>
-
-
+   <attribute access="read-write" 
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=FileSystemMgt"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=Scheduler"/>
+      </descriptors>
+   </attribute>  
    &defaultAttributes;
 
    <!-- Operations -->

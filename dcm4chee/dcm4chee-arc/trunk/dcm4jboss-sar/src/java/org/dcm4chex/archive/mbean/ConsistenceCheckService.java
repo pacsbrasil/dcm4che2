@@ -46,6 +46,7 @@ import java.util.Calendar;
 import javax.ejb.FinderException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -62,7 +63,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ConsistenceCheckService extends ServiceMBeanSupport {
 
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
 	private long minStudyAge;
@@ -96,13 +97,21 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
         }
     };
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+    
     public final String getTaskInterval() {
         String s = RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
         return (disabledEndHour == -1) ? s : s + "!" + disabledStartHour + "-"
                 + disabledEndHour;
     }
 
-    public void setTaskInterval(String interval) {
+    public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
         int pos = interval.indexOf('!');
         if (pos == -1) {
@@ -117,9 +126,9 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler("CheckStudyConsistency", listenerID,
+            scheduler.stopScheduler("CheckStudyConsistency", listenerID,
             		consistentCheckListener);
-            listenerID = timer.startScheduler("CheckStudyConsistency", taskInterval,
+            listenerID = scheduler.startScheduler("CheckStudyConsistency", taskInterval,
             		consistentCheckListener);
         }
     }
@@ -226,13 +235,12 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        timer.init();
-        listenerID = timer.startScheduler("CheckStudyConsistency", taskInterval,
+        listenerID = scheduler.startScheduler("CheckStudyConsistency", taskInterval,
         		consistentCheckListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckStudyConsistency", listenerID,
+        scheduler.stopScheduler("CheckStudyConsistency", listenerID,
         		consistentCheckListener);
         super.stopService();
     }

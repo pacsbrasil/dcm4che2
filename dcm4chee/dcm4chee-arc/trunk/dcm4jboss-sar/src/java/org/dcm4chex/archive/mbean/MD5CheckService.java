@@ -50,6 +50,7 @@ import java.util.Calendar;
 import javax.ejb.FinderException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.util.MD5Utils;
@@ -71,7 +72,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class MD5CheckService extends ServiceMBeanSupport {
 
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
 	private long maxCheckedBefore;
@@ -104,6 +105,14 @@ public class MD5CheckService extends ServiceMBeanSupport {
         }
     };
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+        
     public final int getBufferSize() {
         return bufferSize ;
     }
@@ -118,7 +127,7 @@ public class MD5CheckService extends ServiceMBeanSupport {
                 + disabledEndHour;
     }
 
-    public void setTaskInterval(String interval) {
+    public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
         int pos = interval.indexOf('!');
         if (pos == -1) {
@@ -133,8 +142,8 @@ public class MD5CheckService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler("CheckMD5", listenerID, timerListener);
-            listenerID = timer.startScheduler("CheckMD5", taskInterval,
+            scheduler.stopScheduler("CheckMD5", listenerID, timerListener);
+            listenerID = scheduler.startScheduler("CheckMD5", taskInterval,
             		timerListener);
         }
     }
@@ -236,12 +245,11 @@ public class MD5CheckService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        timer.init();
-        listenerID = timer.startScheduler("CheckMD5", taskInterval, timerListener);
+        listenerID = scheduler.startScheduler("CheckMD5", taskInterval, timerListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckMD5", listenerID, timerListener);
+        scheduler.stopScheduler("CheckMD5", listenerID, timerListener);
         super.stopService();
     }
     

@@ -12,16 +12,15 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
- * Portions created by the Initial Developer are Copyright (C) 2003-2005
+ * Agfa Healthcare.
+ * Portions created by the Initial Developer are Copyright (C) 2006
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See listed authors below. 
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -41,44 +40,34 @@ package org.dcm4chex.archive.mbean;
 
 import java.util.Date;
 
-import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.timer.TimerNotification;
 
-import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
- * @author gunter.zeilinger@tiani.com
- * @version Revision $Date$
- * @since 06.02.2005
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Id$
+ * @since Oct 3, 2006
  */
-
-public class TimerSupport {
+public class SchedulerService extends ServiceMBeanSupport {
     public static String DEFAULT_TIMER_NAME = "jboss:service=Timer";
-    private final ServiceMBeanSupport service;
+
     private ObjectName mTimer;
 
     private static class NotificationFilter implements
             javax.management.NotificationFilter {
 
-		private static final long serialVersionUID = 3257853160218178097L;
+        private static final long serialVersionUID = -2450167711140857405L;
 
-		private Integer mId;
+        private Integer mId;
 
-        /**
-         * Create a Filter.
-         * @param id the Scheduler id
-         */
         public NotificationFilter(Integer pId) {
             mId = pId;
         }
 
-        /**
-         * Determine if the notification should be sent to this Scheduler
-         */
         public boolean isNotificationEnabled(Notification notification) {
             if (notification instanceof TimerNotification) {
                 TimerNotification lTimerNotification = (TimerNotification) notification;
@@ -88,48 +77,40 @@ public class TimerSupport {
         }
     }
 
-    public TimerSupport(ServiceMBeanSupport service) {
-        this.service = service;
-    }
-    
-    public void init() throws Exception {
+    protected void startService() throws Exception {
         // Create Timer MBean if need be
 
         mTimer = new ObjectName(DEFAULT_TIMER_NAME);
 
-        MBeanServer server = service.getServer();
         if (!server.isRegistered(mTimer)) {
             server.createMBean("javax.management.timer.Timer", mTimer);
         }
-        if (!((Boolean) server.getAttribute(mTimer, "Active"))
-                .booleanValue()) {
+        if (!((Boolean) server.getAttribute(mTimer, "Active")).booleanValue()) {
             // Now start the Timer
-            server.invoke(mTimer, "start", new Object[] {},
-                    new String[] {});
+            server.invoke(mTimer, "start", new Object[] {}, new String[] {});
         }
     }
 
-    public Integer startScheduler(String name, long period, NotificationListener listener) {
-        if (period <= 0L) return null;
-        Logger log = service.getLog();
+    public Integer startScheduler(String name, long period,
+            NotificationListener listener) {
+        if (period <= 0L)
+            return null;
         try {
-            // delay start of scheduler, because in JBoss-4.0.4 the EntityContainer
+            // delay start of scheduler, because in JBoss-4.0.4 the
+            // EntityContainer
             // cannot be used immediately after it's been started.
-            // Should be fixed in JBoss-4.0.5            
-            log.info("Start Scheduler " + name + " with period of " + period 
+            // Should be fixed in JBoss-4.0.5
+            log.info("Start Scheduler " + name + " with period of " + period
                     + "ms in 1 min.");
             Date now = new Date(System.currentTimeMillis() + 60000);
-            MBeanServer server = service.getServer();
-            Integer id = (Integer) server.invoke(
-                    mTimer,
-                    "addNotification",
+            Integer id = (Integer) server.invoke(mTimer, "addNotification",
                     new Object[] { "Schedule", "Scheduler Notification", null,
-                            now, new Long(period) },
-                    new String[] { String.class.getName(),
-                            String.class.getName(), Object.class.getName(),
-                            Date.class.getName(), Long.TYPE.getName() });
+                            now, new Long(period) }, new String[] {
+                            String.class.getName(), String.class.getName(),
+                            Object.class.getName(), Date.class.getName(),
+                            Long.TYPE.getName() });
             server.addNotificationListener(mTimer, listener,
-                    new TimerSupport.NotificationFilter(id), null);
+                    new SchedulerService.NotificationFilter(id), null);
             return id;
         } catch (Exception e) {
             log.error("operation failed", e);
@@ -137,15 +118,14 @@ public class TimerSupport {
         return null;
     }
 
-    public void stopScheduler(String name, Integer id, NotificationListener listener) {
-        if (id == null) return;
-        Logger log = service.getLog();
+    public void stopScheduler(String name, Integer id,
+            NotificationListener listener) {
+        if (id == null)
+            return;
         try {
             log.info("Stop Scheduler " + name);
-            MBeanServer server = service.getServer();
             server.removeNotificationListener(mTimer, listener);
-            server.invoke(mTimer, "removeNotification",
-                    new Object[] { id },
+            server.invoke(mTimer, "removeNotification", new Object[] { id },
                     new String[] { Integer.class.getName() });
         } catch (Exception e) {
             log.error("operation failed", e);

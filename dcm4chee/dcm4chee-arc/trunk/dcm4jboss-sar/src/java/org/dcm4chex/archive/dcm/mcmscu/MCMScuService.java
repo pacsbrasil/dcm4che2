@@ -83,8 +83,8 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.mbean.SendMailService;
-import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -122,7 +122,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
         UIDs.ImplicitVRLittleEndian};
 
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
     
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
 	private long maxMediaUsage = 680 * FileUtils.MEGA;
@@ -230,6 +230,14 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
             }};
 
             
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+    
 	/**
 	 * Returns the prefix for FileSetID creation.
 	 * 
@@ -329,12 +337,12 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         return RetryIntervalls.formatIntervalZeroAsNever(burnMediaInterval);
     }
     
-    public void setBurnMediaInterval(String interval) {
+    public void setBurnMediaInterval(String interval) throws Exception {
         this.burnMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
+            scheduler.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
             		burnMediaListener);
-            burnMediaListenerID = timer.startScheduler("CheckForMediaToBurn",
+            burnMediaListenerID = scheduler.startScheduler("CheckForMediaToBurn",
             		burnMediaInterval, burnMediaListener);
         }
     }
@@ -392,12 +400,12 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         return RetryIntervalls.formatIntervalZeroAsNever(scheduleMediaInterval);
     }
     
-    public void setScheduleMediaInterval(String interval) {
+    public void setScheduleMediaInterval(String interval) throws Exception {
         this.scheduleMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
+            scheduler.stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
             		scheduleMediaListener);
-            scheduleMediaListenerID = timer.startScheduler(
+            scheduleMediaListenerID = scheduler.startScheduler(
             		"CheckForStudiesToSchedule", scheduleMediaInterval,
                     scheduleMediaListener);
         }
@@ -407,12 +415,12 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         return RetryIntervalls.formatIntervalZeroAsNever(updateMediaStatusInterval);
     }
     
-    public void setUpdateMediaStatusInterval(String interval) {
+    public void setUpdateMediaStatusInterval(String interval) throws Exception {
         this.updateMediaStatusInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
+            scheduler.stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
             		updateMediaStatusListener);
-            updateMediaStatusListenerID = timer.startScheduler("CheckMediaStatus",
+            updateMediaStatusListenerID = scheduler.startScheduler("CheckMediaStatus",
             		updateMediaStatusInterval, updateMediaStatusListener);
         }
     }
@@ -680,12 +688,11 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * This queue is used to receive media creation request from scheduler or web interface.
 	 */
     protected void startService() throws Exception {
-        timer.init();
-        scheduleMediaListenerID = timer.startScheduler("CheckForStudiesToSchedule", 
+        scheduleMediaListenerID = scheduler.startScheduler("CheckForStudiesToSchedule", 
         		scheduleMediaInterval, scheduleMediaListener);
-        updateMediaStatusListenerID = timer.startScheduler("CheckMediaStatus",
+        updateMediaStatusListenerID = scheduler.startScheduler("CheckMediaStatus",
         		updateMediaStatusInterval, updateMediaStatusListener);
-        burnMediaListenerID = timer.startScheduler("CheckForMediaToBurn",
+        burnMediaListenerID = scheduler.startScheduler("CheckForMediaToBurn",
         		burnMediaInterval, burnMediaListener);
         JMSDelegate.startListening(QUEUE, this, concurrency);
     }
@@ -695,11 +702,11 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 */
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
+        scheduler.stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
         		scheduleMediaListener);
-        timer.stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
+        scheduler.stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
         		updateMediaStatusListener);
-        timer.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
+        scheduler.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
         		burnMediaListener);
         JMSDelegate.stopListening(QUEUE);
         super.stopService();

@@ -74,7 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.mbean.TimerSupport;
+import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -86,7 +86,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  */
 public class StoreScpService extends AbstractScpService {
 
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private final NotificationListener checkPendingSeriesStoredListener = 
         new NotificationListener() {
@@ -172,15 +172,16 @@ public class StoreScpService extends AbstractScpService {
                 .formatIntervalZeroAsNever(checkPendingSeriesStoredInterval);
     }
 
-    public void setCheckPendingSeriesStoredInterval(String interval) {
+    public void setCheckPendingSeriesStoredInterval(String interval)
+            throws Exception {
         long oldInterval = checkPendingSeriesStoredInterval;
         checkPendingSeriesStoredInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED
                 && oldInterval != checkPendingSeriesStoredInterval) {
-            timer.stopScheduler("CheckPendingSeriesStored", listenerID,
+            scheduler.stopScheduler("CheckPendingSeriesStored", listenerID,
                     checkPendingSeriesStoredListener);
-            listenerID = timer.startScheduler("CheckPendingSeriesStored",
+            listenerID = scheduler.startScheduler("CheckPendingSeriesStored",
                     checkPendingSeriesStoredInterval,
                     checkPendingSeriesStoredListener);
         }
@@ -299,6 +300,14 @@ public class StoreScpService extends AbstractScpService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+    
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -491,14 +500,13 @@ public class StoreScpService extends AbstractScpService {
 
     protected void startService() throws Exception {
         super.startService();
-        timer.init();
-        listenerID = timer.startScheduler("CheckPendingSeriesStored",
+        listenerID = scheduler.startScheduler("CheckPendingSeriesStored",
                 checkPendingSeriesStoredInterval,
                 checkPendingSeriesStoredListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckPendingSeriesStored", listenerID,
+        scheduler.stopScheduler("CheckPendingSeriesStored", listenerID,
                 checkPendingSeriesStoredListener);
         super.stopService();
     }

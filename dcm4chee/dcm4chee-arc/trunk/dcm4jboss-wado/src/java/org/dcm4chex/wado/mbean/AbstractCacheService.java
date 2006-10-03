@@ -43,10 +43,11 @@ import java.io.IOException;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.mbean.TimerSupport;
+import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -61,7 +62,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractCacheService extends ServiceMBeanSupport {
 
-    protected final TimerSupport timer = new TimerSupport(this);
+    protected final SchedulerDelegate scheduler = new SchedulerDelegate(this);
     
 	protected Logger log = Logger.getLogger( getClass().getName() );
 	protected WADOCache cache = null;
@@ -81,6 +82,14 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	private long freeDiskSpaceInterval;
 	private Integer freeDiskSpaceListenerID;
 	
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+            
 	public WADOCache getCache() {
 		return cache;
 	}
@@ -162,13 +171,14 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	 * minute or second.
      * 
      * @param interval Timer interval as formatted String.
+     * @throws Exception 
      */
-    public void setFreeDiskSpaceInterval(String interval) {
+    public void setFreeDiskSpaceInterval(String interval) throws Exception {
         freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+            scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
             		freeDiskSpaceListener);
-            freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
+            freeDiskSpaceListenerID = scheduler.startScheduler("CheckFreeDiskSpace",
             		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
@@ -201,8 +211,7 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	 * This queue is used to receive media creation request from scheduler or web interface.
 	 */
     protected void startService() throws Exception {
-        timer.init();
-        freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace", 
+        freeDiskSpaceListenerID = scheduler.startScheduler("CheckFreeDiskSpace", 
         		freeDiskSpaceInterval, freeDiskSpaceListener);
     }
 
@@ -211,7 +220,7 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	 * 
 	 */
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
         		freeDiskSpaceListener);
         super.stopService();
     }

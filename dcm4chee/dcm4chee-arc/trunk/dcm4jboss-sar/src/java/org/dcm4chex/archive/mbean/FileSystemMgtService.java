@@ -67,6 +67,7 @@ import javax.jms.ObjectMessage;
 import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -113,7 +114,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     private static final String FROM_PARAM = "%1";
     private static final String TO_PARAM = "%2";    
     
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 	
     private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
@@ -204,6 +205,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+        
     public final boolean isMakeStorageDirectory() {
         return makeStorageDirectory;
     }
@@ -426,12 +435,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         return RetryIntervalls.formatIntervalZeroAsNever(freeDiskSpaceInterval);
     }
     
-    public void setFreeDiskSpaceInterval(String interval) {
+    public void setFreeDiskSpaceInterval(String interval) throws Exception {
         this.freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+            scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
             		freeDiskSpaceListener);
-            freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
+            freeDiskSpaceListenerID = scheduler.startScheduler("CheckFreeDiskSpace",
             		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
@@ -465,12 +474,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         return RetryIntervalls.formatIntervalZeroAsNever(purgeFilesInterval);
     }
     
-    public void setPurgeFilesInterval(String interval) {
+    public void setPurgeFilesInterval(String interval) throws Exception {
         this.purgeFilesInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+            scheduler.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
             		purgeFilesListener);
-            purgeFilesListenerID = timer.startScheduler("CheckFilesToPurge",
+            purgeFilesListenerID = scheduler.startScheduler("CheckFilesToPurge",
             		purgeFilesInterval, purgeFilesListener);
         }
     }
@@ -567,10 +576,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     
     
     protected void startService() throws Exception {
-         timer.init();
-         freeDiskSpaceListenerID = timer.startScheduler("CheckFreeDiskSpace",
+         freeDiskSpaceListenerID = scheduler.startScheduler("CheckFreeDiskSpace",
          		freeDiskSpaceInterval, freeDiskSpaceListener);
-         purgeFilesListenerID = timer.startScheduler("CheckFilesToPurge",
+         purgeFilesListenerID = scheduler.startScheduler("CheckFilesToPurge",
          		purgeFilesInterval, purgeFilesListener);
  		JMSDelegate.startListening(purgeStudyQueueName, this, 1);
          
@@ -702,9 +710,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     }
     
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
         		freeDiskSpaceListener);
-        timer.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+        scheduler.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
         		purgeFilesListener);
  		JMSDelegate.stopListening(purgeStudyQueueName);
         super.stopService();

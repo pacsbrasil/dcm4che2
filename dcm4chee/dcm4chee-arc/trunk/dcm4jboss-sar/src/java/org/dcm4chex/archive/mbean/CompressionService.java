@@ -81,7 +81,7 @@ public class CompressionService extends ServiceMBeanSupport {
     
     private static final String _DCM = ".dcm";
     
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
 
@@ -146,7 +146,15 @@ public class CompressionService extends ServiceMBeanSupport {
     public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
         this.fileSystemMgtName = fileSystemMgtName;
     }
-    
+
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+        
     public final String getKeepTempFileIfVerificationFails() {
         return RetryIntervalls.formatInterval(keepTempFileIfVerificationFails);
     }
@@ -162,7 +170,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 + disabledEndHour;
     }
 
-    public void setTaskInterval(String interval) {
+    public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
         int pos = interval.indexOf('!');
         if (pos == -1) {
@@ -177,8 +185,8 @@ public class CompressionService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler("CheckFilesToCompress", listenerID, delayedCompressionListener);
-            listenerID = timer.startScheduler("CheckFilesToCompress", 
+            scheduler.stopScheduler("CheckFilesToCompress", listenerID, delayedCompressionListener);
+            listenerID = scheduler.startScheduler("CheckFilesToCompress", 
             		taskInterval, delayedCompressionListener);
         }
     }
@@ -410,13 +418,12 @@ public class CompressionService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        timer.init();
-        listenerID = timer.startScheduler("CheckFilesToCompress", taskInterval,
+        listenerID = scheduler.startScheduler("CheckFilesToCompress", taskInterval,
         		delayedCompressionListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckFilesToCompress", listenerID,
+        scheduler.stopScheduler("CheckFilesToCompress", listenerID,
         		delayedCompressionListener);
         super.stopService();
     }

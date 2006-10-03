@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.dcm4che.util.Executer;
 import org.dcm4cheri.util.StringUtils;
@@ -25,7 +26,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
-import org.dcm4chex.archive.mbean.TimerSupport;
+import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -36,7 +37,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class SyncFileStatusService extends ServiceMBeanSupport {
 
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private static final String NONE = "NONE";
 
@@ -96,6 +97,14 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     };
 
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+    
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -202,7 +211,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                 + disabledEndHour;
     }
 
-    public void setTaskInterval(String interval) {
+    public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
         int pos = interval.indexOf('!');
         if (pos == -1) {
@@ -217,8 +226,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            timer.stopScheduler(TIMER_ID, listenerID, timerListener);
-            listenerID = timer.startScheduler(TIMER_ID, taskInterval,
+            scheduler.stopScheduler(TIMER_ID, listenerID, timerListener);
+            listenerID = scheduler.startScheduler(TIMER_ID, taskInterval,
                     timerListener);
         }
     }
@@ -248,13 +257,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        timer.init();
-        listenerID = timer.startScheduler(TIMER_ID, taskInterval, 
+        listenerID = scheduler.startScheduler(TIMER_ID, taskInterval, 
                 timerListener);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler(TIMER_ID, listenerID, timerListener);
+        scheduler.stopScheduler(TIMER_ID, listenerID, timerListener);
         super.stopService();
     }
 

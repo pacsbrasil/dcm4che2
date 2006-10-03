@@ -50,7 +50,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.MPPSEmulator;
 import org.dcm4chex.archive.ejb.interfaces.MPPSEmulatorHome;
-import org.dcm4chex.archive.mbean.TimerSupport;
+import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -82,7 +82,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
             Tags.SOPInstanceUID, Tags.PPSEndDate, Tags.PPSEndTime,
             Tags.PPSStatus, Tags.PerformedSeriesSeq, };
     
-    private final TimerSupport timer = new TimerSupport(this);
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
     
     private long pollInterval = 0L;
 
@@ -94,6 +94,14 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     private long[] delays;
     
     private ObjectName mppsScuServiceName;
+
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
 
     public final ObjectName getMppsScuServiceName() {
         return mppsScuServiceName;
@@ -144,12 +152,12 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         return RetryIntervalls.formatIntervalZeroAsNever(pollInterval);
     }
 
-    public void setPollInterval(String interval) {
+    public void setPollInterval(String interval) throws Exception {
         this.pollInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            timer.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
-            schedulerID = timer.startScheduler("CheckSeriesWithoutMPPS",
+            scheduler.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+            schedulerID = scheduler.startScheduler("CheckSeriesWithoutMPPS",
             		pollInterval, this);
         }
     }
@@ -233,13 +241,12 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        timer.init();
-        schedulerID = timer.startScheduler("CheckSeriesWithoutMPPS",
+        schedulerID = scheduler.startScheduler("CheckSeriesWithoutMPPS",
         		pollInterval, this);
     }
 
     protected void stopService() throws Exception {
-        timer.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+        scheduler.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
         super.stopService();
     }
 }

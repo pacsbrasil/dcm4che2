@@ -16,6 +16,18 @@
       <name>MCMScuService</name>
    </constructor>
 
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=Scheduler"/>
+      </descriptors>
+   </attribute>
+   
     <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>The calling AE title.
       </description>
