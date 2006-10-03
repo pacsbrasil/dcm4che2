@@ -109,7 +109,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class FileSystemMgtService extends ServiceMBeanSupport implements MessageListener {
 
-	private static final String NONE = "NONE";
+    private static final String NONE = "NONE";
     private static final String FROM_PARAM = "%1";
     private static final String TO_PARAM = "%2";    
     
@@ -178,6 +178,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 	protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
 	
 	private boolean excludePrivate;
+	
+	private boolean deleteFilesWhenUnavailable;
     
     private String[] onSwitchStorageFSCmd;
     
@@ -549,6 +551,20 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
             throw new IllegalArgumentException(command);
         }
     }
+    
+    /**
+     * @return Returns the deleteFilesWhenUnavailable.
+     */
+    public boolean isDeleteFilesWhenUnavailable() {
+        return deleteFilesWhenUnavailable;
+    }
+    /**
+     * @param deleteFilesWhenUnavailable The deleteFilesWhenUnavailable to set.
+     */
+    public void setDeleteFilesWhenUnavailable(boolean deleteFilesWhenUnavailable) {
+        this.deleteFilesWhenUnavailable = deleteFilesWhenUnavailable;
+    }
+    
     
     protected void startService() throws Exception {
          timer.init();
@@ -1160,6 +1176,85 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         dto.setStatus(FileSystemStatus.toInt(status));
         dto.setUserInfo(userInfo);
         newFileSystemMgt().updateFileSystem(dto);      
+    }
+
+    public boolean updateFileSystemAvailability(String dirPath, String availability) throws RemoteException, FinderException {
+        FileSystemMgt mgt = newFileSystemMgt();
+        int iAvail = Availability.toInt(availability);
+        if ( mgt.updateFileSystemAvailability(dirPath, iAvail) ) {
+            if ( deleteFilesWhenUnavailable && iAvail == Availability.UNAVAILABLE ) {
+                deleteFilesOnFS(dirPath, mgt);
+        	}
+            return true;
+        } else {
+           return false;
+        }
+        
+    }
+    
+    public void deleteFilesOnFS(String dirPath) throws RemoteException, FinderException {
+        FileSystemMgt mgt = newFileSystemMgt();
+        int avail = mgt.getFileSystem(dirPath).getAvailability();
+        if ( avail != Availability.UNAVAILABLE )
+            throw new IllegalStateException("Filesystem must be UNAVAILABLE to perform this method!");
+        deleteFilesOnFS(dirPath, mgt);
+    }
+    /**
+     * @param dirPath
+     * @param mgt
+     * @param iAvail
+     * @throws FinderException
+     * @throws RemoteException
+     */
+    private void deleteFilesOnFS(String dirPath, FileSystemMgt mgt) throws FinderException, RemoteException {
+        int offset = 0;
+        Collection files = mgt.getFilesOnFS( dirPath, offset, limitNumberOfFilesPerTask);
+        FileDTO dto;
+        File f;
+        while ( !files.isEmpty() ) {
+            for ( Iterator iter = files.iterator() ; iter.hasNext() ; ) {
+                dto = (FileDTO) iter.next();
+                f = FileUtils.toFile(dto.getDirectoryPath(), dto.getFilePath());
+                delete(f);
+            }
+            offset += 1000;
+            files = mgt.getFilesOnFS( dirPath, offset, limitNumberOfFilesPerTask);
+        }
+    }
+
+    /**
+     * Check if the file of given filesystems are available.
+     * 
+     * @param dirPath
+     * @return 1 if all available, -1 if FS is empty or 0 if some available and some not.
+     * 
+     * @throws FinderException
+     * @throws RemoteException
+     */
+    public int checkFilesOnFS(String dirPath) throws FinderException, RemoteException {
+        FileSystemMgt mgt = newFileSystemMgt();
+        int offset = 0;
+        Collection files = mgt.getFilesOnFS( dirPath, offset, limitNumberOfFilesPerTask);
+        FileDTO dto;
+        File f;
+        int numDBFiles = 0;
+        int numFilesNotAvail=0;
+        while ( !files.isEmpty() ) {
+            numDBFiles += files.size();
+            for ( Iterator iter = files.iterator() ; iter.hasNext() ; ) {
+                dto = (FileDTO) iter.next();
+                f = FileUtils.toFile(dto.getDirectoryPath(), dto.getFilePath());
+                if(!f.exists()) {
+                    if ( log.isDebugEnabled() ) log.debug("Missing file:"+f);
+                    numFilesNotAvail++;
+                }
+            }
+            offset += 1000;
+            files = mgt.getFilesOnFS( dirPath, offset, limitNumberOfFilesPerTask);
+        }
+        if ( log.isDebugEnabled() )
+            log.debug("Files DB entries for filesystem "+dirPath+":"+numDBFiles+" NOT available:"+numFilesNotAvail);
+        return numFilesNotAvail == 0 ? 1 : numFilesNotAvail == numDBFiles ? -1 : 0;
     }
     
     public void linkFileSystems(String prev, String next)

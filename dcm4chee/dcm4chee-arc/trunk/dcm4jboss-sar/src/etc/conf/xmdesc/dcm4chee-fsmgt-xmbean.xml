@@ -340,6 +340,18 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isDeleteFilesWhenUnavailable"
+      setMethod="setDeleteFilesWhenUnavailable">
+      <description><![CDATA[Enable/Disable deletion of files off a filesystem thats availability is changed to UNAVAIL.]]>
+      </description>
+      <name>DeleteFilesWhenUnavailable</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getRetryIntervalsForJmsOrder"
       setMethod="setRetryIntervalsForJmsOrder">
       <description><![CDATA[Number and interval of retries made for
@@ -549,6 +561,54 @@ accessed studies.</description>
       <name>selectStorageFileSystem</name>
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Update Availability of a file system.<br>
+      		This method updates the availability of all instances, series and studies that have files on this filesystem!<br>
+      		If DeleteFilesWhenUnavailable is enabled and the filessystem gets UNAVAILABLE, all files of this FS will be deleted!<br>
+      		Return true if update/delete was performed (when availability of FS has been changed)
+      			]]>
+      </description>
+      <name>updateFileSystemAvailability</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Availability of the filesystem. One of "ONLINE", "NEARLINE",
+            "OFFLINE" or "UNAVAILABLE"</description>
+        <name>availability</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Delete all files for given (unavailable!) filesystem!<br>
+      				Throws an IllegalStateException if filesystems availability is not UNAVAILABLE!
+      			]]>
+      </description>
+      <name>deleteFilesOnFS</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Check filesystem if files are available!<br>
+      				Return 1 if all files are available, -1 if filesystem is empty and 0 if some files are not available!
+      			]]>
+      </description>
+      <name>checkFilesOnFS</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+   
    <operation impact="ACTION">
       <description>Purge unreferenced private Files</description>
       <name>purgePrivateFiles</name>
