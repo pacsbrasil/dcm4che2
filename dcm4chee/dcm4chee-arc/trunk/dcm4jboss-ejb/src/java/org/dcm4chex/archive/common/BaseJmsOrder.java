@@ -54,8 +54,6 @@ import java.util.Date;
  */
 public abstract class BaseJmsOrder implements Serializable {
 		
-	private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-
 	protected static long counter = 0;
 	private String id;
     private int failureCount = 0;
@@ -64,7 +62,7 @@ public abstract class BaseJmsOrder implements Serializable {
 	
     public BaseJmsOrder()
     {
-    	id = dtFormatter.format(new Date()) + counter++;
+    	id = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date()) + counter++;
     }
     
     public final int getFailureCount() {
