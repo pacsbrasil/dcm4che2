@@ -267,6 +267,17 @@ public abstract class FileSystemBean implements EntityBean {
     
     /**
      * @ejb.interface-method
+     */
+    public int getAvailabilitySafe() {
+        try {
+            return getAvailability();
+        } catch (NullPointerException npe) {
+            return 0;
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="fs_status"
      */
     public abstract int getStatus();

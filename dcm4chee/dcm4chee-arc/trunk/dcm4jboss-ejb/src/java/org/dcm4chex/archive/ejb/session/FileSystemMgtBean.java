@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +103,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" ref-name="ejb/StudyOnFileSystem"
  *              view-type="local"
  *
+ * @ejb.ejb-ref ejb-name="Instance" ref-name="ejb/Instance" view-type="local"
+ * @ejb.ejb-ref ejb-name="Series" ref-name="ejb/Series" view-type="local"
  *
  */
 public abstract class FileSystemMgtBean implements SessionBean {
@@ -304,18 +307,78 @@ public abstract class FileSystemMgtBean implements SessionBean {
     	fs.setStatus(status);
     }
 
+    
     /**
      * @ejb.interface-method
      */
-    public void updateFileSystemAvailability(String dirPath, int availability) throws FinderException {
+    public boolean updateFileSystemAvailability(String dirPath, int availability) throws FinderException {
     	FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
 
     	// If we set the file system to OFFLINE, we need to make sure its status should not
     	// DEF_RW.
     	if(availability >= Availability.OFFLINE && fs.getStatus() == FileSystemStatus.DEF_RW)
     		fs.setStatus(FileSystemStatus.RW);
-    	
+    	int oldAvail = fs.getAvailabilitySafe();
     	fs.setAvailability(availability);
+    	boolean changed = availability != oldAvail; 
+    	if ( changed ) {
+    	    updateInstanceAvailability(fs);
+    	}
+    	return changed;
+    }
+    
+    /**
+     * @param fs
+     * @throws FinderException
+     */
+    private void updateInstanceAvailability(FileSystemLocal fs) throws FinderException {
+        int offset = 0;
+        Collection files = fileHome.findByFileSystem(fs.getDirectoryPath(), offset, 1000);
+        HashSet seriess;
+        InstanceLocal instance;
+        Iterator iter;
+        while ( files.size() > 0 ) {
+            seriess = new HashSet();
+            for ( iter = files.iterator() ; iter.hasNext() ; ) {
+                instance = ((FileLocal) iter.next()).getInstance();
+                instance.updateDerivedFields(false, true);
+                seriess.add( instance.getSeries() );
+            }
+            updateSeriesAvailability(seriess);
+            offset += 1000;
+            files = fileHome.findByFileSystem(fs.getDirectoryPath(), offset, 1000);
+        }
+    }
+
+    /**
+     * @param seriess
+     * @throws FinderException
+     */
+    private void updateSeriesAvailability(HashSet seriess) throws FinderException {
+        SeriesLocal series;
+        HashSet studies = new HashSet();
+        for ( Iterator iter = seriess.iterator() ; iter.hasNext() ; ) {
+            series = (SeriesLocal) iter.next();
+            series.updateDerivedFields(false,false,false,false,true);
+            studies.add( series.getStudy() );
+        }
+        StudyLocal study;
+        for ( Iterator iter = studies.iterator() ; iter.hasNext() ; ) {
+            study = (StudyLocal) iter.next();
+            study.updateDerivedFields(false,false,false,false,true,false);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection getFilesOnFS(String dirPath, int offset, int limit) throws FinderException {
+        Collection files = fileHome.findByFileSystem( dirPath, offset, limit );
+        Collection dtos = new ArrayList();
+        for ( Iterator iter = files.iterator() ; iter.hasNext() ; ) {
+            dtos.add( ((FileLocal) iter.next()).getFileDTO() );
+        }
+        return dtos;
     }
     
     /**
