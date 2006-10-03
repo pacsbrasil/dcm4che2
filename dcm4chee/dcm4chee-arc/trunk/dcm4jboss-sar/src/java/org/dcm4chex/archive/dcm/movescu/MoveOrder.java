@@ -51,8 +51,6 @@ public final class MoveOrder implements Serializable {
 
 	private static final long serialVersionUID = 3617856386927702068L;
 
-	public static final String QUEUE = "MoveScu";
-
     private String retrieveAET;
 
     private String moveDestination;

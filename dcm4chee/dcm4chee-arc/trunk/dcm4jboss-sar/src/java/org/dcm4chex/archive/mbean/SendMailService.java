@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -93,7 +94,7 @@ public class SendMailService extends ServiceMBeanSupport
 	public static final String MAIL_FAILURE_COUNT = "failureCount";
 
 	/** Name of the JMS queue to receive 'send email' requests. */ 
-    public static final String QUEUE = "Sendmail";
+    private String queueName;
 	
 	private String smtpHost = "mail";
 
@@ -109,6 +110,14 @@ public class SendMailService extends ServiceMBeanSupport
 
 	private int concurrency = 1;
 
+        public final String getQueueName() {
+            return queueName;
+        }
+        
+        public final void setQueueName(String queueName) {
+            this.queueName = queueName;
+        }
+            
 	public final int getConcurrency() {
 		return concurrency;
 	}
@@ -207,15 +216,15 @@ public class SendMailService extends ServiceMBeanSupport
 	protected void startService() throws Exception
 	{
         super.startService();
-        JMSDelegate.startListening(QUEUE, listener, concurrency);
+        JMSDelegate.startListening(queueName, listener, concurrency);
 	}
 
 	protected void stopService() throws Exception
 	{
-		JMSDelegate.stopListening(QUEUE);
+		JMSDelegate.stopListening(queueName);
 		super.stopService();
 	}
-
+        
 	/**
 	 * Core method of the service. Sends a new mail.
 	 * A huge number of Exception types may be arised during the process of the 
@@ -294,7 +303,7 @@ public class SendMailService extends ServiceMBeanSupport
                 log.error("Give up to send " + mailProps);
             } else {
                 log.warn("Failed to send " + mailProps + ". Scheduling retry.");
-                JMSDelegate.queue(QUEUE, (Serializable) mailProps, 0, System.currentTimeMillis() + delay);
+                JMSDelegate.queue(queueName, (Serializable) mailProps, 0, System.currentTimeMillis() + delay);
             }
         }
 		
@@ -318,7 +327,7 @@ public class SendMailService extends ServiceMBeanSupport
 
 		try
 		{
-			JMSDelegate.queue( QUEUE, mail, Message.DEFAULT_PRIORITY, 0L);
+			JMSDelegate.queue( queueName, mail, Message.DEFAULT_PRIORITY, 0L);
 			return "Mail '"+subject+"' succesfully sent to "+ toAddress;
 		} catch (Exception e)
 		{

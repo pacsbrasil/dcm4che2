@@ -45,7 +45,6 @@ import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -84,7 +83,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
-import org.dcm4chex.archive.mbean.SendMailService;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -107,9 +105,6 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 
     private static final long MIN_MAX_MEDIA_USAGE = 20 * FileUtils.MEGA;
 
-	/** Name of the JMS queue to receive media creation requests from scheduler or WEB interface. */ 
-    private static final String QUEUE = "MCMScu";
-
     /** Action command for media creation. */
     private static final int INITIATE_MEDIA_CREATION = 1;
 
@@ -123,6 +118,9 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         UIDs.ImplicitVRLittleEndian};
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
+    
+    /** Name of the JMS queue to receive media creation requests from scheduler or WEB interface. */ 
+    private String queueName;
     
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
 	private long maxMediaUsage = 680 * FileUtils.MEGA;
@@ -192,6 +190,14 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	
 	private int concurrency = 1;
 
+        public final String getQueueName() {
+            return queueName;
+        }
+        
+        public final void setQueueName(String queueName) {
+            this.queueName = queueName;
+        }
+            
 	public final int getConcurrency() {
 		return concurrency;
 	}
@@ -694,7 +700,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         		updateMediaStatusInterval, updateMediaStatusListener);
         burnMediaListenerID = scheduler.startScheduler("CheckForMediaToBurn",
         		burnMediaInterval, burnMediaListener);
-        JMSDelegate.startListening(QUEUE, this, concurrency);
+        JMSDelegate.startListening(queueName, this, concurrency);
     }
 
 	/**
@@ -708,7 +714,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         		updateMediaStatusListener);
         scheduler.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
         		burnMediaListener);
-        JMSDelegate.stopListening(QUEUE);
+        JMSDelegate.stopListening(queueName);
         super.stopService();
     }
 
@@ -1164,13 +1170,6 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 */
 	private void notifyMediaToBurn(List mediaToBurn) throws JMSException {
 		log.info("Notify "+this.notifyBurnMediaEmailTo+" that "+mediaToBurn.size()+" media are ready to burn!");
-		HashMap map = new HashMap();
-		map.put( SendMailService.MAIL_BODY, formatBody(mediaToBurn) );
-		if ( notifyBurnMediaEmailFrom != null ) map.put( SendMailService.MAIL_FROM_ADDR, notifyBurnMediaEmailFrom );
-		map.put(SendMailService.MAIL_SUBJECT, "Media Creation Service: media ready to burn!");
-		map.put(SendMailService.MAIL_TO_ADDR, notifyBurnMediaEmailTo);
-		JMSDelegate.queue( SendMailService.QUEUE, map, Message.DEFAULT_PRIORITY, 0L);
-
 		try {
 			Object o = server.invoke(sendMailServiceName, "send",
 					new Object[] { "Media Creation Service: media ready to burn!",

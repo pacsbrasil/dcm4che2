@@ -53,7 +53,6 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
-import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.PrivateManager;
 import org.dcm4chex.archive.ejb.interfaces.PrivateManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -70,14 +69,21 @@ public class PPSExceptionMgtService extends ServiceMBeanSupport
 implements NotificationListener, MessageListener {
 
 	/** Name of the JMS queue to 'serialize' SeriesStored and MPPSReceived Notifictions. */ 
-    public static final String QUEUE = "PPSExceptionMgt";
+    private String queueName;
 	
 	private ObjectName mppsScpServiceName;
-	private MPPSManager mppsManager;
 	private PrivateManager privateManager;
 
 	private long delay = 0;
 
+        public final String getQueueName() {
+            return queueName;
+        }
+        
+        public final void setQueueName(String queueName) {
+            this.queueName = queueName;
+        }
+            
 	/**
 	 * @return Returns the delay.
 	 */
@@ -100,7 +106,7 @@ implements NotificationListener, MessageListener {
 	}
 	
 	protected void startService() throws Exception {
-        JMSDelegate.startListening(QUEUE, this, 1);
+        JMSDelegate.startListening(queueName, this, 1);
 		server.addNotificationListener(mppsScpServiceName, this,
 				MPPSScpService.NOTIF_FILTER, null);
 	}
@@ -108,7 +114,7 @@ implements NotificationListener, MessageListener {
 	protected void stopService() throws Exception {
 		server.removeNotificationListener(mppsScpServiceName, this,
 				MPPSScpService.NOTIF_FILTER, null);
-		JMSDelegate.stopListening(QUEUE);
+		JMSDelegate.stopListening(queueName);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {
@@ -125,7 +131,7 @@ implements NotificationListener, MessageListener {
 	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
 	        			String mppsIUID = mppsDS.getString( Tags.SOPInstanceUID );
 		    			log.debug("Scheduled: Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
-		                JMSDelegate.queue(QUEUE, mppsIUID, Message.DEFAULT_PRIORITY, System.currentTimeMillis()+getDelay());
+		                JMSDelegate.queue(queueName, mppsIUID, Message.DEFAULT_PRIORITY, System.currentTimeMillis()+getDelay());
 	        	}
 	        }
 		} catch (Exception e) {

@@ -106,8 +106,18 @@ public class MoveScuService extends ServiceMBeanSupport implements
 	private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
 	private int concurrency = 1;
+        
+        private String queueName;
 
-	public final ObjectName getTLSConfigName() {
+        public final String getQueueName() {
+            return queueName;
+        }
+        
+        public final void setQueueName(String queueName) {
+            this.queueName = queueName;
+        }
+
+        public final ObjectName getTLSConfigName() {
 		return tlsConfig.getTLSConfigName();
 	}
 
@@ -213,7 +223,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
 	private void scheduleMoveOrder(MoveOrder order, long scheduledTime) {
 		try {
-			JMSDelegate.queue(MoveOrder.QUEUE, order,
+			JMSDelegate.queue(queueName, order,
 					JMSDelegate.toJMSPriority(order.getPriority()),
 					scheduledTime);
 		} catch (JMSException e) {
@@ -222,11 +232,11 @@ public class MoveScuService extends ServiceMBeanSupport implements
 	}
 	
 	protected void startService() throws Exception {
-		JMSDelegate.startListening(MoveOrder.QUEUE, this, concurrency);
+		JMSDelegate.startListening(queueName, this, concurrency);
 	}
 
 	protected void stopService() throws Exception {
-		JMSDelegate.stopListening(MoveOrder.QUEUE);
+		JMSDelegate.stopListening(queueName);
 	}
 	
 
