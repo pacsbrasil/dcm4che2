@@ -67,8 +67,8 @@ public abstract class BaseCmd {
     protected int updateDatabaseMaxRetries = 20;
     protected long updateDatabaseRetryInterval = 500L; // ms
     
-    private int resultSetType = ResultSet.TYPE_FORWARD_ONLY;
-    private int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
+    protected int resultSetType = ResultSet.TYPE_FORWARD_ONLY;
+    protected int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
 
     protected BaseCmd(String dsJndiName, int transactionIsolationLevel, String sql)
 			throws SQLException {
