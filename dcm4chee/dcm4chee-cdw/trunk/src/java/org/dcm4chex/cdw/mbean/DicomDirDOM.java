@@ -415,6 +415,7 @@ class DicomDirDOM {
     public void createWeb(MediaCreationRequest rq)
             throws MediaCreationException {
         File dir = new File(rq.getFilesetDir(), IHE_PDI);
+        dir.mkdir();
         try {
 	        log.info("Start Creating HTML content for " + rq);
 	        File indexFile = new File(rq.getFilesetDir(), IHE_PDI
