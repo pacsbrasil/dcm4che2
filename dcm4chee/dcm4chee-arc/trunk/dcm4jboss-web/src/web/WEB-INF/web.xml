@@ -202,6 +202,11 @@
 			<param-name>qrscpServiceName</param-name>
 			<param-value>dcm4chee.archive:service=QueryRetrieveScp</param-value>
 		</init-param>
+		<init-param>
+			<param-name>moveScuQueueName</param-name>
+			<param-value>MoveScu</param-value>
+		</init-param>
+		
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>

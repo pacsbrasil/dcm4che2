@@ -320,8 +320,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 MOVE_PRIOR, null, studyIuids, seriesIuids, sopIuids);
         try {
             log.info("Scheduling " + order);
-            JMSDelegate.queue(MoveOrder.QUEUE, order, JMSDelegate
-                    .toJMSPriority(MOVE_PRIOR), -1);
+            JMSDelegate.queue(
+                    getCtx().getServletConfig().getInitParameter("moveScuQueueName"),
+                    order, JMSDelegate.toJMSPriority(MOVE_PRIOR), -1);
         } catch (JMSException e) {
             log.error("Failed: Scheduling " + order, e);
         }
