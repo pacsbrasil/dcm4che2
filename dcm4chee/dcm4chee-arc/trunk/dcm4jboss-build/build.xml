@@ -204,9 +204,6 @@
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-cdw" prefix="${dist.standalone.config}">
-        <include name="lib/scheduler-plugin.jar"/>
-      </zipfileset>
       <zipfileset dir="../dcm4jboss-cdw/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/dcm4chee-cdw/*"/>
         <include name="conf/xmdesc/*"/>
