@@ -399,48 +399,43 @@ public class DcmSnd {
                     "illegal argument of option -connectTO", 1,
                     Integer.MAX_VALUE));
         if (cl.hasOption("reaper"))
-            dcmsnd
-                    .setAssociationReaperPeriod(parseInt(cl
-                            .getOptionValue("reaper"),
-                            "illegal argument of option -reaper", 1,
-                            Integer.MAX_VALUE));
+            dcmsnd.setAssociationReaperPeriod(
+                    parseInt(cl.getOptionValue("reaper"),
+                    "illegal argument of option -reaper",
+                    1, Integer.MAX_VALUE));
         if (cl.hasOption("rspTO"))
             dcmsnd.setDimseRspTimeout(parseInt(cl.getOptionValue("rspTO"),
-                    "illegal argument of option -rspTO", 1, Integer.MAX_VALUE));
+                    "illegal argument of option -rspTO",
+                    1, Integer.MAX_VALUE));
         if (cl.hasOption("acceptTO"))
             dcmsnd.setAcceptTimeout(parseInt(cl.getOptionValue("acceptTO"),
-                    "illegal argument of option -acceptTO", 1,
-                    Integer.MAX_VALUE));
+                    "illegal argument of option -acceptTO", 
+                    1, Integer.MAX_VALUE));
         if (cl.hasOption("releaseTO"))
             dcmsnd.setReleaseTimeout(parseInt(cl.getOptionValue("releaseTO"),
-                    "illegal argument of option -releaseTO", 1,
-                    Integer.MAX_VALUE));
+                    "illegal argument of option -releaseTO",
+                    1, Integer.MAX_VALUE));
         if (cl.hasOption("soclosedelay"))
-            dcmsnd.setSocketCloseDelay(parseInt(cl
-                    .getOptionValue("soclosedelay"),
+            dcmsnd.setSocketCloseDelay(
+                    parseInt(cl.getOptionValue("soclosedelay"),
                     "illegal argument of option -soclosedelay", 1, 10000));
         if (cl.hasOption("rcvpdulen"))
-            dcmsnd.setMaxPDULengthReceive(parseInt(cl
-                    .getOptionValue("rcvpdulen"),
-                    "illegal argument of option -rcvpdulen", 1, 10000)
-                    * KB);
+            dcmsnd.setMaxPDULengthReceive(
+                    parseInt(cl.getOptionValue("rcvpdulen"),
+                    "illegal argument of option -rcvpdulen", 1, 10000) * KB);
         if (cl.hasOption("sndpdulen"))
             dcmsnd.setMaxPDULengthSend(parseInt(cl.getOptionValue("sndpdulen"),
-                    "illegal argument of option -sndpdulen", 1, 10000)
-                    * KB);
+                    "illegal argument of option -sndpdulen", 1, 10000) * KB);
         if (cl.hasOption("sosndbuf"))
             dcmsnd.setSendBufferSize(parseInt(cl.getOptionValue("sosndbuf"),
-                    "illegal argument of option -sosndbuf", 1, 10000)
-                    * KB);
+                    "illegal argument of option -sosndbuf", 1, 10000) * KB);
         if (cl.hasOption("sorcvbuf"))
             dcmsnd.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
-                    "illegal argument of option -sorcvbuf", 1, 10000)
-                    * KB);
+                    "illegal argument of option -sorcvbuf", 1, 10000) * KB);
         if (cl.hasOption("bufsize"))
-            dcmsnd.setTranscoderBufferSize(parseInt(cl
-                    .getOptionValue("bufsize"),
-                    "illegal argument of option -bufsize", 1, 10000)
-                    * KB);
+            dcmsnd.setTranscoderBufferSize(
+                    parseInt(cl.getOptionValue("bufsize"),
+                    "illegal argument of option -bufsize", 1, 10000) * KB);
         dcmsnd.setPackPDV(!cl.hasOption("pdv1"));
         dcmsnd.setTcpNoDelay(!cl.hasOption("tcpdelay"));
         if (cl.hasOption("async"))
@@ -471,7 +466,7 @@ public class DcmSnd {
             System.exit(2);
         }
         t2 = System.currentTimeMillis();
-        System.out.println("Connected to " + remoteAE + " in "
+        System.out.println("Connected to " + remoteAE + " in " 
                 + ((t2 - t1) / 1000F) + "s");
 
         t1 = System.currentTimeMillis();

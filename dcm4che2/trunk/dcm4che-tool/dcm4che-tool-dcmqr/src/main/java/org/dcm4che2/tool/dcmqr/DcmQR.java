@@ -374,52 +374,62 @@ public class DcmQR {
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("timeout in ms for TCP connect, no timeout by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for TCP connect, no timeout by default");
         opts.addOption(OptionBuilder.create("connectTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("delay in ms for Socket close after sending A-ABORT, 50ms by default");
+        OptionBuilder.withDescription(
+                "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         opts.addOption(OptionBuilder.create("soclosedelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("period in ms to check for outstanding DIMSE-RSP, 10s by default");
+        OptionBuilder.withDescription(
+                "period in ms to check for outstanding DIMSE-RSP, 10s by default");
         opts.addOption(OptionBuilder.create("reaper"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("timeout in ms for receiving DIMSE-RSP, 60s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving DIMSE-RSP, 60s by default");
         opts.addOption(OptionBuilder.create("rspTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
         opts.addOption(OptionBuilder.create("acceptTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("timeout in ms for receiving A-RELEASE-RP, 5s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         opts.addOption(OptionBuilder.create("releaseTO"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
+        OptionBuilder.withDescription(
+                "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         opts.addOption(OptionBuilder.create("rcvpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
+        OptionBuilder.withDescription(
+                "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
         opts.addOption(OptionBuilder.create("sndpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("set SO_RCVBUF socket option to specified value in KB");
+        OptionBuilder.withDescription(
+                "set SO_RCVBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sorcvbuf"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("set SO_SNDBUF socket option to specified value in KB");
+        OptionBuilder.withDescription(
+                "set SO_SNDBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sosndbuf"));
 
         OptionGroup qrlevel = new OptionGroup();
