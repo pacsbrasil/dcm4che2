@@ -44,16 +44,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.jms.JMSException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
@@ -316,15 +313,13 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private void scheduleMove(String[] studyIuids, String[] seriesIuids,
             String[] sopIuids) {
         FolderForm folderForm = (FolderForm) getForm();
-        MoveOrder order = new MoveOrder(null, folderForm.getDestination(),
-                MOVE_PRIOR, null, studyIuids, seriesIuids, sopIuids);
+        String destAET = folderForm.getDestination();
         try {
-            log.info("Scheduling " + order);
-            JMSDelegate.queue(
-                    getCtx().getServletConfig().getInitParameter("moveScuQueueName"),
-                    order, JMSDelegate.toJMSPriority(MOVE_PRIOR), -1);
-        } catch (JMSException e) {
-            log.error("Failed: Scheduling " + order, e);
+            log.info("Scheduling Retrieve Order to " + destAET);
+            new MoveScuDelegate(getCtx()).scheduleMove(destAET,
+                    MOVE_PRIOR, studyIuids, seriesIuids, sopIuids);
+        } catch (Exception e) {
+            log.error("Failed: Scheduling Retrieve Order to " + destAET, e);
         }
     }
 

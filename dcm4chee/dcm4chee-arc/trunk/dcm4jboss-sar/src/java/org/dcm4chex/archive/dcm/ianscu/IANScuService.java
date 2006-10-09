@@ -80,11 +80,11 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -182,6 +182,16 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private int concurrency = 1;
 
+    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }
+    
     public final int getConcurrency() {
         return concurrency;
     }
@@ -362,7 +372,7 @@ public class IANScuService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, seriesStoredFilter, null);
         server.addNotificationListener(fileSystemMgtServiceName,
@@ -377,7 +387,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                 seriesStoredListener, seriesStoredFilter, null);
         server.removeNotificationListener(fileSystemMgtServiceName,
                 studyDeletedListener, studyDeletedFilter, null);
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
     }
 
     private void onSeriesStored(SeriesStored stored) {
@@ -530,9 +540,9 @@ public class IANScuService extends ServiceMBeanSupport implements
             IANOrder order = new IANOrder(notifiedAETs[i], ian);
             try {
                 log.info("Scheduling " + order);
-                JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+                jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                         0L);
-            } catch (JMSException e) {
+            } catch (Exception e) {
                 log.error("Failed to schedule " + order, e);
             }
         }
@@ -555,7 +565,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);
-                    JMSDelegate.queue(queueName, order, 0, System
+                    jmsDelegate.queue(queueName, order, 0, System
                             .currentTimeMillis()
                             + delay);
                 }

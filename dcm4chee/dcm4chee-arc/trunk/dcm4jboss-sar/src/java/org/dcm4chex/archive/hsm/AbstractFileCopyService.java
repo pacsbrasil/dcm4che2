@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -64,9 +63,9 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -102,6 +101,16 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
 
     protected int bufferSize = 8192;
 
+    protected JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }
+        
     public final int getBufferSize() {
         return bufferSize;
     }
@@ -214,7 +223,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     }
 
     protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName, this,
                 seriesStoredFilter, null);
     }
@@ -222,7 +231,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName, this,
                 seriesStoredFilter, null);
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -275,9 +284,9 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     private void schedule(FileCopyOrder order, long scheduledTime) {
         try {
             log.info("Scheduling " + order);
-            JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+            jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                     scheduledTime);
-        } catch (JMSException e) {
+        } catch (Exception e) {
             log.error("Failed to schedule " + order, e);
         }
     }

@@ -16,7 +16,7 @@
     <depends>dcm4chee.archive:service=QueryRetrieveScp</depends>
     <depends>dcm4chee.archive:service=TLSConfig</depends>
     <depends>dcm4chee.archive:service=Queue,name=MoveScu</depends>
-    <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+    <depends>dcm4chee.archive:service=JMS</depends>
   </mbean>
 </server>
 

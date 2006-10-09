@@ -62,7 +62,6 @@ import java.util.StringTokenizer;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -108,12 +107,12 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -154,6 +153,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
+    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    
     private String callingAET;
 
     private int acTimeout;
@@ -373,6 +374,14 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }
+
     public final int getReceiveBufferSize() {
         return tlsConfig.getReceiveBufferSize();
     }
@@ -398,7 +407,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName, this,
                 seriesStoredFilter, null);
     }
@@ -406,7 +415,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName, this,
                 seriesStoredFilter, null);
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -574,7 +583,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     private void schedule(ExportTFOrder order, long scheduledTime)
-            throws JMSException {
+            throws Exception {
         String iuid = order.getManifest().getString(Tags.SOPInstanceUID);
         log.info("Scheduling Export TF order:" + iuid);
         if ( log.isDebugEnabled() ) log.debug("already scheduled:"+scheduledList);
@@ -582,7 +591,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             log.info("Export TF order "+ iuid+" is already scheduled! Ignore this order!");
             return;
         }
-        JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+        jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                 scheduledTime);
         scheduledList.add(iuid);
         copyIUIDs(order.getManifest().get(Tags.IdenticalDocumentsSeq), scheduledList);

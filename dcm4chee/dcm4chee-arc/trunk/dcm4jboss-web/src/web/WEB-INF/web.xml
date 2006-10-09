@@ -203,8 +203,8 @@
 			<param-value>dcm4chee.archive:service=QueryRetrieveScp</param-value>
 		</init-param>
 		<init-param>
-			<param-name>moveScuQueueName</param-name>
-			<param-value>MoveScu</param-value>
+			<param-name>moveScuServiceName</param-name>
+			<param-value>dcm4chee.archive:service=MoveScu</param-value>
 		</init-param>
 		
 

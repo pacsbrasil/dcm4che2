@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.dcm.mcmscu;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
@@ -82,11 +83,11 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -190,6 +191,16 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	
 	private int concurrency = 1;
 
+        private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+        public final ObjectName getJmsServiceName() {
+            return jmsDelegate.getJmsServiceName();
+        }
+
+        public final void setJmsServiceName(ObjectName jmsServiceName) {
+            jmsDelegate.setJmsServiceName(jmsServiceName);
+        }
+            
         public final String getQueueName() {
             return queueName;
         }
@@ -700,7 +711,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         		updateMediaStatusInterval, updateMediaStatusListener);
         burnMediaListenerID = scheduler.startScheduler("CheckForMediaToBurn",
         		burnMediaInterval, burnMediaListener);
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
     }
 
 	/**
@@ -714,8 +725,12 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         		updateMediaStatusListener);
         scheduler.stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
         		burnMediaListener);
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
         super.stopService();
+    }
+    
+    public void scheduleMediaCreation(MediaDTO mediaDTO) throws Exception  {
+        jmsDelegate.queue( queueName, mediaDTO, Message.DEFAULT_PRIORITY, 0L);
     }
 
     /**

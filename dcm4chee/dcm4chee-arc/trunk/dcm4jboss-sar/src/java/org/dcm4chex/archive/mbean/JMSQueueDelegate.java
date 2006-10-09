@@ -12,16 +12,15 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
- * Portions created by the Initial Developer are Copyright (C) 2003-2005
+ * Agfa Healthcare.
+ * Portions created by the Initial Developer are Copyright (C) 2006
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See listed authors below. 
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,10 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.util;
+package org.dcm4chex.archive.mbean;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -58,12 +56,11 @@ import javax.naming.NamingException;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 
 /**
- * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
- * @since 23.08.2004
- *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Id$
+ * @since Oct 9, 2006
  */
-public class JMSDelegate {
+class JMSQueueDelegate {
 
     public static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
@@ -71,38 +68,8 @@ public class JMSDelegate {
      * JBoss-vendor specific property for scheduling a JMS message. In
      * milliseconds since January 1, 1970.
      */
-    public static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
-
-    public static void startListening(String name, MessageListener listener, 
-				int receiverCount)
-    		throws JMSException {
-        if (map.containsKey(name))
-            throw new IllegalStateException("Already listening on queue " + name);
-        map.put(name, new JMSDelegate(name, listener, receiverCount));
-    }
-
-    public static void stopListening(String name) {
-        JMSDelegate jms = (JMSDelegate) map.remove(name);
-        if (jms == null)
-            throw new IllegalStateException("No listener on queue " + name);
-        jms.close();
-    }
-    
-    public static void queue(String name, Serializable obj, int prior,
-            long scheduledTime) throws JMSException {
-        JMSDelegate jms = (JMSDelegate) map.get(name);
-        if (jms == null)
-            throw new IllegalStateException("No listener on queue " + name);
-        jms.queueMessage(obj, prior, scheduledTime);
-    }
-    
-    public static int toJMSPriority(int dcmPriority) {
-        if (dcmPriority == 1) return 5;
-        if (dcmPriority == 2) return 3;
-        return 4;
-    }
-    
-    private static HashMap map = new HashMap();
+    public static final String PROPERTY_SCHEDULED_DELIVERY =
+        "JMS_JBOSS_SCHEDULED_DELIVERY";
 
     private final QueueConnection conn;
 
@@ -110,13 +77,13 @@ public class JMSDelegate {
 
     private int deliveryMode = DeliveryMode.PERSISTENT;
 
-    private JMSDelegate(String name, MessageListener listener, int receiverCount)
-    		throws JMSException {
+    public JMSQueueDelegate(String name, MessageListener listener,
+            int receiverCount) throws JMSException {
         InitialContext iniCtx = null;
         QueueConnectionFactory qcf = null;
         try {
             iniCtx = new InitialContext();
-	        qcf = (QueueConnectionFactory) iniCtx.lookup(CONNECTION_FACTORY);
+            qcf = (QueueConnectionFactory) iniCtx.lookup(CONNECTION_FACTORY);
             queue = (Queue) iniCtx.lookup("queue/" + name);
             conn = qcf.createQueueConnection();
         } catch (NamingException e) {
@@ -132,53 +99,51 @@ public class JMSDelegate {
             }
         }
         try {
-			for (int i = 0; i < receiverCount; ++i) {
-	            QueueSession session = conn.createQueueSession(false,
-	                    QueueSession.AUTO_ACKNOWLEDGE);
-	            QueueReceiver receiver = session.createReceiver(queue);
-	            receiver.setMessageListener(listener);
-			}
-                    // delay start of JMS connection for 1 minute as work around
-                    // for in JBoss-4.0.4 the EntityContainer cannot be used
-                    // immediately after it's been started.
-                    // Should be fixed in JBoss-4.0.5
-                    new Thread(new Runnable(){
+            for (int i = 0; i < receiverCount; ++i) {
+                QueueSession session = conn.createQueueSession(false,
+                        QueueSession.AUTO_ACKNOWLEDGE);
+                QueueReceiver receiver = session.createReceiver(queue);
+                receiver.setMessageListener(listener);
+            }
+            // delay start of JMS connection for 1 minute as work around
+            // for in JBoss-4.0.4 the EntityContainer cannot be used
+            // immediately after it's been started.
+            // Should be fixed in JBoss-4.0.5
+            new Thread(new Runnable() {
 
-                        public void run() {
-                            try {
-                                Thread.sleep(60000);
-                                conn.start();                
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }}).start();
+                public void run() {
+                    try {
+                        Thread.sleep(60000);
+                        conn.start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
 
         } catch (JMSException e) {
             close();
             throw e;
         }
     }
-    
-    private void close() {
+
+    public void close() {
         try {
             conn.close();
         } catch (Exception ignore) {
         }
     }
 
-    public void queueMessage(Serializable obj, int priority,
-            long scheduledTime) throws JMSException {
+    public void queueMessage(Serializable obj, int priority, long scheduledTime)
+            throws JMSException {
         QueueSession session = conn.createQueueSession(false,
                 QueueSession.AUTO_ACKNOWLEDGE);
         try {
             ObjectMessage msg = session.createObjectMessage(obj);
             if (scheduledTime > 0L)
-                    msg.setLongProperty(PROPERTY_SCHEDULED_DELIVERY,
-                            scheduledTime);
+                msg.setLongProperty(PROPERTY_SCHEDULED_DELIVERY, scheduledTime);
             QueueSender sender = session.createSender(queue);
-            sender.send(msg,
-                    deliveryMode,
-                    priority,
+            sender.send(msg, deliveryMode, priority,
                     ObjectMessage.DEFAULT_TIME_TO_LIVE);
         } finally {
             session.close();

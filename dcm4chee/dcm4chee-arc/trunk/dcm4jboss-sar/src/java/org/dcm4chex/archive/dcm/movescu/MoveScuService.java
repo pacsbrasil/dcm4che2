@@ -42,7 +42,6 @@ package org.dcm4chex.archive.dcm.movescu;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -66,8 +65,8 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -109,6 +108,16 @@ public class MoveScuService extends ServiceMBeanSupport implements
         
         private String queueName;
 
+        private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+        public final ObjectName getJmsServiceName() {
+            return jmsDelegate.getJmsServiceName();
+        }
+
+        public final void setJmsServiceName(ObjectName jmsServiceName) {
+            jmsDelegate.setJmsServiceName(jmsServiceName);
+        }
+        
         public final String getQueueName() {
             return queueName;
         }
@@ -221,22 +230,29 @@ public class MoveScuService extends ServiceMBeanSupport implements
 				studyIUID, seriesIUID), scheduledTime);
 	}
 
+        public void scheduleMove(String retrieveAET, String destAET,
+                int priority, String pid, String[] studyIUIDs,
+                String[] seriesIUIDs, String[] sopIUIDs, long scheduledTime) {
+            scheduleMoveOrder(new MoveOrder(retrieveAET, destAET, priority, pid,
+                        studyIUIDs, seriesIUIDs, sopIUIDs), scheduledTime);
+        }
+        
 	private void scheduleMoveOrder(MoveOrder order, long scheduledTime) {
 		try {
-			JMSDelegate.queue(queueName, order,
+			jmsDelegate.queue(queueName, order,
 					JMSDelegate.toJMSPriority(order.getPriority()),
 					scheduledTime);
-		} catch (JMSException e) {
+		} catch (Exception e) {
 			log.error("Failed to schedule order: " + order);
 		}
 	}
 	
 	protected void startService() throws Exception {
-		JMSDelegate.startListening(queueName, this, concurrency);
+		jmsDelegate.startListening(queueName, this, concurrency);
 	}
 
 	protected void stopService() throws Exception {
-		JMSDelegate.stopListening(queueName);
+		jmsDelegate.stopListening(queueName);
 	}
 	
 

@@ -70,8 +70,8 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.dom4j.Document;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
@@ -117,6 +117,16 @@ public class HL7SendService
 	
 	private int concurrency = 1;
 
+        private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+        public final ObjectName getJmsServiceName() {
+            return jmsDelegate.getJmsServiceName();
+        }
+
+        public final void setJmsServiceName(ObjectName jmsServiceName) {
+            jmsDelegate.setJmsServiceName(jmsServiceName);
+        }
+    
 	public final int getConcurrency() {
 		return concurrency;
 	}
@@ -223,7 +233,7 @@ public class HL7SendService
 	}
 
 	protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(hl7ServerName,
                 this,
                 HL7ServerService.NOTIF_FILTER,
@@ -235,7 +245,7 @@ public class HL7SendService
                 this,
                 HL7ServerService.NOTIF_FILTER,
                 null);				
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {
@@ -269,12 +279,12 @@ public class HL7SendService
             HL7SendOrder order = new HL7SendOrder(hl7msg, dests[i]);
             try {
                 log.info("Scheduling " + order);
-                JMSDelegate.queue(queueName,
+                jmsDelegate.queue(queueName,
                         order,
                         Message.DEFAULT_PRIORITY,
                         0L);
 				++count;
-            } catch (JMSException e) {
+            } catch (Exception e) {
                 log.error("Failed to schedule " + order, e);
             }
 		}
@@ -299,7 +309,7 @@ public class HL7SendService
 	                log.error("Give up to process " + order);
 	            } else {
 	                log.warn("Failed to process " + order + ". Scheduling retry.");
-	                JMSDelegate.queue(queueName, order, 0, System
+	                jmsDelegate.queue(queueName, order, 0, System
 	                        .currentTimeMillis()
 	                        + delay);
 	            }

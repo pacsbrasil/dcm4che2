@@ -77,10 +77,10 @@ import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -119,7 +119,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
         Tags.NonDICOMOutputCodeSeq, Tags.OutputInformationSeq };
     
 	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
+        
 	private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
 	private String callingAET;
@@ -149,6 +149,16 @@ public class PPSScuService extends ServiceMBeanSupport implements
     private boolean copyStationClassCode = true;
 
     private boolean copyStationNameCode = true;
+    
+    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }    
 
 	public final boolean isCopyProcessingApplicationsCode() {
         return copyProcessingApplicationsCode;
@@ -337,7 +347,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	}
 
 	protected void startService() throws Exception {
-		JMSDelegate.startListening(queueName, this, concurrency);
+		jmsDelegate.startListening(queueName, this, concurrency);
 		server.addNotificationListener(gpwlScpServiceName, this,
 				GPWLScpService.NOTIF_FILTER, null);
 	}
@@ -345,7 +355,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	protected void stopService() throws Exception {
 		server.removeNotificationListener(gpwlScpServiceName, this,
 				GPWLScpService.NOTIF_FILTER, null);
-		JMSDelegate.stopListening(queueName);
+		jmsDelegate.stopListening(queueName);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {
@@ -403,9 +413,9 @@ public class PPSScuService extends ServiceMBeanSupport implements
 			PPSOrder order = new PPSOrder(pps, destAETs[i]);
 			try {
 				log.info("Scheduling " + order);
-				JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+				jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
 						0L);
-			} catch (JMSException e) {
+			} catch (Exception e) {
 				log.error("Failed to schedule " + order, e);
 			}
 		}
@@ -435,7 +445,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
 				} else {
 					log.warn("Failed to process " + order
 							+ ". Scheduling retry.", e);
-					JMSDelegate.queue(queueName, order, 0, System
+					jmsDelegate.queue(queueName, order, 0, System
 							.currentTimeMillis()
 							+ delay);
 				}

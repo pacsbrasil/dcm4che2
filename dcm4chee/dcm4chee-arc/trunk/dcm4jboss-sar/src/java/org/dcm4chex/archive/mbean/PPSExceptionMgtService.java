@@ -57,7 +57,6 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateManager;
 import org.dcm4chex.archive.ejb.interfaces.PrivateManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -76,6 +75,16 @@ implements NotificationListener, MessageListener {
 
 	private long delay = 0;
 
+    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }
+        
         public final String getQueueName() {
             return queueName;
         }
@@ -106,7 +115,7 @@ implements NotificationListener, MessageListener {
 	}
 	
 	protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this, 1);
+        jmsDelegate.startListening(queueName, this, 1);
 		server.addNotificationListener(mppsScpServiceName, this,
 				MPPSScpService.NOTIF_FILTER, null);
 	}
@@ -114,7 +123,7 @@ implements NotificationListener, MessageListener {
 	protected void stopService() throws Exception {
 		server.removeNotificationListener(mppsScpServiceName, this,
 				MPPSScpService.NOTIF_FILTER, null);
-		JMSDelegate.stopListening(queueName);
+		jmsDelegate.stopListening(queueName);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {
@@ -131,7 +140,7 @@ implements NotificationListener, MessageListener {
 	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
 	        			String mppsIUID = mppsDS.getString( Tags.SOPInstanceUID );
 		    			log.debug("Scheduled: Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
-		                JMSDelegate.queue(queueName, mppsIUID, Message.DEFAULT_PRIORITY, System.currentTimeMillis()+getDelay());
+		                jmsDelegate.queue(queueName, mppsIUID, Message.DEFAULT_PRIORITY, System.currentTimeMillis()+getDelay());
 	        	}
 	        }
 		} catch (Exception e) {

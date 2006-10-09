@@ -95,10 +95,10 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.JMSDelegate;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -140,7 +140,17 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
 	private ObjectName aeServiceName;
 
-	public final int getConcurrency() {
+        private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+        public final ObjectName getJmsServiceName() {
+            return jmsDelegate.getJmsServiceName();
+        }
+
+        public final void setJmsServiceName(ObjectName jmsServiceName) {
+            jmsDelegate.setJmsServiceName(jmsServiceName);
+        }
+
+        public final int getConcurrency() {
 		return concurrency;
 	}
 
@@ -310,18 +320,18 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
     
     public void queueStgCmtOrder(String calling, String called,
-            Dataset actionInfo, boolean scpRole) throws JMSException {
+            Dataset actionInfo, boolean scpRole) throws Exception {
         StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
-        JMSDelegate.queue(queueName, order, 0, 0);        
+        jmsDelegate.queue(queueName, order, 0, 0);        
     }
     
     protected void startService() throws Exception {
         super.startService();
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
         super.stopService();
     }
     
@@ -358,7 +368,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 	                log.error("Give up to process " + order, e);
 	            } else {
 	                log.warn("Failed to process " + order + ". Scheduling retry.", e);
-	                JMSDelegate.queue(queueName, order, 0,
+	                jmsDelegate.queue(queueName, order, 0,
 	                        System.currentTimeMillis() + delay);
 	            }
 			}

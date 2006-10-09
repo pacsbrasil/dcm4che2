@@ -69,8 +69,8 @@ import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -118,6 +118,16 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 
     private int concurrency = 1;
 
+    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }
+    
     public final int getConcurrency() {
         return concurrency;
     }
@@ -234,7 +244,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        JMSDelegate.startListening(queueName, this, concurrency);
+        jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(mppsScpServiceName, this,
                 MPPSScpService.NOTIF_FILTER, null);
     }
@@ -242,7 +252,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     protected void stopService() throws Exception {
         server.removeNotificationListener(mppsScpServiceName, this,
                 MPPSScpService.NOTIF_FILTER, null);
-        JMSDelegate.stopListening(queueName);
+        jmsDelegate.stopListening(queueName);
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -251,9 +261,9 @@ public class MPPSScuService extends ServiceMBeanSupport implements
             MPPSOrder order = new MPPSOrder(mpps, forwardAETs[i]);
             try {
                 log.info("Scheduling " + order);
-                JMSDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+                jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                         0L);
-            } catch (JMSException e) {
+            } catch (Exception e) {
                 log.error("Failed to schedule " + order, e);
             }
         }
@@ -278,7 +288,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);
-                    JMSDelegate.queue(queueName, order, 0, System
+                    jmsDelegate.queue(queueName, order, 0, System
                             .currentTimeMillis()
                             + delay);
                 }

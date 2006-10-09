@@ -275,6 +275,18 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=JMS"/>
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
       <description>Used internally. Do NOT modify.
       </description>
@@ -289,7 +301,6 @@
 
    <!-- Operations -->
    &defaultOperations;
-
    <operation impact="ACTION">
       <description>Check the availability of the Media Creation Managment SCP. Returns OK, MOVE_DEST_UNAVAIL (move destination unavailable) or MCM_SCP_UNAVAIL (Media Creation Management SCP unavailable).
       </description>
@@ -340,4 +351,15 @@
       <return-type>boolean</return-type>
    </operation>
    
+   <operation impact="ACTION">
+      <description>Schedule Media Creation. Used by WEB application</description>
+      <name>scheduleMediaCreation</name>
+      <parameter>
+        <description>Media DTO</description>
+        <name>mediaDTO</name>
+        <type>org.dcm4chex.archive.ejb.interfaces.MediaDTO</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
 </mbean>

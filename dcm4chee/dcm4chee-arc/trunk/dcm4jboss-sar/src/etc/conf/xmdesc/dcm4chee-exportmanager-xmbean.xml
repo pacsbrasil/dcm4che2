@@ -210,6 +210,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=JMS"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.

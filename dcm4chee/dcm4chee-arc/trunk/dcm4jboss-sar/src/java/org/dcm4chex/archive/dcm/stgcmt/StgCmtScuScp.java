@@ -104,11 +104,11 @@ class StgCmtScuScp extends DcmServiceBase {
         try {
             AEData aeData = service.queryAEData(aet, a.getSocket().getInetAddress());
             service.queueStgCmtOrder(a.getCalledAET(), aet, data, true);
-        } catch (JMSException e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
         } catch (UnkownAETException e) {
             throw new DcmServiceException(Status.MoveDestinationUnknown, aet);
-		}
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+	}
         return null;
     }
 

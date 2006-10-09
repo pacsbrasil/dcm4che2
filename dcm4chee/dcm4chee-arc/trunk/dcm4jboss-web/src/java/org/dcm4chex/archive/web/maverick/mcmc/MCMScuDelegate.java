@@ -44,6 +44,7 @@ import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -137,5 +138,12 @@ public class MCMScuDelegate {
 			}
 			
 		}
+
+        public void scheduleMediaCreation(MediaDTO mediaDTO) throws Exception {
+            server.invoke(mcmScuServiceName, "scheduleMediaCreation",
+                        new Object[]{ mediaDTO },
+                        new String[]{ MediaDTO.class.getName() } );
+            
+        }
 
 }

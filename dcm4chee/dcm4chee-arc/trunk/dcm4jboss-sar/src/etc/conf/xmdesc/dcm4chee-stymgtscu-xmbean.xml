@@ -154,6 +154,17 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
          <value value="StudyMgtScu"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=JMS"/>
+      </descriptors>
+   </attribute>   
    <attribute access="read-write" getMethod="getStudyMgtScpServiceName" setMethod="setStudyMgtScpServiceName">
       <description>Used internally - do NOT modify.
       </description>

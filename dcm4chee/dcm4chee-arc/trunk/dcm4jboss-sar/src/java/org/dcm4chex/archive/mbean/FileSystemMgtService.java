@@ -99,7 +99,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -197,6 +196,16 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
                 freeDiskSpace();
             }};
 
+    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+    public final ObjectName getJmsServiceName() {
+        return jmsDelegate.getJmsServiceName();
+    }
+
+    public final void setJmsServiceName(ObjectName jmsServiceName) {
+        jmsDelegate.setJmsServiceName(jmsServiceName);
+    }
+    
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -580,7 +589,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
          		freeDiskSpaceInterval, freeDiskSpaceListener);
          purgeFilesListenerID = scheduler.startScheduler("CheckFilesToPurge",
          		purgeFilesInterval, purgeFilesListener);
- 		JMSDelegate.startListening(purgeStudyQueueName, this, 1);
+ 		jmsDelegate.startListening(purgeStudyQueueName, this, 1);
          
     }
     
@@ -714,7 +723,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
         		freeDiskSpaceListener);
         scheduler.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
         		purgeFilesListener);
- 		JMSDelegate.stopListening(purgeStudyQueueName);
+ 		jmsDelegate.stopListening(purgeStudyQueueName);
         super.stopService();
     }
 
@@ -1387,7 +1396,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
 		try {
 			if(scheduledTime > 0 && log.isInfoEnabled())
 				log.info("Scheduling job ["+order.toIdString()+"] at "+dtFormatter.format(new Date(scheduledTime))+". Retry times: "+order.getFailureCount() );
-			JMSDelegate.queue(purgeStudyQueueName, order, Message.DEFAULT_PRIORITY,
+			jmsDelegate.queue(purgeStudyQueueName, order, Message.DEFAULT_PRIORITY,
 					scheduledTime);
 		} catch (Exception e) {
 			log.error("Failed to schedule " + order, e);

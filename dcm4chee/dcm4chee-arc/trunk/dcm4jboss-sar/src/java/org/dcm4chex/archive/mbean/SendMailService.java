@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -64,10 +63,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.management.ObjectName;
 
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -110,6 +109,16 @@ public class SendMailService extends ServiceMBeanSupport
 
 	private int concurrency = 1;
 
+        private JMSDelegate jmsDelegate = new JMSDelegate(this);
+
+        public final ObjectName getJmsServiceName() {
+            return jmsDelegate.getJmsServiceName();
+        }
+
+        public final void setJmsServiceName(ObjectName jmsServiceName) {
+            jmsDelegate.setJmsServiceName(jmsServiceName);
+        }
+        
         public final String getQueueName() {
             return queueName;
         }
@@ -216,12 +225,12 @@ public class SendMailService extends ServiceMBeanSupport
 	protected void startService() throws Exception
 	{
         super.startService();
-        JMSDelegate.startListening(queueName, listener, concurrency);
+        jmsDelegate.startListening(queueName, listener, concurrency);
 	}
 
 	protected void stopService() throws Exception
 	{
-		JMSDelegate.stopListening(queueName);
+		jmsDelegate.stopListening(queueName);
 		super.stopService();
 	}
         
@@ -237,8 +246,7 @@ public class SendMailService extends ServiceMBeanSupport
 	 * @throws JMSException
 	 * 
 	 */
-	private void process(Map mailProps)
-		throws MessagingException, JMSException
+	private void process(Map mailProps) throws Exception
 	{
 		log.info("process " + mailProps);
 
@@ -303,7 +311,7 @@ public class SendMailService extends ServiceMBeanSupport
                 log.error("Give up to send " + mailProps);
             } else {
                 log.warn("Failed to send " + mailProps + ". Scheduling retry.");
-                JMSDelegate.queue(queueName, (Serializable) mailProps, 0, System.currentTimeMillis() + delay);
+                jmsDelegate.queue(queueName, (Serializable) mailProps, 0, System.currentTimeMillis() + delay);
             }
         }
 		
@@ -327,7 +335,7 @@ public class SendMailService extends ServiceMBeanSupport
 
 		try
 		{
-			JMSDelegate.queue( queueName, mail, Message.DEFAULT_PRIORITY, 0L);
+			jmsDelegate.queue( queueName, mail, Message.DEFAULT_PRIORITY, 0L);
 			return "Mail '"+subject+"' succesfully sent to "+ toAddress;
 		} catch (Exception e)
 		{

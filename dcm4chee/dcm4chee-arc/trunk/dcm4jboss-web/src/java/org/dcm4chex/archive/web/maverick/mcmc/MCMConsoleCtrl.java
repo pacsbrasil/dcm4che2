@@ -41,12 +41,9 @@ package org.dcm4chex.archive.web.maverick.mcmc;
 
 import java.text.ParseException;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.mcmc.model.MCMFilter;
 import org.dcm4chex.archive.web.maverick.mcmc.model.MCMModel;
@@ -138,11 +135,8 @@ public class MCMConsoleCtrl extends Dcm4cheeFormController {
            	if ( md != null ) {
    			   model.updateMediaStatus( mediaPk, MediaDTO.QUEUED, "" );
 	           try {
-	 				JMSDelegate.queue( QUEUE,
-					        md.asMediaDTO(),
-					        Message.DEFAULT_PRIORITY,
-					        0L);
-				} catch (JMSException e) {
+                       delegate.scheduleMediaCreation(md.asMediaDTO());
+				} catch (Exception e) {
 					
 					model.updateMediaStatus( mediaPk, MediaDTO.ERROR, e.getMessage() );
 				}
