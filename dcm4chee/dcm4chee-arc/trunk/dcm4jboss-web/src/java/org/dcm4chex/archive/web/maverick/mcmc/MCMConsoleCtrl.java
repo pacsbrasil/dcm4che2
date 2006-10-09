@@ -56,9 +56,6 @@ import org.dcm4chex.archive.web.maverick.mcmc.model.MediaData;
  */
 public class MCMConsoleCtrl extends Dcm4cheeFormController {
 
-	/** The name of the JMS Queue used to queue a media for creation. */
-	public static final String QUEUE = "MCMScu";
-
 	/** the view model. */
 	private MCMModel model;
 	
