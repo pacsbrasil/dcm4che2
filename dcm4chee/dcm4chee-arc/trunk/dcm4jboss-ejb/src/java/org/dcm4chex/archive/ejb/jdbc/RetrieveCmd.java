@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,7 +162,7 @@ public class RetrieveCmd extends BaseReadCmd {
 					if ( start+len > params.length ) { //we need a new statement for the remaining parameter values
 						len = params.length - start;
 						sqlCmd.updateUIDMatch(len);
-						pstmt = con.prepareStatement(sqlCmd.getSql(), resultSetType, resultSetConcurrency);
+						pstmt = con.prepareStatement(sqlCmd.getSql(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						if ( firstListIdx > 0 ) { //we need to set the fix params for the new statement!
 					    	for ( int i=0 ; i<fixParams.length ; i++) {
 					    		pstmt.setString(i+1,fixParams[i]);	
@@ -281,12 +282,15 @@ public class RetrieveCmd extends BaseReadCmd {
 		}
 		
 		protected void addUidMatch(String column, String[] uid) {
-			if ( uid.length == 1 ) {
-				sqlBuilder.addLiteralMatch(null,column, SqlBuilder.TYPE1, "=?");
-				fixValues .add(uid[0]);
+			if ( uid.length <= maxElementsInUIDMatch ) {
+		        sqlBuilder.addLiteralMatch(null,column, 
+						SqlBuilder.TYPE1, getUIDMatchLiteral(uid.length));
+		        for ( int i=0 ; i < uid.length ; i++ ) {
+		            fixValues.add(uid[i]);
+		        }
 			} else {
 				if ( params != null )
-						throw new IllegalArgumentException("Only one UID list is allowed in RetrieveCmd!");
+						throw new IllegalArgumentException("Only one UID list > maxElementsInUIDMatch ("+maxElementsInUIDMatch+") is allowed in RetrieveCmd!");
 				params = uid;
 				numberOfParams = uid.length < maxElementsInUIDMatch ? uid.length : maxElementsInUIDMatch;
 				uidMatch = (Match.AppendLiteral) sqlBuilder.addLiteralMatch(null,column, 
