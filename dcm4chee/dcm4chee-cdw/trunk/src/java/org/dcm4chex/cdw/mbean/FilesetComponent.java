@@ -192,15 +192,18 @@ class FilesetComponent implements Comparable {
 
     public FilesetComponent takeChilds(long maxSize) {
         FilesetComponent dest = newFilesetComponent();
-        while (!childs.isEmpty()) {
+        for (int i = 0; i < childs.size();) {
             FilesetComponent child = (FilesetComponent) childs.get(0);
-            if (dest.size + child.size > maxSize) {
+            if (dest.size + child.size <= maxSize) {
+                childs.remove(0);
+                incSize(-child.size);
+                child.parent = null;
+                dest.addChild(child);
+            } else if (level == SERIES) {
+                ++i;
+            } else {
                 break;
             }
-            childs.remove(0);
-            incSize(-child.size);
-            child.parent = null;
-            dest.addChild(child);
         }
         return dest;
     }
