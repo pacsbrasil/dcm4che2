@@ -487,7 +487,9 @@ public class HL7SendService
                 null, pixManager, "2.5");
         addQPD(sb, patientID, issuer, domains);
 	    sb.append("\rRCP|I||||||");
-        Document msg = invoke(sb.toString().getBytes(ISO_8859_1), pixManager);
+        String s = sb.toString();
+        log.info("Query PIX Manager " + pixManager + ":\n" + s.replace('\r', '\n'));
+        Document msg = invoke(s.getBytes(ISO_8859_1), pixManager);
         MSH msh = new MSH(msg);
         if (!"RSP".equals(msh.messageType) || !"K23".equals(msh.triggerEvent)) {
             String prompt = "Unsupport response message type: "
@@ -496,8 +498,11 @@ public class HL7SendService
             throw new IOException(prompt);
         }
         RSP rsp = new RSP(msg);
-        if (!"AA".equals(rsp.acknowledgmentCode))
+        if (!"AA".equals(rsp.acknowledgmentCode)) {
+            log.error("PIX Query fails with code " + rsp.acknowledgmentCode
+                    + " - " + rsp.textMessage);
             throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
+        }
         return rsp.getPatientIDs();
 	}
     
