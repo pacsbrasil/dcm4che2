@@ -195,7 +195,7 @@ class FilesetComponent implements Comparable {
         for (int i = 0; i < childs.size();) {
             FilesetComponent child = (FilesetComponent) childs.get(0);
             if (dest.size + child.size <= maxSize) {
-                childs.remove(0);
+                childs.remove(i);
                 incSize(-child.size);
                 child.parent = null;
                 dest.addChild(child);

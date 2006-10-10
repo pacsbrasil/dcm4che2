@@ -724,17 +724,17 @@ class FilesetBuilder {
                                         + ((FilesetComponent) childs.get(0))
                                                 .id()
                                         + " does not fit on media");
-                break;
+                split((FilesetComponent) childs.remove(0),
+                        freeSizeFirst,
+                        freeSizeOther,
+                        fsList);
+                
+                continue;
             }
             fsList.add(comp);
             if (debug)
                     log.debug(" into " + comp + " on Media #" + fsList.size());
         }
-        for (int i = 0, n = childs.size(); i < n; ++i)
-            split((FilesetComponent) childs.get(i),
-                    freeSizeFirst,
-                    freeSizeOther,
-                    fsList);
     }
 
     private String getFilesetIDPrefix() {
