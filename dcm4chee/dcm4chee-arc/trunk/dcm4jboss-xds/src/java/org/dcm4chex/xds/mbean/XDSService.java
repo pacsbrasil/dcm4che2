@@ -66,6 +66,7 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -126,6 +127,7 @@ public class XDSService extends ServiceMBeanSupport {
 	private String testPatient;
 	
 	private boolean shortContentType = false;
+	private boolean logSOAPMessage = false;
 
 	public XDSService() {
         dbFactory = DocumentBuilderFactory.newInstance();
@@ -288,6 +290,18 @@ public class XDSService extends ServiceMBeanSupport {
 	public void setReassignSubmissionUID(boolean reassignUID) {
 		this.reassignSubmissionUID = reassignUID;
 	}
+    /**
+     * @return Returns the logSOAPMessage.
+     */
+    public boolean isLogSOAPMessage() {
+        return logSOAPMessage;
+    }
+    /**
+     * @param logSOAPMessage The logSOAPMessage to set.
+     */
+    public void setLogSOAPMessage(boolean logSOAPMessage) {
+        this.logSOAPMessage = logSOAPMessage;
+    }
 	/**
 	 * @return Returns the shortContentType.
 	 */
@@ -606,8 +620,6 @@ public class XDSService extends ServiceMBeanSupport {
 		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
         DocumentBuilder builder = dbFactory.newDocumentBuilder();
         Document d = builder.parse( src.getInputStream() );
-        NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1","SubmitObjectsRequest");
-        nl.item(0);
         return d;
 	}
 	/**
@@ -621,13 +633,14 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @throws SOAPException
 	 */
 	private void dumpSOAPMessage(SOAPMessage message) throws ParserConfigurationException, SAXException, SOAPException, IOException {
-/*		Document d = getDocumentFromMessage(message);
+	    if ( ! logSOAPMessage ) return;
+		Source s = message.getSOAPPart().getContent();
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();
-            t.transform(new DOMSource(d), new StreamResult(out));t.
-            log.info(out.toString());
+            t.transform(s, new StreamResult(out));
+            log.debug(out.toString());
         } catch (Exception e) {
             log.warn("Failed to log SOAP message", e);
         }
