@@ -343,7 +343,7 @@ public class RetrieveCmd extends BaseReadCmd {
     private static class PatientSql extends Sql {
         PatientSql(Dataset keys, boolean patientRetrieve) {
             String pid = keys.getString(Tags.PatientID);
-            if (pid != null) {
+            if (pid != null && !"*".equals(pid)) {
                 sqlBuilder.addLiteralMatch(null, "Patient.patientId",
                         SqlBuilder.TYPE2, "=?");
                 fixValues.add(pid);
@@ -356,7 +356,7 @@ public class RetrieveCmd extends BaseReadCmd {
         StudySql(Dataset keys, boolean studyRetrieve) {
             super(keys, false);
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
-            if (uid != null && uid.length != 0) {
+            if (uid != null && uid.length != 0 && !"*".equals(uid[0])) {
                 addUidMatch("Study.studyIuid", uid);
             } else if (studyRetrieve)
                 throw new IllegalArgumentException("Missing StudyInstanceUID");
@@ -367,7 +367,7 @@ public class RetrieveCmd extends BaseReadCmd {
         SeriesSql(Dataset keys, boolean seriesRetrieve) {
             super(keys, false);
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
-            if (uid != null && uid.length != 0) {
+            if (uid != null && uid.length != 0 && !"*".equals(uid[0])) {
                 addUidMatch("Series.seriesIuid", uid);
             } else if (seriesRetrieve)
                 throw new IllegalArgumentException("Missing SeriesInstanceUID");
@@ -379,7 +379,7 @@ public class RetrieveCmd extends BaseReadCmd {
         ImageSql(Dataset keys) {
             super(keys, false);
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
-            if (uid != null && uid.length != 0) {
+            if (uid != null && uid.length != 0 && !"*".equals(uid[0])) {
                 addUidMatch("Instance.sopIuid", uid);
             } else
                 throw new IllegalArgumentException("Missing SOPInstanceUID");
