@@ -714,21 +714,17 @@ class FilesetBuilder {
         if (debug) log.debug("split " + src);
         List childs = src.childs();
         while (!childs.isEmpty()) {
-            FilesetComponent comp = src
-                    .takeChilds(fsList.isEmpty() ? freeSizeFirst
-                            : freeSizeOther);
+            FilesetComponent comp = src.takeChilds(
+                    fsList.isEmpty() ? freeSizeFirst : freeSizeOther);
             if (comp.isEmpty()) {
                 if (src.level() == FilesetComponent.SERIES)
                         throw new MediaCreationException(
                                 ExecutionStatusInfo.INST_OVERSIZED, "Instance "
-                                        + ((FilesetComponent) childs.get(0))
-                                                .id()
+                                        + ((FilesetComponent) childs.get(0)).id()
                                         + " does not fit on media");
-                split((FilesetComponent) childs.remove(0),
-                        freeSizeFirst,
-                        freeSizeOther,
-                        fsList);
-                
+                FilesetComponent child = (FilesetComponent) childs.get(0);
+                split(child, freeSizeFirst, freeSizeOther, fsList);
+                src.removeChild(child);
                 continue;
             }
             fsList.add(comp);

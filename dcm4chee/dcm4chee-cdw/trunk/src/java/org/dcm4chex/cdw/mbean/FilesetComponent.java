@@ -185,6 +185,14 @@ class FilesetComponent implements Comparable {
         child.parent = this;
     }
 
+    public void removeChild(FilesetComponent child) {
+        if (child.parent != this)
+                throw new IllegalStateException("Not a child: " + child);
+        childs.remove(child);
+        incSize(-child.size);
+        child.parent = null;
+    }
+    
     public void incSize(long delta) {
         this.size += delta;
         if (parent != null) parent.incSize(delta);
@@ -192,12 +200,11 @@ class FilesetComponent implements Comparable {
 
     public FilesetComponent takeChilds(long maxSize) {
         FilesetComponent dest = newFilesetComponent();
+        Collections.sort(childs);
         for (int i = 0; i < childs.size();) {
             FilesetComponent child = (FilesetComponent) childs.get(0);
             if (dest.size + child.size <= maxSize) {
-                childs.remove(i);
-                incSize(-child.size);
-                child.parent = null;
+                removeChild(child);
                 dest.addChild(child);
             } else if (level == SERIES) {
                 ++i;
