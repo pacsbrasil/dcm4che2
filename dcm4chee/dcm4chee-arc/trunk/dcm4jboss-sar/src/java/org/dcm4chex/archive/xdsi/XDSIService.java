@@ -163,6 +163,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	private Map mapCodeLists = new HashMap();
 
     private ObjectName pixQueryServiceName;
+    private String localDomain;
     private String affinityDomain;
     private String keystoreURL = "conf/identity.p12";
 	private String keystorePassword;
@@ -486,6 +487,15 @@ public class XDSIService extends ServiceMBeanSupport {
 
     public final void setPixQueryServiceName(ObjectName name) {
         this.pixQueryServiceName = name;
+    }
+
+    public String getLocalDomain() {
+    	return localDomain == null ? "NONE" : localDomain;
+    }
+    public void setLocalDomain(String domain) {
+        localDomain = ( domain==null || 
+                		domain.trim().length()<1 || 
+                		domain.equalsIgnoreCase("NONE") ) ? null : domain;
     }
     
     public String getAffinityDomain() {
@@ -951,6 +961,18 @@ public class XDSIService extends ServiceMBeanSupport {
 			return patID+issuer;
 		} else {
 	        try {
+	            if ( localDomain != null ) {
+	                if ( localDomain.charAt(0) == '=') {
+	                    String oldIssuer = issuer;
+	                    issuer = localDomain.substring(1);
+	                    log.info("PIX Query: Local affinity domain changed from "+oldIssuer+" to "+issuer);
+	                } else if ( issuer == null ) {
+	                    log.info("PIX Query: Unknown local affinity domain changed to "+issuer);
+	                    issuer = localDomain;
+	                }
+	            } else if ( issuer == null ) {
+	                issuer = "";
+	            }
 	            List pids = (List) server.invoke(this.pixQueryServiceName,
 	                    "queryCorrespondingPIDs",
 	                    new Object[] { patID, issuer, new String[]{affinityDomain} },

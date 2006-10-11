@@ -248,8 +248,23 @@
          <value value="dcm4chee.archive:service=HL7Send"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getLocalDomain" setMethod="setLocalDomain">
+      <description><![CDATA[Local Affinity Domain (Authority)<br/>
+      		Name of the patient ID authorithy of this Document Source.<br/>
+      		This is normally the 'Issuer of patient ID' (issuer) DICOM attribute.<br/>
+      		We can overwrite this default behaviour with:<br/>
+      		'&lt;Domain&gt;' : use &lt;Domain&gt; if issuer is missing.<br/>
+      		'=&lt;Domain&gt;' : use always &lt;Domain&gt; as local authority. <br/>
+      		'NONE' : default behaviour: use always issuer as local authority. 
+      ]]></description>
+      <name>LocalDomain</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getAffinityDomain" setMethod="setAffinityDomain">
-      <description><![CDATA[Affinity Domain (Authority)<br/>
+      <description><![CDATA[XDS Affinity Domain (Authority)<br/>
       		This name is used in PIX Query Service to get patient id of affinity domain.<br/>
       		You can disable PIX Query by setting this value with '=' as first character.<br/>
       		'=' : use the source patient ID and issuer.<br/>
