@@ -1,7 +1,7 @@
 <project name="dcm4jboss-build" default="dist">
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
-  <property name="version" value="2.10.5"/>
+  <property name="version" value="2.10.6"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
@@ -270,7 +270,7 @@
         <include name="lib/jboss.jar"/>
         <include name="lib/jboss-common-jdbc-wrapper.jar"/>
         <include name="lib/jboss-j2ee.jar"/>
-        <!--include name="lib/jboss-jaxrpc.jar"/-->
+        <include name="lib/jboss-jaxrpc.jar"/>
         <include name="lib/jboss-jca.jar"/>
         <!--include name="lib/jboss-jsr77.jar"/-->
         <!--include name="lib/jboss-management.jar"/-->
@@ -348,7 +348,6 @@
 	  	<include name="lib/hibernate-entitymanager.jar"/>
 	  	<include name="lib/hibernate3.jar"/>
 	  	<include name="lib/javassist.jar"/>
-	  	<include name="lib/jboss-jaxrpc.jar"/>
 	  </zipfileset>
       <zipfileset dir="${jboss.server.home}/deploy/jbossws.sar" prefix="${dist.standalone.config}/lib">
         <include name="jbossws.jar"/>
