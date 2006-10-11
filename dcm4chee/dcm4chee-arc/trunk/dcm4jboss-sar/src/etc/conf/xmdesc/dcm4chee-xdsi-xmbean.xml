@@ -262,6 +262,18 @@
          <value value="=?AffinityDomain"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isLogSOAPMessage"
+      setMethod="setLogSOAPMessage">
+      <description>Enable logging of SOAP message (send and receive).
+      </description>
+      <name>LogSOAPMessage</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   
    <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
       <description>Used internally - do NOT modify.
       </description>

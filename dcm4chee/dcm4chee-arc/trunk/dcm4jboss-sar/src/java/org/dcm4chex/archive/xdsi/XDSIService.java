@@ -79,9 +79,9 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
@@ -172,6 +172,9 @@ public class XDSIService extends ServiceMBeanSupport {
 	private String allowedUrlHost = null;
 	
 	private String ridURL;
+	
+	private boolean logSOAPMessage = true;
+	
     /**
 	 * @return Returns the property file path.
 	 */
@@ -559,6 +562,18 @@ public class XDSIService extends ServiceMBeanSupport {
 	public void setRidURL(String ridURL) {
 		this.ridURL = ridURL;
 	}
+    /**
+     * @return Returns the logSOAPMessage.
+     */
+    public boolean isLogSOAPMessage() {
+        return logSOAPMessage;
+    }
+    /**
+     * @param logSOAPMessage The logSOAPMessage to set.
+     */
+    public void setLogSOAPMessage(boolean logSOAPMessage) {
+        this.logSOAPMessage = logSOAPMessage;
+    }
 // Operations	
 	
 	/**
@@ -996,8 +1011,15 @@ public class XDSIService extends ServiceMBeanSupport {
 				log.info("XDSI: SOAP response status."+status);
 				if ( "Failure".equals(status) ) {
 					NodeList errors = d.getElementsByTagName("RegistryError");
+					StringBuffer sb = new StringBuffer();
+					Node errNode;
 					for ( int i = 0, len=errors.getLength(); i < len ; i++ ) {
-						log.info("Error ("+i+"):"+errors.item(i).getChildNodes().item(0).getNodeValue());
+					    sb.setLength(0); 
+					    sb.append("Error (").append(i).append("):");
+					    if ( (errNode = errors.item(i)) != null && errNode.getFirstChild() != null ) {
+					        sb.append( errNode.getFirstChild().getNodeValue());
+					    }
+						log.info(sb.toString());
 					}
 					return false;
 				}
@@ -1019,17 +1041,17 @@ public class XDSIService extends ServiceMBeanSupport {
 	 * @throws ParserConfigurationException
 	 */
 	private void dumpSOAPMessage(SOAPMessage message) throws SOAPException, IOException, ParserConfigurationException, SAXException {
-/*		Document d = getDocumentFromMessage(message);
+	    if ( ! logSOAPMessage ) return;
+		Source s = message.getSOAPPart().getContent();
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();
-            t.transform(new DOMSource(d), new StreamResult(out));
-            log.info(out.toString());
+            t.transform(s, new StreamResult(out));
+            log.debug(out.toString());
         } catch (Exception e) {
             log.warn("Failed to log SOAP message", e);
         }
-/*_*/        
 	}
 	
 	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
