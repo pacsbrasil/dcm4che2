@@ -1,0 +1,31 @@
+.PS
+boxwid=1.2
+
+copy "sequence.pic";
+
+# Object definition
+actor(O,":Order Filler");
+object(R,":ORM Service");
+object(A,":ADT Service");
+object(W,":MWL SCP");
+step();
+step();
+
+# Procedure Scheduled
+active(O);
+active(R);
+active(W);
+message(O,R,"ORM^O01(NW)");
+message(R,W,"*create(item)");
+inactive(O);
+step();
+inactive(R);
+inactive(W);
+step();
+
+# Object lifeline completion
+complete(O);
+complete(R);
+complete(W);
+
+.PE

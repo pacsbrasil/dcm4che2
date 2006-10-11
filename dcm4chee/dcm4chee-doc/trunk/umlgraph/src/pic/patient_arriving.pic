@@ -1,0 +1,30 @@
+.PS
+boxwid=1.2
+
+copy "sequence.pic";
+
+# Object definition
+actor(O,":Order Filler");
+object(A,":ADT Service");
+object(W,":MWL SCP");
+step();
+step();
+
+# Procedure Scheduled
+active(O);
+active(A);
+active(W);
+message(O,A,"ADT^A10");
+message(A,W,"*update(ARRIVED)");
+inactive(O);
+step();
+inactive(A);
+inactive(W);
+step();
+
+# Object lifeline completion
+complete(O);
+complete(A);
+complete(W);
+
+.PE

@@ -1,0 +1,26 @@
+.PS
+boxwid=1.2
+
+copy "sequence.pic";
+
+# Object definition
+actor(M,":Modality");
+object(W,":MWL SCP");
+step();
+step();
+
+# Worklist Query
+active(W);
+active(M);
+message(M,W,"C-FIND RQ(keys)");
+rmessage(W,M,"*C-FIND RSP(item)");
+step();
+inactive(W);
+inactive(M);
+step();
+
+# Object lifeline completion
+complete(W);
+complete(M);
+
+.PE

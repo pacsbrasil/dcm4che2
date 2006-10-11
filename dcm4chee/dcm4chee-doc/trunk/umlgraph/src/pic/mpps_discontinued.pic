@@ -1,0 +1,44 @@
+.PS
+boxwid=1.2
+
+copy "sequence.pic";
+
+# Object definition
+actor(M,":Modality");
+object(P,":MPPS SCP");
+object(W,":MWL SCP");
+object(U,":MPPS SCU");
+actor(O,":Order Filler");
+step();
+step();
+
+# Modality Procedure Step Discontinued
+active(M);
+active(P);
+message(M,P,"N-SET(DISCONTINUED)");
+active(W);
+message(P,W,"*update(DISCONTINUED)");
+step();
+inactive(W);
+inactive(M);
+active(U);
+message(P,U,"notify(mpps)");
+message(U,U,"queue(mpps)");
+active(U);
+active(O);
+message(U,O,"N-SET(DISCONTINUED)");
+inactive(P);
+step();
+inactive(U);
+inactive(O);
+inactive(U);
+step();
+
+# Object lifeline completion
+complete(U);
+complete(O);
+complete(M);
+complete(P);
+complete(W);
+
+.PE

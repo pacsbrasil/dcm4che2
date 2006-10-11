@@ -1,0 +1,30 @@
+.PS
+boxwid=1.2
+
+copy "sequence.pic";
+
+# Object definition
+actor(O,":Order Filler");
+object(R,":ORM Service");
+object(W,":MWL SCP");
+step();
+step();
+
+# Procedure Canceled
+active(O);
+active(R);
+active(W);
+message(O,R,"ORM^O01(CA)");
+message(R,W,"*delete(spsid)");
+inactive(O);
+step();
+inactive(R);
+inactive(W);
+step();
+
+# Object lifeline completion
+complete(O);
+complete(R);
+complete(W);
+
+.PE
