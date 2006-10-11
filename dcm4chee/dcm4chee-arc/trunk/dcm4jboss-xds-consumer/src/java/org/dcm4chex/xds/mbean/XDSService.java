@@ -127,7 +127,7 @@ public class XDSService extends ServiceMBeanSupport {
 	private String testPatient;
 	
 	private boolean shortContentType = false;
-	private boolean logSOAPMessage = false;
+	private boolean logSOAPMessage = true;
 
 	public XDSService() {
         dbFactory = DocumentBuilderFactory.newInstance();
@@ -383,6 +383,7 @@ public class XDSService extends ServiceMBeanSupport {
 	        			UIDGeneratorImpl.getInstance().createUID());
 	        }
 	        if ( testPatient!= null) {
+	            log.warn("Change patientID in metadata (urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446) to testPatient! new patientID:"+testPatient);
 	        	this.updateExternalIdentifier(d.getDocumentElement(),"urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446",testPatient);
 	        }
 			log.info(storedFiles.size()+" Documents saved!");
@@ -416,6 +417,7 @@ public class XDSService extends ServiceMBeanSupport {
 	private void filterMetadata(XDSDocumentMetadata metadata) {
 		metadata.removeSlot("authorRoleDisplayName");
         if ( testPatient!= null) {
+            log.warn("Change patientID in metadata (urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427) to testPatient! new patientID:"+testPatient);
         	this.updateExternalIdentifier((Element)metadata.getMetadata(),"urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427",testPatient);
         }
 		
@@ -601,8 +603,15 @@ public class XDSService extends ServiceMBeanSupport {
 				log.info("XDS: SOAP response status."+status);
 				if ( "Failure".equals(status) ) {
 					NodeList errors = d.getElementsByTagName("RegistryError");
+					StringBuffer sb = new StringBuffer();
+					Node errNode;
 					for ( int i = 0, len=errors.getLength(); i < len ; i++ ) {
-						log.info("Error ("+i+"):"+errors.item(i).getChildNodes().item(0).getNodeValue());
+					    sb.setLength(0); 
+					    sb.append("Error (").append(i).append("):");
+					    if ( (errNode = errors.item(i)) != null && errNode.getFirstChild() != null ) {
+					        sb.append( errNode.getFirstChild().getNodeValue());
+					    }
+						log.info(sb.toString());
 					}
 					return false;
 				}
