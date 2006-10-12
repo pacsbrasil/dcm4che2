@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,8 +170,7 @@ public class RetrieveCmd extends BaseReadCmd {
                         len = params.length - start;
                         sqlCmd.updateUIDMatch(len);
                         pstmt = con.prepareStatement(sqlCmd.getSql(),
-                                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                ResultSet.CONCUR_READ_ONLY);
+                                resultSetType, resultSetConcurrency);
                         if (firstListIdx > 0) { // we need to set the fix params
                                                 // for the new statement!
                             for (int i = 0; i < fixParams.length; i++) {
