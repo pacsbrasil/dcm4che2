@@ -206,7 +206,7 @@ class FilesetComponent implements Comparable {
             if (dest.size + child.size <= maxSize) {
                 removeChild(child);
                 dest.addChild(child);
-            } else if (level == SERIES) {
+            } else if (level == STUDY) { // don't preserve order of series
                 ++i;
             } else {
                 break;
