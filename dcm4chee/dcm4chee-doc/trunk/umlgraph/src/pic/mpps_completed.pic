@@ -1,4 +1,3 @@
-#/usr/bin/pic2plot -Tps
 .PS
 boxwid=1.2
 
@@ -10,44 +9,70 @@ object(P,":MPPS SCP");
 object(W,":MWL SCP");
 object(U,":MPPS SCU");
 object(I,":IAN SCU");
+object(T,":MPPS2ORM");
+object(S,":HL7Send");
 actor(O,":Order Filler");
 step();
 step();
 
-# Modality Procedure Step Completed
+# Modality Procedure Step In Progress
 active(M);
-active(P);
 message(M,P,"N-SET(COMPLETED)");
-active(W);
+active(P);
 message(P,W,"*update(COMPLETED)");
+inactive(M);
+active(W);
 step();
 inactive(W);
-inactive(M);
-active(U);
 message(P,U,"notify(mpps)");
-message(U,U,"queue(mpps)");
 active(U);
-active(O);
-message(U,O,"N-SET(COMPLETED)");
-step();
+async();
+message(U,U,"*queue(mpps)");
+sync();
+active(U);
+message(U,O,"N-SET(mpps)");
 inactive(U);
+inactive(U);
+active(O);
+step();
 inactive(O);
-inactive(U);
-active(I);
-message(P,I,"notify(mpps)");
-lconstraint_below(I,"{all objects received}");
-message(I,I,"queue(ian)");
-active(I);
+message(P,T,"notify(mpps)");
+active(T);
+message(T,S,"forward(orm)");
+active(S);
+inactive(T);
+async();
+message(S,S,"*queue(orm)");
+sync();
+active(S);
+message(S,O,"ORM^O01(CM)");
+inactive(S);
+inactive(S);
 active(O);
-message(I,O,"N-CREATE(ian)");
 step();
-inactive(I);
+inactive(O);
+message(P,I,"notify(mpps)");
 inactive(P);
+active(I);
+lconstraint(I,"{all objects received}");
+async();
+message(I,I,"*queue(ian)");
+active(I);
+sync();
+message(I,O,"{IAN supported}N-CREATE(ian)");
+active(O);
+message(I,O,"{only SCN supported}C-STORE(scn)");
+inactive(I);
+inactive(I);
+step();
+inactive(O);
 step();
 
 # Object lifeline completion
 complete(I);
 complete(U);
+complete(S);
+complete(T);
 complete(O);
 complete(M);
 complete(P);

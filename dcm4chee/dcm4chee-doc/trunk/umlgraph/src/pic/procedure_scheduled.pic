@@ -6,20 +6,19 @@ copy "sequence.pic";
 # Object definition
 actor(O,":Order Filler");
 object(R,":ORM Service");
-object(A,":ADT Service");
 object(W,":MWL SCP");
 step();
 step();
 
 # Procedure Scheduled
 active(O);
-active(R);
-active(W);
 message(O,R,"ORM^O01(NW)");
+active(R);
 message(R,W,"*create(item)");
+active(W);
 inactive(O);
-step();
 inactive(R);
+step();
 inactive(W);
 step();
 

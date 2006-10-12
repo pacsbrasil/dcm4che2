@@ -1,0 +1,35 @@
+.PS
+boxwid=0.9
+movewid=0.8
+
+copy "sequence.pic";
+
+# Object definition
+actor(M,":Modality");
+object(S,"STORE SCP"); 
+object(W,"MWL SCP");
+step();
+step();
+
+# Object Stored
+active(M);
+message(M,S,"*C-STORE RQ(obj)");
+active(S);
+message(S,W,"[1.object of Series]" \
+"C-FIND RQ(keys)" \
+"");
+active(W);
+rmessage(W,S,"C-FIND RSP(item)");
+inactive(W);
+rmessage(S,M,"C-STORE RSP");
+inactive(S);
+step();
+inactive(M);
+step();
+
+# Object lifeline completion
+complete(M);
+complete(S); 
+complete(W);
+
+.PE

@@ -12,13 +12,13 @@ step();
 
 # Procedure Scheduled
 active(O);
-active(A);
-active(W);
 message(O,A,"ADT^A10");
+active(A);
 message(A,W,"*update(ARRIVED)");
+active(W);
 inactive(O);
-step();
 inactive(A);
+step();
 inactive(W);
 step();
 

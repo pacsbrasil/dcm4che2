@@ -12,13 +12,13 @@ step();
 
 # Procedure Updated
 active(O);
-active(R);
-active(W);
 message(O,R,"ORM^O01(XO)");
+active(R);
 message(R,W,"*update(item)");
+active(W);
 inactive(O);
-step();
 inactive(R);
+step();
 inactive(W);
 step();
 

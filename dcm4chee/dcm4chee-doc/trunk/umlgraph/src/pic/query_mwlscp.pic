@@ -10,12 +10,12 @@ step();
 step();
 
 # Worklist Query
-active(W);
 active(M);
 message(M,W,"C-FIND RQ(keys)");
+active(W);
 rmessage(W,M,"*C-FIND RSP(item)");
-step();
 inactive(W);
+step();
 inactive(M);
 step();
 

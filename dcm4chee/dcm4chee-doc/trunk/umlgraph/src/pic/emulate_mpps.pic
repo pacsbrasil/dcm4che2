@@ -1,0 +1,45 @@
+.PS
+boxwid=1.1
+
+copy "sequence.pic";
+
+# Object definition
+actor(M,":Modality w/o MPPS");
+object(S,"STORE SCP"); 
+object(E,"MPPS Emulator");
+object(P,"MPPS SCP");
+step();
+active(E);
+
+# Poll for Series without MPPS reference
+message(E,E,"select Series w/o MPPS");
+lconstraint(E,"{No Series found}");
+
+# Object Stored
+active(M);
+message(M,S,"*C-STORE(obj)");
+active(S);
+step();
+inactive(S);
+inactive(M);
+
+# Poll for Series without MPPS reference
+message(E,E,"select Series w/o MPPS");
+lconstraint(E,"{Series found}");
+active(E);
+message(E,P,"N-CREATE(mpps)");
+active(P);
+message(E,P,"N-SET(mpps)");
+inactive(E);
+step();
+inactive(P);
+step();
+inactive(E);
+
+# Object lifeline completion
+complete(M);
+complete(S); 
+complete(E);
+complete(P);
+
+.PE

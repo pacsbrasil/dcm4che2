@@ -12,13 +12,13 @@ step();
 
 # Procedure Discontinued
 active(O);
-active(R);
-active(W);
 message(O,R,"ORM^O01(DC)");
+active(R);
 message(R,W,"*delete(spsid)");
+active(W);
 inactive(O);
-step();
 inactive(R);
+step();
 inactive(W);
 step();
 
