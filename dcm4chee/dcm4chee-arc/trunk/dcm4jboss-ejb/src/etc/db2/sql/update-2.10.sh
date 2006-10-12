@@ -26,7 +26,7 @@ do
   db2 -v "DROP SEQUENCE ${t}_pk_seq" || bailout
 done
 
-db2 -t\; -fupdate-2.10.db2sql
+db2 -stf update-2.10.db2sql
 
 db2 TERMINATE
 

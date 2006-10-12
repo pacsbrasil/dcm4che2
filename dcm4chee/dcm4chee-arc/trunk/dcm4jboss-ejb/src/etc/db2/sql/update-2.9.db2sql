@@ -1,5 +1,8 @@
 -- Update DB from dcm4chee-2.8.x to dcm4chee-2.9.x
 
+CONNECT TO tiani;
+SET CURRENT SCHEMA TIANI;
+
 DROP TABLE assoc;
 DROP SEQUENCE assoc_pk_seq;
 

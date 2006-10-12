@@ -1,6 +1,9 @@
 -- Update DB from dcm4chee-2.9.x to dcm4chee-2.10.x
 -- invoked by update-2.10.sh
 
+CONNECT TO tiani;
+SET CURRENT SCHEMA TIANI;
+
 ALTER TABLE series_req ADD req_service VARCHAR(254);
 ALTER TABLE series_req ADD req_physician VARCHAR(254);
 ALTER TABLE series_req ADD req_phys_i_name VARCHAR(254);
