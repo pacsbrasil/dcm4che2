@@ -2,9 +2,10 @@
 <!-- $Id$ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
-  <mbean code="org.dcm4chex.archive.dcm.mppsscp.MPPSScpService" 
-         name="dcm4chee.archive:service=MPPSScp"
-         xmbean-dd="xmdesc/dcm4chee-mppsscp-xmbean.xml">
+  <mbean code="org.dcm4chex.archive.dcm.mppsscp.MPPSScpService"
+    name="dcm4chee.archive:service=MPPSScp"
+    xmbean-dd="xmdesc/dcm4chee-mppsscp-xmbean.xml">
+    <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends>dcm4chee.archive:service=DcmServer</depends>
   </mbean>
 </server>

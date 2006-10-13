@@ -14,6 +14,7 @@
 	     name="dcm4chee.archive:service=MPPSScu"
 	     xmbean-dd="xmdesc/dcm4chee-mppsscu-xmbean.xml">
     <depends>dcm4chee.archive:service=MPPSScp</depends>
+    <depends>dcm4chee.archive:service=TLSConfig</depends>
     <depends>dcm4chee.archive:service=Queue,name=MPPSScu</depends>
     <depends>dcm4chee.archive:service=JMS</depends>
   </mbean>
