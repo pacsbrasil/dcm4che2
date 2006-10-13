@@ -130,7 +130,7 @@ public class VerifyTar {
         }
     }
 
-    private static int fromHexDigit(char c) {
+    public static int fromHexDigit(char c) {
         return c - ((c <= '9') ? '0' : (((c <= 'F') ? 'A' : 'a') - 10));
     }
 
