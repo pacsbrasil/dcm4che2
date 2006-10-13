@@ -25,8 +25,8 @@ class StgCmtScuScpQueue {}
 class StudyMgtScuQueue {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - use - ECHOService
+ * @depend - - - AuditLogger
+ * @depend - - - ECHOService
  */
 class AE {}
 
@@ -51,7 +51,7 @@ class AuditLogger {}
 class auditLogger {}
 
 /**
- * @depend - notifiedBy - Scheduler
+ * @depend - - - Scheduler
  */
 class CheckStudyPatientService {}
 
@@ -65,8 +65,8 @@ class CheckStudyPatientService {}
 class checkStudyPatientService {}
 
 /**
- * @navassoc - use - FileSystemMgt
- * @depend - notifiedBy - Scheduler
+ * @depend - - - FileSystemMgt
+ * @depend - - - Scheduler
  */
 class CompressionService {}
 
@@ -80,7 +80,7 @@ class CompressionService {}
 class compressionService {}
 
 /**
- * @depend - notifiedBy - Scheduler
+ * @depend - - - Scheduler
  */
 class ConsistencyService {}
 
@@ -94,10 +94,10 @@ class ConsistencyService {}
 class consistencyService {}
 
 /**
- * @navassoc - use - FileSystemMgt
- * @navassoc - use - HL7Send
- * @navassoc - use - StoreScp
- * @navassoc - use - StudyMgtScu
+ * @depend - - - FileSystemMgt
+ * @depend - - - HL7Send
+ * @depend - - - StoreScp
+ * @depend - - - StudyMgtScu
  */
 class ContentEditService {}
 
@@ -111,8 +111,8 @@ class ContentEditService {}
 class contentEditService {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - use - TLSConfig
+ * @depend - - - AuditLogger
+ * @depend - - - TLSConfig
  */
 class DcmServer {}
 
@@ -137,7 +137,7 @@ class DeviceService {}
 class deviceService {}
 
 /**
- * @navassoc - use - TLSConfig
+ * @depend - - - TLSConfig
  */
 class ECHOService {}
 
@@ -151,10 +151,10 @@ class ECHOService {}
 class echoService {}
 
 /**
- * @navassoc - use - AuditLogger
- * @depend - notifiedBy - StoreScp
- * @depend - listenTo - ExportManagerQueue
- * @navassoc - use - JMS
+ * @depend - - - AuditLogger
+ * @depend - - - StoreScp
+ * @depend - - - ExportManagerQueue
+ * @depend - - - JMS
  */
 class ExportManager {}
 
@@ -168,10 +168,10 @@ class ExportManager {}
 class exportManager {}
 
 /**
- * @navassoc - use - FileSystemMgt
- * @depend - notifiedBy - StoreScp
- * @depend - listenTo - FileCopyQueue
- * @navassoc - use - JMS
+ * @depend - - - FileSystemMgt
+ * @depend - - - StoreScp
+ * @depend - - - FileCopyQueue
+ * @depend - - - JMS
  */
 class FileCopy {}
 
@@ -185,9 +185,9 @@ class FileCopy {}
 class fileCopy {}
 
 /**
- * @depend - notifiedBy - Scheduler
- * @depend - listenTo - PurgeStudyQueue
- * @navassoc - use - JMS
+ * @depend - - - Scheduler
+ * @depend - - - PurgeStudyQueue
+ * @depend - - - JMS
  */
 class FileSystemMgt {}
 
@@ -212,9 +212,9 @@ class FixPatientAttributesService {}
 class fixPatientAttributesService {}
 
 /**
- * @depend - notifiedBy - StoreScp
- * @navassoc - use - MoveScu
- * @depend - notifiedBy - ContentEditService
+ * @depend - - - StoreScp
+ * @depend - - - MoveScu
+ * @depend - - - ContentEditService
  */
 class Forward {}
 
@@ -228,8 +228,8 @@ class Forward {}
 class forward {}
 
 /**
- * @navassoc - use - AuditLogger
- * @depend - notifiedBy - MPPSScp
+ * @depend - - - AuditLogger
+ * @depend - - - MPPSScp
  */
 class GPWLFeed {}
 
@@ -243,7 +243,7 @@ class GPWLFeed {}
 class gpwlFeed {}
 
 /**
- * @navassoc - attachedTo - DcmServer
+ * @depend - - - DcmServer
  */
 class GPWLScp {}
 
@@ -268,10 +268,10 @@ class GPWLScu {}
 class gpwlScu {}
 
 /**
- * @depend - notifiedBy - HL7Server
- * @navassoc - use - TLSConfig
- * @depend - listenTo - HL7SendQueue
- * @navassoc - use - JMS
+ * @depend - - - HL7Server
+ * @depend - - - TLSConfig
+ * @depend - - - HL7SendQueue
+ * @depend - - - JMS
  */
 class HL7Send {}
 
@@ -285,8 +285,8 @@ class HL7Send {}
 class hl7Send {}
 
 /**
- * @navassoc - use - TLSConfig
- * @navassoc - use - AuditLogger
+ * @depend - - - TLSConfig
+ * @depend - - - AuditLogger
  */
 class HL7Server {}
 
@@ -300,7 +300,7 @@ class HL7Server {}
 class hl7Server {}
 
 /**
- * @navassoc - attachedTo - HL7Server
+ * @depend - - - HL7Server
  */
 class HL7ServiceADT {}
 
@@ -314,8 +314,8 @@ class HL7ServiceADT {}
 class hl7ServiceADT {}
 
 /**
- * @navassoc - attachedTo - HL7Server
- * @navassoc - use - DeviceService
+ * @depend - - - HL7Server
+ * @depend - - - DeviceService
  */
 class HL7ServiceORM {}
 
@@ -329,8 +329,8 @@ class HL7ServiceORM {}
 class hl7ServiceORM {}
 
 /**
- * @navassoc - attachedTo - HL7Server
- * @navassoc - use - ExportManager
+ * @depend - - - HL7Server
+ * @depend - - - ExportManager
  */
 class HL7ServiceORU {}
 
@@ -344,10 +344,10 @@ class HL7ServiceORU {}
 class hl7ServiceORU {}
 
 /**
- * @navassoc - use - AE
- * @navassoc - use - AuditLogger
- * @navassoc - attachedTo - DcmServer
- * @navassoc - use - TLSConfig
+ * @depend - - - AE
+ * @depend - - - AuditLogger
+ * @depend - - - DcmServer
+ * @depend - - - TLSConfig
  */
 class HPScp {}
 
@@ -361,12 +361,12 @@ class HPScp {}
 class hpScp {}
 
 /**
- * @navassoc - use - FileSystemMgt
- * @depend - notifiedBy - StoreScp
- * @depend - notifiedBy - MPPSScp
- * @navassoc - use - TLSConfig
- * @depend - listenTo - IANScuQueue
- * @navassoc - use - JMS
+ * @depend - - - FileSystemMgt
+ * @depend - - - StoreScp
+ * @depend - - - MPPSScp
+ * @depend - - - TLSConfig
+ * @depend - - - IANScuQueue
+ * @depend - - - JMS
  */
 class IANScu {}
 
@@ -402,10 +402,10 @@ class KeyObjectService {}
 class keyObjectService {}
 
 /**
- * @depend - notifiedBy - Scheduler
- * @navassoc - use - Sendmail
- * @depend - listenTo - MCMScuQueue
- * @navassoc - use - JMS
+ * @depend - - - Scheduler
+ * @depend - - - Sendmail
+ * @depend - - - MCMScuQueue
+ * @depend - - - JMS
  */
 class MCMScu {}
 
@@ -419,7 +419,7 @@ class MCMScu {}
 class mcmScu {}
 
 /**
- * @depend - notifiedBy - Scheduler
+ * @depend - - - Scheduler
  */
 class MD5CheckService {}
 
@@ -433,8 +433,8 @@ class MD5CheckService {}
 class md5CheckService {}
 
 /**
- * @depend - notifiedBy - MPPSScp
- * @navassoc - use - HL7Send
+ * @depend - - - MPPSScp
+ * @depend - - - HL7Send
  */
 class MPPS2ORM {}
 
@@ -448,8 +448,8 @@ class MPPS2ORM {}
 class mpps2ORM {}
 
 /**
- * @depend - notifiedBy - Scheduler
- * @navassoc - use - MPPSScu
+ * @depend - - - Scheduler
+ * @depend - - - MPPSScu
  */
 class MPPSEmulator {}
 
@@ -463,8 +463,8 @@ class MPPSEmulator {}
 class mppsEmulator {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - attachedTo - DcmServer
+ * @depend - - - AuditLogger
+ * @depend - - - DcmServer
  */
 class MPPSScp {}
 
@@ -478,10 +478,10 @@ class MPPSScp {}
 class mppsScp {}
 
 /**
- * @depend - notifiedBy - MPPSScp
- * @navassoc - use - TLSConfig
- * @depend - listenTo - MPPSScuQueue
- * @navassoc - use - JMS
+ * @depend - - - MPPSScp
+ * @depend - - - TLSConfig
+ * @depend - - - MPPSScuQueue
+ * @depend - - - JMS
  */
 class MPPSScu {}
 
@@ -495,9 +495,9 @@ class MPPSScu {}
 class mppsScu {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - attachedTo - DcmServer
- * @depend - notifiedBy - MPPSScp
+ * @depend - - - AuditLogger
+ * @depend - - - DcmServer
+ * @depend - - - MPPSScp
  */
 class MWLFindScp {}
 
@@ -511,7 +511,7 @@ class MWLFindScp {}
 class mwlFindScp {}
 
 /**
- * @navassoc - use - TLSConfig
+ * @depend - - - TLSConfig
  */
 class MWLScu {}
 
@@ -525,10 +525,10 @@ class MWLScu {}
 class mwlScu {}
 
 /**
- * @depend - connect - QueryRetrieveScp
- * @navassoc - use - TLSConfig
- * @depend - listenTo - MoveScuQueue
- * @navassoc - use - JMS
+ * @depend - - - QueryRetrieveScp
+ * @depend - - - TLSConfig
+ * @depend - - - MoveScuQueue
+ * @depend - - - JMS
  */
 class MoveScu {}
 
@@ -542,9 +542,9 @@ class MoveScu {}
 class moveScu {}
 
 /**
- * @depend - notifiedBy - MPPSScp
- * @depend - listenTo - PPSExceptionMgtQueue
- * @navassoc - use - JMS
+ * @depend - - - MPPSScp
+ * @depend - - - PPSExceptionMgtQueue
+ * @depend - - - JMS
  */
 class PPSExceptionMgtService {}
 
@@ -558,10 +558,10 @@ class PPSExceptionMgtService {}
 class ppsExceptionMgtService {}
 
 /**
- * @depend - notifiedBy - GPWLScp
- * @navassoc - use - TLSConfig
- * @depend - listenTo - PPSScuQueue
- * @navassoc - use - JMS
+ * @depend - - - GPWLScp
+ * @depend - - - TLSConfig
+ * @depend - - - PPSScuQueue
+ * @depend - - - JMS
  */
 class PPSScu {}
 
@@ -575,13 +575,13 @@ class PPSScu {}
 class ppsScu {}
 
 /**
- * @navassoc - use - AE
- * @navassoc - attachedTo - DcmServer
- * @navassoc - use - TLSConfig
- * @navassoc - use - AuditLogger
- * @navassoc - use - FileSystemMgt
- * @navassoc - use - StgCmtScuScp
- * @navassoc - use - TarRetriever
+ * @depend - - - AE
+ * @depend - - - DcmServer
+ * @depend - - - TLSConfig
+ * @depend - - - AuditLogger
+ * @depend - - - FileSystemMgt
+ * @depend - - - StgCmtScuScp
+ * @depend - - - TarRetriever
  */
 class QueryRetrieveScp {}
 
@@ -595,9 +595,9 @@ class QueryRetrieveScp {}
 class queryRetrieveScp {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - use - FileSystemMgt
- * @depend - notifiedBy - Scheduler
+ * @depend - - - AuditLogger
+ * @depend - - - FileSystemMgt
+ * @depend - - - Scheduler
  */
 class RIDService {}
 
@@ -622,8 +622,8 @@ class Scheduler {}
 class scheduler {}
 
 /**
- * @depend - listenTo - SendmailQueue
- * @navassoc - use - JMS
+ * @depend - - - SendmailQueue
+ * @depend - - - JMS
  */
 class Sendmail {}
 
@@ -637,12 +637,12 @@ class Sendmail {}
 class sendmail {}
 
 /**
- * @navassoc - use - AE
- * @navassoc - attachedTo - DcmServer
- * @navassoc - use - FileSystemMgt
- * @navassoc - use - TLSConfig
- * @depend - listenTo - StgCmtScuScpQueue
- * @navassoc - use - JMS
+ * @depend - - - AE
+ * @depend - - - DcmServer
+ * @depend - - - FileSystemMgt
+ * @depend - - - TLSConfig
+ * @depend - - - StgCmtScuScpQueue
+ * @depend - - - JMS
  */
 class StgCmtScuScp {}
 
@@ -656,11 +656,11 @@ class StgCmtScuScp {}
 class stgCmtScuScp {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - attachedTo - DcmServer
- * @navassoc - use - FileSystemMgt
- * @navassoc - use - MWLScu
- * @depend - notifiedBy - Scheduler
+ * @depend - - - AuditLogger
+ * @depend - - - DcmServer
+ * @depend - - - FileSystemMgt
+ * @depend - - - MWLScu
+ * @depend - - - Scheduler
  */
 class StoreScp {}
 
@@ -685,8 +685,8 @@ class StudyInfoService {}
 class studyInfoService {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - attachedTo - DcmServer
+ * @depend - - - AuditLogger
+ * @depend - - - DcmServer
  */
 class StudyMgtScp {}
 
@@ -700,10 +700,10 @@ class StudyMgtScp {}
 class studyMgtScp {}
 
 /**
- * @depend - notifiedBy - StudyMgtScp
- * @navassoc - use - TLSConfig
- * @depend - listenTo - StudyMgtScuQueue
- * @navassoc - use - JMS
+ * @depend - - - StudyMgtScp
+ * @depend - - - TLSConfig
+ * @depend - - - StudyMgtScuQueue
+ * @depend - - - JMS
  */
 class StudyMgtScu {}
 
@@ -717,8 +717,8 @@ class StudyMgtScu {}
 class studyMgtScu {}
 
 /**
- * @navassoc - use - TLSConfig
- * @depend - notifiedBy - Scheduler
+ * @depend - - - TLSConfig
+ * @depend - - - Scheduler
  */
 class StudyReconciliation {}
 
@@ -732,7 +732,7 @@ class StudyReconciliation {}
 class studyReconciliation {}
 
 /**
- * @depend - notifiedBy - GPWLScp
+ * @depend - - - GPWLScp
  */
 class StudyStatus {}
 
@@ -746,7 +746,7 @@ class StudyStatus {}
 class studyStatus {}
 
 /**
- * @depend - notifiedBy - Scheduler
+ * @depend - - - Scheduler
  */
 class SyncFileStatus {}
 
@@ -760,7 +760,7 @@ class SyncFileStatus {}
 class syncFileStatus {}
 
 /**
- * @navassoc - use - AuditLogger
+ * @depend - - - AuditLogger
  */
 class TLSConfig {}
 
@@ -785,9 +785,9 @@ class TarRetriever {}
 class tarRetriever {}
 
 /**
- * @navassoc - use - FileSystemMgt
- * @depend - notifiedBy - Scheduler
- * @navassoc - use - StudyInfoService
+ * @depend - - - FileSystemMgt
+ * @depend - - - Scheduler
+ * @depend - - - StudyInfoService
  */
 class WADOExtService {}
 
@@ -801,8 +801,8 @@ class WADOExtService {}
 class wadoExtService {}
 
 /**
- * @navassoc - use - FileSystemMgt
- * @depend - notifiedBy - Scheduler
+ * @depend - - - FileSystemMgt
+ * @depend - - - Scheduler
  */
 class WADOService {}
 
@@ -816,8 +816,8 @@ class WADOService {}
 class wadoService {}
 
 /**
- * @navassoc - use - AuditLogger
- * @navassoc - use - HL7Send
+ * @depend - - - AuditLogger
+ * @depend - - - HL7Send
  */
 class XDS_I {}
 
