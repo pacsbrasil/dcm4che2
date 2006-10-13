@@ -13,7 +13,7 @@ for f in ../../target/dot/*.dot
 do \
 BASENAME=`basename $f .dot`
 dot -Tps $f | \
-gs -q -r360 -dNOPAUSE -sDEVICE=pnm -sOutputFile=-  - -c quit | \
+gs -q -r360 -dNOPAUSE -sDEVICE=pnm -sPAPERSIZE=a1 -sOutputFile=-  - -c quit | \
 pnmcrop | \
 pnmscale 0.25 | \
 ppmtogif > ../../target/graph/$BASENAME.gif
