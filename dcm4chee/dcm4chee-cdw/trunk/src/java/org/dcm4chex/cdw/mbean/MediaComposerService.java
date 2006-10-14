@@ -533,7 +533,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 JMSDelegate.queue("MakeIsoImage",
                         "Schedule Creating ISO image for " + rq, log, rq, 0L);
             else
-                JMSDelegate.queue("MediaWriter",
+                JMSDelegate.queue(rq.getMediaWriterName(),
                         "Schedule Creating Media for " + rq, log, rq, 0L);
             
         } catch (JMSException e) {
