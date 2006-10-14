@@ -173,7 +173,7 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getValidFileStatus" setMethod="setValidFileStatus">
-      <description><![CDATA[Defines the 'VALID' File Status if <tt>isFlushOnROFsAvailable</tt> is enabled.<p/> 
+      <description><![CDATA[Defines the 'VALID' File Status if <tt>DeleteLocalStudiesCopyAvailable</tt> is enabled.<p/> 
       		This value is used to check if a valid study copy is available on RO Filesystem.<br/>
       		(all instances of a study must be also stored on a RO filesystem with this filestatus.)
       		<dl>
