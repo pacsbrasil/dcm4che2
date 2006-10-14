@@ -1,3 +1,5 @@
+package archive;
+
 class ExportManagerQueue {}
 
 class FileCopyQueue {}
@@ -34,7 +36,7 @@ class AE {}
  * @view
  * @opt hide
  * 
- * @match context AE
+ * @match context archive.AE
  * @opt !hide
  */
 class ae {}
@@ -45,7 +47,7 @@ class AuditLogger {}
  * @view
  * @opt hide
  * 
- * @match context AuditLogger
+ * @match context archive.AuditLogger
  * @opt !hide
  */
 class auditLogger {}
@@ -59,7 +61,7 @@ class CheckStudyPatientService {}
  * @view
  * @opt hide
  * 
- * @match context CheckStudyPatientService
+ * @match context archive.CheckStudyPatientService
  * @opt !hide
  */
 class checkStudyPatientService {}
@@ -74,7 +76,7 @@ class CompressionService {}
  * @view
  * @opt hide
  * 
- * @match context CompressionService
+ * @match context archive.CompressionService
  * @opt !hide
  */
 class compressionService {}
@@ -88,7 +90,7 @@ class ConsistencyService {}
  * @view
  * @opt hide
  * 
- * @match context ConsistencyService
+ * @match context archive.ConsistencyService
  * @opt !hide
  */
 class consistencyService {}
@@ -105,7 +107,7 @@ class ContentEditService {}
  * @view
  * @opt hide
  * 
- * @match context ContentEditService
+ * @match context archive.ContentEditService
  * @opt !hide
  */
 class contentEditService {}
@@ -120,7 +122,7 @@ class DcmServer {}
  * @view
  * @opt hide
  * 
- * @match context DcmServer
+ * @match context archive.DcmServer
  * @opt !hide
  */
 class dcmServer {}
@@ -131,7 +133,7 @@ class DeviceService {}
  * @view
  * @opt hide
  * 
- * @match context DeviceService
+ * @match context archive.DeviceService
  * @opt !hide
  */
 class deviceService {}
@@ -145,7 +147,7 @@ class ECHOService {}
  * @view
  * @opt hide
  * 
- * @match context ECHOService
+ * @match context archive.ECHOService
  * @opt !hide
  */
 class echoService {}
@@ -162,7 +164,7 @@ class ExportManager {}
  * @view
  * @opt hide
  * 
- * @match context ExportManager
+ * @match context archive.ExportManager
  * @opt !hide
  */
 class exportManager {}
@@ -179,7 +181,7 @@ class FileCopy {}
  * @view
  * @opt hide
  * 
- * @match context FileCopy
+ * @match context archive.FileCopy
  * @opt !hide
  */
 class fileCopy {}
@@ -195,7 +197,7 @@ class FileSystemMgt {}
  * @view
  * @opt hide
  * 
- * @match context FileSystemMgt
+ * @match context archive.FileSystemMgt
  * @opt !hide
  */
 class fileSystemMgt {}
@@ -206,7 +208,7 @@ class FixPatientAttributesService {}
  * @view
  * @opt hide
  * 
- * @match context FixPatientAttributesService
+ * @match context archive.FixPatientAttributesService
  * @opt !hide
  */
 class fixPatientAttributesService {}
@@ -222,7 +224,7 @@ class Forward {}
  * @view
  * @opt hide
  * 
- * @match context Forward
+ * @match context archive.Forward
  * @opt !hide
  */
 class forward {}
@@ -237,7 +239,7 @@ class GPWLFeed {}
  * @view
  * @opt hide
  * 
- * @match context GPWLFeed
+ * @match context archive.GPWLFeed
  * @opt !hide
  */
 class gpwlFeed {}
@@ -251,7 +253,7 @@ class GPWLScp {}
  * @view
  * @opt hide
  * 
- * @match context GPWLScp
+ * @match context archive.GPWLScp
  * @opt !hide
  */
 class gpwlScp {}
@@ -262,7 +264,7 @@ class GPWLScu {}
  * @view
  * @opt hide
  * 
- * @match context GPWLScu
+ * @match context archive.GPWLScu
  * @opt !hide
  */
 class gpwlScu {}
@@ -279,7 +281,7 @@ class HL7Send {}
  * @view
  * @opt hide
  * 
- * @match context HL7Send
+ * @match context archive.HL7Send
  * @opt !hide
  */
 class hl7Send {}
@@ -294,7 +296,7 @@ class HL7Server {}
  * @view
  * @opt hide
  * 
- * @match context HL7Server
+ * @match context archive.HL7Server
  * @opt !hide
  */
 class hl7Server {}
@@ -308,7 +310,7 @@ class HL7ServiceADT {}
  * @view
  * @opt hide
  * 
- * @match context HL7ServiceADT
+ * @match context archive.HL7ServiceADT
  * @opt !hide
  */
 class hl7ServiceADT {}
@@ -323,7 +325,7 @@ class HL7ServiceORM {}
  * @view
  * @opt hide
  * 
- * @match context HL7ServiceORM
+ * @match context archive.HL7ServiceORM
  * @opt !hide
  */
 class hl7ServiceORM {}
@@ -338,7 +340,7 @@ class HL7ServiceORU {}
  * @view
  * @opt hide
  * 
- * @match context HL7ServiceORU
+ * @match context archive.HL7ServiceORU
  * @opt !hide
  */
 class hl7ServiceORU {}
@@ -355,7 +357,7 @@ class HPScp {}
  * @view
  * @opt hide
  * 
- * @match context HPScp
+ * @match context archive.HPScp
  * @opt !hide
  */
 class hpScp {}
@@ -374,7 +376,7 @@ class IANScu {}
  * @view
  * @opt hide
  * 
- * @match context IANScu
+ * @match context archive.IANScu
  * @opt !hide
  */
 class ianScu {}
@@ -385,7 +387,7 @@ class JMS {}
  * @view
  * @opt hide
  * 
- * @match context JMS
+ * @match context archive.JMS
  * @opt !hide
  */
 class jms {}
@@ -396,7 +398,7 @@ class KeyObjectService {}
  * @view
  * @opt hide
  * 
- * @match context KeyObjectService
+ * @match context archive.KeyObjectService
  * @opt !hide
  */
 class keyObjectService {}
@@ -413,7 +415,7 @@ class MCMScu {}
  * @view
  * @opt hide
  * 
- * @match context MCMScu
+ * @match context archive.MCMScu
  * @opt !hide
  */
 class mcmScu {}
@@ -427,7 +429,7 @@ class MD5CheckService {}
  * @view
  * @opt hide
  * 
- * @match context MD5CheckService
+ * @match context archive.MD5CheckService
  * @opt !hide
  */
 class md5CheckService {}
@@ -442,7 +444,7 @@ class MPPS2ORM {}
  * @view
  * @opt hide
  * 
- * @match context MPPS2ORM
+ * @match context archive.MPPS2ORM
  * @opt !hide
  */
 class mpps2ORM {}
@@ -457,7 +459,7 @@ class MPPSEmulator {}
  * @view
  * @opt hide
  * 
- * @match context MPPSEmulator
+ * @match context archive.MPPSEmulator
  * @opt !hide
  */
 class mppsEmulator {}
@@ -472,7 +474,7 @@ class MPPSScp {}
  * @view
  * @opt hide
  * 
- * @match context MPPSScp
+ * @match context archive.MPPSScp
  * @opt !hide
  */
 class mppsScp {}
@@ -489,7 +491,7 @@ class MPPSScu {}
  * @view
  * @opt hide
  * 
- * @match context MPPSScu
+ * @match context archive.MPPSScu
  * @opt !hide
  */
 class mppsScu {}
@@ -505,7 +507,7 @@ class MWLFindScp {}
  * @view
  * @opt hide
  * 
- * @match context MWLFindScp
+ * @match context archive.MWLFindScp
  * @opt !hide
  */
 class mwlFindScp {}
@@ -519,7 +521,7 @@ class MWLScu {}
  * @view
  * @opt hide
  * 
- * @match context MWLScu
+ * @match context archive.MWLScu
  * @opt !hide
  */
 class mwlScu {}
@@ -536,7 +538,7 @@ class MoveScu {}
  * @view
  * @opt hide
  * 
- * @match context MoveScu
+ * @match context archive.MoveScu
  * @opt !hide
  */
 class moveScu {}
@@ -552,7 +554,7 @@ class PPSExceptionMgtService {}
  * @view
  * @opt hide
  * 
- * @match context PPSExceptionMgtService
+ * @match context archive.PPSExceptionMgtService
  * @opt !hide
  */
 class ppsExceptionMgtService {}
@@ -569,7 +571,7 @@ class PPSScu {}
  * @view
  * @opt hide
  * 
- * @match context PPSScu
+ * @match context archive.PPSScu
  * @opt !hide
  */
 class ppsScu {}
@@ -589,7 +591,7 @@ class QueryRetrieveScp {}
  * @view
  * @opt hide
  * 
- * @match context QueryRetrieveScp
+ * @match context archive.QueryRetrieveScp
  * @opt !hide
  */
 class queryRetrieveScp {}
@@ -605,7 +607,7 @@ class RIDService {}
  * @view
  * @opt hide
  * 
- * @match context RIDService
+ * @match context archive.RIDService
  * @opt !hide
  */
 class ridService {}
@@ -616,7 +618,7 @@ class Scheduler {}
  * @view
  * @opt hide
  * 
- * @match context Scheduler
+ * @match context archive.Scheduler
  * @opt !hide
  */
 class scheduler {}
@@ -631,7 +633,7 @@ class Sendmail {}
  * @view
  * @opt hide
  * 
- * @match context Sendmail
+ * @match context archive.Sendmail
  * @opt !hide
  */
 class sendmail {}
@@ -650,7 +652,7 @@ class StgCmtScuScp {}
  * @view
  * @opt hide
  * 
- * @match context StgCmtScuScp
+ * @match context archive.StgCmtScuScp
  * @opt !hide
  */
 class stgCmtScuScp {}
@@ -668,7 +670,7 @@ class StoreScp {}
  * @view
  * @opt hide
  * 
- * @match context StoreScp
+ * @match context archive.StoreScp
  * @opt !hide
  */
 class storeScp {}
@@ -679,7 +681,7 @@ class StudyInfoService {}
  * @view
  * @opt hide
  * 
- * @match context StudyInfoService
+ * @match context archive.StudyInfoService
  * @opt !hide
  */
 class studyInfoService {}
@@ -694,7 +696,7 @@ class StudyMgtScp {}
  * @view
  * @opt hide
  * 
- * @match context StudyMgtScp
+ * @match context archive.StudyMgtScp
  * @opt !hide
  */
 class studyMgtScp {}
@@ -711,7 +713,7 @@ class StudyMgtScu {}
  * @view
  * @opt hide
  * 
- * @match context StudyMgtScu
+ * @match context archive.StudyMgtScu
  * @opt !hide
  */
 class studyMgtScu {}
@@ -726,7 +728,7 @@ class StudyReconciliation {}
  * @view
  * @opt hide
  * 
- * @match context StudyReconciliation
+ * @match context archive.StudyReconciliation
  * @opt !hide
  */
 class studyReconciliation {}
@@ -740,7 +742,7 @@ class StudyStatus {}
  * @view
  * @opt hide
  * 
- * @match context StudyStatus
+ * @match context archive.StudyStatus
  * @opt !hide
  */
 class studyStatus {}
@@ -754,7 +756,7 @@ class SyncFileStatus {}
  * @view
  * @opt hide
  * 
- * @match context SyncFileStatus
+ * @match context archive.SyncFileStatus
  * @opt !hide
  */
 class syncFileStatus {}
@@ -768,7 +770,7 @@ class TLSConfig {}
  * @view
  * @opt hide
  * 
- * @match context TLSConfig
+ * @match context archive.TLSConfig
  * @opt !hide
  */
 class tlsConfig {}
@@ -779,7 +781,7 @@ class TarRetriever {}
  * @view
  * @opt hide
  * 
- * @match context TarRetriever
+ * @match context archive.TarRetriever
  * @opt !hide
  */
 class tarRetriever {}
@@ -795,7 +797,7 @@ class WADOExtService {}
  * @view
  * @opt hide
  * 
- * @match context WADOExtService
+ * @match context archive.WADOExtService
  * @opt !hide
  */
 class wadoExtService {}
@@ -810,7 +812,7 @@ class WADOService {}
  * @view
  * @opt hide
  * 
- * @match context WADOService
+ * @match context archive.WADOService
  * @opt !hide
  */
 class wadoService {}
@@ -825,7 +827,7 @@ class XDS_I {}
  * @view
  * @opt hide
  * 
- * @match context XDS_I
+ * @match context archive.XDS_I
  * @opt !hide
  */
 class xds_I {}
@@ -836,7 +838,7 @@ class XDSService {}
  * @view
  * @opt hide
  * 
- * @match context XDSService
+ * @match context archive.XDSService
  * @opt !hide
  */
 class xdsService {}
