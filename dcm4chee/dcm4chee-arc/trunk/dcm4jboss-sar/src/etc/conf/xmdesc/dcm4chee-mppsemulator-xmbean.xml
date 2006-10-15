@@ -82,7 +82,7 @@
    &defaultOperations;
    <operation impact="ACTION">
       <description><![CDATA[Emulate MPPS messages for newly received series from the stations
-          or modalities specified by the <b>StationAETitlesWithDelay</b> attribute. Returns the number of
+          or modalities specified by the <b>ModalityAETitles</b> attribute. Returns the number of
           successfully created MPPS instances at the MPPS SCP that you specified with the <b>CalledAETitle</b> property.]]>
       </description>
       <name>emulateMPPS</name>
