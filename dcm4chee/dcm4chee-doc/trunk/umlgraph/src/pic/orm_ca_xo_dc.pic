@@ -13,9 +13,22 @@ step();
 active(S);
 step();
 
+# Procedure Canceled
+active(O);
+message(O,S,"ORM^O01(CA)");
+active(S);
+message(S,R,"handle(orm)");
+active(R);
+inactive(S);
+inactive(O);
+message(R,W,"*delete(spsid)");
+active(W);
+inactive(R);
+
 # Procedure Updated
 active(O);
 message(O,S,"ORM^O01(XO)");
+inactive(W);
 active(S);
 message(S,R,"handle(orm)");
 active(R);
@@ -27,6 +40,19 @@ message(R,W,"*update(item)");
 active(W);
 inactive(D);
 inactive(R);
+
+# Procedure Discontinued
+active(O);
+message(O,S,"ORM^O01(DC)");
+inactive(W);
+active(S);
+message(S,R,"handle(orm)");
+active(R);
+inactive(S);
+inactive(O);
+message(R,W,"*delete(spsid)");
+active(W);
+inactive(R);
 step();
 inactive(W);
 step();
@@ -35,7 +61,7 @@ step();
 complete(O);
 complete(R);
 complete(W);
-complete(D);
 complete(S);
+complete(D);
 
 .PE

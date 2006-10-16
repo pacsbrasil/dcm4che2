@@ -6,31 +6,31 @@ copy "sequence.pic";
 # Object definition
 actor(O,"Order Filler");
 object(S,"HL7 Server");
-object(R,"ORM Service");
+object(A,"ADT Service");
 object(W,"MWL SCP");
 step();
 active(S);
 step();
 
-# Procedure Discontinued
+# Procedure Scheduled
 active(O);
-message(O,S,"ORM^O01(DC)");
+message(O,S,"ADT^A10");
 active(S);
-message(S,R,"handle(orm)");
-active(R);
-inactive(S);
+message(S,A,"handle(adt)");
 inactive(O);
-message(R,W,"*delete(spsid)");
+active(A);
+inactive(S);
+message(A,W,"*update(ARRIVED)");
 active(W);
-inactive(R);
+inactive(A);
 step();
 inactive(W);
 step();
 
 # Object lifeline completion
 complete(O);
-complete(R);
+complete(A);
 complete(W);
-inactive(S);
+complete(S);
 
 .PE
