@@ -4,19 +4,28 @@ boxwid=1.2
 copy "sequence.pic";
 
 # Object definition
-actor(O,":Order Filler");
-object(R,":ORM Service");
-object(W,":MWL SCP");
+actor(O,"Order Filler");
+object(S,"HL7 Server");
+object(R,"ORM Service");
+object(W,"MWL SCP");
+object(D,"Device Service");
 step();
+active(S);
 step();
 
 # Procedure Updated
 active(O);
-message(O,R,"ORM^O01(XO)");
+message(O,S,"ORM^O01(XO)");
+active(S);
+message(S,R,"handle(orm)");
 active(R);
+inactive(S);
+inactive(O);
+message(R,D,"addStationInfo(items)");
+active(D);
 message(R,W,"*update(item)");
 active(W);
-inactive(O);
+inactive(D);
 inactive(R);
 step();
 inactive(W);
@@ -26,5 +35,7 @@ step();
 complete(O);
 complete(R);
 complete(W);
+complete(D);
+complete(S);
 
 .PE

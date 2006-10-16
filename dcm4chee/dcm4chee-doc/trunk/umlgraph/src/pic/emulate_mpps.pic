@@ -4,12 +4,15 @@ boxwid=1.1
 copy "sequence.pic";
 
 # Object definition
-actor(M,":Modality w/o MPPS");
-object(S,"STORE SCP"); 
 object(E,"MPPS Emulator");
+object(U,"MPPS SCU");
+object(S,"STORE SCP"); 
+object(D,"DICOM Server");
 object(P,"MPPS SCP");
+actor(M,"Modality w/o MPPS");
 step();
 active(E);
+active(D);
 
 # Poll for Series without MPPS reference
 message(E,E,"select Series w/o MPPS");
@@ -17,20 +20,37 @@ lconstraint(E,"{No Series found}");
 
 # Object Stored
 active(M);
-message(M,S,"*C-STORE(obj)");
+message(M,D,"*C-STORE(obj)");
+active(D);
+message(D,S,"handle(obj)");
+inactive(M);
+inactive(D);
 active(S);
 step();
 inactive(S);
-inactive(M);
 
 # Poll for Series without MPPS reference
 message(E,E,"select Series w/o MPPS");
 lconstraint(E,"{Series found}");
 active(E);
-message(E,P,"N-CREATE(mpps)");
+message(E,U,"send(mpps)");
+active(U);
+message(U,D,"N-CREATE(mpps)");
+inactive(U);
+active(D);
+message(D,P,"handle(mpps)");
 active(P);
-message(E,P,"N-SET(mpps)");
+inactive(D);
+message(E,U,"send(mpps)");
+inactive(P);
 inactive(E);
+active(U);
+message(U,D,"N-SET(mpps)");
+inactive(U);
+active(D);
+message(D,P,"handle(mpps)");
+active(P);
+inactive(D);
 step();
 inactive(P);
 step();
@@ -41,5 +61,7 @@ complete(M);
 complete(S); 
 complete(E);
 complete(P);
+complete(D);
+complete(U);
 
 .PE

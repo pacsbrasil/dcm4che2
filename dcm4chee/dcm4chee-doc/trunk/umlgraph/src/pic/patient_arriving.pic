@@ -4,16 +4,21 @@ boxwid=1.2
 copy "sequence.pic";
 
 # Object definition
-actor(O,":Order Filler");
-object(A,":ADT Service");
-object(W,":MWL SCP");
+actor(O,"Order Filler");
+object(S,"HL7 Server");
+object(A,"ADT Service");
+object(W,"MWL SCP");
 step();
+active(S);
 step();
 
 # Procedure Scheduled
 active(O);
-message(O,A,"ADT^A10");
+message(O,S,"ADT^A10");
+active(S);
+message(S,A,"handle(adt)");
 active(A);
+inactive(S);
 message(A,W,"*update(ARRIVED)");
 active(W);
 inactive(O);
@@ -26,5 +31,6 @@ step();
 complete(O);
 complete(A);
 complete(W);
+complete(S);
 
 .PE
