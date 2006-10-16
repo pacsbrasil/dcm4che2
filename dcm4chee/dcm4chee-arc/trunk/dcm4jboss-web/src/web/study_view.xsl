@@ -132,14 +132,8 @@
     
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.StudyViewCtrl$SeriesContainer']">
     <xsl:if test="modality != 'SR' and modality != 'KO' ">
-        <PARAM>
-            <xsl:attribute name="NAME"><xsl:text>SEQUENCE</xsl:text><xsl:value-of select="position()"/></xsl:attribute>
-            <xsl:attribute name="VALUE">
-                <xsl:text>Seq. Nr. </xsl:text><xsl:value-of select="seriesNumber"/>
-                <xsl:apply-templates select="instanceUIDs/item"></xsl:apply-templates>
-            </xsl:attribute>
-        </PARAM><xsl:text>\
-                                                                                            </xsl:text>
+        <xsl:text>&lt;PARAM NAME="SEQUENCE</xsl:text><xsl:value-of select="position()"/><xsl:text>" VALUE="Seq. Nr. </xsl:text><xsl:value-of select="seriesNumber"/><xsl:apply-templates select="instanceUIDs/item"></xsl:apply-templates><xsl:text>"&gt; \
+                                    </xsl:text>
         </xsl:if>
 </xsl:template>
     
