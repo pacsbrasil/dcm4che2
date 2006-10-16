@@ -304,46 +304,46 @@ class hl7Server {}
 /**
  * @depend - - - HL7Server
  */
-class HL7ServiceADT {}
+class ADTService {}
 
 /**
  * @view
  * @opt hide
  * 
- * @match context archive.HL7ServiceADT
+ * @match context archive.ADTService
  * @opt !hide
  */
-class hl7ServiceADT {}
+class adtService {}
 
 /**
  * @depend - - - HL7Server
  * @depend - - - DeviceService
  */
-class HL7ServiceORM {}
+class ORMService {}
 
 /**
  * @view
  * @opt hide
  * 
- * @match context archive.HL7ServiceORM
+ * @match context archive.ORMService
  * @opt !hide
  */
-class hl7ServiceORM {}
+class ormService {}
 
 /**
  * @depend - - - HL7Server
  * @depend - - - ExportManager
  */
-class HL7ServiceORU {}
+class ORUService {}
 
 /**
  * @view
  * @opt hide
  * 
- * @match context archive.HL7ServiceORU
+ * @match context archive.ORUService
  * @opt !hide
  */
-class hl7ServiceORU {}
+class oruService {}
 
 /**
  * @depend - - - AE
