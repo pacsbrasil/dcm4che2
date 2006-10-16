@@ -58,10 +58,14 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
 
     public PersonNameImpl() {}
     
-    public PersonNameImpl(String s) {
+    public PersonNameImpl(String s, boolean lenient) {
         int grLen = s.indexOf('=');
         if ((grLen == -1 ? s.length() : grLen) > 64) {
-            throw new IllegalArgumentException(s);
+            if (lenient) {
+                log.warn("To long PN: " + s);
+            } else {
+                throw new IllegalArgumentException(s);
+            }
         }
         StringTokenizer stk = new StringTokenizer(s, "=^", true);
         int field = FAMILY;
@@ -88,7 +92,7 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
 
         tk = stk.nextToken("=");
         if (tk.charAt(0) != '=' ) {
-            ideographic = new PersonNameImpl(tk);
+            ideographic = new PersonNameImpl(tk, lenient);
             if (stk.hasMoreTokens())
                 tk = stk.nextToken("=");
         }
@@ -99,7 +103,7 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
         if (tk.charAt(0) == '=' || stk.hasMoreTokens())
             throw new IllegalArgumentException(s);
 
-        phonetic = new PersonNameImpl(tk);
+        phonetic = new PersonNameImpl(tk, lenient);
     }
 
     public String get(int field) {

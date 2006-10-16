@@ -487,12 +487,12 @@ abstract class StringElement extends ValueElement {
 
         public final PersonName getPersonName(SpecificCharacterSet cs)
             throws DcmValueException {
-            return new PersonNameImpl(getString(cs));
+            return new PersonNameImpl(getString(cs), true);
         }
 
         public final PersonName getPersonName(int index, SpecificCharacterSet cs)
             throws DcmValueException {
-            return new PersonNameImpl(getString(index, cs));
+            return new PersonNameImpl(getString(index, cs), true);
         }
 
         public final PersonName[] getPersonNames(SpecificCharacterSet cs)
@@ -500,7 +500,7 @@ abstract class StringElement extends ValueElement {
             String[] ss = getStrings(cs);
             PersonName[] pns = new PersonName[ss.length];
             for (int i = 0; i < ss.length; i++) {
-                pns[i] = new PersonNameImpl(ss[i]);
+                pns[i] = new PersonNameImpl(ss[i], true);
             }
             return pns;
         }

@@ -85,7 +85,7 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
     }
 
     public PersonName newPersonName(String s) {
-        return new PersonNameImpl(s);
+        return new PersonNameImpl(s, false);
     }
     
     public PersonName newPersonName() {

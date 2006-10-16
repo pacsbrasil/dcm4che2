@@ -1528,7 +1528,7 @@ abstract class DcmObjectImpl implements DcmObject {
             value != null && value.length() != 0
                 ? StringElement.createPN(
                     tag,
-                    new PersonNameImpl(value),
+                    new PersonNameImpl(value, false),
                     getSpecificCharacterSet())
                 : StringElement.createPN(tag));
     }
@@ -1546,7 +1546,7 @@ abstract class DcmObjectImpl implements DcmObject {
         }
         PersonName[] a = new PersonName[values.length];
         for (int i = 0; i < a.length; ++i) {
-            a[i] = new PersonNameImpl(values[i]);
+            a[i] = new PersonNameImpl(values[i], false);
         }
         return put(StringElement.createPN(tag, a, getSpecificCharacterSet()));
     }
