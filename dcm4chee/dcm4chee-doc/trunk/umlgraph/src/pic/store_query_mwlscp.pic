@@ -1,6 +1,6 @@
 .PS
-boxwid=0.9
-movewid=0.8
+boxwid=1
+movewid=0.9
 
 copy "sequence.pic";
 
@@ -21,9 +21,10 @@ active(D);
 message(D,S,"handle(obj)");
 inactive(D);
 active(S);
-lconstraint(S,"{1.object of Series}");
-message(S,S,"xslt(attrs):keys");
-message(S,U,"findMWLEntries(keys)");
+step();
+begin_frame(S,F,"[1.object of" \
+"Series]");
+message(S,U,"findMWLEntries(xslt(attrs))");
 active(U)
 message(U,W,"C-FIND RQ(keys)");
 active(W);
@@ -31,7 +32,9 @@ rmessage(W,U,"C-FIND RSP(item)");
 inactive(W);
 rmessage(U,S,"item");
 inactive(U);
-message(S,S,"xslt(item):attrs");
+message(S,S,"coerce(obj, xslt(item))");
+step();
+end_frame(W,F);
 rmessage(S,M,"C-STORE RSP");
 inactive(S);
 step();
