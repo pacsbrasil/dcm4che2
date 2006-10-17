@@ -8,6 +8,7 @@ copy "sequence.pic";
 actor(M,"Modality");
 object(D,"DICOM Server"); 
 object(S,"STORE SCP"); 
+object(U,"MWL SCU"); 
 object(W,"MWL SCP");
 step();
 active(D);
@@ -20,12 +21,17 @@ active(D);
 message(D,S,"handle(obj)");
 inactive(D);
 active(S);
-message(S,W,"[1.object of Series]" \
-"C-FIND RQ(keys)" \
-"");
+lconstraint(S,"{1.object of Series}");
+message(S,S,"xslt(attrs):keys");
+message(S,U,"findMWLEntries(keys)");
+active(U)
+message(U,W,"C-FIND RQ(keys)");
 active(W);
-rmessage(W,S,"C-FIND RSP(item)");
+rmessage(W,U,"C-FIND RSP(item)");
 inactive(W);
+rmessage(U,S,"item");
+inactive(U);
+message(S,S,"xslt(item):attrs");
 rmessage(S,M,"C-STORE RSP");
 inactive(S);
 step();
@@ -37,5 +43,6 @@ complete(M);
 complete(S); 
 complete(W);
 complete(D);
+complete(U);
 
 .PE
