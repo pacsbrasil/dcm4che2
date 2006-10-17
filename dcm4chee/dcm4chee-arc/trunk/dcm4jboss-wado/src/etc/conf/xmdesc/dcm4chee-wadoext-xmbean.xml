@@ -104,7 +104,7 @@
       <description>Interval in which the available disk space is checked and, if necessary,
       	  the cache is cleaned.
           Format: ##m (in minutes), ##h (in hours), ##d (in days).
-          NEVER (= disable media scheduling).          
+          NEVER (= disable cache deletion).          
       </description>
       <name>FreeDiskSpaceInterval</name>
       <type>java.lang.String</type>
