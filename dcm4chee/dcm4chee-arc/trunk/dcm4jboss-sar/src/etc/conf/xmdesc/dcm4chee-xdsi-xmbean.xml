@@ -116,7 +116,7 @@
  
    <attribute access="read-write" getMethod="getPropertyFile" setMethod="setPropertyFile">
       <description>Metadata Property File. 
-      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
       </description>
       <name>MetadataPropertyFile</name>
       <type>java.lang.String</type>
@@ -126,8 +126,8 @@
    </attribute>
    <attribute access="read-write" getMethod="getDocTitleCodeListFile" setMethod="setDocTitleCodeListFile">
       <description>File containing Codes for Document Title (for KOS object and therefore xds metadata 'title').
-      		Format: [designator^]codevalue^meaning 
-      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
       </description>
       <name>DocTitleCodeListFile</name>
       <type>java.lang.String</type>
@@ -137,8 +137,8 @@
    </attribute>
    <attribute access="read-write" getMethod="getEventCodeListFile" setMethod="setEventCodeListFile">
       <description>File containing Codes for eventCodeList.
-      		Format: [designator^]codevalue^meaning 
-      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
       </description>
       <name>EventCodeListFile</name>
       <type>java.lang.String</type>
@@ -148,8 +148,8 @@
    </attribute>
    <attribute access="read-write" getMethod="getClassCodeListFile" setMethod="setClassCodeListFile">
       <description>File containing Codes for ClassCode.
-      		Format: [designator^]codevalue^meaning 
-      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
       </description>
       <name>ClassCodeListFile</name>
       <type>java.lang.String</type>
@@ -159,8 +159,8 @@
    </attribute>
    <attribute access="read-write" getMethod="getContentTypeCodeListFile" setMethod="setContentTypeCodeListFile">
       <description>File containing codes for Content Type Codes.
-      		Format: [designator^]codevalue^meaning 
-      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
       </description>
       <name>ContentTypeCodes</name>
       <type>java.lang.String</type>
@@ -170,8 +170,8 @@
    </attribute>
    <attribute access="read-write" getMethod="getHealthCareFacilityCodeListFile" setMethod="setHealthCareFacilityCodeListFile">
       <description>File containing codes for Healthcare Facility Type Codes.
-      		Format: [designator^]codevalue^meaning 
-      		A relative path name is resolved relative to archive-install-directory/server/default/.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
       </description>
       <name>HealthCareFacilityTypeCode</name>
       <type>java.lang.String</type>
@@ -181,13 +181,13 @@
    </attribute>
    <attribute access="read-write" getMethod="getConfidentialityCodes" setMethod="setConfidentialityCodes">
       <description>Code list for confidentialityCode.
-      		Format: [designator^]codevalue^meaning 
+      		Format: [designator&#94;]codevalue&#94;meaning 
       		Use either newline or semicolon to seperate codes
       </description>
       <name>ConfidentialityCodes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="cc1^confidentialityCode"/>
+         <value value="cc1&#94;confidentialityCode"/>
       </descriptors>
    </attribute>
    
@@ -202,19 +202,19 @@
       <name>AuthorPersonMapping</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="DCM4CHEE^^^XDSITEST"/>
+         <value value="DCM4CHEE&#94;&#94;&#94;XDSITEST"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getAuthorRoles" setMethod="setAuthorRoles">
       <description><![CDATA[List of author roles (with display name).<br/>
-      				Format: &lt;role&gt;^&lt;displayName&gt;<br/>
+      				Format: &lt;role&gt;&#94;&lt;displayName&gt;<br/>
       				Use either newline or semicolon to seperate codes.
       				]]>
       </description>
       <name>AuthorRoles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="stdRole^Standard Role;adminRole^Admin Role"/>
+         <value value="stdRole&#94;Standard Role;adminRole&#94;Admin Role"/>
       </descriptors>
    </attribute>
 
@@ -269,7 +269,7 @@
       		You can disable PIX Query by setting this value with '=' as first character.<br/>
       		'=' : use the source patient ID and issuer.<br/>
       		'=?&lt;Domain&gt;' : use patientID from source and &lt;Domain&gt; as issuer. <br/>
-      		'=&lt;patient&gt;' : use &lt;patient&gt; for patientID and issuer (patid^^^issuer). 
+      		'=&lt;patient&gt;' : use &lt;patient&gt; for patientID and issuer (patid&#94;&#94;&#94;issuer). 
       ]]></description>
       <name>AffinityDomain</name>
       <type>java.lang.String</type>
