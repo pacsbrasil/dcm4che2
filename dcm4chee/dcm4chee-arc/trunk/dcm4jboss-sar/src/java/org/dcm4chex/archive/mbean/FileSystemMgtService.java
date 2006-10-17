@@ -1198,8 +1198,19 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     public boolean updateFileSystemAvailability(String dirPath, String availability) throws RemoteException, FinderException {
         FileSystemMgt mgt = newFileSystemMgt();
         int iAvail = Availability.toInt(availability);
+        log.info("Update availability of "+dirPath+" to "+availability+"("+iAvail+")");
         if ( mgt.updateFileSystemAvailability(dirPath, iAvail) ) {
+            int offset = 0;
+            int limit = limitNumberOfFilesPerTask;
+            int size;
+            log.info("Update availability of all instances of filesystem "+dirPath);
+            while ( (size = mgt.updateInstanceAvailability(dirPath,offset,limit)) > 0) {
+                log.debug("  "+size+" updated for FS availability change!");
+                offset +=limit;
+            }
+            log.info("Instances of "+dirPath+" updated");
             if ( deleteFilesWhenUnavailable && iAvail == Availability.UNAVAILABLE ) {
+                log.info("delete files on unavailable filesystem:"+dirPath);
                 deleteFilesOnFS(dirPath, mgt);
         	}
             return true;

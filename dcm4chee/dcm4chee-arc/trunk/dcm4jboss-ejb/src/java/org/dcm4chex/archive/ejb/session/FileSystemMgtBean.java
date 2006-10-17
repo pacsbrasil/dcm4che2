@@ -321,23 +321,18 @@ public abstract class FileSystemMgtBean implements SessionBean {
     	int oldAvail = fs.getAvailabilitySafe();
     	fs.setAvailability(availability);
     	boolean changed = availability != oldAvail; 
-    	if ( changed ) {
-    	    updateInstanceAvailability(fs);
-    	}
     	return changed;
     }
     
     /**
-     * @param fs
-     * @throws FinderException
+     * @ejb.interface-method
      */
-    private void updateInstanceAvailability(FileSystemLocal fs) throws FinderException {
-        int offset = 0;
-        Collection files = fileHome.findByFileSystem(fs.getDirectoryPath(), offset, 1000);
+    public int updateInstanceAvailability(String dirPath, int offset, int limit) throws FinderException {
+        Collection files = fileHome.findByFileSystem(dirPath, offset, limit);
         HashSet seriess;
         InstanceLocal instance;
         Iterator iter;
-        while ( files.size() > 0 ) {
+        if ( files.size() > 0 ) {
             seriess = new HashSet();
             for ( iter = files.iterator() ; iter.hasNext() ; ) {
                 instance = ((FileLocal) iter.next()).getInstance();
@@ -346,8 +341,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
             }
             updateSeriesAvailability(seriess);
             offset += 1000;
-            files = fileHome.findByFileSystem(fs.getDirectoryPath(), offset, 1000);
         }
+        return files.size();
     }
 
     /**
