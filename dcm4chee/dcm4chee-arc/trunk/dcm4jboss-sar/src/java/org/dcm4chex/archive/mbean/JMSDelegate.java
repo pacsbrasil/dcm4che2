@@ -115,7 +115,7 @@ public class JMSDelegate extends ServiceMBeanSupport {
         } catch (MBeanException e) {
             throw e.getTargetException();
         } catch (Exception e) {
-            log.fatal("Failed to invoke operation queue on " + jmsServiceName);
+            log.fatal("Failed to invoke operation queue on " + jmsServiceName, e);
         }
     }
 }
