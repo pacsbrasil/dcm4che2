@@ -39,7 +39,12 @@
 package org.dcm4che2.util;
 
 
+
 public class TagUtils {
+
+        public static boolean hasVR(int tag) {
+            return !(tag == 0xFFFEE000 || tag == 0xFFFEE00D || tag == 0xFFFEE0DD);
+        }
 
 	public static boolean isCommandElement(int tag) {
 		return (tag & 0xffff0000) == 0;

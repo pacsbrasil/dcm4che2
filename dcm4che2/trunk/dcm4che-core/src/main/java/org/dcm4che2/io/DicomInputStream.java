@@ -304,16 +304,15 @@ public class DicomInputStream extends FilterInputStream implements
             }
             expectFmiEnd = false;
         }
-        if (tag == Tag.Item || tag == Tag.ItemDelimitationItem
-                || tag == Tag.SequenceDelimitationItem) {
-            vr = null;
-        } else if (!ts.explicitVR()) {
-            vr = attrs.vrOf(tag);
-        } else {
+        vr = null;
+        if (TagUtils.hasVR(tag) && ts.explicitVR()) {
             try {
                 vr = VR.valueOf(((header[4] & 0xff) << 8) | (header[5] & 0xff));
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {                
                 vr = attrs.vrOf(tag);
+                log.warn("Catch " + e + " for attribute " 
+                        + TagUtils.toString(tag) + " at pos: " + tagpos
+                        + " - assume " + vr);
             }
             if (vr.explicitVRHeaderLength() == 8) {
                 vallen = ts.bigEndian() ? ByteUtils.bytesBE2ushort(header, 6)
@@ -371,14 +370,23 @@ public class DicomInputStream extends FilterInputStream implements
                 vr = null;
                 vallen = 0;
             }
+            TransferSyntax prevTs = ts;
+            if (TagUtils.hasVR(tag) && (vr == null || vr == VR.UN)) {
+                // switch to ImplicitVRLittleEndian, because Datasets in
+                // items of sequences encoded with VR=UN are itself encoded
+                // in DICOM default Transfer Syntax
+                ts = TransferSyntax.ImplicitVRLittleEndian;
+                vr = attrs.vrOf(tag);
+            }
             quit = !handler.readValue(this);
+            ts = prevTs;
             if (expectFmiEnd && pos == fmiEndPos) {
                 String tsuid = attrs.getString(Tag.TransferSyntaxUID);
                 if (tsuid != null)
                     switchTransferSyntax(TransferSyntax.valueOf(tsuid));
                 else
-                    log
-                            .warn("Missing (0002,0010) Transfer Synatx in File Meta Information");
+                    log.warn("Missing (0002,0010) Transfer Syntax in " +
+                                "File Meta Information");
                 this.expectFmiEnd = false;
             }
         }
@@ -398,55 +406,21 @@ public class DicomInputStream extends FilterInputStream implements
             throw new IllegalArgumentException("dis != this");
         switch (tag) {
         case Tag.Item:
-            DicomElement sq = (DicomElement) sqStack.get(sqStack.size() - 1);
-            if (vallen == -1) {
-                if (sq.vr() == VR.UN) {
-                    DicomElement tmp = attrs.putSequence(sq.tag());
-                    for (int i = 0, n = sq.countItems(); i < n; ++i) {
-                        byte[] b = sq.getFragment(i);
-                        InputStream is = new ByteArrayInputStream(b);
-                        DicomInputStream dis1 = new DicomInputStream(is,
-                                TransferSyntax.ImplicitVRLittleEndian);
-                        DicomObject item = new BasicDicomObject();
-                        dis1.readDicomObject(item, b.length);
-                        tmp.addDicomObject(item);
-                    }
-                    sqStack.set(sqStack.size() - 1, sq = tmp);
-                }
-                if (sq.vr() != VR.SQ) {
-                    throw new DicomCodingException(TagUtils.toString(tag) + " "
-                            + sq.vr() + " contains item with unknown length.");
-                }
-            }
-            if (sq.vr() == VR.SQ) {
-                BasicDicomObject item = new BasicDicomObject();
-                item.setParent(attrs);
-                item.setItemOffset(tagpos);
-                readDicomObject(item, vallen);
-                sq.addDicomObject(item);
-            } else {
-                sq.addFragment(readBytes(vallen));
-            }
+            readItemValue();
             break;
         case Tag.ItemDelimitationItem:
             if (vallen > 0) {
-                log
-                        .warn("Item Delimitation Item (FFFE,E00D) with non-zero Item Length:"
-                                + vallen
-                                + " at pos: "
-                                + tagpos
-                                + " - try to skip length");
+                log.warn("Item Delimitation Item (FFFE,E00D) with non-zero " +
+                        "Item Length:" + vallen + " at pos: " + tagpos + 
+                        " - try to skip length");
                 skip(vallen);
             }
             break;
         case Tag.SequenceDelimitationItem:
             if (vallen > 0) {
-                log
-                        .warn("Sequence Delimitation Item (FFFE,E0DD) with non-zero Item Length:"
-                                + vallen
-                                + " at pos: "
-                                + tagpos
-                                + " - try to skip length");
+                log.warn("Sequence Delimitation Item (FFFE,E0DD) with " +
+                        "non-zero Item Length:" + vallen + " at pos: " +
+                        tagpos + " - try to skip length");
                 skip(vallen);
             }
             break;
@@ -472,6 +446,38 @@ public class DicomInputStream extends FilterInputStream implements
             }
         }
         return true;
+    }
+
+    private void readItemValue() throws IOException, DicomCodingException {
+        DicomElement sq = (DicomElement) sqStack.get(sqStack.size() - 1);
+        if (vallen == -1) {
+            if (sq.vr() == VR.UN) {
+                DicomElement tmp = attrs.putSequence(sq.tag());
+                for (int i = 0, n = sq.countItems(); i < n; ++i) {
+                    byte[] b = sq.getFragment(i);
+                    InputStream is = new ByteArrayInputStream(b);
+                    DicomInputStream dis1 = new DicomInputStream(is,
+                            TransferSyntax.ImplicitVRLittleEndian);
+                    DicomObject item = new BasicDicomObject();
+                    dis1.readDicomObject(item, b.length);
+                    tmp.addDicomObject(item);
+                }
+                sqStack.set(sqStack.size() - 1, sq = tmp);
+            }
+            if (sq.vr() != VR.SQ) {
+                throw new DicomCodingException(TagUtils.toString(tag) + " "
+                        + sq.vr() + " contains item with unknown length.");
+            }
+        }
+        if (sq.vr() == VR.SQ) {
+            BasicDicomObject item = new BasicDicomObject();
+            item.setParent(attrs);
+            item.setItemOffset(tagpos);
+            readDicomObject(item, vallen);
+            sq.addDicomObject(item);
+        } else {
+            sq.addFragment(readBytes(vallen));
+        }
     }
 
     public byte[] readBytes(int vallen) throws IOException {
