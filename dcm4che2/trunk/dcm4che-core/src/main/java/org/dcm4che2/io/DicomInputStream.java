@@ -50,6 +50,8 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.zip.InflaterInputStream;
 
+import javax.imageio.stream.ImageInputStream;
+
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -111,6 +113,17 @@ public class DicomInputStream extends FilterInputStream implements
 
     public DicomInputStream(File f) throws IOException {
         this(new BufferedInputStream(new FileInputStream(f)));
+    }
+
+    public DicomInputStream(ImageInputStream iis, TransferSyntax ts)
+    throws IOException {
+        this(new ImageInputStreamAdapter(iis), ts);
+        pos = iis.getStreamPosition();
+    }
+
+    public DicomInputStream(ImageInputStream iis) throws IOException {
+        this(new ImageInputStreamAdapter(iis));
+        pos = iis.getStreamPosition();
     }
 
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
@@ -307,10 +320,6 @@ public class DicomInputStream extends FilterInputStream implements
                         : ByteUtils.bytesLE2ushort(header, 6);
                 return tag;
             }
-            // if (vr == VR.UN)
-            // {
-            // vr = attrs.vrOf(tag);
-            // }
             readFully(header, 4, 4);
         }
         vallen = ts.bigEndian() ? ByteUtils.bytesBE2int(header, 4) : ByteUtils
