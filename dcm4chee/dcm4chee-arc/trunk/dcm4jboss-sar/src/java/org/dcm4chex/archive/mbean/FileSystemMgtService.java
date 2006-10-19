@@ -1288,6 +1288,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements Message
     public void linkFileSystems(String prev, String next)
             throws RemoteException, FinderException {
         newFileSystemMgt().linkFileSystems(prev, next);
+        if ( storageFileSystem != null && storageFileSystem.getDirectoryPath().equals(prev) ) {
+            storageFileSystem.setNext(next);
+        }
     }
 
     public String addOnlineFileSystem(String dirPath, String userInfo)
