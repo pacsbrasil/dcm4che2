@@ -69,7 +69,8 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	
 	private static final long MIN_FREE = 1 * FileUtils.MEGA;
 	private static final long MIN_PREF_FREE = 2 * FileUtils.MEGA;
-
+	private static final String schedulerName = "WadoCheckFreeDiskSpace";
+		
     private final NotificationListener freeDiskSpaceListener = 
         new NotificationListener(){
             public void handleNotification(Notification notif, Object handback) {
@@ -176,9 +177,9 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
     public void setFreeDiskSpaceInterval(String interval) throws Exception {
         freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+            scheduler.stopScheduler(schedulerName, freeDiskSpaceListenerID,
             		freeDiskSpaceListener);
-            freeDiskSpaceListenerID = scheduler.startScheduler("CheckFreeDiskSpace",
+            freeDiskSpaceListenerID = scheduler.startScheduler(schedulerName,
             		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
@@ -211,7 +212,7 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	 * This queue is used to receive media creation request from scheduler or web interface.
 	 */
     protected void startService() throws Exception {
-        freeDiskSpaceListenerID = scheduler.startScheduler("CheckFreeDiskSpace", 
+        freeDiskSpaceListenerID = scheduler.startScheduler(schedulerName, 
         		freeDiskSpaceInterval, freeDiskSpaceListener);
     }
 
@@ -220,7 +221,7 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 	 * 
 	 */
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        scheduler.stopScheduler(schedulerName, freeDiskSpaceListenerID,
         		freeDiskSpaceListener);
         super.stopService();
     }
