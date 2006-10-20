@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mbean PUBLIC
    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
@@ -57,6 +57,17 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="wado_ext_cache" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTimerID"
+      setMethod="setTimerID">
+      <description>The timer ID for scheduler.
+      </description>
+      <name>TimerID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckFreeDiskSpace" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
