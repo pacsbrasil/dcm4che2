@@ -54,6 +54,7 @@ import java.awt.image.WritableRaster;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.Hashtable;
 
 import javax.imageio.IIOImage;
@@ -74,7 +75,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
-import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
@@ -108,7 +109,6 @@ public class Transcoder {
 
     protected static UIDGenerator uidGen = UIDGenerator.getInstance();
 
-    private FileFormat fileFormat = FileFormat.DICOM_FILE;
     private float compressionQuality = 0.75f;
     private double encodingRate = 1.;
     private ImageInputStream iis;
@@ -342,7 +342,7 @@ public class Transcoder {
         frameIndex = 0;
         dsIn.clear();
         parser.setDcmHandler(dsIn.getDcmHandler());
-        parser.parseDcmFile(fileFormat, Tags.PixelData);
+        parser.parseDcmFile(null, Tags.PixelData);
         if (parser.getReadTag() != Tags.PixelData) {
             if (ignoreMissingPixelData) {
                 setDirectCopy(true);
@@ -350,17 +350,21 @@ public class Transcoder {
                 throw new IOException("no pixel data in source object");
             }
         }
+        decodeParam = parser.getDcmDecodeParam();
 
         dsOut.clear();
         dsOut.putAll(dsIn); // copy object, as some tags are modified by coerce
-        dsOut.setFileMetaInfo(dsIn.getFileMetaInfo());
 
         onHeaderParsed(dsOut);
-        setDirectCopy(doDirectCopy()
-                && dsIn.getFileMetaInfo().getTransferSyntaxUID().equals(
-                        encodeTS));
-
-        decodeParam = parser.getDcmDecodeParam();
+        if (doDirectCopy()) {
+            FileMetaInfo fmi = dsIn.getFileMetaInfo();
+            if (fmi != null) {
+                setDirectCopy(encodeTS.equals(fmi.getTransferSyntaxUID()));
+            } else {
+                setDirectCopy(decodeParam.byteOrder == ByteOrder.LITTLE_ENDIAN 
+                        && encodeTS.equals(UIDs.ExplicitVRLittleEndian));                
+            }
+        }
         pixelDataParam = new PixelDataParam(dsIn, isTypeShortSupported());
 
     }
