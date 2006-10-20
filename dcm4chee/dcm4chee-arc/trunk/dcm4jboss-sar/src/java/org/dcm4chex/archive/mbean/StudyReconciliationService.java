@@ -89,8 +89,9 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class StudyReconciliationService extends ServiceMBeanSupport {
 
-    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
-
+    private static final String TIMER_ID = "CheckStudyReconciliation";
+	private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
+    
     private long taskInterval = 0L;
 
     private int disabledStartHour;
@@ -207,9 +208,9 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler("StudyReconciliation", listenerID,
+            scheduler.stopScheduler(TIMER_ID, listenerID,
             		updateCheckListener);
-            listenerID = scheduler.startScheduler("StudyReconciliation", taskInterval,
+            listenerID = scheduler.startScheduler(TIMER_ID, taskInterval,
             		updateCheckListener);
         }
     }
@@ -611,12 +612,12 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler("StudyReconciliation", taskInterval,
+        listenerID = scheduler.startScheduler(TIMER_ID, taskInterval,
         		updateCheckListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("StudyReconciliation", listenerID,
+        scheduler.stopScheduler(TIMER_ID, listenerID,
         		updateCheckListener);
         super.stopService();
     }
