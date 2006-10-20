@@ -47,7 +47,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private static final String DIR_PARAM = "%d";
 
-    private static final String TIMER_ID = "SyncFileStatus";
+    private static final String TIMER_ID = "CheckSyncFileStatus";
 
     private long minFileAge = 0L;
 
