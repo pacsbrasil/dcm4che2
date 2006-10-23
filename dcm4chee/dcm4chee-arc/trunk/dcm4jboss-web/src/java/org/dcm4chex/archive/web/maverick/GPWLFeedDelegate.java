@@ -77,10 +77,8 @@ public class GPWLFeedDelegate {
     	Object o = null;
     	List l = new ArrayList();
         try {
-            o = server.invoke(gpwlFeedServiceName,
-                    "getHumanPerformer",
-                    new Object[] {},
-                    new String[] {});
+            o = server.getAttribute(gpwlFeedServiceName,
+                    "HumanPerformerList");
         } catch (Exception e) {
             log.warn("Failed to get list of human performer!", e);
         }
