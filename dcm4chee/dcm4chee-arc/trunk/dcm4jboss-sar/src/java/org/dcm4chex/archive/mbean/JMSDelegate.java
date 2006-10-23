@@ -41,10 +41,8 @@ package org.dcm4chex.archive.mbean;
 import java.io.Serializable;
 
 import javax.jms.MessageListener;
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -86,7 +84,7 @@ public class JMSDelegate extends ServiceMBeanSupport {
             throw e.getTargetException();
         } catch (Exception e) {
             log.fatal("Failed to invoke operation startListening on "
-                    + jmsServiceName);
+                    + jmsServiceName, e);
         }
     }
 
@@ -99,7 +97,7 @@ public class JMSDelegate extends ServiceMBeanSupport {
             throw e.getTargetException();
         } catch (Exception e) {
             log.fatal("Failed to invoke operation stopListening on "
-                    + jmsServiceName);
+                    + jmsServiceName, e);
         }
     }
 
