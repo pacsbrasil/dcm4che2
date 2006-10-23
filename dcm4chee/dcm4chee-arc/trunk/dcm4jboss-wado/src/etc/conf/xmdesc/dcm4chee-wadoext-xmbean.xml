@@ -67,7 +67,7 @@
       <name>TimerID</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="CheckFreeDiskSpace" />
+         <value value="CheckFreeDiskSpaceWadoExt" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
