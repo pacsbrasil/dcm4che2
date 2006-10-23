@@ -152,6 +152,7 @@ public class GPWLEntry {
 	}
 	
 	public String getBirthdate() {
+	    if ( !ds.containsValue(Tags.PatientBirthDate)) return "";
 		Date d = ds.getDate(Tags.PatientBirthDate);
 		return d == null ? "" : dformatter.format(d);
 	}
