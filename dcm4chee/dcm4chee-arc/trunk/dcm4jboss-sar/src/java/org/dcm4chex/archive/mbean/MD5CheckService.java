@@ -52,7 +52,6 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Logger;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -84,8 +83,8 @@ public class MD5CheckService extends ServiceMBeanSupport {
 
     private Integer listenerID;
 
-    private static final Logger log = Logger.getLogger(MD5CheckService.class);
-
+    private String timerIDCheckMD5;
+    
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             Calendar cal = Calendar.getInstance();
@@ -142,8 +141,8 @@ public class MD5CheckService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler("CheckMD5", listenerID, timerListener);
-            listenerID = scheduler.startScheduler("CheckMD5", taskInterval,
+            scheduler.stopScheduler(timerIDCheckMD5, listenerID, timerListener);
+            listenerID = scheduler.startScheduler(timerIDCheckMD5, taskInterval,
             		timerListener);
         }
     }
@@ -245,11 +244,11 @@ public class MD5CheckService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler("CheckMD5", taskInterval, timerListener);
+        listenerID = scheduler.startScheduler(timerIDCheckMD5, taskInterval, timerListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckMD5", listenerID, timerListener);
+        scheduler.stopScheduler(timerIDCheckMD5, listenerID, timerListener);
         super.stopService();
     }
     
@@ -264,5 +263,13 @@ public class MD5CheckService extends ServiceMBeanSupport {
                     e);
         }
     }
+
+	public String getTimerIDCheckMD5() {
+		return timerIDCheckMD5;
+	}
+
+	public void setTimerIDCheckMD5(String timerIDCheckMD5) {
+		this.timerIDCheckMD5 = timerIDCheckMD5;
+	}
 
 }

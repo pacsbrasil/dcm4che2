@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mbean PUBLIC
    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
@@ -83,6 +83,18 @@
          <value value="dcm4chee.archive:service=Scheduler"/>
       </descriptors>
    </attribute>  
+   
+   <attribute access="read-write"
+      getMethod="getTimerIDCheckMD5"
+      setMethod="setTimerIDCheckMD5">
+      <description>The timer ID for scheduler of checking MD5.
+      </description>
+      <name>TimerIDCheckMD5</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckMD5" />
+      </descriptors>
+   </attribute>   
 
    &defaultAttributes;
 
