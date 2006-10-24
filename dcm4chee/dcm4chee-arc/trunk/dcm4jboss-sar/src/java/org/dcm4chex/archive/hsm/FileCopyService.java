@@ -51,10 +51,13 @@ import java.util.List;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarOutputStream;
+import org.dcm4che.data.Dataset;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -127,10 +130,16 @@ public class FileCopyService extends AbstractFileCopyService {
         this.tarOutgoingDir = new File(tarOutgoingDir);
         this.absTarOutgoingDir = FileUtils.resolve(this.tarOutgoingDir);
     }
+    
+    protected BaseJmsOrder createOrder(Dataset ian) {
+        return new FileCopyOrder(ian, ForwardingRules.toAET(destination), getRetrieveAET());
+    }
 
-    protected void process(FileCopyOrder order) throws Exception {
-        String destPath = order.getDestinationFileSystemPath();
-        List fileInfos = order.getFileInfos();
+    protected void process(BaseJmsOrder order) throws Exception {
+        String destPath = ((FileCopyOrder)order).getDestinationFileSystemPath();
+        List fileInfos = ((FileCopyOrder)order).getFileInfos();
+        ((FileCopyOrder)order).setDstFilePath(FileUtils.toFile(destPath).getCanonicalPath());
+        
         if (destPath.startsWith("tar:")) {
             copyTar(fileInfos, destPath);
         } else {

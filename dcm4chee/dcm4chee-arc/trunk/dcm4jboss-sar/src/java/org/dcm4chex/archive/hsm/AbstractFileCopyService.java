@@ -39,9 +39,7 @@
 
 package org.dcm4chex.archive.hsm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.jms.Message;
@@ -53,16 +51,13 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.Condition;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -246,44 +241,14 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
                 return;
             }
         }
-        List fileInfos;
+        
+        schedule(createOrder(seriesStored.getIAN()), 
+        		ForwardingRules.toScheduledTime(destination));
+    }
+        
+    protected void schedule(BaseJmsOrder order, long scheduledTime) {
         try {
-            fileInfos = toFileInfos(seriesStored.getIAN());
-        } catch (Exception e) {
-            log.error("Failed to query DB for fileInfos:", e);
-            // TODO Error handling
-            return;
-        }
-        scheduleCopy(fileInfos, ForwardingRules.toAET(destination),
-                ForwardingRules.toScheduledTime(destination));
-    }
-
-    private List toFileInfos(Dataset ian) throws Exception {
-        Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
-        DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
-        FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
-        List list = new ArrayList(aa.length);
-        String retrieveAET = getRetrieveAET();
-        for (int i = 0; i < aa.length; i++) {
-            FileInfo[] a = aa[i];
-            for (int j = 0; j < a.length; j++) {
-                if (a[j].fileRetrieveAET.equals(retrieveAET)) {
-                    list.add(a[j]);
-                    break;
-                }
-            }
-        }
-        return list;
-    }
-
-    public void scheduleCopy(List fileInfos, String destFsPath,
-            long scheduledTime) {
-        schedule(new FileCopyOrder(fileInfos, destFsPath), scheduledTime);
-    }
-
-    private void schedule(FileCopyOrder order, long scheduledTime) {
-        try {
-            log.info("Scheduling " + order);
+            log.info("Scheduling " + order.toIdString());
             jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                     scheduledTime);
         } catch (Exception e) {
@@ -294,20 +259,23 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     public void onMessage(Message message) {
         ObjectMessage om = (ObjectMessage) message;
         try {
-            FileCopyOrder order = (FileCopyOrder) om.getObject();
-            log.info("Start processing " + order);
+            BaseJmsOrder order = (BaseJmsOrder) om.getObject();
+            log.info("Start processing " + order.toIdString());
             try {
                 process(order);
-                log.info("Finished processing " + order);
+                log.info("Finished processing " + order.toIdString());
             } catch (Exception e) {
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 final long delay = retryIntervalls.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
+                    giveUpMessage(order);
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);
+                    // Record this exception
+					order.setThrowable(e);
                     schedule(order, System.currentTimeMillis() + delay);
                 }
             }
@@ -317,9 +285,15 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         }
     }
 
-    protected abstract void process(FileCopyOrder order) throws Exception;
+    protected void giveUpMessage(BaseJmsOrder order) throws Exception {
+    	// Do nothing by default
+    }
 
-    static StorageHome getStorageHome() throws HomeFactoryException {
+    protected abstract BaseJmsOrder createOrder(Dataset ian);
+
+    protected abstract void process(BaseJmsOrder order) throws Exception;
+
+    protected static StorageHome getStorageHome() throws HomeFactoryException {
         return (StorageHome) EJBHomeFactory.getFactory().lookup(
                 StorageHome.class, StorageHome.JNDI_NAME);
     }
