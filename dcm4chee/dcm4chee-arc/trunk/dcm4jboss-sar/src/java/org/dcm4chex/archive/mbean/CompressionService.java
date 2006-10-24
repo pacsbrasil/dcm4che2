@@ -105,6 +105,8 @@ public class CompressionService extends ServiceMBeanSupport {
     
     private int bufferSize = 8192;
     
+    private String timerIDCheckFilesToCompress;
+    
     private static final String[] CODEC_NAMES = new String[] { "JPLL", "JLSL",
             "J2KR" };
 
@@ -185,8 +187,8 @@ public class CompressionService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler("CheckFilesToCompress", listenerID, delayedCompressionListener);
-            listenerID = scheduler.startScheduler("CheckFilesToCompress", 
+            scheduler.stopScheduler(timerIDCheckFilesToCompress, listenerID, delayedCompressionListener);
+            listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress, 
             		taskInterval, delayedCompressionListener);
         }
     }
@@ -418,12 +420,12 @@ public class CompressionService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler("CheckFilesToCompress", taskInterval,
+        listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress, taskInterval,
         		delayedCompressionListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckFilesToCompress", listenerID,
+        scheduler.stopScheduler(timerIDCheckFilesToCompress, listenerID,
         		delayedCompressionListener);
         super.stopService();
     }
@@ -489,4 +491,12 @@ public class CompressionService extends ServiceMBeanSupport {
                     + RetryIntervalls.formatInterval(delay);
         }
     }
+
+	public String getTimerIDCheckFilesToCompress() {
+		return timerIDCheckFilesToCompress;
+	}
+
+	public void setTimerIDCheckFilesToCompress(String timerIDCheckFilesToCompress) {
+		this.timerIDCheckFilesToCompress = timerIDCheckFilesToCompress;
+	}
 }
