@@ -55,7 +55,6 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -80,7 +79,6 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class CheckStudyPatientService extends ServiceMBeanSupport {
 
-    private static final String SCHEDULER_NAME = "CheckStudyPatient";
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
@@ -96,13 +94,13 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
     
     private Integer listenerID;
 
-    private static final Logger log = Logger.getLogger(CheckStudyPatientService.class);
-
     private static final DcmObjectFactory oFact =
         DcmObjectFactory.getInstance();
     private static final DcmParserFactory pFact =
         DcmParserFactory.getInstance();
     
+    private String timerIDCheckStudyPatient;
+
     private final NotificationListener consistentCheckListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             try {
@@ -129,9 +127,9 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
         long oldInterval = taskInterval;
         taskInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler(SCHEDULER_NAME, listenerID,
+            scheduler.stopScheduler(timerIDCheckStudyPatient, listenerID,
             		consistentCheckListener);
-            listenerID = scheduler.startScheduler(SCHEDULER_NAME, taskInterval,
+            listenerID = scheduler.startScheduler(timerIDCheckStudyPatient, taskInterval,
             		consistentCheckListener);
         }
     }
@@ -318,12 +316,12 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
 	}
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler(SCHEDULER_NAME, taskInterval,
+        listenerID = scheduler.startScheduler(timerIDCheckStudyPatient, taskInterval,
         		consistentCheckListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(SCHEDULER_NAME, listenerID,
+        scheduler.stopScheduler(timerIDCheckStudyPatient, listenerID,
         		consistentCheckListener);
         super.stopService();
     }
@@ -339,5 +337,13 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
                     e);
         }
     }
+
+	public String getTimerIDCheckStudyPatient() {
+		return timerIDCheckStudyPatient;
+	}
+
+	public void setTimerIDCheckStudyPatient(String timerIDCheckStudyPatient) {
+		this.timerIDCheckStudyPatient = timerIDCheckStudyPatient;
+	}
 
 }
