@@ -47,7 +47,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private static final String DIR_PARAM = "%d";
 
-    private static final String TIMER_ID = "CheckSyncFileStatus";
+    private String timerIDCheckSyncFileStatus;
 
     private long minFileAge = 0L;
 
@@ -226,8 +226,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler(TIMER_ID, listenerID, timerListener);
-            listenerID = scheduler.startScheduler(TIMER_ID, taskInterval,
+            scheduler.stopScheduler(timerIDCheckSyncFileStatus, listenerID, timerListener);
+            listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus, taskInterval,
                     timerListener);
         }
     }
@@ -257,12 +257,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler(TIMER_ID, taskInterval, 
+        listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus, taskInterval, 
                 timerListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(TIMER_ID, listenerID, timerListener);
+        scheduler.stopScheduler(timerIDCheckSyncFileStatus, listenerID, timerListener);
         super.stopService();
     }
 
@@ -352,4 +352,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                     e);
         }
     }
+
+	public String getTimerIDCheckSyncFileStatus() {
+		return timerIDCheckSyncFileStatus;
+	}
+
+	public void setTimerIDCheckSyncFileStatus(String timerIDCheckSyncFileStatus) {
+		this.timerIDCheckSyncFileStatus = timerIDCheckSyncFileStatus;
+	}
 }
