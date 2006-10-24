@@ -94,6 +94,8 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     private long[] delays;
     
     private ObjectName mppsScuServiceName;
+    
+    private String timerIDCheckSeriesWithoutMPPS;
 
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
@@ -156,8 +158,8 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         this.pollInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
-            schedulerID = scheduler.startScheduler("CheckSeriesWithoutMPPS",
+            scheduler.stopScheduler(timerIDCheckSeriesWithoutMPPS, schedulerID, this);
+            schedulerID = scheduler.startScheduler(timerIDCheckSeriesWithoutMPPS,
             		pollInterval, this);
         }
     }
@@ -241,12 +243,21 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        schedulerID = scheduler.startScheduler("CheckSeriesWithoutMPPS",
+        schedulerID = scheduler.startScheduler(timerIDCheckSeriesWithoutMPPS,
         		pollInterval, this);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+        scheduler.stopScheduler(timerIDCheckSeriesWithoutMPPS, schedulerID, this);
         super.stopService();
     }
+
+	public String getTimerIDCheckSeriesWithoutMPPS() {
+		return timerIDCheckSeriesWithoutMPPS;
+	}
+
+	public void setTimerIDCheckSeriesWithoutMPPS(
+			String timerIDCheckSeriesWithoutMPPS) {
+		this.timerIDCheckSeriesWithoutMPPS = timerIDCheckSeriesWithoutMPPS;
+	}
 }
