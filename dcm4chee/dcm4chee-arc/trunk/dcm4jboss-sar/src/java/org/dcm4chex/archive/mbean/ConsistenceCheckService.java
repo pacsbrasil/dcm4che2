@@ -75,6 +75,8 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
     private int limitNumberOfStudiesPerTask;
 
     private Integer listenerID;
+    
+    private String timerIDCheckStudyConsistency;
 
     private static final Logger log = Logger.getLogger(ConsistenceCheckService.class);
 
@@ -126,9 +128,9 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler("CheckStudyConsistency", listenerID,
+            scheduler.stopScheduler(timerIDCheckStudyConsistency, listenerID,
             		consistentCheckListener);
-            listenerID = scheduler.startScheduler("CheckStudyConsistency", taskInterval,
+            listenerID = scheduler.startScheduler(timerIDCheckStudyConsistency, taskInterval,
             		consistentCheckListener);
         }
     }
@@ -235,12 +237,12 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler("CheckStudyConsistency", taskInterval,
+        listenerID = scheduler.startScheduler(timerIDCheckStudyConsistency, taskInterval,
         		consistentCheckListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckStudyConsistency", listenerID,
+        scheduler.stopScheduler(timerIDCheckStudyConsistency, listenerID,
         		consistentCheckListener);
         super.stopService();
     }
@@ -256,5 +258,13 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
                     e);
         }
     }
+
+	public String getTimerIDCheckStudyConsistency() {
+		return timerIDCheckStudyConsistency;
+	}
+
+	public void setTimerIDCheckStudyConsistency(String timerIDCheckStudyConsistency) {
+		this.timerIDCheckStudyConsistency = timerIDCheckStudyConsistency;
+	}
 
 }
