@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
@@ -167,6 +167,18 @@
          <value value="dcm4chee.archive:service=Scheduler"/>
       </descriptors>
    </attribute>  
+   <attribute access="read-write"
+      getMethod="getTimerIDCheckStudyReconciliation"
+      setMethod="setTimerIDCheckStudyReconciliation">
+      <description>The timer ID for scheduler of checking study reconciliation.
+      </description>
+      <name>TimerIDCheckStudyReconciliation</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckStudyReconciliation" />
+      </descriptors>
+   </attribute>
+   
    &defaultAttributes;
 
    <!-- Operations -->

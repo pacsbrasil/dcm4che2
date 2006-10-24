@@ -89,7 +89,6 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class StudyReconciliationService extends ServiceMBeanSupport {
 
-    private static final String TIMER_ID = "CheckStudyReconciliation";
 	private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
     
     private long taskInterval = 0L;
@@ -124,6 +123,8 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     private String[] cipherSuites = null;
     
+    private String timerIDCheckStudyReconciliation = "CheckStudyReconciliation";
+
     private static final int[] UPDATE_ATTRIBUTES = new int[] {
     	Tags.OtherPatientIDs,
 		Tags.OtherPatientNames,
@@ -208,9 +209,9 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler(TIMER_ID, listenerID,
+            scheduler.stopScheduler(timerIDCheckStudyReconciliation, listenerID,
             		updateCheckListener);
-            listenerID = scheduler.startScheduler(TIMER_ID, taskInterval,
+            listenerID = scheduler.startScheduler(timerIDCheckStudyReconciliation, taskInterval,
             		updateCheckListener);
         }
     }
@@ -612,12 +613,12 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler(TIMER_ID, taskInterval,
+        listenerID = scheduler.startScheduler(timerIDCheckStudyReconciliation, taskInterval,
         		updateCheckListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(TIMER_ID, listenerID,
+        scheduler.stopScheduler(timerIDCheckStudyReconciliation, listenerID,
         		updateCheckListener);
         super.stopService();
     }
@@ -633,6 +634,15 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
                     "Failed to access Study Reconciliation SessionBean:", e);
         }
     }
+
+	public String getTimerIDCheckStudyReconciliation() {
+		return timerIDCheckStudyReconciliation;
+	}
+
+	public void setTimerIDCheckStudyReconciliation(
+			String timerIDCheckStudyReconciliation) {
+		this.timerIDCheckStudyReconciliation = timerIDCheckStudyReconciliation;
+	}
 
 
 
