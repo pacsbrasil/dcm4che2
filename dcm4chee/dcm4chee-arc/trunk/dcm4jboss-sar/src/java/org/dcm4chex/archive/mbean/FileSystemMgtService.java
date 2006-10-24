@@ -187,6 +187,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private boolean deleteFilesWhenUnavailable;
 
     private String[] onSwitchStorageFSCmd;
+    
+    private String timerIDCheckFilesToPurge;    
+    
+    private String timerIDCheckFreeDiskSpace;
 
     private final NotificationListener purgeFilesListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -472,10 +476,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.freeDiskSpaceInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler("CheckFreeDiskSpace",
+            scheduler.stopScheduler(timerIDCheckFreeDiskSpace,
                     freeDiskSpaceListenerID, freeDiskSpaceListener);
             freeDiskSpaceListenerID = scheduler.startScheduler(
-                    "CheckFreeDiskSpace", freeDiskSpaceInterval,
+                    timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
                     freeDiskSpaceListener);
         }
     }
@@ -518,10 +522,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.purgeFilesInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+            scheduler.stopScheduler(timerIDCheckFilesToPurge, purgeFilesListenerID,
                     purgeFilesListener);
             purgeFilesListenerID = scheduler
-                    .startScheduler("CheckFilesToPurge", purgeFilesInterval,
+                    .startScheduler(timerIDCheckFilesToPurge, purgeFilesInterval,
                             purgeFilesListener);
         }
     }
@@ -619,9 +623,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     protected void startService() throws Exception {
         freeDiskSpaceListenerID = scheduler.startScheduler(
-                "CheckFreeDiskSpace", freeDiskSpaceInterval,
+                timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
                 freeDiskSpaceListener);
-        purgeFilesListenerID = scheduler.startScheduler("CheckFilesToPurge",
+        purgeFilesListenerID = scheduler.startScheduler(timerIDCheckFilesToPurge,
                 purgeFilesInterval, purgeFilesListener);
         jmsDelegate.startListening(purgeStudyQueueName, this, 1);
 
@@ -765,9 +769,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        scheduler.stopScheduler(timerIDCheckFreeDiskSpace, freeDiskSpaceListenerID,
                 freeDiskSpaceListener);
-        scheduler.stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+        scheduler.stopScheduler(timerIDCheckFilesToPurge, purgeFilesListenerID,
                 purgeFilesListener);
         jmsDelegate.stopListening(purgeStudyQueueName);
         super.stopService();
@@ -1519,4 +1523,19 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         }
     }
 
+    public String getTimerIDCheckFilesToPurge() {
+		return timerIDCheckFilesToPurge;
+	}
+
+	public void setTimerIDCheckFilesToPurge(String timerIDCheckFilesToPurge) {
+		this.timerIDCheckFilesToPurge = timerIDCheckFilesToPurge;
+	}
+
+	public String getTimerIDCheckFreeDiskSpace() {
+		return timerIDCheckFreeDiskSpace;
+	}
+
+	public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
+		this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
+	}
 }

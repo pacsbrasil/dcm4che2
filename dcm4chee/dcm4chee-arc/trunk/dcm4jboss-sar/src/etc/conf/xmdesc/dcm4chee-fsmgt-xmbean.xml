@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
@@ -429,6 +429,28 @@ accessed studies.</description>
          <value value="dcm4chee.archive:service=Scheduler"/>
       </descriptors>
    </attribute>  
+   <attribute access="read-write"
+      getMethod="getTimerIDCheckFilesToPurge"
+      setMethod="setTimerIDCheckFilesToPurge">
+      <description>The timer ID for scheduler of checking qualified files to purge.
+      </description>
+      <name>TimerIDCheckFilesToPurge</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckFilesToPurge" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTimerIDCheckFreeDiskSpace"
+      setMethod="setTimerIDCheckFreeDiskSpace">
+      <description>The timer ID for scheduler of checking free disk space.
+      </description>
+      <name>TimerIDCheckFreeDiskSpace</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckFreeDiskSpace" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
