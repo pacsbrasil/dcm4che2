@@ -166,6 +166,8 @@ public class StoreScpService extends AbstractScpService {
     private boolean md5sum = true;
 
     private StoreScp scp = new StoreScp(this);
+    
+    private String timerIDCheckPendingSeriesStored;
 
     public final String getCheckPendingSeriesStoredInterval() {
         return RetryIntervalls
@@ -179,9 +181,9 @@ public class StoreScpService extends AbstractScpService {
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED
                 && oldInterval != checkPendingSeriesStoredInterval) {
-            scheduler.stopScheduler("CheckPendingSeriesStored", listenerID,
+            scheduler.stopScheduler(timerIDCheckPendingSeriesStored, listenerID,
                     checkPendingSeriesStoredListener);
-            listenerID = scheduler.startScheduler("CheckPendingSeriesStored",
+            listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
                     checkPendingSeriesStoredInterval,
                     checkPendingSeriesStoredListener);
         }
@@ -500,13 +502,13 @@ public class StoreScpService extends AbstractScpService {
 
     protected void startService() throws Exception {
         super.startService();
-        listenerID = scheduler.startScheduler("CheckPendingSeriesStored",
+        listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
                 checkPendingSeriesStoredInterval,
                 checkPendingSeriesStoredListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler("CheckPendingSeriesStored", listenerID,
+        scheduler.stopScheduler(timerIDCheckPendingSeriesStored, listenerID,
                 checkPendingSeriesStoredListener);
         super.stopService();
     }
@@ -702,5 +704,14 @@ public class StoreScpService extends AbstractScpService {
                 new Object[] { ds },
                 new String[] { Dataset.class.getName() });
     }
+
+	public String getTimerIDCheckPendingSeriesStored() {
+		return timerIDCheckPendingSeriesStored;
+	}
+
+	public void setTimerIDCheckPendingSeriesStored(
+			String timerIDCheckPendingSeriesStored) {
+		this.timerIDCheckPendingSeriesStored = timerIDCheckPendingSeriesStored;
+	}
     
 }
