@@ -68,251 +68,258 @@ import org.xml.sax.ContentHandler;
 
 public class ORMService extends AbstractHL7Service {
 
-	private static final String[] CONTROL_CODES = { "NW", "XO", "CA", "DC", "OC" };
+    private static final String[] CONTROL_CODES = { "NW", "XO", "CA", "DC",
+            "OC" };
 
-	private static final List CONTROL_CODES_LIST = Arrays.asList(CONTROL_CODES);
+    private static final List CONTROL_CODES_LIST = Arrays.asList(CONTROL_CODES);
 
-	private static final int NW = 0;
+    private static final int NW = 0;
 
-	private static final int XO = 1;
+    private static final int XO = 1;
 
-	private static final int CA = 2;
+    private static final int CA = 2;
 
-	private static final int DC = 3;
-	
-	private static final int OC = 4;
+    private static final int DC = 3;
 
-	private ObjectName deviceServiceName;
+    private static final int OC = 4;
 
-	private String stylesheetURL = "resource:dcm4chee-hl7/orm2dcm.xsl";
+    private ObjectName deviceServiceName;
 
-	private String defaultStationAET = "UNKOWN";
+    private String stylesheetURL = "resource:dcm4chee-hl7/orm2dcm.xsl";
 
-	private String defaultStationName = "UNKOWN";
+    private String defaultStationAET = "UNKOWN";
 
-	private String defaultModality = "OT";
+    private String defaultStationName = "UNKOWN";
 
-	public String getStylesheetURL() {
-		return stylesheetURL;
-	}
+    private String defaultModality = "OT";
 
-	public void setStylesheetURL(String stylesheetURL) {
-		this.stylesheetURL = stylesheetURL;
-		reloadStylesheets();
-	}
+    public String getStylesheetURL() {
+        return stylesheetURL;
+    }
 
-	public final ObjectName getDeviceServiceName() {
-		return deviceServiceName;
-	}
-	
-	public final void setDeviceServiceName(ObjectName deviceServiceName) {
-		this.deviceServiceName = deviceServiceName;
-	}
-	
-	public final String getDefaultModality() {
-		return defaultModality;
-	}
-	
-	public final void setDefaultModality(String defaultModality) {
-		this.defaultModality = defaultModality;
-	}
-	
-	public final String getDefaultStationAET() {
-		return defaultStationAET;
-	}
-	
-	public final void setDefaultStationAET(String defaultStationAET) {
-		this.defaultStationAET = defaultStationAET;
-	}
-	
-	public final String getDefaultStationName() {
-		return defaultStationName;
-	}
-	
-	public final void setDefaultStationName(String defaultStationName) {
-		this.defaultStationName = defaultStationName;
-	}
-	
-	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
-			throws HL7Exception {
-		int msgType = checkMessage(msg);
-		try {
-			Dataset ds = dof.newDataset();
-			Transformer t = getTemplates(stylesheetURL).newTransformer();
-			t.transform(new DocumentSource(msg), new SAXResult(ds
-					.getSAXHandler2(null)));
-			final String pid = ds.getString(Tags.PatientID);
-			if (pid == null)
-				throw new HL7Exception("AR",
-						"Missing required PID-3: Patient ID (Internal ID)");
-			final String pname = ds.getString(Tags.PatientName);
-			if (pname == null)
-				throw new HL7Exception("AR",
-						"Missing required PID-5: Patient Name");
-			mergeProtocolCodes(ds);
-			if (msgType == NW || msgType == XO) {
-				ds = addScheduledStationInfo(ds);
-			}
-			MWLManager mwlManager = getMWLManagerHome().create();
-			try {
-				DcmElement spsSq = ds.remove(Tags.SPSSeq);
-				Dataset sps;
-				for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
-					sps = spsSq.getItem(i);
-					switch (msgType) {
-					case NW:
-						ds.putSQ(Tags.SPSSeq).addItem(sps);
-						adjustAttributes(ds);
-						addMissingAttributes(ds);
-						log("Schedule", ds);
-						logDataset("Insert MWL Item:", ds);
-						mwlManager.addWorklistItem(ds);
-						break;
-					case XO:
-						ds.putSQ(Tags.SPSSeq).addItem(sps);
-						adjustAttributes(ds);
-						log("Update", ds);
-						logDataset("Update MWL Item:", ds);
-						if (!mwlManager.updateWorklistItem(ds)) {
-							log("No Such ", ds);
-							addMissingAttributes(ds);
-							log("->Schedule New ", ds);
-							logDataset("Insert MWL Item:", ds);
-							mwlManager.addWorklistItem(ds);
-						}
-						break;
-					case CA:
-					case DC:
-					case OC:
-						log("Cancel", ds);
-						mwlManager.removeWorklistItem(sps.getString(Tags.SPSID));
-						break;
-					default:
-						throw new RuntimeException();
-					}
-				}
-			} finally {
-				mwlManager.remove();
-			}
-		} catch (HL7Exception e) {
-			throw e;
-		} catch (Exception e) {
-			throw new HL7Exception("AE", e.getMessage(), e);
-		}
-		return true;
-	}
+    public void setStylesheetURL(String stylesheetURL) {
+        this.stylesheetURL = stylesheetURL;
+        reloadStylesheets();
+    }
 
-	private void log(String op, Dataset ds) {
-		Dataset sps = ds.getItem(Tags.SPSSeq);
-        log.info(op + " Procedure Step[id:" + ( sps==null ? "<unknown>(SPSSeq missing)":sps.getString(Tags.SPSID) )
-        		+ "] of Study[uid:" + ds.getString(Tags.StudyInstanceUID)
-        		+ "] of Order[accNo:" + ds.getString(Tags.AccessionNumber)
-        		+ "] for Patient [name:" + ds.getString(Tags.PatientName)
-        		+ ",id:" + ds.getString(Tags.PatientID) + "]");
-	}
+    public final ObjectName getDeviceServiceName() {
+        return deviceServiceName;
+    }
 
-	private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
-		return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
-				MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
-	}
+    public final void setDeviceServiceName(ObjectName deviceServiceName) {
+        this.deviceServiceName = deviceServiceName;
+    }
 
-	private int checkMessage(Document msg) throws HL7Exception {
-		// TODO check message, throw HL7Exception.AR if check failed
-		String orc1 = msg.getRootElement().element("ORC").elementText("field");
-		int msgType = CONTROL_CODES_LIST.indexOf(orc1);
-		if (msgType == -1)
-			throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
-					+ orc1);
-		return msgType;
-	}
-	
-	private Dataset addScheduledStationInfo(Dataset spsItems) throws Exception {
+    public final String getDefaultModality() {
+        return defaultModality;
+    }
+
+    public final void setDefaultModality(String defaultModality) {
+        this.defaultModality = defaultModality;
+    }
+
+    public final String getDefaultStationAET() {
+        return defaultStationAET;
+    }
+
+    public final void setDefaultStationAET(String defaultStationAET) {
+        this.defaultStationAET = defaultStationAET;
+    }
+
+    public final String getDefaultStationName() {
+        return defaultStationName;
+    }
+
+    public final void setDefaultStationName(String defaultStationName) {
+        this.defaultStationName = defaultStationName;
+    }
+
+    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+            throws HL7Exception {
+        int msgType = checkMessage(msg);
+        try {
+            Dataset ds = dof.newDataset();
+            Transformer t = getTemplates(stylesheetURL).newTransformer();
+            t.transform(new DocumentSource(msg), new SAXResult(ds
+                    .getSAXHandler2(null)));
+            final String pid = ds.getString(Tags.PatientID);
+            if (pid == null)
+                throw new HL7Exception("AR",
+                        "Missing required PID-3: Patient ID (Internal ID)");
+            final String pname = ds.getString(Tags.PatientName);
+            if (pname == null)
+                throw new HL7Exception("AR",
+                        "Missing required PID-5: Patient Name");
+            mergeProtocolCodes(ds);
+            if (msgType == NW || msgType == XO) {
+                ds = addScheduledStationInfo(ds);
+            }
+            MWLManager mwlManager = getMWLManagerHome().create();
+            try {
+                DcmElement spsSq = ds.remove(Tags.SPSSeq);
+                Dataset sps;
+                for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
+                    sps = spsSq.getItem(i);
+                    switch (msgType) {
+                    case NW:
+                        ds.putSQ(Tags.SPSSeq).addItem(sps);
+                        adjustAttributes(ds);
+                        addMissingAttributes(ds);
+                        log("Schedule", ds);
+                        logDataset("Insert MWL Item:", ds);
+                        mwlManager.addWorklistItem(ds);
+                        break;
+                    case XO:
+                        ds.putSQ(Tags.SPSSeq).addItem(sps);
+                        adjustAttributes(ds);
+                        log("Update", ds);
+                        logDataset("Update MWL Item:", ds);
+                        if (!mwlManager.updateWorklistItem(ds)) {
+                            log("No Such ", ds);
+                            addMissingAttributes(ds);
+                            log("->Schedule New ", ds);
+                            logDataset("Insert MWL Item:", ds);
+                            mwlManager.addWorklistItem(ds);
+                        }
+                        break;
+                    case CA:
+                    case DC:
+                    case OC:
+                        log("Cancel", ds);
+                        mwlManager
+                                .removeWorklistItem(sps.getString(Tags.SPSID));
+                        break;
+                    default:
+                        throw new RuntimeException();
+                    }
+                }
+            } finally {
+                mwlManager.remove();
+            }
+        } catch (HL7Exception e) {
+            throw e;
+        } catch (Exception e) {
+            throw new HL7Exception("AE", e.getMessage(), e);
+        }
+        return true;
+    }
+
+    private void log(String op, Dataset ds) {
+        Dataset sps = ds.getItem(Tags.SPSSeq);
+        log.info(op
+                + " Procedure Step[id:"
+                + (sps == null ? "<unknown>(SPSSeq missing)" : sps
+                        .getString(Tags.SPSID)) + "] of Study[uid:"
+                + ds.getString(Tags.StudyInstanceUID) + "] of Order[accNo:"
+                + ds.getString(Tags.AccessionNumber) + "] for Patient [name:"
+                + ds.getString(Tags.PatientName) + ",id:"
+                + ds.getString(Tags.PatientID) + "]");
+    }
+
+    private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
+        return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
+    }
+
+    private int checkMessage(Document msg) throws HL7Exception {
+        // TODO check message, throw HL7Exception.AR if check failed
+        String orc1 = msg.getRootElement().element("ORC").elementText("field");
+        int msgType = CONTROL_CODES_LIST.indexOf(orc1);
+        if (msgType == -1)
+            throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
+                    + orc1);
+        return msgType;
+    }
+
+    private Dataset addScheduledStationInfo(Dataset spsItems) throws Exception {
         return (Dataset) server.invoke(deviceServiceName,
-        		"addScheduledStationInfo", new Object[] { spsItems },
-        		new String[] { Dataset.class.getName() });
-	}
-	
-	private void addMissingAttributes(Dataset ds) {
-		Dataset sps = ds.getItem(Tags.SPSSeq);
-		if (sps.vm(Tags.ScheduledStationAET) < 1) {
-			log.info("No Scheduled Station AET - use default: " + defaultStationAET);
-			sps.putAE(Tags.ScheduledStationAET, defaultStationAET);
-		}
-		if (sps.vm(Tags.ScheduledStationName) < 1) {			
-			log.info("No Scheduled Station Name - use default: " + defaultStationName);
-			sps.putSH(Tags.ScheduledStationName, defaultStationName);
-		}
-		if (sps.vm(Tags.Modality) < 1) {			
-			log.info("No Modality - use default: " + defaultModality);
-			sps.putCS(Tags.Modality, defaultModality);
-		}
-		if (sps.vm(Tags.SPSStartDate) < 1) {
-			log.info("No SPS Start Date - use current date/time");
-			Date now = new Date();
-			sps.putDA(Tags.SPSStartDate, now);
-			sps.putTM(Tags.SPSStartTime, now);
-		}
-	}
-	
-	private void adjustAttributes(Dataset ds) {
-		Dataset sps = ds.getItem(Tags.SPSSeq);
-		String val;
-		Dataset code;
-		if ((val = sps.getString(Tags.RequestingPhysician)) != null) {
-			log.info("Detect Requesting Physician on SPS Level");
-			ds.putPN(Tags.RequestingPhysician, val);
-			sps.remove(Tags.RequestingPhysician);
-		}
-		if ((val = sps.getString(Tags.RequestingService)) != null) {
-			log.info("Detect Requesting Service on SPS Level");
-			ds.putLO(Tags.RequestingService, val);
-			sps.remove(Tags.RequestingService);
-		}
-		if ((val = sps.getString(Tags.StudyInstanceUID)) != null) {
-			log.info("Detect Study Instance UID on SPS Level");
-			ds.putUI(Tags.StudyInstanceUID, val);
-			sps.remove(Tags.StudyInstanceUID);
-		}
-		if ((val = sps.getString(Tags.RequestedProcedurePriority)) != null) {
-			log.info("Detect Requested Procedure Priority on SPS Level");
-			ds.putCS(Tags.RequestedProcedurePriority, val);
-			sps.remove(Tags.RequestedProcedurePriority);
-		}
-		if ((val = sps.getString(Tags.RequestedProcedureID)) != null) {
-			log.info("Detect Requested Procedure ID on SPS Level");
-			ds.putSH(Tags.RequestedProcedureID, val);
-			sps.remove(Tags.RequestedProcedureID);
-		}
-		if ((val = sps.getString(Tags.RequestedProcedureDescription)) != null) {
-			log.info("Detect Requested Procedure Description on SPS Level");
-			ds.putLO(Tags.RequestedProcedureDescription, val);
-			sps.remove(Tags.RequestedProcedureDescription);
-		}
-		if ((code = sps.getItem(Tags.RequestedProcedureCodeSeq)) != null) {
-			log.info("Detect Requested Procedure Code on SPS Level");
-			ds.putSQ(Tags.RequestedProcedureCodeSeq).addItem(code);
-			sps.remove(Tags.RequestedProcedureCodeSeq);
-		}				
-	}
+                "addScheduledStationInfo", new Object[] { spsItems },
+                new String[] { Dataset.class.getName() });
+    }
 
-	private void mergeProtocolCodes(Dataset orm) {
-		DcmElement prevSpsSq = orm.remove(Tags.SPSSeq);
-		DcmElement newSpsSq = orm.putSQ(Tags.SPSSeq);
-		HashMap spcSqMap = new HashMap();
-		DcmElement spcSq0, spcSqI;
-		Dataset sps;
-		String spsid;
-		for (int i = 0, n = prevSpsSq.countItems(); i < n; ++i) {
-			sps = prevSpsSq.getItem(i);
-			spsid = sps.getString(Tags.SPSID);
-			spcSqI = sps.get(Tags.ScheduledProtocolCodeSeq);
-			spcSq0 = (DcmElement) spcSqMap.get(spsid);
-			if (spcSq0 != null) {
-				spcSq0.addItem(spcSqI.getItem());
-			} else {
-				spcSqMap.put(spsid, spcSqI);
-				newSpsSq.addItem(sps);
-			}
-		}
-	}
+    private void addMissingAttributes(Dataset ds) {
+        Dataset sps = ds.getItem(Tags.SPSSeq);
+        if (sps.vm(Tags.ScheduledStationAET) < 1) {
+            log.info("No Scheduled Station AET - use default: "
+                    + defaultStationAET);
+            sps.putAE(Tags.ScheduledStationAET, defaultStationAET);
+        }
+        if (sps.vm(Tags.ScheduledStationName) < 1) {
+            log.info("No Scheduled Station Name - use default: "
+                    + defaultStationName);
+            sps.putSH(Tags.ScheduledStationName, defaultStationName);
+        }
+        if (sps.vm(Tags.Modality) < 1) {
+            log.info("No Modality - use default: " + defaultModality);
+            sps.putCS(Tags.Modality, defaultModality);
+        }
+        if (sps.vm(Tags.SPSStartDate) < 1) {
+            log.info("No SPS Start Date - use current date/time");
+            Date now = new Date();
+            sps.putDA(Tags.SPSStartDate, now);
+            sps.putTM(Tags.SPSStartTime, now);
+        }
+    }
+
+    private void adjustAttributes(Dataset ds) {
+        Dataset sps = ds.getItem(Tags.SPSSeq);
+        String val;
+        Dataset code;
+        if ((val = sps.getString(Tags.RequestingPhysician)) != null) {
+            log.info("Detect Requesting Physician on SPS Level");
+            ds.putPN(Tags.RequestingPhysician, val);
+            sps.remove(Tags.RequestingPhysician);
+        }
+        if ((val = sps.getString(Tags.RequestingService)) != null) {
+            log.info("Detect Requesting Service on SPS Level");
+            ds.putLO(Tags.RequestingService, val);
+            sps.remove(Tags.RequestingService);
+        }
+        if ((val = sps.getString(Tags.StudyInstanceUID)) != null) {
+            log.info("Detect Study Instance UID on SPS Level");
+            ds.putUI(Tags.StudyInstanceUID, val);
+            sps.remove(Tags.StudyInstanceUID);
+        }
+        if ((val = sps.getString(Tags.RequestedProcedurePriority)) != null) {
+            log.info("Detect Requested Procedure Priority on SPS Level");
+            ds.putCS(Tags.RequestedProcedurePriority, val);
+            sps.remove(Tags.RequestedProcedurePriority);
+        }
+        if ((val = sps.getString(Tags.RequestedProcedureID)) != null) {
+            log.info("Detect Requested Procedure ID on SPS Level");
+            ds.putSH(Tags.RequestedProcedureID, val);
+            sps.remove(Tags.RequestedProcedureID);
+        }
+        if ((val = sps.getString(Tags.RequestedProcedureDescription)) != null) {
+            log.info("Detect Requested Procedure Description on SPS Level");
+            ds.putLO(Tags.RequestedProcedureDescription, val);
+            sps.remove(Tags.RequestedProcedureDescription);
+        }
+        if ((code = sps.getItem(Tags.RequestedProcedureCodeSeq)) != null) {
+            log.info("Detect Requested Procedure Code on SPS Level");
+            ds.putSQ(Tags.RequestedProcedureCodeSeq).addItem(code);
+            sps.remove(Tags.RequestedProcedureCodeSeq);
+        }
+    }
+
+    private void mergeProtocolCodes(Dataset orm) {
+        DcmElement prevSpsSq = orm.remove(Tags.SPSSeq);
+        DcmElement newSpsSq = orm.putSQ(Tags.SPSSeq);
+        HashMap spcSqMap = new HashMap();
+        DcmElement spcSq0, spcSqI;
+        Dataset sps;
+        String spsid;
+        for (int i = 0, n = prevSpsSq.countItems(); i < n; ++i) {
+            sps = prevSpsSq.getItem(i);
+            spsid = sps.getString(Tags.SPSID);
+            spcSqI = sps.get(Tags.ScheduledProtocolCodeSeq);
+            spcSq0 = (DcmElement) spcSqMap.get(spsid);
+            if (spcSq0 != null) {
+                spcSq0.addItem(spcSqI.getItem());
+            } else {
+                spcSqMap.put(spsid, spcSqI);
+                newSpsSq.addItem(sps);
+            }
+        }
+    }
 }
