@@ -63,34 +63,33 @@ public class FileCopyOrder extends BaseJmsOrder {
     protected ArrayList fileInfos = null;
 
     protected final String dstFsPath;
-    
+
     protected String dstFilePath = null;
-    
+
     protected final String retrieveAET;
 
     protected Dataset ian = null;
-    
-    public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAET)
-	{
-		this.ian = ian;
-		this.dstFsPath = dstFsPath;
-		this.retrieveAET = retrieveAET;
-	}
-    
+
+    public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAET) {
+        this.ian = ian;
+        this.dstFsPath = dstFsPath;
+        this.retrieveAET = retrieveAET;
+    }
+
     public List getFileInfos() throws Exception {
-		if(fileInfos == null)
-			convertFromIAN();
-		
-		return fileInfos;
-	}
-    
+        if (fileInfos == null)
+            convertFromIAN();
+
+        return fileInfos;
+    }
+
     /**
      * Convert to fileInfos
      * 
      * @throws Exception
      */
-    protected void convertFromIAN() throws Exception {    	
-    	Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
+    protected void convertFromIAN() throws Exception {
+        Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
         DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
         FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
         fileInfos = new ArrayList(aa.length);
@@ -98,55 +97,52 @@ public class FileCopyOrder extends BaseJmsOrder {
             FileInfo[] a = aa[i];
             for (int j = 0; j < a.length; j++) {
                 if (a[j].fileRetrieveAET.equals(retrieveAET)) {
-                	fileInfos.add(a[j]);
+                    fileInfos.add(a[j]);
                     break;
                 }
             }
         }
-	}
+    }
 
     public final String getDestinationFileSystemPath() {
         return dstFsPath;
     }
-    
+
     public String getDstFilePath() {
-		return dstFilePath;
-	}
+        return dstFilePath;
+    }
 
-	public void setDstFilePath(String dstFilePath) {
-		this.dstFilePath = dstFilePath;
-	}
-	
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer();
-		sb.append(super.toString());
-		sb.append("\tRetrieveAET: ").append(retrieveAET).append("\n");
-		sb.append("\tDestination: ").append(dstFsPath).append("\n");
-		sb.append("\tDestination file path: ").append(dstFilePath);
-		if(dstFilePath == null)
-			sb.append(" (to be resolved)");
-		if(fileInfos != null)
-		{
-			sb.append("\n\tSource files: \n");
-                        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-                            FileInfo fi = (FileInfo) iter.next();
-				sb.append("\t\t").append(((FileInfo)fi).basedir).append(",").append(((FileInfo)fi).fileID).append("\n");
-                        }
-		}
-		else if(ian != null)
-		{
-			sb.append("\n\tIAN Dataset: \n");
-			StringWriter sw = new StringWriter(); 
+    public void setDstFilePath(String dstFilePath) {
+        this.dstFilePath = dstFilePath;
+    }
 
-			try {
-				ian.dumpDataset(sw, null);
-				sb.append(sw.toString());
-			} catch (Exception e) {
-				sb.append("Failed to dump dataset due to: " + e.getMessage());
-			}
-		}
-		sb.append("\n");
-		return sb.toString();
-	}
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(super.toString());
+        sb.append("\tRetrieveAET: ").append(retrieveAET).append("\n");
+        sb.append("\tDestination: ").append(dstFsPath).append("\n");
+        sb.append("\tDestination file path: ").append(dstFilePath);
+        if (dstFilePath == null)
+            sb.append(" (to be resolved)");
+        if (fileInfos != null) {
+            sb.append("\n\tSource files: \n");
+            for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+                FileInfo fi = (FileInfo) iter.next();
+                sb.append("\t\t").append(((FileInfo) fi).basedir).append(",")
+                        .append(((FileInfo) fi).fileID).append("\n");
+            }
+        } else if (ian != null) {
+            sb.append("\n\tIAN Dataset: \n");
+            StringWriter sw = new StringWriter();
+
+            try {
+                ian.dumpDataset(sw, null);
+                sb.append(sw.toString());
+            } catch (Exception e) {
+                sb.append("Failed to dump dataset due to: " + e.getMessage());
+            }
+        }
+        sb.append("\n");
+        return sb.toString();
+    }
 }
