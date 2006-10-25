@@ -41,6 +41,7 @@ package org.dcm4chex.archive.hsm;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -118,7 +119,7 @@ public class FileCopyOrder extends BaseJmsOrder {
 	
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuffer sb = new StringBuffer();
 		sb.append(super.toString());
 		sb.append("\tRetrieveAET: ").append(retrieveAET).append("\n");
 		sb.append("\tDestination: ").append(dstFsPath).append("\n");
@@ -128,8 +129,10 @@ public class FileCopyOrder extends BaseJmsOrder {
 		if(fileInfos != null)
 		{
 			sb.append("\n\tSource files: \n");
-			for(Object fi : fileInfos)
+                        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+                            FileInfo fi = (FileInfo) iter.next();
 				sb.append("\t\t").append(((FileInfo)fi).basedir).append(",").append(((FileInfo)fi).fileID).append("\n");
+                        }
 		}
 		else if(ian != null)
 		{
