@@ -77,146 +77,146 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  * 
  */
 public abstract class MWLManagerBean implements SessionBean {
-	private static final int[] PATIENT_ATTRS = { Tags.PatientName,
-			Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
+    private static final int[] PATIENT_ATTRS = { Tags.PatientName,
+            Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
 
-	private static Logger log = Logger.getLogger(MWLManagerBean.class);
+    private static Logger log = Logger.getLogger(MWLManagerBean.class);
 
-	private PatientLocalHome patHome;
+    private PatientLocalHome patHome;
 
-	private MWLItemLocalHome mwlItemHome;
+    private MWLItemLocalHome mwlItemHome;
 
-	public void setSessionContext(SessionContext ctx) {
-		Context jndiCtx = null;
-		try {
-			jndiCtx = new InitialContext();
-			patHome = (PatientLocalHome) jndiCtx
-					.lookup("java:comp/env/ejb/Patient");
-			mwlItemHome = (MWLItemLocalHome) jndiCtx
-					.lookup("java:comp/env/ejb/MWLItem");
-		} catch (NamingException e) {
-			throw new EJBException(e);
-		} finally {
-			if (jndiCtx != null) {
-				try {
-					jndiCtx.close();
-				} catch (NamingException ignore) {
-				}
-			}
-		}
-	}
+    public void setSessionContext(SessionContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            patHome = (PatientLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Patient");
+            mwlItemHome = (MWLItemLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/MWLItem");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
 
-	public void unsetSessionContext() {
-		mwlItemHome = null;
-		patHome = null;
-	}
+    public void unsetSessionContext() {
+        mwlItemHome = null;
+        patHome = null;
+    }
 
     /**
      * @ejb.interface-method
      */
     public Dataset getWorklistItem(String spsid) throws FinderException {
-		try {
-			return getWorklistItem(spsid, false);
-		} catch (RemoveException e) {
-			throw new EJBException(e);
-		}
+        try {
+            return getWorklistItem(spsid, false);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
     }
-    
-	/**
-	 * @ejb.interface-method
-	 */
-	public Dataset removeWorklistItem(String spsid) 
-			throws EJBException, RemoveException, FinderException {
-		return getWorklistItem(spsid, true);
-	}
-	
-	private Dataset getWorklistItem(String spsid, boolean remove) 
-			throws RemoveException, FinderException {
-		MWLItemLocal mwlItem;
-		try {
-			mwlItem = mwlItemHome.findBySpsId(spsid);
-		} catch (ObjectNotFoundException onf) {
-			return null;
-		}
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset removeWorklistItem(String spsid) throws EJBException,
+            RemoveException, FinderException {
+        return getWorklistItem(spsid, true);
+    }
+
+    private Dataset getWorklistItem(String spsid, boolean remove)
+            throws RemoveException, FinderException {
+        MWLItemLocal mwlItem;
+        try {
+            mwlItem = mwlItemHome.findBySpsId(spsid);
+        } catch (ObjectNotFoundException onf) {
+            return null;
+        }
         final PatientLocal pat = mwlItem.getPatient();
-        Dataset attrs = mwlItem.getAttributes();            
-		attrs.putAll(pat.getAttributes(false));
-		if (remove) {
-			mwlItem.remove();
-		}
-		return attrs;
-	}
+        Dataset attrs = mwlItem.getAttributes();
+        attrs.putAll(pat.getAttributes(false));
+        if (remove) {
+            mwlItem.remove();
+        }
+        return attrs;
+    }
 
-	/**
-	 * @throws FinderException 
-	 * @ejb.interface-method
-	 */
-	public void updateSPSStatus(String spsid, String status) {
-		try {
-			MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
-			Dataset ds = mwlItem.getAttributes();
-			ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
-			mwlItem.setAttributes(ds);
-		} catch (FinderException e) {
-			log.warn("Cant update SPS status! SpsID not found:"+spsid);
-		}
-	}
-	
-	private PatientLocal getPatient(Dataset ds) throws FinderException,
-			CreateException {
-		final String id = ds.getString(Tags.PatientID);
-		Collection c = patHome.findByPatientId(id);
-		for (Iterator it = c.iterator(); it.hasNext();) {
-			PatientLocal patient = (PatientLocal) it.next();
-			if (equals(patient, ds)) {
-				PatientLocal mergedWith = patient.getMergedWith();
-				if (mergedWith != null) {
-					patient = mergedWith;
-				}
-				return patient;
-			}
-		}
-		PatientLocal patient = patHome.create(ds.subSet(PATIENT_ATTRS));
-		return patient;
-	}
+    /**
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public void updateSPSStatus(String spsid, String status) {
+        try {
+            MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
+            Dataset ds = mwlItem.getAttributes();
+            ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
+            mwlItem.setAttributes(ds);
+        } catch (FinderException e) {
+            log.warn("Cant update SPS status! SpsID not found:" + spsid);
+        }
+    }
 
-	private boolean equals(PatientLocal patient, Dataset ds) {
-		// TODO Auto-generated method stub
-		return true;
-	}
+    private PatientLocal getPatient(Dataset ds) throws FinderException,
+            CreateException {
+        final String id = ds.getString(Tags.PatientID);
+        Collection c = patHome.findByPatientId(id);
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            PatientLocal patient = (PatientLocal) it.next();
+            if (equals(patient, ds)) {
+                PatientLocal mergedWith = patient.getMergedWith();
+                if (mergedWith != null) {
+                    patient = mergedWith;
+                }
+                return patient;
+            }
+        }
+        PatientLocal patient = patHome.create(ds.subSet(PATIENT_ATTRS));
+        return patient;
+    }
 
-	/**
-	 * @ejb.interface-method
-	 */
-	public String addWorklistItem(Dataset ds) {
-		try {
-			MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(
-					PATIENT_ATTRS, true, true), getPatient(ds));
-			return mwlItem.getSpsId();
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
+    private boolean equals(PatientLocal patient, Dataset ds) {
+        // TODO Auto-generated method stub
+        return true;
+    }
 
-	/**
-	 * @ejb.interface-method
-	 */
-	public boolean updateWorklistItem(Dataset ds) {
-		try {
+    /**
+     * @ejb.interface-method
+     */
+    public String addWorklistItem(Dataset ds) {
+        try {
+            MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(PATIENT_ATTRS,
+                    true, true), getPatient(ds));
+            return mwlItem.getSpsId();
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateWorklistItem(Dataset ds) {
+        try {
             final Dataset woPatAttrs = ds.subSet(PATIENT_ATTRS, true, true);
-			try {
-				Dataset sps = ds.getItem(Tags.SPSSeq);
-				MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps
-						.getString(Tags.SPSID));
-	            Dataset attrs = mwlItem.getAttributes();
-				attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
-				mwlItem.setAttributes(attrs);
-				return true;
-			} catch (ObjectNotFoundException onfe) {
-				return false;
-			}
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
+            try {
+                Dataset sps = ds.getItem(Tags.SPSSeq);
+                MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps
+                        .getString(Tags.SPSID));
+                Dataset attrs = mwlItem.getAttributes();
+                attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
+                mwlItem.setAttributes(attrs);
+                return true;
+            } catch (ObjectNotFoundException onfe) {
+                return false;
+            }
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
 }
