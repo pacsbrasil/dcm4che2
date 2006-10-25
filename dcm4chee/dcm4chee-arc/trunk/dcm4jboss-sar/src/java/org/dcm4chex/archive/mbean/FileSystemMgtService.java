@@ -127,7 +127,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private long checkFreeDiskSpaceInterval = 60000L;
 
     private float checkFreeDiskSpaceThreshold = 5f;
-    
+
     private boolean checkStorageFileSystemStatus = true;
 
     private String retrieveAET = "DCM4CHEE";
@@ -188,9 +188,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private boolean deleteFilesWhenUnavailable;
 
     private String[] onSwitchStorageFSCmd;
-    
-    private String timerIDCheckFilesToPurge;    
-    
+
+    private String timerIDCheckFilesToPurge;
+
     private String timerIDCheckFreeDiskSpace;
 
     private final NotificationListener purgeFilesListener = new NotificationListener() {
@@ -532,11 +532,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.purgeFilesInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler(timerIDCheckFilesToPurge, purgeFilesListenerID,
+            scheduler.stopScheduler(timerIDCheckFilesToPurge,
+                    purgeFilesListenerID, purgeFilesListener);
+            purgeFilesListenerID = scheduler.startScheduler(
+                    timerIDCheckFilesToPurge, purgeFilesInterval,
                     purgeFilesListener);
-            purgeFilesListenerID = scheduler
-                    .startScheduler(timerIDCheckFilesToPurge, purgeFilesInterval,
-                            purgeFilesListener);
         }
     }
 
@@ -635,8 +635,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         freeDiskSpaceListenerID = scheduler.startScheduler(
                 timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
                 freeDiskSpaceListener);
-        purgeFilesListenerID = scheduler.startScheduler(timerIDCheckFilesToPurge,
-                purgeFilesInterval, purgeFilesListener);
+        purgeFilesListenerID = scheduler.startScheduler(
+                timerIDCheckFilesToPurge, purgeFilesInterval,
+                purgeFilesListener);
         jmsDelegate.startListening(purgeStudyQueueName, this, 1);
 
     }
@@ -675,10 +676,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 || checkStorageFileSystem < System.currentTimeMillis();
         if (checkStorageFileSystemStatus || checkDiskSpace) {
             FileSystemMgt fsmgt = newFileSystemMgt();
-            storageFileSystem = fsmgt.getFileSystem(
-                    storageFileSystem.getDirectoryPath());
+            storageFileSystem = fsmgt.getFileSystem(storageFileSystem
+                    .getDirectoryPath());
             if (!checkStorageFileSystemStatus(storageFileSystem)
-                    || checkDiskSpace && !checkStorageFileSystem(storageFileSystem))
+                    || checkDiskSpace
+                    && !checkStorageFileSystem(storageFileSystem))
                 if (!switchStorageFileSystem(fsmgt, storageFileSystem))
                     return null;
         }
@@ -686,8 +688,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     private synchronized boolean switchStorageFileSystem(FileSystemMgt fsmgt,
-            FileSystemDTO fsDTO)
-            throws RemoteException, FinderException, IOException {
+            FileSystemDTO fsDTO) throws RemoteException, FinderException,
+            IOException {
         if (storageFileSystem != fsDTO)
             return true; // already switched by another thread
         String dirPath, dirPath0 = fsDTO.getDirectoryPath();
@@ -751,21 +753,27 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
         if (!dir.exists()) {
             if (!makeStorageDirectory) {
-                log.warn("No such directory " + dir
-                        + " - try to switch to next configured storage directory");
+                log
+                        .warn("No such directory "
+                                + dir
+                                + " - try to switch to next configured storage directory");
                 return false;
             }
             log.info("M-WRITE " + dir);
             if (!dir.mkdirs()) {
-                log.warn("Failed to create directory "+ dir
-                        + " - try to switch to next configured storage directory");
+                log
+                        .warn("Failed to create directory "
+                                + dir
+                                + " - try to switch to next configured storage directory");
                 return false;
             }
         }
         File nomount = new File(dir, mountFailedCheckFile);
         if (nomount.exists()) {
-            log.warn("Mount on "+ dir
-                    + " seems broken - try to switch to next configured storage directory");
+            log
+                    .warn("Mount on "
+                            + dir
+                            + " seems broken - try to switch to next configured storage directory");
             return false;
         }
         final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
@@ -777,16 +785,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     + " - try to switch to next configured storage directory");
             return false;
         }
-        checkStorageFileSystem = 
-            (freeSpace > minFreeDiskSpace * checkFreeDiskSpaceThreshold) 
-                ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
+        checkStorageFileSystem = (freeSpace > minFreeDiskSpace
+                * checkFreeDiskSpaceThreshold) ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
                 : 0L;
         return true;
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(timerIDCheckFreeDiskSpace, freeDiskSpaceListenerID,
-                freeDiskSpaceListener);
+        scheduler.stopScheduler(timerIDCheckFreeDiskSpace,
+                freeDiskSpaceListenerID, freeDiskSpaceListener);
         scheduler.stopScheduler(timerIDCheckFilesToPurge, purgeFilesListenerID,
                 purgeFilesListener);
         jmsDelegate.stopListening(purgeStudyQueueName);
@@ -1544,18 +1551,18 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     public String getTimerIDCheckFilesToPurge() {
-		return timerIDCheckFilesToPurge;
-	}
+        return timerIDCheckFilesToPurge;
+    }
 
-	public void setTimerIDCheckFilesToPurge(String timerIDCheckFilesToPurge) {
-		this.timerIDCheckFilesToPurge = timerIDCheckFilesToPurge;
-	}
+    public void setTimerIDCheckFilesToPurge(String timerIDCheckFilesToPurge) {
+        this.timerIDCheckFilesToPurge = timerIDCheckFilesToPurge;
+    }
 
-	public String getTimerIDCheckFreeDiskSpace() {
-		return timerIDCheckFreeDiskSpace;
-	}
+    public String getTimerIDCheckFreeDiskSpace() {
+        return timerIDCheckFreeDiskSpace;
+    }
 
-	public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
-		this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
-	}
+    public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
+        this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
+    }
 }
