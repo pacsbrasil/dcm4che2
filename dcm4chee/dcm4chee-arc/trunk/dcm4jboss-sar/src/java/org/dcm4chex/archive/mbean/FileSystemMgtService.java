@@ -128,6 +128,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private long checkFreeDiskSpaceInterval = 60000L;
 
     private float checkFreeDiskSpaceThreshold = 5f;
+    
+    private boolean checkStorageFileSystemStatus = true;
 
     private String retrieveAET = "DCM4CHEE";
 
@@ -307,19 +309,28 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.checkFreeDiskSpaceThreshold = threshold;
     }
 
-    public String getDeleterThresholds() {
+    public final boolean isCheckStorageFileSystemStatus() {
+        return checkStorageFileSystemStatus;
+    }
+
+    public final void setCheckStorageFileSystemStatus(
+            boolean checkStorageFileSystemStatus) {
+        this.checkStorageFileSystemStatus = checkStorageFileSystemStatus;
+    }
+
+    public final String getDeleterThresholds() {
         return deleterThresholds.toString();
     }
 
-    public void setDeleterThresholds(String s) {
+    public final void setDeleterThresholds(String s) {
         this.deleterThresholds = new DeleterThresholds(s, true);
     }
 
-    public String getExpectedDataVolumnePerDay() {
+    public final String getExpectedDataVolumnePerDay() {
         return FileUtils.formatSize(expectedDataVolumnePerDay);
     }
 
-    public void setExpectedDataVolumnePerDay(String s) {
+    public final void setExpectedDataVolumnePerDay(String s) {
         this.expectedDataVolumnePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
     }
 
@@ -661,20 +672,26 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         if (storageFileSystem == null) {
             initStorageFileSystem();
         }
-        if (checkStorageFileSystem == 0L
-                || checkStorageFileSystem < System.currentTimeMillis())
-            if (!checkStorageFileSystem(storageFileSystem))
-                if (!switchStorageFileSystem(storageFileSystem))
+        boolean checkDiskSpace = checkStorageFileSystem == 0L
+                || checkStorageFileSystem < System.currentTimeMillis();
+        if (checkStorageFileSystemStatus || checkDiskSpace) {
+            FileSystemMgt fsmgt = newFileSystemMgt();
+            storageFileSystem = fsmgt.getFileSystem(
+                    storageFileSystem.getDirectoryPath());
+            if (!checkStorageFileSystemStatus(storageFileSystem)
+                    || checkDiskSpace && !checkStorageFileSystem(storageFileSystem))
+                if (!switchStorageFileSystem(fsmgt, storageFileSystem))
                     return null;
+        }
         return storageFileSystem;
     }
 
-    private synchronized boolean switchStorageFileSystem(FileSystemDTO fsDTO)
+    private synchronized boolean switchStorageFileSystem(FileSystemMgt fsmgt,
+            FileSystemDTO fsDTO)
             throws RemoteException, FinderException, IOException {
         if (storageFileSystem != fsDTO)
             return true; // already switched by another thread
         String dirPath, dirPath0 = fsDTO.getDirectoryPath();
-        FileSystemMgt fsmgt = newFileSystemMgt();
         do {
             dirPath = fsDTO.getNext();
             if (dirPath == null || dirPath.equals(dirPath0)) {
@@ -684,7 +701,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 return false;
             }
             fsDTO = fsmgt.getFileSystem(dirPath);
-        } while (!checkStorageFileSystem(fsDTO));
+        } while (!checkStorageFileSystemStatus(fsDTO)
+                || !checkStorageFileSystem(fsDTO));
         storageFileSystem.setStatus(FileSystemStatus.RW);
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
         fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
@@ -716,8 +734,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         }
     }
 
-    private boolean checkStorageFileSystem(FileSystemDTO fsDTO)
-            throws IOException {
+    private boolean checkStorageFileSystemStatus(FileSystemDTO fsDTO) {
         int availability = fsDTO.getAvailability();
         int status = fsDTO.getStatus();
         if (availability != Availability.ONLINE
@@ -727,30 +744,29 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     + " - try to switch to next configured storage directory");
             return false;
         }
+        return true;
+    }
+
+    private boolean checkStorageFileSystem(FileSystemDTO fsDTO)
+            throws IOException {
         File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
         if (!dir.exists()) {
             if (!makeStorageDirectory) {
-                log
-                        .warn("No such directory "
-                                + dir
-                                + " - try to switch to next configured storage directory");
+                log.warn("No such directory " + dir
+                        + " - try to switch to next configured storage directory");
                 return false;
             }
             log.info("M-WRITE " + dir);
             if (!dir.mkdirs()) {
-                log
-                        .warn("Failed to create directory "
-                                + dir
-                                + " - try to switch to next configured storage directory");
+                log.warn("Failed to create directory "+ dir
+                        + " - try to switch to next configured storage directory");
                 return false;
             }
         }
         File nomount = new File(dir, mountFailedCheckFile);
         if (nomount.exists()) {
-            log
-                    .warn("Mount on "
-                            + dir
-                            + " seems broken - try to switch to next configured storage directory");
+            log.warn("Mount on "+ dir
+                    + " seems broken - try to switch to next configured storage directory");
             return false;
         }
         final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
@@ -762,8 +778,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     + " - try to switch to next configured storage directory");
             return false;
         }
-        checkStorageFileSystem = (freeSpace > minFreeDiskSpace
-                * checkFreeDiskSpaceThreshold) ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
+        checkStorageFileSystem = 
+            (freeSpace > minFreeDiskSpace * checkFreeDiskSpaceThreshold) 
+                ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
                 : 0L;
         return true;
     }
@@ -1273,6 +1290,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         dto.setStatus(FileSystemStatus.toInt(status));
         dto.setUserInfo(userInfo);
         newFileSystemMgt().updateFileSystem(dto);
+        checkStorageFileSystem = 0;
     }
 
     public boolean updateFileSystemAvailability(String dirPath,
@@ -1282,6 +1300,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         log.info("Update availability of " + dirPath + " to " + availability
                 + "(" + iAvail + ")");
         if (mgt.updateFileSystemAvailability(dirPath, iAvail)) {
+            checkStorageFileSystem = 0;
             int offset = 0;
             int limit = limitNumberOfFilesPerTask;
             int size;
@@ -1386,10 +1405,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public void linkFileSystems(String prev, String next)
             throws RemoteException, FinderException {
         newFileSystemMgt().linkFileSystems(prev, next);
-        if (storageFileSystem != null
-                && storageFileSystem.getDirectoryPath().equals(prev)) {
-            storageFileSystem.setNext(next);
-        }
+        checkStorageFileSystem = 0;
     }
 
     public String addOnlineFileSystem(String dirPath, String userInfo)
@@ -1441,7 +1457,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         dto.setAvailability(availability);
         dto.setStatus(status);
         dto.setUserInfo(userInfo);
-        return newFileSystemMgt().addAndLinkFileSystem(dto).toString();
+        FileSystemDTO newFS = newFileSystemMgt().addAndLinkFileSystem(dto);
+        checkStorageFileSystem = 0;
+        return newFS.toString();
     }
 
     /*

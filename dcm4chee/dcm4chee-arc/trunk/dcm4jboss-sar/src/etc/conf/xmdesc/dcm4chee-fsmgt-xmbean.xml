@@ -46,7 +46,29 @@ accessed studies.</description>
       <descriptors>
          <value value="archive"/>
       </descriptors>
-   </attribute>   
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isCheckStorageFileSystemStatus"
+      setMethod="setCheckStorageFileSystemStatus">
+      <description><![CDATA[Flag indicating if the status and availability
+      of the current storage file system is checked before each file storage of
+      objects received by the Storage SCP.<br/>
+      If the update of the status or availability of the file system is only
+      performed by invoking operations <i>updateFileSystem</i> or
+      <i>updateFileSystemAvailability</i> of this service - in particular,
+      if there are no other running dcm4chee applications on other nodes
+      (dcm4chee cluster), and File System records in the database will NOT
+      be updated by executing SQL statements using some dcm4chee external SQL
+      client application - the check can be deactivated to spare the execution
+      of one additional SQL statement for each stored object.
+      ]]>
+      </description>
+      <name>CheckStorageFileSystemStatus</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+     </descriptors>
+   </attribute> 
    <attribute access="read-write" 
       getMethod="getMinFreeDiskSpace"
       setMethod="setMinFreeDiskSpace">
