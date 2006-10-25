@@ -110,6 +110,8 @@ import org.jboss.system.ServiceMBeanSupport;
 public class FileSystemMgtService extends ServiceMBeanSupport implements
         MessageListener {
 
+    private static final String DATE_TIME_FORMAT = "yyyy/MM/dd HH:mm:ss";
+
     private static final String NONE = "NONE";
 
     private static final String FROM_PARAM = "%1";
@@ -117,9 +119,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private static final String TO_PARAM = "%2";
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
-
-    private static final SimpleDateFormat dtFormatter = new SimpleDateFormat(
-            "yyyy/MM/dd HH:mm:ss");
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
 
@@ -1530,10 +1529,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     protected void schedule(BaseJmsOrder order, long scheduledTime) {
         try {
-            if (scheduledTime > 0 && log.isInfoEnabled())
+            if (scheduledTime > 0 && log.isInfoEnabled()) {
+                String scheduledTimeStr = new SimpleDateFormat(DATE_TIME_FORMAT)
+                        .format(new Date(scheduledTime));
                 log.info("Scheduling job [" + order.toIdString() + "] at "
-                        + dtFormatter.format(new Date(scheduledTime))
-                        + ". Retry times: " + order.getFailureCount());
+                        + scheduledTimeStr + ". Retry times: "
+                        + order.getFailureCount());
+            }
             jmsDelegate.queue(purgeStudyQueueName, order,
                     Message.DEFAULT_PRIORITY, scheduledTime);
         } catch (Exception e) {
