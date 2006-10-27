@@ -161,8 +161,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private Integer freeDiskSpaceListenerID;
 
-    private boolean autoPurge = true;
-
     private boolean freeDiskSpaceOnDemand = true;
 
     private boolean isPurging = false;
@@ -509,20 +507,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.freeDiskSpaceOnDemand = freeDiskSpaceOnDemand;
     }
 
-    /**
-     * @return Returns the autoPurge.
-     */
-    public boolean isPurgeFilesAfterFreeDiskSpace() {
-        return autoPurge;
-    }
-
-    /**
-     * @param autoPurge
-     *            The autoPurge to set.
-     */
-    public void setPurgeFilesAfterFreeDiskSpace(boolean autoPurge) {
-        this.autoPurge = autoPurge;
-    }
 
     public final String getPurgeFilesInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(purgeFilesInterval);
@@ -826,8 +810,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         log.info("Check for unreferenced private files to delete");
         synchronized (this) {
             if (isPurging) {
-                log
-                        .info("A purge task is already in progress! Ignore this purge order!");
+                log.info("A purge task is already in progress! Ignore this purge order!");
                 return 0;
             }
             isPurging = true;
@@ -862,14 +845,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         } else {
             synchronized (this) {
                 if (isPurging) {
-                    log
-                            .info("A purge task is already in progress! Ignore this purge order!");
+                    log.info("A purge task is already in progress! Ignore this purge order!");
                     return 0;
                 }
                 isPurging = true;
             }
-            log
-                    .info("Check for unreferenced (private) files to delete in filesystem:"
+            log.debug("Check for unreferenced (private) files to delete in filesystem:"
                             + purgeDirPath);
             FileSystemMgt fsMgt = newFileSystemMgt();
             int limit = getLimitNumberOfFilesPerTask();
@@ -889,7 +870,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         try {
             toDelete = fsMgt.getDereferencedPrivateFiles(purgeDirPath, limit);
             if (log.isDebugEnabled())
-                log.debug("purgeFiles: found " + toDelete.length
+                log.debug("purgePrivateFiles: found " + toDelete.length
                         + " files to delete on dirPath:" + purgeDirPath);
         } catch (Exception e) {
             log.warn("Failed to query dereferenced files:", e);

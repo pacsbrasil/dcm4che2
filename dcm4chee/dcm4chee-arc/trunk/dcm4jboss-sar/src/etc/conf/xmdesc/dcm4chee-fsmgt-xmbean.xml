@@ -302,17 +302,6 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isPurgeFilesAfterFreeDiskSpace"
-      setMethod="setPurgeFilesAfterFreeDiskSpace">
-      <description>Enables purging of (web) deleted files after free disk space has processed.
-      </description>
-      <name>DeleteFilesAfterFreeDiskSpace</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>   
-   <attribute access="read-write"
       getMethod="getMountFailedCheckFile"
       setMethod="setMountFailedCheckFile">
       <description>If the specified file exists, this signals a failed mount.
