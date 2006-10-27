@@ -167,7 +167,8 @@ final class RetrieveInfo {
         return  isAnyLocal() && (isAllLocal() || !isAetWithAllIuids());  
     }
    
-    public void addPresContext(AAssociateRQ rq, boolean sendDecompressed) {
+    public void addPresContext(AAssociateRQ rq,
+            boolean sendWithDefaultTransferSyntax) {
         String cuid;
         String tsuid;
         IuidsAndTsuids iuidsAndTsuids;
@@ -177,10 +178,13 @@ final class RetrieveInfo {
             Map.Entry entry = (Entry) it.next();
             cuid = (String) entry.getKey();
             iuidsAndTsuids = (IuidsAndTsuids) entry.getValue();
+            if (sendWithDefaultTransferSyntax) {
+                rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
+                        UIDs.ImplicitVRLittleEndian)); 
+                continue;
+            }
             rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                     NATIVE_LE_TS));
-            if (sendDecompressed)
-                continue;
             Iterator it2 = iuidsAndTsuids.tsuids.iterator();
             while (it2.hasNext()) {
                 tsuid = (String) it2.next();

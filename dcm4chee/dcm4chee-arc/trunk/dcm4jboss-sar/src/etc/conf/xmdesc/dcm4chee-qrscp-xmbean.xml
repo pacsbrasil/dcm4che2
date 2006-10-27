@@ -43,13 +43,15 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getSendDecompressedToAETs"
-      setMethod="setSendDecompressedToAETs">
-      <description>Move Destination AE titles to which images are sent 
-      ALWAYS decompressed. Separate multiple values by \(backslash).
+      getMethod="getSendWithDefaultTransferSyntaxToAETitles"
+      setMethod="setSendWithDefaultTransferSyntaxToAETitles">
+      <description>Move Destination AE titles to which objects are sent 
+      always with Default (=Implicit VR Little Endian) Transfer Syntax, which
+      implies, that compressed stored images are always decompressed by this 
+      service for retrieval. Separate multiple values by \(backslash).
       NONE = no AE titles match this criteria.
       </description>
-      <name>SendDecompressedToAETitles</name>
+      <name>SendWithDefaultTransferSyntaxToAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>

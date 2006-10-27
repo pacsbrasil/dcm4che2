@@ -221,7 +221,8 @@ class MoveTask implements Runnable {
             if (maxOpsInvoked != 1) {
                 rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
             }
-            retrieveInfo.addPresContext(rq, service.isDecompressed(moveDest));
+            retrieveInfo.addPresContext(rq, 
+                    service.isSendWithDefaultTransferSyntax(moveDest));
             ac = a.connect(rq);
         } catch (IOException e) {
             final String prompt = "Failed to connect " + moveDest;

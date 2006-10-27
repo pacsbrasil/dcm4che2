@@ -120,7 +120,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private String[] sendNoPixelDataToAETs = null;
     
-    private String[] sendDecompressedToAETs = null;
+    private String[] sendWithDefaultTransferSyntaxToAETitles = null;
 
     private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
     
@@ -417,13 +417,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 : StringUtils.split(aets, '\\');
     }
     
-    public final String getSendDecompressedToAETs() {
-        return sendDecompressedToAETs == null ? NONE
-                : StringUtils.toString(sendDecompressedToAETs, '\\');
+    public final String getSendWithDefaultTransferSyntaxToAETitles() {
+        return sendWithDefaultTransferSyntaxToAETitles == null ? NONE
+                : StringUtils.toString(sendWithDefaultTransferSyntaxToAETitles, '\\');
     }
 
-    public final void setSendDecompressedToAETs(String aets) {
-        this.sendDecompressedToAETs = NONE.equalsIgnoreCase(aets) ? null 
+    public final void setSendWithDefaultTransferSyntaxToAETitles(String aets) {
+        this.sendWithDefaultTransferSyntaxToAETitles = NONE.equalsIgnoreCase(aets) ? null 
                 : StringUtils.split(aets, '\\');
     }
     
@@ -598,9 +598,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
             && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);
     }
     
-    boolean isDecompressed(String moveDest) {
-        return sendDecompressedToAETs != null
-            && Arrays.asList(sendDecompressedToAETs).contains(moveDest);
+    boolean isSendWithDefaultTransferSyntax(String moveDest) {
+        return sendWithDefaultTransferSyntaxToAETitles != null
+            && Arrays.asList(sendWithDefaultTransferSyntaxToAETitles).contains(moveDest);
     }
     
     boolean isIgnorableSOPClass(String cuid, String moveDest) {
