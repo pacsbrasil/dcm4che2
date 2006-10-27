@@ -78,7 +78,6 @@
         <attr tag="00181020"/> <!-- Software Versions -->
         <attr tag="00181030"/> <!-- Protocol Name -->
         <attr tag="00181050"/> <!-- Spatial Resolution -->
-        <attr tag="00181061"/> <!-- Trigger Source or Type -->
         <attr tag="0018106A"/> <!-- Synchronization Trigger -->
         <attr tag="0018106C"/> <!-- Synchronization Channel -->
         <attr tag="00181200"/> <!-- Date of Last Calibration -->
@@ -87,8 +86,6 @@
         <attr tag="00181801"/> <!-- Time Source -->
         <attr tag="00181802"/> <!-- Time Distribution Protocol -->
         <attr tag="00181803"/> <!-- NTP Source Address -->
-        <attr tag="00185100"/> <!-- Patient Position -->
-        <attr tag="00185101"/> <!-- View Position -->
         <attr tag="0020000E" coerce="false"/> <!-- Series Instance UID -->
         <attr tag="00200011"/> <!-- Series Number -->
         <attr tag="00200052"/> <!-- Frame of Reference UID -->
