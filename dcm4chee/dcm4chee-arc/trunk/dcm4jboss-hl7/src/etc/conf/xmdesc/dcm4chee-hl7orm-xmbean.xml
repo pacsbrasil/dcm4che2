@@ -31,6 +31,39 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getOrderControlOperationMap"
+      setMethod="setOrderControlOperationMap">
+      <description><![CDATA[Maps Order Control (Order Status) in received ORM
+      to Operation to perform.
+      <p><b>Syntax:</b><br/>
+      map = entry+<br/>
+      entry = orderContol [ '(' orderStatus ')' ] ':' operation<br/>
+      operation = 'NW' (* create worklist item(s) *)<br/>
+          | 'XO' (* update worklist item(s) *)<br/>
+          | 'CA' (* remove worklist item(s) *)<br/>
+          | 'SC(' ('IP' | 'CM' | 'OD') ')' (* update status of worklist item(s) *)<br/>
+          | 'NOOP' (* no operation *)</p>
+      ]]>
+      </description>
+      <name>OrderControlOperationMap</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+         NW:NW
+         XO:XO
+         CA:CA
+         OC:CA
+         DC:SC(DC)
+         OD:SC(DC)
+         SC(IP):SC(IP)
+         SC(CM):SC(CM)
+         SC(DC):SC(DC)
+         SC(CA):CA
+         SC:NOOP
+         " />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getDefaultStationName"
       setMethod="setDefaultStationName">
       <description>Scheduled Station Name in generated MWL item,

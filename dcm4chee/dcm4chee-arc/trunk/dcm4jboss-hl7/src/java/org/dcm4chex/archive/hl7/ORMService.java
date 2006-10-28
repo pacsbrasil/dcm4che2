@@ -39,10 +39,13 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
@@ -51,11 +54,13 @@ import javax.xml.transform.sax.SAXResult;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
 import org.xml.sax.ContentHandler;
 
@@ -67,11 +72,11 @@ import org.xml.sax.ContentHandler;
  */
 
 public class ORMService extends AbstractHL7Service {
-
-    private static final String[] CONTROL_CODES = { "NW", "XO", "CA", "DC",
-            "OC" };
-
-    private static final List CONTROL_CODES_LIST = Arrays.asList(CONTROL_CODES);
+    
+    private static final String[] OP_CODES = { "NW", "XO", "CA", "SC(IP)",
+        "SC(CM)", "SC(DC)", "NOOP" };
+    
+    private static final List OP_CODES_LIST = Arrays.asList(OP_CODES);
 
     private static final int NW = 0;
 
@@ -79,10 +84,18 @@ public class ORMService extends AbstractHL7Service {
 
     private static final int CA = 2;
 
-    private static final int DC = 3;
+    private static final int SC_IP = 3;
+    
+    private static final int SC_CM = 4;
 
-    private static final int OC = 4;
+    private static final int SC_DC = 5;
 
+    private static final int NOOP = 6;
+
+    private List orderControls;
+    
+    private int[] ops = {};
+    
     private ObjectName deviceServiceName;
 
     private String stylesheetURL = "resource:dcm4chee-hl7/orm2dcm.xsl";
@@ -110,6 +123,32 @@ public class ORMService extends AbstractHL7Service {
         this.deviceServiceName = deviceServiceName;
     }
 
+    public String getOrderControlOperationMap() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < ops.length; i++) {
+            sb.append(orderControls.get(i)).append(':')
+                .append(OP_CODES[ops[i]]).append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    public void setOrderControlOperationMap(String s) {
+        StringTokenizer stk = new StringTokenizer(s, " \r\n\t,;");
+        int lines = stk.countTokens();
+        int[] newops = new int[lines];
+        List newocs = new ArrayList(lines);
+        for (int i = 0; i < lines; i++) {
+            String[] ocop = StringUtils.split(stk.nextToken(), ':');
+            if (ocop.length != 2
+                    || (newops[i] = OP_CODES_LIST.indexOf(ocop[1])) == -1) {
+                throw new IllegalArgumentException(s);
+            }
+            newocs.add(ocop[0]);            
+        }
+        ops = newops;
+        orderControls = newocs;
+    }
+    
     public final String getDefaultModality() {
         return defaultModality;
     }
@@ -136,7 +175,7 @@ public class ORMService extends AbstractHL7Service {
 
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
-        int msgType = checkMessage(msg);
+        int op = toOp(msg);
         try {
             Dataset ds = dof.newDataset();
             Transformer t = getTemplates(stylesheetURL).newTransformer();
@@ -151,50 +190,60 @@ public class ORMService extends AbstractHL7Service {
                 throw new HL7Exception("AR",
                         "Missing required PID-5: Patient Name");
             mergeProtocolCodes(ds);
-            if (msgType == NW || msgType == XO) {
+            if (op == NW || op == XO) {
                 ds = addScheduledStationInfo(ds);
             }
             MWLManager mwlManager = getMWLManagerHome().create();
-            try {
-                DcmElement spsSq = ds.remove(Tags.SPSSeq);
-                Dataset sps;
-                for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
-                    sps = spsSq.getItem(i);
-                    switch (msgType) {
-                    case NW:
-                        ds.putSQ(Tags.SPSSeq).addItem(sps);
-                        adjustAttributes(ds);
+            DcmElement spsSq = ds.remove(Tags.SPSSeq);
+            Dataset sps;
+            String spsid;
+            for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
+                sps = spsSq.getItem(i);
+                spsid = sps.getString(Tags.SPSID);
+                switch (op) {
+                case NW:
+                    ds.putSQ(Tags.SPSSeq).addItem(sps);
+                    adjustAttributes(ds);
+                    addMissingAttributes(ds);
+                    log("Schedule", ds);
+                    logDataset("Insert MWL Item:", ds);
+                    mwlManager.addWorklistItem(ds);
+                    break;
+                case XO:
+                    ds.putSQ(Tags.SPSSeq).addItem(sps);
+                    adjustAttributes(ds);
+                    log("Update", ds);
+                    logDataset("Update MWL Item:", ds);
+                    if (!mwlManager.updateWorklistItem(ds)) {
+                        log("No Such ", ds);
                         addMissingAttributes(ds);
-                        log("Schedule", ds);
+                        log("->Schedule New ", ds);
                         logDataset("Insert MWL Item:", ds);
                         mwlManager.addWorklistItem(ds);
-                        break;
-                    case XO:
-                        ds.putSQ(Tags.SPSSeq).addItem(sps);
-                        adjustAttributes(ds);
-                        log("Update", ds);
-                        logDataset("Update MWL Item:", ds);
-                        if (!mwlManager.updateWorklistItem(ds)) {
-                            log("No Such ", ds);
-                            addMissingAttributes(ds);
-                            log("->Schedule New ", ds);
-                            logDataset("Insert MWL Item:", ds);
-                            mwlManager.addWorklistItem(ds);
-                        }
-                        break;
-                    case CA:
-                    case DC:
-                    case OC:
-                        log("Cancel", ds);
-                        mwlManager
-                                .removeWorklistItem(sps.getString(Tags.SPSID));
-                        break;
-                    default:
-                        throw new RuntimeException();
                     }
+                    break;
+                case CA:
+                    log("Cancel", ds);
+                    mwlManager.removeWorklistItem(spsid);
+                    break;
+                case SC_IP:
+                    log("Change SPS status to IN PROGRESS", ds);
+                    mwlManager.updateSPSStatus(spsid, "IN PROGRESS");
+                    break;
+                case SC_CM:
+                    log("Change SPS status to COMPLETED", ds);
+                    mwlManager.updateSPSStatus(spsid, "COMPLETED");
+                    break;
+                case SC_DC:
+                    log("Change SPS status to DISCONTINUED", ds);
+                    mwlManager.updateSPSStatus(spsid, "DISCONTINUED");
+                    break;
+                case NOOP:
+                    log("NOOP", ds);
+                    break;
+                default:
+                    throw new RuntimeException();
                 }
-            } finally {
-                mwlManager.remove();
             }
         } catch (HL7Exception e) {
             throw e;
@@ -221,14 +270,27 @@ public class ORMService extends AbstractHL7Service {
                 MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
     }
 
-    private int checkMessage(Document msg) throws HL7Exception {
-        // TODO check message, throw HL7Exception.AR if check failed
-        String orc1 = msg.getRootElement().element("ORC").elementText("field");
-        int msgType = CONTROL_CODES_LIST.indexOf(orc1);
-        if (msgType == -1)
-            throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
-                    + orc1);
-        return msgType;
+    private int toOp(Document msg) throws HL7Exception {
+        List fields = msg.getRootElement().element("ORC").elements("field");
+        String orderControl = getText(fields, 0, "Missing Order Control (ORC-1)");
+        String orderStatus = getText(fields, 0, "Missing Order Status (ORC-4)");
+        int opIndex = orderControls.indexOf(orderControl + "(" + orderStatus + ")");
+        if (opIndex == -1) {
+            opIndex = orderControls.indexOf(orderControl);
+            if (opIndex == -1) {
+                throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
+                        + orderControl);                 
+            }
+        }
+        return opIndex;
+    }
+
+    private String getText(List fields, int i, String errmg) throws HL7Exception {
+        try {
+            return ((Element) fields.get(i)).getText();
+        } catch (NoSuchElementException e) {
+            throw new HL7Exception("AR", errmg);
+        }
     }
 
     private Dataset addScheduledStationInfo(Dataset spsItems) throws Exception {
