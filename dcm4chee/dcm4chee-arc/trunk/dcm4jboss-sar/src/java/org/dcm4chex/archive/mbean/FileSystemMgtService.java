@@ -664,7 +664,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                         + storageFileSystem);
             }
         }
-        checkStorageFileSystem = 0;
+        checkStorageFileSystem();
     }
 
     public FileSystemDTO selectStorageFileSystem() throws Exception {
@@ -1283,6 +1283,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         dto.setStatus(FileSystemStatus.toInt(status));
         dto.setUserInfo(userInfo);
         newFileSystemMgt().updateFileSystem(dto);
+        checkStorageFileSystem();
+    }
+
+    public void checkStorageFileSystem() {
         checkStorageFileSystem = 0;
     }
 
@@ -1293,7 +1297,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         log.info("Update availability of " + dirPath + " to " + availability
                 + "(" + iAvail + ")");
         if (mgt.updateFileSystemAvailability(dirPath, iAvail)) {
-            checkStorageFileSystem = 0;
+            checkStorageFileSystem();
             int offset = 0;
             int limit = limitNumberOfFilesPerTask;
             int size;
@@ -1398,7 +1402,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public void linkFileSystems(String prev, String next)
             throws RemoteException, FinderException {
         newFileSystemMgt().linkFileSystems(prev, next);
-        checkStorageFileSystem = 0;
+        checkStorageFileSystem();
     }
 
     public String addOnlineFileSystem(String dirPath, String userInfo)
@@ -1451,7 +1455,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         dto.setStatus(status);
         dto.setUserInfo(userInfo);
         FileSystemDTO newFS = newFileSystemMgt().addAndLinkFileSystem(dto);
-        checkStorageFileSystem = 0;
+        checkStorageFileSystem();
         return newFS.toString();
     }
 
