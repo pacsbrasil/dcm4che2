@@ -149,16 +149,19 @@ public abstract class MWLManagerBean implements SessionBean {
 
     /**
      * @throws FinderException
+     * @throws FinderException
      * @ejb.interface-method
      */
-    public void updateSPSStatus(String spsid, String status) {
+    public boolean updateSPSStatus(String spsid, String status)
+            throws FinderException {
         try {
             MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
             Dataset ds = mwlItem.getAttributes();
             ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
             mwlItem.setAttributes(ds);
-        } catch (FinderException e) {
-            log.warn("Cant update SPS status! SpsID not found:" + spsid);
+            return true;
+        } catch (ObjectNotFoundException e) {
+            return false;
         }
     }
 

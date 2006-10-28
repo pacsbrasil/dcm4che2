@@ -196,9 +196,12 @@ public class MWLFindScpService extends AbstractScpService
                 String spsid = item.getString(Tags.SPSID);
                 if (spsid != null) {
                     try {
-                        mgr.updateSPSStatus(spsid, spsStatus);
-                        log.info("Update MWL item[spsid=" + spsid
-                        		+ ", status=" + spsStatus + "]");
+                        if (mgr.updateSPSStatus(spsid, spsStatus)) {
+                            log.info("Update MWL item[spsid=" + spsid
+                            		+ ", status=" + spsStatus + "]");
+                        } else {
+                            log.info("No such MWL item[spsid=" + spsid + "]");                            
+                        }
                     } catch (Exception e) {
                         log.error("Failed to update MWL item[spsid="
                         		+ spsid + "]", e);
