@@ -63,7 +63,7 @@ accessed studies.</description>
       of one additional SQL statement for each stored object.</p>
       <p>Invoking operation <i>checkStorageFileSystem</i> will force to check
       the status and availability of the current storage file system before
-      next file storage, even though this attribute is set to <tt>false</tt>.</p>
+      next file storage, even if this attribute is set to <tt>false</tt>.</p>
       ]]>
       </description>
       <name>CheckStorageFileSystemStatus</name>
@@ -615,10 +615,10 @@ accessed studies.</description>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Force check of status and free space of the current
+      <description><![CDATA[Force check of status and free space of the current
         storage file system before the file storage of next object received by
-        the Storage SCP - even though <i>CheckStorageFileSystemStatus</i> is
-        disabled.
+        the Storage SCP - even if <i>CheckStorageFileSystemStatus</i> is
+        disabled.]]>
       </description>
       <name>checkStorageFileSystem</name>
       <return-type>void</return-type>
