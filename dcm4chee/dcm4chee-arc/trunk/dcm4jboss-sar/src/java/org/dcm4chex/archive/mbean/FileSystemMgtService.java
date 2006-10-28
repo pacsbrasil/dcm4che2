@@ -507,7 +507,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.freeDiskSpaceOnDemand = freeDiskSpaceOnDemand;
     }
 
-
     public final String getPurgeFilesInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(purgeFilesInterval);
     }
@@ -615,6 +614,23 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.deleteFilesWhenUnavailable = deleteFilesWhenUnavailable;
     }
 
+
+    public String getTimerIDCheckFilesToPurge() {
+        return timerIDCheckFilesToPurge;
+    }
+
+    public void setTimerIDCheckFilesToPurge(String timerIDCheckFilesToPurge) {
+        this.timerIDCheckFilesToPurge = timerIDCheckFilesToPurge;
+    }
+
+    public String getTimerIDCheckFreeDiskSpace() {
+        return timerIDCheckFreeDiskSpace;
+    }
+
+    public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
+        this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
+    }
+   
     protected void startService() throws Exception {
         freeDiskSpaceListenerID = scheduler.startScheduler(
                 timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
@@ -642,11 +658,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             } else {
                 storageFileSystem = addFileSystem(defStorageDir, retrieveAET,
                         Availability.ONLINE, FileSystemStatus.DEF_RW, null);
-                log
-                        .warn("No writeable Storage Directory configured for retrieve AET "
-                                + retrieveAET
-                                + "- initalize default "
-                                + storageFileSystem);
+                log.warn("No writeable Storage Directory configured for retrieve AET "
+                        + retrieveAET
+                        + "- initalize default "
+                        + storageFileSystem);
             }
         }
         checkStorageFileSystem = 0;
@@ -737,27 +752,21 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
         if (!dir.exists()) {
             if (!makeStorageDirectory) {
-                log
-                        .warn("No such directory "
-                                + dir
-                                + " - try to switch to next configured storage directory");
+                log.warn("No such directory " + dir
+                        + " - try to switch to next configured storage directory");
                 return false;
             }
             log.info("M-WRITE " + dir);
             if (!dir.mkdirs()) {
-                log
-                        .warn("Failed to create directory "
-                                + dir
-                                + " - try to switch to next configured storage directory");
+                log.warn("Failed to create directory " + dir
+                        + " - try to switch to next configured storage directory");
                 return false;
             }
         }
         File nomount = new File(dir, mountFailedCheckFile);
         if (nomount.exists()) {
-            log
-                    .warn("Mount on "
-                            + dir
-                            + " seems broken - try to switch to next configured storage directory");
+            log.warn("Mount on " + dir
+                    + " seems broken - try to switch to next configured storage directory");
             return false;
         }
         final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
@@ -939,17 +948,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             final FileInfo info = fileInfos[i];
             if (retrieveAET.equals(info.fileRetrieveAET)) {
                 File f = FileUtils.toFile(info.basedir, info.fileID);
-                Dataset mergeAttrs = DatasetUtils
-                        .fromByteArray(
-                                info.patAttrs,
-                                DatasetUtils
-                                        .fromByteArray(
-                                                info.studyAttrs,
-                                                DatasetUtils
-                                                        .fromByteArray(
-                                                                info.seriesAttrs,
-                                                                DatasetUtils
-                                                                        .fromByteArray(info.instAttrs))));
+                Dataset mergeAttrs = DatasetUtils.fromByteArray(
+                        info.patAttrs,
+                        DatasetUtils .fromByteArray(
+                                info.studyAttrs,
+                                DatasetUtils .fromByteArray(
+                                        info.seriesAttrs,
+                                        DatasetUtils .fromByteArray(
+                                                info.instAttrs))));
                 FileDataSource ds = new FileDataSource(f, mergeAttrs,
                         new byte[bufferSize]);
                 ds.setWriteFile(true);// write FileMetaInfo!
@@ -1499,15 +1505,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                         // If this happens first time, log as error
                         log.error(
                                 "Failed to process JMS job. Will schedule retry ... Dumping - "
-                                        + order.toString(), e);
+                                + order.toString(), e);
                         // Record this exception
                         order.setThrowable(thisThrowable);
                     } else {
                         // otherwise, if it's the same exception as before
-                        log
-                                .warn("Failed to process "
-                                        + order.toIdString()
-                                        + ". Details should have been provided. Will schedule retry.");
+                        log.warn("Failed to process "
+                                + order.toIdString()
+                                + ". Details should have been provided. Will schedule retry.");
                     }
                     schedule(order, System.currentTimeMillis() + delay);
                 }
@@ -1529,21 +1534,5 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         } catch (Exception e) {
             log.error("Failed to schedule " + order, e);
         }
-    }
-
-    public String getTimerIDCheckFilesToPurge() {
-        return timerIDCheckFilesToPurge;
-    }
-
-    public void setTimerIDCheckFilesToPurge(String timerIDCheckFilesToPurge) {
-        this.timerIDCheckFilesToPurge = timerIDCheckFilesToPurge;
-    }
-
-    public String getTimerIDCheckFreeDiskSpace() {
-        return timerIDCheckFreeDiskSpace;
-    }
-
-    public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
-        this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
     }
 }
