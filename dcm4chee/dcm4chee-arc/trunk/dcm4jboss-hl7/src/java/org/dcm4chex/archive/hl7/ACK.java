@@ -48,18 +48,20 @@ import org.regenstrief.xhl7.HL7XMLLiterate;
 public class ACK {
 
     public final String acknowledgmentCode;
-	public final String messageControlID;
-	public final String textMessage;
 
-	public ACK(Document msg) {
+    public final String messageControlID;
+
+    public final String textMessage;
+
+    public ACK(Document msg) {
         Element msa = msg.getRootElement().element("MSA");
         if (msa == null)
-                throw new IllegalArgumentException("Missing MSA Segment");
+            throw new IllegalArgumentException("Missing MSA Segment");
         List fields = msa.elements(HL7XMLLiterate.TAG_FIELD);
         this.acknowledgmentCode = fieldAt(fields, 0);
         this.messageControlID = fieldAt(fields, 1);
         this.textMessage = fieldAt(fields, 2);
-     }
+    }
 
     private String fieldAt(List fields, int index) {
         return index < fields.size() ? toString(fields.get(index)) : "";
@@ -68,10 +70,9 @@ public class ACK {
     static String toString(Object el) {
         return el != null ? ((Element) el).getText() : "";
     }
-    
+
     public String toString() {
-    	return "ACK[code=" +  acknowledgmentCode 
-    			+ ", msgID=" + messageControlID + ','
-    			+ ", errorMsg=" + textMessage + "]";
+        return "ACK[code=" + acknowledgmentCode + ", msgID=" + messageControlID
+                + ',' + ", errorMsg=" + textMessage + "]";
     }
 }
