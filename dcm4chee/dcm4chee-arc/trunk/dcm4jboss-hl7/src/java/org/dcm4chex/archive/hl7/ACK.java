@@ -56,10 +56,14 @@ public class ACK {
         if (msa == null)
                 throw new IllegalArgumentException("Missing MSA Segment");
         List fields = msa.elements(HL7XMLLiterate.TAG_FIELD);
-        this.acknowledgmentCode = toString(fields.get(0));
-        this.messageControlID = toString(fields.get(1));
-        this.textMessage = toString(fields.get(2));
+        this.acknowledgmentCode = fieldAt(fields, 0);
+        this.messageControlID = fieldAt(fields, 1);
+        this.textMessage = fieldAt(fields, 2);
      }
+
+    private String fieldAt(List fields, int index) {
+        return index < fields.size() ? toString(fields.get(index)) : "";
+    }
 
     static String toString(Object el) {
         return el != null ? ((Element) el).getText() : "";
