@@ -115,7 +115,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
     private ForwardingRules forwardingRules = new ForwardingRules("");
-
+    
     private volatile long messageControlID = System.currentTimeMillis();
 
     private int concurrency = 1;
@@ -361,7 +361,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
         MSH msh = new MSH(rsp);
         if ("ACK".equals(msh.messageType)) {
             ACK ack = new ACK(rsp);
-            if (!"AA".equals(ack.acknowledgmentCode))
+            if (!("AA".equals(ack.acknowledgmentCode)
+                    || "CA".equals(ack.acknowledgmentCode)))
                 throw new HL7Exception(ack.acknowledgmentCode, ack.textMessage);
         } else {
             log.warn("Unsupport response message type: " + msh.messageType
