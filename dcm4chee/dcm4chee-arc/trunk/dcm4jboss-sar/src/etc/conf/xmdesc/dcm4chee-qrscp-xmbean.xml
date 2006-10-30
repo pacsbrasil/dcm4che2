@@ -346,12 +346,30 @@ QueryRetrieveScp service.</description>
    <attribute access="read-write"
       getMethod="isSendPendingMoveRSP"
       setMethod="setSendPendingMoveRSP">
-      <description>Return optional C-Move Response DICOM message with pending status.
+      <description><![CDATA[Flag indicating if optional C-Move Response DICOM
+      message with pending status are returned in the interval defined by
+      attribute <i>PendingMoveRSPInterval</i>.]]>
       </description>
       <name>SendPendingMoveResponse</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false"/>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPendingMoveRSPInterval"
+      setMethod="setPendingMoveRSPInterval">
+      <description><![CDATA[Interval in ms in which C-Move Response DICOM
+      message with pending status are returned. Even send (identical) response
+      messages, if no storage sub-operation was performed during such interval,
+      to keep the association alive. Only effective, if sending C-Move Response
+      DICOM message with pending status is activated by attribute
+      <i>SendPendingMoveResponse</i>.]]>
+      </description>
+      <name>PendingMoveRSPInterval</name>
+      <type>long</type>
+      <descriptors>
+         <value value="5000"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

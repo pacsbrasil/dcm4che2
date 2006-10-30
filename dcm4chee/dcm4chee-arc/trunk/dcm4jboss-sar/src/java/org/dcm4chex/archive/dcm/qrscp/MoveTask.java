@@ -48,6 +48,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
@@ -102,6 +104,8 @@ class MoveTask implements Runnable {
 
     private static final UIDDictionary uidDict = DictionaryFactory
             .getInstance().getDefaultUIDDictionary();
+    
+    private static final Timer pendingRspTimer = new Timer(true);
 
     private final QueryRetrieveScpService service;
 
@@ -159,6 +163,8 @@ class MoveTask implements Runnable {
 
     private DcmElement refSOPSeq;
 
+    private Command fwdMoveRspCmd;
+
     private DimseListener cancelListener = new DimseListener() {
 
         public void dimseReceived(Association assoc, Dimse dimse) {
@@ -176,6 +182,12 @@ class MoveTask implements Runnable {
             }
         }
     };
+
+    private TimerTask sendPendingRsp = new TimerTask() {
+
+        public void run() {
+            notifyMoveSCU(Status.Pending, null, fwdMoveRspCmd);
+        }};
 
     public MoveTask(QueryRetrieveScpService service,
             ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
@@ -283,43 +295,51 @@ class MoveTask implements Runnable {
     }
 
     public void run() {
-        if (retrieveInfo.isRetrieveFromLocal()) {
-            retrieveLocal();
+        if (service.isSendPendingMoveRSP()) {
+            pendingRspTimer.schedule(sendPendingRsp , 0, 
+                    service.getPendingMoveRSPInterval());
         }
-        while (!canceled && retrieveInfo.nextMoveForward()) {
-            String retrieveAET = retrieveInfo.getMoveForwardAET();
-            Collection iuids = retrieveInfo.getMoveForwardUIDs();
-            if (iuids.size() == size) {
-                if (log.isDebugEnabled())
-                    log.debug("Forward original Move RQ to " + retrieveAET);
-                forwardMove(retrieveAET, moveRqCmd, moveRqData, iuids);
-            } else {
-                DcmObjectFactory dof = DcmObjectFactory.getInstance();
-                Command cmd = dof.newCommand();
-                cmd.initCMoveRQ(msgID,
-                        UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-                        priority, moveDest);
-                Dataset ds = dof.newDataset();
-                ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
-                String[] a = (String[]) iuids.toArray(new String[iuids.size()]);
-                if (a.length <= service.getMaxUIDsPerMoveRQ()) {
-                    ds.putUI(Tags.SOPInstanceUID, a);
-                    forwardMove(retrieveAET, cmd, ds, iuids);
+        try {
+            if (retrieveInfo.isRetrieveFromLocal()) {
+                retrieveLocal();
+            }
+            while (!canceled && retrieveInfo.nextMoveForward()) {
+                String retrieveAET = retrieveInfo.getMoveForwardAET();
+                Collection iuids = retrieveInfo.getMoveForwardUIDs();
+                if (iuids.size() == size) {
+                    if (log.isDebugEnabled())
+                        log.debug("Forward original Move RQ to " + retrieveAET);
+                    forwardMove(retrieveAET, moveRqCmd, moveRqData, iuids);
                 } else {
-                    String[] b = new String[service.getMaxUIDsPerMoveRQ()];
-                    int off = 0;
-                    while (off + b.length < a.length) {
+                    DcmObjectFactory dof = DcmObjectFactory.getInstance();
+                    Command cmd = dof.newCommand();
+                    cmd.initCMoveRQ(msgID,
+                            UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                            priority, moveDest);
+                    Dataset ds = dof.newDataset();
+                    ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
+                    String[] a = (String[]) iuids.toArray(new String[iuids.size()]);
+                    if (a.length <= service.getMaxUIDsPerMoveRQ()) {
+                        ds.putUI(Tags.SOPInstanceUID, a);
+                        forwardMove(retrieveAET, cmd, ds, iuids);
+                    } else {
+                        String[] b = new String[service.getMaxUIDsPerMoveRQ()];
+                        int off = 0;
+                        while (off + b.length < a.length) {
+                            System.arraycopy(a, off, b, 0, b.length);
+                            ds.putUI(Tags.SOPInstanceUID, b);
+                            forwardMove(retrieveAET, cmd, ds, Arrays.asList(b));
+                            off += b.length;
+                        }
+                        b = new String[a.length - off];
                         System.arraycopy(a, off, b, 0, b.length);
                         ds.putUI(Tags.SOPInstanceUID, b);
                         forwardMove(retrieveAET, cmd, ds, Arrays.asList(b));
-                        off += b.length;
                     }
-                    b = new String[a.length - off];
-                    System.arraycopy(a, off, b, 0, b.length);
-                    ds.putUI(Tags.SOPInstanceUID, b);
-                    forwardMove(retrieveAET, cmd, ds, Arrays.asList(b));
                 }
             }
+        } finally {
+            sendPendingRsp.cancel();
         }
         notifyMoveFinished();
     }
@@ -370,12 +390,11 @@ class MoveTask implements Runnable {
                 DimseListener moveRspListener = new DimseListener() {
                     public void dimseReceived(Association assoc, Dimse dimse) {
                         try {
-                            final Command fwdMoveRspCmd = dimse.getCommand();
+                            fwdMoveRspCmd = dimse.getCommand();
                             final Dataset ds = dimse.getDataset();
                             final int status = fwdMoveRspCmd.getStatus();
                             switch (status) {
                             case Status.Pending:
-                                notifyMovePending(fwdMoveRspCmd);
                                 return;
                             case Status.Cancel:
                             case Status.UnableToPerformSuboperations:
@@ -471,9 +490,7 @@ class MoveTask implements Runnable {
                         break;
                     }
                     remainingIUIDs.remove(iuid);
-                    if (--remaining > 0) {
-                        notifyMovePending(null);
-                    }
+                    --remaining;
                 }
             };
             try {
@@ -581,12 +598,6 @@ class MoveTask implements Runnable {
         ds.setWithoutPixeldata(withoutPixeldata);
         return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);
-    }
-
-    private void notifyMovePending(Command fwdMoveRspCmd) {
-        if (service.isSendPendingMoveRSP()) {
-            notifyMoveSCU(Status.Pending, null, fwdMoveRspCmd);
-        }
     }
 
     private void notifyMoveFinished() {

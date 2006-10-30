@@ -140,6 +140,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean sendPendingMoveRSP = true;
 
+    private long pendingMoveRSPInterval = 5000;
+    
     private boolean forwardAsMoveOriginator = true;
 
     private boolean recordStudyAccessTime = true;
@@ -398,6 +400,17 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
 
+    public final void setPendingMoveRSPInterval(long ms) {
+        if (ms <= 0) {
+            throw new IllegalArgumentException("pendingMoveRSPInterval: " +  ms);
+        }
+        pendingMoveRSPInterval = ms ;
+    }
+    
+    public final long getPendingMoveRSPInterval() {
+        return pendingMoveRSPInterval ;
+    }
+    
     public final boolean isForwardAsMoveOriginator() {
         return forwardAsMoveOriginator;
     }
@@ -751,5 +764,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         return ds;
     }
+
 
 }
