@@ -91,20 +91,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private static String transactionIsolationLevelAsString(int level) {
         switch (level) {
-        	case 0:
-        	    return "DEFAULT";
-        	case Connection.TRANSACTION_READ_UNCOMMITTED:
-        	    return "READ_UNCOMMITTED";
-        	case Connection.TRANSACTION_READ_COMMITTED:
-        	    return "READ_COMMITTED";
-        	case Connection.TRANSACTION_REPEATABLE_READ:
-        	    return "REPEATABLE_READ";
-        	case Connection.TRANSACTION_SERIALIZABLE:
-        	    return "SERIALIZABLE";
+        case 0:
+            return "DEFAULT";
+        case Connection.TRANSACTION_READ_UNCOMMITTED:
+            return "READ_UNCOMMITTED";
+        case Connection.TRANSACTION_READ_COMMITTED:
+            return "READ_COMMITTED";
+        case Connection.TRANSACTION_REPEATABLE_READ:
+            return "REPEATABLE_READ";
+        case Connection.TRANSACTION_SERIALIZABLE:
+            return "SERIALIZABLE";
         }
         throw new IllegalArgumentException("level:" + level);
     }
-    
+
     private static int transactionIsolationLevelOf(String s) {
         String uc = s.trim().toUpperCase();
         if ("READ_UNCOMMITTED".equals(uc))
@@ -117,43 +117,43 @@ public class QueryRetrieveScpService extends AbstractScpService {
             return Connection.TRANSACTION_SERIALIZABLE;
         return 0;
     }
-    
+
     private String[] sendNoPixelDataToAETs = null;
-    
+
     private String[] sendWithDefaultTransferSyntaxToAETitles = null;
 
     private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
-    
+
     private Map ignorableSOPClasses = new LinkedHashMap();
 
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
-    
+
     private ObjectName fileSystemMgtName;
 
     private ObjectName stgCmtScuScpName;
 
     private ObjectName tarRetrieverName;
-        
-    private ObjectName aeServiceName; 
-    
+
+    private ObjectName aeServiceName;
+
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-    
+
     private boolean sendPendingMoveRSP = true;
 
     private boolean forwardAsMoveOriginator = true;
-	
-	private boolean recordStudyAccessTime = true;
+
+    private boolean recordStudyAccessTime = true;
 
     private boolean noMatchForNoValue = true;
- 
+
     private boolean checkMatchingKeySupported = true;
-    
+
     private int acTimeout = 5000;
 
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
-    
+
     private int maxStoreOpsInvoked = 0;
 
     private FindScp dicomFindScp = new FindScp(this, true);
@@ -161,66 +161,70 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private FindScp tianiFindScp = new FindScp(this, false);
 
     private FindScp tianiBlockedFindScp = new BlockedFindScp(this);
-    
+
     private FindScp tianiVMFFindScp = new VMFFindScp(this);
-	
+
     private MoveScp moveScp = new MoveScp(this);
-    
+
     private int maxUIDsPerMoveRQ = 100;
 
     private int maxBlockedFindRSP = 10000;
 
-	private int bufferSize = 8192;
+    private int bufferSize = 8192;
 
-	private File virtualEnhancedCTConfigFile;
-	
-	private Dataset virtualEnhancedCTConfig;
+    private File virtualEnhancedCTConfigFile;
 
-	private File virtualEnhancedMRConfigFile;
+    private Dataset virtualEnhancedCTConfig;
 
-	private Dataset virtualEnhancedMRConfig;
+    private File virtualEnhancedMRConfigFile;
 
-    /** Map containing accepted SOP Class UIDs.
-     * key is name (as in config string), value is real uid) */
+    private Dataset virtualEnhancedMRConfig;
+
+    /**
+     * Map containing accepted SOP Class UIDs. key is name (as in config
+     * string), value is real uid)
+     */
     private Map standardCuidMap = new LinkedHashMap();
 
-
-    /** Map containing accepted private SOP Class UIDs.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted private SOP Class UIDs. key is name (as in config
+     * string), value is real uid)
+     */
     private Map privateCuidMap = new LinkedHashMap();
 
-
-    /** Map containing accepted Transfer Syntax UIDs for private SOP Classes.
-     * key is name (as in config string), value is real uid) */
+    /**
+     * Map containing accepted Transfer Syntax UIDs for private SOP Classes. key
+     * is name (as in config string), value is real uid)
+     */
     private Map privateTSuidMap = new LinkedHashMap();
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
-    
+
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
-    
+
     public final String getVirtualEnhancedCTConfigFile() {
-		return virtualEnhancedCTConfigFile.getPath();
-	}
+        return virtualEnhancedCTConfigFile.getPath();
+    }
 
-	public final void setVirtualEnhancedCTConfigFile(String path) {
-		this.virtualEnhancedCTConfigFile = 
-			new File(path.replace('/', File.separatorChar));
-	}
+    public final void setVirtualEnhancedCTConfigFile(String path) {
+        this.virtualEnhancedCTConfigFile = new File(path.replace('/',
+                File.separatorChar));
+    }
 
-	public final String getVirtualEnhancedMRConfigFile() {
-		return virtualEnhancedMRConfigFile.getPath();
-	}
+    public final String getVirtualEnhancedMRConfigFile() {
+        return virtualEnhancedMRConfigFile.getPath();
+    }
 
-	public final void setVirtualEnhancedMRConfigFile(String path) {
-		this.virtualEnhancedMRConfigFile =
-			new File(path.replace('/', File.separatorChar));
-	}
+    public final void setVirtualEnhancedMRConfigFile(String path) {
+        this.virtualEnhancedMRConfigFile = new File(path.replace('/',
+                File.separatorChar));
+    }
 
-	public final ObjectName getTLSConfigName() {
+    public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
 
@@ -229,21 +233,21 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();        
+        return tlsConfig.getReceiveBufferSize();
     }
-    
+
     public final void setReceiveBufferSize(int size) {
         tlsConfig.setReceiveBufferSize(size);
     }
 
     public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();        
+        return tlsConfig.getSendBufferSize();
     }
-    
+
     public final void setSendBufferSize(int size) {
         tlsConfig.setSendBufferSize(size);
     }
-        
+
     public final boolean isTcpNoDelay() {
         return tlsConfig.isTcpNoDelay();
     }
@@ -251,15 +255,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setTcpNoDelay(boolean on) {
         tlsConfig.setTcpNoDelay(on);
     }
-    
+
     public final ObjectName getStgCmtScuScpName() {
         return stgCmtScuScpName;
     }
-    
+
     public final void setStgCmtScuScpName(ObjectName stgCmtScuScpName) {
         this.stgCmtScuScpName = stgCmtScuScpName;
     }
-    
+
     public final ObjectName getTarRetrieverName() {
         return tarRetrieverName;
     }
@@ -268,51 +272,56 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.tarRetrieverName = tarRetrieverName;
     }
 
-	/**
-	 * @return Returns the aeService.
-	 */
-	public ObjectName getAEServiceName() {
-		return aeServiceName;
-	}
-	/**
-	 * @param aeService The aeService to set.
-	 */
-	public void setAEServiceName(ObjectName aeServiceName) {
-		this.aeServiceName = aeServiceName;
-	}
-    
+    /**
+     * @return Returns the aeService.
+     */
+    public ObjectName getAEServiceName() {
+        return aeServiceName;
+    }
+
+    /**
+     * @param aeService
+     *            The aeService to set.
+     */
+    public void setAEServiceName(ObjectName aeServiceName) {
+        this.aeServiceName = aeServiceName;
+    }
+
     public final boolean isNoMatchForNoValue() {
         return noMatchForNoValue;
     }
 
     public final void setNoMatchForNoValue(boolean noMatchForNoValue) {
         this.noMatchForNoValue = noMatchForNoValue;
-    }    
-    
+    }
+
     /**
      * @return Returns the checkMatchingKeySupport.
      */
     public boolean isCheckMatchingKeySupported() {
         return checkMatchingKeySupported;
     }
+
     /**
-     * @param checkMatchingKeySupport The checkMatchingKeySupport to set.
+     * @param checkMatchingKeySupport
+     *            The checkMatchingKeySupport to set.
      */
     public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
         this.checkMatchingKeySupported = checkMatchingKeySupport;
     }
+
     public final String getQueryTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
     }
-    
+
     public final void setQueryTransactionIsolationLevel(String level) {
         QueryCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
     }
-    
+
     public final String getRetrieveTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(RetrieveCmd.transactionIsolationLevel);
     }
-    
+
     public final void setRetrieveTransactionIsolationLevel(String level) {
         RetrieveCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
     }
@@ -328,19 +337,19 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public String getAcceptedPrivateSOPClasses() {
         return toString(privateCuidMap);
     }
- 
-    public void setAcceptedPrivateSOPClasses( String s ) {
+
+    public void setAcceptedPrivateSOPClasses(String s) {
         updateAcceptedSOPClass(privateCuidMap, s, null);
     }
 
     public String getAcceptedTransferSyntaxForPrivateSOPClasses() {
         return toString(privateTSuidMap);
     }
- 
-    public void setAcceptedTransferSyntaxForPrivateSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForPrivateSOPClasses(String s) {
         updateAcceptedTransferSyntax(privateTSuidMap, s);
     }
-    
+
     public String getAcceptedStandardSOPClasses() {
         return toString(standardCuidMap);
     }
@@ -349,7 +358,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         updateAcceptedSOPClass(standardCuidMap, s, null);
     }
 
-	public final int getAcTimeout() {
+    public final int getAcTimeout() {
         return acTimeout;
     }
 
@@ -373,13 +382,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.soCloseDelay = soCloseDelay;
     }
 
-    public final int getMaxStoreOpsInvoked()
-    {
+    public final int getMaxStoreOpsInvoked() {
         return maxStoreOpsInvoked;
     }
 
-    public final void setMaxStoreOpsInvoked(int maxStoreOpsInvoked)
-    {
+    public final void setMaxStoreOpsInvoked(int maxStoreOpsInvoked) {
         this.maxStoreOpsInvoked = maxStoreOpsInvoked;
     }
 
@@ -398,45 +405,47 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setForwardAsMoveOriginator(boolean forwardAsMoveOriginator) {
         this.forwardAsMoveOriginator = forwardAsMoveOriginator;
     }
-    
+
     public final boolean isRecordStudyAccessTime() {
-		return recordStudyAccessTime;
-	}
+        return recordStudyAccessTime;
+    }
 
-	public final void setRecordStudyAccessTime(boolean updateAccessTime) {
-		this.recordStudyAccessTime = updateAccessTime;
-	}
+    public final void setRecordStudyAccessTime(boolean updateAccessTime) {
+        this.recordStudyAccessTime = updateAccessTime;
+    }
 
-	public final String getSendNoPixelDataToAETs() {
-        return sendNoPixelDataToAETs == null ? NONE
-                : StringUtils.toString(sendNoPixelDataToAETs, '\\');
+    public final String getSendNoPixelDataToAETs() {
+        return sendNoPixelDataToAETs == null ? NONE : StringUtils.toString(
+                sendNoPixelDataToAETs, '\\');
     }
 
     public final void setSendNoPixelDataToAETs(String aets) {
-        this.sendNoPixelDataToAETs = NONE.equalsIgnoreCase(aets) ? null 
+        this.sendNoPixelDataToAETs = NONE.equalsIgnoreCase(aets) ? null
                 : StringUtils.split(aets, '\\');
     }
-    
+
     public final String getSendWithDefaultTransferSyntaxToAETitles() {
         return sendWithDefaultTransferSyntaxToAETitles == null ? NONE
-                : StringUtils.toString(sendWithDefaultTransferSyntaxToAETitles, '\\');
+                : StringUtils.toString(sendWithDefaultTransferSyntaxToAETitles,
+                        '\\');
     }
 
     public final void setSendWithDefaultTransferSyntaxToAETitles(String aets) {
-        this.sendWithDefaultTransferSyntaxToAETitles = NONE.equalsIgnoreCase(aets) ? null 
-                : StringUtils.split(aets, '\\');
+        this.sendWithDefaultTransferSyntaxToAETitles = NONE
+                .equalsIgnoreCase(aets) ? null : StringUtils.split(aets, '\\');
     }
-    
+
     public final String getIgnoreUnsupportedSOPClassFailuresByAETs() {
         return ignoreUnsupportedSOPClassFailuresByAETs == null ? NONE
-            : StringUtils.toString(ignoreUnsupportedSOPClassFailuresByAETs, '\\');
+                : StringUtils.toString(ignoreUnsupportedSOPClassFailuresByAETs,
+                        '\\');
     }
-    
+
     public final void setIgnoreUnsupportedSOPClassFailuresByAETs(String aets) {
-        this.ignoreUnsupportedSOPClassFailuresByAETs = NONE.equalsIgnoreCase(aets) ? null 
-                : StringUtils.split(aets, '\\');
+        this.ignoreUnsupportedSOPClassFailuresByAETs = NONE
+                .equalsIgnoreCase(aets) ? null : StringUtils.split(aets, '\\');
     }
-    
+
     public final String getIgnorableSOPClasses() {
         return toString(ignorableSOPClasses);
     }
@@ -446,7 +455,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final String getRequestStgCmtFromAETs() {
-        if (requestStgCmtFromAETs.isEmpty()) return NONE;        
+        if (requestStgCmtFromAETs.isEmpty())
+            return NONE;
         StringBuffer sb = new StringBuffer();
         Iterator it = requestStgCmtFromAETs.entrySet().iterator();
         while (it.hasNext()) {
@@ -464,8 +474,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setRequestStgCmtFromAETs(String aets) {
         requestStgCmtFromAETs.clear();
-        if (aets != null && aets.length() > 0 
-                && !aets.equalsIgnoreCase(NONE)) {
+        if (aets != null && aets.length() > 0 && !aets.equalsIgnoreCase(NONE)) {
             String[] a = StringUtils.split(aets, '\\');
             String s;
             int c;
@@ -474,29 +483,30 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 c = s.indexOf(':');
                 if (c == -1)
                     requestStgCmtFromAETs.put(s, s);
-                else if (c > 0 && c < s.length() -1)
-                    requestStgCmtFromAETs.put(s.substring(0, c), s.substring(c+1));
+                else if (c > 0 && c < s.length() - 1)
+                    requestStgCmtFromAETs.put(s.substring(0, c), s
+                            .substring(c + 1));
             }
         }
     }
-    
-	public final int getMaxUIDsPerMoveRQ() {
-		return maxUIDsPerMoveRQ;
-	}
-	
-	public final void setMaxUIDsPerMoveRQ(int max) {
-		this.maxUIDsPerMoveRQ = max;
-	}
 
-	public final void setMaxBlockedFindRSP(int max) {
-		this.maxBlockedFindRSP = max;
-	}
+    public final int getMaxUIDsPerMoveRQ() {
+        return maxUIDsPerMoveRQ;
+    }
+
+    public final void setMaxUIDsPerMoveRQ(int max) {
+        this.maxUIDsPerMoveRQ = max;
+    }
+
+    public final void setMaxBlockedFindRSP(int max) {
+        this.maxBlockedFindRSP = max;
+    }
 
     public final int getMaxBlockedFindRSP() {
-		return maxBlockedFindRSP;
-	}
+        return maxBlockedFindRSP;
+    }
 
-	protected void bindDcmServices(DcmServiceRegistry services) {
+    protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND,
@@ -506,11 +516,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
         services.bind(UIDs.TianiStudyRootQueryRetrieveInformationModelFIND,
                 tianiFindScp);
-        services.bind(UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
+        services.bind(
+                UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
                 tianiBlockedFindScp);
-        services.bind(UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
-                tianiVMFFindScp);
-        
+        services
+                .bind(
+                        UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
+                        tianiVMFFindScp);
+
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 moveScp);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelMOVE, moveScp);
@@ -525,15 +538,21 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
         services.unbind(UIDs.TianiPatientRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.TianiStudyRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.TianiPatientStudyOnlyQueryRetrieveInformationModelFIND);
+        services
+                .unbind(UIDs.TianiPatientStudyOnlyQueryRetrieveInformationModelFIND);
 
-        services.unbind(UIDs.TianiBlockedPatientRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND);
+        services
+                .unbind(UIDs.TianiBlockedPatientRootQueryRetrieveInformationModelFIND);
+        services
+                .unbind(UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND);
+        services
+                .unbind(UIDs.TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND);
 
-        services.unbind(UIDs.TianiVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND);
-        
+        services
+                .unbind(UIDs.TianiVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND);
+        services
+                .unbind(UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND);
+
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
@@ -551,32 +570,33 @@ public class QueryRetrieveScpService extends AbstractScpService {
         putPresContexts(policy, valuesToStringArray(standardCuidMap),
                 enable ? valuesToStringArray(tsuidMap) : null);
     }
-    
+
     protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
             String[] tsuids) {
-        super.putPresContexts(policy, cuids, tsuids);        
+        super.putPresContexts(policy, cuids, tsuids);
         ExtNegotiator neg = tsuids != null ? ECHO_EXT_NEG : null;
         for (int i = 0; i < cuids.length; i++) {
-            policy.putExtNegPolicy(cuids[i], neg);            
+            policy.putExtNegPolicy(cuids[i], neg);
         }
     }
 
-    public AEData queryAEData(String aet, InetAddress address) throws DcmServiceException,
-            UnkownAETException {
-		//String host = address != null ? address.getCanonicalHostName() : null;
+    public AEData queryAEData(String aet, InetAddress address)
+            throws DcmServiceException, UnkownAETException {
+        // String host = address != null ? address.getCanonicalHostName() :
+        // null;
         try {
-            Object o = server.invoke(aeServiceName, "getAE", 
-            		new Object[] {aet, address}, 
-					new String[] {String.class.getName(), InetAddress.class.getName()});
-            if ( o == null ) 
-            	throw new UnkownAETException("Unkown AET: " + aet);
+            Object o = server.invoke(aeServiceName, "getAE", new Object[] {
+                    aet, address }, new String[] { String.class.getName(),
+                    InetAddress.class.getName() });
+            if (o == null)
+                throw new UnkownAETException("Unkown AET: " + aet);
             return (AEData) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
     }
-    
+
     boolean isLocalRetrieveAET(String aet) {
         for (int i = 0; i < calledAETs.length; i++) {
             if (aet.equals(calledAETs[i]))
@@ -584,56 +604,56 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         return false;
     }
-    
+
     public final int getBufferSize() {
-        return bufferSize ;
+        return bufferSize;
     }
 
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-    
+
     boolean isWithoutPixelData(String moveDest) {
         return sendNoPixelDataToAETs != null
-            && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);
+                && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);
     }
-    
+
     boolean isSendWithDefaultTransferSyntax(String moveDest) {
         return sendWithDefaultTransferSyntaxToAETitles != null
-            && Arrays.asList(sendWithDefaultTransferSyntaxToAETitles).contains(moveDest);
+                && Arrays.asList(sendWithDefaultTransferSyntaxToAETitles)
+                        .contains(moveDest);
     }
-    
+
     boolean isIgnorableSOPClass(String cuid, String moveDest) {
         return ignorableSOPClasses.containsValue(cuid)
-            || ignoreUnsupportedSOPClassFailuresByAETs != null
-            && Arrays.asList(ignoreUnsupportedSOPClassFailuresByAETs).contains(moveDest);
+                || ignoreUnsupportedSOPClassFailuresByAETs != null
+                && Arrays.asList(ignoreUnsupportedSOPClassFailuresByAETs)
+                        .contains(moveDest);
     }
-    
+
     String getStgCmtAET(String moveDest) {
         return (String) requestStgCmtFromAETs.get(moveDest);
-    }    
+    }
 
     void logInstancesSent(RemoteNode node, InstancesAction action) {
-        if (auditLogName == null) return;
+        if (auditLogName == null)
+            return;
         try {
-            server.invoke(auditLogName,
-                    "logInstancesSent",
-                    new Object[] { node, action},
-                    new String[] { RemoteNode.class.getName(),
-                    	InstancesAction.class.getName()});
+            server.invoke(auditLogName, "logInstancesSent", new Object[] {
+                    node, action }, new String[] { RemoteNode.class.getName(),
+                    InstancesAction.class.getName() });
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
     }
 
     void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {
-        if (auditLogName == null) return;
+        if (auditLogName == null)
+            return;
         try {
-            server.invoke(auditLogName,
-                    "logDicomQuery",
-                    new Object[] { keys, node, cuid},
-                    new String[] { Dataset.class.getName(), 
-                    	RemoteNode.class.getName(), String.class.getName()});
+            server.invoke(auditLogName, "logDicomQuery", new Object[] { keys,
+                    node, cuid }, new String[] { Dataset.class.getName(),
+                    RemoteNode.class.getName(), String.class.getName() });
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
@@ -657,80 +677,79 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
         return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
-                new Object[] { fsID, fileID }, 
-                new String[] { String.class.getName(), String.class.getName()});
+                new Object[] { fsID, fileID }, new String[] {
+                        String.class.getName(), String.class.getName() });
     }
 
-    FileSystemMgtHome getFileSystemMgtHome()
-	        throws HomeFactoryException {
-	    return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-	            FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
-	}
+    FileSystemMgtHome getFileSystemMgtHome() throws HomeFactoryException {
+        return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
+    }
 
-	void updateStudyAccessTime(Set studyInfos) {
-		if (!recordStudyAccessTime)
-			return;
-		
-	    FileSystemMgt fsMgt;
-	    try {
-	        fsMgt = getFileSystemMgtHome().create();
-	    } catch (Exception e) {
-	        log.fatal("Failed to access FileSystemMgt EJB");
-	        return;
-	    }
-	    try {
-	        for (Iterator it = studyInfos.iterator(); it.hasNext();) {
-	            String studyInfo = (String) it.next();
-	            int delim = studyInfo.indexOf('@');
-	            try {
-	                fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
-	                        studyInfo.substring(delim + 1));
-	            } catch (Exception e) {
-	                log.warn("Failed to update access time for study "
-	                        + studyInfo, e);
-	            }
-	        }
-	    } finally {
-	        try {
-	            fsMgt.remove();
-	        } catch (Exception ignore) {
-	        }
-	    }
-	}
+    void updateStudyAccessTime(Set studyInfos) {
+        if (!recordStudyAccessTime)
+            return;
 
-    Dataset getVMFConfig(String cuid) throws DcmServiceException
-    {
+        FileSystemMgt fsMgt;
+        try {
+            fsMgt = getFileSystemMgtHome().create();
+        } catch (Exception e) {
+            log.fatal("Failed to access FileSystemMgt EJB");
+            return;
+        }
+        try {
+            for (Iterator it = studyInfos.iterator(); it.hasNext();) {
+                String studyInfo = (String) it.next();
+                int delim = studyInfo.indexOf('@');
+                try {
+                    fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
+                            studyInfo.substring(delim + 1));
+                } catch (Exception e) {
+                    log.warn("Failed to update access time for study "
+                            + studyInfo, e);
+                }
+            }
+        } finally {
+            try {
+                fsMgt.remove();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    Dataset getVMFConfig(String cuid) throws DcmServiceException {
         if (UIDs.MRImageStorage.equals(cuid))
             return getVirtualEnhancedMRConfig();
         if (UIDs.CTImageStorage.equals(cuid))
             return getVirtualEnhancedCTConfig();
-        throw new DcmServiceException(0xC001, 
-                "Series contains instance(s) of different SOP Classes than MR or CT - " + cuid);
+        throw new DcmServiceException(0xC001,
+                "Series contains instance(s) of different SOP Classes than MR or CT - "
+                        + cuid);
     }
 
-	Dataset getVirtualEnhancedMRConfig() {
-		if (virtualEnhancedMRConfig == null)
-			virtualEnhancedMRConfig = loadVMFConfig(virtualEnhancedMRConfigFile);
-		return virtualEnhancedMRConfig;
-	}
+    Dataset getVirtualEnhancedMRConfig() {
+        if (virtualEnhancedMRConfig == null)
+            virtualEnhancedMRConfig = loadVMFConfig(virtualEnhancedMRConfigFile);
+        return virtualEnhancedMRConfig;
+    }
 
-	Dataset getVirtualEnhancedCTConfig() {
-		if (virtualEnhancedCTConfig == null)
-			virtualEnhancedCTConfig = loadVMFConfig(virtualEnhancedCTConfigFile);
-		return virtualEnhancedCTConfig;
-	}
+    Dataset getVirtualEnhancedCTConfig() {
+        if (virtualEnhancedCTConfig == null)
+            virtualEnhancedCTConfig = loadVMFConfig(virtualEnhancedCTConfigFile);
+        return virtualEnhancedCTConfig;
+    }
 
-	private Dataset loadVMFConfig(File file) throws ConfigurationException{
-		Dataset ds = DcmObjectFactory.getInstance().newDataset();
-		try {
-	        SAXParserFactory f = SAXParserFactory.newInstance();
-	        SAXParser p = f.newSAXParser();
-			p.parse(FileUtils.resolve(file), ds.getSAXHandler2(null));
-		} catch (Exception e) {
-			throw new ConfigurationException(
-					"Failed to load VMF Configuration from " + file);
-		}
-		return ds;
-	}
+    private Dataset loadVMFConfig(File file) throws ConfigurationException {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        try {
+            SAXParserFactory f = SAXParserFactory.newInstance();
+            SAXParser p = f.newSAXParser();
+            p.parse(FileUtils.resolve(file), ds.getSAXHandler2(null));
+        } catch (Exception e) {
+            throw new ConfigurationException(
+                    "Failed to load VMF Configuration from " + file);
+        }
+        return ds;
+    }
 
 }
