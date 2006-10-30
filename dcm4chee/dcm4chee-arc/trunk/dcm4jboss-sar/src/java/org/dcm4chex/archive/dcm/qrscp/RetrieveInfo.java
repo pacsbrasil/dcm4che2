@@ -108,7 +108,8 @@ final class RetrieveInfo {
             notAvailableIuids.add(iuid);
             for (int j = 0; j < fileInfos.length; j++) {
                 fileInfo = fileInfos[j];
-                if (service.isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
+                if (fileInfo.fileRetrieveAET != null
+                        && service.isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
                     putLocalFile(iuid, fileInfo);
                     iuidsAndTsuids.tsuids.add(fileInfo.tsUID);
                 } else {
