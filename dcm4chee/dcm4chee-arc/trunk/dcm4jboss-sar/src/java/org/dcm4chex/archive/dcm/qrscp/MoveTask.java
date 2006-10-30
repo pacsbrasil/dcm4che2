@@ -186,7 +186,9 @@ class MoveTask implements Runnable {
     private TimerTask sendPendingRsp = new TimerTask() {
 
         public void run() {
-            notifyMoveSCU(Status.Pending, null, fwdMoveRspCmd);
+            if (remaining > 0 || fwdMoveRspCmd != null) {
+                notifyMoveSCU(Status.Pending, null, fwdMoveRspCmd);
+            }
         }};
 
     public MoveTask(QueryRetrieveScpService service,
