@@ -41,7 +41,7 @@
       operation = 'NW' (* create worklist item(s) *)<br/>
           | 'XO' (* update worklist item(s) *)<br/>
           | 'CA' (* remove worklist item(s) *)<br/>
-          | 'SC(' ('IP' | 'CM' | 'OD') ')' (* update status of worklist item(s) *)<br/>
+          | 'SC(' ('IP' | 'CM' | 'DC') ')' (* update status of worklist item(s) *)<br/>
           | 'NOOP' (* no operation *)</p>
       ]]>
       </description>
