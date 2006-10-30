@@ -43,11 +43,9 @@ import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -437,21 +435,11 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listLinkedFileSystems(FileSystemDTO dto)
-    throws FinderException {
-        FileSystemLocal prev0 = getRWFileSystem(dto);
-        if (prev0 == null) {
-        	return Collections.EMPTY_LIST;
-        }
-        ArrayList list = new ArrayList();
-        FileSystemLocal prev;
-        FileSystemLocal next = prev0;
-        do {
-            list.add(next.toDTO());
-        	prev = next;
-        	next = prev.getNextFileSystem();
-        } while (next != null && !next.isIdentical(prev0));
-        return list;
+    public FileSystemDTO[] findRWFileSystemByRetieveAETAndAvailability(
+            String aet, int availability) throws FinderException {
+        return toDTO(fileSystemHome
+                .findByRetrieveAETAndAvailabilityAndStatus2(aet, availability,
+                        FileSystemStatus.DEF_RW, FileSystemStatus.RW));
     }
 
 	private FileSystemLocal getRWFileSystem(FileSystemDTO dto)

@@ -53,6 +53,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1236,6 +1237,43 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         return fsMgt.getStudySize(pk, fsPk);
     }
 
+    private void sortFileSystems(FileSystemDTO[] dtos) {
+        int capacity = dtos.length * 4 / 3 + 1;
+        HashMap tmp = new HashMap(capacity);
+        HashSet root = new HashSet(capacity);
+        HashSet notRoot = new HashSet(capacity);
+        for (int i = 0; i < dtos.length; ++i) {
+            FileSystemDTO dto = dtos[i];
+            String dirPath = dto.getDirectoryPath();
+            tmp.put(dirPath, dto);
+            if (!notRoot.remove(dirPath)) {
+                root.add(dirPath);
+            }
+            String next = dto.getNext();
+            if (next != null && !root.remove(next)) {
+                notRoot.add(next);
+            }
+        }
+        int i = 0;
+        while (!tmp.isEmpty()) {
+            FileSystemDTO dto;
+            if (!root.isEmpty()) {
+                Iterator iter = root.iterator();
+                dto = (FileSystemDTO) tmp.remove(iter.next());
+                iter.remove();
+            } else {
+                Iterator iter = tmp.values().iterator();
+                dto = (FileSystemDTO) iter.next();
+                iter.remove();
+            }
+            while (dto != null) {
+                dtos[i++] = dto;
+                dto = (FileSystemDTO) tmp.remove(dto.getNext());
+            }            
+        }
+    }
+
+    
     private static String toString(FileSystemDTO[] dtos) {
         StringBuffer sb = new StringBuffer();
         String nl = System.getProperty("line.separator", "\n");
@@ -1246,9 +1284,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     public String showAllFileSystems() throws RemoteException, FinderException {
-        return toString(listAllFileSystems());
+        FileSystemDTO[] dtos = listAllFileSystems();
+        sortFileSystems(dtos);
+        return toString(dtos);
     }
-
+    
     public FileSystemDTO[] listAllFileSystems() throws RemoteException,
             FinderException {
         return newFileSystemMgt().getAllFileSystems();
@@ -1413,9 +1453,18 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     public String showOnlineFileSystems() throws RemoteException,
             FinderException {
-        return showFileSystems(Availability.ONLINE);
+        return showFileSystemsWithAvailability(Availability.ONLINE);
     }
 
+    private String showFileSystemsWithAvailability(int availability)
+            throws RemoteException, FinderException {
+        FileSystemDTO[] dtos = newFileSystemMgt()
+                .findRWFileSystemByRetieveAETAndAvailability(retrieveAET,
+                        availability);
+        sortFileSystems(dtos);
+        return toString(dtos);
+    }
+    
     public String addNearlineFileSystem(String dirPath, String userInfo)
             throws RemoteException, FinderException, CreateException {
         return addAndLinkFileSystem(dirPath, Availability.NEARLINE,
@@ -1424,25 +1473,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     public String showNearlineFileSystems() throws RemoteException,
             FinderException {
-        return showFileSystems(Availability.NEARLINE);
-    }
+        return showFileSystemsWithAvailability(Availability.NEARLINE);
+   }
 
     public String removeFileSystem(String dirPath) throws RemoteException,
             FinderException, RemoveException {
         return newFileSystemMgt().removeFileSystem(dirPath).toString();
-    }
-
-    private String showFileSystems(int availability) throws RemoteException,
-            FinderException {
-        FileSystemDTO dto = new FileSystemDTO();
-        dto.setRetrieveAET(retrieveAET);
-        dto.setAvailability(availability);
-        List l = newFileSystemMgt().listLinkedFileSystems(dto);
-        StringBuffer sb = new StringBuffer();
-        for (Iterator iter = l.iterator(); iter.hasNext();) {
-            sb.append(iter.next()).append('\n');
-        }
-        return sb.toString();
     }
 
     private String addAndLinkFileSystem(String dirPath, int availability,
