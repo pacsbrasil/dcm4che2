@@ -9,7 +9,7 @@ CREATE INDEX ser_req_phys ON series_req(req_physician);
 CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name);
 CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name);
 
-ALTER TABLE RENAME audit_record TO audit_record_old;
+ALTER TABLE audit_record RENAME TO audit_record_old;
 DROP SEQUENCE audit_record_pk;
 CREATE SEQUENCE audit_record_old_pk_seq;
 SELECT setval('audit_record_old_pk_seq', max(pk)) FROM audit_record_old;
