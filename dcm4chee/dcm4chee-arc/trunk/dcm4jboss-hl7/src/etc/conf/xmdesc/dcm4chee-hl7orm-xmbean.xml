@@ -33,7 +33,8 @@
    <attribute access="read-write"
       getMethod="getOrderControlOperationMap"
       setMethod="setOrderControlOperationMap">
-      <description><![CDATA[Maps Order Control (Order Status) in received ORM
+      <description><![CDATA[Maps Order Control (Order Status) or - if no Order
+      Status is specified - Order Control (Result Status) in received ORM
       to Operation to perform.
       <p><b>Syntax:</b><br/>
       map = entry+<br/>

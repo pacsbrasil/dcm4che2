@@ -271,9 +271,14 @@ public class ORMService extends AbstractHL7Service {
     }
 
     private int toOp(Document msg) throws HL7Exception {
-        List fields = msg.getRootElement().element("ORC").elements("field");
-        String orderControl = getText(fields, 0, "Missing Order Control (ORC-1)");
-        String orderStatus = getText(fields, 0, "Missing Order Status (ORC-4)");
+        List orc = msg.getRootElement().element("ORC").elements("field");
+        String orderControl = getText(orc, 0);
+        String orderStatus = getText(orc, 4);
+        if (orderStatus.length() == 0) {
+            // use Result Status (OBR-25), if no Order Status (ORC-5);
+            List obr = msg.getRootElement().element("OBR").elements("field");
+            orderStatus = getText(obr, 24);
+        }
         int opIndex = orderControls.indexOf(orderControl + "(" + orderStatus + ")");
         if (opIndex == -1) {
             opIndex = orderControls.indexOf(orderControl);
@@ -285,11 +290,11 @@ public class ORMService extends AbstractHL7Service {
         return opIndex;
     }
 
-    private String getText(List fields, int i, String errmg) throws HL7Exception {
+    private String getText(List fields, int i) throws HL7Exception {
         try {
             return ((Element) fields.get(i)).getText();
         } catch (NoSuchElementException e) {
-            throw new HL7Exception("AR", errmg);
+            return "";
         }
     }
 
