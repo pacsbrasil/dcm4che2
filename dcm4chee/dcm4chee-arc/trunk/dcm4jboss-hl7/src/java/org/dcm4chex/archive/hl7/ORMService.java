@@ -200,9 +200,9 @@ public class ORMService extends AbstractHL7Service {
             for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
                 sps = spsSq.getItem(i);
                 spsid = sps.getString(Tags.SPSID);
+                ds.putSQ(Tags.SPSSeq).addItem(sps);
                 switch (op) {
                 case NW:
-                    ds.putSQ(Tags.SPSSeq).addItem(sps);
                     adjustAttributes(ds);
                     addMissingAttributes(ds);
                     log("Schedule", ds);
@@ -210,7 +210,6 @@ public class ORMService extends AbstractHL7Service {
                     mwlManager.addWorklistItem(ds);
                     break;
                 case XO:
-                    ds.putSQ(Tags.SPSSeq).addItem(sps);
                     adjustAttributes(ds);
                     log("Update", ds);
                     logDataset("Update MWL Item:", ds);
@@ -287,7 +286,7 @@ public class ORMService extends AbstractHL7Service {
                         + orderControl);                 
             }
         }
-        return opIndex;
+        return ops[opIndex];
     }
 
     private String getText(List fields, int i) throws HL7Exception {
