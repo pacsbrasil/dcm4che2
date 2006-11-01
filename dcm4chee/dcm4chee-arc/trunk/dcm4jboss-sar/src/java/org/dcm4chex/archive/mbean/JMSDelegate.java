@@ -51,7 +51,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Id$
  * @since Oct 9, 2006
  */
-public class JMSDelegate extends ServiceMBeanSupport {
+public class JMSDelegate {
 
     private ServiceMBeanSupport service;
 
@@ -83,7 +83,7 @@ public class JMSDelegate extends ServiceMBeanSupport {
         } catch (MBeanException e) {
             throw e.getTargetException();
         } catch (Exception e) {
-            log.fatal("Failed to invoke operation startListening on "
+            service.getLog().fatal("Failed to invoke operation startListening on "
                     + jmsServiceName, e);
         }
     }
@@ -96,7 +96,7 @@ public class JMSDelegate extends ServiceMBeanSupport {
         } catch (MBeanException e) {
             throw e.getTargetException();
         } catch (Exception e) {
-            log.fatal("Failed to invoke operation stopListening on "
+            service.getLog().fatal("Failed to invoke operation stopListening on "
                     + jmsServiceName, e);
         }
     }
@@ -113,7 +113,7 @@ public class JMSDelegate extends ServiceMBeanSupport {
         } catch (MBeanException e) {
             throw e.getTargetException();
         } catch (Exception e) {
-            log.fatal("Failed to invoke operation queue on " + jmsServiceName, e);
+            service.getLog().fatal("Failed to invoke operation queue on " + jmsServiceName, e);
         }
     }
 }
