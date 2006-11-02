@@ -112,7 +112,7 @@
       <name>RetrieveURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://127.0.0.1:8080/wado?RT=DOCUMENT&amp;UID="/>
+         <value value="http://127.0.0.1:8080/IHERetrieveDocument?RT=DOCUMENT&amp;UID="/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getContentTypeURIpart" setMethod="setContentTypeURIpart">
