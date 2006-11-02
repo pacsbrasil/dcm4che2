@@ -378,6 +378,8 @@ public class PPSScuService extends ServiceMBeanSupport implements
                 pps.putSH(Tags.PPSID, "PPS" + ppsiuid.hashCode());
                 pps.putDA(Tags.PPSStartDate, now);
                 pps.putTM(Tags.PPSStartTime, now);
+                pps.putDA(Tags.PPSEndDate);
+                pps.putTM(Tags.PPSEndTime);
                 for (int i = 0; i < N_CREATE_TYPE2_ATTRS.length; i++) {
                     pps.putXX(N_CREATE_TYPE2_ATTRS[i]);                    
                 }
