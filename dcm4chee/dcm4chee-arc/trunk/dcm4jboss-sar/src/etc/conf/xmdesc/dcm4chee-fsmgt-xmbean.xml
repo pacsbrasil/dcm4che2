@@ -23,9 +23,12 @@ accessed studies.</description>
    <attribute access="read-write" 
       getMethod="getRetrieveAET"
       setMethod="setRetrieveAET">
-      <description>Retrieve AE title associated with this DICOM Node. 
+      <description><![CDATA[Retrieve AE title associated with this DICOM Node.<br/>
       There must be at least one configured file system suitable for storage 
-      (ONLINE, RW) associated with this AE title.
+      (ONLINE, RW) associated with this AE title.<br/>
+      <b>Warning:</b> Changing RetrieveAET here does NOT change any configured filesystem!<br/>
+      Use operation switchRetrieveAET instead, wich allows changing this AET 
+      with respect of configured filesystems and already stored objects of this node. ]]>
       </description>
       <name>RetrieveAETitle</name>
       <type>java.lang.String</type>
@@ -648,6 +651,64 @@ accessed studies.</description>
         <type>java.lang.String</type>
       </parameter>
       <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Switch Retrieve AET of this Node.<br>
+      		This operation change current RetrieveAET attribute with respect to configured filesystems.<br/>
+      		1) Change retrieveAET of file systems configured for this Node.<br/>
+      		2) Updatee list of RetrieveAETs of all instances, series and studies that have files on this Node!<br>
+      		Return true if RetrieveAET has been changed.
+      			]]>
+      </description>
+      <name>switchRetrieveAET</name>
+      <parameter>
+        <description>New Retrieve AET</description>
+        <name>retrieveAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Update RetrieveAET of a file system.<br>
+      		This method updates the RetrieveAETs of all instances, series and studies that have files on this filesystem!<br>
+      		Return true if update was performed (when retrieveAET of FS has been changed)
+      			]]>
+      </description>
+      <name>updateFileSystemRetrieveAET</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>New Retrieve AET</description>
+        <name>retrieveAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Update derived fields on given filesystem.<br/>
+      			Return number of updated instances.
+      			]]>
+      </description>
+      <name>updateDerivedFields</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Update Retrieve AETs</description>
+        <name>retrieveAET</name>
+        <type>boolean</type>
+      </parameter>
+      <parameter>
+        <description>Update Availability</description>
+        <name>availability</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>int</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[Delete all files for given (unavailable!) filesystem!<br>

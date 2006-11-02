@@ -1338,17 +1338,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 + "(" + iAvail + ")");
         if (mgt.updateFileSystemAvailability(dirPath, iAvail)) {
             checkStorageFileSystem();
-            int offset = 0;
-            int limit = limitNumberOfFilesPerTask;
-            int size;
             log.info("Update availability of all instances of filesystem "
                     + dirPath);
-            while ((size = mgt.updateInstanceAvailability(dirPath, offset,
-                    limit)) > 0) {
-                log.debug("  " + size + " updated for FS availability change!");
-                offset += limit;
-            }
-            log.info("Instances of " + dirPath + " updated");
+            updateDerivedFields(dirPath, false, true, mgt);
             if (deleteFilesWhenUnavailable
                     && iAvail == Availability.UNAVAILABLE) {
                 log.info("delete files on unavailable filesystem:" + dirPath);
@@ -1360,7 +1352,57 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         }
 
     }
+    
+    public boolean switchRetrieveAET(String newAET) throws RemoteException, FinderException {
+        if ( newAET.equals(retrieveAET)) return false;
+        FileSystemMgt mgt = newFileSystemMgt();
+        FileSystemDTO[] dtos = mgt.findFileSystems(retrieveAET);
+        for ( int i = 0 ; i < dtos.length ; i++ ) {
+            updateFileSystemRetrieveAET( dtos[i].getDirectoryPath(), newAET, false, mgt);
+        }
+        for ( int i = 0 ; i < dtos.length ; i++ ) {
+            updateDerivedFields( dtos[i].getDirectoryPath(), true, false, mgt);
+        }
+        retrieveAET = newAET;
+        return true;
+    }
 
+    public boolean updateFileSystemRetrieveAET(String dirPath, String retrieveAET) throws RemoteException, FinderException {
+        return updateFileSystemRetrieveAET( dirPath, retrieveAET, true, newFileSystemMgt());
+    }
+    private boolean updateFileSystemRetrieveAET(String dirPath,
+            String retrieveAET, boolean update, FileSystemMgt mgt) throws RemoteException, FinderException {
+        log.info("Update retrieveAET of " + dirPath + " to " + retrieveAET);
+        if (mgt.updateFileSystemRetrieveAET(dirPath, retrieveAET)) {
+            if ( update ) {
+                updateDerivedFields(dirPath, true, false, mgt);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public int updateDerivedFields(String dirPath,
+            boolean retrieveAET, boolean availability) throws RemoteException, FinderException {
+        return updateDerivedFields(dirPath, retrieveAET, availability, newFileSystemMgt());
+    }
+    private int updateDerivedFields(String dirPath,
+                boolean retrieveAET, boolean availability, FileSystemMgt mgt) throws RemoteException, FinderException {
+            checkStorageFileSystem();
+            int offset = 0;
+            int limit = limitNumberOfFilesPerTask;
+            int size;
+            log.info("Update Derived Fields of all instances of filesystem "
+                    + dirPath);
+            while ((size = mgt.updateInstanceDerivedFields(dirPath, retrieveAET, availability, offset,
+                    limit)) > 0) {
+                log.info("  " + size + " instances updated!");
+                offset += size;
+            }
+            log.info(offset+" Instances of " + dirPath + " updated");
+            return offset;
+    }
+    
     public void deleteFilesOnFS(String dirPath) throws RemoteException,
             FinderException {
         FileSystemMgt mgt = newFileSystemMgt();
