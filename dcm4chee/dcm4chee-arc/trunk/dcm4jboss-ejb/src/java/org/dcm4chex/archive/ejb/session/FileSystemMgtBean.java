@@ -321,11 +321,24 @@ public abstract class FileSystemMgtBean implements SessionBean {
     	boolean changed = availability != oldAvail; 
     	return changed;
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateFileSystemRetrieveAET(String dirPath, String retrieveAET) throws FinderException {
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
+
+        String oldAET = fs.getRetrieveAET();
+        boolean changed = oldAET == null ? retrieveAET != null : !oldAET.equals(retrieveAET);
+        if ( changed )
+            fs.setRetrieveAET(retrieveAET);
+        return changed;
+    }
     
     /**
      * @ejb.interface-method
      */
-    public int updateInstanceAvailability(String dirPath, int offset, int limit) throws FinderException {
+    public int updateInstanceDerivedFields(String dirPath, boolean retrieveAETs, boolean availability, int offset, int limit) throws FinderException {
         Collection files = fileHome.findByFileSystem(dirPath, offset, limit);
         HashSet seriess;
         InstanceLocal instance;
@@ -334,10 +347,11 @@ public abstract class FileSystemMgtBean implements SessionBean {
             seriess = new HashSet();
             for ( iter = files.iterator() ; iter.hasNext() ; ) {
                 instance = ((FileLocal) iter.next()).getInstance();
-                instance.updateDerivedFields(false, true);
-                seriess.add( instance.getSeries() );
+                if ( instance != null && instance.updateDerivedFields(retrieveAETs, availability) ) {
+                    seriess.add( instance.getSeries() );
+                }
             }
-            updateSeriesAvailability(seriess);
+            updateSeriesDerivedFields(seriess,retrieveAETs, availability);
             offset += 1000;
         }
         return files.size();
@@ -347,18 +361,18 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @param seriess
      * @throws FinderException
      */
-    private void updateSeriesAvailability(HashSet seriess) throws FinderException {
+    private void updateSeriesDerivedFields(HashSet seriess, boolean retrieveAETs, boolean availability) throws FinderException {
         SeriesLocal series;
         HashSet studies = new HashSet();
         for ( Iterator iter = seriess.iterator() ; iter.hasNext() ; ) {
             series = (SeriesLocal) iter.next();
-            series.updateDerivedFields(false,false,false,false,true);
+            series.updateDerivedFields(false,retrieveAETs,false,false,availability);
             studies.add( series.getStudy() );
         }
         StudyLocal study;
         for ( Iterator iter = studies.iterator() ; iter.hasNext() ; ) {
             study = (StudyLocal) iter.next();
-            study.updateDerivedFields(false,false,false,false,true,false);
+            study.updateDerivedFields(false,retrieveAETs,false,false,availability,false);
         }
     }
 
@@ -490,6 +504,13 @@ public abstract class FileSystemMgtBean implements SessionBean {
      */
     public FileSystemDTO[] getAllFileSystems() throws FinderException {
         return toDTO(fileSystemHome.findAll());
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO[] findFileSystems(String retrieveAET) throws FinderException {
+        return toDTO(fileSystemHome.findByRetrieveAET(retrieveAET));
     }
 
     /**

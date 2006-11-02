@@ -586,8 +586,9 @@ public abstract class StudyBean implements EntityBean {
             {
                 Iterator it = seriesAets.iterator();
                 aets = (String) it.next();
-                while (it.hasNext())
-                    aets = commonRetrieveAETs(aets, (String) it.next());
+                while (it.hasNext()) {
+                    aets = aets == null ? (String) it.next() : commonRetrieveAETs(aets, (String) it.next());
+                }
             }
     	}
         if (updated = aets == null 
