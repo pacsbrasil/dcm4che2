@@ -83,7 +83,7 @@ DCM4CHEE_DIST/server/default/conf/xmdesc/*.xml using any utility provided by
 your platform. E.g. GNU Linux:
 
 > find DCM4CHEE_DIST/server/default/conf/xmdesc -exec \
-           sed -i s/DCM4CHEE_DIST/YOUR_AET/g '{}' ';'
+           sed -i s/DCM4CHEE/YOUR_AET/g '{}' ';'
            
 
 8. To test your installation, move to the DCM4CHEE_DIST/bin directory and 
