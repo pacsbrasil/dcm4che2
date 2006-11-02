@@ -46,31 +46,27 @@
     <!--Instance Number-->
     <attr tag="00200013" vr="IS">1</attr>
     <!--Value Type-->
-    <attr tag="0040A040" vr="CS" len="10">CONTAINER</attr>
+    <attr tag="0040A040" vr="CS">CONTAINER</attr>
     <!--Concept Name Code Sequence-->
-    <attr tag="0040A043" vr="SQ" len="-1">
-      <item off="360" len="-1">
+    <attr tag="0040A043" vr="SQ">
+      <item>
         <!--Code Value-->
-        <attr tag="00080100" vr="SH" len="8">11528-7</attr>
+        <attr tag="00080100" vr="SH">11528-7</attr>
         <!--Coding Scheme Designator-->
-        <attr tag="00080102" vr="SH" len="2">LN</attr>
+        <attr tag="00080102" vr="SH">LN</attr>
         <!--Code Meaning-->
-        <attr tag="00080104" vr="LO" len="16">Radiology Report</attr>
+        <attr tag="00080104" vr="LO">Radiology Report</attr>
       </item>
     </attr>
     <!--Continuity Of Content-->
-    <attr tag="0040A050" vr="CS" len="8">SEPARATE</attr>
-    <!--Completion Flag-->
-    <attr tag="0040A491" vr="CS">COMPLETE</attr>
-    <!--Verification Flag-->
-    <attr tag="0040A493" vr="CS">VERIFIED</attr>
+    <attr tag="0040A050" vr="CS">SEPARATE</attr>
     <!--Content Template Sequence-->
-    <attr tag="0040A504" vr="SQ" len="-1">
-      <item off="666" len="-1">
+    <attr tag="0040A504" vr="SQ">
+      <item>
         <!--Mapping Resource-->
-        <attr tag="00080105" vr="CS" len="4">DCMR</attr>
+        <attr tag="00080105" vr="CS">DCMR</attr>
         <!--Template Identifier-->
-        <attr tag="0040DB00" vr="CS" len="4">2000</attr>
+        <attr tag="0040DB00" vr="CS">2000</attr>
       </item>
     </attr>
   </xsl:template>
@@ -103,6 +99,21 @@
     <!--Filler Order Number / Imaging Service Request-->
     <attr tag="00402017" vr="LO">
       <xsl:value-of select="$ordno"/>
+    </attr>
+    <xsl:variable name="resultStatus" select="normalize-space(field[25])"/>
+    <!--Completion Flag-->
+    <attr tag="0040A491" vr="CS">
+      <xsl:choose>
+        <xsl:when test="$resultStatus='P'">PARTIAL</xsl:when>
+        <xsl:otherwise>COMPLETE</xsl:otherwise>
+      </xsl:choose>
+    </attr>
+    <!--Verification Flag-->
+    <attr tag="0040A493" vr="CS">
+      <xsl:choose>
+        <xsl:when test="$resultStatus='P' or $resultStatus='F'">VERIFIED</xsl:when>
+        <xsl:otherwise>UNVERIFIED</xsl:otherwise>
+      </xsl:choose>
     </attr>
   </xsl:template>
   <xsl:template match="OBR" mode="identical">
