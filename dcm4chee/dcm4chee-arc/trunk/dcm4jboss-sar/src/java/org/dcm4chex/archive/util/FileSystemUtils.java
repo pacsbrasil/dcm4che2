@@ -202,9 +202,9 @@ public class FileSystemUtils {
             if (line.length() > 0) {
                 // found it, so now read from the end of the line to find the
                 // last numeric character on the line, then continue until we
-                // find the first non-numeric character, and everything between
+                // find the first pair of non-numeric character, and everything between
                 // that and the last numeric character inclusive is our free
-                // space bytes count
+                // space bytes count (with or without grouping seoperator(s))
                 int j = line.length() - 1;
                 innerLoop1: while (j >= 0) {
                     char c = line.charAt(j);
@@ -216,32 +216,19 @@ public class FileSystemUtils {
                     }
                     j--;
                 }
-                //DecimalFormatSymbols doesnt work for customized grouping seperator (in win XP)
-                char groupSeperator ='0';//set groupSeperator to digit (no group seperator)
-                if ( --j > 2 ) {
-                    if ( !Character.isDigit(line.charAt(j-2)) && 
-                            Character.isDigit(line.charAt(j-3)) &&
-                            Character.isDigit(line.charAt(j-1)) ) {
-                        groupSeperator = line.charAt(j-2);
-                    }
-                }
-                innerLoop2: while (j >= 0) {
+                innerLoop2: while (j >= 0) {//Loop until found two adjoining non digit characters.
                     char c = line.charAt(j);
-                    if (!Character.isDigit(c) && c != groupSeperator 
-                        && !Character.isWhitespace(c)) {
-                      // found the next non-numeric character, this is the
-                      // beginning of the free space bytes count
+                    if (!Character.isDigit(c) && ( j == 0 || !Character.isDigit(line.charAt(j-1)))) {
                       break innerLoop2;
                     }
                     j--;
                 }
-                while (Character.isWhitespace(line.charAt(++j)));
                 bytesStart = j;
                 break outerLoop;
             }
         }
 
-        // remove commas and dots and whitespaces in the bytes count
+        // remove non digit chars in the bytes count
         StringBuffer buf = new StringBuffer(line.substring(bytesStart, bytesEnd));
         char c;
         for (int k = 0; k < buf.length(); k++) {
