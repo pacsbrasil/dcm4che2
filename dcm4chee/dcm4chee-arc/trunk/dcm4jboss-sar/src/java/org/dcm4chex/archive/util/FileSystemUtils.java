@@ -216,9 +216,18 @@ public class FileSystemUtils {
                     }
                     j--;
                 }
+                //DecimalFormatSymbols doesnt work for customized grouping seperator (in win XP)
+                char groupSeperator ='0';//set groupSeperator to digit (no group seperator)
+                if ( --j > 2 ) {
+                    if ( !Character.isDigit(line.charAt(j-2)) && 
+                            Character.isDigit(line.charAt(j-3)) &&
+                            Character.isDigit(line.charAt(j-1)) ) {
+                        groupSeperator = line.charAt(j-2);
+                    }
+                }
                 innerLoop2: while (j >= 0) {
                     char c = line.charAt(j);
-                    if (!Character.isDigit(c) && c != ',' && c != '.' 
+                    if (!Character.isDigit(c) && c != groupSeperator 
                         && !Character.isWhitespace(c)) {
                       // found the next non-numeric character, this is the
                       // beginning of the free space bytes count
@@ -237,7 +246,7 @@ public class FileSystemUtils {
         char c;
         for (int k = 0; k < buf.length(); k++) {
             c = buf.charAt(k);
-            if (c == ',' || c == '.' || Character.isWhitespace(c)) {
+            if (c < '0' || c > '9') {
                 buf.deleteCharAt(k--);
             }
         }
