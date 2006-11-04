@@ -11,6 +11,7 @@
   <mbean code="org.dcm4chex.archive.mbean.FileSystemMgtService"
     name="dcm4chee.archive:service=FileSystemMgt"
     xmbean-dd="xmdesc/dcm4chee-fsmgt-xmbean.xml">
+    <depends>dcm4chee.archive:service=AE</depends>
     <depends>dcm4chee.archive:service=Scheduler</depends>
     <depends>dcm4chee.archive:service=Queue,name=PurgeStudy</depends>
     <depends>dcm4chee.archive:service=JMS</depends>

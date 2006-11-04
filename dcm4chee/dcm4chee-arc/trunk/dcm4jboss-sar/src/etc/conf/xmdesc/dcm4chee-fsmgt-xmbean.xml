@@ -357,6 +357,75 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getOtherServiceAETAttrs"
+      setMethod="setOtherServiceAETAttrs">
+      <description><![CDATA[List of AE Title attributes of other services
+      which are updated by operation updateAETitle.
+       ]]>
+      </description>
+      <name>OtherServiceAETitleAttributesToUpdate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+         dcm4chee.archive:service=AuditLogger#SupressLogForAETitles
+         dcm4chee.archive:service=CheckStudyPatientService#SourceAET
+         dcm4chee.archive:service=ContentEditService#CalledAETitle
+         dcm4chee.archive:service=ContentEditService#CallingAETitle
+         dcm4chee.archive:service=ECHOService#CallingAETitle
+         dcm4chee.archive:service=ExportManager#CallingAETitle
+         dcm4chee.archive:service=Forward#ForwardModifiedToAETitles
+         dcm4chee.archive:service=FileSystemMgt#RetrieveAETitle
+         dcm4chee.archive:service=GPWLScp#CalledAETitles
+         dcm4chee.archive:service=GPWLScp#CallingAETitles
+         dcm4chee.archive:service=GPWLScu#CallingAETitle
+         dcm4chee.archive:service=GPWLScu#CalledAETitle
+         dcm4chee.archive:service=HPScp#CalledAETitles
+         dcm4chee.archive:service=HPScp#CallingAETitles
+         dcm4chee.archive:service=IANScu#NotifiedAETitles
+         dcm4chee.archive:service=IANScu#CallingAETitle
+         dcm4chee.archive:service=MCMScu#CallingAETitle
+         dcm4chee.archive:service=MCMScu#RetrieveAETitle
+         dcm4chee.archive:service=MCMScu#MoveDestinationAETitle
+         dcm4chee.archive:service=MCMScu#McmScpAETitle
+         dcm4chee.archive:service=MoveScu#CallingAETitle
+         dcm4chee.archive:service=MoveScu#CalledAETitle
+         dcm4chee.archive:service=MPPSEmulator#ModalityAETitles
+         dcm4chee.archive:service=MPPSEmulator#CalledAETitle
+         dcm4chee.archive:service=MPPSScp#CalledAETitles
+         dcm4chee.archive:service=MPPSScp#CallingAETitles
+         dcm4chee.archive:service=MPPSScu#ForwardAETitles
+         dcm4chee.archive:service=MPPSScu#CallingAETitle
+         dcm4chee.archive:service=MWLFindScp#CalledAETitles
+         dcm4chee.archive:service=MWLFindScp#CallingAETitles
+         dcm4chee.archive:service=MWLFindScp#LogAETitles
+         dcm4chee.archive:service=MWLScu#CallingAETitle
+         dcm4chee.archive:service=MWLScu#CalledAETitle
+         dcm4chee.archive:service=PPSScu#DestinationAETitles
+         dcm4chee.archive:service=PPSScu#CallingAETitle
+         dcm4chee.archive:service=QueryRetrieveScp#CalledAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#CallingAEtitles
+         dcm4chee.archive:service=QueryRetrieveScp#SendWithDefaultTransferSyntaxToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#SendNoPixelDataToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#IgnoreUnsupportedSOPClassFailures
+         dcm4chee.archive:service=QueryRetrieveScp#RequestStorageCommitFromAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#LogAETitles
+         dcm4chee.archive:service=StgCmtScuScp#CalledAETitles
+         dcm4chee.archive:service=StgCmtScuScp#CallingAETitles
+         dcm4chee.archive:service=StoreScp#CalledAETitles
+         dcm4chee.archive:service=StoreScp#CallingAETitles
+         dcm4chee.archive:service=StoreScp#WarnForCoercedAETitles
+         dcm4chee.archive:service=StoreScp#IgnorePatientIDAETitles
+         dcm4chee.archive:service=StoreScp#LogAETitles
+         dcm4chee.archive:service=StudyReconciliation#FindSCPAETitle
+         dcm4chee.archive:service=StudyReconciliation#CallingAETitle
+         dcm4chee.archive:service=StudyMgtScp#CalledAETitles
+         dcm4chee.archive:service=StudyMgtScp#CallingAETitles
+         dcm4chee.archive:service=StudyMgtScu#CallingAETitle
+         dcm4chee.archive:service=XDS-I#DocRepositoryAET
+         " />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isDeleteFilesWhenUnavailable"
       setMethod="setDeleteFilesWhenUnavailable">
       <description><![CDATA[Enable/Disable deletion of files off a filesystem thats availability is changed to UNAVAIL.]]>
@@ -424,6 +493,17 @@ accessed studies.</description>
          <value value="PurgeStudy"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getAEServiceName"
+      setMethod="setAEServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>AEServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=AE"/>
+      </descriptors>
+   </attribute>   
    <attribute access="read-write"
       getMethod="getJmsServiceName"
       setMethod="setJmsServiceName">
@@ -632,35 +712,37 @@ accessed studies.</description>
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
    <operation impact="ACTION">
-      <description><![CDATA[Update Availability of a file system.<br>
-      		This method updates the availability of all instances, series and studies that have files on this filesystem!<br>
-      		If DeleteFilesWhenUnavailable is enabled and the filessystem gets UNAVAILABLE, all files of this FS will be deleted!<br>
-      		Return true if update/delete was performed (when availability of FS has been changed)
-      			]]>
+      <description><![CDATA[Update specified AE Title to new value in AE
+        Configuration and in all service attributes listed by attribute
+        <b>OtherServiceAETitleAttributesToUpdate</b>. Return number of
+        modified service attributes.]]>
       </description>
-      <name>updateFileSystemAvailability</name>
+      <name>updateAETitle</name>
       <parameter>
-        <description>Directory/Mount Point</description>
-        <name>dirPath</name>
+        <description>AE Title to update.</description>
+        <name>prevAET</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Availability of the filesystem. One of "ONLINE", "NEARLINE",
-            "OFFLINE" or "UNAVAILABLE"</description>
-        <name>availability</name>
+        <description>new AE Title.</description>
+        <name>newAET</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>boolean</return-type>
+      <return-type>int</return-type>
    </operation>
    <operation impact="ACTION">
-      <description><![CDATA[Switch Retrieve AET of this Node.<br>
-      		This operation change current RetrieveAET attribute with respect to configured filesystems.<br/>
-      		1) Change retrieveAET of file systems configured for this Node.<br/>
-      		2) Updatee list of RetrieveAETs of all instances, series and studies that have files on this Node!<br>
-      		Return true if RetrieveAET has been changed.
-      			]]>
+      <description><![CDATA[Update retrieve AET of this Node:
+      <ol>
+      <li>update the retrieve AET of file systems, associated to the current
+        retrieve AET of this node</li>
+      <li>update retrieveAETs of all instances, series and studies that have
+        files on these filesystems</li>
+      <li>update the entry for the retrieve AE in the AE Configuration</li>
+      <li>update all service attributes listed by attribute
+        <b>OtherServiceAETitleAttributesToUpdate</b></li>
+      </ol>]]>
       </description>
-      <name>switchRetrieveAET</name>
+      <name>updateRetrieveAETitle</name>
       <parameter>
         <description>New Retrieve AET</description>
         <name>retrieveAET</name>
@@ -709,6 +791,27 @@ accessed studies.</description>
         <type>boolean</type>
       </parameter>
       <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Update Availability of a file system.<br>
+      		This method updates the availability of all instances, series and studies that have files on this filesystem!<br>
+      		If DeleteFilesWhenUnavailable is enabled and the filessystem gets UNAVAILABLE, all files of this FS will be deleted!<br>
+      		Return true if update/delete was performed (when availability of FS has been changed)
+      			]]>
+      </description>
+      <name>updateFileSystemAvailability</name>
+      <parameter>
+        <description>Directory/Mount Point</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Availability of the filesystem. One of "ONLINE", "NEARLINE",
+            "OFFLINE" or "UNAVAILABLE"</description>
+        <name>availability</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[Delete all files for given (unavailable!) filesystem!<br>

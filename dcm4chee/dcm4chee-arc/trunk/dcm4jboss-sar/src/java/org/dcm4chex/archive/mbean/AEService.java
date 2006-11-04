@@ -141,7 +141,7 @@ public class AEService extends ServiceMBeanSupport {
         }
     }
 
-    public String getAEs() throws RemoteException, Exception {
+    public String getAEs() throws Exception {
         Collection c = lookupAEManager().getAes();
         StringBuffer sb = new StringBuffer();
         AEData ae;
@@ -153,14 +153,29 @@ public class AEService extends ServiceMBeanSupport {
         return sb.toString();
     }
 
-    public List listAEs() throws RemoteException, Exception {
+    public List listAEs() throws Exception {
         return lookupAEManager().getAes();
     }
 
-    public AEData getAE(String title) throws RemoteException, Exception {
+    public AEData getAE(String title) throws Exception {
         return lookupAEManager().getAeByTitle(title);
     }
 
+    public boolean updateAETitle(String prevAET, String newAET)
+    throws Exception {
+        if (prevAET.equals(newAET)) {
+            return false;
+        }
+        AEManager aeManager = lookupAEManager();
+        AEData aeData = aeManager.getAeByTitle(prevAET);
+        if (aeData == null) {
+            return false;
+        }
+        aeData.setTitle(newAET);
+        aeManager.updateAE(aeData);
+        return true;
+    }
+    
     public AEData getAE(String title, String host) throws RemoteException,
             Exception {
         return getAE(title, host == null ? null : InetAddress.getByName(host));
@@ -209,7 +224,7 @@ public class AEService extends ServiceMBeanSupport {
      * @throws RemoteException
      */
     public void updateAE(long pk, String title, String host, int port,
-            String cipher, boolean checkHost) throws RemoteException, Exception {
+            String cipher, boolean checkHost) throws Exception {
         if (checkHost) {
             try {
                 host = InetAddress.getByName(host).getCanonicalHostName();
@@ -243,7 +258,7 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public void addAE(String title, String host, int port, String cipher,
-            boolean checkHost) throws RemoteException, Exception {
+            boolean checkHost) throws Exception {
         updateAE(-1, title, host, port, cipher, checkHost);
     }
 

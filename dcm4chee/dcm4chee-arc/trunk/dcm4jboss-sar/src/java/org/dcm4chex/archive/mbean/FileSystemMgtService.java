@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -95,6 +96,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
@@ -122,6 +124,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
+    
+    private ObjectName aeServiceName;
 
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
@@ -191,6 +195,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private String timerIDCheckFilesToPurge;
 
     private String timerIDCheckFreeDiskSpace;
+    
+    private ObjectName[] otherServiceNames = {};
+
+    private String[] otherServiceAETAttrs = {};
 
     private final NotificationListener purgeFilesListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -206,6 +214,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
+    public final ObjectName getAEServiceName() {
+        return aeServiceName;
+    }
+
+    public final void setAEServiceName(ObjectName aeServiceName) {
+        this.aeServiceName = aeServiceName;
+    }
+    
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -632,6 +648,36 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
     }
    
+    public final String getOtherServiceAETAttrs() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < otherServiceNames.length; i++) {
+            sb.append(otherServiceNames[i].toString()).append('#').append(
+                    otherServiceAETAttrs[i]).append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    public final void setOtherServiceAETAttrs(String s) {
+        StringTokenizer stk = new StringTokenizer(s, "\r\n\t ");
+        int count = stk.countTokens();
+        ObjectName[] names = new ObjectName[count];
+        String[] attrs = new String[count];
+        String tk = null;
+        try {
+            int endName;
+            for (int i = 0; i < names.length; i++) {
+                tk = stk.nextToken();
+                endName = tk.indexOf('#');
+                names[i] = new ObjectName(tk.substring(0, endName));
+                attrs[i] = tk.substring(endName+1);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(tk);
+        }
+        otherServiceNames = names;
+        otherServiceAETAttrs = attrs;
+    }
+
     protected void startService() throws Exception {
         freeDiskSpaceListenerID = scheduler.startScheduler(
                 timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
@@ -660,9 +706,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 storageFileSystem = addFileSystem(defStorageDir, retrieveAET,
                         Availability.ONLINE, FileSystemStatus.DEF_RW, null);
                 log.warn("No writeable Storage Directory configured for retrieve AET "
-                        + retrieveAET
-                        + "- initalize default "
-                        + storageFileSystem);
+                        + retrieveAET + "- initalize default " + storageFileSystem);
             }
         }
         checkStorageFileSystem();
@@ -1353,30 +1397,68 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     }
     
-    public boolean switchRetrieveAET(String newAET) throws RemoteException, FinderException {
+    public int updateAETitle(String prevAET, String newAET) 
+            throws Exception {
+        int count = 0;
+        for (int i = 0; i < otherServiceNames.length; i++) {
+            if (updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
+                    prevAET, newAET)) {
+                ++count;
+            }
+        }
+        server.invoke(aeServiceName, "updateAETitle", 
+                new Object[]{ retrieveAET, newAET },
+                new String[]{ 
+                    String.class.getName(), 
+                    String.class.getName()});
+        return count;
+    }
+    
+    private boolean updateAETitle(ObjectName name, String attr,
+            String prevAET, String newAET) throws Exception {
+        try {
+            String val = (String) server.getAttribute(name, attr);
+            String[] aets = StringUtils.split(val, '\\');
+            boolean modified = false;
+            for (int i = 0; i < aets.length; i++) {
+                if (aets[i].equals(prevAET)) {
+                    aets[i] = newAET;
+                    modified = true;
+                }
+            }
+            if (modified) {
+                server.setAttribute(name, 
+                        new Attribute(attr, StringUtils.toString(aets, '\\')));
+            }
+            return modified;
+        } catch (Exception e) {
+            throw new ConfigurationException("Failed to modify " 
+                    + name + "#" + attr);
+        }
+    }
+
+    public boolean updateRetrieveAETitle(String newAET) throws Exception {
         if ( newAET.equals(retrieveAET)) return false;
         FileSystemMgt mgt = newFileSystemMgt();
         FileSystemDTO[] dtos = mgt.findFileSystems(retrieveAET);
         for ( int i = 0 ; i < dtos.length ; i++ ) {
-            updateFileSystemRetrieveAET( dtos[i].getDirectoryPath(), newAET, false, mgt);
+            updateFileSystemRetrieveAET( dtos[i].getDirectoryPath(), newAET, mgt);
         }
-        for ( int i = 0 ; i < dtos.length ; i++ ) {
-            updateDerivedFields( dtos[i].getDirectoryPath(), true, false, mgt);
-        }
-        retrieveAET = newAET;
+        updateAETitle(retrieveAET, newAET);
         return true;
     }
 
-    public boolean updateFileSystemRetrieveAET(String dirPath, String retrieveAET) throws RemoteException, FinderException {
-        return updateFileSystemRetrieveAET( dirPath, retrieveAET, true, newFileSystemMgt());
+    public boolean updateFileSystemRetrieveAET(String dirPath, String retrieveAET)
+    throws RemoteException, FinderException {
+        return updateFileSystemRetrieveAET( dirPath, retrieveAET, newFileSystemMgt());
     }
+    
     private boolean updateFileSystemRetrieveAET(String dirPath,
-            String retrieveAET, boolean update, FileSystemMgt mgt) throws RemoteException, FinderException {
+            String retrieveAET, FileSystemMgt mgt)
+    throws RemoteException, FinderException {
         log.info("Update retrieveAET of " + dirPath + " to " + retrieveAET);
         if (mgt.updateFileSystemRetrieveAET(dirPath, retrieveAET)) {
-            if ( update ) {
-                updateDerivedFields(dirPath, true, false, mgt);
-            }
+            updateDerivedFields(dirPath, true, false, mgt);
             return true;
         } else {
             return false;

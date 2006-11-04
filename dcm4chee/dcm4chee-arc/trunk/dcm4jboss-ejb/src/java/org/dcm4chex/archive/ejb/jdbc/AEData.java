@@ -67,7 +67,7 @@ public class AEData implements Serializable {
 
     // Variables -----------------------------------------------------
     private final long pk;
-    private final String title;
+    private String title;
     private final String hostname;
     private final int port;
     private final String cipherSuites;
@@ -98,6 +98,10 @@ public class AEData implements Serializable {
      */
     public java.lang.String getTitle() {
         return title;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     /** Getter for property host.

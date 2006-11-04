@@ -25,7 +25,7 @@
       <description>Accepted called AE titles, separated by \ (backslash). 
        
       </description>
-      <name>CalledAETs</name>
+      <name>CalledAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="DCM4CHEE"/>
@@ -37,7 +37,7 @@
       <description>Accepted calling AE titles, separated by \ (backslash).
       ANY = accept any. 
       </description>
-      <name>CallingAETs</name>
+      <name>CallingAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY"/>

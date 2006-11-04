@@ -196,6 +196,21 @@
      </parameter>
      <return-type>void</return-type>
 	</operation>
-   &defaultOperations;
+  <operation impact="ACTION">
+     <description>Update AE Title of existing AE configuration</description>
+     <name>updateAETitle</name>
+     <parameter>
+       <description>AE Title to change</description>
+       <name>prevAET</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>new AE Title</description>
+       <name>newAET</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <return-type>boolean</return-type>
+	</operation>
+	&defaultOperations;
 </mbean>
 
