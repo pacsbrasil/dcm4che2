@@ -468,6 +468,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putAT(Tags.OffendingElement, coercedTags);
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
+            service.postProcess(ds);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);

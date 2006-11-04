@@ -500,6 +500,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setCheckIncorrectWorklistEntry(check);
     }
 
+    public String getTimerIDCheckPendingSeriesStored() {
+        return timerIDCheckPendingSeriesStored;
+    }
+
+    public void setTimerIDCheckPendingSeriesStored(
+            String timerIDCheckPendingSeriesStored) {
+        this.timerIDCheckPendingSeriesStored = timerIDCheckPendingSeriesStored;
+    }    
     protected void startService() throws Exception {
         super.startService();
         listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
@@ -705,13 +713,12 @@ public class StoreScpService extends AbstractScpService {
                 new String[] { Dataset.class.getName() });
     }
 
-	public String getTimerIDCheckPendingSeriesStored() {
-		return timerIDCheckPendingSeriesStored;
-	}
+    void postProcess(Dataset ds) throws Exception {
+        doPostProcess(ds);        
+    }
 
-	public void setTimerIDCheckPendingSeriesStored(
-			String timerIDCheckPendingSeriesStored) {
-		this.timerIDCheckPendingSeriesStored = timerIDCheckPendingSeriesStored;
-	}
+    protected void doPostProcess(Dataset ds) throws Exception {
+        // Extension Point for customized StoreScpService    
+    }
     
 }
