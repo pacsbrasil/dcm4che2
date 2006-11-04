@@ -233,7 +233,7 @@ public class FileSystemUtils {
         char c;
         for (int k = 0; k < buf.length(); k++) {
             c = buf.charAt(k);
-            if (c < '0' || c > '9') {
+            if (!Character.isDigit(c)) {
                 buf.deleteCharAt(k--);
             }
         }
@@ -255,34 +255,51 @@ public class FileSystemUtils {
 //        path = FilenameUtils.normalize(path);
 
         // build and run the 'dir' command
-        String[] cmdAttribs = new String[] {"df", "-kP", path};
+        String[] cmdAttribs = new String[] {"df", "-P", path};
 
         // read the output from the command until we come to the second line
         BufferedReader in = null;
         try {
             in = openProcessStream(cmdAttribs);
-            String line1 = in.readLine(); // header line (ignore it)
+            String line1 = in.readLine(); // header line
             String line2 = in.readLine(); // the line we're interested in
             String line3 = in.readLine(); // possibly interesting line
-            return parseUnixDF_k(path, line1, line2, line3);
+            return parseUnixDF_P(path, line1, line2, line3);
         } finally {
             closeQuietly(in);
         }
     }
 
-    public static long parseDF_k(String path, String line1, String line2, String line3)
+    public static long parseDF_P(String path, String line1, String line2, String line3)
     		throws IOException {
-        return INSTANCE.parseUnixDF_k(path, line1, line2, line3);
+        return INSTANCE.parseUnixDF_P(path, line1, line2, line3);
     }
 
-	long parseUnixDF_k(String path, String line1, String line2, String line3) throws IOException {
-		if (line2 == null) {
+    long parseUnixDF_P(String path, String line1, String line2, String line3)
+            throws IOException {
+        if (line2 == null) {
             // unknown problem, throw exception
             throw new IOException(
-                    "Command line 'df -kP' did not return info as expected " +
+                    "Command line 'df -P' did not return info as expected " +
                     "for path '" + path +
                     "'- response on first line was '" + line1 + "'");
         }
+        
+        // try to get block size from header - if it fails, assume 512
+        long blocksize = 512L;
+        int blocksizeEnd = line1.indexOf('-');
+        if (blocksizeEnd > 0) {
+            int blocksizePos = blocksizeEnd;
+            while (blocksizePos > 0 && Character.isDigit(
+                    line1.charAt(blocksizePos - 1))) {
+                --blocksizePos;
+            }
+            if (blocksizePos < blocksizeEnd) {
+                blocksize = Long.parseLong(
+                        line1.substring(blocksizePos, blocksizeEnd));
+            }
+        }
+        
         line2 = line2.trim();
 
         // Now, we tokenize the string. The fourth element is what we want.
@@ -294,7 +311,7 @@ public class FileSystemUtils {
                 tok = new StringTokenizer(line3, " ");
             } else {
                 throw new IOException(
-                        "Command line 'df -kP' did not return data as expected " +
+                        "Command line 'df -P' did not return data as expected " +
                         "for path '" + path + "'- check path is valid");
             }
         } else {
@@ -304,13 +321,13 @@ public class FileSystemUtils {
         tok.nextToken(); // Ignore Used
         String freeSpace = tok.nextToken();
         try {
-            return (Long.parseLong(freeSpace) << 10); // * 1024
+            return (Long.parseLong(freeSpace) * blocksize);
         } catch (NumberFormatException ex) {
             throw new IOException(
-                    "Command line 'df -kP' did not return numeric data as expected " +
+                    "Command line 'df -P' did not return numeric data as expected " +
                     "for path '" + path + "'- check path is valid");
         }
-	}
+    }
 
     /**
      * Opens the stream to be operating system.
