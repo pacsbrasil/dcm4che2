@@ -311,7 +311,7 @@ public class XDSIModel extends BasicFormModel {
 	}
 	public void setAuthorRoles(CodeItem[] roles) {
 		if ( roles == null || roles.length < 1 ) {
-			throw new IllegalArgumentException("AuthorRoles must not be empty!");
+			log.warn("AuthorRoles must not be empty! Please check AuthorRoleList configuration in XDSIService! XDSI Export is NOT IHE compliant");
 		}
 		authorRoles = roles;
 	}
