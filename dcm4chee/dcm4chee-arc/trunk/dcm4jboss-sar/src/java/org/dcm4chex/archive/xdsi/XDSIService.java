@@ -120,6 +120,8 @@ public class XDSIService extends ServiceMBeanSupport {
 	public  static final String AUTHOR_INSTITUTION = "authorInstitution";
 	public  static final String SOURCE_ID = "sourceId";
 	private static final String HEADER_VALUE = " ";
+    
+    private static final String NONE = "NONE";
 	
     protected ObjectName auditLogName;
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
@@ -540,19 +542,17 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 
 	private List setListString(String s) {
+        List l = new ArrayList();
+        if ( NONE.equals(s) ) return l;
 		StringTokenizer st = new StringTokenizer( s, ";\n\r");
-		String t;
-		int pos;
-		List l = new ArrayList();
 		while ( st.hasMoreTokens() ) {
-			t = st.nextToken();
-			l.add(t);
+			l.add(st.nextToken());
 		}
 		return l;
 	}
 
 	private String getListString(List l) {
-		if ( l == null || l.isEmpty() ) return null;
+		if ( l == null || l.isEmpty() ) return NONE;
 		StringBuffer sb = new StringBuffer();
 		for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
 			sb.append(iter.next()).append( System.getProperty("line.separator", "\n"));
@@ -699,7 +699,6 @@ public class XDSIService extends ServiceMBeanSupport {
 		if ( baseDir == null ) baseDir = testPath == null ? "": testPath+"/";
 		File metaDataFile = new File( baseDir+metaDataFilename);
 		
-		String testID=metaDataFile.getParentFile().getName();
 		XDSIDocument[] docFiles = null;
 		if ( docNames != null && docNames.trim().length() > 0) {
 			StringTokenizer st = new StringTokenizer( docNames, "," );
@@ -1091,7 +1090,6 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 	private Document readXMLFile(File xmlFile){
         Document document = null;
-        PrintStream orig = System.out;
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         try {
             dbFactory.setNamespaceAware(true);
