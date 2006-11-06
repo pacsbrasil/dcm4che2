@@ -2378,7 +2378,7 @@
   <uid value="1.2.840.10008.5.1.1.2" name="Basic Film Box SOP Class" key="BasicFilmBoxSOP" />
   <uid value="1.2.840.10008.5.1.1.4" name="Basic Grayscale Image Box SOP Class" key="BasicGrayscaleImageBox" />
   <uid value="1.2.840.10008.5.1.1.4.1" name="Basic Color Image Box SOP Class" key="BasicColorImageBox" />
-  <uid value="1.2.840.10008.5.1.1.4.2" name="Referenced Image Box SOP Class (Retired)" key="RefImageBoxRetired" retired="true" />
+  <uid value="1.2.840.10008.5.1.1.4.2" name="Referenced Image Box SOP Class (Retired)" key="ReferencedImageBoxRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.1.14" name="Print Job SOP Class" key="PrintJob" />
   <uid value="1.2.840.10008.5.1.1.15" name="Basic Annotation Box SOP Class" key="BasicAnnotationBox" />
   <uid value="1.2.840.10008.5.1.1.16" name="Printer SOP Class" key="Printer" />
@@ -2512,7 +2512,7 @@
   <uid value="1.2.840.10008.3.1.2.5.4" name="Detached Results Management Meta SOP Class" key="DetachedResultsManagementMetaSOPClass" />
   <uid value="1.2.840.10008.3.1.2.5.5" name="Detached Study Management Meta SOP Class" key="DetachedStudyManagementMetaSOPClass" />
   <uid value="1.2.840.10008.5.1.1.9" name="Basic Grayscale Print Management Meta SOP Class" key="BasicGrayscalePrintManagement" />
-  <uid value="1.2.840.10008.5.1.1.9.1" name="Referenced Grayscale Print Management Meta SOP Class (Retired)" key="RefGrayscalePrintManagementRetired" retired="true" />
+  <uid value="1.2.840.10008.5.1.1.9.1" name="Referenced Grayscale Print Management Meta SOP Class (Retired)" key="ReferencedGrayscalePrintManagementRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.1.18" name="Basic Color Print Management Meta SOP Class" key="BasicColorPrintManagement" />
   <uid value="1.2.840.10008.5.1.1.18.1" name="Referenced Color Print Management Meta SOP Class (Retired)" key="RefColorPrintManagementRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.1.32" name="Pull Stored Print Management Meta SOP Class" key="PullStoredPrintManagement" />
