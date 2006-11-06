@@ -161,6 +161,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getFilteredSlots"
+      setMethod="setFilteredSlots">
+      <description><![CDATA[List of Slots that should be removed from metadata before send to registry.<br/>
+      		Such filtering may be necessary if registry does not support certain slots 
+      		(e.g. does not support XDS-I 'authorRoleDisplayName' slot).<br/>
+      		Use NONE to disable slot filtering.
+      		]]>
+      </description>
+      <name>FilteredSlots</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTestPatient"
       setMethod="setTestPatient">
       <description>Patient ID for NIST-Test or NONE.

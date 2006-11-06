@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.net.ssl.HostnameVerifier;
@@ -97,9 +98,10 @@ import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
  */
 public class XDSService extends ServiceMBeanSupport {
 
+    private static final String NONE = "NONE";
+    
 	private static Logger log = Logger.getLogger(XDSService.class.getName());
 
-    private static ServerConfig config = ServerConfigLocator.locate();
     private DocumentBuilderFactory dbFactory;
 
 // http attributes to document repository actor (synchron) 	
@@ -125,7 +127,9 @@ public class XDSService extends ServiceMBeanSupport {
 	private String contentTypeURIpart;
 
 	private String testPatient;
-	
+
+    private List filteredSlots;
+    
 	private boolean shortContentType = false;
 	private boolean logSOAPMessage = true;
 
@@ -328,7 +332,19 @@ public class XDSService extends ServiceMBeanSupport {
 		this.testPatient = testPatient.equalsIgnoreCase("none") ? null : testPatient;
 	}
 	
-	private String replace(String s, String pattern, String replace) {
+	/**
+     * @return the filterSlots
+     */
+    public String getFilteredSlots() {
+        return getListString(filteredSlots);
+    }
+    /**
+     * @param filterSlots the filterSlots to set
+     */
+    public void setFilteredSlots(String filterSlots) {
+        this.filteredSlots = setListString(filterSlots);
+    }
+    private String replace(String s, String pattern, String replace) {
 		int pos = s.indexOf(pattern);
 		if ( pos == -1 ) return s;
 		String s1 = s.substring(0,pos);
@@ -348,7 +364,26 @@ public class XDSService extends ServiceMBeanSupport {
 	public void setFetchNewPatIDURL(String fetchNewPatIDURL) {
 		this.fetchNewPatIDURL = fetchNewPatIDURL;
 	}
-	
+
+    private List setListString(String s) {
+        List l = new ArrayList();
+        if ( NONE.equals(s) ) return l;
+        StringTokenizer st = new StringTokenizer( s, ";\n\r");
+        while ( st.hasMoreTokens() ) {
+            l.add(st.nextToken());
+        }
+        return l;
+    }
+
+    private String getListString(List l) {
+        if ( l == null || l.isEmpty() ) return NONE;
+        StringBuffer sb = new StringBuffer();
+        for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+            sb.append(iter.next()).append( System.getProperty("line.separator", "\n"));
+        }
+        return sb.toString();
+    }
+
 	public XDSResponseObject exportDocument( SOAPMessage message ) throws SOAPException, IOException, ParserConfigurationException, SAXException {
 		List storedFiles = new ArrayList();
 		if ( log.isDebugEnabled()) {
@@ -387,7 +422,6 @@ public class XDSService extends ServiceMBeanSupport {
 	        	this.updateExternalIdentifier(d.getDocumentElement(),"urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446",testPatient);
 	        }
 			log.info(storedFiles.size()+" Documents saved!");
-			Document sor = null;
 		    MessageFactory messageFactory = MessageFactory.newInstance();
 		    SOAPMessage msg = messageFactory.createMessage();
 		    SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
@@ -415,7 +449,11 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @param metadata
 	 */
 	private void filterMetadata(XDSDocumentMetadata metadata) {
-		metadata.removeSlot("authorRoleDisplayName");
+        if ( ! filteredSlots.isEmpty() ) {
+            for ( Iterator iter = filteredSlots.iterator() ; iter.hasNext() ; ) {
+                metadata.removeSlot((String) iter.next());
+            }
+        }
         if ( testPatient!= null) {
             log.warn("Change patientID in metadata (urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427) to testPatient! new patientID:"+testPatient);
         	this.updateExternalIdentifier((Element)metadata.getMetadata(),"urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427",testPatient);
@@ -476,7 +514,7 @@ public class XDSService extends ServiceMBeanSupport {
 	    SOAPMessage message = messageFactory.createMessage();
 	    SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 	    SOAPBody soapBody = envelope.getBody();
-	    SOAPElement bodyElement = soapBody.addDocument(metadata);
+	    soapBody.addDocument(metadata);
 	    return message;
 	}
 	
@@ -528,7 +566,6 @@ public class XDSService extends ServiceMBeanSupport {
 			String url = this.getXDSRegistryURI();
 	        log.debug("Send registry request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
 			configProxyAndTLS(url);
-		    MessageFactory messageFactory = MessageFactory.newInstance();
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
             
             conn = connFactory.createConnection();
@@ -565,14 +602,13 @@ public class XDSService extends ServiceMBeanSupport {
 	    SOAPMessage message = messageFactory.createMessage();
 	    SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 	    SOAPBody soapBody = envelope.getBody();
-	    SOAPElement bodyElement = soapBody.addDocument(sb);
+	    soapBody.addDocument(sb);
 	    this.sendSOAP(message);
 		return true;
 	}
 	
 	private Document readXMLFile(File xmlFile){
         Document document = null;
-        PrintStream orig = System.out;
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         try {
             dbFactory.setNamespaceAware(true);
