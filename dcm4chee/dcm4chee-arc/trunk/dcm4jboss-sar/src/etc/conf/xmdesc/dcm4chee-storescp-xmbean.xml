@@ -612,6 +612,8 @@ StoreSCP service.
            RawDataStorage
            SpatialRegistrationStorage
            SpatialFiducialsStorage
+           DeformableSpatialRegistrationStorage
+           SegmentationStorage
            RealWorldValueMappingStorage
            StereometricRelationshipStorage
            EncapsulatedPDFStorage
