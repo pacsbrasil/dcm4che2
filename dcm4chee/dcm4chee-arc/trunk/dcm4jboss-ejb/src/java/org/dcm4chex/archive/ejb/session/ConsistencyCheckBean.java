@@ -103,16 +103,9 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  */
 public abstract class ConsistencyCheckBean implements SessionBean {
 
-    private PatientLocalHome patHome;
 
     private StudyLocalHome studyHome;
 
-    private SeriesLocalHome seriesHome;
-
-    private InstanceLocalHome instHome;
-    
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    
     private static final Logger log = Logger.getLogger(ConsistencyCheckBean.class);
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
@@ -120,14 +113,8 @@ public abstract class ConsistencyCheckBean implements SessionBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            patHome = (PatientLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Patient");
             studyHome = (StudyLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Study");
-            seriesHome = (SeriesLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Series");
-            instHome = (InstanceLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -141,10 +128,7 @@ public abstract class ConsistencyCheckBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
-        patHome = null;
         studyHome = null;
-        seriesHome = null;
-        instHome = null;
     }
     
     /**
