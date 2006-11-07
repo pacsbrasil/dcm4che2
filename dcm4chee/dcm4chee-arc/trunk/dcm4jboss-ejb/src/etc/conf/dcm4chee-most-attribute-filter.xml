@@ -12,6 +12,7 @@
         <attr tag="00100032"/> <!-- Patient's Birth Time -->
         <attr tag="00101000"/> <!-- Other Patient IDs -->
         <attr tag="00101001"/> <!-- Other Patient Names -->
+        <attr tag="00101002"/> <!-- Other Patient IDs Sequence -->
         <attr tag="00102160"/> <!-- Ethic Group -->
         <attr tag="00104000"/> <!-- Patient Comments -->
         <attr tag="00120010"/> <!-- Clinical Trial Sponsor Name -->

@@ -8,6 +8,7 @@
         <attr tag="00100021"/> <!-- Issuer of Patient ID -->
         <attr tag="00100030"/> <!-- Patient's Birth Date -->
         <attr tag="00100040"/> <!-- Patient's Sex -->
+        <attr tag="00101002"/> <!-- Other Patient IDs Sequence -->
         <attr tag="00104000"/> <!-- Patient Comments -->
     </patient>
     <study>

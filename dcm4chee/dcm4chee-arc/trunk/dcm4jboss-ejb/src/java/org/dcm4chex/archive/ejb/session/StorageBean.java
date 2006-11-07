@@ -404,24 +404,24 @@ public abstract class StorageBean implements SessionBean {
 	}
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException {
+            Dataset coercedElements) throws DcmServiceException, CreateException {
         patient.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException {
+            Dataset coercedElements) throws DcmServiceException, CreateException {
         coercePatientIdentity(study.getPatient(), ds, coercedElements);
         study.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceSeriesIdentity(SeriesLocal series, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException {
+            Dataset coercedElements) throws DcmServiceException, CreateException {
         coerceStudyIdentity(series.getStudy(), ds, coercedElements);
         series.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceInstanceIdentity(InstanceLocal instance, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException {
+            Dataset coercedElements) throws DcmServiceException, CreateException {
         coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
         instance.coerceAttributes(ds, coercedElements);
     }
