@@ -50,7 +50,9 @@ import javax.management.ReflectionException;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -59,7 +61,7 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class MWLScuDelegate {
 	private static ObjectName mwlScuServiceName = null;
-	private static ObjectName mppsScpServiceName = null;
+	private static ObjectName contentEditServiceName = null;
 
 	private static MBeanServer server;
 
@@ -82,8 +84,8 @@ public class MWLScuDelegate {
 		String s = config.getInitParameter("mwlScuServiceName");
 		try {
 			mwlScuServiceName = new ObjectName(s);
-			s = config.getInitParameter("mppsScpServiceName");
-			mppsScpServiceName = new ObjectName(s);
+			s = config.getInitParameter("contentEditName");
+			contentEditServiceName = new ObjectName(s);
 		} catch (Exception e) {
 			log.error("Exception in init! ", e);
 		}
@@ -161,12 +163,12 @@ public class MWLScuDelegate {
 
 	public Map linkMppsToMwl( String[] spsIDs, String[] mppsIUIDs ) {
 		try {
-			Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
+			Map map = (Map) server.invoke(contentEditServiceName, "linkMppsToMwl",
 					new Object[] { spsIDs, mppsIUIDs }, 
 					new String[] { String[].class.getName(), String[].class.getName() });
 			return map;
 		} catch (Exception x) {
-			log.error("Exception occured in updateMPPS: " + x.getMessage(), x);
+			log.error("Exception occured in linkMppsToMwl: " + x.getMessage(), x);
 			return null;
 		}
 	}

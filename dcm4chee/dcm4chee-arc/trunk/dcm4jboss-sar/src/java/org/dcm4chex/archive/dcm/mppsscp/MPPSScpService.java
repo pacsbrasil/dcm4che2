@@ -158,7 +158,12 @@ public class MPPSScpService extends AbstractScpService {
 		            	        coerceAttributes(series,coerce);
 		            	        log.debug("Update series "+series.getString(Tags.SeriesInstanceUID)+" with worklist attributes!");
 	            	        }
-	            	        mgr.updateSeriesAndStudy(seriesDS);
+	            	        Dataset dsN = mgr.updateSeriesAndStudy(seriesDS);
+                            if ( dsN != null ) {
+                                log.debug("IAN Dataset of coerced study:");
+                                log.debug(dsN);
+                                map.put("StudyMgtDS",dsN);
+                            }
 	            	    }
 	            	} catch ( Exception x ) {
 	            	    log.error("Cant coerce MWL attributes to series)",x);
@@ -172,7 +177,6 @@ public class MPPSScpService extends AbstractScpService {
         }
       
    		if ( dominant != null ) {
-   			map.clear();
        		Dataset[] priorPats = (Dataset[])mapPrior.values().toArray(new Dataset[mapPrior.size()]);
        		map.put("dominant", dominant );
        		map.put("priorPats", priorPats);

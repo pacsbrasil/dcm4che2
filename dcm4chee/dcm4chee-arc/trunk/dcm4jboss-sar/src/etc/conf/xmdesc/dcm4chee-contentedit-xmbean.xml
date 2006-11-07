@@ -156,6 +156,15 @@
          <value value="dcm4chee.archive:service=StoreScp"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MppsScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=MPPSScp"/>
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
@@ -441,5 +450,21 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+<!-- MPPS MWL link -->
+   <operation impact="ACTION">
+      <description>Link MPPS to MWL entries.</description>
+      <name>linkMppsToMwl</name>
+      <parameter>
+        <description>List of Scheduled Procedure Step IDs</description>
+        <name>spsIDs</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+        <description>List of MPPS SOP Instance UIDs</description>
+        <name>mppsIUIDs</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>java.util.Map</return-type>
+   </operation>   
    
 </mbean>

@@ -88,6 +88,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 	private ObjectName studyMgtScuServiceName;
     private ObjectName fileSystemMgtName;
     private ObjectName storeScpServiceName;
+    private ObjectName mppsScpServiceName;
 
     private String callingAET;
 	private String calledAET;
@@ -154,6 +155,20 @@ public class ContentEditService extends ServiceMBeanSupport {
 		this.storeScpServiceName = storeScpServiceName;
 	}
 	/**
+     * @return the mppsScpServiceName
+     */
+    public ObjectName getMppsScpServiceName() {
+        return mppsScpServiceName;
+    }
+
+    /**
+     * @param mppsScpServiceName the mppsScpServiceName to set
+     */
+    public void setMppsScpServiceName(ObjectName mppsScpServiceName) {
+        this.mppsScpServiceName = mppsScpServiceName;
+    }
+
+    /**
 	 * @return Returns the receivingApplication.
 	 */
 	public String getReceivingApplication() {
@@ -265,6 +280,24 @@ public class ContentEditService extends ServiceMBeanSupport {
 
 		String patID = ds.getString(Tags.PatientID);
 		sendJMXNotification( new PatientUpdated(patID, "Patient update", getRetrieveAET()));
+    }
+    
+    public Map linkMppsToMwl(String[] spsIDs, String[] mppsIUIDs) {
+        try {
+            Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
+                    new Object[] { spsIDs, mppsIUIDs }, 
+                    new String[] { String[].class.getName(), String[].class.getName() });
+            Dataset dsN = (Dataset) map.get("StudyMgtDS");
+            if ( dsN != null ) {
+                sendStudyMgt( dsN.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsN);
+                sendSeriesUpdatedNotifications(dsN, "Series update");
+            }
+            return map;
+        } catch (Exception x) {
+            log.error("Exception occured in linkMppsToMwl: " + x.getMessage(), x);
+            return null;
+        }
+        
     }
     
     private String getRetrieveAET() {
