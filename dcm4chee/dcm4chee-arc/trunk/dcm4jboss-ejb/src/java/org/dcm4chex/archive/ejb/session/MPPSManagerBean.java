@@ -58,9 +58,11 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
@@ -69,6 +71,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -363,7 +366,6 @@ public abstract class MPPSManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public boolean deleteMPPSEntries( String[] iuids ) {
-    	MPPSLocal mpps;
     	for ( int i = 0 ; i < iuids.length ; i++ ) {
     		try {
 				mppsHome.findBySopIuid( iuids[i] ).remove();
@@ -404,20 +406,43 @@ public abstract class MPPSManagerBean implements SessionBean {
     }
  
     /**
+     * Returns a StudyMgt Dataset.
+     * 
      * @ejb.interface-method
      */
-    public void updateSeriesAndStudy(Collection seriesDS) throws FinderException {
+    public Dataset updateSeriesAndStudy(Collection seriesDS) throws FinderException {
         Dataset ds = null;
         String iuid;
-        SeriesLocal series = null;;
+        SeriesLocal series = null;
+        Dataset dsN = DcmObjectFactory.getInstance().newDataset();
+        DcmElement refSeriesSeq = dsN.putSQ( Tags.RefSeriesSeq );
+        Dataset dsSer;
         for ( Iterator iter = seriesDS.iterator() ; iter.hasNext() ; ) {
             ds = (Dataset) iter.next();
             iuid = ds.getString(Tags.SeriesInstanceUID);
             series = seriesHome.findBySeriesIuid(iuid);
 	        series.setAttributes(ds);
+            dsSer = refSeriesSeq.addNewItem();
+            dsSer.putAll(series.getAttributes(true));
+            Iterator iter2 = series.getInstances().iterator();
+            if ( iter2.hasNext()) {
+                DcmElement refSopSeq = dsSer.putSQ( Tags.RefSOPSeq );
+                InstanceLocal il;
+                Dataset dsInst;
+                while ( iter2.hasNext() ) {
+                    il = (InstanceLocal) iter2.next();
+                    dsInst = refSopSeq.addNewItem();
+                    dsInst.putUI( Tags.RefSOPClassUID, il.getSopCuid() );
+                    dsInst.putUI( Tags.RefSOPInstanceUID, il.getSopIuid() );
+                    dsInst.putAE( Tags.RetrieveAET, il.getRetrieveAETs() );
+                }
+            }
         }
-        if ( series != null )
-            series.getStudy().setAttributes(ds);
+        if ( series != null ) {
+           StudyLocal study = series.getStudy();
+           study.setAttributes(ds);
+           dsN.putAll( study.getAttributes(true) );
+        }
+        return dsN;
     }
-    
 }
