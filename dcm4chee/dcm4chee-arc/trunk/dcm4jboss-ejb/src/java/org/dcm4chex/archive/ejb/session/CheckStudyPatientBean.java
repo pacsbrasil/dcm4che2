@@ -97,8 +97,6 @@ public abstract class CheckStudyPatientBean implements SessionBean {
 
     private ContentEditLocalHome contentEditHome;
     
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    
     private static final Logger log = Logger.getLogger(CheckStudyPatientBean.class);
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
