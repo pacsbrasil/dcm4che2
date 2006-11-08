@@ -113,7 +113,7 @@ accessed studies.</description>
       systems to assess free available disk space on storage file system(s).<br/>
       If you change the default value for POSIX compliant output, a wrong
       value for the free available disk space may be derived from the command
-      output.<br>
+      output.<br/>
       => Always verify, if <i>freeDiskSpace()</i> (still) returns the correct
       value, after any modification of <i>DFCommandOption</i> or
       <i>DFCommand</i>.<br/>
