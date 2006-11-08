@@ -303,6 +303,22 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public final void setMinFreeDiskSpace(String str) {
         this.minFreeDiskSpace = FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
     }
+    
+    public final String getDFCommand() {
+        return FileSystemUtils.getDFCommand();
+    }
+
+    public final void setDFCommand(String dfCommand) {
+        FileSystemUtils.setDFCommand(dfCommand);
+    }
+
+    public final String getDFCommandOption() {
+        return FileSystemUtils.getDFCommandOption();
+    }
+
+    public final void setDFCommandOption(String dfCommandOption) {
+        FileSystemUtils.setDFCommandOption(dfCommandOption);
+    }    
 
     public final String getCheckFreeDiskSpaceInterval() {
         return RetryIntervalls.formatInterval(checkFreeDiskSpaceInterval);

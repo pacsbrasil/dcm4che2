@@ -51,6 +51,9 @@ public class FileSystemUtils {
     private static final int WINDOWS = 1;
     /** Operating system state flag for Unix. */
     private static final int UNIX = 2;
+    
+    private static String dfCommand = "df";
+    private static String dfCommandOption = "-P";
 
     /** The operating system flag. */
     private static final int OS;
@@ -86,6 +89,22 @@ public class FileSystemUtils {
             os = INIT_PROBLEM;
         }
         OS = os;
+    }
+
+    public static final String getDFCommand() {
+        return dfCommand;
+    }
+
+    public static final void setDFCommand(String dfCommand) {
+        FileSystemUtils.dfCommand = dfCommand;
+    }
+
+    public static final String getDFCommandOption() {
+        return dfCommandOption;
+    }
+
+    public static final void setDFCommandOption(String dfCommandOption) {
+        FileSystemUtils.dfCommandOption = dfCommandOption;
     }
 
     /**
@@ -255,7 +274,7 @@ public class FileSystemUtils {
 //        path = FilenameUtils.normalize(path);
 
         // build and run the 'dir' command
-        String[] cmdAttribs = new String[] {"df", "-P", path};
+        String[] cmdAttribs = new String[] {"df", dfCommandOption, path};
 
         // read the output from the command until we come to the second line
         BufferedReader in = null;
@@ -264,24 +283,24 @@ public class FileSystemUtils {
             String line1 = in.readLine(); // header line
             String line2 = in.readLine(); // the line we're interested in
             String line3 = in.readLine(); // possibly interesting line
-            return parseUnixDF_P(path, line1, line2, line3);
+            return parseUnixDF(path, line1, line2, line3);
         } finally {
             closeQuietly(in);
         }
     }
 
-    public static long parseDF_P(String path, String line1, String line2, String line3)
+    public static long parseDF(String path, String line1, String line2, String line3)
     		throws IOException {
-        return INSTANCE.parseUnixDF_P(path, line1, line2, line3);
+        return INSTANCE.parseUnixDF(path, line1, line2, line3);
     }
 
-    long parseUnixDF_P(String path, String line1, String line2, String line3)
+    long parseUnixDF(String path, String line1, String line2, String line3)
             throws IOException {
         if (line2 == null) {
             // unknown problem, throw exception
             throw new IOException(
-                    "Command line 'df -P' did not return info as expected " +
-                    "for path '" + path +
+                    "'" + dfCommand + " " + dfCommandOption +
+                    "' did not return info as expected " + "for path '" + path +
                     "'- response on first line was '" + line1 + "'");
         }
         
@@ -289,13 +308,18 @@ public class FileSystemUtils {
         long blocksize = 512L;
         int blocksizeEnd = line1.indexOf('-');
         if (blocksizeEnd > 0) {
+            int factor = 1;
+            if (line1.charAt(blocksizeEnd - 1) == 'K') {
+                --blocksizeEnd;
+                factor = 1024;
+            }
             int blocksizePos = blocksizeEnd;
             while (blocksizePos > 0 && Character.isDigit(
                     line1.charAt(blocksizePos - 1))) {
                 --blocksizePos;
             }
             if (blocksizePos < blocksizeEnd) {
-                blocksize = Long.parseLong(
+                blocksize = factor * Long.parseLong(
                         line1.substring(blocksizePos, blocksizeEnd));
             }
         }
@@ -311,8 +335,9 @@ public class FileSystemUtils {
                 tok = new StringTokenizer(line3, " ");
             } else {
                 throw new IOException(
-                        "Command line 'df -P' did not return data as expected " +
-                        "for path '" + path + "'- check path is valid");
+                        "'" + dfCommand + " " + dfCommandOption +
+                        "' did not return data as expected for path '" + path +
+                        "'- check path is valid");
             }
         } else {
             tok.nextToken(); // Ignore Filesystem
@@ -324,8 +349,9 @@ public class FileSystemUtils {
             return (Long.parseLong(freeSpace) * blocksize);
         } catch (NumberFormatException ex) {
             throw new IOException(
-                    "Command line 'df -P' did not return numeric data as expected " +
-                    "for path '" + path + "'- check path is valid");
+                    "'" + dfCommand + " " + dfCommandOption +
+                    "' did not return numeric data as expected for path '" + 
+                    path + "'- check path is valid");
         }
     }
 

@@ -89,6 +89,43 @@ accessed studies.</description>
          <value value="50MB"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getDFCommand"
+      setMethod="setDFCommand">
+      <description><![CDATA[<tt>df</tt> command used on *nix operation 
+      systems to assess free available disk space on storage file system(s).<br/>
+      You may change the default value to use a different version than the
+      first in the system PATH.<br/>
+      <p><b>Example:</b> <tt>/usr/xpg4/bin/df</tt><br/>
+      <p><b>Default:</b> <tt>df</tt>
+      ]]>   
+      </description>
+      <name>DFCommand</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="df"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getDFCommandOption"
+      setMethod="setDFCommandOption">
+      <description><![CDATA[<tt>df</tt> command option used on *nix operation
+      systems to assess free available disk space on storage file system(s).<br/>
+      If you change the default value for POSIX compliant output, a wrong
+      value for the free available disk space may be derived from the command
+      output.<br>
+      => Always verify, if <i>freeDiskSpace()</i> (still) returns the correct
+      value, after any modification of <i>DFCommandOption</i> or
+      <i>DFCommand</i>.<br/>
+      Example: <tt>-k</tt><br/>
+      Default Value: <tt>-P</tt>]]>   
+      </description>
+      <name>DFCommandOption</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="-P"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getCheckFreeDiskSpaceInterval"
       setMethod="setCheckFreeDiskSpaceInterval">
