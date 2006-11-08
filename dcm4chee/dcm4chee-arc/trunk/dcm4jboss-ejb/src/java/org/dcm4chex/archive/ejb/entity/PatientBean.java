@@ -120,7 +120,7 @@ public abstract class PatientBean implements EntityBean {
         try {
             jndiCtx = new InitialContext();
             opatidHome = (OtherPatientIdLocalHome)
-                    jndiCtx.lookup("java:comp/env/ejb/OtherPatientIdLocal");
+                    jndiCtx.lookup("java:comp/env/ejb/OtherPatientId");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
