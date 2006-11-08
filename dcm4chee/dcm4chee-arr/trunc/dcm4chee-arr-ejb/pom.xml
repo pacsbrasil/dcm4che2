@@ -164,7 +164,7 @@
                                         <path refid="maven.test.classpath" />
                                     </classpath>
                                     <ejb3configuration />
-                                    <hbm2ddl drop="true" create="true" export="false" update="false" console="false"
+                                    <hbm2ddl drop="false" create="true" export="false" update="false" console="false"
                                         outputfilename="dcm4chee-arr-${db}.ddl" delimiter=";" format="true" />
                                 </hibernatetool>
                             </tasks>
