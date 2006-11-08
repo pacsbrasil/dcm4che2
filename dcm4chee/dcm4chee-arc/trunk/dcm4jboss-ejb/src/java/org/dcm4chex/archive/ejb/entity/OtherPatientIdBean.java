@@ -53,7 +53,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.bean name="OtherPatientId" type="CMP" view-type="local"
  *           local-jndi-name="ejb/OtherPatientId" primkey-field="pk"
  * @ejb.transaction type="Required"
- * @ejb.persistence table-name="patient"
+ * @ejb.persistence table-name="other_pat_id"
  * @jboss.entity-command name="hsqldb-fetch-key"
  */
 public abstract class OtherPatientIdBean implements EntityBean {
