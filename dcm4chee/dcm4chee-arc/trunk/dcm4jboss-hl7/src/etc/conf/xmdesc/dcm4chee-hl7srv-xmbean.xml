@@ -4,8 +4,11 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>HL7 Server</description>
-
+   <description><![CDATA[HL7 Server: Dispatch incoming HL7 messages to
+    registered HL7 services. When configuring, select the TCP listening port, 
+    the security protocol for communication, timeouts, and the maximum number of
+    connected HL7 senders.]]>
+   </description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
@@ -22,7 +25,8 @@
    <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
-      <description>TCP listening port.
+      <description>TCP listening port. This is the most important value in
+      the service, and by default is set to 2575.
       </description>
       <name>Port</name>
       <type>int</type>
@@ -33,8 +37,13 @@
    <attribute access="read-write"
       getMethod="getProtocolName"
       setMethod="setProtocolName">
-      <description>Enable TLS mode: mllp, mllp-tls, mllp-tls.aes,
-      mllp-tls.3des or mllp-tls.nodes.
+      <description><![CDATA[Enable Transport Security Layer (TLS) mode:<ul>
+      <li><tt>mllp</tt> - plain <i>Minimal Lower Level Protocol</i>; <b>no</b> TLS</li>
+      <li><tt>mllp-tls</tt> - accept TLS connections; offer AES or DES encryption</li>
+      <li><tt>mllp-tls.aes</tt> - accept TLS connections; force AES or DES encryption</li>
+      <li><tt>mllp-tls.3des</tt> - accept TLS connections; force DES encryption</li>
+      <li><tt>mllp-tls.nodes</tt> - accept TLS connections without encryption</li>
+      </ul>]]>
       </description>
       <name>ProtocolName</name>
       <type>java.lang.String</type>
@@ -45,7 +54,13 @@
    <attribute access="read-write"
       getMethod="getSoTimeout"
       setMethod="setSoTimeout">
-      <description>Socket timeout in ms. 0 = no timeout.
+      <description>Socket timeout in ms. 0 = no timeout. 
+      This value determines how long the server is waiting for receiving
+      the next message on an open connection before it closes the idle connection.
+      HL7 senders (typical part of the RIS) typically keeps the connection
+      open between emitted messages, and some interprets a close of the idle
+      connection by the server as serious system failure. So the timeout value
+      may be configured quite large. Default: 600000 (=10min).
       </description>
       <name>SoTimeout</name>
       <type>int</type>
@@ -57,7 +72,9 @@
       getMethod="getNoopMessageTypes"
       setMethod="setNoopMessageTypes">
       <description>Comma separated list of Message Types which are accepted
-       even if no HL7 Service is configured to actual process the message.
+       even if no HL7 Service is registered to actual process the message.
+       By setting this value, you avoid to reject messages, which are not
+       processed by the application.
       </description>
       <name>NoopMessageTypes</name>
       <type>java.lang.String</type>
@@ -80,8 +97,10 @@
    <attribute access="read-write"
       getMethod="isFileReceivedHL7"
       setMethod="setFileReceivedHL7">
-      <description>Activates writing received HL7 messages into
-          file (format: hl7-######.hl7) in log directory.
+      <description><![CDATA[Activates writing received HL7 messages into file 
+      (format: hl7-######.hl7) in log directory. Useful to analyse HL7 encoding
+      errors in incoming messages, which causes the conversion of the message
+      to XML for further processing to fail.]]>
       </description>
       <name>FileReceivedHL7</name>
       <type>boolean</type>
@@ -92,8 +111,9 @@
    <attribute access="read-write"
       getMethod="isFileReceivedHL7AsXML"
       setMethod="setFileReceivedHL7AsXML">
-      <description>Activates writing received and XMLized HL7 messages into
-          file (format: hl7-######.xml) in log directory.
+      <description><![CDATA[Activates writing received and XMLized HL7 messages
+      into file (format: hl7-######.xml) in log directory. Useful to test
+      customized XSL stylesheets used by individual HL7 Services.]]>
       </description>
       <name>FileReceivedHL7AsXML</name>
       <type>boolean</type>
@@ -105,7 +125,7 @@
    <attribute access="read-write"
       getMethod="getMaxClients"
       setMethod="setMaxClients">
-      <description>Maximal number of simultaneously connected HL7 clients.
+      <description>Maximal number of simultaneously connected HL7 senders.
       </description>
       <name>MaxClients</name>
       <type>int</type>
@@ -115,7 +135,7 @@
    </attribute>
    <attribute access="read-only"
       getMethod="getNumClients">
-      <description>Current number of connected HL7 clients.
+      <description>Current number of connected HL7 senders.
       </description>
       <name>NumClients</name>
       <type>int</type>
@@ -140,7 +160,7 @@
    </attribute>
    <attribute access="read-only"
       getMethod="getNumberOfReceivedMessages">
-      <description>Number of received HL7 messages.
+      <description>Number of received HL7 messages since last restart of the application.
       </description>
       <name>NumberOfReceivedMessages</name>
       <type>int</type>
