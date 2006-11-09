@@ -30,7 +30,7 @@
    </attribute>
 
    <attribute access="read-write" getMethod="getCalledAET" setMethod="setCalledAET">
-      <description><![CDATA[The AE title of the modality worklist used for find.
+      <description><![CDATA[The AE title of the Modality Worklist SCP to query.
       Use <tt>LOCAL</tt> if the DICOM modality worklist is provided by the
       archive and can be accessed directly from the database.<br/>
       <b>Note:</b> Deletion of worklist entries by the Modality Worklist
