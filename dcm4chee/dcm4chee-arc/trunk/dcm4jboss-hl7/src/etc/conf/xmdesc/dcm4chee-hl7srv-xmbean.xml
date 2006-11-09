@@ -98,9 +98,10 @@
       getMethod="isFileReceivedHL7"
       setMethod="setFileReceivedHL7">
       <description><![CDATA[Activates writing received HL7 messages into file 
-      (format: hl7-######.hl7) in log directory. Useful to analyse HL7 encoding
-      errors in incoming messages, which causes the conversion of the message
-      to XML for further processing to fail.]]>
+      (format: hl7-######.hl7, with ###### as the sequence number of the
+      received message since last application start) in log directory.
+      Useful to analyse HL7 encoding errors in incoming messages, which causes
+      the conversion of the message to XML for further processing to fail.]]>
       </description>
       <name>FileReceivedHL7</name>
       <type>boolean</type>
@@ -112,8 +113,9 @@
       getMethod="isFileReceivedHL7AsXML"
       setMethod="setFileReceivedHL7AsXML">
       <description><![CDATA[Activates writing received and XMLized HL7 messages
-      into file (format: hl7-######.xml) in log directory. Useful to test
-      customized XSL stylesheets used by individual HL7 Services.]]>
+      into file (format: hl7-######.xml, with ###### as the sequence number of 
+      the received message since last application start) in log directory.
+      Useful to test customized XSL stylesheets used by individual HL7 Services.]]>
       </description>
       <name>FileReceivedHL7AsXML</name>
       <type>boolean</type>
@@ -160,7 +162,10 @@
    </attribute>
    <attribute access="read-only"
       getMethod="getNumberOfReceivedMessages">
-      <description>Number of received HL7 messages since last restart of the application.
+      <description><![CDATA[Number of received HL7 messages since last restart
+      of the application. Used for naming of log files, if logging of incoming
+      HL7 messages is activated by <b>FileReceivedHL7</b> or 
+      <b>FileReceivedHL7AsXML</b>.]]>
       </description>
       <name>NumberOfReceivedMessages</name>
       <type>int</type>
