@@ -2,7 +2,10 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Modality Worklist SCU</description>
+   <description>Modality Worklist SCU. Used by the Modality Worklist Console
+   of the Archive Web Administration tool and by the Storage SCP service to
+   query the configured Modality Worklist SCP for Scheduled Procedure Steps.
+   </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
@@ -27,9 +30,12 @@
    </attribute>
 
    <attribute access="read-write" getMethod="getCalledAET" setMethod="setCalledAET">
-      <description>The AE title of the modality worklist used for find. Use LOCAL
-      if the DICOM modality worklist is provided by the archive and can be accessed
-      directly from the database. 
+      <description><![CDATA[The AE title of the modality worklist used for find.
+      Use <tt>LOCAL</tt> if the DICOM modality worklist is provided by the
+      archive and can be accessed directly from the database.<br/>
+      <b>Note:</b> Deletion of worklist entries by the Modality Worklist
+      Console of the Archive Web Administration tool is only possible if this
+      attribute is set to <tt>LOCAL</tt>.]]>
       </description>
       <name>CalledAETitle</name>
       <type>java.lang.String</type>
@@ -88,6 +94,8 @@
 
    <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">
       <description>Priority for C-Find requests. Enumerated Values: LOW, MEDIUM, HIGH.
+        Only effective for queries of a remote Modality Worlist SCP which actual
+        interprets the priority attribute in the DICOM C-FIND request.
       </description>
       <name>Priority</name>
       <type>java.lang.String</type>
