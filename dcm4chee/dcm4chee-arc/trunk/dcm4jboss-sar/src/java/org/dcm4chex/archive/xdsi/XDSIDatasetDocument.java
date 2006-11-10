@@ -44,6 +44,8 @@ import java.io.OutputStream;
 import javax.activation.DataHandler;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.UIDs;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -108,6 +110,9 @@ public class XDSIDatasetDocument implements XDSIDocument {
 		}
 		
 		public void writeTo( OutputStream out ) throws IOException {
+            if ( ds.getFileMetaInfo() == null ) {
+                ds.setFileMetaInfo(DcmObjectFactory.getInstance().newFileMetaInfo(ds, UIDs.ExplicitVRLittleEndian));
+            }
 			ds.writeFile(out,null);
 		}
 
