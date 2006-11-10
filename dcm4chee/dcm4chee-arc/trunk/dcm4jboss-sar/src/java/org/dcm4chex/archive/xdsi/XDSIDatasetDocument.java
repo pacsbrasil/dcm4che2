@@ -110,6 +110,9 @@ public class XDSIDatasetDocument implements XDSIDocument {
 		}
 		
 		public void writeTo( OutputStream out ) throws IOException {
+            if ( ds.getFileMetaInfo() == null ) {
+                ds.setFileMetaInfo(DcmObjectFactory.getInstance().newFileMetaInfo(ds, UIDs.ExplicitVRLittleEndian));
+            }
 			ds.writeFile(out,null);
 		}
 
