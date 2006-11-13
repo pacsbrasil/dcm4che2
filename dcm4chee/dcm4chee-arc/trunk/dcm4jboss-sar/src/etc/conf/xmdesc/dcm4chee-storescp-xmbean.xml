@@ -836,7 +836,18 @@ StoreSCP service.
          <value value="CheckPendingSeriesStored" />
       </descriptors>
    </attribute>
-   
+   <attribute access="read-write"
+      getMethod="getPerfMonServiceName"
+      setMethod="setPerfMonServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>PerfMonServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value=""/>
+      </descriptors>
+   </attribute>
+
    &defaultAttributes;
 
    <!-- Operations -->
