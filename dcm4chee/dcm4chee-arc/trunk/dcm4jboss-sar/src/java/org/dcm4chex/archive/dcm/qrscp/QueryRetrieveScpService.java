@@ -519,6 +519,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return maxBlockedFindRSP;
     }
 
+	public final ObjectName getPerfMonServiceName() {
+		return dicomFindScp.getPerfMonServiceName();
+	}
+
+	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+		dicomFindScp.setPerfMonServiceName(perfMonServiceName);
+	}
+	
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
@@ -542,6 +551,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelMOVE, moveScp);
         services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
                 moveScp);
+        
+        dcmHandler.addAssociationListener(dicomFindScp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
@@ -569,6 +580,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
+        
+        dcmHandler.removeAssociationListener(dicomFindScp);
     }
 
     private static final ExtNegotiator ECHO_EXT_NEG = new ExtNegotiator() {

@@ -56,6 +56,7 @@ import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -67,6 +68,8 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationListener;
@@ -88,6 +91,9 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.perf.PerfCounterEnum;
+import org.dcm4chex.archive.perf.PerfMonDelegate;
+import org.dcm4chex.archive.perf.PerfPropertyEnum;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -142,12 +148,23 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
+    
+    private PerfMonDelegate perfMon;
 
     public StoreScp(StoreScpService service) {
         this.service = service;
         this.log = service.getLog();
+        perfMon = new PerfMonDelegate(this.service);
     }
 
+    public final ObjectName getPerfMonServiceName() {
+		return perfMon.getPerfMonServiceName();
+	}
+
+	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+		perfMon.setPerfMonServiceName(perfMonServiceName);
+	}
+	
     public final boolean isAcceptMissingPatientID() {
         return acceptMissingPatientID;
     }
@@ -373,6 +390,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Association assoc = activeAssoc.getAssociation();
         File file = null;
         try {		
+        	perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN );
+        	perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
+        	
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
             if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 
                     || storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
@@ -387,8 +407,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
-            log.debug("Dataset:\n");
-            log.debug(ds);
+            
+            if(log.isDebugEnabled()) {
+	            log.debug("Dataset:\n");
+	            log.debug(ds);
+            }
+            
+            // Set original dataset
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET, ds);
+            
             service.logDIMSE(assoc, STORE_XML, ds);
             checkDataset(assoc, rqCmd, ds);
             if ( isCheckIncorrectWorklistEntry() 
@@ -411,7 +438,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     rqCmd.getAffectedSOPClassUID(),
                     rqCmd.getAffectedSOPInstanceUID(), tsuid));
 
+            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, file);            
             byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+            
             if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
@@ -452,10 +483,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             mergeMatchingMWLItem(assoc, ds, seriuid, mwlFilter));
                 }                
             }
+            
+            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET, ds);
+            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             if (coerced.isEmpty()
                     || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
@@ -469,6 +504,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
             service.postProcess(ds);
+
+            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -866,9 +903,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     // Implementation of AssociationListener
 
     public void write(Association src, PDU pdu) {
+    	if (pdu instanceof AAssociateAC)
+    		perfMon.assocEstEnd(src, Command.C_STORE_RQ);
     }
 
     public void received(Association src, PDU pdu) {
+    	if(pdu instanceof AAssociateRQ)
+    		perfMon.assocEstStart(src, Command.C_STORE_RQ);
     }
 
     public void write(Association src, Dimse dimse) {
@@ -881,6 +922,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closing(Association assoc) {
+    	if(assoc.getAAssociateAC() != null)
+    		perfMon.assocRelStart(assoc, Command.C_STORE_RQ);
+    	
         String seriuid = (String) assoc.getProperty(SERIES_IUID);
         if (seriuid != null) {
             try {
@@ -902,8 +946,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closed(Association assoc) {
+    	if(assoc.getAAssociateAC() != null)
+    		perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
     }
-
+    
     /**
      * Finalize a stored series.
      * <p>

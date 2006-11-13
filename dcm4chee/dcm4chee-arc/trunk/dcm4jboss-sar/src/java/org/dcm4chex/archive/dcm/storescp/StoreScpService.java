@@ -508,6 +508,15 @@ public class StoreScpService extends AbstractScpService {
             String timerIDCheckPendingSeriesStored) {
         this.timerIDCheckPendingSeriesStored = timerIDCheckPendingSeriesStored;
     }    
+    
+	public final ObjectName getPerfMonServiceName() {
+		return scp.getPerfMonServiceName();
+	}
+
+	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+		scp.setPerfMonServiceName(perfMonServiceName);
+	}
+	
     protected void startService() throws Exception {
         super.startService();
         listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
