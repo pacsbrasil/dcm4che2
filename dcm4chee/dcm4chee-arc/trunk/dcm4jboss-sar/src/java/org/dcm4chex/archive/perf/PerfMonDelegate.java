@@ -49,7 +49,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"assocEstStart",
-                    new Object[] { assoc, command },
+                    new Object[] { assoc, new Integer(command) },
                     new String[] { Association.class.getName(), int.class.getName()});
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation assocEstStart on "
@@ -63,7 +63,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"assocEstEnd",
-                    new Object[] { assoc, command },
+                    new Object[] { assoc, new Integer(command) },
                     new String[] { Association.class.getName(), int.class.getName()});
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation assocEstEnd on "
@@ -77,7 +77,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"assocRelStart",
-                    new Object[] { assoc, command },
+                    new Object[] { assoc, new Integer(command) },
                     new String[] { Association.class.getName(), int.class.getName()});
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation assocRelStart on "
@@ -91,7 +91,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"assocRelEnd",
-                    new Object[] { assoc, command },
+                    new Object[] { assoc, new Integer(command) },
                     new String[] { Association.class.getName(), int.class.getName()});
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation assocRelEnd on "
@@ -105,7 +105,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"start",
-                    new Object[] { assoc, rq, counterEnum },
+                    new Object[] { assoc, rq, new Integer(counterEnum) },
                     new String[] { ActiveAssociation.class.getName(), Dimse.class.getName(), int.class.getName()});
         } catch (Exception e) {
             service.getLog().error("Failed to invoke operation start on "
@@ -128,7 +128,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"setProperty",
-                    new Object[] { assoc, rq, perfPropEnum, data },
+                    new Object[] { assoc, rq, new Integer(perfPropEnum), data },
                     new String[] { ActiveAssociation.class.getName(), Dimse.class.getName(), int.class.getName(), Object.class.getName()});
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation start on "
@@ -142,7 +142,7 @@ public class PerfMonDelegate {
 			
         try {
             service.getServer().invoke(perfMonServiceName,"stop",
-                    new Object[] { assoc, rq, counterEnum },
+                    new Object[] { assoc, rq, new Integer(counterEnum) },
                     new String[] { ActiveAssociation.class.getName(), Dimse.class.getName(), int.class.getName()});
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation stop on "
