@@ -39,33 +39,20 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
-import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
-import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
-import org.dcm4chex.archive.ejb.interfaces.GPSPSPerformerLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.GPSPSRequestLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.OtherPatientIdLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.util.Convert;
@@ -78,8 +65,6 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
- * 
- * @ejb.ejb-ref ejb-name="OtherPatientId" view-type="local" ref-name="ejb/OtherPatientId"
  * 
  * @ejb.finder signature="Collection findAll()"
  *             query="SELECT OBJECT(a) FROM Patient AS a"
@@ -110,34 +95,7 @@ import org.dcm4chex.archive.util.Convert;
 public abstract class PatientBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(PatientBean.class);
-    
-    private EntityContext ejbctx;
-    private OtherPatientIdLocalHome opatidHome;
 
-    public void setEntityContext(EntityContext ctx) {
-        ejbctx = ctx;
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            opatidHome = (OtherPatientIdLocalHome)
-                    jndiCtx.lookup("java:comp/env/ejb/OtherPatientId");
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-    }
-
-    public void unsetEntityContext() {
-        opatidHome = null;
-        ejbctx = null;
-    }
-    
     /**
      * Auto-generated Primary Key
      *
@@ -271,13 +229,6 @@ public abstract class PatientBean implements EntityBean {
     public abstract void setMergedWith(PatientLocal mergedWith);
 
     /**
-     * @ejb.relation name="patient-other-patient-id"
-     *          role-name="patient-with-other-patient-id"
-     */
-    public abstract java.util.Collection getOtherPatientIds();
-    public abstract void setOtherPatientIds(java.util.Collection otherPatientIds);
-    
-    /**
      * @ejb.interface-method view-type="local"
      *
      * @param studies all studies of this patient
@@ -347,7 +298,6 @@ public abstract class PatientBean implements EntityBean {
     }
 
     public void ejbPostCreate(Dataset ds) throws CreateException {
-        updateOtherPatientIds(ds.get(Tags.OtherPatientIDSeq));
         log.info("Created " + prompt());
     }
 
@@ -361,19 +311,6 @@ public abstract class PatientBean implements EntityBean {
         	study.remove();
         }
     }
-    
-    private void updateOtherPatientIds(DcmElement sq)
-    throws CreateException {
-        if (sq == null)
-            return;
-        Collection c = getOtherPatientIds();
-        c.clear();
-        PatientLocal pat = (PatientLocal) ejbctx.getEJBLocalObject();
-        for (int i = 0, n = sq.countItems(); i < n; i++) {
-            c.add(opatidHome.create(sq.getItem(i), pat));
-        }
-    }
-    
 
     /**
      * @ejb.interface-method
@@ -425,17 +362,17 @@ public abstract class PatientBean implements EntityBean {
     }
     
     /**
+     * @throws DcmServiceException 
      * @ejb.interface-method
      */
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
-    throws DcmServiceException, CreateException {
+    throws DcmServiceException {
         Dataset attrs = getAttributes(false);
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
         if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
-            updateOtherPatientIds(attrs.get(Tags.OtherPatientIDSeq));
         }
     }
 
