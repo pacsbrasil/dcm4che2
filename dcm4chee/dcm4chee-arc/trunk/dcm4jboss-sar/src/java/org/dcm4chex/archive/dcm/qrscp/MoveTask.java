@@ -80,6 +80,9 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
+import org.dcm4chex.archive.perf.PerfCounterEnum;
+import org.dcm4chex.archive.perf.PerfMonDelegate;
+import org.dcm4chex.archive.perf.PerfPropertyEnum;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.logging.Logger;
@@ -164,6 +167,8 @@ class MoveTask implements Runnable {
     private DcmElement refSOPSeq;
 
     private Command fwdMoveRspCmd;
+    
+    private PerfMonDelegate perfMon;
 
     private DimseListener cancelListener = new DimseListener() {
 
@@ -206,6 +211,7 @@ class MoveTask implements Runnable {
         this.withoutPixeldata = service.isWithoutPixelData(moveDest);
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.moveCalledAET = moveAssoc.getAssociation().getCalledAET();
+        this.perfMon = service.getMoveScp().getPerfMonDelegate();
         this.callingAET = service.isForwardAsMoveOriginator() ? moveOriginatorAET
                 : moveCalledAET;
         this.priority = moveRqCmd.getInt(Tags.Priority, Command.MEDIUM);
@@ -228,6 +234,7 @@ class MoveTask implements Runnable {
             a.setAcTimeout(service.getAcTimeout());
             a.setDimseTimeout(service.getDimseTimeout());
             a.setSoCloseDelay(service.getSoCloseDelay());
+            a.putProperty("MoveAssociation", moveAssoc);
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(moveDest);
             rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
@@ -237,7 +244,12 @@ class MoveTask implements Runnable {
             }
             retrieveInfo.addPresContext(rq, service
                     .isSendWithDefaultTransferSyntax(moveDest));
+            
+            perfMon.assocEstStart(a, Command.C_STORE_RQ);
+            
             ac = a.connect(rq);
+
+            perfMon.assocEstEnd(a, Command.C_STORE_RQ);
         } catch (IOException e) {
             final String prompt = "Failed to connect " + moveDest;
             log.error(prompt, e);
@@ -495,9 +507,17 @@ class MoveTask implements Runnable {
                     --remaining;
                 }
             };
+            
             try {
-                storeAssoc.invoke(makeCStoreRQ(fileInfo, getByteBuffer(a)),
-                        storeScpListener);
+            	Dimse rq = makeCStoreRQ(fileInfo, getByteBuffer(a));
+            	perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
+            	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
+            	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.DICOM_FILE, getFile(fileInfo));
+            	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
+
+            	storeAssoc.invoke(rq, storeScpListener);
+            	
+            	perfMon.stop(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT);
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
@@ -508,7 +528,12 @@ class MoveTask implements Runnable {
         }
         if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
             try {
+            	perfMon.assocRelStart(a, Command.C_STORE_RQ);
+            	
                 storeAssoc.release(true);
+                
+                perfMon.assocRelEnd(a, Command.C_STORE_RQ);
+                
                 // workaround to ensure that last STORE-RSP is processed before
                 // finally MOVE-RSP is sent
                 Thread.sleep(10);
@@ -589,9 +614,7 @@ class MoveTask implements Runnable {
                 priority);
         storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        File f = info.basedir.startsWith("tar:") ? service.retrieveFileFromTAR(
-                info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
-                info.fileID);
+        File f = getFile(info);
         Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
@@ -600,6 +623,12 @@ class MoveTask implements Runnable {
         ds.setWithoutPixeldata(withoutPixeldata);
         return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);
+    }
+    
+    private File getFile(FileInfo info) throws Exception {
+    	return info.basedir.startsWith("tar:") ? service.retrieveFileFromTAR(
+                info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
+                        info.fileID);
     }
 
     private void notifyMoveFinished() {

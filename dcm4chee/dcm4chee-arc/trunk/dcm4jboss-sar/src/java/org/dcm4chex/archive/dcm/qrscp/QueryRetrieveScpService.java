@@ -525,8 +525,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
 	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
 		dicomFindScp.setPerfMonServiceName(perfMonServiceName);
+		moveScp.setPerfMonServiceName(perfMonServiceName);
 	}
 	
+	public MoveScp getMoveScp() {
+		return moveScp;
+	}
 
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
@@ -553,6 +557,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 moveScp);
         
         dcmHandler.addAssociationListener(dicomFindScp);
+        dcmHandler.addAssociationListener(moveScp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
@@ -582,6 +587,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
         
         dcmHandler.removeAssociationListener(dicomFindScp);
+        dcmHandler.removeAssociationListener(moveScp);
     }
 
     private static final ExtNegotiator ECHO_EXT_NEG = new ExtNegotiator() {

@@ -43,21 +43,30 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.SQLException;
 
+import javax.management.ObjectName;
+
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
+import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.perf.PerfCounterEnum;
+import org.dcm4chex.archive.perf.PerfMonDelegate;
+import org.dcm4chex.archive.perf.PerfPropertyEnum;
 import org.jboss.logging.Logger;
 
 /**
@@ -65,29 +74,41 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  * @since 31.08.2003
  */
-public class MoveScp extends DcmServiceBase {
+public class MoveScp extends DcmServiceBase implements AssociationListener{
     private final QueryRetrieveScpService service;
 	private final Logger log;
+    private PerfMonDelegate perfMon;
 
     public MoveScp(QueryRetrieveScpService service) {
         this.service = service;
 		this.log = service.getLog();
+        perfMon = new PerfMonDelegate(this.service);
     }
 
     public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException {
         Command rqCmd = rq.getCommand();
-        try {
+        try {            
             Dataset rqData = rq.getDataset();
-			log.debug("Identifier:\n");
-			log.debug(rqData);
+            if(log.isDebugEnabled()) {
+            	log.debug("Identifier:\n");
+            	log.debug(rqData);
+            }
+            
             checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
             AEData aeData = null;
             FileInfo[][] fileInfos = null;
             try {
+               	perfMon.start(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
+            	perfMon.setProperty(assoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
+
     			InetAddress host = dest.equals( assoc.getAssociation().getCallingAET()) ? assoc.getAssociation().getSocket().getInetAddress() : null;
                 aeData = service.queryAEData(dest, host);
                 fileInfos = RetrieveCmd.create(rqData).getFileInfos();
+
+                perfMon.setProperty(assoc, rq, PerfPropertyEnum.NUM_OF_RESULTS, String.valueOf(fileInfos.length));
+                perfMon.stop(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
+                
 	            new Thread(
 	                new MoveTask(
 	                    service,
@@ -194,4 +215,45 @@ public class MoveScp extends DcmServiceBase {
             throw new DcmServiceException(status, msg);
         }
     }
+    
+    public final ObjectName getPerfMonServiceName() {
+		return perfMon.getPerfMonServiceName();
+	}
+
+	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+		perfMon.setPerfMonServiceName(perfMonServiceName);
+	}
+    
+    public PerfMonDelegate getPerfMonDelegate() {
+    	return perfMon;
+    }
+
+    public void write(Association src, PDU pdu) {
+    	if (pdu instanceof AAssociateAC)
+    		perfMon.assocEstEnd(src, Command.C_MOVE_RQ);
+	}
+
+	public void received(Association src, PDU pdu) {
+    	if(pdu instanceof AAssociateRQ)
+    		perfMon.assocEstStart(src, Command.C_MOVE_RQ);
+	}
+
+	public void write(Association src, Dimse dimse) {
+	}
+
+	public void received(Association src, Dimse dimse) {
+	}
+
+	public void error(Association src, IOException ioe) {
+	}
+
+	public void closing(Association assoc) {
+    	if(assoc.getAAssociateAC() != null)
+    		perfMon.assocRelStart(assoc, Command.C_MOVE_RQ);
+	}
+
+	public void closed(Association assoc) {
+    	if(assoc.getAAssociateAC() != null)
+    		perfMon.assocRelEnd(assoc, Command.C_MOVE_RQ);
+	}
 }
