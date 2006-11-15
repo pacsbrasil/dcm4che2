@@ -132,6 +132,10 @@ final class AssociationImpl implements Association {
         this.reader = new DimseReaderImpl(fsm);
         this.writer = new DimseWriterImpl(fsm);
     }
+    
+    public final boolean isRequestor() {
+        return fsm.isRequestor();
+    }
 
     public Socket getSocket() {
         return fsm.socket();

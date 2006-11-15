@@ -89,6 +89,8 @@ public interface Association {
     
     public static int ASSOCIATION_TERMINATING = 13;
     
+    boolean isRequestor();
+    
     int getState();
     
     String getStateAsString();
