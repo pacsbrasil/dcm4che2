@@ -40,7 +40,6 @@ public class PerfCounterEnum {
     public static final int C_MOVE_SCP_QUERY_DB = 6;
     
     public static final int C_STORE_SCU_OBJ_OUT = 7;
-    public static final int C_STORE_SCU_SEND_REQUEST = 8;    
     
     public static final String toString(int value) {
        return ENUM[++value];
