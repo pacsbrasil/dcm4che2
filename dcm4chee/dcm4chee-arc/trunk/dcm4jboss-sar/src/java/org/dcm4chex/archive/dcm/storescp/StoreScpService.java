@@ -721,13 +721,30 @@ public class StoreScpService extends AbstractScpService {
                 new Object[] { ds },
                 new String[] { Dataset.class.getName() });
     }
+    
+    /**
+     * Callback for pre-processing the dataset
+     * @param ds the original dataset
+     * @throws Exception
+     */
+    void preProcess(Dataset ds) throws Exception {
+        doPreProcess(ds);        
+    }
 
+    protected void doPreProcess(Dataset ds) throws Exception {
+        // Extension Point for customized StoreScpService    
+    }
+
+    /**
+     * Callback for post-processing the dataset
+     * @param ds the coerced dataset
+     * @throws Exception
+     */
     void postProcess(Dataset ds) throws Exception {
         doPostProcess(ds);        
     }
 
     protected void doPostProcess(Dataset ds) throws Exception {
         // Extension Point for customized StoreScpService    
-    }
-    
+    }    
 }

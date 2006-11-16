@@ -407,6 +407,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
+            service.preProcess(ds);
             
             if(log.isDebugEnabled()) {
 	            log.debug("Dataset:\n");
