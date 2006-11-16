@@ -4,9 +4,11 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>DICOM MPPS to HL7 ORM converter. Converts DICOM Modality
+   <description><![CDATA[DICOM MPPS to HL7 ORM converter. Converts DICOM Modality
    Performed Procedure Step received by MPPS SCP Service into HL7 ORM message
-   sent to any HL7 receiver by utilizing the HL7 Send Service.</description>
+   sent to any HL7 receiver by utilizing the HL7 Send Service.<br/>
+   This service can be used with RIS systems that cannot handle MPPS messages.]]>
+   </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>

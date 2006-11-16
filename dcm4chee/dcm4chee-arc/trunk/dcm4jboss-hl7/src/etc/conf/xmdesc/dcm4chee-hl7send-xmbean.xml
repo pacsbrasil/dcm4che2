@@ -4,8 +4,13 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>HL7 Send Service</description>
-
+   <description><![CDATA[The <b>HL7 Send Service</b> emits messages to HL7
+   receivers. It can be configured to forward messages received by the 
+   [#HL7 Server] to other systems. It is also used by the <i>XDS-I Information
+   Source Service</i> to query the <i>Patient Identifier Cross-reference 
+   Manager</i> to find out the identification of a patient in different Patient
+   Identifier Domains.]]>
+   </description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />

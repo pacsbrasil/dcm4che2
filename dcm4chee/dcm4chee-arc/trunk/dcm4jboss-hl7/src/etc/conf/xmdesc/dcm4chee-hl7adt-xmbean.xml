@@ -4,8 +4,15 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>ADT HL7 Service</description>
-
+   <description><![CDATA[<b>ADT HL7 Service</v>. Receives and processes incoming
+   ADT messages, based on which messages are accepted as defined in the 
+   MessageTypes attribute. If a patient record does not exist in the database 
+   about the patient in the incoming ADT message, one is created.<br/>
+   Note that ADT^A10 messages do not affect the patient record, but instead
+   checks if pending worklist items exist for this patient in the worklist
+   managed by the archive, and if so, changes the status of worklist item to 
+   <tt>ARRIVED</tt>.]]>
+   </description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
@@ -22,7 +29,7 @@
    <attribute access="read-write"
       getMethod="getMessageTypes"
       setMethod="setMessageTypes">
-      <description>Comma separated list of Message Types handled by this Service.
+      <description>Comma separated list of Message Types handled by this service.
       </description>
       <name>MessageTypes</name>
       <type>java.lang.String</type>

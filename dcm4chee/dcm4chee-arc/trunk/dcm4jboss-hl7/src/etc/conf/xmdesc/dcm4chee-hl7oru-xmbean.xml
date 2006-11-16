@@ -4,7 +4,10 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>ORU HL7 Service</description>
+   <description><![CDATA[The <b>ORU HL7 Service</b> converts ORU^R01 into DICOM 
+   structured reports, so a viewer can just use the PACS system to access 
+   the report.]]>
+   </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>

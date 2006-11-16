@@ -4,8 +4,11 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>ORM HL7 Service</description>
-
+   <description><![CDATA[ORM HL7 Service. Create, update or delete entries of 
+   the Modality Worklist provided by [Modality Worklist SCP] according to 
+   received ORM^O01 messages. Generally, this service is used if the connected 
+   RIS cannot provide the modality worklist.]]>
+   </description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
@@ -35,7 +38,7 @@
       setMethod="setOrderControlOperationMap">
       <description><![CDATA[Maps Order Control (Order Status) or - if no Order
       Status is specified - Order Control (Result Status) in received ORM
-      to Operation to perform.
+      to Operation to perform. This controls what happens to worklist items.
       <p><b>Syntax:</b><br/>
       map = entry+<br/>
       entry = orderContol [ '(' orderStatus ')' ] ':' operation<br/>
