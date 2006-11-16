@@ -1357,8 +1357,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
             String availability, String status, String userInfo)
             throws RemoteException, CreateException {
-        return addFileSystem(dirPath, retrieveAET, Availability
-                .toInt(availability), FileSystemStatus.toInt(status), userInfo);
+       	if(validateStoragePath(dirPath, Availability.toInt(availability)))
+            return addFileSystem(dirPath, retrieveAET, Availability
+                    .toInt(availability), FileSystemStatus.toInt(status), userInfo);
+       	else
+    		throw new IllegalArgumentException( "Failed to validate filesystem: " + dirPath);
     }
 
     private FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
@@ -1587,8 +1590,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     public String addOnlineFileSystem(String dirPath, String userInfo)
             throws RemoteException, FinderException, CreateException {
-        return addAndLinkFileSystem(dirPath, Availability.ONLINE,
-                FileSystemStatus.RW, userInfo);
+    	if(validateStoragePath(dirPath, Availability.ONLINE))
+    		return addAndLinkFileSystem(dirPath, Availability.ONLINE,
+    				FileSystemStatus.RW, userInfo);
+       	else
+    		throw new IllegalArgumentException( "Failed to validate online filesystem: " + dirPath);
     }
 
     public String showOnlineFileSystems() throws RemoteException,
@@ -1607,8 +1613,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     
     public String addNearlineFileSystem(String dirPath, String userInfo)
             throws RemoteException, FinderException, CreateException {
-        return addAndLinkFileSystem(dirPath, Availability.NEARLINE,
-                FileSystemStatus.RW, userInfo);
+    	if(validateStoragePath(dirPath, Availability.NEARLINE))
+    		return addAndLinkFileSystem(dirPath, Availability.NEARLINE,
+    				FileSystemStatus.RW, userInfo);
+    	else
+    		throw new IllegalArgumentException( "Failed to validate nearline filesystem: " + dirPath);
     }
 
     public String showNearlineFileSystems() throws RemoteException,
@@ -1633,6 +1642,19 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         FileSystemDTO newFS = newFileSystemMgt().addAndLinkFileSystem(dto);
         checkStorageFileSystem();
         return newFS.toString();
+    }
+    
+    /**
+     * Valide storage path. Customized FileSystemService can provide logic to
+     * validate the path
+     * 
+     * @param path
+     * @param availability
+     * @return
+     */
+    protected boolean validateStoragePath(String path, int availability) {
+    	// By default, it's always valid
+    	return true;
     }
 
     /*
