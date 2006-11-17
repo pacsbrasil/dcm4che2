@@ -70,19 +70,19 @@ public class SRDocumentContent extends SRDocumentContentModule {
     }
     
     public String getRelationshipType() {
-        return dcmobj.getString(Tag.RelationshipType);
+        return dcmobj.getString(Tag.RELATIONSHIP_TYPE);
     }
 
     public void setRelationshipType(String cs) {
-        dcmobj.putString(Tag.RelationshipType, VR.CS, cs);
+        dcmobj.putString(Tag.RELATIONSHIP_TYPE, VR.CS, cs);
     }
     
     public int[] getReferencedContentItemIdentifier() {
-	return dcmobj.getInts(Tag.ReferencedContentItemIdentifier);
+	return dcmobj.getInts(Tag.REFERENCED_CONTENT_ITEM_IDENTIFIER);
     }
     
     public void setReferencedContentItemIdentifier(int[] ul) {
-        dcmobj.putInts(Tag.ReferencedContentItemIdentifier, VR.UL, ul);
+        dcmobj.putInts(Tag.REFERENCED_CONTENT_ITEM_IDENTIFIER, VR.UL, ul);
     }
     
 }

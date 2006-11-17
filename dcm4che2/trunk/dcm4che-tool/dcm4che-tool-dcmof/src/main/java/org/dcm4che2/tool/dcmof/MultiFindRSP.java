@@ -67,8 +67,8 @@ class MultiFindRSP implements DimseRSP {
         this.dcmOF = dcmOF;
         this.keys = keys;
         // always return Specific Character Set
-        if (!keys.contains(Tag.SpecificCharacterSet))
-            keys.putNull(Tag.SpecificCharacterSet, VR.CS);
+        if (!keys.contains(Tag.SPECIFIC_CHARACTER_SET))
+            keys.putNull(Tag.SPECIFIC_CHARACTER_SET, VR.CS);
         this.rsp = rsp;
         this.files = source.listFiles();
     }
@@ -82,18 +82,18 @@ class MultiFindRSP implements DimseRSP {
                     mwl = dcmOF.load(files[cur++]);
                     if (mwl.matches(keys, true)) {
                         // always return Specific Character Set
-                        if (!mwl.contains(Tag.SpecificCharacterSet))
-                            mwl.putNull(Tag.SpecificCharacterSet, VR.CS);
-                        rsp.putInt(Tag.Status, VR.US, mwl.containsAll(keys) 
+                        if (!mwl.contains(Tag.SPECIFIC_CHARACTER_SET))
+                            mwl.putNull(Tag.SPECIFIC_CHARACTER_SET, VR.CS);
+                        rsp.putInt(Tag.STATUS, VR.US, mwl.containsAll(keys) 
                                 ? Status.Pending : Status.PendingWarning);
                         return true;
                     }
                 }
-                rsp.putInt(Tag.Status, VR.US, Status.Success);
+                rsp.putInt(Tag.STATUS, VR.US, Status.Success);
             }
         } catch (Exception e) {
-            rsp.putInt(Tag.Status, VR.US, Status.ProcessingFailure);
-            rsp.putString(Tag.ErrorComment, VR.LO, e.getMessage());
+            rsp.putInt(Tag.STATUS, VR.US, Status.ProcessingFailure);
+            rsp.putString(Tag.ERROR_COMMENT, VR.LO, e.getMessage());
         }
         mwl = null;
         cur = -1;
@@ -109,7 +109,7 @@ class MultiFindRSP implements DimseRSP {
     }
 
     public synchronized void cancel(Association a) throws IOException {
-        rsp.putInt(Tag.Status, VR.US, Status.Cancel);
+        rsp.putInt(Tag.STATUS, VR.US, Status.Cancel);
         files = null;
     }
 

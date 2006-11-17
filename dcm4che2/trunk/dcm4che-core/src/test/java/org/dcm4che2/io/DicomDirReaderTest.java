@@ -79,17 +79,17 @@ public class DicomDirReaderTest extends TestCase {
 	public void testFindFirstMatchingRootRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
 		DicomObject filter = new BasicDicomObject();
-		filter.putString(Tag.DirectoryRecordType, VR.CS, "PATIENT");
-		filter.putString(Tag.PatientsName, VR.PN, "CHEST*");
+		filter.putString(Tag.DIRECTORY_RECORD_TYPE, VR.CS, "PATIENT");
+		filter.putString(Tag.PATIENTS_NAME, VR.PN, "CHEST*");
 		DicomObject rec = r.findFirstMatchingRootRecord(filter, true);
-		assertEquals("Chest^Portable", rec.getString(Tag.PatientsName));
+		assertEquals("Chest^Portable", rec.getString(Tag.PATIENTS_NAME));
 	}
 
 	public void testFindNextMatchingSiblingRecord() throws IOException {
 		DicomDirReader r = new DicomDirReader(locateFile("DICOMDIR"));
 		DicomObject filter = new BasicDicomObject();
-		filter.putString(Tag.DirectoryRecordType, VR.CS, "STUDY");
-		filter.putString(Tag.StudyDate, VR.DA, "-19931213");
+		filter.putString(Tag.DIRECTORY_RECORD_TYPE, VR.CS, "STUDY");
+		filter.putString(Tag.STUDY_DATE, VR.DA, "-19931213");
 		DicomObject pat = r.findFirstRootRecord();
 		int count = 0;
 		while (pat != null) {

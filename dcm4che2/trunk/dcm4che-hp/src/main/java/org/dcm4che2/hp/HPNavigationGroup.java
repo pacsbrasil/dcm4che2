@@ -96,7 +96,7 @@ public class HPNavigationGroup
         DicomObject item = new BasicDicomObject();
         if (navDisplaySet != null)
         {
-            item.putInt(Tag.NavigationDisplaySet, VR.US,
+            item.putInt(Tag.NAVIGATION_DISPLAY_SET, VR.US,
                     navDisplaySet.getDisplaySetNumber());            
         }
         int[] val = new int[refDisplaySets.size()];
@@ -104,7 +104,7 @@ public class HPNavigationGroup
         {
             val[i] = ((HPDisplaySet) refDisplaySets.get(i)).getDisplaySetNumber();
         }
-        item.putInts(Tag.ReferenceDisplaySets, VR.US, val);
+        item.putInts(Tag.REFERENCE_DISPLAY_SETS, VR.US, val);
         return item;
     }
 

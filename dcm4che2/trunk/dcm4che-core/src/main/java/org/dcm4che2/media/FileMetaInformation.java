@@ -69,94 +69,94 @@ public class FileMetaInformation {
     }
 
     protected String getSOPClassUID() {
-        return dcmobj.getString(Tag.SOPClassUID);
+        return dcmobj.getString(Tag.SOP_CLASS_UID);
     }
 
     protected String getSOPInstanceUID() {
-        return dcmobj.getString(Tag.SOPInstanceUID);
+        return dcmobj.getString(Tag.SOP_INSTANCE_UID);
     }
 
     public void init() {
         setFileMetaInformationVersion(VERS_01);
         setMediaStorageSOPClassUID(getSOPClassUID());
         setMediaStorageSOPInstanceUID(getSOPInstanceUID());
-        setTransferSyntaxUID(UID.ExplicitVRLittleEndian);
+        setTransferSyntaxUID(UID.EXPLICIT_VR_LITTLE_ENDIAN);
         setImplementationClassUID(Implementation.classUID());
         setImplementationVersionName( Implementation.versionName());
     }
 
     public int getFileMetaInformationVersion() {
-        byte[] b = dcmobj.getBytes(Tag.FileMetaInformationVersion);
+        byte[] b = dcmobj.getBytes(Tag.FILE_META_INFORMATION_VERSION);
         return (b[0] & 0xff) << 8 | (b[1] & 0xff);
     }
 
     public void setFileMetaInformationVersion(int version) {
         byte[] b = { (byte) (version >> 8),  (byte) version };
-        dcmobj.putBytes(Tag.FileMetaInformationVersion, VR.OB, b);
+        dcmobj.putBytes(Tag.FILE_META_INFORMATION_VERSION, VR.OB, b);
     }
 
     public String getMediaStorageSOPInstanceUID() {
-        return dcmobj.getString(Tag.MediaStorageSOPInstanceUID);
+        return dcmobj.getString(Tag.MEDIA_STORAGE_SOP_INSTANCE_UID);
     }
 
     public void setMediaStorageSOPInstanceUID(String uid) {
-        dcmobj.putString(Tag.MediaStorageSOPInstanceUID, VR.UI, uid);
+        dcmobj.putString(Tag.MEDIA_STORAGE_SOP_INSTANCE_UID, VR.UI, uid);
     }
 
     public String getMediaStorageSOPClassUID() {
-        return dcmobj.getString(Tag.MediaStorageSOPClassUID);
+        return dcmobj.getString(Tag.MEDIA_STORAGE_SOP_CLASS_UID);
     }
 
     public void setMediaStorageSOPClassUID(String uid) {
-        dcmobj.putString(Tag.MediaStorageSOPClassUID, VR.UI, uid);
+        dcmobj.putString(Tag.MEDIA_STORAGE_SOP_CLASS_UID, VR.UI, uid);
     }
 
     public String getImplementationClassUID() {
-        return dcmobj.getString(Tag.ImplementationClassUID);
+        return dcmobj.getString(Tag.IMPLEMENTATION_CLASS_UID);
     }
 
     public void setImplementationClassUID(String uid) {
-        dcmobj.putString(Tag.ImplementationClassUID, VR.UI, uid);
+        dcmobj.putString(Tag.IMPLEMENTATION_CLASS_UID, VR.UI, uid);
     }
     
     public String getImplementationVersionName() {
-        return dcmobj.getString(Tag.ImplementationVersionName);
+        return dcmobj.getString(Tag.IMPLEMENTATION_VERSION_NAME);
     }
 
     public void setImplementationVersionName(String name) {
-        dcmobj.putString(Tag.ImplementationVersionName, VR.SH, name);
+        dcmobj.putString(Tag.IMPLEMENTATION_VERSION_NAME, VR.SH, name);
     }
 
     public String getTransferSyntaxUID() {
-        return dcmobj.getString(Tag.TransferSyntaxUID);
+        return dcmobj.getString(Tag.TRANSFER_SYNTAX_UID);
     }
 
     public void setTransferSyntaxUID(String uid) {
-        dcmobj.putString(Tag.TransferSyntaxUID, VR.UI, uid);
+        dcmobj.putString(Tag.TRANSFER_SYNTAX_UID, VR.UI, uid);
     }
     
     public String getSourceApplicationEntityTitle() {
-        return dcmobj.getString(Tag.SourceApplicationEntityTitle);
+        return dcmobj.getString(Tag.SOURCE_APPLICATION_ENTITY_TITLE);
     }
 
     public void setSourceApplicationEntityTitle(String ae) {
-        dcmobj.putString(Tag.SourceApplicationEntityTitle, VR.AE, ae);
+        dcmobj.putString(Tag.SOURCE_APPLICATION_ENTITY_TITLE, VR.AE, ae);
     }
 
     public String getPrivateInformationCreatorUID() {
-        return dcmobj.getString(Tag.PrivateInformationCreatorUID);
+        return dcmobj.getString(Tag.PRIVATE_INFORMATION_CREATOR_UID);
     }
 
     public void setPrivateInformationCreatorUID(String uid) {
-        dcmobj.putString(Tag.PrivateInformationCreatorUID, VR.UI, uid);
+        dcmobj.putString(Tag.PRIVATE_INFORMATION_CREATOR_UID, VR.UI, uid);
     }
     
     public byte[] getPrivateInformation() {
-        return dcmobj.getBytes(Tag.PrivateInformation);
+        return dcmobj.getBytes(Tag.PRIVATE_INFORMATION);
     }
 
     public void setPrivateInformation(byte[] ob) {
-        dcmobj.putBytes(Tag.FileMetaInformationVersion, VR.OB, ob);
+        dcmobj.putBytes(Tag.FILE_META_INFORMATION_VERSION, VR.OB, ob);
     }
 
 }

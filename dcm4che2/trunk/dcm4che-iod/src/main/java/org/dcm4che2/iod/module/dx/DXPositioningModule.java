@@ -74,12 +74,12 @@ public class DXPositioningModule extends Module {
      * @param codes
      */
     public void setProjectionEponymousNameCode(Code code) {
-        updateSequence(Tag.ProjectionEponymousNameCodeSequence, code);
+        updateSequence(Tag.PROJECTION_EPONYMOUS_NAME_CODE_SEQUENCE, code);
     }
 
     public Code getProjectionEponymousNameCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.ProjectionEponymousNameCodeSequence);
+                Tag.PROJECTION_EPONYMOUS_NAME_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
@@ -97,11 +97,11 @@ public class DXPositioningModule extends Module {
      * @param cs
      */
     public void setPatientPosition(String cs) {
-        dcmobj.putString(Tag.PatientPosition, VR.CS, cs);
+        dcmobj.putString(Tag.PATIENT_POSITION, VR.CS, cs);
     }
 
     public String getPatientPosition() {
-        return dcmobj.getString(Tag.PatientPosition);
+        return dcmobj.getString(Tag.PATIENT_POSITION);
     }
 
     /**
@@ -116,30 +116,30 @@ public class DXPositioningModule extends Module {
      * @param cs
      */
     public void setViewPosition(String cs) {
-        dcmobj.putString(Tag.ViewPosition, VR.CS, cs);
+        dcmobj.putString(Tag.VIEW_POSITION, VR.CS, cs);
     }
 
     public String getViewPosition() {
-        return dcmobj.getString(Tag.ViewPosition);
+        return dcmobj.getString(Tag.VIEW_POSITION);
     }
     
     public void setViewCode(ViewCode code) {
-        updateSequence(Tag.ViewCodeSequence, code);        
+        updateSequence(Tag.VIEW_CODE_SEQUENCE, code);        
     }
 
     public ViewCode getViewCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.ViewCodeSequence);
+                Tag.VIEW_CODE_SEQUENCE);
         return item != null ? new ViewCode(item) : null;        
     }
 
     public void setPatientOrientationCode(PatientOrientationCode code) {
-        updateSequence(Tag.PatientOrientationCodeSequence, code);        
+        updateSequence(Tag.PATIENT_ORIENTATION_CODE_SEQUENCE, code);        
     }
 
     public PatientOrientationCode getPatientOrientationCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.PatientOrientationCodeSequence);
+                Tag.PATIENT_ORIENTATION_CODE_SEQUENCE);
         return item != null ? new PatientOrientationCode(item) : null;        
     }
 
@@ -153,12 +153,12 @@ public class DXPositioningModule extends Module {
      * Type 3
      */
     public void setPatientGantryRelationshipCode(Code code) {
-        updateSequence(Tag.PatientGantryRelationshipCodeSequence, code);
+        updateSequence(Tag.PATIENT_GANTRY_RELATIONSHIP_CODE_SEQUENCE, code);
     }
 
     public Code getPatientGantryRelationshipCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.PatientGantryRelationshipCodeSequence);
+                Tag.PATIENT_GANTRY_RELATIONSHIP_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
@@ -188,11 +188,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setDistanceSourcetoPatient(float f) {
-        dcmobj.putFloat(Tag.DistanceSourcetoPatient, VR.DS, f);
+        dcmobj.putFloat(Tag.DISTANCE_SOURCE_TO_PATIENT, VR.DS, f);
     }
 
     public float getDistanceSourcetoPatient() {
-        return dcmobj.getFloat(Tag.DistanceSourcetoPatient);
+        return dcmobj.getFloat(Tag.DISTANCE_SOURCE_TO_PATIENT);
     }
 
     /**
@@ -209,11 +209,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setDistanceSourcetoDetector(float f) {
-        dcmobj.putFloat(Tag.DistanceSourcetoDetector, VR.DS, f);
+        dcmobj.putFloat(Tag.DISTANCE_SOURCE_TO_DETECTOR, VR.DS, f);
     }
 
     public float getDistanceSourcetoDetector() {
-        return dcmobj.getFloat(Tag.DistanceSourcetoDetector);
+        return dcmobj.getFloat(Tag.DISTANCE_SOURCE_TO_DETECTOR);
     }
 
     /**
@@ -225,11 +225,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setEstimatedRadiographicMagnificationFactor(float f) {
-        dcmobj.putFloat(Tag.EstimatedRadiographicMagnificationFactor, VR.DS, f);
+        dcmobj.putFloat(Tag.ESTIMATED_RADIOGRAPHIC_MAGNIFICATION_FACTOR, VR.DS, f);
     }
 
     public float getEstimatedRadiographicMagnificationFactor() {
-        return dcmobj.getFloat(Tag.EstimatedRadiographicMagnificationFactor);
+        return dcmobj.getFloat(Tag.ESTIMATED_RADIOGRAPHIC_MAGNIFICATION_FACTOR);
     }
 
     /**
@@ -247,11 +247,11 @@ public class DXPositioningModule extends Module {
      * @param cs
      */
     public void setPositionerType(String cs) {
-        dcmobj.putString(Tag.PositionerType, VR.CS, cs);
+        dcmobj.putString(Tag.POSITIONER_TYPE, VR.CS, cs);
     }
 
     public String getPositionerType() {
-        return dcmobj.getString(Tag.PositionerType);
+        return dcmobj.getString(Tag.POSITIONER_TYPE);
     }
 
     /**
@@ -270,11 +270,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setPositonerPrimaryAngle(float f) {
-        dcmobj.putFloat(Tag.PositionerPrimaryAngle, VR.DS, f);
+        dcmobj.putFloat(Tag.POSITIONER_PRIMARY_ANGLE, VR.DS, f);
     }
 
     public float getPositionerPrimaryAngle() {
-        return dcmobj.getFloat(Tag.PositionerPrimaryAngle);
+        return dcmobj.getFloat(Tag.POSITIONER_PRIMARY_ANGLE);
     }
 
     /**
@@ -293,11 +293,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setPositonerSecondaryAngle(float f) {
-        dcmobj.putFloat(Tag.PositionerSecondaryAngle, VR.DS, f);
+        dcmobj.putFloat(Tag.POSITIONER_SECONDARY_ANGLE, VR.DS, f);
     }
 
     public float getPositionerSecondaryAngle() {
-        return dcmobj.getFloat(Tag.PositionerSecondaryAngle);
+        return dcmobj.getFloat(Tag.POSITIONER_SECONDARY_ANGLE);
     }
 
     /**
@@ -316,11 +316,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setDetectorPrimaryAngle(float f) {
-        dcmobj.putFloat(Tag.DetectorPrimaryAngle, VR.DS, f);
+        dcmobj.putFloat(Tag.DETECTOR_PRIMARY_ANGLE, VR.DS, f);
     }
 
     public float getDetectorPrimaryAngle() {
-        return dcmobj.getFloat(Tag.DetectorPrimaryAngle);
+        return dcmobj.getFloat(Tag.DETECTOR_PRIMARY_ANGLE);
     }
 
     /**
@@ -339,11 +339,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setDetectorSecondaryAngle(float f) {
-        dcmobj.putFloat(Tag.DetectorSecondaryAngle, VR.DS, f);
+        dcmobj.putFloat(Tag.DETECTOR_SECONDARY_ANGLE, VR.DS, f);
     }
 
     public float getDetectorSecondaryAngle() {
-        return dcmobj.getFloat(Tag.DetectorSecondaryAngle);
+        return dcmobj.getFloat(Tag.DETECTOR_SECONDARY_ANGLE);
     }
 
     /**
@@ -360,11 +360,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setColumnAngulation(float f) {
-        dcmobj.putFloat(Tag.ColumnAngulation, VR.DS, f);
+        dcmobj.putFloat(Tag.COLUMN_ANGULATION, VR.DS, f);
     }
 
     public float getColumnAngulation() {
-        return dcmobj.getFloat(Tag.ColumnAngulation);
+        return dcmobj.getFloat(Tag.COLUMN_ANGULATION);
     }
 
     /**
@@ -375,11 +375,11 @@ public class DXPositioningModule extends Module {
      * @param cs
      */
     public void setTableType(String cs) {
-        dcmobj.putString(Tag.TableType, VR.CS, cs);
+        dcmobj.putString(Tag.TABLE_TYPE, VR.CS, cs);
     }
 
     public String getTableType() {
-        return dcmobj.getString(Tag.TableType);
+        return dcmobj.getString(Tag.TABLE_TYPE);
     }
 
     /**
@@ -393,11 +393,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setTableAngle(float f) {
-        dcmobj.putFloat(Tag.TableAngle, VR.DS, f);
+        dcmobj.putFloat(Tag.TABLE_ANGLE, VR.DS, f);
     }
 
     public float getTableAngle() {
-        return dcmobj.getFloat(Tag.TableAngle);
+        return dcmobj.getFloat(Tag.TABLE_ANGLE);
     }
 
     /**
@@ -409,11 +409,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setBodyPartThickness(float f) {
-        dcmobj.putFloat(Tag.BodyPartThickness, VR.DS, f);
+        dcmobj.putFloat(Tag.BODY_PART_THICKNESS, VR.DS, f);
     }
 
     public float getBodyPartThickness() {
-        return dcmobj.getFloat(Tag.BodyPartThickness);
+        return dcmobj.getFloat(Tag.BODY_PART_THICKNESS);
     }
 
     /**
@@ -425,11 +425,11 @@ public class DXPositioningModule extends Module {
      * @param f
      */
     public void setCompressionForce(float f) {
-        dcmobj.putFloat(Tag.CompressionForce, VR.DS, f);
+        dcmobj.putFloat(Tag.COMPRESSION_FORCE, VR.DS, f);
     }
 
     public float getCompressionForce() {
-        return dcmobj.getFloat(Tag.CompressionForce);
+        return dcmobj.getFloat(Tag.COMPRESSION_FORCE);
     }
 
 }

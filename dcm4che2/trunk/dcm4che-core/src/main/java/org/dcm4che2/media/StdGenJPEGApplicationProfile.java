@@ -47,32 +47,32 @@ import org.dcm4che2.data.Tag;
 public class StdGenJPEGApplicationProfile extends BasicApplicationProfile {
 
     private static final int[] STD_GEN_JPEG_PATIENT_KEYS = {
-	    Tag.SpecificCharacterSet, Tag.PatientsName, Tag.PatientID,
-	    Tag.PatientsBirthDate, Tag.PatientsSex };
+	    Tag.SPECIFIC_CHARACTER_SET, Tag.PATIENTS_NAME, Tag.PATIENT_ID,
+	    Tag.PATIENTS_BIRTH_DATE, Tag.PATIENTS_SEX };
 
     private static final int[] STD_GEN_JPEG_SERIES_KEYS = {
-	    Tag.SpecificCharacterSet, Tag.Modality, Tag.InstitutionName,
-	    Tag.InstitutionAddress, Tag.PerformingPhysiciansName,
-	    Tag.SeriesInstanceUID, Tag.SeriesNumber };
+	    Tag.SPECIFIC_CHARACTER_SET, Tag.MODALITY, Tag.INSTITUTION_NAME,
+	    Tag.INSTITUTION_ADDRESS, Tag.PERFORMING_PHYSICIANS_NAME,
+	    Tag.SERIES_INSTANCE_UID, Tag.SERIES_NUMBER };
 
     private static final int[] STD_GEN_JPEG_IMAGE_KEYS = {
-	    Tag.SpecificCharacterSet, Tag.ImageType, Tag.AcquisitionDatetime,
-	    Tag.ReferencedImageSequence, Tag.AcquisitionTimeSynchronized,
-	    Tag.InstanceNumber, Tag.ImagePositionPatient,
-	    Tag.ImageOrientationPatient, Tag.FrameofReferenceUID,
-	    Tag.SynchronizationFrameofReferenceUID, Tag.NumberofFrames,
-	    Tag.Rows, Tag.Columns, Tag.PixelSpacing,
-	    Tag.LossyImageCompressionRatio, Tag.CalibrationImage };
+	    Tag.SPECIFIC_CHARACTER_SET, Tag.IMAGE_TYPE, Tag.ACQUISITION_DATETIME,
+	    Tag.REFERENCED_IMAGE_SEQUENCE, Tag.ACQUISITION_TIME_SYNCHRONIZED,
+	    Tag.INSTANCE_NUMBER, Tag.IMAGE_POSITION_PATIENT,
+	    Tag.IMAGE_ORIENTATION_PATIENT, Tag.FRAME_OF_REFERENCE_UID,
+	    Tag.SYNCHRONIZATION_FRAME_OF_REFERENCE_UID, Tag.NUMBER_OF_FRAMES,
+	    Tag.ROWS, Tag.COLUMNS, Tag.PIXEL_SPACING,
+	    Tag.LOSSY_IMAGE_COMPRESSION_RATIO, Tag.CALIBRATION_IMAGE };
 
     private static final int[] STD_GEN_SPECTROSCOPY_KEYS = {
-	    Tag.SpecificCharacterSet, Tag.ImageType, Tag.ContentDate,
-	    Tag.ContentTime, Tag.AcquisitionDatetime,
-	    Tag.ReferencedImageSequence, Tag.ReferencedImageEvidenceSequence,
-	    Tag.AcquisitionTimeSynchronized, Tag.InstanceNumber,
-	    Tag.ImagePositionPatient, Tag.ImageOrientationPatient,
-	    Tag.FrameofReferenceUID, Tag.SynchronizationFrameofReferenceUID,
-	    Tag.NumberofFrames, Tag.Rows, Tag.Columns, Tag.PixelSpacing,
-	    Tag.DataPointRows, Tag.DataPointColumns };
+	    Tag.SPECIFIC_CHARACTER_SET, Tag.IMAGE_TYPE, Tag.CONTENT_DATE,
+	    Tag.CONTENT_TIME, Tag.ACQUISITION_DATETIME,
+	    Tag.REFERENCED_IMAGE_SEQUENCE, Tag.REFERENCED_IMAGE_EVIDENCE_SEQUENCE,
+	    Tag.ACQUISITION_TIME_SYNCHRONIZED, Tag.INSTANCE_NUMBER,
+	    Tag.IMAGE_POSITION_PATIENT, Tag.IMAGE_ORIENTATION_PATIENT,
+	    Tag.FRAME_OF_REFERENCE_UID, Tag.SYNCHRONIZATION_FRAME_OF_REFERENCE_UID,
+	    Tag.NUMBER_OF_FRAMES, Tag.ROWS, Tag.COLUMNS, Tag.PIXEL_SPACING,
+	    Tag.DATA_POINT_ROWS, Tag.DATA_POINT_COLUMNS };
 
     public StdGenJPEGApplicationProfile() {
 	setPatientKeys(STD_GEN_JPEG_PATIENT_KEYS);

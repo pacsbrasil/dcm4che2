@@ -60,7 +60,7 @@ public class RelatedSeries extends Module {
 
     public RelatedSeries() {
         super(new BasicDicomObject());
-        dcmobj.putNull(Tag.PurposeofReferenceCodeSequence, VR.SQ);
+        dcmobj.putNull(Tag.PURPOSE_OF_REFERENCE_CODE_SEQUENCE, VR.SQ);
     }
 
     public static RelatedSeries[] toRelatedSeries(DicomElement sq) {
@@ -75,26 +75,26 @@ public class RelatedSeries extends Module {
     }
     
     public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.StudyInstanceUID);
+        return dcmobj.getString(Tag.STUDY_INSTANCE_UID);
     }
 
     public void setStudyInstanceUID(String s) {
-        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, s);
+        dcmobj.putString(Tag.STUDY_INSTANCE_UID, VR.UI, s);
     }
 
     public String getSeriesInstanceUID() {
-        return dcmobj.getString(Tag.SeriesInstanceUID);
+        return dcmobj.getString(Tag.SERIES_INSTANCE_UID);
     }
 
     public void setSeriesInstanceUID(String s) {
-        dcmobj.putString(Tag.SeriesInstanceUID, VR.UI, s);
+        dcmobj.putString(Tag.SERIES_INSTANCE_UID, VR.UI, s);
     }
 
-    public Code[] getProcedureCodes() {
-        return Code.toCodes(dcmobj.get(Tag.ProcedureCodeSequence));
+    public Code[] getPurposeOfReferenceCodes() {
+        return Code.toCodes(dcmobj.get(Tag.PURPOSE_OF_REFERENCE_CODE_SEQUENCE));
     }
 
-    public void setProcedureCodes(Code[] codes) {
-        updateSequence(Tag.PurposeofReferenceCodeSequence, codes);
+    public void setPurposeOfReferenceCodes(Code[] codes) {
+        updateSequence(Tag.PURPOSE_OF_REFERENCE_CODE_SEQUENCE, codes);
     }
 }

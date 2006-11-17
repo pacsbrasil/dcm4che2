@@ -78,7 +78,7 @@ public class DicomOutputStreamTest extends TestCase {
 
     public void testWriteDICOMDIR() throws IOException {
 		DicomObject attrs = load("DICOMDIR");
-		attrs.putString(0x00020010, VR.CS, TransferSyntax.ExplicitVRLittleEndian.uid());
+		attrs.putString(0x00020010, VR.CS, TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN.uid());
 		File ofile = new File("target/test-out/DICOMDIR");
 		ofile.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(ofile);

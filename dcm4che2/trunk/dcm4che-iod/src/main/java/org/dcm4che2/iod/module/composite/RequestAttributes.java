@@ -75,53 +75,53 @@ public class RequestAttributes extends Module {
     }
 
     public String getRequestedProcedureID() {
-        return dcmobj.getString(Tag.RequestedProcedureID);
+        return dcmobj.getString(Tag.REQUESTED_PROCEDURE_ID);
     }
 
     public void setRequestedProcedureID(String s) {
-        dcmobj.putString(Tag.RequestedProcedureID, VR.SH, s);
+        dcmobj.putString(Tag.REQUESTED_PROCEDURE_ID, VR.SH, s);
     }
 
     public String getReasonfortheRequestedProcedure() {
-        return dcmobj.getString(Tag.ReasonfortheRequestedProcedure);
+        return dcmobj.getString(Tag.REASON_FOR_THE_REQUESTED_PROCEDURE);
     }
 
     public void setReasonfortheRequestedProcedure(String s) {
-        dcmobj.putString(Tag.ReasonfortheRequestedProcedure, VR.LO, s);
+        dcmobj.putString(Tag.REASON_FOR_THE_REQUESTED_PROCEDURE, VR.LO, s);
     }
     
     public Code getReasonforRequestedProcedureCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.ReasonforRequestedProcedureCodeSequence);
+                Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
     public void setReasonforRequestedProcedureCode(Code code) {
-        updateSequence(Tag.ReasonforRequestedProcedureCodeSequence, code);
+        updateSequence(Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE, code);
     }    
 
     public String getScheduledProcedureStepID() {
-        return dcmobj.getString(Tag.ScheduledProcedureStepID);
+        return dcmobj.getString(Tag.SCHEDULED_PROCEDURE_STEP_ID);
     }
 
     public void setScheduledProcedureStepID(String s) {
-        dcmobj.putString(Tag.ScheduledProcedureStepID, VR.SH, s);
+        dcmobj.putString(Tag.SCHEDULED_PROCEDURE_STEP_ID, VR.SH, s);
     }
 
     public String getScheduledProcedureStepDescription() {
-        return dcmobj.getString(Tag.ScheduledProcedureStepDescription);
+        return dcmobj.getString(Tag.SCHEDULED_PROCEDURE_STEP_DESCRIPTION);
     }
 
     public void setScheduledProcedureStepDescription(String s) {
-        dcmobj.putString(Tag.ScheduledProcedureStepDescription, VR.LO, s);
+        dcmobj.putString(Tag.SCHEDULED_PROCEDURE_STEP_DESCRIPTION, VR.LO, s);
     }
     
     public ProtocolCodeAndContext[] getScheduledProtocolCode() {
         return ProtocolCodeAndContext.toProtocolCodeAndContexts(
-                dcmobj.get(Tag.ScheduledProtocolCodeSequence));
+                dcmobj.get(Tag.SCHEDULED_PROTOCOL_CODE_SEQUENCE));
     }
 
     public void setScheduledProtocolCode(ProtocolCodeAndContext[] codes) {
-        updateSequence(Tag.ScheduledProtocolCodeSequence, codes);
+        updateSequence(Tag.SCHEDULED_PROTOCOL_CODE_SEQUENCE, codes);
     }    
 }

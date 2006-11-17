@@ -53,7 +53,7 @@ import org.dcm4che2.net.CommandUtils;
  */
 public class VerificationService extends DicomService implements CEchoSCP {
 
-    private static final String[] sopClasses = { UID.VerificationSOPClass };
+    private static final String[] sopClasses = { UID.VERIFICATION_SOP_CLASS };
 
     public VerificationService() {
         super(sopClasses, null);

@@ -75,83 +75,83 @@ public class Code extends Module {
     }
     
     public String getCodeValue() {
-        return dcmobj.getString(Tag.CodeValue);
+        return dcmobj.getString(Tag.CODE_VALUE);
     }
 
     public void setCodeValue(String s) {
-        dcmobj.putString(Tag.CodeValue, VR.SH, s);
+        dcmobj.putString(Tag.CODE_VALUE, VR.SH, s);
     }
 
     public String getCodingSchemeDesignator() {
-        return dcmobj.getString(Tag.CodingSchemeDesignator);
+        return dcmobj.getString(Tag.CODING_SCHEME_DESIGNATOR);
     }
 
     public void setCodingSchemeDesignator(String s) {
-        dcmobj.putString(Tag.CodingSchemeDesignator, VR.SH, s);
+        dcmobj.putString(Tag.CODING_SCHEME_DESIGNATOR, VR.SH, s);
     }
 
     public String getCodingSchemeVersion() {
-        return dcmobj.getString(Tag.CodingSchemeVersion);
+        return dcmobj.getString(Tag.CODING_SCHEME_VERSION);
     }
 
     public void setCodingSchemeVersion(String s) {
-        dcmobj.putString(Tag.CodingSchemeVersion, VR.SH, s);
+        dcmobj.putString(Tag.CODING_SCHEME_VERSION, VR.SH, s);
     }
 
     public String getCodeMeaning() {
-        return dcmobj.getString(Tag.CodeMeaning);
+        return dcmobj.getString(Tag.CODE_MEANING);
     }
 
     public void setCodeMeaning(String s) {
-        dcmobj.putString(Tag.CodeMeaning, VR.LO, s);
+        dcmobj.putString(Tag.CODE_MEANING, VR.LO, s);
     }
 
     public String getContextIdentifier() {
-        return dcmobj.getString(Tag.ContextIdentifier);
+        return dcmobj.getString(Tag.CONTEXT_IDENTIFIER);
     }
 
     public void setContextIdentifier(String s) {
-        dcmobj.putString(Tag.ContextIdentifier, VR.CS, s);
+        dcmobj.putString(Tag.CONTEXT_IDENTIFIER, VR.CS, s);
     }
 
     public String getMappingResource() {
-        return dcmobj.getString(Tag.MappingResource);
+        return dcmobj.getString(Tag.MAPPING_RESOURCE);
     }
 
     public void setMappingResource(String s) {
-        dcmobj.putString(Tag.MappingResource, VR.CS, s);
+        dcmobj.putString(Tag.MAPPING_RESOURCE, VR.CS, s);
     }
 
     public Date getContextGroupVersion() {
-        return dcmobj.getDate(Tag.ContextGroupVersion);
+        return dcmobj.getDate(Tag.CONTEXT_GROUP_VERSION);
     }
 
     public void setContextGroupVersion(Date d) {
-        dcmobj.putDate(Tag.ContextGroupVersion, VR.DT, d);
+        dcmobj.putDate(Tag.MAPPING_RESOURCE, VR.DT, d);
     }
 
     public String getContextGroupExtensionFlag() {
-        return dcmobj.getString(Tag.ContextGroupExtensionFlag);
+        return dcmobj.getString(Tag.CONTEXT_GROUP_EXTENSION_FLAG);
     }
 
     public void setContextGroupExtensionFlag(String s) {
-        dcmobj.putString(Tag.ContextGroupExtensionFlag, VR.CS, s);
+        dcmobj.putString(Tag.CONTEXT_GROUP_LOCAL_VERSION, VR.CS, s);
     }
 
     public Date getContextGroupLocalVersion() {
-        return dcmobj.getDate(Tag.ContextGroupLocalVersion);
+        return dcmobj.getDate(Tag.CONTEXT_GROUP_LOCAL_VERSION);
     }
 
     public void setContextGroupLocalVersion(Date d) {
-        dcmobj.putDate(Tag.ContextGroupLocalVersion, VR.DT, d);
+        dcmobj.putDate(Tag.CONTEXT_GROUP_LOCAL_VERSION, VR.DT, d);
     }
 
     public String getContextGroupExtensionCreatorUID() {
-        return dcmobj.getString(Tag.ContextGroupExtensionCreatorUID);
+        return dcmobj.getString(Tag.CONTEXT_GROUP_EXTENSION_CREATOR_UID);
     }
 
     public void setContextGroupExtensionCreatorUID(String s) {
-        dcmobj.putString(Tag.ContextGroupExtensionCreatorUID, VR.UI, s);
+        dcmobj.putString(Tag.CONTEXT_GROUP_EXTENSION_CREATOR_UID, VR.UI, s);
     }
 
 }

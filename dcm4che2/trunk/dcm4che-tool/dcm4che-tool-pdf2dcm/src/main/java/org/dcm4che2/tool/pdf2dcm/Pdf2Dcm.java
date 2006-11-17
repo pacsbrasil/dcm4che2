@@ -82,7 +82,7 @@ public class Pdf2Dcm {
         "report.dcm using DICOM Attribute values specified in Configuration " +
         "file pdf2dcm.cfg.";
     
-    private String transferSyntax = UID.ExplicitVRLittleEndian;
+    private String transferSyntax = UID.EXPLICIT_VR_LITTLE_ENDIAN;
     private String charset = "ISO_IR 100";
     private int bufferSize = 8192;
     private Properties cfg = new Properties();
@@ -123,18 +123,18 @@ public class Pdf2Dcm {
     
     public void convert(File pdfFile, File dcmFile) throws IOException { 
         DicomObject attrs = new BasicDicomObject();
-        attrs.putString(Tag.SpecificCharacterSet, VR.CS, charset);
-        attrs.putSequence(Tag.ConceptNameCodeSequence);
+        attrs.putString(Tag.SPECIFIC_CHARACTER_SET, VR.CS, charset);
+        attrs.putSequence(Tag.CONCEPT_NAME_CODE_SEQUENCE);
         for (Enumeration en = cfg.propertyNames(); en.hasMoreElements();) {
             String key = (String) en.nextElement();
             attrs.putString(Tag.toTagPath(key), null, cfg.getProperty(key));           
         }
-        ensureUID(attrs, Tag.StudyInstanceUID);
-        ensureUID(attrs, Tag.SeriesInstanceUID);
-        ensureUID(attrs, Tag.SOPInstanceUID);
+        ensureUID(attrs, Tag.STUDY_INSTANCE_UID);
+        ensureUID(attrs, Tag.SERIES_INSTANCE_UID);
+        ensureUID(attrs, Tag.SOP_INSTANCE_UID);
         Date now = new Date();
-        attrs.putDate(Tag.InstanceCreationDate, VR.DA, now);
-        attrs.putDate(Tag.InstanceCreationTime, VR.TM, now);
+        attrs.putDate(Tag.INSTANCE_CREATION_DATE, VR.DA, now);
+        attrs.putDate(Tag.INSTANCE_CREATION_TIME, VR.TM, now);
         attrs.initFileMetaInformation(transferSyntax);
         FileInputStream pdfInput = new FileInputStream(pdfFile);
         FileOutputStream fos = new FileOutputStream(dcmFile);
@@ -142,10 +142,10 @@ public class Pdf2Dcm {
         DicomOutputStream dos = new DicomOutputStream(bos);
         try {
             dos.writeFileMetaInformation(attrs);
-            dos.writeDataset(attrs.subSet(Tag.SpecificCharacterSet, 
-                    Tag.EncapsulatedDocument), transferSyntax);
+            dos.writeDataset(attrs.subSet(Tag.SPECIFIC_CHARACTER_SET, 
+                    Tag.ENCAPSULATED_DOCUMENT), transferSyntax);
             int pdfLen = (int) pdfFile.length();
-            dos.writeHeader(Tag.EncapsulatedDocument, VR.OB, (pdfLen+1)&~1);
+            dos.writeHeader(Tag.ENCAPSULATED_DOCUMENT, VR.OB, (pdfLen+1)&~1);
             byte[] b = new byte[bufferSize];
             int r;
             while ((r = pdfInput.read(b)) > 0) {
@@ -154,7 +154,7 @@ public class Pdf2Dcm {
             if ((pdfLen&1) != 0) {
                 dos.write(0);
             }
-            dos.writeDataset(attrs.subSet(Tag.EncapsulatedDocument, -1), 
+            dos.writeDataset(attrs.subSet(Tag.ENCAPSULATED_DOCUMENT, -1), 
                     transferSyntax);
         } finally {
             dos.close();
@@ -173,7 +173,7 @@ public class Pdf2Dcm {
             CommandLine cl = parse(args);
             Pdf2Dcm pdf2Dcm = new Pdf2Dcm();
             if (cl.hasOption("ivrle")) {
-                pdf2Dcm.setTransferSyntax(UID.ImplicitVRLittleEndian);
+                pdf2Dcm.setTransferSyntax(UID.IMPLICIT_VR_LITTLE_ENDIAN);
             }
             if (cl.hasOption("cs")) {
                 pdf2Dcm.setCharset(cl.getOptionValue("cs"));

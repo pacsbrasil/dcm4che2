@@ -71,11 +71,11 @@ public class ContentItemAndModifier extends ContentItem {
     }    
     
     public ContentItem[] getContentItemModifier() {
-        return ContentItem.toContentItems(dcmobj.get(Tag.ContentItemModifierSequence));
+        return ContentItem.toContentItems(dcmobj.get(Tag.CONTENT_ITEM_MODIFIER_SEQUENCE));
     }
 
     public void setContentItemModifier(ContentItem[] items) {
-        updateSequence(Tag.ContentItemModifierSequence, items);
+        updateSequence(Tag.CONTENT_ITEM_MODIFIER_SEQUENCE, items);
     }    
     
 }

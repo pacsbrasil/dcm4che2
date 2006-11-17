@@ -71,11 +71,11 @@ public class DicomServiceException extends IOException {
     }
 
     public void setErrorComment(String val) {
-        rsp.putString(Tag.ErrorComment, VR.LO, val);        
+        rsp.putString(Tag.ERROR_COMMENT, VR.LO, val);        
     }
     
     public void setErrorID(int val) {
-        rsp.putInt(Tag.ErrorID, VR.US, val);        
+        rsp.putInt(Tag.ERROR_ID, VR.US, val);        
     }
     
     public final DicomObject getCommand() {

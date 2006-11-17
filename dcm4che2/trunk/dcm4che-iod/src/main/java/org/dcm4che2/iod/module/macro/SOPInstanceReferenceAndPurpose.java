@@ -71,12 +71,13 @@ public class SOPInstanceReferenceAndPurpose extends SOPInstanceReference {
     }
 
     public Code getPurposeofReferenceCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.PurposeofReferenceCodeSequence);
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.PURPOSE_OF_REFERENCE_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
     
     public void setPurposeofReferenceCode(Code code) {
-        updateSequence(Tag.PurposeofReferenceCodeSequence, code);
+        updateSequence(Tag.PURPOSE_OF_REFERENCE_CODE_SEQUENCE, code);
     }
     
 }

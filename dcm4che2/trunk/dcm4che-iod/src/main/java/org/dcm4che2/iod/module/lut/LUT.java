@@ -68,28 +68,28 @@ public class LUT extends Module {
     }
 
     public int[] getLUTDescriptor() {
-        return dcmobj.getInts(Tag.LUTDescriptor);
+        return dcmobj.getInts(Tag.LUT_DESCRIPTOR);
     }
 
     public void setLUTDescriptor(int[] ints) {
-        dcmobj.putInts(Tag.LUTDescriptor, 
+        dcmobj.putInts(Tag.LUT_DESCRIPTOR, 
                 PixelRepresentation.isSigned(dcmobj.getParent()) 
                         ? VR.SS : VR.US, ints);
     }
 
     public String getLUTExplanation() {
-        return dcmobj.getString(Tag.LUTExplanation);
+        return dcmobj.getString(Tag.LUT_EXPLANATION);
     }
 
     public void setLUTExplanation(String lo) {
-        dcmobj.putString(Tag.LUTExplanation, VR.LO, lo);
+        dcmobj.putString(Tag.LUT_EXPLANATION, VR.LO, lo);
     }
 
     public byte[] getLUTData() {
-        return dcmobj.getBytes(Tag.LUTData);
+        return dcmobj.getBytes(Tag.LUT_DATA);
     }
 
     public void setLUTData(byte[] ow) {
-        dcmobj.putBytes(Tag.LUTData, VR.OW, ow);
+        dcmobj.putBytes(Tag.LUT_DATA, VR.OW, ow);
     }
 }

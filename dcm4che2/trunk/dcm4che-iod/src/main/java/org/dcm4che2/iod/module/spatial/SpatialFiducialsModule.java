@@ -67,7 +67,7 @@ public class SpatialFiducialsModule extends Module {
      * @return
      */
     public Date getContentDateTime() {
-        return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
+        return dcmobj.getDate(Tag.CONTENT_DATE, Tag.CONTENT_TIME);
     }
 
     /**
@@ -78,8 +78,8 @@ public class SpatialFiducialsModule extends Module {
      * @param d
      */
     public void setContentDateTime(Date d) {
-        dcmobj.putDate(Tag.ContentDate, VR.DA, d);
-        dcmobj.putDate(Tag.ContentTime, VR.TM, d);
+        dcmobj.putDate(Tag.CONTENT_DATE, VR.DA, d);
+        dcmobj.putDate(Tag.CONTENT_TIME, VR.TM, d);
     }
 
     /**
@@ -90,7 +90,7 @@ public class SpatialFiducialsModule extends Module {
      * @return
      */
     public String getInstanceNumber() {
-        return dcmobj.getString(Tag.InstanceNumber);
+        return dcmobj.getString(Tag.INSTANCE_NUMBER);
     }
 
     /**
@@ -101,7 +101,7 @@ public class SpatialFiducialsModule extends Module {
      * @param s
      */
     public void setInstanceNumber(String s) {
-        dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
+        dcmobj.putString(Tag.INSTANCE_NUMBER, VR.IS, s);
     }
 
     /**
@@ -110,7 +110,7 @@ public class SpatialFiducialsModule extends Module {
      * Type 1
      */
     public String getContentLabel() {
-        return dcmobj.getString(Tag.ContentLabel);
+        return dcmobj.getString(Tag.CONTENT_LABEL);
     }
 
     /**
@@ -121,7 +121,7 @@ public class SpatialFiducialsModule extends Module {
      * @param cs
      */
     public void setContentLabel(String cs) {
-        dcmobj.putString(Tag.ContentLabel, VR.CS, cs);
+        dcmobj.putString(Tag.CONTENT_LABEL, VR.CS, cs);
     }
 
     /**
@@ -132,7 +132,7 @@ public class SpatialFiducialsModule extends Module {
      * @return
      */
     public String getContentDescription() {
-        return dcmobj.getString(Tag.ContentDescription);
+        return dcmobj.getString(Tag.CONTENT_DESCRIPTION);
     }
 
     /**
@@ -143,7 +143,7 @@ public class SpatialFiducialsModule extends Module {
      * @param lo
      */
     public void setContentDescription(String lo) {
-        dcmobj.putString(Tag.ContentDescription, VR.LO, lo);
+        dcmobj.putString(Tag.CONTENT_DESCRIPTION, VR.LO, lo);
     }
 
     /**
@@ -155,7 +155,7 @@ public class SpatialFiducialsModule extends Module {
      * @return
      */
     public String getContentCreatorsName() {
-        return dcmobj.getString(Tag.ContentCreatorsName);
+        return dcmobj.getString(Tag.CONTENT_CREATORS_NAME);
     }
 
     /**
@@ -167,7 +167,7 @@ public class SpatialFiducialsModule extends Module {
      * @param cs
      */
     public void setContentCreatorsName(String pn) {
-        dcmobj.putString(Tag.ContentCreatorsName, VR.PN, pn);
+        dcmobj.putString(Tag.CONTENT_CREATORS_NAME, VR.PN, pn);
     }
 
     /**
@@ -178,7 +178,7 @@ public class SpatialFiducialsModule extends Module {
      * @param fidsets
      */
     public void setFiducialSets(FiducialSet[] fidsets) {
-        updateSequence(Tag.FiducialSetSequence, fidsets);
+        updateSequence(Tag.FIDUCIAL_SET_SEQUENCE, fidsets);
     }
     
     /**
@@ -206,6 +206,6 @@ public class SpatialFiducialsModule extends Module {
      */
     public FiducialSet[] getFiducialSets() {
         return FiducialSet.toFiducialSets(dcmobj
-                .get(Tag.FiducialSetSequence));
+                .get(Tag.FIDUCIAL_SET_SEQUENCE));
     }
 }

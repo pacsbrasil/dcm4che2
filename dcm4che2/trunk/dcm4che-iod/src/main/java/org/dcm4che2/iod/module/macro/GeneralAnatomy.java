@@ -94,7 +94,7 @@ public class GeneralAnatomy extends Module {
      */
     public AnatomicRegionCode getAnatomicRegionCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.AnatomicRegionSequence);
+                Tag.ANATOMIC_REGION_SEQUENCE);
         return item != null ? new AnatomicRegionCode(item) : null;
     }
 
@@ -105,7 +105,7 @@ public class GeneralAnatomy extends Module {
      * @param codes
      */
     public void setAnatomicRegionCode(AnatomicRegionCode code) {
-        updateSequence(Tag.AnatomicRegionSequence, code);
+        updateSequence(Tag.ANATOMIC_REGION_SEQUENCE, code);
     }
 
     /**
@@ -119,7 +119,7 @@ public class GeneralAnatomy extends Module {
     public PrimaryAnatomicStructureCode[] getPrimaryAnatomicStructureCodes() {
         return PrimaryAnatomicStructureCode
             .toPrimaryAnatomicStructureCodes(dcmobj.get(
-                    Tag.PrimaryAnatomicStructureSequence));
+                    Tag.PRIMARY_ANATOMIC_STRUCTURE_SEQUENCE));
     }
 
     /**
@@ -132,6 +132,6 @@ public class GeneralAnatomy extends Module {
      */
     public void setPrimaryAnatomicStructureCodes(
             PrimaryAnatomicStructureCode[] codes) {
-        updateSequence(Tag.PrimaryAnatomicStructureSequence, codes);
+        updateSequence(Tag.PRIMARY_ANATOMIC_STRUCTURE_SEQUENCE, codes);
     }
 }

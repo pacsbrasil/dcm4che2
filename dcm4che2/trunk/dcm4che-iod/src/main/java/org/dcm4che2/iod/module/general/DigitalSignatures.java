@@ -76,75 +76,76 @@ public class DigitalSignatures extends Module {
     }
 
     public int getMACIDNumber() {
-        return dcmobj.getInt(Tag.MACIDNumber);
+        return dcmobj.getInt(Tag.MAC_ID_NUMBER);
     }
     
     public void setMACIDNumber(int i) {
-        dcmobj.putInt(Tag.MACIDNumber, VR.US, i);
+        dcmobj.putInt(Tag.MAC_ID_NUMBER, VR.US, i);
     }
     
     public String getDigitalSignatureUID() {
-        return dcmobj.getString(Tag.DigitalSignatureUID);
+        return dcmobj.getString(Tag.DIGITAL_SIGNATURE_UID);
     }
     
     public void setDigitalSignatureUID(String s) {
-        dcmobj.putString(Tag.DigitalSignatureUID, VR.UI, s);
+        dcmobj.putString(Tag.DIGITAL_SIGNATURE_UID, VR.UI, s);
     }
 
     public Date getDigitalSignatureDateTime() {
-        return dcmobj.getDate(Tag.DigitalSignatureDateTime);
+        return dcmobj.getDate(Tag.DIGITAL_SIGNATURE_DATETIME);
     }
     
     public void setDigitalSignatureDateTime(Date d) {
-        dcmobj.putDate(Tag.DigitalSignatureDateTime, VR.DT, d);
+        dcmobj.putDate(Tag.DIGITAL_SIGNATURE_DATETIME, VR.DT, d);
     }
     
     public String getCertificateType() {
-        return dcmobj.getString(Tag.CertificateType);
+        return dcmobj.getString(Tag.CERTIFICATE_TYPE);
     }
     
     public void setCertificateType(String s) {
-        dcmobj.putString(Tag.CertificateType, VR.CS, s);
+        dcmobj.putString(Tag.CERTIFICATE_TYPE, VR.CS, s);
     }
 
     public byte[] getCertificateofSigner() {
-        return dcmobj.getBytes(Tag.CertificateofSigner);
+        return dcmobj.getBytes(Tag.CERTIFICATE_OF_SIGNER);
     }
     
     public void setCertificateofSigner(byte[] b) {
-        dcmobj.putBytes(Tag.CertificateofSigner, VR.OB, b);
+        dcmobj.putBytes(Tag.CERTIFICATE_OF_SIGNER, VR.OB, b);
     }
 
     public byte[] getSignature() {
-        return dcmobj.getBytes(Tag.Signature);
+        return dcmobj.getBytes(Tag.SIGNATURE);
     }
     
     public void setSignature(byte[] b) {
-        dcmobj.putBytes(Tag.Signature, VR.OB, b);
+        dcmobj.putBytes(Tag.SIGNATURE, VR.OB, b);
     }
 
     public String getCertifiedTimestampType() {
-        return dcmobj.getString(Tag.CertifiedTimestampType);
+        return dcmobj.getString(Tag.CERTIFIED_TIMESTAMP_TYPE);
     }
     
     public void setCertifiedTimestampType(String s) {
-        dcmobj.putString(Tag.CertifiedTimestampType, VR.CS, s);
+        dcmobj.putString(Tag.CERTIFIED_TIMESTAMP_TYPE, VR.CS, s);
     }
 
     public byte[] getCertifiedTimestamp() {
-        return dcmobj.getBytes(Tag.CertifiedTimestamp);
+        return dcmobj.getBytes(Tag.CERTIFIED_TIMESTAMP);
     }
     
     public void setCertifiedTimestamp(byte[] b) {
-        dcmobj.putBytes(Tag.CertifiedTimestamp, VR.OB, b);
+        dcmobj.putBytes(Tag.CERTIFIED_TIMESTAMP, VR.OB, b);
     }
     
     public Code getDigitalSignaturePurposeCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.DigitalSignaturePurposeCodeSequence);
+        DicomObject item = dcmobj.getNestedDicomObject(
+                Tag.DIGITAL_SIGNATURE_PURPOSE_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
     
     public void setDigitalSignaturePurposeCode(Code code) {
-        updateSequence(Tag.DigitalSignaturePurposeCodeSequence, code);
+        updateSequence(Tag.DIGITAL_SIGNATURE_PURPOSE_CODE_SEQUENCE, code);
     }
 }

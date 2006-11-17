@@ -15,93 +15,93 @@ public class GeneralEquipmentModule extends Module {
     }
 
     public String getManufacturer() {
-        return dcmobj.getString(Tag.Manufacturer);
+        return dcmobj.getString(Tag.MANUFACTURER);
     }
 
     public void setManufacturer(String s) {
-        dcmobj.putString(Tag.Manufacturer, VR.LO, s);
+        dcmobj.putString(Tag.MANUFACTURER, VR.LO, s);
     }
 
     public String getInstitutionName() {
-        return dcmobj.getString(Tag.InstitutionName);
+        return dcmobj.getString(Tag.INSTITUTION_NAME);
     }
 
     public void setInstitutionName(String s) {
-        dcmobj.putString(Tag.InstitutionName, VR.LO, s);
+        dcmobj.putString(Tag.INSTITUTION_NAME, VR.LO, s);
     }
 
     public String getInstitutionAddress() {
-        return dcmobj.getString(Tag.InstitutionAddress);
+        return dcmobj.getString(Tag.INSTITUTION_ADDRESS);
     }
 
     public void setInstitutionAddress(String s) {
-        dcmobj.putString(Tag.InstitutionAddress, VR.ST, s);
+        dcmobj.putString(Tag.INSTITUTION_ADDRESS, VR.ST, s);
     }
 
     public String getStationName() {
-        return dcmobj.getString(Tag.StationName);
+        return dcmobj.getString(Tag.STATION_NAME);
     }
     
     public void setStationName(String s) {
-        dcmobj.putString(Tag.StationName, VR.SH, s);
+        dcmobj.putString(Tag.STATION_NAME, VR.SH, s);
     }
     
     public String getInstitutionalDepartmentName() {
-        return dcmobj.getString(Tag.InstitutionalDepartmentName);
+        return dcmobj.getString(Tag.INSTITUTIONAL_DEPARTMENT_NAME);
     }
 
     public void setInstitutionalDepartmentName(String s) {
-        dcmobj.putString(Tag.InstitutionalDepartmentName, VR.LO, s);
+        dcmobj.putString(Tag.INSTITUTIONAL_DEPARTMENT_NAME, VR.LO, s);
     }
 
     public String getManufacturersModelName() {
-        return dcmobj.getString(Tag.ManufacturersModelName);
+        return dcmobj.getString(Tag.MANUFACTURERS_MODEL_NAME);
     }
 
     public void setManufacturersModelName(String s) {
-        dcmobj.putString(Tag.ManufacturersModelName, VR.LO, s);
+        dcmobj.putString(Tag.MANUFACTURERS_MODEL_NAME, VR.LO, s);
     }
 
     public String getDeviceSerialNumber() {
-        return dcmobj.getString(Tag.DeviceSerialNumber);
+        return dcmobj.getString(Tag.DEVICE_SERIAL_NUMBER);
     }
 
     public void setDeviceSerialNumber(String s) {
-        dcmobj.putString(Tag.DeviceSerialNumber, VR.LO, s);
+        dcmobj.putString(Tag.DEVICE_SERIAL_NUMBER, VR.LO, s);
     }
 
     public String[] getSoftwareVersions() {
-        return dcmobj.getStrings(Tag.SoftwareVersions);
+        return dcmobj.getStrings(Tag.SOFTWARE_VERSIONS);
     }
 
     public void setSoftwareVersions(String[] ss) {
-        dcmobj.putStrings(Tag.SoftwareVersions, VR.LO, ss);
+        dcmobj.putStrings(Tag.SOFTWARE_VERSIONS, VR.LO, ss);
     }
 
     public float[] getSpatialResolution() {
-        return dcmobj.getFloats(Tag.SpatialResolution);
+        return dcmobj.getFloats(Tag.SPATIAL_RESOLUTION);
     }
 
     public void setSoftwareVersions(float[] floats) {
-        dcmobj.putFloats(Tag.SpatialResolution, VR.DS, floats);
+        dcmobj.putFloats(Tag.SPATIAL_RESOLUTION, VR.DS, floats);
     }
 
     public Date getDateTimeofLastCalibration() {
-        return dcmobj.getDate(Tag.DateofLastCalibration,
-                Tag.TimeofLastCalibration);
+        return dcmobj.getDate(Tag.DATE_OF_LAST_CALIBRATION,
+                Tag.TIME_OF_LAST_CALIBRATION);
     }
 
     public void setDateTimeofLastCalibration(Date d) {
-        dcmobj.putDate(Tag.DateofLastCalibration, VR.DA, d);
-        dcmobj.putDate(Tag.TimeofLastCalibration, VR.TM, d);
+        dcmobj.putDate(Tag.DATE_OF_LAST_CALIBRATION, VR.DA, d);
+        dcmobj.putDate(Tag.TIME_OF_LAST_CALIBRATION, VR.TM, d);
     }
 
     public int getLargestPixelValueinSeries() {
-        return dcmobj.getInt(Tag.PixelPaddingValue);
+        return dcmobj.getInt(Tag.PIXEL_PADDING_VALUE);
     }
 
     public void setLargestPixelValueinSeries(int s) {
-        dcmobj.putInt(Tag.PixelPaddingValue,
+        dcmobj.putInt(Tag.PIXEL_PADDING_VALUE,
                 PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 

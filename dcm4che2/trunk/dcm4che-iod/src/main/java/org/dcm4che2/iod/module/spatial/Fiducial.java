@@ -87,7 +87,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public String getFiducialIdentifier() {
-		return dcmobj.getString(Tag.FiducialIdentifier);
+		return dcmobj.getString(Tag.FIDUCIAL_IDENTIFIER);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param s
 	 */
 	public void setFiducialIdentifier(String sh) {
-		dcmobj.putString(Tag.FiducialIdentifier, VR.SH, sh);
+		dcmobj.putString(Tag.FIDUCIAL_IDENTIFIER, VR.SH, sh);
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param code
 	 */
 	public void setFiducialIdentifierCode(Code code) {
-		updateSequence(Tag.FiducialIdentifierCodeSequence, code);
+		updateSequence(Tag.FIDUCIAL_IDENTIFIER_CODE_SEQUENCE, code);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 */
 	public Code getFiducialIdentifierCode() {
 		DicomObject item = dcmobj
-				.getNestedDicomObject(Tag.FiducialIdentifierCodeSequence);
+				.getNestedDicomObject(Tag.FIDUCIAL_IDENTIFIER_CODE_SEQUENCE);
 		return item != null ? new Code(item) : null;
 	}
 
@@ -144,7 +144,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public String getFiducialUID() {
-		return dcmobj.getString(Tag.FiducialUID);
+		return dcmobj.getString(Tag.FIDUCIAL_UID);
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param ui
 	 */
 	public void setFiducialUID(String ui) {
-		dcmobj.putString(Tag.FiducialUID, VR.UI, ui);
+		dcmobj.putString(Tag.FIDUCIAL_UID, VR.UI, ui);
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public String getFiducialDescription() {
-		return dcmobj.getString(Tag.FiducialDescription);
+		return dcmobj.getString(Tag.FIDUCIAL_DESCRIPTION);
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param st
 	 */
 	public void setFiducialDescription(String st) {
-		dcmobj.putString(Tag.FiducialDescription, VR.ST, st);
+		dcmobj.putString(Tag.FIDUCIAL_DESCRIPTION, VR.ST, st);
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public String getShapeType() {
-		return dcmobj.getString(Tag.ShapeType);
+		return dcmobj.getString(Tag.SHAPE_TYPE);
 	}
 
 	/**
@@ -210,7 +210,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param cs
 	 */
 	public void setShapeType(String cs) {
-		dcmobj.putString(Tag.ShapeType, VR.CS, cs);
+		dcmobj.putString(Tag.SHAPE_TYPE, VR.CS, cs);
 	}
 
 	/**
@@ -222,7 +222,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public int getNumberofContourPoints() {
-		return dcmobj.getInt(Tag.NumberofContourPoints);
+		return dcmobj.getInt(Tag.NUMBER_OF_CONTOUR_POINTS);
 	}
 
 	/**
@@ -234,7 +234,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param is
 	 */
 	public void setNumberofContourPoints(int is) {
-		dcmobj.putInt(Tag.NumberofContourPoints, VR.IS, is);
+		dcmobj.putInt(Tag.NUMBER_OF_CONTOUR_POINTS, VR.IS, is);
 	}
 
 	/**
@@ -252,7 +252,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public float[] getContourData() {
-		return dcmobj.getFloats(Tag.ContourData);
+		return dcmobj.getFloats(Tag.CONTOUR_DATA);
 	}
 
 	/**
@@ -270,7 +270,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param ds
 	 */
 	public void setContourData(float[] ds) {
-		dcmobj.putFloats(Tag.ContourData, VR.DS, ds);
+		dcmobj.putFloats(Tag.CONTOUR_DATA, VR.DS, ds);
 	}
 
 	/**
@@ -284,7 +284,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @return
 	 */
 	public double getContourUncertaintyRadius() {
-		return dcmobj.getDouble(Tag.ContourUncertaintyRadius);
+		return dcmobj.getDouble(Tag.CONTOUR_UNCERTAINTY_RADIUS);
 	}
 
 	/**
@@ -298,7 +298,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param fd
 	 */
 	public void setContourUncertaintyRadius(double fd) {
-		dcmobj.putDouble(Tag.ContourUncertaintyRadius, VR.FD, fd);
+		dcmobj.putDouble(Tag.CONTOUR_UNCERTAINTY_RADIUS, VR.FD, fd);
 	}
 
 	/**
@@ -313,7 +313,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 */
 	public GraphicCoordinatesData[] getGraphicCoordinatesData() {
 		return GraphicCoordinatesData.toGraphicCoordinatesData(dcmobj
-				.get(Tag.GraphicCoordinatesDataSequence));
+				.get(Tag.GRAPHIC_COORDINATES_DATA_SEQUENCE));
 	}
 
 	/**
@@ -327,7 +327,7 @@ public class Fiducial extends GraphicCoordinatesData {
 	 * @param gcds
 	 */
 	public void setGraphicCoordinatesData(GraphicCoordinatesData[] gcds) {
-		updateSequence(Tag.GraphicCoordinatesDataSequence, gcds);
+		updateSequence(Tag.GRAPHIC_COORDINATES_DATA_SEQUENCE, gcds);
 	}
 
 }

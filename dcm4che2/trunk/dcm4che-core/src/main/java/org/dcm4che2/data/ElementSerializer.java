@@ -51,7 +51,7 @@ class ElementSerializer implements Serializable {
 	private static final long serialVersionUID = 4051046376018292793L;
 
 	private static final DicomElement END_OF_SET = 
-		new SimpleDicomElement(Tag.ItemDelimitationItem, VR.UN, false, null, null);
+		new SimpleDicomElement(Tag.ITEM_DELIMITATION_ITEM, VR.UN, false, null, null);
 
 	private transient DicomObject attrs;
 
@@ -92,7 +92,7 @@ class ElementSerializer implements Serializable {
 		attrs = new BasicDicomObject();
 		attrs.setItemOffset(s.readLong());
 		DicomElement attr = (DicomElement) s.readObject();
-		while (attr.tag() != Tag.ItemDelimitationItem) {
+		while (attr.tag() != Tag.ITEM_DELIMITATION_ITEM) {
 			if (attr.vr() == VR.SQ && attr.hasItems()) {
 				for (int i = 0, n = attr.countItems(); i < n; ++i) {
                     ((BasicDicomObject) attr.getDicomObject(i)).setParent(attrs);

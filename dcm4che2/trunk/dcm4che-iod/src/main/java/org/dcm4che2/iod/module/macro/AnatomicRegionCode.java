@@ -63,7 +63,7 @@ public class AnatomicRegionCode extends Code {
      * @return
      */
 	public Code[] getAnatomicRegionModifiers(){
-		return Code.toCodes(dcmobj.get(Tag.AnatomicRegionModifierSequence));
+		return Code.toCodes(dcmobj.get(Tag.ANATOMIC_REGION_MODIFIER_SEQUENCE));
 	}
 
     /**
@@ -72,7 +72,7 @@ public class AnatomicRegionCode extends Code {
      * @param codes
      */
 	public void setAnatomicRegionModifiers(Code[] codes){
-		updateSequence(Tag.AnatomicRegionModifierSequence, codes);
+		updateSequence(Tag.ANATOMIC_REGION_MODIFIER_SEQUENCE, codes);
 	}
 
 

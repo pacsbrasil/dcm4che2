@@ -90,7 +90,7 @@ public class FiducialSet extends Fiducial {
      * @return
      */
     public String getFrameofRerenceUID() {
-        return dcmobj.getString(Tag.FrameofReferenceUID);
+        return dcmobj.getString(Tag.FRAME_OF_REFERENCE_UID);
     }
 
     /**
@@ -106,7 +106,7 @@ public class FiducialSet extends Fiducial {
      * @param ui
      */
     public void setFrameofReferenceUID(String ui) {
-        dcmobj.putString(Tag.FrameofReferenceUID, VR.UI, ui);
+        dcmobj.putString(Tag.FRAME_OF_REFERENCE_UID, VR.UI, ui);
     }
 
     /**
@@ -122,7 +122,7 @@ public class FiducialSet extends Fiducial {
      */
     public ImageSOPInstanceReference[] getReferencedImages() {
         return ImageSOPInstanceReference.toImageSOPInstanceReferences(dcmobj
-                .get(Tag.ReferencedImageSequence));
+                .get(Tag.REFERENCED_IMAGE_SEQUENCE));
     }
 
     /**
@@ -137,7 +137,7 @@ public class FiducialSet extends Fiducial {
      * @param sops
      */
     public void setReferencedImages(ImageSOPInstanceReference[] sops) {
-        updateSequence(Tag.ReferencedImageSequence, sops);
+        updateSequence(Tag.REFERENCED_IMAGE_SEQUENCE, sops);
     }
 
     /**
@@ -148,7 +148,7 @@ public class FiducialSet extends Fiducial {
      * @return
      */
     public Fiducial[] getFiducials() {
-        return Fiducial.toFiducials(dcmobj.get(Tag.FiducialSequence));
+        return Fiducial.toFiducials(dcmobj.get(Tag.FIDUCIAL_SEQUENCE));
     }
 
     /**
@@ -159,6 +159,6 @@ public class FiducialSet extends Fiducial {
      * @param fids
      */
     public void setFiducials(Fiducial[] fids) {
-        updateSequence(Tag.FiducialSequence, fids);
+        updateSequence(Tag.FIDUCIAL_SEQUENCE, fids);
     }
 }

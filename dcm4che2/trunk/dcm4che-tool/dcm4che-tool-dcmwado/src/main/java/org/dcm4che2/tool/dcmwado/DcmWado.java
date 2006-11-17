@@ -596,12 +596,12 @@ public class DcmWado {
             DicomInputStream in = new DicomInputStream(f);
             try
             {
-                in.setHandler(new StopTagInputHandler(Tag.SeriesInstanceUID));
+                in.setHandler(new StopTagInputHandler(Tag.SERIES_INSTANCE_UID));
                 in.readDicomObject(dcmObj, -1);
                 String[] uid = {
-                        dcmObj.getString(Tag.StudyInstanceUID),
-                        dcmObj.getString(Tag.SeriesInstanceUID),
-                        dcmObj.getString(Tag.SOPInstanceUID)
+                        dcmObj.getString(Tag.STUDY_INSTANCE_UID),
+                        dcmObj.getString(Tag.SERIES_INSTANCE_UID),
+                        dcmObj.getString(Tag.SOP_INSTANCE_UID)
                 };
                 String[] ts = tsfile 
                     ? new String[] { in.getTransferSyntax().uid() }

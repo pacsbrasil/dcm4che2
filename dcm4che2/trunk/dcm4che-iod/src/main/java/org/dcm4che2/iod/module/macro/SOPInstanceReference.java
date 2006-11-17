@@ -73,19 +73,19 @@ public class SOPInstanceReference extends Module {
     }   
     
     public String getReferencedSOPInstanceUID() {
-        return dcmobj.getString(Tag.ReferencedSOPInstanceUID);
+        return dcmobj.getString(Tag.REFERENCED_SOP_INSTANCE_UID);
     }
 
     public void setReferencedSOPInstanceUID(String uid) {
-        dcmobj.putString(Tag.ReferencedSOPInstanceUID, VR.UI, uid);
+        dcmobj.putString(Tag.REFERENCED_SOP_INSTANCE_UID, VR.UI, uid);
     }
 
     public String getReferencedSOPClassUID() {
-        return dcmobj.getString(Tag.ReferencedSOPClassUID);
+        return dcmobj.getString(Tag.REFERENCED_SOP_CLASS_UID);
     }
 
     public void setReferencedSOPClassUID(String uid) {
-        dcmobj.putString(Tag.ReferencedSOPClassUID, VR.UI, uid);
+        dcmobj.putString(Tag.REFERENCED_SOP_CLASS_UID, VR.UI, uid);
     }
 
 }

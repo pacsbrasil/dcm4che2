@@ -60,7 +60,7 @@ public class StorageService extends DicomService implements CStoreSCP {
     }
 
     protected StorageService(String[] sopClasses) {
-        super(sopClasses, UID.StorageServiceClass);
+        super(sopClasses, UID.STORAGE_SERVICE_CLASS);
     }
 
     public void cstore(Association as, int pcid, DicomObject rq,

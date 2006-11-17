@@ -46,19 +46,19 @@ import org.dcm4che2.data.Tag;
  */
 public class XAK1ApplicationProfile extends BasicApplicationProfile {
 
-    private static final int[] XAK1_PATIENT_KEYS = { Tag.SpecificCharacterSet,
-	    Tag.PatientsName, Tag.PatientID, Tag.PatientsBirthDate,
-	    Tag.PatientsSex };
+    private static final int[] XAK1_PATIENT_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
+	    Tag.PATIENTS_NAME, Tag.PATIENT_ID, Tag.PATIENTS_BIRTH_DATE,
+	    Tag.PATIENTS_SEX };
 
-    private static final int[] XAK1_SERIES_KEYS = { Tag.SpecificCharacterSet,
-	    Tag.Modality, Tag.InstitutionName, Tag.InstitutionAddress,
-	    Tag.PerformingPhysiciansName, Tag.SeriesInstanceUID,
-	    Tag.SeriesNumber };
+    private static final int[] XAK1_SERIES_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
+	    Tag.MODALITY, Tag.INSTITUTION_NAME, Tag.INSTITUTION_ADDRESS,
+	    Tag.PERFORMING_PHYSICIANS_NAME, Tag.SERIES_INSTANCE_UID,
+	    Tag.SERIES_NUMBER };
 
-    private static final int[] XAK1_IMAGE_KEYS = { Tag.SpecificCharacterSet,
-	    Tag.ImageType, Tag.ReferencedImageSequence, Tag.InstanceNumber,
-	    Tag.LossyImageCompressionRatio, Tag.CalibrationImage,
-	    Tag.IconImageSequence };
+    private static final int[] XAK1_IMAGE_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
+	    Tag.IMAGE_TYPE, Tag.REFERENCED_IMAGE_SEQUENCE, Tag.INSTANCE_NUMBER,
+	    Tag.LOSSY_IMAGE_COMPRESSION_RATIO, Tag.CALIBRATION_IMAGE,
+	    Tag.ICON_IMAGE_SEQUENCE };
 
     public XAK1ApplicationProfile() {
 	setPatientKeys(XAK1_PATIENT_KEYS);

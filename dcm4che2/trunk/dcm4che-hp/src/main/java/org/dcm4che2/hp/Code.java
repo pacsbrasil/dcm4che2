@@ -71,42 +71,42 @@ public class Code
 
     public String getCodeValue()
     {
-        return dcmobj.getString(Tag.CodeValue);
+        return dcmobj.getString(Tag.CODE_VALUE);
     }
 
     public void setCodeValue(String value)
     {
-        dcmobj.putString(Tag.CodeValue, VR.SH, value);
+        dcmobj.putString(Tag.CODE_VALUE, VR.SH, value);
     }
 
     public String getCodingSchemeDesignator()
     {
-        return dcmobj.getString(Tag.CodingSchemeDesignator);
+        return dcmobj.getString(Tag.CODING_SCHEME_DESIGNATOR);
     }
 
     public void setCodingSchemeDesignator(String designator)
     {
-        dcmobj.putString(Tag.CodingSchemeDesignator, VR.SH, designator);
+        dcmobj.putString(Tag.CODING_SCHEME_DESIGNATOR, VR.SH, designator);
     }
 
     public String getCodingSchemeVersion()
     {
-        return dcmobj.getString(Tag.CodingSchemeVersion);
+        return dcmobj.getString(Tag.CODING_SCHEME_VERSION);
     }
 
     public void setCodingSchemeVersion(String version)
     {
-        dcmobj.putString(Tag.CodingSchemeVersion, VR.SH, version);
+        dcmobj.putString(Tag.CODING_SCHEME_VERSION, VR.SH, version);
     }
 
     public String getCodeMeaning()
     {
-        return dcmobj.getString(Tag.CodeMeaning);
+        return dcmobj.getString(Tag.CODE_MEANING);
     }
 
     public void setCodeMeaning(String meaning)
     {
-        dcmobj.putString(Tag.CodeMeaning, VR.LO, meaning);
+        dcmobj.putString(Tag.CODE_MEANING, VR.LO, meaning);
     }
 
     public static Code[] toArray(DicomElement sq)

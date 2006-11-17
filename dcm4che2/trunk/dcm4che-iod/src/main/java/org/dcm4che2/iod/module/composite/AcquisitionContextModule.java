@@ -92,7 +92,7 @@ public class AcquisitionContextModule extends AcquisitionContext {
      * @param ac
      */
     public void setAcquisitionContexts(AcquisitionContext[] ac) {
-        updateSequence(Tag.AcquisitionContextSequence, ac);
+        updateSequence(Tag.ACQUISITION_CONTEXT_SEQUENCE, ac);
     }
 
     /**
@@ -106,7 +106,7 @@ public class AcquisitionContextModule extends AcquisitionContext {
      */
     public AcquisitionContext[] getAcquisitionContexts() {
         return (AcquisitionContext.toAcquisitionContexts(dcmobj
-                .get(Tag.AcquisitionContextSequence)));
+                .get(Tag.ACQUISITION_CONTEXT_SEQUENCE)));
     }
 
     /**
@@ -117,7 +117,7 @@ public class AcquisitionContextModule extends AcquisitionContext {
      * @param st
      */
     public void setAcquisitionContextDescription(String st) {
-        dcmobj.putString(Tag.AcquisitionContextDescription, VR.ST, st);
+        dcmobj.putString(Tag.ACQUISITION_CONTEXT_DESCRIPTION, VR.ST, st);
     }
 
     /**
@@ -128,7 +128,7 @@ public class AcquisitionContextModule extends AcquisitionContext {
      * @return
      */
     public String getAcquisitionContextDescription() {
-        return dcmobj.getString(Tag.AcquisitionContextDescription);
+        return dcmobj.getString(Tag.ACQUISITION_CONTEXT_DESCRIPTION);
     }
 
 }

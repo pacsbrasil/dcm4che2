@@ -73,19 +73,19 @@ public class HL7StructuredDocumentReference extends SOPInstanceReference {
     }
 
     public String getHL7InstanceIdentifier() {
-        return dcmobj.getString(Tag.HL7InstanceIdentifier);
+        return dcmobj.getString(Tag.HL7_INSTANCE_IDENTIFIER);
     }
     
     public void setHL7InstanceIdentifier(String s) {
-        dcmobj.putString(Tag.HL7InstanceIdentifier, VR.ST, s);
+        dcmobj.putString(Tag.HL7_INSTANCE_IDENTIFIER, VR.ST, s);
     }
 
     public String getRetrieveURI() {
-        return dcmobj.getString(Tag.RetrieveURI);
+        return dcmobj.getString(Tag.RETRIEVE_URI);
     }
     
     public void setRetrieveURI(String s) {
-        dcmobj.putString(Tag.RetrieveURI, VR.UT, s);
+        dcmobj.putString(Tag.RETRIEVE_URI, VR.UT, s);
     }
     
 }

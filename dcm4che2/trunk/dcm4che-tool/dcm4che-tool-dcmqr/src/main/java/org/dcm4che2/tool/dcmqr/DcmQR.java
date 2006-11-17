@@ -106,17 +106,17 @@ public class DcmQR {
         "IMAGE" };
     
     private static final String[] PATIENT_LEVEL_FIND_CUID = {
-        UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
+        UID.PATIENT_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND,
+        UID.PATIENT_STUDY_ONLY_QUERY_RETRIEVE_INFORMATION_MODEL_FIND_RETIRED };
     
     private static final String[] STUDY_LEVEL_FIND_CUID = {
-        UID.StudyRootQueryRetrieveInformationModelFIND,
-        UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
+        UID.STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND,
+        UID.PATIENT_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND,
+        UID.PATIENT_STUDY_ONLY_QUERY_RETRIEVE_INFORMATION_MODEL_FIND_RETIRED };
     
     private static final String[] SERIES_LEVEL_FIND_CUID = {
-        UID.StudyRootQueryRetrieveInformationModelFIND,
-        UID.PatientRootQueryRetrieveInformationModelFIND, };
+        UID.STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND,
+        UID.PATIENT_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND, };
     
     private static final String[][] FIND_CUID = { PATIENT_LEVEL_FIND_CUID,
         STUDY_LEVEL_FIND_CUID,
@@ -124,17 +124,17 @@ public class DcmQR {
         SERIES_LEVEL_FIND_CUID };
     
     private static final String[] PATIENT_LEVEL_MOVE_CUID = {
-        UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
+        UID.PATIENT_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE,
+        UID.PATIENT_STUDY_ONLY_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE_RETIRED };
     
     private static final String[] STUDY_LEVEL_MOVE_CUID = {
-        UID.StudyRootQueryRetrieveInformationModelMOVE,
-        UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
+        UID.STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE,
+        UID.PATIENT_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE,
+        UID.PATIENT_STUDY_ONLY_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE_RETIRED };
     
     private static final String[] SERIES_LEVEL_MOVE_CUID = {
-        UID.StudyRootQueryRetrieveInformationModelMOVE,
-        UID.PatientRootQueryRetrieveInformationModelMOVE };
+        UID.STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE,
+        UID.PATIENT_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_MOVE };
     
     private static final String[][] MOVE_CUID = {
         PATIENT_LEVEL_MOVE_CUID,
@@ -142,31 +142,31 @@ public class DcmQR {
         SERIES_LEVEL_MOVE_CUID,
         SERIES_LEVEL_MOVE_CUID };
     
-    private static final int[] PATIENT_RETURN_KEYS = { Tag.PatientsName,
-        Tag.PatientID, Tag.PatientsBirthDate, Tag.PatientsSex,
-        Tag.NumberofPatientRelatedStudies,
-        Tag.NumberofPatientRelatedSeries,
-        Tag.NumberofPatientRelatedInstances };
+    private static final int[] PATIENT_RETURN_KEYS = { Tag.PATIENTS_NAME,
+        Tag.PATIENT_ID, Tag.PATIENTS_BIRTH_DATE, Tag.PATIENTS_SEX,
+        Tag.NUMBER_OF_PATIENT_RELATED_STUDIES,
+        Tag.NUMBER_OF_PATIENT_RELATED_SERIES,
+        Tag.NUMBER_OF_PATIENT_RELATED_INSTANCES };
     
     private static final int[] STUDY_RETURN_KEYS = {
-        Tag.StudyDate,
-        Tag.StudyTime,
-        Tag.AccessionNumber,
-        Tag.StudyID,
-        Tag.StudyInstanceUID,
-        Tag.NumberofStudyRelatedSeries,
-        Tag.NumberofStudyRelatedInstances };
+        Tag.STUDY_DATE,
+        Tag.STUDY_TIME,
+        Tag.ACCESSION_NUMBER,
+        Tag.STUDY_ID,
+        Tag.STUDY_INSTANCE_UID,
+        Tag.NUMBER_OF_STUDY_RELATED_SERIES,
+        Tag.NUMBER_OF_STUDY_RELATED_INSTANCES };
     
     private static final int[] SERIES_RETURN_KEYS = {
-        Tag.Modality,
-        Tag.SeriesNumber,
-        Tag.SeriesInstanceUID,
-        Tag.NumberofSeriesRelatedInstances };
+        Tag.MODALITY,
+        Tag.SERIES_NUMBER,
+        Tag.SERIES_INSTANCE_UID,
+        Tag.NUMBER_OF_SERIES_RELATED_INSTANCES };
     
     private static final int[] INSTANCE_RETURN_KEYS = {
-        Tag.InstanceNumber,
-        Tag.SOPClassUID,
-        Tag.SOPInstanceUID, };
+        Tag.INSTANCE_NUMBER,
+        Tag.SOP_CLASS_UID,
+        Tag.SOP_INSTANCE_UID, };
     
     private static final int[][] RETURN_KEYS = {
         PATIENT_RETURN_KEYS,
@@ -175,23 +175,23 @@ public class DcmQR {
         INSTANCE_RETURN_KEYS };
     
     private static final int[] MOVE_KEYS = {
-        Tag.QueryRetrieveLevel,
-        Tag.PatientID,
-        Tag.StudyInstanceUID,
-        Tag.SeriesInstanceUID,
-        Tag.SOPInstanceUID, };
+        Tag.QUERY_RETRIEVE_LEVEL,
+        Tag.PATIENT_ID,
+        Tag.STUDY_INSTANCE_UID,
+        Tag.SERIES_INSTANCE_UID,
+        Tag.SOP_INSTANCE_UID, };
     
     private static final String[] IVRLE_TS = {
-        UID.ImplicitVRLittleEndian };
+        UID.IMPLICIT_VR_LITTLE_ENDIAN };
     
     private static final String[] NATIVE_LE_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian  };
+        UID.IMPLICIT_VR_LITTLE_ENDIAN,
+        UID.EXPLICIT_VR_LITTLE_ENDIAN  };
     
     private static final String[] DEFLATED_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
-        UID.DeflatedExplicitVRLittleEndian };
+        UID.IMPLICIT_VR_LITTLE_ENDIAN,
+        UID.EXPLICIT_VR_LITTLE_ENDIAN,
+        UID.DEFLATED_EXPLICIT_VR_LITTLE_ENDIAN };
 
     private static final String[] EMPTY_STRING = {};
 
@@ -455,7 +455,7 @@ public class DcmQR {
         OptionBuilder.hasArgs(2);
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
-                "specified by name or tag value (in hex), e.g. PatientsName\n" +
+                "specified by name or tag value (in hex), e.g. PATIENTS_NAME\n" +
                 "or 00100010. Attributes in nested Datasets can\n" +
                 "be specified by including the name/tag value of\n" +
                 "the sequence attribute, e.g. 00400275/00400009\n" +
@@ -606,13 +606,13 @@ public class DcmQR {
 
         if (cl.hasOption("retall"))
             dcmqr.addPrivate(
-                    UID.PrivateStudyRootQueryRetrieveInformationModelFIND);
+                    UID.PRIVATE_STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND);
         if (cl.hasOption("blocked"))
             dcmqr.addPrivate(
-                    UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND);
+                    UID.PRIVATE_BLOCKED_STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND);
         if (cl.hasOption("vmf"))
             dcmqr.addPrivate(
-                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);
+                    UID.PRIVATE_VIRTUAL_MULTIFRAME_STUDY_ROOT_QUERY_RETRIEVE_INFORMATION_MODEL_FIND);
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
@@ -755,7 +755,7 @@ public class DcmQR {
 
     private void setQueryLevel(int qrlevel) {
         this.qrlevel = qrlevel;
-        keys.putString(Tag.QueryRetrieveLevel, VR.CS, QRLEVEL[qrlevel]);
+        keys.putString(Tag.QUERY_RETRIEVE_LEVEL, VR.CS, QRLEVEL[qrlevel]);
         int[] tags = RETURN_KEYS[qrlevel];
         for (int i = 0; i < tags.length; i++)
             keys.putNull(tags[i], null);
@@ -847,8 +847,8 @@ public class DcmQR {
 
     private String selectTransferSyntax(TransferCapability tc) {
         String[] tcuids = tc.getTransferSyntax();
-        if (Arrays.asList(tcuids).indexOf(UID.DeflatedExplicitVRLittleEndian) != -1)
-            return UID.DeflatedExplicitVRLittleEndian;
+        if (Arrays.asList(tcuids).indexOf(UID.DEFLATED_EXPLICIT_VR_LITTLE_ENDIAN) != -1)
+            return UID.DEFLATED_EXPLICIT_VR_LITTLE_ENDIAN;
         return tcuids[0];
     }
 
@@ -881,9 +881,9 @@ public class DcmQR {
 
     protected void onMoveRSP(Association as, DicomObject cmd, DicomObject data) {
         if (!CommandUtils.isPending(cmd)) {
-            completed += cmd.getInt(Tag.NumberofCompletedSuboperations);
-            warning += cmd.getInt(Tag.NumberofWarningSuboperations);
-            failed += cmd.getInt(Tag.NumberofFailedSuboperations);
+            completed += cmd.getInt(Tag.NUMBER_OF_COMPLETED_SUB_OPERATIONS);
+            warning += cmd.getInt(Tag.NUMBER_OF_WARNING_SUB_OPERATIONS);
+            failed += cmd.getInt(Tag.NUMBER_OF_FAILED_SUB_OPERATIONS);
         }
 
     }

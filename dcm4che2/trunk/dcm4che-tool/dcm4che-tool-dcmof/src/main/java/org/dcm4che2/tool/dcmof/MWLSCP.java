@@ -61,7 +61,7 @@ class MWLSCP extends CFindService
 
     public MWLSCP(Executor executor, DcmOF dcmOF)
     {
-        super(UID.ModalityWorklistInformationModelFIND, executor);
+        super(UID.MODALITY_WORKLIST_INFORMATION_MODEL_FIND, executor);
         this.dcmOF = dcmOF;
     }
 

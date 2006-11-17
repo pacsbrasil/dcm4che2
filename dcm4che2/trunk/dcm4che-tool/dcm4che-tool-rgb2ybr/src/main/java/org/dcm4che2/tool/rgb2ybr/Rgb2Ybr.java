@@ -186,7 +186,7 @@ public class Rgb2Ybr implements DicomInputHandler  {
     }
 
     public boolean readValue(DicomInputStream in) throws IOException {
-        if ((in.tag() & 0xffffffffL) == Tag.PixelData && in.level() == 0) {
+        if ((in.tag() & 0xffffffffL) == Tag.PIXEL_DATA && in.level() == 0) {
             convert(in);
             return true;
         }
@@ -198,7 +198,7 @@ public class Rgb2Ybr implements DicomInputHandler  {
             throw new IOException("Encapsulated Pixel Data");
         }
         DicomObject attrs = in.getDicomObject();
-        String pmi = attrs.getString(Tag.PhotometricInterpretation);
+        String pmi = attrs.getString(Tag.PHOTOMETRIC_INTERPRETATION);
         if (invers) {
             if (YBR_FULL.equals(pmi)) {
                 convert(in, FROM_YBR_FULL, RGB);
@@ -226,18 +226,18 @@ public class Rgb2Ybr implements DicomInputHandler  {
             throws IOException {
         DicomObject attrs = in.getDicomObject();
         check("Unsupported Bits Allocated: ", 8,
-                attrs.getInt(Tag.BitsAllocated));
+                attrs.getInt(Tag.BITS_ALLOCATED));
         check("Wrong Samples per Pixel: ", 3,
-                attrs.getInt(Tag.SamplesperPixel));
+                attrs.getInt(Tag.SAMPLES_PER_PIXEL));
         int valLen = in.valueLength();
-        int planeLen = attrs.getInt(Tag.Columns) * attrs.getInt(Tag.Rows);
-        int nFrames = attrs.getInt(Tag.NumberofFrames, 1);
+        int planeLen = attrs.getInt(Tag.COLUMNS) * attrs.getInt(Tag.ROWS);
+        int nFrames = attrs.getInt(Tag.NUMBER_OF_FRAMES, 1);
         int padded = valLen - planeLen * nFrames * 3;
         if (padded < 0) {
             throw new IOException("Too short Pixel Data: " + valLen);
         }
-        boolean byPlane = attrs.getInt(Tag.PlanarConfiguration) != 0;
-        attrs.putString(Tag.PhotometricInterpretation, VR.CS, pmi);
+        boolean byPlane = attrs.getInt(Tag.PLANAR_CONFIGURATION) != 0;
+        attrs.putString(Tag.PHOTOMETRIC_INTERPRETATION, VR.CS, pmi);
         FileOutputStream fos = new FileOutputStream(ofile);
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         dos = new DicomOutputStream(bos);

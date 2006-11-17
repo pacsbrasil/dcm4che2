@@ -56,46 +56,46 @@ public class KODocumentModule extends Module {
     }
 
     public String getInstanceNumber() {
-	return dcmobj.getString(Tag.InstanceNumber);
+	return dcmobj.getString(Tag.INSTANCE_NUMBER);
     }
 
     public void setInstanceNumber(String s) {
-	dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
+	dcmobj.putString(Tag.INSTANCE_NUMBER, VR.IS, s);
     }
 
     public Date getContentDateTime() {
-	return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
+	return dcmobj.getDate(Tag.CONTENT_DATE, Tag.CONTENT_TIME);
     }
 
     public void setContentDateTime(Date d) {
-	dcmobj.putDate(Tag.ContentDate, VR.DA, d);
-	dcmobj.putDate(Tag.ContentTime, VR.TM, d);
+	dcmobj.putDate(Tag.CONTENT_DATE, VR.DA, d);
+	dcmobj.putDate(Tag.CONTENT_TIME, VR.TM, d);
     }
 
     public ReferencedRequest[] getReferencedRequests() {
         return ReferencedRequest.toReferencedRequests(
-        	dcmobj.get(Tag.ReferencedRequestSequence));
+        	dcmobj.get(Tag.REFERENCED_REQUEST_SEQUENCE));
     }
 
     public void setReferencedRequest(ReferencedRequest[] refrqs) {
-        updateSequence(Tag.ReferencedRequestSequence, refrqs);
+        updateSequence(Tag.REFERENCED_REQUEST_SEQUENCE, refrqs);
     }
 
     public SOPInstanceReferenceMacro[] getCurrentRequestedProcedureEvidences() {
         return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
-        	dcmobj.get(Tag.CurrentRequestedProcedureEvidenceSequence));
+        	dcmobj.get(Tag.CURRENT_REQUESTED_PROCEDURE_EVIDENCE_SEQUENCE));
     }
 
     public void setCurrentRequestedProcedureEvidences(SOPInstanceReferenceMacro[] refs) {
-        updateSequence(Tag.CurrentRequestedProcedureEvidenceSequence, refs);
+        updateSequence(Tag.CURRENT_REQUESTED_PROCEDURE_EVIDENCE_SEQUENCE, refs);
     }
 
     public SOPInstanceReferenceMacro[] getIdenticalDocuments() {
         return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
-        	dcmobj.get(Tag.IdenticalDocumentsSequence));
+        	dcmobj.get(Tag.IDENTICAL_DOCUMENTS_SEQUENCE));
     }
 
     public void setIdenticalDocuments(SOPInstanceReferenceMacro[] refs) {
-        updateSequence(Tag.IdenticalDocumentsSequence, refs);
+        updateSequence(Tag.IDENTICAL_DOCUMENTS_SEQUENCE, refs);
     }
 }

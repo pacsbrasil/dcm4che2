@@ -52,51 +52,51 @@ implements HPComparator
 
     public String getImageSetSelectorUsageFlag()
     {
-        return getDicomObject().getString(Tag.ImageSetSelectorUsageFlag);
+        return getDicomObject().getString(Tag.IMAGE_SET_SELECTOR_USAGE_FLAG);
     }
 
     public int getSelectorAttribute()
     {
-        return getDicomObject().getInt(Tag.SelectorAttribute);
+        return getDicomObject().getInt(Tag.SELECTOR_ATTRIBUTE);
     }
 
     public int getSelectorSequencePointer()
     {
-        return getDicomObject().getInt(Tag.SelectorSequencePointer);
+        return getDicomObject().getInt(Tag.SELECTOR_SEQUENCE_POINTER);
     }
 
     public int getFunctionalGroupPointer()
     {
-        return getDicomObject().getInt(Tag.FunctionalGroupPointer);
+        return getDicomObject().getInt(Tag.FUNCTIONAL_GROUP_POINTER);
     }
 
     public String getSelectorSequencePointerPrivateCreator()
     {
-        return getDicomObject().getString(Tag.SelectorSequencePointerPrivateCreator);
+        return getDicomObject().getString(Tag.SELECTOR_SEQUENCE_POINTER_PRIVATE_CREATOR);
     }
 
     public String getFunctionalGroupPrivateCreator()
     {
-        return getDicomObject().getString(Tag.FunctionalGroupPrivateCreator);
+        return getDicomObject().getString(Tag.FUNCTIONAL_GROUP_PRIVATE_CREATOR);
     }
 
     public String getSelectorAttributePrivateCreator()
     {
-        return getDicomObject().getString(Tag.SelectorAttributePrivateCreator);
+        return getDicomObject().getString(Tag.SELECTOR_ATTRIBUTE_PRIVATE_CREATOR);
     }
 
     public int getSelectorValueNumber()
     {
-        return getDicomObject().getInt(Tag.SelectorValueNumber);
+        return getDicomObject().getInt(Tag.SELECTOR_VALUE_NUMBER);
     }
 
     public String getSortbyCategory()
     {
-        return getDicomObject().getString(Tag.SortbyCategory);
+        return getDicomObject().getString(Tag.SORT_BY_CATEGORY);
     }
 
     public String getSortingDirection()
     {
-        return getDicomObject().getString(Tag.SortingDirection);
+        return getDicomObject().getString(Tag.SORTING_DIRECTION);
     }
 }

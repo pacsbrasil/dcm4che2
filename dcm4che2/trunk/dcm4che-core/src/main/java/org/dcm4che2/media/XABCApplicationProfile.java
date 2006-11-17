@@ -46,18 +46,18 @@ import org.dcm4che2.data.Tag;
  */
 public class XABCApplicationProfile extends BasicApplicationProfile {
 
-    private static final int[] XABC_PATIENT_KEYS = { Tag.SpecificCharacterSet,
-	    Tag.PatientsName, Tag.PatientID, Tag.PatientsBirthDate,
-	    Tag.PatientsSex };
+    private static final int[] XABC_PATIENT_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
+	    Tag.PATIENTS_NAME, Tag.PATIENT_ID, Tag.PATIENTS_BIRTH_DATE,
+	    Tag.PATIENTS_SEX };
 
-    private static final int[] XABC_SERIES_KEYS = { Tag.SpecificCharacterSet,
-	    Tag.Modality, Tag.InstitutionName, Tag.InstitutionAddress,
-	    Tag.PerformingPhysiciansName, Tag.SeriesInstanceUID,
-	    Tag.SeriesNumber };
+    private static final int[] XABC_SERIES_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
+	    Tag.MODALITY, Tag.INSTITUTION_NAME, Tag.INSTITUTION_ADDRESS,
+	    Tag.PERFORMING_PHYSICIANS_NAME, Tag.SERIES_INSTANCE_UID,
+	    Tag.SERIES_NUMBER };
 
-    private static final int[] XABC_IMAGE_KEYS = { Tag.SpecificCharacterSet,
-	    Tag.ImageType, Tag.ReferencedImageSequence, Tag.InstanceNumber,
-	    Tag.CalibrationImage, Tag.IconImageSequence };
+    private static final int[] XABC_IMAGE_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
+	    Tag.IMAGE_TYPE, Tag.REFERENCED_IMAGE_SEQUENCE, Tag.INSTANCE_NUMBER,
+	    Tag.CALIBRATION_IMAGE, Tag.ICON_IMAGE_SEQUENCE };
 
     public XABCApplicationProfile() {
 	setPatientKeys(XABC_PATIENT_KEYS);

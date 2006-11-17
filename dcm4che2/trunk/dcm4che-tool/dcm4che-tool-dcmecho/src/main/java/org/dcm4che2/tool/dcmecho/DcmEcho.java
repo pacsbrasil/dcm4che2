@@ -76,9 +76,9 @@ public class DcmEcho
             + "=> Verify connection to Application Entity STORESCP, "
             + "listening on local port 11112.";
 
-    private static final String[] DEF_TS = { UID.ImplicitVRLittleEndian };
+    private static final String[] DEF_TS = { UID.IMPLICIT_VR_LITTLE_ENDIAN };
     private static final TransferCapability VERIFICATION_SCU = 
-            new TransferCapability(UID.VerificationSOPClass, DEF_TS, TransferCapability.SCU);
+            new TransferCapability(UID.VERIFICATION_SOP_CLASS, DEF_TS, TransferCapability.SCU);
 
     private Executor executor = new NewThreadExecutor("DCMECHO");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();

@@ -55,20 +55,20 @@ public class CommonInstanceReferenceModule extends Module {
 
     public SeriesAndInstanceReference[] getReferencedSeries() {
         return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.ReferencedSeriesSequence));
+                .get(Tag.REFERENCED_SERIES_SEQUENCE));
     }
 
     public void setReferencedSeries(SeriesAndInstanceReference[] seriesRefs) {
-        updateSequence(Tag.ReferencedSeriesSequence, seriesRefs);
+        updateSequence(Tag.REFERENCED_SERIES_SEQUENCE, seriesRefs);
     }
 
     public StudyAndSeriesAndInstanceReference[] getStudiesContainingOtherReferencedInstances() {
         return StudyAndSeriesAndInstanceReference.toStudyAndSeriesAndInstanceReferences(dcmobj
-                .get(Tag.StudiesContainingOtherReferencedInstancesSequence));
+                .get(Tag.STUDIES_CONTAINING_OTHER_REFERENCED_INSTANCES_SEQUENCE));
     }
 
     public void setStudiesContainingOtherReferencedInstances(
             StudyAndSeriesAndInstanceReference[] studyRefs) {
-        updateSequence(Tag.StudiesContainingOtherReferencedInstancesSequence, studyRefs);
+        updateSequence(Tag.STUDIES_CONTAINING_OTHER_REFERENCED_INSTANCES_SEQUENCE, studyRefs);
     }
 }

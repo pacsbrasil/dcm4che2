@@ -64,7 +64,7 @@ public class KODocumentSeriesModule extends GeneralSeriesModule {
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!Modality.KO.equals(getModality())) {
-            result.logInvalidValue(Tag.Modality, dcmobj);
+            result.logInvalidValue(Tag.MODALITY, dcmobj);
         }
     }
 

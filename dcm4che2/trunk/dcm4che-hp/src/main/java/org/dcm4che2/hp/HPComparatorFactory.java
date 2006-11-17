@@ -68,7 +68,7 @@ public class HPComparatorFactory
      */
     public static HPComparator createHPComparator(DicomObject sortingOp)
     {
-        if (sortingOp.containsValue(Tag.SortbyCategory))
+        if (sortingOp.containsValue(Tag.SORT_BY_CATEGORY))
             return HPComparatorFactory.createSortByCategory(sortingOp);
         HPComparator cmp = new SortByAttribute(sortingOp);
         cmp = addSequencePointer(cmp);
@@ -80,10 +80,10 @@ public class HPComparatorFactory
     private static HPComparator createSortByCategory(DicomObject sortingOp)
     {
         HPComparatorSpi spi = HangingProtocol.getHPComparatorSpi(sortingOp
-                .getString(Tag.SortbyCategory));
+                .getString(Tag.SORT_BY_CATEGORY));
         if (spi == null)
             throw new IllegalArgumentException("Unsupported Sort-by Category: "
-                    + sortingOp.get(Tag.SortbyCategory));
+                    + sortingOp.get(Tag.SORT_BY_CATEGORY));
         return spi.createHPComparator(sortingOp);
     }
     
@@ -161,11 +161,11 @@ public class HPComparatorFactory
         if (comparator.getFunctionalGroupPointer() != 0)
             throw new IllegalArgumentException("Functional Group Pointer already added");
         
-        comparator.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT, tag);
+        comparator.getDicomObject().putInt(Tag.SELECTOR_SEQUENCE_POINTER, VR.AT, tag);
         if (privCreator != null)
         {
             comparator.getDicomObject().putString(
-                    Tag.SelectorSequencePointerPrivateCreator, VR.LO, privCreator);
+                    Tag.SELECTOR_SEQUENCE_POINTER_PRIVATE_CREATOR, VR.LO, privCreator);
         }
         return new Seq(privCreator, tag, comparator);
     }
@@ -192,11 +192,11 @@ public class HPComparatorFactory
         if (comparator.getFunctionalGroupPointer() != 0)
             throw new IllegalArgumentException("Functional Group Pointer already added");
         
-        comparator.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT, tag);
+        comparator.getDicomObject().putInt(Tag.FUNCTIONAL_GROUP_POINTER, VR.AT, tag);
         if (privCreator != null)
         {
             comparator.getDicomObject().putString(
-                    Tag.FunctionalGroupPrivateCreator, VR.LO, privCreator);
+                    Tag.FUNCTIONAL_GROUP_PRIVATE_CREATOR, VR.LO, privCreator);
         }
         return new FctGrp(tag, privCreator, comparator);
     }
@@ -263,25 +263,25 @@ public class HPComparatorFactory
             this.valueNumber = valueNumber;
             this.sign = CodeString.sortingDirectionToSign(sortingDirection);
             sortingOp = new BasicDicomObject();
-            sortingOp.putInt(Tag.SelectorAttribute, VR.AT, tag);
+            sortingOp.putInt(Tag.SELECTOR_ATTRIBUTE, VR.AT, tag);
             if (privateCreator != null)
-                sortingOp.putString(Tag.SelectorAttributePrivateCreator,
+                sortingOp.putString(Tag.SELECTOR_ATTRIBUTE_PRIVATE_CREATOR,
                         VR.LO, privateCreator);
-            sortingOp.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
-            sortingOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
+            sortingOp.putInt(Tag.SELECTOR_VALUE_NUMBER, VR.US, valueNumber);
+            sortingOp.putString(Tag.SORTING_DIRECTION, VR.CS, sortingDirection);
         }
         
         SortByAttribute(DicomObject sortingOp) {
             super(getSelectorAttribute(sortingOp),
-                    sortingOp.getString(Tag.SelectorAttributePrivateCreator));
-            this.valueNumber = sortingOp.getInt(Tag.SelectorValueNumber);
+                    sortingOp.getString(Tag.SELECTOR_ATTRIBUTE_PRIVATE_CREATOR));
+            this.valueNumber = sortingOp.getInt(Tag.SELECTOR_VALUE_NUMBER);
             if (valueNumber == 0)
             {
                 throw new IllegalArgumentException(
                         "Missing or invalid (0072,0028) Selector Value Number: "
-                                + sortingOp.get(Tag.SelectorValueNumber));
+                                + sortingOp.get(Tag.SELECTOR_VALUE_NUMBER));
             }
-            String cs = sortingOp.getString(Tag.SortingDirection);
+            String cs = sortingOp.getString(Tag.SORTING_DIRECTION);
             if (cs == null)
             {
                 throw new IllegalArgumentException(
@@ -293,7 +293,7 @@ public class HPComparatorFactory
 
         private static int getSelectorAttribute(DicomObject sortingOp)
         {
-            int tag = sortingOp.getInt(Tag.SelectorAttribute);
+            int tag = sortingOp.getInt(Tag.SELECTOR_ATTRIBUTE);
             if (tag == 0)
             {
                 throw new IllegalArgumentException(
@@ -362,8 +362,8 @@ public class HPComparatorFactory
         {
             if (c1 == null || c2 == null)
                 return 0;
-            String v1 = c1.getString(Tag.CodeValue);
-            String v2 = c2.getString(Tag.CodeValue);
+            String v1 = c1.getString(Tag.CODE_VALUE);
+            String v2 = c2.getString(Tag.CODE_VALUE);
             if (v1 == null || v2 == null)
                 return 0;
             return v1.compareTo(v2) * sign;
@@ -497,7 +497,7 @@ public class HPComparatorFactory
 
         private DicomObject fctGrp(DicomObject o, int frame)
         {
-            DicomObject sharedFctGrp = o.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+            DicomObject sharedFctGrp = o.getNestedDicomObject(Tag.SHARED_FUNCTIONAL_GROUPS_SEQUENCE);
             if (sharedFctGrp != null)
             {
                 DicomObject fctGrp = sharedFctGrp.getNestedDicomObject(resolveTag(sharedFctGrp));
@@ -506,7 +506,7 @@ public class HPComparatorFactory
                     return fctGrp;
                 }
             }
-            DicomElement frameFctGrpSeq = o.get(Tag.PerframeFunctionalGroupsSequence);
+            DicomElement frameFctGrpSeq = o.get(Tag.PER_FRAME_FUNCTIONAL_GROUPS_SEQUENCE);
             if (frameFctGrpSeq == null)
                 return null;
             DicomObject frameFctGrp = frameFctGrpSeq.getDicomObject(frame - 1);

@@ -93,21 +93,21 @@ public class CommandUtils
     
     public static boolean isResponse(DicomObject dcmobj)
     {
-        return (dcmobj.getInt(Tag.CommandField) & RSP) != 0;
+        return (dcmobj.getInt(Tag.COMMAND_FIELD) & RSP) != 0;
     }
 
     public static boolean isCancelRQ(DicomObject dcmobj)
     {
-        return dcmobj.getInt(Tag.CommandField) == C_CANCEL_RQ;
+        return dcmobj.getInt(Tag.COMMAND_FIELD) == C_CANCEL_RQ;
     }
 
     public static DicomObject mkCStoreRQ(int msgId, String cuid, String iuid,
             int priority)
     {
        DicomObject rq = mkRQ(msgId, C_STORE_RQ, withDatasetType);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-       rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
-       rq.putInt(Tag.Priority, VR.US, priority);
+       rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putString(Tag.AFFECTED_SOP_INSTANCE_UID, VR.UI, iuid);
+       rq.putInt(Tag.PRIORITY, VR.US, priority);
        return rq;
     }
     
@@ -115,25 +115,25 @@ public class CommandUtils
             int priority, String moveOriginatorAET, int moveOriginatorMsgId)
     {
        DicomObject rq = mkCStoreRQ(msgId, cuid, iuid, priority);
-       rq.putString(Tag.MoveOriginatorApplicationEntityTitle, VR.AE,
+       rq.putString(Tag.MOVE_ORIGINATOR_APPLICATION_ENTITY_TITLE, VR.AE,
                moveOriginatorAET);
-       rq.putInt(Tag.MoveOriginatorMessageID, VR.US, moveOriginatorMsgId);
+       rq.putInt(Tag.MOVE_ORIGINATOR_MESSAGE_ID, VR.US, moveOriginatorMsgId);
        return rq;
     }
 
     public static DicomObject mkCFindRQ(int msgId, String cuid, int priority)
     {
        DicomObject rq = mkRQ(msgId, C_FIND_RQ, withDatasetType);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-       rq.putInt(Tag.Priority, VR.US, priority);
+       rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putInt(Tag.PRIORITY, VR.US, priority);
        return rq;
     }
 
     public static DicomObject mkCGetRQ(int msgId, String cuid, int priority)
     {
        DicomObject rq = mkRQ(msgId, C_GET_RQ, withDatasetType);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-       rq.putInt(Tag.Priority, VR.US, priority);
+       rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putInt(Tag.PRIORITY, VR.US, priority);
        return rq;
     }
     
@@ -141,25 +141,25 @@ public class CommandUtils
             String destination)
     {
        DicomObject rq = mkRQ(msgId, C_MOVE_RQ, withDatasetType);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-       rq.putInt(Tag.Priority, VR.US, priority);
-       rq.putString(Tag.MoveDestination, VR.AE, destination);
+       rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putInt(Tag.PRIORITY, VR.US, priority);
+       rq.putString(Tag.MOVE_DESTINATION, VR.AE, destination);
        return rq;
     }
 
     public static DicomObject mkCCancelRQ(int msgId)
     {
         DicomObject rq = new BasicDicomObject();
-        rq.putInt(Tag.CommandField, VR.US, C_CANCEL_RQ);
-        rq.putInt(Tag.DataSetType, VR.US, NO_DATASET);
-        rq.putInt(Tag.MessageIDBeingRespondedTo, VR.US, msgId);
+        rq.putInt(Tag.COMMAND_FIELD, VR.US, C_CANCEL_RQ);
+        rq.putInt(Tag.DATA_SET_TYPE, VR.US, NO_DATASET);
+        rq.putInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO, VR.US, msgId);
         return rq;
     }
     
     public static DicomObject mkCEchoRQ(int msgId, String cuid)
     {
        DicomObject rq = mkRQ(msgId, C_ECHO_RQ, NO_DATASET);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+       rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
        return rq;
     }
     
@@ -168,9 +168,9 @@ public class CommandUtils
     {
        DicomObject rq = mkRQ(msgId, N_EVENT_REPORT_RQ, 
                data == null ? NO_DATASET : withDatasetType);
-       rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-       rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
-       rq.putInt(Tag.EventTypeID, VR.US, eventTypeID);
+       rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putString(Tag.AFFECTED_SOP_INSTANCE_UID, VR.UI, iuid);
+       rq.putInt(Tag.EVENT_TYPE_ID, VR.US, eventTypeID);
        return rq;
     }
     
@@ -179,16 +179,16 @@ public class CommandUtils
     {
        DicomObject rq = mkRQ(msgId, N_GET_RQ, 
                data == null ? NO_DATASET : withDatasetType);
-       rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
-       rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+       rq.putString(Tag.REQUESTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putString(Tag.REQUESTED_SOP_INSTANCE_UID, VR.UI, iuid);
        return rq;
     }
     
     public static DicomObject mkNSetRQ(int msgId, String cuid, String iuid)
     {
         DicomObject rq = mkRQ(msgId, N_SET_RQ, withDatasetType);
-        rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
-        rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+        rq.putString(Tag.REQUESTED_SOP_CLASS_UID, VR.UI, cuid);
+        rq.putString(Tag.REQUESTED_SOP_INSTANCE_UID, VR.UI, iuid);
         return rq;
     }
 
@@ -197,9 +197,9 @@ public class CommandUtils
     {
        DicomObject rq = mkRQ(msgId, N_ACTION_RQ, 
                data == null ? NO_DATASET : withDatasetType);
-       rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
-       rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
-       rq.putInt(Tag.ActionTypeID, VR.US, actionTypeID);
+       rq.putString(Tag.REQUESTED_SOP_CLASS_UID, VR.UI, cuid);
+       rq.putString(Tag.REQUESTED_SOP_INSTANCE_UID, VR.UI, iuid);
+       rq.putInt(Tag.ACTION_TYPE_ID, VR.US, actionTypeID);
        return rq;
     }
        
@@ -207,44 +207,44 @@ public class CommandUtils
     {
         DicomObject rq = mkRQ(msgId, N_CREATE_RQ, withDatasetType);
         if (cuid != null)
-            rq.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-        rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+            rq.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+        rq.putString(Tag.AFFECTED_SOP_INSTANCE_UID, VR.UI, iuid);
         return rq;
     }
 
     public static DicomObject mkNDeleteRQ(int msgId, String cuid, String iuid)
     {
         DicomObject rq = mkRQ(msgId, N_DELETE_RQ, NO_DATASET);
-        rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
-        rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
+        rq.putString(Tag.REQUESTED_SOP_CLASS_UID, VR.UI, cuid);
+        rq.putString(Tag.REQUESTED_SOP_INSTANCE_UID, VR.UI, iuid);
         return rq;
     }    
     
     private static DicomObject mkRQ(int msgId, int cmdfield, int datasetType)
     {
         DicomObject rsp = new BasicDicomObject();
-        rsp.putInt(Tag.MessageID, VR.US, msgId);
-        rsp.putInt(Tag.CommandField, VR.US, cmdfield);
-        rsp.putInt(Tag.DataSetType, VR.US, datasetType);
+        rsp.putInt(Tag.MESSAGE_ID, VR.US, msgId);
+        rsp.putInt(Tag.COMMAND_FIELD, VR.US, cmdfield);
+        rsp.putInt(Tag.DATA_SET_TYPE, VR.US, datasetType);
         return rsp;
     }
 
     public static DicomObject mkRSP(DicomObject rq, int status)
     {
         DicomObject rsp = new BasicDicomObject();
-        rsp.putInt(Tag.CommandField, VR.US, rq.getInt(Tag.CommandField) | RSP);
-        rsp.putInt(Tag.Status, VR.US, status);
-        rsp.putInt(Tag.MessageIDBeingRespondedTo, VR.US, rq.getInt(Tag.MessageID));
+        rsp.putInt(Tag.COMMAND_FIELD, VR.US, rq.getInt(Tag.COMMAND_FIELD) | RSP);
+        rsp.putInt(Tag.STATUS, VR.US, status);
+        rsp.putInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO, VR.US, rq.getInt(Tag.MESSAGE_ID));
         if (includeUIDinRSP) {
-            String cuid = rq.getString(Tag.AffectedSOPClassUID);
+            String cuid = rq.getString(Tag.AFFECTED_SOP_CLASS_UID);
             if (cuid == null)
-                cuid = rq.getString(Tag.RequestedSOPClassUID);
-            rsp.putString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+                cuid = rq.getString(Tag.REQUESTED_SOP_CLASS_UID);
+            rsp.putString(Tag.AFFECTED_SOP_CLASS_UID, VR.UI, cuid);
+            String iuid = rq.getString(Tag.AFFECTED_SOP_INSTANCE_UID);
             if (iuid == null)
-                iuid = rq.getString(Tag.RequestedSOPInstanceUID);
+                iuid = rq.getString(Tag.REQUESTED_SOP_INSTANCE_UID);
             if (iuid != null) {
-                rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+                rsp.putString(Tag.AFFECTED_SOP_INSTANCE_UID, VR.UI, iuid);
             }
         }
         return rsp;
@@ -275,176 +275,187 @@ public class CommandUtils
 
     public static boolean hasDataset(DicomObject dcmobj)
     {
-        return dcmobj.getInt(Tag.DataSetType) != NO_DATASET;
+        return dcmobj.getInt(Tag.DATA_SET_TYPE) != NO_DATASET;
     }
 
     public static boolean isPending(DicomObject cmd)
     {
-        return (cmd.getInt(Tag.Status) & PENDING) == PENDING;
+        return (cmd.getInt(Tag.STATUS) & PENDING) == PENDING;
     }
     
     public static String toString(DicomObject cmd, int pcid, String tsuid)
     {
         UIDDictionary dict = UIDDictionary.getDictionary();
         StringBuffer sb = new StringBuffer(64);
-        switch (cmd.getInt(Tag.CommandField))
+        switch (cmd.getInt(Tag.COMMAND_FIELD))
         {
             case C_STORE_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":C-STORE-RQ[pcid=").append(pcid);
-                sb.append(", prior=").append(cmd.getInt(Tag.Priority));
-                sb.append(NL).append("\tcuid=").append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
-                sb.append(NL).append("\tiuid=").append(cmd.getString(Tag.AffectedSOPInstanceUID));
+                sb.append(", prior=").append(cmd.getInt(Tag.PRIORITY));
+                sb.append(NL).append("\tcuid=").append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
+                sb.append(NL).append("\tiuid=").append(cmd.getString(Tag.AFFECTED_SOP_INSTANCE_UID));
                 break;
             case C_GET_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":C-GET-RQ[pcid=").append(pcid);
-                sb.append(", prior=").append(cmd.getInt(Tag.Priority));
+                sb.append(", prior=").append(cmd.getInt(Tag.PRIORITY));
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
                 break;
             case C_FIND_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":C-FIND-RQ[pcid=").append(pcid);
-                sb.append(", prior=").append(cmd.getInt(Tag.Priority));
+                sb.append(", prior=").append(cmd.getInt(Tag.PRIORITY));
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
                 break;
             case C_MOVE_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":C-MOVE-RQ[pcid=").append(pcid);
-                sb.append(", aet=").append(dict.prompt(cmd.getString(Tag.MoveDestination)));
-                sb.append(", prior=").append(cmd.getInt(Tag.Priority));
+                sb.append(", aet=").append(dict.prompt(cmd.getString(Tag.MOVE_DESTINATION)));
+                sb.append(", prior=").append(cmd.getInt(Tag.PRIORITY));
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
                 break;
             case C_ECHO_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":C-ECHO-RQ[pcid=").append(pcid);
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
                 break;
             case N_EVENT_REPORT_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":N-EVENT-REPORT-RQ[pcid=").append(pcid);
-                sb.append(", eventID=").append(cmd.getInt(Tag.EventTypeID));
+                sb.append(", eventID=").append(cmd.getInt(Tag.EVENT_TYPE_ID));
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
                 sb.append(NL).append("\tiuid=");
-                sb.append(cmd.getString(Tag.AffectedSOPInstanceUID));
+                sb.append(cmd.getString(Tag.AFFECTED_SOP_INSTANCE_UID));
                 break;
              case N_GET_RQ:
-                 sb.append(cmd.getInt(Tag.MessageID));
+                 sb.append(cmd.getInt(Tag.MESSAGE_ID));
                  sb.append(":N-GET-RQ[pcid=").append(pcid);
                  sb.append(NL).append("\tcuid=");
-                 sb.append(dict.prompt(cmd.getString(Tag.RequestedSOPClassUID)));
+                 sb.append(dict.prompt(cmd.getString(Tag.REQUESTED_SOP_CLASS_UID)));
                  sb.append(NL).append("\tiuid=");
-                 sb.append(cmd.getString(Tag.RequestedSOPInstanceUID));
+                 sb.append(cmd.getString(Tag.REQUESTED_SOP_INSTANCE_UID));
                  break;
             case N_SET_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":N-SET-RQ[pcid=").append(pcid);
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.RequestedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.REQUESTED_SOP_CLASS_UID)));
                 sb.append(NL).append("\tiuid=");
-                sb.append(cmd.getString(Tag.RequestedSOPInstanceUID));
+                sb.append(cmd.getString(Tag.REQUESTED_SOP_INSTANCE_UID));
                 break;
            case N_ACTION_RQ:
-               sb.append(cmd.getInt(Tag.MessageID));
+               sb.append(cmd.getInt(Tag.MESSAGE_ID));
                sb.append(":N-ACTION-RQ[pcid=").append(pcid);
-               sb.append(", actionID=").append(cmd.getInt(Tag.ActionTypeID));
+               sb.append(", actionID=").append(cmd.getInt(Tag.ACTION_TYPE_ID));
                sb.append(NL).append("\tcuid=");
-               sb.append(dict.prompt(cmd.getString(Tag.RequestedSOPClassUID)));
+               sb.append(dict.prompt(cmd.getString(Tag.REQUESTED_SOP_CLASS_UID)));
                sb.append(NL).append("\tiuid=");
-               sb.append(cmd.getString(Tag.RequestedSOPInstanceUID));
+               sb.append(cmd.getString(Tag.REQUESTED_SOP_INSTANCE_UID));
                break;
             case N_CREATE_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":N-CREATE-RQ[pcid=").append(pcid);
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.AffectedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.AFFECTED_SOP_CLASS_UID)));
                 sb.append(NL).append("\tiuid=");
-                sb.append(cmd.getString(Tag.AffectedSOPInstanceUID));
+                sb.append(cmd.getString(Tag.AFFECTED_SOP_INSTANCE_UID));
                 break;
             case N_DELETE_RQ:
-                sb.append(cmd.getInt(Tag.MessageID));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID));
                 sb.append(":N-DELETE-RQ[pcid=").append(pcid);
                 sb.append(NL).append("\tcuid=");
-                sb.append(dict.prompt(cmd.getString(Tag.RequestedSOPClassUID)));
+                sb.append(dict.prompt(cmd.getString(Tag.REQUESTED_SOP_CLASS_UID)));
                 sb.append(NL).append("\tiuid=");
-                sb.append(cmd.getString(Tag.RequestedSOPInstanceUID));
+                sb.append(cmd.getString(Tag.REQUESTED_SOP_INSTANCE_UID));
                 break;
             case C_CANCEL_RQ:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":C-CANCEL-RQ[pcid=").append(pcid);
                 break;
             case C_STORE_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":C-STORE-RSP[pcid=").append(pcid);
                 break;
             case C_GET_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":C-GET-RSP[pcid=").append(pcid);
-                sb.append(", remaining=").append(cmd.getString(Tag.NumberofRemainingSuboperations));
-                sb.append(", completed=").append(cmd.getString(Tag.NumberofCompletedSuboperations));
-                sb.append(", failed=").append(cmd.getString(Tag.NumberofFailedSuboperations));
-                sb.append(", warning=").append(cmd.getString(Tag.NumberofWarningSuboperations));
+                sb.append(", remaining=").append(
+                        cmd.getString(Tag.NUMBER_OF_REMAINING_SUB_OPERATIONS));
+                sb.append(", completed=").append(
+                        cmd.getString(Tag.NUMBER_OF_COMPLETED_SUB_OPERATIONS));
+                sb.append(", failed=").append(
+                        cmd.getString(Tag.NUMBER_OF_FAILED_SUB_OPERATIONS));
+                sb.append(", warning=").append(
+                        cmd.getString(Tag.NUMBER_OF_WARNING_SUB_OPERATIONS));
                 break;
             case C_FIND_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":C-FIND-RSP[pcid=").append(pcid);
                 break;
             case C_MOVE_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":C-MOVE-RSP[pcid=").append(pcid);
-                sb.append(", remaining=").append(cmd.getString(Tag.NumberofRemainingSuboperations));
-                sb.append(", completed=").append(cmd.getString(Tag.NumberofCompletedSuboperations));
-                sb.append(", failed=").append(cmd.getString(Tag.NumberofFailedSuboperations));
-                sb.append(", warning=").append(cmd.getString(Tag.NumberofWarningSuboperations));
+                sb.append(", remaining=").append(
+                        cmd.getString(Tag.NUMBER_OF_REMAINING_SUB_OPERATIONS));
+                sb.append(", completed=").append(
+                        cmd.getString(Tag.NUMBER_OF_COMPLETED_SUB_OPERATIONS));
+                sb.append(", failed=").append(
+                        cmd.getString(Tag.NUMBER_OF_FAILED_SUB_OPERATIONS));
+                sb.append(", warning=").append(
+                        cmd.getString(Tag.NUMBER_OF_WARNING_SUB_OPERATIONS));
                 break;
             case C_ECHO_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":C-ECHO-RSP[pcid=").append(pcid);
                 break;
             case N_EVENT_REPORT_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":N-EVENT-REPORT-RSP[pcid=").append(pcid);
-                sb.append(", eventID=").append(cmd.getString(Tag.EventTypeID));
+                sb.append(", eventID=").append(cmd.getString(Tag.EVENT_TYPE_ID));
                 break;
             case N_GET_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":N-GET-RSP[pcid=").append(pcid);
                 break;
             case N_SET_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":N-SET-RSP[pcid=").append(pcid);
                 break;
             case N_ACTION_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":N-ACTION-RSP[pcid=").append(pcid);
-                sb.append(", actionID=").append(cmd.getString(Tag.ActionTypeID));
+                sb.append(", actionID=").append(cmd.getString(Tag.ACTION_TYPE_ID));
                 break;
             case N_CREATE_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":N-CREATE-RSP[pcid=").append(pcid);
                 break;
             case N_DELETE_RSP:
-                sb.append(cmd.getInt(Tag.MessageIDBeingRespondedTo));
+                sb.append(cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO));
                 sb.append(":N-DELETE-RSP[pcid=").append(pcid);
                 break;
            default:
                 throw new IllegalArgumentException("CommandField:"
-                        + cmd.get(Tag.CommandField));
+                        + cmd.get(Tag.COMMAND_FIELD));
         }
         if (hasDataset(cmd))
             sb.append(NL).append("\tts=").append(dict.prompt(tsuid));
         if (isResponse(cmd))
         {
-            sb.append(", status=").append(Integer.toHexString(cmd.getInt(Tag.Status))).append('H');
-            if (cmd.contains(Tag.ErrorID))
-                sb.append(", errorID=").append(cmd.getInt(Tag.ErrorID));            
-            if (cmd.contains(Tag.ErrorComment))
-                sb.append(NL).append("\terror=").append(cmd.getString(Tag.ErrorComment));
+            sb.append(", status=")
+                .append(Integer.toHexString(cmd.getInt(Tag.STATUS)))
+                .append('H');
+            if (cmd.contains(Tag.ERROR_ID))
+                sb.append(", errorID=").append(cmd.getInt(Tag.ERROR_ID));            
+            if (cmd.contains(Tag.ERROR_COMMENT))
+                sb.append(NL).append("\terror=").append(
+                        cmd.getString(Tag.ERROR_COMMENT));
         }
         sb.append(']');
         return sb.toString();

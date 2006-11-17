@@ -70,7 +70,7 @@ public class Device
     private String manufacturerModelName;
     private String stationName;
     private String deviceSerialNumber;
-    private String issuerOfPatientID;
+    private String issuerOfPATIENT_ID;
     private String[] softwareVersion = {};
     private String[] primaryDeviceType = {};
     private String[] institutionName = {};
@@ -382,9 +382,9 @@ public class Device
      * 
      * @return A String containing the PID issuer value.
      */
-    public final String getIssuerOfPatientID()
+    public final String getIssuerOfPATIENT_ID()
     {
-        return issuerOfPatientID;
+        return issuerOfPATIENT_ID;
     }
 
     /**
@@ -394,11 +394,11 @@ public class Device
      * created by this device. May be overridden by the values received in a
      * worklist or other source.
      * 
-     * @param issuerOfPatientID A String containing the PID issuer value.
+     * @param issuerOfPATIENT_ID A String containing the PID issuer value.
      */
-    public final void setIssuerOfPatientID(String issuerOfPatientID)
+    public final void setIssuerOfPATIENT_ID(String issuerOfPATIENT_ID)
     {
-        this.issuerOfPatientID = issuerOfPatientID;
+        this.issuerOfPATIENT_ID = issuerOfPATIENT_ID;
     }
 
     /**

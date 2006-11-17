@@ -64,7 +64,7 @@ public class SRDocumentSeriesModule extends GeneralSeriesModule {
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!Modality.SR.equals(getModality())) {
-            result.logInvalidValue(Tag.Modality, dcmobj);
+            result.logInvalidValue(Tag.MODALITY, dcmobj);
         }
     }
 

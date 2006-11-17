@@ -230,12 +230,12 @@ public class Xml2Dcm {
                     String tsuid = cl.getOptionValue("t");
                     if (cl.hasOption("d")) {
                         if (tsuid == null)
-                            tsuid = TransferSyntax.ExplicitVRLittleEndian.uid();
+                            tsuid = TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN.uid();
                         dcmobj.initFileMetaInformation(tsuid);
                     }
                     if (cl.hasOption("a") || dcmobj.fileMetaInfo().isEmpty()) {
                         if (tsuid == null)
-                            tsuid = TransferSyntax.ImplicitVRLittleEndian.uid();
+                            tsuid = TransferSyntax.IMPLICIT_VR_LITTLE_ENDIAN.uid();
                         dos.writeDataset(dcmobj, TransferSyntax.valueOf(tsuid));
                         System.out.println("Created ACR/NEMA Dump " + ofile);                    
                     } else {

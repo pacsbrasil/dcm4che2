@@ -59,60 +59,60 @@ public class IdentifiedPersonOrDevice extends InsitutionNameAndCode {
     }
 
     public String getObserverType() {
-        return dcmobj.getString(Tag.ObserverType);
+        return dcmobj.getString(Tag.OBSERVER_TYPE);
     }
 
     public void setObserverType(String s) {
-        dcmobj.putString(Tag.ObserverType, VR.CS, s);
+        dcmobj.putString(Tag.OBSERVER_TYPE, VR.CS, s);
     }
 
     public String getPersonName() {
-        return dcmobj.getString(Tag.PersonName);
+        return dcmobj.getString(Tag.PERSON_NAME);
     }
 
     public void setPersonName(String s) {
-        dcmobj.putString(Tag.PersonName, VR.PN, s);
+        dcmobj.putString(Tag.PERSON_NAME, VR.PN, s);
     }
     
     public Code getPersonIdentificationCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.PersonIdentificationCodeSequence);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.PERSON_IDENTIFICATION_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
     public void setPersonIdentificationCode(Code code) {
-        updateSequence(Tag.PersonIdentificationCodeSequence, code);
+        updateSequence(Tag.PERSON_IDENTIFICATION_CODE_SEQUENCE, code);
     }
     
     public String getStationName() {
-        return dcmobj.getString(Tag.StationName);
+        return dcmobj.getString(Tag.STATION_NAME);
     }
     
     public void setStationName(String s) {
-        dcmobj.putString(Tag.StationName, VR.SH, s);
+        dcmobj.putString(Tag.STATION_NAME, VR.SH, s);
     }
     
     public String getDeviceUID() {
-        return dcmobj.getString(Tag.DeviceUID);
+        return dcmobj.getString(Tag.DEVICE_UID);
     }
 
     public void setDeviceUID(String s) {
-        dcmobj.putString(Tag.DeviceUID, VR.UI, s);
+        dcmobj.putString(Tag.DEVICE_UID, VR.UI, s);
     }
 
     public String getManufacturer() {
-        return dcmobj.getString(Tag.Manufacturer);
+        return dcmobj.getString(Tag.MANUFACTURER);
     }
 
     public void setManufacturer(String s) {
-        dcmobj.putString(Tag.Manufacturer, VR.LO, s);
+        dcmobj.putString(Tag.MANUFACTURER, VR.LO, s);
     }
 
     public String getManufacturersModelName() {
-        return dcmobj.getString(Tag.ManufacturersModelName);
+        return dcmobj.getString(Tag.MANUFACTURERS_MODEL_NAME);
     }
 
     public void setManufacturersModelName(String s) {
-        dcmobj.putString(Tag.ManufacturersModelName, VR.LO, s);
+        dcmobj.putString(Tag.MANUFACTURERS_MODEL_NAME, VR.LO, s);
     }
 
 }

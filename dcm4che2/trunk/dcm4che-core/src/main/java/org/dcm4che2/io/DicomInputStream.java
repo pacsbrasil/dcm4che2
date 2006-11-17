@@ -219,7 +219,7 @@ public class DicomInputStream extends FilterInputStream implements
                     && header[3] == 'M') {
                 preamble = b;
                 expectFmiEnd = true;
-                return TransferSyntax.ExplicitVRLittleEndian;
+                return TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN;
             }
         } catch (IOException ignore) {
         }
@@ -228,11 +228,11 @@ public class DicomInputStream extends FilterInputStream implements
         expectFmiEnd = b[bigEndian ? 1 : 0] == 2;
         try {
             VR.valueOf(((b[4] & 0xff) << 8) | (b[5] & 0xff));
-            return bigEndian ? TransferSyntax.ExplicitVRBigEndian
-                    : TransferSyntax.ExplicitVRLittleEndian;
+            return bigEndian ? TransferSyntax.EXPLICIT_VR_BIG_ENDIAN
+                    : TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN;
         } catch (IllegalArgumentException e) {
-            return bigEndian ? TransferSyntax.ImplicitVRBigEndian
-                    : TransferSyntax.ImplicitVRLittleEndian;
+            return bigEndian ? TransferSyntax.IMPLICIT_VR_BIG_ENDIAN
+                    : TransferSyntax.IMPLICIT_VR_LITTLE_ENDIAN;
         }
     }
 
@@ -293,7 +293,7 @@ public class DicomInputStream extends FilterInputStream implements
                 .bytesLE2tag(header, 0);
         if (expectFmiEnd && !TagUtils.isFileMetaInfoElement(tag)) {
             log.warn("Missing or wrong (0002,0000) Group Length of File Meta Information");
-            String tsuid = attrs.getString(Tag.TransferSyntaxUID);
+            String tsuid = attrs.getString(Tag.TRANSFER_SYNTAX_UID);
             if (tsuid != null) {
                 ts = TransferSyntax.valueOf(tsuid);
                 tag = ts.bigEndian() ? ByteUtils.bytesBE2tag(header, 0)
@@ -328,7 +328,7 @@ public class DicomInputStream extends FilterInputStream implements
 
     public void readItem(DicomObject dest) throws IOException {
         dest.setItemOffset(pos);
-        if (readHeader() != Tag.Item)
+        if (readHeader() != Tag.ITEM)
             throw new DicomCodingException("Expected (FFFE,E000) but read "
                     + TagUtils.toString(tag));
         readDicomObject(dest, vallen);
@@ -338,7 +338,7 @@ public class DicomInputStream extends FilterInputStream implements
         DicomObject oldAttrs = attrs;
         this.attrs = dest;
         try {
-            parse(len, Tag.ItemDelimitationItem);
+            parse(len, Tag.ITEM_DELIMITATION_ITEM);
         } finally {
             this.attrs = oldAttrs;
         }
@@ -360,28 +360,28 @@ public class DicomInputStream extends FilterInputStream implements
             } catch (EOFException e) {
                 if (len != -1)
                     throw e;
-                if (endTag == Tag.SequenceDelimitationItem) {
+                if (endTag == Tag.SEQUENCE_DELIMITATION_ITEM) {
                     log.warn("Unexpected EOF - treat as (FFFE,E0DD) Sequence Delimitation Item");
-                    tag0 = tag = Tag.SequenceDelimitationItem;
+                    tag0 = tag = Tag.SEQUENCE_DELIMITATION_ITEM;
                 } else {
                     // treat EOF like read of ItemDelimitationItem                
-                    tag0 = tag = Tag.ItemDelimitationItem;
+                    tag0 = tag = Tag.ITEM_DELIMITATION_ITEM;
                 }
                 vr = null;
                 vallen = 0;
             }
             TransferSyntax prevTs = ts;
             if (TagUtils.hasVR(tag) && (vr == null || vr == VR.UN)) {
-                // switch to ImplicitVRLittleEndian, because Datasets in
+                // switch to IMPLICIT_VR_LITTLE_ENDIAN, because Datasets in
                 // items of sequences encoded with VR=UN are itself encoded
                 // in DICOM default Transfer Syntax
-                ts = TransferSyntax.ImplicitVRLittleEndian;
+                ts = TransferSyntax.IMPLICIT_VR_LITTLE_ENDIAN;
                 vr = attrs.vrOf(tag);
             }
             quit = !handler.readValue(this);
             ts = prevTs;
             if (expectFmiEnd && pos == fmiEndPos) {
-                String tsuid = attrs.getString(Tag.TransferSyntaxUID);
+                String tsuid = attrs.getString(Tag.TRANSFER_SYNTAX_UID);
                 if (tsuid != null)
                     switchTransferSyntax(TransferSyntax.valueOf(tsuid));
                 else
@@ -405,10 +405,10 @@ public class DicomInputStream extends FilterInputStream implements
         if (dis != this)
             throw new IllegalArgumentException("dis != this");
         switch (tag) {
-        case Tag.Item:
+        case Tag.ITEM:
             readItemValue();
             break;
-        case Tag.ItemDelimitationItem:
+        case Tag.ITEM_DELIMITATION_ITEM:
             if (vallen > 0) {
                 log.warn("Item Delimitation Item (FFFE,E00D) with non-zero " +
                         "Item Length:" + vallen + " at pos: " + tagpos + 
@@ -416,7 +416,7 @@ public class DicomInputStream extends FilterInputStream implements
                 skip(vallen);
             }
             break;
-        case Tag.SequenceDelimitationItem:
+        case Tag.SEQUENCE_DELIMITATION_ITEM:
             if (vallen > 0) {
                 log.warn("Sequence Delimitation Item (FFFE,E0DD) with " +
                         "non-zero Item Length:" + vallen + " at pos: " +
@@ -433,7 +433,7 @@ public class DicomInputStream extends FilterInputStream implements
                 }
                 sqStack.add(a);
                 try {
-                    parse(vallen, Tag.SequenceDelimitationItem);
+                    parse(vallen, Tag.SEQUENCE_DELIMITATION_ITEM);
                 } finally {
                     sqStack.remove(sqStack.size() - 1);
                 }
@@ -457,7 +457,7 @@ public class DicomInputStream extends FilterInputStream implements
                     byte[] b = sq.getFragment(i);
                     InputStream is = new ByteArrayInputStream(b);
                     DicomInputStream dis1 = new DicomInputStream(is,
-                            TransferSyntax.ImplicitVRLittleEndian);
+                            TransferSyntax.IMPLICIT_VR_LITTLE_ENDIAN);
                     DicomObject item = new BasicDicomObject();
                     dis1.readDicomObject(item, b.length);
                     tmp.addDicomObject(item);

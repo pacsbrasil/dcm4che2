@@ -67,7 +67,7 @@ public class HPSelectorFactory
      */
     public static HPSelector createImageSetSelector(DicomObject item)
     {
-        String usageFlag = item.getString(Tag.ImageSetSelectorUsageFlag);
+        String usageFlag = item.getString(Tag.IMAGE_SET_SELECTOR_USAGE_FLAG);
         if (usageFlag == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0024) Image Set Selector Usage Flag");
@@ -205,7 +205,7 @@ public class HPSelectorFactory
      */
     public static HPSelector createDisplaySetFilter(DicomObject item)
     {
-        if (item.containsValue(Tag.FilterbyCategory))
+        if (item.containsValue(Tag.FILTER_BY_CATEGORY))
         {
             return HPSelectorFactory.createFilterByCategory(item);
         }
@@ -219,11 +219,11 @@ public class HPSelectorFactory
     private static HPSelector createFilterByCategory(DicomObject filterOp)
     {
         HPSelectorSpi spi = HangingProtocol.getHPSelectorSpi(filterOp
-                .getString(Tag.FilterbyCategory));
+                .getString(Tag.FILTER_BY_CATEGORY));
         if (spi == null)
             throw new IllegalArgumentException(
                     "Unsupported Filter-by Category: "
-                            + filterOp.get(Tag.FilterbyCategory));
+                            + filterOp.get(Tag.FILTER_BY_CATEGORY));
         return spi.createHPSelector(filterOp);
     }
     
@@ -390,11 +390,11 @@ public class HPSelectorFactory
             throw new IllegalArgumentException(
                     "Functional Group Pointer already added");
         
-        selector.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT, tag);
+        selector.getDicomObject().putInt(Tag.SELECTOR_SEQUENCE_POINTER, VR.AT, tag);
         if (privCreator != null)
         {
             selector.getDicomObject().putString(
-                    Tag.SelectorSequencePointerPrivateCreator, VR.LO, privCreator);
+                    Tag.SELECTOR_SEQUENCE_POINTER_PRIVATE_CREATOR, VR.LO, privCreator);
         }
            
         return new Seq(tag, privCreator, attrSel);
@@ -426,11 +426,11 @@ public class HPSelectorFactory
             throw new IllegalArgumentException(
                     "Functional Group Pointer already added");
         
-        selector.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT, tag);
+        selector.getDicomObject().putInt(Tag.FUNCTIONAL_GROUP_POINTER, VR.AT, tag);
         if (privCreator != null)
         {
             selector.getDicomObject().putString(
-                    Tag.FunctionalGroupPrivateCreator, VR.LO, privCreator);
+                    Tag.FUNCTIONAL_GROUP_PRIVATE_CREATOR, VR.LO, privCreator);
         }
            
         return new FctGrp(tag, privCreator, attrSel);
@@ -462,7 +462,7 @@ public class HPSelectorFactory
     private static HPSelector createAttributeValueSelector(DicomObject item,
             boolean match, FilterOp filterOp)
     {
-        String vrStr = item.getString(Tag.SelectorAttributeVR);
+        String vrStr = item.getString(Tag.SELECTOR_ATTRIBUTE_VR);
         if (vrStr == null)
         {
             throw new IllegalArgumentException(
@@ -473,39 +473,39 @@ public class HPSelectorFactory
             switch (vrStr.charAt(0) << 8 | vrStr.charAt(1))
             {
                 case 0x4154:
-                    return new Int(item, Tag.SelectorATValue, match, filterOp);
+                    return new Int(item, Tag.SELECTOR_AT_VALUE, match, filterOp);
                 case 0x4353:
-                    return new Str(item, Tag.SelectorCSValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_CS_VALUE, match, filterOp);
                 case 0x4453:
-                    return new Flt(item, Tag.SelectorDSValue, match, filterOp);
+                    return new Flt(item, Tag.SELECTOR_DS_VALUE, match, filterOp);
                 case 0x4644:
-                    return new Dbl(item, Tag.SelectorFDValue, match, filterOp);
+                    return new Dbl(item, Tag.SELECTOR_FD_VALUE, match, filterOp);
                 case 0x464c:
-                    return new Flt(item, Tag.SelectorFLValue, match, filterOp);
+                    return new Flt(item, Tag.SELECTOR_FL_VALUE, match, filterOp);
                 case 0x4953:
-                    return new Int(item, Tag.SelectorISValue, match, filterOp);
+                    return new Int(item, Tag.SELECTOR_IS_VALUE, match, filterOp);
                 case 0x4c4f:
-                    return new Str(item, Tag.SelectorLOValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_LO_VALUE, match, filterOp);
                 case 0x4c54:
-                    return new Str(item, Tag.SelectorLTValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_LT_VALUE, match, filterOp);
                 case 0x504e:
-                    return new Str(item, Tag.SelectorPNValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_PN_VALUE, match, filterOp);
                 case 0x5348:
-                    return new Str(item, Tag.SelectorSHValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_SH_VALUE, match, filterOp);
                 case 0x534c:
-                    return new Int(item, Tag.SelectorSLValue, match, filterOp);
+                    return new Int(item, Tag.SELECTOR_SL_VALUE, match, filterOp);
                 case 0x5351:
                     return new CodeValueSelector(item, match, filterOp);
                 case 0x5353:
-                    return new Int(item, Tag.SelectorSSValue, match, filterOp);
+                    return new Int(item, Tag.SELECTOR_SS_VALUE, match, filterOp);
                 case 0x5354:
-                    return new Str(item, Tag.SelectorSTValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_ST_VALUE, match, filterOp);
                 case 0x554c:
-                    return new UInt(item, Tag.SelectorULValue, match, filterOp);
+                    return new UInt(item, Tag.SELECTOR_UL_VALUE, match, filterOp);
                 case 0x5553:
-                    return new Int(item, Tag.SelectorUSValue, match, filterOp);
+                    return new Int(item, Tag.SELECTOR_US_VALUE, match, filterOp);
                 case 0x5554:
-                    return new Str(item, Tag.SelectorUTValue, match, filterOp);
+                    return new Str(item, Tag.SELECTOR_UT_VALUE, match, filterOp);
             }
         }
         throw new IllegalArgumentException(
@@ -514,10 +514,10 @@ public class HPSelectorFactory
 
     private static HPSelector createDisplaySetSelector(DicomObject item)
     {
-        if (item.containsValue(Tag.FilterbyAttributePresence))
+        if (item.containsValue(Tag.FILTER_BY_ATTRIBUTE_PRESENCE))
             return new AttributePresenceSelector(item);
         
-        String filterOp = item.getString(Tag.FilterbyOperator);
+        String filterOp = item.getString(Tag.FILTER_BY_OPERATOR);
         if (filterOp == null)
             throw new IllegalArgumentException(
                 "Missing (0072,0406) Filter-by Operator");
@@ -562,7 +562,7 @@ public class HPSelectorFactory
     
     private static int getSelectorAttribute(DicomObject item)
     {
-        int tag = item.getInt(Tag.SelectorAttribute);
+        int tag = item.getInt(Tag.SELECTOR_ATTRIBUTE);
         if (tag == 0)
             throw new IllegalArgumentException(
                     "Missing (0072,0026) Selector Attribute");
@@ -577,7 +577,7 @@ public class HPSelectorFactory
         BaseAttributeSelector(DicomObject item, boolean match)
         {
             super(HPSelectorFactory.getSelectorAttribute(item),
-                    item.getString(Tag.SelectorAttributePrivateCreator), match);
+                    item.getString(Tag.SELECTOR_ATTRIBUTE_PRIVATE_CREATOR), match);
             this.item = item;
         }
 
@@ -585,9 +585,9 @@ public class HPSelectorFactory
         {
             super(tag, privateCreator, match);
             item = new BasicDicomObject();
-            item.putInt(Tag.SelectorAttribute, VR.AT, tag);
+            item.putInt(Tag.SELECTOR_ATTRIBUTE, VR.AT, tag);
             if (privateCreator != null)
-                item.putString(Tag.SelectorAttributePrivateCreator,
+                item.putString(Tag.SELECTOR_ATTRIBUTE_PRIVATE_CREATOR,
                         VR.LO, privateCreator);
         }
         
@@ -613,13 +613,13 @@ public class HPSelectorFactory
     {
         AttributePresenceSelector(DicomObject item)
         {
-            super(item, !isPresent(item.getString(Tag.FilterbyAttributePresence)));
+            super(item, !isPresent(item.getString(Tag.FILTER_BY_ATTRIBUTE_PRESENCE)));
         }
 
         AttributePresenceSelector(String filter, int tag, String privateCreator)
         {
             super(tag, privateCreator, !isPresent(filter));
-            item.putString(Tag.FilterbyAttributePresence, VR.CS, filter);
+            item.putString(Tag.FILTER_BY_ATTRIBUTE_PRESENCE, VR.CS, filter);
         }
         
         public boolean matches(DicomObject dcmobj, int frame)
@@ -637,7 +637,7 @@ public class HPSelectorFactory
         AttributeValueSelector(DicomObject item, boolean match, FilterOp filterOp)
         {
             super(item, match);
-            this.valueNumber = item.getInt(Tag.SelectorValueNumber);
+            this.valueNumber = item.getInt(Tag.SELECTOR_VALUE_NUMBER);
             this.filterOp = filterOp;
         }
 
@@ -647,12 +647,12 @@ public class HPSelectorFactory
             super(tag, privateCreator, usageFlag == null || isMatch(usageFlag));
             this.valueNumber = valueNumber;
             this.filterOp = filterOp;
-            item.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
-            item.putString(Tag.FilterbyOperator, VR.CS, filterOp.getCodeString());
-            item.putString(Tag.SelectorAttributeVR, VR.CS, vr.toString());
+            item.putInt(Tag.SELECTOR_VALUE_NUMBER, VR.US, valueNumber);
+            item.putString(Tag.FILTER_BY_OPERATOR, VR.CS, filterOp.getCodeString());
+            item.putString(Tag.SELECTOR_ATTRIBUTE_VR, VR.CS, vr.toString());
             if (usageFlag != null)
             {
-                item.putString(Tag.ImageSetSelectorUsageFlag, VR.CS, usageFlag);
+                item.putString(Tag.IMAGE_SET_SELECTOR_USAGE_FLAG, VR.CS, usageFlag);
             }
         }
         
@@ -667,19 +667,19 @@ public class HPSelectorFactory
         switch (vr1.code())
         {
             case 0x4353:
-                valueTag = Tag.SelectorCSValue; break;
+                valueTag = Tag.SELECTOR_CS_VALUE; break;
             case 0x4c4f:
-                valueTag = Tag.SelectorLOValue; break;
+                valueTag = Tag.SELECTOR_LO_VALUE; break;
             case 0x4c54:
-                valueTag = Tag.SelectorLTValue; break;
+                valueTag = Tag.SELECTOR_LT_VALUE; break;
             case 0x504e:
-                valueTag = Tag.SelectorPNValue; break;
+                valueTag = Tag.SELECTOR_PN_VALUE; break;
             case 0x5348:
-                valueTag = Tag.SelectorSHValue; break;
+                valueTag = Tag.SELECTOR_SH_VALUE; break;
             case 0x5354:
-                valueTag = Tag.SelectorSTValue; break;
+                valueTag = Tag.SELECTOR_ST_VALUE; break;
             case 0x5554:
-                valueTag = Tag.SelectorUTValue; break;
+                valueTag = Tag.SELECTOR_UT_VALUE; break;
             default:
                 throw new IllegalArgumentException("vr: " + vr);
         }
@@ -696,9 +696,9 @@ public class HPSelectorFactory
             super(item, match, filterOp);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
-                        + item.get(Tag.FilterbyOperator)
+                        + item.get(Tag.FILTER_BY_OPERATOR)
                         + " conflicts with non-numeric VR: "
-                        + item.get(Tag.SelectorAttributeVR));
+                        + item.get(Tag.SELECTOR_ATTRIBUTE_VR));
 
             this.params = item.getStrings(valueTag);
             if (params == null || params.length == 0)
@@ -733,17 +733,17 @@ public class HPSelectorFactory
         switch (vr1.code())
         {
             case 0x4154:
-                valueTag = Tag.SelectorATValue; break;
+                valueTag = Tag.SELECTOR_AT_VALUE; break;
             case 0x4953:
-                valueTag = Tag.SelectorISValue; break;
+                valueTag = Tag.SELECTOR_IS_VALUE; break;
             case 0x534c:
-                valueTag = Tag.SelectorSLValue; break;
+                valueTag = Tag.SELECTOR_SL_VALUE; break;
             case 0x5353:
-                valueTag = Tag.SelectorSSValue; break;
+                valueTag = Tag.SELECTOR_SS_VALUE; break;
             case 0x554c:
-                valueTag = Tag.SelectorULValue; uint = true; break;
+                valueTag = Tag.SELECTOR_UL_VALUE; uint = true; break;
             case 0x5553:
-                valueTag = Tag.SelectorUSValue; break;
+                valueTag = Tag.SELECTOR_US_VALUE; break;
             default:
                 throw new IllegalArgumentException("vr: " + vr);
         }
@@ -845,9 +845,9 @@ public class HPSelectorFactory
         switch (vr1.code())
         {
             case 0x4453:
-                valueTag = Tag.SelectorDSValue; break;
+                valueTag = Tag.SELECTOR_DS_VALUE; break;
             case 0x464c:
-                valueTag = Tag.SelectorFLValue; break;
+                valueTag = Tag.SELECTOR_FL_VALUE; break;
             default:
                 throw new IllegalArgumentException("vr: " + vr);
         }
@@ -895,7 +895,7 @@ public class HPSelectorFactory
             String usageFlag, String privateCreator, int tag,
             int valueNumber, double[] values, FilterOp filterOp)
     {
-       return new Dbl(tag, privateCreator, valueNumber, Tag.SelectorFDValue,
+       return new Dbl(tag, privateCreator, valueNumber, Tag.SELECTOR_FD_VALUE,
                usageFlag, filterOp, VR.FD, values);
     }
     
@@ -944,9 +944,9 @@ public class HPSelectorFactory
             super(item, match, filterOp);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
-                        + item.get(Tag.FilterbyOperator)
+                        + item.get(Tag.FILTER_BY_OPERATOR)
                         + " conflicts with non-numeric VR: SQ");
-            this.params = item.get(Tag.SelectorCodeSequenceValue);
+            this.params = item.get(Tag.SELECTOR_CODE_SEQUENCE_VALUE);
             if (params == null || params.countItems() == 0)
                 throw new IllegalArgumentException(
                         "Missing (0072,0080) Selector Code Sequence Value");
@@ -956,7 +956,7 @@ public class HPSelectorFactory
                 Code[] values, FilterOp filterOp)
         {
             super(tag, privateCreator, 0, usageFlag, filterOp, VR.SQ);
-            this.params = item.putSequence(Tag.SelectorCodeSequenceValue,
+            this.params = item.putSequence(Tag.SELECTOR_CODE_SEQUENCE_VALUE,
                     values.length);
             for (int i = 0; i < values.length; i++)
             {
@@ -1027,7 +1027,8 @@ public class HPSelectorFactory
 
         public boolean matches(DicomObject dcmobj, int frame)
         {
-            DicomObject sharedFctGrp = dcmobj.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+            DicomObject sharedFctGrp = dcmobj.getNestedDicomObject(
+                    Tag.SHARED_FUNCTIONAL_GROUPS_SEQUENCE);
             if (sharedFctGrp != null)
             {
                 DicomElement fctGrp = sharedFctGrp.get(resolveTag(sharedFctGrp));
@@ -1036,7 +1037,8 @@ public class HPSelectorFactory
                     return matches(fctGrp, frame);
                 }
             }
-            DicomElement frameFctGrpSeq = dcmobj.get(Tag.PerframeFunctionalGroupsSequence);
+            DicomElement frameFctGrpSeq = dcmobj.get(
+                    Tag.PER_FRAME_FUNCTIONAL_GROUPS_SEQUENCE);
             if (frameFctGrpSeq == null)
                 return match;
             if (frame != 0)

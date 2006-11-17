@@ -62,8 +62,8 @@ public class HPDefinition
     public HPDefinition()
     {
         this.dcmobj = new BasicDicomObject();
-        dcmobj.putSequence(Tag.ProcedureCodeSequence);
-        dcmobj.putSequence(Tag.ReasonforRequestedProcedureCodeSequence);
+        dcmobj.putSequence(Tag.PROCEDURE_CODE_SEQUENCE);
+        dcmobj.putSequence(Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE);
     }
 
     public DicomObject getDicomObject()
@@ -73,55 +73,55 @@ public class HPDefinition
 
     public String getModality()
     {
-        return dcmobj.getString(Tag.Modality);
+        return dcmobj.getString(Tag.MODALITY);
     }
 
     public void setModality(String modality)
     {
-        dcmobj.putString(Tag.Modality, VR.CS, modality);
+        dcmobj.putString(Tag.MODALITY, VR.CS, modality);
     }
 
     public String getLaterality()
     {
-        return dcmobj.getString(Tag.Laterality);
+        return dcmobj.getString(Tag.LATERALITY);
     }
 
     public void setLaterality(String laterality)
     {
-        dcmobj.putString(Tag.Laterality, VR.CS, laterality);
+        dcmobj.putString(Tag.LATERALITY, VR.CS, laterality);
     }
 
     public Code[] getAnatomicRegionCode()
     {
-        DicomElement sq = dcmobj.get(Tag.AnatomicRegionSequence);
+        DicomElement sq = dcmobj.get(Tag.ANATOMIC_REGION_SEQUENCE);
         return sq != null && sq.hasItems() ? Code.toArray(sq) : null;
     }
 
     public void addAnatomicRegionCodes(Code code)
     {
-        addCode(Tag.AnatomicRegionSequence, code);
+        addCode(Tag.ANATOMIC_REGION_SEQUENCE, code);
     }
 
     public Code[] getProcedureCodes()
     {
-        DicomElement sq = dcmobj.get(Tag.ProcedureCodeSequence);
+        DicomElement sq = dcmobj.get(Tag.PROCEDURE_CODE_SEQUENCE);
         return sq != null && sq.hasItems() ? Code.toArray(sq) : null;
     }
 
     public void addProcedureCode(Code code)
     {
-        addCode(Tag.ProcedureCodeSequence, code);
+        addCode(Tag.PROCEDURE_CODE_SEQUENCE, code);
     }
 
     public Code[] getReasonforRequestedProcedureCodes()
     {
-        DicomElement sq = dcmobj.get(Tag.ReasonforRequestedProcedureCodeSequence);
+        DicomElement sq = dcmobj.get(Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE);
         return sq != null && sq.hasItems() ? Code.toArray(sq) : null;
     }
 
     public void addReasonforRequestedProcedureCode(Code code)
     {
-        addCode(Tag.ReasonforRequestedProcedureCodeSequence, code);
+        addCode(Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE, code);
     }
 
     private void addCode(int tag, Code code)

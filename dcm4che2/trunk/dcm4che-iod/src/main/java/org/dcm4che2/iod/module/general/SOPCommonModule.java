@@ -63,86 +63,87 @@ public class SOPCommonModule extends Module {
     }
 
     public String getSOPClassUID() {
-        return dcmobj.getString(Tag.SOPClassUID);
+        return dcmobj.getString(Tag.SOP_CLASS_UID);
     }
     
     public void setSOPClassUID(String uid) {
-        dcmobj.putString(Tag.SOPClassUID, VR.UI, uid);
+        dcmobj.putString(Tag.SOP_CLASS_UID, VR.UI, uid);
     }
     
     public String getSOPInstanceUID() {
-        return dcmobj.getString(Tag.SOPInstanceUID);
+        return dcmobj.getString(Tag.SOP_INSTANCE_UID);
     }
 
     public void setSOPInstanceUID(String uid) {
-        dcmobj.putString(Tag.SOPInstanceUID, VR.UI, uid);
+        dcmobj.putString(Tag.SOP_INSTANCE_UID, VR.UI, uid);
     }
 
     public String[] getSpecificCharacterSet() {
-        return dcmobj.getStrings(Tag.SpecificCharacterSet);
+        return dcmobj.getStrings(Tag.SPECIFIC_CHARACTER_SET);
     }
 
     public void setSpecificCharacterSet(String[] ss) {
-        dcmobj.putStrings(Tag.SpecificCharacterSet, VR.CS, ss);
+        dcmobj.putStrings(Tag.SPECIFIC_CHARACTER_SET, VR.CS, ss);
     }
 
     public Date getInstanceCreationDateTime() {
-        return dcmobj.getDate(Tag.InstanceCreationDate, Tag.InstanceCreationTime);
+        return dcmobj.getDate(Tag.INSTANCE_CREATION_DATE,
+                Tag.INSTANCE_CREATION_TIME);
     }
     
     public void setInstanceCreationDateTime(Date d) {
-        dcmobj.putDate(Tag.InstanceCreationDate, VR.DA, d);
-        dcmobj.putDate(Tag.InstanceCreationTime, VR.TM, d);
+        dcmobj.putDate(Tag.INSTANCE_CREATION_DATE, VR.DA, d);
+        dcmobj.putDate(Tag.INSTANCE_CREATION_TIME, VR.TM, d);
     }
         
     public String getInstanceCreatorUID() {
-        return dcmobj.getString(Tag.InstanceCreatorUID);
+        return dcmobj.getString(Tag.INSTANCE_CREATOR_UID);
     }
     
     public void setInstanceCreatorUID(String s) {
-        dcmobj.putString(Tag.InstanceCreatorUID, VR.UI, s);
+        dcmobj.putString(Tag.INSTANCE_CREATOR_UID, VR.UI, s);
     }
    
     public String getRelatedGeneralSOPClassUID() {
-        return dcmobj.getString(Tag.RelatedGeneralSOPClassUID);
+        return dcmobj.getString(Tag.RELATED_GENERAL_SOP_CLASS_UID);
     }
     
     public void setRelatedGeneralSOPClassUID(String s) {
-        dcmobj.putString(Tag.RelatedGeneralSOPClassUID, VR.UI, s);
+        dcmobj.putString(Tag.RELATED_GENERAL_SOP_CLASS_UID, VR.UI, s);
     }
    
     public String getOriginalSpecializedSOPClassUID() {
-        return dcmobj.getString(Tag.OriginalSpecializedSOPClassUID);
+        return dcmobj.getString(Tag.ORIGINAL_SPECIALIZED_SOP_CLASS_UID);
     }
     
     public void setOriginalSpecializedSOPClassUID(String s) {
-        dcmobj.putString(Tag.OriginalSpecializedSOPClassUID, VR.UI, s);
+        dcmobj.putString(Tag.ORIGINAL_SPECIALIZED_SOP_CLASS_UID, VR.UI, s);
     }
     
     public CodingSchemeIdentification[] getCodingSchemeIdentifications() {
         return CodingSchemeIdentification.toCodingSchemeIdentifications(
-                dcmobj.get(Tag.CodingSchemeIdentificationSequence));
+                dcmobj.get(Tag.CODING_SCHEME_IDENTIFICATION_SEQUENCE));
     }
 
     public void setCodingSchemeIdentifications(CodingSchemeIdentification[] ids) {
-        updateSequence(Tag.CodingSchemeIdentificationSequence, ids);
+        updateSequence(Tag.CODING_SCHEME_IDENTIFICATION_SEQUENCE, ids);
     }    
    
     public String getTimezoneOffsetFromUTC() {
-        return dcmobj.getString(Tag.TimezoneOffsetFromUTC);
+        return dcmobj.getString(Tag.TIMEZONE_OFFSET_FROM_UTC);
     }
     
     public void setTimezoneOffsetFromUTC(String s) {
-        dcmobj.putString(Tag.TimezoneOffsetFromUTC, VR.SH, s);
+        dcmobj.putString(Tag.TIMEZONE_OFFSET_FROM_UTC, VR.SH, s);
     }
       
     public ContributingEquipment[] getContributingEquipments() {
         return ContributingEquipment.toContributingEquipments(
-                dcmobj.get(Tag.ContributingEquipmentSequence));
+                dcmobj.get(Tag.CONTRIBUTING_EQUIPMENT_SEQUENCE));
     }
 
     public void setContributingEquipments(ContributingEquipment[] codes) {
-        updateSequence(Tag.ContributingEquipmentSequence, codes);
+        updateSequence(Tag.CONTRIBUTING_EQUIPMENT_SEQUENCE, codes);
     }    
 
     /**
@@ -163,7 +164,7 @@ public class SOPCommonModule extends Module {
      * @return
      */
     public String getInstanceNumber() {
-        return dcmobj.getString(Tag.InstanceNumber);
+        return dcmobj.getString(Tag.INSTANCE_NUMBER);
     }
 
     /**
@@ -184,75 +185,75 @@ public class SOPCommonModule extends Module {
      * @param s
      */
     public void setInstanceNumber(String s) {
-        dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
+        dcmobj.putString(Tag.INSTANCE_NUMBER, VR.IS, s);
     }
 
     public String getSOPInstanceStatus() {
-        return dcmobj.getString(Tag.SOPInstanceStatus);
+        return dcmobj.getString(Tag.SOP_INSTANCE_STATUS);
     }
     
     public void setSOPInstanceStatus(String s) {
-        dcmobj.putString(Tag.SOPInstanceStatus, VR.CS, s);
+        dcmobj.putString(Tag.SOP_INSTANCE_STATUS, VR.CS, s);
     }
     
     public Date getSOPAuthorizationDateandTime() {
-        return dcmobj.getDate(Tag.SOPAuthorizationDateandTime);
+        return dcmobj.getDate(Tag.SOP_AUTHORIZATION_DATE_AND_TIME);
     }
     
     public void setSOPAuthorizationDatetime(Date d) {
-        dcmobj.putDate(Tag.SOPAuthorizationDateandTime, VR.DT, d);
+        dcmobj.putDate(Tag.SOP_AUTHORIZATION_DATE_AND_TIME, VR.DT, d);
     }
 
     public String getSOPAuthorizationComment() {
-        return dcmobj.getString(Tag.SOPAuthorizationComment);
+        return dcmobj.getString(Tag.SOP_AUTHORIZATION_COMMENT);
     }
     
     public void setSOPAuthorizationComment(String s) {
-        dcmobj.putString(Tag.SOPAuthorizationComment, VR.LT, s);
+        dcmobj.putString(Tag.SOP_AUTHORIZATION_COMMENT, VR.LT, s);
     }
 
     public String getAuthorizationEquipmentCertificationNumber() {
-        return dcmobj.getString(Tag.AuthorizationEquipmentCertificationNumber);
+        return dcmobj.getString(Tag.AUTHORIZATION_EQUIPMENT_CERTIFICATION_NUMBER);
     }
     
     public void setAuthorizationEquipmentCertificationNumber(String s) {
-        dcmobj.putString(Tag.AuthorizationEquipmentCertificationNumber, VR.LO, s);
+        dcmobj.putString(Tag.AUTHORIZATION_EQUIPMENT_CERTIFICATION_NUMBER, VR.LO, s);
     }
 
     public MACParameters[] getMACParameters() {
         return MACParameters.toMACParameters(
-                dcmobj.get(Tag.MACParametersSequence));
+                dcmobj.get(Tag.MAC_PARAMETERS_SEQUENCE));
     }
 
     public void setMACParameters(MACParameters[] mac) {
-        updateSequence(Tag.MACParametersSequence, mac);
+        updateSequence(Tag.MAC_PARAMETERS_SEQUENCE, mac);
     }    
 
     public DigitalSignatures[] getDigitalSignatures() {
         return DigitalSignatures.toDigitalSignatures(
-                dcmobj.get(Tag.DigitalSignaturesSequence));
+                dcmobj.get(Tag.DIGITAL_SIGNATURES_SEQUENCE));
     }
 
     public void setDigitalSignatures(DigitalSignatures[] signatures) {
-        updateSequence(Tag.DigitalSignaturesSequence, signatures);
+        updateSequence(Tag.DIGITAL_SIGNATURES_SEQUENCE, signatures);
     }    
 
     public EncryptedAttributes[] getEncryptedAttributes() {
         return EncryptedAttributes.toEncryptedAttributes(
-                dcmobj.get(Tag.EncryptedAttributesSequence));
+                dcmobj.get(Tag.ENCRYPTED_ATTRIBUTES_SEQUENCE));
     }
 
     public void setEncryptedAttributes(EncryptedAttributes[] attrs) {
-        updateSequence(Tag.EncryptedAttributesSequence, attrs);
+        updateSequence(Tag.ENCRYPTED_ATTRIBUTES_SEQUENCE, attrs);
     }    
 
     public HL7StructuredDocumentReference[] getHL7StructuredDocumentReferences() {
         return HL7StructuredDocumentReference.toHL7StructuredDocumentReferences(
-                dcmobj.get(Tag.HL7StructuredDocumentReferenceSequence));
+                dcmobj.get(Tag.HL7_STRUCTURED_DOCUMENT_REFERENCE_SEQUENCE));
     }
 
     public void setHL7StructuredDocumentReferences(HL7StructuredDocumentReference[] hl7srref) {
-        updateSequence(Tag.HL7StructuredDocumentReferenceSequence, hl7srref);
+        updateSequence(Tag.HL7_STRUCTURED_DOCUMENT_REFERENCE_SEQUENCE, hl7srref);
     }    
 
 }

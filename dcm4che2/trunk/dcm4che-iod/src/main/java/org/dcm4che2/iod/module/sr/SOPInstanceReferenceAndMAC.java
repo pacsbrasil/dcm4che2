@@ -77,19 +77,19 @@ public class SOPInstanceReferenceAndMAC extends SOPInstanceReferenceAndPurpose {
 
     public MACParameters[] getMACParameters() {
         return MACParameters.toMACParameters(dcmobj
-                .get(Tag.MACParametersSequence));
+                .get(Tag.MAC_PARAMETERS_SEQUENCE));
     }
 
     public void setMACParameters(MACParameters[] mac) {
-        updateSequence(Tag.MACParametersSequence, mac);
+        updateSequence(Tag.MAC_PARAMETERS_SEQUENCE, mac);
     }
 
     public DigitalSignatures[] getDigitalSignatures() {
         return DigitalSignatures.toDigitalSignatures(dcmobj
-                .get(Tag.DigitalSignaturesSequence));
+                .get(Tag.DIGITAL_SIGNATURES_SEQUENCE));
     }
 
     public void setDigitalSignatures(DigitalSignatures[] signatures) {
-        updateSequence(Tag.DigitalSignaturesSequence, signatures);
+        updateSequence(Tag.DIGITAL_SIGNATURES_SEQUENCE, signatures);
     }
 }

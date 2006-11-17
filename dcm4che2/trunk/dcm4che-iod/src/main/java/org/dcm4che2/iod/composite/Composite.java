@@ -74,11 +74,11 @@ public class Composite {
     protected final SOPCommonModule sopCommonModule;
 
     public static Composite valueOf(DicomObject dcmobj) {
-        String cuid = dcmobj.getString(Tag.SOPClassUID);
+        String cuid = dcmobj.getString(Tag.SOP_CLASS_UID);
         if (cuid == null) {
             throw new IllegalArgumentException("Missing SOP Class UID");            
         }
-        if (UID.ComputedRadiographyImageStorage.equals(cuid))
+        if (UID.COMPUTED_RADIOGRAPHY_IMAGE_STORAGE.equals(cuid))
             return new CRImage(dcmobj);
         throw new UnsupportedOperationException("Unsupported SOP Class: "
                 + UIDDictionary.getDictionary().prompt(cuid));

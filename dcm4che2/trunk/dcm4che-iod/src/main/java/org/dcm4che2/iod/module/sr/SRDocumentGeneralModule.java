@@ -55,100 +55,100 @@ public class SRDocumentGeneralModule extends KODocumentModule {
     }
 
     public String getCompletionFlag() {
-        return dcmobj.getString(Tag.CompletionFlag);
+        return dcmobj.getString(Tag.COMPLETION_FLAG);
     }
 
     public void setCompletionFlag(String s) {
-        dcmobj.putString(Tag.CompletionFlag, VR.CS, s);
+        dcmobj.putString(Tag.COMPLETION_FLAG, VR.CS, s);
     }
 
     public String getCompletionFlagDescription() {
-        return dcmobj.getString(Tag.CompletionFlagDescription);
+        return dcmobj.getString(Tag.COMPLETION_FLAG_DESCRIPTION);
     }
 
     public void setCompletionFlagDescription(String s) {
-        dcmobj.putString(Tag.CompletionFlagDescription, VR.LO, s);
+        dcmobj.putString(Tag.COMPLETION_FLAG_DESCRIPTION, VR.LO, s);
     }
 
     public String getVerificationFlag() {
-        return dcmobj.getString(Tag.VerificationFlag);
+        return dcmobj.getString(Tag.VERIFICATION_FLAG);
     }
 
     public void setVerificationFlag(String s) {
-        dcmobj.putString(Tag.VerificationFlag, VR.CS, s);
+        dcmobj.putString(Tag.VERIFICATION_FLAG, VR.CS, s);
     }
 
     public VerifyingObserver[] getVerifyingObservers() {
         return VerifyingObserver.toVerifyingObservers(
-        	dcmobj.get(Tag.VerifyingObserverSequence));
+        	dcmobj.get(Tag.VERIFYING_OBSERVER_SEQUENCE));
     }
     
     public void setVerifyingObservers(VerifyingObserver[] a) {
-        updateSequence(Tag.VerifyingObserverSequence, a);
+        updateSequence(Tag.VERIFYING_OBSERVER_SEQUENCE, a);
     }
 
     public IdentifiedPersonOrDevice getAuthorObserver() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.AuthorObserverSequence);
+        	Tag.AUTHOR_OBSERVER_SEQUENCE);
         return item != null ? new IdentifiedPersonOrDevice(item) : null;
     }
 
     public void setAuthorObserver(IdentifiedPersonOrDevice observer) {
-        updateSequence(Tag.AuthorObserverSequence, observer);
+        updateSequence(Tag.AUTHOR_OBSERVER_SEQUENCE, observer);
     }    
 
     public Participant[] getParticipants() {
-        return Participant.toParticipants(dcmobj.get(Tag.ParticipantSequence));
+        return Participant.toParticipants(dcmobj.get(Tag.PARTICIPANT_SEQUENCE));
     }
 
     public void setParticipants(Participant[] participants) {
-        updateSequence(Tag.ParticipantSequence, participants);
+        updateSequence(Tag.PARTICIPANT_SEQUENCE, participants);
     }
 
     public InsitutionNameAndCode getCustodialOrganization() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.CustodialOrganizationSequence);
+        	Tag.CUSTODIAL_ORGANIZATION_SEQUENCE);
         return item != null ? new InsitutionNameAndCode(item) : null;
     }
 
     public void setCustodialOrganization(InsitutionNameAndCode org) {
-        updateSequence(Tag.CustodialOrganizationSequence, org);
+        updateSequence(Tag.CUSTODIAL_ORGANIZATION_SEQUENCE, org);
     }    
 
     public SOPInstanceReferenceMacro[] getPredecessorDocuments() {
         return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
-        	dcmobj.get(Tag.PredecessorDocumentsSequence));
+        	dcmobj.get(Tag.PREDECESSOR_DOCUMENTS_SEQUENCE));
     }
 
     public void setPredecessorDocuments(SOPInstanceReferenceMacro[] refs) {
-        updateSequence(Tag.PredecessorDocumentsSequence, refs);
+        updateSequence(Tag.PREDECESSOR_DOCUMENTS_SEQUENCE, refs);
     }
     
     public Code[] getPerformedProcedureCodes() {
-        return Code.toCodes(dcmobj.get(Tag.PerformedProcedureCodeSequence));
+        return Code.toCodes(dcmobj.get(Tag.PERFORMED_PROCEDURE_CODE_SEQUENCE));
     }
 
     public void setPerformedProcedureCodes(Code[] codes) {
-        updateSequence(Tag.PerformedProcedureCodeSequence, codes);
+        updateSequence(Tag.PERFORMED_PROCEDURE_CODE_SEQUENCE, codes);
     } 
     
     public SOPInstanceReferenceMacro[] getPertinentOtherEvidences() {
         return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
-        	dcmobj.get(Tag.PertinentOtherEvidenceSequence));
+        	dcmobj.get(Tag.PERTINENT_OTHER_EVIDENCE_SEQUENCE));
     }
 
     public void setPertinentOtherEvidences(SOPInstanceReferenceMacro[] refs) {
-        updateSequence(Tag.PertinentOtherEvidenceSequence, refs);
+        updateSequence(Tag.PERTINENT_OTHER_EVIDENCE_SEQUENCE, refs);
     }
 
     public SOPInstanceReference getEquivalentCDADocument() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.EquivalentCDADocumentSequence);
+        	Tag.EQUIVALENT_CDA_DOCUMENT_SEQUENCE);
         return item != null ? new SOPInstanceReference(item) : null;
     }
     
     public void setEquivalentCDADocument(SOPInstanceReference refSOP) {
-        updateSequence(Tag.EquivalentCDADocumentSequence, refSOP);
+        updateSequence(Tag.EQUIVALENT_CDA_DOCUMENT_SEQUENCE, refSOP);
     }
     
 }

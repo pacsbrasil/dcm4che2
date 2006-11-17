@@ -81,13 +81,13 @@ public class GeneralImageModule extends ImagePixel {
 	public void validate(ValidationContext ctx, ValidationResult result) {
 		super.validate(ctx, result);
 		if (!PresentationLUTShape.isValidSoftCopy(getPresentationLUTShape())) {
-			result.logInvalidValue(Tag.PresentationLUTShape, dcmobj);
+			result.logInvalidValue(Tag.PRESENTATION_LUT_SHAPE, dcmobj);
 		}
 		if (!LossyImageCompression.isValid(getLossyImageCompression())) {
-			result.logInvalidValue(Tag.LossyImageCompression, dcmobj);
+			result.logInvalidValue(Tag.LOSSY_IMAGE_COMPRESSION, dcmobj);
 		}
 		if (!Flag.isValid(getBurnedInAnnotation())) {
-			result.logInvalidValue(Tag.BurnedInAnnotation, dcmobj);
+			result.logInvalidValue(Tag.BURNED_IN_ANNOTATION, dcmobj);
 		}
 	}
 
@@ -109,7 +109,7 @@ public class GeneralImageModule extends ImagePixel {
 	 * @return
 	 */
 	public String getInstanceNumber() {
-		return dcmobj.getString(Tag.InstanceNumber);
+		return dcmobj.getString(Tag.INSTANCE_NUMBER);
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class GeneralImageModule extends ImagePixel {
 	 * @param s
 	 */
 	public void setInstanceNumber(String s) {
-		dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
+		dcmobj.putString(Tag.INSTANCE_NUMBER, VR.IS, s);
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class GeneralImageModule extends ImagePixel {
 	 * @return
 	 */
 	public String[] getPatientOrientation() {
-		return dcmobj.getStrings(Tag.PatientOrientation);
+		return dcmobj.getStrings(Tag.PATIENT_ORIENTATION);
 	}
 
 	/**
@@ -146,24 +146,24 @@ public class GeneralImageModule extends ImagePixel {
 	 * @param s
 	 */
 	public void setPatientOrientation(String[] s) {
-		dcmobj.putStrings(Tag.PatientOrientation, VR.CS, s);
+		dcmobj.putStrings(Tag.PATIENT_ORIENTATION, VR.CS, s);
 	}
 
 	public Date getContentDateTime() {
-		return dcmobj.getDate(Tag.ContentDate, Tag.ContentTime);
+		return dcmobj.getDate(Tag.CONTENT_DATE, Tag.CONTENT_TIME);
 	}
 
 	public void setContentDateTime(Date d) {
-		dcmobj.putDate(Tag.ContentDate, VR.DA, d);
-		dcmobj.putDate(Tag.ContentTime, VR.TM, d);
+		dcmobj.putDate(Tag.CONTENT_DATE, VR.DA, d);
+		dcmobj.putDate(Tag.CONTENT_TIME, VR.TM, d);
 	}
 
 	public String[] getImageType() {
-		return dcmobj.getStrings(Tag.ImageType);
+		return dcmobj.getStrings(Tag.IMAGE_TYPE);
 	}
 
 	public void setImageType(String[] s) {
-		dcmobj.putStrings(Tag.ImageType, VR.CS, s);
+		dcmobj.putStrings(Tag.IMAGE_TYPE, VR.CS, s);
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class GeneralImageModule extends ImagePixel {
 	 * @return
 	 */
 	public String getAcquisitionNumber() {
-		return dcmobj.getString(Tag.AcquisitionNumber);
+		return dcmobj.getString(Tag.ACQUISITION_NUMBER);
 	}
 
 	/**
@@ -207,156 +207,156 @@ public class GeneralImageModule extends ImagePixel {
 	 * @param s
 	 */
 	public void setAcquisitionNumber(String s) {
-		dcmobj.putString(Tag.AcquisitionNumber, VR.IS, s);
+		dcmobj.putString(Tag.ACQUISITION_NUMBER, VR.IS, s);
 	}
 
 	public Date getAcquisitionDateTime() {
-		return dcmobj.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
+		return dcmobj.getDate(Tag.ACQUISITION_DATE, Tag.ACQUISITION_TIME);
 	}
 
 	public void setAcquisitionDateTime(Date d) {
-		dcmobj.putDate(Tag.AcquisitionDate, VR.DA, d);
-		dcmobj.putDate(Tag.AcquisitionTime, VR.TM, d);
+		dcmobj.putDate(Tag.ACQUISITION_DATE, VR.DA, d);
+		dcmobj.putDate(Tag.ACQUISITION_TIME, VR.TM, d);
 	}
 
 	public Date getAcquisitionDatetime() {
-		return dcmobj.getDate(Tag.AcquisitionDatetime);
+		return dcmobj.getDate(Tag.ACQUISITION_DATETIME);
 	}
 
 	public void setAcquisitionDatetime(Date d) {
-		dcmobj.putDate(Tag.AcquisitionDatetime, VR.DT, d);
+		dcmobj.putDate(Tag.ACQUISITION_DATETIME, VR.DT, d);
 	}
 
 	public ImageSOPInstanceReferenceAndPurpose[] getReferencedImages() {
 		return ImageSOPInstanceReferenceAndPurpose
 				.toImageSOPInstanceReferenceAndPurposes(dcmobj
-						.get(Tag.ReferencedImageSequence));
+						.get(Tag.REFERENCED_IMAGE_SEQUENCE));
 	}
 
 	public void setReferencedImages(ImageSOPInstanceReferenceAndPurpose[] sops) {
-		updateSequence(Tag.ReferencedImageSequence, sops);
+		updateSequence(Tag.REFERENCED_IMAGE_SEQUENCE, sops);
 	}
 
 	public String getDerivationDescription() {
-		return dcmobj.getString(Tag.DerivationDescription);
+		return dcmobj.getString(Tag.DERIVATION_DESCRIPTION);
 	}
 
 	public void setDerivationDescription(String s) {
-		dcmobj.putString(Tag.DerivationDescription, VR.ST, s);
+		dcmobj.putString(Tag.DERIVATION_DESCRIPTION, VR.ST, s);
 	}
 
 	public Code[] getDerivationCodes() {
-		return Code.toCodes(dcmobj.get(Tag.DerivationCodeSequence));
+		return Code.toCodes(dcmobj.get(Tag.DERIVATION_CODE_SEQUENCE));
 	}
 
 	public void setDerivationCodes(Code[] codes) {
-		updateSequence(Tag.DerivationCodeSequence, codes);
+		updateSequence(Tag.DERIVATION_CODE_SEQUENCE, codes);
 	}
 
 	public SourceImage[] getSourceImages() {
-		return SourceImage.toSourceImages(dcmobj.get(Tag.SourceImageSequence));
+		return SourceImage.toSourceImages(dcmobj.get(Tag.SOURCE_IMAGE_SEQUENCE));
 	}
 
 	public void setSourceImages(SourceImage[] sops) {
-		updateSequence(Tag.SourceImageSequence, sops);
+		updateSequence(Tag.SOURCE_IMAGE_SEQUENCE, sops);
 	}
 
 	public SOPInstanceReferenceAndPurpose[] getReferencedInstances() {
 		return SOPInstanceReferenceAndPurpose
 				.toSOPInstanceReferenceAndPurposes(dcmobj
-						.get(Tag.ReferencedInstanceSequence));
+						.get(Tag.REFERENCED_INSTANCE_SEQUENCE));
 	}
 
 	public void setReferencedInstances(SOPInstanceReferenceAndPurpose[] sops) {
-		updateSequence(Tag.ReferencedInstanceSequence, sops);
+		updateSequence(Tag.REFERENCED_INSTANCE_SEQUENCE, sops);
 	}
 
 	public int getImagesinAcquisition() {
-		return dcmobj.getInt(Tag.ImagesinAcquisition);
+		return dcmobj.getInt(Tag.IMAGES_IN_ACQUISITION);
 	}
 
 	public void setImagesinAcquisition(int i) {
-		dcmobj.putInt(Tag.ImagesinAcquisition, VR.IS, i);
+		dcmobj.putInt(Tag.IMAGES_IN_ACQUISITION, VR.IS, i);
 	}
 
 	public String getImageComments() {
-		return dcmobj.getString(Tag.ImageComments);
+		return dcmobj.getString(Tag.IMAGE_COMMENTS);
 	}
 
 	public void setImageComments(String s) {
-		dcmobj.putString(Tag.ImageComments, VR.LT, s);
+		dcmobj.putString(Tag.IMAGE_COMMENTS, VR.LT, s);
 	}
 
 	public String getQualityControlImage() {
-		return dcmobj.getString(Tag.QualityControlImage);
+		return dcmobj.getString(Tag.QUALITY_CONTROL_IMAGE);
 	}
 
 	public void setQualityControlImage(String s) {
-		dcmobj.putString(Tag.QualityControlImage, VR.CS, s);
+		dcmobj.putString(Tag.QUALITY_CONTROL_IMAGE, VR.CS, s);
 	}
 
 	public String getBurnedInAnnotation() {
-		return dcmobj.getString(Tag.BurnedInAnnotation);
+		return dcmobj.getString(Tag.BURNED_IN_ANNOTATION);
 	}
 
 	public void setBurnedInAnnotation(String s) {
-		dcmobj.putString(Tag.BurnedInAnnotation, VR.CS, s);
+		dcmobj.putString(Tag.BURNED_IN_ANNOTATION, VR.CS, s);
 	}
 
 	public String getLossyImageCompression() {
-		return dcmobj.getString(Tag.LossyImageCompression);
+		return dcmobj.getString(Tag.LOSSY_IMAGE_COMPRESSION);
 	}
 
 	public void setLossyImageCompression(String s) {
-		dcmobj.putString(Tag.LossyImageCompression, VR.CS, s);
+		dcmobj.putString(Tag.LOSSY_IMAGE_COMPRESSION, VR.CS, s);
 	}
 
 	public float[] getLossyImageCompressionRatio() {
-		return dcmobj.getFloats(Tag.LossyImageCompressionRatio);
+		return dcmobj.getFloats(Tag.LOSSY_IMAGE_COMPRESSION_RATIO);
 	}
 
 	public void setLossyImageCompression(float[] floats) {
-		dcmobj.putFloats(Tag.LossyImageCompressionRatio, VR.DS, floats);
+		dcmobj.putFloats(Tag.LOSSY_IMAGE_COMPRESSION_RATIO, VR.DS, floats);
 	}
 
 	public String[] getLossyImageCompressionMethod() {
-		return dcmobj.getStrings(Tag.LossyImageCompressionMethod);
+		return dcmobj.getStrings(Tag.LOSSY_IMAGE_COMPRESSION_METHOD);
 	}
 
 	public void setLossyImageCompressionMethod(String[] ss) {
-		dcmobj.putStrings(Tag.LossyImageCompressionMethod, VR.CS, ss);
+		dcmobj.putStrings(Tag.LOSSY_IMAGE_COMPRESSION_METHOD, VR.CS, ss);
 	}
 
 	public ImagePixel getIconImage() {
-		DicomObject item = dcmobj.getNestedDicomObject(Tag.IconImageSequence);
+		DicomObject item = dcmobj.getNestedDicomObject(Tag.ICON_IMAGE_SEQUENCE);
 		return item != null ? new ImagePixel(item) : null;
 	}
 
 	public void setIconImage(ImagePixel icon) {
-		updateSequence(Tag.IconImageSequence, icon);
+		updateSequence(Tag.ICON_IMAGE_SEQUENCE, icon);
 	}
 
 	public String getPresentationLUTShape() {
-		return dcmobj.getString(Tag.PresentationLUTShape);
+		return dcmobj.getString(Tag.PRESENTATION_LUT_SHAPE);
 	}
 
 	public void setPresentationLUTShape(String s) {
-		dcmobj.putString(Tag.PresentationLUTShape, VR.CS, s);
+		dcmobj.putString(Tag.PRESENTATION_LUT_SHAPE, VR.CS, s);
 	}
 
 	public String getIrradiationEventUID() {
-		return dcmobj.getString(Tag.IrradiationEventUID);
+		return dcmobj.getString(Tag.IRRADIATION_EVENT_UID);
 	}
 
 	public void setIrradiationEventUID(String s) {
-		dcmobj.putString(Tag.IrradiationEventUID, VR.UI, s);
+		dcmobj.putString(Tag.IRRADIATION_EVENT_UID, VR.UI, s);
 	}
 
 	public String getPixelDataProviderURL() {
-		return dcmobj.getString(Tag.PixelDataProviderURL);
+		return dcmobj.getString(Tag.PIXEL_DATA_PROVIDER_URL);
 	}
 
 	public void setPixelDataProviderURL(String s) {
-		dcmobj.putString(Tag.PixelDataProviderURL, VR.UT, s);
+		dcmobj.putString(Tag.PIXEL_DATA_PROVIDER_URL, VR.UT, s);
 	}
 }

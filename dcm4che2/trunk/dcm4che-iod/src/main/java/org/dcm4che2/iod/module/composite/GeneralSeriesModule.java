@@ -62,19 +62,19 @@ public class GeneralSeriesModule extends Module {
     }
 
     public String getModality() {
-        return dcmobj.getString(Tag.Modality);
+        return dcmobj.getString(Tag.MODALITY);
     }
 
     public void setModality(String s) {
-        dcmobj.putString(Tag.Modality, VR.CS, s);
+        dcmobj.putString(Tag.MODALITY, VR.CS, s);
     }
 
     public String getSeriesInstanceUID() {
-        return dcmobj.getString(Tag.SeriesInstanceUID);
+        return dcmobj.getString(Tag.SERIES_INSTANCE_UID);
     }
 
     public void setSeriesInstanceUID(String s) {
-        dcmobj.putString(Tag.SeriesInstanceUID, VR.UI, s);
+        dcmobj.putString(Tag.SERIES_INSTANCE_UID, VR.UI, s);
     }
 
     /**
@@ -95,7 +95,7 @@ public class GeneralSeriesModule extends Module {
      * @return
      */
     public String getSeriesNumber() {
-        return dcmobj.getString(Tag.SeriesNumber);
+        return dcmobj.getString(Tag.SERIES_NUMBER);
     }
 
     /**
@@ -116,180 +116,180 @@ public class GeneralSeriesModule extends Module {
      * @param s
      */
     public void setSeriesNumber(String s) {
-        dcmobj.putString(Tag.SeriesNumber, VR.IS, s);
+        dcmobj.putString(Tag.SERIES_NUMBER, VR.IS, s);
     }
 
     public String getLaterality() {
-        return dcmobj.getString(Tag.Laterality);
+        return dcmobj.getString(Tag.LATERALITY);
     }
 
     public void setLaterality(String s) {
-        dcmobj.putString(Tag.Laterality, VR.CS, s);
+        dcmobj.putString(Tag.LATERALITY, VR.CS, s);
     }
 
     public Date getSeriesDateTime() {
-        return dcmobj.getDate(Tag.SeriesDate, Tag.SeriesTime);
+        return dcmobj.getDate(Tag.SERIES_DATE, Tag.SERIES_TIME);
     }
 
     public void setSeriesDateTime(Date d) {
-        dcmobj.putDate(Tag.SeriesDate, VR.DA, d);
-        dcmobj.putDate(Tag.SeriesTime, VR.TM, d);
+        dcmobj.putDate(Tag.SERIES_DATE, VR.DA, d);
+        dcmobj.putDate(Tag.SERIES_TIME, VR.TM, d);
     }
 
     public String[] getPerformingPhysiciansName() {
-        return dcmobj.getStrings(Tag.PerformingPhysiciansName);
+        return dcmobj.getStrings(Tag.PERFORMING_PHYSICIANS_NAME);
     }
 
     public void setPerformingPhysiciansName(String[] ss) {
-        dcmobj.putStrings(Tag.PerformingPhysiciansName, VR.PN, ss);
+        dcmobj.putStrings(Tag.PERFORMING_PHYSICIANS_NAME, VR.PN, ss);
     }
 
     public PersonIdentification[] getPerformingPhysicianIdentification() {
         return PersonIdentification.toPersonIdentifications(dcmobj
-                .get(Tag.PerformingPhysicianIdentificationSequence));
+                .get(Tag.PERFORMING_PHYSICIAN_IDENTIFICATION_SEQUENCE));
     }
 
     public void setPerformingPhysicianIdentification(PersonIdentification[] ids) {
-        updateSequence(Tag.PerformingPhysicianIdentificationSequence, ids);
+        updateSequence(Tag.PERFORMING_PHYSICIAN_IDENTIFICATION_SEQUENCE, ids);
     }
 
     public String getProtocolName() {
-        return dcmobj.getString(Tag.ProtocolName);
+        return dcmobj.getString(Tag.PROTOCOL_NAME);
     }
 
     public void setProtocolName(String s) {
-        dcmobj.putString(Tag.ProtocolName, VR.LO, s);
+        dcmobj.putString(Tag.PROTOCOL_NAME, VR.LO, s);
     }
 
     public String getSeriesDescription() {
-        return dcmobj.getString(Tag.SeriesDescription);
+        return dcmobj.getString(Tag.SERIES_DESCRIPTION);
     }
 
     public void setSeriesDescription(String s) {
-        dcmobj.putString(Tag.SeriesDescription, VR.LO, s);
+        dcmobj.putString(Tag.SERIES_DESCRIPTION, VR.LO, s);
     }
 
     public String[] getOperatorsName() {
-        return dcmobj.getStrings(Tag.OperatorsName);
+        return dcmobj.getStrings(Tag.OPERATORS_NAME);
     }
 
     public void setOperatorsName(String[] ss) {
-        dcmobj.putStrings(Tag.OperatorsName, VR.PN, ss);
+        dcmobj.putStrings(Tag.OPERATORS_NAME, VR.PN, ss);
     }
 
     public PersonIdentification[] getOperatorIdentification() {
         return PersonIdentification.toPersonIdentifications(dcmobj
-                .get(Tag.OperatorIdentificationSequence));
+                .get(Tag.OPERATOR_IDENTIFICATION_SEQUENCE));
     }
 
     public void setOperatorIdentification(PersonIdentification[] ids) {
-        updateSequence(Tag.OperatorIdentificationSequence, ids);
+        updateSequence(Tag.OPERATOR_IDENTIFICATION_SEQUENCE, ids);
     }
 
     public SOPInstanceReference getReferencedPerformedProcedureStep() {
         DicomObject item = dcmobj
-                .getNestedDicomObject(Tag.ReferencedPerformedProcedureStepSequence);
+                .getNestedDicomObject(Tag.REFERENCED_PERFORMED_PROCEDURE_STEP_SEQUENCE);
         return item != null ? new SOPInstanceReference(item) : null;
     }
 
     public void setReferencedPerformedProcedureStep(
             SOPInstanceReference refSOP) {
-        updateSequence(Tag.ReferencedPerformedProcedureStepSequence, refSOP);
+        updateSequence(Tag.REFERENCED_PERFORMED_PROCEDURE_STEP_SEQUENCE, refSOP);
     }
 
     public RelatedSeries[] getRelatedSeries() {
         return RelatedSeries.toRelatedSeries(dcmobj
-                .get(Tag.RelatedSeriesSequence));
+                .get(Tag.RELATED_SERIES_SEQUENCE));
     }
 
     public void setRelatedSeries(RelatedSeries[] relseries) {
-        updateSequence(Tag.RelatedSeriesSequence, relseries);
+        updateSequence(Tag.RELATED_SERIES_SEQUENCE, relseries);
     }
 
     public String getBodyPartExamined() {
-        return dcmobj.getString(Tag.BodyPartExamined);
+        return dcmobj.getString(Tag.BODY_PART_EXAMINED);
     }
 
     public void setBodyPartExamined(String s) {
-        dcmobj.putString(Tag.BodyPartExamined, VR.CS, s);
+        dcmobj.putString(Tag.BODY_PART_EXAMINED, VR.CS, s);
     }
 
     public String getPatientPosition() {
-        return dcmobj.getString(Tag.PatientPosition);
+        return dcmobj.getString(Tag.PATIENT_POSITION);
     }
 
     public void setPatientPosition(String s) {
-        dcmobj.putString(Tag.PatientPosition, VR.CS, s);
+        dcmobj.putString(Tag.PATIENT_POSITION, VR.CS, s);
     }
 
     public int getSmallestPixelValueinSeries() {
-        return dcmobj.getInt(Tag.SmallestPixelValueinSeries);
+        return dcmobj.getInt(Tag.SMALLEST_PIXEL_VALUE_IN_SERIES);
     }
 
     public void setSmallestPixelValueinSeries(int s) {
-        dcmobj.putInt(Tag.SmallestPixelValueinSeries, PixelRepresentation
+        dcmobj.putInt(Tag.SMALLEST_PIXEL_VALUE_IN_SERIES, PixelRepresentation
                 .isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public int getLargestPixelValueinSeries() {
-        return dcmobj.getInt(Tag.LargestPixelValueinSeries);
+        return dcmobj.getInt(Tag.LARGEST_PIXEL_VALUE_IN_SERIES);
     }
 
     public void setLargestPixelValueinSeries(int s) {
-        dcmobj.putInt(Tag.LargestPixelValueinSeries, PixelRepresentation
+        dcmobj.putInt(Tag.LARGEST_PIXEL_VALUE_IN_SERIES, PixelRepresentation
                 .isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public RequestAttributes[] getRequestAttributes() {
         return RequestAttributes.toRequestAttributes(dcmobj
-                .get(Tag.RequestAttributesSequence));
+                .get(Tag.REQUEST_ATTRIBUTES_SEQUENCE));
     }
 
     public void setRequestAttributes(RequestAttributes[] rqattrs) {
-        updateSequence(Tag.RequestAttributesSequence, rqattrs);
+        updateSequence(Tag.REQUEST_ATTRIBUTES_SEQUENCE, rqattrs);
     }
 
     public String getPerformedProcedureStepID() {
-        return dcmobj.getString(Tag.PerformedProcedureStepID);
+        return dcmobj.getString(Tag.PERFORMED_PROCEDURE_STEP_ID);
     }
 
     public void setPerformedProcedureStepID(String s) {
-        dcmobj.putString(Tag.PerformedProcedureStepID, VR.SH, s);
+        dcmobj.putString(Tag.PERFORMED_PROCEDURE_STEP_ID, VR.SH, s);
     }
 
-    public Date getPerformedProcedureStepDateTime() {
-        return dcmobj.getDate(Tag.PerformedProcedureStepStartDate,
-                Tag.PerformedProcedureStepStartTime);
+    public Date getPerformedProcedureStepStartDateTime() {
+        return dcmobj.getDate(Tag.PERFORMED_PROCEDURE_STEP_START_DATE,
+                Tag.PERFORMED_PROCEDURE_STEP_START_TIME);
     }
 
-    public void setPerformedProcedureStepDateTime(Date d) {
-        dcmobj.putDate(Tag.PerformedProcedureStepStartDate, VR.DA, d);
-        dcmobj.putDate(Tag.PerformedProcedureStepStartTime, VR.TM, d);
+    public void setPerformedProcedureStepStartDateTime(Date d) {
+        dcmobj.putDate(Tag.PERFORMED_PROCEDURE_STEP_START_DATE, VR.DA, d);
+        dcmobj.putDate(Tag.PERFORMED_PROCEDURE_STEP_START_TIME, VR.TM, d);
     }
 
     public String getPerformedProcedureStepDescription() {
-        return dcmobj.getString(Tag.PerformedProcedureStepDescription);
+        return dcmobj.getString(Tag.PERFORMED_PROCEDURE_STEP_DESCRIPTION);
     }
 
     public void setPerformedProcedureStepDescription(String s) {
-        dcmobj.putString(Tag.PerformedProcedureStepDescription, VR.LO, s);
+        dcmobj.putString(Tag.PERFORMED_PROCEDURE_STEP_DESCRIPTION, VR.LO, s);
     }
 
     public ProtocolCodeAndContext[] getPerformedProtocolCodes() {
         return ProtocolCodeAndContext.toProtocolCodeAndContexts(dcmobj
-                .get(Tag.PerformedProtocolCodeSequence));
+                .get(Tag.PERFORMED_PROTOCOL_CODE_SEQUENCE));
     }
 
     public void setPerformedProtocolCodes(ProtocolCodeAndContext[] codes) {
-        updateSequence(Tag.PerformedProtocolCodeSequence, codes);
+        updateSequence(Tag.PERFORMED_PROTOCOL_CODE_SEQUENCE, codes);
     }
 
     public String getCommentsonthePerformedProcedureStep() {
-        return dcmobj.getString(Tag.CommentsonthePerformedProcedureStep);
+        return dcmobj.getString(Tag.COMMENTS_ON_THE_PERFORMED_PROCEDURE_STEP);
     }
 
     public void setCommentsonthePerformedProcedureStep(String s) {
-        dcmobj.putString(Tag.CommentsonthePerformedProcedureStep, VR.ST, s);
+        dcmobj.putString(Tag.COMMENTS_ON_THE_PERFORMED_PROCEDURE_STEP, VR.ST, s);
     }
 
 }

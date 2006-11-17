@@ -94,11 +94,11 @@ public class HPDisplaySetTest extends TestCase {
     private static DicomObject image(String type, String modality, String bodyPart,
             String position, String orientation) {
         DicomObject o = new BasicDicomObject();
-        o.putString(Tag.ImageType, VR.CS, type);
-        o.putString(Tag.Modality, VR.CS, modality);
-        o.putString(Tag.BodyPartExamined, VR.CS, bodyPart);
-        o.putString(Tag.ImagePositionPatient, VR.DS, position);
-        o.putString(Tag.ImageOrientationPatient, VR.DS, orientation);
+        o.putString(Tag.IMAGE_TYPE, VR.CS, type);
+        o.putString(Tag.MODALITY, VR.CS, modality);
+        o.putString(Tag.BODY_PART_EXAMINED, VR.CS, bodyPart);
+        o.putString(Tag.IMAGE_POSITION_PATIENT, VR.DS, position);
+        o.putString(Tag.IMAGE_ORIENTATION_PATIENT, VR.DS, orientation);
         return o;
     }
 

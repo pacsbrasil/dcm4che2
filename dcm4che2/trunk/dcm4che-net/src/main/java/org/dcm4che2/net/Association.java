@@ -476,7 +476,7 @@ public class Association implements Runnable {
     }
 
     public DimseRSP cecho() throws IOException, InterruptedException {
-        return cecho(UID.VerificationSOPClass);
+        return cecho(UID.VERIFICATION_SOP_CLASS);
     }
 
     public DimseRSP cecho(String cuid) throws IOException, InterruptedException {
@@ -670,11 +670,11 @@ public class Association implements Runnable {
             throw new IllegalStateException(
                     "Presentation State not accepted - " + pc);
         rspHandler.setPcid(pcid);
-        rspHandler.setMsgId(cmd.getInt(Tag.MessageID));
+        rspHandler.setMsgId(cmd.getInt(Tag.MESSAGE_ID));
         rspHandler.setTimeout(System.currentTimeMillis()
-                + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RQ ? ae
+                + (cmd.getInt(Tag.COMMAND_FIELD) == CommandUtils.C_MOVE_RQ ? ae
                         .getMoveRspTimeout() : ae.getDimseRspTimeout()));
-        addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
+        addDimseRSPHandler(cmd.getInt(Tag.MESSAGE_ID), rspHandler);
         encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());
     }
 
@@ -705,7 +705,7 @@ public class Association implements Runnable {
             writer = new DataWriterAdapter(data);
             datasetType = CommandUtils.getWithDatasetType();
         }
-        cmd.putInt(Tag.DataSetType, VR.US, datasetType);
+        cmd.putInt(Tag.DATA_SET_TYPE, VR.US, datasetType);
         encoder.writeDIMSE(pcid, cmd, writer, pc.getTransferSyntax());
         if (!CommandUtils.isPending(cmd)) {
             updateIdleTimeout();
@@ -714,7 +714,7 @@ public class Association implements Runnable {
     }
 
     void onCancelRQ(DicomObject cmd) throws IOException {
-        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
+        int msgId = cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO);
         DimseRSP handler = removeCancelRQHandler(msgId);
         if (handler != null) {
             handler.cancel(this);
@@ -723,7 +723,7 @@ public class Association implements Runnable {
 
     public void registerCancelRQHandler(DicomObject cmd, DimseRSP handler) {
         synchronized (cancelHandlerForMsgId) {
-            cancelHandlerForMsgId.put(cmd.getInt(Tag.MessageID), handler);
+            cancelHandlerForMsgId.put(cmd.getInt(Tag.MESSAGE_ID), handler);
         }
     }
 
@@ -734,7 +734,7 @@ public class Association implements Runnable {
     }
 
     void onDimseRSP(DicomObject cmd, DicomObject data) throws IOException {
-        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
+        int msgId = cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO);
         DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
         if (rspHandler == null) {
             log.warn("unexpected message ID in DIMSE RSP:\n{}", cmd);
@@ -749,7 +749,7 @@ public class Association implements Runnable {
             } else {
                 rspHandler
                         .setTimeout(System.currentTimeMillis()
-                                + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RSP ? ae
+                                + (cmd.getInt(Tag.COMMAND_FIELD) == CommandUtils.C_MOVE_RSP ? ae
                                         .getMoveRspTimeout()
                                         : ae.getDimseRspTimeout()));
 
@@ -1009,7 +1009,7 @@ public class Association implements Runnable {
                         AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
                         AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
             if (!rq.getApplicationContext().equals(
-                    UID.DICOMApplicationContextName))
+                    UID.DICOM_APPLICATION_CONTEXT_NAME))
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);

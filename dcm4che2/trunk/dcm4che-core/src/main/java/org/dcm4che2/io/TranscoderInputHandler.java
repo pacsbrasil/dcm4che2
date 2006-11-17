@@ -79,11 +79,11 @@ public class TranscoderInputHandler implements DicomInputHandler
     {
         final int tag = in.tag();
         switch (tag) {
-        case Tag.Item:
+        case Tag.ITEM:
             transcodeItem(in);
             break;
-        case Tag.ItemDelimitationItem:
-        case Tag.SequenceDelimitationItem:
+        case Tag.ITEM_DELIMITATION_ITEM:
+        case Tag.SEQUENCE_DELIMITATION_ITEM:
             in.readValue(in);
             break;
         default:
@@ -103,13 +103,13 @@ public class TranscoderInputHandler implements DicomInputHandler
         final VR sqvr = sq.vr();
         if (sqvr == VR.SQ)
         {
-            out.writeHeader(Tag.Item, null, -1);
+            out.writeHeader(Tag.ITEM, null, -1);
             in.readValue(in);
-            out.writeHeader(Tag.ItemDelimitationItem, null, 0);
+            out.writeHeader(Tag.ITEM_DELIMITATION_ITEM, null, 0);
         }
         else
         {
-            out.writeHeader(Tag.Item, null, in.valueLength());
+            out.writeHeader(Tag.ITEM, null, in.valueLength());
             transcodeValue(in, sqvr);
         }
     }
@@ -125,10 +125,10 @@ public class TranscoderInputHandler implements DicomInputHandler
             out.writeHeader(tag, vr, -1);
             in.readValue(in);
             attrs.remove(tag);
-            out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+            out.writeHeader(Tag.SEQUENCE_DELIMITATION_ITEM, null, 0);
         } else {
             out.writeHeader(tag, vr, vallen);
-            if (tag == Tag.SpecificCharacterSet
+            if (tag == Tag.SPECIFIC_CHARACTER_SET
                     || TagUtils.isPrivateCreatorDataElement(tag))
             {
                 byte[] val = in.readBytes(vallen);

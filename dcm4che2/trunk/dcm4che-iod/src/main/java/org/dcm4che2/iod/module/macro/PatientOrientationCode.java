@@ -57,12 +57,12 @@ public class PatientOrientationCode  extends Code {
     }
     
     public void setPatientOrientationModifierCodes(Code[] codes) {
-        updateSequence(Tag.PatientOrientationModifierCodeSequence, codes);
+        updateSequence(Tag.PATIENT_ORIENTATION_MODIFIER_CODE_SEQUENCE, codes);
     }
 
     public Code[] getPatientOrientationModifierCodes() {
         return Code.toCodes(dcmobj
-                .get(Tag.PatientOrientationModifierCodeSequence));
+                .get(Tag.PATIENT_ORIENTATION_MODIFIER_CODE_SEQUENCE));
     }  
 
 }

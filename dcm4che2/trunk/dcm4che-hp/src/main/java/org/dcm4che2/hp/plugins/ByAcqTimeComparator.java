@@ -63,7 +63,7 @@ extends AbstractHPComparator
     public ByAcqTimeComparator(DicomObject sortOp)
     {
         this.sortOp = sortOp;
-        String cs = sortOp.getString(Tag.SortingDirection);
+        String cs = sortOp.getString(Tag.SORTING_DIRECTION);
         if (cs == null)
         {
             throw new IllegalArgumentException(
@@ -76,8 +76,8 @@ extends AbstractHPComparator
     {
         this.sign = CodeString.sortingDirectionToSign(sortingDirection);
         this.sortOp = new BasicDicomObject();
-        sortOp.putString(Tag.SortbyCategory, VR.CS, CodeString.BY_ACQ_TIME);
-        sortOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
+        sortOp.putString(Tag.SORT_BY_CATEGORY, VR.CS, CodeString.BY_ACQ_TIME);
+        sortOp.putString(Tag.SORTING_DIRECTION, VR.CS, sortingDirection);
     }
     
     public final DicomObject getDicomObject()
@@ -96,13 +96,13 @@ extends AbstractHPComparator
 
     private Date toAcqTime(DicomObject o, int frame)
     {
-        Date t = o.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
+        Date t = o.getDate(Tag.ACQUISITION_DATE, Tag.ACQUISITION_TIME);
         if (t == null)
         {
-            t = o.getDate(Tag.AcquisitionDatetime);
+            t = o.getDate(Tag.ACQUISITION_DATETIME);
             if (t == null)
             {
-                t = o.getDate(Tag.ContentDate, Tag.ContentTime);
+                t = o.getDate(Tag.CONTENT_DATE, Tag.CONTENT_TIME);
             }
         }
         return t;

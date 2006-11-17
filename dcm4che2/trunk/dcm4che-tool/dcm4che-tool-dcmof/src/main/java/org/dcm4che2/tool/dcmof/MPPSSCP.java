@@ -59,7 +59,7 @@ import org.dcm4che2.net.service.NSetService;
 class MPPSSCP {
 
     private final DicomService ncreatescp = new NCreateService(
-            UID.ModalityPerformedProcedureStepSOPClass) {
+            UID.MODALITY_PERFORMED_PROCEDURE_STEP_SOP_CLASS) {
 
         protected DicomObject doNCreate(Association as, int pcid,
                 DicomObject rq, DicomObject data, DicomObject rsp)
@@ -69,7 +69,7 @@ class MPPSSCP {
     };
 
     private final DicomService nsetscp = new NSetService(
-            UID.ModalityPerformedProcedureStepSOPClass) {
+            UID.MODALITY_PERFORMED_PROCEDURE_STEP_SOP_CLASS) {
 
         protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
                 DicomObject data, DicomObject rsp) throws DicomServiceException {
@@ -99,16 +99,16 @@ class MPPSSCP {
 
     private DicomObject doNCreate(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
-        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+        String iuid = rq.getString(Tag.AFFECTED_SOP_INSTANCE_UID);
         if (iuid == null)
-            iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
+            iuid = rsp.getString(Tag.AFFECTED_SOP_INSTANCE_UID);
         File f = mkFile(iuid);
         if (f.exists()) {
             throw new DicomServiceException(rq, Status.DuplicateSOPinstance);
         }      
         data.initFileMetaInformation(
-                UID.InstanceAvailabilityNotificationSOPClass, iuid,
-                UID.ExplicitVRLittleEndian);
+                UID.INSTANCE_AVAILABILITY_NOTIFICATION_SOP_CLASS, iuid,
+                UID.EXPLICIT_VR_LITTLE_ENDIAN);
         try {
             store(f, data);
         } catch (Exception e) {
@@ -123,7 +123,7 @@ class MPPSSCP {
     
     private DicomObject doNSet(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
-        final String iuid = rq.getString(Tag.RequestedSOPInstanceUID);
+        final String iuid = rq.getString(Tag.REQUESTED_SOP_INSTANCE_UID);
         File f = mkFile(iuid);
         if (!f.exists()) {
             throw new DicomServiceException(rq, Status.NoSuchObjectInstance,
@@ -131,7 +131,7 @@ class MPPSSCP {
         } 
         try {
             DicomObject mpps = dcmOF.load(f);
-            String status = mpps.getString(Tag.PerformedProcedureStepStatus);
+            String status = mpps.getString(Tag.PERFORMED_PROCEDURE_STEP_STATUS);
             if (!"IN PROGRESS".equals(status)) {
                 DicomServiceException ex = new DicomServiceException(rq, 
                         Status.ProcessingFailure,

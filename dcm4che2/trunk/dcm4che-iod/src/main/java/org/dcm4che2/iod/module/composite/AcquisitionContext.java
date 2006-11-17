@@ -85,11 +85,11 @@ public class AcquisitionContext extends Module {
      * @param cs
      */
     public void setValueType(String cs) {
-        dcmobj.putString(Tag.ValueType, VR.CS, cs);
+        dcmobj.putString(Tag.VALUE_TYPE, VR.CS, cs);
     }
 
     public String getValueType() {
-        return dcmobj.getString(Tag.ValueType);
+        return dcmobj.getString(Tag.VALUE_TYPE);
     }
 
     /**
@@ -101,12 +101,12 @@ public class AcquisitionContext extends Module {
      * @param c
      */
     public void setConceptNameCode(Code c) {
-        updateSequence(Tag.ConceptNameCodeSequence, c);
+        updateSequence(Tag.CONCEPT_NAME_CODE_SEQUENCE, c);
     }
 
     public Code getConceptNameCode() {
         DicomObject item = dcmobj
-                .getNestedDicomObject(Tag.ConceptNameCodeSequence);
+                .getNestedDicomObject(Tag.CONCEPT_NAME_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
@@ -123,11 +123,11 @@ public class AcquisitionContext extends Module {
      * @param us
      */
     public void setReferencedFrameNumbers(int[] us) {
-        dcmobj.putInts(Tag.ReferencedFrameNumbers, VR.US, us);
+        dcmobj.putInts(Tag.REFERENCED_FRAME_NUMBERS, VR.US, us);
     }
 
     public int[] getReferencedFrameNumbers() {
-        return dcmobj.getInts(Tag.ReferencedFrameNumbers);
+        return dcmobj.getInts(Tag.REFERENCED_FRAME_NUMBERS);
     }
 
     /**
@@ -144,11 +144,11 @@ public class AcquisitionContext extends Module {
      * @param ds
      */
     public void setNumericValue(float ds) {
-        dcmobj.putFloat(Tag.NumericValue, VR.DS, ds);
+        dcmobj.putFloat(Tag.NUMERIC_VALUE, VR.DS, ds);
     }
 
     public float getNumericValue() {
-        return dcmobj.getFloat(Tag.NumericValue);
+        return dcmobj.getFloat(Tag.NUMERIC_VALUE);
     }
 
     /**
@@ -163,12 +163,12 @@ public class AcquisitionContext extends Module {
      * @param c
      */
     public void setMeasurementUnitsCode(Code c) {
-        updateSequence(Tag.MeasurementUnitsCodeSequence, c);
+        updateSequence(Tag.MEASUREMENT_UNITS_CODE_SEQUENCE, c);
     }
 
     public Code getMeasurementUnitsCode() {
         DicomObject item = dcmobj
-                .getNestedDicomObject(Tag.MeasurementUnitsCodeSequence);
+                .getNestedDicomObject(Tag.MEASUREMENT_UNITS_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
@@ -187,12 +187,12 @@ public class AcquisitionContext extends Module {
      * @return
      */
     public Date getDateTime() {
-        return dcmobj.getDate(Tag.Date, Tag.Time);
+        return dcmobj.getDate(Tag.DATE, Tag.TIME);
     }
 
     public void setDateTime(Date d) {
-        dcmobj.putDate(Tag.Date, VR.DA, d);
-        dcmobj.putDate(Tag.Time, VR.TM, d);
+        dcmobj.putDate(Tag.DATE, VR.DA, d);
+        dcmobj.putDate(Tag.TIME, VR.TM, d);
     }
 
     /**
@@ -210,7 +210,7 @@ public class AcquisitionContext extends Module {
      * @return
      */
     public String getPersonName() {
-        return dcmobj.getString(Tag.PersonName);
+        return dcmobj.getString(Tag.PERSON_NAME);
     }
 
     /**
@@ -228,7 +228,7 @@ public class AcquisitionContext extends Module {
      * @param s
      */
     public void setPersonName(String s) {
-        dcmobj.putString(Tag.PersonName, VR.PN, s);
+        dcmobj.putString(Tag.PERSON_NAME, VR.PN, s);
     }
 
     /**
@@ -244,7 +244,7 @@ public class AcquisitionContext extends Module {
      * @return
      */
     public String getTextValue() {
-        return dcmobj.getString(Tag.TextValue);
+        return dcmobj.getString(Tag.TEXT_VALUE);
     }
 
     /**
@@ -260,7 +260,7 @@ public class AcquisitionContext extends Module {
      * @param s
      */
     public void setTextValue(String s) {
-        dcmobj.putString(Tag.TextValue, VR.UT, s);
+        dcmobj.putString(Tag.TEXT_VALUE, VR.UT, s);
     }
 
     /**
@@ -277,7 +277,7 @@ public class AcquisitionContext extends Module {
      * @return
      */
     public Code getConceptCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.CONCEPT_CODE_SEQUENCE);
         return item != null ? new Code(item) : null;
     }
 
@@ -296,7 +296,7 @@ public class AcquisitionContext extends Module {
      * @param code
      */
     public void setConceptCode(Code code) {
-        updateSequence(Tag.ConceptCodeSequence, code);
+        updateSequence(Tag.CONCEPT_CODE_SEQUENCE, code);
     }
 
 }

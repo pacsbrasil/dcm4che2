@@ -85,16 +85,16 @@ public class DXImageModule extends GeneralImageModule {
         super.validate(ctx, result);
         if (!PixelIntensityRelationship
                 .isValid(getPixelIntensityRelationship())) {
-            result.logInvalidValue(Tag.PixelIntensityRelationship, dcmobj);
+            result.logInvalidValue(Tag.PIXEL_INTENSITY_RELATIONSHIP, dcmobj);
         }
         if (!Sign.isValid(getPixelIntensityRelationshipSign())) {
-            if (dcmobj.containsValue(Tag.PixelIntensityRelationshipSign)) {
-                result.logInvalidValue(Tag.PixelIntensityRelationshipSign,
+            if (dcmobj.containsValue(Tag.PIXEL_INTENSITY_RELATIONSHIP_SIGN)) {
+                result.logInvalidValue(Tag.PIXEL_INTENSITY_RELATIONSHIP_SIGN,
                         dcmobj);
             }
         }
         if (!Flag.isValid(getCalibrationImage())) {
-            result.logInvalidValue(Tag.CalibrationImage, dcmobj);
+            result.logInvalidValue(Tag.CALIBRATION_IMAGE, dcmobj);
         }
     }
 
@@ -109,11 +109,11 @@ public class DXImageModule extends GeneralImageModule {
      * @param s
      */
     public void setPixelIntensityRelationship(String s) {
-        dcmobj.putString(Tag.PixelIntensityRelationship, VR.CS, s);
+        dcmobj.putString(Tag.PIXEL_INTENSITY_RELATIONSHIP, VR.CS, s);
     }
 
     public String getPixelIntensityRelationship() {
-        return dcmobj.getString(Tag.PixelIntensityRelationship);
+        return dcmobj.getString(Tag.PIXEL_INTENSITY_RELATIONSHIP);
     }
 
     /**
@@ -127,11 +127,11 @@ public class DXImageModule extends GeneralImageModule {
      * @param ss
      */
     public void setPixelIntensityRelationshipSign(int ss) {
-        dcmobj.putInt(Tag.PixelIntensityRelationshipSign, VR.SS, ss);
+        dcmobj.putInt(Tag.PIXEL_INTENSITY_RELATIONSHIP_SIGN, VR.SS, ss);
     }
 
     public int getPixelIntensityRelationshipSign() {
-        return dcmobj.getInt(Tag.PixelIntensityRelationshipSign);
+        return dcmobj.getInt(Tag.PIXEL_INTENSITY_RELATIONSHIP_SIGN);
     }
 
     /**
@@ -148,11 +148,11 @@ public class DXImageModule extends GeneralImageModule {
      *            0
      */
     public void setRescaleIntercept(float ds) {
-        dcmobj.putFloat(Tag.RescaleIntercept, VR.DS, ds);
+        dcmobj.putFloat(Tag.RESCALE_INTERCEPT, VR.DS, ds);
     }
 
     public float getRescaleIntercept() {
-        return dcmobj.getFloat(Tag.RescaleIntercept);
+        return dcmobj.getFloat(Tag.RESCALE_INTERCEPT);
     }
 
     /**
@@ -166,7 +166,7 @@ public class DXImageModule extends GeneralImageModule {
      *            1
      */
     private void setRescaleSlope(float f) {
-        dcmobj.putFloat(Tag.RescaleSlope, VR.DS, f);
+        dcmobj.putFloat(Tag.RESCALE_SLOPE, VR.DS, f);
     }
 
     /**
@@ -179,7 +179,7 @@ public class DXImageModule extends GeneralImageModule {
      * @return 1
      */
     public String getRescaleSlope() {
-        return dcmobj.getString(Tag.RescaleSlope);
+        return dcmobj.getString(Tag.RESCALE_SLOPE);
     }
 
     /**
@@ -194,7 +194,7 @@ public class DXImageModule extends GeneralImageModule {
      *            US = Unspecified
      */
     private void setRescaleType(String cs) {
-        dcmobj.putString(Tag.RescaleType, VR.CS, cs);
+        dcmobj.putString(Tag.RESCALE_TYPE, VR.CS, cs);
     }
 
     /**
@@ -208,7 +208,7 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public String getRescaleType() {
-        return dcmobj.getString(Tag.RescaleType);
+        return dcmobj.getString(Tag.RESCALE_TYPE);
     }
 
     /**
@@ -220,7 +220,7 @@ public class DXImageModule extends GeneralImageModule {
      * @param lo
      */
     public void setAcquisitionDeviceProcessingDescription(String lo) {
-        dcmobj.putString(Tag.AcquisitionDeviceProcessingDescription, VR.LO, lo);
+        dcmobj.putString(Tag.ACQUISITION_DEVICE_PROCESSING_DESCRIPTION, VR.LO, lo);
     }
 
     /**
@@ -232,7 +232,7 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public String getAcquisitionDeviceProcessingDescription() {
-        return dcmobj.getString(Tag.AcquisitionDeviceProcessingDescription);
+        return dcmobj.getString(Tag.ACQUISITION_DEVICE_PROCESSING_DESCRIPTION);
     }
 
     /**
@@ -245,7 +245,7 @@ public class DXImageModule extends GeneralImageModule {
      * @param lo
      */
     public void setAcquisitionDeviceProcessingCode(String lo) {
-        dcmobj.putString(Tag.AcquisitionDeviceProcessingCode, VR.LO, lo);
+        dcmobj.putString(Tag.ACQUISITION_DEVICE_PROCESSING_CODE, VR.LO, lo);
     }
 
     /**
@@ -258,7 +258,7 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public String getAcquisitionDeviceProcessingCode() {
-        return dcmobj.getString(Tag.AcquisitionDeviceProcessingCode);
+        return dcmobj.getString(Tag.ACQUISITION_DEVICE_PROCESSING_DESCRIPTION);
     }
 
     /**
@@ -276,7 +276,7 @@ public class DXImageModule extends GeneralImageModule {
      * @param cs
      */
     public void setCalibrationImage(String cs) {
-        dcmobj.putString(Tag.CalibrationImage, VR.CS, cs);
+        dcmobj.putString(Tag.CALIBRATION_IMAGE, VR.CS, cs);
     }
 
     /**
@@ -294,15 +294,15 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public String getCalibrationImage() {
-        return dcmobj.getString(Tag.CalibrationImage);
+        return dcmobj.getString(Tag.CALIBRATION_IMAGE);
     }
 
     public LUT[] getVOILUTs() {
-        return LUT.toLUTs(dcmobj.get(Tag.VOILUTSequence));
+        return LUT.toLUTs(dcmobj.get(Tag.VOI_LUT_SEQUENCE));
     }
 
     public void setVOILUTs(LUT[] luts) {
-        updateSequence(Tag.VOILUTSequence, luts);
+        updateSequence(Tag.VOI_LUT_SEQUENCE, luts);
     }
 
     /**
@@ -315,7 +315,7 @@ public class DXImageModule extends GeneralImageModule {
      * LUT Sequence (0028,3010) is present.
      */
     public void setWindowCenter(float[] floats) {
-        dcmobj.putFloats(Tag.WindowCenter, VR.DS, floats);
+        dcmobj.putFloats(Tag.WINDOW_CENTER, VR.DS, floats);
     }
 
     /**
@@ -330,7 +330,7 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public float[] getWindowCenter() {
-        return dcmobj.getFloats(Tag.WindowCenter);
+        return dcmobj.getFloats(Tag.WINDOW_CENTER);
     }
 
     /**
@@ -343,7 +343,7 @@ public class DXImageModule extends GeneralImageModule {
      * @param ds
      */
     public void setWindowWidth(float[] floats) {
-        dcmobj.putFloats(Tag.WindowWidth, VR.DS, floats);
+        dcmobj.putFloats(Tag.WINDOW_WIDTH, VR.DS, floats);
     }
 
     /**
@@ -356,7 +356,7 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public float[] getWindowWidth() {
-        return dcmobj.getFloats(Tag.WindowWidth);
+        return dcmobj.getFloats(Tag.WINDOW_WIDTH);
     }
 
     /**
@@ -367,7 +367,7 @@ public class DXImageModule extends GeneralImageModule {
      * @param lo
      */
     public void setWindowCenterWidthExplanation(String lo) {
-        dcmobj.putString(Tag.WindowCenterWidthExplanation, VR.LO, lo);
+        dcmobj.putString(Tag.WINDOW_CENTER_WIDTH_EXPLANATION, VR.LO, lo);
     }
 
     /**
@@ -378,6 +378,6 @@ public class DXImageModule extends GeneralImageModule {
      * @return
      */
     public String getWindowCenterWidthExplanation() {
-        return dcmobj.getString(Tag.WindowCenterWidthExplanation);
+        return dcmobj.getString(Tag.WINDOW_CENTER_WIDTH_EXPLANATION);
     }
 }
