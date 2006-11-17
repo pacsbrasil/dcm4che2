@@ -274,7 +274,7 @@ public class FileSystemUtils {
 //        path = FilenameUtils.normalize(path);
 
         // build and run the 'dir' command
-        String[] cmdAttribs = new String[] {"df", dfCommandOption, path};
+        String[] cmdAttribs = new String[] {dfCommand, dfCommandOption, path};
 
         // read the output from the command until we come to the second line
         BufferedReader in = null;
