@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE uids [
-<!ENTITY p06_06 SYSTEM "../../../target/xml/p6_uid/04v06_06.xml">
+<!ENTITY p07_06_03 SYSTEM "../../../target/xml/p6_uid/07_06_03.xml">
 
 <!ENTITY private SYSTEM "private-uids.xml">
 ]>
 <uids>
-&p06_06;
+&p07_06_03;
 &private;
 </uids>

@@ -59,7 +59,7 @@
 			<param name="fname" value="04v06_07"/>
 		</antcall>
 		<antcall target="unzip-sxw">
-			<param name="fname" value="04v06_06"/>
+			<param name="fname" value="07_06_03"/>
 		</antcall>
 	</target>
 	
@@ -72,7 +72,7 @@
 			<param name="style" value="p7_element"/>
 		</antcall>
 		<antcall target="grep">
-			<param name="fname" value="04v06_06"/>
+			<param name="fname" value="07_06_03"/>
 			<param name="style" value="p6_element"/>
 		</antcall>
 	</target>
@@ -82,7 +82,7 @@
          - - - - - - - - - - - - - - - - - -->
 	<target name="p6_uid" depends="unzip">
 		<antcall target="grep">
-			<param name="fname" value="04v06_06"/>
+			<param name="fname" value="07_06_03"/>
 			<param name="style" value="p6_uid"/>
 		</antcall>
 	</target>

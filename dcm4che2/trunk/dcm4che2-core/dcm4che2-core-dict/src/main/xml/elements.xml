@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE elements [
 <!ENTITY p06_07 SYSTEM "../../../target/xml/p7_element/04v06_07.xml">
-<!ENTITY p06_06 SYSTEM "../../../target/xml/p6_element/04v06_06.xml">
+<!ENTITY p07_06_03 SYSTEM "../../../target/xml/p6_element/07_06_03.xml">
 ]>
 <elements>
 &p06_07;
-&p06_06;
+&p07_06_03;
 </elements>

@@ -3,7 +3,8 @@
     <xsl:output method="xml" indent="yes"/>
     <xsl:variable name="noascii">&#xF06D;&#x2019;&#x2013;</xsl:variable>
     <xsl:variable name="ascii">u'-</xsl:variable>
-    <xsl:variable name="nojavaid"> ,'/-()[]@:&amp;</xsl:variable>
+    <xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz/-,'()[]@:&amp;</xsl:variable>
+    <xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ  </xsl:variable>
     <xsl:variable name="digits">0123456789</xsl:variable>
     <xsl:template match="/">
         <dictionary>
@@ -14,7 +15,8 @@
     </xsl:template>
     <xsl:template match="element">
         <xsl:variable name="tag" select="@tag"/>        
-        <xsl:if test="not(following-sibling::*[@tag=$tag])">
+        <xsl:variable name="text" select="text()"/>        
+        <xsl:if test="$text and not(following-sibling::*[@tag=$tag])">
             <xsl:variable name="hex">
                 <xsl:choose>
                     <xsl:when test="@tag='(0020,3100 to 31FF)'">002031xx</xsl:when>
@@ -23,7 +25,6 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:variable>    
-            <xsl:variable name="text" select="text()"/>        
             <xsl:variable name="name" select="translate($text,$noascii,$ascii)"/>        
             <xsl:variable name="ret" select="@ret"/>
             <element>
@@ -33,10 +34,14 @@
                 <xsl:attribute name="alias">
                     <!-- if first char is digit, add _ as prefix -->
                     <xsl:if test="not(translate(substring($name,1,1),$digits,''))">_</xsl:if>
-                    <xsl:value-of select="concat(translate($name,$nojavaid,''),@ret)"/>
-                    <!-- if different attributes with equal names, add ggggeeee suffix -->
+                    <xsl:value-of select="translate(normalize-space(translate($name,$lower,$upper)),' ','_')"/>                    
+                    <!-- if different attributes with equal names, add _gggg_eeee suffix -->
                     <xsl:if test="../*[text()=$text][@ret=$ret][@tag!=$tag]">
-                        <xsl:value-of select="$hex"/>
+                      <xsl:text>_</xsl:text>
+                      <xsl:value-of select="$hex"/>
+                    </xsl:if>
+                    <xsl:if test="string($ret)">
+                      <xsl:text>_RET</xsl:text>
                     </xsl:if>
                 </xsl:attribute>
                 <xsl:attribute name="vr">

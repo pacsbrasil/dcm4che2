@@ -3,7 +3,8 @@
     <xsl:output method="xml" indent="yes"/>
     <xsl:variable name="noascii">&#xF06D;&#x2019;&#x2013;</xsl:variable>
     <xsl:variable name="ascii">u'-</xsl:variable>
-    <xsl:variable name="nojavaid"> ,'/-()[]@:&amp;</xsl:variable>
+    <xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz/-,'()[]@:&amp;</xsl:variable>
+    <xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ  </xsl:variable>
     <xsl:variable name="digits">0123456789</xsl:variable>
     <xsl:template match="/">
         <uids>
@@ -25,7 +26,7 @@
             <xsl:attribute name="alias">
                 <xsl:variable name="name1">
                     <xsl:choose>
-                        <xsl:when test="@value='1.2.840.10008.1.2.4.70'">JPEGLossless</xsl:when>
+                        <xsl:when test="@value='1.2.840.10008.1.2.4.70'">JPEG_LOSSLESS</xsl:when>
                         <xsl:when test="@value='1.2.840.10008.1.2.4.100'">MPEG2</xsl:when>
                         <xsl:when test="@type='Transfer Syntax'">
                             <xsl:call-template name="remove">
@@ -45,7 +46,15 @@
                 </xsl:variable>
                 <!-- if first char is digit, add _ as prefix -->
                 <xsl:if test="not(translate(substring($name1,1,1),$digits,''))">_</xsl:if>
-                <xsl:value-of select="translate($name1,$nojavaid,'')"/>
+                <xsl:choose>
+                  <!-- do not convert LDAP OID names to uppercase -->
+                  <xsl:when test="starts-with($name1,'dicom')">
+                    <xsl:value-of select="$name1"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="translate(normalize-space(translate($name1,$lower,$upper)),' ','_')"/>
+                  </xsl:otherwise>
+                </xsl:choose>
             </xsl:attribute>
             <xsl:attribute name="type">
                 <xsl:value-of select="@type"/>
