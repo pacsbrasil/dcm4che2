@@ -97,6 +97,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.wado.common.BasicRequestObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -135,6 +136,8 @@ private boolean useTransferSyntaxOfFileAsDefault = true;
 
 private boolean extendedWADOAllowed = false;
 private String extendedWADORequestType;
+
+private boolean disableDNS = false;
 
 private Map textSopCuids = null;
 
@@ -208,10 +211,7 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 	}
 	if ( this.isAuditLogEnabled(req) && resp.getReturnCode() == HttpServletResponse.SC_OK ) {
     	Dataset patDS = getPatientInfo(req);
-    	this.logInstancesSent( alf.newPatient(patDS.getString(Tags.PatientID), 
-    			patDS.getString(Tags.PatientName)),
-				alf.newRemoteNode( req.getRemoteAddr(), req.getRemoteHost(), null),
-				patDS.getString(Tags.StudyInstanceUID));
+    	this.logInstancesSent( patDS, req );
 	}
 	return resp;
 }
@@ -281,10 +281,7 @@ public WADOResponseObject handleDicom( WADORequestObject req ) {
 			WADOResponseObject resp = new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
 	        if ( this.isAuditLogEnabled(req) ) {
 	        	Dataset patDS = getPatientInfo(req);
-	        	this.logInstancesSent( alf.newPatient(patDS.getString(Tags.PatientID), 
-	        			patDS.getString(Tags.PatientName)),
-						alf.newRemoteNode( req.getRemoteAddr(), req.getRemoteHost(), null),
-						patDS.getString(Tags.StudyInstanceUID));
+	        	this.logInstancesSent( patDS, req );
 	        }
 			return resp;
 		} else {
@@ -337,10 +334,7 @@ private WADOResponseObject getUpdatedInstance( WADORequestObject req, String tra
         	} else {
         		d = getPatientInfo(req);
         	}
-        	this.logInstancesSent( alf.newPatient(d.getString(Tags.PatientID), 
-        							d.getString(Tags.PatientName)),
-        							alf.newRemoteNode( req.getRemoteAddr(), req.getRemoteHost(), null),
-									d.getString(Tags.StudyInstanceUID));
+        	this.logInstancesSent( d, req );
         }
         return new WADODatasourceResponseObjectImpl( ds, transferSyntax, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
         
@@ -813,6 +807,20 @@ public Set getDisabledAuditLogHosts() {
 }
 
 /**
+ * @return the disableDNS
+ */
+public boolean isDisableDNS() {
+    return disableDNS;
+}
+
+/**
+ * @param disableDNS the disableDNS to set
+ */
+public void setDisableDNS(boolean disableDNS) {
+    this.disableDNS = disableDNS;
+}
+
+/**
  * @return Returns the useOrigFile.
  */
 public boolean isUseOrigFile() {
@@ -882,9 +890,11 @@ public void setTextSopCuids(Map sopCuids) {
 	}
 }
 
-private void logInstancesSent(Patient patient, 
-								RemoteNode rnode, 
-								String suid) {
+private void logInstancesSent(Dataset ds, BasicRequestObject req) {
+    Patient patient = alf.newPatient(ds.getString(Tags.PatientID),ds.getString(Tags.PatientName) );
+    String remoteHost = disableDNS ? req.getRemoteAddr() : req.getRemoteHost();
+    RemoteNode rnode = alf.newRemoteNode( req.getRemoteAddr(), remoteHost, null);
+    String suid = ds.getString(Tags.StudyInstanceUID);
     try {
         server.invoke(auditLogName,
                 "logInstancesSent",

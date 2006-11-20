@@ -286,7 +286,18 @@ public class WADOService extends AbstractCacheService {
 			support.setDisabledAuditLogHosts(disabledHosts);
 		}
 	}
-	
+
+    public boolean isDisableDNS() {
+        return support.isDisableDNS();
+    }
+
+    /**
+     * @param disableDNS the disableDNS to set
+     */
+    public void setDisableDNS(boolean disableDNS) {
+        support.setDisableDNS(disableDNS);
+    }
+    
 	/**
 	 * Setter for the name of the FileSystemMgt MBean.
 	 * <p>
