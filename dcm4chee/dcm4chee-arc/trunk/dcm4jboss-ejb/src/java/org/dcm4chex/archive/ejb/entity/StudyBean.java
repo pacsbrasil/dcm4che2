@@ -130,7 +130,7 @@ import org.dcm4chex.archive.util.Convert;
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2 AND f.fileSystem.availability <> 3 AND f.fileSystem.status = 2"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Long pk)"
  * 	            query="SELECT MAX(s.availability) FROM Series s WHERE s.study.pk = ?1"
- * @jboss.query signature="long ejbSelectStudyFileSize(java.lang.Long studyPk, java.lang.Long fsPk)"
+ * @jboss.query signature="java.lang.Long ejbSelectStudyFileSize(java.lang.Long studyPk, java.lang.Long fsPk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
@@ -558,7 +558,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query=""
      */
-    public abstract long ejbSelectStudyFileSize(Long studyPk, Long fsPk)
+    public abstract Long ejbSelectStudyFileSize(Long studyPk, Long fsPk)
             throws FinderException;
 
  
@@ -573,7 +573,8 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.home-method
      */
     public long ejbHomeSelectStudySize( Long studyPk, Long fsPk ) throws FinderException {
-    	return ejbSelectStudyFileSize(studyPk, fsPk);
+        Long l = ejbSelectStudyFileSize(studyPk, fsPk);
+        return l == null ? 0l : l.longValue();
     }
     
     private boolean updateRetrieveAETs(Long pk, int numI)
