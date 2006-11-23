@@ -459,7 +459,7 @@ public class DcmImageReader extends ImageReader {
 	            data[i] &= mask;
 	        return bi;
         }
-        final int sign = theDataset.getInt(Tags.PixelPresentation, 0) == 0 ?
+        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ?
         		0 : ~mask;
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;

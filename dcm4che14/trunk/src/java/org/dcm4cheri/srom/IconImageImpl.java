@@ -105,7 +105,7 @@ class IconImageImpl implements IconImage {
         ds.putUS(Tags.BitsAllocated, 8);
         ds.putUS(Tags.BitsStored, 8);
         ds.putUS(Tags.HighBit, 7);
-        ds.putUS(Tags.PixelPresentation, 0);
+        ds.putUS(Tags.PixelRepresentation, 0);
         ds.putOB(Tags.PixelData, pixeldata);
     }    
     
