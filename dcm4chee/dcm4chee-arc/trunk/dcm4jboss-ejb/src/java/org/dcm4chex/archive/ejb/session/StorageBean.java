@@ -42,8 +42,11 @@ package org.dcm4chex.archive.ejb.session;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -123,6 +126,14 @@ public abstract class StorageBean implements SessionBean {
     private StudyOnFileSystemLocalHome sofHome;
 
     private SessionContext sessionCtx;
+    
+    private static final int MAX_PK_CACHE_ENTRIES = 100;
+    private static Map seriesPkCache = Collections.synchronizedMap(
+     new LinkedHashMap() {
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+           return size() > MAX_PK_CACHE_ENTRIES;
+        }
+    });
 
     public void setSessionContext(SessionContext ctx) {
         sessionCtx = ctx;
@@ -207,7 +218,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public SeriesStored makeSeriesStored(String seriuid)
     throws FinderException {
-        SeriesLocal series = seriesHome.findBySeriesIuid(seriuid);
+        SeriesLocal series = findBySeriesIuid(seriuid);
         return makeSeriesStored(series);
     }
 
@@ -225,7 +236,7 @@ public abstract class StorageBean implements SessionBean {
             iuids.add(refSOPs.getItem(i).getString(Tags.RefSOPInstanceUID));
         }
         String seriuid = refSeries.getString(Tags.SeriesInstanceUID);
-        SeriesLocal series = seriesHome.findBySeriesIuid(seriuid);
+        SeriesLocal series = findBySeriesIuid(seriuid);
         Collection c = series.getInstances();
         int remaining = 0;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
@@ -326,7 +337,7 @@ public abstract class StorageBean implements SessionBean {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
-            series = seriesHome.findBySeriesIuid(uid);
+            series = findBySeriesIuid(uid);
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             series = seriesHome.create(ds, getStudy(ds, coercedElements, fs));
@@ -450,7 +461,7 @@ public abstract class StorageBean implements SessionBean {
             	commited(seriesSet, studySet, iuid, aet);
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
-            final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
+            final SeriesLocal ser = findBySeriesIuid((String) series.next());
 			ser.updateDerivedFields(false, false, true, false, false);
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
@@ -481,7 +492,7 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateSeries(String iuid) throws FinderException {
-   		final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
+   		final SeriesLocal series = findBySeriesIuid(iuid);
    		series.updateDerivedFields(true, true, false, true, true);
     }
     
@@ -505,6 +516,16 @@ public abstract class StorageBean implements SessionBean {
 	    	if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
 	    		study.remove();
     	}
+    }
+    
+    private SeriesLocal findBySeriesIuid(String uid) throws javax.ejb.FinderException {
+    	Long pk = (Long)seriesPkCache.get(uid);
+    	if (pk != null) {
+    		return seriesHome.findByPrimaryKey(pk);
+    	}
+    	SeriesLocal ser = seriesHome.findBySeriesIuid(uid);
+    	seriesPkCache.put(uid, ser.getPk());
+    	return ser;
     }
 }
 
