@@ -736,8 +736,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 || checkStorageFileSystem < System.currentTimeMillis();
         if (checkStorageFileSystemStatus || checkDiskSpace) {
             FileSystemMgt fsmgt = newFileSystemMgt();
-            storageFileSystem = fsmgt.getFileSystem(storageFileSystem
-                    .getDirectoryPath());
+            storageFileSystem = fsmgt.getFileSystem(new Long(storageFileSystem.getPk()));
             if (!checkStorageFileSystemStatus(storageFileSystem)
                     || checkDiskSpace
                     && !checkStorageFileSystem(storageFileSystem))

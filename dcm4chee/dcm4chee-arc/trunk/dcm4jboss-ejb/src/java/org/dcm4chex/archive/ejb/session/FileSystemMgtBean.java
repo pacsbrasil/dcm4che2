@@ -396,6 +396,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
         updateFileSystem(fs1);
         updateFileSystem(fs2);
     }
+    
+    /**
+     * @throws FinderException
+     * @ejb.interface-method
+     */
+    public FileSystemDTO getFileSystem(Long pk) throws FinderException {
+        return fileSystemHome.findByPrimaryKey(pk).toDTO();
+    }
 
     /**
      * @throws FinderException
