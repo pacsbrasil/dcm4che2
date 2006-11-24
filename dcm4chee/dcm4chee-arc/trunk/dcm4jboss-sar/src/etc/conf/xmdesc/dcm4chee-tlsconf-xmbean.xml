@@ -20,6 +20,39 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
+      getMethod="getEnabledProtocols"
+      setMethod="setEnabledProtocols">
+      <description><![CDATA[Comma separated list of protocol versions enabled
+      for use on this connection. See <b>SupportedProtocols</b> for possible
+      values. Default: TLSv1,SSLv3]]>
+      </description>
+      <name>EnabledProtocols</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="TLSv1,SSLv3" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSupportedProtocols">
+      <description><![CDATA[Supported protocol versions by the used SSL provider.
+      Defines possible values for <b>EnabledProtocols</b>.]]>
+      </description>
+      <name>SupportedProtocols</name>
+      <type>java.lang.String</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isNeedClientAuth"
+      setMethod="setNeedClientAuthentication">
+      <description><![CDATA[Set to <tt>true</tt> if client authentication is
+      required, or <tt>false</tt> if no client authentication is desired.]]>
+      </description>
+      <name>NeedClientAuth</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getKeyStoreURL"
       setMethod="setKeyStoreURL">
       <description>URL of key store containing key used in SSL handshake,

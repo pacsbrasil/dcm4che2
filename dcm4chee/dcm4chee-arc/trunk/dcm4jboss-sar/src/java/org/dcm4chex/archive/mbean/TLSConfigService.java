@@ -51,6 +51,7 @@ import javax.net.SocketFactory;
 import org.dcm4che.util.HandshakeFailedEvent;
 import org.dcm4che.util.HandshakeFailedListener;
 import org.dcm4che.util.SSLContextAdapter;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -88,6 +89,32 @@ public class TLSConfigService extends ServiceMBeanSupport
 
     public void setAuditLoggerName(ObjectName auditLogName) {
         this.auditLogName = auditLogName;
+    }
+
+    public String getEnabledProtocols() {
+        return StringUtils.toString(ssl.getEnabledProtocols(), ',');
+    }
+
+    public void setEnabledProtocols(String protocols) {
+        ssl.setEnabledProtocols(StringUtils.split(protocols, ','));
+    }
+
+    public String getSupportedProtocols() {
+        try {
+            initTLSConf();
+            ssl.getSSLContext(); // XXX force to initialize SSLContext
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return StringUtils.toString(ssl.getSupportedProtocols(), ',');
+    }
+    
+    public boolean isNeedClientAuth() {
+        return ssl.isNeedClientAuth();
+    }
+    
+    public void setNeedClientAuth(boolean needClientAuth) {
+        ssl.setNeedClientAuth(needClientAuth);
     }
 
     public final void setKeyStorePassword(String keyStorePassword) {
