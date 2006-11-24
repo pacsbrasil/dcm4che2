@@ -201,11 +201,22 @@ public abstract class AbstractModel {
         Calendar cal = Calendar.getInstance();
         cal.clear();
         String[] s3 = StringUtils.split(s, '/');
+        if ( ( s3.length > 0 ) && ( s3[0].length() > 4) ) {
+        	throw new NumberFormatException(s);
+        }
         cal.set(Calendar.YEAR, Integer.parseInt(s3[0]));
         if (s3.length > 1 && s3[1].length() > 0) {
+        	if ( s3[1].length() > 2 )
+        	{
+        		throw new NumberFormatException(s);
+        	}
             cal.set(Calendar.MONTH, Integer.parseInt(s3[1])-1);
             if (s3.length > 2 && s3[2].length() > 0) {
-                cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s3[2]));
+            	if ( s3[2].length() > 2 )
+            	{
+            		throw new NumberFormatException(s);
+            	}
+               cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s3[2]));
             } else {
                 if (end) {
                     cal.add(Calendar.MONTH, 1);
