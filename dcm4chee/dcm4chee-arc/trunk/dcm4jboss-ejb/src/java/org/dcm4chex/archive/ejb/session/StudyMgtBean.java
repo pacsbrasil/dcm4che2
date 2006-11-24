@@ -62,6 +62,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
@@ -73,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -209,24 +211,19 @@ public abstract class StudyMgtBean implements SessionBean {
 	public void updateStudyAndPatientOnly(String iuid, Dataset ds) throws DcmServiceException {
 		try {
 			StudyLocal study = getStudy(iuid);
-			
-			//
-			// Update patient attributes
-			//
+			AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter(null);
+			AttributeFilter studyFilter = AttributeFilter.getStudyAttributeFilter(null);
+			Dataset patientAttr = patientFilter.filter(ds);
+			Dataset studyAttr = studyFilter.filter(ds);
+
 			PatientUpdateLocal patientUpdate = patientUpdateHome.create();
-			try
-			{
-				patientUpdate.updatePatient(study, ds);
+			try {
+               patientUpdate.updatePatient(study, patientAttr);
 			}
-			finally
-			{
+			finally	{
 				patientUpdate.remove();
 			}
-			
-			//
-			// Update study attributes
-			//
-			updateStudy(iuid, ds);
+			updateStudy(iuid, studyAttr);
 		} catch (Exception e) {
 			throw new EJBException(e);
 		}	
@@ -239,15 +236,6 @@ public abstract class StudyMgtBean implements SessionBean {
 			throws DcmServiceException {
 		try {
 			StudyLocal study = getStudy(iuid);
-			if (ds.contains(Tags.PatientID)) {
-				PatientLocal prevPat = study.getPatient();
-				PatientLocal pat = getPatient(ds);
-				if (!pat.isIdentical(prevPat)) {					
-					log.info("Move " + study.asString() + " from " + 
-							prevPat.asString() + " to " + pat.asString());
-					study.setPatient(getPatient(ds));
-				}
-			}
 			Dataset attrs = study.getAttributes(false);
 			attrs.putAll(ds);
 			study.setAttributes(attrs);
