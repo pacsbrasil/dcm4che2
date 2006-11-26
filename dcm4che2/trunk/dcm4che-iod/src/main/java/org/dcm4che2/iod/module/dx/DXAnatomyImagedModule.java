@@ -65,7 +65,7 @@ public class DXAnatomyImagedModule extends GeneralAnatomy {
     public void validate(ValidationContext ctx, ValidationResult result){
         super.validate(ctx, result);
         if (!ImageLaterality.isValid(getImageLaterality())) {
-            result.logInvalidValue(Tag.IMAGE_LATERALITY, dcmobj);
+            result.logInvalidValue(Tag.ImageLaterality, dcmobj);
         }
 
     }
@@ -96,7 +96,7 @@ public class DXAnatomyImagedModule extends GeneralAnatomy {
      * @return
      */
     public String getImageLaterality() {
-        return dcmobj.getString(Tag.IMAGE_LATERALITY);
+        return dcmobj.getString(Tag.ImageLaterality);
     }
 
     /**
@@ -125,7 +125,7 @@ public class DXAnatomyImagedModule extends GeneralAnatomy {
      * @param s
      */
     public void setImageLaterality(String s) {
-        dcmobj.putString(Tag.IMAGE_LATERALITY, VR.CS, s);
+        dcmobj.putString(Tag.ImageLaterality, VR.CS, s);
     }
 
 }

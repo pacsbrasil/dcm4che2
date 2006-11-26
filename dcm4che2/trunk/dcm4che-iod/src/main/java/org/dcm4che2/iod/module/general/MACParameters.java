@@ -73,35 +73,35 @@ public class MACParameters extends Module {
     }
 
     public int getMACIDNumber() {
-        return dcmobj.getInt(Tag.MAC_ID_NUMBER);
+        return dcmobj.getInt(Tag.MACIDNumber);
     }
     
     public void setMACIDNumber(int i) {
-        dcmobj.putInt(Tag.MAC_ID_NUMBER, VR.US, i);
+        dcmobj.putInt(Tag.MACIDNumber, VR.US, i);
     }
     
     public String getMACCalculationTransferSyntaxUID() {
-        return dcmobj.getString(Tag.MAC_CALCULATION_TRANSFER_SYNTAX_UID);
+        return dcmobj.getString(Tag.MACCalculationTransferSyntaxUID);
     }
     
     public void setMACCalculationTransferSyntaxUID(String s) {
-        dcmobj.putString(Tag.MAC_CALCULATION_TRANSFER_SYNTAX_UID, VR.UI, s);
+        dcmobj.putString(Tag.MACCalculationTransferSyntaxUID, VR.UI, s);
     }
     
     public String getMACAlgorithm() {
-        return dcmobj.getString(Tag.MAC_ALGORITHM);
+        return dcmobj.getString(Tag.MACAlgorithm);
     }
     
     public void setMACAlgorithm(String s) {
-        dcmobj.putString(Tag.MAC_ALGORITHM, VR.CS, s);
+        dcmobj.putString(Tag.MACAlgorithm, VR.CS, s);
     }
 
     public int[] getDataElementsSigned() {
-        return dcmobj.getInts(Tag.DATA_ELEMENTS_SIGNED);
+        return dcmobj.getInts(Tag.DataElementsSigned);
     }
     
     public void setDataElementsSigned(int[] ints) {
-        dcmobj.putInts(Tag.DATA_ELEMENTS_SIGNED, VR.AT, ints);
+        dcmobj.putInts(Tag.DataElementsSigned, VR.AT, ints);
     }
 
 }

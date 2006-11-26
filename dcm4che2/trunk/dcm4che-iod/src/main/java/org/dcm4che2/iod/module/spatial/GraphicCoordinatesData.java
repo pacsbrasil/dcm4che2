@@ -88,7 +88,7 @@ public class GraphicCoordinatesData extends Module {
      * @return
      */
     public float[] getGraphicData() {
-        return dcmobj.getFloats(Tag.GRAPHIC_DATA);
+        return dcmobj.getFloats(Tag.GraphicData);
     }
 
     /**
@@ -105,7 +105,7 @@ public class GraphicCoordinatesData extends Module {
      * @param fl
      */
     public void setGraphicData(float[] fl) {
-        dcmobj.putFloats(Tag.GRAPHIC_DATA, VR.FL, fl);
+        dcmobj.putFloats(Tag.GraphicData, VR.FL, fl);
     }
 
     /**
@@ -122,7 +122,7 @@ public class GraphicCoordinatesData extends Module {
      * @param sop
      */
     public void setReferencedImage(ImageSOPInstanceReference sop) {
-        updateSequence(Tag.REFERENCED_IMAGE_SEQUENCE, sop);
+        updateSequence(Tag.ReferencedImageSequence, sop);
     }
 
     /**
@@ -140,7 +140,7 @@ public class GraphicCoordinatesData extends Module {
      */
     public ImageSOPInstanceReference getReferencedImage() {
         DicomObject item = dcmobj
-                .getNestedDicomObject(Tag.REFERENCED_IMAGE_SEQUENCE);
+                .getNestedDicomObject(Tag.ReferencedImageSequence);
         return item != null ? new ImageSOPInstanceReference(item) : null;
     }
 

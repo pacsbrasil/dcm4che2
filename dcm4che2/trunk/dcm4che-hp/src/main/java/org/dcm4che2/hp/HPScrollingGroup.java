@@ -88,7 +88,7 @@ public class HPScrollingGroup
         {
             val[i] = ((HPDisplaySet) displaySets.get(i)).getDisplaySetNumber();
         }
-        item.putInts(Tag.DISPLAY_SET_SCROLLING_GROUP, VR.US, val);
+        item.putInts(Tag.DisplaySetScrollingGroup, VR.US, val);
         return item;
     }
 

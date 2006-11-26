@@ -73,87 +73,87 @@ public class ReferencedRequest extends Module {
     }
 
     public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.STUDY_INSTANCE_UID);
+        return dcmobj.getString(Tag.StudyInstanceUID);
     }
     
     public void setStudyInstanceUID(String s) {
-        dcmobj.putString(Tag.STUDY_INSTANCE_UID, VR.UI, s);
+        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, s);
     }
 
     public SOPInstanceReference getReferencedStudySOPInstance() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.REFERENCED_STUDY_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ReferencedStudySequence);
         return item != null ? new SOPInstanceReference(item) : null;
     }
     
     public void setReferencedStudySOPInstance(SOPInstanceReference refSOP) {
-        updateSequence(Tag.REFERENCED_STUDY_SEQUENCE, refSOP);
+        updateSequence(Tag.ReferencedStudySequence, refSOP);
     }
     
     public String getAccessionNumber() {
-        return dcmobj.getString(Tag.ACCESSION_NUMBER);
+        return dcmobj.getString(Tag.AccessionNumber);
     }
     
     public void setAccessionNumber(String s) {
-        dcmobj.putString(Tag.ACCESSION_NUMBER, VR.SH, s);
+        dcmobj.putString(Tag.AccessionNumber, VR.SH, s);
     }
         
     public String getPlacerOrderNumberImagingServiceRequest() {
-        return dcmobj.getString(Tag.PLACER_ORDER_NUMBER_IMAGING_SERVICE_REQUEST);
+        return dcmobj.getString(Tag.PlacerOrderNumberImagingServiceRequest);
     }
     
     public void setPlacerOrderNumberImagingServiceRequest(String s) {
-        dcmobj.putString(Tag.PLACER_ORDER_NUMBER_IMAGING_SERVICE_REQUEST, VR.LO, s);
+        dcmobj.putString(Tag.PlacerOrderNumberImagingServiceRequest, VR.LO, s);
     }
            
     public String getFillerOrderNumberImagingServiceRequest() {
-        return dcmobj.getString(Tag.FILLER_ORDER_NUMBER_IMAGING_SERVICE_REQUEST);
+        return dcmobj.getString(Tag.FillerOrderNumberImagingServiceRequest);
     }
     
     public void setFillerOrderNumberImagingServiceRequest(String s) {
-        dcmobj.putString(Tag.FILLER_ORDER_NUMBER_IMAGING_SERVICE_REQUEST, VR.LO, s);
+        dcmobj.putString(Tag.FillerOrderNumberImagingServiceRequest, VR.LO, s);
     }
     
     public String getRequestedProcedureID() {
-        return dcmobj.getString(Tag.REQUESTED_PROCEDURE_ID);
+        return dcmobj.getString(Tag.RequestedProcedureID);
     }
 
     public void setRequestedProcedureID(String s) {
-        dcmobj.putString(Tag.REQUESTED_PROCEDURE_ID, VR.SH, s);
+        dcmobj.putString(Tag.RequestedProcedureID, VR.SH, s);
     }
 
     public String getRequestedProcedureDescription() {
-        return dcmobj.getString(Tag.REQUESTED_PROCEDURE_DESCRIPTION);
+        return dcmobj.getString(Tag.RequestedProcedureDescription);
     }
 
     public void setRequestedProcedureDescription(String s) {
-        dcmobj.putString(Tag.REQUESTED_PROCEDURE_DESCRIPTION, VR.LO, s);
+        dcmobj.putString(Tag.RequestedProcedureDescription, VR.LO, s);
     }
 
     public Code getRequestedProcedureCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.REQUESTED_PROCEDURE_CODE_SEQUENCE);
+                Tag.RequestedProcedureCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setRequestedProcedureCode(Code code) {
-        updateSequence(Tag.REQUESTED_PROCEDURE_CODE_SEQUENCE, code);
+        updateSequence(Tag.RequestedProcedureCodeSequence, code);
     }    
 
-    public String getReasonfortheRequestedProcedure() {
-        return dcmobj.getString(Tag.REASON_FOR_THE_REQUESTED_PROCEDURE);
+    public String getReasonForTheRequestedProcedure() {
+        return dcmobj.getString(Tag.ReasonForTheRequestedProcedure);
     }
 
-    public void setReasonfortheRequestedProcedure(String s) {
-        dcmobj.putString(Tag.REASON_FOR_THE_REQUESTED_PROCEDURE, VR.LO, s);
+    public void setReasonForTheRequestedProcedure(String s) {
+        dcmobj.putString(Tag.ReasonForTheRequestedProcedure, VR.LO, s);
     }
     
-    public Code getReasonforRequestedProcedureCode() {
+    public Code getReasonForRequestedProcedureCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE);
+                Tag.ReasonForRequestedProcedureCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
-    public void setReasonforRequestedProcedureCode(Code code) {
-        updateSequence(Tag.REASON_FOR_REQUESTED_PROCEDURE_CODE_SEQUENCE, code);
+    public void setReasonForRequestedProcedureCode(Code code) {
+        updateSequence(Tag.ReasonForRequestedProcedureCodeSequence, code);
     }
 }

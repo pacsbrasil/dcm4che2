@@ -59,116 +59,116 @@ public class PatientModule extends Module {
         super(dcmobj);
     }
 
-    public String getPatientsName() {
-        return dcmobj.getString(Tag.PATIENTS_NAME);
+    public String getPatientName() {
+        return dcmobj.getString(Tag.PatientName);
     }
     
-    public void setPatientsName(String s) {
-        dcmobj.putString(Tag.PATIENTS_NAME, VR.PN, s);
+    public void setPatientName(String s) {
+        dcmobj.putString(Tag.PatientName, VR.PN, s);
     }
     
     public String getPatientID() {
-        return dcmobj.getString(Tag.PATIENT_ID);
+        return dcmobj.getString(Tag.PatientID);
     }
     
     public void setPatientID(String s) {
-        dcmobj.putString(Tag.PATIENT_ID, VR.LO, s);
+        dcmobj.putString(Tag.PatientID, VR.LO, s);
     }
     
-    public String getIssuerofPatientID() {
-        return dcmobj.getString(Tag.ISSUER_OF_PATIENT_ID);
+    public String getIssuerOfPatientID() {
+        return dcmobj.getString(Tag.IssuerOfPatientID);
     }
     
-    public void setIssuerofPatientID(String s) {
-        dcmobj.putString(Tag.ISSUER_OF_PATIENT_ID, VR.LO, s);
+    public void setIssuerOfPatientID(String s) {
+        dcmobj.putString(Tag.IssuerOfPatientID, VR.LO, s);
     }
     
-    public Date getPatientsBirthDate() {
-        return dcmobj.getDate(Tag.PATIENTS_BIRTH_DATE);
+    public Date getPatientBirthDate() {
+        return dcmobj.getDate(Tag.PatientBirthDate);
     }
     
-    public void setPatientsBirthDate(Date d) {
-        dcmobj.putDate(Tag.PATIENTS_BIRTH_DATE, VR.DA, d);
+    public void setPatientBirthDate(Date d) {
+        dcmobj.putDate(Tag.PatientBirthDate, VR.DA, d);
     }
     
-    public Date getPatientsBirthTime() {
-        return dcmobj.getDate(Tag.PATIENTS_BIRTH_TIME);
+    public Date getPatientBirthTime() {
+        return dcmobj.getDate(Tag.PatientBirthTime);
     }
     
-    public void setPatientsBirthTime(Date d) {
-        dcmobj.putDate(Tag.PATIENTS_BIRTH_TIME, VR.TM, d);
+    public void setPatientBirthTime(Date d) {
+        dcmobj.putDate(Tag.PatientBirthTime, VR.TM, d);
     }
     
-    public String getPatientsSex() {
-        return dcmobj.getString(Tag.PATIENTS_SEX);
+    public String getPatientSex() {
+        return dcmobj.getString(Tag.PatientSex);
     }
     
-    public void setPatientsSex(String s) {
-        dcmobj.putString(Tag.PATIENTS_SEX, VR.CS, s);
+    public void setPatientSex(String s) {
+        dcmobj.putString(Tag.PatientSex, VR.CS, s);
     }
     
     public SOPInstanceReference getReferencedPatientSOPInstance() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.REFERENCED_PATIENT_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ReferencedPatientSequence);
         return item != null ? new SOPInstanceReference(item) : null;
     }
     
     public void setReferencedPatientSOPInstance(SOPInstanceReference refSOP) {
-        updateSequence(Tag.REFERENCED_PATIENT_SEQUENCE, refSOP);
+        updateSequence(Tag.ReferencedPatientSequence, refSOP);
     }
     
     public String[] getOtherPatientIDs() {
-        return dcmobj.getStrings(Tag.OTHER_PATIENT_IDS);
+        return dcmobj.getStrings(Tag.OtherPatientIDs);
     }
     
     public void setOtherPatientIDs(String[] ss) {
-        dcmobj.putStrings(Tag.OTHER_PATIENT_IDS, VR.LO, ss);
+        dcmobj.putStrings(Tag.OtherPatientIDs, VR.LO, ss);
     }
     
     public String[] getOtherPatientNames() {
-        return dcmobj.getStrings(Tag.OTHER_PATIENT_NAMES);
+        return dcmobj.getStrings(Tag.OtherPatientNames);
     }
     
     public void setOtherPatientNames(String[] ss) {
-        dcmobj.putStrings(Tag.OTHER_PATIENT_NAMES, VR.PN, ss);
+        dcmobj.putStrings(Tag.OtherPatientNames, VR.PN, ss);
     }
     
     public String getEthnicGroup() {
-        return dcmobj.getString(Tag.ETHNIC_GROUP);
+        return dcmobj.getString(Tag.EthnicGroup);
     }
     
     public void setEthnicGroup(String s) {
-        dcmobj.putString(Tag.ETHNIC_GROUP, VR.SH, s);
+        dcmobj.putString(Tag.EthnicGroup, VR.SH, s);
     }
     
     public String getPatientComments() {
-        return dcmobj.getString(Tag.PATIENT_COMMENTS);
+        return dcmobj.getString(Tag.PatientComments);
     }
     
     public void setPatientComments(String s) {
-        dcmobj.putString(Tag.PATIENT_COMMENTS, VR.LT, s);
+        dcmobj.putString(Tag.PatientComments, VR.LT, s);
     }
     
     public String getPatientIdentifyRemoved() {
-        return dcmobj.getString(Tag.PATIENT_IDENTIFY_REMOVED);
+        return dcmobj.getString(Tag.PatientIdentifyRemoved);
     }
     
     public void setPatientIdentifyRemoved(String s) {
-        dcmobj.putString(Tag.PATIENT_IDENTIFY_REMOVED, VR.CS, s);
+        dcmobj.putString(Tag.PatientIdentifyRemoved, VR.CS, s);
     }
     
     public String getDeidentificationMethod() {
-        return dcmobj.getString(Tag.DE_IDENTIFICATION_METHOD);
+        return dcmobj.getString(Tag.DeidentificationMethod);
     }
     
     public void setDeidentificationMethod(String s) {
-        dcmobj.putString(Tag.DE_IDENTIFICATION_METHOD, VR.LO, s);
+        dcmobj.putString(Tag.DeidentificationMethod, VR.LO, s);
     }
     
     public Code[] getDeidentificationMethodCodes() {
-        return Code.toCodes(dcmobj.get(Tag.DE_IDENTIFICATION_METHOD_CODE_SEQUENCE));
+        return Code.toCodes(dcmobj.get(Tag.DeidentificationMethodCodeSequence));
     }
 
     public void setDeidentificationMethodCodes(Code[] codes) {
-        updateSequence(Tag.DE_IDENTIFICATION_METHOD_CODE_SEQUENCE, codes);
+        updateSequence(Tag.DeidentificationMethodCodeSequence, codes);
     }    
 }

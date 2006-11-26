@@ -107,21 +107,21 @@ public class DcmSnd {
       + "listening on local port 11112.";
 
     private static final String[] IVLE_TS = { 
-        UID.IMPLICIT_VR_LITTLE_ENDIAN,
-        UID.EXPLICIT_VR_LITTLE_ENDIAN, 
-        UID.EXPLICIT_VR_BIG_ENDIAN,
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian, 
+        UID.ExplicitVRBigEndian,
     };
 
     private static final String[] EVLE_TS = {
-        UID.EXPLICIT_VR_LITTLE_ENDIAN,
-        UID.IMPLICIT_VR_LITTLE_ENDIAN,
-        UID.EXPLICIT_VR_BIG_ENDIAN, 
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian, 
     };
 
     private static final String[] EVBE_TS = { 
-        UID.EXPLICIT_VR_BIG_ENDIAN,
-        UID.EXPLICIT_VR_LITTLE_ENDIAN, 
-        UID.IMPLICIT_VR_LITTLE_ENDIAN, 
+        UID.ExplicitVRBigEndian,
+        UID.ExplicitVRLittleEndian, 
+        UID.ImplicitVRLittleEndian, 
     };
 
     private Executor executor = new NewThreadExecutor("DCMSND");
@@ -543,7 +543,7 @@ public class DcmSnd {
         try {
             DicomInputStream in = new DicomInputStream(f);
             try {
-                in.setHandler(new StopTagInputHandler(Tag.STUDY_DATE));
+                in.setHandler(new StopTagInputHandler(Tag.StudyDate));
                 in.readDicomObject(dcmObj, PEEK_LEN);
                 info.tsuid = in.getTransferSyntax().uid();
                 info.fmiEndPos = in.getEndOfFileMetaInfoPosition();
@@ -559,14 +559,14 @@ public class DcmSnd {
             System.out.print('F');
             return;
         }
-        info.cuid = dcmObj.getString(Tag.SOP_CLASS_UID);
+        info.cuid = dcmObj.getString(Tag.SOPClassUID);
         if (info.cuid == null) {
             System.err.println("WARNING: Missing SOP Class UID in " + f
                     + " - skipped.");
             System.out.print('F');
             return;
         }
-        info.iuid = dcmObj.getString(Tag.SOP_INSTANCE_UID);
+        info.iuid = dcmObj.getString(Tag.SOPInstanceUID);
         if (info.iuid == null) {
             System.err.println("WARNING: Missing SOP Instance UID in " + f
                     + " - skipped.");
@@ -582,7 +582,7 @@ public class DcmSnd {
         HashSet ts = (HashSet) as2ts.get(cuid);
         if (ts == null) {
             ts = new HashSet();
-            ts.add(UID.IMPLICIT_VR_LITTLE_ENDIAN);
+            ts.add(UID.ImplicitVRLittleEndian);
             as2ts.put(cuid, ts);
         }
         ts.add(tsuid);
@@ -664,11 +664,11 @@ public class DcmSnd {
     }
 
     private String selectTransferSyntax(String[] available, String tsuid) {
-        if (tsuid.equals(UID.IMPLICIT_VR_LITTLE_ENDIAN))
+        if (tsuid.equals(UID.ImplicitVRLittleEndian))
             return selectTransferSyntax(available, IVLE_TS);
-        if (tsuid.equals(UID.EXPLICIT_VR_LITTLE_ENDIAN))
+        if (tsuid.equals(UID.ExplicitVRLittleEndian))
             return selectTransferSyntax(available, EVLE_TS);
-        if (tsuid.equals(UID.EXPLICIT_VR_BIG_ENDIAN))
+        if (tsuid.equals(UID.ExplicitVRBigEndian))
             return selectTransferSyntax(available, EVBE_TS);
         return tsuid;
     }
@@ -754,8 +754,8 @@ public class DcmSnd {
     }
 
     private void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
-        int status = cmd.getInt(Tag.STATUS);
-        int msgId = cmd.getInt(Tag.MESSAGE_ID_BEING_RESPONDED_TO);
+        int status = cmd.getInt(Tag.Status);
+        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
         FileInfo info = (FileInfo) files.get(msgId - 1);
         switch (status) {
         case 0:

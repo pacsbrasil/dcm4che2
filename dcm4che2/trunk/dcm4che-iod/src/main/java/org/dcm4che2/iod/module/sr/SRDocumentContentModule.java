@@ -58,52 +58,52 @@ public class SRDocumentContentModule extends Module {
     }
     
     public String getValueType() {
-        return dcmobj.getString(Tag.VALUE_TYPE);
+        return dcmobj.getString(Tag.ValueType);
     }
     
     public void setValueType(String s) {
-        dcmobj.putString(Tag.VALUE_TYPE, VR.CS, s);
+        dcmobj.putString(Tag.ValueType, VR.CS, s);
     }
     
     public Code getConceptNameCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.CONCEPT_NAME_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptNameCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setConceptNameCode(Code code) {
-         updateSequence(Tag.CONCEPT_NAME_CODE_SEQUENCE, code);
+         updateSequence(Tag.ConceptNameCodeSequence, code);
     }    
     
     public Date getDateTime() {
-        return dcmobj.getDate(Tag.DATETIME);
+        return dcmobj.getDate(Tag.DateTime);
     }
     
     public void setDateTime(Date d) {
-        dcmobj.putDate(Tag.DATETIME, VR.DT, d);
+        dcmobj.putDate(Tag.DateTime, VR.DT, d);
     }
     
     public Date getDate() {
-        return dcmobj.getDate(Tag.DATE);
+        return dcmobj.getDate(Tag.Date);
     }
     
     public void setDate(Date d) {
-        dcmobj.putDate(Tag.DATE, VR.DA, d);
+        dcmobj.putDate(Tag.Date, VR.DA, d);
     }
     
     public Date getTime() {
-        return dcmobj.getDate(Tag.TIME);
+        return dcmobj.getDate(Tag.Time);
     }
     
     public void setTime(Date d) {
-        dcmobj.putDate(Tag.TIME, VR.TM, d);
+        dcmobj.putDate(Tag.Time, VR.TM, d);
     }
     
     public String getPersonName() {
-        return dcmobj.getString(Tag.PERSON_NAME);
+        return dcmobj.getString(Tag.PersonName);
     }
     
     public void setPersonName(String s) {
-        dcmobj.putString(Tag.PERSON_NAME, VR.PN, s);
+        dcmobj.putString(Tag.PersonName, VR.PN, s);
     }
     
     public String getUID() {
@@ -115,68 +115,68 @@ public class SRDocumentContentModule extends Module {
     }
     
     public String getTextValue() {
-        return dcmobj.getString(Tag.TEXT_VALUE);
+        return dcmobj.getString(Tag.TextValue);
     }
     
     public void setTextValue(String s) {
-        dcmobj.putString(Tag.TEXT_VALUE, VR.UT, s);
+        dcmobj.putString(Tag.TextValue, VR.UT, s);
     }
         
     public MeasuredValue getMeasuredValue() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.MEASURED_VALUE_SEQUENCE);
+        	Tag.MeasuredValueSequence);
         return item != null ? new MeasuredValue(item) : null;
     }
 
     public void setMeasuredValue(MeasuredValue value) {
-        updateSequence(Tag.MEASURED_VALUE_SEQUENCE, value);
+        updateSequence(Tag.MeasuredValueSequence, value);
     }
     
     public Code getNumericValueQualifierCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.NUMERIC_VALUE_QUALIFIER_CODE_SEQUENCE);
+        	Tag.NumericValueQualifierCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setNumericValueQualifierCode(Code code) {
-        updateSequence(Tag.NUMERIC_VALUE_QUALIFIER_CODE_SEQUENCE, code);
+        updateSequence(Tag.NumericValueQualifierCodeSequence, code);
     }
     
     public Code getConceptCode() {
-	DicomObject item = dcmobj.getNestedDicomObject(Tag.CONCEPT_CODE_SEQUENCE);
+	DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
 	return item != null ? new Code(item) : null;
     }
     
     public void setConceptCode(Code code) {
-	updateSequence(Tag.CONCEPT_CODE_SEQUENCE, code);
+	updateSequence(Tag.ConceptCodeSequence, code);
     }    
     
     public SOPInstanceReference getReferencedSOPInstance() {
-	DicomObject item = dcmobj.getNestedDicomObject(Tag.CONCEPT_CODE_SEQUENCE);
+	DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
 	return item != null ? new SOPInstanceReference(item) : null;
     }
     
     public void setReferencedSOPInstance(SOPInstanceReference ref) {
-	updateSequence(Tag.CONCEPT_CODE_SEQUENCE, ref);
+	updateSequence(Tag.ConceptCodeSequence, ref);
     }
     
     //TODO
     
     public SRDocumentContent[] getContent() {
         return SRDocumentContent.toSRDocumentContent(
-        	dcmobj.get(Tag.CONTENT_SEQUENCE));
+        	dcmobj.get(Tag.ContentSequence));
     }
 
     public void setContent(SRDocumentContent[] codes) {
-        updateSequence(Tag.CONTENT_SEQUENCE, codes);
+        updateSequence(Tag.ContentSequence, codes);
     } 
     
     public Date getObservationDateTime() {
-        return dcmobj.getDate(Tag.OBSERVATION_DATE_TIME);
+        return dcmobj.getDate(Tag.ObservationDateTime);
     }
     
     public void setObservationDateTime(Date d) {
-        dcmobj.putDate(Tag.OBSERVATION_DATE_TIME, VR.DT, d);
+        dcmobj.putDate(Tag.ObservationDateTime, VR.DT, d);
     }    
 
 }

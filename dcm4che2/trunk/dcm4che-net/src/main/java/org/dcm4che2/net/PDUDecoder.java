@@ -473,7 +473,7 @@ class PDUDecoder extends PDVInputStream
             throw new AAbort();
         }
         String tsuid = pc.getTransferSyntax();
-        DicomObject cmd = readDicomObject(TransferSyntax.IMPLICIT_VR_LITTLE_ENDIAN);
+        DicomObject cmd = readDicomObject(TransferSyntax.ImplicitVRLittleEndian);
         if (log.isInfoEnabled())
             log.info(as.toString() + " >> " + CommandUtils.toString(cmd, pcid, tsuid));
         if (log.isDebugEnabled())

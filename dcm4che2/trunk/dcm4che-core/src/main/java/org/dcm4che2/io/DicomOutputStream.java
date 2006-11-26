@@ -57,7 +57,7 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private static final int PREAMBLE_LENGTH = 128;
 
-    private TransferSyntax ts = TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN;
+    private TransferSyntax ts = TransferSyntax.ExplicitVRLittleEndian;
 
     private boolean includeGroupLength = false;
 
@@ -157,13 +157,13 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void writeDicomObject(DicomObject attrs) throws IOException {
-        this.ts = TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN;
+        this.ts = TransferSyntax.ExplicitVRLittleEndian;
         writeElements(attrs.iterator(), false, null);
-        writeHeader(Tag.ITEM_DELIMITATION_ITEM, null, 0);
+        writeHeader(Tag.ItemDelimitationItem, null, 0);
     }
 
     public void writeCommand(DicomObject attrs) throws IOException {
-        this.ts = TransferSyntax.IMPLICIT_VR_LITTLE_ENDIAN;
+        this.ts = TransferSyntax.ImplicitVRLittleEndian;
         writeElements(attrs.commandIterator(), true, new ItemInfo(attrs
                 .commandIterator(), true));
     }
@@ -174,7 +174,7 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void writeDicomFile(DicomObject attrs) throws IOException {
-        String tsuid = attrs.getString(Tag.TRANSFER_SYNTAX_UID);
+        String tsuid = attrs.getString(Tag.TransferSyntaxUID);
         if (tsuid == null)
             throw new IllegalArgumentException(
                     "Missing (0002,0010) Transfer Syntax UID");
@@ -188,7 +188,7 @@ public class DicomOutputStream extends FilterOutputStream {
         write('I');
         write('C');
         write('M');
-        this.ts = TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN;
+        this.ts = TransferSyntax.ExplicitVRLittleEndian;
         writeElements(attrs.fileMetaInfoIterator(), true, new ItemInfo(attrs
                 .fileMetaInfoIterator(), true));
     }
@@ -235,10 +235,10 @@ public class DicomOutputStream extends FilterOutputStream {
         } else {
             len = explicitItemLength ? itemInfo.len : -1;
         }
-        writeHeader(Tag.ITEM, null, len);
+        writeHeader(Tag.Item, null, len);
         writeElements(item.iterator(), includeGroupLength, itemInfo);
         if (len == -1) {
-            writeHeader(Tag.ITEM_DELIMITATION_ITEM, null, 0);
+            writeHeader(Tag.ItemDelimitationItem, null, 0);
         }
     }
 
@@ -279,7 +279,7 @@ public class DicomOutputStream extends FilterOutputStream {
                 } else {
                     for (int i = 0, n = a.countItems(); i < n; i++) {
                         byte[] val = a.getFragment(i);
-                        writeHeader(Tag.ITEM, null, (val.length + 1) & ~1);
+                        writeHeader(Tag.Item, null, (val.length + 1) & ~1);
                         write(val);
                         if ((val.length & 1) != 0)
                             write(0);
@@ -292,7 +292,7 @@ public class DicomOutputStream extends FilterOutputStream {
                     write(vr.padding());
             }
             if (len == -1) {
-                writeHeader(Tag.SEQUENCE_DELIMITATION_ITEM, null, 0);
+                writeHeader(Tag.SequenceDelimitationItem, null, 0);
             }
         }
     }

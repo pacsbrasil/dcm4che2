@@ -72,11 +72,11 @@ public class ProtocolCodeAndContext extends Code {
         
     public ContentItemAndModifier[] getProtocolContext() {
         return ContentItemAndModifier.toContentItemAndModifiers(
-                dcmobj.get(Tag.PROTOCOL_CONTEXT_SEQUENCE));
+                dcmobj.get(Tag.ProtocolContextSequence));
     }
 
     public void setProcedureCodes(ContentItemAndModifier[] items) {
-        updateSequence(Tag.PROTOCOL_CONTEXT_SEQUENCE, items);
+        updateSequence(Tag.ProtocolContextSequence, items);
     }    
     
 }

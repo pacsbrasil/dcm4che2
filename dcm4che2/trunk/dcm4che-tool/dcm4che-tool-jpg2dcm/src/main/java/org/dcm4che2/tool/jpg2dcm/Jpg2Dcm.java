@@ -90,7 +90,7 @@ public class Jpg2Dcm {
     
     private String charset = "ISO_IR 100";
     private int bufferSize = 8192;
-    private String transferSyntax = UID.JPEG_BASELINE_1;
+    private String transferSyntax = UID.JPEGBaseline1;
     private Properties cfg = new Properties();
 
     public Jpg2Dcm() {
@@ -132,7 +132,7 @@ public class Jpg2Dcm {
         FileImageInputStream jpgInput = new FileImageInputStream(jpgFile);
         try {
             DicomObject attrs = new BasicDicomObject();
-            attrs.putString(Tag.SPECIFIC_CHARACTER_SET, VR.CS, charset);
+            attrs.putString(Tag.SpecificCharacterSet, VR.CS, charset);
             for (Enumeration en = cfg.propertyNames(); en.hasMoreElements();) {
                 String key = (String) en.nextElement();
                 attrs.putString(Tag.toTagPath(key), null, cfg.getProperty(key));           
@@ -140,22 +140,22 @@ public class Jpg2Dcm {
             if (missingImagePixelAttr(attrs)) {
                 detectImagePixelAttrs(attrs, jpgInput);
             }
-            ensureUID(attrs, Tag.STUDY_INSTANCE_UID);
-            ensureUID(attrs, Tag.SERIES_INSTANCE_UID);
-            ensureUID(attrs, Tag.SOP_INSTANCE_UID);
+            ensureUID(attrs, Tag.StudyInstanceUID);
+            ensureUID(attrs, Tag.SeriesInstanceUID);
+            ensureUID(attrs, Tag.SOPInstanceUID);
             Date now = new Date();
-            attrs.putDate(Tag.INSTANCE_CREATION_DATE, VR.DA, now);
-            attrs.putDate(Tag.INSTANCE_CREATION_TIME, VR.TM, now);
+            attrs.putDate(Tag.InstanceCreationDate, VR.DA, now);
+            attrs.putDate(Tag.InstanceCreationTime, VR.TM, now);
             attrs.initFileMetaInformation(transferSyntax);
             FileOutputStream fos = new FileOutputStream(dcmFile);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             DicomOutputStream dos = new DicomOutputStream(bos);
             try {
                 dos.writeDicomFile(attrs);
-                dos.writeHeader(Tag.PIXEL_DATA, VR.OB, -1);
-                dos.writeHeader(Tag.ITEM, null, 0);
+                dos.writeHeader(Tag.PixelData, VR.OB, -1);
+                dos.writeHeader(Tag.Item, null, 0);
                 int jpgLen = (int) jpgFile.length();
-                dos.writeHeader(Tag.ITEM, null, (jpgLen+1)&~1);
+                dos.writeHeader(Tag.Item, null, (jpgLen+1)&~1);
                 byte[] b = new byte[bufferSize];
                 int r;
                 while ((r = jpgInput.read(b)) > 0) {
@@ -164,7 +164,7 @@ public class Jpg2Dcm {
                 if ((jpgLen&1) != 0) {
                     dos.write(0);
                 }
-                dos.writeHeader(Tag.SEQUENCE_DELIMITATION_ITEM, null, 0);
+                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
             } finally {
                 dos.close();
             }
@@ -174,8 +174,8 @@ public class Jpg2Dcm {
     }    
 
     private boolean missingImagePixelAttr(DicomObject attrs) {
-        return !(attrs.containsValue(Tag.ROWS) 
-                && attrs.containsValue(Tag.COLUMNS));
+        return !(attrs.containsValue(Tag.Rows) 
+                && attrs.containsValue(Tag.Columns));
     }
 
     private void detectImagePixelAttrs(DicomObject attrs, ImageInputStream iis)
@@ -186,8 +186,8 @@ public class Jpg2Dcm {
         }                
         ImageReader reader = (ImageReader) iter.next();
         reader.setInput(iis);
-        attrs.putInt(Tag.ROWS, VR.US, reader.getHeight(0));
-        attrs.putInt(Tag.COLUMNS, VR.US, reader.getWidth(0));
+        attrs.putInt(Tag.Rows, VR.US, reader.getHeight(0));
+        attrs.putInt(Tag.Columns, VR.US, reader.getWidth(0));
         reader.dispose();
         iis.seek(0);
     }

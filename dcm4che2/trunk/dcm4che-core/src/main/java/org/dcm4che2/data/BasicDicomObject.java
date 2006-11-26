@@ -308,7 +308,7 @@ public class BasicDicomObject extends AbstractDicomObject {
     public DicomElement remove(int tag) {
         DicomElement attr = (DicomElement) table.remove(tag);
         if (attr != null) {
-            if (tag == Tag.SPECIFIC_CHARACTER_SET) {
+            if (tag == Tag.SpecificCharacterSet) {
                 charset = null;
             }
         }
@@ -322,7 +322,7 @@ public class BasicDicomObject extends AbstractDicomObject {
             return a;
         }
         table.put(tag, a);
-        if (tag == Tag.SPECIFIC_CHARACTER_SET) {
+        if (tag == Tag.SpecificCharacterSet) {
             charset = SpecificCharacterSet.valueOf(a.getStrings(null, false));
         }
         return a;
@@ -513,19 +513,19 @@ public class BasicDicomObject extends AbstractDicomObject {
     }
 
     public void initFileMetaInformation(String tsuid) {
-        final String sopClassUID = getString(Tag.SOP_CLASS_UID);
-        final String sopInstanceUID = getString(Tag.SOP_INSTANCE_UID);
+        final String sopClassUID = getString(Tag.SOPClassUID);
+        final String sopInstanceUID = getString(Tag.SOPInstanceUID);
         initFileMetaInformation(sopClassUID, sopInstanceUID, tsuid);
     }
 
     public void initFileMetaInformation(String cuid, String iuid, String tsuid) {
-        putBytes(Tag.FILE_META_INFORMATION_VERSION, VR.OB, new byte[] { 0, 1 },
+        putBytes(Tag.FileMetaInformationVersion, VR.OB, new byte[] { 0, 1 },
                 false);
-        putString(Tag.MEDIA_STORAGE_SOP_CLASS_UID, VR.UI, cuid);
-        putString(Tag.MEDIA_STORAGE_SOP_INSTANCE_UID, VR.UI, iuid);
-        putString(Tag.TRANSFER_SYNTAX_UID, VR.UI, tsuid);
-        putString(Tag.IMPLEMENTATION_CLASS_UID, VR.UI, Implementation.classUID());
-        putString(Tag.IMPLEMENTATION_VERSION_NAME, VR.SH, Implementation
+        putString(Tag.MediaStorageSOPClassUID, VR.UI, cuid);
+        putString(Tag.MediaStorageSOPInstanceUID, VR.UI, iuid);
+        putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        putString(Tag.ImplementationClassUID, VR.UI, Implementation.classUID());
+        putString(Tag.ImplementationVersionName, VR.SH, Implementation
                 .versionName());
     }
 }

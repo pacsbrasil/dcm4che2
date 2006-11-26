@@ -71,8 +71,8 @@ public class HPImageSet
         this.selectors = new ArrayList();
         this.dcmobj = new BasicDicomObject();
         DicomObject is = new BasicDicomObject();
-        is.putSequence(Tag.IMAGE_SET_SELECTOR_SEQUENCE);
-        DicomElement tbissq = is.putSequence(Tag.TIME_BASED_IMAGE_SETS_SEQUENCE);
+        is.putSequence(Tag.ImageSetSelectorSequence);
+        DicomElement tbissq = is.putSequence(Tag.TimeBasedImageSetsSequence);
         tbissq.addDicomObject(dcmobj);
     }
     
@@ -102,94 +102,94 @@ public class HPImageSet
 
     public int getImageSetNumber()
     {
-        return dcmobj.getInt(Tag.IMAGE_SET_NUMBER);
+        return dcmobj.getInt(Tag.ImageSetNumber);
     }
 
     public void setImageSetNumber(int imageSetNumber)
     {
-        dcmobj.putInt(Tag.IMAGE_SET_NUMBER, VR.US, imageSetNumber);
+        dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSetNumber);
     }
 
     public String getImageSetLabel()
     {
-        return dcmobj.getString(Tag.IMAGE_SET_LABEL);
+        return dcmobj.getString(Tag.ImageSetLabel);
     }
 
     public void setImageSetLabel(String imageSetLabel)
     {
-        dcmobj.putString(Tag.IMAGE_SET_LABEL, VR.LO, imageSetLabel);
+        dcmobj.putString(Tag.ImageSetLabel, VR.LO, imageSetLabel);
     }
 
     public String getImageSetSelectorCategory()
     {
-        return dcmobj.getString(Tag.IMAGE_SET_SELECTOR_CATEGORY);
+        return dcmobj.getString(Tag.ImageSetSelectorCategory);
     }
 
     public boolean hasRelativeTime()
     {
-        return dcmobj.containsValue(Tag.RELATIVE_TIME);
+        return dcmobj.containsValue(Tag.RelativeTime);
     }
     
     public RelativeTime getRelativeTime()
     {
         RelativeTimeUnits units = 
-                RelativeTimeUnits.valueOf(dcmobj.getString(Tag.RELATIVE_TIME_UNITS));
-        return new RelativeTime(dcmobj.getInts(Tag.RELATIVE_TIME), units);
+                RelativeTimeUnits.valueOf(dcmobj.getString(Tag.RelativeTimeUnits));
+        return new RelativeTime(dcmobj.getInts(Tag.RelativeTime), units);
     }
 
     public void setRelativeTime(RelativeTime relativeTime)
     {
-        dcmobj.putString(Tag.IMAGE_SET_SELECTOR_CATEGORY, VR.CS, 
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
                 CodeString.RELATIVE_TIME);
-        dcmobj.putInts(Tag.RELATIVE_TIME, VR.US, relativeTime.getValues());
-        dcmobj.putString(Tag.RELATIVE_TIME_UNITS, VR.CS, 
+        dcmobj.putInts(Tag.RelativeTime, VR.US, relativeTime.getValues());
+        dcmobj.putString(Tag.RelativeTimeUnits, VR.CS, 
                 relativeTime.getUnits().getCodeString());
     }
 
     public boolean hasAbstractPriorValue()
     {
-        return dcmobj.containsValue(Tag.ABSTRACT_PRIOR_VALUE);
+        return dcmobj.containsValue(Tag.AbstractPriorValue);
     }
 
     public AbstractPriorValue getAbstractPriorValue()
     {
-        return new AbstractPriorValue(dcmobj.getInts(Tag.ABSTRACT_PRIOR_VALUE));
+        return new AbstractPriorValue(dcmobj.getInts(Tag.AbstractPriorValue));
     }
 
     public void setAbstractPriorValue(AbstractPriorValue abstractPriorValue)
     {
-        dcmobj.putString(Tag.IMAGE_SET_SELECTOR_CATEGORY, VR.CS, 
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
                 CodeString.ABSTRACT_PRIOR);
-        dcmobj.putInts(Tag.ABSTRACT_PRIOR_VALUE, VR.US, abstractPriorValue.getValues());
+        dcmobj.putInts(Tag.AbstractPriorValue, VR.US, abstractPriorValue.getValues());
     }
 
     public boolean hasAbstractPriorCode()
     {
-        return dcmobj.containsValue(Tag.ABSTRACT_PRIOR_CODE_SEQUENCE);
+        return dcmobj.containsValue(Tag.AbstractPriorCodeSequence);
     }
 
     public Code getAbstractPriorCode()
     {
         return new Code(
-                dcmobj.getNestedDicomObject(Tag.ABSTRACT_PRIOR_CODE_SEQUENCE));
+                dcmobj.getNestedDicomObject(Tag.AbstractPriorCodeSequence));
     }
 
     public void setAbstractPriorCode(Code code)
     {
-        dcmobj.putString(Tag.IMAGE_SET_SELECTOR_CATEGORY, VR.CS, 
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
                 CodeString.ABSTRACT_PRIOR);
-        dcmobj.putNestedDicomObject(Tag.ABSTRACT_PRIOR_CODE_SEQUENCE,
+        dcmobj.putNestedDicomObject(Tag.AbstractPriorCodeSequence,
                 code.getDicomObject());
     }
 
     public DicomElement getImageSetSelectorSequence()
     {
-        return dcmobj.getParent().get(Tag.IMAGE_SET_SELECTOR_SEQUENCE);
+        return dcmobj.getParent().get(Tag.ImageSetSelectorSequence);
     }
 
     public DicomElement getTimeBasedImageSetsSequence()
     {
-        return dcmobj.getParent().get(Tag.TIME_BASED_IMAGE_SETS_SEQUENCE);
+        return dcmobj.getParent().get(Tag.TimeBasedImageSetsSequence);
     }
 
     public List getImageSetSelectors()

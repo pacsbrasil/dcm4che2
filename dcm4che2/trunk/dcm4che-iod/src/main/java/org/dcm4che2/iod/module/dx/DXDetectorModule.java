@@ -54,90 +54,90 @@ public class DXDetectorModule extends DXDetector {
     }
 
     public float getDetectorActiveTime() {
-        return dcmobj.getFloat(Tag.DETECTOR_ACTIVE_TIME);
+        return dcmobj.getFloat(Tag.DetectorActiveTime);
     }
     
     public void setDetectorActiveTime(float f) {
-        dcmobj.putFloat(Tag.DETECTOR_ACTIVE_TIME, VR.DS, f);
+        dcmobj.putFloat(Tag.DetectorActiveTime, VR.DS, f);
     }
   
     public float getDetectorActivationOffsetFromExposure() {
-        return dcmobj.getFloat(Tag.DETECTOR_ACTIVATION_OFFSET_FROM_EXPOSURE);
+        return dcmobj.getFloat(Tag.DetectorActivationOffsetFromExposure);
     }
     
     public void setDetectorActivationOffsetFromExposure(float s) {
-        dcmobj.putFloat(Tag.DETECTOR_ACTIVATION_OFFSET_FROM_EXPOSURE, VR.DS, s);
+        dcmobj.putFloat(Tag.DetectorActivationOffsetFromExposure, VR.DS, s);
     }
 
-    public String getFieldofViewShape() {
-        return dcmobj.getString(Tag.FIELD_OF_VIEW_SHAPE);
+    public String getFieldOfViewShape() {
+        return dcmobj.getString(Tag.FieldOfViewShape);
     }
     
-    public void setFieldofViewShape(String s) {
-        dcmobj.putString(Tag.FIELD_OF_VIEW_SHAPE, VR.CS, s);
+    public void setFieldOfViewShape(String s) {
+        dcmobj.putString(Tag.FieldOfViewShape, VR.CS, s);
     }
 
-    public int[] getFieldofViewDimensions() {
-        return dcmobj.getInts(Tag.FIELD_OF_VIEW_DIMENSIONS);
+    public int[] getFieldOfViewDimensions() {
+        return dcmobj.getInts(Tag.FieldOfViewDimensions);
     }
     
-    public void setFieldofViewDimensions(int[] ints) {
-        dcmobj.putInts(Tag.FIELD_OF_VIEW_DIMENSIONS, VR.IS, ints);
+    public void setFieldOfViewDimensions(int[] ints) {
+        dcmobj.putInts(Tag.FieldOfViewDimensions, VR.IS, ints);
     }
 
-    public float[] getFieldofViewOrigin() {
-        return dcmobj.getFloats(Tag.FIELD_OF_VIEW_ORIGIN);
+    public float[] getFieldOfViewOrigin() {
+        return dcmobj.getFloats(Tag.FieldOfViewOrigin);
     }
     
-    public void setFieldofViewOrigin(float[] floats) {
-        dcmobj.putFloats(Tag.FIELD_OF_VIEW_ORIGIN, VR.DS, floats);
+    public void setFieldOfViewOrigin(float[] floats) {
+        dcmobj.putFloats(Tag.FieldOfViewOrigin, VR.DS, floats);
     }
     
-    public float getFieldofViewRotation() {
-        return dcmobj.getFloat(Tag.FIELD_OF_VIEW_ROTATION);
+    public float getFieldOfViewRotation() {
+        return dcmobj.getFloat(Tag.FieldOfViewRotation);
     }
     
-    public void setFieldofViewRotation(float f) {
-        dcmobj.putFloat(Tag.FIELD_OF_VIEW_ROTATION, VR.DS, f);
+    public void setFieldOfViewRotation(float f) {
+        dcmobj.putFloat(Tag.FieldOfViewRotation, VR.DS, f);
     }
 
-    public String getFieldofViewHorizontalFlip() {
-        return dcmobj.getString(Tag.FIELD_OF_VIEW_HORIZONTAL_FLIP);
+    public String getFieldOfViewHorizontalFlip() {
+        return dcmobj.getString(Tag.FieldOfViewHorizontalFlip);
     }
     
-    public void setFieldofViewHorizontalFlip(String s) {
-        dcmobj.putString(Tag.FIELD_OF_VIEW_HORIZONTAL_FLIP, VR.CS, s);
+    public void setFieldOfViewHorizontalFlip(String s) {
+        dcmobj.putString(Tag.FieldOfViewHorizontalFlip, VR.CS, s);
     }
 
     public float[] getImagerPixelSpacing() {
-        return dcmobj.getFloats(Tag.IMAGER_PIXEL_SPACING);
+        return dcmobj.getFloats(Tag.ImagerPixelSpacing);
     }
     
     public void setImagerPixelSpacing(float[] floats) {
-        dcmobj.putFloats(Tag.IMAGER_PIXEL_SPACING, VR.DS, floats);
+        dcmobj.putFloats(Tag.ImagerPixelSpacing, VR.DS, floats);
     }
 
     public float[] getPixelSpacing() {
-        return dcmobj.getFloats(Tag.PIXEL_SPACING);
+        return dcmobj.getFloats(Tag.PixelSpacing);
     }
     
     public void setPixelSpacing(float[] floats) {
-        dcmobj.putFloats(Tag.PIXEL_SPACING, VR.DS, floats);
+        dcmobj.putFloats(Tag.PixelSpacing, VR.DS, floats);
     }
 
     public String getPixelSpacingCalibrationType() {
-        return dcmobj.getString(Tag.PIXEL_SPACING_CALIBRATION_TYPE);
+        return dcmobj.getString(Tag.PixelSpacingCalibrationType);
     }
     
     public void setPixelSpacingCalibrationType(String s) {
-        dcmobj.putString(Tag.PIXEL_SPACING_CALIBRATION_TYPE, VR.CS, s);
+        dcmobj.putString(Tag.PixelSpacingCalibrationType, VR.CS, s);
     }
 
     public String getPixelSpacingCalibrationDescription() {
-        return dcmobj.getString(Tag.PIXEL_SPACING_CALIBRATION_DESCRIPTION);
+        return dcmobj.getString(Tag.PixelSpacingCalibrationDescription);
     }
     
     public void setPixelSpacingCalibrationDescription(String s) {
-        dcmobj.putString(Tag.PIXEL_SPACING_CALIBRATION_DESCRIPTION, VR.LO, s);
+        dcmobj.putString(Tag.PixelSpacingCalibrationDescription, VR.LO, s);
     }
 }

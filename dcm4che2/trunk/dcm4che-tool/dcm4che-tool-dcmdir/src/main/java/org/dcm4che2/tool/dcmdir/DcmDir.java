@@ -178,7 +178,7 @@ public class DcmDir {
 	    sb.setLength(0);
 	    rec.toStringBuffer(sb, param);
 	    System.out.println("" + rec.getItemOffset() + ": "
-		    + rec.getString(Tag.DIRECTORY_RECORD_TYPE) + " - " + id + i);
+		    + rec.getString(Tag.DirectoryRecordType) + " - " + id + i);
 	    System.out.println(sb.toString());
 	    dump(dicomdir.findFirstChildRecord(rec), param,
 		    id + i + '.', sb);
@@ -223,7 +223,7 @@ public class DcmDir {
             return n;
         }
         DicomInputStream in = new DicomInputStream(f);
-        in.setHandler(new StopTagInputHandler(Tag.PIXEL_DATA));
+        in.setHandler(new StopTagInputHandler(Tag.PixelData));
         DicomObject dcmobj =  in.readDicomObject();
         DicomObject patrec = ap.makePatientDirectoryRecord(dcmobj);
         DicomObject styrec = ap.makeStudyDirectoryRecord(dcmobj);
@@ -244,7 +244,7 @@ public class DcmDir {
             ++n;
         }
         if (n == 0 && checkDuplicate) {
-            String iuid = dcmobj.getString(Tag.MEDIA_STORAGE_SOP_INSTANCE_UID);
+            String iuid = dcmobj.getString(Tag.MediaStorageSOPInstanceUID);
             if (dicomdir.findInstanceRecord(rec, iuid) != null) {
                 System.out.print('D');
         	return 0;
@@ -266,24 +266,24 @@ public class DcmDir {
             return n;
         }
         DicomInputStream in = new DicomInputStream(f);
-        in.setHandler(new StopTagInputHandler(Tag.SERIES_INSTANCE_UID + 1));
+        in.setHandler(new StopTagInputHandler(Tag.SeriesInstanceUID + 1));
         DicomObject dcmobj =  in.readDicomObject();
-        String pid = dcmobj.getString(Tag.PATIENT_ID);
+        String pid = dcmobj.getString(Tag.PatientID);
         DicomObject pat = dicomdir.findPatientRecord(pid);
         if (pat == null) {
             return 0;
         }
-        String styuid = dcmobj.getString(Tag.STUDY_INSTANCE_UID);
+        String styuid = dcmobj.getString(Tag.StudyInstanceUID);
         DicomObject sty = dicomdir.findStudyRecord(pat, styuid);
         if (sty == null) {
             return 0;
         }
-        String seruid = dcmobj.getString(Tag.SERIES_INSTANCE_UID);
+        String seruid = dcmobj.getString(Tag.SeriesInstanceUID);
         DicomObject ser = dicomdir.findSeriesRecord(sty, seruid);
         if (ser == null) {
             return 0;
         }
-        String iuid = dcmobj.getString(Tag.MEDIA_STORAGE_SOP_INSTANCE_UID);
+        String iuid = dcmobj.getString(Tag.MediaStorageSOPInstanceUID);
         DicomObject rec = dicomdir.findInstanceRecord(ser, iuid);
         if (rec == null) {
             return 0;

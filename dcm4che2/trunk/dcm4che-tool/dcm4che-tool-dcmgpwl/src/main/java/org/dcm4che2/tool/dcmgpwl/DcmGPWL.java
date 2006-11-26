@@ -95,104 +95,104 @@ public class DcmGPWL {
             "all scheduled GP-SPS";
 
     private static final String[] SOP_CUIDS = {
-        UID.GENERAL_PURPOSE_WORKLIST_INFORMATION_MODEL_FIND,
-        UID.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_SOP_CLASS,
-        UID.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_SOP_CLASS};
+        UID.GeneralPurposeWorklistInformationModelFIND,
+        UID.GeneralPurposeScheduledProcedureStepSOPClass,
+        UID.GeneralPurposePerformedProcedureStepSOPClass};
     
     private static final String[] METASOP_CUID = {
-        UID.GENERAL_PURPOSE_WORKLIST_MANAGEMENT_META_SOP_CLASS };
+        UID.GeneralPurposeWorklistManagementMetaSOPClass };
 
     private static final int[] RETURN_KEYS = {
-        Tag.SOP_CLASS_UID,
-        Tag.SOP_INSTANCE_UID,
-        Tag.PATIENTS_NAME,
-        Tag.PATIENT_ID,
-        Tag.PATIENTS_BIRTH_DATE,
-        Tag.PATIENTS_SEX,
-        Tag.STUDY_INSTANCE_UID,
-        Tag.SCHEDULED_PROCEDURE_STEP_ID,
-        Tag.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_STATUS,
-        Tag.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_PRIORITY,
-        Tag.SCHEDULED_PROCEDURE_STEP_START_DATE_AND_TIME,
-        Tag.MULTIPLE_COPIES_FLAG,
-        Tag.SCHEDULED_PROCEDURE_STEP_MODIFICATION_DATE_AND_TIME,
-        Tag.EXPECTED_COMPLETION_DATE_AND_TIME,
-        Tag.INPUT_AVAILABILITY_FLAG,
+        Tag.SOPClassUID,
+        Tag.SOPInstanceUID,
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex,
+        Tag.StudyInstanceUID,
+        Tag.ScheduledProcedureStepID,
+        Tag.GeneralPurposeScheduledProcedureStepStatus,
+        Tag.GeneralPurposeScheduledProcedureStepPriority,
+        Tag.ScheduledProcedureStepStartDateAndTime,
+        Tag.MultipleCopiesFlag,
+        Tag.ScheduledProcedureStepModificationDateAndTime,
+        Tag.ExpectedCompletionDateAndTime,
+        Tag.InputAvailabilityFlag,
     };
 
     private static final int[] REQUEST_RETURN_KEYS = {
-        Tag.ACCESSION_NUMBER,
-        Tag.STUDY_INSTANCE_UID,
-        Tag.REQUESTING_PHYSICIAN,
-        Tag.REQUESTED_PROCEDURE_DESCRIPTION,
-        Tag.REQUESTED_PROCEDURE_ID,
+        Tag.AccessionNumber,
+        Tag.StudyInstanceUID,
+        Tag.RequestingPhysician,
+        Tag.RequestedProcedureDescription,
+        Tag.RequestedProcedureID,
     };
 
     private static final int[] RETURN_SQ_KEYS = {
-        Tag.REFERENCED_PERFORMED_PROCEDURE_STEP_SEQUENCE,
-        Tag.SCHEDULED_PROCESSING_APPLICATIONS_CODE_SEQUENCE,
-        Tag.RESULTING_GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEPS_SEQUENCE,
-        Tag.SCHEDULED_WORKITEM_CODE_SEQUENCE,
-        Tag.INPUT_INFORMATION_SEQUENCE,
-        Tag.RELEVANT_INFORMATION_SEQUENCE,
-        Tag.SCHEDULED_STATION_NAME_CODE_SEQUENCE,
-        Tag.SCHEDULED_STATION_CLASS_CODE_SEQUENCE,
-        Tag.SCHEDULED_STATION_GEOGRAPHIC_LOCATION_CODE_SEQUENCE,
-        Tag.SCHEDULED_HUMAN_PERFORMERS_SEQUENCE,
-        Tag.ACTUAL_HUMAN_PERFORMERS_SEQUENCE,
-        Tag.REFERENCED_REQUEST_SEQUENCE,
+        Tag.ReferencedPerformedProcedureStepSequence,
+        Tag.ScheduledProcessingApplicationsCodeSequence,
+        Tag.ResultingGeneralPurposePerformedProcedureStepsSequence,
+        Tag.ScheduledWorkitemCodeSequence,
+        Tag.InputInformationSequence,
+        Tag.RelevantInformationSequence,
+        Tag.ScheduledStationNameCodeSequence,
+        Tag.ScheduledStationClassCodeSequence,
+        Tag.ScheduledStationGeographicLocationCodeSequence,
+        Tag.ScheduledHumanPerformersSequence,
+        Tag.ActualHumanPerformersSequence,
+        Tag.ReferencedRequestSequence,
     };
 
     private static final int[] PPS_CREATE_TYPE2 = {
-        Tag.PATIENTS_NAME,
-        Tag.PATIENT_ID,
-        Tag.PATIENTS_BIRTH_DATE,
-        Tag.PATIENTS_SEX,
-        Tag.PERFORMED_PROCEDURE_STEP_DESCRIPTION,
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex,
+        Tag.PerformedProcedureStepDescription,
     };
 
     private static final int[] PPS_SQ_CREATE_TYPE2 = {
-        Tag.PERFORMED_PROCESSING_APPLICATIONS_CODE_SEQUENCE,
-        Tag.PERFORMED_WORKITEM_CODE_SEQUENCE,
-        Tag.PERFORMED_STATION_NAME_CODE_SEQUENCE,
-        Tag.PERFORMED_STATION_CLASS_CODE_SEQUENCE,
-        Tag.PERFORMED_STATION_GEOGRAPHIC_LOCATION_CODE_SEQUENCE,
-        Tag.OUTPUT_INFORMATION_SEQUENCE,
-        Tag.ACTUAL_HUMAN_PERFORMERS_SEQUENCE,
-        Tag.REFERENCED_REQUEST_SEQUENCE,
+        Tag.PerformedProcessingApplicationsCodeSequence,
+        Tag.PerformedWorkitemCodeSequence,
+        Tag.PerformedStationNameCodeSequence,
+        Tag.PerformedStationClassCodeSequence,
+        Tag.PerformedStationGeographicLocationCodeSequence,
+        Tag.OutputInformationSequence,
+        Tag.ActualHumanPerformersSequence,
+        Tag.ReferencedRequestSequence,
     };
     
     private static final int[] SPS_SQ_PPS_SQ_MAP = {
-        Tag.SCHEDULED_PROCESSING_APPLICATIONS_CODE_SEQUENCE,
-        Tag.PERFORMED_PROCESSING_APPLICATIONS_CODE_SEQUENCE,
-        Tag.SCHEDULED_WORKITEM_CODE_SEQUENCE,
-        Tag.PERFORMED_WORKITEM_CODE_SEQUENCE,
-        Tag.SCHEDULED_STATION_NAME_CODE_SEQUENCE,
-        Tag.PERFORMED_STATION_NAME_CODE_SEQUENCE,
-        Tag.SCHEDULED_STATION_CLASS_CODE_SEQUENCE,
-        Tag.PERFORMED_STATION_CLASS_CODE_SEQUENCE,
-        Tag.SCHEDULED_STATION_GEOGRAPHIC_LOCATION_CODE_SEQUENCE,
-        Tag.PERFORMED_STATION_GEOGRAPHIC_LOCATION_CODE_SEQUENCE,
-        Tag.SCHEDULED_HUMAN_PERFORMERS_SEQUENCE,
-        Tag.ACTUAL_HUMAN_PERFORMERS_SEQUENCE,
+        Tag.ScheduledProcessingApplicationsCodeSequence,
+        Tag.PerformedProcessingApplicationsCodeSequence,
+        Tag.ScheduledWorkitemCodeSequence,
+        Tag.PerformedWorkitemCodeSequence,
+        Tag.ScheduledStationNameCodeSequence,
+        Tag.PerformedStationNameCodeSequence,
+        Tag.ScheduledStationClassCodeSequence,
+        Tag.PerformedStationClassCodeSequence,
+        Tag.ScheduledStationGeographicLocationCodeSequence,
+        Tag.PerformedStationGeographicLocationCodeSequence,
+        Tag.ScheduledHumanPerformersSequence,
+        Tag.ActualHumanPerformersSequence,
     };
 
     private static final int[] PPS_CREATE_FROM_SPS = {
-        Tag.SPECIFIC_CHARACTER_SET,
-        Tag.PATIENTS_NAME,
-        Tag.PATIENT_ID,
-        Tag.PATIENTS_BIRTH_DATE,
-        Tag.PATIENTS_SEX,
-        Tag.ACTUAL_HUMAN_PERFORMERS_SEQUENCE,
-        Tag.REFERENCED_REQUEST_SEQUENCE,
+        Tag.SpecificCharacterSet,
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex,
+        Tag.ActualHumanPerformersSequence,
+        Tag.ReferencedRequestSequence,
     };
     
     private static final String[] IVRLE_TS = {
-        UID.IMPLICIT_VR_LITTLE_ENDIAN };
+        UID.ImplicitVRLittleEndian };
     
     private static final String[] LE_TS = {
-        UID.EXPLICIT_VR_LITTLE_ENDIAN, 
-        UID.IMPLICIT_VR_LITTLE_ENDIAN };
+        UID.ExplicitVRLittleEndian, 
+        UID.ImplicitVRLittleEndian };
     
     private Executor executor = new NewThreadExecutor("DCMGPWL");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -228,26 +228,26 @@ public class DcmGPWL {
                     new BasicDicomObject());
         }
         DicomObject rqAttrs = new BasicDicomObject();
-        attrs.putNestedDicomObject(Tag.REFERENCED_REQUEST_SEQUENCE, rqAttrs );
+        attrs.putNestedDicomObject(Tag.ReferencedRequestSequence, rqAttrs );
         for (int i = 0; i < REQUEST_RETURN_KEYS.length; i++) {
             rqAttrs.putNull(REQUEST_RETURN_KEYS[i], null);
         }
-        rqAttrs.putNestedDicomObject(Tag.REQUESTED_PROCEDURE_CODE_SEQUENCE,
+        rqAttrs.putNestedDicomObject(Tag.RequestedProcedureCodeSequence,
                 new BasicDicomObject());
     }
 
     public void initAction() {
-        attrs.putString(Tag.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_STATUS,
+        attrs.putString(Tag.GeneralPurposeScheduledProcedureStepStatus,
                 VR.CS, "IN PROGRESS");
     }
 
     public void initCreatePPS(String[] refsps) {
         long ts = System.currentTimeMillis();
         Date now = new Date(ts);
-        attrs.putString(Tag.PERFORMED_PROCEDURE_STEP_ID, VR.SH, Long.toString(ts));
-        attrs.putDate(Tag.PERFORMED_PROCEDURE_STEP_START_DATE, VR.DA, now);
-        attrs.putDate(Tag.PERFORMED_PROCEDURE_STEP_START_TIME, VR.TM, now);
-        attrs.putString(Tag.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_STATUS,
+        attrs.putString(Tag.PerformedProcedureStepID, VR.SH, Long.toString(ts));
+        attrs.putDate(Tag.PerformedProcedureStepStartDate, VR.DA, now);
+        attrs.putDate(Tag.PerformedProcedureStepStartTime, VR.TM, now);
+        attrs.putString(Tag.GeneralPurposePerformedProcedureStepStatus,
                 VR.CS, "IN PROGRESS");
         for (int i = 0; i < PPS_CREATE_TYPE2.length; i++) {
             attrs.putNull(PPS_CREATE_TYPE2[i], null);
@@ -257,14 +257,14 @@ public class DcmGPWL {
         }
         if (refsps != null) {            
             DicomObject item = new BasicDicomObject();
-            item.putString(Tag.REFERENCED_SOP_CLASS_UID, VR.UI,
-                    UID.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_SOP_CLASS);
-            item.putString(Tag.REFERENCED_SOP_INSTANCE_UID, VR.UI, refsps[0]);
+            item.putString(Tag.ReferencedSOPClassUID, VR.UI,
+                    UID.GeneralPurposeScheduledProcedureStepSOPClass);
+            item.putString(Tag.ReferencedSOPInstanceUID, VR.UI, refsps[0]);
             item.putString(
-                    Tag.REFERENCED_GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_TRANSACTION_UID,
+                    Tag.ReferencedGeneralPurposeScheduledProcedureStepTransactionUID,
                     VR.UI, refsps[1]);
             attrs.putNestedDicomObject(
-                    Tag.REFERENCED_GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_SEQUENCE,
+                    Tag.ReferencedGeneralPurposeScheduledProcedureStepSequence,
                     item);
             if (outDir != null) {
                 File f = new File(outDir, refsps[0]);
@@ -297,20 +297,20 @@ public class DcmGPWL {
     
     public void addOutput(DicomObject inst) {
         DicomObject studyRef = findOrCreateItem(
-                attrs.get(Tag.OUTPUT_INFORMATION_SEQUENCE),
-                Tag.STUDY_INSTANCE_UID, inst.getString(Tag.STUDY_INSTANCE_UID),
-                Tag.REFERENCED_SERIES_SEQUENCE);
+                attrs.get(Tag.OutputInformationSequence),
+                Tag.StudyInstanceUID, inst.getString(Tag.StudyInstanceUID),
+                Tag.ReferencedSeriesSequence);
         DicomObject seriesRef = findOrCreateItem(
-                studyRef.get(Tag.REFERENCED_SERIES_SEQUENCE),
-                Tag.SERIES_INSTANCE_UID, inst.getString(Tag.SERIES_INSTANCE_UID),
-                Tag.REFERENCED_SOP_SEQUENCE);
+                studyRef.get(Tag.ReferencedSeriesSequence),
+                Tag.SeriesInstanceUID, inst.getString(Tag.SeriesInstanceUID),
+                Tag.ReferencedSOPSequence);
         DicomObject refSOP = new BasicDicomObject();
-        refSOP.putString(Tag.REFERENCED_SOP_CLASS_UID, VR.UI, 
-                inst.getString(Tag.SOP_CLASS_UID));
-        refSOP.putString(Tag.REFERENCED_SOP_INSTANCE_UID, VR.UI,
-                inst.getString(Tag.SOP_INSTANCE_UID));
-        refSOP.putString(Tag.RETRIEVE_AE_TITLE, VR.AE, retrieveAET);
-        seriesRef.get(Tag.REFERENCED_SOP_SEQUENCE).addDicomObject(refSOP);
+        refSOP.putString(Tag.ReferencedSOPClassUID, VR.UI, 
+                inst.getString(Tag.SOPClassUID));
+        refSOP.putString(Tag.ReferencedSOPInstanceUID, VR.UI,
+                inst.getString(Tag.SOPInstanceUID));
+        refSOP.putString(Tag.RetrieveAETitle, VR.AE, retrieveAET);
+        seriesRef.get(Tag.ReferencedSOPSequence).addDicomObject(refSOP);
     }
         
     private DicomObject findOrCreateItem(DicomElement sq, int tag, String uid,
@@ -330,7 +330,7 @@ public class DcmGPWL {
     }
 
     public void initSetPPS() {
-        attrs.putSequence(Tag.OUTPUT_INFORMATION_SEQUENCE);
+        attrs.putSequence(Tag.OutputInformationSequence);
     }
     
     public final void setLocalHost(String hostname) {
@@ -426,10 +426,10 @@ public class DcmGPWL {
  
     public void addRefRequestAttr(int tag, String value) {
         DicomObject rqAttrs = 
-            attrs.getNestedDicomObject(Tag.REFERENCED_REQUEST_SEQUENCE);
+            attrs.getNestedDicomObject(Tag.ReferencedRequestSequence);
         if (rqAttrs == null) {
             rqAttrs = new BasicDicomObject();
-            attrs.putNestedDicomObject(Tag.REFERENCED_REQUEST_SEQUENCE, rqAttrs);
+            attrs.putNestedDicomObject(Tag.ReferencedRequestSequence, rqAttrs);
         }
         rqAttrs .putString(tag, null, value);
     }
@@ -444,50 +444,50 @@ public class DcmGPWL {
     }
 
     private void setCodeValueAndScheme(DicomObject codeItem, String[] code) {
-        codeItem.putString(Tag.CODE_VALUE, VR.SH, code[0]);
-        codeItem.putString(Tag.CODING_SCHEME_DESIGNATOR, VR.SH, code[1]);
-        codeItem.putString(Tag.CODE_MEANING, VR.LO, code[2]);
+        codeItem.putString(Tag.CodeValue, VR.SH, code[0]);
+        codeItem.putString(Tag.CodingSchemeDesignator, VR.SH, code[1]);
+        codeItem.putString(Tag.CodeMeaning, VR.LO, code[2]);
     }
 
     public void setScheduledHumanPerformerCodeValueAndScheme(String[] valueAndScheme) {
         DicomObject performerKeys = attrs.getNestedDicomObject(
-                Tag.SCHEDULED_HUMAN_PERFORMERS_SEQUENCE);
+                Tag.ScheduledHumanPerformersSequence);
         DicomObject codeItem = new BasicDicomObject();
         setCodeValueAndScheme(codeItem, valueAndScheme);        
-        performerKeys.putNestedDicomObject(Tag.HUMAN_PERFORMER_CODE_SEQUENCE, codeItem);
-        performerKeys.putNull(Tag.HUMAN_PERFORMERS_NAME, VR.PN);
-        performerKeys.putNull(Tag.HUMAN_PERFORMERS_ORGANIZATION, VR.LO);
+        performerKeys.putNestedDicomObject(Tag.HumanPerformerCodeSequence, codeItem);
+        performerKeys.putNull(Tag.HumanPerformerName, VR.PN);
+        performerKeys.putNull(Tag.HumanPerformerOrganization, VR.LO);
     }
     
     public void setActualHumanPerformer(String[] code, String name, String org) {
         DicomObject performerKeys = new BasicDicomObject();
-        attrs.putNestedDicomObject(Tag.ACTUAL_HUMAN_PERFORMERS_SEQUENCE,
+        attrs.putNestedDicomObject(Tag.ActualHumanPerformersSequence,
                 performerKeys);
         BasicDicomObject codeItem = new BasicDicomObject();
-        codeItem.putString(Tag.CODE_VALUE, VR.SH, code[0]);
-        codeItem.putString(Tag.CODING_SCHEME_DESIGNATOR, VR.SH, code[1]);
-        codeItem.putString(Tag.CODE_MEANING, VR.LO, code[2]);
-        performerKeys.putNestedDicomObject(Tag.HUMAN_PERFORMER_CODE_SEQUENCE, codeItem);
+        codeItem.putString(Tag.CodeValue, VR.SH, code[0]);
+        codeItem.putString(Tag.CodingSchemeDesignator, VR.SH, code[1]);
+        codeItem.putString(Tag.CodeMeaning, VR.LO, code[2]);
+        performerKeys.putNestedDicomObject(Tag.HumanPerformerCodeSequence, codeItem);
         if (name != null) {
-            performerKeys.putString(Tag.HUMAN_PERFORMERS_NAME, VR.PN, name);
+            performerKeys.putString(Tag.HumanPerformerName, VR.PN, name);
         }
         if (org != null) {
-            performerKeys.putString(Tag.HUMAN_PERFORMERS_ORGANIZATION,VR.LO, org);
+            performerKeys.putString(Tag.HumanPerformerOrganization,VR.LO, org);
         }
     }
     
     public void setSPSStatus(String status) {
-        attrs.putString(Tag.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_STATUS,
+        attrs.putString(Tag.GeneralPurposeScheduledProcedureStepStatus,
                 VR.CS, status);        
     }    
 
     public void setPPSStatus(String status) {
-        attrs.putString(Tag.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_STATUS,
+        attrs.putString(Tag.GeneralPurposePerformedProcedureStepStatus,
                 VR.CS, status);
         if ("COMPLETED".equals(status) || "DISCONTINUED".equals(status)) {
             Date now = new Date();
-            attrs.putDate(Tag.PERFORMED_PROCEDURE_STEP_END_DATE, VR.DA, now);
-            attrs.putDate(Tag.PERFORMED_PROCEDURE_STEP_END_TIME, VR.TM, now);
+            attrs.putDate(Tag.PerformedProcedureStepEndDate, VR.DA, now);
+            attrs.putDate(Tag.PerformedProcedureStepEndTime, VR.TM, now);
         }
     }    
     
@@ -500,7 +500,7 @@ public class DcmGPWL {
     }
 
     public void setTransactionUID(String uid) {
-        attrs.putString(Tag.TRANSACTION_UID, VR.UI, uid);
+        attrs.putString(Tag.TransactionUID, VR.UI, uid);
     }
     
     public void open() throws IOException, ConfigurationException,
@@ -515,7 +515,7 @@ public class DcmGPWL {
     private TransferCapability selectTransferCapability(String cuid)
     throws NoPresentationContextException {
         TransferCapability tc = assoc.getTransferCapabilityAsSCU(
-                UID.GENERAL_PURPOSE_WORKLIST_MANAGEMENT_META_SOP_CLASS);
+                UID.GeneralPurposeWorklistManagementMetaSOPClass);
         if (tc == null) {
             tc = assoc.getTransferCapabilityAsSCU(cuid);
             if (tc == null) {
@@ -529,10 +529,10 @@ public class DcmGPWL {
 
     public int query() throws IOException, InterruptedException {
         TransferCapability tc = selectTransferCapability(
-                UID.GENERAL_PURPOSE_WORKLIST_INFORMATION_MODEL_FIND);
+                UID.GeneralPurposeWorklistInformationModelFIND);
         System.out.println("Send Query Request:");
         System.out.println(attrs.toString());
-        DimseRSP rsp = assoc.cfind(UID.GENERAL_PURPOSE_WORKLIST_INFORMATION_MODEL_FIND,
+        DimseRSP rsp = assoc.cfind(UID.GeneralPurposeWorklistInformationModelFIND,
                 priority, attrs, tc.getTransferSyntax()[0], cancelAfter);
         int count = 0;
         while (rsp.next()) {
@@ -543,14 +543,14 @@ public class DcmGPWL {
                 System.out.println("\nReceived Query Response #" + count + ":");
                 System.out.println(data.toString());
                 if (outDir != null) {
-                    String iuid = data.getString(Tag.SOP_INSTANCE_UID);
+                    String iuid = data.getString(Tag.SOPInstanceUID);
                     File f = new File(outDir, iuid);
                     System.out.println("M-WRITE " + f);
                     FileOutputStream fos = new FileOutputStream(f);
                     BufferedOutputStream bos = new BufferedOutputStream(fos);
                     DicomOutputStream dos = new DicomOutputStream(bos);
                     try {
-                        data.initFileMetaInformation(UID.EXPLICIT_VR_LITTLE_ENDIAN);
+                        data.initFileMetaInformation(UID.ExplicitVRLittleEndian);
                         dos.writeDicomFile(data);
                     } finally {
                         dos.close();
@@ -563,11 +563,11 @@ public class DcmGPWL {
     
     private void action(String iuid) throws IOException, InterruptedException {
         TransferCapability tc = selectTransferCapability(
-                UID.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_SOP_CLASS);
+                UID.GeneralPurposeScheduledProcedureStepSOPClass);
         System.out.println("Send GP-SPS Modify Request:");
         System.out.println(attrs.toString());
         DimseRSP rsp = assoc.naction(
-                UID.GENERAL_PURPOSE_SCHEDULED_PROCEDURE_STEP_SOP_CLASS, iuid,
+                UID.GeneralPurposeScheduledProcedureStepSOPClass, iuid,
                 1, attrs, tc.getTransferSyntax()[0]);
         rsp.next();
         DicomObject cmd = rsp.getCommand();
@@ -577,11 +577,11 @@ public class DcmGPWL {
 
     public void createpps(String iuid)throws IOException, InterruptedException {
         TransferCapability tc = selectTransferCapability(
-                UID.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_SOP_CLASS);
+                UID.GeneralPurposePerformedProcedureStepSOPClass);
         System.out.println("Send GP-PPS Create Request:");
         System.out.println(attrs.toString());
         DimseRSP rsp = assoc.ncreate(
-                UID.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_SOP_CLASS, iuid,
+                UID.GeneralPurposePerformedProcedureStepSOPClass, iuid,
                 attrs, tc.getTransferSyntax()[0]);
         rsp.next();
         DicomObject cmd = rsp.getCommand();
@@ -591,11 +591,11 @@ public class DcmGPWL {
     
     public void setpps(String iuid) throws IOException, InterruptedException {
         TransferCapability tc = selectTransferCapability(
-                UID.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_SOP_CLASS);
+                UID.GeneralPurposePerformedProcedureStepSOPClass);
         System.out.println("Send GP-PPS Update Request:");
         System.out.println(attrs.toString());
         DimseRSP rsp = assoc.nset(
-                UID.GENERAL_PURPOSE_PERFORMED_PROCEDURE_STEP_SOP_CLASS, iuid,
+                UID.GeneralPurposePerformedProcedureStepSOPClass, iuid,
                 attrs, tc.getTransferSyntax()[0]);
         rsp.next();
         DicomObject cmd = rsp.getCommand();
@@ -688,25 +688,25 @@ public class DcmGPWL {
                     dcmgpwl.addRefRequestAttr(toTag(matchingKeys[i - 1]), matchingKeys[i]);
             }
             if (cl.hasOption("workitem")) {
-                dcmgpwl.addCodeValueAndScheme(Tag.PERFORMED_WORKITEM_CODE_SEQUENCE,
+                dcmgpwl.addCodeValueAndScheme(Tag.PerformedWorkitemCodeSequence,
                         cl.getOptionValues("workitem"));
             }
             if (cl.hasOption("application")) {
                 dcmgpwl.addCodeValueAndScheme(
-                        Tag.PERFORMED_PROCESSING_APPLICATIONS_CODE_SEQUENCE,
+                        Tag.PerformedProcessingApplicationsCodeSequence,
                         cl.getOptionValues("application"));
             }
             if (cl.hasOption("station")) {
-                dcmgpwl.addCodeValueAndScheme(Tag.PERFORMED_STATION_NAME_CODE_SEQUENCE,
+                dcmgpwl.addCodeValueAndScheme(Tag.PerformedStationNameCodeSequence,
                         cl.getOptionValues("station"));
             }
             if (cl.hasOption("class")) {
-                dcmgpwl.addCodeValueAndScheme(Tag.PERFORMED_STATION_CLASS_CODE_SEQUENCE,
+                dcmgpwl.addCodeValueAndScheme(Tag.PerformedStationClassCodeSequence,
                         cl.getOptionValues("class"));
             }
             if (cl.hasOption("location")) {
                 dcmgpwl.addCodeValueAndScheme(
-                        Tag.PERFORMED_STATION_GEOGRAPHIC_LOCATION_CODE_SEQUENCE,
+                        Tag.PerformedStationGeographicLocationCodeSequence,
                         cl.getOptionValues("location"));
             }
             if (cl.hasOption("perfcode")) {
@@ -747,29 +747,29 @@ public class DcmGPWL {
                     dcmgpwl.addRefRequestAttr(toTag(matchingKeys[i - 1]), matchingKeys[i]);
             }
             if (cl.hasOption("D")) {
-                dcmgpwl.addAttr(Tag.SCHEDULED_PROCEDURE_STEP_START_DATE_AND_TIME,
+                dcmgpwl.addAttr(Tag.ScheduledProcedureStepStartDateAndTime,
                         cl.getOptionValue("D"));
             }
             if (cl.hasOption("workitem")) {
-                dcmgpwl.addCodeValueAndScheme(Tag.SCHEDULED_WORKITEM_CODE_SEQUENCE,
+                dcmgpwl.addCodeValueAndScheme(Tag.ScheduledWorkitemCodeSequence,
                         cl.getOptionValues("workitem"));
             }
             if (cl.hasOption("application")) {
                 dcmgpwl.addCodeValueAndScheme(
-                        Tag.SCHEDULED_PROCESSING_APPLICATIONS_CODE_SEQUENCE,
+                        Tag.ScheduledProcessingApplicationsCodeSequence,
                         cl.getOptionValues("application"));
             }
             if (cl.hasOption("station")) {
-                dcmgpwl.addCodeValueAndScheme(Tag.SCHEDULED_STATION_NAME_CODE_SEQUENCE,
+                dcmgpwl.addCodeValueAndScheme(Tag.ScheduledStationNameCodeSequence,
                         cl.getOptionValues("station"));
             }
             if (cl.hasOption("class")) {
-                dcmgpwl.addCodeValueAndScheme(Tag.SCHEDULED_STATION_CLASS_CODE_SEQUENCE,
+                dcmgpwl.addCodeValueAndScheme(Tag.ScheduledStationClassCodeSequence,
                         cl.getOptionValues("class"));
             }
             if (cl.hasOption("location")) {
                 dcmgpwl.addCodeValueAndScheme(
-                        Tag.SCHEDULED_STATION_GEOGRAPHIC_LOCATION_CODE_SEQUENCE,
+                        Tag.ScheduledStationGeographicLocationCodeSequence,
                         cl.getOptionValues("location"));
             }
             if (cl.hasOption("performer")) {
@@ -842,7 +842,7 @@ public class DcmGPWL {
             DicomInputStream din = null;
             try {
                 din = new DicomInputStream(file);
-                din.setHandler(new StopTagInputHandler(Tag.STUDY_ID));
+                din.setHandler(new StopTagInputHandler(Tag.StudyID));
                 dcmgpwl.addOutput(din.readDicomObject());
             } catch (IOException e) {
                 System.out.println("WARNING: Failed to read " + file + ": "
@@ -983,7 +983,7 @@ public class DcmGPWL {
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription(
                 "specify matching key or PPS attribute. attr can be specified " +
-                "by name or tag value (in hex), e.g. PATIENTS_NAME or 00100010.");
+                "by name or tag value (in hex), e.g. PatientName or 00100010.");
         opts.addOption(OptionBuilder.create("A"));
         
         OptionBuilder.withArgName("datetime");

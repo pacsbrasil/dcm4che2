@@ -181,11 +181,11 @@ public class Dcm2Xml {
                 }
             }
             if (x) {
-                excludes[tagStr.length] = Tag.PIXEL_DATA;
+                excludes[tagStr.length] = Tag.PixelData;
             }
             dcm2xml.setExclude(excludes);
         } else if (x) {
-            dcm2xml.setExclude(new int[] { Tag.PIXEL_DATA });
+            dcm2xml.setExclude(new int[] {Tag.PixelData});
         }
         if (cl.hasOption("T")) {
             final String xslurl = cl.getOptionValue("t");

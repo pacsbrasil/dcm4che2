@@ -15,93 +15,93 @@ public class GeneralEquipmentModule extends Module {
     }
 
     public String getManufacturer() {
-        return dcmobj.getString(Tag.MANUFACTURER);
+        return dcmobj.getString(Tag.Manufacturer);
     }
 
     public void setManufacturer(String s) {
-        dcmobj.putString(Tag.MANUFACTURER, VR.LO, s);
+        dcmobj.putString(Tag.Manufacturer, VR.LO, s);
     }
 
     public String getInstitutionName() {
-        return dcmobj.getString(Tag.INSTITUTION_NAME);
+        return dcmobj.getString(Tag.InstitutionName);
     }
 
     public void setInstitutionName(String s) {
-        dcmobj.putString(Tag.INSTITUTION_NAME, VR.LO, s);
+        dcmobj.putString(Tag.InstitutionName, VR.LO, s);
     }
 
     public String getInstitutionAddress() {
-        return dcmobj.getString(Tag.INSTITUTION_ADDRESS);
+        return dcmobj.getString(Tag.InstitutionAddress);
     }
 
     public void setInstitutionAddress(String s) {
-        dcmobj.putString(Tag.INSTITUTION_ADDRESS, VR.ST, s);
+        dcmobj.putString(Tag.InstitutionAddress, VR.ST, s);
     }
 
     public String getStationName() {
-        return dcmobj.getString(Tag.STATION_NAME);
+        return dcmobj.getString(Tag.StationName);
     }
     
     public void setStationName(String s) {
-        dcmobj.putString(Tag.STATION_NAME, VR.SH, s);
+        dcmobj.putString(Tag.StationName, VR.SH, s);
     }
     
     public String getInstitutionalDepartmentName() {
-        return dcmobj.getString(Tag.INSTITUTIONAL_DEPARTMENT_NAME);
+        return dcmobj.getString(Tag.InstitutionalDepartmentName);
     }
 
     public void setInstitutionalDepartmentName(String s) {
-        dcmobj.putString(Tag.INSTITUTIONAL_DEPARTMENT_NAME, VR.LO, s);
+        dcmobj.putString(Tag.InstitutionalDepartmentName, VR.LO, s);
     }
 
-    public String getManufacturersModelName() {
-        return dcmobj.getString(Tag.MANUFACTURERS_MODEL_NAME);
+    public String getManufacturerModelName() {
+        return dcmobj.getString(Tag.ManufacturerModelName);
     }
 
-    public void setManufacturersModelName(String s) {
-        dcmobj.putString(Tag.MANUFACTURERS_MODEL_NAME, VR.LO, s);
+    public void setManufacturerModelName(String s) {
+        dcmobj.putString(Tag.ManufacturerModelName, VR.LO, s);
     }
 
     public String getDeviceSerialNumber() {
-        return dcmobj.getString(Tag.DEVICE_SERIAL_NUMBER);
+        return dcmobj.getString(Tag.DeviceSerialNumber);
     }
 
     public void setDeviceSerialNumber(String s) {
-        dcmobj.putString(Tag.DEVICE_SERIAL_NUMBER, VR.LO, s);
+        dcmobj.putString(Tag.DeviceSerialNumber, VR.LO, s);
     }
 
     public String[] getSoftwareVersions() {
-        return dcmobj.getStrings(Tag.SOFTWARE_VERSIONS);
+        return dcmobj.getStrings(Tag.SoftwareVersions);
     }
 
     public void setSoftwareVersions(String[] ss) {
-        dcmobj.putStrings(Tag.SOFTWARE_VERSIONS, VR.LO, ss);
+        dcmobj.putStrings(Tag.SoftwareVersions, VR.LO, ss);
     }
 
     public float[] getSpatialResolution() {
-        return dcmobj.getFloats(Tag.SPATIAL_RESOLUTION);
+        return dcmobj.getFloats(Tag.SpatialResolution);
     }
 
     public void setSoftwareVersions(float[] floats) {
-        dcmobj.putFloats(Tag.SPATIAL_RESOLUTION, VR.DS, floats);
+        dcmobj.putFloats(Tag.SpatialResolution, VR.DS, floats);
     }
 
-    public Date getDateTimeofLastCalibration() {
-        return dcmobj.getDate(Tag.DATE_OF_LAST_CALIBRATION,
-                Tag.TIME_OF_LAST_CALIBRATION);
+    public Date getDateTimeOfLastCalibration() {
+        return dcmobj.getDate(Tag.DateOfLastCalibration,
+                Tag.TimeOfLastCalibration);
     }
 
-    public void setDateTimeofLastCalibration(Date d) {
-        dcmobj.putDate(Tag.DATE_OF_LAST_CALIBRATION, VR.DA, d);
-        dcmobj.putDate(Tag.TIME_OF_LAST_CALIBRATION, VR.TM, d);
+    public void setDateTimeOfLastCalibration(Date d) {
+        dcmobj.putDate(Tag.DateOfLastCalibration, VR.DA, d);
+        dcmobj.putDate(Tag.TimeOfLastCalibration, VR.TM, d);
     }
 
-    public int getLargestPixelValueinSeries() {
-        return dcmobj.getInt(Tag.PIXEL_PADDING_VALUE);
+    public int getLargestPixelValueInSeries() {
+        return dcmobj.getInt(Tag.PixelPaddingValue);
     }
 
-    public void setLargestPixelValueinSeries(int s) {
-        dcmobj.putInt(Tag.PIXEL_PADDING_VALUE,
+    public void setLargestPixelValueInSeries(int s) {
+        dcmobj.putInt(Tag.PixelPaddingValue,
                 PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 

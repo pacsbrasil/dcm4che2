@@ -60,20 +60,20 @@ public class MeasuredValue extends Module {
     }
 
     public float getNumericValue() {
-        return dcmobj.getFloat(Tag.NUMERIC_VALUE);
+        return dcmobj.getFloat(Tag.NumericValue);
     }
     
     public void setNumericValue(float f) {
-        dcmobj.putFloat(Tag.NUMERIC_VALUE, VR.DS, f);
+        dcmobj.putFloat(Tag.NumericValue, VR.DS, f);
     }
             
     public Code getMeasurementUnitsCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.MEASUREMENT_UNITS_CODE_SEQUENCE);
+        	Tag.MeasurementUnitsCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setMeasurementUnitsCode(Code code) {
-        updateSequence(Tag.MEASUREMENT_UNITS_CODE_SEQUENCE, code);
+        updateSequence(Tag.MeasurementUnitsCodeSequence, code);
     }
 }

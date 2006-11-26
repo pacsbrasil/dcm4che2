@@ -85,7 +85,7 @@ public class Txt2DcmSR {
         "report.dcm using DICOM Attribute values specified in Configuration " +
         "file txt2dcmsr.cfg.";
     
-    private String transferSyntax = UID.EXPLICIT_VR_LITTLE_ENDIAN;
+    private String transferSyntax = UID.ExplicitVRLittleEndian;
     private String charset = "ISO_IR 100";
     private boolean paragraphs = false;
     private Properties cfg = new Properties();
@@ -123,7 +123,7 @@ public class Txt2DcmSR {
     
     public void convert(File txtFile, File dcmFile) throws IOException {
         DicomObject attrs = new BasicDicomObject();
-        attrs.putString(Tag.SPECIFIC_CHARACTER_SET, VR.CS, charset);
+        attrs.putString(Tag.SpecificCharacterSet, VR.CS, charset);
         for (Enumeration en = cfg.propertyNames(); en.hasMoreElements();) {
             String key = (String) en.nextElement();
             if (key.length() > 0) {
@@ -131,15 +131,15 @@ public class Txt2DcmSR {
             }
         }
         ensureVerifyingObserverIdCodeSeq(attrs);
-        ensureUID(attrs, Tag.STUDY_INSTANCE_UID);
-        ensureUID(attrs, Tag.SERIES_INSTANCE_UID);
-        ensureUID(attrs, Tag.SOP_INSTANCE_UID);
+        ensureUID(attrs, Tag.StudyInstanceUID);
+        ensureUID(attrs, Tag.SeriesInstanceUID);
+        ensureUID(attrs, Tag.SOPInstanceUID);
         Date now = new Date();
         ensureContenDateAndTime(attrs, now);
-        attrs.putDate(Tag.INSTANCE_CREATION_DATE, VR.DA, now);
-        attrs.putDate(Tag.INSTANCE_CREATION_TIME, VR.TM, now);
+        attrs.putDate(Tag.InstanceCreationDate, VR.DA, now);
+        attrs.putDate(Tag.InstanceCreationTime, VR.TM, now);
         DicomElement sq = attrs.get(Tag.toTagPath(cfg.getProperty("")));
-        sq.getDicomObject().putBytes(Tag.TEXT_VALUE, VR.UT, readBytes(txtFile));
+        sq.getDicomObject().putBytes(Tag.TextValue, VR.UT, readBytes(txtFile));
         if (paragraphs) {
             splitParagraphs(attrs, sq);
         }
@@ -157,10 +157,10 @@ public class Txt2DcmSR {
 
     private void splitParagraphs(DicomObject attrs, DicomElement sq) {
         DicomObject item = sq.getDicomObject();
-        String txt = item.getString(Tag.TEXT_VALUE);
+        String txt = item.getString(Tag.TextValue);
         StringTokenizer stk = new StringTokenizer(txt, "\r\n");
         String txt1 = stk.nextToken();
-        item.remove(Tag.TEXT_VALUE);
+        item.remove(Tag.TextValue);
         while (stk.hasMoreTokens()) {
             String txt2 = stk.nextToken().trim();
             if (txt2.length() == 0) {
@@ -168,10 +168,10 @@ public class Txt2DcmSR {
             }
             DicomObject item2 = new BasicDicomObject();
             item.copyTo(item2);
-            item2.putString(Tag.TEXT_VALUE, VR.UT, txt2);
+            item2.putString(Tag.TextValue, VR.UT, txt2);
             sq.addDicomObject(item2);
         }
-        item.putString(Tag.TEXT_VALUE, VR.UT, txt1);
+        item.putString(Tag.TextValue, VR.UT, txt1);
     }
 
     private byte[] readBytes(File txtFile) throws IOException {
@@ -187,21 +187,21 @@ public class Txt2DcmSR {
     }
 
     private void ensureContenDateAndTime(DicomObject attrs, Date now) {
-        if (!attrs.containsValue(Tag.CONTENT_DATE)) {
-            attrs.putDate(Tag.CONTENT_DATE, VR.DA, now);
-        } else if (attrs.containsValue(Tag.CONTENT_TIME)) {
+        if (!attrs.containsValue(Tag.ContentDate)) {
+            attrs.putDate(Tag.ContentDate, VR.DA, now);
+        } else if (attrs.containsValue(Tag.ContentTime)) {
             return;
         }
-        attrs.putDate(Tag.CONTENT_TIME, VR.TM, now);        
+        attrs.putDate(Tag.ContentTime, VR.TM, now);        
     }
 
     private void ensureVerifyingObserverIdCodeSeq(DicomObject attrs) {
-        DicomElement sq =  attrs.get(Tag.VERIFYING_OBSERVER_SEQUENCE);
+        DicomElement sq =  attrs.get(Tag.VerifyingObserverSequence);
         if (sq != null && sq.hasItems()) {
             for (int i = 0, n = sq.countItems(); i < n; i++) {
                 DicomObject item = sq.getDicomObject(i);
-                if (!item.contains(Tag.VERIFYING_OBSERVER_IDENTIFICATION_CODE_SEQUENCE)) {
-                    item.putNull(Tag.VERIFYING_OBSERVER_IDENTIFICATION_CODE_SEQUENCE, VR.SQ);
+                if (!item.contains(Tag.VerifyingObserverIdentificationCodeSequence)) {
+                    item.putNull(Tag.VerifyingObserverIdentificationCodeSequence, VR.SQ);
                 }
             }
         }
@@ -218,7 +218,7 @@ public class Txt2DcmSR {
             CommandLine cl = parse(args);
             Txt2DcmSR txt2dcmsr = new Txt2DcmSR();
             if (cl.hasOption("ivrle")) {
-                txt2dcmsr.setTransferSyntax(UID.IMPLICIT_VR_LITTLE_ENDIAN);
+                txt2dcmsr.setTransferSyntax(UID.ImplicitVRLittleEndian);
             }
             if (cl.hasOption("cs")) {
                 txt2dcmsr.setCharset(cl.getOptionValue("cs"));

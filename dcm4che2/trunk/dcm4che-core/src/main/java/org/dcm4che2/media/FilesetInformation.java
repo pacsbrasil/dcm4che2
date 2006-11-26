@@ -67,26 +67,26 @@ public class FilesetInformation extends FileMetaInformation {
     
     public void init() {
         super.init();
-        dcmobj.putNull(Tag.FILE_SET_ID, VR.CS);
+        dcmobj.putNull(Tag.FilesetID, VR.CS);
         setOffsetFirstRootRecord(0);
         setOffsetLastRootRecord(0);
         setFilesetConsistencyFlag(0);
     }
 
     public String getFilesetID() {
-        return dcmobj.getString(Tag.FILE_SET_ID);
+        return dcmobj.getString(Tag.FilesetID);
     }
 
     public void setFilesetID(String id) {
-        dcmobj.putString(Tag.FILE_SET_ID, VR.CS, id);
+        dcmobj.putString(Tag.FilesetID, VR.CS, id);
     }
 
     public String[] getFilesetDescriptorFileID() {
-        return dcmobj.getStrings(Tag.FILE_SET_DESCRIPTOR_FILE_ID);
+        return dcmobj.getStrings(Tag.FilesetDescriptorFileID);
     }
 
     public void setFilesetDescriptorFileID(String[] cs) {
-        dcmobj.putStrings(Tag.FILE_SET_DESCRIPTOR_FILE_ID, VR.CS, cs);
+        dcmobj.putStrings(Tag.FilesetDescriptorFileID, VR.CS, cs);
     }
 
     public File getFilesetDescriptorFile(File basedir) {
@@ -98,30 +98,30 @@ public class FilesetInformation extends FileMetaInformation {
     }
     
     public String getSpecificCharacterSetofFilesetDescriptorFile() {
-        return dcmobj.getString(Tag.SPECIFIC_CHARACTER_SET_OF_FILE_SET_DESCRIPTOR_FILE);
+        return dcmobj.getString(Tag.SpecificCharacterSetOfFilesetDescriptorFile);
     }
 
     public void setSpecificCharacterSetofFilesetDescriptorFile(String cs) {
-        dcmobj.putString(Tag.FILE_SET_ID, VR.CS, cs);
+        dcmobj.putString(Tag.FilesetID, VR.CS, cs);
     }
     
     public int getOffsetFirstRootRecord() {
         return dcmobj.getInt(
-                Tag.OFFSET_OF_THE_FIRST_DIRECTORY_RECORD_OF_THE_ROOT_DIRECTORY_ENTITY);
+                Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity);
     }
 
     public void setOffsetFirstRootRecord(int offset) {
-        dcmobj.putInt(Tag.OFFSET_OF_THE_FIRST_DIRECTORY_RECORD_OF_THE_ROOT_DIRECTORY_ENTITY,
+        dcmobj.putInt(Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
                 VR.UL, offset);
     }
 
     public int getOffsetLastRootRecord() {
         return dcmobj.getInt(
-                Tag.OFFSET_OF_THE_LAST_DIRECTORY_RECORD_OF_THE_ROOT_DIRECTORY_ENTITY);
+                Tag.OffsetOfTheLastDirectoryRecordOfTheRootDirectoryEntity);
     }
 
     public void setOffsetLastRootRecord(int offset) {
-        dcmobj.putInt(Tag.OFFSET_OF_THE_LAST_DIRECTORY_RECORD_OF_THE_ROOT_DIRECTORY_ENTITY,
+        dcmobj.putInt(Tag.OffsetOfTheLastDirectoryRecordOfTheRootDirectoryEntity,
                 VR.UL, offset);
     }
     
@@ -130,11 +130,11 @@ public class FilesetInformation extends FileMetaInformation {
     }
 
     public int getFilesetConsistencyFlag() {
-        return dcmobj.getInt(Tag.FILE_SET_CONSISTENCY_FLAG);
+        return dcmobj.getInt(Tag.FilesetConsistencyFlag);
     }
     
     public void setFilesetConsistencyFlag(int flag) {
-        dcmobj.putInt(Tag.FILE_SET_CONSISTENCY_FLAG, VR.US, flag);
+        dcmobj.putInt(Tag.FilesetConsistencyFlag, VR.US, flag);
     }
     
     public boolean isNoKnownInconsistencies() {
@@ -142,7 +142,7 @@ public class FilesetInformation extends FileMetaInformation {
     }
     
     protected String getSOPClassUID() {
-        return UID.MEDIA_STORAGE_DIRECTORY_STORAGE;
+        return UID.MediaStorageDirectoryStorage;
     }
 
     protected String getSOPInstanceUID() {

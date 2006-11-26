@@ -60,7 +60,7 @@ class IANSCP extends NCreateService {
     protected File destination;
 
     public IANSCP(DcmOF dcmOF) {
-        super(UID.INSTANCE_AVAILABILITY_NOTIFICATION_SOP_CLASS);
+        super(UID.InstanceAvailabilityNotificationSOPClass);
         this.dcmOF = dcmOF;
     }
 
@@ -71,10 +71,10 @@ class IANSCP extends NCreateService {
 
     protected DicomObject doNCreate(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
-        final String iuid = rsp.getString(Tag.AFFECTED_SOP_INSTANCE_UID);
+        final String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
         data.initFileMetaInformation(
-                UID.INSTANCE_AVAILABILITY_NOTIFICATION_SOP_CLASS, iuid,
-                UID.EXPLICIT_VR_LITTLE_ENDIAN);
+                UID.InstanceAvailabilityNotificationSOPClass, iuid,
+                UID.ExplicitVRLittleEndian);
         try {
             store(iuid, data);
         } catch (Exception e) {

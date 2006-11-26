@@ -63,11 +63,11 @@ public class NCreateService extends DicomService implements NCreateSCP {
     public void ncreate(Association as, int pcid, DicomObject rq,
             DicomObject data) throws DicomServiceException, IOException {
         DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
-        String iuid = rq.getString(Tag.AFFECTED_SOP_INSTANCE_UID);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
         if (iuid == null) {
             iuid = UIDUtils.createUID();
-            rq.putString(Tag.AFFECTED_SOP_INSTANCE_UID, VR.UI, iuid);
-            rsp.putString(Tag.AFFECTED_SOP_INSTANCE_UID, VR.UI, iuid);
+            rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+            rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
         }
         as.writeDimseRSP(pcid, rsp, doNCreate(as, pcid, rq, data, rsp));
     }

@@ -46,11 +46,10 @@ import org.dcm4che2.data.Tag;
  */
 public class CTMRApplicationProfile extends BasicApplicationProfile {
     
-    private static final int[] CTMR_IMAGE_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
-	    Tag.REFERENCED_IMAGE_SEQUENCE, Tag.INSTANCE_NUMBER,
-	    Tag.IMAGE_POSITION_PATIENT, Tag.IMAGE_ORIENTATION_PATIENT,
-	    Tag.FRAME_OF_REFERENCE_UID, Tag.ROWS, Tag.COLUMNS, 
-            Tag.PIXEL_SPACING };
+    private static final int[] CTMR_IMAGE_KEYS = { Tag.SpecificCharacterSet,
+	    Tag.ReferencedImageSequence, Tag.InstanceNumber,
+	    Tag.ImagePositionPatient, Tag.ImageOrientationPatient,
+	    Tag.FrameOfReferenceUID, Tag.Rows, Tag.Columns, Tag.PixelSpacing};
 
     public CTMRApplicationProfile() {
 	setImageKeys(CTMR_IMAGE_KEYS);

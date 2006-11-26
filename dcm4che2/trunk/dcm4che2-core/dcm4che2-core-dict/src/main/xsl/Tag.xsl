@@ -41,7 +41,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package <xsl:value-of select="$package"/>;
 
 import java.util.StringTokenizer;

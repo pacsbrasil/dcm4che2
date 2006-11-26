@@ -73,43 +73,43 @@ public class SeriesAndInstanceReference extends Module {
     }   
     
     public String getSeriesInstanceUID() {
-        return dcmobj.getString(Tag.SERIES_INSTANCE_UID);
+        return dcmobj.getString(Tag.SeriesInstanceUID);
     }
 
     public void setSeriesInstanceUID(String uid) {
-        dcmobj.putString(Tag.SERIES_INSTANCE_UID, VR.UI, uid);
+        dcmobj.putString(Tag.SeriesInstanceUID, VR.UI, uid);
     }
 
     public String getRetrieveAETitle() {
-        return dcmobj.getString(Tag.RETRIEVE_AE_TITLE);
+        return dcmobj.getString(Tag.RetrieveAETitle);
     }
 
     public void setRetrieveAETitle(String ae) {
-        dcmobj.putString(Tag.RETRIEVE_AE_TITLE, VR.AE, ae);
+        dcmobj.putString(Tag.RetrieveAETitle, VR.AE, ae);
     }
 
     public String getStorageMediaFilesetID() {
-        return dcmobj.getString(Tag.STORAGE_MEDIA_FILE_SET_ID);
+        return dcmobj.getString(Tag.StorageMediaFilesetID);
     }
 
     public void setStorageMediaFilesetID(String sh) {
-        dcmobj.putString(Tag.STORAGE_MEDIA_FILE_SET_ID, VR.SH, sh);
+        dcmobj.putString(Tag.StorageMediaFilesetID, VR.SH, sh);
     }
 
     public String getStorageMediaFilesetUID() {
-        return dcmobj.getString(Tag.STORAGE_MEDIA_FILE_SET_UID);
+        return dcmobj.getString(Tag.StorageMediaFilesetUID);
     }
 
     public void setStorageMediaFilesetUID(String uid) {
-        dcmobj.putString(Tag.STORAGE_MEDIA_FILE_SET_UID , VR.UI, uid);
+        dcmobj.putString(Tag.StorageMediaFilesetUID , VR.UI, uid);
     }
 
     public SOPInstanceReferenceAndMAC[] getReferencedInstances() {
         return SOPInstanceReferenceAndMAC.toSOPInstanceReferenceAndMACs(dcmobj
-                .get(Tag.REFERENCED_INSTANCE_SEQUENCE));
+                .get(Tag.ReferencedInstanceSequence));
     }
 
     public void setSOPInstanceReference(SOPInstanceReferenceAndMAC[] sops) {
-        updateSequence(Tag.REFERENCED_INSTANCE_SEQUENCE, sops);
+        updateSequence(Tag.ReferencedInstanceSequence, sops);
     }
 }

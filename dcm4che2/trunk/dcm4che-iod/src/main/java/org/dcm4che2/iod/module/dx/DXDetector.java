@@ -57,164 +57,164 @@ public class DXDetector extends Module {
     }
 
     public String getDetectorType() {
-        return dcmobj.getString(Tag.DETECTOR_TYPE);
+        return dcmobj.getString(Tag.DetectorType);
     }
     
     public void setDetectorType(String s) {
-        dcmobj.putString(Tag.DETECTOR_TYPE, VR.CS, s);
+        dcmobj.putString(Tag.DetectorType, VR.CS, s);
     }
 
     public String getDetectorConfiguration() {
-        return dcmobj.getString(Tag.DETECTOR_CONFIGURATION);
+        return dcmobj.getString(Tag.DetectorConfiguration);
     }
     
     public void setDetectorConfiguration(String s) {
-        dcmobj.putString(Tag.DETECTOR_CONFIGURATION, VR.CS, s);
+        dcmobj.putString(Tag.DetectorConfiguration, VR.CS, s);
     }
 
     public String getDetectorDescription() {
-        return dcmobj.getString(Tag.DETECTOR_DESCRIPTION);
+        return dcmobj.getString(Tag.DetectorDescription);
     }
     
     public void setDetectorDescription(String s) {
-        dcmobj.putString(Tag.DETECTOR_DESCRIPTION, VR.LT, s);
+        dcmobj.putString(Tag.DetectorDescription, VR.LT, s);
     }
 
     public String getDetectorMode() {
-        return dcmobj.getString(Tag.DETECTOR_MODE);
+        return dcmobj.getString(Tag.DetectorMode);
     }
     
     public void setDetectorMode(String s) {
-        dcmobj.putString(Tag.DETECTOR_MODE, VR.LT, s);
+        dcmobj.putString(Tag.DetectorMode, VR.LT, s);
     }
 
     public String getDetectorID() {
-        return dcmobj.getString(Tag.DETECTOR_ID);
+        return dcmobj.getString(Tag.DetectorID);
     }
     
     public void setDetectorID(String s) {
-        dcmobj.putString(Tag.DETECTOR_ID, VR.SH, s);
+        dcmobj.putString(Tag.DetectorID, VR.SH, s);
     }
 
-    public Date getDateTimeofLastDetectorCalibration() {
-        return dcmobj.getDate(Tag.DATE_OF_LAST_DETECTOR_CALIBRATION,
-                Tag.TIME_OF_LAST_DETECTOR_CALIBRATION);
+    public Date getDateTimeOfLastDetectorCalibration() {
+        return dcmobj.getDate(Tag.DateOfLastDetectorCalibration,
+                Tag.TimeOfLastDetectorCalibration);
     }
 
-    public void setDateTimeofLastDetectorCalibration(Date d) {
-        dcmobj.putDate(Tag.DATE_OF_LAST_DETECTOR_CALIBRATION, VR.DA, d);
-        dcmobj.putDate(Tag.TIME_OF_LAST_DETECTOR_CALIBRATION, VR.TM, d);
+    public void setDateTimeOfLastDetectorCalibration(Date d) {
+        dcmobj.putDate(Tag.DateOfLastDetectorCalibration, VR.DA, d);
+        dcmobj.putDate(Tag.TimeOfLastDetectorCalibration, VR.TM, d);
     }
 
-    public int getExposuresonDetectorSinceLastCalibration() {
-        return dcmobj.getInt(Tag.EXPOSURES_ON_DETECTOR_SINCE_LAST_CALIBRATION);
+    public int getExposuresOnDetectorSinceLastCalibration() {
+        return dcmobj.getInt(Tag.ExposuresOnDetectorSinceLastCalibration);
     }
     
-    public void setExposuresonDetectorSinceLastCalibration(int i) {
-        dcmobj.putInt(Tag.EXPOSURES_ON_DETECTOR_SINCE_LAST_CALIBRATION, VR.IS, i);
+    public void setExposuresOnDetectorSinceLastCalibration(int i) {
+        dcmobj.putInt(Tag.ExposuresOnDetectorSinceLastCalibration, VR.IS, i);
     }
 
-    public int getExposuresonDetectorSinceManufactured() {
-        return dcmobj.getInt(Tag.EXPOSURES_ON_DETECTOR_SINCE_MANUFACTURED);
+    public int getExposuresOnDetectorSinceManufactured() {
+        return dcmobj.getInt(Tag.ExposuresOnDetectorSinceManufactured);
     }
     
-    public void setExposuresonDetectorSinceManufactured(int i) {
-        dcmobj.putInt(Tag.EXPOSURES_ON_DETECTOR_SINCE_MANUFACTURED, VR.IS, i);
+    public void setExposuresOnDetectorSinceManufactured(int i) {
+        dcmobj.putInt(Tag.ExposuresOnDetectorSinceManufactured, VR.IS, i);
     }
 
     public float getDetectorTimeSinceLastExposure() {
-        return dcmobj.getFloat(Tag.DETECTOR_TIME_SINCE_LAST_EXPOSURE);
+        return dcmobj.getFloat(Tag.DetectorTimeSinceLastExposure);
     }
     
     public void setDetectorTimeSinceLastExposure(float f) {
-        dcmobj.putFloat(Tag.DETECTOR_TIME_SINCE_LAST_EXPOSURE, VR.DS, f);
+        dcmobj.putFloat(Tag.DetectorTimeSinceLastExposure, VR.DS, f);
     }
 
     public float[] getDetectorBinning() {
-        return dcmobj.getFloats(Tag.DETECTOR_BINNING);
+        return dcmobj.getFloats(Tag.DetectorBinning);
     }
     
     public void setDetectorBinning(float[] f) {
-        dcmobj.putFloats(Tag.DETECTOR_BINNING, VR.DS, f);
+        dcmobj.putFloats(Tag.DetectorBinning, VR.DS, f);
     }
 
     public String getDetectorManufacturerName() {
-        return dcmobj.getString(Tag.DETECTOR_MANUFACTURER_NAME);
+        return dcmobj.getString(Tag.DetectorManufacturerName);
     }
     
     public void setDetectorManufacturerName(String s) {
-        dcmobj.putString(Tag.DETECTOR_MANUFACTURER_NAME, VR.LO, s);
+        dcmobj.putString(Tag.DetectorManufacturerName, VR.LO, s);
     }
 
-    public String getDetectorManufacturersModelName() {
-        return dcmobj.getString(Tag.DETECTOR_MANUFACTURERS_MODEL_NAME);
+    public String getDetectorManufacturerModelName() {
+        return dcmobj.getString(Tag.DetectorManufacturerModelName);
     }
     
-    public void setDetectorManufacturersModelName(String s) {
-        dcmobj.putString(Tag.DETECTOR_MANUFACTURERS_MODEL_NAME, VR.LO, s);
+    public void setDetectorManufacturerModelName(String s) {
+        dcmobj.putString(Tag.DetectorManufacturerModelName, VR.LO, s);
     }
 
     public String getDetectorConditionsNominalFlag() {
-        return dcmobj.getString(Tag.DETECTOR_CONDITIONS_NOMINAL_FLAG);
+        return dcmobj.getString(Tag.DetectorConditionsNominalFlag);
     }
     
     public void setDetectorConditionsNominalFlag(String s) {
-        dcmobj.putString(Tag.DETECTOR_CONDITIONS_NOMINAL_FLAG, VR.CS, s);
+        dcmobj.putString(Tag.DetectorConditionsNominalFlag, VR.CS, s);
     }
 
     public float getDetectorTemperature() {
-        return dcmobj.getFloat(Tag.DETECTOR_TEMPERATURE);
+        return dcmobj.getFloat(Tag.DetectorTemperature);
     }
     
     public void setDetectorTemperature(float f) {
-        dcmobj.putFloat(Tag.DETECTOR_TEMPERATURE, VR.DS, f);
+        dcmobj.putFloat(Tag.DetectorTemperature, VR.DS, f);
     }
 
     public float getSensitivity() {
-        return dcmobj.getFloat(Tag.SENSITIVITY);
+        return dcmobj.getFloat(Tag.Sensitivity);
     }
     
     public void setSensitivity(float s) {
-        dcmobj.putFloat(Tag.SENSITIVITY, VR.DS, s);
+        dcmobj.putFloat(Tag.Sensitivity, VR.DS, s);
     }
 
     public float[] getDetectorElementPhysicalSize() {
-        return dcmobj.getFloats(Tag.DETECTOR_ELEMENT_PHYSICAL_SIZE);
+        return dcmobj.getFloats(Tag.DetectorElementPhysicalSize);
     }
     
     public void setDetectorElementPhysicalSize(float[] f) {
-        dcmobj.putFloats(Tag.DETECTOR_ELEMENT_PHYSICAL_SIZE, VR.DS, f);
+        dcmobj.putFloats(Tag.DetectorElementPhysicalSize, VR.DS, f);
     }
 
     public float[] getDetectorElementSpacing() {
-        return dcmobj.getFloats(Tag.DETECTOR_ELEMENT_SPACING);
+        return dcmobj.getFloats(Tag.DetectorElementSpacing);
     }
     
     public void setDetectorElementSpacing(float[] f) {
-        dcmobj.putFloats(Tag.DETECTOR_ELEMENT_SPACING, VR.DS, f);
+        dcmobj.putFloats(Tag.DetectorElementSpacing, VR.DS, f);
     }
 
     public String getDetectorActiveShape() {
-        return dcmobj.getString(Tag.DETECTOR_ACTIVE_SHAPE);
+        return dcmobj.getString(Tag.DetectorActiveShape);
     }
     
     public void setDetectorActiveShape(String s) {
-        dcmobj.putString(Tag.DETECTOR_ACTIVE_SHAPE, VR.CS, s);
+        dcmobj.putString(Tag.DetectorActiveShape, VR.CS, s);
     }
 
     public float[] getDetectorActiveDimensions() {
-        return dcmobj.getFloats(Tag.DETECTOR_ACTIVE_DIMENSIONS);
+        return dcmobj.getFloats(Tag.DetectorActiveDimensions);
     }
     
     public void setDetectorActiveDimensions(float[] f) {
-        dcmobj.putFloats(Tag.DETECTOR_ACTIVE_DIMENSIONS, VR.DS, f);
+        dcmobj.putFloats(Tag.DetectorActiveDimensions, VR.DS, f);
     }
 
     public float[] getDetectorActiveOrigin() {
-        return dcmobj.getFloats(Tag.DETECTOR_ACTIVE_ORIGIN);
+        return dcmobj.getFloats(Tag.DetectorActiveOrigin);
     }
     
     public void setDetectorActiveOrigin(float[] f) {
-        dcmobj.putFloats(Tag.DETECTOR_ACTIVE_ORIGIN, VR.DS, f);
+        dcmobj.putFloats(Tag.DetectorActiveOrigin, VR.DS, f);
     }
 }

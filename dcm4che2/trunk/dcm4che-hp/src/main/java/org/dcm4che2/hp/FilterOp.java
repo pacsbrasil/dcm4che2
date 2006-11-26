@@ -179,17 +179,17 @@ public abstract class FilterOp
 
     static boolean codeEquals(DicomObject item1, DicomObject item2)
     {
-        if (!equals(item1.getString(Tag.CODE_VALUE),
-                item2.getString(Tag.CODE_VALUE)))
+        if (!equals(item1.getString(Tag.CodeValue),
+                item2.getString(Tag.CodeValue)))
             return false;
-        if (!equals(item1.getString(Tag.CODING_SCHEME_DESIGNATOR),
-                item2.getString(Tag.CODING_SCHEME_DESIGNATOR)))
+        if (!equals(item1.getString(Tag.CodingSchemeDesignator),
+                item2.getString(Tag.CodingSchemeDesignator)))
             return false;
-        if (!item1.containsValue(Tag.CODING_SCHEME_VERSION)
-                || !item2.containsValue(Tag.CODING_SCHEME_VERSION))
+        if (!item1.containsValue(Tag.CodingSchemeVersion)
+                || !item2.containsValue(Tag.CodingSchemeVersion))
             return true;
-        return equals(item1.getString(Tag.CODING_SCHEME_VERSION),
-                item2.getString(Tag.CODING_SCHEME_VERSION));
+        return equals(item1.getString(Tag.CodingSchemeVersion),
+                item2.getString(Tag.CodingSchemeVersion));
     }
 
     static boolean equals(Object o1, Object o2)

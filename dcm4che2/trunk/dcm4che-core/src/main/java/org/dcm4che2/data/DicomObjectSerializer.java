@@ -73,7 +73,7 @@ class DicomObjectSerializer implements Serializable {
 			throws IOException, ClassNotFoundException {
 		s.defaultReadObject();
 		DicomInputStream dis = 
-				new DicomInputStream(s, TransferSyntax.EXPLICIT_VR_LITTLE_ENDIAN);
+				new DicomInputStream(s, TransferSyntax.ExplicitVRLittleEndian);
 		
 		attrs = new BasicDicomObject();
 		dis.readDicomObject(attrs, -1);

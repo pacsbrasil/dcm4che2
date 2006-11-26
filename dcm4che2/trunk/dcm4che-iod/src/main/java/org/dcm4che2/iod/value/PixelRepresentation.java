@@ -57,6 +57,6 @@ public class PixelRepresentation {
         return ss != UNSIGNED;
     }
     public static boolean isSigned(DicomObject dcmobj) {
-        return isSigned(dcmobj.getInt(Tag.PIXEL_REPRESENTATION));
+        return isSigned(dcmobj.getInt(Tag.PixelRepresentation));
     }
 }

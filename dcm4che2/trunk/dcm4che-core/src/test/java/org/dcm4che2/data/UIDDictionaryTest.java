@@ -52,8 +52,8 @@ public class UIDDictionaryTest extends TestCase {
 
 	public final void testGetDictionary() {
 		UIDDictionary dict = UIDDictionary.getDictionary();
-        assertEquals("Implicit VR Little Endian", dict.nameOf(UID.IMPLICIT_VR_LITTLE_ENDIAN));
-		assertEquals("Explicit VR Little Endian", dict.nameOf(UID.EXPLICIT_VR_LITTLE_ENDIAN));
+        assertEquals("Implicit VR Little Endian", dict.nameOf(UID.ImplicitVRLittleEndian));
+		assertEquals("Explicit VR Little Endian", dict.nameOf(UID.ExplicitVRLittleEndian));
 	}
 
 }

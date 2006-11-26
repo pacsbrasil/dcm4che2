@@ -126,13 +126,13 @@ public class DcmOF {
             + "requests with DCM4CHE_OF as called AE title, storing received messages "
             + "to /tmp.";
 
-    private static final String[] ONLY_DEF_TS = { UID.IMPLICIT_VR_LITTLE_ENDIAN };
+    private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
 
-    private static final String[] NATIVE_TS = { UID.EXPLICIT_VR_LITTLE_ENDIAN,
-            UID.EXPLICIT_VR_BIG_ENDIAN, UID.IMPLICIT_VR_LITTLE_ENDIAN };
+    private static final String[] NATIVE_TS = { UID.ExplicitVRLittleEndian,
+            UID.ExplicitVRBigEndian, UID.ImplicitVRLittleEndian };
 
-    private static final String[] NATIVE_LE_TS = { UID.EXPLICIT_VR_LITTLE_ENDIAN,
-            UID.IMPLICIT_VR_LITTLE_ENDIAN };
+    private static final String[] NATIVE_LE_TS = { UID.ExplicitVRLittleEndian,
+            UID.ImplicitVRLittleEndian };
 
     private static Logger log = LoggerFactory.getLogger(DcmOF.class);
     private static Executor executor = new NewThreadExecutor("DCMOF");
@@ -432,7 +432,7 @@ public class DcmOF {
                     "illegal argument of option -async", 0, 0xffff));
 
         ArrayList tc = new ArrayList();
-        tc.add(new TransferCapability(UID.VERIFICATION_SOP_CLASS, ONLY_DEF_TS,
+        tc.add(new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS,
                 TransferCapability.SCP));
         if (cl.hasOption(MWL))
             dcmof.registerMWLSCP(new File(cl.getOptionValue(MWL)), tc);

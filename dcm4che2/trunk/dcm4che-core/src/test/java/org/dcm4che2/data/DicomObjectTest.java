@@ -105,8 +105,8 @@ public class DicomObjectTest extends TestCase {
     
     public void testPut() {
         DicomObject dcm = new BasicDicomObject();
-        dcm.putNull(Tag.ACQUISITION_DATE, null);
-        assertEquals(VR.DA, dcm.get(Tag.ACQUISITION_DATE).vr());
+        dcm.putNull(Tag.AcquisitionDate, null);
+        assertEquals(VR.DA, dcm.get(Tag.AcquisitionDate).vr());
     }
 
     private static final String[] IMAGE_TYPES = {
@@ -116,7 +116,7 @@ public class DicomObjectTest extends TestCase {
 
     public void testVm() {
         DicomObject dcm = new BasicDicomObject();
-        dcm.putStrings(Tag.IMAGE_TYPE, VR.CS, IMAGE_TYPES);
-        assertEquals(IMAGE_TYPES.length, dcm.vm(Tag.IMAGE_TYPE));
+        dcm.putStrings(Tag.ImageType, VR.CS, IMAGE_TYPES);
+        assertEquals(IMAGE_TYPES.length, dcm.vm(Tag.ImageType));
     }
 }

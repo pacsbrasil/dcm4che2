@@ -57,7 +57,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
 
     public ImagePlaneSelector(DicomObject filterOp)
     {
-        String vrStr = filterOp.getString(Tag.SELECTOR_ATTRIBUTE_VR);
+        String vrStr = filterOp.getString(Tag.SelectorAttributeVR);
         if (vrStr == null)
         {
             throw new IllegalArgumentException(
@@ -68,7 +68,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
             throw new IllegalArgumentException(
                     "(0072,0050) Selector Attribute VR: " + vrStr);
         }
-        String[] values = filterOp.getStrings(Tag.SELECTOR_CS_VALUE);
+        String[] values = filterOp.getStrings(Tag.SelectorCSValue);
         if (values == null || values.length == 0)
             throw new IllegalArgumentException(
                     "Missing (0072,0062) AbstractHPSelector CS Value");
@@ -84,14 +84,14 @@ public class ImagePlaneSelector extends AbstractHPSelector
     {
         this.imagePlanes = (ImagePlane[]) imagePlanes.clone();
         this.filterOp = new BasicDicomObject();
-        filterOp.putString(Tag.FILTER_BY_CATEGORY, VR.CS, "IMAGE_PLANE");
-        filterOp.putString(Tag.SELECTOR_ATTRIBUTE_VR, VR.CS, "CS");
+        filterOp.putString(Tag.FilterbyCategory, VR.CS, "IMAGE_PLANE");
+        filterOp.putString(Tag.SelectorAttributeVR, VR.CS, "CS");
         String[] values = new String[imagePlanes.length];
         for (int i = 0; i < values.length; i++)
         {
             values[i] = imagePlanes[i].getCodeString();
         }
-        filterOp.putStrings(Tag.SELECTOR_CS_VALUE, VR.CS, values);
+        filterOp.putStrings(Tag.SelectorCSValue, VR.CS, values);
     }
     
     public final DicomObject getDicomObject()
@@ -112,7 +112,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
     public boolean matches(DicomObject dcmobj, int frame)
     {
         ImagePlane imagePlane;
-        float[] floats = dcmobj.getFloats(Tag.IMAGE_ORIENTATION_PATIENT);
+        float[] floats = dcmobj.getFloats(Tag.ImageOrientationPatient);
         if (floats != null && floats.length == 6)
         {
             ImageOrientation orientation = new ImageOrientation(floats);
@@ -120,7 +120,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
         }
         else
         {
-            String[] ss = dcmobj.getStrings(Tag.PATIENT_ORIENTATION);
+            String[] ss = dcmobj.getStrings(Tag.PatientOrientation);
             if (ss != null && ss.length == 2)
             {
                 PatientOrientation orientation = new PatientOrientation(ss);

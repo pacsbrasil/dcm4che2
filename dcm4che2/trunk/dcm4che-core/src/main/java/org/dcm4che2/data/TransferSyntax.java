@@ -41,33 +41,33 @@ package org.dcm4che2.data;
 public class TransferSyntax
 {
 
-    public static final TransferSyntax IMPLICIT_VR_LITTLE_ENDIAN = 
+    public static final TransferSyntax ImplicitVRLittleEndian = 
             new TransferSyntax("1.2.840.10008.1.2", false, false, false, false);
 
-    public static final TransferSyntax IMPLICIT_VR_BIG_ENDIAN =
+    public static final TransferSyntax ImplicitVRBigEndian =
             new TransferSyntax(null, false, true, false, false);
 
-    public static final TransferSyntax EXPLICIT_VR_LITTLE_ENDIAN =
+    public static final TransferSyntax ExplicitVRLittleEndian =
             new TransferSyntax("1.2.840.10008.1.2.1", true, false, false, false);
 
-    public static final TransferSyntax EXPLICIT_VR_BIG_ENDIAN = 
+    public static final TransferSyntax ExplicitVRBigEndian = 
             new TransferSyntax("1.2.840.10008.1.2.2", true, true, false, false);
 
-    public static final TransferSyntax DEFLATED_EXPLICIT_VR_LITTLE_ENDIAN = 
+    public static final TransferSyntax DeflatedExplicitVRLittleEndian = 
             new TransferSyntax("1.2.840.10008.1.2.1.99", true, false, true, false);
 
     public static TransferSyntax valueOf(String uid)
     {
         if (uid == null)
             throw new NullPointerException("uid");
-        if (uid.equals(IMPLICIT_VR_LITTLE_ENDIAN.uid))
-            return IMPLICIT_VR_LITTLE_ENDIAN;
-        if (uid.equals(EXPLICIT_VR_LITTLE_ENDIAN.uid))
-            return EXPLICIT_VR_LITTLE_ENDIAN;
-        if (uid.equals(EXPLICIT_VR_BIG_ENDIAN.uid))
-            return EXPLICIT_VR_BIG_ENDIAN;
-        if (uid.equals(DEFLATED_EXPLICIT_VR_LITTLE_ENDIAN.uid))
-            return DEFLATED_EXPLICIT_VR_LITTLE_ENDIAN;
+        if (uid.equals(ImplicitVRLittleEndian.uid))
+            return ImplicitVRLittleEndian;
+        if (uid.equals(ExplicitVRLittleEndian.uid))
+            return ExplicitVRLittleEndian;
+        if (uid.equals(ExplicitVRBigEndian.uid))
+            return ExplicitVRBigEndian;
+        if (uid.equals(DeflatedExplicitVRLittleEndian.uid))
+            return DeflatedExplicitVRLittleEndian;
         return new TransferSyntax(uid, true, false, false, true);
     }
 

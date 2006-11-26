@@ -70,22 +70,22 @@ public class ReferencedSOP
 
     public String getReferencedSOPInstanceUID()
     {
-        return dcmobj.getString(Tag.REFERENCED_SOP_INSTANCE_UID);
+        return dcmobj.getString(Tag.ReferencedSOPInstanceUID);
     }
 
     public void setReferencedSOPInstanceUID(String uid)
     {
-        dcmobj.putString(Tag.REFERENCED_SOP_INSTANCE_UID, VR.UI, uid);
+        dcmobj.putString(Tag.ReferencedSOPInstanceUID, VR.UI, uid);
     }
 
     public String getReferencedSOPClassUID()
     {
-        return dcmobj.getString(Tag.REFERENCED_SOP_CLASS_UID);
+        return dcmobj.getString(Tag.ReferencedSOPClassUID);
     }
 
     public void setReferencedSOPClassUID(String uid)
     {
-        dcmobj.putString(Tag.REFERENCED_SOP_CLASS_UID, VR.UI, uid);
+        dcmobj.putString(Tag.ReferencedSOPClassUID, VR.UI, uid);
     }
 
 }

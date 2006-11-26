@@ -67,7 +67,7 @@ public abstract class AAssociateRQAC {
     protected int maxOpsPerformed = 1;
     protected String calledAET = DEF_CALLED_AET;
     protected String callingAET = DEF_CALLING_AET;
-    protected String applicationContext = UID.DICOM_APPLICATION_CONTEXT_NAME;
+    protected String applicationContext = UID.DICOMApplicationContextName;
     protected String implClassUID = Implementation.classUID();
     protected String implVersionName = Implementation.versionName();
     protected UserIdentity userIdentity;

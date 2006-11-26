@@ -46,8 +46,8 @@ import org.dcm4che2.data.Tag;
  */
 public class StdGenApplicationProfile extends BasicApplicationProfile {
 
-    private static final int[] STD_GEN_IMAGE_KEYS = { Tag.SPECIFIC_CHARACTER_SET,
-	    Tag.IMAGE_TYPE, Tag.REFERENCED_IMAGE_SEQUENCE, Tag.INSTANCE_NUMBER };
+    private static final int[] STD_GEN_IMAGE_KEYS = { Tag.SpecificCharacterSet,
+	    Tag.ImageType, Tag.ReferencedImageSequence, Tag.InstanceNumber };
 
     public StdGenApplicationProfile() {
 	setImageKeys(STD_GEN_IMAGE_KEYS);

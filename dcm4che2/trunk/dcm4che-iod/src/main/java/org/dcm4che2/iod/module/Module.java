@@ -114,7 +114,7 @@ public class Module {
 		if (module != null) {
 			dcmobj.putNestedDicomObject(tag, module.getDicomObject());
 		} else {
-			dcmobj.remove(Tag.REFERENCED_STUDY_SEQUENCE);
+			dcmobj.remove(Tag.ReferencedStudySequence);
 		}
 	}
 

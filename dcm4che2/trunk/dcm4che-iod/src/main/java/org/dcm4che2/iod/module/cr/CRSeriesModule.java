@@ -56,59 +56,59 @@ public class CRSeriesModule extends GeneralSeriesModule {
     }
 
     public String getBodyPartExamined() {
-        return dcmobj.getString(Tag.BODY_PART_EXAMINED);
+        return dcmobj.getString(Tag.BodyPartExamined);
     }
     
     public void setBodyPartExamined(String s) {
-        dcmobj.putString(Tag.BODY_PART_EXAMINED, VR.CS, s);
+        dcmobj.putString(Tag.BodyPartExamined, VR.CS, s);
     }
 
     public String getViewPosition() {
-        return dcmobj.getString(Tag.VIEW_POSITION);
+        return dcmobj.getString(Tag.ViewPosition);
     }
     
     public void setViewPosition(String s) {
-        dcmobj.putString(Tag.VIEW_POSITION, VR.CS, s);
+        dcmobj.putString(Tag.ViewPosition, VR.CS, s);
     }
 
     public String getFilterType() {
-        return dcmobj.getString(Tag.FILTER_TYPE);
+        return dcmobj.getString(Tag.FilterType);
     }
     
     public void setFilterType(String s) {
-        dcmobj.putString(Tag.FILTER_TYPE, VR.SH, s);
+        dcmobj.putString(Tag.FilterType, VR.SH, s);
     }
 
     public String getCollimatorgridName() {
-        return dcmobj.getString(Tag.COLLIMATOR_GRID_NAME);
+        return dcmobj.getString(Tag.CollimatorgridName);
     }
     
     public void setCollimatorgridName(String s) {
-        dcmobj.putString(Tag.COLLIMATOR_GRID_NAME, VR.SH, s);
+        dcmobj.putString(Tag.CollimatorgridName, VR.SH, s);
     }
 
     public float[] getFocalSpots() {
-        return dcmobj.getFloats(Tag.FOCAL_SPOTS);
+        return dcmobj.getFloats(Tag.FocalSpots);
     }
     
     public void setFocalSpots(float[] fs) {
-        dcmobj.putFloats(Tag.FOCAL_SPOTS, VR.DS, fs);
+        dcmobj.putFloats(Tag.FocalSpots, VR.DS, fs);
     }
 
     public String getPlateType() {
-        return dcmobj.getString(Tag.PLATE_TYPE);
+        return dcmobj.getString(Tag.PlateType);
     }
     
     public void setPlateType(String s) {
-        dcmobj.putString(Tag.PLATE_TYPE, VR.SH, s);
+        dcmobj.putString(Tag.PlateType, VR.SH, s);
     }
 
     public String getPhosphorType() {
-        return dcmobj.getString(Tag.PHOSPHOR_TYPE);
+        return dcmobj.getString(Tag.PhosphorType);
     }
     
     public void setPhosphorType(String s) {
-        dcmobj.putString(Tag.PHOSPHOR_TYPE, VR.LO, s);
+        dcmobj.putString(Tag.PhosphorType, VR.LO, s);
     }
     
 }

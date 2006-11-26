@@ -74,19 +74,19 @@ public class SeriesAndInstanceReference extends Module {
     }   
     
     public String getSeriesInstanceUID() {
-        return dcmobj.getString(Tag.SERIES_INSTANCE_UID);
+        return dcmobj.getString(Tag.SeriesInstanceUID);
     }
 
     public void setSeriesInstanceUID(String uid) {
-        dcmobj.putString(Tag.SERIES_INSTANCE_UID, VR.UI, uid);
+        dcmobj.putString(Tag.SeriesInstanceUID, VR.UI, uid);
     }
 
     public SOPInstanceReference[] getReferencedInstances() {
         return SOPInstanceReference.toSOPInstanceReferences(dcmobj
-                .get(Tag.REFERENCED_INSTANCE_SEQUENCE));
+                .get(Tag.ReferencedInstanceSequence));
     }
 
     public void setSOPInstanceReference(SOPInstanceReference[] sops) {
-        updateSequence(Tag.DATA_ELEMENTS_SIGNED, sops);
+        updateSequence(Tag.ReferencedInstanceSequence, sops);
     }
 }

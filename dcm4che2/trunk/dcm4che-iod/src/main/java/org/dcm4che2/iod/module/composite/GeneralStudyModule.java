@@ -61,112 +61,111 @@ public class GeneralStudyModule extends Module {
     }
     
     public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.STUDY_INSTANCE_UID);
+        return dcmobj.getString(Tag.StudyInstanceUID);
     }
     
     public void setStudyInstanceUID(String s) {
-        dcmobj.putString(Tag.STUDY_INSTANCE_UID, VR.UI, s);
+        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, s);
     }
     
     public Date getStudyDateTime() {
-        return dcmobj.getDate(Tag.STUDY_DATE, Tag.STUDY_TIME);
+        return dcmobj.getDate(Tag.StudyDate, Tag.StudyTime);
     }
     
     public void setStudyDateTime(Date d) {
-        dcmobj.putDate(Tag.STUDY_DATE, VR.DA, d);
-        dcmobj.putDate(Tag.STUDY_TIME, VR.TM, d);
+        dcmobj.putDate(Tag.StudyDate, VR.DA, d);
+        dcmobj.putDate(Tag.StudyTime, VR.TM, d);
     }
     
     public String getReferringPhysiciansName() {
-        return dcmobj.getString(Tag.REFERRING_PHYSICIANS_NAME);
+        return dcmobj.getString(Tag.ReferringPhysicianName);
     }
     
     public void setReferringPhysiciansName(String s) {
-        dcmobj.putString(Tag.REFERRING_PHYSICIANS_NAME, VR.PN, s);
+        dcmobj.putString(Tag.ReferringPhysicianName, VR.PN, s);
     }
     
     public PersonIdentification getReferringPhysicianIdentification() {
-        DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.REFERRING_PHYSICIAN_IDENTIFICATION_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ReferringPhysicianIdentificationSequence);
         return item != null ? new PersonIdentification(item) : null;
     }
     
     public void setReferringPhysicianIdentification(PersonIdentification id) {
-        updateSequence(Tag.REFERRING_PHYSICIAN_IDENTIFICATION_SEQUENCE, id);
+        updateSequence(Tag.ReferringPhysicianIdentificationSequence, id);
     }
     
     public String getStudyID() {
-        return dcmobj.getString(Tag.STUDY_ID);
+        return dcmobj.getString(Tag.StudyID);
     }
     
     public void setStudyID(String s) {
-        dcmobj.putString(Tag.STUDY_ID, VR.SH, s);
+        dcmobj.putString(Tag.StudyID, VR.SH, s);
     }
     
     public String getAccessionNumber() {
-        return dcmobj.getString(Tag.ACCESSION_NUMBER);
+        return dcmobj.getString(Tag.AccessionNumber);
     }
     
     public void setAccessionNumber(String s) {
-        dcmobj.putString(Tag.ACCESSION_NUMBER, VR.SH, s);
+        dcmobj.putString(Tag.AccessionNumber, VR.SH, s);
     }
     
     public String getStudyDescription() {
-        return dcmobj.getString(Tag.STUDY_DESCRIPTION);
+        return dcmobj.getString(Tag.StudyDescription);
     }
     
     public void setStudyDescription(String s) {
-        dcmobj.putString(Tag.STUDY_DESCRIPTION, VR.LO, s);
+        dcmobj.putString(Tag.StudyDescription, VR.LO, s);
     }
     
-    public String[] getPhysiciansofRecord() {
-        return dcmobj.getStrings(Tag.PHYSICIANS_OF_RECORD);
+    public String[] getPhysiciansOfRecord() {
+        return dcmobj.getStrings(Tag.PhysiciansOfRecord);
     }
     
-    public void setPhysiciansofRecord(String[] ss) {
-        dcmobj.putStrings(Tag.PHYSICIANS_OF_RECORD, VR.PN, ss);
+    public void setPhysiciansOfRecord(String[] ss) {
+        dcmobj.putStrings(Tag.PhysiciansOfRecord, VR.PN, ss);
     }
     
-    public PersonIdentification[] getPhysiciansofRecordIdentification() {
+    public PersonIdentification[] getPhysiciansOfRecordIdentification() {
         return PersonIdentification.toPersonIdentifications(
-                dcmobj.get(Tag.PHYSICIANS_OF_RECORD_IDENTIFICATION_SEQUENCE));
+                dcmobj.get(Tag.PhysiciansOfRecordIdentificationSequence));
     }
 
-    public void setPhysiciansofRecordIdentification(PersonIdentification[] ids) {
-        updateSequence(Tag.PHYSICIANS_OF_RECORD_IDENTIFICATION_SEQUENCE, ids);
+    public void setPhysiciansOfRecordIdentification(PersonIdentification[] ids) {
+        updateSequence(Tag.PhysiciansOfRecordIdentificationSequence, ids);
     }    
     
-    public String[] getNameofPhysiciansReadingStudy() {
-        return dcmobj.getStrings(Tag.NAME_OF_PHYSICIANS_READING_STUDY);
+    public String[] getNameOfPhysiciansReadingStudy() {
+        return dcmobj.getStrings(Tag.NameOfPhysiciansReadingStudy);
     }
     
-    public void setNameofPhysiciansReadingStudy(String[] ss) {
-        dcmobj.putStrings(Tag.NAME_OF_PHYSICIANS_READING_STUDY, VR.PN, ss);
+    public void setNameOfPhysiciansReadingStudy(String[] ss) {
+        dcmobj.putStrings(Tag.NameOfPhysiciansReadingStudy, VR.PN, ss);
     }
     
     public PersonIdentification[] getPhysiciansReadingStudyIdentification() {
         return PersonIdentification.toPersonIdentifications(
-                dcmobj.get(Tag.PHYSICIANS_READING_STUDY_IDENTIFICATION_SEQUENCE));
+                dcmobj.get(Tag.PhysiciansReadingStudyIdentificationSequence));
     }
 
     public void setPhysiciansReadingStudyIdentification(PersonIdentification[] ids) {
-        updateSequence(Tag.PHYSICIANS_READING_STUDY_IDENTIFICATION_SEQUENCE, ids);
+        updateSequence(Tag.PhysiciansReadingStudyIdentificationSequence, ids);
     }    
     
     public SOPInstanceReference getReferencedStudySOPInstance() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.REFERENCED_STUDY_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ReferencedStudySequence);
         return item != null ? new SOPInstanceReference(item) : null;
     }
     
     public void setReferencedStudySOPInstance(SOPInstanceReference refSOP) {
-        updateSequence(Tag.REFERENCED_STUDY_SEQUENCE, refSOP);
+        updateSequence(Tag.ReferencedStudySequence, refSOP);
     }
     
     public Code[] getProcedureCodes() {
-        return Code.toCodes(dcmobj.get(Tag.PROCEDURE_CODE_SEQUENCE));
+        return Code.toCodes(dcmobj.get(Tag.ProcedureCodeSequence));
     }
 
     public void setProcedureCodes(Code[] codes) {
-        updateSequence(Tag.PROCEDURE_CODE_SEQUENCE, codes);
+        updateSequence(Tag.ProcedureCodeSequence, codes);
     }    
 }

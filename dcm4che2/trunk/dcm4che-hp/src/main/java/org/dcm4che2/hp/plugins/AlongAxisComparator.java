@@ -71,7 +71,7 @@ extends AbstractHPComparator
     public AlongAxisComparator(DicomObject sortOp)
     {
         this.sortOp = sortOp;
-        String cs = sortOp.getString(Tag.SORTING_DIRECTION);
+        String cs = sortOp.getString(Tag.SortingDirection);
         if (cs == null)
         {
             throw new IllegalArgumentException(
@@ -92,8 +92,8 @@ extends AbstractHPComparator
     {
         this.sign = CodeString.sortingDirectionToSign(sortingDirection);
         this.sortOp = new BasicDicomObject();
-        sortOp.putString(Tag.SORT_BY_CATEGORY, VR.CS, CodeString.ALONG_AXIS);
-        sortOp.putString(Tag.SORTING_DIRECTION, VR.CS, sortingDirection);
+        sortOp.putString(Tag.SortbyCategory, VR.CS, CodeString.ALONG_AXIS);
+        sortOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
     }
     
     public final DicomObject getDicomObject()
@@ -131,18 +131,18 @@ extends AbstractHPComparator
     private float[] getImageOrientationPatient(DicomObject o, int frame)
     {
         float[] iop;
-        if ((iop = o.getFloats(Tag.IMAGE_ORIENTATION_PATIENT)) != null)
+        if ((iop = o.getFloats(Tag.ImageOrientationPatient)) != null)
             return iop;
         
         // Check the shared first in the case of image orientation
         int[] tagPath = { 
-                Tag.SHARED_FUNCTIONAL_GROUPS_SEQUENCE, 0,
-                Tag.PLANE_ORIENTATION_SEQUENCE, 0,
-                Tag.IMAGE_ORIENTATION_PATIENT };
+                Tag.SharedFunctionalGroupsSequence, 0,
+                Tag.PlaneOrientationSequence, 0,
+                Tag.ImageOrientationPatient };
         if ((iop = o.getFloats(tagPath)) != null)
             return iop;
         
-        tagPath[0] = Tag.PER_FRAME_FUNCTIONAL_GROUPS_SEQUENCE;
+        tagPath[0] = Tag.PerframeFunctionalGroupsSequence;
         tagPath[1] = frame;
         return o.getFloats(tagPath);
     }
@@ -150,18 +150,18 @@ extends AbstractHPComparator
     private float[] getImagePositionPatient(DicomObject o, int frame)
     {
         float[] ipp;
-        if ((ipp = o.getFloats(Tag.IMAGE_POSITION_PATIENT)) != null)
+        if ((ipp = o.getFloats(Tag.ImagePositionPatient)) != null)
             return ipp;
         
         // Check the per frame first in the case of image position
         int[] tagPath = { 
-                Tag.PER_FRAME_FUNCTIONAL_GROUPS_SEQUENCE, frame,
-                Tag.PLANE_ORIENTATION_SEQUENCE, 0,
-                Tag.IMAGE_POSITION_PATIENT };
+                Tag.PerframeFunctionalGroupsSequence, frame,
+                Tag.PlanePositionSequence, 0,
+                Tag.ImagePositionPatient };
         if ((ipp = o.getFloats(tagPath)) != null)
             return ipp;
         
-        tagPath[0] = Tag.SHARED_FUNCTIONAL_GROUPS_SEQUENCE;
+        tagPath[0] = Tag.SharedFunctionalGroupsSequence;
         tagPath[1] = 0;
         return o.getFloats(tagPath);
     }

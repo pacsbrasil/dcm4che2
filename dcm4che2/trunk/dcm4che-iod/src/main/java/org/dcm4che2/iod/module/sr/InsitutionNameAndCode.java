@@ -60,20 +60,19 @@ public class InsitutionNameAndCode extends Module {
     }
 
     public String getInstitutionName() {
-        return dcmobj.getString(Tag.INSTITUTION_NAME);
+        return dcmobj.getString(Tag.InstitutionName);
     }
     
     public void setInstitutionName(String s) {
-        dcmobj.putString(Tag.INSTITUTION_NAME, VR.LO, s);
+        dcmobj.putString(Tag.InstitutionName, VR.LO, s);
     }
         
     public Code getInstitutionCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.INSTITUTION_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.InstitutionCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setInstitutionCode(Code code) {
-        updateSequence(Tag.INSTITUTION_CODE_SEQUENCE, code);
+        updateSequence(Tag.InstitutionCodeSequence, code);
     }    
 }

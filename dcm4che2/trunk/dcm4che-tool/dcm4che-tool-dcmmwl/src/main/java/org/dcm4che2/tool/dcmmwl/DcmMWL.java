@@ -85,53 +85,53 @@ public class DcmMWL {
             "CT procedure steps scheduled for May 2, 2006.";
 
     private static final int[] RETURN_KEYS = {
-        Tag.ACCESSION_NUMBER,
-        Tag.REFERRING_PHYSICIANS_NAME,
-        Tag.PATIENTS_NAME,
-        Tag.PATIENT_ID,
-        Tag.PATIENTS_BIRTH_DATE,
-        Tag.PATIENTS_SEX,
-        Tag.PATIENTS_WEIGHT,
-        Tag.MEDICAL_ALERTS,
-        Tag.CONTRAST_ALLERGIES,
-        Tag.PREGNANCY_STATUS,
-        Tag.STUDY_INSTANCE_UID,
-        Tag.REQUESTING_PHYSICIAN,
-        Tag.REQUESTING_SERVICE,
-        Tag.REQUESTED_PROCEDURE_DESCRIPTION,
-        Tag.ADMISSION_ID,
-        Tag.SPECIAL_NEEDS,
-        Tag.CURRENT_PATIENT_LOCATION,
-        Tag.PATIENT_STATE,
-        Tag.REQUESTED_PROCEDURE_ID,
-        Tag.REQUESTED_PROCEDURE_PRIORITY,
-        Tag.PATIENT_TRANSPORT_ARRANGEMENTS,
-        Tag.PLACER_ORDER_NUMBER_IMAGING_SERVICE_REQUEST,
-        Tag.FILLER_ORDER_NUMBER_IMAGING_SERVICE_REQUEST,
-        Tag.CONFIDENTIALITY_CONSTRAINT_ON_PATIENT_DATA_DESCRIPTION,
+        Tag.AccessionNumber,
+        Tag.ReferringPhysicianName,
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex,
+        Tag.PatientWeight,
+        Tag.MedicalAlerts,
+        Tag.ContrastAllergies,
+        Tag.PregnancyStatus,
+        Tag.StudyInstanceUID,
+        Tag.RequestingPhysician,
+        Tag.RequestingService,
+        Tag.RequestedProcedureDescription,
+        Tag.AdmissionID,
+        Tag.SpecialNeeds,
+        Tag.CurrentPatientLocation,
+        Tag.PatientState,
+        Tag.RequestedProcedureID,
+        Tag.RequestedProcedurePriority,
+        Tag.PatientTransportArrangements,
+        Tag.PlacerOrderNumberImagingServiceRequest,
+        Tag.FillerOrderNumberImagingServiceRequest,
+        Tag.ConfidentialityConstraintOnPatientDataDescription,
     };
 
     private static final int[] SPS_RETURN_KEYS = {
-        Tag.MODALITY,
-        Tag.REQUESTED_CONTRAST_AGENT,
-        Tag.SCHEDULED_STATION_AE_TITLE,
-        Tag.SCHEDULED_PROCEDURE_STEP_START_DATE,
-        Tag.SCHEDULED_PROCEDURE_STEP_START_TIME,
-        Tag.SCHEDULED_PERFORMING_PHYSICIANS_NAME,
-        Tag.SCHEDULED_PROCEDURE_STEP_DESCRIPTION,
-        Tag.SCHEDULED_PROCEDURE_STEP_ID,
-        Tag.SCHEDULED_STATION_NAME,
-        Tag.SCHEDULED_PROCEDURE_STEP_LOCATION,
-        Tag.PRE_MEDICATION,
-        Tag.SCHEDULED_PROCEDURE_STEP_STATUS
+        Tag.Modality,
+        Tag.RequestedContrastAgent,
+        Tag.ScheduledStationAETitle,
+        Tag.ScheduledProcedureStepStartDate,
+        Tag.ScheduledProcedureStepStartTime,
+        Tag.ScheduledPerformingPhysicianName,
+        Tag.ScheduledProcedureStepDescription,
+        Tag.ScheduledProcedureStepID,
+        Tag.ScheduledStationName,
+        Tag.ScheduledProcedureStepLocation,
+        Tag.PreMedication,
+        Tag.ScheduledProcedureStepStatus
     };
 
     private static final String[] IVRLE_TS = {
-        UID.IMPLICIT_VR_LITTLE_ENDIAN };
+        UID.ImplicitVRLittleEndian };
     
     private static final String[] LE_TS = {
-        UID.EXPLICIT_VR_LITTLE_ENDIAN, 
-        UID.IMPLICIT_VR_LITTLE_ENDIAN };
+        UID.ExplicitVRLittleEndian, 
+        UID.ImplicitVRLittleEndian };
     
     private Executor executor = new NewThreadExecutor("DCMMWL");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -158,13 +158,13 @@ public class DcmMWL {
         for (int i = 0; i < RETURN_KEYS.length; i++) {
             keys.putNull(RETURN_KEYS[i], null);
         }        
-        keys.putNestedDicomObject(Tag.REQUESTED_PROCEDURE_CODE_SEQUENCE,
+        keys.putNestedDicomObject(Tag.RequestedProcedureCodeSequence,
                 new BasicDicomObject());
-        keys.putNestedDicomObject(Tag.SCHEDULED_PROCEDURE_STEP_SEQUENCE, spsKeys);
+        keys.putNestedDicomObject(Tag.ScheduledProcedureStepSequence, spsKeys);
         for (int i = 0; i < SPS_RETURN_KEYS.length; i++) {
             spsKeys.putNull(SPS_RETURN_KEYS[i], null);
         }
-        spsKeys.putNestedDicomObject(Tag.SCHEDULED_PROTOCOL_CODE_SEQUENCE,
+        spsKeys.putNestedDicomObject(Tag.ScheduledProtocolCodeSequence,
                 new BasicDicomObject());
     }
 
@@ -254,7 +254,7 @@ public class DcmMWL {
 
     public void setTransferSyntax(String[] ts) {
         TransferCapability[] tc = { new TransferCapability(
-                UID.MODALITY_WORKLIST_INFORMATION_MODEL_FIND, ts,
+                UID.ModalityWorklistInformationModelFIND, ts,
                 TransferCapability.SCU) };
         ae.setTransferCapability(tc);       
     }
@@ -270,7 +270,7 @@ public class DcmMWL {
 
     public List query() throws IOException, InterruptedException {
         TransferCapability tc = assoc.getTransferCapabilityAsSCU(
-                UID.MODALITY_WORKLIST_INFORMATION_MODEL_FIND);
+                UID.ModalityWorklistInformationModelFIND);
         if (tc == null) {
             throw new NoPresentationContextException(
                     "Modality Worklist not supported by "
@@ -278,7 +278,7 @@ public class DcmMWL {
         }
         System.out.println("Send Query Request:");
         System.out.println(keys.toString());
-        DimseRSP rsp = assoc.cfind(UID.MODALITY_WORKLIST_INFORMATION_MODEL_FIND,
+        DimseRSP rsp = assoc.cfind(UID.ModalityWorklistInformationModelFIND,
                 priority, keys, tc.getTransferSyntax()[0], cancelAfter);
         List result = new ArrayList();
         while (rsp.next()) {
@@ -367,18 +367,18 @@ public class DcmMWL {
                 dcmmwl.addKey(Tag.toTagPath(returnKeys[i]), null);
         }
         if (cl.hasOption("date")) {
-            dcmmwl.addSpsKey(Tag.SCHEDULED_PROCEDURE_STEP_START_DATE,
+            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartDate,
                     cl.getOptionValue("date"));
         }
         if (cl.hasOption("time")) {
-            dcmmwl.addSpsKey(Tag.SCHEDULED_PROCEDURE_STEP_START_TIME,
+            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartTime,
                     cl.getOptionValue("time"));
         }
         if (cl.hasOption("mod")) {
-            dcmmwl.addSpsKey(Tag.MODALITY, cl.getOptionValue("mod"));
+            dcmmwl.addSpsKey(Tag.Modality, cl.getOptionValue("mod"));
         }
         if (cl.hasOption("aet")) {
-            dcmmwl.addSpsKey(Tag.SCHEDULED_STATION_AE_TITLE,
+            dcmmwl.addSpsKey(Tag.ScheduledStationAETitle,
                     cl.getOptionValue("aet"));
         }
 
@@ -486,7 +486,7 @@ public class DcmMWL {
         OptionBuilder.hasArgs(2);
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
-                "specified by name or tag value (in hex), e.g. PATIENTS_NAME\n" +
+                "specified by name or tag value (in hex), e.g. PatientName\n" +
                 "or 00100010. Attributes in nested Datasets can\n" +
                 "be specified by preceding the name/tag value of\n" +
                 "the sequence attribute, e.g. 00400100/00400009\n" +

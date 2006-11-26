@@ -178,15 +178,15 @@ public class Dcm2Txt implements DicomInputHandler {
 
     public boolean readValue(DicomInputStream in) throws IOException {
             switch (in.tag()) {
-            case Tag.ITEM:
+            case Tag.Item:
                 if (in.sq().vr() != VR.SQ) {
                     outFragment(in);
                 } else {
                     outItem(in);                    
                 }
                 break;
-            case Tag.ITEM_DELIMITATION_ITEM:
-            case Tag.SEQUENCE_DELIMITATION_ITEM: 
+            case Tag.ItemDelimitationItem:
+            case Tag.SequenceDelimitationItem: 
                 if (in.level() > 0)
                     outItem(in);
                 break;
@@ -220,8 +220,8 @@ public class Dcm2Txt implements DicomInputHandler {
         vr.promptValue(val, bigEndian, dcmobj.getSpecificCharacterSet(),
                 cbuf, maxValLen, line);
         line.append("]");
-        if (tag == Tag.SPECIFIC_CHARACTER_SET
-                || tag == Tag.TRANSFER_SYNTAX_UID
+        if (tag == Tag.SpecificCharacterSet
+                || tag == Tag.TransferSyntaxUID
                 || TagUtils.isPrivateCreatorDataElement(tag)) {
             dcmobj.putBytes(tag, vr, val, bigEndian);
         }

@@ -62,164 +62,164 @@ public class ImagePixel extends Module {
     }
 
     public int getSamplesPerPixel() {
-        return dcmobj.getInt(Tag.SAMPLES_PER_PIXEL);
+        return dcmobj.getInt(Tag.SamplesPerPixel);
     }
     
     public void setSamplesPerPixel(int i) {
-        dcmobj.putInt(Tag.SAMPLES_PER_PIXEL, VR.US, i);
+        dcmobj.putInt(Tag.SamplesPerPixel, VR.US, i);
     }
     
     public String getPhotometricInterpretation() {
-        return dcmobj.getString(Tag.PHOTOMETRIC_INTERPRETATION);
+        return dcmobj.getString(Tag.PhotometricInterpretation);
     }
     
     public void setPhotometricInterpretation(String s) {
-        dcmobj.putString(Tag.PHOTOMETRIC_INTERPRETATION, VR.CS, s);
+        dcmobj.putString(Tag.PhotometricInterpretation, VR.CS, s);
     }
     
     public int getRows() {
-        return dcmobj.getInt(Tag.ROWS);
+        return dcmobj.getInt(Tag.Rows);
     }
     
     public void setRows(int i) {
-        dcmobj.putInt(Tag.ROWS, VR.US, i);
+        dcmobj.putInt(Tag.Rows, VR.US, i);
     }
     
     public int getColumns() {
-        return dcmobj.getInt(Tag.COLUMNS);
+        return dcmobj.getInt(Tag.Columns);
     }
     
     public void setColumns(int i) {
-        dcmobj.putInt(Tag.COLUMNS, VR.US, i);
+        dcmobj.putInt(Tag.Columns, VR.US, i);
     }
     
     public int getBitsAllocated() {
-        return dcmobj.getInt(Tag.BITS_ALLOCATED);
+        return dcmobj.getInt(Tag.BitsAllocated);
     }
     
     public void setBitsAllocated(int i) {
-        dcmobj.putInt(Tag.BITS_ALLOCATED, VR.US, i);
+        dcmobj.putInt(Tag.BitsAllocated, VR.US, i);
     }
     
     public int getBitsStored() {
-        return dcmobj.getInt(Tag.BITS_STORED);
+        return dcmobj.getInt(Tag.BitsStored);
     }
     
     public void setBitsStored(int i) {
-        dcmobj.putInt(Tag.BITS_STORED, VR.US, i);
+        dcmobj.putInt(Tag.BitsStored, VR.US, i);
     }
     
     public int getHighBit() {
-        return dcmobj.getInt(Tag.HIGH_BIT);
+        return dcmobj.getInt(Tag.HighBit);
     }
     
     public void setHighBit(int i) {
-        dcmobj.putInt(Tag.HIGH_BIT, VR.US, i);
+        dcmobj.putInt(Tag.HighBit, VR.US, i);
     }
     
     public int getPixelRepresentation() {
-        return dcmobj.getInt(Tag.PIXEL_REPRESENTATION);
+        return dcmobj.getInt(Tag.PixelRepresentation);
     }
     
     public void setPixelRepresentation(int i) {
-        dcmobj.putInt(Tag.PIXEL_REPRESENTATION, VR.US, i);
+        dcmobj.putInt(Tag.PixelRepresentation, VR.US, i);
     }
     
     public int getPlanarConfiguration() {
-        return dcmobj.getInt(Tag.PLANAR_CONFIGURATION);
+        return dcmobj.getInt(Tag.PlanarConfiguration);
     }
     
     public void setPlanarConfiguration(int i) {
-        dcmobj.putInt(Tag.PLANAR_CONFIGURATION, VR.US, i);
+        dcmobj.putInt(Tag.PlanarConfiguration, VR.US, i);
     }
     
     public int[] getPixelAspectRatio() {
-        return dcmobj.getInts(Tag.PIXEL_ASPECT_RATIO);
+        return dcmobj.getInts(Tag.PixelAspectRatio);
     }
     
     public void setPixelAspectRatio(int[] ints) {
-        dcmobj.putInts(Tag.PIXEL_ASPECT_RATIO, VR.IS, ints);
+        dcmobj.putInts(Tag.PixelAspectRatio, VR.IS, ints);
     }
     
     public byte[] getPixelData() {
-        return dcmobj.getBytes(Tag.PIXEL_DATA, false);
+        return dcmobj.getBytes(Tag.PixelData, false);
     }
     
     public void setPixelData(byte[] b) {
-        dcmobj.putBytes(Tag.PIXEL_DATA, VR.OW, b, false);
+        dcmobj.putBytes(Tag.PixelData, VR.OW, b, false);
     }
     
     public int getSmallestImagePixelValue() {
-        return dcmobj.getInt(Tag.SMALLEST_IMAGE_PIXEL_VALUE);
+        return dcmobj.getInt(Tag.SmallestImagePixelValue);
     }
 
     public void setSmallestImagePixelValue(int s) {
-        dcmobj.putInt(Tag.SMALLEST_IMAGE_PIXEL_VALUE,
+        dcmobj.putInt(Tag.SmallestImagePixelValue,
                 PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
 
     public int getLargestImagePixelValue() {
-        return dcmobj.getInt(Tag.LARGEST_IMAGE_PIXEL_VALUE);
+        return dcmobj.getInt(Tag.LargestImagePixelValue);
     }
 
     public void setLargestImagePixelValue(int s) {
-        dcmobj.putInt(Tag.LARGEST_IMAGE_PIXEL_VALUE,
+        dcmobj.putInt(Tag.LargestImagePixelValue,
                 PixelRepresentation.isSigned(dcmobj) ? VR.SS : VR.US, s);
     }
     
     public int[] getRedPaletteColorLookupTableDescriptor() {
-        return dcmobj.getInts(Tag.RED_PALETTE_COLOR_LOOKUP_TABLE_DESCRIPTOR);
+        return dcmobj.getInts(Tag.RedPaletteColorLookupTableDescriptor);
     }
     
     public void setRedPaletteColorLookupTableDescriptor(int[] ints) {
-        dcmobj.putInts(Tag.RED_PALETTE_COLOR_LOOKUP_TABLE_DESCRIPTOR, VR.US, ints);
+        dcmobj.putInts(Tag.RedPaletteColorLookupTableDescriptor, VR.US, ints);
     }
     
     public int[] getGreenPaletteColorLookupTableDescriptor() {
-        return dcmobj.getInts(Tag.GREEN_PALETTE_COLOR_LOOKUP_TABLE_DESCRIPTOR);
+        return dcmobj.getInts(Tag.GreenPaletteColorLookupTableDescriptor);
     }
     
     public void setGreenPaletteColorLookupTableDescriptor(int[] ints) {
-        dcmobj.putInts(Tag.GREEN_PALETTE_COLOR_LOOKUP_TABLE_DESCRIPTOR, VR.US, ints);
+        dcmobj.putInts(Tag.GreenPaletteColorLookupTableDescriptor, VR.US, ints);
     }
     
     public int[] getBluePaletteColorLookupTableDescriptor() {
-        return dcmobj.getInts(Tag.BLUE_PALETTE_COLOR_LOOKUP_TABLE_DESCRIPTOR);
+        return dcmobj.getInts(Tag.BluePaletteColorLookupTableDescriptor);
     }
     
     public void setBluePaletteColorLookupTableDescriptor(int[] ints) {
-        dcmobj.putInts(Tag.BLUE_PALETTE_COLOR_LOOKUP_TABLE_DESCRIPTOR, VR.US, ints);
+        dcmobj.putInts(Tag.BluePaletteColorLookupTableDescriptor, VR.US, ints);
     }
     
     public byte[] getRedPaletteColorLookupTableData() {
-        return dcmobj.getBytes(Tag.RED_PALETTE_COLOR_LOOKUP_TABLE_DATA, false);
+        return dcmobj.getBytes(Tag.RedPaletteColorLookupTableData, false);
     }
     
     public void setRedPaletteColorLookupTableData(byte[] b) {
-        dcmobj.putBytes(Tag.RED_PALETTE_COLOR_LOOKUP_TABLE_DATA, VR.OW, b, false);
+        dcmobj.putBytes(Tag.RedPaletteColorLookupTableData, VR.OW, b, false);
     }
     
     public byte[] getGreenPaletteColorLookupTableData() {
-        return dcmobj.getBytes(Tag.GREEN_PALETTE_COLOR_LOOKUP_TABLE_DATA, false);
+        return dcmobj.getBytes(Tag.GreenPaletteColorLookupTableData, false);
     }
     
     public void setGreenPaletteColorLookupTableData(byte[] b) {
-        dcmobj.putBytes(Tag.GREEN_PALETTE_COLOR_LOOKUP_TABLE_DATA, VR.OW, b, false);
+        dcmobj.putBytes(Tag.GreenPaletteColorLookupTableData, VR.OW, b, false);
     }
     
     public byte[] getBluePaletteColorLookupTableData() {
-        return dcmobj.getBytes(Tag.BLUE_PALETTE_COLOR_LOOKUP_TABLE_DATA, false);
+        return dcmobj.getBytes(Tag.BluePaletteColorLookupTableData, false);
     }
     
     public void setBluePaletteColorLookupTableData(byte[] b) {
-        dcmobj.putBytes(Tag.BLUE_PALETTE_COLOR_LOOKUP_TABLE_DATA, VR.OW, b, false);
+        dcmobj.putBytes(Tag.BluePaletteColorLookupTableData, VR.OW, b, false);
     }
     
     public byte[] getICCProfile() {
-        return dcmobj.getBytes(Tag.ICC_PROFILE, false);
+        return dcmobj.getBytes(Tag.ICCProfile, false);
     }
     
     public void setICCProfile(byte[] b) {
-        dcmobj.putBytes(Tag.ICC_PROFILE, VR.OB, b, false);
+        dcmobj.putBytes(Tag.ICCProfile, VR.OB, b, false);
     }
 }

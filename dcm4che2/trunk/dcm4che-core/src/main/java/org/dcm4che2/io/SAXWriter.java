@@ -178,7 +178,7 @@ public class SAXWriter implements DicomInputHandler {
     public boolean readValue(DicomInputStream in) throws IOException {
         try {
             switch (in.tag()) {
-            case Tag.ITEM:
+            case Tag.Item:
             {
                 final boolean isRoot;
                 if (isRoot = !seenFirst) {
@@ -191,14 +191,14 @@ public class SAXWriter implements DicomInputHandler {
                     ch.endDocument();
                 break;
             }
-            case Tag.ITEM_DELIMITATION_ITEM:
+            case Tag.ItemDelimitationItem:
                 in.readValue(in);
                 if (in.level() == 0) {
                     ch.endElement("", "", "dicom");
                     ch.endDocument();
                 }
                 break;
-            case Tag.SEQUENCE_DELIMITATION_ITEM:
+            case Tag.SequenceDelimitationItem:
                 in.readValue(in);
                 break;
             default:
@@ -292,8 +292,8 @@ public class SAXWriter implements DicomInputHandler {
                 vr.formatXMLValue(val, bigEndian,
                         attrs.getSpecificCharacterSet(), cbuf, ch);
             }
-            if (tag == Tag.SPECIFIC_CHARACTER_SET
-                    || tag == Tag.TRANSFER_SYNTAX_UID
+            if (tag == Tag.SpecificCharacterSet
+                    || tag == Tag.TransferSyntaxUID
                     || TagUtils.isPrivateCreatorDataElement(tag)) {
                 attrs.putBytes(tag, vr, val, bigEndian);
             }

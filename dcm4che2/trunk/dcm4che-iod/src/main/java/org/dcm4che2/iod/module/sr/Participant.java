@@ -72,18 +72,18 @@ public class Participant extends IdentifiedPersonOrDevice {
     }
     
     public String getParticipationType() {
-        return dcmobj.getString(Tag.PARTICIPATION_TYPE);
+        return dcmobj.getString(Tag.ParticipationType);
     }
 
     public void setParticipationType(String s) {
-        dcmobj.putString(Tag.PARTICIPATION_TYPE, VR.CS, s);
+        dcmobj.putString(Tag.ParticipationType, VR.CS, s);
     }
 
     public Date getParticipationDatetime() {
-        return dcmobj.getDate(Tag.PARTICIPATION_DATETIME);
+        return dcmobj.getDate(Tag.ParticipationDatetime);
     }
 
     public void setParticipationDatetime(Date dt) {
-        dcmobj.putDate(Tag.PARTICIPATION_DATETIME, VR.DT, dt);
+        dcmobj.putDate(Tag.ParticipationDatetime, VR.DT, dt);
     }    
 }

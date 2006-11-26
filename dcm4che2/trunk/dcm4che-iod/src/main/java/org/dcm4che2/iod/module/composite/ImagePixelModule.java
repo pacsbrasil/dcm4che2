@@ -55,11 +55,11 @@ public class ImagePixelModule extends ImagePixel {
     }
 
     public String getPixelDataProviderURL() {
-        return dcmobj.getString(Tag.PIXEL_DATA_PROVIDER_URL);
+        return dcmobj.getString(Tag.PixelDataProviderURL);
     }
     
     public void setPixelDataProviderURL(String s) {
-        dcmobj.putString(Tag.PIXEL_DATA_PROVIDER_URL, VR.UT, s);
+        dcmobj.putString(Tag.PixelDataProviderURL, VR.UT, s);
     }
     
 }

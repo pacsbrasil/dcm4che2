@@ -73,53 +73,53 @@ public class PersonIdentification extends Module {
     }
     
     public Code getPersonIdentificationCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.PERSON_IDENTIFICATION_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.PersonIdentificationCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setPersonIdentificationCode(Code code) {
-        updateSequence(Tag.PERSON_IDENTIFICATION_CODE_SEQUENCE, code);
+        updateSequence(Tag.PersonIdentificationCodeSequence, code);
     }    
 
-    public String getPersonsAddress() {
-        return dcmobj.getString(Tag.PERSONS_ADDRESS);
+    public String getPersonAddress() {
+        return dcmobj.getString(Tag.PersonAddress);
     }
     
-    public void setPersonsAddress(String s) {
-        dcmobj.putString(Tag.PERSONS_ADDRESS, VR.ST, s);
+    public void setPersonAddress(String s) {
+        dcmobj.putString(Tag.PersonAddress, VR.ST, s);
     }
         
-    public String[] getPersonsTelephoneNumbers() {
-        return dcmobj.getStrings(Tag.PERSONS_TELEPHONE_NUMBERS);
+    public String[] getPersonTelephoneNumbers() {
+        return dcmobj.getStrings(Tag.PersonTelephoneNumbers);
     }
     
-    public void setPersonsTelephoneNumbers(String[] ss) {
-        dcmobj.putStrings(Tag.PERSONS_TELEPHONE_NUMBERS, VR.LO, ss);
+    public void setPersonTelephoneNumbers(String[] ss) {
+        dcmobj.putStrings(Tag.PersonTelephoneNumbers, VR.LO, ss);
     }
     
     public String getInstitutionName() {
-        return dcmobj.getString(Tag.INSTITUTION_NAME);
+        return dcmobj.getString(Tag.InstitutionName);
     }
     
     public void setInstitutionName(String s) {
-        dcmobj.putString(Tag.INSTITUTION_NAME, VR.LO, s);
+        dcmobj.putString(Tag.InstitutionName, VR.LO, s);
     }
         
     public String getInstitutionAddress() {
-        return dcmobj.getString(Tag.INSTITUTION_ADDRESS);
+        return dcmobj.getString(Tag.InstitutionAddress);
     }
     
     public void setInstitutionAddress(String s) {
-        dcmobj.putString(Tag.INSTITUTION_ADDRESS, VR.ST, s);
+        dcmobj.putString(Tag.InstitutionAddress, VR.ST, s);
     }
         
     public Code getInstitutionCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.INSTITUTION_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.InstitutionCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setInstitutionCode(Code code) {
-        updateSequence(Tag.INSTITUTION_CODE_SEQUENCE, code);
+        updateSequence(Tag.InstitutionCodeSequence, code);
     }    
 
     

@@ -73,58 +73,58 @@ public class CodingSchemeIdentification extends Module {
     }
     
     public String getCodingSchemeDesignator() {
-        return dcmobj.getString(Tag.CODING_SCHEME_DESIGNATOR);
+        return dcmobj.getString(Tag.CodingSchemeDesignator);
     }
     
     public void setCodingSchemeDesignator(String s) {
-        dcmobj.putString(Tag.CODING_SCHEME_DESIGNATOR, VR.SH, s);
+        dcmobj.putString(Tag.CodingSchemeDesignator, VR.SH, s);
     }
 
     public String getCodingSchemeRegistry() {
-        return dcmobj.getString(Tag.CODING_SCHEME_REGISTRY);
+        return dcmobj.getString(Tag.CodingSchemeRegistry);
     }
     
     public void setCodingSchemeRegistry(String s) {
-        dcmobj.putString(Tag.CODING_SCHEME_REGISTRY, VR.LO, s);
+        dcmobj.putString(Tag.CodingSchemeRegistry, VR.LO, s);
     }
 
     public String getCodingSchemeUID() {
-        return dcmobj.getString(Tag.CODING_SCHEME_UID);
+        return dcmobj.getString(Tag.CodingSchemeUID);
     }
     
     public void setCodingSchemeUID(String s) {
-        dcmobj.putString(Tag.CODING_SCHEME_UID, VR.UI, s);
+        dcmobj.putString(Tag.CodingSchemeUID, VR.UI, s);
     }
 
     public String getCodingSchemeExternalID() {
-        return dcmobj.getString(Tag.CODING_SCHEME_EXTERNAL_ID);
+        return dcmobj.getString(Tag.CodingSchemeExternalID);
     }
     
     public void setCodingSchemeExternalID(String s) {
-        dcmobj.putString(Tag.CODING_SCHEME_EXTERNAL_ID, VR.ST, s);
+        dcmobj.putString(Tag.CodingSchemeExternalID, VR.ST, s);
     }
 
     public String getCodingSchemeName() {
-        return dcmobj.getString(Tag.CODING_SCHEME_NAME);
+        return dcmobj.getString(Tag.CodingSchemeName);
     }
     
     public void setCodingSchemeName(String s) {
-        dcmobj.putString(Tag.CODING_SCHEME_NAME, VR.ST, s);
+        dcmobj.putString(Tag.CodingSchemeName, VR.ST, s);
     }
     
     public String getCodingSchemeVersion() {
-        return dcmobj.getString(Tag.CODING_SCHEME_VERSION);
+        return dcmobj.getString(Tag.CodingSchemeVersion);
     }
     
     public void setCodingSchemeVersion(String s) {
-        dcmobj.putString(Tag.CODING_SCHEME_VERSION, VR.SH, s);
+        dcmobj.putString(Tag.CodingSchemeVersion, VR.SH, s);
     }
 
     public String getResponsibleOrganization() {
-        return dcmobj.getString(Tag.RESPONSIBLE_ORGANIZATION_00080116);
+        return dcmobj.getString(Tag.ResponsibleOrganization00080116);
     }
     
     public void setResponsibleOrganization(String s) {
-        dcmobj.putString(Tag.RESPONSIBLE_ORGANIZATION_00080116, VR.ST, s);
+        dcmobj.putString(Tag.ResponsibleOrganization00080116, VR.ST, s);
     }
 }

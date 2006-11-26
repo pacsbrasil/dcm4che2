@@ -72,11 +72,11 @@ public class ImageSOPInstanceReference extends SOPInstanceReference {
     }
 
     public int[] getReferencedFrameNumber() {
-        return dcmobj.getInts(Tag.REFERENCED_FRAME_NUMBER);
+        return dcmobj.getInts(Tag.ReferencedFrameNumber);
     }
     
     public void setReferencedFrameNumber(int[] ints) {
-        dcmobj.putInts(Tag.REFERENCED_FRAME_NUMBER, VR.IS, ints);
+        dcmobj.putInts(Tag.ReferencedFrameNumber, VR.UI, ints);
     }
     
 }

@@ -63,7 +63,7 @@ public class DXSeriesModule extends GeneralSeriesModule {
     }
 
     public String getPresentationIntentType() {
-        return dcmobj.getString(Tag.PRESENTATION_INTENT_TYPE);
+        return dcmobj.getString(Tag.PresentationIntentType);
     }
 
     /**
@@ -83,7 +83,7 @@ public class DXSeriesModule extends GeneralSeriesModule {
      * @param s
      */
     public void setPresentationIntentType(String s) {
-        dcmobj.putString(Tag.PRESENTATION_INTENT_TYPE, VR.CS, s);
+        dcmobj.putString(Tag.PresentationIntentType, VR.CS, s);
     }
 
 }

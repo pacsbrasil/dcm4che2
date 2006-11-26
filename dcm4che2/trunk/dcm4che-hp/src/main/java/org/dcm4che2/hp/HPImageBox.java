@@ -56,14 +56,14 @@ public class HPImageBox
 
     public HPImageBox(DicomObject item, int tot)
     {
-        if (item.getInt(Tag.IMAGE_BOX_NUMBER) != item.getItemPosition())
+        if (item.getInt(Tag.ImageBoxNumber) != item.getItemPosition())
             throw new IllegalArgumentException(""
-                    + item.get(Tag.IMAGE_BOX_NUMBER));
+                    + item.get(Tag.ImageBoxNumber));
         if (tot > 1)
         {
-            if (!CodeString.TILED.equals(item.getString(Tag.IMAGE_BOX_LAYOUT_TYPE)))
+            if (!CodeString.TILED.equals(item.getString(Tag.ImageBoxLayoutType)))
                 throw new IllegalArgumentException(""
-                        + item.get(Tag.IMAGE_BOX_LAYOUT_TYPE));
+                        + item.get(Tag.ImageBoxLayoutType));
         }
         this.dcmobj = item;
     }
@@ -80,132 +80,132 @@ public class HPImageBox
 
     public int getImageBoxNumber()
     {
-        return dcmobj.getInt(Tag.IMAGE_BOX_NUMBER);
+        return dcmobj.getInt(Tag.ImageBoxNumber);
     }
 
     public void setImageBoxNumber(int value)
     {
-        dcmobj.putInt(Tag.IMAGE_BOX_NUMBER, VR.US, value);
+        dcmobj.putInt(Tag.ImageBoxNumber, VR.US, value);
     }
 
     public double[] getDisplayEnvironmentSpatialPosition()
     {
-        return dcmobj.getDoubles(Tag.DISPLAY_ENVIRONMENT_SPATIAL_POSITION);
+        return dcmobj.getDoubles(Tag.DisplayEnvironmentSpatialPosition);
     }
 
     public void setDisplayEnvironmentSpatialPosition(double[] values)
     {
-        dcmobj.putDoubles(Tag.DISPLAY_ENVIRONMENT_SPATIAL_POSITION, VR.FD, values);
+        dcmobj.putDoubles(Tag.DisplayEnvironmentSpatialPosition, VR.FD, values);
     }
 
     public String getImageBoxLayoutType()
     {
-        return dcmobj.getString(Tag.IMAGE_BOX_LAYOUT_TYPE);
+        return dcmobj.getString(Tag.ImageBoxLayoutType);
     }
 
     public void setImageBoxLayoutType(String type)
     {
-        dcmobj.putString(Tag.IMAGE_BOX_LAYOUT_TYPE, VR.CS, type);
+        dcmobj.putString(Tag.ImageBoxLayoutType, VR.CS, type);
     }
 
     public int getImageBoxTileHorizontalDimension()
     {
-        return dcmobj.getInt(Tag.IMAGE_BOX_TILE_HORIZONTAL_DIMENSION);
+        return dcmobj.getInt(Tag.ImageBoxTileHorizontalDimension);
     }
 
     public void setImageBoxTileHorizontalDimension(int value)
     {
-        dcmobj.putInt(Tag.IMAGE_BOX_TILE_HORIZONTAL_DIMENSION, VR.US, value);
+        dcmobj.putInt(Tag.ImageBoxTileHorizontalDimension, VR.US, value);
     }
 
     public int getImageBoxTileVerticalDimension()
     {
-        return dcmobj.getInt(Tag.IMAGE_BOX_TILE_VERTICAL_DIMENSION);
+        return dcmobj.getInt(Tag.ImageBoxTileVerticalDimension);
     }
 
     public void setImageBoxTileVerticalDimension(int value)
     {
-        dcmobj.putInt(Tag.IMAGE_BOX_TILE_VERTICAL_DIMENSION, VR.US, value);
+        dcmobj.putInt(Tag.ImageBoxTileVerticalDimension, VR.US, value);
     }
 
     public String getImageBoxScrollDirection()
     {
-        return dcmobj.getString(Tag.IMAGE_BOX_SCROLL_DIRECTION);
+        return dcmobj.getString(Tag.ImageBoxScrollDirection);
     }
 
     public void setImageBoxScrollDirection(String value)
     {
-        dcmobj.putString(Tag.IMAGE_BOX_SCROLL_DIRECTION, VR.CS, value);
+        dcmobj.putString(Tag.ImageBoxScrollDirection, VR.CS, value);
     }
 
     public String getImageBoxSmallScrollType()
     {
-        return dcmobj.getString(Tag.IMAGE_BOX_SMALL_SCROLL_TYPE);
+        return dcmobj.getString(Tag.ImageBoxSmallScrollType);
     }
 
     public void setImageBoxSmallScrollType(String value)
     {
-        dcmobj.putString(Tag.IMAGE_BOX_SMALL_SCROLL_TYPE, VR.CS, value);
+        dcmobj.putString(Tag.ImageBoxSmallScrollType, VR.CS, value);
     }
 
     public int getImageBoxSmallScrollAmount()
     {
-        return dcmobj.getInt(Tag.IMAGE_BOX_SMALL_SCROLL_AMOUNT);
+        return dcmobj.getInt(Tag.ImageBoxSmallScrollAmount);
     }
 
     public void setImageBoxSmallScrollAmount(int value)
     {
-        dcmobj.putInt(Tag.IMAGE_BOX_SMALL_SCROLL_AMOUNT, VR.US, value);
+        dcmobj.putInt(Tag.ImageBoxSmallScrollAmount, VR.US, value);
     }
 
     public String getImageBoxLargeScrollType()
     {
-        return dcmobj.getString(Tag.IMAGE_BOX_LARGE_SCROLL_TYPE);
+        return dcmobj.getString(Tag.ImageBoxLargeScrollType);
     }
 
     public void setImageBoxLargeScrollType(String value)
     {
-        dcmobj.putString(Tag.IMAGE_BOX_LARGE_SCROLL_TYPE, VR.CS, value);
+        dcmobj.putString(Tag.ImageBoxLargeScrollType, VR.CS, value);
     }
 
     public int getImageBoxOverlapPriority()
     {
-        return dcmobj.getInt(Tag.IMAGE_BOX_OVERLAP_PRIORITY);
+        return dcmobj.getInt(Tag.ImageBoxOverlapPriority);
     }
 
     public void setImageBoxOverlapPriority(int value)
     {
-        dcmobj.putInt(Tag.IMAGE_BOX_OVERLAP_PRIORITY, VR.US, value);
+        dcmobj.putInt(Tag.ImageBoxOverlapPriority, VR.US, value);
     }
 
     public int getPreferredPlaybackSequencing()
     {
-        return dcmobj.getInt(Tag.PREFERRED_PLAYBACK_SEQUENCING);
+        return dcmobj.getInt(Tag.PreferredPlaybackSequencing);
     }
 
     public void setPreferredPlaybackSequencing(int value)
     {
-        dcmobj.putInt(Tag.PREFERRED_PLAYBACK_SEQUENCING, VR.US, value);
+        dcmobj.putInt(Tag.PreferredPlaybackSequencing, VR.US, value);
     }
 
     public int getRecommendedDisplayFrameRate()
     {
-        return dcmobj.getInt(Tag.RECOMMENDED_DISPLAY_FRAME_RATE);
+        return dcmobj.getInt(Tag.RecommendedDisplayFrameRate);
     }
 
     public void setRecommendedDisplayFrameRate(int value)
     {
-        dcmobj.putInt(Tag.RECOMMENDED_DISPLAY_FRAME_RATE, VR.IS, value);
+        dcmobj.putInt(Tag.RecommendedDisplayFrameRate, VR.IS, value);
     }
 
-    public double getCineRelativetoRealTime()
+    public double getCineRelativeToRealTime()
     {
-        return dcmobj.getDouble(Tag.CINE_RELATIVE_TO_REAL_TIME);
+        return dcmobj.getDouble(Tag.CineRelativeToRealTime);
     }
 
-    public void setCineRelativetoRealTime(double value)
+    public void setCineRelativeToRealTime(double value)
     {
-        dcmobj.putDouble(Tag.CINE_RELATIVE_TO_REAL_TIME, VR.FD, value);
+        dcmobj.putDouble(Tag.CineRelativeToRealTime, VR.FD, value);
     }
 
 }

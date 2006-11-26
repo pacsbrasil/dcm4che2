@@ -810,8 +810,8 @@ public class NetworkApplicationEntity {
                             + remoteAE.getAETitle());
             PresentationContext pctx = new PresentationContext();
             pctx.setPCID(aarq.nextPCID());
-            pctx.setAbstractSyntax(UID.VERIFICATION_SOP_CLASS);
-            pctx.addTransferSyntax(UID.IMPLICIT_VR_LITTLE_ENDIAN);
+            pctx.setAbstractSyntax(UID.VerificationSOPClass);
+            pctx.addTransferSyntax(UID.ImplicitVRLittleEndian);
             aarq.addPresentationContext(pctx);
             return aarq;
         }
@@ -874,11 +874,11 @@ public class NetworkApplicationEntity {
             Map.Entry e = (Entry) iter.next();
             String cuid = (String) e.getKey();
             LinkedHashSet ts = (LinkedHashSet) e.getValue();
-            if (ts.remove(UID.EXPLICIT_VR_LITTLE_ENDIAN)) {
-                ts2.add(UID.EXPLICIT_VR_LITTLE_ENDIAN);
+            if (ts.remove(UID.ExplicitVRLittleEndian)) {
+                ts2.add(UID.ExplicitVRLittleEndian);
             }
-            if (ts.remove(UID.IMPLICIT_VR_LITTLE_ENDIAN)) {
-                ts2.add(UID.IMPLICIT_VR_LITTLE_ENDIAN);
+            if (ts.remove(UID.ImplicitVRLittleEndian)) {
+                ts2.add(UID.ImplicitVRLittleEndian);
             }
             if (ts2.isEmpty()) {
                 iter.remove();

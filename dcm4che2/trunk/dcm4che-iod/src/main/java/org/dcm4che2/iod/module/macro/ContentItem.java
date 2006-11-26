@@ -75,52 +75,52 @@ public class ContentItem extends Module {
     }    
 
     public String getValueType() {
-        return dcmobj.getString(Tag.VALUE_TYPE);
+        return dcmobj.getString(Tag.ValueType);
     }
     
     public void setValueType(String s) {
-        dcmobj.putString(Tag.VALUE_TYPE, VR.CS, s);
+        dcmobj.putString(Tag.ValueType, VR.CS, s);
     }
     
     public Code getConceptNameCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.CONCEPT_NAME_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptNameCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setConceptNameCode(Code code) {
-         updateSequence(Tag.CONCEPT_NAME_CODE_SEQUENCE, code);
+         updateSequence(Tag.ConceptNameCodeSequence, code);
     }    
     
     public Date getDateTime() {
-        return dcmobj.getDate(Tag.DATETIME);
+        return dcmobj.getDate(Tag.DateTime);
     }
     
     public void setDateTime(Date d) {
-        dcmobj.putDate(Tag.DATETIME, VR.DT, d);
+        dcmobj.putDate(Tag.DateTime, VR.DT, d);
     }
     
     public Date getDate() {
-        return dcmobj.getDate(Tag.DATE);
+        return dcmobj.getDate(Tag.Date);
     }
     
     public void setDate(Date d) {
-        dcmobj.putDate(Tag.DATE, VR.DA, d);
+        dcmobj.putDate(Tag.Date, VR.DA, d);
     }
     
     public Date getTime() {
-        return dcmobj.getDate(Tag.TIME);
+        return dcmobj.getDate(Tag.Time);
     }
     
     public void setTime(Date d) {
-        dcmobj.putDate(Tag.TIME, VR.TM, d);
+        dcmobj.putDate(Tag.Time, VR.TM, d);
     }
     
     public String getPersonName() {
-        return dcmobj.getString(Tag.PERSON_NAME);
+        return dcmobj.getString(Tag.PersonName);
     }
     
     public void setPersonName(String s) {
-        dcmobj.putString(Tag.PERSON_NAME, VR.PN, s);
+        dcmobj.putString(Tag.PersonName, VR.PN, s);
     }
     
     public String getUID() {
@@ -132,37 +132,37 @@ public class ContentItem extends Module {
     }
     
     public String getTextValue() {
-        return dcmobj.getString(Tag.TEXT_VALUE);
+        return dcmobj.getString(Tag.TextValue);
     }
     
     public void setTextValue(String s) {
-        dcmobj.putString(Tag.TEXT_VALUE, VR.UT, s);
+        dcmobj.putString(Tag.TextValue, VR.UT, s);
     }
         
     public Code getConceptCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(Tag.CONCEPT_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.ConceptCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setConceptCode(Code code) {
-        updateSequence(Tag.CONCEPT_CODE_SEQUENCE, code);
+        updateSequence(Tag.ConceptCodeSequence, code);
     }    
 
     public float getNumericValue() {
-        return dcmobj.getFloat(Tag.NUMERIC_VALUE);
+        return dcmobj.getFloat(Tag.NumericValue);
     }
     
     public void setNumericValue(float f) {
-        dcmobj.putFloat(Tag.NUMERIC_VALUE, VR.DS, f);
+        dcmobj.putFloat(Tag.NumericValue, VR.DS, f);
     }
             
     public Code getMeasurementUnitsCode() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.MEASUREMENT_UNITS_CODE_SEQUENCE);
+        	Tag.MeasurementUnitsCodeSequence);
         return item != null ? new Code(item) : null;
     }
 
     public void setMeasurementUnitsCode(Code code) {
-        updateSequence(Tag.MEASUREMENT_UNITS_CODE_SEQUENCE, code);
+        updateSequence(Tag.MeasurementUnitsCodeSequence, code);
     }
 }

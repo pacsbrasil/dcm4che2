@@ -130,7 +130,7 @@ public class DicomDirWriter extends DicomDirReader {
 	out.setExplicitSequenceLength(true);
 	out.setExplicitItemLength(true);
 	out.writeDicomFile(fileSetInfo.getDicomObject());
-	out.writeHeader(Tag.DIRECTORY_RECORD_SEQUENCE, VR.SQ, 0);
+	out.writeHeader(Tag.DirectoryRecordSequence, VR.SQ, 0);
 	this.firstRecordPos = (int) out.getStreamPosition();
 	this.recordSeqLen = 0;
     }
@@ -204,14 +204,14 @@ public class DicomDirWriter extends DicomDirReader {
 	    writeRecord(firstRecordPos, rec);
 	    filesetInfo.setOffsetFirstRootRecord((int) firstRecordPos);
 	} else {
-	    addRecord(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD, lastRootRecord, rec);
+	    addRecord(Tag.OffsetOfTheNextDirectoryRecord, lastRootRecord, rec);
 	}
        filesetInfo.setOffsetLastRootRecord((int) rec.getItemOffset());
     }
 
     public synchronized DicomObject addPatientRecord(DicomObject patrec)
 	    throws IOException {
-	DicomObject other = findPatientRecord(patrec.getString(Tag.PATIENT_ID));
+	DicomObject other = findPatientRecord(patrec.getString(Tag.PatientID));
 	if (other != null) {
 	    return other;
 	}
@@ -222,7 +222,7 @@ public class DicomDirWriter extends DicomDirReader {
     public synchronized void addSiblingRecord(DicomObject prevRec,
 	    DicomObject dcmobj) throws IOException {
 	prevRec = lastSiblingOrThis(prevRec);
-	addRecord(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD, prevRec, dcmobj);
+	addRecord(Tag.OffsetOfTheNextDirectoryRecord, prevRec, dcmobj);
 	if (cachedLastChildRecord == prevRec) {
 	    cachedLastChildRecord = dcmobj;
 	} else {
@@ -238,13 +238,13 @@ public class DicomDirWriter extends DicomDirReader {
 	    DicomObject dcmobj) throws IOException {
 	if (parentRec == cachedParentRecord) {
 	    log.debug("Hit Parent/LastChild cache");
-	    addRecord(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD, cachedLastChildRecord, dcmobj);
+	    addRecord(Tag.OffsetOfTheNextDirectoryRecord, cachedLastChildRecord, dcmobj);
 	} else {
 	    DicomObject prevRec = lastChildRecord(parentRec);
 	    if (prevRec != null) {
-		addRecord(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD, prevRec, dcmobj);
+		addRecord(Tag.OffsetOfTheNextDirectoryRecord, prevRec, dcmobj);
 	    } else {
-		addRecord(Tag.OFFSET_OF_REFERENCED_LOWER_LEVEL_DIRECTORY_ENTITY,
+		addRecord(Tag.OffsetOfReferencedLowerLevelDirectoryEntity,
 			parentRec, dcmobj);
 	    }
 	    cachedParentRecord = parentRec;
@@ -255,7 +255,7 @@ public class DicomDirWriter extends DicomDirReader {
     public synchronized DicomObject addStudyRecord(DicomObject patrec,
 	    DicomObject styrec) throws IOException {
 	DicomObject other = findStudyRecord(patrec, styrec
-		.getString(Tag.STUDY_INSTANCE_UID));
+		.getString(Tag.StudyInstanceUID));
 	if (other != null) {
 	    return other;
 	}
@@ -266,7 +266,7 @@ public class DicomDirWriter extends DicomDirReader {
     public synchronized DicomObject addSeriesRecord(DicomObject styrec,
 	    DicomObject serrec) throws IOException {
 	DicomObject other = findSeriesRecord(styrec, serrec
-		.getString(Tag.SERIES_INSTANCE_UID));
+		.getString(Tag.SeriesInstanceUID));
 	if (other != null) {
 	    return other;
 	}
@@ -275,17 +275,17 @@ public class DicomDirWriter extends DicomDirReader {
     }
 
     public synchronized void deleteRecord(DicomObject rec) throws IOException {
-	if (rec.getInt(Tag.RECORD_IN_USE_FLAG) == INACTIVE) {
+	if (rec.getInt(Tag.RecordInuseFlag) == INACTIVE) {
 	    return; // already disabled
 	}
 	for (DicomObject child = readRecord(
-		rec.getInt(Tag.OFFSET_OF_REFERENCED_LOWER_LEVEL_DIRECTORY_ENTITY));
+		rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity));
 		child != null; 
 		child = readRecord(
-			child.getInt(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD))) {
+			child.getInt(Tag.OffsetOfTheNextDirectoryRecord))) {
 	    deleteRecord(child);
 	}
-	rec.putInt(Tag.RECORD_IN_USE_FLAG, VR.US, INACTIVE);
+	rec.putInt(Tag.RecordInuseFlag, VR.US, INACTIVE);
 	markAsDirty(rec);
     }
 
@@ -300,7 +300,7 @@ public class DicomDirWriter extends DicomDirReader {
 	    recordSeqLen = rollbackLen - firstRecordPos;
 	    raf.seek(rollbackLen);
 	    if (!out.isExplicitSequenceLength() && !isEmpty()) {
-		out.writeHeader(Tag.SEQUENCE_DELIMITATION_ITEM, null, 0);
+		out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
 	    }
 	    raf.setLength(raf.getFilePointer());
 	    rollbackLen = -1;
@@ -314,7 +314,7 @@ public class DicomDirWriter extends DicomDirReader {
     public synchronized void commit() throws IOException {
 	if (rollbackLen != -1 && !out.isExplicitSequenceLength()) {
 	    raf.seek(endPos());
-	    out.writeHeader(Tag.SEQUENCE_DELIMITATION_ITEM, null, 0);
+	    out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
 	}
 	if (offsetFirstRootRecord() != filesetInfo.getOffsetFirstRootRecord()) {
 	    offsetFirstRootRecord(filesetInfo.getOffsetFirstRootRecord());
@@ -344,12 +344,12 @@ public class DicomDirWriter extends DicomDirReader {
     }
 
     private void writeDirRecordHeader(DicomObject rec) throws IOException {
-	ByteUtils.int2bytesLE(rec.getInt(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD),
+	ByteUtils.int2bytesLE(rec.getInt(Tag.OffsetOfTheNextDirectoryRecord),
 		dirRecordHeader, 8);
-	ByteUtils.ushort2bytesLE(rec.getInt(Tag.RECORD_IN_USE_FLAG),
+	ByteUtils.ushort2bytesLE(rec.getInt(Tag.RecordInuseFlag),
 		dirRecordHeader, 20);
 	ByteUtils.int2bytesLE(
-		rec.getInt(Tag.OFFSET_OF_REFERENCED_LOWER_LEVEL_DIRECTORY_ENTITY),
+		rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity),
 		dirRecordHeader, 30);
 	raf.seek(rec.getItemOffset() + 8);
 	raf.write(dirRecordHeader);
@@ -367,19 +367,19 @@ public class DicomDirWriter extends DicomDirReader {
 	if (recordSeqLen == -1) {
 	    long endPos = raf.length() - 12;
 	    raf.seek(endPos);
-	    if (in.readHeader() == Tag.SEQUENCE_DELIMITATION_ITEM) {
+	    if (in.readHeader() == Tag.SequenceDelimitationItem) {
 		recordSeqLen = (int) (endPos - firstRecordPos);
 	    } else {
 		endPos = filesetInfo.getOffsetLastRootRecord();
 		raf.seek(endPos);
 		in.setStreamPosition(endPos);
 		DicomObject dcmobj = new BasicDicomObject();
-		while (in.readHeader() == Tag.ITEM) {
+		while (in.readHeader() == Tag.Item) {
 		    in.readDicomObject(dcmobj, in.valueLength());
 		    dcmobj.clear();
 		    endPos = in.getStreamPosition();
 		}
-		if (in.tag() != Tag.SEQUENCE_DELIMITATION_ITEM) {
+		if (in.tag() != Tag.SequenceDelimitationItem) {
 		    throw new IOException("Unexpected Tag "
 			    + TagUtils.toString(in.tag()) + " at offset "
 			    + endPos);
@@ -410,9 +410,9 @@ public class DicomDirWriter extends DicomDirReader {
 	}
 	raf.seek(offset);
 	out.setStreamPosition(offset);
-	dcmobj.putInt(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD, VR.UL, 0);
-	dcmobj.putInt(Tag.RECORD_IN_USE_FLAG, VR.US, INUSE);
-	dcmobj.putInt(Tag.OFFSET_OF_REFERENCED_LOWER_LEVEL_DIRECTORY_ENTITY, VR.UL, 0);
+	dcmobj.putInt(Tag.OffsetOfTheNextDirectoryRecord, VR.UL, 0);
+	dcmobj.putInt(Tag.RecordInuseFlag, VR.US, INUSE);
+	dcmobj.putInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, VR.UL, 0);
 	out.writeItem(dcmobj, in.getTransferSyntax());
 	recordSeqLen = (int) (out.getStreamPosition() - firstRecordPos);
 	cache.put((int) dcmobj.getItemOffset(), dcmobj);
@@ -422,8 +422,8 @@ public class DicomDirWriter extends DicomDirReader {
 	int[] purged = { 0 };
 	for (DicomObject rec = readRecord(filesetInfo.getOffsetFirstRootRecord());
 		rec != null;
-		rec = readRecord(rec.getInt(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD))) {
-	    if (rec.getInt(Tag.RECORD_IN_USE_FLAG) != INACTIVE) {
+		rec = readRecord(rec.getInt(Tag.OffsetOfTheNextDirectoryRecord))) {
+	    if (rec.getInt(Tag.RecordInuseFlag) != INACTIVE) {
 		purge(rec, purged);
 	    }
 	}
@@ -431,12 +431,12 @@ public class DicomDirWriter extends DicomDirReader {
     }
 
     private boolean purge(DicomObject rec, int[] purged) throws IOException {
-	boolean purge = !rec.containsValue(Tag.REFERENCED_FILE_ID);
+	boolean purge = !rec.containsValue(Tag.ReferencedFileID);
 	for (DicomObject child = readRecord(
-		rec.getInt(Tag.OFFSET_OF_REFERENCED_LOWER_LEVEL_DIRECTORY_ENTITY)); 
+		rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity)); 
 		child != null;
-		child = readRecord(child.getInt(Tag.OFFSET_OF_THE_NEXT_DIRECTORY_RECORD))) {
-	    if (child.getInt(Tag.RECORD_IN_USE_FLAG) != INACTIVE) {
+		child = readRecord(child.getInt(Tag.OffsetOfTheNextDirectoryRecord))) {
+	    if (child.getInt(Tag.RecordInuseFlag) != INACTIVE) {
 		purge = purge(child, purged) && purge;
 	    }
 	}

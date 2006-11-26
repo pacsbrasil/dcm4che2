@@ -73,19 +73,19 @@ public class StudyAndSeriesAndInstanceReference extends Module {
     }   
     
     public String getStudyInstanceUID() {
-        return dcmobj.getString(Tag.STUDY_INSTANCE_UID);
+        return dcmobj.getString(Tag.StudyInstanceUID);
     }
 
     public void setStudyInstanceUID(String uid) {
-        dcmobj.putString(Tag.STUDY_INSTANCE_UID, VR.UI, uid);
+        dcmobj.putString(Tag.StudyInstanceUID, VR.UI, uid);
     }
 
     public SeriesAndInstanceReference[] getReferencedSeries() {
         return SeriesAndInstanceReference.toSeriesAndInstanceReferences(dcmobj
-                .get(Tag.REFERENCED_SERIES_SEQUENCE));
+                .get(Tag.ReferencedSeriesSequence));
     }
 
     public void setReferencedSeries(SeriesAndInstanceReference[] sops) {
-        updateSequence(Tag.REFERENCED_SERIES_SEQUENCE, sops);
+        updateSequence(Tag.ReferencedSeriesSequence, sops);
     }
 }

@@ -70,62 +70,62 @@ public class HPScreenDefinition
 
     public int getNumberOfVerticalPixels()
     {
-        return dcmobj.getInt(Tag.NUMBER_OF_VERTICAL_PIXELS);
+        return dcmobj.getInt(Tag.NumberOfVerticalPixels);
     }
 
     public void setNumberOfVerticalPixels(int value)
     {
-        dcmobj.putInt(Tag.NUMBER_OF_VERTICAL_PIXELS, VR.US, value);
+        dcmobj.putInt(Tag.NumberOfVerticalPixels, VR.US, value);
     }
 
     public int getNumberOfHorizontalPixels()
     {
-        return dcmobj.getInt(Tag.NUMBER_OF_HORIZONTAL_PIXELS);
+        return dcmobj.getInt(Tag.NumberOfHorizontalPixels);
     }
 
-    public void setNumberofHorizontalPixels(int value)
+    public void setNumberOfHorizontalPixels(int value)
     {
-        dcmobj.putInt(Tag.NUMBER_OF_HORIZONTAL_PIXELS, VR.US, value);
+        dcmobj.putInt(Tag.NumberOfHorizontalPixels, VR.US, value);
     }
 
     public double[] getDisplayEnvironmentSpatialPosition()
     {
-        return dcmobj.getDoubles(Tag.DISPLAY_ENVIRONMENT_SPATIAL_POSITION);
+        return dcmobj.getDoubles(Tag.DisplayEnvironmentSpatialPosition);
     }
 
     public void setDisplayEnvironmentSpatialPosition(double[] values)
     {
-        dcmobj.putDoubles(Tag.DISPLAY_ENVIRONMENT_SPATIAL_POSITION, VR.FD, values);
+        dcmobj.putDoubles(Tag.DisplayEnvironmentSpatialPosition, VR.FD, values);
     }
 
     public int getScreenMinimumColorBitDepth()
     {
-        return dcmobj.getInt(Tag.SCREEN_MINIMUM_COLOR_BIT_DEPTH);
+        return dcmobj.getInt(Tag.ScreenMinimumColorBitDepth);
     }
 
     public void setScreenMinimumColorBitDepth(int value)
     {
-        dcmobj.putInt(Tag.SCREEN_MINIMUM_COLOR_BIT_DEPTH, VR.US, value);
+        dcmobj.putInt(Tag.ScreenMinimumColorBitDepth, VR.US, value);
     }
 
     public int getScreenMinimumGrayscaleBitDepth()
     {
-        return dcmobj.getInt(Tag.SCREEN_MINIMUM_GRAYSCALE_BIT_DEPTH);
+        return dcmobj.getInt(Tag.ScreenMinimumGrayscaleBitDepth);
     }
 
     public void setScreenMinimumGrayscaleBitDepth(int value)
     {
-        dcmobj.putInt(Tag.SCREEN_MINIMUM_GRAYSCALE_BIT_DEPTH, VR.US, value);
+        dcmobj.putInt(Tag.ScreenMinimumGrayscaleBitDepth, VR.US, value);
     }
 
     public int getApplicationMaximumRepaintTime()
     {
-        return dcmobj.getInt(Tag.APPLICATION_MAXIMUM_REPAINT_TIME);
+        return dcmobj.getInt(Tag.ApplicationMaximumRepaintTime);
     }
 
     public void setApplicationMaximumRepaintTime(int value)
     {
-        dcmobj.putInt(Tag.APPLICATION_MAXIMUM_REPAINT_TIME, VR.US, value);
+        dcmobj.putInt(Tag.ApplicationMaximumRepaintTime, VR.US, value);
     }
 
 }

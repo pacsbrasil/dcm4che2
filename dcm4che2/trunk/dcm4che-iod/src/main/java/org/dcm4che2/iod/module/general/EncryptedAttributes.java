@@ -73,18 +73,18 @@ public class EncryptedAttributes extends Module {
     }
 
     public String getEncryptedContentTransferSyntaxUID() {
-        return dcmobj.getString(Tag.ENCRYPTED_CONTENT_TRANSFER_SYNTAX_UID);
+        return dcmobj.getString(Tag.EncryptedContentTransferSyntaxUID);
     }
     
     public void setEncryptedContentTransferSyntaxUID(String s) {
-        dcmobj.putString(Tag.ENCRYPTED_CONTENT_TRANSFER_SYNTAX_UID, VR.UI, s);
+        dcmobj.putString(Tag.EncryptedContentTransferSyntaxUID, VR.UI, s);
     }
 
     public byte[] getEncryptedContent() {
-        return dcmobj.getBytes(Tag.ENCRYPTED_CONTENT);
+        return dcmobj.getBytes(Tag.EncryptedContent);
     }
     
     public void setEncryptedContent(byte[] b) {
-        dcmobj.putBytes(Tag.ENCRYPTED_CONTENT, VR.OB, b);
+        dcmobj.putBytes(Tag.EncryptedContent, VR.OB, b);
     }
 }

@@ -74,36 +74,35 @@ public class VerifyingObserver extends Module {
     }
 
     public String getVerifyingObserverName() {
-        return dcmobj.getString(Tag.VERIFYING_OBSERVER_NAME);
+        return dcmobj.getString(Tag.VerifyingObserverName);
     }
     
     public void setVerifyingObserverName(String s) {
-        dcmobj.putString(Tag.VERIFYING_OBSERVER_NAME, VR.PN, s);
+        dcmobj.putString(Tag.VerifyingObserverName, VR.PN, s);
     }
     
     public Code getVerifyingObserverIdentificationCode() {
-        DicomObject item = dcmobj.getNestedDicomObject(
-                Tag.VERIFYING_OBSERVER_IDENTIFICATION_CODE_SEQUENCE);
+        DicomObject item = dcmobj.getNestedDicomObject(Tag.VerifyingObserverIdentificationCodeSequence);
         return item != null ? new Code(item) : null;
     }
     
     public void setVerifyingObserverIdentificationCode(Code code) {
-        updateSequence(Tag.VERIFYING_OBSERVER_IDENTIFICATION_CODE_SEQUENCE, code);
+        updateSequence(Tag.VerifyingObserverIdentificationCodeSequence, code);
     }
     
     public String getVerifyingOrganization() {
-        return dcmobj.getString(Tag.VERIFYING_ORGANIZATION);
+        return dcmobj.getString(Tag.VerifyingOrganization);
     }
 
     public void setVerifyingOrganization(String s) {
-        dcmobj.putString(Tag.VERIFYING_ORGANIZATION, VR.LO, s);
+        dcmobj.putString(Tag.VerifyingOrganization, VR.LO, s);
     }
 
     public Date getVerificationDateTime() {
-        return dcmobj.getDate(Tag.VERIFICATION_DATE_TIME);
+        return dcmobj.getDate(Tag.VerificationDateTime);
     }
 
     public void setVerificationDateTime(Date dt) {
-        dcmobj.putDate(Tag.VERIFICATION_DATE_TIME, VR.DT, dt);
+        dcmobj.putDate(Tag.VerificationDateTime, VR.DT, dt);
     }
 }

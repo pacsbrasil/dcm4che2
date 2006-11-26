@@ -52,52 +52,52 @@ implements HPSelector
     
     public String getImageSetSelectorUsageFlag()
     {
-        return getDicomObject().getString(Tag.IMAGE_SET_SELECTOR_USAGE_FLAG);
+        return getDicomObject().getString(Tag.ImageSetSelectorUsageFlag);
     }
 
     public String getFilterbyCategory()
     {
-        return getDicomObject().getString(Tag.FILTER_BY_CATEGORY);
+        return getDicomObject().getString(Tag.FilterbyCategory);
     }
     
     public String getFilterbyAttributePresence()
     {
-        return getDicomObject().getString(Tag.FILTER_BY_ATTRIBUTE_PRESENCE);
+        return getDicomObject().getString(Tag.FilterbyAttributePresence);
     }
     
     public int getSelectorAttribute()
     {
-        return getDicomObject().getInt(Tag.SELECTOR_ATTRIBUTE);
+        return getDicomObject().getInt(Tag.SelectorAttribute);
     }
 
     public String getSelectorAttributeVR()
     {
-        return getDicomObject().getString(Tag.SELECTOR_ATTRIBUTE_VR);
+        return getDicomObject().getString(Tag.SelectorAttributeVR);
     }
 
     public int getSelectorSequencePointer()
     {
-        return getDicomObject().getInt(Tag.SELECTOR_SEQUENCE_POINTER);
+        return getDicomObject().getInt(Tag.SelectorSequencePointer);
     }
 
     public int getFunctionalGroupPointer()
     {
-        return getDicomObject().getInt(Tag.FUNCTIONAL_GROUP_POINTER);
+        return getDicomObject().getInt(Tag.FunctionalGroupPointer);
     }
 
     public String getSelectorSequencePointerPrivateCreator()
     {
-        return getDicomObject().getString(Tag.SELECTOR_SEQUENCE_POINTER_PRIVATE_CREATOR);
+        return getDicomObject().getString(Tag.SelectorSequencePointerPrivateCreator);
     }
 
     public String getFunctionalGroupPrivateCreator()
     {
-        return getDicomObject().getString(Tag.FUNCTIONAL_GROUP_PRIVATE_CREATOR);
+        return getDicomObject().getString(Tag.FunctionalGroupPrivateCreator);
     }
 
     public String getSelectorAttributePrivateCreator()
     {
-        return getDicomObject().getString(Tag.SELECTOR_ATTRIBUTE_PRIVATE_CREATOR);
+        return getDicomObject().getString(Tag.SelectorAttributePrivateCreator);
     }
     
     public Object getSelectorValue()
@@ -109,51 +109,51 @@ implements HPSelector
         switch (vrStr.charAt(0) << 8 | vrStr.charAt(1))
         {
             case 0x4154:
-                return getDicomObject().getInts(Tag.SELECTOR_AT_VALUE);
+                return getDicomObject().getInts(Tag.SelectorATValue);
             case 0x4353:
-                return getDicomObject().getStrings(Tag.SELECTOR_CS_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorCSValue);
             case 0x4453:
-                return getDicomObject().getFloats(Tag.SELECTOR_DS_VALUE);
+                return getDicomObject().getFloats(Tag.SelectorDSValue);
             case 0x4644:
-                return getDicomObject().getDoubles(Tag.SELECTOR_FD_VALUE);
+                return getDicomObject().getDoubles(Tag.SelectorFDValue);
             case 0x464c:
-                return getDicomObject().getFloats(Tag.SELECTOR_FL_VALUE);
+                return getDicomObject().getFloats(Tag.SelectorFLValue);
             case 0x4953:
-                return getDicomObject().getInts(Tag.SELECTOR_IS_VALUE);
+                return getDicomObject().getInts(Tag.SelectorISValue);
             case 0x4c4f:
-                return getDicomObject().getStrings(Tag.SELECTOR_LO_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorLOValue);
             case 0x4c54:
-                return getDicomObject().getStrings(Tag.SELECTOR_LT_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorLTValue);
             case 0x504e:
-                return getDicomObject().getStrings(Tag.SELECTOR_PN_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorPNValue);
             case 0x5348:
-                return getDicomObject().getStrings(Tag.SELECTOR_SH_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorSHValue);
             case 0x534c:
-                return getDicomObject().getInts(Tag.SELECTOR_SL_VALUE);
+                return getDicomObject().getInts(Tag.SelectorSLValue);
             case 0x5351:
-                return Code.toArray(getDicomObject().get(Tag.SELECTOR_CODE_SEQUENCE_VALUE));
+                return Code.toArray(getDicomObject().get(Tag.SelectorCodeSequenceValue));
             case 0x5353:
-                return getDicomObject().getInts(Tag.SELECTOR_SS_VALUE);
+                return getDicomObject().getInts(Tag.SelectorSSValue);
             case 0x5354:
-                return getDicomObject().getStrings(Tag.SELECTOR_ST_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorSTValue);
             case 0x554c:
-                return getDicomObject().getInts(Tag.SELECTOR_UL_VALUE);
+                return getDicomObject().getInts(Tag.SelectorULValue);
             case 0x5553:
-                return getDicomObject().getInts(Tag.SELECTOR_US_VALUE);
+                return getDicomObject().getInts(Tag.SelectorUSValue);
             case 0x5554:
-                return getDicomObject().getStrings(Tag.SELECTOR_UT_VALUE);
+                return getDicomObject().getStrings(Tag.SelectorUTValue);
         }
         return null;
     }
 
     public int getSelectorValueNumber()
     {
-        return getDicomObject().getInt(Tag.SELECTOR_VALUE_NUMBER);
+        return getDicomObject().getInt(Tag.SelectorValueNumber);
     }
 
     public String getFilterbyOperator()
     {
-        return getDicomObject().getString(Tag.FILTER_BY_OPERATOR);
+        return getDicomObject().getString(Tag.FilterbyOperator);
     }
 
 

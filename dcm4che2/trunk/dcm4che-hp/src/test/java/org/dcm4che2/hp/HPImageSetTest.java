@@ -83,15 +83,15 @@ public class HPImageSetTest extends TestCase {
         assertEquals(false, is1.contains(o, 0));
         assertEquals(false, is2.contains(o, 0));
         assertEquals(false, is3.contains(o, 0));
-        o.putString(Tag.BODY_PART_EXAMINED, VR.CS, "HEAD");
+        o.putString(Tag.BodyPartExamined, VR.CS, "HEAD");
         assertEquals(false, is1.contains(o, 0));
         assertEquals(false, is2.contains(o, 0));
         assertEquals(false, is3.contains(o, 0));
-        o.putString(Tag.MODALITY, VR.CS, "CT");
+        o.putString(Tag.Modality, VR.CS, "CT");
         assertEquals(false, is1.contains(o, 0));
         assertEquals(true, is2.contains(o, 0));
         assertEquals(true, is3.contains(o, 0));
-        o.putString(Tag.MODALITY, VR.CS, "MR");
+        o.putString(Tag.Modality, VR.CS, "MR");
         assertEquals(true, is1.contains(o, 0));
         assertEquals(false, is2.contains(o, 0));
         assertEquals(false, is3.contains(o, 0));

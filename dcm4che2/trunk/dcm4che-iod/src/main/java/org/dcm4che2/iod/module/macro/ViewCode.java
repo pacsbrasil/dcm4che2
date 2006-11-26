@@ -57,12 +57,12 @@ public class ViewCode extends Code {
     }
     
     public void setViewModifierCodes(Code[] codes) {
-        updateSequence(Tag.VIEW_MODIFIER_CODE_SEQUENCE, codes);
+        updateSequence(Tag.ViewModifierCodeSequence, codes);
     }
 
     public Code[] getViewModifierCodes() {
         return Code.toCodes(dcmobj
-                .get(Tag.VIEW_MODIFIER_CODE_SEQUENCE));
+                .get(Tag.ViewModifierCodeSequence));
     }  
 
 }
