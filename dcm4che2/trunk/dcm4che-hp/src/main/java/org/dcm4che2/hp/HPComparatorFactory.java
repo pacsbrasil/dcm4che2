@@ -376,9 +376,9 @@ public class HPComparatorFactory
                 return 0;
 
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sign;
-            if (v1[valueNumber - 1] > v2[valueNumber - 1])
                 return -sign;
+            if (v1[valueNumber - 1] > v2[valueNumber - 1])
+                return sign;
             return 0;
         }
 
@@ -388,9 +388,9 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sign;
-            if (v1[valueNumber - 1] > v2[valueNumber - 1])
                 return -sign;
+            if (v1[valueNumber - 1] > v2[valueNumber - 1])
+                return sign;
             return 0;
         }
 
@@ -400,9 +400,9 @@ public class HPComparatorFactory
                     || v2.length < valueNumber)
                 return 0;
             if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return sign;
-            if (v1[valueNumber - 1] > v2[valueNumber - 1])
                 return -sign;
+            if (v1[valueNumber - 1] > v2[valueNumber - 1])
+                return sign;
             return 0;
         }
 
@@ -422,9 +422,9 @@ public class HPComparatorFactory
             long l1 = v1[valueNumber - 1] & 0xffffffffL;
             long l2 = v2[valueNumber - 1] & 0xffffffffL;
             if (l1 < l2)
-                return sign;
-            if (l1 > l2)
                 return -sign;
+            if (l1 > l2)
+                return sign;
             return 0;
         }
 

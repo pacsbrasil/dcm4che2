@@ -44,7 +44,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\logger
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\nlog4j-1.2.19.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.14.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
 

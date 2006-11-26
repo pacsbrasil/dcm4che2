@@ -43,7 +43,7 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/logger/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/nlog4j-1.2.19.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.14.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

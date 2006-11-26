@@ -108,9 +108,9 @@ extends AbstractHPComparator
             float v1 = dot(o1, frame1);
             float v2 = dot(o2, frame2);
             if (v1 < v2)
-                return sign;
-            if (v1 > v2)
                 return -sign;
+            if (v1 > v2)
+                return sign;
         }
         catch (RuntimeException ignore)
         {

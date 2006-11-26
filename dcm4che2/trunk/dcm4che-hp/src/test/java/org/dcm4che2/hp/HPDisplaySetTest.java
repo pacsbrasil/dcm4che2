@@ -141,7 +141,7 @@ public class HPDisplaySetTest extends TestCase {
         assertEquals(false, ds5.contains(CT_SAGITAL, 0));
         assertEquals(true, ds5.contains(CT_TRANSVERSE1, 0));
         assertEquals(true, ds5.contains(CT_TRANSVERSE2, 0));
-        assertEquals(true, ds5.compare(CT_TRANSVERSE1, 1, CT_TRANSVERSE2, 1) > 0);
+        assertEquals(true, ds5.compare(CT_TRANSVERSE1, 1, CT_TRANSVERSE2, 1) < 0);
 
         HPDisplaySet ds10 = (HPDisplaySet) mrOnlyDisplay.get(4);
         HPImageSet is1 = ds10.getImageSet();
@@ -153,7 +153,7 @@ public class HPDisplaySetTest extends TestCase {
         assertEquals(true, is1.contains(MR_TRANSVERSE2, 0));
         assertEquals(true, ds10.contains(MR_TRANSVERSE1, 0));
         assertEquals(true, ds10.contains(MR_TRANSVERSE2, 0));
-        assertEquals(true, ds10.compare(MR_TRANSVERSE1, 1, MR_TRANSVERSE2, 1) > 0);
+        assertEquals(true, ds10.compare(MR_TRANSVERSE1, 1, MR_TRANSVERSE2, 1) < 0);
         
         List filterOps = ds10.getFilterOperations();
         assertEquals(1, filterOps.size());
