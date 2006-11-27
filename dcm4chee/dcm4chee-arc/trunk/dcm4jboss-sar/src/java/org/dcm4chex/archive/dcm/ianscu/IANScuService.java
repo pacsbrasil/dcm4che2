@@ -184,6 +184,8 @@ public class IANScuService extends ServiceMBeanSupport implements
     private int scnPriority = 0;
 
     private String[] notifiedAETs = EMPTY;
+    
+    private boolean notifyOtherServices;
 
     private boolean onStudyDeleted;
 
@@ -230,6 +232,15 @@ public class IANScuService extends ServiceMBeanSupport implements
                 : StringUtils.split(notifiedAETs, '\\');
     }
 
+    public final void setNotifyOtherServices(boolean notifyOtherServices) {
+        this.notifyOtherServices = notifyOtherServices;
+    }
+
+    public final boolean isNotifyOtherServices() {
+        return notifyOtherServices;
+    }
+
+    
     public final boolean isOnStudyDeleted() {
         return onStudyDeleted;
     }
@@ -402,7 +413,7 @@ public class IANScuService extends ServiceMBeanSupport implements
     }
 
     private void onSeriesStored(SeriesStored stored) {
-        if (notifiedAETs.length == 0)
+        if (!notifyOtherServices && notifiedAETs.length == 0)
             return;
         Dataset ian = stored.getIAN();
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
@@ -428,13 +439,18 @@ public class IANScuService extends ServiceMBeanSupport implements
     }
 
     private void onMPPSReceived(Dataset mpps) {
-        if (notifiedAETs.length == 0 || !sendOneIANforEachMPPS || isIgnoreMPPS(mpps)) {
+        if (isIgnoreMPPS(mpps) || !notifyOtherServices 
+                && (notifiedAETs.length == 0 || !sendOneIANforEachMPPS)) {
             return;
         }
         Dataset ian = makeIAN(mpps);
         if (ian != null) {
-            sendMPPSInstancesAvailableNotification(mpps);
-            schedule(ian);
+            if (notifyOtherServices) {
+                sendMPPSInstancesAvailableNotification(mpps);
+            }
+            if (!sendOneIANforEachMPPS) {
+                schedule(ian);
+            }
         }
     }
 

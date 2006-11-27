@@ -28,6 +28,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isNotifyOtherServices"
+      setMethod="setNotifyOtherServices">
+      <description><![CDATA[Enables notification of other services about the
+        event, that all objects referenced in a MPPS COMPLETE message became 
+        available in the archive. Must be activated, if XDS-I auto-publishing
+        feature is used.]]>
+      </description>
+      <name>NotifyOtherServices</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSendOneIANforEachMPPS"
       setMethod="setSendOneIANforEachMPPS">
       <description>Send IAN not before having received the last instance of the
