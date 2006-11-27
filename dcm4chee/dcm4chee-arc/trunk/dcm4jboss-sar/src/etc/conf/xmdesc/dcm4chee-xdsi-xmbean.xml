@@ -17,7 +17,20 @@
    </constructor>
 
    <!-- Attributes -->
-   
+   <attribute access="read-write" 
+     getMethod="getAutoPublishAETs" 
+     setMethod="setAutoPublishAETs">
+      <description>List of Source (Modality) AE titles separated by \(backslash), 
+      from which studies shall be automatically published to the configured
+      XDS-I Repository. NONE = do not publish studies received from any source
+      automatically.
+      </description>
+      <name>AutoPublishSourceAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getDocRepositoryURI" setMethod="setDocRepositoryURI">
       <description>Document Repository URI.
       </description>
@@ -296,6 +309,30 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4chee.archive:service=AuditLogger"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" 
+     getMethod="getStoreScpServiceName"
+     setMethod="setStoreScpServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=StoreScp"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+     getMethod="getKeyObjectServiceName"
+     setMethod="setKeyObjectServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>KeyObjectServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=KeyObjectService"/>
       </descriptors>
    </attribute>
    

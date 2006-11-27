@@ -8,5 +8,7 @@
     xmbean-dd="xmdesc/dcm4chee-xdsi-xmbean.xml">
     <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends>dcm4chee.archive:service=HL7Send</depends>
+    <depends>dcm4chee.archive:service=StoreScp</depends>
+    <depends>dcm4chee.archive:service=KeyObjectService</depends>
   </mbean>
 </server>

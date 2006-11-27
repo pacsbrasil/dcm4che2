@@ -52,6 +52,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -63,7 +65,11 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.activation.DataHandler;
+import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.RuntimeMBeanException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -91,9 +97,13 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfig;
@@ -124,6 +134,13 @@ public class XDSIService extends ServiceMBeanSupport {
     private static final String NONE = "NONE";
 	
     protected ObjectName auditLogName;
+    
+    protected ObjectName storeScpServiceName;
+
+    protected ObjectName keyObjectServiceName;
+    
+    protected String[] autoPublishAETs;
+    
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
 
     private static ServerConfig config = ServerConfigLocator.locate();
@@ -177,7 +194,22 @@ public class XDSIService extends ServiceMBeanSupport {
 	private String ridURL;
 	
 	private boolean logSOAPMessage = true;
-	
+
+        private static final NotificationFilterSupport seriesStoredFilter = 
+            new NotificationFilterSupport();
+
+        static {
+            seriesStoredFilter.enableType(SeriesStored.class.getName());
+        }
+        
+        private final NotificationListener seriesStoredListener = 
+            new NotificationListener() {
+                public void handleNotification(Notification notif, Object handback) {
+                    onSeriesStored((SeriesStored) notif.getUserData());
+                }
+
+            };
+        
     /**
 	 * @return Returns the property file path.
 	 */
@@ -491,6 +523,34 @@ public class XDSIService extends ServiceMBeanSupport {
         this.pixQueryServiceName = name;
     }
 
+    public final ObjectName getStoreScpServiceName() {
+        return storeScpServiceName;
+    }
+
+    public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
+        this.storeScpServiceName = storeScpServiceName;
+    }
+    
+    public final ObjectName getKeyObjectServiceName() {
+        return keyObjectServiceName;
+    }
+
+    public final void setKeyObjectServiceName(ObjectName keyObjectServiceName) {
+        this.keyObjectServiceName = keyObjectServiceName;
+    }
+    
+    public final String getAutoPublishAETs() {
+        return autoPublishAETs.length > 0 ? StringUtils.toString(autoPublishAETs,
+                '\\') : NONE;
+    }
+
+    public final void setAutoPublishAETs(String autoPublishAETs) {
+        this.autoPublishAETs = NONE.equalsIgnoreCase(autoPublishAETs)
+                ? new String[0]
+                : StringUtils.split(autoPublishAETs, '\\');
+    }
+    
+    
     public String getLocalDomain() {
     	return localDomain == null ? "NONE" : localDomain;
     }
@@ -1100,5 +1160,39 @@ public class XDSIService extends ServiceMBeanSupport {
         }
         return document;
     }
-	
+        
+    protected void startService() throws Exception {
+        server.addNotificationListener(storeScpServiceName,
+                seriesStoredListener, seriesStoredFilter, null);
+    }
+
+    protected void stopService() throws Exception {
+        server.removeNotificationListener(storeScpServiceName,
+                seriesStoredListener, seriesStoredFilter, null);
+    }
+    
+    private void onSeriesStored(SeriesStored stored) {
+        if (Arrays.asList(autoPublishAETs).indexOf(stored.getCallingAET()) == -1) {
+            return;
+        }
+        // TODO        
+    }
+
+    private Dataset getKeyObject(Collection iuids, Dataset rootInfo, List contentItems) {
+        Object o = null;
+        try {
+            o = server.invoke(keyObjectServiceName,
+                    "getKeyObject",
+                    new Object[] { iuids, rootInfo, contentItems },
+                    new String[] { Collection.class.getName(), Dataset.class.getName(), Collection.class.getName() });
+        } catch (RuntimeMBeanException x) {
+            log.warn("RuntimeException thrown in KeyObject Service:"+x.getCause());
+            throw new IllegalArgumentException(x.getCause().getMessage());
+        } catch (Exception e) {
+            log.warn("Failed to create Key Object:", e);
+            throw new IllegalArgumentException("Error: KeyObject Service cant create manifest Key Object! Reason:"+e.getClass().getName());
+        }
+        return (Dataset) o;
+    }
+
 }
