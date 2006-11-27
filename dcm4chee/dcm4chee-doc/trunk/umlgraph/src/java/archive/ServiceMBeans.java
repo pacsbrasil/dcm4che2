@@ -821,6 +821,8 @@ class wadoService {}
 /**
  * @depend - - - AuditLogger
  * @depend - - - HL7Send
+ * @depend - - - KeyObjectService
+ * @depend - - - IANScu
  */
 class XDS_I {}
 
