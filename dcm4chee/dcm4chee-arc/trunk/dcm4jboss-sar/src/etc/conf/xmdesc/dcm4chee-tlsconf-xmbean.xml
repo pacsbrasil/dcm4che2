@@ -42,11 +42,11 @@
    </attribute>
    <attribute access="read-write"
       getMethod="isNeedClientAuth"
-      setMethod="setNeedClientAuthentication">
+      setMethod="setNeedClientAuth">
       <description><![CDATA[Set to <tt>true</tt> if client authentication is
       required, or <tt>false</tt> if no client authentication is desired.]]>
       </description>
-      <name>NeedClientAuth</name>
+      <name>NeedClientAuthentication</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
