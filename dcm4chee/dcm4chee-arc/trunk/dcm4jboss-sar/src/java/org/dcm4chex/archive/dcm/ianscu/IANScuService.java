@@ -49,6 +49,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -95,6 +96,16 @@ import org.jboss.system.ServiceMBeanSupport;
 public class IANScuService extends ServiceMBeanSupport implements
         MessageListener {
 
+    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.ianscu";
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+
+        private static final long serialVersionUID = -6323628592613659041L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE.equals(notif.getType());
+        }
+    };
+    
     private static final String NONE = "NONE";
 
     private static final String[] EMPTY = {};
@@ -422,10 +433,18 @@ public class IANScuService extends ServiceMBeanSupport implements
         }
         Dataset ian = makeIAN(mpps);
         if (ian != null) {
+            sendMPPSInstancesAvailableNotification(mpps);
             schedule(ian);
         }
     }
 
+    void sendMPPSInstancesAvailableNotification(Dataset mpps) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE, this, eventID);
+        notif.setUserData(mpps);
+        super.sendNotification(notif);
+    }
+    
     private boolean isIgnoreMPPS(Dataset mpps) {
         String status = mpps.getString(Tags.PPSStatus);
         if ("COMPLETED".equals(status)) {

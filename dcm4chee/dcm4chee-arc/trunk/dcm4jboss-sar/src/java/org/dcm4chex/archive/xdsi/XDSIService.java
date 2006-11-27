@@ -99,6 +99,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
@@ -135,7 +136,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	
     protected ObjectName auditLogName;
     
-    protected ObjectName storeScpServiceName;
+    protected ObjectName ianScuServiceName;
 
     protected ObjectName keyObjectServiceName;
     
@@ -202,10 +203,10 @@ public class XDSIService extends ServiceMBeanSupport {
             seriesStoredFilter.enableType(SeriesStored.class.getName());
         }
         
-        private final NotificationListener seriesStoredListener = 
+        private final NotificationListener ianListener = 
             new NotificationListener() {
                 public void handleNotification(Notification notif, Object handback) {
-                    onSeriesStored((SeriesStored) notif.getUserData());
+                    onIAN((Dataset) notif.getUserData());
                 }
 
             };
@@ -523,12 +524,12 @@ public class XDSIService extends ServiceMBeanSupport {
         this.pixQueryServiceName = name;
     }
 
-    public final ObjectName getStoreScpServiceName() {
-        return storeScpServiceName;
+    public final ObjectName getIANScuServiceName() {
+        return ianScuServiceName;
     }
 
-    public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
-        this.storeScpServiceName = storeScpServiceName;
+    public final void setIANScuServiceName(ObjectName ianScuServiceName) {
+        this.ianScuServiceName = ianScuServiceName;
     }
     
     public final ObjectName getKeyObjectServiceName() {
@@ -1162,17 +1163,18 @@ public class XDSIService extends ServiceMBeanSupport {
     }
         
     protected void startService() throws Exception {
-        server.addNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+        server.addNotificationListener(ianScuServiceName,
+                ianListener, IANScuService.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
-        server.removeNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+        server.removeNotificationListener(ianScuServiceName,
+                ianListener, IANScuService.NOTIF_FILTER, null);
     }
     
-    private void onSeriesStored(SeriesStored stored) {
-        if (Arrays.asList(autoPublishAETs).indexOf(stored.getCallingAET()) == -1) {
+    private void onIAN(Dataset mpps) {
+        if (Arrays.asList(autoPublishAETs).indexOf(
+                mpps.getString(Tags.PerformedStationAET)) == -1) {
             return;
         }
         // TODO        

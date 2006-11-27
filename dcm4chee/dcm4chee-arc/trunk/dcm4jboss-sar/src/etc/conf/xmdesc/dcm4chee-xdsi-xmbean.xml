@@ -313,14 +313,14 @@
    </attribute>
 
    <attribute access="read-write" 
-     getMethod="getStoreScpServiceName"
-     setMethod="setStoreScpServiceName">
+     getMethod="getIANScuServiceName"
+     setMethod="setIANScuServiceName">
       <description>Used internally. Do not modify.
       </description>
-      <name>StoreScpServiceName</name>
+      <name>IANScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chee.archive:service=StoreScp"/>
+         <value value="org.dcm4chex.archive.dcm.ianscu.IANScuService"/>
       </descriptors>
    </attribute>
    
