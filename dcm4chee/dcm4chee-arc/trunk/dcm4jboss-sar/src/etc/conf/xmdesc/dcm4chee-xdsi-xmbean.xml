@@ -320,7 +320,7 @@
       <name>IANScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="org.dcm4chex.archive.dcm.ianscu.IANScuService"/>
+         <value value="dcm4chee.archive:service=IANScu"/>
       </descriptors>
    </attribute>
    
