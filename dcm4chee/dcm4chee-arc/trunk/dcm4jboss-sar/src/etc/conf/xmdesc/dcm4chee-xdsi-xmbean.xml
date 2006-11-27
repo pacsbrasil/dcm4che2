@@ -243,7 +243,7 @@
    </attribute>
    <attribute access="read-write" getMethod="getAutoPublishDocTitle" setMethod="setAutoPublishDocTitle">
       <description><![CDATA[Document title for auto published metainfo KOS. <br> 
-      	Format:&lt;CodeValue&gt;^&lt;CodeMeaning&gt;[^&lt;CodeDesignator&gt;]
+      	Format:&lt;CodeValue&gt;^&lt;CodeMeaning&gt;[^&lt;CodeDesignator&gt;] ]]>
       </description>
       <name>AutoPublishDocTitle</name>
       <type>java.lang.String</type>
