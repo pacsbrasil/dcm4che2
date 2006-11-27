@@ -138,6 +138,7 @@ public class XDSIService extends ServiceMBeanSupport {
     protected ObjectName keyObjectServiceName;
     
     protected String[] autoPublishAETs;
+    private String autoPublishDocTitle;
     
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
 
@@ -171,6 +172,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	private File contentTypeCodeListFile;
 	private File eventCodeListFile;
 	private File healthCareFacilityCodeListFile;
+    private File autoPublishPropertyFile;
 
 	private List authorRoles = new ArrayList();
 	private List confidentialityCodes;
@@ -193,16 +195,10 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 	private boolean logSOAPMessage = true;
 
-        private static final NotificationFilterSupport seriesStoredFilter = 
-            new NotificationFilterSupport();
-
-        static {
-            seriesStoredFilter.enableType(SeriesStored.class.getName());
-        }
-        
         private final NotificationListener ianListener = 
             new NotificationListener() {
                 public void handleNotification(Notification notif, Object handback) {
+                    log.info("ianListener called!");
                     onIAN((Dataset) notif.getUserData());
                 }
 
@@ -548,6 +544,23 @@ public class XDSIService extends ServiceMBeanSupport {
                 : StringUtils.split(autoPublishAETs, '\\');
     }
     
+    public final String getAutoPublishDocTitle() {
+        return autoPublishDocTitle;
+    }
+    public final void setAutoPublishDocTitle(String autoPublishDocTitle ) {
+        this.autoPublishDocTitle = autoPublishDocTitle;
+    }
+    
+    public String getAutoPublishPropertyFile() {
+        return autoPublishPropertyFile == null ? "NONE" : autoPublishPropertyFile.getPath();
+    }
+    public void setAutoPublishPropertyFile(String file) throws IOException {
+        if ( file == null || file.trim().length() < 1 || file.equalsIgnoreCase("NONE")) {
+            autoPublishPropertyFile = null;
+        } else {
+            autoPublishPropertyFile = new File(file.replace('/', File.separatorChar));
+        }
+    }
     
     public String getLocalDomain() {
     	return localDomain == null ? "NONE" : localDomain;
@@ -657,7 +670,7 @@ public class XDSIService extends ServiceMBeanSupport {
 			bis.close();
 		}
 	}
-	
+    
 	public List listAuthorRoles() throws IOException {
 		return this.authorRoles;
 	}
@@ -1170,11 +1183,70 @@ public class XDSIService extends ServiceMBeanSupport {
     }
     
     private void onIAN(Dataset mpps) {
+        log.debug("Received mpps");log.debug(mpps);
         if (Arrays.asList(autoPublishAETs).indexOf(
                 mpps.getString(Tags.PerformedStationAET)) == -1) {
+            List iuids = getIUIDS(mpps);
+            log.debug("iuids:"+iuids);
+            Dataset manifest = getKeyObject(iuids, getAutoPublishRootInfo(mpps), null);
+            log.debug("Created manifest KOS:");
+            log.debug(manifest);
+            try {
+                sendSOAP(manifest, getAutoPublishMetadataProperties(mpps));
+            } catch (SQLException x) {
+                log.error("XDS-I Autopublish failed! Reason:",x );
+            }
             return;
         }
         // TODO        
+    }
+    
+    private List getIUIDS(Dataset mpps) {
+        List l = new ArrayList();
+        DcmElement refSerSQ = mpps.get(Tags.PerformedSeriesSeq);
+        if ( refSerSQ != null ) {
+            Dataset item;
+            DcmElement refSopSQ;
+            for ( int i = 0 ,len = refSerSQ.countItems() ; i < len ; i++){
+                refSopSQ = refSerSQ.getItem(i).get(Tags.RefImageSeq);
+                for ( int j = 0 ,len1 = refSerSQ.countItems() ; j < len1 ; j++){
+                    item = refSopSQ.getItem(j);
+                    l.add( item.getString(Tags.RefSOPInstanceUID));
+                }
+            }
+        }
+        return l;
+    }
+    private Dataset getAutoPublishRootInfo(Dataset mpps) {
+        Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
+        DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset item = sq.addNewItem();
+        StringTokenizer st = new StringTokenizer(autoPublishDocTitle,"^");
+        item.putSH(Tags.CodeValue,st.hasMoreTokens() ? st.nextToken():"autoPublish");
+        item.putLO(Tags.CodeMeaning, st.hasMoreTokens() ? st.nextToken():"default doctitle for autopublish");
+        item.putSH(Tags.CodingSchemeDesignator,st.hasMoreTokens() ? st.nextToken():null);
+        return rootInfo;
+    }
+    
+    private Properties getAutoPublishMetadataProperties(Dataset mpps) {
+        Properties props = new Properties();
+        BufferedInputStream bis = null;
+        try {
+            if (autoPublishPropertyFile == null ) return props;
+            File propFile = FileUtils.resolve(this.autoPublishPropertyFile);
+            bis= new BufferedInputStream( new FileInputStream( propFile ));
+            props.load(bis);
+            return props;
+        } catch (IOException x) {
+            log.error("Cant read Metadata Properties for AutoPublish!",x);
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (IOException ignore) {}
+            }
+        }
+        return props;
     }
 
     private Dataset getKeyObject(Collection iuids, Dataset rootInfo, List contentItems) {

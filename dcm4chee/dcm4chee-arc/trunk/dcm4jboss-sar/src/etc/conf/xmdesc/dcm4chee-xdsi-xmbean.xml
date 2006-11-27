@@ -231,6 +231,27 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write" getMethod="getAutoPublishPropertyFile" setMethod="setAutoPublishPropertyFile">
+      <description>Metadata Property File for AutoPublish. 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>AutoPublishPropertyFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/nist/metadata.conf"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getAutoPublishDocTitle" setMethod="setAutoPublishDocTitle">
+      <description><![CDATA[Document title for auto published metainfo KOS. <br> 
+      	Format:&lt;CodeValue&gt;^&lt;CodeMeaning&gt;[^&lt;CodeDesignator&gt;]
+      </description>
+      <name>AutoPublishDocTitle</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="AutoPublish^Automatic XDS-I export of received images"/>
+      </descriptors>
+   </attribute>
+
 
    <attribute access="read-write" getMethod="getTestPath" setMethod="setTestPath">
       <description>Base directory path. (is used in sendSOAP for metadata and doc files!)
