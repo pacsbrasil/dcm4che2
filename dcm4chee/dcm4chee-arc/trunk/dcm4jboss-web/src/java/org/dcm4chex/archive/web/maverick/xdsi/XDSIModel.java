@@ -391,6 +391,7 @@ public class XDSIModel extends BasicFormModel {
 		setSelectedContentTypeCode(0);
 		setSelectedHealthCareTypeCode(0);
 		this.deselectAllEventCodes();
+        this.exportPDF=false;
 	}
 
 }
