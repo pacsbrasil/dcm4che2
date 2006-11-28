@@ -42,7 +42,7 @@ accessed studies.</description>
       <description><![CDATA[Default Storage Directory, used if there is no
       File system entry configured for given Retrieve AET.
       A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>
+      <i>archive-install-directory</i>/server/default/. Use "NONE" to skip the default configuration.]]>
       </description>
       <name>DefaultStorageDirectory</name>
       <type>java.lang.String</type>

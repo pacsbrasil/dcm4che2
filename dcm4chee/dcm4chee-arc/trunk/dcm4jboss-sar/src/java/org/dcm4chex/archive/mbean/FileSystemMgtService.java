@@ -718,12 +718,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 storageFileSystem = c[0];
                 storageFileSystem.setStatus(FileSystemStatus.DEF_RW);
                 fsmgt.updateFileSystem(storageFileSystem);
-            } else {
+            } else if(defStorageDir != null && !defStorageDir.equals("NONE")){
                 storageFileSystem = addFileSystem(defStorageDir, retrieveAET,
                         Availability.ONLINE, FileSystemStatus.DEF_RW, null);
                 log.warn("No writeable Storage Directory configured for retrieve AET "
                         + retrieveAET + "- initalize default " + storageFileSystem);
-            }
+            } else  {
+            	log.warn("No writeable Storage Directory configured for retrieve AET " +
+            			retrieveAET + "- online storage is not available at this moment but should be configured later." );
+            }            
         }
         checkStorageFileSystem();
     }
