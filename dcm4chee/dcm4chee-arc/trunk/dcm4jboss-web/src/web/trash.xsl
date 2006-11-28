@@ -431,7 +431,7 @@
 		    <td class="study_mark" align="right">
 				<a href="trashfolder.m?undel=study&amp;studyPk={pk}"
 					onclick="return confirm('Undelete this study ?')">
-					<img src="images/undel.gif" alt="Undelete this Series" border="0" title="Undelete this series"/>		
+					<img src="images/undel.gif" alt="Undelete Study" border="0" title="Undelete Study"/>		
 				</a>
 		    </td>
 			<td class="study_mark" align="right">
@@ -518,7 +518,7 @@
             <td class="series_mark" align="right">
 				<a href="trashfolder.m?undel=series&amp;seriesPk={pk}"
 					onclick="return confirm('Undelete this series ?')">
-					<img src="images/undel.gif" alt="Undelete Series" border="0" title="Undel Series"/>		
+					<img src="images/undel.gif" alt="Undelete Series" border="0" title="Undelete Series"/>		
 				</a>
 	        </td>
             <td class="series_mark" align="right">
