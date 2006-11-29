@@ -220,6 +220,36 @@ public class AuditEvent extends BaseElement {
          */
         public static final ID USER_AUTHENTICATION = 
                 new ID("110114", "DCM", "User Authentication");
+
+        /**
+         * Event ID used for {@link HealthServicesProvisionEventMessage}.
+         */
+        public static final ID HEALTH_SERVICE_PROVISION_EVENT = 
+                new ID("IHE0001", "IHE", "Health Services Provision Event");
+        
+        /**
+         * Event ID used for {@link MedicationEventMessage}.
+         */
+        public static final ID MEDICATION_EVENT = 
+                new ID("IHE0002", "IHE", "Medication Event");
+        
+        /**
+         * Event ID used for {@link PatientCareResourceAssignmentMessage}.
+         */
+        public static final ID PATIENT_CARE_RESOURCE_ASSIGNMENT = 
+                new ID("IHE0003", "IHE", "Patient Care Resource Assignment");
+        
+        /**
+         * Event ID used for {@link PatientCareEpisodeMessage}.
+         */
+        public static final ID PATIENT_CARE_EPISODE = 
+                new ID("IHE0004", "IHE", "Patient Care Episode");
+        
+        /**
+         * Event ID used for {@link PatientCareProtocolMessage}.
+         */
+        public static final ID PATIENT_CARE_PROTOCOL = 
+                new ID("IHE0005", "IHE", "Patient Care Protocol");
         
         
         public ID(String code) {

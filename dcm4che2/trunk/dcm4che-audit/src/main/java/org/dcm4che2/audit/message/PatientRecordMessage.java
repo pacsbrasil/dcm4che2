@@ -26,8 +26,8 @@ public class PatientRecordMessage extends AuditMessage {
     public PatientRecordMessage(AuditEvent event, ActiveParticipant user1,
             ActiveParticipant user2, Patient patient) {
         super(event, user1);
-        addActiveParticipant(user2); 
-        addParticipantObject(patient);
+        super.addActiveParticipant(user2); 
+        super.addParticipantObject(patient);
     }
 
     /**

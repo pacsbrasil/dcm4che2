@@ -35,41 +35,32 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
+ 
 package org.dcm4che2.audit.message;
 
 /**
- * This message describes the event of a Query being issued or received.
- * The message does not record the response to the query, but merely
- * records the fact that a query was issued. For example, this would report
- * queries using the DICOM SOP Classes:
- * <ul>
- * <li>Modality Worklist</li>
- * <li>General Purpose Worklist</li>
- * <li>Composite Instance Query</li>
- * </ul>
- * <p>
- * Notes:
- * <ol>
- * <li>The response to a query may result in one or more Instances Transferred 
- * or Instances Accessed messages, depending on what events transpire after the
- * query. If there were security-related failures, such as access violations,
- * when processing a query, those failures should show up in other audit 
- * messages, such as a Security Alert message.</li>
- * <li>Non-DICOM queries may also be captured by this message. The Participant
- * Object ID Type Code, the Participant Object ID, and the Query fields may 
- * have values related to such non-DICOM queries.</li>
- * </ol>
+ * This message may be generated whenever health services are scheduled and
+ * performed within an instance or episode of care. These include scheduling, 
+ * initiation, updates or amendments, performing or completing an act, and 
+ * cancellation.
+ * 
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Nov 29, 2006
+ * 
+ * @see <a href="http://www.ihe.net/Technical_Framework/upload/ihe_iti_tf_2.0_vol2_FT_2005-08-15.pdf">
+ * IHE IT Infrastructure Technical Framework, vol. 2: Transactions</a>,
+ * 3.20.7.3.1 Health Services Provision Event
  */
-public class QueryMessage extends AuditMessage {
+public class HealthServicesProvisionEventMessage extends AuditMessage {
 
-    public QueryMessage(AuditEvent event, Source src, Destination dst, QuerySOPClass sopClass) {
-        super(event, src);
-        super.addActiveParticipant(dst);
-        super.addParticipantObject(sopClass);
+    public HealthServicesProvisionEventMessage(AuditEvent event, 
+            ActiveParticipant user, Patient patient) {
+        super(event, user);
+        super.addParticipantObject(patient);
     }
-
-    public QueryMessage addOtherParticipant(ActiveParticipant apart) {
+    
+    public HealthServicesProvisionEventMessage addUser(ActiveParticipant apart) {
         super.addActiveParticipant(apart);
         return this;
     }
@@ -77,7 +68,7 @@ public class QueryMessage extends AuditMessage {
     /**
      * This method is deprecated and should not be used.
      * 
-     * @deprecated use {@link #addOtherParticipant(ActiveParticipant)}
+     * @deprecated use {@link #addUser(ActiveParticipant)}
      */
     public AuditMessage addActiveParticipant(ActiveParticipant apart) {
         return super.addActiveParticipant(apart);
@@ -85,9 +76,11 @@ public class QueryMessage extends AuditMessage {
 
     /**
      * This method is deprecated and should not be used.
-     *
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     * @deprecated <tt>QueryMessage</tt> has no additional <tt>ParticipantObject</tt>
+     * 
+     * @exception java.lang.IllegalArgumentException
+     *                if this method is invoked
+     * @deprecated <tt>HealthServicesProvisionEventMessage</tt> has no
+     *             additional <tt>ParticipantObject</tt>
      */
     public AuditMessage addParticipantObject(ParticipantObject obj) {
         throw new IllegalArgumentException();
@@ -95,9 +88,37 @@ public class QueryMessage extends AuditMessage {
         
     public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
 
-        public AuditEvent() {
-            super(ID.QUERY);
-            super.setEventActionCode(ActionCode.EXECUTE);
-        }        
-    }    
+        protected AuditEvent(ActionCode actionCode) {
+            super(ID.HEALTH_SERVICE_PROVISION_EVENT);
+            setEventActionCode(actionCode);
+        }  
+        
+        public static class Create extends AuditEvent {
+
+            public Create() {
+                super(ActionCode.CREATE);
+            }        
+        }
+
+        public static class Read extends AuditEvent {
+
+            public Read() {
+                super(ActionCode.READ);
+            }        
+        }
+
+        public static class Update extends AuditEvent {
+
+            public Update() {
+                super(ActionCode.UPDATE);
+            }        
+        }
+
+        public static class Delete extends AuditEvent {
+
+            public Delete() {
+                super(ActionCode.DELETE);
+            }        
+        }
+    }
 }
