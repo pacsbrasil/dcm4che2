@@ -41,13 +41,17 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-
+import java.util.Iterator;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -58,6 +62,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private static final int[] MATCHING_PATIENT_KEYS = new int[] {
         Tags.PatientID,
 		Tags.IssuerOfPatientID,
+        Tags.OtherPatientIDSeq,
 		Tags.PatientName,
 		Tags.PatientBirthDate, Tags.PatientBirthTime,
 		Tags.PatientSex
@@ -99,6 +104,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 		Tags.RequestingPhysician
 		};
 
+    private static final int[] MATCHING_OTHER_PAT_ID_SEQ = new int[] {
+        Tags.PatientID,
+        Tags.IssuerOfPatientID,
+        Tags.TypeOfPatientID //We can not match but should add here to avoid warnings.
+        };
+    
+    private static final int[] ATTR_IGNORE_DIFF_LOG = new int[] {
+        Tags.PatientID,
+        Tags.IssuerOfPatientID,
+        Tags.OtherPatientIDSeq
+        };
 
     private static final String[] AVAILABILITY = { 
         "ONLINE", 
@@ -115,6 +131,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static int transactionIsolationLevel = 0;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    
+    private boolean otherPatientIDMatchNotSupported = false;
+    private ArrayList chkPatAttrs;
     
     public static QueryCmd create(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue) throws SQLException {
@@ -201,11 +220,25 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return sqlBuilder.isMatchNotSupported();
     }
     
+    /**
+     * Check if this QueryCmd use an unsupported matching key.
+     * 
+     * @return true if an unsupported matching key is found!
+     */
+    public boolean isMatchingKeyNotSupported() {
+        return otherPatientIDMatchNotSupported || super.isMatchingKeyNotSupported() ;
+    }
+    
     protected void addPatientMatch() {
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
-                .getStrings(Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, keys
-                .getString(Tags.IssuerOfPatientID));
+        DcmElement otherPatIdSQ = getOtherPatientIdMatchSQ();
+        if ( otherPatIdSQ != null ) {
+            addListOfPatIdMatch(otherPatIdSQ);
+        } else {
+            sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
+                    .getStrings(Tags.PatientID));
+            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, keys
+                    .getString(Tags.IssuerOfPatientID));
+        }
         sqlBuilder.addPNMatch(
                 new String[] { 
                         "Patient.patientName",
@@ -217,6 +250,60 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
                 keys.getStrings(Tags.PatientSex));
         matchingKeys.add(MATCHING_PATIENT_KEYS);
+        seqMatchingKeys.put(new Integer(Tags.OtherPatientIDSeq), new IntList().add(MATCHING_OTHER_PAT_ID_SEQ));
+    }
+
+    private DcmElement getOtherPatientIdMatchSQ() {
+        DcmElement otherPatIdSQ =  keys.get(Tags.OtherPatientIDSeq);
+        if (otherPatIdSQ == null || !otherPatIdSQ.hasItems() ) return null;
+        StringBuffer sb = new StringBuffer();
+        String patId = keys.getString(Tags.PatientID);
+        if ( checkMatchValue(patId,"Patient ID", sb) ) {
+            String issuer = keys.getString(Tags.IssuerOfPatientID);
+            if ( checkMatchValue(issuer,"Issuer of Patient ID", sb) ) {
+                Dataset item;
+                for ( int i = 0, len = otherPatIdSQ.countItems() ; i < len ; i++ ) {
+                    item = otherPatIdSQ.getItem(i);
+                    if ( !checkMatchValue(item.getString(Tags.PatientID),"PatientID of item", sb) || 
+                         !checkMatchValue(item.getString(Tags.IssuerOfPatientID),"Issuer of item", sb)) {
+                        break;
+                    }
+                }
+                if ( sb.length() == 0 )
+                    return otherPatIdSQ;
+            }
+        }
+        log.warn("Matching of items in OtherPatientIdSequence disabled! Reason: "+sb);
+        otherPatientIDMatchNotSupported = true;
+        return null;
+    }
+
+    private void addListOfPatIdMatch(DcmElement otherPatIdSQ) {
+        Node n = sqlBuilder.addNodeMatch("OR", false);
+        addIdAndIssuerPair(n,keys.getString(Tags.PatientID),keys.getString(Tags.IssuerOfPatientID));
+        Dataset item;
+        for ( int i = 0, len = otherPatIdSQ.countItems() ; i < len ; i++ ) {
+            item = otherPatIdSQ.getItem(i);
+            addIdAndIssuerPair(n,item.getString(Tags.PatientID),item.getString(Tags.IssuerOfPatientID));
+        }
+    }
+
+    private void addIdAndIssuerPair(Node n, String patId, String issuer) {
+        Node n1 = new Match.Node("AND", false);
+        n1.addMatch( new Match.SingleValue(null, "Patient.patientId", type2, patId) );
+        n1.addMatch( new Match.SingleValue(null, "Patient.issuerOfPatientId", type2, issuer) );
+        n.addMatch(n1);
+   }
+
+    private boolean checkMatchValue(String value, String chkItem, StringBuffer sb) {
+        if ( value == null ) {
+            sb.append("Missing attribute ").append(chkItem);
+        } else if ( value.indexOf('*') != -1 || value.indexOf('?') != -1 ) {
+            sb.append("Wildcard ('*','?') not allowed in ").append(chkItem).append(" ('").append(value).append("')");
+        } else {
+            return true;
+        }
+        return false;
     }
 
     protected void addStudyMatch() {
@@ -321,6 +408,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public Dataset getDataset() throws SQLException {
         Dataset ds = dof.newDataset();
         fillDataset(ds);
+        if ( !otherPatientIDMatchNotSupported )
+            addOtherPatientSeq(ds,keys);
         adjustDataset(ds, keys);
         if (!filterResult)
             return ds;
@@ -330,6 +419,81 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         keys.putUI(Tags.StorageMediaFileSetUID);
         keys.putCS(Tags.InstanceAvailability);
         return ds.subSet(keys);
+    }
+
+    private void addOtherPatientSeq(Dataset ds, Dataset keys) throws SQLException {
+        DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
+        if ( sq != null ) {
+            checkPatAttrs();
+            if ( log.isDebugEnabled() ) {
+                log.debug("PatientID in response:"+keys.getString(Tags.PatientID)+"^"+keys.getString(Tags.IssuerOfPatientID));
+                log.debug("PatientID of match:"+ds.getString(Tags.PatientID)+"^"+ds.getString(Tags.IssuerOfPatientID));
+            }
+            ds.putAll(keys.subSet(new int[]{Tags.PatientID, Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq}));
+        }
+    }
+
+    private void checkPatAttrs() throws SQLException {
+        Dataset ds = dof.newDataset();
+        fillDataset(ds,1);
+        if ( chkPatAttrs == null ) {
+           chkPatAttrs = new ArrayList();
+        } else {
+            for (Iterator iter = chkPatAttrs.iterator() ; iter.hasNext() ;) {
+                logDiffs(ds, (Dataset) iter.next());
+            }
+        }
+        chkPatAttrs.add(ds);
+    }
+    
+    private void logDiffs(Dataset ds, Dataset ds1) {
+        DcmElement elem, elem1;
+        int tag;
+        String dsPrefix = null;
+        String ds1Prefix = null;
+        for ( Iterator dsTags = ds.subSet(ATTR_IGNORE_DIFF_LOG, true, false).iterator() ; dsTags.hasNext() ; ) {
+            elem = (DcmElement) dsTags.next();
+            tag = elem.tag();
+            elem1 = ds1.get(tag);
+            log.debug("compare:"+elem+" with "+elem1);
+            if ( elem != null && elem1 != null && !checkAttr(elem,elem1) ) {
+                if ( dsPrefix == null ) { 
+                    dsPrefix = getPatIdString(ds);
+                    ds1Prefix = getPatIdString(ds1);
+                }
+                log.warn("Different patient attribute found! "+dsPrefix+elem+" <-> "+ds1Prefix+elem1);
+            }
+       }
+    }
+
+    private boolean checkAttr(DcmElement elem, DcmElement elem1) {
+        if ( elem.isEmpty() && elem1.isEmpty() ) return true;
+        if (elem.vr() == VRs.PN ) {
+            return getFnGn(elem).equals(getFnGn(elem1));
+        }
+        return elem.equals(elem1);
+    }
+
+    private String getFnGn(DcmElement el) {
+        try {
+            String pn = el.getString(null);
+            int pos = pn.indexOf('=');
+            if ( pos != -1 ) pn = pn.substring(0,pos);
+            pos = pn.indexOf('^');
+            if ( pos != -1 ) {
+                pos = pn.indexOf('^',pos);
+                return pos != -1 ? pn.substring(0,pos) : pn;
+            } else {
+                return pn;
+            }
+        } catch (DcmValueException x) {
+            log.error("Cant get family and given name value of "+el, x);
+            return "";
+        }
+    }
+
+    private String getPatIdString(Dataset ds) {
+        return "("+ds.getString(Tags.PatientID)+"^"+ds.getString(Tags.IssuerOfPatientID)+"):";
     }
 
     protected abstract void fillDataset(Dataset ds) throws SQLException;
