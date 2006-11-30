@@ -8,5 +8,6 @@
     <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends>dcm4chee.archive:service=DcmServer</depends>
     <depends>dcm4chee.archive:service=MPPSScp</depends>
+    <depends>dcm4chee.archive:service=MWLScu</depends>
   </mbean>
 </server>

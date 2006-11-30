@@ -50,8 +50,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4chex.archive.common.PPSStatus;
-import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
@@ -69,11 +67,9 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class MWLFindScpService extends AbstractScpService implements
         NotificationListener {
 
-    private static final String SPS_STATUS_STARTED = 
-            SPSStatus.toString(SPSStatus.STARTED);
+    private static final String SPS_STATUS_STARTED = "STARTED";
 
-    private static final String PPS_STATUS_IN_PROGRESS = 
-            PPSStatus.toString(PPSStatus.IN_PROGRESS);
+    private static final String PPS_STATUS_IN_PROGRESS = "IN_PROGRESS";
 
     private static final NotificationFilterSupport mppsFilter = 
             new NotificationFilterSupport();
@@ -84,6 +80,8 @@ public class MWLFindScpService extends AbstractScpService implements
     }
 
     private ObjectName mppsScpServiceName;
+    
+    private ObjectName mwlScuServiceName;
 
     private boolean checkMatchingKeySupported = true;
 
@@ -120,6 +118,14 @@ public class MWLFindScpService extends AbstractScpService implements
         this.mppsScpServiceName = mppsScpServiceName;
     }
 
+    public final ObjectName getMwlScuServiceName() {
+        return mwlScuServiceName;
+    }
+
+    public final void setMwlScuServiceName(ObjectName mwlScuServiceName) {
+        this.mwlScuServiceName = mwlScuServiceName;
+    }
+   
     protected void startService() throws Exception {
         server.addNotificationListener(mppsScpServiceName, this, mppsFilter,
                 null);
