@@ -89,12 +89,6 @@ public final class MoveOrder implements Serializable {
 	}
 	
     public MoveOrder(String retrieveAET, String moveDestination, int priority,
-			String patientId, String studyIuid, String seriesIuid) {
-		this(retrieveAET, moveDestination, priority, patientId,
-				studyIuid, seriesIuid, null);
-	}
-	
-    public MoveOrder(String retrieveAET, String moveDestination, int priority,
 			String patientId, String studyIuid, String[] seriesIuids) {
 		this(retrieveAET, moveDestination, priority, patientId,
 				studyIuid != null ? new String[] { studyIuid } : null,

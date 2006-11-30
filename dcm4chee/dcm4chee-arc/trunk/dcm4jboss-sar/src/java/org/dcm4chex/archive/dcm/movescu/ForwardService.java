@@ -255,11 +255,12 @@ public class ForwardService extends ServiceMBeanSupport {
         try {
             server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
                     retrieveAET, destAET, new Integer(priority), pid,
-                    studyIUID, seriesIUID, new Long(scheduledTime) },
+                    studyIUID, seriesIUID, null, new Long(scheduledTime) },
                     new String[] { String.class.getName(),
                             String.class.getName(), int.class.getName(),
                             String.class.getName(), String.class.getName(),
-                            String.class.getName(), long.class.getName() });
+                            String.class.getName(), String[].class.getName(),
+                            long.class.getName() });
         } catch (Exception e) {
             log.error("Schedule Move failed:", e);
         }

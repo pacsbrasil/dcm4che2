@@ -177,8 +177,8 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Schedule Retrieve of single Series.</description>
-      <name>scheduleMoveSeries</name>
+      <description>Schedule Retrieve</description>
+      <name>scheduleMove</name>
       <parameter>
         <description>Retieve AE Title</description>
         <name>retrieveAET</name>
@@ -208,6 +208,11 @@
         <description>Series Instance UID</description>
         <name>seriesIUID</name>
         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>SOP Instance UIDs</description>
+        <name>sopIUIDs</name>
+        <type>[Ljava.lang.String;</type>
       </parameter>
       <parameter>
         <description>Scheduled Time in ms from 1970-01-01 00:00</description>

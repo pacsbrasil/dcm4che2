@@ -223,11 +223,11 @@ public class MoveScuService extends ServiceMBeanSupport implements
         this.callingAET = aet;
     }
 
-    public void scheduleMoveSeries(String retrieveAET, String destAET,
+    public void scheduleMove(String retrieveAET, String destAET,
             int priority, String pid, String studyIUID, String seriesIUID,
-            long scheduledTime) {
+            String[] sopIUIDs, long scheduledTime) {
         scheduleMoveOrder(new MoveOrder(retrieveAET, destAET, priority, pid,
-                studyIUID, seriesIUID), scheduledTime);
+                studyIUID, seriesIUID, sopIUIDs), scheduledTime);
     }
 
     public void scheduleMove(String retrieveAET, String destAET, int priority,
