@@ -21,7 +21,7 @@
 	<property name="xdoclet.verbose" value="off"/>	
 
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.4.GA"/>		
+	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>		
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 
 	<path id="class.path">
