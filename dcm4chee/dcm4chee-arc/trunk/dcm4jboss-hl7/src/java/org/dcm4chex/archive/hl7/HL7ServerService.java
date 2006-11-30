@@ -88,26 +88,26 @@ import org.xml.sax.XMLReader;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 25.10.2004
- *
+ * 
  */
-public class HL7ServerService extends ServiceMBeanSupport
-	implements Server.Handler {
+public class HL7ServerService extends ServiceMBeanSupport implements
+        Server.Handler {
 
     private static final String ISO_8859_1 = "ISO-8859-1";
 
-	public static final String EVENT_TYPE = "org.dcm4chex.archive.hl7";
+    public static final String EVENT_TYPE = "org.dcm4chex.archive.hl7";
 
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
 
-		private static final long serialVersionUID = 4049637871541892405L;
+        private static final long serialVersionUID = 4049637871541892405L;
 
-		public boolean isNotificationEnabled(Notification notif) {
+        public boolean isNotificationEnabled(Notification notif) {
             return EVENT_TYPE.equals(notif.getType());
         }
     };
-	
+
     private String ackStylesheetURL = "resource:dcm4chee-hl7/msh2ack.xsl";
-    
+
     private String logStylesheetURL = "resource:dcm4chee-hl7/logmsg.xsl";
 
     private File logDir;
@@ -117,44 +117,44 @@ public class HL7ServerService extends ServiceMBeanSupport
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
 
     private ObjectName auditLogName;
-    
+
     private boolean fileReceivedHL7AsXML;
 
     private boolean fileReceivedHL7;
 
-	private boolean sendNotification;
-	
-	private int soTimeout = 0;
+    private boolean sendNotification;
 
-	private int numberOfReceivedMessages = 0;
-	
+    private int soTimeout = 0;
+
+    private int numberOfReceivedMessages = 0;
+
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
     private Hashtable templates = new Hashtable();
 
     private Hashtable serviceRegistry = new Hashtable();
-    
+
     private String[] noopMessageTypes = {};
 
     public final String getAckStylesheetURL() {
-		return ackStylesheetURL;
-	}
+        return ackStylesheetURL;
+    }
 
-	public final void setAckStylesheetURL(String ackStylesheetURL) {
-		this.ackStylesheetURL = ackStylesheetURL;
-		reloadStylesheets();
-	}
+    public final void setAckStylesheetURL(String ackStylesheetURL) {
+        this.ackStylesheetURL = ackStylesheetURL;
+        reloadStylesheets();
+    }
 
-	public final String getLogStylesheetURL() {
-		return logStylesheetURL;
-	}
+    public final String getLogStylesheetURL() {
+        return logStylesheetURL;
+    }
 
-	public final void setLogStylesheetURL(String logStylesheetURL) {
-		this.logStylesheetURL = logStylesheetURL;
-		reloadStylesheets();
-	}
+    public final void setLogStylesheetURL(String logStylesheetURL) {
+        this.logStylesheetURL = logStylesheetURL;
+        reloadStylesheets();
+    }
 
-	public ObjectName getAuditLoggerName() {
+    public ObjectName getAuditLoggerName() {
         return auditLogName;
     }
 
@@ -169,7 +169,7 @@ public class HL7ServerService extends ServiceMBeanSupport
     public final void setTLSConfigName(ObjectName tlsConfigName) {
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
-    
+
     public int getPort() {
         return hl7srv.getPort();
     }
@@ -179,13 +179,13 @@ public class HL7ServerService extends ServiceMBeanSupport
     }
 
     public final String getNoopMessageTypes() {
-        return StringUtils.toString(noopMessageTypes,',');
+        return StringUtils.toString(noopMessageTypes, ',');
     }
 
     public final void setNoopMessageTypes(String noopMessageTypes) {
-        this.noopMessageTypes = StringUtils.split(noopMessageTypes,',');
+        this.noopMessageTypes = StringUtils.split(noopMessageTypes, ',');
     }
-    
+
     public String getProtocolName() {
         return protocol.toString();
     }
@@ -209,11 +209,11 @@ public class HL7ServerService extends ServiceMBeanSupport
     public int getMaxIdleThreads() {
         return hl7srv.getMaxIdleThreads();
     }
-    
+
     public int getNumIdleThreads() {
         return hl7srv.getNumIdleThreads();
     }
-    
+
     public void setMaxIdleThreads(int max) {
         hl7srv.setMaxIdleThreads(max);
     }
@@ -221,62 +221,64 @@ public class HL7ServerService extends ServiceMBeanSupport
     public final boolean isFileReceivedHL7AsXML() {
         return fileReceivedHL7AsXML;
     }
-    
+
     public final void setFileReceivedHL7AsXML(boolean fileReceivedHL7AsXML) {
         this.fileReceivedHL7AsXML = fileReceivedHL7AsXML;
     }
-    
+
     public final boolean isFileReceivedHL7() {
-		return fileReceivedHL7;
-	}
+        return fileReceivedHL7;
+    }
 
-	public final void setFileReceivedHL7(boolean fileReceivedHL7) {
-		this.fileReceivedHL7 = fileReceivedHL7;
-	}
+    public final void setFileReceivedHL7(boolean fileReceivedHL7) {
+        this.fileReceivedHL7 = fileReceivedHL7;
+    }
 
-	public final int getSoTimeout() {
-		return soTimeout;
-	}
+    public final int getSoTimeout() {
+        return soTimeout;
+    }
 
-	public final void setSoTimeout(int soTimeout) {
-		this.soTimeout = soTimeout;
-	}
+    public final void setSoTimeout(int soTimeout) {
+        this.soTimeout = soTimeout;
+    }
 
-	public final boolean isSendNotification() {
-		return sendNotification;
-	}
+    public final boolean isSendNotification() {
+        return sendNotification;
+    }
 
-	public final void setSendNotification(boolean sendNotification) {
-		this.sendNotification = sendNotification;
-	}
+    public final void setSendNotification(boolean sendNotification) {
+        this.sendNotification = sendNotification;
+    }
 
-	public final int getNumberOfReceivedMessages() {
-		return numberOfReceivedMessages;
-	}
+    public final int getNumberOfReceivedMessages() {
+        return numberOfReceivedMessages;
+    }
 
-	public void registerService(String messageType, HL7Service service) {
+    public void registerService(String messageType, HL7Service service) {
         if (service != null)
             serviceRegistry.put(messageType, service);
         else
             serviceRegistry.remove(messageType);
     }
-    
-    public Templates getTemplates(String uri) 
-    		throws TransformerConfigurationException {
+
+    public Templates getTemplates(String uri)
+            throws TransformerConfigurationException {
         Templates tpl = (Templates) templates.get(uri);
         if (tpl == null) {
-            tpl = TransformerFactory.newInstance().newTemplates(new StreamSource(uri));
+            tpl = TransformerFactory.newInstance().newTemplates(
+                    new StreamSource(uri));
             templates.put(uri, tpl);
         }
         return tpl;
     }
-	
-	public void reloadStylesheets() {
-		templates.clear();
-	}
+
+    public void reloadStylesheets() {
+        templates.clear();
+    }
 
     protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
+        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
+                "log");
         hl7srv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
         hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
@@ -307,19 +309,20 @@ public class HL7ServerService extends ServiceMBeanSupport
         HL7Service service = (HL7Service) serviceRegistry.get(messageType);
         if (service == null) {
             if (Arrays.asList(noopMessageTypes).indexOf(messageType) == -1)
-                throw new HL7Exception("AR", "Unsupported message type: " + messageType.replace('^','_'));
+                throw new HL7Exception("AR", "Unsupported message type: "
+                        + messageType.replace('^', '_'));
         }
         return service;
     }
-	
-	//  Server.Handler Implementation-------------------------------
+
+    // Server.Handler Implementation-------------------------------
     public void handle(Socket s) throws IOException {
-		if (soTimeout > 0) {
-			s.setSoTimeout(soTimeout);
-		}
+        if (soTimeout > 0) {
+            s.setSoTimeout(soTimeout);
+        }
         MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
                 .getOutputStream(), false);
-		InputStream mllpIn = mllpDriver.getInputStream(); 
+        InputStream mllpIn = mllpDriver.getInputStream();
         XMLReader xmlReader = new HL7XMLReader();
         XMLWriter xmlWriter = new HL7XMLWriter();
         xmlWriter.setOutputStream(mllpDriver.getOutputStream());
@@ -346,31 +349,38 @@ public class HL7ServerService extends ServiceMBeanSupport
                     loghl7.write(bb, 0, msglen);
                     loghl7.close();
                 } catch (IOException e) {
-                    log.warn("Failed to log received HL7 message to " + logfile, e);
+                    log.warn(
+                            "Failed to log received HL7 message to " + logfile,
+                            e);
                 }
             }
             try {
                 try {
-                    ByteArrayInputStream bbin = new  ByteArrayInputStream(bb, 0, msglen);
-                    InputSource in = new InputSource(new InputStreamReader(bbin, ISO_8859_1));
-                    xmlReader.parse(in);                
+                    ByteArrayInputStream bbin = new ByteArrayInputStream(bb, 0,
+                            msglen);
+                    InputSource in = new InputSource(new InputStreamReader(
+                            bbin, ISO_8859_1));
+                    xmlReader.parse(in);
                     Document msg = hl7in.getDocument();
                     logMessage(msg);
                     if (fileReceivedHL7AsXML) {
-                        fileReceivedHL7AsXML(msg, makeLogfile("hl7-######.xml", msgNo));
+                        fileReceivedHL7AsXML(msg, makeLogfile("hl7-######.xml",
+                                msgNo));
                     }
                     MSH msh = new MSH(msg);
                     HL7Service service = getService(msh);
-                    if (service == null || service.process(msh, msg, hl7out)) 
-						ack(msg, hl7out, null);
-					if (sendNotification) {                       
-						sendNotification(makeNotification(realloc(bb, msglen, msglen)));
-					}
+                    if (service == null || service.process(msh, msg, hl7out)) {
+                        ack(msg, hl7out, null);
+                    }
+                    if (sendNotification) {
+                        sendNotification(makeNotification(realloc(bb, msglen,
+                                msglen)));
+                    }
                 } catch (SAXException e) {
                     throw new HL7Exception("AE", "Failed to parse message ", e);
                 }
             } catch (HL7Exception e) {
-            	log.warn("Processing HL7 failed:", e);
+                log.warn("Processing HL7 failed:", e);
                 mllpDriver.discardPendingOutput();
                 ack(hl7in.getDocument(), hl7out, e);
             }
@@ -384,36 +394,37 @@ public class HL7ServerService extends ServiceMBeanSupport
         return out;
     }
 
-    private File makeLogfile(String pattern,  int msgNo) {
-		final int endPrefix = pattern.indexOf('#');
-		final int startSuffix = pattern.lastIndexOf('#') + 1;
-		final String noStr = String.valueOf(msgNo);
-		StringBuffer sb = new StringBuffer(pattern.substring(0, endPrefix));
-		for (int i = endPrefix + noStr.length(); i < startSuffix; ++i) {
-			sb.append('0');
-		}
-		sb.append(noStr);
-		sb.append(pattern.substring(startSuffix));
-		return new File(logDir, sb.toString());
-	}
+    private File makeLogfile(String pattern, int msgNo) {
+        final int endPrefix = pattern.indexOf('#');
+        final int startSuffix = pattern.lastIndexOf('#') + 1;
+        final String noStr = String.valueOf(msgNo);
+        StringBuffer sb = new StringBuffer(pattern.substring(0, endPrefix));
+        for (int i = endPrefix + noStr.length(); i < startSuffix; ++i) {
+            sb.append('0');
+        }
+        sb.append(noStr);
+        sb.append(pattern.substring(startSuffix));
+        return new File(logDir, sb.toString());
+    }
 
     private void fileReceivedHL7AsXML(Document msg, File f) {
         try {
-	        Transformer tr = TransformerFactory.newInstance().newTransformer();
-	        tr.setOutputProperty(OutputKeys.INDENT, "yes");
-	        FileOutputStream out = new FileOutputStream(f);
-			try {
-				tr.transform(new DocumentSource(msg), new StreamResult(out));
-			} finally {
-				out.close();
-			}
+            Transformer tr = TransformerFactory.newInstance().newTransformer();
+            tr.setOutputProperty(OutputKeys.INDENT, "yes");
+            FileOutputStream out = new FileOutputStream(f);
+            try {
+                tr.transform(new DocumentSource(msg), new StreamResult(out));
+            } finally {
+                out.close();
+            }
         } catch (Exception e) {
             log.warn("Failed to log HL7 to " + f, e);
         }
     }
 
     public void logMessage(Document document) {
-        if (!log.isInfoEnabled()) return;
+        if (!log.isInfoEnabled())
+            return;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("Received HL7 message:".getBytes());
@@ -424,7 +435,7 @@ public class HL7ServerService extends ServiceMBeanSupport
             log.warn("Failed to log message", e);
         }
     }
-    
+
     public boolean isSockedClosedByHandler() {
         return false;
     }
