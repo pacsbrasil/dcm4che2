@@ -96,13 +96,9 @@ public class SchedulerService extends ServiceMBeanSupport {
         if (period <= 0L)
             return null;
         try {
-            // delay start of scheduler, because in JBoss-4.0.4 the
-            // EntityContainer
-            // cannot be used immediately after it's been started.
-            // Should be fixed in JBoss-4.0.5
             log.info("Start Scheduler " + name + " with period of " + period
-                    + "ms in 1 min.");
-            Date now = new Date(System.currentTimeMillis() + 60000);
+                    + "ms in 1 s.");
+            Date now = new Date(System.currentTimeMillis() + 1000);
             Integer id = (Integer) server.invoke(mTimer, "addNotification",
                     new Object[] { "Schedule", "Scheduler Notification", null,
                             now, new Long(period) }, new String[] {

@@ -69,6 +69,28 @@
       <attribute name="RefreshPeriod">60</attribute>
    </mbean>
 
+   <!-- ==================================================================== -->
+   <!-- Transactions                                                         -->
+   <!-- ==================================================================== -->
+   <!-- The configurable Xid factory.  For use with Oracle, set pad to true -->
+   <mbean code="org.jboss.tm.XidFactory"
+      name="jboss:service=XidFactory">
+      <!--attribute name="Pad">true</attribute-->
+   </mbean>
+
+   <!--
+      | The fast in-memory transaction manager.
+    -->
+   <mbean code="org.jboss.tm.TransactionManagerService"
+      name="jboss:service=TransactionManager"
+      xmbean-dd="resource:xmdesc/TransactionManagerService-xmbean.xml">
+      <attribute name="TransactionTimeout">300</attribute>
+      <!-- set to false to disable transaction demarcation over IIOP -->
+      <attribute name="GlobalIdsEnabled">true</attribute>
+      <depends optional-attribute-name="XidFactory">jboss:service=XidFactory</depends>
+      <depends>jboss:service=Naming</depends>
+   </mbean>
+
 
    <!-- ==================================================================== -->
    <!-- Monitoring and Management                                            -->

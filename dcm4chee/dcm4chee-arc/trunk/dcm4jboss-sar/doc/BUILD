@@ -8,7 +8,7 @@ to download and install:
 
 - XDoclet 1.2.3 [http://xdoclet.sourceforge.net]
 
-- JBoss 4.0.4.GA + EJB3 
+- JBoss 4.0.5.GA + EJB3 
 (Run JEMS-Installer 
 [http://prdownloads.sourceforge.net/jboss/jems-installer-1.2.0.BETA2.jar?download]
 with ejb3 profile)
@@ -25,7 +25,7 @@ The build scripts (dcm4jboss-all/dcm4jboss-xxx/build.xml) assumes following
 locations of XDoclet, JBoss, Apache FOP and Jakarta Cactus:
 
 xdoclet.home=${user.home}/xdoclet-1.2.3
-jboss.home=${user.home}/jboss-4.0.4.GA
+jboss.home=${user.home}/jboss-4.0.5.GA
 fop.home=${user.home}/fop-0.20.5
 cactus.home=${user.home}/jakarta-cactus-13-1.7
 

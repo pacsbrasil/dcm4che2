@@ -105,22 +105,7 @@ class JMSQueueDelegate {
                 QueueReceiver receiver = session.createReceiver(queue);
                 receiver.setMessageListener(listener);
             }
-            // delay start of JMS connection for 1 minute as work around
-            // for in JBoss-4.0.4 the EntityContainer cannot be used
-            // immediately after it's been started.
-            // Should be fixed in JBoss-4.0.5
-            new Thread(new Runnable() {
-
-                public void run() {
-                    try {
-                        Thread.sleep(60000);
-                        conn.start();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-
+            conn.start();
         } catch (JMSException e) {
             close();
             throw e;

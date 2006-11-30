@@ -3,7 +3,7 @@
 	<property file="build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.4.GA" />
+	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA" />
 	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
 	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
 	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
