@@ -409,6 +409,8 @@ public class IANScuService extends ServiceMBeanSupport implements
                 seriesStoredListener, seriesStoredFilter, null);
         server.removeNotificationListener(fileSystemMgtServiceName,
                 studyDeletedListener, studyDeletedFilter, null);
+        server.removeNotificationListener(mppsScpServiceName,
+                mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
 
