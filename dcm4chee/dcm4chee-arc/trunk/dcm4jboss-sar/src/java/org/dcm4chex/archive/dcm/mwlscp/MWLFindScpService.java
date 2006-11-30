@@ -75,7 +75,9 @@ public class MWLFindScpService extends AbstractScpService implements
     private static final String PPS_STATUS_IN_PROGRESS = 
             PPSStatus.toString(PPSStatus.IN_PROGRESS);
 
-    private static final NotificationFilterSupport mppsFilter = new NotificationFilterSupport();
+    private static final NotificationFilterSupport mppsFilter = 
+            new NotificationFilterSupport();
+    
     static {
         mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
@@ -190,7 +192,8 @@ public class MWLFindScpService extends AbstractScpService implements
             return;
         }
         try {
-            final String spsStatus = PPS_STATUS_IN_PROGRESS.equals(status) ? SPS_STATUS_STARTED
+            final String spsStatus = PPS_STATUS_IN_PROGRESS.equals(status) 
+                    ? SPS_STATUS_STARTED
                     : status;
             for (int i = 0, n = sq.countItems(); i < n; ++i) {
                 Dataset item = sq.getItem(i);
