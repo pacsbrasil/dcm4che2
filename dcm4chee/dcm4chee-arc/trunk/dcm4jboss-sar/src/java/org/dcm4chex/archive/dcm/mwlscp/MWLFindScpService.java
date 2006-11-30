@@ -66,23 +66,25 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  * @version $Revision$ $Date$
  * @since 31.01.2004
  */
-public class MWLFindScpService extends AbstractScpService
-	implements NotificationListener {
+public class MWLFindScpService extends AbstractScpService implements
+        NotificationListener {
 
-    private static final String SPS_STATUS_STARTED = SPSStatus.toString(SPSStatus.STARTED);
-    private static final String PPS_STATUS_IN_PROGRESS = PPSStatus.toString(PPSStatus.IN_PROGRESS);
-    
-	private static final NotificationFilterSupport mppsFilter = 
-		new NotificationFilterSupport();
-	static {
-		mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
-		mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
-	}
-	private ObjectName mppsScpServiceName;
-	
+    private static final String SPS_STATUS_STARTED = 
+            SPSStatus.toString(SPSStatus.STARTED);
+
+    private static final String PPS_STATUS_IN_PROGRESS = 
+            PPSStatus.toString(PPSStatus.IN_PROGRESS);
+
+    private static final NotificationFilterSupport mppsFilter = new NotificationFilterSupport();
+    static {
+        mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
+        mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+    }
+
+    private ObjectName mppsScpServiceName;
+
     private boolean checkMatchingKeySupported = true;
 
-    
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
 
     /**
@@ -91,15 +93,18 @@ public class MWLFindScpService extends AbstractScpService
     public boolean isCheckMatchingKeySupported() {
         return checkMatchingKeySupported;
     }
+
     /**
-     * @param checkMatchingKeySupport The checkMatchingKeySupport to set.
+     * @param checkMatchingKeySupport
+     *            The checkMatchingKeySupport to set.
      */
     public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
         this.checkMatchingKeySupported = checkMatchingKeySupport;
     }
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
-    }        
+    }
 
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
@@ -108,27 +113,23 @@ public class MWLFindScpService extends AbstractScpService
     public final ObjectName getMppsScpServiceName() {
         return mppsScpServiceName;
     }
-    
+
     public final void setMppsScpServiceName(ObjectName mppsScpServiceName) {
         this.mppsScpServiceName = mppsScpServiceName;
     }
 
     protected void startService() throws Exception {
-        server.addNotificationListener(mppsScpServiceName,
-                this,
-                mppsFilter,
+        server.addNotificationListener(mppsScpServiceName, this, mppsFilter,
                 null);
         super.startService();
     }
 
     protected void stopService() throws Exception {
         super.stopService();
-        server.removeNotificationListener(mppsScpServiceName,
-                this,
-                mppsFilter,
+        server.removeNotificationListener(mppsScpServiceName, this, mppsFilter,
                 null);
     }
-    
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.ModalityWorklistInformationModelFIND, mwlFindScp);
     }
@@ -141,45 +142,45 @@ public class MWLFindScpService extends AbstractScpService
         policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND,
                 enable ? valuesToStringArray(tsuidMap) : null);
     }
-    
+
     private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
         return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
                 MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
     }
 
-	private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
+    private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
         return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
     }
-    
-	private Dataset getMPPS(String iuid) throws Exception {
-		MPPSManager mgr = getMPPSManagerHome().create();
-		try {
-			return mgr.getMPPS(iuid);
-		} finally {
-			try {
-				mgr.remove();
-			} catch (Exception ignore) {
-			}
-		}
-	}
-	
+
+    private Dataset getMPPS(String iuid) throws Exception {
+        MPPSManager mgr = getMPPSManagerHome().create();
+        try {
+            return mgr.getMPPS(iuid);
+        } finally {
+            try {
+                mgr.remove();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
     public void handleNotification(Notification notif, Object handback) {
         Dataset mpps = (Dataset) notif.getUserData();
-		final String iuid = mpps.getString(Tags.SOPInstanceUID);
-		final String status = mpps.getString(Tags.PPSStatus);
+        final String iuid = mpps.getString(Tags.SOPInstanceUID);
+        final String status = mpps.getString(Tags.PPSStatus);
         DcmElement sq = mpps.get(Tags.ScheduledStepAttributesSeq);
         if (sq == null) {
-        	// MPPS N-SET can be ignored for status == IN PROGRESS
-        	if (PPS_STATUS_IN_PROGRESS.equals(status))
-        		return;
-        	try {
-				mpps = getMPPS(iuid);
-				sq = mpps.get(Tags.ScheduledStepAttributesSeq);
-			} catch (Exception e) {
-				log.error("Failed to load MPPS - " + iuid, e);
-				return;
-			}
+            // MPPS N-SET can be ignored for status == IN PROGRESS
+            if (PPS_STATUS_IN_PROGRESS.equals(status))
+                return;
+            try {
+                mpps = getMPPS(iuid);
+                sq = mpps.get(Tags.ScheduledStepAttributesSeq);
+            } catch (Exception e) {
+                log.error("Failed to load MPPS - " + iuid, e);
+                return;
+            }
         }
         MWLManager mgr;
         try {
@@ -189,8 +190,8 @@ public class MWLFindScpService extends AbstractScpService
             return;
         }
         try {
-            final String spsStatus = PPS_STATUS_IN_PROGRESS.equals(status) ? 
-                    		SPS_STATUS_STARTED : status;
+            final String spsStatus = PPS_STATUS_IN_PROGRESS.equals(status) ? SPS_STATUS_STARTED
+                    : status;
             for (int i = 0, n = sq.countItems(); i < n; ++i) {
                 Dataset item = sq.getItem(i);
                 String spsid = item.getString(Tags.SPSID);
@@ -198,13 +199,13 @@ public class MWLFindScpService extends AbstractScpService
                     try {
                         if (mgr.updateSPSStatus(spsid, spsStatus)) {
                             log.info("Update MWL item[spsid=" + spsid
-                            		+ ", status=" + spsStatus + "]");
+                                    + ", status=" + spsStatus + "]");
                         } else {
-                            log.info("No such MWL item[spsid=" + spsid + "]");                            
+                            log.info("No such MWL item[spsid=" + spsid + "]");
                         }
                     } catch (Exception e) {
-                        log.error("Failed to update MWL item[spsid="
-                        		+ spsid + "]", e);
+                        log.error("Failed to update MWL item[spsid=" + spsid
+                                + "]", e);
                     }
                 }
             }
@@ -215,5 +216,5 @@ public class MWLFindScpService extends AbstractScpService
             }
         }
     }
-    
+
 }
