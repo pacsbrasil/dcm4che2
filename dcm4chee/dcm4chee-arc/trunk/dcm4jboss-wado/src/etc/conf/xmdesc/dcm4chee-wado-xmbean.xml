@@ -269,6 +269,17 @@
          <value value="NONE" />
       </descriptors>
    </attribute>
+    <attribute access="read-write"
+      getMethod="isDisableDNS"
+      setMethod="setDisableDNS">
+      <description>Disable/enable Hostname Lookup (DNS) for Audit Log. 
+      </description>
+      <name>DisableHostLookup</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"
       setMethod="setSchedulerServiceName">
