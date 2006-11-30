@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -133,7 +134,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
     private boolean otherPatientIDMatchNotSupported = false;
-    private ArrayList chkPatAttrs;
+    private HashMap chkPatAttrs;
     
     public static QueryCmd create(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue) throws SQLException {
@@ -436,31 +437,28 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private void checkPatAttrs() throws SQLException {
         Dataset ds = dof.newDataset();
         fillDataset(ds,1);
+        String key = getPatIdString(ds);
         if ( chkPatAttrs == null ) {
-           chkPatAttrs = new ArrayList();
-        } else {
-            for (Iterator iter = chkPatAttrs.iterator() ; iter.hasNext() ;) {
-                logDiffs(ds, (Dataset) iter.next());
+            chkPatAttrs = new HashMap();
+            chkPatAttrs.put(key,ds);
+        } else if ( !chkPatAttrs.containsKey(key)) {
+            for (Iterator iter = chkPatAttrs.values().iterator() ; iter.hasNext() ;) {
+                logDiffs(ds, (Dataset) iter.next(), key);
             }
+            chkPatAttrs.put(key,ds);
         }
-        chkPatAttrs.add(ds);
     }
     
-    private void logDiffs(Dataset ds, Dataset ds1) {
+    private void logDiffs(Dataset ds, Dataset ds1, String dsPrefix) {
         DcmElement elem, elem1;
         int tag;
-        String dsPrefix = null;
-        String ds1Prefix = null;
-        for ( Iterator dsTags = ds.subSet(ATTR_IGNORE_DIFF_LOG, true, false).iterator() ; dsTags.hasNext() ; ) {
-            elem = (DcmElement) dsTags.next();
+        String ds1Prefix = getPatIdString(ds1);
+        for ( Iterator iter = ds.subSet(ATTR_IGNORE_DIFF_LOG, true, false).iterator() ; iter.hasNext() ; ) {
+            elem = (DcmElement) iter.next();
             tag = elem.tag();
             elem1 = ds1.get(tag);
-            log.debug("compare:"+elem+" with "+elem1);
+            if ( log.isDebugEnabled() ) log.debug("compare:"+elem+" with "+elem1);
             if ( elem != null && elem1 != null && !checkAttr(elem,elem1) ) {
-                if ( dsPrefix == null ) { 
-                    dsPrefix = getPatIdString(ds);
-                    ds1Prefix = getPatIdString(ds1);
-                }
                 log.warn("Different patient attribute found! "+dsPrefix+elem+" <-> "+ds1Prefix+elem1);
             }
        }
@@ -493,7 +491,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     private String getPatIdString(Dataset ds) {
-        return "("+ds.getString(Tags.PatientID)+"^"+ds.getString(Tags.IssuerOfPatientID)+"):";
+        return ds.getString(Tags.PatientID)+"^"+ds.getString(Tags.IssuerOfPatientID);
     }
 
     protected abstract void fillDataset(Dataset ds) throws SQLException;
