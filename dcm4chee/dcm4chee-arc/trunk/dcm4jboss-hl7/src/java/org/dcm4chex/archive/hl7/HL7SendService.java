@@ -248,7 +248,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
     }
 
     public void handleNotification(Notification notif, Object handback) {
-        forward((byte[]) notif.getUserData());
+        Object[] hl7msg = (Object[]) notif.getUserData();
+        forward((byte[]) hl7msg[0], (Document) hl7msg[1]);
     }
 
     public int forward(byte[] hl7msg) {
@@ -263,7 +264,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
             log.error("Failed to parse HL7 message", e);
             return -1;
         }
-        Document msg = hl7in.getDocument();
+        return forward(hl7msg, hl7in.getDocument());
+    }
+
+    private int forward(byte[] hl7msg, Document msg) {
         MSH msh = new MSH(msg);
         Map param = new HashMap();
         param.put("sending", new String[] { msh.sendingApplication + '^'

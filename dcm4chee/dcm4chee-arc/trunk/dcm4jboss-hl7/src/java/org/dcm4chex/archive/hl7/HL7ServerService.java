@@ -373,8 +373,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                         ack(msg, hl7out, null);
                     }
                     if (sendNotification) {
-                        sendNotification(makeNotification(realloc(bb, msglen,
-                                msglen)));
+                        sendNotification(makeNotification(realloc(bb, msglen,msglen),
+                                msg));
                     }
                 } catch (SAXException e) {
                     throw new HL7Exception("AE", "Failed to parse message ", e);
@@ -440,10 +440,10 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         return false;
     }
 
-    private Notification makeNotification(byte[] hl7msg) {
+    private Notification makeNotification(byte[] hl7msg, Document msg) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE, this, eventID);
-        notif.setUserData(hl7msg);
+        notif.setUserData(new Object[]{hl7msg, msg});
         return notif;
     }
 }
