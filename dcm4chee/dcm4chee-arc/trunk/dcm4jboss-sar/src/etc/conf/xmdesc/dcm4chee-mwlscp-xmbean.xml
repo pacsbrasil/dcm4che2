@@ -66,10 +66,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isUseProxy"
+      setMethod="setUseProxy">
+      <description>Enable proxy C-FIND to remote MWL SCP. 
+      	Proxy MWL SCP is configured in MWL SCU Service.      
+      </description>
+      <name>UseProxy</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isCheckMatchingKeySupported"
       setMethod="setCheckMatchingKeySupported">
       <description>Enable check if unsupported matching key(s) are used in C-FIND. 
-      	In this case the C-FIND PENDING status is changed from 0xff00 to 0xff01.      
+      	In this case the C-FIND PENDING status is changed from 0xff00 to 0xff01.
+      	(Not used if proxy is enabled!)      
       </description>
       <name>CheckMatchingKeySupported</name>
       <type>boolean</type>

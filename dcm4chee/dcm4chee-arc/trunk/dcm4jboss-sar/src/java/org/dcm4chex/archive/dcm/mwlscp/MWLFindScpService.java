@@ -39,10 +39,15 @@
 
 package org.dcm4chex.archive.dcm.mwlscp;
 
+import java.util.List;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -83,9 +88,28 @@ public class MWLFindScpService extends AbstractScpService implements
     
     private ObjectName mwlScuServiceName;
 
+    private boolean useProxy = false;
+    
     private boolean checkMatchingKeySupported = true;
 
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
+
+    /**
+     * @return the useProxy
+     */
+    public boolean isUseProxy() {
+        return useProxy;
+    }
+
+    /**
+     * @param useProxy the useProxy to set
+     */
+    public void setUseProxy(boolean useProxy) {
+        this.useProxy = useProxy;
+        if ( useProxy && server != null ) {
+            checkMWLScuConfig();
+        }
+    }
 
     /**
      * @return Returns the checkMatchingKeySupport.
@@ -226,4 +250,30 @@ public class MWLFindScpService extends AbstractScpService implements
         }
     }
 
+    public boolean checkMWLScuConfig() {
+        String proxyAET;
+        try {
+            proxyAET = (String) server.getAttribute(mwlScuServiceName, "CalledAETitle");
+        } catch (Exception x) {
+            log.warn("Cant check MWL SCU AET configuration! Continue with assumption that configuration is valid!",x);
+            return true;
+        }
+        if ( "LOCAL".equals(proxyAET)){
+            log.warn("Check MWL Proxy Settings: Called AET in MWLScu Service is LOCAL! -> Use local DB access!");
+            return false;
+        }
+        for ( int i = 0 ; i < calledAETs.length ; i++ ) {
+            if ( proxyAET.equals(calledAETs[i])) {
+                log.warn("Check MWL Proxy Settings: Called AET ("+proxyAET+") in MWLScu is also configured as accepted AET here! -> Disable forwarding MWL C-FIND requests to avoid infinite loop!");
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public int findMWLEntries( Dataset rqData, List l, boolean forceLocal ) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        return ((Integer) server.invoke(this.mwlScuServiceName, forceLocal ? "findMWLEntriesLocal":"findMWLEntries", 
+                new Object[] {rqData, l}, 
+                new String[]{Dataset.class.getName(), List.class.getName()})).intValue();
+    }
 }

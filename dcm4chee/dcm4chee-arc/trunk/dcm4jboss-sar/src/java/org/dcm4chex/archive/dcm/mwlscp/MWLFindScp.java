@@ -40,7 +40,9 @@
 package org.dcm4chex.archive.dcm.mwlscp;
 
 import java.io.IOException;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -53,7 +55,6 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
-import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 import org.jboss.logging.Logger;
 
 /**
@@ -89,30 +90,26 @@ public class MWLFindScp extends DcmServiceBase {
         if (coerce != null) {
             service.coerceAttributes(rqData, coerce);
         }
-
-        MWLQueryCmd queryCmd;
+        
+        List l = new ArrayList();
+        boolean forceLocal = !( service.isUseProxy() && service.checkMWLScuConfig());
         try {
-            queryCmd = new MWLQueryCmd(rqData);
-            queryCmd.execute();
+            int pendingStatus = service.findMWLEntries(rqData, l, forceLocal);
+            return new MultiCFindRsp(l, pendingStatus);
         } catch (Exception e) {
-            log.error("Query DB failed:", e);
+            log.error("Forwarding request to proxy failed!", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-        return new MultiCFindRsp(queryCmd);
-    }
+     }
 
 	private class MultiCFindRsp implements MultiDimseRsp {
-        private final MWLQueryCmd queryCmd;
+        private final Iterator iterResults;
         private boolean canceled = false;
-        private int pendingStatus = Status.Pending;
+        private final int pendingStatus;
 
-        public MultiCFindRsp(MWLQueryCmd queryCmd) {
-            this.queryCmd = queryCmd;
-            if ( queryCmd.isMatchNotSupported() ) { 
-                pendingStatus = 0xff01;
-            } else if ( service.isCheckMatchingKeySupported() && queryCmd.isMatchingKeyNotSupported() ) {
-                pendingStatus = 0xff01;
-            }
+        public MultiCFindRsp(List results, int pendingStatus) {
+            iterResults = results.iterator();
+            this.pendingStatus = service.isCheckMatchingKeySupported() ? pendingStatus : 0xff00;
         }
 
         public DimseListener getCancelListener() {
@@ -131,13 +128,13 @@ public class MWLFindScp extends DcmServiceBase {
                 return null;                
             }
             try {
-                if (!queryCmd.next()) {
+                if (!iterResults.hasNext()) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;
                 }
         		Association a = assoc.getAssociation();
-                rspCmd.putUS(Tags.Status, pendingStatus);
-                Dataset rspData = queryCmd.getDataset();
+                rspCmd.putUS(Tags.Status, pendingStatus );
+                Dataset rspData = (Dataset) iterResults.next();
 				log.debug("Identifier:\n");
 				log.debug(rspData);
                 service.logDIMSE(a, RESULT_XML, rspData);
@@ -147,17 +144,13 @@ public class MWLFindScp extends DcmServiceBase {
                     service.coerceAttributes(rspData, coerce);
                 }
                 return rspData;
-            } catch (SQLException e) {
-                log.error("Retrieve DB record failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);                
             } catch (Exception e) {
-                log.error("Corrupted DB record:", e);
+                log.error("Process MWL C-FIND failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);                
             }                        
         }
 
         public void release() {
-            queryCmd.close();
         }
     }
 }

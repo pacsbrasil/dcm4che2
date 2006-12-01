@@ -44,7 +44,6 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,6 +53,7 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -310,13 +310,13 @@ public class MWLScuService extends ServiceMBeanSupport {
     /**
      * Get a list of work list entries.
      */
-    public List findMWLEntries(Dataset searchDS) {
+    public int findMWLEntries(Dataset searchDS, List result) {
         log.debug("Query MWL SCP: " + calledAET + " with keys:");
         log.debug(searchDS);
         if (isLocal()) {
-            return findMWLEntriesLocal(searchDS);
+            return findMWLEntriesLocal(searchDS, result);
         } else {
-            return findMWLEntriesFromAET(searchDS);
+            return findMWLEntriesFromAET(searchDS, result);
         }
     }
 
@@ -324,8 +324,7 @@ public class MWLScuService extends ServiceMBeanSupport {
      * @param searchDS
      * @return
      */
-    private List findMWLEntriesLocal(Dataset searchDS) {
-        List l = new ArrayList();
+    public int findMWLEntriesLocal(Dataset searchDS, List result) {
         MWLQueryCmd queryCmd = null;
         try {
             queryCmd = new MWLQueryCmd(searchDS);
@@ -333,14 +332,14 @@ public class MWLScuService extends ServiceMBeanSupport {
             while (queryCmd.next()) {
                 Dataset rsp = queryCmd.getDataset();
                 logResponse(rsp);
-                l.add(rsp);
+                result.add(rsp);
             }
         } catch (SQLException x) {
             log.error("Exception in findMWLEntriesLocal! ", x);
         }
         if (queryCmd != null)
             queryCmd.close();
-        return l;
+        return queryCmd.isMatchNotSupported() ? 0xff01 : 0xff00;
     }
 
     private void logResponse(Dataset rsp) {
@@ -350,9 +349,9 @@ public class MWLScuService extends ServiceMBeanSupport {
         }
     }
 
-    private List findMWLEntriesFromAET(Dataset searchDS) {
+    private int findMWLEntriesFromAET(Dataset searchDS, List result) {
         ActiveAssociation assoc = null;
-        List list = new ArrayList();
+        int pendingStatus = 0xff00;
         try {
             // get association for mwl find.
             AEData aeData = new AECmd(calledAET).getAEData();
@@ -360,12 +359,12 @@ public class MWLScuService extends ServiceMBeanSupport {
                     getCFINDAssocReq());
             if (assoc == null) {
                 log.error("Couldnt open association to " + aeData);
-                return list;
+                return Status.ProcessingFailure;
             }
             Association as = assoc.getAssociation();
             if (as.getAcceptedTransferSyntaxUID(1) == null) {
                 log.error(calledAET + " doesnt support CFIND request!", null);
-                return list;
+                return Status.ProcessingFailure;
             }
             // send mwl cfind request.
             Command cmd = DcmObjectFactory.getInstance().newCommand();
@@ -375,12 +374,13 @@ public class MWLScuService extends ServiceMBeanSupport {
                     searchDS);
             FutureRSP findRsp = assoc.invoke(mcRQ);
             Dimse dimse = findRsp.get();
+            pendingStatus = dimse.getCommand().getStatus();
             List pending = findRsp.listPending();
             Iterator iter = pending.iterator();
             while (iter.hasNext()) {
                 Dataset rsp = ((Dimse) iter.next()).getDataset();
                 logResponse(rsp);
-                list.add(rsp);
+                result.add(rsp);
             }
             if (log.isDebugEnabled()) {
                 log.debug("Received final C-FIND RSP from " + calledAET + " :"
@@ -389,7 +389,7 @@ public class MWLScuService extends ServiceMBeanSupport {
             }
         } catch (Exception e) {
             log.error("Cant get working list! Reason: unexpected error", e);
-            return list;
+            return Status.ProcessingFailure;
         } finally {
             if (assoc != null)
                 try {
@@ -400,7 +400,7 @@ public class MWLScuService extends ServiceMBeanSupport {
                                     + assoc.getAssociation(), e1);
                 }
         }
-        return list;
+        return pendingStatus;
     }
 
     /**

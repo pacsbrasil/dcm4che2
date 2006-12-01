@@ -161,7 +161,28 @@
         <name>searchDS</name>
         <type>org.dcm4che.data.Dataset</type>
       </parameter>
-      <return-type>java.util.List</return-type>
+      <parameter>
+        <description>Result list</description>
+        <name>result</name>
+        <type>java.util.List</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get a list of modality worklist entries using local database access.
+      </description>
+      <name>findMWLEntriesLocal</name>
+      <parameter>
+        <description>Dataset for C-Find</description>
+        <name>searchDS</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>Result list</description>
+        <name>result</name>
+        <type>java.util.List</type>
+      </parameter>
+      <return-type>int</return-type>
    </operation>
 
    <operation impact="ACTION">
