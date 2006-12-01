@@ -466,10 +466,11 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 
 
 private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO fileDTO, String contentType, String xslURL ) {
+	QueryCmd query = null;
 	try {
 		Dataset keys = dof.newDataset();
 		keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-		QueryCmd query = QueryCmd.createInstanceQuery(keys, false, true);
+		query = QueryCmd.createInstanceQuery(keys, false, true);
 		query.execute();
 		if (!query.next()) {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
@@ -492,6 +493,10 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
     } catch (Exception e) {
         log.error("Failed to get DICOM file", e);
 		return new WADOStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+    }
+    finally {
+    	if(query != null)
+    		try { query.close(); } catch(Exception ignore) {}
     }
 }
 
