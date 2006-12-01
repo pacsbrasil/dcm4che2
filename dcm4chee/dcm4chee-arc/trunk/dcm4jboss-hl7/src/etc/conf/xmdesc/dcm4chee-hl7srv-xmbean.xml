@@ -86,12 +86,14 @@
       getMethod="isSendNotification"
       setMethod="setSendNotification">
       <description>Activates notification of registered listeners about received
-      HL7 messages. Required for message forwarding by HL7 Send service.
+      HL7 messages. Required for message forwarding by HL7 Send service and
+      for prefetch of studies on receive of ORM^O01 messages by the Prefetch
+      Service.
       </description>
       <name>SendNotification</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
