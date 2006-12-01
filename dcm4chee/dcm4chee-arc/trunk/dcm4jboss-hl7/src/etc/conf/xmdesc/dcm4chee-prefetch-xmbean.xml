@@ -4,9 +4,9 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description><![CDATA[The <b>Prefetch Service</b> prefetches studies no
-   longer ONLINE available from an external archive or attached nearline
-   storage on receive of a HL7 Order Message (ORM^O01) for the patient.]]>
+   <description><![CDATA[The <b>Prefetch Service</b> prefetches no longer
+     ONLINE available studies from an external archive or attached NEARLINE
+     storage on receive of a HL7 Order Message (ORM^O01) for the patient.]]>
    </description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
