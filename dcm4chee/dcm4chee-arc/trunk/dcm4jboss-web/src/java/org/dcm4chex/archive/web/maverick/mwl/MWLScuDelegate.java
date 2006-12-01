@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick.mwl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -105,11 +106,11 @@ public class MWLScuDelegate {
 	 *         of one scheduled procedure step).
 	 */
 	public List findMWLEntries(Dataset ds) {
-		List resp = null;
+		List resp = new ArrayList();
 		try {
 			Object o = server.invoke(mwlScuServiceName, "findMWLEntries",
-					new Object[] { ds },
-					new String[] { Dataset.class.getName() });
+					new Object[] { ds, resp },
+					new String[] { Dataset.class.getName(), List.class.getName() });
 			resp = (List) o;
 		} catch (Exception x) {
 			log.error("Exception occured in findMWLEntries: " + x.getMessage(),
