@@ -962,4 +962,20 @@ accessed studies.</description>
       <name>listLocalOnlineRWFileSystems</name>
       <return-type>[Lorg.dcm4chex.archive.ejb.interfaces.FileSystemDTO;</return-type>
    </operation>
+   <operation impact="INFO">
+      <description>Show all file systems in unsorted format given the availability and status. Use (-2) to skip the filtering.
+      </description>
+      <name>showAllFileSystems</name>
+      <parameter>
+        <description>File System Availability. Availabe availabilities: ONLINE(0), NEARLINE(1), OFFLINE(2), UNAVAILABLE(3). Use (-2) to skip this filter.</description>
+        <name>availability</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>File System Status. Available statuses: PENDING(-1), RW+(0), RW(1), RO(2).Use (-2) to skip this filter.</description>
+        <name>status</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
 </mbean>

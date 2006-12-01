@@ -1344,6 +1344,33 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         }
         return sb.toString();
     }
+    
+    /**
+     * Show all file systems in unsorted format given the availability and status. 
+     * 
+     * @param availability The availability of file system, e.g., ONLINE, NEARLINE. If it's negative, ignored.
+     * @param status The status of file system, e.g., RW+, RW, RO. If it's negative, ignored.
+     * @return
+     * @throws RemoteException
+     * @throws FinderException
+     */
+    public String showAllFileSystems(int availability, int status) 
+    	throws RemoteException, FinderException {
+        FileSystemDTO[] dtos = listAllFileSystems();
+        if(availability >= -1 || status >= -1) {
+        	ArrayList dtoa = new ArrayList();
+        	for(int i = 0; i < dtos.length; i++) {
+        		if( (availability < -1 || availability >= -1 && dtos[i].getAvailability() == availability)
+        				&& (status < -1 || status >= -1 && dtos[i].getStatus() == status) )
+        			dtoa.add(dtos[i]);
+        	}
+        	if(dtoa.size() == 0)
+        		return "NONE";
+        	dtos = (FileSystemDTO[])dtoa.toArray(new FileSystemDTO[dtoa.size()]);
+        }
+        
+        return toString(dtos);
+    }
 
     public String showAllFileSystems() throws RemoteException, FinderException {
         FileSystemDTO[] dtos = listAllFileSystems();
