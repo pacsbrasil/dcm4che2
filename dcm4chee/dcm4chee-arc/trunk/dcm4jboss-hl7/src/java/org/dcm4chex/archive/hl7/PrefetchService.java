@@ -59,6 +59,7 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dom4j.Document;
 import org.dom4j.io.DocumentSource;
 import org.jboss.system.ServiceMBeanSupport;
+import org.regenstrief.xhl7.HL7XMLLiterate;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -225,9 +226,7 @@ public class PrefetchService extends ServiceMBeanSupport implements
         }
         Object[] hl7msg = (Object[]) notif.getUserData();
         Document hl7doc = (Document) hl7msg[1];
-        MSH msh = new MSH(hl7doc);
-        if ("ORM".equals(msh.messageType) 
-                && "O01".equals(msh.triggerEvent)) {
+        if (isORM_O01_NW(hl7doc)) {
             Dataset findRQ = DcmObjectFactory.getInstance().newDataset();
             try {
                 Transformer t = getTemplates(stylesheetURL).newTransformer();
@@ -246,6 +245,13 @@ public class PrefetchService extends ServiceMBeanSupport implements
                 log.error("Failed to schedule " + order, e);
             }            
         }
+    }
+
+    private boolean isORM_O01_NW(Document hl7doc) {
+        MSH msh = new MSH(hl7doc);
+        return "ORM".equals(msh.messageType) && "O01".equals(msh.triggerEvent)
+            && "NW".equals(hl7doc.getRootElement().element("ORC")
+                    .element(HL7XMLLiterate.TAG_FIELD).getText());
     }
 
     public void onMessage(Message message) {
