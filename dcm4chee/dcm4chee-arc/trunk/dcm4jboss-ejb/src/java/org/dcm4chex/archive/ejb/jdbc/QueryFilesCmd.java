@@ -47,6 +47,7 @@ import java.util.List;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
+import java.sql.PreparedStatement;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -55,64 +56,66 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  */
 public final class QueryFilesCmd extends BaseReadCmd {
 
+    private static final String QueryFilesByUIDCmd = "SELECT files.pk, files.filepath, files.file_md5, files.file_status, "
+            + "filesystem.dirpath, filesystem.retrieve_aet, filesystem.availability, filesystem.user_info, instance.sop_cuid "
+            + "FROM files, filesystem, instance WHERE instance.pk = files.instance_fk AND files.filesystem_fk = filesystem.pk "
+            + "AND instance.sop_iuid=?";
+
+    private static final String QueryLinkedFilesCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
+            + "fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid "
+            + "FROM files f, filesystem fs, instance i, files f2 "
+            + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND f.instance_fk = f2.instance_fk and f2.pk=?";
+
     private static final Comparator DESC_FILE_PK = new Comparator() {
 
         public int compare(Object o1, Object o2) {
             FileDTO fi1 = (FileDTO) o1;
             FileDTO fi2 = (FileDTO) o2;
             int diffAvail = fi1.getAvailability() - fi2.getAvailability();
-            return diffAvail != 0 ? diffAvail : (int)(fi2.getPk() - fi1.getPk());
+            return diffAvail != 0 ? diffAvail : (int) (fi2.getPk() - fi1
+                    .getPk());
         }
     };
+
     public static int transactionIsolationLevel = 0;
-
-    private static final String[] SELECT_ATTRIBUTE = { "File.pk", "File.filePath",
-            "File.fileMd5Field", "File.fileStatus", "FileSystem.pk",
-            "FileSystem.directoryPath", "FileSystem.retrieveAET",
-            "FileSystem.availability", "FileSystem.userInfo", "Instance.sopCuid"};
-
-    private static final String[] ENTITY = { "Instance", "File", "FileSystem" };
-
-    private static final String[] RELATIONS = { "Instance.pk",
-            "File.instance_fk", "File.filesystem_fk", "FileSystem.pk" };
 
     public QueryFilesCmd(String iuid) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-        SqlBuilder sqlBuilder = new SqlBuilder();
-        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
-        sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addSingleValueMatch(null, "Instance.sopIuid",
-                SqlBuilder.TYPE1, iuid);
-		execute(sqlBuilder.getSql());
+                transactionIsolationLevel, QueryFilesByUIDCmd);
+        ((PreparedStatement) stmt).setString(1, iuid);
+        execute();
     }
-    
+
+    public QueryFilesCmd(long filePk) throws SQLException {
+        super(JdbcProperties.getInstance().getDataSource(),
+                transactionIsolationLevel, QueryLinkedFilesCmd);
+        ((PreparedStatement) stmt).setLong(1, filePk);
+        execute();
+    }
+
     private FileDTO getFileDTO() throws SQLException {
         FileDTO dto = new FileDTO();
         dto.setPk(rs.getLong(1));
         dto.setFilePath(rs.getString(2));
         dto.setFileMd5(MD5.toBytes(rs.getString(3)));
         dto.setFileStatus(rs.getInt(4));
-        dto.setFileSystemPk(rs.getLong(5));
-        dto.setDirectoryPath(rs.getString(6));
-        dto.setRetrieveAET(rs.getString(7));
-		dto.setAvailability(rs.getInt(8));
-		dto.setUserInfo(rs.getString(9));
-		dto.setSopClassUID(rs.getString(10));
-		return dto;
+        dto.setDirectoryPath(rs.getString(5));
+        dto.setRetrieveAET(rs.getString(6));
+        dto.setAvailability(rs.getInt(7));
+        dto.setUserInfo(rs.getString(8));
+        dto.setSopClassUID(rs.getString(9));
+        return dto;
     }
-    
+
     public List getFileDTOs() throws SQLException {
         List list = new ArrayList();
-		try {
-			while (next())
-				list.add(getFileDTO());
-		} finally {
-			close();
-		}
-		Collections.sort(list, DESC_FILE_PK);
-		return list;
-    }    
-
+        try {
+            while (next())
+                list.add(getFileDTO());
+        } finally {
+            close();
+        }
+        Collections.sort(list, DESC_FILE_PK);
+        return list;
+    }
 }
