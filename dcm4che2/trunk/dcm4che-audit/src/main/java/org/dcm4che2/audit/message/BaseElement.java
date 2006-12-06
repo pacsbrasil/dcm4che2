@@ -56,7 +56,7 @@ import java.util.Map;
  */
 class BaseElement {
     
-    private static String dateTimeFormat = "yyyy-MM-ddTHH:mm:ss.SSSZ";
+    private static String dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     protected static String encoding = 
         System.getProperty("file.encoding", "ISO-8859-1");
 

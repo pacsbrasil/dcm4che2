@@ -66,7 +66,7 @@ public class AuditMessage extends BaseElement {
             throw new NullPointerException();
         }
         this.event = event;
-        addActiveParticipant(apart);
+        addActiveParticipantInternal(apart);
     }
     
     public final AuditEvent getAuditEvent() {
@@ -98,6 +98,10 @@ public class AuditMessage extends BaseElement {
     }
            
     public AuditMessage addActiveParticipant(ActiveParticipant apart) {
+        return addActiveParticipantInternal(apart);
+    }
+
+    private AuditMessage addActiveParticipantInternal(ActiveParticipant apart) {
         if (apart == null) {
             throw new NullPointerException();
         }
