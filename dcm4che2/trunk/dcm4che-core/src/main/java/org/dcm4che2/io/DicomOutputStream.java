@@ -174,9 +174,13 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     /**
-     * Write a DICOM object to the output stream using the specified <code>DicomObject</code>  to obtain the transfer syntax UID and other attributes.
-     *  
-     * @param attrs The <code>DicomObject</code> containing the DICOM tags to write into the file.
+     * Write a DICOM object to the output stream using the specified
+     * <code>DicomObject</code> to obtain the transfer syntax UID and other
+     * attributes.
+     * 
+     * @param attrs
+     *            The <code>DicomObject</code> containing the DICOM tags to
+     *            write into the file.
      * @throws IOException
      */
     public void writeDicomFile(DicomObject attrs) throws IOException {
@@ -202,8 +206,10 @@ public class DicomOutputStream extends FilterOutputStream {
     /**
      * Write a DICOM dataset to the output stream.
      * 
-     * @param attrs A DicomObject containing the attributes to write.
-     * @param tsuid A String containing the transfer syntax UID of the file.
+     * @param attrs
+     *            A DicomObject containing the attributes to write.
+     * @param tsuid
+     *            A String containing the transfer syntax UID of the file.
      * @throws IOException
      */
     public void writeDataset(DicomObject attrs, String tsuid)
@@ -214,8 +220,11 @@ public class DicomOutputStream extends FilterOutputStream {
     /**
      * Write a DICOM dataset to the output stream.
      * 
-     * @param attrs A DicomObject containing the attributes to write.
-     * @param transferSyntax A TransferSyntax object representing the transfer syntax of the file.
+     * @param attrs
+     *            A DicomObject containing the attributes to write.
+     * @param transferSyntax
+     *            A TransferSyntax object representing the transfer syntax of
+     *            the file.
      * @throws IOException
      */
     public void writeDataset(DicomObject attrs, TransferSyntax transferSyntax)
@@ -243,8 +252,10 @@ public class DicomOutputStream extends FilterOutputStream {
     /**
      * Write an item (DicomObject) to the output stream.
      * 
-     * @param item The DicomObject containing the specific item to write.
-     * @param transferSyntax The <code>TransferSyntax</code> of the item.
+     * @param item
+     *            The DicomObject containing the specific item to write.
+     * @param transferSyntax
+     *            The <code>TransferSyntax</code> of the item.
      * @throws IOException
      */
     public void writeItem(DicomObject item, TransferSyntax transferSyntax)
@@ -259,7 +270,8 @@ public class DicomOutputStream extends FilterOutputStream {
         int len;
         if (item.isEmpty()) {
             len = explicitItemLengthIfZero ? 0 : -1;
-        } else {
+        }
+        else {
             len = explicitItemLength ? itemInfo.len : -1;
         }
         writeHeader(Tag.Item, null, len);
@@ -288,7 +300,8 @@ public class DicomOutputStream extends FilterOutputStream {
             if (vr == VR.SQ) {
                 if (len == -1 && explicitSequenceLength) {
                     len = itemInfo.sqlen[++sqi];
-                } else if (len == 0 && !explicitSequenceLengthIfZero) {
+                }
+                else if (len == 0 && !explicitSequenceLengthIfZero) {
                     len = -1;
                 }
             }
@@ -303,7 +316,8 @@ public class DicomOutputStream extends FilterOutputStream {
                                 : null;
                         writeItem(item, childItemInfo);
                     }
-                } else {
+                }
+                else {
                     for (int i = 0, n = a.countItems(); i < n; i++) {
                         byte[] val = a.getFragment(i);
                         writeHeader(Tag.Item, null, (val.length + 1) & ~1);
@@ -312,7 +326,8 @@ public class DicomOutputStream extends FilterOutputStream {
                             write(0);
                     }
                 }
-            } else if (len > 0) {
+            }
+            else if (len > 0) {
                 byte[] val = a.getBytes();
                 write(val);
                 if ((val.length & 1) != 0)
@@ -327,7 +342,8 @@ public class DicomOutputStream extends FilterOutputStream {
     public void writeHeader(int tag, VR vr, int len) throws IOException {
         if (ts.bigEndian()) {
             ByteUtils.tag2bytesBE(tag, header, 0);
-        } else {
+        }
+        else {
             ByteUtils.tag2bytesLE(tag, header, 0);
         }
         int off = 0;
@@ -336,7 +352,8 @@ public class DicomOutputStream extends FilterOutputStream {
             if (vr.explicitVRHeaderLength() == 8) {
                 if (ts.bigEndian()) {
                     ByteUtils.ushort2bytesBE(len, header, 6);
-                } else {
+                }
+                else {
                     ByteUtils.ushort2bytesLE(len, header, 6);
                 }
                 write(header, 0, 8);
@@ -348,7 +365,8 @@ public class DicomOutputStream extends FilterOutputStream {
         }
         if (ts.bigEndian()) {
             ByteUtils.int2bytesBE(len, header, 4);
-        } else {
+        }
+        else {
             ByteUtils.int2bytesLE(len, header, 4);
         }
         write(header, off, 8 - off);
@@ -380,10 +398,12 @@ public class DicomOutputStream extends FilterOutputStream {
                             }
                             sqlen[sqi] = vlen;
                         }
-                    } else {
+                    }
+                    else {
                         vlen = calcFragSqLen(a);
                     }
-                } else if (a.vr() == VR.SQ) { // vlen == 0
+                }
+                else if (a.vr() == VR.SQ) { // vlen == 0
                     if (!explicitSequenceLengthIfZero)
                         vlen = 8;
                 }
