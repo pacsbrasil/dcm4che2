@@ -195,6 +195,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-arr/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
+        <exclude name="conf/standardjboss.xml"/>
         <exclude name="conf/standardjbosscmp-jdbc.xml"/>
         <include name="deploy/**"/>
       </zipfileset>
@@ -230,6 +231,7 @@
         <include name="conf/**"/>
         <exclude name="conf/log4j.xml"/>
         <exclude name="conf/login-config.xml"/>
+        <exclude name="conf/standardjboss.xml"/>
         <exclude name="conf/standardjbosscmp-jdbc.xml"/>
         <exclude name="conf/jboss-service.xml"/>
         <include name="deploy/jbossweb-tomcat55.sar/**"/>
@@ -331,6 +333,7 @@
 	  <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
 	    <include name="deploy/ejb3.deployer/**"/>
 	  	<include name="deploy/jboss-aop-jdk50.deployer/**"/>
+	  	<include name="deploy/jbossws.sar/**"/>
 	  	<include name="deploy/ear-deployer.xml"/>
 	  	<include name="deploy/ejb3-interceptors-aop.xml"/>
 	  	<include name="deploy/usertx-service.xml"/>
@@ -342,9 +345,6 @@
 	  	<include name="lib/hibernate3.jar"/>
 	  	<include name="lib/javassist.jar"/>
 	  </zipfileset>
-      <zipfileset dir="${jboss.server.home}/deploy/jbossws.sar" prefix="${dist.standalone.config}/lib">
-        <include name="jbossws.jar"/>
-      </zipfileset>
       <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.standalone.config}/deploy">
         <include name="dcm4chee-arr-${db.name}-*.ear"/>
       </zipfileset>
