@@ -173,6 +173,12 @@ public class DicomOutputStream extends FilterOutputStream {
         write(VR.UL.toBytes(length, ts.bigEndian()), 0, 4);
     }
 
+    /**
+     * Write a DICOM object to the output stream using the specified <code>DicomObject</code>  to obtain the transfer syntax UID and other attributes.
+     *  
+     * @param attrs The <code>DicomObject</code> containing the DICOM tags to write into the file.
+     * @throws IOException
+     */
     public void writeDicomFile(DicomObject attrs) throws IOException {
         String tsuid = attrs.getString(Tag.TransferSyntaxUID);
         if (tsuid == null)
@@ -193,19 +199,33 @@ public class DicomOutputStream extends FilterOutputStream {
                 .fileMetaInfoIterator(), true));
     }
 
+    /**
+     * Write a DICOM dataset to the output stream.
+     * 
+     * @param attrs A DicomObject containing the attributes to write.
+     * @param tsuid A String containing the transfer syntax UID of the file.
+     * @throws IOException
+     */
     public void writeDataset(DicomObject attrs, String tsuid)
             throws IOException {
         writeDataset(attrs, TransferSyntax.valueOf(tsuid));
     }
 
-    public void writeDataset(DicomObject attrs, TransferSyntax ts)
+    /**
+     * Write a DICOM dataset to the output stream.
+     * 
+     * @param attrs A DicomObject containing the attributes to write.
+     * @param transferSyntax A TransferSyntax object representing the transfer syntax of the file.
+     * @throws IOException
+     */
+    public void writeDataset(DicomObject attrs, TransferSyntax transferSyntax)
             throws IOException {
-        if (ts.deflated())
+        if (transferSyntax.deflated())
             out = new DeflaterOutputStream(out);
-        this.ts = ts;
+        this.ts = transferSyntax;
         writeElements(attrs.datasetIterator(), includeGroupLength,
                 createItemInfo(attrs));
-        if (ts.deflated())
+        if (transferSyntax.deflated())
             ((DeflaterOutputStream) out).finish();
     }
 
@@ -220,9 +240,16 @@ public class DicomOutputStream extends FilterOutputStream {
                 || explicitSequenceLength;
     }
 
-    public void writeItem(DicomObject item, TransferSyntax ts)
+    /**
+     * Write an item (DicomObject) to the output stream.
+     * 
+     * @param item The DicomObject containing the specific item to write.
+     * @param transferSyntax The <code>TransferSyntax</code> of the item.
+     * @throws IOException
+     */
+    public void writeItem(DicomObject item, TransferSyntax transferSyntax)
             throws IOException {
-        this.ts = ts;
+        this.ts = transferSyntax;
         writeItem(item, createItemInfo(item));
     }
 
