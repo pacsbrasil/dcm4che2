@@ -102,7 +102,7 @@ public class DcmRcv extends StorageService {
     private static final String DESCRIPTION = 
         "DICOM Server listening on specified <port> for incoming association " +
         "requests. If no local IP address of the network interface is specified " +
-        "connections on any/all local addresses are accepted. If <aet> is" +
+        "connections on any/all local addresses are accepted. If <aet> is " +
         "specified, only requests with matching called AE title will be " +
         "accepted.\n" +
         "Options:";
