@@ -521,7 +521,12 @@ public abstract class StorageBean implements SessionBean {
     private SeriesLocal findBySeriesIuid(String uid) throws javax.ejb.FinderException {
     	Long pk = (Long)seriesPkCache.get(uid);
     	if (pk != null) {
-    		return seriesHome.findByPrimaryKey(pk);
+            try { 
+                return seriesHome.findByPrimaryKey(pk);
+            } catch ( ObjectNotFoundException x ) {
+                log.warn("Series "+uid+" not found with cached pk! Cache entry removed!");
+                seriesPkCache.remove(uid);
+            }
     	}
     	SeriesLocal ser = seriesHome.findBySeriesIuid(uid);
     	seriesPkCache.put(uid, ser.getPk());
