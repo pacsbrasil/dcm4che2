@@ -97,6 +97,19 @@
          <value value="DCM4CHEE" />
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getCallingAET"
+      setMethod="setCallingAET">
+      <description>Calling AE title of the Move SCU.
+      </description>
+      <name>CallingAETitle</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE" />
+      </descriptors>
+   </attribute>
+   
    <attribute access="read-write" 
        getMethod="getRetrievePriority"
        setMethod="setRetrievePriority">
@@ -141,7 +154,7 @@
       <name>MoveScuServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chee.archive:service=MoveScuService" />
+         <value value="dcm4chee.archive:service=MoveScu" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -188,9 +201,58 @@
          <value value="Prefetch" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getAcTimeout"
+      setMethod="setAcTimeout">
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
+      </description>
+      <name>AcceptTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDimseTimeout"
+      setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
+      </description>
+      <name>DIMSETimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="600000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSoCloseDelay"
+      setMethod="setSoCloseDelay">
+      <description>Socket close delay in milliseconds after an A-Release response.
+      </description>
+      <name>SocketCloseDelay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Reload Stylesheets</description>
+      <name>reloadStylesheets</name>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Schedule 'Test' Pre-Fetch Order.</description>
+      <name>processFile</name>
+      <parameter>
+        <description>Filename of hl7 file containing ORM message</description>
+        <name>filename</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
+    
 </mbean>
     
