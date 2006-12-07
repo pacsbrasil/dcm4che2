@@ -18,6 +18,8 @@ class PPSExceptionMgtQueue {}
 
 class PPSScuQueue {}
 
+class PrefetchQueue {}
+
 class PurgeStudyQueue {}
 
 class SendmailQueue {}
@@ -331,6 +333,25 @@ class ORMService {}
  */
 class ormService {}
 
+
+/**
+ * @depend - - - HL7Server
+ * @depend - - - TLSConfig
+ * @depend - - - MoveScu
+ * @depend - - - PrefetchQueue
+ * @depend - - - JMS
+ */
+class Prefetch {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.Prefetch
+ * @opt !hide
+ */
+class prefetch {}
+
 /**
  * @depend - - - HL7Server
  * @depend - - - ExportManager
@@ -501,6 +522,7 @@ class mppsScu {}
  * @depend - - - AuditLogger
  * @depend - - - DcmServer
  * @depend - - - MPPSScp
+ * @depend - - - MWLScu
  */
 class MWLFindScp {}
 
