@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -40,6 +41,27 @@ package org.dcm4che2.io;
 
 import java.io.IOException;
 
+/**
+ * Interface used by the <code>DicomInputStream</code> when reading values.
+ * <code>DicomInputStream</code> provides an implementation, which may be
+ * overridden by setting a custom implementation of
+ * <code>DicomInputHandler</code> into the stream object.
+ * 
+ * @see org.dcm4che2.io.DicomInputStream
+ * @see org.dcm4che2.io.TranscoderInputHandler
+ * @see org.dcm4che2.io.StopTagInputHandler
+ * 
+ * @author gunter zeilinger(gunterze@gmail.com)
+ */
 public interface DicomInputHandler {
+    
+	/**
+     * Called by the input stream when reading a DICOM value in the stream.
+     * 
+     * @param in
+     *            The <code>DicomInputStream</code> calling this method.
+     * @return boolean true if the stream should continue reading the item.
+     * @throws IOException
+     */
 	boolean readValue(DicomInputStream in) throws IOException;
 }
