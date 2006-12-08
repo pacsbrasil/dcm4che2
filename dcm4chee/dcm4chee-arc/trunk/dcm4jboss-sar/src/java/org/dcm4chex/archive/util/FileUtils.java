@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -63,11 +64,17 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class FileUtils {
 
+    protected static final Logger log = Logger.getLogger(FileUtils.class);
+
     private static final int BUFFER_SIZE = 512;
     
 	public static final long MEGA = 1000000L;
 
     public static final long GIGA = 1000000000L;
+
+    public static final long MAX_TIMES_CREATE_FILE = 1000;
+    
+    public static final long INTERVAL_CREATE_FILE = 250; //ms
 
     private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -80,12 +87,68 @@ public class FileUtils {
 	    return String.valueOf(ch8);
 	}
 
-    public static File createNewFile(File dir, int hash) throws IOException {
-		File f;
-		do {
-			f = new File(dir, toHex(hash++));
-		} while (!f.createNewFile());
-		return f;
+	/**
+	 * Create a new file based on hash code, including the directory structure if necessary. 
+	 * In case of collision, we will reset hashcode and try again.
+	 * 
+	 * @param dir the directory where the new file will be created
+	 * @param hash the initial hash value
+	 * @return the file created successfully
+	 * @throws Exception
+	 */
+    public static File createNewFile(File dir, int hash) throws Exception {
+		File f = null;
+		boolean success = false;
+		Exception lastException = null;
+		for(int i = 0; i < MAX_TIMES_CREATE_FILE && !success; i++) {					
+			// In UNIX, mkdirs and createNewFile can throw IOException 
+			// instead of nicely returning false
+			try
+			{				
+		        if (!dir.exists()) {
+		            success = dir.mkdirs();
+		            if(!success)
+		            	throw new IOException("Direcotry creation failed: " + dir.getCanonicalPath());
+		        }
+
+				// Try to construct a new file name everytime
+				f = new File(dir, toHex(hash++));
+
+				success = f.createNewFile();	
+				
+				if(i > 0)
+					log.info("file: " + dir.getCanonicalPath() 
+							+ " created successfully after retries: " + i);
+				
+				if(success)
+					return f;
+				else
+					i--; // if not success, we should not increment i which is for exceptional retry
+			}
+			catch(Exception e)
+			{
+	        	if(lastException == null )
+	        		log.warn("failed to create file: " + dir.getCanonicalPath()
+	        				+ " - retry: " + (i+1) + " of " + MAX_TIMES_CREATE_FILE 
+	        				+ ". Will retry again.", e);
+	        	else
+	        		log.warn("failed to create file: " + dir.getCanonicalPath() 
+	        				+ " - got the same exception as above - retry: "
+	        				+ (i+1) + " of " + MAX_TIMES_CREATE_FILE + ". Will retry again" );	        	
+	        	lastException = e;
+
+				success = false;
+								
+				// Maybe other thread is trying to do the same thing
+				// Let's wait for 100 ms - this rarely happens
+				try {
+					Thread.sleep(INTERVAL_CREATE_FILE);
+				} catch (InterruptedException e1) {
+				} 
+			}
+		}
+		// Run out of retries, throw original exception
+		throw lastException;
     }
 	
     public static String slashify(File f) {

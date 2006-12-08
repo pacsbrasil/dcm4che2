@@ -682,7 +682,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return store;
     }
 
-    private File makeFile(File basedir, Dataset ds) throws IOException {
+    private File makeFile(File basedir, Dataset ds) throws Exception {
         Calendar date = Calendar.getInstance();
         if (studyDateInFilePath) {
             Date studyDate = ds.getDate(Tags.StudyDate, Tags.StudyTime);
@@ -710,11 +710,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         filePath.append(File.separatorChar);
         filePath.append(toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
         File dir = new File(basedir, filePath.toString());
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new IOException("Failed to create directory " + dir);
-            }
-        }
         return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
     }
 
