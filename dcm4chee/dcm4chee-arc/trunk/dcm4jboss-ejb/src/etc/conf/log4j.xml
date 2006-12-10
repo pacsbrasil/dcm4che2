@@ -15,9 +15,8 @@
  -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
-
+   
    <renderer renderedClass="org.dcm4che.data.Dataset" renderingClass="org.dcm4che.log.DatasetRenderer" />
-
 
    <!-- ================================= -->
    <!-- Preserve messages in a local file -->
@@ -26,35 +25,33 @@
    <!-- A time/date based rolling appender
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
+      <param name="File" value="${jboss.server.log.dir}/server.log"/>
       <param name="Append" value="false"/>
 
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
+         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
       </layout>
    </appender>
-    -->
-      
+   -->
+
    <!-- A size based file rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.RollingFileAppender">
      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-     <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
+     <param name="File" value="${jboss.server.log.dir}/server.log"/>
      <param name="Append" value="false"/>
      <param name="MaxFileSize" value="10000KB"/>
      <param name="MaxBackupIndex" value="10"/>
 
      <layout class="org.apache.log4j.PatternLayout">
-         <!-- The default pattern: Date Priority CallingAET->CalledAET (Thread) [Category] Message\n -->
-         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
+       <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
      </layout>	    
    </appender>
 
-   <!-- A File appender to seperate according MDC key-value pair; using here to seperate by calling AET -->
-
-<!-- e.g. AET SIEMENS_CT 
+   <!-- A File appender filtered by calling or called AET.
+   Multiple values for matching calling AET can be specified, separated by ';'.
+   
    <appender name="AET_SIEMENS_CT" class="org.jboss.logging.appender.RollingFileAppender">
      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
      <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
@@ -63,19 +60,16 @@
      <param name="MaxBackupIndex" value="10"/>
 
      <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
+        <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
      </layout>	    
-
-
-	<filter class="org.dcm4che.log.MDCFilter">
+     <filter class="org.dcm4che.log.MDCFilter">
 	      <param name="Key" value="calling"/>
 	      <param name="Value" value="SIEMENS_CT"/>
 	      <param name="AcceptOnMatch" value="true"/>
-	</filter>
-	<filter class="org.apache.log4j.varia.DenyAllFilter" />
+	   </filter>
+	   <filter class="org.apache.log4j.varia.DenyAllFilter" />
    </appender>
--->
-
+   -->
 
    <!-- ============================== -->
    <!-- Append messages to the console -->
@@ -87,17 +81,7 @@
       <param name="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <!-- The default pattern: Date Priority [Category] Message\n -->
          <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p %X{calling}->%X{called} [%c{1}] %m%n"/>
-      </layout>
-   </appender>
-
-   <appender name="JSR77" class="org.apache.log4j.FileAppender">
-      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <param name="Append" value="false"/>
-      <param name="File" value="${jboss.server.home.dir}/log/jsr77.log"/>
-      <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
       </layout>
    </appender>
 
@@ -135,11 +119,9 @@
      <param name="Facility" value="LOCAL7"/>
      <param name="FacilityPrinting" value="true"/>
      <param name="SyslogHost" value="localhost"/>
-     <param name="Threshold" value="INFO"/>
      <layout class="org.apache.log4j.PatternLayout">
-       <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} [%c] %m%n"/>
+       <param name="ConversionPattern" value="[%d{ABSOLUTE},%c{1}] %m%n"/>
      </layout>
-
    </appender>
    -->
 
@@ -173,6 +155,39 @@
    </appender>
    -->
 
+   <!--  Emit events as JMX notifications
+   <appender name="JMX" class="org.jboss.monitor.services.JMXNotificationAppender">
+      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      
+      <param name="Threshold" value="WARN"/>
+      <param name="ObjectName" value="jboss.system:service=Logging,type=JMXNotificationAppender"/>
+      
+      <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="%d %-5p [%c] %m"/>
+      </layout>
+   </appender>
+   -->
+   
+   <!-- Audit Trail Messages -->
+   <!-- Use copy of log4j-1.2.14's SyslogAppender provided by dcm4che-audit-2.x
+   as long JBoss uses a previous version of log4j, which SyslogAppender cannot
+   be configured to send messages to a different port than 514 -->
+   <appender name="AUDIT" class="org.dcm4che2.audit.log4j.net.SyslogAppender">
+     <param name="Facility" value="AUTHPRIV"/>
+     <param name="SyslogHost" value="localhost:4000"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <!-- emulate syslog HEADER Part of emitted syslog message, because
+          SyslogAppender in log4j-1.2.x (including log4j-1.2.14) only prefix
+          message with PRI Part! -->
+       <param name="ConversionPattern" value="%d{MMM d HH:mm:ss} HOST %m"/>
+     </layout>
+   </appender>
+
+   <category name="audit" additivity="false">
+     <priority value="INFO" />
+     <appender-ref ref="AUDIT"/>
+   </category>
+   
    <!-- ================ -->
    <!-- Limit categories -->
    <!-- ================ -->
@@ -202,27 +217,46 @@
       <priority value="INFO"/>
    </category>
 
-   <!-- Decrease the priority threshold for the org.dcm4cheri.util category
-   		for monitoring thread pool behavior
-   <category name="org.dcm4cheri.util">
-      <priority value="INFO"/>
-   </category>
- -->
-
-   <!-- Limit the org.apache category to INFO -->
+   <!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
    <category name="org.apache">
       <priority value="INFO"/>
    </category>
-   
-   <!-- Limit JBoss categories to INFO
-        Modify INFO to FATAL to hide error messages from jboss components --> 
-   <category name="org.jboss">
-     <priority value="INFO"/>
+
+   <!-- Limit the org.jboss.serial (jboss-serialization) to INFO as its DEBUG is verbose -->
+   <category name="org.jboss.serial">
+      <priority value="INFO"/>
    </category>
+
+   <!-- Limit the org.jgroups category to WARN as its INFO is verbose -->
+   <category name="org.jgroups">
+      <priority value="WARN"/>
+   </category>
+
+   <!-- Limit the jacorb category to WARN as its INFO is verbose -->
+   <category name="jacorb">
+      <priority value="WARN"/>
+   </category>
+
+   <!-- Limit JBoss categories
+   <category name="org.jboss">
+      <priority value="INFO"/>
+   </category>
+   -->
+
+   <!-- Limit the JSR77 categories -->
+   <category name="org.jboss.management">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Enable JBossWS message tracing
+   <category name="jbossws.SOAPMessage">
+    <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   -->
 
    <!-- Decrease the priority threshold for the org.jboss.varia category
    <category name="org.jboss.varia">
-     <priority value="INFO"/>
+     <priority value="DEBUG"/>
    </category>
    -->
 
@@ -276,10 +310,8 @@
      <priority value="INFO" />
      <appender-ref ref="TRAP_LOG"/>
    </category>
-   
   
    -->
-
 
    <!-- ======================= -->
    <!-- Setup the Root category -->
@@ -288,7 +320,6 @@
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
-<!--      <appender-ref ref="AET_SIEMENS_CT"/> -->
    </root>
 
    <!-- Clustering logging -->
@@ -297,7 +328,7 @@
 
    <appender name="CLUSTER" class="org.jboss.logging.appender.RollingFileAppender">
      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-     <param name="File" value="${jboss.server.home.dir}/log/cluster.log"/>
+     <param name="File" value="${jboss.server.log.dir}/cluster.log"/>
      <param name="Append" value="false"/>
      <param name="MaxFileSize" value="500KB"/>
      <param name="MaxBackupIndex" value="1"/>
@@ -315,5 +346,5 @@
      <appender-ref ref="CLUSTER"/>
    </category>
    -->
-   
+
 </log4j:configuration>
