@@ -49,6 +49,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
+import javax.net.ssl.HandshakeCompletedListener;
 
 import org.dcm4che.util.HandshakeFailedListener;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -116,15 +117,20 @@ public final class TLSConfigDelegate {
                 
     public HandshakeFailedListener handshakeFailedListener() {
         try {
-	        return (HandshakeFailedListener) service.getServer().invoke(
-	                tlsConfigName, "handshakeFailedListener", null, null);
-	    } catch (InstanceNotFoundException e) {
-	        throw new ConfigurationException(e);
-	    } catch (MBeanException e) {
-	        throw new ConfigurationException(e);
-	    } catch (ReflectionException e) {
-	        throw new ConfigurationException(e);
-	    }
+            return (HandshakeFailedListener) service.getServer().invoke(
+                    tlsConfigName, "handshakeFailedListener", null, null);
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    public HandshakeCompletedListener handshakeCompletedListener() {
+        try {
+            return (HandshakeCompletedListener) service.getServer().invoke(
+                    tlsConfigName, "handshakeCompletedListener", null, null);
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     public ServerSocketFactory serverSocketFactory(String[] cipherSuites) {

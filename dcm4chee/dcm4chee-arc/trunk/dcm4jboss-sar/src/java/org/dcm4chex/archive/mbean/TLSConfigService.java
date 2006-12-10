@@ -44,9 +44,12 @@ import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
+import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
 
 import org.dcm4che.util.HandshakeFailedEvent;
 import org.dcm4che.util.HandshakeFailedListener;
@@ -61,7 +64,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 13.12.2004
  */
 public class TLSConfigService extends ServiceMBeanSupport
-		implements HandshakeFailedListener {
+		implements HandshakeFailedListener, HandshakeCompletedListener {
 
     private SSLContextAdapter ssl = SSLContextAdapter.getInstance();
 
@@ -81,6 +84,7 @@ public class TLSConfigService extends ServiceMBeanSupport
 
     public TLSConfigService() {
         ssl.addHandshakeFailedListener(this);
+        ssl.addHandshakeCompletedListener(this);
     }
     
     public ObjectName getAuditLoggerName() {
@@ -147,6 +151,10 @@ public class TLSConfigService extends ServiceMBeanSupport
         return this;
     }
 
+    public final HandshakeCompletedListener handshakeCompletedListener() {
+        return this;
+    }
+
     public ServerSocketFactory serverSocketFactory(String[] cipherSuites) {
         if (cipherSuites == null || cipherSuites.length == 0) { return ServerSocketFactory
                 .getDefault(); }
@@ -193,13 +201,26 @@ public class TLSConfigService extends ServiceMBeanSupport
     protected void stopService() throws Exception {
     }
     
-    //  HandshakeFailedListener Implementation-------------------------------
     public void handshakeFailed(HandshakeFailedEvent event) {
-        logSecurityAlert("NodeAuthentification", 
+       sendNotification(event);
+       logSecurityAlert("NodeAuthentification", 
                     event.getSocket(), null,
                     event.getException().getMessage());
     }
 
+
+    public void handshakeCompleted(HandshakeCompletedEvent event) {
+        sendNotification(event);
+    }
+
+    private void sendNotification(Object event) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(event.getClass().getName(), this, 
+                eventID);
+        notif.setUserData(event);
+        super.sendNotification(notif);
+    }
+    
     private void logSecurityAlert(String alertType, Socket socket, String aet,
             String description) {
         if (auditLogName == null) return;

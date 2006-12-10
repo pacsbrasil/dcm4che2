@@ -280,6 +280,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
                 "log");
         hl7srv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+        hl7srv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
         hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
         hl7srv.start();

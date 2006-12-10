@@ -120,6 +120,11 @@
    </operation>
    <operation impact="INFO">
       <description>Used internally</description>
+      <name>handshakeCompletedListener</name>
+      <return-type>javax.net.ssl.HandshakeCompletedListener</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Used internally</description>
       <name>serverSocketFactory</name>
       <parameter>
         <name>cipherSuites</name>
@@ -137,5 +142,20 @@
       <return-type>javax.net.SocketFactory</return-type>
    </operation>
    
+   <!-- Notifications -->
+   <notification>
+      <description>The notification sent whenever a SSL handshake failed on a 
+        given SSL connection.
+      </description>
+      <name>javax.management.Notification</name>
+      <notification-type>org.dcm4che.util.HandshakeFailedEvent</notification-type>
+   </notification>
+   <notification>
+      <description>The notification sent whenever a SSL handshake completed on
+        a given SSL connection.
+      </description>
+      <name>javax.management.Notification</name>
+      <notification-type>javax.net.ssl.HandshakeCompletedEvent</notification-type>
+   </notification>
 </mbean>
     

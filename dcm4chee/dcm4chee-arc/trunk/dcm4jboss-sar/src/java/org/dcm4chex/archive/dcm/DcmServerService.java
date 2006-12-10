@@ -220,6 +220,7 @@ public class DcmServerService extends ServiceMBeanSupport {
     
     protected void startService() throws Exception {
         dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+        dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
         dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
         dcmsrv.start();
