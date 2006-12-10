@@ -39,6 +39,8 @@
 package org.dcm4che.util;
 
 import java.io.IOException;
+import java.net.InetAddress;
+
 import javax.net.ssl.SSLSocket;
 import java.util.EventObject;
 
@@ -62,18 +64,26 @@ public class HandshakeFailedEvent extends EventObject {
     
     // Constants -----------------------------------------------------
     
+    private static final long serialVersionUID = -2950362806134963066L;
+    
     // Variables -----------------------------------------------------
+    private final InetAddress remoteAddr;
     private final IOException ex;
     
     // Constructors --------------------------------------------------
-    public HandshakeFailedEvent(SSLSocket sock, IOException ex) {
+    public HandshakeFailedEvent(SSLSocket sock, InetAddress remoteAddr, IOException ex) {
         super(sock);
+        this.remoteAddr = remoteAddr;
         this.ex = ex;
     }
     
     // Methods -------------------------------------------------------
     public SSLSocket getSocket() {
         return (SSLSocket) source;
+    }
+    
+    public InetAddress getRemoteAddress() {
+        return remoteAddr;
     }
     
     public IOException getException() {

@@ -39,6 +39,7 @@
 package org.dcm4cheri.server;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -320,6 +321,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                     (HandshakeCompletedListener) hcl.get(i));
             }
         }
+        InetAddress remoteAddr = s.getInetAddress();
         try {
             s.startHandshake();
             if (log.isInfoEnabled()) {
@@ -339,7 +341,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
             }
         } catch (IOException e) {
             if (hfl != null) {
-                HandshakeFailedEvent event = new HandshakeFailedEvent(s,e);
+                HandshakeFailedEvent event = new HandshakeFailedEvent(s,remoteAddr,e);
                 for (int i = 0, n = hfl.size(); i < n; ++i) {
                     ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
                 }

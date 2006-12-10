@@ -736,6 +736,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
                             (HandshakeCompletedListener) hcl.get(i));
                 }
             }
+            InetAddress remoteAddr = s.getInetAddress();
             try {
                 s.startHandshake();
                 if (log.isInfoEnabled()) {
@@ -755,7 +756,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
                 }
             } catch (IOException e) {
                 if (hfl != null) {
-                    HandshakeFailedEvent event = new HandshakeFailedEvent(s, e);
+                    HandshakeFailedEvent event = new HandshakeFailedEvent(s, remoteAddr, e);
                     for (int i = 0, n = hfl.size(); i < n; ++i) {
                         ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
                     }
