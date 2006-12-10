@@ -51,8 +51,6 @@ import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.AuditSource;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.UserAuthenticationMessage;
 import org.dcm4che2.audit.message.UserWithLocation;
@@ -80,51 +78,6 @@ public class AuditLoginModule implements LoginModule {
     public void initialize(Subject subject, CallbackHandler cbh,
             Map sharedState, Map options) {
         this.cbh = cbh;
-        if (AuditMessage.getDefaultAuditSource() == null) {
-            AuditMessage.setDefaultAuditSource(makeAuditSource(options));
-        }
-    }
-
-    private AuditSource makeAuditSource(Map options) {
-        String auditEnterpriseSiteID = 
-                (String) options.get("auditEnterpriseSiteID");
-        String auditSourceID = (String) options.get("auditSourceID");
-        String auditSourceTypeCodes = 
-                (String) options.get("auditSourceTypeCodes");
-        if (auditSourceID == null || auditSourceID.length() == 0) {
-            log.warn("Missing Configuration of auditSourceID in " +
-                            "conf/login-conf.xml - use 'DCM4CHEE'");
-            auditSourceID = "DCM4CHEE";
-        }
-        AuditSource auditSource = new AuditSource(auditSourceID);
-        AuditMessage.setDefaultAuditSource(auditSource);
-        if (auditEnterpriseSiteID != null 
-                && auditEnterpriseSiteID.length() != 0) {
-            auditSource.setAuditEnterpriseSiteID(auditEnterpriseSiteID);
-        }
-        if (auditSourceTypeCodes != null 
-                && auditSourceTypeCodes.length() != 0) {
-            initAuditSourceTypeCodes(auditSource, auditSourceTypeCodes);
-        }
-        return auditSource;
-    }
-
-    private void initAuditSourceTypeCodes(AuditSource auditSource, 
-            String auditSourceTypeCodes) {
-        char[] cs = auditSourceTypeCodes.toCharArray();
-        for (int i = 0; i < cs.length; i++) {
-            int index = "+123456789".indexOf(cs[i]);
-            if (index == -1 || ((i & 1) == 0 ? index == 0 : index != 0)) {
-                log.warn("Invalid configuration of auditSourceTypeCodes '"
-                        + auditSourceTypeCodes
-                        + "' in conf/login-conf.xml - ignored");
-                return;
-            }
-        }
-        for (int i = 0; i < cs.length; i++,i++) {
-            auditSource.addAuditSourceTypeCode(
-                    new AuditSource.TypeCode(String.valueOf(cs[i])));                
-        }
     }
 
     /* (non-Javadoc)
@@ -192,7 +145,7 @@ public class AuditLoginModule implements LoginModule {
                     ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(addr)
                     : (NetworkAccessPoint) new NetworkAccessPoint.HostName(host);
         } catch (PolicyContextException e) {
-            log.error("Failed to access Network Access Point ID:", e);
+            log.error("Failed to determine Network Access Point ID:", e);
             return new NetworkAccessPoint.HostName("???");
         }
     }

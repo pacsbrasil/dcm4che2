@@ -106,10 +106,6 @@ The outline of the application-policy is:
           </login-module>
           <login-module code="org.dcm4chee.audit.login.AuditLoginModule"
              flag = "optional" >
-             <!--module-option name = "auditEnterpriseSiteID">hospital X</module-option-->             
-             <module-option name = "auditSourceID">DCM4CHEE</module-option>
-             <!-- 3+4 =  Web server + Application Server -->          
-             <module-option name = "auditSourceTypeCodes">3+4</module-option>             
           </login-module>
        </authentication>
     </application-policy>
@@ -124,10 +120,6 @@ The outline of the application-policy is:
           </login-module>
           <login-module code="org.dcm4chee.audit.login.AuditLoginModule"
              flag = "optional" >
-             <!--module-option name = "auditEnterpriseSiteID">hospital X</module-option-->             
-             <module-option name = "auditSourceID">DCM4CHEE</module-option>
-             <!-- 3+4 =  Web server + Application Server -->          
-             <module-option name = "auditSourceTypeCodes">3+4</module-option>             
           </login-module>
        </authentication>
     </application-policy>
@@ -142,10 +134,6 @@ The outline of the application-policy is:
           </login-module>
           <login-module code="org.dcm4chee.audit.login.AuditLoginModule"
              flag = "optional" >
-             <!--module-option name = "auditEnterpriseSiteID">hospital X</module-option-->             
-             <module-option name = "auditSourceID">DCM4CHEE</module-option>
-             <!-- 3+4 =  Web server + Application Server -->          
-             <module-option name = "auditSourceTypeCodes">3+4</module-option>             
           </login-module>
        </authentication>
     </application-policy>
