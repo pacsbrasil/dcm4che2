@@ -56,21 +56,18 @@ package org.dcm4che2.audit.message;
  */
 public class SecurityAlertMessage extends AuditMessage {
     
-    public SecurityAlertMessage(AuditEvent event, ActiveParticipant reporter,
-            Patient patient) {
+    public SecurityAlertMessage(AuditEvent event, ActiveParticipant reporter) {
         super(event, reporter);
-        super.addParticipantObject(patient);
     }
     
     public SecurityAlertMessage(AuditEvent event, ActiveParticipant reporter1,
-            ActiveParticipant reporter2, Patient patient) {
+            ActiveParticipant reporter2) {
         super(event, reporter1);
         super.addActiveParticipant(reporter2); 
-        super.addParticipantObject(patient);
     }
     
     public SecurityAlertMessage addPerfomingParticipant(
-            PerfomingParticipant performer) {
+            PerformingParticipant performer) {
         super.addActiveParticipant(performer);
         return this;
     }
@@ -85,11 +82,11 @@ public class SecurityAlertMessage extends AuditMessage {
      * 
      * @deprecated
      * @exception java.lang.IllegalArgumentException if apart is not a 
-     * {@link PerfomingParticipant}
-     * @see #addPerfomingParticipant(PerfomingParticipant)
+     * {@link PerformingParticipant}
+     * @see #addPerfomingParticipant(PerformingParticipant)
      */
     public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        if (apart instanceof PerfomingParticipant) {
+        if (apart instanceof PerformingParticipant) {
             return super.addActiveParticipant(apart);            
         }
         throw new IllegalArgumentException();
@@ -112,7 +109,7 @@ public class SecurityAlertMessage extends AuditMessage {
     
     public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
 
-        protected AuditEvent(TypeCode code) {
+        public AuditEvent(TypeCode code) {
             super(ID.SECURITY_ALERT);
             super.setEventActionCode(ActionCode.EXECUTE);
             super.addEventTypeCode(code);
