@@ -50,7 +50,6 @@ public class ApplicationLauncher extends ActiveParticipant {
 
     public ApplicationLauncher(String id) {
         super(id);
-        setUserIsRequestor(true);
         addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION_LAUNCHER);
     }
 }
