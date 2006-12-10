@@ -51,8 +51,8 @@ public class NetworkAccessPoint {
     public static final String IP_ADDRESS = "2";
     public static final String TEL_NR = "3";
     
-    private final String id;
-    private final String typeCode;
+    protected final String id;
+    protected final String typeCode;
 
     protected NetworkAccessPoint(String id, String typeCode) {
         this.id = id;
@@ -64,6 +64,13 @@ public class NetworkAccessPoint {
         public HostName(String host) {
             super(host, HOST_NAME);
         }
+        
+        public String getNodeID() {
+            int domainNameStart = id.indexOf('.') + 1;
+            return domainNameStart == 0 ? id
+                    : (id.substring(0, domainNameStart-1) + '@' 
+                            + id.substring(domainNameStart));
+        }        
     }
     
     public static class IPAddress extends NetworkAccessPoint {
@@ -86,5 +93,9 @@ public class NetworkAccessPoint {
 
     public final String getTypeCode() {
         return typeCode;
+    }
+    
+    public String getNodeID() {
+        return id;
     }
 }
