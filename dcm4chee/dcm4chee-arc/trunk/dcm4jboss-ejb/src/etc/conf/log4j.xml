@@ -171,14 +171,11 @@
    <!-- Audit Trail Messages -->
    <!-- Use copy of log4j-1.2.14's SyslogAppender provided by dcm4che-audit-2.x
    as long JBoss uses a previous version of log4j, which SyslogAppender cannot
-   be configured to send messages to a different port than 514 -->
+   be configured to send messages to a different port than 514
    <appender name="AUDIT" class="org.dcm4che2.audit.log4j.net.SyslogAppender">
      <param name="Facility" value="AUTHPRIV"/>
      <param name="SyslogHost" value="localhost:4000"/>
      <layout class="org.apache.log4j.PatternLayout">
-       <!-- emulate syslog HEADER Part of emitted syslog message, because
-          SyslogAppender in log4j-1.2.x (including log4j-1.2.14) only prefix
-          message with PRI Part! -->
        <param name="ConversionPattern" value="%d{MMM d HH:mm:ss} HOST %m"/>
      </layout>
    </appender>
@@ -187,6 +184,7 @@
      <priority value="INFO" />
      <appender-ref ref="AUDIT"/>
    </category>
+   -->
    
    <!-- ================ -->
    <!-- Limit categories -->
