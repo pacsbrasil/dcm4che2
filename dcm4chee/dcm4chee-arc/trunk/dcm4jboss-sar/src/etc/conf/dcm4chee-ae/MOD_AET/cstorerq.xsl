@@ -8,6 +8,11 @@ SERIES level.
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:output method="xml" indent="no"/>
+  <!-- overwritten by application with actual values -->
+  <xsl:param name="calling" select="'SAMPLE_MOD'"/>
+  <xsl:param name="called" select="'DCM4CHEE'"/>
+  <xsl:param name="date" select="'20051206'"/>
+  <xsl:param name="time" select="'115600.000'"/>
   <xsl:template match="/dataset">
     <dataset>
       <xsl:variable name="reqPhysician" select="attr[@tag='00321032']"/>
