@@ -706,9 +706,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             filePath.append(String.valueOf(date.get(Calendar.HOUR_OF_DAY)));
             filePath.append(File.separatorChar);
         }
-        filePath.append(toHex(ds.getString(Tags.StudyInstanceUID).hashCode()));
+        filePath.append(FileUtils.toHex(ds.getString(Tags.StudyInstanceUID).hashCode()));
         filePath.append(File.separatorChar);
-        filePath.append(toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
+        filePath.append(FileUtils.toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
         File dir = new File(basedir, filePath.toString());
         return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
     }
@@ -883,17 +883,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             sb.append('0');
         }
         sb.append(v);
-    }
-
-    private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
-        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
-    private String toHex(int val) {
-        char[] ch8 = new char[8];
-        for (int i = 8; --i >= 0; val >>= 4) {
-            ch8[i] = HEX_DIGIT[val & 0xf];
-        }
-        return String.valueOf(ch8);
     }
 
     // Implementation of AssociationListener

@@ -79,14 +79,14 @@ public class FileUtils {
     private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-	private static String toHex(int val) {
+	public static String toHex(int val) {
 	    char[] ch8 = new char[8];
 	    for (int i = 8; --i >= 0; val >>= 4) {
 	        ch8[i] = HEX_DIGIT[val & 0xf];
 	    }
 	    return String.valueOf(ch8);
 	}
-
+    
 	/**
 	 * Create a new file based on hash code, including the directory structure if necessary. 
 	 * In case of collision, we will reset hashcode and try again.
@@ -108,7 +108,7 @@ public class FileUtils {
 		        if (!dir.exists()) {
 		            success = dir.mkdirs();
 		            if(!success)
-		            	throw new IOException("Direcotry creation failed: " + dir.getCanonicalPath());
+		            	throw new IOException("Directory creation failed: " + dir.getCanonicalPath());
 		        }
 
 				// Try to construct a new file name everytime
