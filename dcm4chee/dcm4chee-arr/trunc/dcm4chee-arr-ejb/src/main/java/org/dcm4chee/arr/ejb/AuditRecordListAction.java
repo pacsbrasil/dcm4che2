@@ -426,8 +426,22 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         
     @SuppressWarnings("unchecked")
     private void updateResults() {        
-        Criteria criteria = session.createCriteria(AuditRecord.class);
+        Criteria recordsCriteria = buildCriteria(session.createCriteria(AuditRecord.class));
         
+        List<AuditRecord> all = recordsCriteria
+            .addOrder(Order.desc(orderByEventDateTime?"eventDateTime":"receiveDateTime"))
+            .list();
+
+        count = all.size();        
+        int from = getFirstResult();
+        int to = Math.max(0, Math.min(count, getFirstResult() + pageSize));
+        log.info(String.format("Found total %d records. Displaying from %d to %d",  count, (from+1), to));
+        records = all.subList(from, to);
+        
+        selectedIndex = -1;
+    }
+    
+    private Criteria buildCriteria(Criteria criteria) {
         addCriteriaForEvent(criteria);
         addCriteriaForAuditSource(criteria);
         addCriteriaForParticipantObject(criteria);
@@ -447,15 +461,8 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         else if(hasCriteriaForActiveParticipant2()) {
             criteria.add(addCriteriaForActiveParticipant2(criteria));
         }        
-
-        records = criteria.setFirstResult(getFirstResult())
-                .addOrder(Order.desc(orderByEventDateTime?"eventDateTime":"receiveDateTime"))
-                .setMaxResults(pageSize)
-                .list();
-
-        count = records.size();
-        log.info("Found {} records",  count);
-        selectedIndex = -1;
+        
+        return criteria;
     }
     
     private Criteria addCriteriaForEvent(Criteria criteria) {
