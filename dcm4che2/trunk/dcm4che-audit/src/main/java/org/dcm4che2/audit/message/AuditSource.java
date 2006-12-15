@@ -54,16 +54,6 @@ import java.util.List;
  */
 public class AuditSource extends BaseElement {
 
-    public static final String END_USER_DISPLAY_DEVICE = "1";
-    public static final String DATA_ACQUISITION_DEVICE = "2";
-    public static final String WEB_SERVER_PROCESS = "3";
-    public static final String APPLICATION_SERVER_PROCESS = "4";
-    public static final String DATABASE_SERVER_PROCESS = "5";
-    public static final String SECURITY_SERVER = "6";
-    public static final String ISO_LEVEL_1_3_NETWORK_COMPONENT = "7";
-    public static final String ISO_LEVEL_4_6_OPERATING_SOFTWARE = "8";
-    public static final String OTHER = "9";
-    
     private final ArrayList auditSourceTypeCodes = new ArrayList(1);
     
     public AuditSource(String id) {
@@ -88,8 +78,7 @@ public class AuditSource extends BaseElement {
         return Collections.unmodifiableList(auditSourceTypeCodes);
     }
            
-    public AuditSource addAuditSourceTypeCode(
-            TypeCode code) {
+    public AuditSource addAuditSourceTypeCode(TypeCode code) {
         if (code == null) {
             throw new NullPointerException();
         }
@@ -113,6 +102,27 @@ public class AuditSource extends BaseElement {
                 throw new IllegalArgumentException(
                         "Illegal Audit Source Type code: " + code);
             }
+            setReadOnly(true);
         }
+        
+        public static final TypeCode END_USER_DISPLAY_DEVICE = 
+                new TypeCode("1");
+        public static final TypeCode DATA_ACQUISITION_DEVICE = 
+                new TypeCode("2");
+        public static final TypeCode WEB_SERVER_PROCESS = 
+                new TypeCode("3");
+        public static final TypeCode APPLICATION_SERVER_PROCESS = 
+                new TypeCode("4");
+        public static final TypeCode DATABASE_SERVER_PROCESS = 
+                new TypeCode("5");
+        public static final TypeCode SECURITY_SERVER = 
+                new TypeCode("6");
+        public static final TypeCode ISO_LEVEL_1_3_NETWORK_COMPONENT = 
+                new TypeCode("7");
+        public static final TypeCode ISO_LEVEL_4_6_OPERATING_SOFTWARE = 
+                new TypeCode("8");
+        public static final TypeCode OTHER = 
+                new TypeCode("9");
+        
     }
  }

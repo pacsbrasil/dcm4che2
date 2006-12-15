@@ -49,8 +49,8 @@ package org.dcm4che2.audit.message;
  */
 public class StudyDeletedMessage extends AuditMessage {
 
-    public StudyDeletedMessage(AuditEvent event, Source user, Patient patient, 
-            Study study) {
+    public StudyDeletedMessage(AuditEvent event, ActiveParticipant user,
+            Patient patient, Study study) {
         super(event, user);
         super.addParticipantObject(patient);
         super.addParticipantObject(study);

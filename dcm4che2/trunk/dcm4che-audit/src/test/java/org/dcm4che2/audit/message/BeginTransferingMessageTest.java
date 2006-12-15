@@ -15,7 +15,7 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Agfa-Gevaert AG.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
@@ -39,26 +39,19 @@
 package org.dcm4che2.audit.message;
 
 /**
- * Identifies Patient.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 23, 2006
+ * @since Dec 14, 2006
  */
-public class Patient extends ParticipantObject {
-    
-    public Patient(String id) {
-        super(id, IDTypeCode.PATIENT_ID);
-        setParticipantObjectTypeCode(TypeCode.PERSON);
-        setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
+public class BeginTransferingMessageTest extends MessageTestCaseSupport {
+
+    public void testBeginTransferingMessage() throws Exception {
+        BeginTransferingMessage.AuditEvent event = 
+                new BeginTransferingMessage.AuditEvent();
+        BeginTransferingMessage msg = new BeginTransferingMessage(
+                event, mkArchiveSource(), 
+                (Destination) mkMesaDestination().setUserIsRequestor(true),
+                mkPatient(), mkStudy());
+        assertXML(msg);
     }
-    
-    public void setPatientName(String pn) {
-        setParticipantObjectName(pn);
-    }
-    
-    public String getPatientName() {
-        return getParticipantObjectName();
-    }
-    
 }

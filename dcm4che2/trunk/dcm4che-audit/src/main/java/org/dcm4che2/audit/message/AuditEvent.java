@@ -162,7 +162,7 @@ public class AuditEvent extends BaseElement {
          * Event ID of {@link InstancesTransferedMessage}.
          */
         public static final ID DICOM_INSTANCES_TRANSFERRED = 
-                new ID("110103", "DCM", "DICOM Instances Transferred");
+                new ID("110104", "DCM", "DICOM Instances Transferred");
         
         /**
          * Event ID of {@link StudyDeletedMessage}.

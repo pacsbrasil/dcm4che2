@@ -135,7 +135,7 @@ public class AuditMessage extends BaseElement {
         }
         out.write("<?xml version=\"1.0\" encoding=\"");
         out.write(encoding);
-        out.write("\" ?>");
+        out.write("\"?>");
         super.output(out);
     }
     

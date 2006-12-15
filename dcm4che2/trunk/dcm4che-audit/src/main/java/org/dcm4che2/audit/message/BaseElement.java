@@ -188,7 +188,7 @@ class BaseElement {
             String str = val.toString();
             int quote = '"';
             String apos = "'";
-            if (str.indexOf('"') != 0) {
+            if (str.indexOf('"') != -1) {
                 quote = '\'';
                 apos = "&apos;";
             }

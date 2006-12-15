@@ -15,7 +15,7 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Agfa-Gevaert AG.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
@@ -39,26 +39,38 @@
 package org.dcm4che2.audit.message;
 
 /**
- * Identifies Patient.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 23, 2006
+ * @since Dec 14, 2006
  */
-public class Patient extends ParticipantObject {
-    
-    public Patient(String id) {
-        super(id, IDTypeCode.PATIENT_ID);
-        setParticipantObjectTypeCode(TypeCode.PERSON);
-        setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
+public class InstancesTransferedMessageTest extends MessageTestCaseSupport {
+
+    public void testCreateInstancesTransferedMessage() throws Exception {
+        testInstancesTransferedMessage(
+                new InstancesTransferedMessage.AuditEvent.Create());
     }
     
-    public void setPatientName(String pn) {
-        setParticipantObjectName(pn);
+    public void testReadInstancesTransferedMessage() throws Exception {
+        testInstancesTransferedMessage(
+                new InstancesTransferedMessage.AuditEvent.Read());
     }
     
-    public String getPatientName() {
-        return getParticipantObjectName();
+    public void testUpdateInstancesTransferedMessage() throws Exception {
+        testInstancesTransferedMessage(
+                new InstancesTransferedMessage.AuditEvent.Update());
     }
     
+    public void testInstancesTransferedMessage() throws Exception {
+        testInstancesTransferedMessage(
+                new InstancesTransferedMessage.AuditEvent.Execute());
+    }
+    
+    void testInstancesTransferedMessage(
+            InstancesTransferedMessage.AuditEvent event) 
+            throws Exception {
+        InstancesTransferedMessage msg = new InstancesTransferedMessage(
+                event, mkArchiveSource(), mkMesaDestination(),
+                mkPatient(), mkStudy());
+        assertXML(msg);
+    }
 }

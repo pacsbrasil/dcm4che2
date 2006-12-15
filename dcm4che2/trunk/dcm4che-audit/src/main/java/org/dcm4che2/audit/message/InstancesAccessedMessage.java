@@ -49,8 +49,8 @@ package org.dcm4che2.audit.message;
  */
 public class InstancesAccessedMessage extends AuditMessage {
 
-    public InstancesAccessedMessage(AuditEvent event, Source user, Patient patient, 
-            Study study) {
+    public InstancesAccessedMessage(AuditEvent event, ActiveParticipant user,
+            Patient patient, Study study) {
         super(event, user);
         super.addParticipantObject(patient);
         super.addParticipantObject(study);

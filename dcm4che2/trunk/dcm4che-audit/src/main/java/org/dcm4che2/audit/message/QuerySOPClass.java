@@ -38,6 +38,13 @@
  
 package org.dcm4che2.audit.message;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.io.DicomOutputStream;
+
 /**
  * Identifies queried SOP Class and used query request parameters. Used by
  * {@link QueryMessage}.
@@ -54,6 +61,23 @@ public class QuerySOPClass extends ParticipantObject {
         setParticipantObjectTypeCodeRole(TypeCodeRole.REPORT);
         setParticipantObjectQuery(query);
         addParticipantObjectDetail("TransferSyntax", tsuid);
+    }
+    
+    public QuerySOPClass(String cuid, DicomObject keys, String tsuid)
+            throws IOException {
+        this(cuid, tsuid, writeDataset(keys, tsuid));
+    }
+
+    public QuerySOPClass(String cuid, DicomObject keys) throws IOException {
+        this(cuid, keys, UID.ImplicitVRLittleEndian);
+    }
+    
+    private static byte[] writeDataset(DicomObject keys, String tsuid)
+            throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
+        DicomOutputStream dos = new DicomOutputStream(baos);
+        dos.writeDataset(keys, tsuid);
+        return baos.toByteArray();
     }
     
 }

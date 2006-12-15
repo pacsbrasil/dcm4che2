@@ -15,7 +15,7 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Agfa-Gevaert AG.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
@@ -38,27 +38,33 @@
  
 package org.dcm4che2.audit.message;
 
+import org.dcm4che2.audit.message.UserAuthenticationMessage.AuditEvent;
+
+
 /**
- * Identifies Patient.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 23, 2006
+ * @since Dec 14, 2006
  */
-public class Patient extends ParticipantObject {
-    
-    public Patient(String id) {
-        super(id, IDTypeCode.PATIENT_ID);
-        setParticipantObjectTypeCode(TypeCode.PERSON);
-        setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
+public class UserAuthenticationMessageTest extends MessageTestCaseSupport {
+
+    public void testLoginMessage()
+            throws Exception {
+        testUserAuthenticationMessage(
+                new UserAuthenticationMessage.AuditEvent.Login());
     }
     
-    public void setPatientName(String pn) {
-        setParticipantObjectName(pn);
+    public void testLogoutMessage()
+    throws Exception {
+        testUserAuthenticationMessage(
+                new UserAuthenticationMessage.AuditEvent.Logout());
     }
-    
-    public String getPatientName() {
-        return getParticipantObjectName();
+
+    private void testUserAuthenticationMessage(AuditEvent event)
+            throws Exception {
+        UserAuthenticationMessage msg = new UserAuthenticationMessage(event,
+                mkUserWithLocation());
+        assertXML(msg);
     }
-    
+
 }

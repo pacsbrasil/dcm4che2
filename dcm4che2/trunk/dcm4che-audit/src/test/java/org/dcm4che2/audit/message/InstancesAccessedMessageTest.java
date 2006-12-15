@@ -15,7 +15,7 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Agfa-Gevaert AG.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
@@ -39,26 +39,38 @@
 package org.dcm4che2.audit.message;
 
 /**
- * Identifies Patient.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 23, 2006
+ * @since Dec 14, 2006
  */
-public class Patient extends ParticipantObject {
-    
-    public Patient(String id) {
-        super(id, IDTypeCode.PATIENT_ID);
-        setParticipantObjectTypeCode(TypeCode.PERSON);
-        setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
+public class InstancesAccessedMessageTest extends MessageTestCaseSupport {
+
+    public void testInstancesCreatedMessage() throws Exception {
+        testInstancesAccessedMessage(
+                new InstancesAccessedMessage.AuditEvent.Create());
     }
     
-    public void setPatientName(String pn) {
-        setParticipantObjectName(pn);
+    public void testInstancesReadMessage() throws Exception {
+        testInstancesAccessedMessage(
+                new InstancesAccessedMessage.AuditEvent.Read());
     }
     
-    public String getPatientName() {
-        return getParticipantObjectName();
+    public void testInstancesUpdateMessage() throws Exception {
+        testInstancesAccessedMessage(
+                new InstancesAccessedMessage.AuditEvent.Update());
     }
     
+    public void testInstancesDeletedMessage() throws Exception {
+        testInstancesAccessedMessage(
+                new InstancesAccessedMessage.AuditEvent.Delete());
+    }
+    
+    void testInstancesAccessedMessage(
+            InstancesAccessedMessage.AuditEvent event)
+            throws Exception {
+        InstancesAccessedMessage msg = new InstancesAccessedMessage(event,
+                mkUser(), mkPatient(), mkStudy());
+        assertXML(msg);
+    }
+
 }

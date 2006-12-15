@@ -63,7 +63,8 @@ package org.dcm4che2.audit.message;
  */
 public class QueryMessage extends AuditMessage {
 
-    public QueryMessage(AuditEvent event, Source src, Destination dst, QuerySOPClass sopClass) {
+    public QueryMessage(AuditEvent event, Source src, Destination dst, 
+            QuerySOPClass sopClass) {
         super(event, src);
         super.addActiveParticipant(dst);
         super.addParticipantObject(sopClass);
