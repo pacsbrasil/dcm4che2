@@ -49,8 +49,8 @@ package org.dcm4che2.audit.message;
  * @since Nov 29, 2006
  * 
  * @see <a href="http://www.ihe.net/Technical_Framework/upload/ihe_iti_tf_2.0_vol2_FT_2005-08-15.pdf">
- * IHE IT Infrastructure Technical Framework, vol. 2: Transactions</a>,
- * 3.20.7.3.1 Health Services Provision Event
+ * IHE IT Infrastructure Technical Framework, vol. 2: Transactions,
+ * 3.20.7.3.1 Health Services Provision Event</a>
  */
 public class HealthServicesProvisionEventMessage extends AuditMessage {
 
