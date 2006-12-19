@@ -20,7 +20,7 @@
 <%
 	String user = null;
 	String passwd = null;
-	if ( request.getParameter("accNr") != null ) {
+	if ( request.getParameter("accNr") != null || request.getParameter("studyUID") != null) {
 		user = request.getParameter("loginuser");
 		passwd = request.getParameter("passwd4user");
 		if ( passwd != null && (passwd.length() % 4) == 0) {
