@@ -170,8 +170,8 @@ class GenericEntityMgmtBean implements GenericEntityMgmt {
         em.flush();
     }
 
-    public void remove(Object entity) {
-        em.remove(entity);
+    public <T> void remove(Class<T> entityClass, Integer pk) {
+        em.remove(em.find(entityClass, pk));
     }
 
     /**

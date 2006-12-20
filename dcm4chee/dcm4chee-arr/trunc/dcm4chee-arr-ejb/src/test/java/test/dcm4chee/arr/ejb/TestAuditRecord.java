@@ -94,15 +94,15 @@ public class TestAuditRecord {
     @AfterClass(groups = { "mdb", "integration.jmx", "stress.jmx" })
     public void tearDown() {
         try {
-            GenericEntityMgmt mgmt = Ejb3Util
+            GenericEntityMgmt gem = Ejb3Util
                     .getRemoteInterface(GenericEntityMgmt.class);
-            List<AuditRecord> arrs = mgmt.findAll(AuditRecord.class);
+            List<AuditRecord> arrs = gem.findAll(AuditRecord.class);
 
             for (AuditRecord ar : arrs) {
-                mgmt.remove(ar);
+                gem.remove(AuditRecord.class, ar.getPk());
             }
 
-            arrs = mgmt.findAll(AuditRecord.class);
+            arrs = gem.findAll(AuditRecord.class);
             assert arrs.size() == 0;
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
@@ -208,16 +208,16 @@ public class TestAuditRecord {
 
     private void doCheckData() {
         try {
-            GenericEntityMgmt mgmt = Ejb3Util
+            GenericEntityMgmt gem = Ejb3Util
                     .getRemoteInterface(GenericEntityMgmt.class);
-            List<AuditRecord> arrs = mgmt.findAll(AuditRecord.class);
+            List<AuditRecord> arrs = gem.findAll(AuditRecord.class);
             assert arrs.size() >= 1;
 
             for (AuditRecord ar : arrs) {
-                mgmt.remove(ar);
+                gem.remove(AuditRecord.class, ar.getPk());
             }
 
-            arrs = mgmt.findAll(AuditRecord.class);
+            arrs = gem.findAll(AuditRecord.class);
             assert arrs.size() == 0;
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);

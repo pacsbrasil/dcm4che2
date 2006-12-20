@@ -25,7 +25,7 @@ public interface GenericEntityMgmt {
     
     void persistent(Object entity);
     void merge(Object entity);
-    void remove(Object entity);
+    <T> void remove(Class<T> entityClass, Integer pk);
     
     void flush();
     

@@ -205,7 +205,7 @@ public class TestGenericEntityMgmt {
             List<AuditRecord> arrs = gem.findAll(AuditRecord.class);
 
             for (AuditRecord ar : arrs) {
-                gem.remove(ar);
+                gem.remove(AuditRecord.class, ar.getPk());
             }
 
             arrs = gem.findAll(AuditRecord.class);
