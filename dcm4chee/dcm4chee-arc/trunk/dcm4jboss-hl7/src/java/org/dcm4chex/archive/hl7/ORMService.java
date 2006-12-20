@@ -383,7 +383,7 @@ public class ORMService extends AbstractHL7Service {
         }
     }
 
-    private void mergeProtocolCodes(Dataset orm, int[] ops) {
+    private void mergeProtocolCodes(Dataset orm, int[] op) {
         DcmElement prevSpsSq = orm.remove(Tags.SPSSeq);
         DcmElement newSpsSq = orm.putSQ(Tags.SPSSeq);
         HashMap spcSqMap = new HashMap();
@@ -396,12 +396,11 @@ public class ORMService extends AbstractHL7Service {
             spcSqI = sps.get(Tags.ScheduledProtocolCodeSeq);
             spcSq0 = (DcmElement) spcSqMap.get(spsid);
             if (spcSq0 != null) {
-                System.arraycopy(ops, j, ops, j-1, n-i);
                 spcSq0.addItem(spcSqI.getItem());
             } else {
                 spcSqMap.put(spsid, spcSqI);
                 newSpsSq.addItem(sps);
-                ++j;
+                op[j++] = op[i];
             }
         }
     }
