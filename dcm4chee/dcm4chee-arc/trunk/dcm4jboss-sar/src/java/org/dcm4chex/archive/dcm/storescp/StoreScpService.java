@@ -44,6 +44,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -717,9 +718,11 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public List findMWLEntries(Dataset ds) throws Exception {
-        return (List) server.invoke(mwlScuServiceName, "findMWLEntries",
-                new Object[] { ds },
-                new String[] { Dataset.class.getName() });
+        List resp = new ArrayList();
+        server.invoke(mwlScuServiceName, "findMWLEntries",
+                    new Object[] { ds, resp },
+                    new String[] { Dataset.class.getName(), List.class.getName() });
+        return resp;
     }
     
     /**
