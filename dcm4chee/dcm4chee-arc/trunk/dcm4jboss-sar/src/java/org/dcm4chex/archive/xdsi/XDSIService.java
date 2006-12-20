@@ -1185,7 +1185,7 @@ public class XDSIService extends ServiceMBeanSupport {
     private void onIAN(Dataset mpps) {
         log.debug("Received mpps");log.debug(mpps);
         if (Arrays.asList(autoPublishAETs).indexOf(
-                mpps.getString(Tags.PerformedStationAET)) == -1) {
+                mpps.getString(Tags.PerformedStationAET)) != -1) {
             List iuids = getIUIDS(mpps);
             log.debug("iuids:"+iuids);
             Dataset manifest = getKeyObject(iuids, getAutoPublishRootInfo(mpps), null);
