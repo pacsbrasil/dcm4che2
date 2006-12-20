@@ -175,7 +175,7 @@ public class ORMService extends AbstractHL7Service {
 
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
-        int op = toOp(msg);
+        int op[] = toOp(msg);
         try {
             Dataset ds = dof.newDataset();
             Transformer t = getTemplates(stylesheetURL).newTransformer();
@@ -189,10 +189,10 @@ public class ORMService extends AbstractHL7Service {
             if (pname == null)
                 throw new HL7Exception("AR",
                         "Missing required PID-5: Patient Name");
-            mergeProtocolCodes(ds);
-            if (op == NW || op == XO) {
+            mergeProtocolCodes(ds, op);
+//            if (op == NW || op == XO) {
                 ds = addScheduledStationInfo(ds);
-            }
+//            }
             MWLManager mwlManager = getMWLManagerHome().create();
             DcmElement spsSq = ds.remove(Tags.SPSSeq);
             Dataset sps;
@@ -201,7 +201,7 @@ public class ORMService extends AbstractHL7Service {
                 sps = spsSq.getItem(i);
                 spsid = sps.getString(Tags.SPSID);
                 ds.putSQ(Tags.SPSSeq).addItem(sps);
-                switch (op) {
+                switch (op[i]) {
                 case NW:
                     adjustAttributes(ds);
                     addMissingAttributes(ds);
@@ -269,24 +269,39 @@ public class ORMService extends AbstractHL7Service {
                 MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
     }
 
-    private int toOp(Document msg) throws HL7Exception {
-        List orc = msg.getRootElement().element("ORC").elements("field");
-        String orderControl = getText(orc, 0);
-        String orderStatus = getText(orc, 4);
-        if (orderStatus.length() == 0) {
-            // use Result Status (OBR-25), if no Order Status (ORC-5);
-            List obr = msg.getRootElement().element("OBR").elements("field");
-            orderStatus = getText(obr, 24);
+    private int[] toOp(Document msg) throws HL7Exception {
+        Element rootElement = msg.getRootElement();
+        List orcs = rootElement.elements("ORC");
+        List obrs = rootElement.elements("OBR");
+        if (orcs.isEmpty()) {
+            throw new HL7Exception("AR", "Missing ORC Segment");                             
         }
-        int opIndex = orderControls.indexOf(orderControl + "(" + orderStatus + ")");
-        if (opIndex == -1) {
-            opIndex = orderControls.indexOf(orderControl);
-            if (opIndex == -1) {
-                throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
-                        + orderControl);                 
+        if (orcs.size() != obrs.size()) {
+            throw new HL7Exception("AR", "Number of ORC Segments ["
+                    + orcs.size() + "] does not match number of OBR Segments ["
+                    + obrs.size() + "]");                             
+        }
+        int[] op = new int[orcs.size()];
+        for (int i = 0; i < op.length; i++) {           
+            List orc = ((Element) orcs.get(i)).elements("field");
+            String orderControl = getText(orc, 0);
+            String orderStatus = getText(orc, 4);
+            if (orderStatus.length() == 0) {
+                // use Result Status (OBR-25), if no Order Status (ORC-5);
+                List obr = ((Element) obrs.get(i)).elements("field");
+                orderStatus = getText(obr, 24);
             }
+            int opIndex = orderControls.indexOf(orderControl + "(" + orderStatus + ")");
+            if (opIndex == -1) {
+                opIndex = orderControls.indexOf(orderControl);
+                if (opIndex == -1) {
+                    throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
+                            + orderControl);                 
+                }
+            }
+            op[i] = ops[opIndex];
         }
-        return ops[opIndex];
+        return op;
     }
 
     private String getText(List fields, int i) throws HL7Exception {
@@ -368,23 +383,25 @@ public class ORMService extends AbstractHL7Service {
         }
     }
 
-    private void mergeProtocolCodes(Dataset orm) {
+    private void mergeProtocolCodes(Dataset orm, int[] ops) {
         DcmElement prevSpsSq = orm.remove(Tags.SPSSeq);
         DcmElement newSpsSq = orm.putSQ(Tags.SPSSeq);
         HashMap spcSqMap = new HashMap();
         DcmElement spcSq0, spcSqI;
         Dataset sps;
         String spsid;
-        for (int i = 0, n = prevSpsSq.countItems(); i < n; ++i) {
+        for (int i = 0, j = 0, n = prevSpsSq.countItems(); i < n; ++i) {
             sps = prevSpsSq.getItem(i);
             spsid = sps.getString(Tags.SPSID);
             spcSqI = sps.get(Tags.ScheduledProtocolCodeSeq);
             spcSq0 = (DcmElement) spcSqMap.get(spsid);
             if (spcSq0 != null) {
+                System.arraycopy(ops, j, ops, j-1, n-i);
                 spcSq0.addItem(spcSqI.getItem());
             } else {
                 spcSqMap.put(spsid, spcSqI);
                 newSpsSq.addItem(sps);
+                ++j;
             }
         }
     }
