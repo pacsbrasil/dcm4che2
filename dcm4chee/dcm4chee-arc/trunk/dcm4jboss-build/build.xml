@@ -54,7 +54,7 @@
     <mkdir dir="${target.dir}/doc/licenses"/>
   	<fixcrlf srcdir="../dcm4che14/doc/licenses"
   		destdir="${target.dir}/doc/licenses" eol="crlf"/>
-  	<fixcrlf srcdir="../dcm4jboss-sar/doc" includes="INSTALL"
+  	<fixcrlf srcdir="../dcm4jboss-sar/doc" includes="INSTALL, PWD2HASH"
   		destdir="${target.dir}/doc" eol="crlf" />
   </target>
   
@@ -130,9 +130,12 @@
       <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.standalone}">
         <include name="sql/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.standalone.config}">
-        <include name="lib/*"/>
-      </zipfileset>
+        <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.standalone.config}">
+          <include name="lib/*"/>
+        </zipfileset>
+        <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.standalone}">
+          <include name="bin/*"/>
+        </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone}">
         <include name="bin/JavaService.exe"/>
       </zipfileset>

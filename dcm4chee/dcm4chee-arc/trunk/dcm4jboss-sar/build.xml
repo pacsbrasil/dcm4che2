@@ -116,6 +116,17 @@
             <include name="org/dcm4chex/archive/hsm/VerifyTar*"/>
           </fileset>
         </jar>
+        <jar jarfile="${target.bin}/pwd2hash.jar">
+          	<manifest>
+  				<attribute name="Main-Class" value="Pwd2Hash"/>
+  				<attribute name="Class-Path" value="./ ../server/default/lib/dcm4che.jar"/>
+			    <attribute name="Implementation-Title" value="pwd2hash"/>
+			    <attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+			    <attribute name="Implementation-Vendor" value="Agfa Healthcare"/>
+  	    	</manifest>
+             <fileset dir="${target.classes}" includes="Pwd2Hash.class"/>
+        </jar>
+   		
     </target>
 
    	<!-- =================================================================== -->

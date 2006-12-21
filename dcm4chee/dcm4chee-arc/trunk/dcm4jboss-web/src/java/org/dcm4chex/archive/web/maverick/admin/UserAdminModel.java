@@ -39,12 +39,16 @@
 
 package org.dcm4chex.archive.web.maverick.admin;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.util.Base64;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
 
@@ -135,7 +139,8 @@ public class UserAdminModel extends BasicFormModel {
 		} else {
 			String userID = user.getUserID();
 			try {
-				delegate.addUser(user.getUserID(),passwd, user.roles());
+				String hashedPasswd = Base64.byteArrayToBase64(this.createPasswordHash(passwd));
+				delegate.addUser(user.getUserID(), hashedPasswd, user.roles());
 			} catch (Exception e) {
 				log.error("Cant create new user "+userID+" with roles "+user.roles(), e);
 				this.setPopupMsg("Cant create user "+userID+"! Exception:"+e.getMessage());
@@ -179,7 +184,9 @@ public class UserAdminModel extends BasicFormModel {
 	
 	public boolean changePassword(String user, String oldPasswd, String newPasswd){
 		try {
-			if ( delegate.changePasswordForUser(user, oldPasswd, newPasswd) ) {
+			final String oldHashedPasswd = Base64.byteArrayToBase64(this.createPasswordHash(oldPasswd));
+			final String newHashedPasswd = Base64.byteArrayToBase64(this.createPasswordHash(newPasswd));
+			if ( delegate.changePasswordForUser(user, oldHashedPasswd, newHashedPasswd) ) {
 				log.info("Password changed of user "+user );
 				return true;
 			}
@@ -252,6 +259,31 @@ public class UserAdminModel extends BasicFormModel {
 		}
 	}
 	
-
-	
+	/**
+	 * Creates hash of the given password
+	 * 
+	 * @param password The given password
+	 * 
+	 * @return Byte array containing hash of the given password
+	 */
+	private byte[] createPasswordHash(String password)
+	{
+		try
+		{
+		   final MessageDigest digest = MessageDigest.getInstance("SHA");
+		   byte[] hashBytes = digest.digest((password).getBytes("UTF-8"));
+		   System.out.println("Create Hash: original string=" + password+ 
+		   		", bytes=" + (password).getBytes("UTF-8").toString() + 
+				", hashBytes=" + hashBytes.toString());
+		   return hashBytes;
+		} catch ( NoSuchAlgorithmException ex ) {
+			log.error("Cannot create safe password!", ex);
+			this.setPopupMsg( "Cannot create safe password! Exception:" + ex.getMessage());
+			return new byte[0];
+		} catch ( UnsupportedEncodingException ex ) {
+			log.error("Cannot convert to UTF-8!", ex);
+			this.setPopupMsg( "Cannot convert to UTF-8! Exception:" + ex.getMessage());
+			return new byte[0];
+		}
+	}
 }

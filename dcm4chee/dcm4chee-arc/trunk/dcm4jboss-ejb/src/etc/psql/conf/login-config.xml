@@ -99,6 +99,9 @@ $Revision$
              <module-option name = "dsJndiName">java:/PostgresDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
+             <module-option name = "hashEncoding">base64</module-option>
+             <module-option name = "hashCharset">UTF-8</module-option>
+             <module-option name = "hashAlgorithm">SHA-1</module-option>
           </login-module>
           <login-module code="org.dcm4chex.archive.security.AuditLoginModule"
              flag = "optional" >
@@ -114,6 +117,9 @@ $Revision$
              <module-option name = "dsJndiName">java:/PostgresDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
+             <module-option name = "hashEncoding">base64</module-option>
+             <module-option name = "hashCharset">UTF-8</module-option>
+             <module-option name = "hashAlgorithm">SHA-1</module-option>
           </login-module>
           <login-module code="org.dcm4chex.archive.security.AuditLoginModule"
              flag = "optional" >
@@ -129,6 +135,9 @@ $Revision$
              <module-option name = "dsJndiName">java:/PostgresDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
+             <module-option name = "hashEncoding">base64</module-option>
+             <module-option name = "hashCharset">UTF-8</module-option>
+             <module-option name = "hashAlgorithm">SHA-1</module-option>
           </login-module>
           <login-module code="org.dcm4chex.arr.security.AuditingLoginModule"
              flag = "optional" >
