@@ -73,7 +73,10 @@ public class QueryStudiesCmd extends BaseReadCmd {
     private static final String[] ENTITY = {"Patient"};
 
     private static final String[] LEFT_JOIN = { 
-            "Study", null, "Patient.pk", "Study.patient_fk",};
+        "Study", null, "Patient.pk", "Study.patient_fk",};
+    private static final String[] LEFT_JOIN_WITH_SERIES = { 
+        "Study", null, "Patient.pk", "Study.patient_fk", 
+        "Series", null, "Study.pk", "Series.study_fk"};
 
 	private boolean hideMissingStudies;
     
@@ -104,7 +107,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
 
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setLeftJoin(LEFT_JOIN);
+        if ( filter.containsValue(Tags.SeriesInstanceUID) ) {
+            sqlBuilder.setLeftJoin(LEFT_JOIN_WITH_SERIES);
+        } else {            
+            sqlBuilder.setLeftJoin(LEFT_JOIN);
+        }
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
@@ -120,6 +127,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 filter.getStrings(Tags.StudyID));
         sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
                 SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+        sqlBuilder.addListOfStringMatch(null, "Series.seriesIuid",
+                SqlBuilder.TYPE1, filter.getStrings( Tags.SeriesInstanceUID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
                 filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
