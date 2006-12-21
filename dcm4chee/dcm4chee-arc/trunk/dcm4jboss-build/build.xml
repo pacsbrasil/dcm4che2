@@ -105,7 +105,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4che14" prefix="${dist.standalone}">
         <include name="bin/libclib_jiio.so"/>
-        <include name="bin/clib_jiio.dll"/>
+        <include name="bin/clib_jiio*.dll"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
