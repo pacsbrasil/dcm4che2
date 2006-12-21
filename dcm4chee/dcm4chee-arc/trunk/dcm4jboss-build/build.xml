@@ -109,6 +109,8 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
+      </zipfileset>
+      <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.standalone}">
         <include name="bin/*"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/target/${db.name}" prefix="${dist.standalone.config}">
