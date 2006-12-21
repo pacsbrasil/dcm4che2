@@ -134,6 +134,9 @@ public class StudyFilterModel extends AbstractModel {
     public final void setStudyUID(String s) {
         ds.putUI(Tags.StudyInstanceUID, s);
     }
+    public final void setSeriesUID(String s) {
+        ds.putUI(Tags.SeriesInstanceUID, s);
+    }
 
     public final String getModality() {
         return ds.getString(Tags.ModalitiesInStudy);

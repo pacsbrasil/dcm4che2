@@ -102,6 +102,8 @@ public class FolderForm extends BasicFolderForm {
 
     private String studyUID;
 
+    private String seriesUID;
+
     private String studyDateRange;
 
     private String modality;
@@ -289,6 +291,7 @@ public class FolderForm extends BasicFolderForm {
             patientName = "";
             accessionNumber = "";
             studyID = "";
+            seriesUID = "";
             studyDateRange = "";
             modality = "";
             filterAET = false;
@@ -296,6 +299,27 @@ public class FolderForm extends BasicFolderForm {
 		}
 	}
 
+    public String getSeriesUID() {
+        return seriesUID;
+    }
+    /**
+     * @param studyUID The studyUID to set.
+     */
+    public void setSeriesUID(String seriesUID) {
+        this.seriesUID = seriesUID;
+        if ( seriesUID != null && seriesUID.trim().length() > 0 ) {
+            patientID = "";
+            patientName = "";
+            accessionNumber = "";
+            studyID = "";
+            studyUID = "";
+            studyDateRange = "";
+            modality = "";
+            filterAET = false;
+            this.showSeriesIUID = true;
+        }
+    }
+    
     public final List getAets() {
         return aets;
     }
@@ -325,6 +349,7 @@ public class FolderForm extends BasicFolderForm {
             studyFilter.setAccessionNumber(accessionNumber);
             studyFilter.setStudyID(studyID);
             studyFilter.setStudyUID( studyUID );
+            studyFilter.setSeriesUID( seriesUID );
             studyFilter.setStudyDateRange(studyDateRange);
             studyFilter.setModality(modality);
             studyFilter.setCallingAET(this.filterAET ? destination:null);

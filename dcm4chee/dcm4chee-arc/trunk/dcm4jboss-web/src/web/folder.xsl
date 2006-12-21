@@ -198,6 +198,12 @@
 				        		<input size="45" name="studyUID" type="text" value="{studyUID}"/>
 				      		</td>
 						</xsl:when>
+						<xsl:when test="showSeriesIUID='true'">
+				      		<td class="label">Series IUID:</td>
+				      		<td>
+				        		<input size="45" name="seriesUID" type="text" value="{seriesUID}"/>
+				      		</td>
+						</xsl:when>
 						<xsl:otherwise>
 							<td class="label">Study ID:</td>
 				      		<td>
