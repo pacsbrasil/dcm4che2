@@ -600,6 +600,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Patient.encodedAttributes",
                     "Study.encodedAttributes",
                     "Series.encodedAttributes",
+                    "Study.numberOfStudyRelatedSeries",
+                    "Study.numberOfStudyRelatedInstances",
                     "Series.numberOfSeriesRelatedInstances",
                     "Series.filesetId",
                     "Series.filesetIuid",
@@ -631,11 +633,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
             fillDataset(ds, 3);
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(5));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(6));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(7), rs.getString(8));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(9)]);
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(6));
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(9), rs.getString(10));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(11)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -661,6 +665,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Study.encodedAttributes",
                     "Series.encodedAttributes",
                     "Instance.encodedAttributes",
+                    "Study.numberOfStudyRelatedSeries",
+                    "Study.numberOfStudyRelatedInstances",
+                    "Series.numberOfSeriesRelatedInstances",
                     "Instance.retrieveAETs",
                     "Instance.externalRetrieveAET",
                     "Instance.availability",
@@ -709,10 +716,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 2);
             fillDataset(ds, 3);
             fillDataset(ds, 4);
-            DatasetUtils.putRetrieveAET(ds, rs.getString(5), rs.getString(6));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(7)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(8));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(9));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(5));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(6));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(7));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(8), rs.getString(9));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(10)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(11));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(12));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
 
