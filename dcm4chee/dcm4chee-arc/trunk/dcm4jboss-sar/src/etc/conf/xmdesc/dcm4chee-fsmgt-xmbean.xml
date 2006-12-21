@@ -442,6 +442,7 @@ accessed studies.</description>
          dcm4chee.archive:service=Prefetch#PrefetchSourceAETitle
          dcm4chee.archive:service=Prefetch#DestinationQueryAETitle
          dcm4chee.archive:service=Prefetch#DestinationStorageAETitle
+         dcm4chee.archive:service=Prefetch#CallingAETitle
          dcm4chee.archive:service=QueryRetrieveScp#CalledAETitles
          dcm4chee.archive:service=QueryRetrieveScp#CallingAEtitles
          dcm4chee.archive:service=QueryRetrieveScp#SendWithDefaultTransferSyntaxToAETitles
