@@ -359,6 +359,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setCoerceWarnCallingAETs(aets);
     }
 
+    public String getAcceptMismatchIUIDCallingAETs() {
+        return scp.getAcceptMismatchIUIDCallingAETs();
+    }
+
+    public void setAcceptMismatchIUIDCallingAETs(String aets) {
+        scp.setAcceptMismatchIUIDCallingAETs(aets);
+    }
+
     public boolean isStoreDuplicateIfDiffHost() {
         return scp.isStoreDuplicateIfDiffHost();
     }

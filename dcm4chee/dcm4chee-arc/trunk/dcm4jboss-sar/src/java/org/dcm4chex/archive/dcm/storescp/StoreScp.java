@@ -145,6 +145,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private CompressionRules compressionRules = new CompressionRules("");
 
     private String[] coerceWarnCallingAETs = {};
+    private String[] acceptMismatchIUIDCallingAETs = {};
     private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
@@ -276,6 +277,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setCoerceWarnCallingAETs(String aets) {
         coerceWarnCallingAETs = StringUtils.split(aets, '\\');
+    }
+
+    public final String getAcceptMismatchIUIDCallingAETs() {
+        return StringUtils.toString(acceptMismatchIUIDCallingAETs, '\\');
+    }
+
+    public final void setAcceptMismatchIUIDCallingAETs(String aets) {
+        acceptMismatchIUIDCallingAETs = StringUtils.split(aets, '\\');
     }
 
     public final boolean isStudyDateInFilePath() {
@@ -419,6 +428,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             
             service.logDIMSE(assoc, STORE_XML, ds);
             checkDataset(assoc, rqCmd, ds);
+            iuid = ds.getString(Tags.SOPInstanceUID); // may differ from Affected SOP IUID
             if ( isCheckIncorrectWorklistEntry() 
                     && checkIncorrectWorklistEntry(ds) ) {
                 log.info("Received Instance[uid=" + iuid
@@ -783,11 +793,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         + Tags.toString(TYPE1_ATTR[i]));
             }
         }
-        if (!rqCmd.getAffectedSOPInstanceUID().equals(
-                ds.getString(Tags.SOPInstanceUID))) {
-            throw new DcmServiceException(
-                    Status.DataSetDoesNotMatchSOPClassError,
-            "SOP Instance UID in Dataset differs from Affected SOP Instance UID");
+        String affectedSOPInstanceUID = rqCmd.getAffectedSOPInstanceUID();
+        String sopInstanceUID = ds.getString(Tags.SOPInstanceUID);
+        if (!affectedSOPInstanceUID.equals(sopInstanceUID)) {
+            String prompt = "SOP Instance UID in Dataset ["
+                    + sopInstanceUID
+                    + "] differs from Affected SOP Instance UID["
+                    + affectedSOPInstanceUID + "]";
+            log.warn(prompt);
+            if (!contains(acceptMismatchIUIDCallingAETs, assoc.getCallingAET())) {
+                throw new DcmServiceException(
+                        Status.DataSetDoesNotMatchSOPClassError, prompt);
+            }
         }
         if (!rqCmd.getAffectedSOPClassUID().equals(
                 ds.getString(Tags.SOPClassUID))) {

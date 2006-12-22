@@ -61,6 +61,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAcceptMismatchIUIDCallingAETs"
+      setMethod="setAcceptMismatchIUIDCallingAETs">
+      <description>List of the AE titles for the Storage SCUs from which
+      storage requests with Affected SOP Instance UID in the command differs
+      from the SOP Instance UID are accepted. 
+      Separate multiple values by \(backslash).
+      NONE = no calling AE titles.  
+      </description>
+      <name>AcceptMismatchAffectedSOPInstanceUIDCallingAETiles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptMissingPatientID"
       setMethod="setAcceptMissingPatientID">
       <description><![CDATA[Accept storage of objects/images without patient ID]]>
