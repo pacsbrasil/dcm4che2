@@ -13,6 +13,9 @@
   <property name="dcm4chee-arr.ear" value="${dcm4chee-arr.home}/dcm4chee-arr-ear"/>
   <!-- Override with your FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
+  <!-- Override with your MAVEN2 repository dist location
+      (only needed for dist-arr target) -->
+  <property name="maven.repo" value="${user.home}/.m2/repository"/>
   <target name="clean">
     <delete dir="${target.dir}"/>
     <ant inheritAll="false" dir="../dcm4che14" target="clean"/>
@@ -350,6 +353,12 @@
 	  	<include name="lib/hibernate3.jar"/>
 	  	<include name="lib/javassist.jar"/>
 	  </zipfileset>
+      <zipfileset dir="${maven.repo}/org/slf4j/slf4j-log4j12/1.1.0" prefix="${dist.standalone.config}/lib">
+        <include name="slf4j-log4j12-1.1.0.jar"/>
+      </zipfileset>
+      <zipfileset dir="${maven.repo}/org/slf4j/slf4j-api/1.1.0" prefix="${dist.standalone.config}/lib">
+        <include name="slf4j-api-1.1.0.jar"/>
+      </zipfileset>
       <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.standalone.config}/deploy">
         <include name="dcm4chee-arr-${db.name}-*.ear"/>
       </zipfileset>

@@ -6,3 +6,7 @@ dcm4chee-arr.home=${user.home}/dcm4chee/dcm4chee-arr
 
 #Override with your FOP dist location
 fop.home=${user.home}/fop-0.20.5
+
+#Override with your MAVEN2 repository dist location
+#(only needed for dist-arr target)
+maven.repo=${user.home}/.m2/repository
