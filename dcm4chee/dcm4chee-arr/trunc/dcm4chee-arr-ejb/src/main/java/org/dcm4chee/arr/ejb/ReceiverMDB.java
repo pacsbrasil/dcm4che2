@@ -67,7 +67,10 @@ import org.xml.sax.helpers.XMLReaderFactory;
                 propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(
                 propertyName = "destination",
-                propertyValue = "queue/ARRReceiver") })
+                propertyValue = "queue/ARRReceiver"),
+        @ActivationConfigProperty(
+                propertyName = "maxSession",
+                propertyValue = "1") })
 public class ReceiverMDB implements MessageListener {
 
     private static Logger log = LoggerFactory.getLogger(ReceiverMDB.class);
