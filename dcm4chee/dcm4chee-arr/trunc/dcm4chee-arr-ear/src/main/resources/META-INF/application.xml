@@ -18,6 +18,6 @@
     <java>slf4j-log4j12-1.0.jar</java>
   </module>
   <module>
-    <java>jboss-seam-1.0.1.GA.jar</java>
+    <java>jboss-seam-1.1.0.GA.jar</java>
   </module>
 </application>
