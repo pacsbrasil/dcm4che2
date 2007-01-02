@@ -126,18 +126,15 @@ public class TranscoderInputHandler implements DicomInputHandler
             in.readValue(in);
             attrs.remove(tag);
             out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-        } else {
+        } else if (!TagUtils.isGroupLengthElement(tag)) {
             out.writeHeader(tag, vr, vallen);
             if (tag == Tag.SpecificCharacterSet
-                    || TagUtils.isPrivateCreatorDataElement(tag))
-            {
+                    || TagUtils.isPrivateCreatorDataElement(tag)) {
                 byte[] val = in.readBytes(vallen);
                 boolean bigEndian = in.getTransferSyntax().bigEndian();
                 attrs.putBytes(tag, vr, val, bigEndian);
                 out.write(val);
-            }
-            else
-            {
+            } else {
                 transcodeValue(in, vr);
             }
         }
