@@ -83,7 +83,6 @@ class MessageTestCaseSupport extends TestCase {
         AuditSource auditSource = new AuditSource(AUDIT_SOURCE_ID);
         auditSource.addAuditSourceTypeCode(AUDIT_SOURCE_TYPE_CODE);
         AuditMessage.setDefaultAuditSource(auditSource);
-        AuditMessage.setEncoding("ISO-8859-1");
     }
 
     protected void assertXML(AuditMessage msg) throws Exception {
@@ -91,9 +90,9 @@ class MessageTestCaseSupport extends TestCase {
         String ref = load(
                 msg.getAuditEvent().getClass().getName().replace('.', '/') 
                                 + ".xml");
-        assertEquals(ref.substring(0, 94), xml.substring(0, 94));
+        assertEquals(ref.substring(0, 50), xml.substring(0, 50));
         // skip value of EventDateTime
-        assertEquals(ref.substring(123), xml.substring(123));
+        assertEquals(ref.substring(79), xml.substring(79));
     }
 
     private String load(String name) throws Exception {
