@@ -54,12 +54,13 @@ import java.util.List;
  */
 public class AuditMessage extends BaseElement {
 
+    private static boolean incXMLDecl = false;
     private static AuditSource defaultAuditSource;
     private final AuditEvent event;
     private final ArrayList activeParticipants = new ArrayList();
     private final ArrayList auditSources = new ArrayList(1);
     private final ArrayList participantObjects = new ArrayList();
-
+    
     public AuditMessage(AuditEvent event, ActiveParticipant apart) {
         super("AuditMessage");
         if (event == null) {
@@ -69,6 +70,14 @@ public class AuditMessage extends BaseElement {
         addActiveParticipantInternal(apart);
     }
     
+    public static final boolean isIncXMLDecl() {
+        return incXMLDecl;
+    }
+
+    public static final void setIncXMLDecl(boolean incXMLDecl) {
+        AuditMessage.incXMLDecl = incXMLDecl;
+    }
+
     public final AuditEvent getAuditEvent() {
         return event;
     }
@@ -133,9 +142,9 @@ public class AuditMessage extends BaseElement {
         if (auditSources.isEmpty() && defaultAuditSource == null) {
             throw new IllegalStateException("No Audit Source specified!");
         }
-        out.write("<?xml version=\"1.0\" encoding=\"");
-        out.write(encoding);
-        out.write("\"?>");
+        if (incXMLDecl) {
+            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        }
         super.output(out);
     }
     

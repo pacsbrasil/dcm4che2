@@ -119,7 +119,7 @@ public class SyslogWriter extends Writer {
   
   public
   void write(String string) throws IOException {
-    byte[] bytes = string.getBytes();
+    byte[] bytes = string.getBytes("UTF-8");
     DatagramPacket packet = new DatagramPacket(bytes, bytes.length,
                                                address, port);
 

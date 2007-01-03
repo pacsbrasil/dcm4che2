@@ -40,7 +40,6 @@ package org.dcm4che2.audit.message;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -57,8 +56,6 @@ import java.util.Map;
 class BaseElement {
     
     private static String dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-    protected static String encoding = 
-        System.getProperty("file.encoding", "ISO-8859-1");
 
     protected final String name;
     protected LinkedHashMap atts;
@@ -71,16 +68,6 @@ class BaseElement {
     public BaseElement(String name, String attr, String val) {
         this.name = name;
         addAttribute(attr, val);
-    }
-
-    public static final String getEncoding() {
-        return encoding;
-    }
-
-    public static final void setEncoding(String encoding) 
-            throws UnsupportedEncodingException {
-        "".getBytes(encoding);
-        BaseElement.encoding = encoding;
     }
 
     public static final String getDateTimeFormat() {

@@ -377,7 +377,7 @@ public class ParticipantObject extends BaseElement {
             super("ParticipantObjectDetail");
             addAttribute("type", type);
             try {
-                addAttribute("value", value.getBytes(encoding));
+                addAttribute("value", value.getBytes("UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e);
             }        
@@ -393,7 +393,7 @@ public class ParticipantObject extends BaseElement {
         
         public final String getValueAsString() {
             try {
-                return new String((byte[]) getAttribute("value"), encoding);
+                return new String((byte[]) getAttribute("value"), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                  throw new Error(e);
             }
