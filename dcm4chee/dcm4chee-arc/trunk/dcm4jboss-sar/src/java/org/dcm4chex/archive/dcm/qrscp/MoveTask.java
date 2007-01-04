@@ -110,9 +110,9 @@ public class MoveTask implements Runnable {
     
     private static final Timer pendingRspTimer = new Timer(true);
 
-    private final QueryRetrieveScpService service;
+    protected final QueryRetrieveScpService service;
 
-    private final Logger log;
+    protected final Logger log;
 
     private final String moveDest;
 
