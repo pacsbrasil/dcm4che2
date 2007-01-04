@@ -158,7 +158,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private int maxStoreOpsInvoked = 0;
 
-    private FindScp dicomFindScp = new FindScp(this, true);
+    private FindScp dicomFindScp = null;
 
     private FindScp tianiFindScp = new FindScp(this, false);
 
@@ -166,7 +166,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private FindScp tianiVMFFindScp = new VMFFindScp(this);
 
-    private MoveScp moveScp = new MoveScp(this);
+    private MoveScp moveScp = null;
 
     private int maxUIDsPerMoveRQ = 100;
 
@@ -200,6 +200,19 @@ public class QueryRetrieveScpService extends AbstractScpService {
      */
     private Map privateTSuidMap = new LinkedHashMap();
 
+    public QueryRetrieveScpService() {
+    	moveScp = createMoveScp();
+    	dicomFindScp = createFindScp();
+    }
+    
+	protected MoveScp createMoveScp() {
+		return new MoveScp(this);
+	}
+	
+	protected FindScp createFindScp() {
+		return new FindScp(this, true);
+	}
+	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
