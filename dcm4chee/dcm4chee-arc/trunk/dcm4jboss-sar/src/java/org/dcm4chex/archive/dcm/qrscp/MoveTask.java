@@ -625,7 +625,7 @@ class MoveTask implements Runnable {
                 storeRqCmd, ds);
     }
     
-    private File getFile(FileInfo info) throws Exception {
+    protected File getFile(FileInfo info) throws Exception {
     	return info.basedir.startsWith("tar:") ? service.retrieveFileFromTAR(
                 info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
                         info.fileID);
