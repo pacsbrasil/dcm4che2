@@ -109,9 +109,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
                 perfMon.setProperty(assoc, rq, PerfPropertyEnum.NUM_OF_RESULTS, String.valueOf(fileInfos.length));
                 perfMon.stop(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
                 
-	            new Thread(
-	                new MoveTask(
-	                    service,
+	            new Thread( createMoveTask(service,
 	                    assoc,
 	                    rq.pcid(),
 	                    rqCmd,
@@ -139,6 +137,21 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
         }
+    }
+    
+    protected MoveTask createMoveTask( QueryRetrieveScpService service,
+	    ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
+	    Dataset moveRqData, FileInfo[][] fileInfo, AEData aeData,
+	    String moveDest) throws DcmServiceException {
+    	return new MoveTask(
+                service,
+                moveAssoc,
+                movePcid,
+                moveRqCmd,
+                moveRqData,
+                fileInfo,
+                aeData,
+                moveDest);
     }
 
     private void checkMoveRQ(
