@@ -147,7 +147,7 @@ public class ParticipantObjectDescription extends BaseElement {
         private final ArrayList instances = new ArrayList();
 
         public SOPClass(String uid) {
-            super("MPPS", "UID", uid);
+            super("SOPClass", "UID", uid);
         }
 
         public final SOPClass setNumberOfInstances(int n) {
