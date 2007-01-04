@@ -92,7 +92,7 @@ import org.jboss.logging.Logger;
  * @version $Revision$
  * @since 16.09.2003
  */
-class MoveTask implements Runnable {
+public class MoveTask implements Runnable {
 
     private static final String SEND_BUFFER = "SEND_BUFFER";
 
