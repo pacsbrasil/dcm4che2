@@ -63,7 +63,7 @@ public abstract class DeleterThreshold implements Comparable {
         return startHour - ((DeleterThreshold) o).startHour;
     }
     
-    public abstract long getFreeSize(long expectedDataVolumnePerDay);
+    public abstract long getFreeSize(long expectedDataVolumePerDay);
     
     public static class SizeBased extends DeleterThreshold {
         private long freeSize;
@@ -83,7 +83,7 @@ public abstract class DeleterThreshold implements Comparable {
             return "" + startHour + ":" +  FileUtils.formatSize(freeSize);
         }
 
-        public long getFreeSize(long expectedDataVolumnePerDay) {
+        public long getFreeSize(long expectedDataVolumePerDay) {
             return freeSize;
         }
     }
@@ -106,8 +106,8 @@ public abstract class DeleterThreshold implements Comparable {
             return "" + startHour + ":" +  freeHours + "h";
         }
 
-        public long getFreeSize(long expectedDataVolumnePerDay) {            
-            return expectedDataVolumnePerDay * freeHours / 24;
+        public long getFreeSize(long expectedDataVolumePerDay) {            
+            return expectedDataVolumePerDay * freeHours / 24;
         }
     }
 }

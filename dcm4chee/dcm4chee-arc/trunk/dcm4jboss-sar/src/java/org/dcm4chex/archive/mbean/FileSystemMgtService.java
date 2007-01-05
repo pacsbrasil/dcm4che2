@@ -142,7 +142,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private DeleterThresholds deleterThresholds = new DeleterThresholds(
             "7:1h;19:24h", true);
 
-    private long expectedDataVolumnePerDay = 100000L;
+    private long expectedDataVolumePerDay = 100000L;
 
     private boolean flushExternalRetrievable = false;
 
@@ -182,7 +182,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private String purgeStudyQueueName = null;
 
-    private long adjustExpectedDataVolumnePerDay = 0L;
+    private long adjustExpectedDataVolumePerDay = 0L;
 
     protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
 
@@ -356,20 +356,20 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         this.deleterThresholds = new DeleterThresholds(s, true);
     }
 
-    public final String getExpectedDataVolumnePerDay() {
-        return FileUtils.formatSize(expectedDataVolumnePerDay);
+    public final String getExpectedDataVolumePerDay() {
+        return FileUtils.formatSize(expectedDataVolumePerDay);
     }
 
-    public final void setExpectedDataVolumnePerDay(String s) {
-        this.expectedDataVolumnePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
+    public final void setExpectedDataVolumePerDay(String s) {
+        this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
     }
 
-    public final boolean isAdjustExpectedDataVolumnePerDay() {
-        return adjustExpectedDataVolumnePerDay != 0L;
+    public final boolean isAdjustExpectedDataVolumePerDay() {
+        return adjustExpectedDataVolumePerDay != 0L;
     }
 
-    public final void setAdjustExpectedDataVolumnePerDay(boolean b) {
-        this.adjustExpectedDataVolumnePerDay = b ? nextMidnight() : 0L;
+    public final void setAdjustExpectedDataVolumePerDay(boolean b) {
+        this.adjustExpectedDataVolumePerDay = b ? nextMidnight() : 0L;
     }
 
     private long nextMidnight() {
@@ -1050,15 +1050,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             FileSystemMgt fsMgt = newFileSystemMgt();
             FileSystemDTO[] fs = listLocalOnlineRWFileSystems(fsMgt);
             Calendar now = Calendar.getInstance();
-            if (adjustExpectedDataVolumnePerDay != 0
-                    && now.getTimeInMillis() > adjustExpectedDataVolumnePerDay) {
-                adjustExpectedDataVolumnePerDay(fsMgt, fs);
-                adjustExpectedDataVolumnePerDay = nextMidnight();
+            if (adjustExpectedDataVolumePerDay != 0
+                    && now.getTimeInMillis() > adjustExpectedDataVolumePerDay) {
+                adjustExpectedDataVolumePerDay(fsMgt, fs);
+                adjustExpectedDataVolumePerDay = nextMidnight();
             }
             long available = getAvailableDiskSpace(fs) - minFreeDiskSpace
                     * fs.length;
             long freeSize = deleterThresholds.getDeleterThreshold(now)
-                    .getFreeSize(expectedDataVolumnePerDay);
+                    .getFreeSize(expectedDataVolumePerDay);
             long maxSizeToDel = freeSize - available;
             if (maxSizeToDel > 0) {
                 freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
@@ -1186,13 +1186,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         return sizeDeleted;
     }
 
-    public String adjustExpectedDataVolumnePerDay() throws Exception {
+    public String adjustExpectedDataVolumePerDay() throws Exception {
         FileSystemMgt fsMgt = newFileSystemMgt();
-        return adjustExpectedDataVolumnePerDay(fsMgt,
+        return adjustExpectedDataVolumePerDay(fsMgt,
                 listLocalOnlineRWFileSystems(fsMgt));
     }
 
-    private String adjustExpectedDataVolumnePerDay(FileSystemMgt fsMgt,
+    private String adjustExpectedDataVolumePerDay(FileSystemMgt fsMgt,
             FileSystemDTO[] fs) throws Exception {
         Calendar cal = Calendar.getInstance();
         cal.roll(Calendar.DAY_OF_MONTH, false);
@@ -1202,9 +1202,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             sum = fsMgt.sizeOfFilesCreatedAfter(new Long(fs[i].getPk()), after);
         }
         String size = FileUtils.formatSize(sum);
-        if (sum > expectedDataVolumnePerDay) {
+        if (sum > expectedDataVolumePerDay) {
             server.setAttribute(super.serviceName, new Attribute(
-                    "ExpectedDataVolumnePerDay", size));
+                    "ExpectedDataVolumePerDay", size));
         }
         return size;
     }

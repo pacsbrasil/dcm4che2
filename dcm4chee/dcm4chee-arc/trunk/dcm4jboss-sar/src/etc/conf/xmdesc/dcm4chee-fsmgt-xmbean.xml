@@ -175,24 +175,24 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getExpectedDataVolumnePerDay"
-      setMethod="setExpectedDataVolumnePerDay">
+      getMethod="getExpectedDataVolumePerDay"
+      setMethod="setExpectedDataVolumePerDay">
       <description><![CDATA[Expected data volume per day. Used to transform time based deleter
       thresholds (s. DeleterThresholds) into disk space size to free.]]>
       </description>
-      <name>ExpectedDataVolumnePerDay</name>
+      <name>ExpectedDataVolumePerDay</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="100MB"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAdjustExpectedDataVolumnePerDay"
-      setMethod="setAdjustExpectedDataVolumnePerDay">
-      <description><![CDATA[Update value of attribute ExpectedDataVolumnePerDay at midnight,
-      if data volumne received during last 24 hours exceeds its current value.]]>
+      getMethod="isAdjustExpectedDataVolumePerDay"
+      setMethod="setAdjustExpectedDataVolumePerDay">
+      <description><![CDATA[Update value of attribute ExpectedDataVolumePerDay at midnight,
+      if data volume received during last 24 hours exceeds its current value.]]>
       </description>
-      <name>AdjustExpectedDataVolumnePerDay</name>
+      <name>AdjustExpectedDataVolumePerDay</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
@@ -930,10 +930,10 @@ accessed studies.</description>
       <return-type>void</return-type>
    </operation>   
    <operation impact="ACTION">
-      <description>Update value of attribute ExpectedDataVolumnePerDay at midnight,
-      if data volumne received during last 24 hours exceeds its current value.
+      <description>Update value of attribute ExpectedDataVolumePerDay at midnight,
+      if data volume received during last 24 hours exceeds its current value.
       </description>
-      <name>adjustExpectedDataVolumnePerDay</name>
+      <name>adjustExpectedDataVolumePerDay</name>
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="INFO">
