@@ -14,12 +14,12 @@
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-seam-ui</artifactId>
-      <version>1.1.0.GA</version>
+      <version>1.0.1.GA</version>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-seam-debug</artifactId>
-      <version>1.1.0.GA</version>
+      <version>1.0.1.GA</version>
     </dependency>
     <dependency>
       <groupId>javax.el</groupId>
