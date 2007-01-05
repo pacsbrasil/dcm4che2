@@ -72,12 +72,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
- *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.retrieveAET = ?1 AND sof.accessTime < ?2 AND sof.fileSystem.status >= 0 ORDER BY sof.accessTime ASC"
+ *             query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.retrieveAET = ?1 AND sof.accessTime < ?2 AND sof.fileSystem.status >= 0 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC"
  *             strategy="on-find" eager-load-group="*"
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndOldest(java.lang.String aet, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndOldest(java.lang.String aet, int limit)"
- *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.retrieveAET = ?1 AND sof.fileSystem.status >= 0 ORDER BY sof.accessTime ASC LIMIT ?2"
+ *             query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.retrieveAET = ?1 AND sof.fileSystem.status >= 0 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC LIMIT ?2"
  *             strategy="on-find" eager-load-group="*"
  */
 public abstract class StudyOnFileSystemBean implements EntityBean {
