@@ -50,67 +50,69 @@ import org.dcm4che.dict.Tags;
  * @since Nov 7, 2005
  */
 public class SeriesStored implements Serializable {
-	
+
     private static final long serialVersionUID = -5829286003479809840L;
+
     private String callingAET;
-	private String patientID;
-	private String patientName;
-	private String retrieveAET;
-	private String accessionNumber;
-	private final Dataset ian;
-	
-	public SeriesStored(Dataset ian) {
-		this.ian = ian;
-	}
-    
-    public String toString() {
-        return "SeriesStored[calling=" + callingAET
-            + ", suid=" + (ian != null ? ian.getString(Tags.StudyInstanceUID) : null)
-            + "]";
+
+    private String patientID;
+    private String patientName;
+    private String retrieveAET;
+    private String accessionNumber;
+    private final Dataset ian;
+
+    public SeriesStored(Dataset ian) {
+        this.ian = ian;
     }
 
-	public final Dataset getIAN() {
-		return ian;
-	}
-	
-	public final String getCallingAET() {
-		return callingAET;
-	}
+    public String toString() {
+        return "SeriesStored[calling=" + callingAET + ", suid="
+                + (ian != null ? ian.getString(Tags.StudyInstanceUID) : null)
+                + "]";
+    }
 
-	public final void setCallingAET(String callingAET) {
-		this.callingAET = callingAET;
-	}
+    public final Dataset getIAN() {
+        return ian;
+    }
 
-	public final String getRetrieveAET() {
-		return retrieveAET;
-	}
+    public final String getCallingAET() {
+        return callingAET;
+    }
 
-	public final void setRetrieveAET(String retrieveAET) {
-		this.retrieveAET = retrieveAET;
-	}
+    public final void setCallingAET(String callingAET) {
+        this.callingAET = callingAET;
+    }
 
-	public final String getPatientID() {
-		return patientID;
-	}
+    public final String getRetrieveAET() {
+        return retrieveAET;
+    }
 
-	public final void setPatientID(String patientID) {
-		this.patientID = patientID;
-	}
+    public final void setRetrieveAET(String retrieveAET) {
+        this.retrieveAET = retrieveAET;
+    }
 
-	public final String getPatientName() {
-		return patientName;
-	}
+    public final String getPatientID() {
+        return patientID;
+    }
 
-	public final void setPatientName(String patientName) {
-		this.patientName = patientName;
-	}
+    public final void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
 
-	public final String getAccessionNumber() {
-		return accessionNumber;
-	}
+    public final String getPatientName() {
+        return patientName;
+    }
 
-	public final void setAccessionNumber(String accessionNumber) {
-		this.accessionNumber = accessionNumber;
-	}
+    public final void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public final String getAccessionNumber() {
+        return accessionNumber;
+    }
+
+    public final void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
+    }
 
 }
