@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.common;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
@@ -51,8 +52,8 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 
-    private static final long serialVersionUID = -5829286003479809840L;
-
+    private static final long serialVersionUID = 3482736440136478280L;
+    private InetAddress remoteAddress;
     private String callingAET;
 
     private String patientID;
@@ -113,6 +114,14 @@ public class SeriesStored implements Serializable {
 
     public final void setAccessionNumber(String accessionNumber) {
         this.accessionNumber = accessionNumber;
+    }
+
+    public final InetAddress getRemoteAddress() {
+        return remoteAddress;
+    }
+
+    public final void setRemoteAddress(InetAddress remoteAddress) {
+        this.remoteAddress = remoteAddress;
     }
 
 }
