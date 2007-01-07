@@ -203,6 +203,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isLogInstancesStored"
+      setMethod="setLogInstancesStored">
+      <description>Emit InstancesStored audit messages.
+      </description>
+      <name>LogInstancesStored</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogSecurityAlert"
       setMethod="setLogSecurityAlert">
       <description>Emit SecurityAlert audit messages.
