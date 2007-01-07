@@ -147,7 +147,7 @@ public class InstancesTransferedLoggerMBean
             String host = alertLogger.isDisableHostLookup() 
                     ? remoteAddr.getHostAddress()
                     : remoteAddr.getHostName();
-            src = new Source(host);
+            src = new Source(remoteAET + '@' + host);
             src.setNetworkAccessPoint(Character.isDigit(host.charAt(0))
                     ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(host)
                     : (NetworkAccessPoint) new NetworkAccessPoint.HostName(host));
