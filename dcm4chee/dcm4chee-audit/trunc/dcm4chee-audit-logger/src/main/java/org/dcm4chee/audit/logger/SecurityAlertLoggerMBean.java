@@ -73,6 +73,7 @@ import org.dcm4che2.audit.message.ApplicationLauncher;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.AuditSource;
+import org.dcm4che2.audit.message.Destination;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.PerformingParticipant;
@@ -229,7 +230,7 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
         logApplicationActivity(AuditEvent.TypeCode.APPLICATION_START);
     }
 
-    public void destroy() throws Exception {
+    public void destroy() {
         logApplicationActivity(AuditEvent.TypeCode.APPLICATION_STOP);
         server = null;
     }
@@ -316,17 +317,25 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
     private void logApplicationActivity(AuditEvent.TypeCode typeCode) {
         ApplicationActivityMessage msg = new ApplicationActivityMessage(
                 new ApplicationActivityMessage.AuditEvent(typeCode), 
-                getApplication());
+                mkLocalApplication());
         msg.addApplicationLauncher(new ApplicationLauncher(getPrincipal()));
         SecurityAlertLoggerMBean.auditlog.info(msg);        
     }
 
-    private Application getApplication() {
+    private Application mkLocalApplication() {
         Application app = new Application(applicationID);
         app.setAlternativeUserID(altUserID);
+        app.setNetworkAccessPoint(nap);
         return app;
     }
 
+    public Destination mkLocalDestination() {
+        Destination app = new Destination(applicationID);
+        app.setAlternativeUserID(altUserID);
+        app.setNetworkAccessPoint(nap);
+        return app;
+    }
+    
     private void logSecurityAlert(AuditEvent.TypeCode typeCode, 
             AlertSubject alertSubject) {
         SecurityAlertMessage msg = new SecurityAlertMessage(

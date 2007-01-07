@@ -38,6 +38,8 @@
  
 package org.dcm4chee.audit.logger;
 
+import org.dcm4che2.audit.message.Destination;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -58,9 +60,11 @@ public interface SecurityAlertLogger {
     public String getAuditEnterpriseSiteID();
     public String getAuditSourceTypeCodes();
     
+    public Destination mkLocalDestination();
+
     //  Life cycle method
     public void create() throws Exception;
-    public void destroy() throws Exception;
+    public void destroy();
     public void start () throws Exception;
     public void stop ();
 }
