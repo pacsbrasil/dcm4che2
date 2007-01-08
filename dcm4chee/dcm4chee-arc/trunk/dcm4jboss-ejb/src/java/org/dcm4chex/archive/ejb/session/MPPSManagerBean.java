@@ -165,7 +165,10 @@ public abstract class MPPSManagerBean implements SessionBean {
     private PatientLocal getPatient(Dataset ds) throws DcmServiceException {
         try {
             final String id = ds.getString(Tags.PatientID);
-            Collection c = patHome.findByPatientId(id);
+            final String issuer = ds.getString(Tags.IssuerOfPatientID);
+            Collection c = issuer != null 
+                    ? patHome.findByPatientIdWithIssuer(id, issuer)
+                    : patHome.findByPatientId(id);
             for (Iterator it = c.iterator(); it.hasNext();) {
                 PatientLocal patient = (PatientLocal) it.next();
                 if (equals(patient, ds)) {
