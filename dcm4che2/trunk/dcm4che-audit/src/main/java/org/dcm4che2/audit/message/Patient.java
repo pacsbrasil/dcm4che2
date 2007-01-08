@@ -53,8 +53,9 @@ public class Patient extends ParticipantObject {
         setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
     }
     
-    public void setPatientName(String pn) {
+    public Patient setPatientName(String pn) {
         setParticipantObjectName(pn);
+        return this;
     }
     
     public String getPatientName() {
