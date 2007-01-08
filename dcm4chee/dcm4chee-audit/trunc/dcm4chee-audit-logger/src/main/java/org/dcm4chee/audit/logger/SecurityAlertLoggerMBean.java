@@ -78,7 +78,6 @@ import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.PerformingParticipant;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
-import org.dcm4che2.audit.message.Source;
 import org.jboss.annotation.ejb.Management;
 import org.jboss.annotation.ejb.Service;
 import org.jboss.mx.util.MBeanServerLocator;
@@ -93,7 +92,6 @@ import org.jboss.security.SecurityAssociation;
 @Management(SecurityAlertLogger.class)
 public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
 
-    private static final Logger auditlog = Logger.getLogger("audit");
     private static final Logger log = 
             Logger.getLogger(SecurityAlertLoggerMBean.class);
     private static final String AUDIT_SOURCE_URL =
@@ -120,8 +118,7 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
     private String applicationID;
     private String aeTitles;
     private String altUserID;
-    private NetworkAccessPoint nap;
-    private boolean hostLookup = true;
+    private NetworkAccessPoint localNAP;
     
     public final String getApplicationID() {
         return applicationID;
@@ -146,18 +143,6 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
         altUserID = "AETITLES=" + aeTitles.replace('\\', ';');
     }
     
-    public final boolean isDisableHostLookup() {
-        return !hostLookup;
-    }
-
-    public final void setDisableHostLookup(boolean disable) {
-        this.hostLookup = !disable;
-    }
-    
-    public final NetworkAccessPoint getNetworkAccessPoint() {
-        return nap;
-    }
-
     public String getAuditSourceID() {
         return AuditMessage.getDefaultAuditSource().getAuditSourceID();
     }
@@ -181,15 +166,11 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
         
     private void initLocalNetworkAccessPoint() {
         try {
-            InetAddress localHost = InetAddress.getLocalHost();
-            String ip = localHost.getHostAddress();
-            String host = localHost.getHostName();
-            nap = ip.equals(host)
-                    ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(ip)
-                    : (NetworkAccessPoint) new NetworkAccessPoint.HostName(host);
+            localNAP = LoggerUtils.toNetworkAccessPoint(
+                    InetAddress.getLocalHost());
         } catch (UnknownHostException e) {
             log.error("Failed to determine Network Access Point ID:", e);
-            nap = new NetworkAccessPoint.HostName("???");
+            localNAP = new NetworkAccessPoint.HostName("???");
         }
     }
     
@@ -320,36 +301,25 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
                 new ApplicationActivityMessage.AuditEvent(typeCode), 
                 mkLocalApplication());
         msg.addApplicationLauncher(new ApplicationLauncher(getPrincipal()));
-        SecurityAlertLoggerMBean.auditlog.info(msg);        
+        LoggerUtils.log.info(msg);        
     }
 
     private Application mkLocalApplication() {
         Application app = new Application(applicationID);
         app.setAlternativeUserID(altUserID);
-        app.setNetworkAccessPoint(nap);
+        app.setNetworkAccessPoint(localNAP);
         return app;
     }
-
-    public Destination mkLocalDestination(boolean isRequestor) {
-        Destination dst = new Destination(applicationID);
-        if (!isRequestor) {
-            dst.setUserIsRequestor(false);
-        }
-        dst.setAlternativeUserID(altUserID);
-        dst.setNetworkAccessPoint(nap);
-        return dst;
-    }
-
-    public Source mkLocalSource(boolean isRequestor) {
-        Source src = new Source(applicationID);
-        if (!isRequestor) {
-            src.setUserIsRequestor(false);
-        }
-        src.setAlternativeUserID(altUserID);
-        src.setNetworkAccessPoint(nap);
-        return src;
-    }
     
+
+    public Destination getLocalDestination() {
+        Destination dst = new Destination(applicationID);
+        dst.setUserIsRequestor(false);
+        dst.setAlternativeUserID(altUserID);
+        dst.setNetworkAccessPoint(localNAP);
+        return dst;
+    }   
+
     private void logSecurityAlert(AuditEvent.TypeCode typeCode, 
             AlertSubject alertSubject) {
         SecurityAlertMessage msg = new SecurityAlertMessage(
@@ -359,7 +329,7 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
         if (alertSubject != null) {
             msg.addAlertSubject(alertSubject);
         }
-        SecurityAlertLoggerMBean.auditlog.info(msg);
+        LoggerUtils.log.info(msg);
     }
     
     private ActiveParticipant getReporter() {
@@ -372,7 +342,7 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
     }
 
     private AlertSubject mkAlertSubject(String desc) {
-        return new AlertSubject(nap.getNodeID(),
+        return new AlertSubject(localNAP.getNodeID(),
                 ParticipantObject.IDTypeCode.NODE_ID, desc);
     }
     
@@ -396,19 +366,16 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
     private PerformingParticipant toPerformer(SSLSocket sock,
             InetAddress remoteAddr) {
         SSLSession session = sock.getSession();
-        String host = hostLookup ? remoteAddr.getHostName()
-                : remoteAddr.getHostAddress();
+        NetworkAccessPoint nap = LoggerUtils.toNetworkAccessPoint(remoteAddr);
         String id;
         try {
             Principal p = session.getPeerPrincipal();
             id = p.getName();
         } catch (SSLPeerUnverifiedException e) {
-            id = host;
+            id = nap.getNodeID();
         }
         PerformingParticipant perf = new PerformingParticipant(id);
-        perf.setNetworkAccessPoint(Character.isDigit(host.charAt(0))
-                ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(host)
-                : (NetworkAccessPoint) new NetworkAccessPoint.HostName(host));
+        perf.setNetworkAccessPoint(nap);
         return perf;
     }
 
@@ -427,8 +394,9 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
                     hsfEvent.getRemoteAddress()));
             msg.addAlertSubject(mkAlertSubject(
                     hsfEvent.getException().getMessage()));
-            SecurityAlertLoggerMBean.auditlog.warn(msg);           
-        }};
+            LoggerUtils.log.warn(msg);           
+        }
+    };
 
     private final NotificationListener hscl = new NotificationListener() {
 
@@ -441,12 +409,12 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
             msg.addPerfomingParticipant(toPerformer(hscEvent.getSocket(), 
                     hscEvent.getSocket().getInetAddress()));
             msg.addAlertSubject(mkAlertSubject(toText(hscEvent)));
-            SecurityAlertLoggerMBean.auditlog.info(msg);
-            
+            LoggerUtils.log.info(msg);            
         }
 
         private String toText(HandshakeCompletedEvent hscEvent) {
             return "SSL handshake completed, cipher suite: "
                     + hscEvent.getCipherSuite();
-        }};
+        }
+    };
 }

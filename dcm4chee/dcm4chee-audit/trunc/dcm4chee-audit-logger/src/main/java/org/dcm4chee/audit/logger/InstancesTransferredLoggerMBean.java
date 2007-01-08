@@ -57,7 +57,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.Association;
 import org.dcm4che2.audit.message.ActiveParticipant;
-import org.dcm4che2.audit.message.Destination;
 import org.dcm4che2.audit.message.InstancesTransferedMessage;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
@@ -76,11 +75,10 @@ import org.jboss.mx.util.MBeanServerLocator;
  * @version $Revision$ $Date$
  * @since Jan 5, 2007
  */
-@Service(objectName = "dcm4chee.archive.logger:name=InstancesTransferedLogger,type=service")
+@Service(objectName = "dcm4chee.archive.logger:name=InstancesTransferredLogger,type=service")
 @Management(InstancesTransferredLogger.class)
 public class InstancesTransferredLoggerMBean 
         implements InstancesTransferredLogger {
-    private static final Logger auditlog = Logger.getLogger("audit");
     private static final Logger log = 
             Logger.getLogger(InstancesTransferredLoggerMBean.class);
 
@@ -89,9 +87,9 @@ public class InstancesTransferredLoggerMBean
     
     @Depends ("dcm4chee.archive:service=QueryRetrieveScp")
     private ObjectName queryRetrieveSCPName;
-
-    @Depends ("dcm4chee.archive.logger:name=SecurityAlertLogger,type=service")
-    private SecurityAlertLogger alertLogger;    
+    
+    @Depends("dcm4chee.archive.logger:name=SecurityAuidtLogger,type=service")
+    private SecurityAlertLogger alertLogger;
 
     private MBeanServer server;
 
@@ -156,12 +154,12 @@ public class InstancesTransferredLoggerMBean
                 SeriesStored series = (SeriesStored) notif.getUserData();
                 InstancesTransferedMessage msg = new InstancesTransferedMessage(
                         new InstancesTransferedMessage.AuditEvent.Create(),
-                        mkRemoteSource(series),
-                        alertLogger.mkLocalDestination(false),
+                        toSource(series),
+                        alertLogger.getLocalDestination(),
                         new Patient(series.getPatientID())
                                 .setPatientName(series.getPatientName()),
                         mkStudy(series));
-                InstancesTransferredLoggerMBean.auditlog.info(msg);
+                LoggerUtils.log.info(msg);
             } catch (Throwable th) {
                 log.warn("Failed to emit Audit Log message for stored Series: ", th);
             }
@@ -178,71 +176,54 @@ public class InstancesTransferredLoggerMBean
                 Association moveAssoc = transferred.getMoveAssociation();
                 String moveAET = moveAssoc.getCallingAET();
                 Association storeAssoc = transferred.getStoreAssociation();
-                String storeAET = storeAssoc.getCallingAET();
-                boolean destIsRequestor = storeAET.equals(moveAET);
+                String destAET = storeAssoc.getCalledAET();
+                String sourceAET = storeAssoc.getCallingAET();
+                boolean srcIsRequestor = sourceAET.equals(moveAET);
+                boolean destIsRequestor = destAET.equals(moveAET);
                 Map studies = transferred.getStudies();
                 Iterator iterStudies = studies.entrySet().iterator();
                 InstancesTransferedMessage msg = new InstancesTransferedMessage(
                         new InstancesTransferedMessage.AuditEvent.Execute(),
-                        alertLogger.mkLocalSource(false),
-                        mkRemoteDestination(storeAssoc, destIsRequestor),
+                        LoggerUtils.toSource(srcIsRequestor, sourceAET,
+                                storeAssoc.getSocket().getLocalAddress()),
+                        LoggerUtils.toDestination(destIsRequestor, destAET,
+                                storeAssoc.getSocket().getInetAddress()),
                         new Patient(transferred.getPatientID())
                                 .setPatientName(transferred.getPatientName()), 
                         mkStudy((Map.Entry) iterStudies.next()));
                 if (!destIsRequestor) {
                     msg.addOtherParticipant(mkRequestor(moveAssoc));
                 }
-                InstancesTransferredLoggerMBean.auditlog.info(msg);
+                LoggerUtils.log.info(msg);
             } catch (Throwable th) {
                 log.warn("Failed to emit Instances Transferred Audit Log message: ", th);
             }
         }
     };
 
-    private Source mkRemoteSource(SeriesStored series) {
+    private Source toSource(SeriesStored series) {
         String remoteAET = series.getCallingAET();
         InetAddress remoteAddr = series.getRemoteAddress();
         Source src;
         if (remoteAddr == null) {
             src = new Source(remoteAET);
         } else {
-            NetworkAccessPoint nap = mkNetworkAccessPoint(remoteAddr);
-            src = new Source(remoteAET + '@' + nap.getID());
+            NetworkAccessPoint nap = 
+                    LoggerUtils.toNetworkAccessPoint(remoteAddr);
+            src = new Source(nap.getNodeID());
             src.setNetworkAccessPoint(nap);
         }
         src.setAETitle(remoteAET);
         return src;
     }
 
-    private NetworkAccessPoint mkNetworkAccessPoint(InetAddress remoteAddr) {
-        String id = alertLogger.isDisableHostLookup() 
-                ? remoteAddr.getHostAddress()
-                : remoteAddr.getHostName();
-        NetworkAccessPoint nap = Character.isDigit(id.charAt(0))
-                ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(id)
-                : (NetworkAccessPoint) new NetworkAccessPoint.HostName(id);
-        return nap;
-    }
-
     private ActiveParticipant mkRequestor(Association moveAssoc) {
         String aet = moveAssoc.getCallingAET();
-        NetworkAccessPoint nap = mkNetworkAccessPoint(
+        NetworkAccessPoint nap = LoggerUtils.toNetworkAccessPoint(
                 moveAssoc.getSocket().getInetAddress());
-        ActiveParticipant ap = new ActiveParticipant(aet + '@' + nap.getID());
+        ActiveParticipant ap = new ActiveParticipant(nap.getNodeID());
         ap.setAETitle(aet);
         return ap ;
-    }
-
-    private Destination mkRemoteDestination(Association storeAssoc, 
-            boolean destIsRequestor) {
-        String aet = storeAssoc.getCalledAET();
-        NetworkAccessPoint nap = mkNetworkAccessPoint(
-                storeAssoc.getSocket().getInetAddress());
-        Destination dst = new Destination(aet + '@' + nap.getID());
-        if (!destIsRequestor) {
-            dst.setUserIsRequestor(false);
-        }
-        return dst;
     }
 
     private Study mkStudy(Map.Entry entry) {

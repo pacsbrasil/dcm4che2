@@ -15,12 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Agfa Healthcare.
+ * Portions created by the Initial Developer are Copyright (C) 2006
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * See listed authors below.
+ * See listed authors below. 
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,29 +35,15 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
-package org.dcm4chee.audit.logger;
 
-import org.dcm4che2.audit.message.Destination;
+package org.dcm4chee.audit.logger;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since Dec 7, 2006
+ * @version $Id$
+ * @since Jan 8, 2007
  */
-public interface SecurityAlertLogger {
-
-    public String getApplicationID();
-    public void setApplicationID(String appID);
-
-    public String getAETitles();
-    public void setAETitles(String aeTitles);
-
-    public String getAuditSourceID();
-    public String getAuditEnterpriseSiteID();
-    public String getAuditSourceTypeCodes();
-    
-    public Destination getLocalDestination();
+public interface QueryLogger {
 
     //  Life cycle method
     public void create() throws Exception;
