@@ -78,6 +78,7 @@ import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.PerformingParticipant;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
+import org.dcm4che2.audit.message.Source;
 import org.jboss.annotation.ejb.Management;
 import org.jboss.annotation.ejb.Service;
 import org.jboss.mx.util.MBeanServerLocator;
@@ -329,11 +330,24 @@ public class SecurityAlertLoggerMBean implements SecurityAlertLogger {
         return app;
     }
 
-    public Destination mkLocalDestination() {
-        Destination app = new Destination(applicationID);
-        app.setAlternativeUserID(altUserID);
-        app.setNetworkAccessPoint(nap);
-        return app;
+    public Destination mkLocalDestination(boolean isRequestor) {
+        Destination dst = new Destination(applicationID);
+        if (!isRequestor) {
+            dst.setUserIsRequestor(false);
+        }
+        dst.setAlternativeUserID(altUserID);
+        dst.setNetworkAccessPoint(nap);
+        return dst;
+    }
+
+    public Source mkLocalSource(boolean isRequestor) {
+        Source src = new Source(applicationID);
+        if (!isRequestor) {
+            src.setUserIsRequestor(false);
+        }
+        src.setAlternativeUserID(altUserID);
+        src.setNetworkAccessPoint(nap);
+        return src;
     }
     
     private void logSecurityAlert(AuditEvent.TypeCode typeCode, 
