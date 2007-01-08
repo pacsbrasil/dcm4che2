@@ -85,6 +85,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
@@ -545,6 +546,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private void checkFile(FileInfo info) throws IOException {
         if (info.md5 == null || info.basedir == null
+                || info.availability != Availability.ONLINE
                 || info.basedir.startsWith("ftp://")
                 || !isLocalRetrieveAET(info.fileRetrieveAET))
             return;
