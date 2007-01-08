@@ -131,11 +131,9 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     
     private AuditRecordLocalHome home;
 
-    private Connection con = null;
-
-    private Statement stmt = null;
-
     private int database = -1;
+
+    private DataSource ds;
 
     /**
      *  Sets the sessionContext attribute of the QueryAuditRecordBean object
@@ -143,7 +141,6 @@ public abstract class QueryAuditRecordBean implements SessionBean {
      * @param  sessionContext The new sessionContext value
      */
     public void setSessionContext(SessionContext sessionContext) {
-        DataSource ds = null;
         try {
             Context jndiCtx = new InitialContext();
             home = (AuditRecordLocalHome) jndiCtx
@@ -157,32 +154,13 @@ public abstract class QueryAuditRecordBean implements SessionBean {
             log.error("Failed lookup ns:", e);
             throw new EJBException(e);
         }
-        try {
-            con = ds.getConnection();
-            stmt = con.createStatement();
-        } catch (SQLException e) {
-            log.error("Failed to connect to db:", e);
-            unsetSessionContext();
-            throw new EJBException(e);
-        }
     }
 
     /**
      *  Description of the Method
      */
     public void unsetSessionContext() {
-        if (stmt != null) {
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-            }
-        }
-        if (con != null) {
-            try {
-                con.close();
-            } catch (SQLException e) {
-            }
-        }
+        ds = null;
     }
 
     /**
@@ -241,10 +219,14 @@ public abstract class QueryAuditRecordBean implements SessionBean {
         ResultSet rs = null;
         String sql = buildSQL(type, host, from, to, aet, userName, patientName,
                 patientId, offset, limit, orderBy, orderDir);
+        if (log.isDebugEnabled()) {
+            log.debug("Execute Query: " + sql);
+        }
+        Connection con = null;
+        Statement stmt = null;
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Execute Query: " + sql);
-            }
+            con = ds.getConnection();
+            stmt = con.createStatement();            
             ResultSet countrs = stmt.executeQuery(buildCountSQL(type, host, from,
                     to, aet, userName, patientName, patientId));
             countrs.next();
@@ -259,6 +241,18 @@ public abstract class QueryAuditRecordBean implements SessionBean {
             if (rs != null) {
                 try {
                     rs.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (con != null) {
+                try {
+                    con.close();
                 } catch (SQLException e) {
                 }
             }
