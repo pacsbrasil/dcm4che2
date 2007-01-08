@@ -80,6 +80,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
+import org.dcm4chex.archive.notif.InstancesTransferred;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -163,6 +164,8 @@ public class MoveTask implements Runnable {
     private RetrieveInfo retrieveInfo;
 
     private Dataset stgCmtActionInfo;
+    
+    private InstancesTransferred instancesTransferred;
 
     private DcmElement refSOPSeq;
 
@@ -490,6 +493,7 @@ public class MoveTask implements Runnable {
                         ++completed;
                         updateInstancesAction(fileInfo);
                         updateStgCmtActionInfo(fileInfo);
+                        updateInstancesTransferred(fileInfo);
                         break;
                     case Status.CoercionOfDataElements:
                     case Status.DataSetDoesNotMatchSOPClassWarning:
@@ -497,6 +501,7 @@ public class MoveTask implements Runnable {
                         ++warnings;
                         updateInstancesAction(fileInfo);
                         updateStgCmtActionInfo(fileInfo);
+                        updateInstancesTransferred(fileInfo);
                         break;
                     default:
                         ++failed;
@@ -552,8 +557,12 @@ public class MoveTask implements Runnable {
             failed += remainingIUIDs.size();
             failedIUIDs.addAll(remainingIUIDs);
         }
-        if (instancesAction != null)
+        if (instancesAction != null) {
             service.logInstancesSent(remoteNode, instancesAction);
+        }
+        if (instancesTransferred != null) {
+            service.sendJMXNotification(instancesTransferred);
+        }
         service.updateStudyAccessTime(studyInfos);
         String stgCmtAET = service.getStgCmtAET(moveDest);
         if (stgCmtAET != null && refSOPSeq.countItems() > 0)
@@ -592,6 +601,19 @@ public class MoveTask implements Runnable {
         item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
+
+    private void updateInstancesTransferred(FileInfo fileInfo) {
+        if (instancesTransferred == null) {
+            instancesTransferred = new InstancesTransferred(
+                    storeAssoc.getAssociation(),
+                    moveAssoc.getAssociation(),
+                    fileInfo.patID,
+                    fileInfo.patName);
+        }
+        instancesTransferred.addInstance(fileInfo.studyIUID, 
+                fileInfo.sopCUID, fileInfo.sopIUID);        
+    }
+    
     private Dimse makeCStoreRQ(FileInfo info, byte[] buffer) throws Exception {
         Association assoc = storeAssoc.getAssociation();
         PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,

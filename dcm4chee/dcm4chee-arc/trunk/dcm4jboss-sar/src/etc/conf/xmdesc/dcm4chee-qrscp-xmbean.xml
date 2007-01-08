@@ -713,5 +713,13 @@ QueryRetrieveScp service.</description>
       </parameter>
        <return-type>void</return-type>
    </operation>
+   
+   <!-- Notifications -->
+   <notification>
+        <description>The notification sent after completion of the retrieve
+        of instances.</description>
+        <name>javax.management.Notification</name>
+        <notification-type>org.dcm4chex.archive.notif.InstancesTransferred</notification-type>
+    </notification>   
 </mbean>
 
