@@ -80,30 +80,39 @@ import org.jboss.system.server.ServerConfigLocator;
 public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected static final String ANY = "ANY";
+
     protected static final String NONE = "NONE";
 
     protected ObjectName dcmServerName;
 
     protected ObjectName auditLogName;
-    
+
     protected DcmHandler dcmHandler;
 
     protected String[] calledAETs;
 
     protected String[] callingAETs;
-        
-    /** Map containing accepted Transfer Syntax UIDs.
-     * key is name (as in config string), value is real uid) */
+
+    /**
+     * Map containing accepted Transfer Syntax UIDs. key is name (as in config
+     * string), value is real uid)
+     */
     protected Map tsuidMap = new LinkedHashMap();
 
     protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
+
     protected int maxOpsInvoked = 1;
+
     protected int maxOpsPerformed = 1;
+
     protected String[] logCallingAETs = {};
+
     protected File logDir;
+
     protected File coerceConfigDir;
+
     protected Hashtable templates = new Hashtable();
-        
+
     public final ObjectName getDcmServerName() {
         return dcmServerName;
     }
@@ -121,11 +130,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final String getCalledAETs() {
-        return calledAETs == null ? "":StringUtils.toString(calledAETs, '\\');
+        return calledAETs == null ? "" : StringUtils.toString(calledAETs, '\\');
     }
-    
+
     public final void setCalledAETs(String calledAETs) {
-    	if ( getCalledAETs().equals(calledAETs)) return;
+        if (getCalledAETs().equals(calledAETs))
+            return;
         disableService();
         this.calledAETs = StringUtils.split(calledAETs, '\\');
         enableService();
@@ -139,35 +149,38 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         logCallingAETs = StringUtils.split(aets, '\\');
     }
 
-	public final int getMaxPDULength() {
-		return maxPDULength;
-	}
-	
-	public final void setMaxPDULength(int maxPDULength) {
-		if ( this.maxPDULength == maxPDULength ) return;
-		this.maxPDULength = maxPDULength;
-		enableService();
-	}
-	
+    public final int getMaxPDULength() {
+        return maxPDULength;
+    }
+
+    public final void setMaxPDULength(int maxPDULength) {
+        if (this.maxPDULength == maxPDULength)
+            return;
+        this.maxPDULength = maxPDULength;
+        enableService();
+    }
+
     public final int getMaxOpsInvoked() {
-		return maxOpsInvoked;
-	}
+        return maxOpsInvoked;
+    }
 
-	public final void setMaxOpsInvoked(int maxOpsInvoked) {
-		if ( this.maxOpsInvoked == maxOpsInvoked ) return;
-		this.maxOpsInvoked = maxOpsInvoked;
-		enableService();
-	}
+    public final void setMaxOpsInvoked(int maxOpsInvoked) {
+        if (this.maxOpsInvoked == maxOpsInvoked)
+            return;
+        this.maxOpsInvoked = maxOpsInvoked;
+        enableService();
+    }
 
-	public final int getMaxOpsPerformed() {
-		return maxOpsPerformed;
-	}
+    public final int getMaxOpsPerformed() {
+        return maxOpsPerformed;
+    }
 
-	public final void setMaxOpsPerformed(int maxOpsPerformed) {
-		if ( this.maxOpsPerformed == maxOpsPerformed ) return;
-		this.maxOpsPerformed = maxOpsPerformed;
-		enableService();
-	}
+    public final void setMaxOpsPerformed(int maxOpsPerformed) {
+        if (this.maxOpsPerformed == maxOpsPerformed)
+            return;
+        this.maxOpsPerformed = maxOpsPerformed;
+        enableService();
+    }
 
     public final String getCoerceConfigDir() {
         return coerceConfigDir.getPath();
@@ -176,16 +189,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setCoerceConfigDir(String path) {
         this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
     }
-    
-	protected void enableService() {
-        if (dcmHandler == null) return;
+
+    protected void enableService() {
+        if (dcmHandler == null)
+            return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
-            AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
+            AcceptorPolicy policy1 = policy
+                    .getPolicyForCalledAET(calledAETs[i]);
             if (policy1 == null) {
                 policy1 = AssociationFactory.getInstance().newAcceptorPolicy();
                 policy1.setCallingAETs(callingAETs);
-                policy.putPolicyForCalledAET(calledAETs[i], policy1);                
+                policy.putPolicyForCalledAET(calledAETs[i], policy1);
                 policy.addCalledAET(calledAETs[i]);
             } else {
                 if (policy1.getCallingAETs().length > 0) {
@@ -199,16 +214,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 }
             }
             policy1.setMaxPDULength(maxPDULength);
- 			policy1.setAsyncOpsWindow(maxOpsInvoked, maxOpsPerformed);
+            policy1.setAsyncOpsWindow(maxOpsInvoked, maxOpsPerformed);
             updatePresContexts(policy1, true);
         }
     }
 
     private void disableService() {
-        if (dcmHandler == null) return;
+        if (dcmHandler == null)
+            return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
-            AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
+            AcceptorPolicy policy1 = policy
+                    .getPolicyForCalledAET(calledAETs[i]);
             if (policy1 != null) {
                 updatePresContexts(policy1, false);
                 if (policy1.listPresContext().isEmpty()) {
@@ -220,19 +237,23 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final String getCallingAETs() {
-        return callingAETs != null ? StringUtils.toString(callingAETs, '\\') : ANY;
+        return callingAETs != null ? StringUtils.toString(callingAETs, '\\')
+                : ANY;
     }
 
     public final void setCallingAETs(String callingAETs) {
-    	if ( getCallingAETs().equals(callingAETs)) return;
-        this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null 
+        if (getCallingAETs().equals(callingAETs))
+            return;
+        this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null
                 : StringUtils.split(callingAETs, '\\');
         enableService();
     }
-    
-    protected void updateAcceptedSOPClass(Map cuidMap, String newval, DcmService scp) {
+
+    protected void updateAcceptedSOPClass(Map cuidMap, String newval,
+            DcmService scp) {
         Map tmp = parseUIDs(newval);
-        if (cuidMap.keySet().equals(tmp.keySet())) return;
+        if (cuidMap.keySet().equals(tmp.keySet()))
+            return;
         disableService();
         if (scp != null)
             unbindAll(valuesToStringArray(cuidMap));
@@ -242,25 +263,27 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             bindAll(valuesToStringArray(cuidMap), scp);
         enableService();
     }
-    
-//    protected String[] getTransferSyntaxUIDs() {
-//        return valuesToStringArray(tsuids);
-//    }
+
+    // protected String[] getTransferSyntaxUIDs() {
+    // return valuesToStringArray(tsuids);
+    // }
 
     protected static String[] valuesToStringArray(Map tsuid) {
-         return (String[]) tsuid.values().toArray(new String[tsuid.size()]);
+        return (String[]) tsuid.values().toArray(new String[tsuid.size()]);
     }
 
     protected void bindAll(String[] cuids, DcmService scp) {
-        if ( dcmHandler == null ) return; //nothing to do!
+        if (dcmHandler == null)
+            return; // nothing to do!
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         for (int i = 0; i < cuids.length; i++) {
             services.bind(cuids[i], scp);
         }
     }
 
-    protected void unbindAll(String[]  cuids) {
-        if ( dcmHandler == null ) return; //nothing to do!
+    protected void unbindAll(String[] cuids) {
+        if (dcmHandler == null)
+            return; // nothing to do!
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         for (int i = 0; i < cuids.length; i++) {
             services.unbind(cuids[i]);
@@ -274,51 +297,55 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public void setAcceptedTransferSyntax(String s) {
         updateAcceptedTransferSyntax(tsuidMap, s);
     }
-       
+
     protected void updateAcceptedTransferSyntax(Map tsuidMap, String newval) {
         Map tmp = parseUIDs(newval);
-        if (tsuidMap.keySet().equals(tmp.keySet())) return;
+        if (tsuidMap.keySet().equals(tmp.keySet()))
+            return;
         tsuidMap.clear();
         tsuidMap.putAll(tmp);
         enableService();
     }
-    
+
     protected String toString(Map uids) {
-        if ( uids == null || uids.isEmpty() ) return "";
+        if (uids == null || uids.isEmpty())
+            return "";
         String nl = System.getProperty("line.separator", "\n");
         StringBuffer sb = new StringBuffer();
         Iterator iter = uids.keySet().iterator();
-        while ( iter.hasNext() ) {
+        while (iter.hasNext()) {
             sb.append(iter.next()).append(nl);
         }
         return sb.toString();
     }
-    
+
     protected static Map parseUIDs(String uids) {
         StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
-        String uid,name;
+        String uid, name;
         Map map = new LinkedHashMap();
-        while ( st.hasMoreTokens() ) {
+        while (st.hasMoreTokens()) {
             uid = st.nextToken().trim();
             name = uid;
-            
+
             if (isDigit(uid.charAt(0))) {
-                if ( ! UIDs.isValid(uid) ) 
-                    throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+                if (!UIDs.isValid(uid))
+                    throw new IllegalArgumentException("UID " + uid
+                            + " isn't a valid UID!");
             } else {
-                uid = UIDs.forName( name );
+                uid = UIDs.forName(name);
             }
-            map.put(name,uid);
+            map.put(name, uid);
         }
         return map;
     }
-    
+
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
-    
+
     protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
+        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
+                "log");
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
@@ -335,8 +362,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected abstract void bindDcmServices(DcmServiceRegistry services);
 
     protected abstract void unbindDcmServices(DcmServiceRegistry services);
-    
-    protected abstract void updatePresContexts(AcceptorPolicy policy, boolean enable);
+
+    protected abstract void updatePresContexts(AcceptorPolicy policy,
+            boolean enable);
 
     protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
             String[] tsuids) {
@@ -344,10 +372,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             policy.putPresContext(cuids[i], tsuids);
         }
     }
-    
-    protected void putRoleSelections(AcceptorPolicy policy, String[] cuids, boolean scu, boolean scp)
-    {
-    	for (int i = 0; i < cuids.length; i++) {
+
+    protected void putRoleSelections(AcceptorPolicy policy, String[] cuids,
+            boolean scu, boolean scp) {
+        for (int i = 0; i < cuids.length; i++) {
             policy.putRoleSelection(cuids[i], scu, scp);
         }
     }
@@ -357,11 +385,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         dir.mkdir();
         return new File(dir, new DTFormat().format(now) + suffix);
     }
-    
+
     public Templates getCoercionTemplatesFor(String aet, String fname) {
         // check AET specific attribute coercion configuration
-        File f = FileUtils.resolve(
-                new File(new File(coerceConfigDir, aet), fname));
+        File f = FileUtils.resolve(new File(new File(coerceConfigDir, aet),
+                fname));
         if (!f.exists()) {
             // check general attribute coercion configuration
             f = FileUtils.resolve(new File(coerceConfigDir, fname));
@@ -386,7 +414,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public void reloadStylesheets() {
         templates.clear();
     }
-    
+
     private boolean contains(Object[] a, Object e) {
         for (int i = 0; i < a.length; i++) {
             if (a[i].equals(e)) {
@@ -398,16 +426,17 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public void logDIMSE(Association a, String suffix, Dataset ds) {
         String callingAET = a.getCallingAET();
-        if (contains(logCallingAETs, callingAET )) {
+        if (contains(logCallingAETs, callingAET)) {
             try {
-                XSLTUtils.writeTo(ds, getLogFile(new Date(), callingAET, suffix));
+                XSLTUtils.writeTo(ds,
+                        getLogFile(new Date(), callingAET, suffix));
             } catch (Exception e) {
                 log.warn("Logging of attributes failed:", e);
             }
         }
     }
 
-    public Dataset getCoercionAttributesFor(Association a, String xsl, 
+    public Dataset getCoercionAttributesFor(Association a, String xsl,
             Dataset in) {
         String callingAET = a.getCallingAET();
         Templates stylesheet = getCoercionTemplatesFor(callingAET, xsl);
@@ -423,12 +452,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
         return out;
     }
-    
+
     public void coerceAttributes(DcmObject ds, DcmObject coerce) {
-        coerceAttributes(ds, coerce, null);        
+        coerceAttributes(ds, coerce, null);
     }
-    
-    private void coerceAttributes(DcmObject ds, DcmObject coerce, DcmElement parent) {
+
+    private void coerceAttributes(DcmObject ds, DcmObject coerce,
+            DcmElement parent) {
         boolean coerced = false;
         for (Iterator it = coerce.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
@@ -480,18 +510,17 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 }
             }
             if (coerced) {
-                log.info(parent == null 
-                        ? ("Coerce " + oldEl + " to " + el)
-                        : ("Coerce " + oldEl + " to " + el 
-                                + " in item of " + parent));
+                log
+                        .info(parent == null ? ("Coerce " + oldEl + " to " + el)
+                                : ("Coerce " + oldEl + " to " + el
+                                        + " in item of " + parent));
             } else {
                 if (oldEl == null && log.isDebugEnabled()) {
-                    log.debug(parent == null 
-                            ? ("Add " + el)
-                            : ("Add " + el + " in item of " + parent));                    
+                    log.debug(parent == null ? ("Add " + el) : ("Add " + el
+                            + " in item of " + parent));
                 }
                 it.remove();
             }
         }
-    }    
+    }
 }
