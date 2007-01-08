@@ -48,6 +48,7 @@ import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.management.InstanceNotFoundException;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
@@ -330,6 +331,8 @@ public class ContentEditService extends ServiceMBeanSupport {
             					   String.class.getName(), 
 								   int.class.getName(), int.class.getName(),
 								   Dataset.class.getName() });
+        }catch(InstanceNotFoundException infe) {
+        	log.warn("The MBean service [" + studyMgtScuServiceName + "] is not registered. Ignore sending StudyMgt command: " + infoStr);
         } catch (Exception e) {
             log.error("Failed to send StudyMgt command:"+infoStr, e);
         }
@@ -352,7 +355,10 @@ public class ContentEditService extends ServiceMBeanSupport {
 								   String.class.getName(),
 								   String.class.getName(),
 								   boolean.class.getName() });
-        } catch (Exception e) {
+        }catch(InstanceNotFoundException infe) {
+        	log.warn("The MBean service [" + hl7SendServiceName + "] is not registered. Ignore sending HL7 message: " + msgType);
+        }
+        catch (Exception e) {
             log.error("Failed to send HL7 message:"+msgType, e);log.error(ds);
         }
 	}
@@ -371,6 +377,8 @@ public class ContentEditService extends ServiceMBeanSupport {
 							   String.class.getName(),
 							   String.class.getName(),
 							   boolean.class.getName() });
+        }catch(InstanceNotFoundException infe) {        	
+        	log.warn("The MBean service [" + hl7SendServiceName + "] is not registered. Ignore sending HL7 patient merge message.");
         } catch (Exception e) {
             log.error("Failed to send HL7 patient merge message:", e);log.error(dsDominant);
         }
