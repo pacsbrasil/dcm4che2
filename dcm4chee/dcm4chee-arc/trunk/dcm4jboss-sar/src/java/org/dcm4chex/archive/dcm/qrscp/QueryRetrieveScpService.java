@@ -52,7 +52,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.management.JMException;
-import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -796,13 +795,5 @@ public class QueryRetrieveScpService extends AbstractScpService {
                     "Failed to load VMF Configuration from " + file);
         }
         return ds;
-    }
-
-    void sendJMXNotification(Object o) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(o.getClass().getName(), this,
-                eventID);
-        notif.setUserData(o);
-        super.sendNotification(notif);
     }
 }

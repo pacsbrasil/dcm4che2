@@ -60,6 +60,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.notif.Query;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -116,12 +117,14 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             
             Association a = assoc.getAssociation();
             service.logDIMSE(a, QUERY_XML, rqData);
+            logDicomQuery(a, rq.getCommand(), rqData);
+            service.sendJMXNotification(new Query(a,
+                    rq.getCommand().getAffectedSOPClassUID(), rqData));
             Dataset coerce = 
                 service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
-            logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
             MultiDimseRsp rsp = newMultiCFindRsp(rqData);
             perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
             return rsp;

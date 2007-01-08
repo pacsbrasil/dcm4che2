@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
@@ -523,4 +524,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             }
         }
     }
+    
+
+    public void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
+    }
+    
 }

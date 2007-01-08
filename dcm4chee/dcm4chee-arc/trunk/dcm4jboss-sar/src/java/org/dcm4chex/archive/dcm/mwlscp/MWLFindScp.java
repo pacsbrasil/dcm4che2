@@ -55,6 +55,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4chex.archive.notif.Query;
 import org.jboss.logging.Logger;
 
 /**
@@ -86,6 +87,8 @@ public class MWLFindScp extends DcmServiceBase {
         log.debug("Identifier:\n");
         log.debug(rqData);
         service.logDIMSE(a, QUERY_XML, rqData);
+        service.sendJMXNotification(new Query(a,
+                rq.getCommand().getAffectedSOPClassUID(), rqData));
         Dataset coerce = service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
         if (coerce != null) {
             service.coerceAttributes(rqData, coerce);

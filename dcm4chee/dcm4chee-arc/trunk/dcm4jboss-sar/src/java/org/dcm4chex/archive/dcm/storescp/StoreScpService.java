@@ -612,14 +612,6 @@ public class StoreScpService extends AbstractScpService {
 
     }
 
-    void sendJMXNotification(Object o) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(o.getClass().getName(), this,
-                eventID);
-        notif.setUserData(o);
-        super.sendNotification(notif);
-    }
-
     void logInstancesStored(Socket s, SeriesStored seriesStored) {
         if (auditLogName == null)
             return;

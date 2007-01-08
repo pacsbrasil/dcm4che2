@@ -55,6 +55,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
+import org.dcm4chex.archive.notif.Query;
 import org.jboss.logging.Logger;
 
 /**
@@ -82,7 +83,10 @@ class GPWLFindScp extends DcmServiceBase {
             Dataset rqData = rq.getDataset();
 			log.debug("Identifier:\n");
 			log.debug(rqData);
-            logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
+            Association a = assoc.getAssociation();
+            logDicomQuery(a, rq.getCommand(), rqData);
+            service.sendJMXNotification(new Query(a,
+                    rq.getCommand().getAffectedSOPClassUID(), rqData));
             queryCmd = new GPWLQueryCmd(rqData);
             queryCmd.execute();
         } catch (Exception e) {
