@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -63,6 +64,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
@@ -120,6 +122,7 @@ import org.dcm4chex.archive.util.Convert;
  * 
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
  * @ejb.ejb-ref ejb-name="SeriesRequest" view-type="local" ref-name="ejb/Request"
+ * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
  * 
  */
 public abstract class SeriesBean implements EntityBean {
@@ -129,6 +132,7 @@ public abstract class SeriesBean implements EntityBean {
     private EntityContext ejbctx;
     private MPPSLocalHome mppsHome;
     private SeriesRequestLocalHome reqHome;
+    private FileSystemLocalHome fsHome;
 
     public void setEntityContext(EntityContext ctx) {
         ejbctx = ctx;
@@ -139,6 +143,8 @@ public abstract class SeriesBean implements EntityBean {
                     jndiCtx.lookup("java:comp/env/ejb/MPPS");
             reqHome = (SeriesRequestLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/Request");
+            fsHome = (FileSystemLocalHome)
+            		jndiCtx.lookup("java:comp/env/ejb/FileSystem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -154,6 +160,7 @@ public abstract class SeriesBean implements EntityBean {
     public void unsetEntityContext() {
         mppsHome = null;
         reqHome = null;
+        fsHome = null;
         ejbctx = null;
     }
 
@@ -465,7 +472,7 @@ public abstract class SeriesBean implements EntityBean {
         String aets = null;
         if (numI > 0) {
 	        StringBuffer sb = new StringBuffer();
-	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
+	        Set iAetSet = getInternalRetrieveAETs(pk);
 	        if (iAetSet.remove(null))
 	            log.warn("Series[iuid=" + getSeriesIuid()
 	                    + "] contains Instance(s) with unspecified Retrieve AET");
@@ -485,6 +492,16 @@ public abstract class SeriesBean implements EntityBean {
         	setRetrieveAETs(aets);
         }
         return updated;
+    }
+    
+    private Set getInternalRetrieveAETs(Long pk) throws FinderException {
+    	Collection aets = fsHome.allRetrieveAETs();
+    	if(aets.size() > 1)
+        	return ejbSelectInternalRetrieveAETs(pk);
+    	else
+        	// If there's only one AET registered with all existing file systems
+        	// we just simply return this only one.
+    		return new HashSet(aets);    	
     }
     
     private boolean updateExternalRetrieveAET(Long pk, int numI) throws FinderException {

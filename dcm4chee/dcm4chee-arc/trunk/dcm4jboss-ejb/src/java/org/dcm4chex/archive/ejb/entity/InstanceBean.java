@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,6 +66,7 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -117,9 +119,8 @@ import org.dcm4chex.archive.util.Convert;
  *              eager-load-group="*"
  * 
  *
- * @ejb.ejb-ref ejb-name="Code"
- *              view-type="local"
- *              ref-name="ejb/Code"
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
+ * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
  *
  */
 public abstract class InstanceBean implements EntityBean {
@@ -127,12 +128,14 @@ public abstract class InstanceBean implements EntityBean {
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
     private CodeLocalHome codeHome;
-
+    private FileSystemLocalHome fsHome;
+    
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
+            fsHome = (FileSystemLocalHome) jndiCtx.lookup("java:comp/env/ejb/FileSystem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -147,6 +150,7 @@ public abstract class InstanceBean implements EntityBean {
 
     public void unsetEntityContext() {
         codeHome = null;
+        fsHome = null;
     }
 
     /**
@@ -458,7 +462,7 @@ public abstract class InstanceBean implements EntityBean {
     }
     
     private boolean updateRetrieveAETs(Long pk) throws FinderException {
-        final Set aetSet = ejbSelectRetrieveAETs(pk);
+        final Set aetSet = getInternalRetrieveAETs(pk);
         if (aetSet.remove(null))
             log.warn("Instance[iuid=" + getSopIuid()
                     + "] reference File(s) with unspecified Retrieve AET");
@@ -467,6 +471,16 @@ public abstract class InstanceBean implements EntityBean {
 		if (updated = aets == null ? getRetrieveAETs() != null : !aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
         return updated;
+    }
+    
+    private Set getInternalRetrieveAETs(Long pk) throws FinderException {
+    	Collection aets = fsHome.allRetrieveAETs();
+    	if(aets.size() > 1)
+        	return ejbSelectRetrieveAETs(pk);
+    	else
+        	// If there's only one AET registered with all existing file systems
+        	// we just simply return this only one.
+    		return new HashSet(aets);    	
     }
  
     /**
