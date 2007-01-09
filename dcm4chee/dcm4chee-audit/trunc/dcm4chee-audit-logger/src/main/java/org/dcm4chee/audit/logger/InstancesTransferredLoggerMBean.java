@@ -88,7 +88,7 @@ public class InstancesTransferredLoggerMBean
     @Depends ("dcm4chee.archive:service=QueryRetrieveScp")
     private ObjectName queryRetrieveSCPName;
     
-    @Depends("dcm4chee.archive.logger:name=SecurityAuidtLogger,type=service")
+    @Depends("dcm4chee.archive.logger:name=SecurityAlertLogger,type=service")
     private SecurityAlertLogger alertLogger;
 
     private MBeanServer server;
