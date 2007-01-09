@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
+import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -111,6 +112,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *              
  * @jboss.query signature="Long ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
  *              query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND f.createdTime > ?2"
+ *
+ * @jboss.query signature="java.util.Collection ejbSelectAllRetrieveAETs()"
+ *              query="SELECT DISTINCT f.retrieveAET FROM FileSystem f"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -196,6 +200,21 @@ public abstract class FileSystemBean implements EntityBean {
         }
     }
 
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract Collection ejbSelectAllRetrieveAETs()
+    throws FinderException;
+
+    /**
+     * Get all available distinct retrieve AETs registered with file systems
+     * 
+     * @ejb.home-method
+     */
+    public Collection ejbHomeAllRetrieveAETs() throws FinderException {
+        return ejbSelectAllRetrieveAETs();
+    }
+    
     /**
      * @ejb.interface-method
      */
