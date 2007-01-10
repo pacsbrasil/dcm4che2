@@ -109,6 +109,7 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.notif.BeginTransfering;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
@@ -610,12 +611,17 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         final int exportManifest = export.indexOf("MANIFEST");
         final boolean exportInstances = export.indexOf("INSTANCES") != -1;
         final boolean exportMedia = export.indexOf("MEDIA") != -1;
+        final boolean audit = "YES".equalsIgnoreCase(
+                config.getProperty("audit"));
 
         HashMap attrs = new HashMap();
         FileInfo[] fileInfos = queryAttrs(manifest, attrs);
         int[] pcids = new int[fileInfos.length + 1];
         ActiveAssociation a = openAssociation(fileInfos, pcids, dest,
                 exportManifest != -1, exportInstances, exportMedia);
+        if (audit) {
+            notifyBeginTransfering(a, manifest, fileInfos);
+        }
         HashMap iuidMap = new HashMap();
         if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
             removeDelayReason(manifest);
@@ -625,8 +631,9 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             sndManifest.putAll(manifest);
             coerceAttributes(sndManifest, config, iuidMap);
         }
-        if (exportManifest == 0)
+        if (exportManifest == 0) {
             sendManifests(a, pcids[fileInfos.length], sndManifest, prior);
+        }
         if (exportInstances) {
             byte[] b = new byte[bufferSize];
             for (int i = 0; i < fileInfos.length; i++) {
@@ -635,8 +642,9 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 sendInstance(a, pcids[i], ds, info, config, iuidMap, b, prior);
             }
         }
-        if (exportManifest > 0)
+        if (exportManifest > 0) {
             sendManifests(a, pcids[fileInfos.length], sndManifest, prior);
+        }
         if (exportMedia) {
             sendMediaCreationRequest(a, manifest, config);
         }
@@ -1239,4 +1247,44 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             throwStorageNotSupported(aa, cuid, dest);
         return aa;
     }
+    
+    private void notifyBeginTransfering(ActiveAssociation a, Dataset manifest, 
+            FileInfo[] fileInfos) {
+        BeginTransfering beginTransfering = new BeginTransfering(
+                a.getAssociation(),
+                manifest.getString(Tags.PatientID),
+                manifest.getString(Tags.PatientName));
+        beginTransfering.addInstance(
+                manifest.getString(Tags.StudyInstanceUID), 
+                manifest.getString(Tags.SOPClassUID), 
+                manifest.getString(Tags.SOPInstanceUID));
+        DcmElement identicalsq = manifest.get(Tags.IdenticalDocumentsSeq);
+        if (identicalsq != null && !identicalsq.isEmpty()) {
+            for (int i = 0, n = identicalsq.countItems(); i < n; i++) {
+                Dataset otherStudyItem = identicalsq.getItem(i);
+                Dataset otherSeriesItem = 
+                        otherStudyItem.getItem(Tags.RefSeriesSeq);
+                Dataset otherRefSOPItem =
+                        otherSeriesItem.getItem(Tags.RefSOPSeq);
+                beginTransfering.addInstance(
+                        otherStudyItem.getString(Tags.StudyInstanceUID), 
+                        otherRefSOPItem.getString(Tags.RefSOPClassUID), 
+                        otherRefSOPItem.getString(Tags.RefSOPInstanceUID));
+            }
+        }
+        for (int i = 0; i < fileInfos.length; i++) {
+            beginTransfering.addInstance(fileInfos[i].studyIUID, 
+                    fileInfos[i].sopCUID, fileInfos[i].sopIUID);                
+        }           
+        sendJMXNotification(beginTransfering);
+    }
+
+    private void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
+    }
+    
 }

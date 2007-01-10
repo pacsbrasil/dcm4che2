@@ -38,24 +38,56 @@
 
 package org.dcm4chex.archive.notif;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.dcm4che.net.Association;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Jan 8, 2007
+ * @since Jan 10, 2007
  */
-public class InstancesTransferred extends BeginTransfering {
+public class BeginTransfering {
 
-    private final Association moveAssoc;
+    private final Association storeAssoc;
+    private final String patID;
+    private final String patName;
+    private final HashMap studies = new HashMap();
 
-    public InstancesTransferred(Association storeAssoc, Association moveAssoc, 
-            String patID, String patName) {
-        super(storeAssoc, patID, patName);
-        this.moveAssoc = moveAssoc;
+    public BeginTransfering(Association storeAssoc, String patID,
+            String patName) {
+        this.storeAssoc = storeAssoc;
+        this.patID = patID;
+        this.patName = patName;
     }
 
-    public final Association getMoveAssociation() {
-        return moveAssoc;
+    public final Association getStoreAssociation() {
+        return storeAssoc;
+    }
+    
+    public final String getPatientID() {
+        return patID;
+    }
+
+    public final String getPatientName() {
+        return patName;
+    }
+
+    public void addInstance(String studyIUID, String sopCUID, String sopIUID) {
+        HashMap cuids = (HashMap) studies.get(studyIUID);
+        if (cuids == null) {
+            studies.put(studyIUID, cuids = new HashMap());
+        }
+        ArrayList iuids = (ArrayList) cuids.get(sopCUID);
+        if (iuids == null) {
+            cuids.put(sopCUID, iuids = new ArrayList());
+        }
+        iuids.add(sopIUID);
+    }
+    
+    public Map getStudies() {
+        return studies;
     }
 }
