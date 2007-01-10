@@ -38,12 +38,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.xds.repository.web;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
@@ -67,12 +65,11 @@ import org.dcm4chex.xds.mbean.XDSRegistryResponse;
  */
 public class XDSRepositoryServlet extends HttpServlet {
 
-	private static final int BUFFER_SIZE = 65535;
+	public static final int BUFFER_SIZE = 65535;
 	private MessageFactory messageFactory;
 	
 	private XDSServiceDelegate delegate; 
 
-	private List storedFiles = new ArrayList();
 	/**
 	 * Comment for <code>serialVersionUID</code>
 	 */
@@ -117,13 +114,13 @@ public class XDSRepositoryServlet extends HttpServlet {
 	}
 	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
 		log.info("XDSRepositoryServlet.doPost called from "+request.getRemoteHost()+" with URL "+request.getRequestURL()+" ! (secure :"+request.isSecure()+")");
-		StringBuffer sb = new StringBuffer();
-        BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
+        log.debug("request.getContentLength():"+request.getContentLength());
+        DebugInputStream bis = new DebugInputStream( request );
         SOAPMessage message = null;
         XDSResponseObject xdsResponse;
         try{
             message = messageFactory.createMessage(getMimeHeaders(request),bis);
-    		log.info("SOAP message parsed! "+request.getRemoteHost()+" !");
+    		log.info("SOAP message parsed! "+request.getRemoteHost()+" ! len:"+bis.getReadCount());
     		xdsResponse = delegate.exportDocument(message);
     		log.info("Export done! remoteHost:"+request.getRemoteHost()+" ! xdsResponse:"+xdsResponse);
         } catch (Exception x) {
@@ -132,7 +129,7 @@ public class XDSRepositoryServlet extends HttpServlet {
         try {
         	xdsResponse.execute(response);
         } catch (Throwable t) {
-        	log.info("Sending response failed! remoteHost:"+request.getRemoteHost());
+        	log.error("Sending response failed! remoteHost:"+request.getRemoteHost());
         }
 	}
 
@@ -149,5 +146,63 @@ public class XDSRepositoryServlet extends HttpServlet {
         return mimeHeaders;
     }
 	
-	
 }
+class DebugInputStream extends InputStream {
+
+    private final InputStream in;
+    private int readCount = 0;
+    int contentLength;
+
+    DebugInputStream(HttpServletRequest request) throws IOException {
+        in = request.getInputStream();
+        contentLength = request.getContentLength();
+    }
+    
+    public int read() throws IOException {
+        int val = in.read();
+        if ( val != -1 ) {
+            readCount++;
+        }
+        return val;
+    }
+ 
+    public int read(byte[] ba) throws IOException {
+        int read = in.read(ba);
+        readCount+=read;
+        return read;
+    }
+
+    public int read(byte[] ba, int offs, int len) throws IOException {
+        int read = in.read(ba, offs,len);
+        readCount+=read;
+        return read;
+    }
+
+    public int available() throws IOException {
+        return contentLength - readCount;
+    }
+    
+    public void close() throws IOException {
+        in.close();
+    }
+ 
+    public void reset() throws IOException {
+        in.reset();
+    }
+    
+    public void mark( int readlimit ) {
+        in.mark(readlimit);
+    }
+    
+    public boolean markSupported() {
+        return in.markSupported();
+    }
+    public long skip( long l ) throws IOException {
+        return in.skip(l);
+    }
+    
+    public long getReadCount() {
+        return readCount;
+    }
+}
+
