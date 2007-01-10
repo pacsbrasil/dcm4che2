@@ -58,8 +58,8 @@ import org.jboss.logging.Logger;
  */
 public class MediaCreationRequest implements Serializable {
 
-    static final long serialVersionUID = -6377946755804233232L;
-    
+    private static final long serialVersionUID = 7597506507735924505L;
+
     private final File requestFile;
 
     private final Date timestamp;
@@ -118,6 +118,10 @@ public class MediaCreationRequest implements Serializable {
                 throw new IllegalStateException(
                         "FilesetDir not yet initialized");
         return new File(filesetDir, "DICOMDIR");
+    }
+
+    public final File getRequestFile() {
+        return requestFile;
     }
 
     public final String getMediaWriterName() {

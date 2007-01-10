@@ -43,6 +43,7 @@ import java.io.IOException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
@@ -113,21 +114,37 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
                 log.info("" + rq + " already failed");
                 return;
             }
-            rq.updateStatus(ExecutionStatus.CREATING, ExecutionStatusInfo.NORMAL, log);
+            updateStatus(rq, ExecutionStatus.CREATING, ExecutionStatusInfo.NORMAL);
             try {
                 cleanup = handle(rq, attrs);
             } catch (MediaCreationException e) {
                 log.error("Failed to process " + rq, e);
-                rq.updateStatus(ExecutionStatus.FAILURE, e.getStatusInfo(), log);
+                updateStatus(rq, ExecutionStatus.FAILURE, e.getStatusInfo());
             }
         } catch (IOException e) {
             // error already logged
         } finally {
             if (cleanup && !keepSpoolFiles) rq.cleanFiles(spoolDir);
         }
-
+    }
+    
+    protected void updateStatus(MediaCreationRequest rq, String status, 
+            String info) throws IOException {
+        rq.updateStatus(status, info, log);
+        if (status.equals(ExecutionStatus.DONE)
+                || status.equals(ExecutionStatus.FAILURE)) {
+            sendJMXNotification(rq);
+        }
     }
 
+    public void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
+    }
+    
     /**
      * @param mcrq Media Creation Request
      * @param attrs Attributes of Media Creation Request

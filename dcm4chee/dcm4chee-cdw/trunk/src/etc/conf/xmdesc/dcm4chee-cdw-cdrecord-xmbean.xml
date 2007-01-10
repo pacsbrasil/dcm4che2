@@ -331,4 +331,13 @@
       <name>umount</name>
       <return-type>boolean</return-type>
    </operation>
+   
+   <!-- Notifications -->
+   <notification>
+        <description>The notification sent after (successful or failed)
+        media creation.</description>
+        <name>javax.management.Notification</name>
+        <notification-type>org.dcm4chex.cdw.common.MediaCreationRequest</notification-type>
+   </notification>   
+   
 </mbean>
