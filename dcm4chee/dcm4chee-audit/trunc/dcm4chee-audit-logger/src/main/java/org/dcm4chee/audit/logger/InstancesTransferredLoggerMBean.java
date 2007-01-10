@@ -57,6 +57,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.Association;
 import org.dcm4che2.audit.message.ActiveParticipant;
+import org.dcm4che2.audit.message.BeginTransferingMessage;
 import org.dcm4che2.audit.message.InstancesTransferedMessage;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
@@ -64,6 +65,7 @@ import org.dcm4che2.audit.message.Patient;
 import org.dcm4che2.audit.message.Source;
 import org.dcm4che2.audit.message.Study;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.notif.BeginTransfering;
 import org.dcm4chex.archive.notif.InstancesTransferred;
 import org.jboss.annotation.ejb.Depends;
 import org.jboss.annotation.ejb.Management;
@@ -88,6 +90,9 @@ public class InstancesTransferredLoggerMBean
     @Depends ("dcm4chee.archive:service=QueryRetrieveScp")
     private ObjectName queryRetrieveSCPName;
     
+    @Depends ("dcm4chee.archive:service=ExportManager")
+    private ObjectName exportManagerName;
+    
     @Depends("dcm4chee.archive.logger:name=SecurityAlertLogger,type=service")
     private SecurityAlertLogger alertLogger;
 
@@ -104,10 +109,12 @@ public class InstancesTransferredLoggerMBean
     public void start() throws Exception {
         registerSeriesStoredListener();
         registerInstancesTransferredListener();
+        registerBeginTransferingListener();
     }
     public void stop() {
         unregisterSeriesStoredListener();
         unregisterInstancesTransferredListener();
+        unregisterBeginTransferingListener();
     }
 
     private void registerSeriesStoredListener() 
@@ -142,6 +149,24 @@ public class InstancesTransferredLoggerMBean
                     instancesTransferredListener);
         } catch (Exception e) {
             log.warn("Failed to unregister InstancesTransferred Notification" +
+                    "Listener from " + storeSCPName, e);
+        }
+    }
+
+    private void registerBeginTransferingListener() 
+            throws Exception {
+        NotificationFilterSupport f = new NotificationFilterSupport();
+        f.enableType(BeginTransfering.class.getName());
+        server.addNotificationListener(exportManagerName,
+                beginTransferingListener, f , null);
+    }
+
+    private void unregisterBeginTransferingListener() {
+        try {
+            server.removeNotificationListener(exportManagerName, 
+                    beginTransferingListener);
+        } catch (Exception e) {
+            log.warn("Failed to unregister BeginTransfering Notification" +
                     "Listener from " + storeSCPName, e);
         }
     }
@@ -201,6 +226,34 @@ public class InstancesTransferredLoggerMBean
         }
     };
 
+    private final NotificationListener beginTransferingListener = 
+            new NotificationListener() {
+
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                BeginTransfering transfering = 
+                        (BeginTransfering) notif.getUserData();
+                Association storeAssoc = transfering.getStoreAssociation();
+                String destAET = storeAssoc.getCalledAET();
+                String sourceAET = storeAssoc.getCallingAET();
+                Map studies = transfering.getStudies();
+                Iterator iterStudies = studies.entrySet().iterator();
+                BeginTransferingMessage msg = new BeginTransferingMessage(
+                        new BeginTransferingMessage.AuditEvent(),
+                        LoggerUtils.toSource(true, sourceAET,
+                                storeAssoc.getSocket().getLocalAddress()),
+                        LoggerUtils.toDestination(false, destAET,
+                                storeAssoc.getSocket().getInetAddress()),
+                        new Patient(transfering.getPatientID())
+                                .setPatientName(transfering.getPatientName()), 
+                        mkStudy((Map.Entry) iterStudies.next()));
+                LoggerUtils.log.info(msg);
+            } catch (Throwable th) {
+                log.warn("Failed to emit Begin Transfering Audit Log message: ", th);
+            }
+        }
+    };
+    
     private Source toSource(SeriesStored series) {
         String remoteAET = series.getCallingAET();
         InetAddress remoteAddr = series.getRemoteAddress();
