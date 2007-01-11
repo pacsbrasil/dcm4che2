@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,7 +66,6 @@ import java.util.TreeMap;
 
 import javax.activation.DataHandler;
 import javax.management.Notification;
-import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.RuntimeMBeanException;
@@ -102,6 +102,7 @@ import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.notif.Export;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfig;
@@ -142,8 +143,6 @@ public class XDSIService extends ServiceMBeanSupport {
     
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
 
-    private static ServerConfig config = ServerConfigLocator.locate();
-    
     private DocumentBuilderFactory dbFactory;
 
 	private String testPath;
@@ -182,6 +181,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	private Map mapCodeLists = new HashMap();
 
     private ObjectName pixQueryServiceName;
+    private String sourceID;
     private String localDomain;
     private String affinityDomain;
     private String keystoreURL = "conf/identity.p12";
@@ -329,11 +329,14 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 	
 	public String getSourceID() {
-		return metadataProps.getProperty(SOURCE_ID);
+        if ( sourceID == null ) sourceID = metadataProps.getProperty(SOURCE_ID);
+        return sourceID;
 	}
 
-	public void setSourceID(String id ) {
-		metadataProps.setProperty(SOURCE_ID, id == null ? "" : id);
+	public void setSourceID(String id) {
+        sourceID = id;
+        if ( sourceID != null )
+            metadataProps.setProperty(SOURCE_ID, sourceID);
 	}
 	
 	/**
@@ -371,7 +374,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	public String getDocRepositoryURI() {
 		return docRepositoryURI;
 	}
-	/**
+    /**
 	 * @param docRepositoryURI The docRepositoryURI to set.
 	 */
 	public void setDocRepositoryURI(String docRepositoryURI) {
@@ -666,6 +669,9 @@ public class XDSIService extends ServiceMBeanSupport {
 		try {
 			metadataProps.clear();
 			metadataProps.load(bis);
+            if ( sourceID != null ) {
+                metadataProps.setProperty(SOURCE_ID, sourceID);
+            }
 		} finally {
 			bis.close();
 		}
@@ -926,16 +932,20 @@ public class XDSIService extends ServiceMBeanSupport {
 		}
 		if ( kos == null ) return false;
 		if ( mdProps == null ) mdProps = this.metadataProps;
+        String user = mdProps.getProperty("user");
 		mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(kos));
 		XDSMetadata md = new XDSMetadata(kos, mdProps);
 		Document metadata = md.getMetadata();
 		XDSIDocument doc = new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID);
 		boolean b = sendSOAP(metadata,new XDSIDocument[]{doc} , null);
-		if ( b ) logExport( kos.getString(Tags.PatientID), 
+        sendExportNotification(kos, user, b);
+		if ( b ) {
+            logExport( kos.getString(Tags.PatientID), 
 							kos.getString(Tags.PatientName),
 							this.getDocRepositoryURI(), 
 							docRepositoryAET,
-							getSUIDs(kos));
+                            getSUIDs(kos));
+        }
 		return b;
 	}
 
@@ -950,6 +960,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		log.info("Document UID of exported PDF:"+pdfUID);
 		ds.putUI(Tags.SOPInstanceUID,pdfUID);
 		if ( mdProps == null ) mdProps = this.metadataProps;
+        String user = mdProps.getProperty("user");
 		mdProps.setProperty("mimetype", "application/pdf");
 		mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
 		XDSMetadata md = new XDSMetadata(ds, mdProps);
@@ -957,11 +968,14 @@ public class XDSIService extends ServiceMBeanSupport {
 		XDSIDocument doc = new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",DOCUMENT_ID);
 		//XDSIDocument doc = new XDSIFileDocument(new File("C:/xdstest.pdf"), "application/pdf",DOCUMENT_ID);
 		boolean b = sendSOAP(metadata,new XDSIDocument[]{doc} , null);
-		if ( b ) logExport( ds.getString(Tags.PatientID), 
+        sendExportNotification(ds, user, b);
+		if ( b ) {
+            logExport( ds.getString(Tags.PatientID), 
 							ds.getString(Tags.PatientName),
 							this.getDocRepositoryURI(), 
 							docRepositoryAET,
 							getSUIDs(ds));
+        }
 		return b;
 	}
 	
@@ -1003,7 +1017,28 @@ public class XDSIService extends ServiceMBeanSupport {
             log.warn("Audit Log failed:", e);
         }		
 	}
-	/**
+	private void sendExportNotification(Dataset dsKos, String user, boolean success) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        String destHost = null;
+        try {
+            destHost = new URL(docRepositoryURI).getHost();
+        } catch (MalformedURLException e) {
+            log.warn("Document Repository URL is not valid! Cant get host for audit log!");
+        }
+        String srcId = getSourceID();
+        String srcHost = null;
+        try {
+            srcHost = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException ignore) {
+        }
+        Export export = new Export(dsKos, user, srcId,
+                srcHost, 
+                docRepositoryURI, destHost);
+        Notification notif = new Notification(Export.class.getName(), this, eventID);
+        notif.setUserData(export);
+        super.sendNotification(notif);
+    }
+    /**
 	 * @param kos
 	 * @return
 	 */
@@ -1144,19 +1179,6 @@ public class XDSIService extends ServiceMBeanSupport {
         } catch (Exception e) {
             log.warn("Failed to log SOAP message", e);
         }
-	}
-	
-	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
-		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
-		if ( dbFactory == null ) {
-	        dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setNamespaceAware(true);
-		}
-        DocumentBuilder builder = dbFactory.newDocumentBuilder();
-        Document d = builder.parse( src.getInputStream() );
-        NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1","SubmitObjectsRequest");
-        nl.item(0);
-        return d;
 	}
 	
 	private Document readXMLFile(File xmlFile){
