@@ -177,7 +177,7 @@
      <param name="Facility" value="AUTHPRIV"/>
      <param name="SyslogHost" value="localhost:4000"/>
      <layout class="org.apache.log4j.PatternLayout">
-       <!-- replace HOST by actual hostname for RFC 3164 -- BSD Syslog
+       <!-- replace HOST by actual hostname for RFC 3164 - BSD Syslog
        compliant message prefix -->
        <param name="ConversionPattern" value="%d{MMM d HH:mm:ss} HOST %m"/>
      </layout>
