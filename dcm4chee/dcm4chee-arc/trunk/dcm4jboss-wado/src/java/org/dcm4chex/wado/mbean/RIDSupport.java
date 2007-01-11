@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
@@ -80,6 +81,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
@@ -93,6 +95,7 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
+import org.dcm4chex.archive.notif.Export;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.ImageCachingException;
@@ -654,7 +657,7 @@ public class RIDSupport {
 				File f = getDocumentFile(uid,reqObj.getParam("preferredContentType"));//Document is not stored in PACS (XDS)
 				if ( f.exists() ) {
 					try {
-						logExport(reqObj, getXDSPatientInfo(reqObj), "XDS Document Retrieve");
+						logExport(reqObj, getXDSPatientInfo(reqObj, f), "XDS Document Retrieve");
 						return new WADOStreamResponseObjectImpl( new FileInputStream(f), reqObj.getParam("preferredContentType"), HttpServletResponse.SC_OK, null);
 					} catch (FileNotFoundException ignore) {
 					}
@@ -677,6 +680,10 @@ public class RIDSupport {
         try {
         	Set suids = new HashSet();
         	suids.add(ds.getString(Tags.StudyInstanceUID));
+            String url = "http://"+reqObj.getRemoteHost()+"/"+mediaType.replace(' ', '_');
+            String srcHost = new URL(reqObj.getRequestURL()).getHost();
+            Export export = new Export(ds, reqObj.getRemoteUser(), reqObj.getRequestURL(), srcHost, url, reqObj.getRemoteHost());
+            service.sendExportNotification(export);
             server.invoke(auditLogName,
                     "logExport",
                     new Object[] { ds.getString(Tags.PatientID), ds.getString(Tags.PatientName),
@@ -715,14 +722,30 @@ public class RIDSupport {
 
 	/**
 	 * @param reqObj
+	 * @param f 
 	 * @return
 	 */
-	private Dataset getXDSPatientInfo(RIDRequestObject reqObj) {
-		Dataset ds = dof.newDataset();
-		//TODO REAL stuff
-		ds.putUI(Tags.StudyInstanceUID);
-		ds.putLO(Tags.PatientID,"");
-		ds.putPN(Tags.PatientName,"");
+	private Dataset getXDSPatientInfo(RIDRequestObject reqObj, File f) {
+        String pct = reqObj.getParam("preferredContentType");
+        Dataset ds = dof.newDataset();
+        if ( "application/dicom".equals(pct) ) {
+            try {
+                InputStream is = new BufferedInputStream( new FileInputStream(f) );
+                DataInputStream dis = new DataInputStream(is);
+                DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+                parser.setDcmHandler(ds.getDcmHandler());
+                parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
+                log.info("parsed Dicom File ds:");log.info(ds);
+                return ds;
+            } catch (Exception x) {
+                log.error("Cant parse dicom file to get XDSPatientInfo! file:"+f, x);
+            }
+        }
+        log.debug("Not a Dicom file! try to get patient infos!");
+		//TODO REAL stuff (need metadata here!)
+		if ( ! ds.containsValue(Tags.StudyInstanceUID) ) ds.putUI(Tags.StudyInstanceUID);
+        if ( ! ds.containsValue(Tags.PatientID) ) ds.putLO(Tags.PatientID,"UNKNOWN");
+        if ( ! ds.containsValue(Tags.PatientName) ) ds.putPN(Tags.PatientName,"UNKNOWN");
 		return ds;
 	}
 	

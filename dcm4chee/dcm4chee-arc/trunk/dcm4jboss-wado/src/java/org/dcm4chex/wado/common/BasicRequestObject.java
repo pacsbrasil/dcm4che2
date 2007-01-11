@@ -95,6 +95,6 @@ public interface BasicRequestObject {
 	
 	String getRemoteAddr();
 	String getRemoteHost();
-
+    String getRemoteUser();
 
 }

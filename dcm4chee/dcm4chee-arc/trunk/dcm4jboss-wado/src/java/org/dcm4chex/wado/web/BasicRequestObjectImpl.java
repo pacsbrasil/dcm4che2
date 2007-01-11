@@ -73,6 +73,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	
 	private String remoteAddr;
 	private String remoteHost = null;
+    private String remoteUser;
 
 	/**
 	 * Initialize an RequestObject with http request.
@@ -100,6 +101,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 		}
 		setAllowedContentTypes( request.getHeader("accept") );
 		this.remoteAddr = request.getRemoteAddr();
+        remoteUser = request.getRemoteUser();
 	}
 	
 	/**
@@ -192,4 +194,9 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
         }
 		return remoteHost;
 	}
+    
+    public String getRemoteUser() {
+        return remoteUser;
+    }
+    
 }
