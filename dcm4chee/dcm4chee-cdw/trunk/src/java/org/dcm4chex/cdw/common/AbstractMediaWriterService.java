@@ -114,26 +114,20 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
                 log.info("" + rq + " already failed");
                 return;
             }
-            updateStatus(rq, ExecutionStatus.CREATING, ExecutionStatusInfo.NORMAL);
+            rq.updateStatus(ExecutionStatus.CREATING, ExecutionStatusInfo.NORMAL, log);
             try {
                 cleanup = handle(rq, attrs);
             } catch (MediaCreationException e) {
                 log.error("Failed to process " + rq, e);
-                updateStatus(rq, ExecutionStatus.FAILURE, e.getStatusInfo());
+                rq.updateStatus(ExecutionStatus.FAILURE, e.getStatusInfo(), log);
             }
         } catch (IOException e) {
             // error already logged
         } finally {
+            if (rq.isDone() || rq.isFailed()) {
+                sendJMXNotification(rq);
+            }
             if (cleanup && !keepSpoolFiles) rq.cleanFiles(spoolDir);
-        }
-    }
-    
-    protected void updateStatus(MediaCreationRequest rq, String status, 
-            String info) throws IOException {
-        rq.updateStatus(status, info, log);
-        if (status.equals(ExecutionStatus.DONE)
-                || status.equals(ExecutionStatus.FAILURE)) {
-            sendJMXNotification(rq);
         }
     }
 

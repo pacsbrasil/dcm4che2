@@ -41,6 +41,7 @@ package org.dcm4chex.cdw.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.Date;
 
 import org.dcm4che.data.Dataset;
@@ -58,10 +59,14 @@ import org.jboss.logging.Logger;
  */
 public class MediaCreationRequest implements Serializable {
 
-    private static final long serialVersionUID = 7597506507735924505L;
+    private static final long serialVersionUID = 3340629480873666008L;
 
     private final File requestFile;
+    
+    private final String requestAET;
 
+    private final InetAddress requestIP;
+    
     private final Date timestamp;
     
     private String mediaWriterName;
@@ -89,14 +94,23 @@ public class MediaCreationRequest implements Serializable {
     private int retries = 0;
     
     private boolean keepLabelFile = false;
+    
+    private boolean failed = false;
 
-    public MediaCreationRequest(File requestFile) {
+    private boolean done = false;
+
+    public MediaCreationRequest(File requestFile, String requestAET,
+            InetAddress requestIP) {
         this.requestFile = requestFile;
+        this.requestAET = requestAET;
+        this.requestIP = requestIP;
         this.timestamp = new Date();
     }
 
     public MediaCreationRequest(MediaCreationRequest other) {
         this.requestFile = other.requestFile;
+        this.requestAET = other.requestAET;
+        this.requestIP = other.requestIP;
         this.timestamp = other.timestamp;
         this.mediaWriterName = other.mediaWriterName;
         this.priority = other.priority;
@@ -111,6 +125,8 @@ public class MediaCreationRequest implements Serializable {
         this.volsetSize = other.volsetSize;
         this.retries = other.retries;
         this.keepLabelFile = other.keepLabelFile;
+        this.failed = other.failed;
+        this.done = other.done;
     }
 
     public final File getDicomDirFile() {
@@ -122,6 +138,14 @@ public class MediaCreationRequest implements Serializable {
 
     public final File getRequestFile() {
         return requestFile;
+    }
+
+    public final String getRequestAET() {
+        return requestAET;
+    }
+
+    public final InetAddress getRequestIP() {
+        return requestIP;
     }
 
     public final String getMediaWriterName() {
@@ -240,6 +264,14 @@ public class MediaCreationRequest implements Serializable {
         this.keepLabelFile = keepLabelFile;
     }
     
+    public final boolean isFailed() {
+        return failed;
+    }
+
+    public final boolean isDone() {
+        return done;
+    }
+
     public final boolean isCanceled() {
         return !requestFile.exists();
     }
@@ -253,16 +285,20 @@ public class MediaCreationRequest implements Serializable {
 
     public Dataset readAttributes(Logger log) throws IOException {
         if (log.isDebugEnabled()) log.debug("M-READ " + requestFile);
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
         try {
-            ds.readFile(requestFile, FileFormat.DICOM_FILE, Tags.PixelData);
+            return readAttributes();
         } catch (IOException e) {
             log.error("Failed: M-READ " + requestFile, e);
             throw e;
         }
-        return ds;
     }
 
+    public Dataset readAttributes() throws IOException {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        ds.readFile(requestFile, FileFormat.DICOM_FILE, Tags.PixelData);
+        return ds;
+    }
+    
     public void updateStatus(String status, String info, Logger log)
             throws IOException {
         Dataset attrs = readAttributes(log);
@@ -270,6 +306,8 @@ public class MediaCreationRequest implements Serializable {
     }
 
     private void updateStatus(String status, String info, Logger log, Dataset attrs) throws IOException {
+        failed = status.equals(ExecutionStatus.FAILURE);
+        done = status.equals(ExecutionStatus.DONE);
         if (info.equals(attrs.getString((Tags.ExecutionStatusInfo)))
                 && status.equals(attrs.getString((Tags.ExecutionStatus))))
                 return;
@@ -313,6 +351,7 @@ public class MediaCreationRequest implements Serializable {
 	            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
 	            attrs.putCS(Tags.ExecutionStatusInfo,
 	                    ExecutionStatusInfo.NORMAL);
+                    done = true;
 	        }
 	        log.info("Finished Writing Media " + this);
 	    }

@@ -59,6 +59,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
@@ -470,7 +471,9 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         if (!f.exists())
                 throw new DcmServiceException(Status.NoSuchObjectInstance);
 
-        MediaCreationRequest mcrq = new MediaCreationRequest(f);
+        Association a = assoc.getAssociation();
+        MediaCreationRequest mcrq = new MediaCreationRequest(f,
+                a.getCallingAET(), a.getSocket().getInetAddress());
         Dataset attrs;
         try {
             attrs = mcrq.readAttributes(log);
@@ -500,8 +503,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     Status.ResourceLimitation); }
             try {
                 checkRequest(attrs);
-                mcrq.setMediaWriterName(lookupMediaWriterName(assoc
-                        .getAssociation().getCalledAET()));
+                mcrq.setMediaWriterName(lookupMediaWriterName(a.getCalledAET()));
                 mcrq.setPriority(priority);
                 mcrq.setRemainingCopies(numberOfCopies);
                 mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
