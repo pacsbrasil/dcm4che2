@@ -18,7 +18,6 @@ package org.dcm4chex.archive.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -186,11 +185,13 @@ public class FileSystemUtils {
         String[] cmdAttrbs = new String[] {"cmd.exe", "/C", "dir /c " + path};
 
         // read in the output of the command to an ArrayList
-        BufferedReader in = null;
+        Process proc = null;
         String line = null;
         ArrayList lines = new ArrayList();
         try {
-            in = openProcessStream(cmdAttrbs);
+        	proc = Runtime.getRuntime().exec(cmdAttrbs);
+        	BufferedReader in = new BufferedReader(
+                new InputStreamReader(proc.getInputStream()));
             line = in.readLine();
             while (line != null) {
                 line = line.toLowerCase().trim();
@@ -198,7 +199,7 @@ public class FileSystemUtils {
                 line = in.readLine();
             }
         } finally {
-            closeQuietly(in);
+            closeQuietly(proc);
         }
 
         if (lines.size() == 0) {
@@ -277,15 +278,17 @@ public class FileSystemUtils {
         String[] cmdAttribs = new String[] {dfCommand, dfCommandOption, path};
 
         // read the output from the command until we come to the second line
-        BufferedReader in = null;
+        Process proc = null;
         try {
-            in = openProcessStream(cmdAttribs);
-            String line1 = in.readLine(); // header line
+        	proc = Runtime.getRuntime().exec(cmdAttribs);
+        	BufferedReader in = new BufferedReader(
+                new InputStreamReader(proc.getInputStream()));
+            String line1 = in.readLine(); // header line (ignore it)
             String line2 = in.readLine(); // the line we're interested in
             String line3 = in.readLine(); // possibly interesting line
             return parseUnixDF(path, line1, line2, line3);
         } finally {
-            closeQuietly(in);
+        	closeQuietly(proc);
         }
     }
 
@@ -356,25 +359,13 @@ public class FileSystemUtils {
     }
 
     /**
-     * Opens the stream to be operating system.
-     *
-     * @param params  the command parameters
-     * @return a reader
-     * @throws IOException if an error occurs
+     * Close all associated streams of the process
+     * 
+     * @param proc
      */
-    BufferedReader openProcessStream(String[] params) throws IOException {
-        Process proc = Runtime.getRuntime().exec(params);
-        return new BufferedReader(
-            new InputStreamReader(proc.getInputStream()));
-    }
-
-    void closeQuietly(Reader input) {
-        try {
-            if (input != null) {
-                input.close();
-            }
-        } catch (IOException ioe) {
-            // ignore
-        }
+    void closeQuietly(Process proc) {
+    	try { proc.getInputStream().close(); } catch (Exception ignore) {}
+    	try { proc.getOutputStream().close(); } catch (Exception ignore) {}
+    	try { proc.getErrorStream().close(); } catch (Exception ignore) {}
     }
 }
