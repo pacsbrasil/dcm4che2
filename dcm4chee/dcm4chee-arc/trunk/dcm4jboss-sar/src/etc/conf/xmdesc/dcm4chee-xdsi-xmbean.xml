@@ -17,6 +17,15 @@
    </constructor>
 
    <!-- Attributes -->
+   <attribute access="read-write" getMethod="getSourceID" setMethod="setSourceID">
+      <description>Source ID - unique identifier of this Document Source.
+      </description>
+      <name>SourceID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" 
      getMethod="getAutoPublishAETs" 
      setMethod="setAutoPublishAETs">
