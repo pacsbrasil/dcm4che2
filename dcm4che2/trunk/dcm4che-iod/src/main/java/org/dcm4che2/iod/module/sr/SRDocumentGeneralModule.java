@@ -143,12 +143,12 @@ public class SRDocumentGeneralModule extends KODocumentModule {
 
     public SOPInstanceReference getEquivalentCDADocument() {
         DicomObject item = dcmobj.getNestedDicomObject(
-        	Tag.EquivalentCDADocumentSequence);
+        	Tag.EquivalentCDADocumentSequenceRET);
         return item != null ? new SOPInstanceReference(item) : null;
     }
     
     public void setEquivalentCDADocument(SOPInstanceReference refSOP) {
-        updateSequence(Tag.EquivalentCDADocumentSequence, refSOP);
+        updateSequence(Tag.EquivalentCDADocumentSequenceRET, refSOP);
     }
     
 }
