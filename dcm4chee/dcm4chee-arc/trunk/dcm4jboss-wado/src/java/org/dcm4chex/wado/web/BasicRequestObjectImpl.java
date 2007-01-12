@@ -74,6 +74,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	private String remoteAddr;
 	private String remoteHost = null;
     private String remoteUser;
+    private HttpServletRequest request;
 
 	/**
 	 * Initialize an RequestObject with http request.
@@ -83,6 +84,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	 * @param request The http request.
 	 */
 	public BasicRequestObjectImpl( HttpServletRequest request ) {
+            this.request = request;
 		reqType  = request.getParameter( "requestType" );
 		if ( reqType == null) reqType = request.getParameter("RT");
 		paramMap = request.getParameterMap();
@@ -103,6 +105,10 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 		this.remoteAddr = request.getRemoteAddr();
         remoteUser = request.getRemoteUser();
 	}
+        
+        public final HttpServletRequest getRequest() {
+            return request;
+        }
 	
 	/**
 	 * @param accept

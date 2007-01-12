@@ -50,8 +50,6 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.notif.WADORetrieve;
 import org.dcm4chex.wado.common.WADORequestObject;
@@ -356,8 +354,8 @@ public class WADOService extends AbstractCacheService {
 
 	protected void sendExportNotification(WADORequestObject req, WADOResponseObject resp) {
 	    long eventID = getNextNotificationSequenceNumber();
-	    WADORetrieve export = new WADORetrieve(req.getRemoteHost(),
-	    		req.getRemoteUser(), support.getNotificationInfo(req,resp));
+	    WADORetrieve export = new WADORetrieve(req.getRequest(),
+	    		support.getNotificationInfo(req,resp));
 	    if ( resp.getReturnCode() != HttpServletResponse.SC_OK ) {
 	    	export.setErrorMsg(resp.getErrorMessage());
 	    }

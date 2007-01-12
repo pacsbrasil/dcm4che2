@@ -42,6 +42,8 @@ package org.dcm4chex.wado.common;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author franz.willer
  *
@@ -95,6 +97,7 @@ public interface BasicRequestObject {
 	
 	String getRemoteAddr();
 	String getRemoteHost();
-    String getRemoteUser();
+        String getRemoteUser();
+        HttpServletRequest getRequest();
 
 }

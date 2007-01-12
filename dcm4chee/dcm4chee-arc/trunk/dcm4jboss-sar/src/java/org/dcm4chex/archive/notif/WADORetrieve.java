@@ -38,6 +38,8 @@
 
 package org.dcm4chex.archive.notif;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -49,27 +51,18 @@ import org.dcm4che.dict.Tags;
  */
 public class WADORetrieve {
 
-    private String clientHost;
-    private String user;
+    private HttpServletRequest request;
     private Dataset dsInfo;
     private String errorMsg;
 
-    public WADORetrieve(String clientHost, String user, Dataset dsInfo) {
-        this.clientHost = clientHost;
-        this.user = user;
+    public WADORetrieve(HttpServletRequest request, Dataset dsInfo) {
+        this.request = request;
         this.dsInfo = dsInfo;
     }
 
-	/**
-	 * @return Returns the clientHost.
-	 */
-	public String getClientHost() {
-		return clientHost;
+	public HttpServletRequest getRequest() {
+		return request;
 	}
-
-	public String getUser() {
-        return user;
-    }
 
 	/**
 	 * @return Returns the patId.
