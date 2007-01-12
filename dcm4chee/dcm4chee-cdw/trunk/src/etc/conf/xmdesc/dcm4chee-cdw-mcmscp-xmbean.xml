@@ -89,6 +89,32 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDefaultFilesetID"
+      setMethod="setDefaultFilesetID">
+      <description>Used, if no Fileset ID is specified in the received
+      Media Creation request. 0 or # will be replaced by 
+      NextDefaultFilesetIDSeqno.
+      </description>
+      <name>DefaultFilesetID</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="DISK_000" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getNextDefaultFilesetIDSeqno"
+      setMethod="setNextDefaultFilesetIDSeqno">
+      <description>Used with DefaultFilesetID to generate the Fileset ID, if
+      no Fileset ID is specified in the received Media Creation request.
+      Will automatic incremented for each generated Fileset ID.
+      </description>
+      <name>NextDefaultFilesetIDSeqno</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getDefaultRequestPriority"
       setMethod="setDefaultRequestPriority">
       <description>Description not yet written.

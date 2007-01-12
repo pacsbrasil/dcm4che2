@@ -41,6 +41,7 @@ package org.dcm4chex.cdw.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.jms.JMSException;
+import javax.management.Attribute;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -95,6 +97,12 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     private String defaultRequestPriority = Priority.LOW;
 
+    private String defaultFilesetID;
+
+    private DecimalFormat defaultFilesetIDFormat;
+    
+    private int nextDefaultFilesetIDSeqno = 1;
+    
     private int maxNumberOfCopies = 10;
 
     private boolean defaultLabelUsingInformationExtractedFromInstances = true;
@@ -177,6 +185,26 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         this.defaultMediaApplicationProfile = profile;
     }
 
+    public final String getDefaultFilesetID() {
+        return defaultFilesetID;
+    }
+
+    public final void setDefaultFilesetID(String defaultFilesetID) {
+        if (defaultFilesetID.indexOf('0') != -1
+                || defaultFilesetID.indexOf('#') != -1) {
+            defaultFilesetIDFormat = new DecimalFormat(defaultFilesetID);
+        }
+        this.defaultFilesetID = defaultFilesetID;
+    }
+
+    public final int getNextDefaultFilesetIDSeqno() {
+        return nextDefaultFilesetIDSeqno;
+    }
+
+    public final void setNextDefaultFilesetIDSeqno(int seqno) {
+        this.nextDefaultFilesetIDSeqno = seqno;
+    }   
+    
     public final boolean isAllowCancelAlreadyCreating() {
         return allowCancelAlreadyCreating;
     }
@@ -506,7 +534,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 mcrq.setMediaWriterName(lookupMediaWriterName(a.getCalledAET()));
                 mcrq.setPriority(priority);
                 mcrq.setRemainingCopies(numberOfCopies);
-                mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
+                mcrq.setFilesetID(ensureFileSetID(
+                        attrs.getString(Tags.StorageMediaFileSetID)));
                 mcrq.setVolsetID(attrs.getString(Tags.StorageMediaFileSetID));
                 attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
                 attrs.putCS(Tags.RequestPriority, priority);
@@ -567,6 +596,29 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     + actionID);
         }
         return null;
+    }
+
+    private String ensureFileSetID(String value) {
+        if (value != null) {
+            return value;
+        }
+        
+        if (defaultFilesetIDFormat == null) {
+            return defaultFilesetID;
+        }
+        
+        synchronized (defaultFilesetIDFormat) {
+            try {
+                server.setAttribute(serviceName, 
+                        new Attribute("NextDefaultFilesetIDSeqno", 
+                                new Integer(nextDefaultFilesetIDSeqno+1)) );
+            } catch (Exception e) {
+                log.warn("Failed to store incremented NextFilesetSeqno - " +
+                            "will be reset by next reboot! ", e);
+                ++nextDefaultFilesetIDSeqno;
+            }
+            return defaultFilesetIDFormat.format(nextDefaultFilesetIDSeqno-1);
+        }
     }
 
     private void deleteRefInstances(final Dataset attrs) {
