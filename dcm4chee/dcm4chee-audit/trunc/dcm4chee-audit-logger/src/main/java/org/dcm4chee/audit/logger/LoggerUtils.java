@@ -142,6 +142,13 @@ public class LoggerUtils {
         return src;
     }
 
+    public static Destination toLocalDestination(HttpServletRequest request) {
+        NetworkAccessPoint nap = toLocalNetworkAccessPoint(request);
+        Destination dst = new Destination(nap.getNodeID());
+        dst.setNetworkAccessPoint(nap);
+        return dst;
+    }
+
     public static Destination toRemoteDestination(HttpServletRequest request) {
         NetworkAccessPoint nap = toRemoteNetworkAccessPoint(request);
         String user = request.getRemoteUser();
@@ -149,6 +156,16 @@ public class LoggerUtils {
         Destination dst = new Destination(id);
         dst.setNetworkAccessPoint(nap);
         return dst;
+    }
+    
+    public static Source toRemoteSource(HttpServletRequest request) {
+        NetworkAccessPoint nap = toRemoteNetworkAccessPoint(request);
+        String user = request.getRemoteUser();
+        String id = user != null ? (user + '@' + nap.getID()) : nap.getID();
+        Source src = new Source(id);
+        src.setUserIsRequestor(false);
+        src.setNetworkAccessPoint(nap);
+        return src;
     }
 
     public static Patient toPatient(Dataset ds) {
