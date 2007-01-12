@@ -40,10 +40,17 @@ package org.dcm4chee.audit.logger;
 
 import java.net.InetAddress;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.Destination;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.Patient;
 import org.dcm4che2.audit.message.Source;
+import org.dcm4che2.audit.message.Study;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -67,6 +74,26 @@ public class LoggerUtils {
         String id = hostLookup 
                 ? remoteAddr.getHostName()
                 : remoteAddr.getHostAddress();
+        NetworkAccessPoint nap = Character.isDigit(id.charAt(0))
+                ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(id)
+                : (NetworkAccessPoint) new NetworkAccessPoint.HostName(id);
+        return nap;
+    }
+
+    public static NetworkAccessPoint toRemoteNetworkAccessPoint(
+            HttpServletRequest rq) {
+        String id = hostLookup 
+                ? rq.getRemoteHost()
+                : rq.getRemoteAddr();
+        NetworkAccessPoint nap = Character.isDigit(id.charAt(0))
+                ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(id)
+                : (NetworkAccessPoint) new NetworkAccessPoint.HostName(id);
+        return nap;
+    }
+
+    public static NetworkAccessPoint toLocalNetworkAccessPoint(
+            HttpServletRequest rq) {
+        String id = rq.getServerName();
         NetworkAccessPoint nap = Character.isDigit(id.charAt(0))
                 ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(id)
                 : (NetworkAccessPoint) new NetworkAccessPoint.HostName(id);
@@ -105,5 +132,45 @@ public class LoggerUtils {
             dst.setUserIsRequestor(false);
         }
         return dst;
+    }
+
+    public static Source toLocalSource(HttpServletRequest request) {
+        NetworkAccessPoint nap = toLocalNetworkAccessPoint(request);
+        Source src = new Source(nap.getNodeID());
+        src.setUserIsRequestor(false);
+        src.setNetworkAccessPoint(nap);
+        return src;
+    }
+
+    public static Destination toRemoteDestination(HttpServletRequest request) {
+        NetworkAccessPoint nap = toRemoteNetworkAccessPoint(request);
+        String user = request.getRemoteUser();
+        String id = user != null ? (user + '@' + nap.getID()) : nap.getID();
+        Destination dst = new Destination(id);
+        dst.setNetworkAccessPoint(nap);
+        return dst;
+    }
+
+    public static Patient toPatient(Dataset ds) {
+        Patient patient = new Patient(ds.getString(Tags.PatientID));
+        String pn = ds.getString(Tags.PatientName);
+        if (pn != null) {
+            patient.setParticipantObjectName(pn);
+        }
+        return patient;
+    }
+
+    public static Study toStudy(Dataset ds) {
+        Study study = new Study(ds.getString(Tags.StudyInstanceUID));
+        String cuid = ds.getString(Tags.SOPClassUID);
+        if ( cuid != null ) {
+            ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                ParticipantObjectDescription.SOPClass sopClass =
+                    new ParticipantObjectDescription.SOPClass(cuid);
+                sopClass.setNumberOfInstances(1);
+                desc.addSOPClass(sopClass);            
+                study.addParticipantObjectDescription(desc);
+        }
+        return study ;
     }
 }

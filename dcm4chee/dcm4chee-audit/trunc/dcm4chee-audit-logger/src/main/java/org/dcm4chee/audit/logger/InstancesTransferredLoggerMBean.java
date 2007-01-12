@@ -39,6 +39,7 @@
 package org.dcm4chee.audit.logger;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -58,6 +60,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.Association;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.BeginTransferingMessage;
+import org.dcm4che2.audit.message.Destination;
 import org.dcm4che2.audit.message.InstancesTransferedMessage;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
@@ -67,6 +70,7 @@ import org.dcm4che2.audit.message.Study;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.notif.BeginTransfering;
 import org.dcm4chex.archive.notif.InstancesTransferred;
+import org.dcm4chex.archive.notif.WADORetrieve;
 import org.jboss.annotation.ejb.Depends;
 import org.jboss.annotation.ejb.Management;
 import org.jboss.annotation.ejb.Service;
@@ -96,6 +100,9 @@ public class InstancesTransferredLoggerMBean
     @Depends("dcm4chee.archive.logger:name=SecurityAlertLogger,type=service")
     private SecurityAlertLogger alertLogger;
 
+    @Depends ("dcm4chee.archive:service=WADOService")
+    private ObjectName wadoServiceName;
+
     private MBeanServer server;
 
     public void create() throws Exception {
@@ -110,11 +117,13 @@ public class InstancesTransferredLoggerMBean
         registerSeriesStoredListener();
         registerInstancesTransferredListener();
         registerBeginTransferingListener();
+        registerWadoRetrieveListener();
     }
     public void stop() {
         unregisterSeriesStoredListener();
         unregisterInstancesTransferredListener();
         unregisterBeginTransferingListener();
+        unregisterWadoRetrieveListener();
     }
 
     private void registerSeriesStoredListener() 
@@ -167,10 +176,25 @@ public class InstancesTransferredLoggerMBean
                     beginTransferingListener);
         } catch (Exception e) {
             log.warn("Failed to unregister BeginTransfering Notification" +
-                    "Listener from " + storeSCPName, e);
+                    "Listener from " + exportManagerName, e);
         }
     }
 
+    private void registerWadoRetrieveListener() throws Exception {
+    	NotificationFilterSupport f = new NotificationFilterSupport();
+    	f.enableType(WADORetrieve.class.getName());
+    	server.addNotificationListener(wadoServiceName, wadoRetrieveListener, f , null);
+    }
+
+    private void unregisterWadoRetrieveListener() {
+    	try {
+    		server.removeNotificationListener(wadoServiceName, wadoRetrieveListener);
+    	} catch (Exception e) {
+    		log.warn("Failed to unregister WadoRetrieve Notification" +
+    				"Listener from " + wadoServiceName, e);
+    	}
+    }
+    
     private final NotificationListener seriesStoredListener = 
             new NotificationListener() {
 
@@ -250,6 +274,35 @@ public class InstancesTransferredLoggerMBean
                 LoggerUtils.log.info(msg);
             } catch (Throwable th) {
                 log.warn("Failed to emit Begin Transfering Audit Log message: ", th);
+            }
+        }
+    };
+  
+    private final NotificationListener wadoRetrieveListener = 
+        new NotificationListener() {
+
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+            	WADORetrieve wado = (WADORetrieve) notif.getUserData();
+                HttpServletRequest request = wado.getRequest();
+                Dataset ds = wado.getDataset();
+                NetworkAccessPoint nap = LoggerUtils.toNetworkAccessPoint(
+                        InetAddress.getLocalHost());
+                Source src = new Source(nap.getNodeID());
+                src.setNetworkAccessPoint(nap);
+                src.setUserIsRequestor(false);
+                Patient pat = new Patient(wado.getPatId());
+                if ( wado.getPatName() != null ) 
+                	pat.setPatientName(wado.getPatName());
+                InstancesTransferedMessage msg = new InstancesTransferedMessage(
+                        new InstancesTransferedMessage.AuditEvent.Execute(),
+                        LoggerUtils.toLocalSource(request),
+                        LoggerUtils.toRemoteDestination(request),
+                        LoggerUtils.toPatient(ds), 
+                        LoggerUtils.toStudy(ds));
+                LoggerUtils.log.info(msg);
+            } catch (Throwable th) {
+                log.warn("Failed to emit Instances Transferred Audit Log message: ", th);
             }
         }
     };
