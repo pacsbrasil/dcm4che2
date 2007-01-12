@@ -58,19 +58,14 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WADOImageResponseObjectImpl implements WADOResponseObject {
+public class WADOImageResponseObjectImpl extends BasicWADOResponseObject {
 
 	private BufferedImage bi;
-	private String contentType;
-	private int returnCode;
-	private String errorMessage;
 	private JPEGEncodeParam jpgParam;
 
 	public WADOImageResponseObjectImpl( BufferedImage bi, String contentType, int retCode, String errMsg ) {
+		super(contentType,retCode,errMsg);
 		this.bi = bi;
-		this.contentType = contentType;
-		returnCode = retCode;
-		errorMessage = errMsg;
 	}
 	public WADOImageResponseObjectImpl( BufferedImage bi, JPEGEncodeParam jpgParam, String contentType, int retCode, String errMsg ) {
 		this( bi, contentType, retCode, errMsg);
@@ -92,27 +87,6 @@ public class WADOImageResponseObjectImpl implements WADOResponseObject {
 		} finally {
 			out.close();
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.wado.common.WADOResponseObject#getContentType()
-	 */
-	public String getContentType() {
-		return contentType;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.wado.common.WADOResponseObject#getReturnCode()
-	 */
-	public int getReturnCode() {
-		return returnCode;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.wado.common.WADOResponseObject#getErrorMessage()
-	 */
-	public String getErrorMessage() {
-		return errorMessage;
 	}
 
 }

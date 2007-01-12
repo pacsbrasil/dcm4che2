@@ -55,19 +55,14 @@ import org.xml.sax.SAXException;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WADOStreamResponseObjectImpl implements WADOResponseObject {
+public class WADOStreamResponseObjectImpl extends BasicWADOResponseObject {
 
 	private InputStream stream;
-	private String contentType;
-	private int returnCode;
-	private String errorMessage;
 	private static final int BUF_LEN = 65536;
 
 	public WADOStreamResponseObjectImpl( InputStream is, String contentType, int retCode, String errMsg ) {
+		super(contentType,retCode,errMsg);
 		this.stream = is;
-		this.contentType = contentType;
-		returnCode = retCode;
-		errorMessage = errMsg;
 	}
 	
 	/* (non-Javadoc)
@@ -95,26 +90,4 @@ public class WADOStreamResponseObjectImpl implements WADOResponseObject {
 			}
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.wado.common.WADOResponseObject#getContentType()
-	 */
-	public String getContentType() {
-		return contentType;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.wado.common.WADOResponseObject#getReturnCode()
-	 */
-	public int getReturnCode() {
-		return returnCode;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.wado.common.WADOResponseObject#getErrorMessage()
-	 */
-	public String getErrorMessage() {
-		return errorMessage;
-	}
-
 }

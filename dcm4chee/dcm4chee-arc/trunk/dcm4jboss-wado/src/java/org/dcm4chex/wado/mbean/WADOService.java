@@ -46,9 +46,14 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import javax.management.Notification;
 import javax.management.ObjectName;
+import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4chex.archive.notif.WADORetrieve;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -344,7 +349,21 @@ public class WADOService extends AbstractCacheService {
 	 * @return The value object containing the retrieved object or an error.
 	 */
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
-		return support.getWADOObject( reqVO );
+		WADOResponseObject resp = support.getWADOObject( reqVO );
+		sendExportNotification(reqVO, resp);
+		return resp;
+	}
+
+	protected void sendExportNotification(WADORequestObject req, WADOResponseObject resp) {
+	    long eventID = getNextNotificationSequenceNumber();
+	    WADORetrieve export = new WADORetrieve(req.getRemoteHost(),
+	    		req.getRemoteUser(), support.getNotificationInfo(req,resp));
+	    if ( resp.getReturnCode() != HttpServletResponse.SC_OK ) {
+	    	export.setErrorMsg(resp.getErrorMessage());
+	    }
+	    Notification notif = new Notification(WADORetrieve.class.getName(), this, eventID);
+	    notif.setUserData(export);
+	    sendNotification(notif);
 	}
 
 }

@@ -66,6 +66,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.management.MBeanServer;
+import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
@@ -95,6 +96,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.notif.WADORetrieve;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.common.BasicRequestObject;
@@ -350,7 +352,7 @@ private WADOResponseObject getUpdatedInstance( WADORequestObject req, String tra
  * @param req
  * @return
  */
-private Dataset getPatientInfo(WADORequestObject req) {
+protected Dataset getPatientInfo(WADORequestObject req) {
 	Dataset ds = dof.newDataset();
 	Dataset result = dof.newDataset();
 	try {
@@ -928,6 +930,25 @@ private void setDefaultTextSopCuids() {
 	textSopCuids.put( "EnhancedSR", UIDs.EnhancedSR );
 	textSopCuids.put( "KeyObjectSelectionDocument", UIDs.KeyObjectSelectionDocument );
 	textSopCuids.put( "MammographyCADSR", UIDs.MammographyCADSR );
+}
+
+/**
+ * @param req
+ * @param resp
+ * @return
+ */
+public Dataset getNotificationInfo(WADORequestObject req, WADOResponseObject resp) {
+	Dataset ds;
+    if ( resp.getReturnCode() == HttpServletResponse.SC_OK ) {
+	    ds = getPatientInfo(req);
+    } else {
+    	ds = dof.newDataset();
+    }
+    if ( !ds.containsValue(Tags.StudyInstanceUID) ) ds.putUI(Tags.StudyInstanceUID, req.getStudyUID());
+    if ( !ds.containsValue(Tags.SeriesInstanceUID) ) ds.putUI(Tags.SeriesInstanceUID, req.getSeriesUID());
+    if ( !ds.containsValue(Tags.SOPInstanceUID) ) ds.putUI(Tags.SOPInstanceUID, req.getObjectUID());
+    if ( !ds.containsValue(Tags.PatientID) ) ds.putUI(Tags.SOPInstanceUID, "UNKNOWN");
+    return ds;
 }
 
 /**
