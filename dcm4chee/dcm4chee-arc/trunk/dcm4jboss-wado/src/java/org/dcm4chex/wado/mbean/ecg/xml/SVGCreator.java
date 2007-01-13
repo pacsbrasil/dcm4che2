@@ -482,8 +482,10 @@ public class SVGCreator implements XMLResponseObject{
 		String yScaleDesc = null;
 		WaveformScalingInfo scalingInfo = area.getScalingInfo();
 		if ( scalingInfo != null ) {
-			if ( (pixPerSec = scalingInfo.getPixPerSec()) > 0 && (pixPerUnit = scalingInfo.getPixPerUnit()) > 0 ) 
+			if ( (pixPerSec = scalingInfo.getPixPerSec()) > 0 && (pixPerUnit = scalingInfo.getPixPerUnit()) > 0 ) {
+				channel.applyAreaScaling(scalingInfo.getYScaleDesc());
 				return scalingInfo;
+			}
 			xScaleDesc = scalingInfo.getXScaleDesc();
 			yScaleDesc = scalingInfo.getYScaleDesc();
 		}

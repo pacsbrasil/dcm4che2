@@ -261,5 +261,32 @@ public class WaveFormChannel {
 		buffer.reset();
 		return new float[]{ min*sensitivity, max*sensitivity};
 	}
+	
+	public void applyAreaScaling(String unit) {
+		if (sensitivityUnit != null && unit != null && !sensitivityUnit.equals(unit)) {
+			float f1 = getUnitFactor(sensitivityUnit);
+			float f2 = getUnitFactor(unit);
+			if ( f1 != f2 ) {
+				sensitivity *= f1 / f2;
+				log.debug("Sensitivity corrected! Units: (source:"+sensitivityUnit+" area:"+unit+" -> new value:"+sensitivity);
+			}
+		}
+	}
+	private float getUnitFactor(String unit) {
+		if (unit.length() < 2) return 1f;
+		switch (unit.charAt(0)) {
+		case 'u': return 1e-6f;
+		case 'm': return 1e-3f;
+		case 'k': return 1000f;
+		case 'M': return 1e6f;
+		case 'G': return 1e9f;
+		case 'n': return 1e-9f;
+		case 'p': return 1e-12f;
+		case 'd': return 0.1f;
+		case 'c': return 0.01f;
+			default:
+				return 1f;
+		}
+	}
 
 }

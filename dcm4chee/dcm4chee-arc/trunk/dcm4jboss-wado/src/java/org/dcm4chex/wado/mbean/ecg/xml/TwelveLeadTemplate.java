@@ -50,7 +50,7 @@ public class TwelveLeadTemplate implements WaveformTemplate {
 	public static final float MIN_WIDTH = 1000;
 	public static final float MIN_HEIGHT = 1000;
 	public static final float CAL_PULSE_WIDTH = 120;
-	public static final WaveformScalingInfo SCALING_INFO = new WaveformScalingInfo(250f,null,100f,null);
+	public static final WaveformScalingInfo SCALING_INFO = new WaveformScalingInfo(250f,null,100f,"mV");
 	
 	private float width;
 	private float height;
