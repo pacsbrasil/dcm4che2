@@ -311,10 +311,17 @@ public class XDSMetadata {
 
 		addEventCodeList();
 		String mime = mdValues.getProperty("mimetype","application/dicom");
-		addClassification(UUID.XDSDocumentEntry_formatCode, XDSIService.DOCUMENT_ID, 
-				UIDs.KeyObjectSelectionDocument,
-				"Key Object Selection Document", 
-				"1.2.840.10008.2.6.1" );		
+		if ( "application/dicom".equals(mime)) {
+			addClassification(UUID.XDSDocumentEntry_formatCode, XDSIService.DOCUMENT_ID, 
+					UIDs.KeyObjectSelectionDocument,
+					"Key Object Selection Document", 
+					"1.2.840.10008.2.6.1" );
+		} else {
+			addClassification(UUID.XDSDocumentEntry_formatCode, XDSIService.DOCUMENT_ID, 
+					mdValues.getProperty("formatCode."+mime,"PDF"),
+					mdValues.getProperty("formatCodeDN."+mime,"PDF Document"), 
+					mdValues.getProperty("formatCodeCodingSchemeOID."+mime,"Connect-a-thon formatCodes") );
+		}
 		addClassification(UUID.XDSDocumentEntry_healthCareFacilityTypeCode, XDSIService.DOCUMENT_ID, 
 				mdValues.getProperty("healthCareFacilityTypeCode","Assisted Living"),
 				mdValues.getProperty("healthCareFacilityTypeCodeDN","Assisted Living"),
