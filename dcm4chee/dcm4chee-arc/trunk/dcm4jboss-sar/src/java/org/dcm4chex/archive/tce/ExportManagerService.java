@@ -1100,10 +1100,10 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private void setFirstDayOfMonth(Dataset attrs, int tag) {
         DcmElement el = attrs.get(tag);
-        if (el == null)
-            return;
+        Date date;
         try {
-            Date date = el.getDate();
+            if (el == null || (date = el.getDate()) == null)
+                return;
             date.setDate(1);
             if (el.vr() == VRs.DA)
                 attrs.putDA(tag, date);
