@@ -261,13 +261,19 @@ public class UDPServerMBean implements UDPServer {
             }
             return;
         }
-        try {
-            sendMessage(data, off, length - off, from);
+        try {           
+            sendMessage(data, off, trimTail(data, length) - off, from);
         } catch (Throwable e) {
             log.error("Failed to schedule processing of " +
                     AuditMessageUtils.promptMsg(data, length)
                     + " received from " + from, e);
         }        
+    }
+
+    private int trimTail(byte[] data, int length) {
+        int index = length - 1;
+        while (data[index] == 0) --index;
+        return index + 1;
     }
 
     private void sendMessage(byte[] data, int off, int length, InetAddress from)
