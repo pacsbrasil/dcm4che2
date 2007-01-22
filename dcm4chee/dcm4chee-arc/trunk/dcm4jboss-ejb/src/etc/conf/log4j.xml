@@ -183,9 +183,9 @@
      </layout>
    </appender>
 
-   <!-- set additivity="false" to supress logging of Audit Messages in CONSOLE
+   <!-- set additivity="true" to log emitted Audit Messages in CONSOLE
    and FILE appender -->
-   <category name="audit" additivity="true">
+   <category name="audit" additivity="false">
      <priority value="INFO" />
      <appender-ref ref="AUDIT"/>
    </category>
@@ -238,6 +238,11 @@
    <!-- Limit the jacorb category to WARN as its INFO is verbose -->
    <category name="jacorb">
       <priority value="WARN"/>
+   </category>
+
+   <!-- Limit the org.hibernate category to INFO as its DEBUG is verbose -->
+   <category name="org.hibernate">
+      <priority value="INFO"/>
    </category>
 
    <!-- Limit JBoss categories -->
