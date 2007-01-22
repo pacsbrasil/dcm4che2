@@ -98,6 +98,9 @@ public abstract class DirBuilderFactory {
         REC_TYPE_MAP.put(UIDs.StandaloneModalityLUTStorage, DirRecord.MODALITY_LUT);
         REC_TYPE_MAP.put(UIDs.StandaloneVOILUTStorage, DirRecord.VOI_LUT);
         REC_TYPE_MAP.put(UIDs.GrayscaleSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
+        REC_TYPE_MAP.put(UIDs.ColorSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
+        REC_TYPE_MAP.put(UIDs.PseudoColorSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
+        REC_TYPE_MAP.put(UIDs.BlendingSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
         REC_TYPE_MAP.put(UIDs.XRayAngiographicImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.XRayRadiofluoroscopicImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.XRayAngiographicBiPlaneImageStorageRetired, DirRecord.IMAGE);
@@ -113,19 +116,25 @@ public abstract class DirBuilderFactory {
         REC_TYPE_MAP.put(UIDs.ComprehensiveSR, DirRecord.SR_DOCUMENT);
         REC_TYPE_MAP.put(UIDs.MammographyCADSR, DirRecord.SR_DOCUMENT);
         REC_TYPE_MAP.put(UIDs.KeyObjectSelectionDocument, DirRecord.KEY_OBJECT_DOC);
+        REC_TYPE_MAP.put(UIDs.MRSpectroscopyStorage, DirRecord.SPECTROSCOPY);
         REC_TYPE_MAP.put(UIDs.PositronEmissionTomographyImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.StandalonePETCurveStorage, DirRecord.CURVE);
         REC_TYPE_MAP.put(UIDs.RTImageStorage, DirRecord.IMAGE);
         REC_TYPE_MAP.put(UIDs.RTDoseStorage, DirRecord.RT_DOSE);
         REC_TYPE_MAP.put(UIDs.RTStructureSetStorage, DirRecord.RT_STRUCTURE_SET);
         REC_TYPE_MAP.put(UIDs.RTBeamsTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
+        REC_TYPE_MAP.put(UIDs.RTIonBeamsTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
         REC_TYPE_MAP.put(UIDs.RTPlanStorage, DirRecord.RT_PLAN);
+        REC_TYPE_MAP.put(UIDs.RTIonPlanStorage, DirRecord.RT_PLAN);
         REC_TYPE_MAP.put(UIDs.RTBrachyTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
         REC_TYPE_MAP.put(UIDs.RTTreatmentSummaryRecordStorage, DirRecord.RT_TREAT_RECORD);
         REC_TYPE_MAP.put(UIDs.RawDataStorage, DirRecord.RAW_DATA);
         REC_TYPE_MAP.put(UIDs.SpatialRegistrationStorage, DirRecord.REGISTRATION);
+        REC_TYPE_MAP.put(UIDs.DeformableSpatialRegistrationStorage, DirRecord.REGISTRATION);
         REC_TYPE_MAP.put(UIDs.SpatialFiducialsStorage, DirRecord.FIDUCIAL);
         REC_TYPE_MAP.put(UIDs.EncapsulatedPDFStorage, DirRecord.ENCAP_DOC);
+        REC_TYPE_MAP.put(UIDs.RealWorldValueMappingStorage, DirRecord.VALUE_MAP);
+        REC_TYPE_MAP.put(UIDs.StereometricRelationshipStorage, DirRecord.STEREOMETRIC);
     }
 
     public static String getRecordType(String classUID) {

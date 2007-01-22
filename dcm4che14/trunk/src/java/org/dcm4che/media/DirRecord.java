@@ -77,6 +77,9 @@ public interface DirRecord
     public static final String REGISTRATION = "REGISTRATION";
     public static final String FIDUCIAL = "FIDUCIAL";
     public static final String ENCAP_DOC = "ENCAP DOC";
+    public static final String VALUE_MAP = "VALUE MAP";
+    public static final String HL7_STRUC_DOC = "HL7 STRUC DOC";
+    public static final String STEREOMETRIC = "STEREOMETRIC";
 
     public void reload() throws IOException, DcmValueException;
     
