@@ -363,6 +363,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                             bbin, ISO_8859_1));
                     xmlReader.parse(in);
                     Document msg = hl7in.getDocument();
+                    log.info("Received HL7 message:");
                     logMessage(msg);
                     if (fileReceivedHL7AsXML) {
                         fileReceivedHL7AsXML(msg, makeLogfile("hl7-######.xml",
@@ -428,7 +429,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             return;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write("Received HL7 message:".getBytes());
             Transformer t = getTemplates(logStylesheetURL).newTransformer();
             t.transform(new DocumentSource(document), new StreamResult(out));
             log.info(out.toString());

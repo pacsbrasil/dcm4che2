@@ -250,5 +250,15 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Log Message</description>
+      <name>logMessage</name>
+      <parameter>
+        <description>Message</description>
+        <name>message</name>
+        <type>org.dom4j.Document</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
 </mbean>
     

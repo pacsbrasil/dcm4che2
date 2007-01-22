@@ -511,6 +511,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
         log.info("Query PIX Manager " + pixManager + ":\n"
                 + s.replace('\r', '\n'));
         Document msg = invoke(s.getBytes(ISO_8859_1), pixManager);
+        log.info("PIX Query returns:");
+        logMessage(msg);
         MSH msh = new MSH(msg);
         if (!"RSP".equals(msh.messageType) || !"K23".equals(msh.triggerEvent)) {
             String prompt = "Unsupport response message type: "
@@ -525,6 +527,16 @@ public class HL7SendService extends ServiceMBeanSupport implements
             throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
         }
         return rsp.getPatientIDs();
+    }
+
+    private void logMessage(Document msg) {
+        try {
+            server.invoke(hl7ServerName, "logMessage",
+                    new Object[]{ msg },
+                    new String[]{ Document.class.getName() });
+        } catch (Exception e) {
+            log.warn("Failed to log message", e);
+        }        
     }
 
     private StringBuffer makeMSH(String timestamp, String msgType,
