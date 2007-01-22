@@ -53,6 +53,7 @@ import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -68,6 +69,7 @@ import org.dcm4che2.audit.message.Study;
 import org.dcm4che2.audit.message.DataExportMessage.AuditEvent;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4chex.archive.notif.Export;
+import org.dcm4chex.archive.notif.RIDExport;
 import org.jboss.annotation.ejb.Depends;
 import org.jboss.annotation.ejb.Management;
 import org.jboss.annotation.ejb.Service;
@@ -99,8 +101,7 @@ public class ExportLoggerMBean implements ExportLogger, NotificationListener {
     
     @Depends ("dcm4chee.archive:service=RIDService")
     private ObjectName ridServicename;
-    
-    
+
     /**
      * @return the auditFailures
      */
@@ -131,25 +132,39 @@ public class ExportLoggerMBean implements ExportLogger, NotificationListener {
     }
     
     public void start() throws Exception {
+        registerRIDExportListerner();
         registerExportListeners();
     }
 
     public void stop() {
+        unregisterRIDExportListerner();
         unregisterExportListeners();
+    }
+
+    private void registerRIDExportListerner() throws Exception {
+        NotificationFilterSupport f = new NotificationFilterSupport();
+        f.enableType(RIDExport.class.getName());
+        server.addNotificationListener(ridServicename, ridExportListener, f , null);
+    }
+
+    private void unregisterRIDExportListerner() {
+        try {
+            server.removeNotificationListener( ridServicename, ridExportListener );
+        } catch (Exception e) {
+            log.warn("Failed to unregister RID Export Notification Listener", e);
+        }
     }
 
     private void registerExportListeners() throws Exception {
         NotificationFilterSupport f = new NotificationFilterSupport();
         f.enableType(Export.class.getName());
         server.addNotificationListener(xdsiServicename, this, f , null);
-        server.addNotificationListener(ridServicename, this, f , null);
     }
 
     private void unregisterExportListeners() {
         ObjectName serviceName = null;
         try {
             server.removeNotificationListener( serviceName=xdsiServicename, this );
-            server.removeNotificationListener( serviceName=ridServicename, this );
         } catch (Exception e) {
             log.warn("Failed to unregister Export Notification Listener(s) from " + serviceName, e);
         }
@@ -295,5 +310,42 @@ public class ExportLoggerMBean implements ExportLogger, NotificationListener {
         }
         return mapSopClass;
     }
+ 
+    private NotificationListener ridExportListener = new NotificationListener(){
+
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                RIDExport export = (RIDExport) notif.getUserData();
+                HttpServletRequest request = export.getRequest();
+                Dataset ds = export.getDataset();
+                Patient pat = new Patient(export.getPatId());
+                if ( export.getPatName() != null ) 
+                        pat.setPatientName(export.getPatName());
+                DataExportMessage msg = new DataExportMessage(
+                        new DataExportMessage.AuditEvent(), 
+                        LoggerUtils.toLocalSource(request), 
+                        LoggerUtils.toRemoteDestinationMedia(request), pat);
+                String suid = ds.getString(Tags.StudyInstanceUID);
+                if (suid != null) {
+                    Study sty = new Study(suid);
+                    String cuid = ds.getString(Tags.SOPClassUID);
+                    if (cuid != null) {
+                        ParticipantObjectDescription desc = 
+                            new ParticipantObjectDescription();
+                        ParticipantObjectDescription.SOPClass sopClass =
+                            new ParticipantObjectDescription.SOPClass(cuid);
+                        sopClass.setNumberOfInstances(1);
+                        desc.addSOPClass(sopClass);
+                        sty.addParticipantObjectDescription(desc);
+                    }
+                    msg.addStudy(sty);
+                }
+                LoggerUtils.log.info(msg);
+            } catch (Throwable th) {
+                log.warn("Failed to emit Data Export Audit Log message: ", th);
+            }        
+        }
+        
+        };   
  
 }

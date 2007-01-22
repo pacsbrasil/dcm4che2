@@ -46,6 +46,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.Destination;
+import org.dcm4che2.audit.message.DestinationMedia;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.Patient;
@@ -136,17 +137,10 @@ public class LoggerUtils {
 
     public static Source toLocalSource(HttpServletRequest request) {
         NetworkAccessPoint nap = toLocalNetworkAccessPoint(request);
-        Source src = new Source(nap.getNodeID());
+        Source src = new Source(request.getRequestURL().toString());
         src.setUserIsRequestor(false);
         src.setNetworkAccessPoint(nap);
         return src;
-    }
-
-    public static Destination toLocalDestination(HttpServletRequest request) {
-        NetworkAccessPoint nap = toLocalNetworkAccessPoint(request);
-        Destination dst = new Destination(nap.getNodeID());
-        dst.setNetworkAccessPoint(nap);
-        return dst;
     }
 
     public static Destination toRemoteDestination(HttpServletRequest request) {
@@ -157,17 +151,16 @@ public class LoggerUtils {
         dst.setNetworkAccessPoint(nap);
         return dst;
     }
-    
-    public static Source toRemoteSource(HttpServletRequest request) {
+
+    public static DestinationMedia toRemoteDestinationMedia(HttpServletRequest request) {
         NetworkAccessPoint nap = toRemoteNetworkAccessPoint(request);
         String user = request.getRemoteUser();
         String id = user != null ? (user + '@' + nap.getID()) : nap.getID();
-        Source src = new Source(id);
-        src.setUserIsRequestor(false);
-        src.setNetworkAccessPoint(nap);
-        return src;
+        DestinationMedia dst = new DestinationMedia(id);
+        dst.setNetworkAccessPoint(nap);
+        return dst;
     }
-
+    
     public static Patient toPatient(Dataset ds) {
         Patient patient = new Patient(ds.getString(Tags.PatientID));
         String pn = ds.getString(Tags.PatientName);
