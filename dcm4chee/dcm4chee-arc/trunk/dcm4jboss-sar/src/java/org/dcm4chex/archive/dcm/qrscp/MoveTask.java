@@ -342,11 +342,13 @@ public class MoveTask implements Runnable {
                     } else {
                         String[] b = new String[service.getMaxUIDsPerMoveRQ()];
                         int off = 0;
+                        int fwdMsgID = msgID;
                         while (off + b.length < a.length) {
                             System.arraycopy(a, off, b, 0, b.length);
                             ds.putUI(Tags.SOPInstanceUID, b);
                             forwardMove(retrieveAET, cmd, ds, Arrays.asList(b));
                             off += b.length;
+                            cmd.putUS(Tags.MessageID, ++fwdMsgID);
                         }
                         b = new String[a.length - off];
                         System.arraycopy(a, off, b, 0, b.length);
