@@ -68,7 +68,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -96,8 +95,8 @@ public class IHEDocumentList implements XMLResponseObject{
 	private String docCodeSystem;
 	private String docDisplayName;
 	
-	private Date lowerDateTime = null;
-	private Date upperDateTime = null;
+	private long lowerDateTime = Long.MIN_VALUE;
+	private long upperDateTime = Long.MAX_VALUE;
 	private int mostRecentResults = 0;
 	
 	private String xslFile;
@@ -119,8 +118,14 @@ public class IHEDocumentList implements XMLResponseObject{
 	}
 	
 	public boolean add( Dataset ds ) {
-		if ( ds == null ) return false;
-			return datasets.add( ds );
+                Date date = ds.getDateTime( Tags.ContentDate, Tags.ContentTime );
+                if (date != null) {
+                    long ms = date.getTime();
+                    if (ms < lowerDateTime || ms > upperDateTime) {
+                        return false;
+                    }
+                }
+		return datasets.add(ds);
 	}
 	
 	/**
@@ -193,16 +198,10 @@ public class IHEDocumentList implements XMLResponseObject{
 		this.docDisplayName = docDisplayName;
 	}
 	/**
-	 * @return Returns the lowerDateTime.
-	 */
-	public Date getLowerDateTime() {
-		return lowerDateTime;
-	}
-	/**
 	 * @param lowerDateTime The lowerDateTime to set.
 	 */
 	public void setLowerDateTime(Date lowerDateTime) {
-		this.lowerDateTime = lowerDateTime;
+		this.lowerDateTime = lowerDateTime.getTime();
 	}
 	/**
 	 * @return Returns the mostRecentResults.
@@ -217,16 +216,10 @@ public class IHEDocumentList implements XMLResponseObject{
 		this.mostRecentResults = mostRecentResults;
 	}
 	/**
-	 * @return Returns the upperDateTime.
-	 */
-	public Date getUpperDateTime() {
-		return upperDateTime;
-	}
-	/**
 	 * @param upperDateTime The upperDateTime to set.
 	 */
 	public void setUpperDateTime(Date upperDateTime) {
-		this.upperDateTime = upperDateTime;
+		this.upperDateTime = upperDateTime.getTime();
 	}
 	/**
 	 * @return Returns the xslFile.

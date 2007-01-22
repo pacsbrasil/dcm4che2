@@ -54,7 +54,8 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
-import org.dcm4chex.archive.notif.Export;
+//import org.dcm4chex.archive.notif.Export;
+import org.dcm4chex.archive.notif.RIDExport;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -307,9 +308,9 @@ public class RIDService extends AbstractCacheService  {
 	}
 	
 	
-    protected void sendExportNotification(Export export) {
+    protected void sendExportNotification(RIDExport export) {
         long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(Export.class.getName(), this, eventID);
+        Notification notif = new Notification(RIDExport.class.getName(), this, eventID);
         notif.setUserData(export);
         super.sendNotification(notif);
     }

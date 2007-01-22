@@ -947,7 +947,7 @@ public Dataset getNotificationInfo(WADORequestObject req, WADOResponseObject res
     if ( !ds.containsValue(Tags.StudyInstanceUID) ) ds.putUI(Tags.StudyInstanceUID, req.getStudyUID());
     if ( !ds.containsValue(Tags.SeriesInstanceUID) ) ds.putUI(Tags.SeriesInstanceUID, req.getSeriesUID());
     if ( !ds.containsValue(Tags.SOPInstanceUID) ) ds.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-    if ( !ds.containsValue(Tags.PatientID) ) ds.putUI(Tags.SOPInstanceUID, "UNKNOWN");
+    if ( !ds.containsValue(Tags.PatientID) ) ds.putLO(Tags.PatientID, "UNKNOWN");
     return ds;
 }
 

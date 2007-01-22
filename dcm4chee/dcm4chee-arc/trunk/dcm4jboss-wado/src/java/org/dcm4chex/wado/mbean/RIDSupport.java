@@ -87,7 +87,6 @@ import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DataSource;
-import org.dcm4che.srom.SRDocumentFactory;
 import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -96,6 +95,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.notif.Export;
+import org.dcm4chex.archive.notif.RIDExport;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.ImageCachingException;
@@ -133,7 +133,6 @@ public class RIDSupport {
 	
 	private static Logger log = Logger.getLogger( RIDService.class.getName() );
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
-    private static final SRDocumentFactory srFact = SRDocumentFactory.getInstance();
 
     private static final String FOBSR_XSL_URI = "resource:xsl/fobsr.xsl";
     private final Driver fop = new Driver();
@@ -340,17 +339,13 @@ public class RIDSupport {
 		if ( contentType == null ) {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
 		}
-		Dataset queryDS;
 		String reqType = reqObj.getRequestType();
 		if (log.isDebugEnabled() ) log.debug(" Summary request type:"+reqObj.getRequestType());
+                Dataset queryDS = getQueryDS( reqObj );
+                if ( queryDS == null )
+                        return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
 		if ( SUMMARY_CARDIOLOGY_ECG.equals( reqType ) ) {
-			return getECGSummary( reqObj );
-		} else {
-			queryDS = getRadiologyQueryDS( reqObj );
-			if ( queryDS == null )
-				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
-			
-
+			return getECGSummary( reqObj, queryDS );
 		}
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
@@ -364,23 +359,23 @@ public class RIDSupport {
 	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
 	    }
 		for ( Iterator iter = conceptNames.iterator() ; iter.hasNext() ; ) {
-        	queryDS.remove( Tags.ConceptNameCodeSeq );//remove for next search.
         	DcmElement cnSq = queryDS.putSQ(Tags.ConceptNameCodeSeq);
         	cnSq.addItem( (Dataset) iter.next() );
         	fillDocList( docList, queryDS );
 		}
-		Dataset ecgQueryDS = getECGQueryDS( reqObj);
+		queryDS.remove( Tags.ConceptNameCodeSeq );//remove for next search.
+//		Dataset ecgQueryDS = getECGQueryDS( reqObj);
 		if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
-			addECGSummary( docList, ecgQueryDS );
+			addECGSummary( docList, queryDS );
 		}
 		
 		if ( encapsulatedPDFSupport ) {
 			if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
-				addEncapsulatedPDF(docList,ecgQueryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY));
-				addEncapsulatedPDF(docList,ecgQueryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG));
+				addEncapsulatedPDF(docList,queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY));
+				addEncapsulatedPDF(docList,queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG));
 			}
 			if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_RADIOLOGY ) ) {
-				addEncapsulatedPDF(docList,ecgQueryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_RADIOLOGY));
+				addEncapsulatedPDF(docList,queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_RADIOLOGY));
 			}
 		}
 
@@ -434,10 +429,10 @@ public class RIDSupport {
 		return null;
 	}
 
-	private WADOResponseObject getECGSummary( RIDRequestObject reqObj ) throws SQLException {
-		Dataset queryDS = getECGQueryDS( reqObj );
-		if ( queryDS == null )
-			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
+	private WADOResponseObject getECGSummary( RIDRequestObject reqObj, Dataset queryDS ) throws SQLException {
+//		Dataset queryDS = getECGQueryDS( reqObj );
+//		if ( queryDS == null )
+//			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
 		addECGSummary( docList, queryDS );
@@ -473,36 +468,25 @@ public class RIDSupport {
 		else if (SUMMARY_CARDIOLOGY_ECG.equals( docCode ) )
 			docList.setDocDisplayName( "List of ECG");
 		String mrr = reqObj.getParam("mostRecentResults");
-		docList.setMostRecentResults( Integer.parseInt(mrr));
-		String ldt = reqObj.getParam("lowerDateTime");
-		if ( ldt != null ) {
-			try {
-				docList.setLowerDateTime( new ISO8601DateFormat().parse( ldt ) );
-			} catch (ParseException e) {} //Is checked in request object!
-		}
-		String udt = reqObj.getParam("upperDateTime");
-		if ( udt != null ) {
-			try {
-				docList.setUpperDateTime( new ISO8601DateFormat().parse( udt ) );
-			} catch (ParseException e) {} //Is checked in request object!
-		}
+                if (mrr != null) {
+                    docList.setMostRecentResults(Integer.parseInt(mrr));
+                }
+                Date ldt = toDate(reqObj.getParam("lowerDateTime"));
+                if (ldt != null) {
+                    docList.setLowerDateTime(ldt);
+                }
+                Date udt = toDate(reqObj.getParam("upperDateTime"));
+                if (udt != null) {
+                    docList.setUpperDateTime(udt);
+                }
 	}
 	
 	private void fillDocList( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
 		QueryCmd qCmd = QueryCmd.create( queryDS, false, true );
 		try {
 			qCmd.execute();
-		    Dataset ds = factory.newDataset();
 			while ( qCmd.next() ) {
-				ds = qCmd.getDataset();
-				Date date = ds.getDateTime( Tags.ContentDate, Tags.ContentTime );
-				if ( checkDate( docList, date ) ) {
-					if ( log.isDebugEnabled() ) {
-						log.debug("Add to docList! ds:");
-						log.debug(ds);
-					}
-					docList.add( ds );
-				}
+                            docList.add(qCmd.getDataset());
 			}
 		} catch ( SQLException x ) {
 			qCmd.close();
@@ -513,34 +497,14 @@ public class RIDSupport {
 
 
 	/**
-	 * @param docList
-	 * @param date
-	 * @return
-	 */
-	private boolean checkDate(IHEDocumentList docList, Date date) {
-		Date ldt = docList.getLowerDateTime();
-		Date udt = docList.getUpperDateTime();
-		if ( ldt == null && udt == null ) return true;
-		if ( ldt != null ) {
-			if ( udt != null ) {
-				return ( ldt.compareTo( date ) <= 0 ) && ( udt.compareTo( date ) >= 0 );
-			} else {
-				return ( ldt.compareTo( date ) <= 0 );
-			}
-		} else {
-			return ( udt.compareTo( date ) >= 0 );
-		}
-	}
-
-	/**
 	 * @param reqObj
 	 * @return
 	 */
-	private Dataset getRadiologyQueryDS(RIDRequestObject reqObj) {
+	private Dataset getQueryDS(RIDRequestObject reqObj) {
 		String patID = reqObj.getParam( "patientID" );
 		String[] pat = splitPatID( patID );
 		pat = checkPatient( pat );
-		log.info("getRadiologyQueryDS: pat:"+pat);
+		log.info("getQueryDS: pat:"+pat);
 		if ( pat == null ) return null;
 		Dataset ds = factory.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
@@ -548,13 +512,23 @@ public class RIDSupport {
 		if ( pat[1] != null ) { // Issuer of patientID is known. 
 			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
 		}
-		ds.putCS( Tags.Modality, "SR" );
+//		ds.putCS( Tags.Modality, "SR" );
 		//Concept name sequence will be used as search criteria. -> within a loop over all radiology specific concept names.
 		return ds;
 	}
 
 
-	/**
+    static Date toDate(String dt) {
+        if (dt == null || dt.length() == 0)
+            return null;
+        try {
+            return new ISO8601DateFormat().parse( dt );
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    /**
 	 * @param pat
 	 * @return
 	 */
@@ -612,20 +586,20 @@ public class RIDSupport {
 	 * @param reqObj
 	 * @return
 	 */
-	private Dataset getECGQueryDS(RIDRequestObject reqObj) {
-		String patID = reqObj.getParam( "patientID" );
-		String[] pat = splitPatID( patID );
-		pat = checkPatient( pat );
-		if ( log.isDebugEnabled() ) log.debug("getECGQueryDS: pat:"+pat);
-		if ( pat == null ) return null;
-		Dataset ds = factory.newDataset();
-        ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-		ds.putLO(Tags.PatientID, pat[0]);
-		if ( pat[1] != null ) { // Issuer of patientID is known. 
-			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
-		}
-		return ds;
-	}
+//	private Dataset getECGQueryDS(RIDRequestObject reqObj) {
+//		String patID = reqObj.getParam( "patientID" );
+//		String[] pat = splitPatID( patID );
+//		pat = checkPatient( pat );
+//		if ( log.isDebugEnabled() ) log.debug("getECGQueryDS: pat:"+pat);
+//		if ( pat == null ) return null;
+//		Dataset ds = factory.newDataset();
+//        ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+//		ds.putLO(Tags.PatientID, pat[0]);
+//		if ( pat[1] != null ) { // Issuer of patientID is known. 
+//			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
+//		}
+//		return ds;
+//	}
 
 	/**
 	 * @param reqVO
@@ -680,9 +654,10 @@ public class RIDSupport {
         try {
         	Set suids = new HashSet();
         	suids.add(ds.getString(Tags.StudyInstanceUID));
-            String url = "http://"+reqObj.getRemoteHost()+"/"+mediaType.replace(' ', '_');
-            String srcHost = new URL(reqObj.getRequestURL()).getHost();
-            Export export = new Export(ds, reqObj.getRemoteUser(), reqObj.getRequestURL(), srcHost, url, reqObj.getRemoteHost());
+//            String url = "http://"+reqObj.getRemoteHost()+"/"+mediaType.replace(' ', '_');
+//            String srcHost = new URL(reqObj.getRequestURL()).getHost();
+//            Export export = new Export(ds, reqObj.getRemoteUser(), reqObj.getRequestURL(), srcHost, url, reqObj.getRemoteHost());
+            RIDExport export = new RIDExport(reqObj.getRequest(), ds);
             service.sendExportNotification(export);
             server.invoke(auditLogName,
                     "logExport",
