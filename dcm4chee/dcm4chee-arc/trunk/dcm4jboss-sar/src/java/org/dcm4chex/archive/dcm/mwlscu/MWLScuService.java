@@ -374,13 +374,15 @@ public class MWLScuService extends ServiceMBeanSupport {
                     searchDS);
             FutureRSP findRsp = assoc.invoke(mcRQ);
             Dimse dimse = findRsp.get();
-            pendingStatus = dimse.getCommand().getStatus();
             List pending = findRsp.listPending();
-            Iterator iter = pending.iterator();
-            while (iter.hasNext()) {
-                Dataset rsp = ((Dimse) iter.next()).getDataset();
-                logResponse(rsp);
-                result.add(rsp);
+            if ( pending.size() > 0 ) {
+                pendingStatus = ((Dimse) pending.get(0)).getCommand().getStatus();
+                Iterator iter = pending.iterator();
+                while (iter.hasNext()) {
+                    Dataset rsp = ((Dimse) iter.next()).getDataset();
+                    logResponse(rsp);
+                    result.add(rsp);
+                }
             }
             if (log.isDebugEnabled()) {
                 log.debug("Received final C-FIND RSP from " + calledAET + " :"
@@ -435,9 +437,9 @@ public class MWLScuService extends ServiceMBeanSupport {
     }
 
     /**
-     * Return the association request for media creation.
+     * Return the association request for modality worklist C-FIND.
      * <p>
-     * This association is used for sending media creation request and action
+     * This association is used for sending modality worklist C-FIND request and action
      * command.
      * 
      * @return Association for media creation.
