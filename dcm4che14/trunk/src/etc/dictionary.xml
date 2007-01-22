@@ -361,6 +361,7 @@
   <element tag="(0018,0094)" name="Percent Phase Field of View" vr="DS" vm="1" key="PercentPhaseFieldOfView" />
   <element tag="(0018,0095)" name="Pixel Bandwidth" vr="DS" vm="1" key="PixelBandwidth" />
   <element tag="(0018,1000)" name="Device Serial Number" vr="LO" vm="1" key="DeviceSerialNumber" />
+  <element tag="(0018,1002)" name="Device UID" vr="UI" vm="1" key="DeviceUID" />
   <element tag="(0018,1004)" name="Plate ID" vr="LO" vm="1" key="PlateID" />
   <element tag="(0018,1005)" name="Generator ID" vr="LO" vm="1" key="GeneratorID" />
   <element tag="(0018,1006)" name="Grid ID" vr="LO" vm="1" key="GridID" />
@@ -1135,6 +1136,7 @@
   <element tag="(0038,0040)" name="Discharge Diagnosis Description" vr="LO" vm="1" key="DischargeDiagnosisDescription" />
   <element tag="(0038,0044)" name="Discharge Diagnosis Code Sequence" vr="SQ" vm="1" key="DischargeDiagnosisCodeSeq" />
   <element tag="(0038,0050)" name="Special Needs" vr="LO" vm="1" key="SpecialNeeds" />
+  <element tag="(0038,0100)" name="Pertinent Documents Sequence" vr="SQ" vm="1" key="PertinentDocumentsSeq" />
   <element tag="(0038,0300)" name="Current Patient Location" vr="LO" vm="1" key="CurrentPatientLocation" />
   <element tag="(0038,0400)" name="Patient's Institution Residence" vr="LO" vm="1" key="PatientInstitutionResidence" />
   <element tag="(0038,0500)" name="Patient State" vr="LO" vm="1" key="PatientState" />
@@ -1299,6 +1301,14 @@
   <element tag="(0040,4036)" name="Human Performer's Organization" vr="LO" vm="1" key="HumanPerformerOrganization" />
   <element tag="(0040,4037)" name="Human Performer's Name" vr="PN" vm="1" key="HumanPerformerName" />
   <element tag="(0040,8302)" name="Entrance Dose in mGy" vr="DS" vm="1" key="EntranceDoseInmGy" />
+  <element tag="(0040,9094)" name="Referenced Image Real World Value Mapping Sequence" vr="SQ" vm="1" key="RefImageRealWorldValueMappingSeq" />
+  <element tag="(0040,9096)" name="Real World Value Mapping Sequence" vr="SQ" vm="1" key="RealWorldValueMappingSeq" />
+  <element tag="(0040,9210)" name="LUT Label" vr="SH" vm="1" key="LUTLabel" />
+  <element tag="(0040,9211)" name="Real World Value Last Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLastValueMappedUS" />
+  <element tag="(0040,9212)" name="Real World Value LUT Data" vr="FD" vm="1-n" key="RealWorldValueLUTData" />
+  <element tag="(0040,9216)" name="Real World Value First Value Mapped" vr="US/SS" vm="1" key="RealWorldValueFirstValueMappedUS" />
+  <element tag="(0040,9224)" name="Real World Value Intercept" vr="FD" vm="1" key="RealWorldValueIntercept" />
+  <element tag="(0040,9225)" name="Real World Value Slope" vr="FD" vm="1" key="RealWorldValueSlope" />
   <element tag="(0040,A010)" name="Relationship Type" vr="CS" vm="1" key="RelationshipType" />
   <element tag="(0040,A027)" name="Verifying Organization" vr="LO" vm="1" key="VerifyingOrganization" />
   <element tag="(0040,A030)" name="Verification DateTime" vr="DT" vm="1" key="VerificationDateTime" />
@@ -1308,7 +1318,14 @@
   <element tag="(0040,A050)" name="Continuity Of Content" vr="CS" vm="1" key="ContinuityOfContent" />
   <element tag="(0040,A073)" name="Verifying Observer Sequence" vr="SQ" vm="1" key="VerifyingObserverSeq" />
   <element tag="(0040,A075)" name="Verifying Observer Name" vr="PN" vm="1" key="VerifyingObserverName" />
+  <element tag="(0040,A078)" name="Author Observer Sequence" vr="SQ" vm="1" key="AuthorObserverSeq" />
+  <element tag="(0040,A07A)" name="Participant Sequence" vr="SQ" vm="1" key="ParticipantSeq" />
+  <element tag="(0040,A07C)" name="Custodial Organization Sequence" vr="SQ" vm="1" key="CustodialOrganizationSeq" />
+  <element tag="(0040,A080)" name="Participant Type" vr="CS" vm="1" key="ParticipantType" />
+  <element tag="(0040,A082)" name="Participant DateTime" vr="DT" vm="1" key="ParticipantDateTime" />
+  <element tag="(0040,A084)" name="Observer Type" vr="CS" vm="1" key="ObserverType" />
   <element tag="(0040,A088)" name="Verifying Observer Identification Code Sequence" vr="SQ" vm="1" key="VerifyingObserverIdentificationCodeSeq" />
+  <element tag="(0040,A090)" name="Equivalent CDA Document Sequence" vr="SQ" vm="1" key="EquivalentCDADocumentSeq" />
   <element tag="(0040,A0B0)" name="Referenced Waveform Channels" vr="US" vm="2-2n" key="RefWaveformChannels" />
   <element tag="(0040,A120)" name="DateTime" vr="DT" vm="1" key="DateTime" />
   <element tag="(0040,A121)" name="Date" vr="DA" vm="1" key="Date" />
@@ -1333,6 +1350,7 @@
   <element tag="(0040,A372)" name="Performed Procedure Code Sequence" vr="SQ" vm="1" key="PerformedProcedureCodeSeq" />
   <element tag="(0040,A375)" name="Current Requested Procedure Evidence Sequence" vr="SQ" vm="1" key="CurrentRequestedProcedureEvidenceSeq" />
   <element tag="(0040,A385)" name="Pertinent Other Evidence Sequence" vr="SQ" vm="1" key="PertinentOtherEvidenceSeq" />
+  <element tag="(0040,A390)" name="HL7 Structured Document Reference Sequence" vr="SQ" vm="1" key="HL7StructuredDocumentReferenceSeq" />
   <element tag="(0040,A491)" name="Completion Flag" vr="CS" vm="1" key="CompletionFlag" />
   <element tag="(0040,A492)" name="Completion Flag Description" vr="LO" vm="1" key="CompletionFlagDescription" />
   <element tag="(0040,A493)" name="Verification Flag" vr="CS" vm="1" key="VerificationFlag" />
@@ -1347,14 +1365,10 @@
   <element tag="(0040,DB0C)" name="Template Extension Organization UID" vr="UI" vm="1" key="TemplateExtensionOrganizationUID" />
   <element tag="(0040,DB0D)" name="Template Extension Creator UID" vr="UI" vm="1" key="TemplateExtensionCreatorUID" />
   <element tag="(0040,DB73)" name="Referenced Content Item Identifier" vr="UL" vm="1-n" key="RefContentItemIdentifier" />
-  <element tag="(0040,9094)" name="Referenced Image Real World Value Mapping Sequence" vr="SQ" vm="1" key="RefImageRealWorldValueMappingSeq" />
-  <element tag="(0040,9096)" name="Real World Value Mapping Sequence" vr="SQ" vm="1" key="RealWorldValueMappingSeq" />
-  <element tag="(0040,9210)" name="LUT Label" vr="SH" vm="1" key="LUTLabel" />
-  <element tag="(0040,9211)" name="Real World Value Last Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLastValueMappedUS" />
-  <element tag="(0040,9212)" name="Real World Value LUT Data" vr="FD" vm="1-n" key="RealWorldValueLUTData" />
-  <element tag="(0040,9216)" name="Real World Value First Value Mapped" vr="US/SS" vm="1" key="RealWorldValueFirstValueMappedUS" />
-  <element tag="(0040,9224)" name="Real World Value Intercept" vr="FD" vm="1" key="RealWorldValueIntercept" />
-  <element tag="(0040,9225)" name="Real World Value Slope" vr="FD" vm="1" key="RealWorldValueSlope" />
+  <element tag="(0040,E001)" name="HL7 Instance Identifier" vr="ST" vm="1" key="HL7InstanceIdentifier" />
+  <element tag="(0040,E004)" name="HL7 Document Effective Time" vr="DT" vm="1" key="HL7DocumentEffectiveTime" />
+  <element tag="(0040,E006)" name="HL7 Document Type Code Sequence" vr="SQ" vm="1" key="HL7DocumentTypeCodeSeq" />
+  <element tag="(0040,E010)" name="Retrieve URI" vr="UT" vm="1" key="RetrieveURI" />
 
   <element tag="(0042,0010)" name="Document Title" vr="ST" vm="1" key="DocumentTitle" />
   <element tag="(0042,0011)" name="Encapsulated Document" vr="OB" vm="1" key="EncapsulatedDocument" />
@@ -1651,11 +1665,31 @@
   <element tag="(0100,0424)" name="SOP Authorization Comment" vr="LT" vm="1" key="SOPAuthorizationComment" />
   <element tag="(0100,0426)" name="Authorization Equipment Certification Number" vr="LO" vm="1" key="AuthorizationEquipmentCertificationNumber" />
 
+  <element tag="(0400,0005)" name="MAC ID Number" vr="US" vm="1" key="MACIDNumber" />
+  <element tag="(0400,0010)" name="MAC Calculation Transfer Syntax UID" vr="UI" vm="1" key="MACCalculationTransferSyntaxUID" />
+  <element tag="(0400,0015)" name="MAC Algorithm" vr="CS" vm="1" key="MACAlgorithm" />
+  <element tag="(0400,0020)" name="Data Elements Signed" vr="AT" vm="1-n" key="DataElementsSigned" />
+  <element tag="(0400,0100)" name="Digital Signature UID" vr="UI" vm="1" key="DigitalSignatureUID" />
+  <element tag="(0400,0105)" name="Digital Signature Date Time" vr="DT" vm="1" key="DigitalSignatureDateTime" />
+  <element tag="(0400,0110)" name="Certificate Type" vr="CS" vm="1" key="CertificateType" />
+  <element tag="(0400,0115)" name="Certificate of Signer" vr="OB" vm="1" key="CertificateOfSigner" />
+  <element tag="(0400,0120)" name="Signature" vr="OB" vm="1" key="Signature" />
+  <element tag="(0400,0305)" name="Certified Timestamp Type" vr="CS" vm="1" key="CertifiedTimestampType" />
+  <element tag="(0400,0310)" name="Certified Timestamp" vr="OB" vm="1" key="CertifiedTimestamp" />
+  <element tag="(0400,0401)" name="Digital Signature Purpose Code Sequence" vr="SQ" vm="1" key="DigitalSignaturePurposeCodeSeq" />
+  <element tag="(0400,0402)" name="Referenced Digital Signature Sequence" vr="SQ" vm="1" key="RefDigitalSignatureSeq" />
+  <element tag="(0400,0403)" name="Referenced SOP Instance MAC Sequence" vr="SQ" vm="1" key="RefSOPInstanceMACSeq" />
+  <element tag="(0400,0404)" name="MAC" vr="OB" vm="1" key="MAC" />
   <element tag="(0400,0500)" name="Encrypted Attributes Sequence" vr="SQ" vm="1" key="EcryptedAttributesSeq" />
   <element tag="(0400,0510)" name="Encrypted Content Transfer Syntax UID" vr="UI" vm="1" key="EncryptedContentTransferSyntax" />
   <element tag="(0400,0520)" name="Encrypted Content" vr="OB" vm="1" key="EncryptedContent" />
   <element tag="(0400,0550)" name="Modified Attributes Sequence" vr="SQ" vm="1" key="ModifiedAttributesSeq" />
-  
+  <element tag="(0400,0561)" name="Original Attributes Sequence" vr="SQ" vm="1" key="OriginalAttributesSeq" />
+  <element tag="(0400,0562)" name="Attribute Modification Datetime" vr="DT" vm="1" key="AttributeModificationDatetime" />
+  <element tag="(0400,0563)" name="Modifying System" vr="LO" vm="1" key="ModifyingSystem" />
+  <element tag="(0400,0564)" name="Source of Previous Values" vr="LO" vm="1" key="SourceOfPreviousValues" />
+  <element tag="(0400,0565)" name="Reason for the Attribute Modification" vr="CS" vm="1" key="ReasonForTheAttributeModification" />
+
   <element tag="(2000,0010)" name="Number of Copies" vr="IS" vm="1" key="NumberOfCopies" />
   <element tag="(2000,001E)" name="Printer Configuration Sequence" vr="SQ" vm="1" key="PrinterConfigurationSeq" />
   <element tag="(2000,0020)" name="Print Priority" vr="CS" vm="1" key="PrintPriority" />
@@ -2355,6 +2389,7 @@
   <uid value="1.2.840.10008.1.2.4.91" name="JPEG 2000 Lossy Image Compression" key="JPEG2000Lossy" />
   <uid value="1.2.840.10008.1.2.4.100" name="MPEG2 Main Profile @ Main Level" key="MPEG2" />
   <uid value="1.2.840.10008.1.2.5" name="RLE Lossless" key="RLELossless" />
+  <uid value="1.2.840.10008.1.2.6.1" name="RFC 2557 MIME encapsulation" key="RFC2557MIMEEncapsulation" />
 </uids>
 
 <uids type="SOPClass">
@@ -2378,7 +2413,7 @@
   <uid value="1.2.840.10008.5.1.1.2" name="Basic Film Box SOP Class" key="BasicFilmBoxSOP" />
   <uid value="1.2.840.10008.5.1.1.4" name="Basic Grayscale Image Box SOP Class" key="BasicGrayscaleImageBox" />
   <uid value="1.2.840.10008.5.1.1.4.1" name="Basic Color Image Box SOP Class" key="BasicColorImageBox" />
-  <uid value="1.2.840.10008.5.1.1.4.2" name="Referenced Image Box SOP Class (Retired)" key="ReferencedImageBoxRetired" retired="true" />
+  <uid value="1.2.840.10008.5.1.1.4.2" name="Referenced Image Box SOP Class (Retired)" key="RefImageBoxRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.1.14" name="Print Job SOP Class" key="PrintJob" />
   <uid value="1.2.840.10008.5.1.1.15" name="Basic Annotation Box SOP Class" key="BasicAnnotationBox" />
   <uid value="1.2.840.10008.5.1.1.16" name="Printer SOP Class" key="Printer" />
@@ -2512,7 +2547,7 @@
   <uid value="1.2.840.10008.3.1.2.5.4" name="Detached Results Management Meta SOP Class" key="DetachedResultsManagementMetaSOPClass" />
   <uid value="1.2.840.10008.3.1.2.5.5" name="Detached Study Management Meta SOP Class" key="DetachedStudyManagementMetaSOPClass" />
   <uid value="1.2.840.10008.5.1.1.9" name="Basic Grayscale Print Management Meta SOP Class" key="BasicGrayscalePrintManagement" />
-  <uid value="1.2.840.10008.5.1.1.9.1" name="Referenced Grayscale Print Management Meta SOP Class (Retired)" key="ReferencedGrayscalePrintManagementRetired" retired="true" />
+  <uid value="1.2.840.10008.5.1.1.9.1" name="Referenced Grayscale Print Management Meta SOP Class (Retired)" key="RefGrayscalePrintManagementRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.1.18" name="Basic Color Print Management Meta SOP Class" key="BasicColorPrintManagement" />
   <uid value="1.2.840.10008.5.1.1.18.1" name="Referenced Color Print Management Meta SOP Class (Retired)" key="RefColorPrintManagementRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.1.32" name="Pull Stored Print Management Meta SOP Class" key="PullStoredPrintManagement" />
@@ -2553,6 +2588,7 @@
 </uids>
 
 <uids type="CodingScheme">
+  <uid value="1.2.840.10008.2.6.1" name="DICOM UID Registry" key="DICOMUIDRegistry" />
   <uid value="1.2.840.10008.2.16.4" name="DICOM Controlled Terminology Coding Scheme" key="DICOMControlledTerminologyCodingScheme" />
 </uids>
 
