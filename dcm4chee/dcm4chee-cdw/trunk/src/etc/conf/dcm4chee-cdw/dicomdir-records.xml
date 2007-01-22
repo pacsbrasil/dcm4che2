@@ -106,6 +106,50 @@
     <!-- Calibration Image -->
     <attr tag="(0050,0004)"/>
   </record>
+  <!-- Standalone overlay Directory Record -->
+  <record type="OVERLAY">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Overlay Number -->
+    <attr tag="(0020,0022)"/>
+  </record>
+  <!-- Standalone modality LUT Directory Record -->
+  <record type="MODALITY LUT">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Lookup table Number -->
+    <attr tag="(0020,0026)"/>
+  </record>
+  <!-- Standalone VOI LUT Directory Record -->
+  <record type="VOI LUT">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Lookup table Number -->
+    <attr tag="(0020,0026)"/>
+  </record>
+  <!-- Standalone curve Directory Record -->
+  <record type="CURVE">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Curve Number -->
+    <attr tag="(0020,0024)"/>
+  </record>
   <!-- RT Dose Directory Record -->
   <record type="RT DOSE">
     <!-- Specific Character Set -->
@@ -182,12 +226,10 @@
     <attr tag="(0070,0080)"/>
     <!-- Content Description -->
     <attr tag="(0070,0081)"/>
-    <!-- Presentation Creation Date -->
-    <attr tag="(0070,0082)"/>
-    <!-- Presentation Creation Time -->
-    <attr tag="(0070,0083)"/>
-    <!-- Content Creator s Name -->
+    <!-- Content Creator's Name -->
     <attr tag="(0070,0084)"/>
+    <!-- Content Creator's Identification Sequence -->
+    <attr tag="(0070,0086)"/>
   </record>
   <!-- Waveform Directory Record -->
   <record type="WAVEFORM">
@@ -232,6 +274,31 @@
     <!-- Concept Name Code Sequence -->
     <attr tag="(0040,A043)"/>
   </record>
+  <!-- Spectroscopy Directory Record -->
+  <record type="SPECTROSCOPY">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Image Type -->
+    <attr tag="(0008,0008)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Referenced Image Evidence Sequence -->
+    <attr tag="(0008,9092)"/>
+    <!-- Instance Number -->
+    <attr tag="(0020,0013)"/>
+    <!-- Number of Frames -->
+    <attr tag="(0028,0008)"/>
+    <!-- Rows -->
+    <attr tag="(0028,0010)"/>
+    <!-- Columns -->
+    <attr tag="(0028,0011)"/>
+    <!-- Data Point Rows -->
+    <attr tag="(0028,9001)"/>
+    <!-- Data Point Columns -->
+    <attr tag="(0028,9002)"/>
+  </record>
   <!-- Raw Data Directory Record -->
   <record type="RAW DATA">
     <!-- Specific Character Set -->
@@ -257,8 +324,10 @@
     <attr tag="(0070,0080)"/>
     <!-- Content Description -->
     <attr tag="(0070,0081)"/>
-    <!-- Content Creator s Name -->
+    <!-- Content Creator's Name -->
     <attr tag="(0070,0084)"/>
+    <!-- Content Creator's Identification Sequence -->
+    <attr tag="(0070,0086)"/>
   </record>
   <!-- Spatial Fiducials Directory Record -->
   <record type="FIDUCIAL">
@@ -270,6 +339,14 @@
     <attr tag="(0008,0033)"/>
     <!-- Instance Number -->
     <attr tag="(0020,0013)"/>
+    <!-- Content Label -->
+    <attr tag="(0070,0080)"/>
+    <!-- Content Description -->
+    <attr tag="(0070,0081)"/>
+    <!-- Content Creator's Name -->
+    <attr tag="(0070,0084)"/>
+    <!-- Content Creator's Identification Sequence -->
+    <attr tag="(0070,0086)"/>
   </record>
   <!-- Encapsulated Document Directory Record -->
   <record type="ENCAP DOC">
@@ -287,5 +364,35 @@
     <attr tag="(0040,A493)"/>
     <!-- Document Title -->
     <attr tag="(0042,0010)"/>
+  </record>
+  <!-- Real World Value Mapping Directory Record -->
+  <record type="VALUE MAP">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Instance Number -->
+    <attr tag="(0020,0013)"/>
+    <!-- Content Label -->
+    <attr tag="(0070,0080)"/>
+    <!-- Content Description -->
+    <attr tag="(0070,0081)"/>
+    <!-- Content Creator's Name -->
+    <attr tag="(0070,0084)"/>
+    <!-- Content Creator's Identification Sequence -->
+    <attr tag="(0070,0086)"/>
+  </record>
+  <!-- Stereometric Relationship Directory Record -->
+  <record type="STEREOMETRIC">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Instance Number -->
+    <attr tag="(0020,0013)"/>
   </record>
 </records>

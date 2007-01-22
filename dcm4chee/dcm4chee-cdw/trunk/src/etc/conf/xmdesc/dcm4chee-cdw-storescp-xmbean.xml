@@ -292,6 +292,8 @@
            RawDataStorage
            SpatialRegistrationStorage
            SpatialFiducialsStorage
+           DeformableSpatialRegistrationStorage
+           SegmentationStorage
            RealWorldValueMappingStorage
            StereometricRelationshipStorage
            EncapsulatedPDFStorage
@@ -303,6 +305,11 @@
            RTTreatmentSummaryRecordStorage
            RTIonPlanStorage
            RTIonBeamsTreatmentRecordStorage
+           StandaloneOverlayStorage
+           StandaloneCurveStorage
+           StandaloneModalityLUTStorage
+           StandaloneVOILUTStorage
+           StandalonePETCurveStorage
            "/>
       </descriptors>
    </attribute>
