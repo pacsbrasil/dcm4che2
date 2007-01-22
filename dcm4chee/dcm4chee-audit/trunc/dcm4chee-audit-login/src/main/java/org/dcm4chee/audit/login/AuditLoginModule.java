@@ -51,6 +51,8 @@ import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.AuditLog;
+import org.dcm4che2.audit.message.AuditLogUsedMessage;
 import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.UserAuthenticationMessage;
 import org.dcm4che2.audit.message.UserWithLocation;
@@ -71,6 +73,7 @@ public class AuditLoginModule implements LoginModule {
     private static final Logger log = Logger.getLogger(AuditLoginModule.class);
     
     private CallbackHandler cbh;
+    private String auditLogURI = null;
     
     /* (non-Javadoc)
      * @see javax.security.auth.spi.LoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
@@ -78,6 +81,9 @@ public class AuditLoginModule implements LoginModule {
     public void initialize(Subject subject, CallbackHandler cbh,
             Map sharedState, Map options) {
         this.cbh = cbh;
+        Object tmp = options.get("auditLogURI");
+        if( tmp != null )
+            auditLogURI = tmp.toString();
     }
 
     /* (non-Javadoc)
@@ -91,9 +97,14 @@ public class AuditLoginModule implements LoginModule {
      * @see javax.security.auth.spi.LoginModule#commit()
      */
     public boolean commit() throws LoginException {
+        UserWithLocation user = getUserWithLocation();
         auditlog.info(new UserAuthenticationMessage(
-                new UserAuthenticationMessage.AuditEvent.Login(),
-                getUserWithLocation()));
+                new UserAuthenticationMessage.AuditEvent.Login(), user));
+        if (auditLogURI  != null) {
+            auditlog.info(new AuditLogUsedMessage(
+                    new AuditLogUsedMessage.AuditEvent(), user,
+                    new AuditLog(auditLogURI)));            
+        }
         return true;
     }
 
