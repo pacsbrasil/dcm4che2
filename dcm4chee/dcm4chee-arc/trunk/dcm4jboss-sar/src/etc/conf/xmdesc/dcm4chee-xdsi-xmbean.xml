@@ -86,7 +86,7 @@
       <name>KeystoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/web.client.keystore" />
+         <value value="resource:identity.p12" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
@@ -109,7 +109,7 @@
       <name>TrustStoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/web.client.truststore" />
+         <value value="resource:cacerts.jks" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
