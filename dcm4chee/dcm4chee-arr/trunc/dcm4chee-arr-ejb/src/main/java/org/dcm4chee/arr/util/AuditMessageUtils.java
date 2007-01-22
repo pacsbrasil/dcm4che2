@@ -47,9 +47,9 @@ import java.io.UnsupportedEncodingException;
  *
  */
 public class AuditMessageUtils {
-
-    private static final int MAX_HEADER_LEN = 100;
-    private static final int MAX_PROMPT_LEN = 200;
+    
+    private static final int MAX_HEADER_LEN = 200;
+    private static final int MAX_PROMPT_LEN = 1000;
     private static final int PROMPT_END = 16;
 
     private static final byte[] AUDIT_MESSAGE = { 
