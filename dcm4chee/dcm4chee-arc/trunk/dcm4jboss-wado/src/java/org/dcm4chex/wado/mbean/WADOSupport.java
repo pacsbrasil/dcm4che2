@@ -113,6 +113,7 @@ public class WADOSupport {
 	
 public static final String CONTENT_TYPE_JPEG = "image/jpeg";
 public static final String CONTENT_TYPE_DICOM = "application/dicom";
+public static final String CONTENT_TYPE_DICOM_XML = "application/dicom+xml";
 public static final String CONTENT_TYPE_HTML = "text/html";
 private static final String CONTENT_TYPE_XHTML = "application/xhtml+xml";
 public static final String CONTENT_TYPE_XML = "text/xml";
@@ -195,8 +196,10 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 		resp = this.handleJpg( req );
 	} else if ( CONTENT_TYPE_DICOM.equals( contentType ) ) {
 		return handleDicom( req ); //audit log is done in handleDicom to avoid extra query.
-	} else if ( CONTENT_TYPE_HTML.equals( contentType ) ) {
-		resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+    } else if ( CONTENT_TYPE_DICOM_XML.equals( contentType ) ) {
+        resp = handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, null );
+    } else if ( CONTENT_TYPE_HTML.equals( contentType ) ) {
+        resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
 	} else if ( CONTENT_TYPE_XHTML.equals( contentType ) ) {
 		resp = handleTextTransform( req, fileDTO, contentType, getXHtmlXslURL() );
 	} else if ( CONTENT_TYPE_XML.equals( contentType ) ) {
@@ -243,9 +246,11 @@ private List getSupportedContentTypes(FileDTO fileDTO) {
 		types.add(CONTENT_TYPE_XML);
 		types.add(CONTENT_TYPE_PLAIN);
 		types.add(CONTENT_TYPE_DICOM);
+        types.add(CONTENT_TYPE_DICOM_XML);
 	} else {
 		types.add(CONTENT_TYPE_JPEG);
 		types.add(CONTENT_TYPE_DICOM);
+        types.add(CONTENT_TYPE_DICOM_XML);
 	}
 	return types;
 }
@@ -486,7 +491,7 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
         Dataset ds = dof.newDataset();
         parser.setDcmHandler(ds.getDcmHandler());
-        parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
+        parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
         ds.putAll(dsCoerce);
         if ( log.isDebugEnabled()) {
         	log.debug("Dataset for XSLT Transformation:");log.debug(ds);
