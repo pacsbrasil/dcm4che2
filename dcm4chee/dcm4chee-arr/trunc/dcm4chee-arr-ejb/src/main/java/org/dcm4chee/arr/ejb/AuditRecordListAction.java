@@ -59,6 +59,7 @@ import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Destroy;
 import org.jboss.seam.annotations.Factory;
@@ -428,15 +429,22 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     private void updateResults() {        
         Criteria recordsCriteria = buildCriteria(session.createCriteria(AuditRecord.class));
         
-        List<AuditRecord> all = recordsCriteria
-            .addOrder(Order.desc(orderByEventDateTime?"eventDateTime":"receiveDateTime"))
-            .list();
-
-        count = all.size();        
+        count = ((Integer)recordsCriteria
+                .addOrder(Order.desc(orderByEventDateTime?"eventDateTime":"receiveDateTime"))
+                .setProjection(Projections.rowCount())
+                .list().iterator().next()).intValue();
         int from = getFirstResult();
         int to = Math.max(0, Math.min(count, getFirstResult() + pageSize));
+   
         log.info(String.format("Found total %d records. Displaying from %d to %d",  count, (from+1), to));
-        records = all.subList(from, to);
+        
+        records = recordsCriteria
+                .setProjection(null)
+                .setResultTransformer( Criteria.ROOT_ENTITY )
+                .setFirstResult(from)
+                .setMaxResults(pageSize)
+                .addOrder(Order.desc(orderByEventDateTime?"eventDateTime":"receiveDateTime"))
+                .list();
         
         selectedIndex = -1;
     }
