@@ -62,6 +62,11 @@
 			<param-value>20</param-value>
 		</init-param>
 
+		<init-param>
+			<param-name>startWithoutQuery</param-name>
+			<param-value>false</param-value>
+		</init-param>
+
 		<!-- 
 			Used by dcm4chee-web application to find AuditLogger MBean.
 			Value must match mbean name in configured in

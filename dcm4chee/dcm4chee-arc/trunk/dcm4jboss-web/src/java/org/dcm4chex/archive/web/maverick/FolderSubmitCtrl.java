@@ -146,7 +146,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
             	return query(true); 
             }
         	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
-            if (folderForm.getTotal() < 1 || rq.getParameter("filter") != null
+            if ( (folderForm.getTotal() < 1 && !"true".equals(getCtx().getServletConfig().getInitParameter("startWithoutQuery" ) ) )
+                    || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
