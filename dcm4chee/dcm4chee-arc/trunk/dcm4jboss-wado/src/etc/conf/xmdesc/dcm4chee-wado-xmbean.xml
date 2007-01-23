@@ -138,19 +138,7 @@
          <value value="true" />
       </descriptors>
    </attribute>
-    <attribute access="read-write"
-      getMethod="isUseOrigFile"
-      setMethod="setUseOrigFile">
-      <description>If enabled, A WADO request with application/DICOM returns the original DICOM file instead
-      		of the updated file.   
-      </description>
-      <name>UseOrigFile</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
-    <attribute access="read-write"
+   <attribute access="read-write"
       getMethod="isUseTransferSyntaxOfFileAsDefault"
       setMethod="setUseTransferSyntaxOfFileAsDefault">
       <description>Set the handling of missing transfersyntax parameter if content type is application/dicom.

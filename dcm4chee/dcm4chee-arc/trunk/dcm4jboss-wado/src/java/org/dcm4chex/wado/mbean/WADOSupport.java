@@ -66,7 +66,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.management.MBeanServer;
-import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
@@ -88,7 +87,6 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -96,10 +94,8 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.notif.WADORetrieve;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.wado.common.BasicRequestObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -131,8 +127,6 @@ private static ObjectName fileSystemMgtName = null;
 private static ObjectName auditLogName = null;
 /** List of Hosts where audit log is disabled.<p><code>null</code> means ALL; an empty list means NONE */
 private Set disabledAuditLogHosts;
-
-private boolean useOrigFile = false;
 
 private boolean useTransferSyntaxOfFileAsDefault = true;
 
@@ -204,16 +198,12 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 	} else if ( CONTENT_TYPE_HTML.equals( contentType ) ) {
 		resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
 	} else if ( CONTENT_TYPE_XHTML.equals( contentType ) ) {
-		resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+		resp = handleTextTransform( req, fileDTO, contentType, getXHtmlXslURL() );
 	} else if ( CONTENT_TYPE_XML.equals( contentType ) ) {
 		resp = handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, getXmlXslURL() );
 	} else {
 		log.debug("Content type not supported! :"+contentType+"\nrequested contentType(s):"+req.getContentTypes()+" SOP Class UID:"+fileDTO.getSopClassUID());
 		resp = new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested (preferred) content type!"+contentType);
-	}
-	if ( this.isAuditLogEnabled(req) && resp.getReturnCode() == HttpServletResponse.SC_OK ) {
-    	Dataset patDS = getPatientInfo(req);
-    	this.logInstancesSent( patDS, req );
 	}
 	return resp;
 }
@@ -278,21 +268,20 @@ public WADOResponseObject handleDicom( WADORequestObject req ) {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
 		}
 	}
-	try {
-		if ( useOrigFile  ) {
-			WADOResponseObject resp = new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
-	        if ( this.isAuditLogEnabled(req) ) {
-	        	Dataset patDS = getPatientInfo(req);
-	        	this.logInstancesSent( patDS, req );
-	        }
-			return resp;
-		} else {
-			return getUpdatedInstance( req, checkTransferSyntax( req.getTransferSyntax() ) );
-		}
-	} catch (FileNotFoundException x) {
-		log.error("Exception in handleDicom: "+x.getMessage(), x);
-		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
-	}	
+    if ( "true".equals(req.getRequest().getParameter("useOrig") ) ) {
+        try {
+            WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+            log.info("Original Dicom object file retrieved (useOrig=true) objectUID:"+req.getObjectUID() );
+            Dataset ds = getPatientInfo(req);
+            ds.putPN(Tags.PatientName, ds.getString(Tags.PatientName)+" (orig)");
+            resp.setPatInfo(ds);
+            return resp;
+        } catch (FileNotFoundException e) {
+            log.error("Dicom File not found (useOrig=true)! file:"+file);
+            return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+        }
+    }
+    return getUpdatedInstance( req, checkTransferSyntax( req.getTransferSyntax() ) );
 }
 
 /**
@@ -320,26 +309,19 @@ private String checkTransferSyntax(String transferSyntax) {
 
 private WADOResponseObject getUpdatedInstance( WADORequestObject req, String transferSyntax ) {
 	String iuid = req.getObjectUID();
-	DataSource ds = null;
+    FileDataSource ds = null;
 	try {
-        ds = (DataSource) server.invoke(fileSystemMgtName,
+        ds = (FileDataSource) server.invoke(fileSystemMgtName,
                 "getDatasourceOfInstance",
                 new Object[] { iuid },
                 new String[] { String.class.getName() } );
-        if ( this.isAuditLogEnabled(req) ) {
-        	Dataset d;
-        	if ( ds instanceof FileDataSource ) {
-            	d = ((FileDataSource) ds).getMergeAttrs();
-            	if ( req.getRequestParams().containsKey("privateTags")) {
-            		((FileDataSource) ds).setExcludePrivate("no".equalsIgnoreCase(((String[])req.getRequestParams().get("privateTags"))[0]));
-            	}
-        	} else {
-        		d = getPatientInfo(req);
-        	}
-        	this.logInstancesSent( d, req );
+       	Dataset d = ((FileDataSource) ds).getMergeAttrs();
+        if ( req.getRequestParams().containsKey("privateTags")) {
+            ((FileDataSource) ds).setExcludePrivate("no".equalsIgnoreCase(((String[])req.getRequestParams().get("privateTags"))[0]));
         }
-        return new WADODatasourceResponseObjectImpl( ds, transferSyntax, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
-        
+        WADODatasourceResponseObjectImpl resp =  new WADODatasourceResponseObjectImpl( ds, transferSyntax, CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+        resp.setPatInfo(d);
+        return resp;
     } catch (Exception e) {
         log.error("Failed to get updated DICOM file", e);
 		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
@@ -353,6 +335,7 @@ private WADOResponseObject getUpdatedInstance( WADORequestObject req, String tra
  * @return
  */
 protected Dataset getPatientInfo(WADORequestObject req) {
+    log.debug("get patient info from database for WADO request:"+req);
 	Dataset ds = dof.newDataset();
 	Dataset result = dof.newDataset();
 	try {
@@ -401,9 +384,12 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 	String columns = req.getColumns();
 	String frameNumber = req.getFrameNumber();
 	try {
-		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber );
+        boolean[] readDicom = new boolean[]{false};
+		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber, readDicom );
 		if ( file != null ) {
-	        return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
+            WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
+            if ( readDicom[0] ) resp.setPatInfo(this.getPatientInfo(req));
+            return resp;
 		} else {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 		}
@@ -422,8 +408,24 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 		return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get jpeg");
 	}
 }
+
+/**
+ * 
+ * @param studyUID
+ * @param seriesUID
+ * @param instanceUID
+ * @param rows
+ * @param columns
+ * @param frameNumber
+ * @param readDicom     Used to indicate if the image is read from the dicom file for this request.
+ * @return
+ * @throws IOException
+ * @throws NeedRedirectionException
+ * @throws NoImageException
+ * @throws ImageCachingException
+ */
 public File getJpg( String studyUID, String seriesUID, String instanceUID, 
-				String rows, String columns, String frameNumber	) 
+				String rows, String columns, String frameNumber, boolean[] readDicom ) 
 				throws IOException, NeedRedirectionException, NoImageException, ImageCachingException {
 	int frame = 0;
 	String suffix = null;
@@ -442,6 +444,7 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 	if ( file == null ) {
 		File dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
 		if ( dicomFile != null ) {
+            if ( readDicom != null) readDicom[0] = true;
 			bi = getImage( dicomFile, frame, rows, columns );
 		} else {
 			return null;
@@ -486,12 +489,14 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
         parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
         ds.putAll(dsCoerce);
         if ( log.isDebugEnabled()) {
-        	log.debug("SR Dataset for XSLT Transformation:");log.debug(ds);
+        	log.debug("Dataset for XSLT Transformation:");log.debug(ds);
         	log.debug("Use XSLT stylesheet:"+xslURL);
         }
 		TransformerHandler th = getTransformerHandler(xslURL);
 		DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th);
-        return new WADOTransformResponseObjectImpl(res, contentType, HttpServletResponse.SC_OK, null);
+        WADOTransformResponseObjectImpl resp = new WADOTransformResponseObjectImpl(res, contentType, HttpServletResponse.SC_OK, null);
+        resp.setPatInfo(dsCoerce);
+        return resp;
     } catch (Exception e) {
         log.error("Failed to get DICOM file", e);
 		return new WADOStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
@@ -574,7 +579,6 @@ public void clearTemplateCache() {
  * @throws IOException
  */
 public File getDICOMFile( String studyUID, String seriesUID, String instanceUID ) throws IOException, NeedRedirectionException {
-    File file;
     Object dicomObject = null;
 	try {
         dicomObject = server.invoke(fileSystemMgtName,
@@ -617,8 +621,7 @@ private URL getRedirectURL( String hostname, WADORequestObject req ) {
 		int port = new URL( req.getRequestURL() ).getPort();
 		url = new URL("http",hostname,port, sb.toString() );
 	} catch (MalformedURLException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		log.error("Malformed redirect URL: hostname:"+hostname+" page:"+sb,e);
 	}
 	if (log.isDebugEnabled() ) log.debug("redirect url:"+url );
 	return url;
@@ -828,19 +831,6 @@ public void setDisableDNS(boolean disableDNS) {
 }
 
 /**
- * @return Returns the useOrigFile.
- */
-public boolean isUseOrigFile() {
-	return useOrigFile;
-}
-/**
- * @param useOrigFile The useOrigFile to set.
- */
-public void setUseOrigFile(boolean useOrigFile) {
-	this.useOrigFile = useOrigFile;
-}
-
-/**
  * @return Returns the useTransferSyntaxOfFileAsDefault.
  */
 public boolean isUseTransferSyntaxOfFileAsDefault() {
@@ -897,7 +887,8 @@ public void setTextSopCuids(Map sopCuids) {
 	}
 }
 
-private void logInstancesSent(Dataset ds, BasicRequestObject req) {
+protected void logInstancesSent(WADORequestObject req, WADOResponseObject resp) {
+    Dataset ds = resp.getPatInfo();
     Patient patient = alf.newPatient(ds.getString(Tags.PatientID),ds.getString(Tags.PatientName) );
     String remoteHost = disableDNS ? req.getRemoteAddr() : req.getRemoteHost();
     RemoteNode rnode = alf.newRemoteNode( req.getRemoteAddr(), remoteHost, null);
@@ -930,25 +921,6 @@ private void setDefaultTextSopCuids() {
 	textSopCuids.put( "EnhancedSR", UIDs.EnhancedSR );
 	textSopCuids.put( "KeyObjectSelectionDocument", UIDs.KeyObjectSelectionDocument );
 	textSopCuids.put( "MammographyCADSR", UIDs.MammographyCADSR );
-}
-
-/**
- * @param req
- * @param resp
- * @return
- */
-public Dataset getNotificationInfo(WADORequestObject req, WADOResponseObject resp) {
-	Dataset ds;
-    if ( resp.getReturnCode() == HttpServletResponse.SC_OK ) {
-	    ds = getPatientInfo(req);
-    } else {
-    	ds = dof.newDataset();
-    }
-    if ( !ds.containsValue(Tags.StudyInstanceUID) ) ds.putUI(Tags.StudyInstanceUID, req.getStudyUID());
-    if ( !ds.containsValue(Tags.SeriesInstanceUID) ) ds.putUI(Tags.SeriesInstanceUID, req.getSeriesUID());
-    if ( !ds.containsValue(Tags.SOPInstanceUID) ) ds.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-    if ( !ds.containsValue(Tags.PatientID) ) ds.putLO(Tags.PatientID, "UNKNOWN");
-    return ds;
 }
 
 /**

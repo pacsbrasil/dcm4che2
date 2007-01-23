@@ -50,8 +50,15 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.Patient;
+import org.dcm4che.auditlog.RemoteNode;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.notif.WADORetrieve;
+import org.dcm4chex.wado.common.BasicRequestObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -67,7 +74,6 @@ public class WADOService extends AbstractCacheService {
 
 	private WADOSupport support = new WADOSupport( this.server );
 
-	
 	public WADOService() {
 		cache = WADOCacheImpl.getWADOCache();
 	}
@@ -109,19 +115,6 @@ public class WADOService extends AbstractCacheService {
 		cache.setRedirectCaching( redirectCaching );
 	}
 
-	/**
-	 * @return Returns the useOrigFile.
-	 */
-	public boolean isUseOrigFile() {
-		return support.isUseOrigFile();
-	}
-	/**
-	 * @param useOrigFile The useOrigFile to set.
-	 */
-	public void setUseOrigFile(boolean useOrigFile) {
-		support.setUseOrigFile(useOrigFile);
-	}
-	
 	/**
 	 * @return Returns the useTransferSyntaxOfFileAsDefault.
 	 */
@@ -348,14 +341,22 @@ public class WADOService extends AbstractCacheService {
 	 */
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
 		WADOResponseObject resp = support.getWADOObject( reqVO );
-		sendExportNotification(reqVO, resp);
+        if ( support.isAuditLogEnabled(reqVO) ) {
+            if (resp.getPatInfo() != null ) {
+                support.logInstancesSent(reqVO, resp);
+                sendExportNotification(reqVO, resp);
+            } else {
+                log.debug("Suppress audit log! No patient info available!");
+            }
+        } else {
+            log.debug("Suppress audit log! Disabled for host:"+reqVO.getRemoteHost());
+        }
 		return resp;
 	}
 
 	protected void sendExportNotification(WADORequestObject req, WADOResponseObject resp) {
 	    long eventID = getNextNotificationSequenceNumber();
-	    WADORetrieve export = new WADORetrieve(req.getRequest(),
-	    		support.getNotificationInfo(req,resp));
+	    WADORetrieve export = new WADORetrieve(req.getRequest(), resp.getPatInfo());
 	    if ( resp.getReturnCode() != HttpServletResponse.SC_OK ) {
 	    	export.setErrorMsg(resp.getErrorMessage());
 	    }

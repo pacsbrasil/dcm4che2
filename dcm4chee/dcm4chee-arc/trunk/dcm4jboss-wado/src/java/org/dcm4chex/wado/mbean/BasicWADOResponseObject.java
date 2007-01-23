@@ -41,6 +41,7 @@ package org.dcm4chex.wado.mbean;
 
 import java.util.Properties;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.wado.common.WADOResponseObject;
 
 /**
@@ -54,6 +55,7 @@ public abstract class BasicWADOResponseObject implements WADOResponseObject {
 	private String contentType;
 	private int returnCode;
 	private String errorMessage;
+    private Dataset patInfo;
 
 	public BasicWADOResponseObject( String contentType, int retCode, String errMsg ) {
 		this.contentType = contentType;
@@ -81,5 +83,19 @@ public abstract class BasicWADOResponseObject implements WADOResponseObject {
 	public String getErrorMessage() {
 		return errorMessage;
 	}
+
+    /**
+     * @return the patInfo
+     */
+    public Dataset getPatInfo() {
+        return patInfo;
+    }
+
+    /**
+     * @param patInfo the patInfo to set
+     */
+    public void setPatInfo(Dataset patInfo) {
+        this.patInfo = patInfo;
+    }
 	
 }

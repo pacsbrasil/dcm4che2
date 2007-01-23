@@ -44,6 +44,7 @@ import java.io.OutputStream;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.dcm4che.data.Dataset;
 import org.xml.sax.SAXException;
 
 /**
@@ -87,4 +88,10 @@ public interface WADOResponseObject {
 	 * @return An error message or null if return code is OK.
 	 */
 	String getErrorMessage();
+    
+    /**
+     * Returns Dataset with patient info (if available)
+     * 
+     */
+    Dataset getPatInfo();
 }

@@ -826,7 +826,7 @@ public class RIDSupport {
 	private WADOResponseObject handleJPEG(final RIDRequestObject reqObj) {
 		File file;
 		try {
-			file = getWADOSupport().getJpg( "rid", "rid", reqObj.getParam("documentUID"), null, null, null );
+			file = getWADOSupport().getJpg( "rid", "rid", reqObj.getParam("documentUID"), null, null, null, null );
 			if ( file != null ) {
 				return new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
 			} else {
