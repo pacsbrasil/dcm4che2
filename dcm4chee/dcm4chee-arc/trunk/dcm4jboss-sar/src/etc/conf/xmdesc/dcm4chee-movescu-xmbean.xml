@@ -53,6 +53,8 @@
       <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
       <br>The interval can be specified in seconds (##s),
       minutes (##m), hours (##h) or days (##d).
+      <br>Optional: Individual settings for specific Destination AETs. e.g. [AET1]3x1m,5x1h
+      <br>Several AET settings can be seperated with new line or ';'.
       <br>Example: 
       <br>5x1m,10x10m means retry a total of 5 times, one minute
       apart for each retry; then retry a total of 10 times, 10 minutes 

@@ -41,6 +41,10 @@ package org.dcm4chex.archive.dcm.movescu;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -102,8 +106,8 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
     private int soCloseDelay;
 
-    private RetryIntervalls retryIntervalls = new RetryIntervalls();
-
+    //private RetryIntervalls retryIntervalls = new RetryIntervalls();
+    private HashMap retryIntervalls = new HashMap();
     private int concurrency = 1;
 
     private String queueName;
@@ -208,11 +212,43 @@ public class MoveScuService extends ServiceMBeanSupport implements
     }
 
     public String getRetryIntervalls() {
-        return retryIntervalls.toString();
+        StringBuffer sb = new StringBuffer();
+        Map.Entry entry;
+        String key;
+        String defaultIntervalls = null;
+        for ( Iterator iter = retryIntervalls.entrySet().iterator() ; iter.hasNext() ; ) {
+            entry = (Map.Entry) iter.next();
+            key = (String)entry.getKey();
+            if ( key == null ) {
+                defaultIntervalls = ((RetryIntervalls) entry.getValue()).toString();
+            } else {
+                sb.append('[').append(key).append(']').append( (RetryIntervalls) entry.getValue() );
+                sb.append(System.getProperty("line.separator", "\n"));
+            }
+        }
+        if ( defaultIntervalls != null ) {
+            sb.append(defaultIntervalls);
+            sb.append(System.getProperty("line.separator", "\n"));
+        }
+        
+        return sb.length() > 1 ? sb.toString() : "NEVER";
     }
 
     public void setRetryIntervalls(String text) {
-        retryIntervalls = new RetryIntervalls(text);
+        retryIntervalls.clear();
+        StringTokenizer st = new StringTokenizer(text,";\r\n");
+        String token, key;
+        int pos;
+        while ( st.hasMoreTokens()) {
+            token = st.nextToken();
+            pos = token.indexOf(']');
+            if ( pos == -1 ) {
+                retryIntervalls.put(null, new RetryIntervalls(token));
+            } else {
+                key = token.substring(1,pos);
+                retryIntervalls.put(key, new RetryIntervalls(token.substring(pos+1)));
+            }
+        }
     }
 
     public String getCallingAET() {
@@ -265,7 +301,9 @@ public class MoveScuService extends ServiceMBeanSupport implements
             } catch (Exception e) {
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
-                final long delay = retryIntervalls.getIntervall(failureCount);
+                RetryIntervalls retry = (RetryIntervalls)retryIntervalls.get(order.getMoveDestination());
+                if ( retry == null ) retry = (RetryIntervalls)retryIntervalls.get(null);
+                final long delay = retry == null ? -1l : retry.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
                 } else {
