@@ -2128,8 +2128,14 @@
   <element tag="(300A,012C)" name="Isocenter Position" vr="DS" vm="3" key="IsocenterPosition" />
   <element tag="(300A,012E)" name="Surface Entry Point" vr="DS" vm="3" key="SurfaceEntryPoint" />
   <element tag="(300A,0130)" name="Source to Surface Distance" vr="DS" vm="1" key="SourceToSurfaceDistance" />
-  <element tag="(300A,0134)" name="Gantry Pitch Angle Tolerance" vr="FL" vm="1" key="GantryPitchAngleTolerance" />
-  <element tag="(300A,014E)" name="Cumulative Meterset Weight" vr="DS" vm="1" key="CumulativeMetersetWeight" />
+  <element tag="(300A,0134)" name="Cumulative Meterset Weight" vr="DS" vm="1" key="CumulativeMetersetWeight" />
+  <element tag="(300A,0140)" name="Table Top Pitch Angle" vr="FL" vm="1" key="TableTopPitchAngle" />
+  <element tag="(300A,0142)" name="Table Top Pitch Rotation Direction" vr="CS" vm="1" key="TableTopPitchRotationDirection" />
+  <element tag="(300A,0144)" name="Table Roll Pitch Angle" vr="FL" vm="1" key="TableTopRollAngle" />
+  <element tag="(300A,0146)" name="Table Roll Pitch Rotation Direction" vr="CS" vm="1" key="TableTopRollRotationDirection" />
+  <element tag="(300A,0148)" name="Head Fixation Angle" vr="FL" vm="1" key="HeadFixationAngle" />
+  <element tag="(300A,014A)" name="Gantry Pitch Angle" vr="FL" vm="1" key="GantryPitchAngle" />
+  <element tag="(300A,014C)" name="Gantry Pitch Rotation Direction" vr="CS" vm="1" key="GantryPitchRotationDirection" />
   <element tag="(300A,0180)" name="Patient Setup Sequence" vr="SQ" vm="1" key="PatientSetupSeq" />
   <element tag="(300A,0182)" name="Patient Setup Number" vr="IS" vm="1" key="PatientSetupNumber" />
   <element tag="(300A,0184)" name="Patient Additional Position" vr="LO" vm="1" key="PatientAdditionalPosition" />
