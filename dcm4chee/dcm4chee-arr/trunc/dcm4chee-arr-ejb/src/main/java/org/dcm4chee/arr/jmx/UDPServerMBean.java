@@ -78,7 +78,7 @@ public class UDPServerMBean implements UDPServer {
 
     private static Logger log = LoggerFactory.getLogger(UDPServerMBean.class);
     
-    @Resource (mappedName="ConnectionFactory")
+    @Resource (mappedName="java:ConnectionFactory")
     private QueueConnectionFactory cf;
     private QueueConnection conn;
 
