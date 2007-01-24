@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
@@ -237,12 +238,7 @@ public class ECGSupport {
 	        tmpOut = new FileOutputStream( tmpFile);
 	        
 			DcmElement elem = ds.get( Tags.WaveformSeq);
-			int nrOfWFGroups = elem.countItems();
-			WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
-			for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
-				wfgrps[i] = new WaveformGroup( ds.getString(Tags.SOPClassUID),elem, i,
-						ridSupport.getWaveformCorrection());
-			}
+			WaveformGroup[] wfgrps = getWaveformGroups(elem, ds.getString(Tags.SOPClassUID));
 			WaveformInfo wfInfo = new WaveformInfo( ds );
 
 			FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
@@ -268,6 +264,27 @@ public class ECGSupport {
 			return new WADOStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform PDF! Reason:"+t.getMessage());
 		}
 	}
+    /**
+     * @param cuid
+     * @param elem
+     * @return
+     */
+    private WaveformGroup[] getWaveformGroups(DcmElement elem, String cuid) {
+        float corr = ridSupport.getWaveformCorrection();
+        int nrOfWFGroups = elem.countItems();
+        if ( nrOfWFGroups == 1) 
+            return new WaveformGroup[]{new WaveformGroup( cuid,elem, 0, corr)};//dont check the only one
+        
+        ArrayList l = new ArrayList(nrOfWFGroups);
+        for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
+            try {
+                l.add( new WaveformGroup( cuid,elem, i, corr) );
+            } catch (Exception x) {
+                log.warn("Item "+i+" in Waveform Sequence is not valid! Ignored!!");
+            }
+        }
+        return (WaveformGroup[]) l.toArray(new WaveformGroup[l.size()]);
+    }
 	
 	
 }
