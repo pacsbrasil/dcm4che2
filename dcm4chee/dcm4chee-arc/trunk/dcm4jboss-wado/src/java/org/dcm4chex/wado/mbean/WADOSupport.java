@@ -478,21 +478,25 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO fileDTO, String contentType, String xslURL ) {
 	QueryCmd query = null;
 	try {
-		Dataset keys = dof.newDataset();
-		keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-		query = QueryCmd.createInstanceQuery(keys, false, true);
-		query.execute();
-		if (!query.next()) {
-			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
-		}
-		Dataset dsCoerce = query.getDataset();
 		File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
         DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
         Dataset ds = dof.newDataset();
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-        ds.putAll(dsCoerce);
+        Dataset dsCoerce = null;
+        if ( !"true".equals(req.getRequest().getParameter("useOrig"))) {
+            Dataset keys = dof.newDataset();
+            keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
+            query = QueryCmd.createInstanceQuery(keys, false, true);
+            query.execute();
+            if (!query.next()) {
+                log.error("Internal error! Instance not found but file entry exists?! objectUID:"+req.getObjectUID()+" file:"+fileDTO);
+                return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Instance not found but file entry exists?");
+            }
+            dsCoerce = query.getDataset();
+            ds.putAll(dsCoerce);
+        }
         if ( log.isDebugEnabled()) {
         	log.debug("Dataset for XSLT Transformation:");log.debug(ds);
         	log.debug("Use XSLT stylesheet:"+xslURL);
@@ -500,7 +504,7 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
 		TransformerHandler th = getTransformerHandler(xslURL);
 		DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th);
         WADOTransformResponseObjectImpl resp = new WADOTransformResponseObjectImpl(res, contentType, HttpServletResponse.SC_OK, null);
-        resp.setPatInfo(dsCoerce);
+        resp.setPatInfo(dsCoerce != null ? dsCoerce : ds);
         return resp;
     } catch (Exception e) {
         log.error("Failed to get DICOM file", e);
