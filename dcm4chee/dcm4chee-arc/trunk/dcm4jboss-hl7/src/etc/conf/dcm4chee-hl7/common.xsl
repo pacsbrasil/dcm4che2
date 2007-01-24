@@ -177,5 +177,16 @@
       <xsl:with-param name="vr" select="'CS'"/>
       <xsl:with-param name="val" select="string(field[8]/text())"/>
     </xsl:call-template>
+    <!-- Other Patient Names -->
+    <!-- TODO: extend for multiple Other Patient Names -->
+    <xsl:call-template name="xpn2pnAttr">
+      <xsl:with-param name="tag" select="'00101001'"/>
+      <xsl:with-param name="xpn" select="field[9]"/>
+    </xsl:call-template>
+    <!-- Patient's Mother's Birth Name -->
+    <xsl:call-template name="xpn2pnAttr">
+      <xsl:with-param name="tag" select="'00101060'"/>
+      <xsl:with-param name="xpn" select="field[6]"/>
+    </xsl:call-template>
   </xsl:template>
 </xsl:stylesheet>
