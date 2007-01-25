@@ -87,6 +87,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.Implementation;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.UIDDictionary;
@@ -110,7 +111,7 @@ import org.dcm4cheri.util.StringUtils;
  * @version 1.0.0
  */
 abstract class AAssociateRQACImpl implements AAssociateRQAC {
-   
+   static final Logger log = Logger.getLogger(AAssociateRQACImpl.class);
    static UIDDictionary DICT =
          DictionaryFactory.getInstance().getDefaultUIDDictionary();
    
@@ -159,24 +160,24 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                case 0x20:
                case 0x21:
                   if (itemType != pctype()) {
-                     throw new PDUException(
-                     "unexpected item type "
-                     + Integer.toHexString(itemType) + 'H',
-                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                     AAbort.UNEXPECTED_PDU_PARAMETER));
+                       log.warn("Treat unexpected item[type="
+                              + Integer.toHexString(itemType)
+                              + "H, length=" + itemLen + "] in received "
+                              + typeAsString() + " as item[type=" 
+                              + Integer.toHexString(pctype()) + "H]");
                   }
                   addPresContext(
-                  new PresContextImpl(itemType, din, itemLen));
+                          new PresContextImpl(pctype(), din, itemLen));
                   break;
                case 0x50:
                   readUserInfo(din, itemLen);
                   break;
                default:
-                  throw new PDUException(
-                  "unrecognized item type "
-                  + Integer.toHexString(itemType) + 'H',
-                  new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                  AAbort.UNRECOGNIZED_PDU_PARAMETER));
+                   log.warn("Skip unrecognized item[type="
+                           + Integer.toHexString(itemType)
+                           + "H, length=" + itemLen 
+                           + "] in received " + typeAsString());
+                   din.skipBytes(itemLen);
             }
          }
       } catch (PDUException e) {
@@ -396,11 +397,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                userIdentityAC = new UserIdentityACImpl(din, itemLen);
                break;
           default:
-               throw new PDUException(
-               "unrecognized user sub-item type "
-               + Integer.toHexString(subItemType) + 'H',
-               new AAbortImpl(AAbort.SERVICE_PROVIDER,
-               AAbort.UNRECOGNIZED_PDU_PARAMETER));
+              log.warn("Skip unrecognized user sub-item [type="
+                      + Integer.toHexString(subItemType)
+                      + "H, length=" + itemLen 
+                      + "] in received " + typeAsString());
+              din.skipBytes(itemLen);
          }
       }
    }
