@@ -46,6 +46,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.TagDictionary;
 import org.xml.sax.SAXException;
 
 /**
@@ -57,16 +58,18 @@ import org.xml.sax.SAXException;
 public class DatasetXMLResponseObject implements XMLResponseObject {
 	Dataset ds;
 	TransformerHandler th;
-	
-	public DatasetXMLResponseObject( Dataset ds, TransformerHandler th ) {
+    private TagDictionary dict = null;
+    
+	public DatasetXMLResponseObject( Dataset ds, TransformerHandler th, TagDictionary dict ) {
 		this.ds = ds;
 		this.th = th;
+        this.dict = dict;
 	}
 	
 	public void toXML( OutputStream out ) throws TransformerConfigurationException, SAXException {
 		try {
 			th.setResult( new StreamResult(out));
-			ds.writeDataset2( th, null, null, Integer.MAX_VALUE, null);
+			ds.writeDataset2( th, dict, null, Integer.MAX_VALUE, null);
 			out.flush();
 			out.close();
 		} catch ( Exception x ) {

@@ -171,11 +171,32 @@ public class WADOService extends AbstractCacheService {
 	public void setXmlXslURL(String xslURL) {
 		support.setXmlXslURL(xslURL);
 	}
-	
+
+    /**
+     * Set URL to XSLT stylesheet that should be used to transform DICOM SR to xml document.
+     * 
+     * @return
+     */
+    public String getDicomXslURL() {
+        return support.getDicomXslURL();
+    }
+    
+    public void setDicomXslURL(String xslURL) {
+        support.setDicomXslURL(xslURL);
+    }
+
 	public void clearTemplateCache() {
 		support.clearTemplateCache();
 	}
-	
+
+    public String getContentTypeDicomXML() {
+        return support.getContentTypeDicomXML();
+    }
+
+    public void setContentTypeDicomXML(String contentTypeDicomXML) {
+        support.setContentTypeDicomXML(contentTypeDicomXML);
+    }
+    
 	/**
 	 * Returns a String with all defined SOP Class UIDs that are used to find text (SR) documents.
 	 * <p>

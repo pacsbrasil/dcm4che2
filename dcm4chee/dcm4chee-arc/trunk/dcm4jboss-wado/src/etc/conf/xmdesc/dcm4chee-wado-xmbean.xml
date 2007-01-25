@@ -185,6 +185,29 @@
          <value value="resource:xsl/sr_xml_style.xsl" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getDicomXslURL"
+      setMethod="setDicomXslURL">
+      <description>URL to XSLT stylesheet to render DICOM to HTML (Use NONE to disable this transformation) .          
+      </description>
+      <name>DicomXslURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/dicom_html.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getContentTypeDicomXML"
+      setMethod="setContentTypeDicomXML">
+      <description>Response Content type (mime type) of request with application/dicom+xml.
+      		Use NONE to disable application/dicom+xml requests.          
+      </description>
+      <name>ContentTypeDicomXML</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="text/html" />
+      </descriptors>
+   </attribute>
 
     <attribute access="read-write"
       getMethod="getTextSopCuids"

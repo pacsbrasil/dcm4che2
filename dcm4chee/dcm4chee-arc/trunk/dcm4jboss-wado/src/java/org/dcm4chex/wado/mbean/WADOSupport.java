@@ -85,6 +85,8 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -140,10 +142,15 @@ private Map textSopCuids = null;
 
 private static MBeanServer server;
 
+private static TagDictionary dict = null;
+
 private static final int BUF_LEN = 65536;
 private String htmlXslURL = "resource:xsl/sr_html.xsl";
 private String xhtmlXslURL = "resource:xsl/sr_html.xsl";
 private String xmlXslURL = "resource:xsl/sr_xml_style.xsl";
+private String dicomXslURL = "resource:xsl/dicom_html.xsl";
+private String contentTypeDicomXML;
+
 private Map mapTemplates = new HashMap();
 
 public WADOSupport( MBeanServer mbServer ) {
@@ -197,13 +204,14 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
 	} else if ( CONTENT_TYPE_DICOM.equals( contentType ) ) {
 		return handleDicom( req ); //audit log is done in handleDicom to avoid extra query.
     } else if ( CONTENT_TYPE_DICOM_XML.equals( contentType ) ) {
-        resp = handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, null );
+        if ( dict == null ) dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
+        resp = handleTextTransform( req, fileDTO, contentTypeDicomXML, getDicomXslURL(), dict );
     } else if ( CONTENT_TYPE_HTML.equals( contentType ) ) {
-        resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL() );
+        resp = handleTextTransform( req, fileDTO, contentType, getHtmlXslURL(), null );
 	} else if ( CONTENT_TYPE_XHTML.equals( contentType ) ) {
-		resp = handleTextTransform( req, fileDTO, contentType, getXHtmlXslURL() );
+		resp = handleTextTransform( req, fileDTO, contentType, getXHtmlXslURL(), null );
 	} else if ( CONTENT_TYPE_XML.equals( contentType ) ) {
-		resp = handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, getXmlXslURL() );
+		resp = handleTextTransform( req, fileDTO, CONTENT_TYPE_XML, getXmlXslURL(), null );
 	} else {
 		log.debug("Content type not supported! :"+contentType+"\nrequested contentType(s):"+req.getContentTypes()+" SOP Class UID:"+fileDTO.getSopClassUID());
 		resp = new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested (preferred) content type!"+contentType);
@@ -246,12 +254,12 @@ private List getSupportedContentTypes(FileDTO fileDTO) {
 		types.add(CONTENT_TYPE_XML);
 		types.add(CONTENT_TYPE_PLAIN);
 		types.add(CONTENT_TYPE_DICOM);
-        types.add(CONTENT_TYPE_DICOM_XML);
 	} else {
 		types.add(CONTENT_TYPE_JPEG);
 		types.add(CONTENT_TYPE_DICOM);
-        types.add(CONTENT_TYPE_DICOM_XML);
 	}
+    if ( ! "NONE".equals(contentTypeDicomXML) )
+	    types.add(CONTENT_TYPE_DICOM_XML);
 	return types;
 }
 
@@ -475,7 +483,7 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 /*_*/
 
 
-private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO fileDTO, String contentType, String xslURL ) {
+private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO fileDTO, String contentType, String xslURL, TagDictionary dict ) {
 	QueryCmd query = null;
 	try {
 		File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
@@ -502,7 +510,7 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
         	log.debug("Use XSLT stylesheet:"+xslURL);
         }
 		TransformerHandler th = getTransformerHandler(xslURL);
-		DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th);
+		DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th, dict);
         WADOTransformResponseObjectImpl resp = new WADOTransformResponseObjectImpl(res, contentType, HttpServletResponse.SC_OK, null);
         resp.setPatInfo(dsCoerce != null ? dsCoerce : ds);
         return resp;
@@ -554,6 +562,34 @@ public String getXmlXslURL() {
 public void setXmlXslURL(String xmlXslURL) {
 	this.xmlXslURL = xmlXslURL;
 }
+/**
+ * @return the dicomXslURL
+ */
+public String getDicomXslURL() {
+    return dicomXslURL;
+}
+
+/**
+ * @param dicomXslURL the dicomXslURL to set
+ */
+public void setDicomXslURL(String dicomXslURL) {
+    this.dicomXslURL = dicomXslURL;
+}
+
+/**
+ * @return the contentTypeDicomXML
+ */
+public String getContentTypeDicomXML() {
+    return contentTypeDicomXML;
+}
+
+/**
+ * @param contentTypeDicomXML the contentTypeDicomXML to set
+ */
+public void setContentTypeDicomXML(String contentTypeDicomXML) {
+    this.contentTypeDicomXML = contentTypeDicomXML;
+}
+
 private TransformerHandler getTransformerHandler(String xslt) throws TransformerConfigurationException {
 	SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 	TransformerHandler th;
