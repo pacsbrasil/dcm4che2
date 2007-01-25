@@ -46,8 +46,8 @@ set CP=%DCM4CHE_HOME%\etc\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.8-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-2.0.8-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.1.0-RC1.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.1.0-RC1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.1.0.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.1.0.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.14.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.0.jar
 

@@ -149,6 +149,8 @@ public class DcmSnd {
     private int filesSent = 0;
 
     private long totalSize = 0L;
+    
+    private DicomObject coerceAttrs;
 
     public DcmSnd() {
         remoteAE.setInstalled(true);

@@ -282,7 +282,7 @@
 <element tag="00120050" alias="ClinicalTrialTimePointID" vr="LO" vm="1" ret="">Clinical Trial Time Point ID</element>
 <element tag="00120051" alias="ClinicalTrialTimePointDescription" vr="ST" vm="1" ret="">Clinical Trial Time Point Description</element>
 <element tag="00120060" alias="ClinicalTrialCoordinatingCenterName" vr="LO" vm="1" ret="">Clinical Trial Coordinating Center Name</element>
-<element tag="00120062" alias="PatientIdentifyRemoved" vr="CS" vm="1" ret="">Patient Identify Removed</element>
+<element tag="00120062" alias="PatientIdentityRemoved" vr="CS" vm="1" ret="">Patient Identity Removed</element>
 <element tag="00120063" alias="DeidentificationMethod" vr="LO" vm="1-n" ret="">De-identification Method</element>
 <element tag="00120064" alias="DeidentificationMethodCodeSequence" vr="SQ" vm="1" ret="">De-identification Method Code Sequence</element>
 <element tag="00180010" alias="ContrastBolusAgent" vr="LO" vm="1" ret="">Contrast/Bolus Agent</element>
@@ -337,6 +337,7 @@
 <element tag="00180095" alias="PixelBandwidth" vr="DS" vm="1" ret="">Pixel Bandwidth</element>
 <element tag="00181000" alias="DeviceSerialNumber" vr="LO" vm="1" ret="">Device Serial Number</element>
 <element tag="00181002" alias="DeviceUID" vr="UI" vm="1" ret="">Device UID</element>
+<element tag="00181003" alias="DeviceID" vr="LO" vm="1" ret="">Device ID</element>
 <element tag="00181004" alias="PlateID" vr="LO" vm="1" ret="">Plate ID</element>
 <element tag="00181005" alias="GeneratorID" vr="LO" vm="1" ret="">Generator ID</element>
 <element tag="00181006" alias="GridID" vr="LO" vm="1" ret="">Grid ID</element>
@@ -869,6 +870,25 @@
 <element tag="00189474" alias="CarmPositionerTabletopRelationship" vr="CS" vm="1" ret="">C-arm Positioner Tabletop Relationship</element>
 <element tag="00189476" alias="XRayGeometrySequence" vr="SQ" vm="1" ret="">X-Ray Geometry Sequence</element>
 <element tag="00189477" alias="IrradiationEventIdentificationSequence" vr="SQ" vm="1" ret="">Irradiation Event Identification Sequence</element>
+<element tag="00189504" alias="XRay3DFrameTypeSequence" vr="SQ" vm="1" ret="">X-Ray 3D Frame Type Sequence</element>
+<element tag="00189506" alias="ContributingSourcesSequence" vr="SQ" vm="1" ret="">Contributing Sources Sequence</element>
+<element tag="00189507" alias="XRay3DAcquisitionSequence" vr="SQ" vm="1" ret="">X-Ray 3D Acquisition Sequence</element>
+<element tag="00189508" alias="PrimaryPositionerScanArc" vr="FL" vm="1" ret="">Primary Positioner Scan Arc</element>
+<element tag="00189509" alias="SecondaryPositionerScanArc" vr="FL" vm="1" ret="">Secondary Positioner Scan Arc</element>
+<element tag="00189510" alias="PrimaryPositionerScanStartAngle" vr="FL" vm="1" ret="">Primary Positioner Scan Start Angle</element>
+<element tag="00189511" alias="SecondaryPositionerScanStartAngle" vr="FL" vm="1" ret="">Secondary Positioner Scan Start Angle</element>
+<element tag="00189514" alias="PrimaryPositionerIncrement" vr="FL" vm="1" ret="">Primary Positioner Increment</element>
+<element tag="00189515" alias="SecondaryPositionerIncrement" vr="FL" vm="1" ret="">Secondary Positioner Increment</element>
+<element tag="00189516" alias="StartAcquisitionDatetime" vr="DT" vm="1" ret="">Start Acquisition Datetime</element>
+<element tag="00189517" alias="EndAcquisitionDatetime" vr="DT" vm="1" ret="">End Acquisition Datetime</element>
+<element tag="00189524" alias="ApplicationName" vr="LO" vm="1" ret="">Application Name</element>
+<element tag="00189525" alias="ApplicationVersion" vr="LO" vm="1" ret="">Application Version</element>
+<element tag="00189526" alias="ApplicationManufacturer" vr="LO" vm="1" ret="">Application Manufacturer</element>
+<element tag="00189527" alias="AlgorithmType" vr="CS" vm="1" ret="">Algorithm Type</element>
+<element tag="00189528" alias="AlgorithmDescription" vr="LO" vm="1" ret="">Algorithm Description</element>
+<element tag="00189530" alias="XRay3DReconstructionSequence" vr="SQ" vm="1" ret="">X-Ray 3D Reconstruction Sequence</element>
+<element tag="00189531" alias="ReconstructionDescription" vr="LO" vm="1" ret="">Reconstruction Description</element>
+<element tag="00189538" alias="PerProjectionAcquisitionSequence" vr="SQ" vm="1" ret="">Per Projection Acquisition Sequence</element>
 <element tag="0018A001" alias="ContributingEquipmentSequence" vr="SQ" vm="1" ret="">Contributing Equipment Sequence</element>
 <element tag="0018A002" alias="ContributionDateTime" vr="DT" vm="1" ret="">Contribution Date Time</element>
 <element tag="0018A003" alias="ContributionDescription" vr="ST" vm="1" ret="">Contribution Description</element>
@@ -905,7 +925,9 @@
 <element tag="00201000" alias="SeriesInStudyRET" vr="IS" vm="1" ret="RET">Series in Study</element>
 <element tag="00201001" alias="AcquisitionsInSeriesRET" vr="IS" vm="1" ret="RET">Acquisitions in Series</element>
 <element tag="00201002" alias="ImagesInAcquisition" vr="IS" vm="1" ret="">Images in Acquisition</element>
+<element tag="00201003" alias="ImagesInSeriesRET" vr="IS" vm="1" ret="RET">Images in Series</element>
 <element tag="00201004" alias="AcquisitionsInStudyRET" vr="IS" vm="1" ret="RET">Acquisitions in Study</element>
+<element tag="00201005" alias="ImagesInStudyRET" vr="IS" vm="1" ret="RET">Images in Study</element>
 <element tag="00201020" alias="ReferenceRET" vr="CS" vm="1-n" ret="RET">Reference</element>
 <element tag="00201040" alias="PositionReferenceIndicator" vr="LO" vm="1" ret="">Position Reference Indicator</element>
 <element tag="00201041" alias="SliceLocation" vr="DS" vm="1" ret="">Slice Location</element>
@@ -957,6 +979,9 @@
 <element tag="00209421" alias="DimensionDescriptionLabel" vr="LO" vm="1" ret="">Dimension Description Label</element>
 <element tag="00209450" alias="PatientOrientationInFrameSequence" vr="SQ" vm="1" ret="">Patient Orientation in Frame Sequence</element>
 <element tag="00209453" alias="FrameLabel" vr="LO" vm="1" ret="">Frame Label</element>
+<element tag="00209518" alias="AcquisitionIndex" vr="US" vm="1-n" ret="">Acquisition Index</element>
+<element tag="00209529" alias="ContributingSOPInstancesReferenceSequence" vr="SQ" vm="1" ret="">Contributing SOP Instances Reference Sequence</element>
+<element tag="00209536" alias="ReconstructionIndex" vr="US" vm="1" ret="">Reconstruction Index</element>
 <element tag="00220001" alias="LightPathFilterPassThroughWavelength" vr="US" vm="1" ret="">Light Path Filter Pass-Through Wavelength</element>
 <element tag="00220002" alias="LightPathFilterPassBand" vr="US" vm="2" ret="">Light Path Filter Pass Band</element>
 <element tag="00220003" alias="ImagePathFilterPassThroughWavelength" vr="US" vm="1" ret="">Image Path Filter Pass-Through Wavelength</element>
@@ -1021,6 +1046,7 @@
 <element tag="00280110" alias="SmallestImagePixelValueInPlane" vr="US|SS" vm="1" ret="">Smallest Image Pixel Value in Plane</element>
 <element tag="00280111" alias="LargestImagePixelValueInPlane" vr="US|SS" vm="1" ret="">Largest Image Pixel Value in Plane</element>
 <element tag="00280120" alias="PixelPaddingValue" vr="US|SS" vm="1" ret="">Pixel Padding Value</element>
+<element tag="00280121" alias="PixelPaddingRangeLimit" vr="US|SS" vm="1" ret="">Pixel Padding Range Limit</element>
 <element tag="00280200" alias="ImageLocationRET" vr="US" vm="1" ret="RET">Image Location</element>
 <element tag="00280300" alias="QualityControlImage" vr="CS" vm="1" ret="">Quality Control Image</element>
 <element tag="00280301" alias="BurnedInAnnotation" vr="CS" vm="1" ret="">Burned In Annotation</element>
@@ -1101,6 +1127,8 @@
 <element tag="00289446" alias="ImageProcessingApplied" vr="CS" vm="1-n" ret="">Image Processing Applied</element>
 <element tag="00289454" alias="MaskSelectionMode" vr="CS" vm="1" ret="">Mask Selection Mode</element>
 <element tag="00289474" alias="LUTFunction" vr="CS" vm="1" ret="">LUT Function</element>
+<element tag="00289520" alias="ImageToEquipmentMappingMatrix" vr="DS" vm="16" ret="">Image to Equipment Mapping Matrix</element>
+<element tag="00289537" alias="EquipmentCoordinateSystemIdentification" vr="CS" vm="1" ret="">Equipment Coordinate System Identification</element>
 <element tag="0032000A" alias="StudyStatusIDRET" vr="CS" vm="1" ret="RET">Study Status ID</element>
 <element tag="0032000C" alias="StudyPriorityIDRET" vr="CS" vm="1" ret="RET">Study Priority ID</element>
 <element tag="00320012" alias="StudyIDIssuerRET" vr="LO" vm="1" ret="RET">Study ID Issuer</element>
@@ -1334,7 +1362,7 @@
 <element tag="0040A082" alias="ParticipationDatetime" vr="DT" vm="1" ret="">Participation Datetime</element>
 <element tag="0040A084" alias="ObserverType" vr="CS" vm="1" ret="">Observer Type</element>
 <element tag="0040A088" alias="VerifyingObserverIdentificationCodeSequence" vr="SQ" vm="1" ret="">Verifying Observer Identification Code Sequence</element>
-<element tag="0040A090" alias="EquivalentCDADocumentSequence" vr="SQ" vm="1" ret="">Equivalent CDA Document Sequence</element>
+<element tag="0040A090" alias="EquivalentCDADocumentSequenceRET" vr="SQ" vm="1" ret="RET">Equivalent CDA Document Sequence</element>
 <element tag="0040A0B0" alias="ReferencedWaveformChannels" vr="US" vm="2-2n" ret="">Referenced Waveform Channels</element>
 <element tag="0040A120" alias="DateTime" vr="DT" vm="1" ret="">DateTime</element>
 <element tag="0040A121" alias="Date" vr="DA" vm="1" ret="">Date</element>
@@ -1363,6 +1391,7 @@
 <element tag="0040A491" alias="CompletionFlag" vr="CS" vm="1" ret="">Completion Flag</element>
 <element tag="0040A492" alias="CompletionFlagDescription" vr="LO" vm="1" ret="">Completion Flag Description</element>
 <element tag="0040A493" alias="VerificationFlag" vr="CS" vm="1" ret="">Verification Flag</element>
+<element tag="0040A494" alias="ArchiveRequested" vr="CS" vm="1" ret="">Archive Requested</element>
 <element tag="0040A504" alias="ContentTemplateSequence" vr="SQ" vm="1" ret="">Content Template Sequence</element>
 <element tag="0040A525" alias="IdenticalDocumentsSequence" vr="SQ" vm="1" ret="">Identical Documents Sequence</element>
 <element tag="0040A730" alias="ContentSequence" vr="SQ" vm="1" ret="">Content Sequence</element>
@@ -1382,6 +1411,7 @@
 <element tag="00420011" alias="EncapsulatedDocument" vr="OB" vm="1" ret="">Encapsulated Document</element>
 <element tag="00420012" alias="MIMETypeOfEncapsulatedDocument" vr="LO" vm="1" ret="">MIME Type of Encapsulated Document</element>
 <element tag="00420013" alias="SourceInstanceSequence" vr="SQ" vm="1" ret="">Source Instance Sequence</element>
+<element tag="00420014" alias="ListOfMIMETypes" vr="LO" vm="1-n" ret="">List of MIME Types</element>
 <element tag="00500004" alias="CalibrationImage" vr="CS" vm="1" ret="">Calibration Image</element>
 <element tag="00500010" alias="DeviceSequence" vr="SQ" vm="1" ret="">Device Sequence</element>
 <element tag="00500014" alias="DeviceLength" vr="DS" vm="1" ret="">Device Length</element>
@@ -1685,6 +1715,11 @@
 <element tag="04000510" alias="EncryptedContentTransferSyntaxUID" vr="UI" vm="1" ret="">Encrypted Content Transfer Syntax UID</element>
 <element tag="04000520" alias="EncryptedContent" vr="OB" vm="1" ret="">Encrypted Content</element>
 <element tag="04000550" alias="ModifiedAttributesSequence" vr="SQ" vm="1" ret="">Modified Attributes Sequence</element>
+<element tag="04000561" alias="OriginalAttributesSequence" vr="SQ" vm="1" ret="">Original Attributes Sequence</element>
+<element tag="04000562" alias="AttributeModificationDatetime" vr="DT" vm="1" ret="">Attribute Modification Datetime</element>
+<element tag="04000563" alias="ModifyingSystem" vr="LO" vm="1" ret="">Modifying System</element>
+<element tag="04000564" alias="SourceOfPreviousValues" vr="LO" vm="1" ret="">Source of Previous Values</element>
+<element tag="04000565" alias="ReasonForTheAttributeModification" vr="CS" vm="1" ret="">Reason for the Attribute Modification</element>
 <element tag="20000010" alias="NumberOfCopies" vr="IS" vm="1" ret="">Number of Copies</element>
 <element tag="2000001E" alias="PrinterConfigurationSequence" vr="SQ" vm="1" ret="">Printer Configuration Sequence</element>
 <element tag="20000020" alias="PrintPriority" vr="CS" vm="1" ret="">Print Priority</element>
@@ -2404,7 +2439,7 @@
 <element tag="50xx200E" alias="AudioCommentsRET" vr="LT" vm="1" ret="RET">Audio Comments</element>
 <element tag="50xx2500" alias="CurveLabelRET" vr="LO" vm="1" ret="RET">Curve Label</element>
 <element tag="50xx2600" alias="CurveReferencedOverlaySequenceRET" vr="SQ" vm="1" ret="RET">Curve Referenced Overlay Sequence</element>
-<element tag="50xx2610" alias="ReferencedOverlayGroupRET" vr="US" vm="1" ret="RET">Referenced Overlay Group</element>
+<element tag="50xx2610" alias="CurveReferencedOverlayGroupRET" vr="US" vm="1" ret="RET">Curve Referenced Overlay Group</element>
 <element tag="50xx3000" alias="CurveDataRET" vr="OW|OB" vm="1" ret="RET">Curve Data</element>
 <element tag="52009229" alias="SharedFunctionalGroupsSequence" vr="SQ" vm="1" ret="">Shared Functional Groups Sequence</element>
 <element tag="52009230" alias="PerframeFunctionalGroupsSequence" vr="SQ" vm="1" ret="">Per-frame Functional Groups Sequence</element>

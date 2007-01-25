@@ -149,11 +149,11 @@ public class PatientModule extends Module {
     }
     
     public String getPatientIdentifyRemoved() {
-        return dcmobj.getString(Tag.PatientIdentifyRemoved);
+        return dcmobj.getString(Tag.PatientIdentityRemoved);
     }
     
     public void setPatientIdentifyRemoved(String s) {
-        dcmobj.putString(Tag.PatientIdentifyRemoved, VR.CS, s);
+        dcmobj.putString(Tag.PatientIdentityRemoved, VR.CS, s);
     }
     
     public String getDeidentificationMethod() {

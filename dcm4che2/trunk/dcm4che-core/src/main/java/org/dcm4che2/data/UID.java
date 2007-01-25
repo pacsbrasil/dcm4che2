@@ -165,6 +165,9 @@ public class UID {
     /** RFC 2557 MIME encapsulation - Transfer Syntax */
     public static final String RFC2557MIMEencapsulation = "1.2.840.10008.1.2.6.1";
 
+    /** XML Encoding - Transfer Syntax */
+    public static final String XMLEncoding = "1.2.840.10008.1.2.6.2";
+
     /** Storage Commitment Push Model SOP Class - SOP Class */
     public static final String StorageCommitmentPushModelSOPClass = "1.2.840.10008.1.20.1";
 
@@ -522,6 +525,9 @@ public class UID {
     /** Encapsulated PDF Storage - SOP Class */
     public static final String EncapsulatedPDFStorage = "1.2.840.10008.5.1.4.1.1.104.1";
 
+    /** Encapsulated CDA Storage - SOP Class */
+    public static final String EncapsulatedCDAStorage = "1.2.840.10008.5.1.4.1.1.104.2";
+
     /** Standalone VOI LUT Storage (Retired) - SOP Class */
     public static final String StandaloneVOILUTStorageRetired = "1.2.840.10008.5.1.4.1.1.11";
 
@@ -557,6 +563,12 @@ public class UID {
 
     /** Standalone PET Curve Storage (Retired) - SOP Class */
     public static final String StandalonePETCurveStorageRetired = "1.2.840.10008.5.1.4.1.1.129";
+
+    /** X-Ray 3D Angiographic Image Storage - SOP Class */
+    public static final String XRay3DAngiographicImageStorage = "1.2.840.10008.5.1.4.1.1.13.1.1";
+
+    /** X-Ray 3D Craniofacial Image Storage - SOP Class */
+    public static final String XRay3DCraniofacialImageStorage = "1.2.840.10008.5.1.4.1.1.13.1.2";
 
     /** CT Image Storage - SOP Class */
     public static final String CTImageStorage = "1.2.840.10008.5.1.4.1.1.2";

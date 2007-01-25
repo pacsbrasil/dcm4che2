@@ -37,6 +37,7 @@
 <uid value="1.2.840.10008.1.2.4.95" alias="JPIPReferencedDeflate" type="Transfer Syntax">JPIP Referenced Deflate</uid>
 <uid value="1.2.840.10008.1.2.5" alias="RLELossless" type="Transfer Syntax">RLE Lossless</uid>
 <uid value="1.2.840.10008.1.2.6.1" alias="RFC2557MIMEencapsulation" type="Transfer Syntax">RFC 2557 MIME encapsulation</uid>
+<uid value="1.2.840.10008.1.2.6.2" alias="XMLEncoding" type="Transfer Syntax">XML Encoding</uid>
 <uid value="1.2.840.10008.1.20.1" alias="StorageCommitmentPushModelSOPClass" type="SOP Class">Storage Commitment Push Model SOP Class</uid>
 <uid value="1.2.840.10008.1.20.1.1" alias="StorageCommitmentPushModelSOPInstance" type="Well-known SOP Instance">Storage Commitment Push Model SOP Instance</uid>
 <uid value="1.2.840.10008.1.20.2" alias="StorageCommitmentPullModelSOPClassRetired" type="SOP Class">Storage Commitment Pull Model SOP Class (Retired)</uid>
@@ -156,6 +157,7 @@
 <uid value="1.2.840.10008.5.1.4.1.1.1.3.1" alias="DigitalIntraoralXRayImageStorageForProcessing" type="SOP Class">Digital Intra-oral X-Ray Image Storage - For Processing</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.10" alias="StandaloneModalityLUTStorageRetired" type="SOP Class">Standalone Modality LUT Storage (Retired)</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.104.1" alias="EncapsulatedPDFStorage" type="SOP Class">Encapsulated PDF Storage</uid>
+<uid value="1.2.840.10008.5.1.4.1.1.104.2" alias="EncapsulatedCDAStorage" type="SOP Class">Encapsulated CDA Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.11" alias="StandaloneVOILUTStorageRetired" type="SOP Class">Standalone VOI LUT Storage (Retired)</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.11.1" alias="GrayscaleSoftcopyPresentationStateStorageSOPClass" type="SOP Class">Grayscale Softcopy Presentation State Storage SOP Class</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.11.2" alias="ColorSoftcopyPresentationStateStorageSOPClass" type="SOP Class">Color Softcopy Presentation State Storage SOP Class</uid>
@@ -168,6 +170,8 @@
 <uid value="1.2.840.10008.5.1.4.1.1.12.3" alias="XRayAngiographicBiPlaneImageStorageRetired" type="SOP Class">X-Ray Angiographic Bi-Plane Image Storage (Retired)</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.128" alias="PositronEmissionTomographyImageStorage" type="SOP Class">Positron Emission Tomography Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.129" alias="StandalonePETCurveStorageRetired" type="SOP Class">Standalone PET Curve Storage (Retired)</uid>
+<uid value="1.2.840.10008.5.1.4.1.1.13.1.1" alias="XRay3DAngiographicImageStorage" type="SOP Class">X-Ray 3D Angiographic Image Storage</uid>
+<uid value="1.2.840.10008.5.1.4.1.1.13.1.2" alias="XRay3DCraniofacialImageStorage" type="SOP Class">X-Ray 3D Craniofacial Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.2" alias="CTImageStorage" type="SOP Class">CT Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.2.1" alias="EnhancedCTImageStorage" type="SOP Class">Enhanced CT Image Storage</uid>
 <uid value="1.2.840.10008.5.1.4.1.1.20" alias="NuclearMedicineImageStorage" type="SOP Class">Nuclear Medicine Image Storage</uid>

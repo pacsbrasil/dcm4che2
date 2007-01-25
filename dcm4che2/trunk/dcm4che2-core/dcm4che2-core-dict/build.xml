@@ -56,10 +56,22 @@
          - - - - - - - - - - - - - - - - - -->
 	<target name="unzip">
 		<antcall target="unzip-sxw">
-			<param name="fname" value="04v06_07"/>
+			<param name="fname" value="07_07pu"/>
 		</antcall>
 		<antcall target="unzip-sxw">
-			<param name="fname" value="07_06_03"/>
+			<param name="fname" value="07_06pu"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup114_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="sup116_ft2"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp684_ft"/>
+		</antcall>
+		<antcall target="unzip-sxw">
+			<param name="fname" value="cp692_ft"/>
 		</antcall>
 	</target>
 	
@@ -68,11 +80,27 @@
          - - - - - - - - - - - - - - - - - -->
 	<target name="p6_element" depends="unzip">
 		<antcall target="grep">
-			<param name="fname" value="04v06_07"/>
+			<param name="fname" value="07_07pu"/>
 			<param name="style" value="p7_element"/>
 		</antcall>
 		<antcall target="grep">
-			<param name="fname" value="07_06_03"/>
+			<param name="fname" value="07_06pu"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup114_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup116_ft2"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp684_ft"/>
+			<param name="style" value="p6_element"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp692_ft"/>
 			<param name="style" value="p6_element"/>
 		</antcall>
 	</target>
@@ -82,7 +110,15 @@
          - - - - - - - - - - - - - - - - - -->
 	<target name="p6_uid" depends="unzip">
 		<antcall target="grep">
-			<param name="fname" value="07_06_03"/>
+			<param name="fname" value="07_06pu"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup114_ft"/>
+			<param name="style" value="p6_uid"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup116_ft2"/>
 			<param name="style" value="p6_uid"/>
 		</antcall>
 	</target>
