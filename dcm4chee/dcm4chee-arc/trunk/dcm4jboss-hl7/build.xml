@@ -1,7 +1,7 @@
 <project name="dcm4chee-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.10.11"/>
+	<property name="version" value="2.10.12"/>
 	<property name="javac.debug" value="on"/>
 	
 	<!-- Override with your dcm4che14 dist location -->
