@@ -29,6 +29,7 @@
     
     <xsl:template match="item">
         <tr>
+        	<td class="itemno"><xsl:value-of select="position()"/></td>
             <td>
                 <table class="dcmds">
                     <tr class="head"><td>Group</td><td>Element</td><td>Name</td><td>VR</td>
@@ -44,10 +45,10 @@
         <tr class="row{$pos}">
             <td><xsl:value-of select="substring(@tag,1,4)"/></td><td><xsl:value-of select="substring(@tag,5,4)"/></td>
             <td><xsl:value-of select="@name"/></td><td><xsl:value-of select="@vr"/></td>
-   		    <td><xsl:value-of select="@len"/></td>
             <xsl:choose>
             	<xsl:when test="@vr='SQ'">
-	        		<td>--</td>
+   				    <td>--</td>
+	        		<td><xsl:value-of select="@vm"/></td>
 	        		<td>
 			            <table class="dcmds">
 			                <tr class="head"><td><i>Items</i></td></tr>
@@ -56,6 +57,7 @@
 			        </td>
             	</xsl:when>
             	<xsl:otherwise>
+		   		    <td><xsl:value-of select="@len"/></td>
 	        		<td><xsl:value-of select="@vm"/></td>
 	        		<td><xsl:value-of select="."/></td>
             	</xsl:otherwise>

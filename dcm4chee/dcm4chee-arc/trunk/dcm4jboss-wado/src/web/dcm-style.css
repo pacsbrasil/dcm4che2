@@ -1,4 +1,4 @@
-/* ARR style sheet */
+/* DICOM+XML style sheet */
 body
 {
 	
@@ -41,6 +41,13 @@ table.dcmds tr.row0
 table.dcmds tr.row1
 {
     background-color: #F0F0FD;
+}
+
+table.dcmds td.itemno
+{
+	border: thin #FDFDDF ridge;
+    text-align: center;
+    vertical-align: middle;
 }
 
 
@@ -146,18 +153,3 @@ BLOCKQUOTE {
 	letter-spacing : 2px;
 	text-transform : none;
 }
-
-
-
-
-.background {
-	background-attachment: fixed;
-	background-image: url(logo.gif);
-	background-repeat: no-repeat;
-	background-position: center?????A?º??u center;
-	background-color: #CCCCCC;
-	font-style: italic;
-
-}
-
-
