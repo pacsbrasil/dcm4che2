@@ -15,12 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -44,68 +44,57 @@ import java.io.IOException;
 
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.PDUException;
-import org.dcm4che.net.RoleSelection;
+import org.dcm4che.net.UserIdentityAC;
 
 /**
- *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Jan 25, 2007
  */
-final class RoleSelectionImpl implements RoleSelection {
+final class UserIdentityACImpl implements UserIdentityAC {
 
-    private final String asuid;
-    private final boolean scu;
-    private final boolean scp;
-    
-    /** Creates a new instance of RoleSelectionImpl */
-    RoleSelectionImpl(String asuid, boolean scu, boolean scp) {
-        this.asuid = asuid;
-        this.scu = scu;
-        this.scp = scp;
+    private static final byte[] EMPTY = {};
+
+    private final byte[] serverResponse;
+
+    UserIdentityACImpl(byte[] serverResponse) {
+        this.serverResponse = serverResponse == null ? EMPTY
+                    : (byte[]) serverResponse.clone();
+    }
+
+    public UserIdentityACImpl() {
+        this.serverResponse = EMPTY;
     }
     
-    RoleSelectionImpl(DataInputStream din, int len)
-            throws IOException, PDUException {
-        int uidLen = din.readUnsignedShort();
-        if (uidLen + 4 != len) {
-            throw new PDUException( "SCP/SCU role selection sub-item length: "
-                    + len + " mismatch UID-length:" + uidLen,
+    UserIdentityACImpl(DataInputStream din, int len) throws IOException {
+        int rsplen = din.readUnsignedShort();
+        if (rsplen + 2 != len) {
+            throw new PDUException( "User Identity selection sub-item length: "
+                    + len + " mismatch Server Response length:" + rsplen,
                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                AAbort.INVALID_PDU_PARAMETER_VALUE));
         } 
-        this.asuid = AAssociateRQACImpl.readASCII(din, uidLen);
-        this.scu = din.readBoolean();
-        this.scp = din.readBoolean();
+        this.serverResponse = new byte[rsplen];
+        din.readFully(serverResponse);
     }
 
-    public final String getSOPClassUID() {
-        return asuid;
-    }    
-
-    public final boolean scu() {
-        return scu;
-    }
-
-    public final boolean scp() {
-        return scp;
-    }
-    
-    final int length() {
-        return 4 + asuid.length();
-    }
-    
     void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x54);
+        dout.write(0x59);
         dout.write(0);
         dout.writeShort(length());
-        dout.writeShort(asuid.length());
-        dout.writeBytes(asuid);
-        dout.writeBoolean(scu);
-        dout.writeBoolean(scp);         
+        dout.writeShort(serverResponse.length);
+        dout.write(serverResponse);
     }
     
+    public final byte[] getServerResponse() {
+        return (byte[]) serverResponse.clone();
+    }
+
+    public int length() {
+        return 2 + serverResponse.length;
+    }
+
     public String toString() {
-        return "RoleSelection[sop=" + AAssociateRQACImpl.DICT.lookup(asuid)
-                + ", scu=" + scu + ", scp=" + scp + "]";
-    }    
+        return "UserIdentity[serverResponse(" + serverResponse.length + ")]";
+    }
 }

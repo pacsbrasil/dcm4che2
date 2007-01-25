@@ -89,6 +89,10 @@ import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.ExtNegotiator;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.net.RoleSelection;
+import org.dcm4che.net.UserIdentityAC;
+import org.dcm4che.net.UserIdentityNegotiator;
+import org.dcm4che.net.UserIdentityRQ;
+import org.dcm4che.net.UserIdentityRejectionException;
 import org.dcm4che.dict.UIDs;
 
 import org.dcm4cheri.util.StringUtils;
@@ -127,7 +131,15 @@ import java.util.List;
  * </ul>
  */
 class AcceptorPolicyImpl implements AcceptorPolicy {
+
     // Constants -----------------------------------------------------
+    private static final UserIdentityNegotiator DEF_USER_IDENTITY_NEGOTIATOR = 
+            new UserIdentityNegotiator(){
+
+                public UserIdentityAC negotiate(UserIdentityRQ rq) {
+                    return rq.isPositiveResponseRequested() 
+                        ? new UserIdentityACImpl() : null;
+                }};
     
     // Attributes ----------------------------------------------------
     private int maxLength = PDataTF.DEF_MAX_PDU_LENGTH;
@@ -163,6 +175,9 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     private HashMap policyForCalledAET = new HashMap();
     
     private HashMap policyForCallingAET = new HashMap();
+    
+    private UserIdentityNegotiator userIdentityNegotiator = 
+            DEF_USER_IDENTITY_NEGOTIATOR; 
     
     private LinkedHashMap presCtxMap = new LinkedHashMap();
     
@@ -358,6 +373,14 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         return (ExtNegotiator)extNegotiaionMap.get(uid);
     }
     
+    public final void setUserIdentityNegotiator(
+            UserIdentityNegotiator userIdentityNegotiator) {
+        if (userIdentityNegotiator == null) {
+            throw new NullPointerException();
+        }
+        this.userIdentityNegotiator = userIdentityNegotiator;
+    }
+
     public PDU negotiate(AAssociateRQ rq) {
         if ((rq.getProtocolVersion() & 0x0001) == 0) {
             return new AAssociateRJImpl(
@@ -413,6 +436,17 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         ac.setImplClassUID(this.implClassUID);
         ac.setImplVersionName(this.implVers);
         ac.setAsyncOpsWindow(negotiateAOW(rq.getAsyncOpsWindow()));
+        UserIdentityRQ userid = rq.getUserIdentity();
+        if (userid != null) {
+            try {
+                ac.setUserIdentity(userIdentityNegotiator.negotiate(userid));
+            } catch (UserIdentityRejectionException e) {
+                return new AAssociateRJImpl(
+                        AAssociateRJ.REJECTED_PERMANENT,
+                        AAssociateRJ.SERVICE_PROVIDER_ACSE,
+                        AAssociateRJ.NO_REASON_GIVEN);
+            }
+        }
         negotiatePresCtx(rq, ac);
         negotiateRoleSelection(rq, ac);
         negotiateExt(rq, ac);
@@ -482,7 +516,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
                 new ExtNegotiationImpl(uid, enp.negotiate(offered.info())));
         }
     }
-    
+
     private AsyncOpsWindow negotiateAOW(AsyncOpsWindow offered) {
         if (offered == null)
             return null;

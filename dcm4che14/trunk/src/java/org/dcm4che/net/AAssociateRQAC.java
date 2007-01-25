@@ -239,5 +239,6 @@ public interface AAssociateRQAC extends PDU {
      * where added by {@link #addRoleSelection}.
      * @return list the contained Extended Negotiation Sub-Items */    
     public Collection listExtNegotiations();
+
 }
 

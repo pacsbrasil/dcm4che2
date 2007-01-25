@@ -110,6 +110,19 @@ public abstract class AssociationFactory {
             boolean scp);
 
     public abstract ExtNegotiation newExtNegotiation(String uid, byte[] info);
+    
+    public abstract CommonExtNegotiation newCommonExtNegotiation(String sopCUID,
+            String serviceCUID, String[] relGenSopCUIDs);
+
+    public abstract UserIdentityRQ newUserIdentity(
+            boolean positiveResponseRequested, String username, String passcode);
+
+    public abstract UserIdentityRQ newUserIdentity(int userIdentityType,
+            boolean positiveResponseRequested, byte[] primaryField);
+
+    public abstract UserIdentityAC newUserIdentity();
+    
+    public abstract UserIdentityAC newUserIdentity(byte[] serverResponse);
 
     public abstract PDU readFrom(InputStream in, byte[] buf) throws IOException;
 

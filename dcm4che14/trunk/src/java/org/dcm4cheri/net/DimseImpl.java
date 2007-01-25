@@ -38,17 +38,17 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.Dimse;
-import org.dcm4che.net.DataSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDDictionary;
-import org.dcm4che.dict.DictionaryFactory;
-
-import java.io.*;
+import org.dcm4che.net.DataSource;
+import org.dcm4che.net.Dimse;
 
 /**
  *
@@ -134,9 +134,6 @@ class DimseImpl implements Dimse {
         ds.writeDataset(out, DcmDecodeParam.valueOf(tsUID));       
     }
 
-    private static UIDDictionary DICT =
-      DictionaryFactory.getInstance().getDefaultUIDDictionary();
-    
     public String toString() {
        return "[pc-" + pcid + "] " + cmd.toString();
     }

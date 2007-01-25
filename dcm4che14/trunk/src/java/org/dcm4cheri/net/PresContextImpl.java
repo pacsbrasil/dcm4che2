@@ -51,9 +51,6 @@ import java.util.*;
  * @version 1.0.0
  */
 final class PresContextImpl implements PresContext {
-    private static final UIDDictionary UID_DICT = 
-	DictionaryFactory.getInstance().getDefaultUIDDictionary();
-
     private final int type;
     private final int pcid;
     private final int result;
@@ -193,14 +190,14 @@ final class PresContextImpl implements PresContext {
     private StringBuffer toStringBuffer(StringBuffer sb) {
 	sb.append("PresContext[pcid=").append(pcid);
 	if (type == 0x20) {
-	    sb.append(", as=").append(UID_DICT.lookup(asuid));
+	    sb.append(", as=").append(AAssociateRQACImpl.DICT.lookup(asuid));
 	} else {
 	    sb.append(", result=").append(resultAsString());
 	}
 	Iterator it = tsuids.iterator();
-	sb.append(", ts=").append(UID_DICT.lookup((String)it.next()));
+	sb.append(", ts=").append(AAssociateRQACImpl.DICT.lookup((String)it.next()));
 	while (it.hasNext()) {
-	    sb.append(", ").append(UID_DICT.lookup((String)it.next()));
+	    sb.append(", ").append(AAssociateRQACImpl.DICT.lookup((String)it.next()));
 	}
 	return sb.append("]");
     }

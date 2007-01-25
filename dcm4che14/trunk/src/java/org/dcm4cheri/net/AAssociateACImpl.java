@@ -79,6 +79,8 @@ package org.dcm4cheri.net;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.net.PDUException;
+import org.dcm4che.net.UserIdentityAC;
+import org.dcm4che.net.UserIdentityRQ;
 
 import java.util.Iterator;
 
@@ -106,6 +108,14 @@ final class AAssociateACImpl extends AAssociateRQACImpl
 
     AAssociateACImpl() {
     }
+ 
+    public final UserIdentityAC getUserIdentity() {
+        return userIdentityAC;
+    }
+
+    public final void setUserIdentity(UserIdentityAC userIdentity) {
+        this.userIdentityAC = userIdentity;
+    }  
     
     public int countAcceptedPresContext() {
        int accepted = 0;
@@ -124,7 +134,7 @@ final class AAssociateACImpl extends AAssociateRQACImpl
     protected int pctype() {
         return 0x21;
     }
-
+    
     protected String typeAsString() {
        return "AAssociateAC";
     }

@@ -15,12 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,30 +35,16 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
+ 
 package org.dcm4che.net;
 
 /**
- * <description>
- *
- * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since May, 2002
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>20020728 gunter:</b>
- * <ul>
- * <li> add {@link #countAcceptedPresContext}
- * </ul>
+ * @since Jan 25, 2007
  */
-public interface AAssociateAC extends AAssociateRQAC {
-   
-    public UserIdentityAC getUserIdentity();
+public interface UserIdentityAC {
 
-    public void setUserIdentity(UserIdentityAC userIdentity);
-
-    public int countAcceptedPresContext();
+    public byte[] getServerResponse();
+    
 }
-

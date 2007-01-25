@@ -76,20 +76,6 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.Implementation;
-import org.dcm4che.net.AAssociateRQAC;
-import org.dcm4che.net.AAbort;
-import org.dcm4che.net.AsyncOpsWindow;
-import org.dcm4che.net.PresContext;
-import org.dcm4che.net.RoleSelection;
-import org.dcm4che.net.ExtNegotiation;
-import org.dcm4che.net.PDUException;
-import org.dcm4che.net.PDataTF;
-import org.dcm4che.dict.DictionaryFactory;
-import org.dcm4che.dict.UIDDictionary;
-import org.dcm4che.dict.UIDs;
-import org.dcm4cheri.util.StringUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -97,10 +83,26 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+
+import org.dcm4che.Implementation;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.UIDDictionary;
+import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.AAbort;
+import org.dcm4che.net.AAssociateRQAC;
+import org.dcm4che.net.AsyncOpsWindow;
+import org.dcm4che.net.CommonExtNegotiation;
+import org.dcm4che.net.ExtNegotiation;
+import org.dcm4che.net.PDUException;
+import org.dcm4che.net.PDataTF;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.net.RoleSelection;
+import org.dcm4che.net.UserIdentityAC;
+import org.dcm4che.net.UserIdentityRQ;
+import org.dcm4cheri.util.StringUtils;
 
 /**
  *
@@ -120,9 +122,13 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
    private String implClassUID = Implementation.getClassUID();
    private String implVers = Implementation.getVersionName();
    private AsyncOpsWindow asyncOpsWindow = null;
+   protected UserIdentityRQ userIdentityRQ = null;
+   protected UserIdentityAC userIdentityAC = null;
    protected final LinkedHashMap presCtxs = new LinkedHashMap();
    protected final LinkedHashMap roleSels = new LinkedHashMap();
    protected final LinkedHashMap extNegs = new LinkedHashMap();
+   protected final LinkedHashMap commonExtNegs = new LinkedHashMap();
+
    
    protected AAssociateRQACImpl init(UnparsedPDUImpl raw) throws PDUException {
       if (raw.buffer() == null) {
@@ -317,9 +323,9 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
    public void clearExtNegotiations() {
       extNegs.clear();
    }
-   
+
    static String readASCII(DataInputStream in, int len)
-   throws IOException, UnsupportedEncodingException {
+   throws IOException {
       byte[] b = new byte[len];
       in.readFully(b);
       while (len > 0 && b[len-1] == 0) --len;
@@ -332,10 +338,15 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
    }
    
    public ExtNegotiation addExtNegotiation(ExtNegotiation extNeg) {
-      return (ExtNegotiation)extNegs.put(
-      extNeg.getSOPClassUID(), extNeg);
+      return (ExtNegotiation)extNegs.put(extNeg.getSOPClassUID(), extNeg);
    }
    
+   public CommonExtNegotiation addCommonExtNegotiation(
+           CommonExtNegotiation extNeg) {
+       return (CommonExtNegotiation) 
+               commonExtNegs.put(extNeg.getSOPClassUID(), extNeg);
+    }
+    
    private void readUserInfo(DataInputStream din, int len)
    throws IOException, PDUException {
       int diff = len - din.available();
@@ -375,7 +386,16 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
             case 0x56:
                addExtNegotiation(new ExtNegotiationImpl(din, itemLen));
                break;
-            default:
+            case 0x57:
+               addCommonExtNegotiation(new CommonExtNegotiationImpl(din, itemLen));
+               break;
+            case 0x58:
+               userIdentityRQ = new UserIdentityRQImpl(din, itemLen);
+               break;
+            case 0x59:
+               userIdentityAC = new UserIdentityACImpl(din, itemLen);
+               break;
+          default:
                throw new PDUException(
                "unrecognized user sub-item type "
                + Integer.toHexString(subItemType) + 'H',
@@ -471,6 +491,15 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
       for (Iterator it = extNegs.values().iterator(); it.hasNext();) {
          ((ExtNegotiationImpl)it.next()).writeTo(dout);
       }
+      for (Iterator it = commonExtNegs.values().iterator(); it.hasNext();) {
+          ((CommonExtNegotiationImpl)it.next()).writeTo(dout);
+      }
+      if (userIdentityRQ != null) {
+          ((UserIdentityRQImpl)userIdentityRQ).writeTo(dout);
+      }
+      if (userIdentityAC != null) {
+          ((UserIdentityACImpl)userIdentityAC).writeTo(dout);
+      }
    }
    
    private int getUserInfoLength() {
@@ -489,6 +518,10 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
          ExtNegotiationImpl en = (ExtNegotiationImpl)it.next();
          retval += 4 + en.length();
       }
+      for (Iterator it = commonExtNegs.values().iterator(); it.hasNext();) {
+          CommonExtNegotiationImpl en = (CommonExtNegotiationImpl)it.next();
+          retval += 4 + en.length();
+       }
       return retval;
    }
    
@@ -527,10 +560,14 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
          for (Iterator it = extNegs.values().iterator(); it.hasNext();) {
             sb.append("\n\t").append(it.next());
          }
+         for (Iterator it = commonExtNegs.values().iterator(); it.hasNext();) {
+             sb.append("\n\t").append(it.next());
+          }
       } else {
         appendPresCtxSummary(sb);
         sb.append("\n\troleSel:\t#").append(roleSels.size())
-          .append("\n\textNego:\t#").append(extNegs.size());
+          .append("\n\textNego:\t#").append(extNegs.size())
+          .append("\n\tcommonExtNego:\t#").append(commonExtNegs.size());
       }
       return sb;
    }

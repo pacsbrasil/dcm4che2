@@ -38,9 +38,12 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.ExtNegotiation;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-import java.io.*;
+import org.dcm4che.net.ExtNegotiation;
+import org.dcm4cheri.util.StringUtils;
 
 /**
  *
@@ -86,4 +89,13 @@ final class ExtNegotiationImpl implements ExtNegotiation {
         dout.write(info);
     }
     
-}
+    public String toString() {
+        StringBuffer sb = new StringBuffer(64);
+        sb.append("ExtNegotiation[sop=")
+                .append(AAssociateRQACImpl.DICT.lookup(asuid))
+                .append(", info=");
+        StringUtils.promptBytes(sb, info, 0, info.length, Integer.MAX_VALUE);
+        sb.append("]");
+        return sb.toString();
+    }
+  }

@@ -86,6 +86,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AReleaseRQ;
 import org.dcm4che.net.AReleaseRP;
 import org.dcm4che.net.AsyncOpsWindow;
+import org.dcm4che.net.CommonExtNegotiation;
 import org.dcm4che.net.DataSource;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
@@ -96,6 +97,8 @@ import org.dcm4che.net.PDU;
 import org.dcm4che.net.PDUException;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.net.RoleSelection;
+import org.dcm4che.net.UserIdentityAC;
+import org.dcm4che.net.UserIdentityRQ;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
@@ -179,6 +182,32 @@ public final class AssociationFactoryImpl extends AssociationFactory {
     
     public ExtNegotiation newExtNegotiation(String uid, byte[] info) {
         return new ExtNegotiationImpl(uid, info);
+    }
+    
+    public CommonExtNegotiation newCommonExtNegotiation(String sopCUID,
+            String serviceCUID, String[] relGenSopCUIDs) {
+        return new CommonExtNegotiationImpl(sopCUID, serviceCUID, 
+                relGenSopCUIDs);
+    }
+
+    public UserIdentityRQ newUserIdentity(boolean positiveResponseRequested, 
+            String username, String passcode) {
+        return new UserIdentityRQImpl(positiveResponseRequested, username,
+                passcode);
+    }
+
+    public UserIdentityRQ newUserIdentity(int userIdentityType, 
+            boolean positiveResponseRequested, byte[] primaryField) {
+        return new UserIdentityRQImpl(userIdentityType,
+                positiveResponseRequested, primaryField);
+    }
+
+    public UserIdentityAC newUserIdentity() {
+        return new UserIdentityACImpl();
+    }
+    
+    public UserIdentityAC newUserIdentity(byte[] serverResponse) {
+        return new UserIdentityACImpl(serverResponse);
     }
     
     public PDU readFrom(InputStream in, byte[] buf)

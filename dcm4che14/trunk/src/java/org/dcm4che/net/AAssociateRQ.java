@@ -38,6 +38,8 @@
 
 package org.dcm4che.net;
 
+import java.util.Collection;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -45,5 +47,16 @@ package org.dcm4che.net;
  */
 public interface AAssociateRQ extends AAssociateRQAC {
 
+    public CommonExtNegotiation removeCommonExtNegotiation(String uid);
+
+    public CommonExtNegotiation getCommonExtNegotiation(String uid);
+
+    public Collection listCommonExtNegotiations();
+
+    public void clearCommonExtNegotiations();
+  
+    public UserIdentityRQ getUserIdentity();
+
+    public void setUserIdentity(UserIdentityRQ userIdentity);
 }
 
