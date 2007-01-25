@@ -172,23 +172,27 @@
    <!-- Audit Trail Messages -->
    <!-- ==================== -->
    <!-- Only used for emitting RFC-3881 compliant Audit messages by (optional)
-        dcm4chee-audit-3.x module -->
+        dcm4chee-audit-3.x module
    <appender name="AUDIT" class="org.dcm4che2.audit.log4j.net.SyslogAppender">
      <param name="Facility" value="AUTHPRIV"/>
      <param name="SyslogHost" value="localhost:4000"/>
      <layout class="org.apache.log4j.PatternLayout">
+     -->
        <!-- replace HOST by actual hostname for RFC 3164 - BSD Syslog
        compliant message prefix -->
+     <!--
        <param name="ConversionPattern" value="%d{MMM d HH:mm:ss} HOST %m"/>
      </layout>
    </appender>
+   -->
 
    <!-- set additivity="true" to log emitted Audit Messages in CONSOLE
-   and FILE appender -->
+   and FILE appender
    <category name="audit" additivity="false">
      <priority value="INFO" />
      <appender-ref ref="AUDIT"/>
    </category>
+   -->
 
    
    <!-- ================ -->
