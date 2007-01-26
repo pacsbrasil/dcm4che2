@@ -39,7 +39,7 @@
 </head>
 <body>
 	<h1>
-		No Dataset object stored in session attribute 'dicom2view' !
+		No Dataset object stored in session attribute 'dataset2view' !
 	</h1>
 </body>
 </html>
