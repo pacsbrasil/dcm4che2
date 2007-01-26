@@ -30,7 +30,6 @@
 		th.setResult( new StreamResult(out));
 		ds.writeDataset2( th, dict, null, Integer.MAX_VALUE, null);
 		out.flush();
-		out.close();
 	} else {
 %>
 <html>
