@@ -153,7 +153,7 @@
 			<col width="12%"/>
 		</colgroup>
 		<tr >
-			<td bgcolor="eeeeee" style="height:7px" colspan="8"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:7px" colspan="11"></td> <!-- spacer -->
 		</tr>
 		<tr>
 			<th title="Scheduled Procedure Step ID" align="left">ID</th>
@@ -199,7 +199,7 @@
 			<th align="left">&#160;&#160;</th> <!-- function -->
 		</tr>
 		<tr >
-			<td bgcolor="eeeeee" style="height:5px" colspan="9"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:5px" colspan="11"></td> <!-- spacer -->
 		</tr>
 	</table>
 
@@ -223,7 +223,9 @@
 			<col width="11%"/>
 			<col width="14%"/>
 			<col width="15%"/>
-			<col width="12%"/>
+			<col width="6%"/>
+			<col width="3%"/>
+			<col width="3%"/>
 		</colgroup>
 		<tr>
 	        <td align="left" title="SPS ID" >
@@ -255,19 +257,26 @@
 					<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
 				</a>
 			</td>
-			<xsl:if test="/model/linkMode > 0">
-				<td title="Function" align="center" valign="bottom">
+			<td title="Function" align="center" valign="bottom">
+				<xsl:if test="/model/linkMode > 0">
+					&#160;
 					<a href="mwl_console.m?action=doLink&amp;spsID={spsID}&amp;mppsIUID={/model/mppsIUID}">
 						<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsIUID"/> ?')</xsl:attribute>
 						<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
 					</a>
-				</td>	
-			</xsl:if>
-			<xsl:if test="/model/linkMode > 0 or /model/local = 'true'">
-				<td title="Function" align="center" valign="bottom">
+				</xsl:if>
+			</td>	
+			<td title="Function">
+				<a href="mwl_console.m?action=inspect&amp;spsID={spsID}" target="xmlview">
+					<img src="images/xml.gif" alt="xml" border="0" title="Inspect MWL DICOM object"/>		
+				</a>
+			</td>
+			<td title="Function" align="center" valign="bottom">
+				&#160;
+				<xsl:if test="/model/linkMode > 0 or /model/local = 'true'">
 					<input type="checkbox" name="sticky" value="{spsID}" />
-				</td>
-			</xsl:if>
+				</xsl:if>
+			</td>	
 		</tr>
 	</table>
 
@@ -320,7 +329,7 @@
 			<td>&#160;&#160;</td><!-- function -->
 		</tr>
 		<tr >
-			<td bgcolor="eeeeee" style="height:5px" colspan="8"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:5px" colspan="11"></td> <!-- spacer -->
 		</tr>
 	</table>
 

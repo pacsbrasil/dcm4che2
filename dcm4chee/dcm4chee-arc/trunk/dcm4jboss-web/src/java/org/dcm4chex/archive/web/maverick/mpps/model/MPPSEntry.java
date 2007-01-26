@@ -94,6 +94,9 @@ public class MPPSEntry {
 		return getMppsIUID().hashCode();
 	}
 	
+    public Dataset toDataset() {
+        return ds;
+    }
 	private void initSSA( Dataset ds ) {
 		ssAttrs = new ArrayList();
 		DcmElement e = ds.get( Tags.ScheduledStepAttributesSeq );

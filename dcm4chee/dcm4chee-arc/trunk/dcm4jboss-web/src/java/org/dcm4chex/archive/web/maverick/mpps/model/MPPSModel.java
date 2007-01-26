@@ -171,6 +171,10 @@ public class MPPSModel extends BasicFormPagingModel {
 	public Collection getMppsEntries() {
 		return mppsEntries.values();
 	}
+    
+    public MPPSEntry getMppsEntry( String mppsIUID ) {
+        return (MPPSEntry) mppsEntries.get(mppsIUID);
+    }
 
 	/**
 	 * Update the list of MPPSEntries for the view.

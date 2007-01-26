@@ -218,7 +218,8 @@
 			<col width="20%"/>
 			<col width="5%"/>
 			<col width="12%"/>
-			<col width="5%"/>
+			<col width="3%"/>
+			<col width="2%"/>
 		</colgroup>
 		<tr >
 			<td bgcolor="999999" style="height:2px" colspan="9"></td> <!-- spacer -->
@@ -263,6 +264,11 @@
 					</td>	
 				</xsl:otherwise>
 			</xsl:choose>
+			<td title="Function">
+				<a href="mpps_console.m?action=inspect&amp;mppsIUID={mppsIUID}" target="xmlview">
+					<img src="images/xml.gif" alt="xml" border="0" title="Inspect MPPS DICOM object"/>		
+				</a>
+			</td>
 			<td title="Function">
 				<input type="checkbox" name="mppsIUID" value="{mppsIUID}">
 					<xsl:if test="/model/mppsIUIDs/item = mppsIUID">

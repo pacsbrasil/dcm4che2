@@ -280,6 +280,7 @@ default-transform-type="xslt">
     	  <!-- <transform path="mwlc/merge_confirm.xsl" /> -->
 	      <transform path="patient_merge.xsl" />
 	    </view>
+	    <view name="inspect" type="redirect" path="dcmview.jsp"/>
      </command>
 
 	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->
@@ -293,6 +294,7 @@ default-transform-type="xslt">
     	  <transform path="mppsc/mpps_console.xsl" />
 	    </view>
 	    <view name="link" type="redirect" path="mwl_console.m?action=link"/>
+	    <view name="inspect" type="redirect" path="dcmview.jsp"/>
      </command>
      
 	<!-- ****** General Purpose Worklist Console (GPWLConsole) related commands ******-->
@@ -303,6 +305,7 @@ default-transform-type="xslt">
     	  <transform path="gpwlc/gpwl_console.xsl" />
 	    </view>
 	    <view name="linkDone" type="redirect" path="gppps_console.m?action=linkDone"/>
+	    <view name="inspect" type="redirect" path="dcmview.jsp"/>
      </command>
 	<!-- ****** General Purpose Performed Procedure Step Console (GPPPSConsole) related commands ******-->
 
@@ -312,6 +315,7 @@ default-transform-type="xslt">
     	  <transform path="gpppsc/gppps_console.xsl" />
 	    </view>
 	    <view name="link" type="redirect" path="gpwl_console.m?action=link"/>
+	    <view name="inspect" type="redirect" path="dcmview.jsp"/>
      </command>
 
 	<!-- ****** User admin related commands ******-->

@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
+import org.dcm4chex.archive.web.maverick.mwl.model.MWLEntry;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLFilter;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 
@@ -158,6 +159,8 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 		} else if ("cancelLink".equals(action)) {
 			model.setMppsIDs(null);
 			return "cancelLink";
+        } else if ("inspect".equals(action)) {
+            return inspect(request.getParameter("spsID"));
 		}
 		return SUCCESS;
 	}
@@ -196,7 +199,18 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 		return "linkDone";
 	}
 
-
+	private String inspect(String spsID) {
+	    if ( spsID != null ) {
+	        MWLEntry entry = model.getMWLEntry(spsID);
+            if ( entry != null ) {
+                this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
+                return INSPECT;
+            } else {
+                model.setPopupMsg("MWL Entry not found! SPS ID:"+spsID);
+            }
+        }
+	    return SUCCESS;   
+    }
 
 	/**
 	 * @param request

@@ -44,6 +44,7 @@ import java.text.ParseException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 
@@ -108,7 +109,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
             } else {
             	String action = request.getParameter("action");
             	if ( action != null ) {
-            		performAction( action, request );
+            		return performAction( action, request );
             	}
             }
             return SUCCESS;
@@ -122,13 +123,16 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 	 * @param action
 	 * @param request
 	 */
-	private void performAction(String action, HttpServletRequest request) {
+	private String performAction(String action, HttpServletRequest request) {
 		if ( "linkDone".equals(action) ) {
         	model.filterWorkList( false );
 			model.setPopupMsg( MWLModel.getModel( request ).getPopupMsg() ); //popup message of doLink is set in MWL!
 		} else if ( "unlink".equals(action) ) {
-			unlink(request.getParameterValues( "mppsIUID" ));
-		}
+			return unlink(request.getParameterValues( "mppsIUID" ));
+		} else if ( "inspect".equals(action) ) {
+		    return inspect (request.getParameter( "mppsIUID" ));
+        }
+        return SUCCESS;
 	}
 
 	/**
@@ -148,6 +152,18 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 	}
 
 
+    private String inspect(String mppsIUID) {
+        if ( mppsIUID != null ) {
+            MPPSEntry entry = model.getMppsEntry(mppsIUID);
+            if ( entry != null ) {
+                this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
+                return INSPECT;
+            } else {
+                model.setPopupMsg("MPPS Entry not found! MPPS IUID:"+mppsIUID);
+            }
+        }
+        return SUCCESS;
+    }
 
 
 	/**

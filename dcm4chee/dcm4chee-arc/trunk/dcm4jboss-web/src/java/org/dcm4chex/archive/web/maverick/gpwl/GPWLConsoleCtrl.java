@@ -44,6 +44,7 @@ import java.text.ParseException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLEntry;
 import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLFilter;
 import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLModel;
 import org.dcm4chex.archive.web.maverick.gpwl.GPWLScuDelegate;
@@ -125,10 +126,25 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
 	private String performAction(String action, HttpServletRequest request) throws ParseException {
 		if ( "delete".equalsIgnoreCase( action ) ) {
 			getGPWLScuDelegate().deleteGPWLEntry(request.getParameter(""));
-		}
+		} else if ( "inspect".equals(action)) {
+		    return inspect(request.getParameter("gpwlIUID"));
+        }
 		return SUCCESS;
 	}
 
+    private String inspect(String iuid) {
+        if ( iuid != null ) {
+            GPWLEntry entry = model.getGPWLEntry(iuid);
+            if ( entry != null ) {
+                this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
+                return INSPECT;
+            } else {
+                model.setPopupMsg("GPWL Entry not found! SPS ID:"+iuid);
+            }
+        }
+        return SUCCESS;   
+    }
+    
 	/**
 	 * @param request
 	 * @return

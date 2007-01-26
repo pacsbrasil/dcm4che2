@@ -70,6 +70,10 @@ public class MWLEntry {
 		this.ds = ds;
 		spsItem = ds.get( Tags.SPSSeq ).getItem();//scheduled procedure step sequence item.
 	}
+    
+    public Dataset toDataset() {
+        return ds;
+    }
 	
 	public String getSpsID() {
 		return spsItem.getString( Tags.SPSID );

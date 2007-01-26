@@ -81,6 +81,10 @@ public class GPPPSEntry {
 		initRefReqSq( ds );
 		initRefGPSPS( ds );
 	}
+    
+    public Dataset toDataset() {
+        return ds;
+    }
 	
 	public boolean equals(Object o) {
 		if ( o != null && (o instanceof GPPPSEntry )) {

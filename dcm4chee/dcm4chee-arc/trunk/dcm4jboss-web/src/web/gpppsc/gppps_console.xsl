@@ -187,7 +187,8 @@
 			<col width="12%"/>
 			<col width="10%"/>
 			<col width="10%"/>
-			<col width="5%"/>
+			<col width="3%"/>
+			<col width="2%"/>
 		</colgroup>
 		<tr >
 			<td bgcolor="999999" style="height:2px" colspan="9"></td> <!-- spacer -->
@@ -220,6 +221,11 @@
 				<xsl:value-of select="PPSStatus"/>
 		 	</td>
 			<td title="Function">
+				<a href="gppps_console.m?action=inspect&amp;gpppsIUID={gpppsIUID}" target="xmlview">
+					<img src="images/xml.gif" alt="xml" border="0" title="Inspect GPPPS DICOM object"/>		
+				</a>
+			</td>	
+			<td title="Function">
 				<input type="checkbox" name="gpppsIUID" value="{gpppsIUID}">
 					<xsl:if test="/model/gpppsIUIDs/item = gpppsIUID">
 						<xsl:attribute name="checked"/>
@@ -239,7 +245,7 @@
 		</colgroup>
 		<tr>
 			<td >&#160;</td>
-	        <td align="left" title="Patient" >
+	        <td align="left" title="IUID" >
 				<xsl:value-of select="gpppsIUID"/>
 			</td>
 	        <td align="left" title="Performed Workitem Code" >

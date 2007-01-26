@@ -169,6 +169,10 @@ public class GPPPSModel extends BasicFormPagingModel {
 	public Collection getGpppsEntries() {
 		return gpppsEntries.values();
 	}
+    
+    public GPPPSEntry getGPPPSEntry( String iuid ) {
+        return (GPPPSEntry) gpppsEntries.get(iuid);
+    }
 
 	/**
 	 * Update the list of GPPPSEntries for the view.

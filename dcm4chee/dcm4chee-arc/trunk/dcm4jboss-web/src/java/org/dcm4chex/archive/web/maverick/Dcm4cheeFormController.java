@@ -69,8 +69,10 @@ public class Dcm4cheeFormController extends Throwaway2
 	
 	public static final String ERROR_PARSE_DATE = "parseError_date";
 	public static final String ERROR_PARSE_TIME = "parseError_time";
-	public static final String ERROR_PARSE_DATETIME = "parseError_datetime";
+    public static final String ERROR_PARSE_DATETIME = "parseError_datetime";
 
+    public static final String INSPECT = "inspect";
+    
 	private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());
 	/**
 	 * The form bean gets set here

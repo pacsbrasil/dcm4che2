@@ -72,6 +72,10 @@ public class GPWLEntry {
 		swcItem = ds.getItem( Tags.ScheduledWorkitemCodeSeq );//scheduled workitem code sequence item.
 		refReqItem = ds.getItem(Tags.RefRequestSeq);
 	}
+    
+    public Dataset toDataset() {
+        return ds;
+    }
 	
 	public String getIUID() {
 		return ds.getString( Tags.SOPInstanceUID );

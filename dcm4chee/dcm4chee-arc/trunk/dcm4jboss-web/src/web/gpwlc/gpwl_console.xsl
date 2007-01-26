@@ -249,7 +249,8 @@
 			<col width="7%"/>
 			<col width="7%"/>
 			<col width="12%"/>
-			<col width="18%"/>
+			<col width="16%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<tr>
@@ -279,6 +280,11 @@
 					&#160;<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
 				</a>
 			</td>
+			<td title="Function">
+				<a href="gpwl_console.m?action=inspect&amp;gpwlIUID={IUID}" target="xmlview">
+					<img src="images/xml.gif" alt="xml" border="0" title="Inspect GPWL DICOM object"/>		
+				</a>
+			</td>	
 			<td title="Function" align="center" valign="bottom">
 				<input type="checkbox" name="sticky" value="{IUID}" />
 			</td>
@@ -323,7 +329,7 @@
 			<td>&#160;&#160;</td><!-- function -->
 		</tr>
 		<tr >
-			<td bgcolor="eeeeee" style="height:5px" colspan="8"></td> <!-- spacer -->
+			<td bgcolor="eeeeee" style="height:5px" colspan="9"></td> <!-- spacer -->
 		</tr>
 	</table>
 	

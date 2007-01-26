@@ -44,7 +44,9 @@ import java.text.ParseException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSEntry;
 import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSModel;
+import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLEntry;
 
 /**
  * @author franz.willer
@@ -106,7 +108,7 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
             } else {
             	String action = request.getParameter("action");
             	if ( action != null ) {
-            		performAction( action, request );
+            		return performAction( action, request );
             	}
             }
             return SUCCESS;
@@ -120,13 +122,28 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
 	 * @param action
 	 * @param request
 	 */
-	private void performAction(String action, HttpServletRequest request) {
+	private String performAction(String action, HttpServletRequest request) {
 		if ( "linkDone".equals(action) ) {
         	model.filterWorkList( true );
-		}
+		} else if ( "inspect".equals(action) ) {
+            return inspect(request.getParameter("gpppsIUID"));
+        }
+        return SUCCESS;
 	}
 
 
+    private String inspect(String iuid) {
+        if ( iuid != null ) {
+            GPPPSEntry entry = model.getGPPPSEntry(iuid);
+            if ( entry != null ) {
+                this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
+                return INSPECT;
+            } else {
+                model.setPopupMsg("GPPPS Entry not found! IUID:"+iuid);
+            }
+        }
+        return SUCCESS;   
+    }
 
 	/**
 	 * Checks the http parameters for filter params and update the filter.
