@@ -519,7 +519,6 @@ public class MoveTask implements Runnable {
             	Dimse rq = makeCStoreRQ(fileInfo, getByteBuffer(a));
             	perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
-            	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.DICOM_FILE, getFile(fileInfo));
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
 
             	storeAssoc.invoke(rq, storeScpListener);
@@ -645,10 +644,19 @@ public class MoveTask implements Runnable {
                                 .fromByteArray(info.instAttrs))));
         FileDataSource ds = new FileDataSource(f, mergeAttrs, buffer);
         ds.setWithoutPixeldata(withoutPixeldata);
-        return AssociationFactory.getInstance().newDimse(presCtx.pcid(),
+        Dimse rq = AssociationFactory.getInstance().newDimse(presCtx.pcid(),
                 storeRqCmd, ds);
+    	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.DICOM_FILE, f);
+    	return rq;
     }
     
+    /**
+     * This method may trigger remote retrieval. Use cautiously
+     * 
+     * @param info
+     * @return The File 
+     * @throws Exception
+     */
     protected File getFile(FileInfo info) throws Exception {
     	return info.basedir.startsWith("tar:") ? service.retrieveFileFromTAR(
                 info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
