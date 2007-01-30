@@ -67,16 +67,21 @@
               <bundleFileName>seam-ejb.jar</bundleFileName>
             </ejbModule>
             <webModule>
-               <groupId>dcm4che</groupId>
-               <artifactId>dcm4chee-arr-seam-web-${db}</artifactId>
-               <contextRoot>/dcm4chee-arr</contextRoot>
-               <bundleFileName>seam-web.war</bundleFileName>
+              <groupId>dcm4che</groupId>
+              <artifactId>dcm4chee-arr-seam-web-${db}</artifactId>
+              <contextRoot>/dcm4chee-arr</contextRoot>
+              <bundleFileName>seam-web.war</bundleFileName>
             </webModule>
             <sarModule>
               <groupId>dcm4che</groupId>
               <artifactId>dcm4chee-arr-listeners-udp</artifactId>
               <bundleFileName>listeners-udp.sar</bundleFileName>
             </sarModule>
+            <jarModule>
+              <groupId>jboss</groupId>
+              <artifactId>jboss-seam</artifactId>
+              <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
           </modules>
           <jboss>
             <version>4</version>
