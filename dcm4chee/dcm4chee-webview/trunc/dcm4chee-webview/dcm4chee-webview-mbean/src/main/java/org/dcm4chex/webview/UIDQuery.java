@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@agfa.com
- * @version $Revision:$ $Date:$
+ * @version $Id$
  * @since 04.10.2006
  */
 public class UIDQuery {
