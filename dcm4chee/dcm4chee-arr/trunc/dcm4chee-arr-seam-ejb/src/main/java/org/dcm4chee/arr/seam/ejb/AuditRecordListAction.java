@@ -461,10 +461,9 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         Criteria recordsCriteria = buildCriteria(session
                 .createCriteria(AuditRecord.class));
 
-        count = ((Integer) recordsCriteria.addOrder(
-                Order.desc(orderByEventDateTime ? "eventDateTime"
-                        : "receiveDateTime")).setProjection(
-                Projections.rowCount()).list().iterator().next()).intValue();
+        count = ((Integer) recordsCriteria
+                .setProjection(Projections.rowCount())
+                .list().iterator().next()).intValue();
         int from = getFirstResult();
         int to = Math.max(0, Math.min(count, getFirstResult() + pageSize));
 
