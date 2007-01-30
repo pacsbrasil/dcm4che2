@@ -87,7 +87,6 @@ public class UIDQuery {
     private Map splitSeries(List l, String patID) {
         Map m = new HashMap();
         DicomObject dcm;
-        List seriess;
         String suid;
         for ( Iterator iter = l.iterator() ; iter.hasNext() ;) {
             dcm = (DicomObject) iter.next();
