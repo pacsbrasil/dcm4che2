@@ -160,4 +160,97 @@ public class AuditMessage extends BaseElement {
         }
         outputChilds(out, participantObjects);
     }
+    
+    public static AuditMessage createApplicationActivityMessage(
+            AuditEvent.TypeCode code, Application app) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY,
+                        AuditEvent.ActionCode.EXECUTE),
+                app);
+    }
+
+    public static AuditMessage createApplicationStartMessage(Application app) {
+        return createApplicationActivityMessage(
+                AuditEvent.TypeCode.APPLICATION_START, app);
+    }
+
+    public static AuditMessage createApplicationStopMessage(Application app) {
+        return createApplicationActivityMessage(
+                AuditEvent.TypeCode.APPLICATION_STOP, app);
+    }
+
+    public static AuditMessage createAuditLogUsedMessage(
+            ActiveParticipant userOrProcess, AuditLog auditLog) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.AUDIT_LOG_USED,
+                        AuditEvent.ActionCode.READ),
+                        userOrProcess)
+                .addParticipantObject(auditLog);        
+    }
+    
+    public static AuditMessage createAuditLogUsedMessage(ActiveParticipant user,
+            ActiveParticipant process, AuditLog auditLog) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.AUDIT_LOG_USED,
+                        AuditEvent.ActionCode.READ),
+                        user)
+                .addActiveParticipant(process)        
+                .addParticipantObject(auditLog);        
+    }
+    
+    public static AuditMessage createBeginTransferingMessage(Source src,
+            Destination dst, Patient patient, Study study) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.BEGIN_TRANSFERRING_DICOM_INSTANCES,
+                        AuditEvent.ActionCode.EXECUTE),
+                src)
+                .addActiveParticipant(dst)
+                .addParticipantObject(patient)
+                .addParticipantObject(study);
+    }
+
+    public static AuditMessage createExportMessage(Source userOrProcess, 
+            DestinationMedia dstMedia, Patient patient) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.EXPORT,
+                        AuditEvent.ActionCode.READ),
+                        userOrProcess)
+                .addActiveParticipant(dstMedia)
+                .addParticipantObject(patient);
+    }
+    
+    public static AuditMessage createExportMessage(Source user, Source process,
+            DestinationMedia dstMedia, Patient patient) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.EXPORT,
+                        AuditEvent.ActionCode.READ),
+                        user)
+                .addActiveParticipant(process)
+                .addActiveParticipant(dstMedia)
+                .addParticipantObject(patient);
+    }
+
+    public static AuditMessage createImportMessage(
+            ActiveParticipant userOrProcess, ActiveParticipant srcMedia,
+            ParticipantObject patient) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.IMPORT,
+                        AuditEvent.ActionCode.CREATE),
+                        userOrProcess)
+                .addActiveParticipant(srcMedia)
+                .addParticipantObject(patient);
+    }
+    
+    public static AuditMessage createImportMessage(
+            ActiveParticipant user, ActiveParticipant process,
+            ActiveParticipant srcMedia, ParticipantObject patient) {
+        return new AuditMessage(
+                new AuditEvent(AuditEvent.ID.IMPORT,
+                        AuditEvent.ActionCode.CREATE),
+                        user)
+                .addActiveParticipant(process)
+                .addActiveParticipant(srcMedia)
+                .addParticipantObject(patient);
+    }
+    
 }

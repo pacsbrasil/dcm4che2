@@ -72,6 +72,25 @@ public class AuditEvent extends BaseElement {
         this(eventID, OutcomeIndicator.SUCCESS);
     }
     
+    public AuditEvent(ID eventID, ActionCode action, OutcomeIndicator outcome) {
+        this(eventID, outcome);
+        setEventActionCode(action);
+    }
+
+    public AuditEvent(ID eventID, ActionCode action) {
+        this(eventID, action, OutcomeIndicator.SUCCESS);
+    }
+
+    public AuditEvent(ID eventID, ActionCode action, TypeCode type,
+            OutcomeIndicator outcome) {
+        this(eventID, action, outcome);
+        addEventTypeCode(type);
+    }
+
+    public AuditEvent(ID eventID, ActionCode action, TypeCode type) {
+        this(eventID, action, type, OutcomeIndicator.SUCCESS);
+    }
+
     public ID getEventID() {
         return eventID;
     }
