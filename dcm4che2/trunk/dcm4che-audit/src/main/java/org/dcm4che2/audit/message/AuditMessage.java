@@ -54,6 +54,8 @@ import java.util.List;
  */
 public class AuditMessage extends BaseElement {
 
+    private static final String XML_VERSION_1_0_ENCODING_UTF_8 = 
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     private static boolean incXMLDecl = false;
     private static AuditSource defaultAuditSource;
     private final AuditEvent event;
@@ -70,18 +72,14 @@ public class AuditMessage extends BaseElement {
         addActiveParticipantInternal(apart);
     }
     
-    public static final boolean isIncXMLDecl() {
+    public static final boolean isIncludeXMLDeclaration() {
         return incXMLDecl;
     }
 
-    public static final void setIncXMLDecl(boolean incXMLDecl) {
+    public static final void setIncludeXMLDeclaration(boolean incXMLDecl) {
         AuditMessage.incXMLDecl = incXMLDecl;
     }
 
-    public final AuditEvent getAuditEvent() {
-        return event;
-    }
-    
     public static AuditSource getDefaultAuditSource() {
         return defaultAuditSource;
     }
@@ -90,6 +88,10 @@ public class AuditMessage extends BaseElement {
         defaultAuditSource = sourceId;
     }
 
+    public final AuditEvent getAuditEvent() {
+        return event;
+    }
+    
     public List getAuditSources() {
         return Collections.unmodifiableList(auditSources);
     }
@@ -143,7 +145,7 @@ public class AuditMessage extends BaseElement {
             throw new IllegalStateException("No Audit Source specified!");
         }
         if (incXMLDecl) {
-            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            out.write(XML_VERSION_1_0_ENCODING_UTF_8);
         }
         super.output(out);
     }
@@ -157,5 +159,5 @@ public class AuditMessage extends BaseElement {
             outputChilds(out, auditSources);
         }
         outputChilds(out, participantObjects);
-    }       
+    }
 }
